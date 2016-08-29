@@ -21,16 +21,17 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\install;
+
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\PhpConf;
 use COREPOS\pos\install\conf\JsonConf;
 use COREPOS\pos\install\conf\ParamConf;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use \CoreLocal;
 
-if (!class_exists('AutoLoader')) {
-    include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-}
-
-class InstallUtilities extends LibraryClass 
+class InstallUtilities 
 {
     static public function dbOrFail($db)
     {

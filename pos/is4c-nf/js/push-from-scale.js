@@ -7,7 +7,7 @@ function pollScale(rel_prefix)
         var data = $.parseJSON(event.data);
         if (data.scale) {
             $.ajax({
-                url: rel_prefix + "ajax-callbacks/AjaxScale.php",
+                url: rel_prefix + "ajax/AjaxScale.php",
                 data: "input=" + data.scale
             }).done(function(resp) {
                 $('#scaleBottom').html(resp);

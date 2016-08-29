@@ -22,6 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
 
 /**
   @class Drawer
@@ -32,9 +34,9 @@ class Drawers extends \LibraryClass
     {
         $pin = self::current();
         if ($pin == 1) {
-            \ReceiptLib::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
+            ReceiptLib::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
         } elseif ($pin == 2) {
-            \ReceiptLib::writeLine(chr(27).chr(112).chr(1).chr(48)."0");
+            ReceiptLib::writeLine(chr(27).chr(112).chr(1).chr(48)."0");
         }
     }
 
@@ -55,7 +57,7 @@ class Drawers extends \LibraryClass
             return 1;
         }
 
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $chkQ = 'SELECT drawer_no FROM drawerowner WHERE emp_no=' . \CoreLocal::get('CashierNo');
         $chkR = $dbc->query($chkQ);
         if ($dbc->numRows($chkR) == 0) {
@@ -74,7 +76,7 @@ class Drawers extends \LibraryClass
     */
     static public function assign($emp,$num)
     {
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
         $upR = $dbc->query($upQ);
 
@@ -88,7 +90,7 @@ class Drawers extends \LibraryClass
     */
     static public function free($num)
     {
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $upQ = sprintf('UPDATE drawerowner SET emp_no=NULL WHERE drawer_no=%d',$num);
         $upR = $dbc->query($upQ);
 
@@ -101,7 +103,7 @@ class Drawers extends \LibraryClass
     */
     static public function available()
     {
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $query = 'SELECT drawer_no FROM drawerowner WHERE emp_no IS NULL ORDER BY drawer_no';
         $res = $dbc->query($query);
         $ret = array();

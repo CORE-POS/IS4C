@@ -86,7 +86,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
         $plu = false;
         if (is_array($data) && isset($data[$SKU]) && isset($data[$PLU])) {
             // grab data from appropriate columns
-            $sku = $data[$SKU];
+            $sku = str_pad($data[$SKU], 7, "0", STR_PAD_LEFT);
             $plu = substr($data[$PLU],0,13);
             $plu = BarcodeLib::padUPC($plu);
             if (!is_numeric($plu)) { 
@@ -177,7 +177,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendP = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
         $vname = $dbc->getValue($vendP,array($vid));
-        if ($vname) {
+        if (!$vname) {
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
@@ -189,7 +189,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public function preprocess()
     {
-        if (php_sapi_name() !== 'cli' && !header_sent() && session_id() === '') {
+        if (php_sapi_name() !== 'cli' && !headers_sent() && session_id() === '') {
             /* this page requires a session to pass some extra
                state information through multiple requests */
             session_start();

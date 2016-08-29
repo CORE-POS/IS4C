@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class VirtCoupDisplay extends NoInputCorePage 
@@ -161,6 +164,5 @@ class VirtCoupDisplay extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new VirtCoupDisplay();
+AutoLoader::dispatch();
 

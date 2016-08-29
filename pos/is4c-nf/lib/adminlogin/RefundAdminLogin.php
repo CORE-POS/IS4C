@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class RefundAdminLogin
   adminlogin callback for approving refunds
@@ -36,7 +40,7 @@ class RefundAdminLogin
     {
         if ($success) {
             CoreLocal::set('refundComment', CoreLocal::get('strEntered'));    
-            return MiscLib::base_url().'gui-modules/refundComment.php';
+            return MiscLib::baseURL().'gui-modules/refundComment.php';
         } else {
             CoreLocal::set('refundComment', '');
             return false;

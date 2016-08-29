@@ -1,12 +1,14 @@
-var mgrlogin = (function($) {
+var mgrlogin = (function($, errorLog) {
     var mod = {};
 
     var cancelOrder = function(data, urlStem) {
         $.ajax({
-            url: urlStem + 'ajax-callbacks/AjaxEnd.php',
+            url: urlStem + 'ajax/AjaxEnd.php',
             type: 'get',
             data: 'receiptType=cancelled&ref='+data.trans_num,
             cache: false
+        }).fail(function(xhr, statusText, err) {
+            errorLog.show(xhr, statusText, err);
         }).done(function(data) {
             window.location = urlStem + 'gui-modules/pos2.php';
         });
@@ -31,6 +33,8 @@ var mgrlogin = (function($) {
             type: 'get',
             cache: false,
             dataType: 'json'
+        }).fail(function(xhr, statusText, err) {
+            errorLog.show(xhr, statusText, err);
         }).done(function(data) {
             if (data.cancelOrder){
                 cancelOrder(data, urlStem);
@@ -45,4 +49,4 @@ var mgrlogin = (function($) {
     };
 
     return mod;
-}(jQuery));
+}(jQuery, errorLog));

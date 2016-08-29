@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardEmvCaAdmin extends NoInputCorePage 
 {
@@ -33,68 +38,64 @@ class PaycardEmvCaAdmin extends NoInputCorePage
         'PR' => 'Parameter Report',
         'PD' => 'Parameter Download',
     );
+    private $map = array(
+        'KC' => 'keyChange',
+        'KR' => 'keyReport',
+        'SR' => 'statsReport',
+        'DR' => 'declineReport',
+        'PR' => 'paramReport',
+        'PD' => 'paramDownload',
+    );
 
     private $xml = false;
     private $output = 'receipt';
     
     function preprocess()
     {
-        if (isset($_REQUEST["selectlist"])) {
+        $this->conf = new PaycardConf();
+        $caAdmin = new DatacapCaAdmin();
+        if (FormLib::get("selectlist", false) !== false) {
             /** generate XML based on menu choice **/
-            switch ($_REQUEST['selectlist']) {
+            switch (FormLib::get('selectlist')) {
                 case 'KC':
-                    $this->xml = DatacapCaAdmin::keyChange();
-                    $this->output = 'display';
-                    break;
                 case 'PD':
-                    $this->xml = DatacapCaAdmin::paramDownload();
                     $this->output = 'display';
-                    break;
+                    // intentional fallthrough
                 case 'KR':
-                    $this->xml = DatacapCaAdmin::keyReport();
-                    break;
                 case 'SR':
-                    $this->xml = DatacapCaAdmin::statsReport();
-                    break;
                 case 'DR':
-                    $this->xml = DatacapCaAdmin::declineReport();
-                    break;
                 case 'PR':
-                    $this->xml = DatacapCaAdmin::paramReport();
+                    $method = $this->map[FormLib::get('selectlist')];
+                    $this->xml = $caAdmin->$method();
                     break;
                 case 'CL':
                 default:
                     $this->change_page('PaycardEmvMenu.php');
                     return false;
             }
-        } elseif (isset($_REQUEST['xml-resp'])) {
+        } elseif (FormLib::get('xml-resp')) {
             /** parse response XML and display a dialog box
                 or print a receipt **/
-            $xml = $_REQUEST['xml-resp'];
-            $output = $_REQUEST['output-method'];
-            $resp = DatacapCaAdmin::parseResponse($xml);
+            $xml = FormLib::get('xml-resp');
+            $output = FormLib::get('output-method');
+            $resp = $caAdmin->parseResponse($xml);
             if ($output == 'display' || $resp['receipt'] === false) {
-                CoreLocal::set('boxMsg', '<strong>' . $resp['status'] . '</strong><br />' . $resp['msg-text']);
-                CoreLocal::set('strRemembered', '');
+                $this->conf->set('boxMsg', '<strong>' . $resp['status'] . '</strong><br />' . $resp['msg-text']);
+                $this->conf->set('strRemembered', '');
                 $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
                 return false;
-            } else {
-                $print_class = CoreLocal::get('ReceiptDriver');
-                if ($print_class === '' || !class_exists($print_class)) {
-                    $print_class = 'ESCPOSPrintHandler';
-                }
-                $PRINT_OBJ = new $print_class();
-                $receipt_body = implode("\n", $resp['receipt']);
-                $receipt_body .= "\n\n\n\n\n\n\n";
-                $receipt_body .= chr(27).chr(105);
-                if (session_id() != '') {
-                    session_write_close();
-                }
-                $PRINT_OBJ->writeLine($receipt_body);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-
-                return false;
             }
+            $PRINTOBJ = PrintHandler::factory($this->conf->get('ReceiptDriver'));
+            $receiptBody = implode("\n", $resp['receipt']);
+            $receiptBody .= "\n\n\n\n\n\n\n";
+            $receiptBody .= chr(27).chr(105);
+            if (session_id() != '') {
+                session_write_close();
+            }
+            $PRINTOBJ->writeLine($receiptBody);
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+
+            return false;
         }
 
         return true;
@@ -104,8 +105,8 @@ class PaycardEmvCaAdmin extends NoInputCorePage
     {
         if ($this->xml === false) {
             echo '<script type="text/javascript" src="../../../js/selectSubmit.js"></script>';
-            $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-            $this->add_onload_command("\$('#selectlist').focus();\n");
+            $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
+            $this->addOnloadCommand("\$('#selectlist').focus();\n");
         } else {
             ?>
 <script type="text/javascript">
@@ -157,8 +158,8 @@ function emvSubmit() {
         <div class="centeredDisplay colored rounded">
         <span class="larger">process admin transaction</span>
         <form name="selectform" method="post" id="selectform"
-            action="<?php echo $_SERVER['PHP_SELF']; ?>">
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+        <?php if ($this->conf->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">
             <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
@@ -167,15 +168,15 @@ function emvSubmit() {
         <select id="selectlist" name="selectlist" size="5" style="width: 10em;"
             onblur="$('#selectlist').focus()">
         <?php
-        $i = 0;
+        $first = true;
         foreach ($this->menu as $val => $label) {
             printf('<option %s value="%s">%s</option>',
-                ($i == 0 ? 'selected' : ''), $val, $label);
-            $i++;
+                ($first ? 'selected' : ''), $val, $label);
+            $first = false;
         }
         ?>
         </select>
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <?php if ($this->conf->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollUp('#selectlist');">
             <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
@@ -194,7 +195,5 @@ function emvSubmit() {
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new PaycardEmvCaAdmin();
-}
+AutoLoader::dispatch();
 

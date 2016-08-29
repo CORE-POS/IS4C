@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\parser\Parser;
+
 class MiscLoggingParser extends Parser {
 
     private $valid = array(

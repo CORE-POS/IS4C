@@ -1,4 +1,8 @@
 <?php
+
+namespace COREPOS\pos\lib\PrintHandlers;
+use \CoreLocal;
+
 /**
  @class EmailPrintHandler
 

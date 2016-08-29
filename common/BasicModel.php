@@ -1461,7 +1461,7 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
                     }
                 }
                 $obj = new $class(null);
-                if (!is_a($obj, 'BasicModel')) {
+                if (!is_a($obj, 'COREPOS\\common\\BasicModel')) {
                     return $carry;
                 }
 
@@ -1479,7 +1479,7 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
             array()
         );
         ksort($tables);
-        echo array_reduce(array_keys($table),
+        echo array_reduce(array_keys($tables),
             function ($carry, $item) {
                 return $carry . '* [' . $item . '](#' . strtolower($item) . ')' . "\n";
             },
@@ -1488,7 +1488,7 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
         echo "\n";
         echo array_reduce($tables,
             function ($carry, $item) {
-                return $doc . "\n";
+                return $carry . $item . "\n";
             },
             ''
         ); 

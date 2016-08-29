@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+
 /**
   @class DDDAdminLogin
   adminlogin callback for marking current
@@ -36,7 +39,7 @@ class DDDAdminLogin
     public static function adminLoginCallback($success)
     {
         if ($success) {
-            return MiscLib::base_url().'ajax-callbacks/ddd.php';
+            return MiscLib::baseURL().'ajax-callbacks/ddd.php';
         } else {
             return false;
         }

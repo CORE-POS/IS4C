@@ -22,6 +22,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\parser\Parser;
+
 /** List the Coop Cred Programs the member belongs to
  *   with stutus and balance for each.
  */

@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Tenders\TenderModule;
+
 /**
   @class ECheckTender
   Tender module for handling both paper

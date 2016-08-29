@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class TaxExemptPlugin extends Plugin 
 {
     public $plugin_description = 'Automatically apply tax exempt to defined members';

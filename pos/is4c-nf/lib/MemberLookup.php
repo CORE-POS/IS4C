@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+
 /**
   @class MemberLookup
 */

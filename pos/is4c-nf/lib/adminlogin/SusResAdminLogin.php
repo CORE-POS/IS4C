@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+
 /**
   @class SusResAdminLogin
   adminlogin callback to approve access
@@ -36,7 +39,7 @@ class SusResAdminLogin
     static public function adminLoginCallback($success)
     {
         if ($success) {
-            return MiscLib::base_url().'gui-modules/adminlist.php';
+            return MiscLib::baseURL().'gui-modules/adminlist.php';
         } else {
             return false;
         }

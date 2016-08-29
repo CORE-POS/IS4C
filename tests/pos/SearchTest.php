@@ -7,12 +7,12 @@ class SearchTest extends PHPUnit_Framework_TestCase
 {
     public function testProductSearch()
     {
-        $mods = AutoLoader::ListModules('ProductSearch', true);
+        $mods = AutoLoader::ListModules('COREPOS\\pos\\lib\\Search\\Products\\ProductSearch', true);
 
         foreach($mods as $class){
             $obj = new $class();
 
-            $this->assertInstanceOf('ProductSearch',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Search\\Products\\ProductSearch',$obj);
 
             $this->assertInternalType('integer',$obj->result_size);
 
@@ -34,12 +34,12 @@ class SearchTest extends PHPUnit_Framework_TestCase
 
     public function testMemberSearch()
     {
-        $mods = AutoLoader::ListModules('MemberLookup', true);
+        $mods = AutoLoader::ListModules('COREPOS\\pos\\lib\\MemberLookup', true);
 
         foreach($mods as $class){
             $obj = new $class();
 
-            $this->assertInstanceOf('MemberLookup',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\MemberLookup',$obj);
 
             $this->assertInternalType('boolean', $obj->handle_numbers());
             $this->assertInternalType('boolean', $obj->handle_text());

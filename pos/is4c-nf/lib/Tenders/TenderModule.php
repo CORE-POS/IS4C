@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use \CoreLocal;
+
 /**
   @class TenderModule
   Base class for modular tenders

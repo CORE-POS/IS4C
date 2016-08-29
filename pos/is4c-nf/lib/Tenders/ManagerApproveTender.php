@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class StoreTransfer
   Tender module for inter-departmental transfers
@@ -55,7 +60,7 @@ class ManagerApproveTender extends TenderModule
 
         if (CoreLocal::get("approvetender") != 1) {
             CoreLocal::set("approvetender",1);
-            return $my_url."gui-modules/adminlogin.php?class=ManagerApproveTender";
+            return $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-ManagerApproveTender";
         } else {
             CoreLocal::set("approvetender",0);
             return true;

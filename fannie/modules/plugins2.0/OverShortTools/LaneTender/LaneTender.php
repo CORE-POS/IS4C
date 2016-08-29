@@ -105,7 +105,7 @@ class LaneTender extends FannieReportPage
         ';
         $statement = $dbc->prepare($query);
         $args = array($d1.' 00:00:00', $d2.' 23:59:59');
-        $result = $dbc->exec($statement, $args);
+        $result = $dbc->execute($statement, $args);
         $cashierNames = array();
         while ($row = $dbc->fetch_row($result)) {
             $data[$row['register_no']]['tenders'][$row['trans_subtype']][0] += $row['amount'];
@@ -140,7 +140,7 @@ class LaneTender extends FannieReportPage
         ';
         $statement = $dbc->prepare($query);
         $args = array($d1.' 00:00:00', $d2.' 23:59:59');
-        $result = $dbc->exec($statement, $args);
+        $result = $dbc->execute($statement, $args);
         while ($row = $dbc->fetch_row($result)) {
             $data[$row['lane']]['tenders'][$row['tender_type']][1] += $row['amount'];
         }

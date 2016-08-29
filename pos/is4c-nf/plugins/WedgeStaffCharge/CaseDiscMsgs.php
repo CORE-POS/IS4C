@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\parser\Parser;
+
 class CaseDiscMsgs extends Parser 
 {
     function check($str)

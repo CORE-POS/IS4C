@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+
 class NoDefaultAmountTender extends TenderModule 
 {
     /**

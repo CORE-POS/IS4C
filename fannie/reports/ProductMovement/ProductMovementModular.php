@@ -176,7 +176,10 @@ class ProductMovementModular extends FannieReportPage
             $sumQty += $row[4];
             $sumSales += $row[5];
         }
-        return array('Total',null,null,null,$sumQty,$sumSales);
+        return array(
+            array('Daily Avg.',null,null,null,round($sumQty/count($data),2),round($sumSales/count($data),2)),
+            array('Total',null,null,null,$sumQty,$sumSales)
+        );
     }
 
     public function javascriptContent()

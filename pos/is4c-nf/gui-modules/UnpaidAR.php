@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\PrehLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class UnpaidAR extends BasicCorePage 
@@ -97,6 +100,5 @@ class UnpaidAR extends BasicCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new UnpaidAR();
+AutoLoader::dispatch();
 

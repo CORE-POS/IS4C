@@ -260,7 +260,7 @@ class DepartmentMovementReport extends FannieReportPage
     private function upcFooter($data)
     {
         $this->report_headers = array('UPC','Brand','Description','Rings','Qty','$',
-            'Dept#','Department','Subdept','Vendor');
+            'Dept#','Department','Super#','Vendor');
         $this->sort_column = 4;
         $this->sort_direction = 1;
         $sumQty = 0.0;

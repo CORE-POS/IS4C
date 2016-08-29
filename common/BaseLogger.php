@@ -269,14 +269,8 @@ class BaseLogger
     private function rfcLogLine($line, $int_level)
     {
         $date = date('M j H:i:s');
-        $host = gethostname();
-        if ($host === false) {
-            $host = 'localhost';
-        }
-        $pid = getmypid();
-        if ($pid === false) {
-            $pid = 0;
-        }
+        $host = gethostname() ? gethostname() : 'localhost';
+        $pid = getmypid() ? getmypid() : 0;
 
         return sprintf('%s %s %s[%d]: (%s) %s',
             $date, $host, $this->program_name, $pid,
@@ -324,7 +318,7 @@ class BaseLogger
     */
     public function getLogLocation($int_level)
     {
-        return '/dev/null';
+        return stristr(PHP_OS, 'WIN') ? 'nul' : '/dev/null';
     }
 
     /**

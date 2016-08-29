@@ -73,6 +73,7 @@ class TagTest extends PHPUnit_Framework_TestCase
             ),
         );
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        COREPOS\Fannie\API\item\signage\LegacyWrapper::setWrapped('Fannie_Standard');
         foreach ($mods as $class) {
             $obj = new $class($sample, 'provided');
             ob_start();

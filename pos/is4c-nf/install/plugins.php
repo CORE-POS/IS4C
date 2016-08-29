@@ -1,10 +1,13 @@
 <?php
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\plugins\Plugin;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
-include('InstallUtilities.php');
 $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <html>
@@ -47,12 +50,12 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
             $obj->pluginDisable();
         }
     }
-    CoreLocal::set('PluginList',$_REQUEST['PLUGINLIST']);
+    CoreLocal::set('PluginList',$_REQUEST['PLUGINLIST'], true);
 }
 $type_check = CoreLocal::get('PluginList');
-if (!is_array($type_check)) CoreLocal::set('PluginList',array());
+if (!is_array($type_check)) CoreLocal::set('PluginList',array(), true);
 
-$mods = AutoLoader::listModules('Plugin');
+$mods = AutoLoader::listModules('COREPOS\\pos\\plugins\\Plugin');
 sort($mods);
 
 foreach($mods as $m){

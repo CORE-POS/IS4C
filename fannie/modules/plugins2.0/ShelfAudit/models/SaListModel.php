@@ -35,6 +35,7 @@ class SaListModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
     'clear' => array('type'=>'TINYINT', 'default'=>0),
     'quantity' => array('type'=>'DOUBLE', 'default'=>0),
+    'uid' => array('type'=>'INT'),
     );
 }
 

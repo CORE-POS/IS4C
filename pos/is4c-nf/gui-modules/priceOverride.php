@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputCorePage {

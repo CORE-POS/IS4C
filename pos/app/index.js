@@ -34,3 +34,27 @@ var HOST = '127.0.0.1';
 var PORT = '9451';
 server.bind(PORT, HOST);
 
+/**
+  Idea: use node webkit to open a 2nd window if a second screen
+  is present. In the main POS window javascript could theoretically
+  call process.mainModule.exports.reloadNodeWindow() to trigger a
+  refresh of the customer screen.
+nw.Screen.Init();
+var exports.reloadNodeWindow = function(){ 
+    // null function
+};
+if (1 in nw.Screen.screens) { // 2nd screen present
+    var screen = nw.Screen.screens[1];
+    var cWin = nw.Window.open("http://localhost/IS4C/pos/is4c-nf/gui-modules/posCustDisplay.php",
+        {
+            x: screen['bounds']['x'],
+            y: screen['bounds']['y'],
+        });
+    cWin.on("loaded", function() {
+        cWin.enterFullScreen();
+    };
+    exports.reloadNodeWindow = function() {
+        cWin.reload();
+    }
+}
+*/

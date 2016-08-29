@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
+use \CoreLocal;
+
 /**
   @class WFC_Kicker
   Opens drawer for cash, credit card over $25,

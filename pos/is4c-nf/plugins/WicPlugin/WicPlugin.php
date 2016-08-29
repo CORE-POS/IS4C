@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class WicPlugin extends Plugin 
 {
     public $plugin_settings = array(

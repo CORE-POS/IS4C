@@ -1,8 +1,10 @@
 <?php
+
+namespace COREPOS\pos\lib\PrintHandlers;
+
 /**
  @class PdfPrintHandler
 */
-
 class PdfPrintHandler extends PrintHandler 
 {
     private $instance = null;
@@ -12,7 +14,7 @@ class PdfPrintHandler extends PrintHandler
     public function __construct()
     {
         if (class_exists('fpdf\FPDF')) {
-            $this->instance = new fpdf\FPDF('P', 'mm', 'Letter');
+            $this->instance = new \fpdf\FPDF('P', 'mm', 'Letter');
             $this->instance->AddPage();
             $this->TextStyle();
         }

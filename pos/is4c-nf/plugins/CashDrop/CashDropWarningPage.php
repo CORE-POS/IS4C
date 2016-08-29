@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\InputCorePage;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class CashDropWarningPage extends InputCorePage 
@@ -59,6 +60,5 @@ class CashDropWarningPage extends InputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new CashDropWarningPage();
+AutoLoader::dispatch();
 

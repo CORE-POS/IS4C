@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use \CoreLocal;
+
 /**
   @class GiftCertificateTender
   Tender module for gift certificates

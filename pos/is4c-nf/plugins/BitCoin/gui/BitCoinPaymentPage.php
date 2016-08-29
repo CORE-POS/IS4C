@@ -22,6 +22,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\InputCorePage;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class BitCoinPaymentPage extends InputCorePage 
@@ -163,5 +166,5 @@ function monitorPaymentStatus(payment_id)
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new BitCoinPaymentPage();
+AutoLoader::dispatch();
+

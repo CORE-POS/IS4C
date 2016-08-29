@@ -55,6 +55,15 @@ class WfcClassRegistryPage extends FanniePage
         
         return true;
     }
+    
+    public function css_content()
+    {
+        return '
+            table td,th {
+                border-top: none !important;
+            }
+       ';
+    }
 
     public  function body_content()
     {
@@ -209,6 +218,48 @@ class WfcClassRegistryPage extends FanniePage
         }
         
         if ($key > -1) {
+            
+            
+            //  Send email if class is almost filled and email hasn't been sent.
+            $query = $dbc->prepare('
+                SELECT count(seat) 
+                FROM wfcuRegistry 
+                WHERE upc = ?
+                    AND first_name != "NULL" 
+                    AND seatType = 1
+            
+            ');
+            $result = $dbc->execute($query, $plu);
+            $curClassSize = $dbc->fetch_row($result);
+            if (!is_array($classSize) && $curClassSize[0] >= ($classSize - 3)) {
+                $query = $dbc->prepare('
+                    SELECT details 
+                    FROM wfcuRegistry
+                    WHERE upc = ?
+                        AND details = "email_sent"
+                ');
+                $result = $dbc->execute($query, $plu);
+                $row = $dbc->fetch_row($result);
+                if (!isset($row)) {
+                    $to = 'it@wholefoods.coop; brand@wholefoods.coop';
+                    $sub = 'WFC-U Class Near Capacity';
+                    $adhd = 'From: automail@wholefoods.coop';
+                    $msg = 'WFC-U class ';
+                    $msg .= $className[$key];
+                    $msg .= ' is almost full.';
+                    $msg .= "\n";
+                    $msg .= 'IT - please mark class as Sold Out : 
+                        <a href="http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=' . $plu . '>' . $plu . '</a>';
+                    $msg .= "\n";
+                    mail($to,$sub,$msg,$adhd);
+                    
+                    $query = $dbc->prepare('
+                        INSERT INTO wfcuRegistry (details, upc)
+                        VALUES ("email_sent", ?)
+                    ');
+                    $dbc->execute($query, $plu);
+                }
+            }
             
             //* Class Roster
             $ret .= "<h2 align=\"center\">" . $className[$key] . "</h2>";

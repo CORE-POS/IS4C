@@ -124,8 +124,17 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($this->id);
         $cache = new InventoryCacheModel($this->connection);
+        if (!class_exists('SoPoBridge')) {
+            include(__DIR__ . '/../ordering/SoPoBridge.php');
+        }
+        $bridge = new SoPoBridge($this->connection, $this->config);
         foreach ($poi->find() as $item) {
             $cache->recalculateOrdered($item->internalUPC(), $model->storeID());
+            if ($this->setPlaced ==1 && $poi->isSpecialOrder()) {
+                $soID = substr($poi->internalUPC(), 0, 9);
+                $transID = substr($poi->internalUPC(), 9);
+                $bridge->markAsPlaced($soID, $transID);
+            }
         }
         echo ($this->setPlaced == 1) ? $model->placedDate() : 'n/a';
 
@@ -347,6 +356,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $notes = $dbc->getValue($notes, $this->id);
         $vname = $dbc->prepare('SELECT * FROM vendors WHERE vendorID=?');
         $vendor = $dbc->getRow($vname, array($orderObj->vendorID));
+        $vendor['notes'] = nl2br($vendor['notes']);
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
@@ -390,7 +400,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 <td rowspan="10" colspan="2">
                     <label>Notes</label>
                     <textarea class="form-control" 
-                        onkeypress="autoSaveNotes({$this->id}', this);">{$notes}</textarea>
+                        onkeypress="autoSaveNotes({$this->id}, this);">{$notes}</textarea>
                 </td>
             {{CODING}}
         </table>
@@ -430,7 +440,8 @@ HTML;
 Ph: {$vendor['phone']}<br />
 Fax: {$vendor['fax']}<br />
 Email: {$vendor['email']}<br />
-{$vendor['address']}, {$vendor['city']}, {$vendor['state']} {$vendor['zip']}
+{$vendor['address']}, {$vendor['city']}, {$vendor['state']} {$vendor['zip']}<br />
+{$vendor['notes']}
 </div></div>
 HTML;
         $ret .= '</div></div>';

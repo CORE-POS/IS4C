@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class giftcardlist extends NoInputCorePage 
@@ -85,6 +87,5 @@ class giftcardlist extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new giftcardlist();
+AutoLoader::dispatch();
 

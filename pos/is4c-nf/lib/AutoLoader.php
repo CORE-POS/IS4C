@@ -21,10 +21,14 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\LocalStorage\LaneCache;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\plugins\Plugin;
+
 if (!defined('CONF_LOADED')) {
     include_once(dirname(__FILE__).'/LocalStorage/conf.php');
 }
-if (!class_exists('LaneCache', false)) {
+if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneCache', false)) {
     include(dirname(__FILE__) . '/LocalStorage/LaneCache.php');
 }
 
@@ -54,8 +58,7 @@ class AutoLoader extends LibraryClass
     static public function loadClass($name)
     {
         global $CORE_LOCAL;
-        $mapItem = LaneCache::get("ClassLookup");
-        $map = $mapItem->get();
+        $map = CoreLocal::get("ClassLookup");
         if (!is_array($map)) {
             // attempt to build map before giving up
             $map = self::loadMap();
@@ -64,7 +67,7 @@ class AutoLoader extends LibraryClass
             }
         }
 
-        if (isset($map[$name]) && !file_exists($map[$name])) {
+        if (strpos($name, '\\') === false && isset($map[$name]) && !file_exists($map[$name])) {
             // file is missing. 
             // rebuild map to see if the class is
             // gone or the file just moved
@@ -80,12 +83,14 @@ class AutoLoader extends LibraryClass
                 $path .= self::arrayToPath(array_slice($pieces, 2));
                 if (file_exists($path)) {
                     $map[$name] = $path;
+                    CoreLocal::set('ClassLookup', $map);
                 }
             } elseif (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'pos') {
                 $path = dirname(__FILE__) . $sep . '..' . $sep;
                 $path .= self::arrayToPath(array_slice($pieces, 2));
                 if (file_exists($path)) {
                     $map[$name] = $path;
+                    CoreLocal::set('ClassLookup', $map);
                 }
             }
         } elseif (!isset($map[$name])) {
@@ -121,44 +126,41 @@ class AutoLoader extends LibraryClass
         $class_map = array();
         $search_path = realpath(dirname(__FILE__).'/../');
         self::recursiveLoader($search_path, $class_map);
-        $map = LaneCache::get('ClassLookup');
-        $map->set($class_map);
-        LaneCache::set($map);
+        CoreLocal::set('ClassLookup', $class_map);
 
         return $class_map;
     }
 
     static private $class_paths = array(
-        'DiscountType'      => '/Scanning/DiscountTypes',
-        'FooterBox'         => '/FooterBoxes',
-        'Kicker'            => '/Kickers',
-        'Parser'            => '/../parser-class-lib/parse',
-        'PreParser'         => '/../parser-class-lib/preparse',
-        'PriceMethod'       => '/Scanning/PriceMethods',
-        'SpecialUPC'        => '/Scanning/SpecialUPCs',
-        'SpecialDept'       => '/Scanning/SpecialDepts',
-        'TenderModule'      => '/Tenders',
-        'ProductSearch'     => '/Search/Products',
-        'PrintHandler'      => '/PrintHandlers',
-        'TotalAction'       => '/TotalActions',
-        'TenderReport'      => '/ReceiptBuilding/TenderReports',
+        'COREPOS\pos\lib\Scanning\DiscountType' => '/Scanning/DiscountTypes',
+        'COREPOS\pos\lib\FooterBoxes\FooterBox' => '/FooterBoxes',
+        'COREPOS\pos\lib\Kickers\Kicker' => '/Kickers',
+        'COREPOS\\pos\\parser\\Parser' => '/../parser/parse',
+        'COREPOS\\pos\\parser\\PreParser' => '/../parser/preparse',
+        'COREPOS\pos\lib\Scanning\PriceMethod' => '/Scanning/PriceMethods',
+        'COREPOS\pos\lib\Scanning\SpecialUPC' => '/Scanning/SpecialUPCs',
+        'COREPOS\pos\lib\Scanning\SpecialDept' => '/Scanning/SpecialDepts',
+        'COREPOS\pos\lib\Tenders\TenderModule' => '/Tenders',
+        'COREPOS\pos\lib\Search\Products\ProductSearch' => '/Search/Products',
+        'COREPOS\pos\lib\PrintHandlers\PrintHandler' => '/PrintHandlers',
+        'COREPOS\pos\lib\TotalActions\TotalAction'       => '/TotalActions',
+        'COREPOS\pos\lib\ReceiptBuilding\TenderReports\TenderReport' => '/ReceiptBuilding/TenderReports',
         'BasicModel'        => '/models',
         'COREPOS\pos\lib\models\BasicModel' => '/models',
-        'DefaultReceiptDataFetch'   => '/ReceiptBuilding/ReceiptDataFetch',
-        'DefaultReceiptFilter'      => '/ReceiptBuilding/ReceiptFilter',
-        'DefaultReceiptSort'        => '/ReceiptBuilding/ReceiptSort',
-        'DefaultReceiptTag'         => '/ReceiptBuilding/ReceiptTag',
-        'DefaultReceiptSavings'     => '/ReceiptBuilding/ReceiptSavings',
-        'DefaultReceiptThanks'      => '/ReceiptBuilding/ThankYou',
-        'ReceiptMessage'            => '/ReceiptBuilding/Messages',
-        'CustomerReceiptMessage'    => '/ReceiptBuilding/custMessages',
-        'VariableWeightReWrite'     => '/Scanning/VariableWeightReWrites',
+        'COREPOS\pos\lib\ReceiptBuilding\DataFetch\DefaultReceiptDataFetch' => '/ReceiptBuilding/DataFetch',
+        'COREPOS\pos\lib\ReceiptBuilding\Filter\DefaultReceiptFilter' => '/ReceiptBuilding/Filter',
+        'COREPOS\pos\lib\ReceiptBuilding\Sort\DefaultReceiptSort' => '/ReceiptBuilding/Sort',
+        'COREPOS\pos\lib\ReceiptBuilding\Tag\DefaultReceiptTag' => '/ReceiptBuilding/Tag',
+        'COREPOS\pos\lib\ReceiptBuilding\Savings\DefaultReceiptSavings' => '/ReceiptBuilding/Savings',
+        'COREPOS\pos\lib\ReceiptBuilding\ThankYou\DefaultReceiptThanks' => '/ReceiptBuilding/ThankYou',
+        'COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage' => '/ReceiptBuilding/Messages',
+        'COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage' => '/ReceiptBuilding/CustMessages',
+        'COREPOS\pos\lib\Scanning\VariableWeightReWrite' => '/Scanning/VariableWeightReWrites',
     );
 
     private static $base_classes = array(
-        'DiscountModule'    => '/DiscountModule.php',
-        'MemberLookup'      => '/MemberLookup.php',
-        'ItemNotFound'      => '/ItemNotFound.php',
+        'COREPOS\\pos\\lib\\MemberLookup' => '/MemberLookup.php',
+        'COREPOS\\pos\\lib\\ItemNotFound' => '/ItemNotFound.php',
     );
 
     /**
@@ -198,7 +200,7 @@ class AutoLoader extends LibraryClass
 
             if (strstr($file,'plugins')) {
                 $parent = Plugin::memberOf($file);
-                if ($base_class !== 'Plugin' && $parent && !Plugin::isEnabled($parent)) {
+                if ($base_class !== 'COREPOS\\pos\\plugins\\Plugin' && $parent && !Plugin::isEnabled($parent)) {
                     continue;
                 }
             }
@@ -213,6 +215,8 @@ class AutoLoader extends LibraryClass
             }
 
             if (is_subclass_of($name,$base_class)) {
+                $ret[] = $name;
+            } elseif ($ns_class === $base_class && $include_base) {
                 $ret[] = $name;
             }
 
@@ -230,7 +234,7 @@ class AutoLoader extends LibraryClass
         }
     }
 
-    static private function fileToFullClass($file)
+    static public function fileToFullClass($file)
     {
         $file = realpath($file);
         if (substr($file, -4) == '.php') {
@@ -260,13 +264,21 @@ class AutoLoader extends LibraryClass
         // skip searching these directories
         // to improve overall performance
         $exclude = array(
+            'ajax',
+            'ajax-callbacks',
             'css',
             'graphics',
             'gui-modules',
+            'install',
             'js',
+            'Kickers',
             'locale',
             'log',
-            'NewMagellan',
+            'scale-drivers',
+            'models',
+            'noauto',
+            'PrintHandlers',
+            'ReceiptBuilding',
             'test',
         );
 
@@ -319,7 +331,7 @@ if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
     include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
 }
 
-COREPOS\common\ErrorHandler::setLogger(new LaneLogger());
+COREPOS\common\ErrorHandler::setLogger(new \COREPOS\pos\lib\LaneLogger());
 COREPOS\common\ErrorHandler::setErrorHandlers();
 
 /** 

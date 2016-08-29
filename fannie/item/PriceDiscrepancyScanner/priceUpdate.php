@@ -48,6 +48,15 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
     
     $item->store_id($store_id);
     $item->normal_price($price);        
+    $ret .= '
+        <div class="alert alert-info">
+            <form method="get">
+                <input type="text" name="test' . $i . '">
+                <input type="submit">
+            </form>
+            This form was added to the page through ajax. 
+        </div>
+    ';
     
     if ($ret['error'] == 0) {
         $saved = $item->save();

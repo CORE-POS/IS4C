@@ -1,11 +1,13 @@
 <?php
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
-include('InstallUtilities.php');
 $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <html>
@@ -62,6 +64,14 @@ This option changes HTTP redirects into manual, clickable links. A stack
 trace is also included. There are some javascript-based URL changes that
 this won't catch, but your browser surely has a fancy javascript console
 available for those. If not, find a better browser.
+<hr />
+<b>Show AJAX errors</b>
+<?php
+echo $form->selectField('Debug_JS', array(1=>'Yes',0=>'No'), 0);
+?>
+<br />
+This option will write information along the bottom of the screen when
+an AJAX request dies with a fatal error.
 <hr />
 <b>Character Set</b>
 <?php

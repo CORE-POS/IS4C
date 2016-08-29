@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+
 /**
   @class MagicPLU
 

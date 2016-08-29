@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class ECheckVerifyPage extends NoInputCorePage 
@@ -31,7 +32,7 @@ class ECheckVerifyPage extends NoInputCorePage
         $amount = $_REQUEST['amount'];
         if (isset($_REQUEST['selectlist'])) {
             $opt = $_REQUEST['selectlist'];
-            if ($opt == '' || $opt == 'CL') {
+            if ($opt == '' || strtoupper($opt) == 'CL') {
                 CoreLocal::set('lastRepeat', '');
                 $this->change_page($this->page_url."gui-modules/pos2.php");
 
@@ -113,7 +114,5 @@ class ECheckVerifyPage extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new ECheckVerifyPage();
-}
+AutoLoader::dispatch();
 

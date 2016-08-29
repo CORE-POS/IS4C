@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicCorePage 
@@ -55,7 +60,16 @@ class login3 extends BasicCorePage
 
             if (Authenticate::checkPassword($passwd,4)){
                 $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
+                return false;
+            } elseif (CoreLocal::get('LastID') == 0 && Authenticate::checkPermission($passwd, 25)) {
+                Database::setglobalvalue("LoggedIn", 0);
+                CoreLocal::set("LoggedIn",0);
+                CoreLocal::set("training",0);
+                if (Database::rotateTempData()) {
+                    Database::clearTempTables();
+                }
+                $this->change_page($this->page_url."gui-modules/login2.php");
+                return false;
             } else {
                 $this->color = "errorColoredArea";
                 $this->img = $this->page_url."graphics/redkey4.gif";

@@ -1,4 +1,5 @@
 <?php
+use COREPOS\pos\lib\Database;
 include(dirname(__FILE__) . '/test_env.php');
 function nl() { return php_sapi_name() === 'cli' ? "\n" : '<br />'; }
 

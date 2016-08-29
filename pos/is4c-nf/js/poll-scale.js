@@ -4,7 +4,7 @@ function pollScale(rel_prefix)
 {
     if (typeof isNodeWebKit === 'function' && !isNodeWebKit()) {
         SCALE_REL_PRE = rel_prefix;
-        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/AjaxPollScale.php',
+        $.ajax({url: SCALE_REL_PRE+'ajax/AjaxPollScale.php',
             type: 'post',
             cache: false,
             dataType: 'json'
@@ -13,6 +13,7 @@ function pollScale(rel_prefix)
 }
 
 function scalePollError(e1,e2,e3){
+    errorLog.show(e1, e2, e3);
 	rePoll();
 }
 
@@ -89,7 +90,7 @@ function dataCallback(data)
             runParser(encodeURI(data), SCALE_REL_PRE);
         }
     } else if (/^S1\d+$/.test(data)) {
-        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/AjaxScale.php',
+        $.ajax({url: SCALE_REL_PRE+'ajax/AjaxScale.php',
             type: 'post',
             cache: false
         }).done(function(resp) {

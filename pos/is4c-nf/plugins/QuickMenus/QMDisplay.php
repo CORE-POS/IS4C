@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
 use \COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class QMDisplay extends NoInputCorePage 

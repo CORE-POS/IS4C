@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptLib;
+
 /** @class PaycardProcessPage
 
     This class automatically includes the header and footer
@@ -43,11 +48,18 @@ class PaycardProcessPage extends BasicCorePage
        for format information
     */
     protected $action = '';
+    protected $conf;
+
+    public function __construct()
+    {
+        $this->conf = new PaycardConf();
+        parent::__construct();
+    }
 
     public function getHeader()
     {
         ob_start();
-        $my_url = $this->page_url;
+        $myUrl = $this->page_url;
         ?>
         <!DOCTYPE html>
         <html>
@@ -57,15 +69,11 @@ class PaycardProcessPage extends BasicCorePage
         // 18Aug12 EL Add content/charset.
         echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
         echo "<link rel=\"stylesheet\" type=\"text/css\"
-            href=\"{$my_url}css/pos.css\">";
-        if (MiscLib::win32()) {
-            echo "<script type=\"text/javascript\"
-                src=\"{$my_url}js/jquery-1.8.3.min.js\"></script>";
-        } else {
-            echo "<script type=\"text/javascript\"
-                src=\"{$my_url}js/jquery.js\"></script>";
-        }
-        $this->paycard_jscript_functions();
+            href=\"{$myUrl}css/pos.css\">";
+        $jquery = MiscLib::win32() ? 'jquery-1.8.3.min.js' : 'jquery.js';
+        echo "<script type=\"text/javascript\"
+            src=\"{$myUrl}js/{$jquery}\"></script>";
+        $this->paycardJscriptFunctions();
         $this->head_content();
         echo "</head>";
         echo '<body class="'.$this->body_class.'">';
@@ -93,13 +101,13 @@ class PaycardProcessPage extends BasicCorePage
        Include some paycard submission javascript functions.
        Automatically called during page print.
     */
-    protected function paycard_jscript_functions()
+    protected function paycardJscriptFunctions()
     {
-        $plugin_info = new Paycards();
+        $pluginInfo = new Paycards();
         ?>
         <script type="text/javascript">
         function paycard_submitWrapper(){
-            $.ajax({url: '<?php echo $plugin_info->pluginUrl(); ?>/ajax/ajax-paycard-auth.php',
+            $.ajax({url: '<?php echo $pluginInfo->pluginUrl(); ?>/ajax/AjaxPaycardAuth.php',
                 cache: false,
                 type: 'post',
                 dataType: 'json'
@@ -137,23 +145,22 @@ class PaycardProcessPage extends BasicCorePage
 
     protected function emvResponseHandler($xml, $balance=false)
     {
-        $e2e = new MercuryE2E();
+        $e2e = new MercuryDC();
         $json = array();
-        $plugin_info = new Paycards();
-        $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
+        $pluginInfo = new Paycards();
+        $json['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvSuccess.php';
         $json['receipt'] = false;
         $func = $balance ? 'handleResponseDataCapBalance' : 'handleResponseDataCap';
         $success = $e2e->$func($xml);
+        $this->conf->set("msgrepeat",0);
         if ($success === PaycardLib::PAYCARD_ERR_OK) {
             $json = $e2e->cleanup($json);
-            CoreLocal::set("strEntered","");
-            CoreLocal::set("strRemembered","");
-            CoreLocal::set("msgrepeat",0);
+            $this->conf->set("strEntered","");
+            $this->conf->set("strRemembered","");
             if ($json['receipt']) {
                 $json['main_frame'] .= '?receipt=' . $json['receipt'];
             }
         } else {
-            CoreLocal::set("msgrepeat",0);
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
         }
         $this->change_page($json['main_frame']);

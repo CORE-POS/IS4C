@@ -137,9 +137,10 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         list($upcP, $skuP, $insP) = $this->prepStatements($dbc);
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
+        $col_max = max($indexes);
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
-            if (count($data) < 14) continue;
+            if (count($data) < $col_max) continue;
 
             $upc = str_replace("-","",$data[$indexes['upc']]);
             $upc = str_replace(" ","",$upc);

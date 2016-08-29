@@ -21,12 +21,14 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+
 /**
   @class Notifier
   Draw information on the right-hand side
   of the screen.
 */
-class Notifier extends LibraryClass 
+class Notifier 
 {
     /**
       Display the notification

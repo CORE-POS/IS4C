@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\ajax\AjaxEnd;
+
 ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -54,7 +60,7 @@ $input = array(
 TransRecord::finalizeTransaction(true);
 
 if (!class_exists('AjaxEnd')) {
-    include(dirname(__FILE__) . '/AjaxEnd.php');
+    include(__DIR__ . '/../AjaxEnd.php');
 }
 $ajax = new AjaxEnd();
 $ajax->ajax($input);

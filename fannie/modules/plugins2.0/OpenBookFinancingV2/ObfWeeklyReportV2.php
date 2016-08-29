@@ -89,14 +89,18 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $sales->obfWeekID($week->obfWeekID());
         $sales->actualSales(0, '>');
         $num_cached = $sales->find();
-        if (count($num_cached) == 0) {
+        $sales->reset();
+        $sales->obfWeekID($week->obfWeekID());
+        $sales->lastYearSales(0, '>');
+        $ly_cached = $sales->find();
+        if (count($num_cached) == 0 || count($ly_cached) == 0) {
             $dateInfo = array(
                 'start_ts' => $start_ts,
                 'end_ts' => $end_ts,
                 'start_ly' => $start_ly,
                 'end_ly' => $end_ly,
             );
-            $this->updateSalesCache($week, $num_cached, $dateInfo);
+            $this->updateSalesCache($week, array($num_cached, $ly_cached), $dateInfo);
         }
 
         // record set to return
@@ -207,7 +211,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $labor->obfCategoryID($category->obfCategoryID());
             $labor->load();
             // use SPLH instead of pre-allocated
-            list($proj_hours, $trend_hours) = $this->projectHours($category, $dept_proj, $dept_trend);
+            list($proj_hours, $trend_hours) = $this->projectHours($labor->splhTarget(), $dept_proj, $dept_trend);
             // approximate wage to convert hours into dollars
             list($proj_wages, $trend_wages) = $this->projectWages($labor, $proj_hours, $trend_hours);
 
@@ -305,7 +309,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
 
-            list($proj_hours, $trend_hours) = $this->projectHours($c, $total_sales->projected, $total_sales->trend);
+            list($proj_hours, $trend_hours) = $this->projectHours($labor->splhTarget(), $total_sales->projected, $total_sales->trend);
             list($proj_wages, $trend_wages) = $this->projectWages($labor, $proj_hours, $trend_hours);
 
             $data[] = array(
@@ -409,8 +413,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             'meta_foreground' => 'black',
         );
 
-        $proj_trans = $total_trans->lastYear * 1.05;
-        $qtd_proj_trans = $total_trans->quarterLastYear * 1.05;
+        $transGrowth = $store == 1 ? 0.925 : 1.0;
+        $proj_trans = $total_trans->lastYear * $transGrowth;
+        $qtd_proj_trans = $total_trans->quarterLastYear * $transGrowth;
         $data[] = array(
             'Transactions',
             number_format($total_trans->lastYear),
@@ -470,7 +475,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
 
-            list($proj_hours, $trend_hours) = $this->projectHours($c, $total_sales->projected+$otherStore['plan'], $total_sales->trend);
+            list($proj_hours, $trend_hours) = $this->projectHours($labor->splhTarget(), $total_sales->projected+$otherStore['plan'], $total_sales->trend);
             list($proj_wages, $trend_wages) = $this->projectWages($labor, $proj_hours, $trend_hours);
 
             $data[] = array(
@@ -619,7 +624,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['plan'] += $row['plan'];
             $cat->obfCategoryID($row['catID']);
             $cat->load();
-            $plan[$row['catID']] = $this->projectHours($cat, $row['plan'], $row['plan']);
+            $plan[$row['catID']] = $this->projectHours($cat->salesPerLaborHourTarget(), $row['plan'], $row['plan']);
         }
 
         /**
@@ -645,7 +650,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             } else {
                 $cat->obfCategoryID($row['catID']);
                 $cat->load();
-                list($tmpP, $tmpT) = $this->projectHours($cat, $info['plan'], $info['plan']);
+                list($tmpP, $tmpT) = $this->projectHours($cat->salesPerLaborHourTarget(), $info['plan'], $info['plan']);
                 $info['planHours'] += $tmpP;
             }
         }

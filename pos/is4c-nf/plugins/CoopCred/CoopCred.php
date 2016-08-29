@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 /** Coop Cred - Debit accounts for members.
 */
 class CoopCred extends Plugin

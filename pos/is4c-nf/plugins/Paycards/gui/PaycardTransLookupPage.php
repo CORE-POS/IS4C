@@ -21,21 +21,26 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\gui\BasicCorePage;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardTransLookupPage extends BasicCorePage 
 {
 
     function preprocess()
     {
-        if (isset($_REQUEST['doLookup'])) {
-            $ref = $_REQUEST['id'];
-            $local = $_REQUEST['local'];
-            $mode = $_REQUEST['mode'];
+        $this->conf = new PaycardConf();
+        if (FormLib::get('doLookup', false) !== false) {
+            $ref = FormLib::get('id');
+            $local = FormLib::get('local');
+            $mode = FormLib::get('mode');
 
             $obj = null;
             $resp = array();
-            foreach(CoreLocal::get('RegisteredPaycardClasses') as $rpc) {
+            foreach($this->conf->get('RegisteredPaycardClasses') as $rpc) {
                 $obj = new $rpc();
                 if ($obj->myRefNum($ref)) {
                     break;
@@ -46,17 +51,17 @@ class PaycardTransLookupPage extends BasicCorePage
 
             if ($obj === null) {
                 $resp['output'] = DisplayLib::boxMsg('Invalid Transaction ID' . '<br />Local System Error', '', true);
-                $resp['confirm_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
-                $resp['cancel_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
+                $resp['confirm_dest'] = MiscLib::baseURL() . 'gui-modules/pos2.php';
+                $resp['cancel_dest'] = MiscLib::baseURL() . 'gui-modules/pos2.php';
             } else if ($local == 0 && $mode == 'verify') {
                 $resp['output'] = DisplayLib::boxMsg('Cannot Verify - Already Complete' . '<br />Local System Error', '', true);
-                $resp['confirm_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
-                $resp['cancel_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
+                $resp['confirm_dest'] = MiscLib::baseURL() . 'gui-modules/pos2.php';
+                $resp['cancel_dest'] = MiscLib::baseURL() . 'gui-modules/pos2.php';
             } else {
                 $resp = $obj->lookupTransaction($ref, $local, $mode);
             }
 
-            echo JsonLib::array_to_json($resp);
+            echo json_encode($resp);
 
             return false;
         }
@@ -68,13 +73,13 @@ class PaycardTransLookupPage extends BasicCorePage
     {
         $this->input_header('onsubmit="PaycardTransLookupPage.formCallback();return false;"');
         echo '<div class="baseHeight">';
-        $id = $_REQUEST['id'];
+        $ptid = FormLib::get('id', 0);
         $local = false;
-        if (substr($id, 0, 2) == '_l') {
+        if (substr($ptid, 0, 2) == '_l') {
             $local = true;
-            $id = substr($id, 2);
+            $ptid = substr($ptid, 2);
         }
-        $mode = $_REQUEST['mode'];
+        $mode = FormLib::get('mode', 'lookup');
         $msg = 'Looking up transaction';
         if ($mode == 'verify') {
             $msg = 'Verifying transaction';
@@ -82,7 +87,7 @@ class PaycardTransLookupPage extends BasicCorePage
         echo DisplayLib::boxMsg($msg . '<br />Please wait', '', true);
         echo '</div>'; // baseHeight
 
-        printf('<input type="hidden" id="refNum" value="%s" />', $id);
+        printf('<input type="hidden" id="refNum" value="%s" />', $ptid);
         printf('<input type="hidden" id="local" value="%d" />', ($local) ? 1 : 0);
         printf('<input type="hidden" id="lookupMode" value="%s" />', $mode);
 
@@ -90,7 +95,7 @@ class PaycardTransLookupPage extends BasicCorePage
         echo DisplayLib::printfooter();
         echo "</div>\n";
 
-        $this->add_onload_command('PaycardTransLookupPage.performLookup();');
+        $this->addOnloadCommand('PaycardTransLookupPage.performLookup();');
     }
 
     function head_content()
@@ -99,5 +104,5 @@ class PaycardTransLookupPage extends BasicCorePage
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new PaycardTransLookupPage();
+AutoLoader::dispatch();
+

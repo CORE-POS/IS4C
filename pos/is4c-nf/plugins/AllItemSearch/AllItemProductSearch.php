@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\Search\Products\ProductSearch;
+
 class AllItemProductSearch extends ProductSearch {
 
     public function search($str){

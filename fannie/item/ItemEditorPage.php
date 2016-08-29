@@ -255,7 +255,9 @@ HTML;
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ? ";
+                WHERE description LIKE ? 
+                    OR p.brand LIKE ?";
+            $args[] = '%'.$upc.'%';    
             $args[] = '%'.$upc.'%';    
         }
         if (!$inUseFlag) {
@@ -480,8 +482,8 @@ HTML;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
     href="{$url}item/addShelfTag.php?upc={$upc}" title="Queue a tag for this item">Shelf Tag</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-'<a class="btn btn-default btn-sm" 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a class="btn btn-default btn-sm" 
     href="{$url}item/CloneItemPage.php?id={$upc}" 
     title="Create a duplicate item with a different UPC">Clone Item</a>
 HTML;

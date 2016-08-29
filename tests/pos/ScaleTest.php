@@ -1,4 +1,8 @@
 <?php
+
+use COREPOS\pos\lib\DriverWrappers\NewMagellan;
+use COREPOS\pos\lib\DriverWrappers\ssd;
+
 /**
  * @backupGlobals disabled
  */

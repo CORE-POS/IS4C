@@ -1,6 +1,7 @@
 <?php
 
 namespace COREPOS\pos\install\data;
+use COREPOS\pos\lib\MiscLib;
 
 class Loader
 {
@@ -131,7 +132,7 @@ class Loader
               Handle symlinks on windows by checking if the first line
               of the file contains the name of another CSV file.
             */
-            if (\MiscLib::win32()) {
+            if (MiscLib::win32()) {
                 $fptr = fopen($path, 'r');
                 $first_line = trim(fgets($fptr));
                 if (substr($first_line, -4) == '.csv') {

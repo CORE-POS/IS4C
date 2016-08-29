@@ -404,9 +404,9 @@ HTML;
         $ret .= '<p><button type="submit" class="btn btn-default">Save Origins</button></p>';
         $ret .= '</form>';
 
-        $customOpts .= $this->arrayToSelect($customs);
-        $stateOpts .= $this->arrayToSelect($states);
-        $countryOpts .= $this->arrayToSelect($countries);
+        $customOpts = $this->arrayToSelect($customs);
+        $stateOpts = $this->arrayToSelect($states);
+        $countryOpts = $this->arrayToSelect($countries);
         $ret .= <<<HTML
 <hr />
 <form action="{$self}" method="post">

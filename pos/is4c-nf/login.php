@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\MiscLib;
+
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
-LaneCache::clear();
+COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 
 AutoLoader::loadMap();
 
 CoreState::initiate_session();
 
+CoreLocal::set('ValidJson', false);
+CoreLocal::refresh();
 CoreLocal::migrateSettings();
 
 if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {

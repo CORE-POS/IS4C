@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+
 /**
   @class MemberBarcode
   WFC barcoded member ID implementation

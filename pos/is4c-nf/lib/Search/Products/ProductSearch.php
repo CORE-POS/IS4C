@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Search\Products;
+
 /**
   @class ProductSearch
   Base class for providing product search results

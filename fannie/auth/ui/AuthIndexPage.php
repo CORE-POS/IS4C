@@ -80,6 +80,8 @@ class AuthIndexPage extends FanniePage {
             echo '<li><a href="AuthGroupsPage.php?removeUser=1">Delete User from Group</a></li>';
             echo '<li><a href="AuthGroupsPage.php?removeAuth=1">Delete Authorization from Group</a></li>';
             echo "<br />";
+            echo "<li><a href=AuthReport.php>Report of All Authorizations</a></li>";
+            echo "<br />";
             echo "<li><a href=AuthPosePage.php>Switch User</a></li>";
         }
         // The 'limited' options

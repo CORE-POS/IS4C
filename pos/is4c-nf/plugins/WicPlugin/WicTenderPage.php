@@ -14,7 +14,12 @@
     in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *********************************************************************************/
+
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 class WicTenderPage extends BasicCorePage 
 {
@@ -24,7 +29,7 @@ class WicTenderPage extends BasicCorePage
     public function preprocess()
     {
         if (FormLib::get('reginput', false) !== false) {
-            $inp = FormLib::get('reginput');
+            $inp = strtoupper(FormLib::get('reginput'));
             $this->step = FormLib::get('step', 0);
             // clear backtracks through steps
             if ($inp == 'CL' && $this->step == 0) {
@@ -176,5 +181,6 @@ class WicTenderPage extends BasicCorePage
             </p>';
     }
 }
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new WicTenderPage();
+
+AutoLoader::dispatch();
+

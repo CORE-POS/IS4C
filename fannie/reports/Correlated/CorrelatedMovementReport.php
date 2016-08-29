@@ -212,7 +212,7 @@ function flipover(opt){
 
         ob_start();
         ?>
-<form action="CorrelatedMovementReport.php" method=post>
+<form action="CorrelatedMovementReport.php" method="get">
 <div class="row">
     <div class="col-sm-6">
         <ul class="nav nav-tabs" role="tablist">

@@ -2,10 +2,14 @@
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use COREPOS\pos\lib\Scanning\PriceMethod;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
-include('InstallUtilities.php');
 $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <html>
@@ -91,7 +95,15 @@ body {
 <tr>
 <tr>
     <td><b>Unknown Item Handler</b></td>
-    <td><?php echo $form->selectField('ItemNotFound', AutoLoader::listModules('ItemNotFound', true), 'ItemNotFound'); ?>
+    <?php
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ItemNotFound', true);
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
+    ?>
+    <td><?php echo $form->selectField('ItemNotFound', $mods, 'ItemNotFound'); ?>
+    <?php
+    $val = str_replace('-', '\\', CoreLocal::get('ItemNotFound'));
+    InstallUtilities::paramSave('ItemNotFound', $val);
+    ?>
     <span class='noteTxt'>Module called when a UPC does not match any item or Special UPC handler</span>
     </td>
 </tr>
@@ -101,7 +113,8 @@ body {
     </td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('SpecialUPC');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\SpecialUPC');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     echo $form->selectField('SpecialUpcClasses',
         $mods,
         array(),
@@ -109,6 +122,8 @@ body {
         true,
         array('multiple'=>'multiple', 'size'=>10)
     );
+    CoreLocal::set('SpecialUpcClasses', array_map(function($i){ return str_replace('-', '\\', $i); }, CoreLocal::get('SpecialUpcClasses')));
+    InstallUtilities::paramSave('SpecialUpcClasses', CoreLocal::get('SpecialUpcClasses'));
     ?>
     </td>
 </tr>
@@ -223,7 +238,7 @@ if (is_array(FormLib::get('DT_MODS'))) {
 if (!is_array(CoreLocal::get('DiscountTypeClasses'))) {
     CoreLocal::set('DiscountTypeClasses', array(), true);
 }
-$discounts = AutoLoader::listModules('DiscountType');
+$discounts = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\DiscountType');
 $dt_conf = CoreLocal::get("DiscountTypeClasses");
 $dt_conf[] = ''; // add blank slot for adding another discounttype
 $i = 64;
@@ -280,7 +295,7 @@ if (is_array(FormLib::get('PM_MODS'))) {
 if (!is_array(CoreLocal::get('PriceMethodClasses'))){
     CoreLocal::set('PriceMethodClasses', array(), true);
 }
-$pms = AutoLoader::listModules('PriceMethod');
+$pms = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\PriceMethod');
 $pm_conf = CoreLocal::get("PriceMethodClasses");
 $pm_conf[] = ''; // add blank slot for adding another method
 $i = 100;
@@ -335,7 +350,8 @@ save 5%.
 </td></tr>
 <tr><td>
 <?php
-$sdepts = AutoLoader::listModules('SpecialDept');
+$sdepts = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\SpecialDept');
+$sdepts = array_map(function($i){ return str_replace('\\', '-', $i); }, $sdepts);
 $dbc = Database::pDataConnect();
 $specialDeptMapExists = $dbc->table_exists('SpecialDeptMap');
 $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
@@ -361,7 +377,7 @@ if (is_array(FormLib::get('SDEPT_MAP_LIST'))) {
         if (!isset($SDEPT_MAP_LIST[$i])) continue;
         if (empty($SDEPT_MAP_LIST[$i])) continue;
 
-        $class = $SDEPT_MAP_NAME[$i];
+        $class = str_replace('-', '\\', $SDEPT_MAP_NAME[$i]);
         $ids = preg_split('/\D+/',$SDEPT_MAP_LIST[$i]);
         foreach ($ids as $id) {
             if ($specialDeptMapExists) {
@@ -386,13 +402,14 @@ if ($specialDeptMapExists) {
     $sconf = CoreLocal::get('SpecialDeptMap');
 }
 foreach ($sdepts as $sd) {
-    $list = "";
+    $sclass = str_replace('-', '\\', $sd);
+    $obj = new $sclass();
+    $list = '';
     foreach($sconf as $id => $mods){
-        if (in_array($sd,$mods))
+        if (in_array($sclass,$mods))
             $list .= $id.', ';
     }
     $list = rtrim($list,', ');
-    $obj = new $sd();
     printf('<tr><td title="%s">%s</td><td>
         <input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
         <input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
@@ -430,7 +447,7 @@ if (!$specialDeptMapExists) {
     </td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('VariableWeightReWrite');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrite');
     echo $form->selectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
     ?>
     </td>

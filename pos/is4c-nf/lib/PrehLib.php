@@ -21,16 +21,25 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\TotalActions\TotalAction;
+use \CoreLocal;
+
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
 */
-class PrehLib extends LibraryClass 
+class PrehLib 
 {
 
 static private function getTenderMods($right)
 {
-    $ret = array('TenderModule');
+    $ret = array('COREPOS\\pos\\lib\\Tenders\\TenderModule');
 
     /**
       Get a tender-specific module if
@@ -55,7 +64,7 @@ static private function getTenderMods($right)
     }
     if (is_array($map) && isset($map[$right])) {
         $class = $map[$right];
-        if ($class != 'TenderModule') {
+        if ($class != 'COREPOS\\pos\\lib\\Tenders\\TenderModule') {
             $ret[] = $class;
         }
     }
@@ -95,6 +104,9 @@ static public function tender($right, $strl)
     $tender_mods = self::getTenderMods($right);
     $tender_object = null;
     foreach ($tender_mods as $class) {
+        if (!class_exists($class)) { // try namespaced version
+            $class = 'COREPOS\\pos\\lib\\Tenders\\' . $class;
+        }
         if (!class_exists($class)) {
             $ret['output'] = DisplayLib::boxMsg(
                 _('tender is misconfigured'),
@@ -194,14 +206,7 @@ static private function runTotalActions()
             if ("$ttl_class" == "") {
                 continue;
             }
-            if (!class_exists($ttl_class)) {
-                CoreLocal::set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
-                CoreLocal::set('boxMsgButtons', array(
-                    'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                ));
-                return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
-            }
-            $mod = new $ttl_class();
+            $mod = TotalAction::factory($ttl_class);
             $result = $mod->apply();
             if ($result !== true && is_string($result)) {
                 return $result; // redirect URL
@@ -373,7 +378,7 @@ static public function omtr_ttl()
         /* If member can do Store Charge, warn on certain conditions.
          * Important preliminary is to refresh totals.
         */
-        $temp = COREPOS\pos\lib\MemberLib::chargeOk();
+        $temp = \COREPOS\pos\lib\MemberLib::chargeOk();
         if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0){
             if (CoreLocal::get('msgrepeat') == 0){
                 CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
@@ -546,7 +551,7 @@ public static function ageCheck($required_age, $ret)
 {
     $my_url = MiscLib::baseURL();
     if (CoreLocal::get("cashierAge") < 18 && CoreLocal::get("cashierAgeOverride") != 1){
-        $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
+        $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-AgeApproveAdminLogin";
         return array(true, $ret);
     }
 
@@ -558,7 +563,7 @@ public static function ageCheck($required_age, $ret)
     $today = strtotime( date('Y-m-d') );
     if ($of_age_on_day > $today) {
         $ret['udpmsg'] = 'twoPairs';
-        $ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
+        $ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC';
         return array(true, $ret);
     }
 

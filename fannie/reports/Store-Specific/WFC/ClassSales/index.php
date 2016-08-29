@@ -23,7 +23,7 @@
 
 include('../../../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
 
 $thisMonth = date('n');
 while(($thisMonth-1)%3 != 0) $thisMonth--;

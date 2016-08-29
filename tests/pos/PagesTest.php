@@ -1,4 +1,7 @@
 <?php
+
+use COREPOS\pos\lib\gui\InputCorePage;
+
 /**
  * @backupGlobals disabled
  */
@@ -7,7 +10,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
     public function testLib()
     {
-        $classes = array('BasicCorePage', 'InputCorePage', 'NoInputCorePage');
+        $classes = array('COREPOS\\pos\\lib\\gui\\BasicCorePage', 'COREPOS\\pos\\lib\\gui\\InputCorePage', 'COREPOS\\pos\\lib\\gui\\NoInputCorePage');
         foreach ($classes as $class) {
             ob_start();
             $obj = new $class();

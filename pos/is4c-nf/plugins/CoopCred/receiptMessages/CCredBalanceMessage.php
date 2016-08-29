@@ -21,6 +21,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
+
 /**
   @class CCredBalanceMessage
   Return a message containing Available Balance

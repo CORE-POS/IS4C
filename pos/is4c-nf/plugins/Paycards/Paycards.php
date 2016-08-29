@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class Paycards extends Plugin {
 
     public $plugin_description = 'Plugin for integrated payment cards';
@@ -212,7 +214,9 @@ messages from POS?',
 
     public function plugin_transaction_reset()
     {
-        CoreLocal::set('paycardTendered', false);
+        $conf = new PaycardConf();
+
+        $conf->set('paycardTendered', false);
 
         /**
           @var CachePanEncBlcok
@@ -223,14 +227,14 @@ messages from POS?',
           so the value is stored in session until the
           cashier is ready to process payment
         */
-        CoreLocal::set("CachePanEncBlock","");
+        $conf->set("CachePanEncBlock","");
 
         /**
           @var CachePinEncBlock
           Stores the encrypted string of PIN data.
           Similar to CachePanEncBlock.
         */
-        CoreLocal::set("CachePinEncBlock","");
+        $conf->set("CachePinEncBlock","");
 
         /**
           @var CacheCardType
@@ -242,14 +246,14 @@ messages from POS?',
           - EBTFOOD
           - EBTCASH
         */
-        CoreLocal::set("CacheCardType","");
+        $conf->set("CacheCardType","");
 
         /**
           @var CacheCardCashBack
           Stores the select cashback amount.
           Similar to CachePanEncBlock.
         */
-        CoreLocal::set("CacheCardCashBack",0);
+        $conf->set("CacheCardCashBack",0);
 
         /**
           @var ccTermState
@@ -259,7 +263,7 @@ messages from POS?',
           cashier know what the CC terminal is
           doing if they cannot see its screen.
         */
-        CoreLocal::set('ccTermState','swipe');
+        $conf->set('ccTermState','swipe');
 
         /**
           @var paycard_voiceauthcode
@@ -268,21 +272,21 @@ messages from POS?',
           but required to pass Mercury's certification
           script.
         */
-        CoreLocal::set("paycard_voiceauthcode","");
+        $conf->set("paycard_voiceauthcode","");
 
         /**
           @var ebt_authcode
           Stores a foodstamp authorization code.
           Similar to paycard_voiceauthcode.
         */
-        CoreLocal::set("ebt_authcode","");
+        $conf->set("ebt_authcode","");
 
         /**
           @var ebt_vnum
           Stores a foodstamp voucher number.
           Similar to paycard_voiceauthcode.
         */
-        CoreLocal::set("ebt_vnum","");
+        $conf->set("ebt_vnum","");
 
         /**
           @var paycard_keyed
@@ -295,9 +299,9 @@ messages from POS?',
           keyed transactions even though the CC terminal
           is only capable of producing swipe-style data.
         */
-        CoreLocal::set("paycard_keyed",False);
+        $conf->set("paycard_keyed",False);
 
-        PaycardLib::paycard_reset();
+        $conf->reset();
     }
 
 }

@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -90,7 +93,7 @@ class tenderlist extends NoInputCorePage
             SELECT TenderCode,TenderName 
             FROM tenders 
             WHERE MaxAmount > 0
-                AND TenderModule <> 'DisabledTender'
+                AND TenderModule NOT LIKE '%DisabledTender'
             ORDER BY TenderName");
 
         echo "<div class=\"baseHeight\">"

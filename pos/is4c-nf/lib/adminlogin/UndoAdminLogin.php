@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+
 /**
   @class UndoAdminLogin
   adminlogin callback for voiding
@@ -36,7 +39,7 @@ class UndoAdminLogin
     static public function adminLoginCallback($success)
     {
         if ($success) {
-            return MiscLib::base_url().'gui-modules/undo.php';
+            return MiscLib::baseURL().'gui-modules/undo.php';
         } else {
             return false;
         }

@@ -1,4 +1,5 @@
 <?php
+use COREPOS\pos\lib\ReceiptLib;
 include('test_env.php');
 ?>
 <html>

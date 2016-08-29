@@ -22,6 +22,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
+
 /**
     @class CCredUsedBalances
     List post-transaction balances for Coop Cred accounts

@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
+
 /**
   @class GCReceiptMessage
 */
@@ -99,8 +104,8 @@ class GCReceiptMessage extends ReceiptMessage
                 $col1[] = "Authorization: ".$row['xAuthorizationCode'];
                 $col2[] = "";
             }
-            $col1[] = ReceiptLib::boldFont()."Amount: ".PaycardLib::paycard_moneyFormat($row['amount']).ReceiptLib::normalFont(); // bold ttls apbw 11/3/07
-            $col2[] = "New Balance: ".PaycardLib::paycard_moneyFormat($row['xBalance']);
+            $col1[] = ReceiptLib::boldFont()."Amount: ".$row['amount'].ReceiptLib::normalFont(); // bold ttls apbw 11/3/07
+            $col2[] = "New Balance: ".$row['xBalance'];
             $slip .= ReceiptLib::twoColumns($col1, $col2);
 
             // name/phone on activation only

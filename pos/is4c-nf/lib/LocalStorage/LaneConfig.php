@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\LocalStorage;
+
 if (!class_exists('COREPOS\common\cache\file\CacheItemPool', false)) {
     include(dirname(__FILE__) . '/../../../../common/cache/file/CacheItemPool.php');
+}
+if (!class_exists('COREPOS\common\cache\php\CacheItemPool', false)) {
+    include(dirname(__FILE__) . '/../../../../common/cache/php/CacheItemPool.php');
 }
 if (!class_exists('COREPOS\common\cache\file\CacheItem', false)) {
     include(dirname(__FILE__) . '/../../../../common/cache/file/CacheItem.php');
@@ -45,7 +50,11 @@ class LaneConfig
     private static function init()
     {
         if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
+            if (function_exists('opcache_compile_file')) {
+                self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
+            } else {
+                self::$instance = new \COREPOS\common\cache\php\CacheItemPool('lane.config.cache');
+            }
         }
     }
 

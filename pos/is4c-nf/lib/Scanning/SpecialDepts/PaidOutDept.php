@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialDepts;
+use COREPOS\pos\lib\Scanning\SpecialDept;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 class PaidOutDept extends SpecialDept
 {
     public $help_summary = 'Negate entered amount and also prompt for comment';

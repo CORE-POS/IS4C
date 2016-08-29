@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class RefundComment extends NoInputCorePage 
@@ -116,6 +119,5 @@ class RefundComment extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new RefundComment();
+AutoLoader::dispatch();
 

@@ -17,6 +17,9 @@ class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage
 
     protected $footer_image = 'cd_line_16.png';
 
+    protected $width = 53.975;
+    protected $height = 68.96;
+
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');

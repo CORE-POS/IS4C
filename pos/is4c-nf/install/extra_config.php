@@ -1,11 +1,14 @@
 <?php
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
-include('InstallUtilities.php');
 $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <!DOCTYPE html>
@@ -135,11 +138,11 @@ if (FormLib::get('PPORT',false) !== false) {
     $PPORT = FormLib::get('PPORT');
     $otherPortText = FormLib::get('otherpport', false);
     if ($PPORT === 'other' && $otherPortText !== false) {
-        CoreLocal::set('printerPort',trim($otherPortText));
+        CoreLocal::set('printerPort',trim($otherPortText), true);
         $otherPortChecked = True;
         $otherPortText = trim($otherPortText);
     } else {
-        CoreLocal::set('printerPort',$PPORT);
+        CoreLocal::set('printerPort',$PPORT, true);
         $otherPortChecked = False;
         $otherPortText = "";
     }
@@ -198,8 +201,11 @@ InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
     <td><b>Drawer Behavior Module</b>:</td>
     <td>
     <?php
-    $kmods = AutoLoader::listModules('Kicker',True);
+    $kmods = AutoLoader::listModules('COREPOS\pos\lib\Kickers\Kicker',True);
+    $kmods = array_map(function($i){ return str_replace('\\', '-', $i); }, $kmods);
     echo $form->selectField('kickerModule', $kmods, 'Kicker');
+    $rewrite = str_replace('-', '\\', CoreLocal::get('kickerModule')); 
+    InstallUtilities::paramSave('kickerModule', $rewrite);
     ?>
     </td>
 </tr>
@@ -254,26 +260,31 @@ $current_mods = CoreLocal::get("FooterModules");
 if (is_array(FormLib::get('FOOTER_MODS'))) $current_mods = FormLib::get('FOOTER_MODS');
 elseif(!is_array($current_mods) || count($current_mods) != 5){
     $current_mods = array(
-    'SavedOrCouldHave',
-    'TransPercentDiscount',
-    'MemSales',
-    'EveryoneSales',
-    'MultiTotal'
+    'COREPOS-pos-lib-FooterBoxes-SavedOrCouldHave',
+    'COREPOS-pos-lib-FooterBoxes-TransPercentDiscount',
+    'COREPOS-pos-lib-FooterBoxes-MemSales',
+    'COREPOS-pos-lib-FooterBoxes-EveryoneSales',
+    'COREPOS-pos-lib-FooterBoxes-MultiTotal'
     );
 }
-$footer_mods = AutoLoader::listModules('FooterBox');
+$footer_mods = AutoLoader::listModules('COREPOS\\pos\\lib\\FooterBoxes\\FooterBox');
+$footer_mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $footer_mods);
+$current_mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $current_mods);
 for($i=0;$i<5;$i++){
     echo '<select name="FOOTER_MODS[]">';
     foreach($footer_mods as $fm){
+        $match = false;
+        if ($current_mods[$i] == $fm) {
+            $match = true;
+        } elseif (substr($fm, -1*(strlen($current_mods[$i])+1)) == '-' . $current_mods[$i]) {
+            $match = true;
+        }
         printf('<option %s>%s</option>',
-            ($current_mods[$i]==$fm?'selected':''),$fm);
+            ($match?'selected':''),$fm);
     }
     echo '</select><br />';
 }
-$saveStr = "array(";
-foreach($current_mods as $m)
-    $saveStr .= "'".$m."',";
-$saveStr = rtrim($saveStr,",").")";
+$current_mods = array_map(function($i){ return str_replace('-', '\\', $i); }, $current_mods);
 InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
 </td></tr>
@@ -282,7 +293,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td>
     <?php
     // get current settings
-    $notifiers = AutoLoader::listModules('Notifier');
+    $notifiers = AutoLoader::listModules('COREPOS\\pos\\lib\\Notifier');
     echo $form->selectField('Notifiers', 
         $notifiers, 
         array(), 
@@ -321,7 +332,8 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td><b>Subtotal Actions</b></td>
     <td rowspan="2">
     <?php
-    $mods = AutoLoader::listModules('TotalAction');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\TotalActions\\TotalAction');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     echo $form->selectField('TotalActions',
         $mods,
         array(),
@@ -329,6 +341,8 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
         true,
         array('multiple'=>'multiple', 'size'=>5)
     );
+    CoreLocal::set('TotalActions', array_map(function($i){ return str_replace('-', '\\', $i); }, CoreLocal::get('TotalActions')));
+    InstallUtilities::paramSave('TotalActions', CoreLocal::get('TotalActions'));
     ?>
     </td>
 </tr>
@@ -356,7 +370,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td>
     <?php 
     $ebtOpts = array(1 => 'Cash Side', 0 => 'Food Side');
-    echo InstallUtilities::installselectField('fntlDefault', $ebtOpts, 1);
+    echo $form->selectField('fntlDefault', $ebtOpts, 1);
     ?>
     </td>
 </tr>
@@ -364,9 +378,12 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td><b>Tender Report</b>:</td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('TenderReport');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     sort($mods);
-    echo $form->selectField('TenderReportMod', $mods, 'DefaultTenderReport');
+    echo $form->selectField('TenderReportMod', $mods, 'COREPOS-pos-lib-ReceiptBuilding-DefaultTenderReport');
+    CoreLocal::set('TenderReportMod', str_replace('-', '\\', CoreLocal::get('TenderReportMod')));
+    InstallUtilities::paramSave('TenderReportMod', CoreLocal::get('TenderReportMod'));
     ?>
     </td>
 </tr>
@@ -394,7 +411,7 @@ if (is_array(FormLib::get('TenderMapping'))) {
             continue;
         }
         list($code, $mod) = explode(":", $tm);
-        $settings[$code] = $mod;
+        $settings[$code] = str_replace('-', '\\', $mod);
     }
     if (!isset($tender_table['TenderModule'])) {
         InstallUtilities::paramSave('TenderMap',$settings);
@@ -429,7 +446,8 @@ if (is_array(FormLib::get('TenderMapping'))) {
         CoreLocal::set('TenderMap', $settings);
     }
 }
-$mods = AutoLoader::listModules('TenderModule');
+$mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Tenders\\TenderModule');
+$mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
 //  Tender Report: Desired tenders column
 $settings2 = CoreLocal::get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();
@@ -456,9 +474,22 @@ while($row = $db->fetch_row($res)){
     echo '<td><select name="TenderMapping[]">';
     echo '<option value="">default</option>';
     foreach($mods as $m){
+        /**
+          Map unnamespaced values to namespaced values
+          so the configuration doesn't break
+        */
+        $selected = false;
+        if (isset($settings[$row['TenderCode']])) {
+            $current = str_replace('\\', '-', $settings[$row['TenderCode']]);
+            if ($current == $m) {
+                $selected = true; // direct match
+            } elseif (substr($m, -1*(strlen($current)+1)) == '-' . $current) {
+                $selected = true; // namespace match
+            }
+        }
         printf('<option value="%s:%s" %s>%s</option>',
             $row['TenderCode'],$m,
-            (isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
+            ($selected ? 'selected' : ''),
             $m);    
     }
     echo '</select></td>';

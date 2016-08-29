@@ -86,7 +86,10 @@ class ErrorHandler
     static public function catchFatal()
     {
         $error = error_get_last();
-        if ($error["type"] == E_ERROR) {
+        if ($error["type"] == E_ERROR 
+            || $error['type'] == E_PARSE 
+            || $error['type'] == E_CORE_ERROR
+            || $error['type'] == E_COMPILE_ERROR) {
             self::errorHandler($error["type"], $error["message"], $error["file"], $error["line"]);
             /**
               Put fatals in the error log as well as the debug log

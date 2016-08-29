@@ -106,7 +106,7 @@ class EpScaleLib
         }
         $line .= 'BCO' . '0' . chr(253);
         $line .= 'WTA' . '0' . chr(253);
-        $line .= 'UTA' . (isset($item_info['Tare']) ? floor(1000*$item_info['Tare']) . '0' : '0') . chr(253);
+        $line .= 'UTA' . (isset($item_info['Tare']) ? str_pad(floor(100*$item_info['Tare']).'0', 3, '0', STR_PAD_LEFT) : '0') . chr(253);
         $line .= 'SLI' . (isset($item_info['ShelfLife']) ? $item_info['ShelfLife'] : '0') . chr(253);
         $line .= 'SLT' . '0' . chr(253);
         $line .= 'EBY' . '0' . chr(253);
@@ -172,7 +172,7 @@ class EpScaleLib
                         $line .= 'LF1' . $item_info[$key] . chr(253);
                         break;
                     case 'Tare':
-                        $line .= 'UTA' . floor(100*$item_info[$key]) .'0' . chr(253);
+                        $line .= 'UTA' . str_pad(floor(100*$item_info['Tare']).'0', 3, '0', STR_PAD_LEFT). chr(253);
                         break;
                     case 'ShelfLife':
                         $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);

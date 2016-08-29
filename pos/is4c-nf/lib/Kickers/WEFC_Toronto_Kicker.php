@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
+use \CoreLocal;
+
 /**
   @class WEFC_Toronto_Kicker
   Class for opening cash drawer.

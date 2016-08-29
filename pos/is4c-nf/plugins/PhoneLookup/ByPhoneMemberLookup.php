@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MemberLookup;
+use COREPOS\pos\lib\Database;
+
 /**
   @class ByPhoneMemberLookup
   

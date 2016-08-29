@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+
 /**
   @class JsonLib
   Functions for JSON support in PHP < 5.3

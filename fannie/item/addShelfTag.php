@@ -77,28 +77,85 @@ HTML;
         return '</body></html>';
     }
 
+    private function print_tag() {
+      $offset = FormLib::get('offset', 0);
+
+      $data = array(array(
+        'normal_price' => FormLib::get('price'),
+        'description' => FormLib::get('description'),
+        'brand' => FormLib::get('brand'),
+        'units' => FormLib::get('units'),
+        'size' => FormLib::get('size'),
+        'sku' => FormLib::get('sku'),
+        'pricePerUnit' => FormLib::get('ppo'),
+        'upc' => FormLib::get('upc'),
+        'vendor' => FormLib::get('vendor'),
+        'scale' => FormLib::get('scale'),
+        'numflag' => FormLib::get('numflag'),
+        'count' => FormLib::get('count', 0)
+      ));
+
+      if (!defined('FPDF_FONTPATH')) {
+        define('FPDF_FONTPATH','font/');
+      }
+      if (!class_exists('FPDF', false)) {
+          require(dirname(__FILE__) . '/../src/fpdf/fpdf.php');
+      }
+      if (!class_exists('FpdfWithBarcode', false)) {
+          include(dirname(__FILE__) . '/../admin/labels/FpdfWithBarcode.php');
+      }
+
+      $layout_file = dirname(__FILE__) . '/../admin/labels/pdf_layouts/' . $this->config->get('SINGLE_LABEL_LAYOUT') . '.php';
+      if (count($data) > 0 && file_exists($layout_file) && !function_exists($this->config->get('SINGLE_LABEL_LAYOUT'))) {
+          include($layout_file);
+      }
+      if (function_exists($this->config->get('SINGLE_LABEL_LAYOUT'))) {
+          $filename = "/tmp/".uniqid().".pdf";
+          $layout = $this->config->get('SINGLE_LABEL_LAYOUT');
+          $layout($data, $offset, $filename);
+          echo "<pre>";
+          $printer = "";
+          if($this->config->get('SINGLE_LABEL_PRINTER') != "") {
+            $printer = "-d ".$this->config->get('SINGLE_LABEL_PRINTER')." ";
+          }
+          passthru("/usr/bin/lp ".$printer.$filename);
+          echo "</pre>";
+          unlink($filename);
+          return '<div class="alert alert-success">Printing '.$filename.'</div>';
+      } else {
+          echo 'Invalid data and/or layout';
+      }
+
+      return false;
+
+    }
+
     protected function post_upc_view()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-
-        $shelftag = new ShelftagsModel($dbc);
-        $shelftag->id(FormLib::get('subID', 0));
-        $shelftag->upc(FormLib::get('upc'));
-        $shelftag->normal_price(FormLib::get('price'));
-        $shelftag->pricePerUnit(FormLib::get('ppo'));
-        $shelftag->description(FormLib::get('description'));
-        $shelftag->brand(FormLib::get('brand'));
-        $shelftag->sku(FormLib::get('sku'));
-        $shelftag->size(FormLib::get('size'));
-        $shelftag->units(FormLib::get('units'));
-        $shelftag->vendor(FormLib::get('vendor'));
-        $shelftag->count(FormLib::get('count', 1));
-        $insR = $shelftag->save();
-
-        if ($insR === false) {
-            return '<div class="alert alert-danger">Error creating tag</div>';
+        if(FormLib::get('print') == "now") {
+          return $this->print_tag();
         } else {
+          $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+          $shelftag = new ShelftagsModel($dbc);
+          $shelftag->id(FormLib::get('subID', 0));
+          $shelftag->upc(FormLib::get('upc'));
+          $shelftag->normal_price(FormLib::get('price'));
+          $shelftag->pricePerUnit(FormLib::get('ppo'));
+          $shelftag->description(FormLib::get('description'));
+          $shelftag->brand(FormLib::get('brand'));
+          $shelftag->sku(FormLib::get('sku'));
+          $shelftag->size(FormLib::get('size'));
+          $shelftag->units(FormLib::get('units'));
+          $shelftag->vendor(FormLib::get('vendor'));
+          $shelftag->count(FormLib::get('count', 1));
+          $insR = $shelftag->save();
+
+          if ($insR === false) {
+            return '<div class="alert alert-danger">Error creating tag</div>';
+          } else {
             return '<div class="alert alert-success">Created Tag</div>';
+          }
         }
     }
 
@@ -170,8 +227,17 @@ HTML;
             <strong><?php printf("%.2f",$price); ?></strong>
         </span>
         <input type='hidden' name='price' size=8 value=<?php echo $price; ?> />
-        <button type="submit" class="btn btn-default"
-            name="submit" value="New">Create Tag</button>
+        <span class="btn-group">
+          <button type="submit" class="btn btn-default"
+              name="submit" value="New">Create Tag</button>
+          <?php
+          $instant_tag_disabled = "disabled";
+          if($this->config->get('SINGLE_LABEL_LAYOUT') != "" &&
+             $this->config->get('SINGLE_LABEL_PRINTER') != "") {
+                 $instant_tag_disabled = "";
+           } ?>
+          <button type="submit" class="btn btn-default" <?php echo $instant_tag_disabled; ?>
+              name="print" value="now">Instant Tag</button>
         </p>
         <div class="form-group form-inline">
         <label>Barcode page</label>
@@ -197,4 +263,3 @@ HTML;
 }
 
 FannieDispatch::conditionalExec();
-

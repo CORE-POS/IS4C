@@ -52,7 +52,7 @@ class FannieDispatch
     static public function runPage($class)
     {
         $config = FannieConfig::factory();
-        $logger = new FannieLogger();
+        $logger = FannieLogger::factory();
         if ($config->get('SYSLOG_SERVER')) {
             $logger->setRemoteSyslog(
                 $config->get('SYSLOG_SERVER'),

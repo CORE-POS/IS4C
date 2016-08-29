@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
+
 /**
   @class YPSITenderReport
   Ypsilanti Food Co-op custom tender report format

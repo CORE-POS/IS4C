@@ -110,6 +110,7 @@
     <SPH Include="SPH_Magellan_Scale.cs" />
     <SPH Include="SPH_Magellan_Classic.cs" />
     <SPH Include="SPH_Magellan_Locking.cs" />
+    <SPH Include="SPH_NCR_Scale.cs" />
     <SPH Include="SPH_SignAndPay_USB.cs" />
     <SPH Include="SPH_SignAndPay_Auto.cs" />
     <SPH Include="SPH_SignAndPay_Native.cs" />

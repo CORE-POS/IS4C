@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
 
 /**
  @class CoreState
  Setup session variables
 */
-class CoreState extends LibraryClass 
+class CoreState 
 {
 
 /**
@@ -42,7 +47,6 @@ static public function initiate_session()
     self::memberReset();
     self::transReset();
     self::printReset();
-    PaycardLib::paycard_reset();
 
     Database::getsubtotals();
     Database::loadglobalvalues();
@@ -542,7 +546,7 @@ static public function loadData()
         $row_local = $db_local->fetchRow($result_local);
         
         if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-            COREPOS\pos\lib\MemberLib::setMember($row_local['card_no'], 1);
+            \COREPOS\pos\lib\MemberLib::setMember($row_local['card_no'], 1);
         }
     }
 }

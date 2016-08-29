@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PaidOutComment extends NoInputCorePage 
@@ -93,6 +95,5 @@ class PaidOutComment extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new PaidOutComment();
+AutoLoader::dispatch();
 

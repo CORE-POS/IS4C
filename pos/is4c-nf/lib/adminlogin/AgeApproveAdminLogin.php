@@ -20,6 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class AgeApproveAdminLogin
   adminlogin callback for permitting underage age

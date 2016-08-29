@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning;
+
 /**
   @class VariableWeightReWrite
 

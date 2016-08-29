@@ -37,6 +37,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
     public $themed = true;
 
     protected $signage_mod;
+    protected $selected_mod;
     protected $signage_obj;
 
     public function preprocess()
@@ -188,16 +189,24 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $mod = FormLib::get('signmod', false);
         if ($mod !== false) {
-            $this->signage_mod = $mod;
+            $this->selected_mod = $mod;
+            if (substr($mod, 0, 7) == 'Legacy:') {
+                $this->signage_mod = 'COREPOS\\Fannie\\API\\item\\signage\\LegacyWrapper';
+                COREPOS\Fannie\API\item\signage\LegacyWrapper::setWrapped(substr($mod, 7));
+            } else {
+                $this->signage_mod = $mod;
+            }
             return true;
         } else {
             $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
             $default = $this->config->get('DEFAULT_SIGNAGE');
             if (in_array($default, $mods)) {
                 $this->signage_mod = $default;
+                $this->selected_mod = $default;
                 return true;
             } elseif (isset($mods[0])) {
                 $this->signage_mod = $mods[0];
+                $this->selected_mod = $mods[0];
                 return true;
             } else {
                 return false;
@@ -226,6 +235,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         sort($mods);
+        foreach (COREPOS\Fannie\API\item\signage\LegacyWrapper::getLayouts() as $l) {
+            $mods[] = 'Legacy:' . $l;
+        }
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<label>Layout</label>: 
             <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
@@ -235,8 +247,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 $pts = explode('\\', $m);
                 $name = $pts[count($pts)-1];
             }
+            if ($name === 'LegacyWrapper') continue;
             $ret .= sprintf('<option %s value="%s">%s</option>',
-                    ($m == $this->signage_mod ? 'selected' : ''), $m, $name);
+                    ($m == $this->selected_mod ? 'selected' : ''), $m, $name);
         }
         $ret .= '</select>';
         

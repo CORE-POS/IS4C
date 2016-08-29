@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\CoreState;
+
 /**
   @class Authenticate
   Functions for user authentication
 */
-class Authenticate extends LibraryClass 
+class Authenticate 
 {
  
 

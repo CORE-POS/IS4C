@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Tenders\TenderModule;
+
 /**
   @class CoopCredTender
   Tender module for Coop Cred accounts

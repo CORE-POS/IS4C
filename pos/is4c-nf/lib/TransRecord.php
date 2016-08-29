@@ -21,6 +21,14 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptLib;
+use \AutoLoader;
+use \CoreLocal;
+
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     * 10Apr2013 Andy Theuninck Filter backslash out of comments
@@ -32,7 +40,7 @@
   @class TransRecord
   Defines functions for adding records to the transaction
 */
-class TransRecord extends LibraryClass 
+class TransRecord 
 {
 
 /*------------------------------------------------------------------------------
@@ -282,6 +290,16 @@ static public function addRecord($named_params)
         $new_record['numflag'],
         $new_record['charflag']
     );
+
+    $actions = CoreLocal::get('ItemActions');
+    if (!is_array($actions)) {
+        $actions = AutoLoader::listModules('COREPOS\\pos\\lib\\ItemAction');
+        CoreLocal::set('ItemActions', $actions);
+    }
+    foreach ($actions as $class) {
+        $obj = new $class();
+        $obj->callback($new_record);
+    }
 }
 
 /**

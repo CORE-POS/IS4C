@@ -32,6 +32,7 @@ class SaItemList extends SaHandheldPage
     public $description = '[Build List] is an interface for scanning and entering quantities on
     hand using a handheld device.';
     protected $enable_linea = true;
+    protected $must_authenticate = true;
 
     private function exportList()
     {
@@ -47,13 +48,16 @@ class SaItemList extends SaHandheldPage
     {
         $dbc = $this->connection;
         $settings = $this->config->get('PLUGIN_SETTINGS');
+        $uid = FannieAuth::getUID($this->current_user);
 
         if (FormLib::get('clear') === '1') {
             $table = $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList';
-            $res = $dbc->query('
+            $prep = $dbc->prepare('
                 UPDATE ' . $table . '
                 SET clear=1
+                WHERE uid=?
             ');
+            $dbc->execute($prep, array($uid));
             return true;
         } elseif (FormLib::get('export') === '1') {
             echo $this->exportList();
@@ -73,8 +77,9 @@ class SaItemList extends SaHandheldPage
                 FROM products AS p
                     LEFT JOIN ' . $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList AS s ON p.upc=s.upc AND s.clear=0
                 WHERE p.upc=?
+                    AND (s.uid=? OR s.uid IS NULL)
             ');
-            $row = $dbc->getRow($prep, array($upc));
+            $row = $dbc->getRow($prep, array($upc, $uid));
             if ($row) {
                 $this->saveRowToList($dbc, $upc, $row, $settings);
             }
@@ -91,6 +96,7 @@ class SaItemList extends SaHandheldPage
         $model = new SaListModel($dbc);
         $model->upc($upc);
         $model->clear(0);
+        $model->uid(FannieAuth::getUID($this->current_user));
         $entries = $model->find('date', true);
         if (count($entries) > 0) {
             $entries[0]->tdate(date('Y-m-d H:i:s'));
@@ -110,7 +116,7 @@ class SaItemList extends SaHandheldPage
         $this->addOnloadCommand('$(\'' . $elem . '\').focus();');
         $this->addOnloadCommand("enableLinea('#upc_in');\n");
         ob_start();
-        $this->upcForm($elem);
+        $this->upcForm($elem, 1);
         if (isset($this->current_item_data['upc']) && !isset($this->current_item_data['desc'])) {
             echo '<div class="alert alert-danger">Item not found (' 
                 . $this->current_item_data['upc'] . ')</div>'; 
@@ -138,6 +144,7 @@ class SaItemList extends SaHandheldPage
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($this->config->get('OP_DB'));
+        $uid = FannieAuth::getUID($this->current_user);
         $prep = $this->connection->prepare('
             SELECT s.upc,
                 p.brand,
@@ -152,9 +159,10 @@ class SaItemList extends SaHandheldPage
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
             WHERE s.clear=0
                 AND s.quantity <> 0
+                AND s.uid=?
             ORDER BY s.tdate DESC
         ');
-        $res = $this->connection->execute($prep);
+        $res = $this->connection->execute($prep, array($uid));
         $ret = '
             <table class="table table-bordered table-striped small">
             <tr>
@@ -166,6 +174,7 @@ class SaItemList extends SaHandheldPage
                 <th>Size</th>
                 <th>Qty</th>
             </tr>';
+        $upcs = '';
         while ($row = $this->connection->fetchRow($res)) {
             $ret .= sprintf('<tr>
                 <td>%s</td>
@@ -184,8 +193,11 @@ class SaItemList extends SaHandheldPage
                 $row['size'],
                 $row['qty']
             ); 
+            $upcs .= $row['upc'] . "\n";
         }
         $ret .= '</table>';
+
+        $ret .= '<textarea>' . $upcs . '</textarea>';
 
         return $ret;
     }

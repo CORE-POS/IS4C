@@ -22,43 +22,47 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\plugins\Paycards\card\CardValidator;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardboxMsgAuth extends PaycardProcessPage {
 
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
-        $this->add_onload_command("\$('#formlocal').submit(paycardboxmsgAuth.submitWrapper);\n");
-        if (isset($_REQUEST['validate'])) { // ajax callback to validate inputs
-            list($valid, $msg) = PaycardLib::validateAmount();
+        $this->addOnloadCommand("\$('#formlocal').submit(paycardboxmsgAuth.submitWrapper);\n");
+        $cval = new CardValidator();
+        if (FormLib::get('validate') !== '') { // ajax callback to validate inputs
+            list($valid, $msg) = $cval->validateAmount($this->conf);
             echo json_encode(array('valid'=>$valid, 'msg'=>$msg));
             return false;
-        } elseif (isset($_REQUEST['reginput'])) {
-            $input = strtoupper(trim($_REQUEST['reginput']));
+        } elseif (FormLib::get('reginput', false) !== false) {
+            $input = strtoupper(trim(FormLib::get('reginput')));
             // CL always exits
-            if( $input == "CL") {
-                CoreLocal::set("msgrepeat",0);
-                CoreLocal::set("toggletax",0);
-                CoreLocal::set("togglefoodstamp",0);
-                PaycardLib::paycard_reset();
-                CoreLocal::set("CachePanEncBlock","");
-                CoreLocal::set("CachePinEncBlock","");
-                CoreLocal::set("CacheCardType","");
-                CoreLocal::set("CacheCardCashBack",0);
-                CoreLocal::set('ccTermState','swipe');
+            if ($input === "CL") {
+                $this->conf->set("msgrepeat",0);
+                $this->conf->set("toggletax",0);
+                $this->conf->set("togglefoodstamp",0);
+                $this->conf->reset();
+                $this->conf->set("CachePanEncBlock","");
+                $this->conf->set("CachePinEncBlock","");
+                $this->conf->set("CacheCardType","");
+                $this->conf->set("CacheCardCashBack",0);
+                $this->conf->set('ccTermState','swipe');
                 UdpComm::udpSend("termReset");
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif ($input == "") {
-                list($valid, $msg) = PaycardLib::validateAmount();
+                list($valid, $msg) = $cval->validateAmount($this->conf);
                 if ($valid) {
                     $this->action = "onsubmit=\"return false;\"";    
-                    $this->add_onload_command("paycard_submitWrapper();");
+                    $this->addOnloadCommand("paycard_submitWrapper();");
                 }
             } else {
                 // any other input is an alternate amount
-                CoreLocal::set("paycard_amount","invalid");
+                $this->conf->set("paycard_amount","invalid");
                 if (is_numeric($input)){
                     $this->setAmount($input/100);
                 }
@@ -71,9 +75,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 
     private function setAmount($amt)
     {
-        CoreLocal::set("paycard_amount",$amt);
-        if (CoreLocal::get('CacheCardCashBack') > 0 && CoreLocal::get('CacheCardCashBack') <= 40) {
-            CoreLocal::set('paycard_amount',($amt)+CoreLocal::get('CacheCardCashBack'));
+        $this->conf->set("paycard_amount",$amt);
+        if ($this->conf->get('CacheCardCashBack') > 0 && $this->conf->get('CacheCardCashBack') <= 40) {
+            $this->conf->set('paycard_amount',($amt)+$this->conf->get('CacheCardCashBack'));
         }
     }
 
@@ -84,57 +88,48 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 
     function body_content()
     {
-        ?>
-        <div class="baseHeight">
-        <?php
+        echo '<div class="baseHeight">';
         // generate message to print
-        $type = CoreLocal::get("paycard_type");
-        $mode = CoreLocal::get("paycard_mode");
-        $amt = CoreLocal::get("paycard_amount");
-        $cb = CoreLocal::get('CacheCardCashBack');
-        $balance_limit = CoreLocal::get('PaycardRetryBalanceLimit');
-        if ($cb > 0) $amt -= $cb;
-        list($valid, $validmsg) = PaycardLib::validateAmount();
+        $amt = $this->conf->get("paycard_amount");
+        $cashback = $this->conf->get('CacheCardCashBack');
+        $balanceLimit = $this->conf->get('PaycardRetryBalanceLimit');
+        if ($cashback > 0) $amt -= $cashback;
+        $cval = new CardValidator();
+        list($valid, $validmsg) = $cval->validateAmount($this->conf);
         if ($valid === false) {
-            echo PaycardLib::paycard_msgBox($type, "Invalid Amount: $amt",
+            echo PaycardLib::paycardMsgBox("Invalid Amount: $amt",
                 $validmsg, "[clear] to cancel");
-        } elseif ($balance_limit > 0) {
-            $msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
-            if (CoreLocal::get("CacheCardType") != "") {
-                $msg .= " as ".CoreLocal::get("CacheCardType");
-            } elseif (CoreLocal::get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
+        } elseif ($balanceLimit > 0) {
+            $msg = "Tender ".PaycardLib::moneyFormat($amt);
+            if ($this->conf->get("CacheCardType") != "") {
+                $msg .= " as ".$this->conf->get("CacheCardType");
+            } elseif ($this->conf->get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
                 $msg .= ' as GIFT';
             }
-            echo PaycardLib::paycard_msgBox($type,$msg."?","",
-                    "Card balance is {$balance_limit}<br>
+            echo PaycardLib::paycardMsgBox($msg."?","",
+                    "Card balance is {$balanceLimit}<br>
                     [enter] to continue if correct<br>Enter a different amount if incorrect<br>
                     [clear] to cancel");
         } elseif ($amt > 0) {
-            $msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
-            if (CoreLocal::get("CacheCardType") != "") {
-                $msg .= " as ".CoreLocal::get("CacheCardType");
-            } elseif (CoreLocal::get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
+            $msg = "Tender ".PaycardLib::moneyFormat($amt);
+            if ($this->conf->get("CacheCardType") != "") {
+                $msg .= " as ".$this->conf->get("CacheCardType");
+            } elseif ($this->conf->get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
                 $msg .= ' as GIFT';
             }
-            if ($cb > 0) {
-                $msg .= ' (CB:'.PaycardLib::paycard_moneyFormat($cb).')';
+            if ($cashback > 0) {
+                $msg .= ' (CB:'.PaycardLib::moneyFormat($cashback).')';
             }
             $msg .= '?';
-            if (CoreLocal::get('CacheCardType') == 'EBTFOOD' && abs(CoreLocal::get('subtotal') - CoreLocal::get('fsEligible')) > 0.005) {
+            if ($this->conf->get('CacheCardType') == 'EBTFOOD' && abs($this->conf->get('subtotal') - $this->conf->get('fsEligible')) > 0.005) {
                 $msg .= '<br />'
                     . _('Not all items eligible');
             }
-            echo PaycardLib::paycard_msgBox($type,$msg,"","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
+            echo PaycardLib::paycardMsgBox($msg,"","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
         } elseif( $amt < 0) {
-            echo PaycardLib::paycard_msgBox($type,"Refund ".PaycardLib::paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
-        } else {
-            echo PaycardLib::paycard_errBox($type,"Invalid Entry",
-                "Enter a different amount","[clear] to cancel");
+            echo PaycardLib::paycardMsgBox("Refund ".PaycardLib::moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
         }
-        CoreLocal::set("msgrepeat",2);
-        ?>
-        </div>
-        <?php
+        echo '</div>';
     }
 }
 

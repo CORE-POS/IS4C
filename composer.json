@@ -1,9 +1,10 @@
 {
     "name": "core-pos/core-pos",
     "description": "A Point of Sale System for Co-ops",
-    "license": "GPL",
+    "license": "GPL2",
     "type": "package",
     "homepage": "https://github.com/CORE-POS/IS4C",
+    "version": "2.3.0-dev",
     "authors": [
         {
             "name": "Andy Theuninck",
@@ -23,7 +24,6 @@
         "psr/log": "~1.0",
         "sabre/vobject": "~3.4",
         "endroid/qrcode": "~1.5",
-        "itbz/fpdf": "~1.7",
         "phpoffice/phpexcel": "^1.8",
         "mailchimp/mailchimp": "^2.0",
         "datto/json-rpc-http": "^3.1",
@@ -31,7 +31,6 @@
         "predis/predis": "^1.0",
         "symfony/http-foundation": "^2.6",
         "domisys/image_barcode2": "^3.0",
-        "everyman/neo4jphp": "dev-master",
         "sebastian/git": "^2.1",
         "corepos/composer-installer": "^1.0"
     },

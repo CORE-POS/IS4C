@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Search\Products\ProductSearch;
+use COREPOS\pos\parser\parse\UPC;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -107,7 +112,7 @@ class productlist extends NoInputCorePage
     private function runSearch($entered)
     {
         /* Get all enabled plugins and standard modules of the base. */
-        $modules = AutoLoader::ListModules('ProductSearch');
+        $modules = AutoLoader::ListModules('COREPOS\\pos\\lib\\Search\\Products\\ProductSearch');
         $results = array();
         $this->boxSize = 1;
         /* Search first with the plugins

@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\parser\Parser;
+use COREPOS\pos\plugins\Paycards\card\CardReader;
+
 if (!class_exists("PaycardLib")) 
     include_once(realpath(dirname(__FILE__)."/paycardLib.php"));
 
@@ -28,6 +33,11 @@ class paycardEntered extends Parser
 {
     private $swipetype;
     private $manual = false;
+
+    public function __construct()
+    {
+        $this->conf = new PaycardConf();
+    }
 
     function check($str)
     {
@@ -53,9 +63,9 @@ class paycardEntered extends Parser
         $ret = array();
         if( substr($str,0,2) == "PV") {
             $ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_BALANCE, substr($str,2), $this->manual, $this->swipetype);
-        } else if( substr($str,0,2) == "AV") {
+        } elseif( substr($str,0,2) == "AV") {
             $ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_ADDVALUE, substr($str,2), $this->manual, $this->swipetype);
-        } else if( substr($str,0,2) == "AC") {
+        } elseif( substr($str,0,2) == "AC") {
             $ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_ACTIVATE, substr($str,2), $this->manual, $this->swipetype);
         } else {
             $ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_AUTH, $str, $this->manual, $this->swipetype);
@@ -63,21 +73,21 @@ class paycardEntered extends Parser
 
         // if successful, paycard_entered() redirects to a confirmation page and exit()s; if we're still here, there was an error, so reset all data
         if ($ret['main_frame'] === false) {
-            PaycardLib::paycard_reset();
+            $this->conf->reset();
         }
 
         return $ret;
     }
 
-    private function checkTotal($mode, $type)
+    private function checkTotal($mode)
     {
         // error checks based on transaction
         if ($mode == PaycardLib::PAYCARD_MODE_AUTH) {
-            if( CoreLocal::get("ttlflag") != 1) { // must subtotal before running card
-                throw new Exception(PaycardLib::paycard_msgBox($type,"No Total",
+            if( $this->conf->get("ttlflag") != 1) { // must subtotal before running card
+                throw new Exception(PaycardLib::paycardMsgBox("No Total",
                     "Transaction must be totaled before tendering or refunding","[clear] to cancel"));
-            } else if( abs(CoreLocal::get("amtdue")) < 0.005) { // can't tender for more than due
-                throw new Exception(PaycardLib::paycard_msgBox($type,"No Total",
+            } elseif( abs($this->conf->get("amtdue")) < 0.005) { // can't tender for more than due
+                throw new Exception(PaycardLib::paycardMsgBox("No Total",
                     "Nothing to tender or refund","[clear] to cancel"));
             }
         }
@@ -88,29 +98,29 @@ class paycardEntered extends Parser
     private function initAmount($type)
     {
         /* assign amount due. EBT food should use eligible amount */
-        CoreLocal::set("paycard_amount",CoreLocal::get("amtdue"));
+        $this->conf->set("paycard_amount",$this->conf->get("amtdue"));
         if ($type == 'EBTFOOD'){
-            if (CoreLocal::get('fntlflag') == 0){
+            if ($this->conf->get('fntlflag') == 0){
                 /* try to automatically do fs total */
                 $try = PrehLib::fsEligible();
                 if ($try !== True){
-                    throw new Exception(PaycardLib::paycard_msgBox($type,"Type Mismatch",
+                    throw new Exception(PaycardLib::paycardMsgBox("Type Mismatch",
                         "Foodstamp eligible amount inapplicable","[clear] to cancel"));
                 } 
             }
             /**
               Always validate amount as non-zero
             */
-            if (CoreLocal::get('fsEligible') <= 0.005 && CoreLocal::get('fsEligible') >= -0.005) {
-                throw new Exception(PaycardLib::paycard_msgBox($type,_('Zero Total'),
+            if ($this->conf->get('fsEligible') <= 0.005 && $this->conf->get('fsEligible') >= -0.005) {
+                throw new Exception(PaycardLib::paycardMsgBox(_('Zero Total'),
                     "Foodstamp eligible amount is zero","[clear] to cancel"));
                 UdpComm::udpSend('termReset');
             } 
-            CoreLocal::set("paycard_amount",CoreLocal::get("fsEligible"));
+            $this->conf->set("paycard_amount",$this->conf->get("fsEligible"));
         }
-        if (($type == 'EBTCASH' || $type == 'DEBIT') && CoreLocal::get('CacheCardCashBack') > 0){
-            CoreLocal::set('paycard_amount',
-                CoreLocal::get('amtdue') + CoreLocal::get('CacheCardCashBack'));
+        if (($type == 'EBTCASH' || $type == 'DEBIT') && $this->conf->get('CacheCardCashBack') > 0){
+            $this->conf->set('paycard_amount',
+                $this->conf->get('amtdue') + $this->conf->get('CacheCardCashBack'));
         }
 
         return true;
@@ -121,70 +131,65 @@ class paycardEntered extends Parser
         $ret = $this->default_json();
         // initialize
         $validate = true; // run Luhn's on PAN, check expiration date
-        PaycardLib::paycard_reset();
-        CoreLocal::set("paycard_mode",$mode);
-        CoreLocal::set("paycard_manual",($manual ? 1 : 0));
+        $reader = new CardReader();
+        $this->conf->reset();
+        $this->conf->set("paycard_mode",$mode);
+        $this->conf->set("paycard_manual",($manual ? 1 : 0));
 
         try {
-            $this->checkTotal($mode, $type);
-
-            // check for pre-validation override
-            if (strtoupper(substr($card,0,1)) == 'O') {
-                $validate = false;
-                $card = substr($card, 1);
-            }
+            $this->checkTotal($mode);
 
             // parse card data
-            if (CoreLocal::get("paycard_manual")) {
+            if ($this->conf->get("paycard_manual")) {
                 // make sure it's numeric
                 if (!ctype_digit($card) || strlen($card) < 18) { // shortest known card # is 14 digits, plus MMYY
-                    throw new Exception(PaycardLib::paycard_msgBox($type,"Manual Entry Unknown",
+                    throw new Exception(PaycardLib::paycardMsgBox("Manual Entry Unknown",
                         "Please enter card data like:<br>CCCCCCCCCCCCCCCCMMYY","[clear] to cancel"));
                 }
                 // split up input (and check for the Concord test card)
                 if ($type == PaycardLib::PAYCARD_TYPE_UNKNOWN){
-                    $type = PaycardLib::paycard_type($card);
+                    $type = $reader->type($card);
                 }
                 if( $type == PaycardLib::PAYCARD_TYPE_GIFT) {
-                    CoreLocal::set("paycard_PAN",$card); // our gift cards have no expiration date or conf code
+                    $this->conf->set("paycard_PAN",$card); // our gift cards have no expiration date or conf code
                 } else {
-                    CoreLocal::set("paycard_PAN",substr($card,0,-4));
-                    CoreLocal::set("paycard_exp",substr($card,-4,4));
+                    $this->conf->set("paycard_PAN",substr($card,0,-4));
+                    $this->conf->set("paycard_exp",substr($card,-4,4));
                 }
             } elseif ($type == PaycardLib::PAYCARD_TYPE_ENCRYPTED){
                 // add leading zero back to fix hex encoding, if needed
                 if (substr($card,0,7)=="2E60080")
                     $card = "0".$card;
-                CoreLocal::set("paycard_PAN",$card);
+                $this->conf->set("paycard_PAN",$card);
             } else {
                 // swiped magstripe (reference to ISO format at end of this file)
-                $stripe = PaycardLib::paycard_magstripe($card);
+                $stripe = $reader->magstripe($card);
                 if (!is_array($stripe)) {
-                    throw new Exception(PaycardLib::paycard_errBox($type,CoreLocal::get("paycard_manual")."Card Data Invalid","Please swipe again or type in manually","[clear] to cancel"));
+                    throw new Exception(PaycardLib::paycardErrBox($this->conf->get("paycard_manual")."Card Data Invalid","Please swipe again or type in manually","[clear] to cancel"));
                 }
-                CoreLocal::set("paycard_PAN",$stripe["pan"]);
-                CoreLocal::set("paycard_exp",$stripe["exp"]);
-                CoreLocal::set("paycard_name",$stripe["name"]);
-                CoreLocal::set("paycard_tr1",$stripe["tr1"]);
-                CoreLocal::set("paycard_tr2",$stripe["tr2"]);
-                CoreLocal::set("paycard_tr3",$stripe["tr3"]);
+                $this->conf->set("paycard_PAN",$stripe["pan"]);
+                $this->conf->set("paycard_exp",$stripe["exp"]);
+                $this->conf->set("paycard_name",$stripe["name"]);
+                $this->conf->set("paycard_tr1",$stripe["tr1"]);
+                $this->conf->set("paycard_tr2",$stripe["tr2"]);
+                $this->conf->set("paycard_tr3",$stripe["tr3"]);
             } // manual/swiped
 
             // determine card issuer and type
-            CoreLocal::set("paycard_type",PaycardLib::paycard_type(CoreLocal::get("paycard_PAN")));
-            CoreLocal::set("paycard_issuer",PaycardLib::paycard_issuer(CoreLocal::get("paycard_PAN")));
+            $this->conf->set("paycard_type",$reader->type($this->conf->get("paycard_PAN")));
+            $this->conf->set("paycard_issuer",$reader->issuer($this->conf->get("paycard_PAN")));
 
             /* check card type. Credit is default. */
-            $type = CoreLocal::get("CacheCardType");
-            if ($type == '' && CoreLocal::get('paycard_type') !== PaycardLib::PAYCARD_TYPE_GIFT) {
+            $type = $this->conf->get("CacheCardType");
+            if ($type == '' && $this->conf->get('paycard_type') !== PaycardLib::PAYCARD_TYPE_GIFT) {
                 $type = 'CREDIT';
-                CoreLocal::set("CacheCardType","CREDIT");
+                $this->conf->set("CacheCardType","CREDIT");
             }
             $this->initAmount($type);
 
             // if we knew the type coming in, make sure it agrees
-            if ($type != PaycardLib::PAYCARD_TYPE_UNKNOWN && $type != CoreLocal::get("paycard_type")) {
-                throw new Exception(PaycardLib::paycard_msgBox($type,"Type Mismatch",
+            if ($type != PaycardLib::PAYCARD_TYPE_UNKNOWN && $type != $this->conf->get("paycard_type")) {
+                throw new Exception(PaycardLib::paycardMsgBox("Type Mismatch",
                     "Card number does not match card type","[clear] to cancel"));
             }
         } catch (Exception $ex) {
@@ -193,14 +198,14 @@ class paycardEntered extends Parser
         }
     
 
-        foreach(CoreLocal::get("RegisteredPaycardClasses") as $rpc){
+        foreach($this->conf->get("RegisteredPaycardClasses") as $rpc){
             if (!class_exists($rpc)) continue;
             $myObj = new $rpc();
-            if ($myObj->handlesType(CoreLocal::get("paycard_type")))
+            if ($myObj->handlesType($this->conf->get("paycard_type")))
                 return $myObj->entered($validate,$ret);
         }
 
-        $ret['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_UNKNOWN,"Unknown Card Type ".CoreLocal::get("paycard_type"),"","[clear] to cancel");
+        $ret['output'] = PaycardLib::paycardErrBox("Unknown Card Type ".$this->conf->get("paycard_type"),"","[clear] to cancel");
         return $ret;
     }
 

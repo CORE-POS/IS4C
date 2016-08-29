@@ -1,30 +1,47 @@
-var customerURL = "";
-var customerWindow = null;
+var CustomerDisplay = (function($) {
 
-function setCustomerURL(url)
-{
-    customerURL = url;
-}
+    var customerURL = "";
+    var win = null;
+    var mod = {};
 
-function launchCustomerDisplay()
-{
-    customerWindow = window.open(customerURL, 'Customer_Display');
-}
+    mod.setURL = function(url) {
+        customerURL = url;
+    };
 
-function updateCustomerDisplay(identifier, content)
-{
-    if (!$.isWindow(customerWindow)) {
-        console.log('Opening window...');
-        launchCustomerDisplay();
-    }
-    childWindow.$(identifier).html(content);
-}
+    mod.exists = function() {
+        return (win !== null && $.isWindow(win)) ? true : false;
+    };
 
-function reloadCustomerDisplay()
-{
-    if (!$.isWindow(customerWindow)) {
-        launchCustomerDisplay();
-    }
-    customerWindow.location.reload();
-}
+    var launchCustomerDisplay = function() {
+        win = window.open(customerURL, 'Customer_Display');
+    };
 
+    mod.updateCustomerDisplay = function(identifier, content) {
+        var curElem = $(document.activeElement);
+
+        if (mod.exists()) {
+            win.$(identifier).html(content);
+        }
+
+        if (curElem.length) {
+            curElem.focus();
+        }
+    };
+
+    mod.reloadCustomerDisplay = function() {
+        var curElem = $(document.activeElement);
+
+        if (!mod.exists()) {
+            launchCustomerDisplay();
+        } else {
+            win.location.reload();
+        }
+
+        if (curElem.length) {
+            curElem.focus();
+        }
+    };
+
+    return mod;
+
+}(jQuery));

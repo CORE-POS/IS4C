@@ -51,6 +51,11 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         foreach ($store_model->find('storeID') as $obj) {
             $stores[$obj->storeID()] = $obj;
         }
+        if (count($stores) == 0) {
+            $store_model->storeID(1);
+            $store_model->description('DEFAULT STORE');
+            $stores[1] = $store_model;
+        }
 
         return $stores;
     }
@@ -98,6 +103,25 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         }
 
         return $department;
+    }
+
+    private function confidentDepartment($upc)
+    {
+        $brand_id = substr($upc, 0, 8);
+        if ($brand_id === '00000000') {
+            return true;
+        }
+        $dbc = $this->db();
+        $chkP = $dbc->prepare('
+            SELECT department 
+            FROM products
+            WHERE upc LIKE ?
+                AND upc not like \'002%\'
+            GROUP BY department
+        ');
+        $chkR = $dbc->execute($chkP, array($brand_id . '%'));
+
+        return $dbc->numRows($chkR) === 1 ? true : false;
     }
 
     private function getExistingItem($upc)
@@ -377,6 +401,9 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($new_item) {
             // new item
             $ret .= "<div class=\"alert alert-warning\">Item not found.  You are creating a new one.</div>";
+            if (!$this->confidentDepartment($upc)) {
+                $ret .= '<div class="alert alert-danger">Please double-check POS department auto selection</div>';
+            }
         }
 
         $nav_tabs = '<ul id="store-tabs" class="nav nav-tabs small" role="tablist">';
@@ -485,7 +512,7 @@ HTML;
                             class="chosen-select form-control vendor_field syncable-input"
                             onchange="baseItem.vendorChanged(this.value);">';
                 $ret .= '<option value="0">Select a vendor</option>';
-                $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors ORDER BY vendorName');
+                $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName');
                 while ($vendW = $dbc->fetchRow($vendR)) {
                     $ret .= sprintf('<option %s>%s</option>',
                                 ($vendW['vendorID'] == $normalizedVendorID ? 'selected' : ''),
@@ -505,17 +532,29 @@ HTML;
 
             if (isset($rowItem['discounttype']) && $rowItem['discounttype'] <> 0) {
                 /* show sale info */
-                $batchP = $dbc->prepare("
-                    SELECT b.batchName, 
-                        b.batchID 
-                    FROM batches AS b 
-                        LEFT JOIN batchList as l on b.batchID=l.batchID 
-                        LEFT JOIN StoreBatchMap AS m ON b.batchID=m.batchID
-                    WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
-                        AND (l.upc=? OR l.upc=?)
-                        AND m.storeID=?"
-                );
-                $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode,$store_id));
+                if (FannieConfig::config('STORE_MODE') == 'HQ') {
+                    $batchP = $dbc->prepare("
+                        SELECT b.batchName, 
+                            b.batchID 
+                        FROM batches AS b 
+                            LEFT JOIN batchList as l on b.batchID=l.batchID 
+                            LEFT JOIN StoreBatchMap AS m ON b.batchID=m.batchID
+                        WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
+                            AND (l.upc=? OR l.upc=?)
+                            AND m.storeID=?"
+                    );
+                    $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode,$store_id));
+                } else {
+                    $batchP = $dbc->prepare("
+                        SELECT b.batchName, 
+                            b.batchID 
+                        FROM batches AS b 
+                            LEFT JOIN batchList as l on b.batchID=l.batchID 
+                        WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
+                            AND (l.upc=? OR l.upc=?)
+                    ");
+                    $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode));
+                }
                 $batch = array('batchID'=>0, 'batchName'=>"Unknown");
                 if ($dbc->num_rows($batchR) > 0) {
                     $batch = $dbc->fetch_row($batchR);

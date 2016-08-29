@@ -33,6 +33,9 @@
     *                       in body_content() using temp_message.
 
 */
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\PrehLib;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -317,6 +320,5 @@ class memlist_cards extends NoInputCorePage
 // /class memlist
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new memlist_cards();
+AutoLoader::dispatch();
 

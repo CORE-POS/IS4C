@@ -22,6 +22,13 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\lib\TransRecord;
 
 /**
   @class MemberLib
@@ -33,12 +40,12 @@ class MemberLib extends \LibraryClass
     */
     static public function clear()
     {
-        \CoreState::memberReset();
-        $dbc = \Database::tDataConnect();
+        CoreState::memberReset();
+        $dbc = Database::tDataConnect();
         $dbc->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
         \CoreLocal::set("ttlflag",0);    
         $opts = array('upc'=>'DEL_MEMENTRY');
-        \TransRecord::add_log_record($opts);
+        TransRecord::add_log_record($opts);
     }
 
     /**
@@ -69,7 +76,7 @@ class MemberLib extends \LibraryClass
             "redraw_footer"=>false
         );
         
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $result = $dbc->query($query);
         $num_rows = $dbc->num_rows($result);
 
@@ -84,7 +91,7 @@ class MemberLib extends \LibraryClass
                 $row = $dbc->fetch_row($result);
                 self::setMember($row["CardNo"], $row["personNum"]);
                 $ret['redraw_footer'] = true;
-                $ret['output'] = \DisplayLib::lastpage();
+                $ret['output'] = DisplayLib::lastpage();
 
                 if ($member_number != \CoreLocal::get('defaultNonMem')) {
                     $ret['udpmsg'] = 'goodBeep';
@@ -101,7 +108,7 @@ class MemberLib extends \LibraryClass
           be next.
           If verifyName is enabled, confirming the name should be next.
         */
-        $ret['main_frame'] = \MiscLib::base_url() . "gui-modules/memlist.php?idSearch=" . $member_number;
+        $ret['main_frame'] = MiscLib::base_url() . "gui-modules/memlist.php?idSearch=" . $member_number;
 
         return $ret;
     }
@@ -192,7 +199,7 @@ class MemberLib extends \LibraryClass
                 }
 
                 if ($chargeOk == 1) {
-                    $conn = \Database::pDataConnect();
+                    $conn = Database::pDataConnect();
                     $query = "SELECT ChargeLimit AS CLimit
                         FROM custdata
                         WHERE personNum=1 AND CardNo = $member";
@@ -260,7 +267,7 @@ class MemberLib extends \LibraryClass
         if (\CoreLocal::get("SSI") == 1) {
             $memMsg .= " #";
         }
-        $conn = \Database::pDataConnect();
+        $conn = Database::pDataConnect();
         if (\CoreLocal::get('NoCompat') == 1 || $conn->tableExists('CustomerNotifications')) {
             $blQ = '
                 SELECT message
@@ -286,7 +293,7 @@ class MemberLib extends \LibraryClass
     */
     static public function setMember($member, $personNumber, $row=array())
     {
-        $conn = \Database::pDataConnect();
+        $conn = Database::pDataConnect();
 
         /**
           Look up the member information here. There's no good 
@@ -361,7 +368,7 @@ class MemberLib extends \LibraryClass
           Set member number and attributes
           in the current transaction
         */
-        $conn2 = \Database::tDataConnect();
+        $conn2 = Database::tDataConnect();
         $memquery = "
             UPDATE localtemptrans 
             SET card_no = '" . $member . "',
@@ -374,7 +381,7 @@ class MemberLib extends \LibraryClass
         */
         if (\CoreLocal::get('discountEnforced')) {
             // skip subtotaling automatically since that occurs farther down
-            \DiscountModule::updateDiscount(new \DiscountModule($row['Discount'], 'custdata'), false);
+            DiscountModule::updateDiscount(new DiscountModule($row['Discount'], 'custdata'), false);
         }
 
         /**
@@ -382,7 +389,7 @@ class MemberLib extends \LibraryClass
         */
         \CoreLocal::set("memberID",$member);
         $opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
-        \TransRecord::add_log_record($opts);
+        TransRecord::add_log_record($opts);
 
         /**
           Optionally add a subtotal line depending
@@ -391,7 +398,7 @@ class MemberLib extends \LibraryClass
         if (\CoreLocal::get('member_subtotal') === 0 || \CoreLocal::get('member_subtotal') === '0') {
             $noop = "";
         } else {
-            \PrehLib::ttl();
+            PrehLib::ttl();
         } 
     }
 
@@ -411,7 +418,7 @@ class MemberLib extends \LibraryClass
         if ($cardno == \CoreLocal::get("defaultNonMem")) return false;
         if (\CoreLocal::get("balance") == 0) return false;
 
-        $dbc = \Database::mDataConnect();
+        $dbc = Database::mDataConnect();
 
         if (\CoreLocal::get('NoCompat') != 1 && !$dbc->table_exists("unpaid_ar_today")) return false;
 
@@ -454,7 +461,7 @@ class MemberLib extends \LibraryClass
     */
     static public function chargeOk() 
     {
-        $conn = \Database::pDataConnect();
+        $conn = Database::pDataConnect();
         $query = "SELECT c.ChargeLimit - c.Balance AS availBal,
             c.Balance, c.ChargeOk
             FROM custdata AS c 
@@ -484,7 +491,7 @@ class MemberLib extends \LibraryClass
     static public function getChgName() 
     {
         $query = "select LastName, FirstName from custdata where CardNo = '" .\CoreLocal::get("memberID") ."'";
-        $connection = \Database::pDataConnect();
+        $connection = Database::pDataConnect();
         $result = $connection->query($query);
         $num_rows = $connection->num_rows($result);
 

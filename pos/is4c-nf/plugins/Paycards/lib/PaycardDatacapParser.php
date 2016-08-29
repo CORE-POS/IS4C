@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\parser\Parser;
+
 /**
   Using Datacap ActiveX requires the cashier
   to select a card type. Commands are DATACAP
@@ -51,104 +55,109 @@ class PaycardDatacapParser extends Parser
         'ACDATACAPGD',
         'AVDATACAPGD',
     );
+    
+    public function __construct()
+    {
+        $this->conf = new PaycardConf();
+    }
 
     public function check($str)
     {
         if (in_array($str, $this->valid)) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public function parse($str)
     {
         $ret = $this->default_json();
-        if (CoreLocal::get("ttlflag") != 1) { // must subtotal before running card
-            $ret['output'] = PaycardLib::paycard_msgBox('',"No Total",
+        if ($this->conf->get("ttlflag") != 1) { // must subtotal before running card
+            $ret['output'] = PaycardLib::paycardMsgBox("No Total",
                 "Transaction must be totaled before tendering or refunding","[clear] to cancel");
             return $ret;
         }
-        $plugin_info = new Paycards();
-        $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvPage.php';
+        $pluginInfo = new Paycards();
+        $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvPage.php';
         Database::getsubtotals();
-        CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
-        CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
-        CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+        $this->conf->set('paycard_amount', $this->conf->get('amtdue'));
+        $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+        $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
         switch ($str) {
             case 'DATACAP':
-                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvMenu.php';
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvMenu.php';
                 break; 
             case 'DATACAPEMV': 
-                CoreLocal::set('CacheCardType', 'EMV');
+                $this->conf->set('CacheCardType', 'EMV');
                 break;
             case 'DATACAPCC':
-                CoreLocal::set('CacheCardType', 'CREDIT');
+                $this->conf->set('CacheCardType', 'CREDIT');
                 break;
             case 'DATACAPCCAUTO':
-                CoreLocal::set('CacheCardType', 'CREDIT');
+                $autoMode = $this->conf->get('PaycardsDatacapMode') == 1 ? 'EMV' : 'CREDIT';
+                $this->conf->set('CacheCardType', $autoMode);
                 $ret['main_frame'] .= '?reginput=';
                 break;
             case 'DATACAPDC':
-                if (CoreLocal::get('CacheCardCashBack')) {
-                    CoreLocal::set('paycard_amount', CoreLocal::get('amtdue') + CoreLocal::get('CacheCardCashBack'));
+                if ($this->conf->get('CacheCardCashBack')) {
+                    $this->conf->set('paycard_amount', $this->conf->get('amtdue') + $this->conf->get('CacheCardCashBack'));
                 }
-                CoreLocal::set('CacheCardType', 'DEBIT');
+                $this->conf->set('CacheCardType', 'DEBIT');
                 break;
             case 'DATACAPEF':
-                if (CoreLocal::get('fntlflag') == 0) {
+                if ($this->conf->get('fntlflag') == 0) {
                     /* try to automatically do fs total */
                     $try = PrehLib::fsEligible();
                     if ($try !== true) {
-                        $ret['output'] = PaycardLib::paycard_msgBox($type,"Type Mismatch",
+                        $ret['output'] = PaycardLib::paycardMsgBox("Type Mismatch",
                             "Foodstamp eligible amount inapplicable","[clear] to cancel");
                         $ret['main_frame'] = false;
                         return $ret;
                     } 
                 }
-                CoreLocal::set('paycard_amount', CoreLocal::get('fsEligible'));
-                CoreLocal::set('CacheCardType', 'EBTFOOD');
+                $this->conf->set('paycard_amount', $this->conf->get('fsEligible'));
+                $this->conf->set('CacheCardType', 'EBTFOOD');
                 break;
             case 'DATACAPEC':
-                if (CoreLocal::get('CacheCardCashBack')) {
-                    CoreLocal::set('paycard_amount', CoreLocal::get('amtdue') + CoreLocal::get('CacheCardCashBack'));
+                if ($this->conf->get('CacheCardCashBack')) {
+                    $this->conf->set('paycard_amount', $this->conf->get('amtdue') + $this->conf->get('CacheCardCashBack'));
                 }
-                CoreLocal::set('CacheCardType', 'EBTCASH');
+                $this->conf->set('CacheCardType', 'EBTCASH');
                 break;
             case 'DATACAPGD':
-                CoreLocal::set('CacheCardType', 'GIFT');
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $this->conf->set('CacheCardType', 'GIFT');
+                $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
                 break;
             case 'PVDATACAPGD':
-                CoreLocal::set('CacheCardType', 'GIFT');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
-                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
+                $this->conf->set('CacheCardType', 'GIFT');
+                $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
+                $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'PVDATACAPEF':
-                CoreLocal::set('CacheCardType', 'EBTFOOD');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
-                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
+                $this->conf->set('CacheCardType', 'EBTFOOD');
+                $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'PVDATACAPEC':
-                CoreLocal::set('CacheCardType', 'EBTCASH');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
-                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
+                $this->conf->set('CacheCardType', 'EBTCASH');
+                $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'ACDATACAPGD':
-                CoreLocal::set('CacheCardType', 'GIFT');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_ACTIVATE);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
-                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
+                $this->conf->set('CacheCardType', 'GIFT');
+                $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_ACTIVATE);
+                $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvGift.php?mode=' . $this->conf->get('paycard_mode');
                 break;
             case 'AVDATACAPGD':
-                CoreLocal::set('CacheCardType', 'GITFT');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_ADDVALUE);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
-                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
+                $this->conf->set('CacheCardType', 'GIFT');
+                $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_ADDVALUE);
+                $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvGift.php?mode=' . $this->conf->get('paycard_mode');
                 break;
         }
-        CoreLocal::set('paycard_id', CoreLocal::get('LastID')+1);
+        $this->conf->set('paycard_id', $this->conf->get('LastID')+1);
 
         return $ret;
     }

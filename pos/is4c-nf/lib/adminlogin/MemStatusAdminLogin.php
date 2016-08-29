@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class MemStatusAdminLogin
   adminlogin callback for approving member status toggle

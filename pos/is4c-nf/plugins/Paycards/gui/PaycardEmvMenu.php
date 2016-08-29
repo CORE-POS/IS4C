@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\gui\NoInputCorePage;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardEmvMenu extends NoInputCorePage 
 {
@@ -31,58 +34,35 @@ class PaycardEmvMenu extends NoInputCorePage
         'EBT' => 'EBT',
         'GIFT' => 'Gift',
     );
-    private $clear_to_home = 1;
+    private $clearToHome = 1;
     
     function preprocess()
     {
-        if (isset($_REQUEST["selectlist"])) {
+        $this->conf = new PaycardConf();
+        $choice = FormLib::get('selectlist', false);
+        if ($choice !== false) {
             $parser = new PaycardDatacapParser();
-            switch ($_REQUEST['selectlist']) {
+            switch ($choice) {
                 case 'CAADMIN':
                     $this->change_page('PaycardEmvCaAdmin.php');
                     return false;
                 case 'CC':
-                    $json = $parser->parse('DATACAPCC');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'DC':
-                    $json = $parser->parse('DATACAPDC');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'EMV':
-                    $json = $parser->parse('DATACAPEMV');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'EF':
-                    $json = $parser->parse('DATACAPEF');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'EC':
-                    $json = $parser->parse('DATACAPEC');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'GD':
-                    $json = $parser->parse('DATACAPGD');
+                    $json = $parser->parse('DATACAP' . $choice);
                     $this->change_page($json['main_frame']);
                     return false;
                 case 'PVEF':
-                    $json = $parser->parse('PVDATACAPEF');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'PVEC':
-                    $json = $parser->parse('PVDATACAPEC');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'PVGD':
-                    $json = $parser->parse('PVDATACAPGD');
+                    $json = $parser->parse('PVDATACAP' . substr($choice, -2));
                     $this->change_page($json['main_frame']);
-                    return false;
                 case 'ACGD':
-                    $json = $parser->parse('ACDATACAPGD');
-                    $this->change_page($json['main_frame']);
-                    return false;
                 case 'AVGD':
-                    $json = $parser->parse('AVDATACAPGD');
+                    $json = $parser->parse(substr($choice,0,2) . 'DATACAPGD');
                     $this->change_page($json['main_frame']);
                     return false;
                 case 'EBT':
@@ -92,7 +72,7 @@ class PaycardEmvMenu extends NoInputCorePage
                         'PVEF' => 'Food Balance',
                         'PVEC' => 'Cash Balance',
                     );
-                    $this->clear_to_home = 0;
+                    $this->clearToHome = 0;
                     break;
                 case 'GIFT':
                     $this->menu = array(
@@ -101,25 +81,26 @@ class PaycardEmvMenu extends NoInputCorePage
                         'AVGD' => 'Reload Card',
                         'PVGD' => 'Check Balance',
                     );
-                    $this->clear_to_home = 0;
+                    $this->clearToHome = 0;
                     break;
                 case 'CL':
                 default:
-                    if (isset($_REQUEST['clear-to-home']) && $_REQUEST['clear-to-home']) {
+                    if (FormLib::get('clear-to-home')) {
                         $this->change_page(MiscLib::baseUrl() . 'gui-modules/pos2.php');
                         return false;
                     }
                     break;
             }
         }
-        if (!isset($_REQUEST['selectlist']) || $_REQUEST['selectlist'] == 'CL' || $_REQUEST['selectlist'] === '') {
-            if (CoreLocal::get('PaycardsDatacapMode') == 1) {
+        if ($choice === false || $choice === 'CL' || $choice === '') {
+            if ($this->conf->get('PaycardsDatacapMode') == 1) {
                 $this->menu = array(
                     'EMV' => 'EMV Credit/Debit',
+                    'CC' => 'Credit only',
                     'EBT' => 'EBT',
                     'GIFT' => 'Gift',
                 );
-            } elseif (CoreLocal::get('PaycardsDatacapMode') == 2 || CoreLocal::get('PaycardsDatacapMode') == 3) {
+            } elseif ($this->conf->get('PaycardsDatacapMode') == 2 || $this->conf->get('PaycardsDatacapMode') == 3) {
                 $this->menu = array(
                     'EMV' => 'EMV Credit/Debit',
                     'CAADMIN' => 'Admin Functions',
@@ -130,12 +111,13 @@ class PaycardEmvMenu extends NoInputCorePage
         return true;
     }
     
-    function head_content(){
+    function head_content()
+    {
         ?>
         <script type="text/javascript" src="../../../js/selectSubmit.js"></script>
         <?php
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-        $this->add_onload_command("\$('#selectlist').focus();\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
     } // END head() FUNCTION
 
     function body_content() 
@@ -146,9 +128,9 @@ class PaycardEmvMenu extends NoInputCorePage
         <div class="centeredDisplay colored rounded">
         <span class="larger">process card transaction</span>
         <form name="selectform" method="post" id="selectform"
-            action="<?php echo $_SERVER['PHP_SELF']; ?>">
-        <input type="hidden" name="clear-to-home" value="<?php echo $this->clear_to_home; ?>" />
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+        <input type="hidden" name="clear-to-home" value="<?php echo $this->clearToHome; ?>" />
+        <?php if ($this->conf->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">
             <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
@@ -157,15 +139,15 @@ class PaycardEmvMenu extends NoInputCorePage
         <select id="selectlist" name="selectlist" size="5" style="width: 10em;"
             onblur="$('#selectlist').focus()">
         <?php
-        $i = 0;
+        $first =true;
         foreach ($this->menu as $val => $label) {
             printf('<option %s value="%s">%s</option>',
-                ($i == 0 ? 'selected' : ''), $val, $label);
-            $i++;
+                ($first ? 'selected' : ''), $val, $label);
+            $first = false;
         }
         ?>
         </select>
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <?php if ($this->conf->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollUp('#selectlist');">
             <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
@@ -184,5 +166,5 @@ class PaycardEmvMenu extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new PaycardEmvMenu();
+AutoLoader::dispatch();
+

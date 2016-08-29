@@ -1,7 +1,21 @@
 <?php
 
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Franking;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\StoreCreditIssuedReceiptMessage;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\GenericSigSlipMessage;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\GCBalanceReceiptMessage;
+use COREPOS\pos\lib\ReceiptBuilding\Tag\DefaultReceiptTag;
+use COREPOS\pos\lib\ReceiptBuilding\Format\TotalReceiptFormat;
+use COREPOS\pos\lib\ReceiptBuilding\Format\TenderReceiptFormat;
+use COREPOS\pos\lib\ReceiptBuilding\Format\OtherReceiptFormat;
+use COREPOS\pos\lib\ReceiptBuilding\Format\DefaultReceiptFormat;
+use COREPOS\pos\lib\ReceiptBuilding\Format\ItemReceiptFormat;
+use COREPOS\pos\lib\ReceiptBuilding\CustMessages\WfcEquityMessage;
+use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
+use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DefaultHtmlEmail;
 
 /**
  * @backupGlobals disabled
@@ -13,7 +27,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     */
     public function testMessages()
     {
-        $mods = AutoLoader::listModules('ReceiptMessage', true);
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\ReceiptMessage', true);
         $db = Database::tDataConnect();
 
         foreach($mods as $message_class) {
@@ -84,7 +98,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testSavings()
     {
-        foreach (array('DefaultReceiptSavings', 'SeparateReceiptSavings') as $class) {
+        foreach (array('COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\DefaultReceiptSavings', 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\SeparateReceiptSavings') as $class) {
             $obj = new $class();
             $this->assertEquals('', $obj->savingsMessage('1-1-1'));
         }
@@ -159,7 +173,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testCustMessages()
     {
-        $mods = AutoLoader::listModules('CustomerReceiptMessage');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\CustomerReceiptMessage');
 
         foreach($mods as $class) {
             $obj = new $class();
@@ -186,7 +200,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testDataFetch()
     {
-        $mods = AutoLoader::listModules('DefaultReceiptDataFetch');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\DefaultReceiptDataFetch');
         $dbc = Database::tDataConnect();
 
         foreach($mods as $message_class) {
@@ -226,7 +240,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testFilter()
     {
-        $mods = AutoLoader::listModules('DefaultReceiptFilter');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DefaultReceiptFilter');
 
         foreach($mods as $filter_class) {
             $obj = new $filter_class();
@@ -249,7 +263,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testSort()
     {
-        $mods = AutoLoader::listModules('DefaultReceiptSort');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DefaultReceiptSort');
 
         if (empty($this->record_sets)) {
             $this->record_sets[] = $this->test_records;
@@ -279,7 +293,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testTag()
     {
-        $mods = AutoLoader::listModules('DefaultReceiptTag');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DefaultReceiptTag');
 
         if (empty($this->record_sets)) {
             $this->record_sets[] = $this->test_records;
@@ -310,7 +324,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testFormat()
     {
-        $mods = AutoLoader::listModules('DefaultReceiptFormat');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DefaultReceiptFormat');
 
         if (empty($this->record_sets)) {
             $this->record_sets[] = $this->test_records;
@@ -382,7 +396,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen(ReceiptLib::twoColumns($col2, $col1)));
 
         $this->assertEquals(array('any'=>'','print'=>''), ReceiptLib::memReceiptMessages(1));
-        $this->assertEquals('EmailPrintHandler', ReceiptLib::emailReceiptMod());
+        $this->assertEquals('COREPOS\pos\lib\PrintHandlers\EmailPrintHandler', ReceiptLib::emailReceiptMod());
 
         $port = CoreLocal::get('printerPort');
         $temp_file = tempnam(sys_get_temp_dir(), 'ppp');
@@ -396,7 +410,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testTenderReport()
     {
-        $mods = AutoLoader::listModules('TenderReport', true);
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport', true);
         foreach ($mods as $mod) {
             $this->assertInternalType('string', $mod::get());
         }

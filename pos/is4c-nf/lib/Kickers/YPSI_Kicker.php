@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
+
 /**
   @class YPSI_Kicker
   Opens drawer for cash, debit, CC, EBT

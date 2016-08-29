@@ -22,6 +22,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
+
 /**
     @class CCredSigSlip
     Make a signature slip for each Coop Cred tender used in the transaction.

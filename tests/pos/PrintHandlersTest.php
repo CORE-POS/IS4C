@@ -6,7 +6,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
 {
     public function testBase()
     {
-        $ph = new PrintHandler();
+        $ph = new COREPOS\pos\lib\PrintHandlers\PrintHandler();
         $this->assertEquals("\t", $ph->Tab());
         $this->assertEquals("\n", $ph->LineFeed());
         $this->assertEquals("\n\n", $ph->LineFeed(2));
@@ -64,7 +64,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
 
     public function testPdf()
     {
-        $pdf = new PdfPrintHandler();
+        $pdf = new COREPOS\pos\lib\PrintHandlers\PdfPrintHandler();
         $pdf->TextStyle(true, true, true, true, true);
 
         $this->assertEquals('', $pdf->Underline());
@@ -81,7 +81,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
 
     public function testHtml()
     {
-        $html = new HtmlEmailPrintHandler();
+        $html = new COREPOS\pos\lib\PrintHandlers\HtmlEmailPrintHandler();
         $this->assertEquals('<div style="text-align:center">foo</div>', $html->centerString('foo'));
         $this->assertEquals('<div style="text-align:center"><strong>foo</strong></div>', $html->centerString('foo', true));
         $this->assertEquals('<!-- foo -->', $html->addRenderingSpacer('foo'));
@@ -89,7 +89,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
 
     public function testEmail()
     {
-        $mod = new EmailPrintHandler();
+        $mod = new COREPOS\pos\lib\PrintHandlers\EmailPrintHandler();
         $this->assertEquals('    ', $mod->Tab());
         $this->assertEquals('', $mod->CarriageReturn());
         $this->assertEquals('', $mod->RenderBitmapFromFile('fake-file'));
@@ -98,7 +98,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
 
     public function testEsc()
     {
-        $ph = new ESCPOSPrintHandler();
+        $ph = new COREPOS\pos\lib\PrintHandlers\ESCPOSPrintHandler();
         $blank_methods = array(
             'PageFeed',
             'ClearPage',

@@ -21,8 +21,16 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\Kickers\Kicker;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
 CoreState::loadParams();
@@ -176,8 +184,7 @@ class login2 extends BasicCorePage
         if (session_id() != '') {
             session_write_close();
         }
-        $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
-        $kicker_object = new $kicker_class();
+        $kicker_object = Kicker::factory(CoreLocal::get('kickerModule'));
         if ($kicker_object->kickOnSignIn()) {
             Drawers::kick();
         }

@@ -100,21 +100,21 @@ class MemArTransferTool extends FannieRESTfulPage
     protected function getName($num)
     {
         if (!is_numeric($num)) {
-            $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
+            $this->errors .= "<div class=\"alert alert-danger\">Error: value given (".$num.") isn't a number</div>"
                 ."<br /><br />"
                 ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
             return '';
         } else {
-            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memTo);
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($num);
             if ($account == false) {
-                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->memTo."</div>"
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$num."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return '';
             }
             foreach ($account['customers'] as $c) {
                 if ($c['accountHolder']) {
-                    return $this->name2 = $c['firstName'] . ' ' . $c['lastName'];
+                    return $c['firstName'] . ' ' . $c['lastName'];
                 }
             }
         }

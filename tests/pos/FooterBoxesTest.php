@@ -1,5 +1,12 @@
 <?php
 
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
+use COREPOS\pos\lib\FooterBoxes\TransPercentDiscount;
+use COREPOS\pos\lib\FooterBoxes\SavedOrCouldHave;
+use COREPOS\pos\lib\FooterBoxes\PatronagePts;
+use COREPOS\pos\lib\FooterBoxes\MemSales;
+use COREPOS\pos\lib\FooterBoxes\MultiTotal;
+
 /**
  * @backupGlobals disabled
  */
@@ -8,22 +15,22 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
     public function testAll()
     {
         $defaults = array(
-            'FooterBox',
-            'EveryoneSales',
-            'MemSales',
-            'MultiTotal',
-            'SavedOrCouldHave',
-            'TransPercentDiscount'
+            'COREPOS\\pos\\lib\\FooterBoxes\\FooterBox',
+            'COREPOS\\pos\\lib\\FooterBoxes\\EveryoneSales',
+            'COREPOS\\pos\\lib\\FooterBoxes\\MemSales',
+            'COREPOS\\pos\\lib\\FooterBoxes\\MultiTotal',
+            'COREPOS\\pos\\lib\\FooterBoxes\\SavedOrCouldHave',
+            'COREPOS\\pos\\lib\\FooterBoxes\\TransPercentDiscount'
         );
 
-        $all = AutoLoader::ListModules('FooterBox',True);
+        $all = AutoLoader::ListModules('COREPOS\pos\lib\FooterBoxes\FooterBox',True);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
         foreach($all as $class){
-            $obj = new $class();
-            $this->assertInstanceOf('FooterBox',$obj);
+            $obj = FooterBox::factory($class);
+            $this->assertInstanceOf('COREPOS\pos\lib\FooterBoxes\FooterBox',$obj);
 
             $this->assertObjectHasAttribute('header_css',$obj);
             $this->assertObjectHasAttribute('display_css',$obj);

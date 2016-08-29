@@ -43,7 +43,7 @@ class OrderItemLib
         }
 
         $item = self::$generic_item;
-        $item['description'] = $upc . ' SO';
+        $item['description'] = $upc;
         $item['upc'] = $upc;
 
         return $item;
@@ -79,10 +79,12 @@ class OrderItemLib
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 p.upc,
                 COALESCE(v.sku, \'\') AS sku,
-                p.department
+                p.department,
+                r.priceRuleTypeID
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
             WHERE p.upc=?
                 AND p.inUse=1
         ');
@@ -111,7 +113,8 @@ class OrderItemLib
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 v.upc,
                 v.sku,
-                0 AS department
+                0 AS department,
+                0 AS priceRuleTypeID
             FROM vendorItems AS v 
                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
             WHERE v.upc=?
@@ -158,10 +161,12 @@ class OrderItemLib
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 p.upc,
                 COALESCE(v.sku, \'\') AS sku,
-                p.department
+                p.department,
+                r.priceRuleTypeID
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
             WHERE v.sku LIKE ?
                 AND p.inUse=1
         ');
@@ -190,7 +195,8 @@ class OrderItemLib
                 v.upc,
                 v.sku,
                 COALESCE(n.vendorName, \'\') AS vendorName,
-                0 AS department
+                0 AS department,
+                0 AS priceRuleTypeID
             FROM vendorItems AS v 
                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
             WHERE v.sku LIKE ?
@@ -217,6 +223,11 @@ class OrderItemLib
             if (isset($prodW[$key])) {
                 $ret[$key] = $prodW[$key];
             }
+        }
+
+        if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
+            && ($prodW['priceRuleTypeID'] == 6 || $prodW['priceRuleTypeID'] == 7 || $prodW['priceRuleTypeID'] == 8)) {
+            $ret['discountable'] = 0;
         }
 
         return $ret;
@@ -250,17 +261,23 @@ class OrderItemLib
         }
     }
 
+    public static function getUnitPrice($item, $is_member)
+    {
+        if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
+            return $item['special_price'];
+        } else {
+            return $item['normal_price'];
+        }
+    }
+
     /**
       Get the unit price for an item based on pricing
       rules
     */
-    public static function getUnitPrice($item, $is_member)
+    public static function getEffectiveUnit($item, $is_member)
     {
         if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
-            // only use sale price if it's a better deal
-            $sale = $item['special_price'];
-            $nonsale = self::stockedUnitPrice($item, $is_member);
-            return $sale <= $nonsale ? $sale : $nonsale;
+            return $item['special_price'];
         } elseif ($item['stocked']) {
             return self::stockedUnitPrice($item, $is_member);
         } else {
@@ -270,7 +287,7 @@ class OrderItemLib
 
     public static function getCasePrice($item, $is_member)
     {
-        return $item['caseSize'] * self::getUnitPrice($item, $is_member);
+        return $item['caseSize'] * self::getEffectiveUnit($item, $is_member);
     }
 
     /**
@@ -281,9 +298,9 @@ class OrderItemLib
     {
         if ($item['discountable']) {
             return self::markUpOrDown($item, $is_member);
-        } else {
-            return $item['normal_price'];
         }
+
+        return $item['normal_price'];
     }
 
     /**
@@ -313,7 +330,7 @@ class OrderItemLib
     /**
       Decide if the sale price be used for this item
     */
-    private static function useSalePrice($item, $is_member)
+    public static function useSalePrice($item, $is_member)
     {
         /**
           @Configurability: need to be able to turn off sale
@@ -349,6 +366,19 @@ class OrderItemLib
                 AND b.endDate >= ' . $dbc->curdate()
         );  
         $eligible = $dbc->getValue($saleP, array($item['upc'], $item['special_price']));
+
+        if ($eligible) {
+            return true;
+        }
+
+
+        $lcP = $dbc->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+        $like = $dbc->getValue($lcP, array($item['upc']));
+        if (!$like) {
+            return false;
+        }
+
+        $eligible = $dbc->getValue($saleP, array('LC' . $like, $item['special_price']));
 
         return $eligible ? true : false;
     }

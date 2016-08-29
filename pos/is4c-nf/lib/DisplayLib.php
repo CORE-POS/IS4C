@@ -21,11 +21,19 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
+use \CoreLocal;
+
 /**
   @class DisplayLib
   Functions for drawing display elements
 */
-class DisplayLib extends LibraryClass {
+class DisplayLib 
+{
 
 /**
   Get the standard footer with total and
@@ -50,7 +58,7 @@ static public function printfooter($readOnly=False)
         );
     }
     
-    $modchain = array_map(function($class){ return new $class(); }, $FOOTER_MODULES);
+    $modchain = array_map(function($class){ return FooterBox::factory($class); }, $FOOTER_MODULES);
 
     if (!$readOnly) {
         CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));
@@ -116,6 +124,9 @@ static public function printfooter($readOnly=False)
     }
     $ret .= "</tr>";
     $ret .= "</table>";
+    if (CoreLocal::get('Debug_JS')) {
+        $ret .= '<div id="jsErrorLog"></div>';
+    }
 
     return $ret;
 }

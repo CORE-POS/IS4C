@@ -219,7 +219,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
 function enableLinea(selector, callback)
 {
     Device = new ScannerDevice({
-        barcodeData: function (data, type){
+        barcodeData: function(data, type) {
             var upc = data.substring(0,data.length-1);
             if ($(selector).length > 0){
                 $(selector).val(upc);
@@ -242,6 +242,21 @@ function enableLinea(selector, callback)
         }
     });
     ScannerDevice.registerListener(Device);
+
+    if (typeof WebBarcode == 'object') {
+        WebBarcode.onBarcodeScan(function(ev) {
+            var data = ev.value;
+            var upc = data.substring(0,data.length-1);
+            if ($(selector).length > 0){
+                $(selector).val(upc);
+                if (typeof callback === 'function') {
+                    callback();
+                } else {
+                    $(selector).closest('form').submit();
+                }
+            }
+        });
+    }
 
     function lineaSilent()
     {

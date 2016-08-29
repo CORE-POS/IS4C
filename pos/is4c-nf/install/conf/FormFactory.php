@@ -52,7 +52,7 @@ class FormFactory
             $current_value = $this->sanitizeString($current_value);
         }
 
-        CoreLocal::set($name, $current_value);
+        \CoreLocal::set($name, $current_value, true);
         if ($storage == Conf::INI_SETTING) {
             if (is_array($current_value)) {
                 $out_value = 'array(' . implode(',', $current_value) . ')';
@@ -124,7 +124,7 @@ class FormFactory
         // sanitize values:
         $current_value = $this->sanitizeValue($current_value, $is_array, $quoted);
         
-        \CoreLocal::set($name, $current_value);
+        \CoreLocal::set($name, $current_value, true);
         $this->writeInput($name, $current_value, $storage);
 
         $attributes['title'] = $this->storageAttribute($name, $storage);
@@ -138,13 +138,21 @@ class FormFactory
         $has_keys = ($options === array_values($options)) ? false : true;
         foreach ($options as $key => $value) {
             $selected = '';
-            if ($is_array && $has_keys && in_array($key, $current_value)) {
+            if ($is_array && $has_keys) {
+                foreach ($current_value as $cv) {
+                    if ($this->endMatch($key, $cv)) {
+                        $selected = 'selected';
+                    }
+                }
+            } elseif ($is_array && !$has_keys) {
+                foreach ($current_value as $cv) {
+                    if ($this->endMatch($value, $cv)) {
+                        $selected = 'selected';
+                    }
+                }
+            } elseif ($has_keys && ($current_value == $key || $this->endMatch($key, $current_value))) {
                 $selected = 'selected';
-            } elseif ($is_array && !$has_keys && in_array($value, $current_value)) {
-                $selected = 'selected';
-            } elseif ($has_keys && $current_value == $key) {
-                $selected = 'selected';
-            } elseif (!$has_keys && $current_value == $value) {
+            } elseif (!$has_keys && ($current_value == $value || $this->endMatch($value, $current_value))) {
                 $selected = 'selected';
             }
             $optval = $has_keys ? $key : $value;
@@ -158,9 +166,19 @@ class FormFactory
         return $ret;
     }
 
+    private function endMatch($full, $end)
+    {
+        if (strstr($end, '\\')) {
+            $tmp = explode('\\', $end);
+            $end = $tmp[count($tmp)-1];
+        }
+        $len = strlen($end);
+        return substr($full, -1*$len) === $end;
+    }
+
     public function checkboxField($name, $label, $default_value=0, $storage=Conf::EITHER_SETTING, $choices=array(0, 1), $attributes=array())
     {
-        $current_value = $this->getCurrentValue($name, $default_value, $quoted);
+        $current_value = $this->getCurrentValue($name, $default_value, false);
 
         // sanitize
         if (!is_array($choices) || count($choices) != 2) {
@@ -174,7 +192,7 @@ class FormFactory
             $current_value = $choices[0];
         }
 
-        \CoreLocal::set($name, $current_value);
+        \CoreLocal::set($name, $current_value, true);
         $this->writeInput($name, $current_value, $storage);
 
         $attributes['title'] = $this->storageAttribute($name, $storage);

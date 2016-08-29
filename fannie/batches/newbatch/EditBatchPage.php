@@ -711,10 +711,10 @@ HTML;
                 $orderby = 'ORDER BY b.salePrice DESC';
                 break;
             case 'loc_a':
-                $orderby = 'ORDER BY m.super_name,y.subsection,y.shelf_set,y.shelf';
+                $orderby = 'ORDER BY locationName';
                 break;
             case 'loc_d':
-                $orderby = 'ORDER BY m.super_name DESC,y.subsection DESC,y.shelf_set DESC,y.shelf DESC';
+                $orderby = 'ORDER BY locationName';
                 break;
             case 'brand_a':
                 $orderby = 'ORDER BY p.brand ASC';
@@ -768,17 +768,15 @@ HTML;
                 CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
                 b.quantity,
                 b.pricemethod,
-                m.super_name, 
-                y.subsection, 
-                y.shelf_set, 
-                y.shelf,
-                p.brand
+                p.brand,
+                NULL AS locationName
             FROM batchList AS b 
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
-                LEFT JOIN superDeptNames AS m ON y.section=m.superID
+                LEFT JOIN FloorSections AS s ON y.section=s.floorSectionID
+                LEFT JOIN FloorSectionsListView as f on b.upc=f.upc
             WHERE b.batchID = ? 
             $orderby";
         $fetchArgs[] = $id;
@@ -798,13 +796,10 @@ HTML;
                     where b.batchID = ? $orderby";
         }
 
-        $sections = array();
-        if ($dbc->tableExists('FloorSections')) {
-            $floor = new FloorSectionsModel($dbc);
-            foreach ($floor->find() as $f) {
-                $sections[$f->floorSectionID()] = $f->name();
-            }
-            $fetchQ = str_replace('y.subsection', 'y.floorSectionID', $fetchQ);
+        if ($dbc->tableExists('FloorSectionsListView')) {
+            $fetchQ = str_replace('NULL AS locationName', 'f.sections AS locationName', $fetchQ);
+        } elseif ($dbc->tableExists('FloorSections')) {
+            $fetchQ = str_replace('NULL AS locationName', 's.name AS locationName', $fetchQ);
         }
 
         $fetchP = $dbc->prepare($fetchQ);
@@ -920,7 +915,7 @@ HTML;
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=sale_a\">$saleHeader</a></th>";
         }
         $ret .= "<th colspan=\"3\">&nbsp;</th>";
-        if ($orderby != 'ORDER BY m.super_name,y.subsection,y.shelf_set,y.shelf') {
+        if ($orderby != 'ORDER BY locationName') {
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=loc_a\">Location</a></th>";
         } else {
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=loc_d\">Location</a></th>";
@@ -999,13 +994,8 @@ HTML;
             }
 
             $loc = 'n/a';
-            if (!empty($fetchW['subsection'])) {
-                $loc = substr($fetchW['super_name'],0,4);
-                $loc .= $fetchW['subsection'].', ';
-                $loc .= 'Unit '.$fetchW['shelf_set'].', ';
-                $loc .= 'Shelf '.$fetchW['shelf'];
-            } elseif (!empty($fetchW['floorSectionID'])) {
-                $loc = $sections[$fetchW['floorSectionID']];
+            if (!empty($fetchW['locationName'])) {
+                $loc = $fetchW['locationName'];
             }
             $ret .= "<td bgcolor=$colors[$cur]>".$loc.'</td>';
             $ret .= '<input type="hidden" class="batch-hidden-upc" value="' . $fetchW['upc'] . '" />';

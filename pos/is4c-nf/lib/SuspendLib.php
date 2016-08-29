@@ -21,11 +21,17 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
+use \CoreLocal;
+
 /**
   @class SuspendLib
   Functions related to suspend and resume transaction
 */
-class SuspendLib extends LibraryClass 
+class SuspendLib 
 {
 
 /**

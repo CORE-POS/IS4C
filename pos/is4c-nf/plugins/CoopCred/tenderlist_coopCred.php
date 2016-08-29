@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class tenderlist_coopCred extends NoInputCorePage 
@@ -165,6 +168,5 @@ class tenderlist_coopCred extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new tenderlist_coopCred();
+AutoLoader::dispatch();
 

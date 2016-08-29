@@ -47,7 +47,8 @@ class NewMemsByZipReport extends FannieReportPage
         } catch (Exception $ex) {
             return array();
         }
-        $args[] = FormLib::get('store', 0);
+        $store = FormLib::get('store', 0);
+        $args[] = $store;
 
         $dlog = DTransactionsModel::selectDLog($this->form->date1, $this->form->date2);
         $prep = $dbc->prepare('

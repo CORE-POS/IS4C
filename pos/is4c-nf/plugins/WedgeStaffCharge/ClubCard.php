@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\parser\Parser;
+
 class ClubCard extends Parser 
 {
     function check($str)

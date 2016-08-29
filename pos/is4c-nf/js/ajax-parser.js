@@ -3,7 +3,7 @@ var CORE_JS_PREFIX = "";
 function runParser(input_str,rel_prefix){
 	CORE_JS_PREFIX = rel_prefix;
 	$.ajax({
-		url: CORE_JS_PREFIX+'ajax-callbacks/AjaxParser.php',
+		url: CORE_JS_PREFIX+'ajax/AjaxParser.php',
 		type: 'GET',
 		data: "input="+input_str,
 		dataType: "json",
@@ -11,15 +11,14 @@ function runParser(input_str,rel_prefix){
 	}).done(parserHandler).fail(parserError);
 }
 
-function parserError()
+function parserError(xhr, statusText, err)
 {
+    errorLog.show(xhr, statusText, err);
 }
 
 function customerWindowHtml(selector, content)
 {
-    if (typeof customerWindow !== 'undefined' && $.isWindow(customerWindow)) {
-        customerWindow.$(selector).html(content);
-    }
+    CustomerDisplay.updateCustomerDisplay(selector, content);
 }
 
 function parserHandler(data)
@@ -27,11 +26,11 @@ function parserHandler(data)
 	if (data.main_frame){
 		window.location = data.main_frame;
 		return;
-	} else {
-		if (data.output) {
-			$(data.target).html(data.output);
-            customerWindowHtml(data.target, data.output);
-        }
+	}
+
+    if (data.output) {
+        $(data.target).html(data.output);
+        customerWindowHtml(data.target, data.output);
 	}
 
 	if (data.redraw_footer){
@@ -51,7 +50,7 @@ function parserHandler(data)
 
 	if (data.receipt){
 		$.ajax({
-			url: CORE_JS_PREFIX+'ajax-callbacks/AjaxEnd.php',
+			url: CORE_JS_PREFIX+'ajax/AjaxEnd.php',
 			type: 'GET',
 			data: 'receiptType='+data.receipt+'&ref='+data.trans_num,
 			dataType: 'json',

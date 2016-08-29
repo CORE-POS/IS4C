@@ -32,6 +32,9 @@
 
 */
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -62,12 +65,12 @@ class memlist extends NoInputCorePage
             $entered = substr($entered, 0, strlen($entered) - 2);
         }
 
-        return str_replace("'", '', $entered);
+        return strtoupper(str_replace("'", '', $entered));
     }
 
     private function runSearch($entered)
     {
-        $lookups = AutoLoader::ListModules('MemberLookup', True);
+        $lookups = AutoLoader::ListModules('COREPOS\\pos\\lib\\MemberLookup', True);
         $results = array();
         foreach ($lookups as $class) {
             if (!class_exists($class)) continue;
@@ -239,7 +242,7 @@ class memlist extends NoInputCorePage
     function head_content()
     {
         if (count($this->results) > 0) {
-            $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-div')\n");
+            $this->add_onload_command("selectSubmit('#reginput', '#selectform', '#filter-div')\n");
         } else {
             $this->default_parsewrapper_js('reginput','selectform');
         }

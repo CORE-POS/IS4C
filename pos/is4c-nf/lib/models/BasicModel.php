@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\models;
+use COREPOS\pos\lib\Database;
 
 if (!class_exists('AutoLoader')) {
     include(dirname(__FILE__) . '/../AutoLoader.php');
@@ -59,9 +60,9 @@ class BasicModel extends \COREPOS\common\BasicModel
     public function setConnectionByName($db_name)
     {
         if ($db_name == \CoreLocal::get('pDatabase')) {
-            $this->connection = \Database::pDataConnect();
+            $this->connection = Database::pDataConnect();
         } else if ($db_name == \CoreLocal::get('tDatabase')) {
-            $this->connection = \Database::tDataConnect();
+            $this->connection = Database::tDataConnect();
         } else {
             /**
               Allow for db other than main ones, e.g. for a plugin.

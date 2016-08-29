@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\LocalStorage\LaneCache;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+use \Exception;
+
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     *  3Feb2015 Eric Lee New function logger(), anticipate change to uploadCC().
@@ -33,8 +39,8 @@
   @class Database
   Functions related to the database
 */
-class Database extends LibraryClass {
-
+class Database 
+{
 
 /***********************************************************************************************
 
@@ -237,7 +243,7 @@ static public function getsubtotals()
        view is deprecated we can revisit how these two
        session variables should behave.
     */
-    $taxes = Database::LineItemTaxes();
+    $taxes = self::LineItemTaxes();
     $taxTTL = 0.00;
     $exemptTTL = 0.00;
     foreach($taxes as $tax) {
@@ -287,7 +293,7 @@ static public function getsubtotals()
 */
 static public function LineItemTaxes()
 {
-    $dbc = Database::tDataConnect();
+    $dbc = self::tDataConnect();
     $taxQ = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
         FROM taxView ORDER BY taxrate DESC";
     $taxR = $dbc->query($taxQ);
@@ -801,7 +807,7 @@ static public function rotateTempData()
         $connection->query("insert into localtrans_today select * from localtemptrans");
     }
 
-    $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
+    $cols = self::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
     $ret = $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
 
     /**
@@ -854,7 +860,7 @@ static public function clearTempTables()
  */
 static public function logger($msg="")
 {
-    $connection = Database::tDataConnect();
+    $connection = self::tDataConnect();
 
     if (method_exists($connection, 'logger')) {
         $ret = $connection->logger($msg);

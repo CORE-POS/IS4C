@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TotalActions\TotalAction;
+
 /**
   @class WicTotalAction
 */
@@ -33,8 +36,6 @@ class WicTotalAction extends TotalAction
             $dbc->query('
                 UPDATE localtemptrans
                 SET discountable=0
-                WHERE department NOT IN (41, 42, 156, 201, 204, 208)
-                    AND department NOT BETWEEN 509 AND 557
             ');
         }
     }

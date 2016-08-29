@@ -88,7 +88,17 @@ class ObfWeeklyReport extends FannieReportPage
         $start_ts = strtotime($week->startDate());
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
 
-        return array('Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts));
+        $store = FormLib::get('store');
+        $prev = $this->form->weekID - 1;
+        $next = $this->form->weekID + 1;
+        $other = $store == 1 ? 2 : 1;
+
+        return array(
+            'Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts) . '<br />',
+            "<a href=\"?weekID={$prev}&store={$store}\">Prev Week</a> 
+            | <a href=\"?weekID={$next}&store={$store}\">Next Week</a>
+            | <a href=\"?weekID={$this->form->weekID}&store={$other}\">Other Store</a>",
+        );
     }
 
     protected function initTotalSales()
@@ -199,10 +209,10 @@ class ObfWeeklyReport extends FannieReportPage
         return $average_wage;
     }
 
-    protected function projectHours($category, $dept_proj, $dept_trend)
+    protected function projectHours($splhGoal, $dept_proj, $dept_trend)
     {
-        $proj_hours = $dept_proj / $category->salesPerLaborHourTarget();
-        $trend_hours = $dept_trend / $category->salesPerLaborHourTarget();
+        $proj_hours = $dept_proj / $splhGoal;
+        $trend_hours = $dept_trend / $splhGoal;
 
         return array($proj_hours, $trend_hours);
     }
@@ -959,7 +969,7 @@ class ObfWeeklyReport extends FannieReportPage
             $sales->save();
         }
 
-        if (count($num_cached) == 0) {
+        if (count($num_cached[1]) == 0) {
             /**
               Now lookup year-over-year info
               Since it examines a whole month rather than a single
@@ -980,7 +990,7 @@ class ObfWeeklyReport extends FannieReportPage
             foreach (array(1,2) as $storeID) {
                 $tArgs = array_merge($args, array($storeID)); 
                 $transR = $dbc->execute($transP, $tArgs);
-                if (!$future && $transR) {
+                if ($transR) {
                     $month_trans = $dbc->numRows($transR);
                     $avg_trans = ($month_trans / $num_days) * 7;
                     $trans_info[$storeID] = $avg_trans;
@@ -1014,7 +1024,7 @@ class ObfWeeklyReport extends FannieReportPage
             }
 
             /** plugged new store numbers **/
-            foreach (array(7, 8, 9) as $catID) {
+            foreach (array(1, 2, 3, 7, 8, 9) as $catID) {
                 $sales->lastYearTransactions($trans_info[2]);
                 $sales->obfCategoryID($catID);
                 if ($future) {
@@ -1026,44 +1036,83 @@ class ObfWeeklyReport extends FannieReportPage
                         $sales->growthTarget($l->growthTarget());
                     }
                 }
-                if ($catID == 7) {
+                if ($catID == 1) {
                     $sales->superID(6);
-                    $sales->lastYearSales(25576.85);
+                    $sales->lastYearSales(54178.24);
+                    $sales->save();
+                } elseif ($catID == 2) {
+                    $sales->superID(10); 
+                    $sales->lastYearSales(10778.62);
+                    $sales->save();
+                    $sales->superID(11); 
+                    $sales->lastYearSales(35928.54);
+                    $sales->save();
+                    $sales->superID(16); 
+                    $sales->lastYearSales(13173.87);
+                    $sales->save();
+                } elseif ($catID == 3) {
+                    $sales->superID(1); 
+                    $sales->lastYearSales(27089.13);
+                    $sales->save();
+                    $sales->superID(4); 
+                    $sales->lastYearSales(61306.97);
+                    $sales->save();
+                    $sales->superID(5); 
+                    $sales->lastYearSales(23524.77);
+                    $sales->save();
+                    $sales->superID(7); 
+                    $sales->lastYearSales(285.16);
+                    $sales->save();
+                    $sales->superID(8); 
+                    $sales->lastYearSales(17108.92);
+                    $sales->save();
+                    $sales->superID(9); 
+                    $sales->lastYearSales(2566.35);
+                    $sales->save();
+                    $sales->superID(13); 
+                    $sales->lastYearSales(15683.19);
+                    $sales->save();
+                    $sales->superID(17); 
+                    $sales->lastYearSales(26376.25);
+                    $sales->save();
+                } elseif ($catID == 7) {
+                    $sales->superID(6);
+                    $sales->lastYearSales(0.92*25576.85);
                     $sales->save();
                 } elseif ($catID == 8) {
                     $sales->superID(10); 
-                    $sales->lastYearSales(5088.447);
+                    $sales->lastYearSales(0.92*5088.447);
                     $sales->save();
                     $sales->superID(11); 
-                    $sales->lastYearSales(16961.49);
+                    $sales->lastYearSales(0.92*16961.49);
                     $sales->save();
                     $sales->superID(16); 
-                    $sales->lastYearSales(6219.213);
+                    $sales->lastYearSales(0.92*6219.213);
                     $sales->save();
                 } elseif ($catID == 9) {
                     $sales->superID(1); 
-                    $sales->lastYearSales(12788.43);
+                    $sales->lastYearSales(0.92*12788.43);
                     $sales->save();
                     $sales->superID(4); 
-                    $sales->lastYearSales(28942.23);
+                    $sales->lastYearSales(0.92*28942.23);
                     $sales->save();
                     $sales->superID(5); 
-                    $sales->lastYearSales(11105.74);
+                    $sales->lastYearSales(0.92*11105.74);
                     $sales->save();
                     $sales->superID(7); 
-                    $sales->lastYearSales(134.62);
+                    $sales->lastYearSales(0.92*134.62);
                     $sales->save();
                     $sales->superID(8); 
-                    $sales->lastYearSales(8076.90);
+                    $sales->lastYearSales(0.92*8076.90);
                     $sales->save();
                     $sales->superID(9); 
-                    $sales->lastYearSales(1211.54);
+                    $sales->lastYearSales(0.92*1211.54);
                     $sales->save();
                     $sales->superID(13); 
-                    $sales->lastYearSales(7403.83);
+                    $sales->lastYearSales(0.92*7403.83);
                     $sales->save();
                     $sales->superID(17); 
-                    $sales->lastYearSales(12451.89);
+                    $sales->lastYearSales(0.92*12451.89);
                     $sales->save();
                 }
             }

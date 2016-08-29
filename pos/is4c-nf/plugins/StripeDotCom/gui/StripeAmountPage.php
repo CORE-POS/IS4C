@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class StripeAmountPage extends BasicCorePage 
@@ -116,5 +118,5 @@ class StripeAmountPage extends BasicCorePage
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new StripeAmountPage();
+AutoLoader::dispatch();
+

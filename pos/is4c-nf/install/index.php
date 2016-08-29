@@ -22,15 +22,16 @@
     DHermann test
 *********************************************************************************/
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
 use COREPOS\pos\install\db\Creator;
+use COREPOS\pos\install\InstallUtilities;
 
 ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('InstallUtilities.php');
 $form = new FormFactory(null);
 ?>
 <html>
@@ -51,7 +52,7 @@ body {
 <form action=index.php method=post>
 
 <div class="alert"><?php Conf::checkWritable('../ini.json', false, 'JSON'); ?></div>
-<div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.php', true, 'PHP'); ?></div>
 
 PHP is running as: <?php echo Conf::whoami(); ?><br />
 <?php
