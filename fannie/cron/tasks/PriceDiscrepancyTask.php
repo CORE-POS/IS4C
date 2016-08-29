@@ -57,6 +57,7 @@ class PriceDiscrepancyTask extends FannieTask
     
     private function deptTask($dbc)
     {
+        /*
         $itemA = array();
         $itemB = array();
 
@@ -108,17 +109,22 @@ class PriceDiscrepancyTask extends FannieTask
                 if ($department != $itemB[$upc]) $count++;
             }
         }
-
+        */
+        $diffR = $dbc->query("
+            SELECT upc
+            FROM products
+            GROUP BY upc
+            HAVING MIN(department) <> MAX(department)
+        ");
+        $count = $dbc->numRows($diffR);
         $msg = "";
         if ($count > 0 ) {
             $msg = $count . " department discrepancies were discovered\n";
-            foreach ($itemA as $upc => $department)  {
-                $link = "http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=" . $upc . "\t";
-                if ($department != $itemB[$upc]) {
-                    $msg .=  $link . $department . "\t" . $itemB[$upc] . "\n";
-                }
+            $host = $this->config->get('HTTP_HOST');
+            $baseURL = $this->config->get('URL');
+            while ($row = $dbc->fetchRow($diffR)) {
+                $msg .= "{$host}{$baseURL}/item/ItemEditorPage.php?searchupc=" . $row['upc'] . "\n";
             }
-            
         }
 
         return $msg;
