@@ -119,11 +119,11 @@ class PriceDiscrepancyTask extends FannieTask
         $count = $dbc->numRows($diffR);
         $msg = "";
         if ($count > 0 ) {
-            $msg = $count . " department discrepancies were discovered\n";
+            $msg = "\n" . $count . " department discrepancies were discovered\n";
             $host = $this->config->get('HTTP_HOST');
             $baseURL = $this->config->get('URL');
             while ($row = $dbc->fetchRow($diffR)) {
-                $msg .= "{$host}{$baseURL}/item/ItemEditorPage.php?searchupc=" . $row['upc'] . "\n";
+                $msg .= "http://{$host}{$baseURL}item/ItemEditorPage.php?searchupc=" . $row['upc'] . "\n";
             }
         }
 
