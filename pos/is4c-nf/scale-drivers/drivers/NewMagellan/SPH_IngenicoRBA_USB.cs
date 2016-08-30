@@ -180,9 +180,11 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
     { 
         // needs changes for mono. Async probably still doesn't work.
         GetHandle();
+        WriteMessageToDevice(UnitDataMessage());
+        WriteMessageToDevice(SetAllowedPaymentTypes());
+        //WriteMessageToDevice(OnlineMessage());
+        //WriteMessageToDevice(SwipeCardScreen());
         AsyncRead();
-        WriteMessageToDevice(OnlineMessage());
-        WriteMessageToDevice(SwipeCardScreen());
     }
 
     public override void WriteMessageToDevice(byte[] msg)
@@ -210,6 +212,7 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
         try {
             input = (byte[])iar.AsyncState;
             usb_fs.EndRead(iar);
+        } catch (TimeoutException){ //We don't care if it times out.
         } catch(Exception ex){
             System.Console.WriteLine("EndRead exception:");
             System.Console.WriteLine(ex);
@@ -231,6 +234,7 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
             if (input.Length > 3 && input[2] == 0x6) { // ACK 0x1 0x1 0x6
                 last_message = null;
                 System.Console.WriteLine("ACK : DEVICE");
+                if(sendUpdate==true) {WriteMessageToDevice(ShowCardButtonsMessage());}
             } else if (input.Length > 3 && input[2] == 0x15) { // NACK 0x1 0x1 0x15
                 System.Console.WriteLine("NACK : DEVICE");
                 // resend message?
@@ -311,6 +315,8 @@ public class SPH_IngenicoRBA_USB : SPH_IngenicoRBA_Common
         /**
          * Widen message by one byte to add LRC
          */
+        System.Console.WriteLine("OUT BYTES:");
+
         byte[] msg = new byte[b.Length+1];
         for (int i=0; i < b.Length; i++) {
             msg[i] = b[i];

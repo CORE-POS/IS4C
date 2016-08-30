@@ -233,6 +233,8 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
     private string masked_pan = "";
 
     private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
+    public bool sendUpdate = false;
+
 
     // spacing matters on these
     protected const string EBT_CA = "1 0 4  0  14 10000 1 1 1 0      0 132 0 1 0 D 0 0 406";
@@ -295,8 +297,15 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
 
         int code = ((buffer[1]-0x30)*10) + (buffer[2]-0x30);
         switch (code) {
-            case 1: break;     // online response from device
+            case 1: // moved this intial card swipe screen until after the device lets us know it is online ~RO
+                WriteMessageToDevice(SwipeCardScreen());
+                break;     // online response from device
+            
             case 4: break;     // set payment response from device
+
+            case 7: //I added this function because this is how the Ingenico Ultilites start a terminal. ~RO
+                WriteMessageToDevice(OnlineMessage());
+                break;
 
             case 11:    
                 // status response from device
@@ -335,6 +344,7 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
                 }
                 if (auto_state_change) {
                     WriteMessageToDevice(GetCardType());
+                    sendUpdate = true;
                 }
                 break;
 
@@ -440,6 +450,7 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
             WriteMessageToDevice(StatusRequestMessage());
         } else if (!auto_state_change && !getting_signature && (msg == "termGetType" || msg == "termGetTypeWithFS")) {
             WriteMessageToDevice(GetCardType());
+            sendUpdate = true;
         } else if (!auto_state_change && !getting_signature && msg == "termWait") {
             WriteMessageToDevice(TermWaitScreen());
         } else if (!auto_state_change && !getting_signature && msg == "termApproved") {
@@ -945,6 +956,105 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
     protected byte[] SaveStateMessage()
     {
         return new byte[6]{ 0x2, 0x33, 0x34, 0x2e, 0x53, 0x3 };
+    }
+
+    protected byte[] SetAllowedPaymentTypes() {
+        //09.1111100000000000
+        //30 39 2e 31 31 31 31 31 30 30 30 30 30 30 30 30 30 30 30
+        byte [] msg = new byte[21];
+        msg[0] = 0x2; //STX
+        msg[1] = 0x30; //0
+        msg[2] = 0x39; //9
+        msg[3] = 0x2e; //.
+        msg[4] = 0x31; //1
+        msg[5] = 0x31;
+        msg[6] = 0x31;
+        msg[7] = 0x31;
+        msg[8] = 0x31;
+        msg[9] = 0x30; //0
+        msg[10] = 0x30;
+        msg[11] = 0x30;
+        msg[12] = 0x30;
+        msg[13] = 0x30;
+        msg[14] = 0x30;
+        msg[15] = 0x30;
+        msg[16] = 0x30;
+        msg[17] = 0x30;
+        msg[18] = 0x30;
+        msg[19] = 0x30;
+        msg[20] = 0x3; //ETX
+
+        return msg;
+    }
+
+    protected byte[] ShowCardButtonsMessage() {
+        //this is a speical update screen message to tell an isc250 to show the buttons on the card select screen.
+        //System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+        //string[] buttons = new string[5] {"BBTNA,S","BBTNB,S","BBTNC,S","BBTND,S","BBTND,S"};
+        //byte[] encode = enc.GetBytes(buttons[0]);
+        sendUpdate = false;
+ 
+
+        //70.BBTNA
+        //37 30 2e 42 42 54 4e 41 2c 53 
+
+        byte[] msg = new byte[12];
+
+        msg[0] = 0x2;
+        msg[1] = 0x37;
+        msg[2] = 0x30;
+        msg[3] = 0x2e;
+        msg[4] = 0x42;
+        msg[5] = 0x42;
+        msg[6] = 0x54;
+        msg[7] = 0x4e;
+        msg[8] = 0x41;
+        msg[9] = 0x2c;
+        msg[10] = 0x53;
+        msg[11] = 0x03;
+
+        /*
+        msg[11] = 0x65;
+        msg[12] = 0x62;
+        msg[13] = 0x69;
+        msg[14] = 0x74;
+        msg[15] = 0x1c;
+        msg[16] = 0x42;
+        msg[17] = 0x42;
+        msg[18] = 0x54;
+        msg[19] = 0x4e;
+        msg[20] = 0x41;
+        msg[21] = 0x2c;
+        msg[22] = 0x53;
+        msg[23] = 0x3;
+        */
+
+        /*
+        int pos = 4;
+        foreach (string s in buttons) {
+            encode = enc.GetBytes(s);
+            foreach (byte b in encode) {
+                msg[pos] = b;
+                pos++;
+            }
+            msg[pos] = 0x1c;
+            pos++;
+        }
+
+        msg[pos] = 0x3;
+        */
+        return msg;
+
+    }
+
+    protected byte[] UnitDataMessage() {
+        byte[] msg = new byte[5];
+        msg[0] = 0x2;
+        msg[1] = 0x30;
+        msg[2] = 0x37;
+        msg[3] = 0x2e;
+        msg[4] = 0x3;
+        return msg;
     }
 
     protected byte[] UpdateScreenMessage(string update)
