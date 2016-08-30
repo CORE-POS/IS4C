@@ -32,7 +32,7 @@ class ECheckVerifyPage extends NoInputCorePage
         $amount = $_REQUEST['amount'];
         if (isset($_REQUEST['selectlist'])) {
             $opt = $_REQUEST['selectlist'];
-            if ($opt == '' || $opt == 'CL') {
+            if ($opt == '' || strtoupper($opt) == 'CL') {
                 CoreLocal::set('lastRepeat', '');
                 $this->change_page($this->page_url."gui-modules/pos2.php");
 

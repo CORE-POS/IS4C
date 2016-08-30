@@ -33,8 +33,6 @@ fannie/locale/*.pot
 *.exe
 fannie/INSTALL
 vendor
-composer.json
-composer.lock
 !pos/is4c-nf/scale-drivers/drivers/NewMagellan/.paket/paket.bootstrapper.exe
 TestPage
 saveTestInfo.php

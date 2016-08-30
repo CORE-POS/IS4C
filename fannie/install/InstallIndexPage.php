@@ -552,6 +552,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         //Use I18N language codes.
         $langs = array("en"=>"English", "fr"=>"French", "sp"=>"Spanish");
         echo installSelectField('FANNIE_LANGUAGE', $FANNIE_LANGUAGE, $langs, '');
+        
+        echo '<br />Week Start Date:  ';
+        $weekStartDay = array("7"=>"Sunday","1"=>"Monday","2"=>"Tuesday","3"=>"Wednesday","4"=>"Thursday",
+            "5"=>"Friday","6"=>"Saturday");
+        echo installSelectField('FANNIE_WEEK_START', $FANNIE_WEEK_START, $weekStartDay, '1');
+        
         ?>
         <hr />
         <h4 class="install">Back Office Transactions</h4>

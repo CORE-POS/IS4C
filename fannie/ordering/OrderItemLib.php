@@ -226,7 +226,7 @@ class OrderItemLib
         }
 
         if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
-            && ($item['priceRuleTypeID'] == 6 || $item['priceRuleTypeID'] == 7 || $item['priceRuleTypeID'] == 8)) {
+            && ($prodW['priceRuleTypeID'] == 6 || $prodW['priceRuleTypeID'] == 7 || $prodW['priceRuleTypeID'] == 8)) {
             $ret['discountable'] = 0;
         }
 
@@ -276,7 +276,9 @@ class OrderItemLib
     */
     public static function getEffectiveUnit($item, $is_member)
     {
-        if ($item['stocked']) {
+        if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
+            return $item['special_price'];
+        } elseif ($item['stocked']) {
             return self::stockedUnitPrice($item, $is_member);
         } else {
             return self::notStockedUnitPrice($item, $is_member);
@@ -328,7 +330,7 @@ class OrderItemLib
     /**
       Decide if the sale price be used for this item
     */
-    private static function useSalePrice($item, $is_member)
+    public static function useSalePrice($item, $is_member)
     {
         /**
           @Configurability: need to be able to turn off sale

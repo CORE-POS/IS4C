@@ -173,10 +173,10 @@ class SpecialOrderTags extends FannieRESTfulPage
                 $pdf->Image($qrImg, $posX+60, $posY+93);
                 unlink($qrImg);
             }
-            */
 
             $pdf->SetXY($posX,$posY+115);
             $pdf->Cell(90,10,"Re-Order: $reorder_url", 0, 0, 'C');
+            */
 
             $count++;
         }

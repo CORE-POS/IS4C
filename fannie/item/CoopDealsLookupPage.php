@@ -124,7 +124,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
-				<input type="submit" class="btn btn-default" value="go">
+                <input type="submit" class="btn btn-default" value="go">
             </form>
         ';
         $dbc = FannieDB::get('woodshed_no_replicate');
@@ -219,7 +219,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="form-inline">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
-				<input type="submit" class="btn btn-default" value="go">
+                <input type="submit" class="btn btn-default" value="go">
             </form>
             <a class="btn btn-default" href="http://192.168.1.2/scancoord/SaleChangeScanner.php">
             Back to Sign info<br>Scanner</a><br><br>
@@ -230,18 +230,18 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
     function get_view() 
     {
-		$curMonth = date('M');
-		if($curMonth == 'Jul') {
-			$curMonth = 'July';
-		} elseif($curMonth == 'Jun') {
-			$curMonth = 'June';
-		} 
-		
+        $curMonth = date('M');
+        if($curMonth == 'Jul') {
+            $curMonth = 'July';
+        } elseif($curMonth == 'Jun') {
+            $curMonth = 'June';
+        } 
+        
         return '
-			<form method="get" name="useCurMo" class="form-inline">
-				<input type="hidden" name="month" value="' . $curMonth . '">
-				<input type="submit" class="btn btn-default" value="Use Current Month">
-			</form><br>
+            <form method="get" name="useCurMo" class="form-inline">
+                <input type="hidden" name="month" value="' . $curMonth . '">
+                <input type="submit" class="btn btn-default" value="Use Current Month">
+            </form><br>
 
             <form method="get" name="id-form" class="form-inline">
                 or <label>Select a Month</label><br>

@@ -38,59 +38,54 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
     function preprocess()
     {   
         $this->__routes[] = 'get<dept>';
-        $this->__routes[] = 'get<dept><update>';
+        $this->__routes[] = 'post<dept><update>';
         return parent::preprocess();
     }
     
-    public function get_dept_update_view()
+    public function post_dept_update_view()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $item = new ProductsModel($dbc);
-        $data = array();        
+
+        $upcs = FormLib::get('upc');
+        $depts = FormLib::get('deptno');
+        $taxes = FormLib::get('tax');
+        $foods = FormLib::get('foodstamp');
+        $wics = FormLib::get('wic');
         $ret = array('error'=>NULL,'error_msg'=>NULL);
-        $lastUPC = '';
-        foreach ($_GET as $key => $value) {
-            //  $key . " :: " . $value . '<br>';
-            //$upc = substr($key,0,4);
-            for ($i=1;$i<3;$i++) {
-                unset($ret);
-                $item->store_id($i);
-                if (substr($key,0,4) == 'dept') {
-                    $item->upc(substr($key,4));
-                    $item->department($value);
-                } elseif (substr($key,0,3) == 'tax') {
-                    $item->tax($value);
-                } elseif (substr($key,0,9) == 'foodstamp') {
-                    $item->foodstamp($value);
-                } elseif (substr($key,0,3) == 'wic') {
-                    $item->wicable($value);
-                } elseif ($key == 'update' || $key == 'dept') {   
-                    continue;
-                } else {
+        $prodP = $dbc->prepare('
+            UPDATE products
+            SET department=?,
+                tax=?,
+                foodstamp=?,
+                wicable=?,
+                modified=' . $dbc->now() . '
+            WHERE upc=?');
+        for ($i=0; $i<count($upcs); $i++) {
+            if ($ret['error'] == 0) {
+                $args = array(
+                    $depts[$i],
+                    $taxes[$i],
+                    $foods[$i],
+                    $wics[$i],
+                    $upcs[$i],
+                );
+                $saved = $dbc->execute($prodP, $args);
+                if (!$saved) {
                     $ret['error'] = 1;
-                    $ret['error_msg'] = 'Unknown field';
-                }
-                
-                if ($ret['error'] == 0) {
-                    $saved = $item->save();
-                    if (!$saved) {
-                        $ret['error'] = 1;
-                        $ret['error_msg'] = 'Save failed';
-                    } else {
-                        if ($lastUPC != $item->upc() && strlen($item->upc()) == 13) echo '<span class="text-success">' . $item->upc() . ' successfully updated.</span><br>';
-                        $lastUPC = $item->upc();
-                    }
+                    $ret['error_msg'] = 'Save failed';
                 } else {
-                    echo '<span class="text-danger">Data Did Not Save</span>';
-                }        
+                    echo '<span class="text-success">' . $upcs[$i] . ' successfully updated.</span><br>';
+                }
+            } else {
+                echo '<span class="text-danger">Data Did Not Save</span>';
             }
-            
         }
         
-        echo '<a class="btn btn-default" href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php">Back</a><br><br>';
-        
+        echo '<a class="btn btn-default" href="DepartmentDiscrepancyNew.php">Back</a><br><br>';
 
+        $update = new ProdUpdateModel($dbc);
+        $update->logManyUpdates($upcs, 'EDIT');
     }
     
     public function get_dept_view()
@@ -149,7 +144,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
         ');
         $result = $dbc->execute($query, $args);
         $ret .= '
-            <table class="table table-condensed small"><form method="get" class="form-inline">
+            <table class="table table-condensed small"><form method="post" class="form-inline">
                 <thead>
                     <th>UPC</th>
                     <th>Brand</th>
@@ -163,7 +158,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
         while ($row = $dbc->fetch_row($result)) {
             $upc[] = $row['upc'];
             $ret .= '<tr>';
-            $ret .= '<td><a href="http://key/git/fannie/item/ItemEditorPage.php?searchupc=' 
+            $ret .= '<td><a href="ItemEditorPage.php?searchupc=' 
                 . $row['upc'] . '" target="_blank">' . $row['upc'] . '</a></td>';
             
             if (isset($row['longBrand']) && $row['longBrand'] != '') {
@@ -177,7 +172,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                 $ret .= '<td>' . $row['description'] . '</td>';
             }
             
-            $ret .= '<td><select style="height:20px; width:150px" name="dept' . $row['upc'] . '">';
+            $ret .= '<td><select style="height:20px; width:150px" name="deptno[]">';
             
             foreach ($dept as $department_no => $department_name) {
                 $ret .= '<option value="' . $department_no . '"';
@@ -198,7 +193,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
             } else {
                 $color = 'info';
             }
-            $ret .= '<td><select style="height:20px;width:150px" class="alert-' . $color . '" name="tax' . $row['upc'] . '">';
+            $ret .= '<td><select style="height:20px;width:150px" class="alert-' . $color . '" name="tax[]">';
             $ret .= '<option value="0"';
             if ($tax == 0) {
                 $ret .= ' selected>No Tax</option>';
@@ -225,7 +220,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
             } else {
                 $color = 'success';
             }
-            $ret .= '<td><select style="height:20px;width:150px" class="alert-' . $color . '" name="foodstamp' . $row['upc'] . '">';
+            $ret .= '<td><select style="height:20px;width:150px" class="alert-' . $color . '" name="foodstamp[]">';
             $ret .= '<option value="0"';
             if ($foodstamp == 0) {
                 $ret .= ' selected>No - foodstamp</option>';
@@ -247,7 +242,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
             } else {
                 $color = 'success';
             }
-            $ret .= '<td><select style="height:20px;width:150px" class="alert-' . $color . '" name="wic' . $row['upc'] . '">';
+            $ret .= '<td><select style="height:20px;width:150px" class="alert-' . $color . '" name="wic[]">';
             $ret .= '<option value="0"';
             if ($wic == 0) {
                 $ret .= '" selected>No - wic</option>';
@@ -261,10 +256,10 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                 $ret .= '>Yes - wic</option>';                
             }
             $ret .= '</select></td>';
-            //$ret .= '<td><input type="hidden" name="upc" value="' . $row['upc'] . '"></td>';
+            $ret .= '<td><input type="hidden" name="upc[]" value="' . $row['upc'] . '"></td>';
               
         }
-        $ret .= '<a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php">Back</a><br><br>';
+        $ret .= '<a href="DepartmentDiscrepancyNew.php">Back</a><br><br>';
         $ret .= '</tr><tr><td><input type="submit" class="btn btn-default" 
             value="Update Products"></td>';
         $ret .= '</table>
@@ -301,7 +296,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
         }
         foreach ($dept as $dept_no => $dept_name) {
             $ret .= '<tr>';
-            $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no='
+            $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no='
                 . $dept_no . '&dept_name=' . $dept_name . '&order=department">' . $dept_no . ' ' . $dept_name . '</a></td>';            
             $queryD = $dbc->prepare('
                 SELECT 
@@ -335,7 +330,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                         $k = '<span class="redcircle"><b>' . $k . '</b></span>';
                     }
                 }
-                $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=tax">' . $i . ' ' . $j . ' ' . $k . '</a></td>'; //Tax
                 
                 unset($k);                    
@@ -350,7 +345,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                 } elseif ($min == $j && $i != 0) {
                     $j = '<span class="redcircle"><b>' . $j . '</b></span>';
                 }
-                $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=foodstamp">' . $i . ' ' . $j . '</a></td>'; //Foodstamp
                 
                 unset($k);                    
@@ -365,7 +360,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                 } elseif ($min == $j && $i != 0) {
                     $j = '<span class="redcircle"><b>' . $j . '</b></span>';
                 }
-                $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=wic">' . $i . ' ' . $j . '</a></td>'; //Wic
                    
             }
@@ -439,9 +434,9 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
         if ($count > 0 ) {
             $msg = $count . " department discrepancies were discovered<br>";
             foreach ($itemA as $upc => $department)  {
-                $link = "<http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=" . $upc . "&nbsp";
+                $link = "<a href=ItemEditorPage.php?searchupc=" . $upc . "&nbsp";
                 if ($department != $itemB[$upc]) {
-                    $msg .=  $link . $department . "&nbsp" . $itemB[$upc] . "<br>";
+                    $msg .=  $link . $department . "&nbsp" . $itemB[$upc] . "</a><br>";
                 }
             }
             

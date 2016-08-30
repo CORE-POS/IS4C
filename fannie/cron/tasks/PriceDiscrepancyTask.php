@@ -57,6 +57,7 @@ class PriceDiscrepancyTask extends FannieTask
     
     private function deptTask($dbc)
     {
+        /*
         $itemA = array();
         $itemB = array();
 
@@ -108,17 +109,22 @@ class PriceDiscrepancyTask extends FannieTask
                 if ($department != $itemB[$upc]) $count++;
             }
         }
-
+        */
+        $diffR = $dbc->query("
+            SELECT upc
+            FROM products
+            GROUP BY upc
+            HAVING MIN(department) <> MAX(department)
+        ");
+        $count = $dbc->numRows($diffR);
         $msg = "";
         if ($count > 0 ) {
-            $msg = $count . " department discrepancies were discovered\n";
-            foreach ($itemA as $upc => $department)  {
-                $link = "<http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=" . $upc . "\t";
-                if ($department != $itemB[$upc]) {
-                    $msg .=  $link . $department . "\t" . $itemB[$upc] . "\n";
-                }
+            $msg = "\n" . $count . " department discrepancies were discovered\n";
+            $host = $this->config->get('HTTP_HOST');
+            $baseURL = $this->config->get('URL');
+            while ($row = $dbc->fetchRow($diffR)) {
+                $msg .= "http://{$host}{$baseURL}item/ItemEditorPage.php?searchupc=" . $row['upc'] . "\n";
             }
-            
         }
 
         return $msg;
@@ -164,20 +170,16 @@ class PriceDiscrepancyTask extends FannieTask
         
         $msg = "";
         foreach ($item as $key => $row) {
-            $link = "<http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=" . $key . "\t";
+            $link = "http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=" . $key . "\t";
             $msg .= $link . $row['desc'] . "\t" . $row['priceA'] . "\t" . $row['priceB'] . "\n";
         }
 
         
         if($item) {
             $msg .= "\n";
-            //  Replace this link with the link to the Fannie Page once it exists.
             $msg .= 'To make Corrections, visit ';
-            $link = "http://" . $this->config->get("HTTP_HOST") . $this->config->get("URL")
+            $msg .= "http://" . $this->config->get("HTTP_HOST") . $this->config->get("URL")
                 . "fannie/item/PriceDiscrepancyScanner/PriceDiscrepancyPage.php";
-            //$msg = wordwrap($msg, 10, '\n');
-            //$msg = str_replace('\n', '', $msg);
-            //mail($this->config->get('ADMIN_EMAIL'), count($item) . ' Price Discrepancies found in POS', $msg, 'From: ' . $this->config->get('ADMIN_EMAIL'));
         }
         
         return $msg;
