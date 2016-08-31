@@ -276,7 +276,7 @@ class AutoLoader extends LibraryClass
         while($dir && ($file=readdir($dir)) !== false) {
             if ($file[0] == ".") continue;
 
-            $fullname = $path . DIRECTORY_SEPARATOR . $file);
+            $fullname = $path . DIRECTORY_SEPARATOR . $file;
             if (is_dir($fullname) && !in_array($file, $exclude)) {
                 self::recursiveLoader($fullname, $map);
             } else if (substr($file,-4) == '.php') {
