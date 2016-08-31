@@ -197,7 +197,7 @@ class AutoLoader extends LibraryClass
 
             ob_start();
             $ns_class = self::fileToFullClass($file);
-            if (class_exists($ns_class)) {
+            if (!class_exists($name, false) && class_exists($ns_class)) {
                 $name = $ns_class;
             } elseif (!class_exists($name)) { 
                 ob_end_clean();
