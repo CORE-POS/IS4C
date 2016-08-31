@@ -67,10 +67,11 @@ class AjaxParser extends AjaxCallback
         foreach ($preChain as $cn){
             if (!class_exists($cn)) continue;
             $pre = new $cn();
-            if ($pre->check($entered))
+            if ($pre->check($entered)) {
                 $entered = $pre->parse($entered);
                 if (!$entered || $entered == "")
                     break;
+            }
         }
 
         return $entered;
