@@ -80,7 +80,7 @@ class LaneCache
     public static function flush()
     {
         self::init();
-        self::$intance->commit();
+        self::$instance->commit();
     }
 }
 
