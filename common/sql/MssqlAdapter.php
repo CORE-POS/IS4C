@@ -46,9 +46,9 @@ class MssqlAdapter implements DialectAdapter
         if ($dbc->numRows($result) > 0) {
             $row = $dbc->fetchRow($result);
             return $row[0];
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function defaultDatabase()
@@ -58,14 +58,13 @@ class MssqlAdapter implements DialectAdapter
 
     public function temporaryTable($name, $source_table)
     {
+        $tname = '#' . $name;
         if (strstr($name, '.dbo.')) {
-            list($schema, $table) = explode('.dbo.', $name, 2);
-            $name = $schema . '.dbo.#' . $name;
-        } else {
-            $name = '#' . $name;
+            list($schema, ) = explode('.dbo.', $name, 2);
+            $tname = $schema . '.dbo.#' . $name;
         }
         return '
-            CREATE TABLE ' . $name . '
+            CREATE TABLE ' . $tname . '
             LIKE ' . $source_table;
     }
 
