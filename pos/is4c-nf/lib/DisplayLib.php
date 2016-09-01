@@ -159,6 +159,7 @@ static public function plainmsg($strmsg)
   This function will include the header
   printheaderb(). 
 */
+    // @hintable
 static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array()) 
 {
     $ret = self::printheaderb();
@@ -215,6 +216,7 @@ static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array())
 
   An alias for msgbox().
 */
+    // @hintable
 static public function xboxMsg($strmsg, $buttons=array()) 
 {
     return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif", false, $buttons);
@@ -230,6 +232,7 @@ static public function xboxMsg($strmsg, $buttons=array())
 
   An alias for msgbox().
 */
+    // @hintable
 static public function boxMsg($strmsg, $header="", $noBeep=false, $buttons=array()) 
 {
     $default = CoreLocal::get('alertBar');
@@ -330,6 +333,7 @@ static private function itemOnClick($trans_id)
    (or touchscreen).
   @return An HTML string
 */
+    // @hintable
 static public function printItem($fields, $trans_id=-1) 
 {
     $onclick = self::itemOnClick($trans_id);
@@ -371,6 +375,7 @@ static public function printItem($fields, $trans_id=-1)
   - 000000 => totalLine
   - 800080 => fsLine
 */
+    // @hintable
 static public function printItemColor($color, $fields, $trans_id=-1) 
 {
     $onclick = self::itemOnClick($trans_id);
@@ -428,6 +433,7 @@ private static function colorToCSS($color, $text=true)
   - 000000 => totalArea
   - 800080 => fsArea
 */
+    // @hintable
 static public function printItemColorHilite($color, $fields)
 {
     $total = self::displayableText($fields[2], true, true);
@@ -824,6 +830,7 @@ static public function screenDisplay($min, $max)
     return $ret;
 }
 
+    // @hintable
 static private function screenDisplayColor($row)
 {
     if ($row['trans_status'] == 'V' || $row['trans_type'] == 'T' || $row['trans_status'] == 'R' || $row['trans_status'] == 'M' || $row['voided'] == 17 || $row['trans_status'] == 'J') {
@@ -840,6 +847,7 @@ static private function screenDisplayColor($row)
     }
 }
 
+    // @hintable
 static private function screenDisplayDescription($row)
 {
     if ($row['voided'] == 5 || $row['voided'] == 11 || $row['voided'] == 17 || $row['trans_type'] == 'T') {
@@ -849,6 +857,7 @@ static private function screenDisplayDescription($row)
     }
 }
 
+    // @hintable
 static private function screenDisplayComment($row)
 {
     if ($row['discounttype'] == 3 && $row['trans_status'] == 'V') {
@@ -888,6 +897,7 @@ static private function screenDisplayComment($row)
     }
 }
 
+    // @hintable
 static private function screenDisplayTotal($row)
 {
     if ($row['voided'] == 3 || $row['voided'] == 5 || $row['voided'] == 7 || $row['voided'] == 11 || $row['voided'] == 17) {
@@ -899,6 +909,7 @@ static private function screenDisplayTotal($row)
     }
 }
 
+    // @hintable
 static private function screenDisplayStatus($row)
 {
     if ($row['trans_status'] == 'V') {

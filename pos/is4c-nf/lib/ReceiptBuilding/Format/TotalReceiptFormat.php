@@ -36,6 +36,7 @@ class TotalReceiptFormat extends DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
+    // @hintable
     public function format($row)
     {
         switch($row['upc']) {

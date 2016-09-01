@@ -30,6 +30,7 @@ use \CoreLocal;
 class MemberSale extends DiscountType 
 {
 
+    // @hintable
     public function priceInfo($row,$quantity=1)
     {
         if (is_array($this->savedInfo)) {

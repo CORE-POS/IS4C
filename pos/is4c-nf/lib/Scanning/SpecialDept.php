@@ -54,6 +54,7 @@ class SpecialDept
       @param $arr a handler map (array)
       @return handler map (array)
     */
+    // @hintable
     public function register($deptID,$arr)
     {
         if (!is_array($arr)) {
@@ -82,6 +83,7 @@ class SpecialDept
       will be invoked within a Parser object and
       hence uses the same return format.
     */
+    // @hintable
     public function handle($deptID,$amount,$json)
     {
         return $json;
@@ -96,6 +98,7 @@ class SpecialDept
         'PaidOutDept',
     );
 
+    // @hintable
     public static function factory($class)
     {
         if ($class != '' && in_array($class, self::$builtin)) {

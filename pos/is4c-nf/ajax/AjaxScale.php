@@ -31,6 +31,7 @@ class AjaxScale extends AjaxCallback
 {
     protected $encoding = 'plain';
 
+    // @hintable
     public function ajax($input=array())
     {
         $input = isset($_REQUEST['input'])?$_REQUEST['input']:'';

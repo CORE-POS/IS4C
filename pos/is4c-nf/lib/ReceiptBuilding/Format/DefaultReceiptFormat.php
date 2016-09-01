@@ -33,6 +33,7 @@ class DefaultReceiptFormat
 {
     protected $print_handler;
 
+    // @hintable
     public function setPrintHandler($ph)
     {
         $this->print_handler = $ph;
@@ -56,6 +57,7 @@ class DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
+    // @hintable
     public function format($row)
     {
         return "";

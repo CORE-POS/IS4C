@@ -105,6 +105,7 @@ class CouponCode extends SpecialUPC
         return $dbc->fetchRow($result);
     }
     
+    // @hintable
     private function checkLimits($upc, $json)
     {
         $dbc = Database::pDataConnect();
@@ -143,6 +144,7 @@ class CouponCode extends SpecialUPC
         return true;
     }
 
+    // @hintable
     public function handle($upc,$json)
     {
         list($man_id, $fam, $val, $man_id_start) = $this->upcToParts($upc);

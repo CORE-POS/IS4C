@@ -52,6 +52,7 @@ class ItemNotFound
       same format as Parser since this module interacts
       with input parsing. 
     */
+    // @hintable
     public function handle($upc, $json)
     {
         $opts = array('upc'=>$upc,'description'=>'BADSCAN');

@@ -100,6 +100,7 @@ class AutoLoader extends LibraryClass
         }
     }
 
+    // @hintable
     private static function arrayToPath($arr)
     {
         $ret = array_reduce($arr, function($carry, $item){ return $carry . $item . DIRECTORY_SEPARATOR; });
@@ -245,6 +246,7 @@ class AutoLoader extends LibraryClass
       @param $map array of class name => file
       @return $map (by reference)
     */
+    // @hintable
     static private function recursiveLoader($path,&$map=array())
     {
         if(!is_dir($path)) {
