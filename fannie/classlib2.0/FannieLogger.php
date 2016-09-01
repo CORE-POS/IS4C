@@ -30,7 +30,7 @@
 */
 class FannieLogger extends \COREPOS\common\Logger
 {
-    protected $program_name = 'fannie';
+    protected $programName = 'fannie';
 
     /**
       Get filename for log
