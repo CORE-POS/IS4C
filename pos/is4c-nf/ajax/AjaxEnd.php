@@ -42,6 +42,7 @@ class AjaxEnd extends AjaxCallback
 {
     protected $encoding = 'json';
 
+    // @hintable
     public function ajax($input=array())
     {
         $receiptType = isset($input['receiptType']) ? $input['receiptType'] : FormLib::get('receiptType');

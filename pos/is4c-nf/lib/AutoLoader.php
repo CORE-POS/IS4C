@@ -67,31 +67,19 @@ class AutoLoader extends LibraryClass
             }
         }
 
-        if (strpos($name, '\\') === false && isset($map[$name]) && !file_exists($map[$name])) {
-            // file is missing. 
-            // rebuild map to see if the class is
-            // gone or the file just moved
-            $map = self::loadMap();
-            if (!is_array($map)) {
-                return;
-            }
-        } elseif (!isset($map[$name]) && strpos($name, '\\') > 0) {
+        if (!isset($map[$name]) && strpos($name, '\\') > 0) {
             $pieces = explode('\\', $name);
             $sep = DIRECTORY_SEPARATOR;
             if (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'common') {
                 $path = dirname(__FILE__) . $sep . '..' . $sep . '..' . $sep . '..' . $sep . 'common' . $sep;
                 $path .= self::arrayToPath(array_slice($pieces, 2));
-                if (file_exists($path)) {
-                    $map[$name] = $path;
-                    CoreLocal::set('ClassLookup', $map);
-                }
+                $map[$name] = $path;
+                CoreLocal::set('ClassLookup', $map);
             } elseif (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'pos') {
                 $path = dirname(__FILE__) . $sep . '..' . $sep;
                 $path .= self::arrayToPath(array_slice($pieces, 2));
-                if (file_exists($path)) {
-                    $map[$name] = $path;
-                    CoreLocal::set('ClassLookup', $map);
-                }
+                $map[$name] = $path;
+                CoreLocal::set('ClassLookup', $map);
             }
         } elseif (!isset($map[$name])) {
             // class is unknown
@@ -103,13 +91,16 @@ class AutoLoader extends LibraryClass
             }
         }
 
-        if (isset($map[$name]) && !class_exists($name,false)
-           && file_exists($map[$name])) {
-
-            include_once($map[$name]);
+        if (isset($map[$name]) && !class_exists($name,false)) {
+            $included = include_once($map[$name]);
+            if ($included === false) {
+                unset($map[$name]);
+                CoreLocal::set('ClassLookup', $map);
+            }
         }
     }
 
+    // @hintable
     private static function arrayToPath($arr)
     {
         $ret = array_reduce($arr, function($carry, $item){ return $carry . $item . DIRECTORY_SEPARATOR; });
@@ -207,7 +198,7 @@ class AutoLoader extends LibraryClass
 
             ob_start();
             $ns_class = self::fileToFullClass($file);
-            if (class_exists($ns_class)) {
+            if (!class_exists($name, false) && class_exists($ns_class)) {
                 $name = $ns_class;
             } elseif (!class_exists($name)) { 
                 ob_end_clean();
@@ -255,6 +246,7 @@ class AutoLoader extends LibraryClass
       @param $map array of class name => file
       @return $map (by reference)
     */
+    // @hintable
     static private function recursiveLoader($path,&$map=array())
     {
         if(!is_dir($path)) {
@@ -286,12 +278,12 @@ class AutoLoader extends LibraryClass
         while($dir && ($file=readdir($dir)) !== false) {
             if ($file[0] == ".") continue;
 
-            $fullname = realpath($path."/".$file);
+            $fullname = $path . DIRECTORY_SEPARATOR . $file;
             if (is_dir($fullname) && !in_array($file, $exclude)) {
                 self::recursiveLoader($fullname, $map);
             } else if (substr($file,-4) == '.php') {
                 $class = substr($file,0,strlen($file)-4);
-                $map[$class] = $fullname;
+                $map[$class] = realpath($fullname);
             }
         }
         closedir($dir);

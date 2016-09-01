@@ -40,6 +40,7 @@ use \CoreLocal;
 
 class MoreThanQttyPM extends PriceMethod {
 
+    // @hintable
     function addItem($row,$quantity,$priceObj)
     {
         if ($quantity == 0) return false;

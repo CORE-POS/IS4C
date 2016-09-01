@@ -31,6 +31,7 @@ class ArWarnDept extends SpecialDept
 
     public $help_summary = 'Require cashier confirmation on AR sale';
 
+    // @hintable
     public function handle($deptID,$amount,$json)
     {
         if (CoreLocal::get('msgrepeat') == 0) {

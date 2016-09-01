@@ -36,6 +36,7 @@ class InOrderReceiptSort extends DefaultReceiptSort
       @param $rowset an array of records
       @return an array of records
     */
+    // @hintable
     public function sort($rowset)
     {
         $nontenders = array();

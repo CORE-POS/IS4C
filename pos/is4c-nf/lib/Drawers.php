@@ -28,7 +28,7 @@ use COREPOS\pos\lib\ReceiptLib;
 /**
   @class Drawer
 */
-class Drawers extends \LibraryClass 
+class Drawers 
 {
     static public function kick() 
     {

@@ -492,6 +492,7 @@ static public function uploadtoServer()
     local.table_name against remote.table2
    @return [string] comma separated list of column names
 */
+    // @hintable
 static public function getMatchingColumns($connection,$table_name,$table2="")
 {
     /**
@@ -549,6 +550,7 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
    @param $table2 a database table
    @return [string] comma separated list of column names
  */
+    // @hintable
 static public function localMatchingColumns($connection,$table1,$table2)
 {
     $poll1 = $connection->tableDefinition($table1);
@@ -690,6 +692,7 @@ static public function setglobalvalue($param, $value)
   and in session
   @param $arr An array of keys and values
 */
+    // @hintable
 static public function setglobalvalues($arr)
 {
     $setStr = "";

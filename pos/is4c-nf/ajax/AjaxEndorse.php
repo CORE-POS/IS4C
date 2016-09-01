@@ -32,6 +32,7 @@ class AjaxEndorse extends AjaxCallback
 {
     protected $encoding = 'plain';
 
+    // @hintable
     public function ajax($input=array())
     {
         $endorseType = FormLib::get('type', '');

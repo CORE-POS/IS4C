@@ -34,6 +34,7 @@ class GroupSavingsSort extends DefaultReceiptSort
     /**
       Find coupons and member special lines
     */
+    // @hintable
     private function getCouponsAndSpecials($items)
     {
         $splice = array();
@@ -60,6 +61,7 @@ class GroupSavingsSort extends DefaultReceiptSort
       Insert $lines adjacent to an $item where they
       share a common $field value
     */
+    // @hintable
     private function addLinesNearField($items, $lines, $field)
     {
         foreach ($lines as $line) {
@@ -91,6 +93,7 @@ class GroupSavingsSort extends DefaultReceiptSort
       @param $rowset an array of records
       @return an array of records
     */
+    // @hintable
     public function sort($rowset)
     {
         /**

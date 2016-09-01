@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib\Scanning\PriceMethods;
 use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
@@ -46,6 +47,7 @@ use \CoreLocal;
 class BigGroupPM extends PriceMethod 
 {
 
+    // @hintable
     function addItem($row,$quantity,$priceObj)
     {
         if ($quantity == 0) return false;
@@ -58,12 +60,15 @@ class BigGroupPM extends PriceMethod
             $row['discount'] = 0;
         }
 
-        $stem = substr($mixMatch,0,10);    
         $sets = 99;
+        $volume = $priceObj->isSale() ? $row['specialquantity'] : $row['quantity'];
+        $mixMatch = $row['mixmatchcode'];
+        $stem = substr($mixMatch,0,10);    
+        $dbt = Database::tDataConnect();
         // count up total sets
-        for($i=0; $i<=$volume; $i++){
+        for($i=0; $i<=($volume-1); $i++){
             $tmp = $stem."_q".$i;
-            if ($volume == $i) $tmp = $stem.'_d';
+            if ($volume-1 == $i) $tmp = $stem.'_d';
 
             $chkQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END) 
                 FROM localtemptrans WHERE mixmatch='$tmp' 
@@ -71,7 +76,8 @@ class BigGroupPM extends PriceMethod
             $chkR = $dbt->query($chkQ);
             $tsets = 0;
             if ($dbt->num_rows($chkR) > 0){
-                $tsets = array_pop($dbt->fetch_row($chkR));
+                $chkW = $dbt->fetchRow($chkR);
+                $tsets = $chkW[0];
             }
             if ($tmp == $mixMatch){
                 $tsets += is_int($quantity)?$quantity:1;
@@ -89,8 +95,10 @@ class BigGroupPM extends PriceMethod
         $matchQ = "SELECT sum(matched) FROM localtemptrans WHERE
             left(mixmatch,11)='{$stem}_'";
         $matchR = $dbt->query($matchQ);
-        if ($dbt->num_rows($matchR) > 0)
-            $matches = array_pop($dbt->fetch_row($matchR));
+        if ($dbt->num_rows($matchR) > 0) {
+            $matchW = $dbt->fetchRow($matchR);
+            $matches = $matchW[0];
+        }
         $sets -= $matches;
 
         // this means the current item
@@ -101,9 +109,6 @@ class BigGroupPM extends PriceMethod
                     $pricing['memDiscount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
                 else
                     $pricing['discount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
-            }
-            else {
-                $pricing['unitPrice'] = $pricing['unitPrice'] - $row['specialgroupprice'];
             }
 
             TransRecord::addRecord(array(
@@ -127,12 +132,16 @@ class BigGroupPM extends PriceMethod
                 'volDiscType' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
                 'volume' => ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
                 'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
-                'mixmatch' => $row['mixmatchcode'],
+                'mixMatch' => $row['mixmatchcode'],
                 'matched' => $sets,
                 'cost' => (isset($row['cost'])?$row['cost']*$quantity:0.00),
                 'numflag' => (isset($row['numflag'])?$row['numflag']:0),
                 'charflag' => (isset($row['charflag'])?$row['charflag']:'')
             ));
+
+            if (!$priceObj->isSale()){
+                TransRecord::addhousecoupon('0', 0, MiscLib::truncate2($sets*$row['groupprice']), 'SET DISCOUNT');
+            }
         }
         else {
             // not a new set, treat as a regular item

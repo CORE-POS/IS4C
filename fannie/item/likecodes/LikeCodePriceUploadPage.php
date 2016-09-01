@@ -84,7 +84,9 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 WHERE u.likeCode=?');
         }
 
-        return array($update, $updateWithCost);
+        $getUPCs = $dbc->prepare("SELECT upc FROM upcLike WHERE likeCode=?");
+
+        return array($update, $updateWithCost, $getUPCs);
     }
 
     public function process_file($linedata, $indexes)
@@ -93,8 +95,10 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $ret = true;
-        list($update, $updateWithCost) = $this->prepareStatements($dbc);
+        list($update, $updateWithCost, $getUPCs) = $this->prepareStatements($dbc);
         $this->stats = array('done' => 0, 'error' => array());
+        $upcs = array();
+        $sets = array();
         foreach ($linedata as $line) {
             $likecode = trim($line[$indexes['likecode']]);
             $price =  trim($line[$indexes['price']], ' $');  
@@ -115,7 +119,46 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $ret = false;
                 $this->stats['error'][] = ' Problem updating LC# ' . $likecode . ';';
             } else {
+                $upcR = $dbc->execute($getUPCs, array($likecode));
+                while ($upcW = $dbc->fetchRow($res)) {
+                    $upcs[] = $upcW['upc'];
+                    $sets[] = array($price, $cost, $upcW['upc']);
+                }
                 $this->stats['done']++;
+            }
+        }
+
+        // log the updates
+        $model = new ProdUpdateModel($dbc);
+        $model->logManyUpdates($upcs, 'EDIT');
+
+        // push updates to local lanes
+        $FANNIE_LANES = FannieConfig::config('LANES');
+        for ($i = 0; $i < count($FANNIE_LANES); $i++) {
+            $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+                $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+                $FANNIE_LANES[$i]['pw']);
+            
+            if (!isset($lane_sql->connections[$FANNIE_LANES[$i]['op']]) || $lane_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
+                // connect failed
+                continue;
+            }
+            $upP = $lane_sql->prepare('UPDATE products SET normal_price=?, cost=? WHERE upc=?');
+            foreach ($sets as $set) {
+                $upR = $lane_sql->execute($upP, $set);
+            }
+        }
+
+        // push updates to other stores
+        if (FannieConfig::config('STORE_MODE') === 'HQ' && class_exists('\\Datto\\JsonRpc\\Http\\Client')) {
+            $prep = $this->connection->prepare('
+                SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
+                ');
+            $res = $this->connection->execute($prep, array(\FannieConfig::config('STORE_ID')));
+            while ($row = $this->connection->fetchRow($res)) {
+                $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
+                $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', array('upc'=>array_keys($upcs), 'fast'=>true));
+                $client->send();
             }
         }
 

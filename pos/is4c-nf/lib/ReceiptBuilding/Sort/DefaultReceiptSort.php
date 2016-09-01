@@ -44,6 +44,7 @@ class DefaultReceiptSort
       @param $rowset an array of records
       @return an array of records
     */
+    // @hintable
     public function sort($rowset)
     {
         $tax = false;
@@ -140,6 +141,7 @@ class DefaultReceiptSort
     }
 
     // utility function to sort records by the trans_id field
+    // @hintable
     static public function record_compare($r1,$r2){
         if (!isset($r1['trans_id']) || !isset($r2['trans_id'])) {
             return 0;
@@ -157,6 +159,7 @@ class DefaultReceiptSort
       @param $new a new record
       @return $cur with the new record added
     */
+    // @hintable
     protected function upc_merge($cur, $new) {
         if ($new['trans_status'] != '' || $new['trans_type'] != 'I'
            || $new['scale'] != 0 || $new['matched'] != 0) {

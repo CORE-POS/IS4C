@@ -44,6 +44,7 @@ use \CoreLocal;
 class ABGroupPM extends PriceMethod 
 {
 
+    // @hintable
     function addItem($row,$quantity,$priceObj)
     {
         if ($quantity == 0) {

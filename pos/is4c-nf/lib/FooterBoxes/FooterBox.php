@@ -78,6 +78,7 @@ class FooterBox
         'TransPercentDiscount',
     );
 
+    // @hintable
     public static function factory($class)
     {
         if ($class != '' && in_array($class, self::$builtin)) {

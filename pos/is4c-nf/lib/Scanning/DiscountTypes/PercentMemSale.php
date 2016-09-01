@@ -30,6 +30,7 @@ use \CoreLocal;
 class PercentMemSale extends DiscountType 
 {
 
+    // @hintable
     function priceInfo($row,$quantity=1)
     {
         if (is_array($this->savedInfo)) {

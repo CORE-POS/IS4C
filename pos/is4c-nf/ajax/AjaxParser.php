@@ -67,10 +67,11 @@ class AjaxParser extends AjaxCallback
         foreach ($preChain as $cn){
             if (!class_exists($cn)) continue;
             $pre = new $cn();
-            if ($pre->check($entered))
+            if ($pre->check($entered)) {
                 $entered = $pre->parse($entered);
                 if (!$entered || $entered == "")
                     break;
+            }
         }
 
         return $entered;
@@ -105,6 +106,7 @@ class AjaxParser extends AjaxCallback
         return $result;
     }
 
+    // @hintable
     private function runPostParsers($result)
     {
         // postparse chain: modify result
@@ -126,6 +128,7 @@ class AjaxParser extends AjaxCallback
         return $result;
     }
 
+    // @hintable
     private function handlePaycards($entered, $json)
     {
         /* this breaks the model a bit, but I'm putting
@@ -152,6 +155,7 @@ class AjaxParser extends AjaxCallback
         return array($entered, $json);
     }
 
+    // @hintable
     private function readInput($input)
     {
         $in_field = 'input';
@@ -172,6 +176,7 @@ class AjaxParser extends AjaxCallback
         return $entered;
     }
 
+    // @hintable
     public function ajax($input=array())
     {
         if (CoreLocal::get('CashierNo') === '') { // session is missing/invalid

@@ -56,6 +56,7 @@ class pos2 extends BasicCorePage
         return true;
     }
 
+    // @hintable
     private function doRedirect($json)
     {
         if (isset($json['main_frame']) && $json['main_frame'] != false) {
@@ -65,6 +66,7 @@ class pos2 extends BasicCorePage
         }
     }
 
+    // @hintable
     private function setOutput($json)
     {
         if (isset($json['output']) && !empty($json['output'])) {
@@ -72,6 +74,7 @@ class pos2 extends BasicCorePage
         }
     }
 
+    // @hintable
     private function registerRetry($json)
     {
         if (isset($json['retry']) && $json['retry'] != false) {
@@ -79,6 +82,7 @@ class pos2 extends BasicCorePage
         }
     }
 
+    // @hintable
     private function registerPrintJob($json)
     {
         if (isset($json['receipt']) && $json['receipt'] != false) {

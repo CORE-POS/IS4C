@@ -36,6 +36,7 @@ class TenderReceiptFormat extends DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
+    // @hintable
     public function format($row)
     {
         $ret = str_pad($row['description'],44,' ',STR_PAD_LEFT);
