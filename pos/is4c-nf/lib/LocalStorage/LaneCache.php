@@ -40,6 +40,7 @@ if (!class_exists('COREPOS\common\cache\file\CacheItem', false)) {
 class LaneCache 
 {
     private static $instance = null;
+    private static $changed = false;
 
     private static function init()
     {
@@ -62,7 +63,11 @@ class LaneCache
     public static function set($item)
     {
         self::init();
-        self::$instance->save($item);
+        self::$instance->saveDeferred($item);
+        if (self::$changed === false) {
+            register_shutdown_function(array('COREPOS\\pos\\lib\\LocalStorage\\LaneCache', 'flush'));
+            self::$changed = true;
+        }
     }
 
     public static function clear()
@@ -70,6 +75,12 @@ class LaneCache
         self::init();
         self::$instance->clear();
         self::$instance->commit();
+    }
+
+    public static function flush()
+    {
+        self::init();
+        self::$intance->commit();
     }
 }
 

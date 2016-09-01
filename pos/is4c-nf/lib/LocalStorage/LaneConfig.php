@@ -46,6 +46,7 @@ if (!class_exists('COREPOS\common\cache\file\CacheItem', false)) {
 class LaneConfig 
 {
     private static $instance = null;
+    private static $changed = false;
 
     private static function init()
     {
@@ -75,7 +76,11 @@ class LaneConfig
         self::init();
         $item = self::$instance->getItem($key);
         $item->set($val);
-        self::$instance->save($item);
+        self::$instance->saveDeferred($item);
+        if (self::$changed === false) {
+            register_shutdown_function(array('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig', 'flush'));
+            self::$changed = true;
+        }
     }
 
     public static function has($key)
@@ -90,6 +95,12 @@ class LaneConfig
         self::init();
         self::$instance->clear();
         self::$instance->commit();
+    }
+
+    public static function flush()
+    {
+        self::init();
+        self::$intance->commit();
     }
 }
 
