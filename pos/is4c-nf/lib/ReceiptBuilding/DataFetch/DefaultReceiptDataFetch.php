@@ -37,6 +37,7 @@ class DefaultReceiptDataFetch
       Implementation function
       @return SQL result object
     */
+    // @hintable
     public function fetch($sql, $empNo=false,$laneNo=false,$transNo=false)
     {
         $op_db = CoreLocal::get('pDatabase');

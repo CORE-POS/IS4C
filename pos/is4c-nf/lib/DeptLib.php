@@ -31,7 +31,7 @@ use COREPOS\pos\lib\TransRecord;
 /**
   @class DeptLib
 */
-class DeptLib extends \LibraryClass 
+class DeptLib 
 {
     /**
       Add an open ring to a department
@@ -41,6 +41,7 @@ class DeptLib extends \LibraryClass
       @returns An array. See Parser::default_json()
        for format explanation.
     */
+    // @hintable
     static public function deptkey($price, $dept,$ret=array()) 
     {
         if (\CoreLocal::get("quantity") == 0 && \CoreLocal::get("multiple") == 0) {
@@ -108,6 +109,7 @@ class DeptLib extends \LibraryClass
         return $ret;
     }
 
+    // @hintable
     static private function getDepartment($dbc, $dept)
     {
         $query = "SELECT dept_no,
@@ -144,6 +146,7 @@ class DeptLib extends \LibraryClass
         return $dbc->numRows($result) === 0 ? false : $dbc->fetchRow($result);
     }
 
+    // @hintable
     static private function deptCouponRing($dept, $price, $ret)
     {
         $query2 = "select department, sum(total) as total from localtemptrans where department = "
@@ -195,6 +198,7 @@ class DeptLib extends \LibraryClass
         return $ret;
     }
 
+    // @hintable
     static private function memberOnlyDept($dept, $ret)
     {
         /**
@@ -254,6 +258,7 @@ class DeptLib extends \LibraryClass
         return array($ret, $modified);
     }
 
+    // @hintable
     static private function deptOpenRing($dept, $price, $discount, $ret)
     {
         list($ret, $memberOnly) = self::memberOnlyDept($dept, $ret);

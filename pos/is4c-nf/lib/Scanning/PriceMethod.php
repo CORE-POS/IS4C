@@ -63,6 +63,7 @@ class PriceMethod
       @param $priceObj A DiscountType object 
       @return boolean success/failure
     */
+    // @hintable
     public function addItem($row, $quantity, $priceObj)
     {
         return true;

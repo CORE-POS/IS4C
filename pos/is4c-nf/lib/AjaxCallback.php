@@ -39,11 +39,13 @@ class AjaxCallback
         return $this->encoding;
     }
 
+    // @hintable
     public function ajax($input=array())
     {
 
     }
 
+    // @hintable
     public static function unitTest($class)
     {
         self::executeCallback($class);
@@ -70,6 +72,7 @@ class AjaxCallback
         }
     }
 
+    // @hintable
     private static function executeCallback($callback_class)
     {
         $obj = new $callback_class();

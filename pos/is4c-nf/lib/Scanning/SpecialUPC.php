@@ -43,6 +43,7 @@ class SpecialUPC
         'SpecialOrder',
     );
 
+    // @hintable
     public static function factory($class)
     {
         if ($class != '' && in_array($class, self::$builtin)) {
@@ -85,6 +86,7 @@ class SpecialUPC
       will be invoked within a Paser object and
       hence uses the same return format.
     */
+    // @hintable
     public function handle($upc,$json)
     {
 

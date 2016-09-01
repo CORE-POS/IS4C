@@ -17,6 +17,7 @@ class ItemAction
       @param $record [keyed array] last record 
         added to the transaction
     */
+    // @hintable
     public function callback($record)
     {
     }

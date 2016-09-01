@@ -51,9 +51,9 @@ class LaneConfig
     {
         if (self::$instance === null) {
             if (function_exists('opcache_compile_file')) {
-                self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
-            } else {
                 self::$instance = new \COREPOS\common\cache\php\CacheItemPool('lane.config.cache');
+            } else {
+                self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
             }
         }
     }

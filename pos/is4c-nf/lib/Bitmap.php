@@ -608,6 +608,7 @@ class Bitmap
         }
     }
     
+    // @hintable
     public function drawLine($pt1, $pt2, $val) 
     {
         // validate coordinates

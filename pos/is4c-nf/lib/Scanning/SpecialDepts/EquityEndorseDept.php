@@ -30,6 +30,7 @@ class EquityEndorseDept extends SpecialDept
 {
     public $help_summary = 'Prompt to print receipt number on equity paperwork via endorser';
 
+    // @hintable
     public function handle($deptID,$amount,$json)
     {
         if (CoreLocal::get("memberID") == "0" || CoreLocal::get("memberID") == CoreLocal::get("defaultNonMem")) {

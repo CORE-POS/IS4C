@@ -33,7 +33,7 @@ use COREPOS\pos\lib\TransRecord;
 /**
   @class MemberLib
 */
-class MemberLib extends \LibraryClass 
+class MemberLib 
 {
     /**
       Remove member number from current transaction
@@ -121,6 +121,7 @@ class MemberLib extends \LibraryClass
       @param $row a record from custdata
       @param $chargeOk whether member can store-charge purchases
     */
+    // @hintable
     static public function setAltMemMsg($store, $member, $personNumber, $row)
     {
         if ($store == 'WEFC_Toronto') {

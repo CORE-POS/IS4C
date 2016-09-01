@@ -40,6 +40,7 @@ use \CoreLocal;
 
 class QttyEnforcedGroupPM extends PriceMethod {
 
+    // @hintable
     function addItem($row,$quantity,$priceObj)
     {
         if ($quantity == 0) return false;

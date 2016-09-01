@@ -37,6 +37,7 @@ class ItemReceiptFormat extends DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
+    // @hintable
     public function format($row)
     {
         if ($row['trans_type'] == 'D') {
@@ -82,6 +83,7 @@ class ItemReceiptFormat extends DefaultReceiptFormat
     /**
       Determine flags for a row
     */
+    // @hintable
     private function flags($row)
     {
         if ($row['trans_status']=='V') {

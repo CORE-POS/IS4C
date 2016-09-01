@@ -31,6 +31,7 @@ class AjaxJsError extends AjaxCallback
 {
     protected $encoding = 'plain';
 
+    // @hintable
     public function ajax($input=array())
     {
         if (isset($_REQUEST['data'])) {

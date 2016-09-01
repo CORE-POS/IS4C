@@ -42,6 +42,7 @@ class BasicPM extends PriceMethod
 
     private $error_msg = '';
 
+    // @hintable
     function addItem($row, $quantity, $priceObj)
     {
         if ($quantity == 0) {
