@@ -28,7 +28,7 @@ use COREPOS\pos\lib\ReceiptLib;
   @class CoopCredLib
   Functions for the Coop Cred plugin.
 */
-class CoopCredLib extends LibraryClass {
+class CoopCredLib {
 
 static private $SQL_CONNECTION = null;
 

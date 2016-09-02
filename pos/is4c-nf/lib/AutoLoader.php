@@ -33,22 +33,11 @@ if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneCache', false)) {
 }
 
 /**
-  @class LibraryClass
-  Class for defining library functions.
-  All methods should be static.
-
-  This exists to make documented hierarchy
-  more sensible.
-*/
-class LibraryClass {
-}
-
-/**
   @class AutoLoader
   Map available modules and register automatic
   class loading
 */
-class AutoLoader extends LibraryClass 
+class AutoLoader 
 {
 
     /**
