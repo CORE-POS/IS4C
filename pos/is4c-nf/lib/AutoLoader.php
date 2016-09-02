@@ -69,16 +69,19 @@ class AutoLoader extends LibraryClass
 
         if (!isset($map[$name]) && strpos($name, '\\') > 0) {
             $pieces = explode('\\', $name);
+            if ($name[0] == '\\') { // some old PHP5.3 versions leave the leading backslash
+                $name = substr($name, 1);
+            }
             $sep = DIRECTORY_SEPARATOR;
-            if (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'common') {
-                $path = dirname(__FILE__) . $sep . '..' . $sep . '..' . $sep . '..' . $sep . 'common' . $sep;
-                $path .= self::arrayToPath(array_slice($pieces, 2));
-                $map[$name] = $path;
-                CoreLocal::set('ClassLookup', $map);
-            } elseif (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'pos') {
-                $path = dirname(__FILE__) . $sep . '..' . $sep;
-                $path .= self::arrayToPath(array_slice($pieces, 2));
-                $map[$name] = $path;
+            $our_path = false;
+            if (strpos($name, 'COREPOS\\pos\\') === 0) {
+                $our_path = __DIR__ . $sep . '..' . $sep . strtr(substr($name, 12), '\\', $sep) . '.php';
+            } elseif (strpos($name, 'COREPOS\\common\\') === 0) {
+                $our_path = __DIR__ . $sep . '..' . $sep . '..' . $sep . '..' . $sep . 'common' . $sep
+                    . strtr(substr($name, 15), '\\', $sep) . '.php';
+            }
+            if ($our_path) {
+                $map[$name] = $our_path;
                 CoreLocal::set('ClassLookup', $map);
             }
         } elseif (!isset($map[$name])) {
@@ -98,14 +101,6 @@ class AutoLoader extends LibraryClass
                 CoreLocal::set('ClassLookup', $map);
             }
         }
-    }
-
-    // @hintable
-    private static function arrayToPath($arr)
-    {
-        $ret = array_reduce($arr, function($carry, $item){ return $carry . $item . DIRECTORY_SEPARATOR; });
-
-        return substr($ret, 0, strlen($ret)-1) . '.php';
     }
 
     /**
