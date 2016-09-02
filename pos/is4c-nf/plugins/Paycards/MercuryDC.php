@@ -489,9 +489,6 @@ class MercuryDC extends MercuryE2E
                     // charge the card for a less amount. 
                     TransRecord::addcomment("");
                     $this->conf->set('boxMsg', sprintf('Card Balance: $%.2f', $ebtbalance));
-                } elseif (substr($tranCode, 0, 3) == 'EMV') {
-                    $this->conf->set('paycard_amount', 0);
-                    return PaycardLib::PAYCARD_ERR_OK;
                 }
                 UdpComm::udpSend('termReset');
                 $this->conf->set('ccTermState','swipe');
