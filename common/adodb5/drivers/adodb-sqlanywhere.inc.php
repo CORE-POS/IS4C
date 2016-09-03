@@ -1,6 +1,8 @@
 <?php
 /*
-version V5.20dev  ??-???-2014  (c) 2000-2014  John Lim (jlim#natsoft.com).  All rights
+@version   v5.20.6  31-Aug-2016
+@copyright (c) 2000-2013  John Lim (jlim#natsoft.com).  All rights
+@copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
 reserved.
   Released under both BSD license and Lesser GPL library license.
   Whenever there is any discrepancy between the two licenses,
@@ -55,11 +57,6 @@ if (!defined('ADODB_SYBASE_SQLANYWHERE')){
  class ADODB_sqlanywhere extends ADODB_odbc {
   	var $databaseType = "sqlanywhere";
 	var $hasInsertID = true;
-
-	function __construct()
-	{
-		$this->ADODB_odbc();
-	}
 
 	 function _insertid() {
   	   return $this->GetOne('select @@identity');
@@ -158,7 +155,7 @@ if (!defined('ADODB_SYBASE_SQLANYWHERE')){
 
  function __construct($id,$mode=false)
  {
-  $this->ADORecordSet_odbc($id,$mode);
+  parent::__construct($id,$mode);
  }
 
 

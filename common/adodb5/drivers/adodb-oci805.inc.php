@@ -1,6 +1,8 @@
 <?php
 /**
- * @version V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+ * @version   v5.20.6  31-Aug-2016
+ * @copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
+ * @copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
  * Released under both BSD license and Lesser GPL library license.
  * Whenever there is any discrepancy between the two licenses,
  * the BSD license will take precedence.
@@ -20,11 +22,6 @@ include_once(ADODB_DIR.'/drivers/adodb-oci8.inc.php');
 class ADODB_oci805 extends ADODB_oci8 {
 	var $databaseType = "oci805";
 	var $connectSID = true;
-
-	function __construct()
-	{
-		$this->ADODB_oci8();
-	}
 
 	function SelectLimit($sql,$nrows=-1,$offset=-1, $inputarr=false,$secs2cache=0)
 	{
@@ -53,6 +50,6 @@ class ADORecordset_oci805 extends ADORecordset_oci8 {
 	var $databaseType = "oci805";
 	function __construct($id,$mode=false)
 	{
-		$this->ADORecordset_oci8($id,$mode);
+		parent::__construct($id,$mode);
 	}
 }
