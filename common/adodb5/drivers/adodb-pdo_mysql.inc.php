@@ -87,6 +87,8 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		$save = $this->metaTablesSQL;
 		if ($showSchema && is_string($showSchema)) {
 			$this->metaTablesSQL .= " from $showSchema";
+		} else {
+			$this->metaTablesSQL .= "schema()";
 		}
 		
 		if ($mask) {
