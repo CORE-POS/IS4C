@@ -1,12 +1,18 @@
 <?php
 /*
-V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+@version   v5.20.6  31-Aug-2016
+@copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
+@copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
   Released under both BSD license and Lesser GPL library license.
   Whenever there is any discrepancy between the two licenses,
   the BSD license will take precedence.
   Set tabs to 8.
 
-  MySQL code that does not support transactions. Use mysqlt if you need transactions.
+  This is the preferred driver for MySQL connections, and supports both transactional
+  and non-transactional table types. You can use this as a drop-in replacement for both
+  the mysql and mysqlt drivers. As of ADOdb Version 5.20.0, all other native MySQL drivers
+  are deprecated
+  
   Requires mysql client. Works on Windows and Unix.
 
 21 October 2003: MySQLi extension implementation by Arjen de Rijke (a.de.rijke@xs4all.nl)
@@ -112,7 +118,8 @@ class ADODB_mysqli extends ADOConnection {
 					$argUsername,
 					$argPassword,
 					$argDatabasename,
-					$this->port,
+					# PHP7 compat: port must be int. Use default port if cast yields zero
+					(int)$this->port != 0 ? (int)$this->port : 3306,
 					$this->socket,
 					$this->clientFlags);
 
@@ -213,28 +220,32 @@ class ADODB_mysqli extends ADOConnection {
 		return !empty($rs);
 	}
 
-	// if magic quotes disabled, use mysql_real_escape_string()
-	// From docs-adodb.htm:
-	// Quotes a string to be sent to the database. The $magic_quotes_enabled
-	// parameter may look funny, but the idea is if you are quoting a
-	// string extracted from a POST/GET variable, then
-	// pass get_magic_quotes_gpc() as the second parameter. This will
-	// ensure that the variable is not quoted twice, once by qstr and once
-	// by the magic_quotes_gpc.
-	//
-	//Eg. $s = $db->qstr(_GET['name'],get_magic_quotes_gpc());
+	/**
+	 * Quotes a string to be sent to the database
+	 * When there is no active connection,
+	 * @param string $s The string to quote
+	 * @param boolean $magic_quotes If false, use mysqli_real_escape_string()
+	 *     if you are quoting a string extracted from a POST/GET variable,
+	 *     then pass get_magic_quotes_gpc() as the second parameter. This will
+	 *     ensure that the variable is not quoted twice, once by qstr() and
+	 *     once by the magic_quotes_gpc.
+	 *     Eg. $s = $db->qstr(_GET['name'],get_magic_quotes_gpc());
+	 * @return string Quoted string
+	 */
 	function qstr($s, $magic_quotes = false)
 	{
 		if (is_null($s)) return 'NULL';
 		if (!$magic_quotes) {
-			if (PHP_VERSION >= 5) {
+			// mysqli_real_escape_string() throws a warning when the given
+			// connection is invalid
+			if (PHP_VERSION >= 5 && $this->_connectionID) {
 				return "'" . mysqli_real_escape_string($this->_connectionID, $s) . "'";
 			}
 
-		if ($this->replaceQuote[0] == '\\') {
-			$s = adodb_str_replace(array('\\',"\0"),array('\\\\',"\\\0"),$s);
-		}
-		return "'".str_replace("'",$this->replaceQuote,$s)."'";
+			if ($this->replaceQuote[0] == '\\') {
+				$s = adodb_str_replace(array('\\',"\0"), array('\\\\',"\\\0") ,$s);
+			}
+			return "'" . str_replace("'", $this->replaceQuote, $s) . "'";
 		}
 		// undo magic quotes for "
 		$s = str_replace('\\"','"',$s);
@@ -960,10 +971,11 @@ class ADORecordSet_mysqli extends ADORecordSet{
 		return $o;
 	}
 
-	function GetRowAssoc($upper = true)
+	function GetRowAssoc($upper = ADODB_ASSOC_CASE)
 	{
-		if ($this->fetchMode == MYSQLI_ASSOC && !$upper)
+		if ($this->fetchMode == MYSQLI_ASSOC && $upper == ADODB_ASSOC_CASE_LOWER) {
 			return $this->fields;
+		}
 		$row = ADORecordSet::GetRowAssoc($upper);
 		return $row;
 	}
@@ -1032,7 +1044,10 @@ class ADORecordSet_mysqli extends ADORecordSet{
 		$this->_currentRow++;
 		$this->fields = @mysqli_fetch_array($this->_queryID,$this->fetchMode);
 
-		if (is_array($this->fields)) return true;
+		if (is_array($this->fields)) {
+			$this->_updatefields();
+			return true;
+		}
 		$this->EOF = true;
 		return false;
 	}
@@ -1040,6 +1055,7 @@ class ADORecordSet_mysqli extends ADORecordSet{
 	function _fetch()
 	{
 		$this->fields = mysqli_fetch_array($this->_queryID,$this->fetchMode);
+		$this->_updatefields();
 		return is_array($this->fields);
 	}
 
@@ -1048,11 +1064,15 @@ class ADORecordSet_mysqli extends ADORecordSet{
 		//if results are attached to this pointer from Stored Proceedure calls, the next standard query will die 2014
 		//only a problem with persistant connections
 
-		while(mysqli_more_results($this->connection->_connectionID)){
-			@mysqli_next_result($this->connection->_connectionID);
+		if(isset($this->connection->_connectionID) && $this->connection->_connectionID) {
+			while(mysqli_more_results($this->connection->_connectionID)){
+				mysqli_next_result($this->connection->_connectionID);
+			}
 		}
 
-		mysqli_free_result($this->_queryID);
+		if($this->_queryID instanceof mysqli_result) {
+			mysqli_free_result($this->_queryID);
+		}
 		$this->_queryID = false;
 	}
 
@@ -1183,7 +1203,7 @@ class ADORecordSet_array_mysqli extends ADORecordSet_array {
 
 	function __construct($id=-1,$mode=false)
 	{
-		$this->ADORecordSet_array($id,$mode);
+		parent::__construct($id,$mode);
 	}
 
 	function MetaType($t, $len = -1, $fieldobj = false)

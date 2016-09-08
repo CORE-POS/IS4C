@@ -1,12 +1,18 @@
 <?php
 /*
-V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+@version   v5.20.6  31-Aug-2016
+@copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
+@copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
   Released under both BSD license and Lesser GPL library license.
   Whenever there is any discrepancy between the two licenses,
   the BSD license will take precedence.
   Set tabs to 8.
 
-  MySQL code that does not support transactions. Use mysqlt if you need transactions.
+  This driver only supports the original non-transactional MySQL driver. It
+  is deprected in PHP version 5.5 and removed in PHP version 7. It is deprecated
+  as of ADOdb version 5.20.0. Use the mysqli driver instead, which supports both
+  transactional and non-transactional updates
+  
   Requires mysql client. Works on Windows and Unix.
 
  28 Feb 2001: MetaColumns bug fix - suggested by  Freek Dijkstra (phpeverywhere@macfreek.com)
@@ -753,10 +759,14 @@ class ADORecordSet_mysql extends ADORecordSet{
 		return $o;
 	}
 
-	function GetRowAssoc($upper=true)
+	function GetRowAssoc($upper = ADODB_ASSOC_CASE)
 	{
-		if ($this->fetchMode == MYSQL_ASSOC && !$upper) $row = $this->fields;
-		else $row = ADORecordSet::GetRowAssoc($upper);
+		if ($this->fetchMode == MYSQL_ASSOC && $upper == ADODB_ASSOC_CASE_LOWER) {
+			$row = $this->fields;
+		}
+		else {
+			$row = ADORecordSet::GetRowAssoc($upper);
+		}
 		return $row;
 	}
 
@@ -787,6 +797,7 @@ class ADORecordSet_mysql extends ADORecordSet{
 		//return adodb_movenext($this);
 		//if (defined('ADODB_EXTENSION')) return adodb_movenext($this);
 		if (@$this->fields = mysql_fetch_array($this->_queryID,$this->fetchMode)) {
+			$this->_updatefields();
 			$this->_currentRow += 1;
 			return true;
 		}
@@ -800,6 +811,7 @@ class ADORecordSet_mysql extends ADORecordSet{
 	function _fetch()
 	{
 		$this->fields = @mysql_fetch_array($this->_queryID,$this->fetchMode);
+		$this->_updatefields();
 		return is_array($this->fields);
 	}
 
@@ -867,21 +879,7 @@ class ADORecordSet_mysql extends ADORecordSet{
 class ADORecordSet_ext_mysql extends ADORecordSet_mysql {
 	function __construct($queryID,$mode=false)
 	{
-		if ($mode === false) {
-			global $ADODB_FETCH_MODE;
-			$mode = $ADODB_FETCH_MODE;
-		}
-		switch ($mode)
-		{
-		case ADODB_FETCH_NUM: $this->fetchMode = MYSQL_NUM; break;
-		case ADODB_FETCH_ASSOC:$this->fetchMode = MYSQL_ASSOC; break;
-		case ADODB_FETCH_DEFAULT:
-		case ADODB_FETCH_BOTH:
-		default:
-		$this->fetchMode = MYSQL_BOTH; break;
-		}
-		$this->adodbFetchMode = $mode;
-		$this->ADORecordSet($queryID);
+		parent::__construct($queryID,$mode);
 	}
 
 	function MoveNext()

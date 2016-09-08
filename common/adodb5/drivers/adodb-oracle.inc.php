@@ -1,6 +1,8 @@
 <?php
 /*
-V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+@version   v5.20.6  31-Aug-2016
+@copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
+@copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
   Released under both BSD license and Lesser GPL library license.
   Whenever there is any discrepancy between the two licenses,
   the BSD license will take precedence.
@@ -32,7 +34,7 @@ class ADODB_oracle extends ADOConnection {
 	}
 
 	// format and return date string in database date format
-	function DBDate($d)
+	function DBDate($d, $isfld = false)
 	{
 		if (is_string($d)) $d = ADORecordSet::UnixDate($d);
 		if (is_object($d)) $ds = $d->format($this->fmtDate);
@@ -41,7 +43,7 @@ class ADODB_oracle extends ADOConnection {
 	}
 
 	// format and return date string in database timestamp format
-	function DBTimeStamp($ts)
+	function DBTimeStamp($ts, $isfld = false)
 	{
 
 		if (is_string($ts)) $ts = ADORecordSet::UnixTimeStamp($ts);
@@ -303,7 +305,7 @@ class ADORecordset_oracle extends ADORecordSet {
 		   return @ora_close($this->_queryID);
    }
 
-	function MetaType($t,$len=-1)
+	function MetaType($t, $len = -1, $fieldobj = false)
 	{
 		if (is_object($t)) {
 			$fieldobj = $t;
