@@ -175,7 +175,6 @@ class dbObject {
 	* Destroys the object
 	*/
 	function destroy() {
-		unset( $this );
 	}
 
 	/**
@@ -290,12 +289,14 @@ class dbTable extends dbObject {
 		switch( $this->currentElement ) {
 			case 'INDEX':
 				if( !isset( $attributes['PLATFORM'] ) OR $this->supportedPlatform( $attributes['PLATFORM'] ) ) {
-					xml_set_object( $parser, $this->addIndex( $attributes ) );
+					$index = $this->addIndex( $attributes );
+					xml_set_object( $parser,  $index );
 				}
 				break;
 			case 'DATA':
 				if( !isset( $attributes['PLATFORM'] ) OR $this->supportedPlatform( $attributes['PLATFORM'] ) ) {
-					xml_set_object( $parser, $this->addData( $attributes ) );
+					$data = $this->addData( $attributes );
+					xml_set_object( $parser, $data );
 				}
 				break;
 			case 'DROP':
@@ -2104,11 +2105,12 @@ class adoSchema {
 
 		$schema = '<?xml version="1.0"?>' . "\n"
 				. '<schema version="' . $this->schemaVersion . '">' . "\n";
-
-		if( is_array( $tables = $this->db->MetaTables( 'TABLES' , ($prefix) ? $prefix.'%' : '') ) ) {
+		if( is_array( $tables = $this->db->MetaTables( 'TABLES' ,false ,($prefix) ? str_replace('_','\_',$prefix).'%' : '') ) ) {
 			foreach( $tables as $table ) {
-				if ($stripprefix) $table = str_replace(str_replace('\\_', '_', $pfx ), '', $table);
-				$schema .= $indent . '<table name="' . htmlentities( $table ) . '">' . "\n";
+				$schema .= $indent
+					. '<table name="'
+					. htmlentities( $stripprefix ? str_replace($prefix, '', $table) : $table )
+					. '">' . "\n";
 
 				// grab details from database
 				$rs = $this->db->Execute( 'SELECT * FROM ' . $table . ' WHERE -1' );
@@ -2377,7 +2379,6 @@ class adoSchema {
 	function Destroy() {
 		ini_set("magic_quotes_runtime", $this->mgq );
 		#set_magic_quotes_runtime( $this->mgq );
-		unset( $this );
 	}
 }
 

@@ -1,6 +1,8 @@
 <?php
 /*
-V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+@version   v5.20.6  31-Aug-2016
+@copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
+@copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
   Released under both BSD license and Lesser GPL library license.
   Whenever there is any discrepancy between the two licenses,
   the BSD license will take precedence.
@@ -133,12 +135,12 @@ class ADODB_mssqlnative extends ADOConnection {
 			sqlsrv_set_error_handling( SQLSRV_ERRORS_LOG_ALL );
 			sqlsrv_log_set_severity( SQLSRV_LOG_SEVERITY_ALL );
 			sqlsrv_log_set_subsystems(SQLSRV_LOG_SYSTEM_ALL);
-			sqlsrv_configure('warnings_return_as_errors', 0);
+			sqlsrv_configure('WarningsReturnAsErrors', 0);
 		} else {
 			sqlsrv_set_error_handling(0);
 			sqlsrv_log_set_severity(0);
 			sqlsrv_log_set_subsystems(SQLSRV_LOG_SYSTEM_ALL);
-			sqlsrv_configure('warnings_return_as_errors', 0);
+			sqlsrv_configure('WarningsReturnAsErrors', 0);
 		}
 	}
 	function ServerVersion() {
@@ -480,6 +482,10 @@ class ADODB_mssqlnative extends ADOConnection {
 		$connectionInfo["Database"]=$argDatabasename;
 		$connectionInfo["UID"]=$argUsername;
 		$connectionInfo["PWD"]=$argPassword;
+		
+		foreach ($this->connectionParameters as $parameter=>$value)
+		    $connectionInfo[$parameter] = $value;
+		
 		if ($this->debug) ADOConnection::outp("<hr>connecting... hostname: $argHostname params: ".var_export($connectionInfo,true));
 		//if ($this->debug) ADOConnection::outp("<hr>_connectionID before: ".serialize($this->_connectionID));
 		if(!($this->_connectionID = sqlsrv_connect($argHostname,$connectionInfo))) {
@@ -563,7 +569,7 @@ class ADODB_mssqlnative extends ADOConnection {
 
 		$insert = false;
 		// handle native driver flaw for retrieving the last insert ID
-		if(preg_match('/^\W*(insert [^;]+);?$/i', $sql)) {
+		if(preg_match('/^\W*insert\s(?:(?:(?:\'\')*\'[^\']+\'(?:\'\')*)|[^;\'])*;?$/i', $sql)) {
 			$insert = true;
 			$sql .= '; '.$this->identitySQL; // select scope_identity()
 		}
@@ -579,9 +585,10 @@ class ADODB_mssqlnative extends ADOConnection {
 			$rez = false;
 		} else if ($insert) {
 			// retrieve the last insert ID (where applicable)
-			sqlsrv_next_result($rez);
-			sqlsrv_fetch($rez);
-			$this->lastInsertID = sqlsrv_get_field($rez, 0);
+			while ( sqlsrv_next_result($rez) ) {
+				sqlsrv_fetch($rez);
+				$this->lastInsertID = sqlsrv_get_field($rez, 0);
+			}
 		}
 		return $rez;
 	}
@@ -845,7 +852,7 @@ class ADORecordset_mssqlnative extends ADORecordSet {
 
 		}
 		$this->fetchMode = $mode;
-		return $this->ADORecordSet($id,$mode);
+		return parent::__construct($id,$mode);
 	}
 
 
@@ -1067,9 +1074,12 @@ class ADORecordset_mssqlnative extends ADORecordSet {
 		is running. All associated result memory for the specified result identifier will automatically be freed.	*/
 	function _close()
 	{
-		$rez = sqlsrv_free_stmt($this->_queryID);
-		$this->_queryID = false;
-		return $rez;
+		if(is_object($this->_queryID)) {
+			$rez = sqlsrv_free_stmt($this->_queryID);
+			$this->_queryID = false;
+			return $rez;
+		}
+		return true;
 	}
 
 	// mssql uses a default date like Dec 30 2000 12:00AM
@@ -1088,7 +1098,7 @@ class ADORecordset_mssqlnative extends ADORecordSet {
 class ADORecordSet_array_mssqlnative extends ADORecordSet_array {
 	function __construct($id=-1,$mode=false)
 	{
-		$this->ADORecordSet_array($id,$mode);
+		parent::__construct($id,$mode);
 	}
 
 		// mssql uses a default date like Dec 30 2000 12:00AM

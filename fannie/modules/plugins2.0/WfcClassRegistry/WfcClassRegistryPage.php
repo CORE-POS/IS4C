@@ -264,7 +264,8 @@ class WfcClassRegistryPage extends FanniePage
             //* Class Roster
             $ret .= "<h2 align=\"center\">" . $className[$key] . "</h2>";
             $ret .= "<h3 align=\"center\">" . $classDate[$key] . "</h3>";
-            $ret .= "<h5 align=\"center\"> <i>Plu</i>: " . $plu . "</h5>";
+            //$ret .= "<h5 align=\"center\"> <i>Plu</i>: " . $plu . "</h5>";
+            $ret .= "<h5 align='center'><a href='/git/fannie/item/ItemEditorPage.php?searchupc=" . $plu . "' target='_blank'>PLU: " . $plu . "</a></h5>";
             $ret .= "<div id=\"line-div\"></div>";
             
             $items = new wfcuRegistryModel($dbc);

@@ -1,6 +1,8 @@
 <?php
 /*
-  V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+  @version   v5.20.6  31-Aug-2016
+  @copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
+  @copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
 
   First cut at the Netezza Driver by Josh Eldridge joshuae74#hotmail.com
  Based on the previous postgres drivers.
@@ -141,21 +143,7 @@ class ADORecordSet_netezza extends ADORecordSet_postgres64
 
 	function __construct($queryID,$mode=false)
 	{
-		if ($mode === false) {
-			global $ADODB_FETCH_MODE;
-			$mode = $ADODB_FETCH_MODE;
-		}
-		switch ($mode)
-		{
-		case ADODB_FETCH_NUM: $this->fetchMode = PGSQL_NUM; break;
-		case ADODB_FETCH_ASSOC:$this->fetchMode = PGSQL_ASSOC; break;
-
-		case ADODB_FETCH_DEFAULT:
-		case ADODB_FETCH_BOTH:
-		default: $this->fetchMode = PGSQL_BOTH; break;
-		}
-		$this->adodbFetchMode = $mode;
-		$this->ADORecordSet($queryID);
+		parent::__construct($queryID,$mode);
 	}
 
 	// _initrs modified to disable blob handling
