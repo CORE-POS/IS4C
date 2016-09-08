@@ -38,7 +38,7 @@ class TenderReceiptFormat extends DefaultReceiptFormat
     */
     public function format(array $row)
     {
-        $tender_width = $this->line_width - 8;
+        $tender_width = $this->line_width - 12;
         $ret = str_pad($row['description'], $tender_width,' ',STR_PAD_LEFT);
         $ret .= str_pad(sprintf('%.2f',-1*$row['total']),8,' ',STR_PAD_LEFT);
 
