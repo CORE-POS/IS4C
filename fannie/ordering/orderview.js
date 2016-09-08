@@ -92,8 +92,6 @@ var orderView = (function($) {
     };
 
     mod.saveCtC = function (val,oid){
-        console.log(val);
-        console.log(oid);
         $.ajax({
             url: 'OrderAjax.php',
             type: 'post',
@@ -333,6 +331,11 @@ var orderView = (function($) {
         var nT = $('#nText').val();
         if (nT !== '' && nD === '0') {
             window.alert("Assign your notes to a department");
+            return false;
+        }
+
+        if ($('#orderStore').val() == 0) {
+            window.alert('Choose a store');
         } else {
             window.location = $('#redirectURL').val();
         }
