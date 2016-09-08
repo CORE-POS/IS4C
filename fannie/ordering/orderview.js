@@ -107,10 +107,6 @@ var orderView = (function($) {
             data: 'customer=1&orderID='+oid+'&memNum='+cardno,
             dataType: 'json'
         }).done(function(resp){
-            if (resp.customer) {
-                $('#customerDiv').html(resp.customer);
-                mod.afterLoadCustomer();
-            }
             if (resp.footer) {
                 $('#footerDiv').html(resp.footer);
                 $('#confirm-date').change(function(e) {
@@ -119,6 +115,10 @@ var orderView = (function($) {
                 $('#ctcselect').change(function() {
                     mod.saveCtC($(this).val(), $('#orderID').val());
                 });
+            }
+            if (resp.customer) {
+                $('#customerDiv').html(resp.customer);
+                mod.afterLoadCustomer();
             }
         });
     };
