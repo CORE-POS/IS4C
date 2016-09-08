@@ -22,8 +22,11 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\webservices; 
+use COREPOS\Fannie\API\member\MemberREST;
+use \FannieDB;
+use \FannieConfig;
 
-class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieWebService 
+class FannieAutoComplete extends FannieWebService 
 {
     
     public $type = 'json'; // json/plain by default
@@ -53,7 +56,7 @@ class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieWebServic
             return $ret;
         }
 
-        $dbc = \FannieDB::getReadOnly(\FannieConfig::factory()->get('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->field)) {
             case 'item':
                 $res = false;
@@ -133,7 +136,7 @@ class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieWebServic
             case 'maddress':
             case 'mcity':
             case 'memail':
-                return \COREPOS\Fannie\API\member\MemberREST::autoComplete($args->field, $args->search);
+                return MemberREST::autoComplete($args->field, $args->search);
 
             case 'sku':
                 $query = 'SELECT sku
