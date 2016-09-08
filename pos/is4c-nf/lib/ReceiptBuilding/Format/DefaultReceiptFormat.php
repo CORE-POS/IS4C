@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\ReceiptBuilding\Format;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 
 /**
   @class DefaultReceiptFormat
@@ -32,11 +33,16 @@ namespace COREPOS\pos\lib\ReceiptBuilding\Format;
 class DefaultReceiptFormat 
 {
     protected $print_handler;
+    protected $line_width = 56;
 
-    // @hintable
-    public function setPrintHandler($ph)
+    public function setPrintHandler(PrintHandler $ph)
     {
         $this->print_handler = $ph;
+    }
+
+    public function setWidth($w)
+    {
+        $this->line_width = is_numeric($w) ? ((int)$w) : 56;
     }
     
     /*
@@ -47,9 +53,11 @@ class DefaultReceiptFormat
     /**
       constructor. disables bolding by default
     */
-    public function __construct()
+    public function __construct(PrintHandler $ph=null, $w=56)
     {
-        $is_bold = False;
+        $is_bold = false;
+        $this->print_handler = $ph;
+        $this->line_width = is_numeric($w) ? ((int)$w) : 56;
     }
 
     /**
@@ -57,10 +65,9 @@ class DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
-    // @hintable
-    public function format($row)
+    public function format(array $row)
     {
-        return "";
+        return '';
     }
 }
 
