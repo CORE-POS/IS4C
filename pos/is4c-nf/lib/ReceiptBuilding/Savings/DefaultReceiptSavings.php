@@ -32,6 +32,7 @@ class DefaultReceiptSavings
 {
     protected $print_handler;
 
+    // @hintable
     public function setPrintHandler($ph)
     {
         $this->print_handler = $ph;

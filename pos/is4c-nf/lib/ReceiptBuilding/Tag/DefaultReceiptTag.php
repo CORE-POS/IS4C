@@ -37,6 +37,7 @@ class DefaultReceiptTag
       @param $rowset an array of records
       @return an array of records
     */
+    // @hintable
     public function tag($rowset)
     {
         for($i=0;$i<count($rowset);$i++) {

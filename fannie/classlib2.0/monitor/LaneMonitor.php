@@ -22,6 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\monitor;
+use COREPOS\Fannie\API\data\Util;
+use COREPOS\Fannie\API\lib\FannieUI;
 
 class LaneMonitor extends Monitor
 {
@@ -52,7 +54,7 @@ class LaneMonitor extends Monitor
         foreach ($this->config->get('LANES') as $lane) {
             // verify lane is online
             $iter = array(
-                'online' => \COREPOS\Fannie\API\data\Util::checkHost($lane['host'], $lane['type']), 
+                'online' => Util::checkHost($lane['host'], $lane['type']), 
                 'tables' => array(),
             ); 
             // verify lane database is accessible
@@ -106,7 +108,7 @@ class LaneMonitor extends Monitor
     */
     public function display($json)
     {
-        return '<pre>' . \COREPOS\Fannie\API\lib\FannieUI::prettyJSON($json) . '</pre>';
+        return '<pre>' . FannieUI::prettyJSON($json) . '</pre>';
     }
 }
 

@@ -530,7 +530,7 @@ class OrderViewPage extends FannieRESTfulPage
         if (empty($names)) {
             $ret .= sprintf('<tr><th>First Name</th><td>
                     <input type="text" id="t_firstName" name="fn"
-                    class="form-control input-sm conact-field"
+                    class="form-control input-sm contact-field"
                     value="%s" 
                     /></td>',$orderModel->firstName());
             $ret .= sprintf('<th>Last Name</th><td><input 
@@ -655,6 +655,9 @@ class OrderViewPage extends FannieRESTfulPage
         }
         $unitPrice = OrderItemLib::getUnitPrice($item, $mempricing);
         $casePrice = OrderItemLib::getCasePrice($item, $mempricing);
+        if (!OrderItemLib::useSalePrice($item, $mempricing)) {
+            $item['discounttype'] = 0;
+        }
 
         $ins_array['upc'] = $item['upc'];
         $ins_array['quantity'] = $item['caseSize'];

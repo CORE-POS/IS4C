@@ -4,6 +4,7 @@ namespace COREPOS\pos\install\conf;
 
 class ParamConf
 {
+    // @hintable
     static public function save($sql, $key, $value) 
     {
         list($value, $save_as_array) = self::paramValueToArray($value);

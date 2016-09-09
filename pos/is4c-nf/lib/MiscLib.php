@@ -234,6 +234,7 @@ static public function getAllIPs()
     return $ret;
 }
 
+    // @hintable
 static private function globalIPs($ret)
 {
     /**

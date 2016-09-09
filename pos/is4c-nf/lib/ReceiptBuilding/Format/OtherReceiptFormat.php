@@ -36,7 +36,7 @@ class OtherReceiptFormat extends DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
-    public function format($row)
+    public function format(array $row)
     {
         if ($row['trans_type'] == '0') {
             // tare

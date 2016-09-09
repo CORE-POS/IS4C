@@ -547,8 +547,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     foreach ($recordset as $record) {
         $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Format\\' . $record['tag'] . 'ReceiptFormat';
         if (!class_exists($class_name)) continue;
-        $obj = new $class_name();
-        $obj->setPrintHandler(self::$PRINT_OBJ);
+        $obj = new $class_name(self::$PRINT_OBJ);
 
         $line = $obj->format($record);
 

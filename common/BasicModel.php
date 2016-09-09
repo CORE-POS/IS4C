@@ -1085,7 +1085,7 @@ class BasicModel
     {
         $current = $this->connection->detailedDefinition($this->name);
         $recase_columns = array();
-        foreach ($this->columns as $col_name => $defintion) {
+        foreach ($this->columns as $col_name => $definition) {
             if (!in_array($col_name, array_keys($current)) && isset($definition['replaces']) && in_array($definition['replaces'], array_keys($current))) {
                 printf("%s column %s as %s\n", 
                         ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to rename":"Renaming", 

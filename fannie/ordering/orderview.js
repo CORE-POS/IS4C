@@ -92,8 +92,6 @@ var orderView = (function($) {
     };
 
     mod.saveCtC = function (val,oid){
-        console.log(val);
-        console.log(oid);
         $.ajax({
             url: 'OrderAjax.php',
             type: 'post',
@@ -109,10 +107,6 @@ var orderView = (function($) {
             data: 'customer=1&orderID='+oid+'&memNum='+cardno,
             dataType: 'json'
         }).done(function(resp){
-            if (resp.customer) {
-                $('#customerDiv').html(resp.customer);
-                mod.afterLoadCustomer();
-            }
             if (resp.footer) {
                 $('#footerDiv').html(resp.footer);
                 $('#confirm-date').change(function(e) {
@@ -121,6 +115,10 @@ var orderView = (function($) {
                 $('#ctcselect').change(function() {
                     mod.saveCtC($(this).val(), $('#orderID').val());
                 });
+            }
+            if (resp.customer) {
+                $('#customerDiv').html(resp.customer);
+                mod.afterLoadCustomer();
             }
         });
     };
@@ -333,6 +331,11 @@ var orderView = (function($) {
         var nT = $('#nText').val();
         if (nT !== '' && nD === '0') {
             window.alert("Assign your notes to a department");
+            return false;
+        }
+
+        if ($('#orderStore').val() == 0) {
+            window.alert('Choose a store');
         } else {
             window.location = $('#redirectURL').val();
         }

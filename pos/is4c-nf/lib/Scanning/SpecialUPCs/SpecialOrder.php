@@ -57,6 +57,7 @@ class SpecialOrder extends SpecialUPC
         return false;
     }
 
+    // @hintable
     public function handle($upc,$json)
     {
         $orderID = substr($upc,5,6);

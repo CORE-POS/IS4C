@@ -9,11 +9,13 @@ class FormFactory
 {
     private $dbc;
 
+    // @hintable
     public function __construct($sql)
     {
         $this->dbc = $sql;
     }
 
+    // @hintable
     public function setDB($sql)
     {
         $this->dbc = $sql;
@@ -31,6 +33,7 @@ class FormFactory
 
       @return [string] html input field
     */
+    // @hintable
     public function textField($name, $default_value='', $storage=Conf::EITHER_SETTING, $quoted=true, $attributes=array(), $area=false)
     {
         $current_value = $this->getCurrentValue($name, $default_value, $quoted);
@@ -105,6 +108,7 @@ class FormFactory
 
       @return [string] html select field
     */
+    // @hintable
     public function selectField($name, $options, $default_value='', $storage=Conf::EITHER_SETTING, $quoted=true, $attributes=array())
     {
         $current_value = $this->getCurrentValue($name, $default_value, $quoted);
@@ -176,6 +180,7 @@ class FormFactory
         return substr($full, -1*$len) === $end;
     }
 
+    // @hintable
     public function checkboxField($name, $label, $default_value=0, $storage=Conf::EITHER_SETTING, $choices=array(0, 1), $attributes=array())
     {
         $current_value = $this->getCurrentValue($name, $default_value, false);
@@ -246,6 +251,7 @@ class FormFactory
         }
     }
 
+    // @hintable
     private function attributesToStr($attributes)
     {
         $ret = '';

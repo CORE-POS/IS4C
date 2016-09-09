@@ -22,6 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\monitor;
+use COREPOS\Fannie\API\lib\FannieUI;
+use \FannieDB;
 
 class ServerMonitor extends Monitor
 {
@@ -47,7 +49,7 @@ class ServerMonitor extends Monitor
 
     public function check()
     {
-        $dbc = \FannieDB::get($this->config->get('OP_DB'));
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $ret = array(
             'versions' => $this->versionInfo(),
             'disk' => $this->diskSpace(),
@@ -128,7 +130,7 @@ class ServerMonitor extends Monitor
     */
     public function display($json)
     {
-        return '<pre>' . \COREPOS\Fannie\API\lib\FannieUI::prettyJSON($json) . '</pre>';
+        return '<pre>' . FannieUI::prettyJSON($json) . '</pre>';
     }
 }
 

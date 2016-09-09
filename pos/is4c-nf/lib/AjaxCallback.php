@@ -39,11 +39,13 @@ class AjaxCallback
         return $this->encoding;
     }
 
+    // @hintable
     public function ajax($input=array())
     {
 
     }
 
+    // @hintable
     public static function unitTest($class)
     {
         self::executeCallback($class);
@@ -65,11 +67,10 @@ class AjaxCallback
             //self::perfStart();
             self::executeCallback($callback_class);
             //self::perfEnd();
-        } else {
-            self::$logger->debug("Unknown AJAX request: {$callback_class} (File: {$file}, NS: {$nsClass}");
         }
     }
 
+    // @hintable
     private static function executeCallback($callback_class)
     {
         $obj = new $callback_class();

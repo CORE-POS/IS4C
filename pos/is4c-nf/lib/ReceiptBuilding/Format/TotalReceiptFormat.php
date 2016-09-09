@@ -36,7 +36,7 @@ class TotalReceiptFormat extends DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
-    public function format($row)
+    public function format(array $row)
     {
         switch($row['upc']) {
             case 'TOTAL':
@@ -49,7 +49,8 @@ class TotalReceiptFormat extends DefaultReceiptFormat
                 break;
             case 'DISCOUNT':
                 $text = sprintf("** %d%% Discount Applied **",$row['percentDiscount']);
-                $text = str_pad($text, 44, ' ', STR_PAD_RIGHT);
+                $pad = $this->line_width - 12;
+                $text = str_pad($text, $pad, ' ', STR_PAD_RIGHT);
                 $amount = str_pad(sprintf('%.2f',$row['total']), 
                                 8, 
                                 ' ',
@@ -62,8 +63,9 @@ class TotalReceiptFormat extends DefaultReceiptFormat
     private function align($text, $amount)
     {
         $amount = sprintf('%.2f',$amount);
+        $pad = $this->line_width - 12;
 
-        $ret = str_pad($text,44,' ',STR_PAD_LEFT);
+        $ret = str_pad($text, $pad,' ',STR_PAD_LEFT);
         $ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
 
         return $ret;
