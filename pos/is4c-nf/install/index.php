@@ -156,7 +156,8 @@ if (is_array(CoreLocal::get('LaneMap'))) {
     <td>
     <?php
     $db_opts = \COREPOS\common\sql\Lib::getDrivers();
-    $default = $db_opts[array_keys($db_opts)[0]];
+    $db_keys = array_keys($db_opts);
+    $default = $db_opts[$db_keys[0]];
     echo $form->selectField('DBMS', $db_opts, $default, Conf::INI_SETTING);
     ?>
     </td>
@@ -305,7 +306,8 @@ $form->setDB(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
     <td>
     <?php
     $db_opts = \COREPOS\common\sql\Lib::getDrivers();
-    $default = $db_opts[array_keys($db_opts)[0]];
+    $db_keys = array_keys($db_opts);
+    $default = $db_opts[$db_keys[0]];
     echo $form->selectField('mDBMS', $db_opts, $default);
     ?>
     </td>
