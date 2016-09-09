@@ -22,6 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\member;
+use \FannieDB;
+use \FannieConfig;
 
 class MemberModule
 {
@@ -40,7 +42,7 @@ class MemberModule
             include_once(dirname(__FILE__) . '/../data/FannieDB.php');
         }
 
-        return \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
+        return FannieDB::get(FannieConfig::factory()->get('OP_DB'));
     }
 
     public function width()

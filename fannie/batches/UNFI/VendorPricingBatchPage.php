@@ -154,8 +154,18 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 WHEN g.margin IS NOT NULL AND g.margin <> 0 THEN g.margin
                 WHEN s.margin IS NOT NULL AND s.margin <> 0 THEN s.margin
                 ELSE d.margin
-            END';
+            END';   
         $srpSQL = Margin::toPriceSQL($costSQL, $marginCase);
+        
+        /*
+        //  Scan both stores to find a list of items that are inUse.  
+        $itemsInUse = array();
+        $query = $dbc->prepare("SELECT upc FROM products WHERE inUse = 1");
+        $result = $dbc->execute($query);
+        while ($row = $dbc->fetchRow($result)) {
+            $itemsInUse[$row['upc']] = 1;
+        }
+        */
 
         $query = "SELECT p.upc,
             p.description,
@@ -184,8 +194,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 
-                    AND v.vendorID=?
-                    AND p.inUse=1 ";
+                    AND v.vendorID=?";
         if ($superID != 99) {
             $query .= " AND m.superID=? ";
             $args[] = $superID;
@@ -193,10 +202,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         if ($filter === false) {
             $query .= " AND p.normal_price <> v.srp ";
         }
-        if ($this->config->get('STORE_MODE') == 'HQ') {
-            $query .= ' AND p.store_id=? ';
-            $args[] = $this->config->get('STORE_ID');
-        }
+        
+        $query .= ' AND p.upc IN (SELECT upc FROM products WHERE inUse = 1) ';
+        $query .= ' GROUP BY p.upc ';
 
         $query .= " ORDER BY p.upc";
         if (isset($p_def['price_rule_id'])) {
