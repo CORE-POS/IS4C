@@ -57,6 +57,19 @@ class DDDReport extends FannieReportPage
         $store = FormLib::get('store', 0);
         $args[] = $store;
 
+        $dept_where = '';
+        $depts = FormLib::get('departments', array());
+        $dept1 = FormLib::get('deptStart', '');
+        $dept2 = FormLib::get('deptEnd', '');
+        if (!empty($depts)) {
+            list($dIN, $args) = $dbc->safeInClause($depts, $args);
+            $dept_where .= " AND d.department IN ({$dIN}) ";
+        } elseif ($dept1 && $dept2) {
+            $dept_where .= " AND d.department BETWEEN ? AND ? ";
+            $args[] = $dept1;
+            $args[] = $dept2;
+        }
+
         /**
           I'm using {{placeholders}}
           to build the basic query, then replacing those
@@ -90,6 +103,7 @@ class DDDReport extends FannieReportPage
                     AND d.upc <> '0'
                     AND datetime BETWEEN ? AND ?
                     AND " . DTrans::isStoreID($store, 'd') . "
+                    {$dept_where}
                   GROUP BY
                     YEAR(datetime),
                     MONTH(datetime),
