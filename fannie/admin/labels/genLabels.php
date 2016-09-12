@@ -62,11 +62,22 @@ class genLabels extends FannieRESTfulPage
         }
 
         $layout_file = dirname(__FILE__) . '/pdf_layouts/' . $layout . '.php';
-        if (count($data) > 0 && file_exists($layout_file) && !function_exists($layout)) {
+        if (count($data[0]) > 0 && file_exists($layout_file) && !function_exists($layout)) {
             include($layout_file);
         }
-        if (count($data) > 0 && function_existS($layout)) {
-            $layout($data,$offset);
+        if (count($data[0]) > 0 && function_existS($layout)) {
+            $layout($data[0],$offset);
+        } else {
+            echo 'Invalid data and/or layout';
+        }
+        
+        //  Print Narrow Tags
+        $layout_file = dirname(__FILE__) . '/pdf_layouts/WFC_Narrow.php';
+        if (count($data[1]) > 0 && file_exists($layout_file) && !function_exists('WFC_Narrow')) {
+            include($layout_file);
+        }
+        if (count($data[1]) > 0 && function_existS('WFC_Narrow')) {
+            WFC_Narrow($data[1],$offset);
         } else {
             echo 'Invalid data and/or layout';
         }
@@ -79,6 +90,14 @@ class genLabels extends FannieRESTfulPage
         if (!is_array($tagID)) {
             $tagID = array($tagID);
         }
+        
+        $narrowTags = array();
+        $prep = $dbc->prepare("select upc from woodshed_no_replicate.NarrowTags");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $narrowTags[] = $row['upc'];
+        }
+        
         list($inStr, $args) = $dbc->safeInClause($tagID);
         $query = "
             SELECT s.*,
@@ -109,6 +128,8 @@ class genLabels extends FannieRESTfulPage
             if (isset($row['count']) && $row['count'] > 0) {
                 $count = $row['count'];
             }
+            $dataA = array();
+            $dataB = array();
             for ($i=0; $i<$count; $i++) {
                 if (strlen($row['sku']) > 7) {
                     $row['sku'] = ltrim($row['sku'], '0');
@@ -126,9 +147,14 @@ class genLabels extends FannieRESTfulPage
                     'scale' => $row['scale'],
                     'numflag' => $row['numflag']
                 );          
-                $data[] = $myrow;
+                if (in_array($row['upc'],$narrowTags)) {
+                    $dataB[] = $myrow;
+                } else {
+                    $dataA[] = $myrow;
+                }
             }
         }
+        $data = array($dataA,$dataB);
 
         return $data;
     }
@@ -139,13 +165,22 @@ class genLabels extends FannieRESTfulPage
             $batchID = array($batchID);
         }
         list($batchIDList, $args) = $dbc->safeInClause($batchID);
+        
+        $narrowTags = array();
+        $prep = $dbc->prepare("select upc from woodshed_no_replicate.NarrowTags");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $narrowTags[] = $row['upc'];
+        }
+        
         $testQ = $dbc->prepare("select b.*,p.scale,p.numflag
             FROM batchBarcodes as b 
                 " . DTrans::joinProducts('b', 'p', 'INNER') . "
             WHERE b.batchID in ($batchIDList) and b.description <> ''
             ORDER BY b.batchID");
         $result = $dbc->execute($testQ,$args);
-        $data = array();
+        $dataA = array();
+        $dataB = array();
         while ($row = $dbc->fetchRow($result)) {
             $myrow = array(
             'normal_price' => $row['normal_price'],
@@ -160,8 +195,13 @@ class genLabels extends FannieRESTfulPage
             'scale' => $row['scale'],
             'numflag' => $row['numflag']
             );          
-            $data[] = $myrow;
+            if (in_array($row['upc'],$narrowTags)) {
+                $dataB[] = $myrow;
+            } else {
+                $dataA[] = $myrow;
+            }
         }
+        $data = array($dataA,$dataB);
 
         return $data;
     }
