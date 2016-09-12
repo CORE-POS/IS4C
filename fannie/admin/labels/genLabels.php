@@ -92,12 +92,14 @@ class genLabels extends FannieRESTfulPage
         }
         
         $narrowTags = array();
-        $prep = $dbc->prepare("select upc from woodshed_no_replicate.NarrowTags");
-        $res = $dbc->execute($prep);
-        while ($row = $dbc->fetchRow($res)) {
-            $narrowTags[] = $row['upc'];
+        if ($dbc->tableExists('woodshed_no_replicate.NarrowTags')) {
+            $prep = $dbc->prepare("select upc from woodshed_no_replicate.NarrowTags");
+            $res = $dbc->execute($prep);
+            while ($row = $dbc->fetchRow($res)) {
+                $narrowTags[] = $row['upc'];
+            }
         }
-        
+            
         list($inStr, $args) = $dbc->safeInClause($tagID);
         $query = "
             SELECT s.*,
@@ -167,10 +169,12 @@ class genLabels extends FannieRESTfulPage
         list($batchIDList, $args) = $dbc->safeInClause($batchID);
         
         $narrowTags = array();
-        $prep = $dbc->prepare("select upc from woodshed_no_replicate.NarrowTags");
-        $res = $dbc->execute($prep);
-        while ($row = $dbc->fetchRow($res)) {
-            $narrowTags[] = $row['upc'];
+        if ($dbc->tableExists('woodshed_no_replicate.NarrowTags')) {
+            $prep = $dbc->prepare("select upc from woodshed_no_replicate.NarrowTags");
+            $res = $dbc->execute($prep);
+            while ($row = $dbc->fetchRow($res)) {
+                $narrowTags[] = $row['upc'];
+            }
         }
         
         $testQ = $dbc->prepare("select b.*,p.scale,p.numflag
