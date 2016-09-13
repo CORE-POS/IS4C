@@ -2,7 +2,7 @@ var recentSales = (function($) {
     var mod = {};
 
     var changeUrl = function(field, val) {
-        var url = 'RecentSalesReport.php?' + field + '=' + val;
+        var url = '?' + field + '=' + val;
         url += '&store=' + $('select[name=store]').val();
         window.location = url;
     };

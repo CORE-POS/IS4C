@@ -47,18 +47,24 @@ class ItemOrderHistoryReport extends FannieReportPage
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC($this->form->upc));
         $prod->load();
+        $stores = FormLib::storePicker();
         $ret = array('Order History For ' . $prod->upc() . ' ' . $prod->description());
         if (FormLib::get('all')) {
             $ret[] = 'All [known] orders';
             if ($this->report_format = 'html') {
-                $ret[] = sprintf('<a href="ItemOrderHistoryReport.php?upc=%s">Show Recent</a>', $prod->upc());
+                $ret[] = sprintf(' <a href="ItemOrderHistoryReport.php?upc=%s">Show Recent</a>', $prod->upc())
+                    . ' | ' . $stores['html'];
             }
         } else {
             $ret[] = 'Since ' . date('F d, Y', strtotime('92 days ago'));
             if ($this->report_format = 'html') {
-                $ret[] = sprintf('<a href="ItemOrderHistoryReport.php?upc=%s&all=1">Show All</a>', $prod->upc());
+                $ret[] = sprintf(' <a href="ItemOrderHistoryReport.php?upc=%s&all=1">Show All</a>', $prod->upc())
+                    . ' | ' . $stores['html'];
             }
         }
+        $this->addScript('../../src/javascript/jquery.js');
+        $this->addScript('../RecentSales/recentSales.js');
+        $this->addOnloadCommand("recentSales.bindSelect('upc', '" . $prod->upc() . "');\n");
 
         return $ret;
     }
@@ -70,6 +76,13 @@ class ItemOrderHistoryReport extends FannieReportPage
 
         $upc = $this->form->upc;
         $upc = BarcodeLib::padUPC($upc);
+        $store = FormLib::get('store', false);
+        if ($store === false) {
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            if ($store === false) {
+                $store = 0;
+            }
+        }
 
         $query = 'SELECT i.sku, i.quantity, i.unitCost, i.caseSize,
                         i.quantity * i.unitCost * i.caseSize AS ttl,
@@ -79,6 +92,7 @@ class ItemOrderHistoryReport extends FannieReportPage
                             LEFT JOIN vendors AS v ON o.vendorID=v.vendorID
                         WHERE i.internalUPC = ?
                             AND o.placedDate >= ?
+                            ' . ($store ? ' AND o.storeID=? ' : '') . '
                         ORDER BY o.placedDate';
         $prep = $dbc->prepare($query);
         $args = array($upc);
@@ -86,6 +100,9 @@ class ItemOrderHistoryReport extends FannieReportPage
             $args[] = '1900-01-01 00:00:00';
         } else {
             $args[] = date('Y-m-d', strtotime('92 days ago'));
+        }
+        if ($store) {
+            $args[] = $store;
         }
         $result = $dbc->execute($prep, $args);
         $data = array();
