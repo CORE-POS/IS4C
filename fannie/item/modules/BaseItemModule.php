@@ -848,6 +848,9 @@ HTML;
             $model->store_id($stores[$i]);
             if (!$model->load()) {
                 // fully init new record
+                $model->pricemethod(0);
+                $model->groupprice(0.00);
+                $model->quantity(0);
                 $model->special_price(0);
                 $model->specialpricemethod(0);
                 $model->specialquantity(0);
@@ -911,9 +914,11 @@ HTML;
             if (isset($brand[$i])) {
                 $model->brand($brand[$i]);
             }
+            /**
             $model->pricemethod(0);
             $model->groupprice(0.00);
             $model->quantity(0);
+            */
             $dept = $this->formNoEx('department', array());
             if (isset($dept[$i])) {
                 $model->department($dept[$i]);
