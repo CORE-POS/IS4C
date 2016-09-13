@@ -54,6 +54,19 @@ $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 $narrowP = $dbc->prepare('SELECT upc FROM woodshed_no_replicate.NarrowTags WHERE upc=?');
 
+$full = array();
+$half = array();
+foreach ($data as $row) {
+    if ($dbc->getValue($narrowP, array($row['upc']))) {
+        $row['full'] = false;
+        $half[] = $row;
+    } else {
+        $row['full'] = true;
+        $full[] = $row;
+    }
+}
+$data = array_merge($full, $half);
+
 $width = 52; // tag width in mm
 $height = 31; // tag height in mm
 $left = 5; // left margin
@@ -95,7 +108,7 @@ $down = 31.0;
 foreach($data as $row) {
    // extract & format data
 
-   if (!$dbc->getValue($narrowP, array($row['upc']))) {
+   if ($row['full']) {
         $price = $row['normal_price'];
         $desc = strtoupper(substr($row['description'],0,27));
         $brand = ucwords(strtolower(substr($row['brand'],0,13)));
