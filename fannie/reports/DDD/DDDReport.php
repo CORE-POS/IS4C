@@ -58,9 +58,19 @@ class DDDReport extends FannieReportPage
         $args[] = $store;
 
         $dept_where = '';
+        $super = FormLib::get('buyer', '');
+        $superTable = 'MasterSuperDepts';
         $depts = FormLib::get('departments', array());
         $dept1 = FormLib::get('deptStart', '');
         $dept2 = FormLib::get('deptEnd', '');
+        $subs = FormLib::get('subdepts', array());
+        if ($super !== '' && $super == -2) {
+            $dept_where .= " AND m.superID<>0 ";
+        } elseif ($super !== '' && $super > -1) {
+            $superTable = 'superdepts';
+            $dept_where .= " AND m.superID=? ";
+            $args[] = $super;
+        }
         if (!empty($depts)) {
             list($dIN, $args) = $dbc->safeInClause($depts, $args);
             $dept_where .= " AND d.department IN ({$dIN}) ";
@@ -68,6 +78,10 @@ class DDDReport extends FannieReportPage
             $dept_where .= " AND d.department BETWEEN ? AND ? ";
             $args[] = $dept1;
             $args[] = $dept2;
+        }
+        if (!empty($subs)) {
+            list($sIN, $args) = $dbc->safeInClause($subs, $args);
+            $dept_where .= " AND p.subdept IN ({$sIN}) ";
         }
 
         /**
@@ -94,7 +108,7 @@ class DDDReport extends FannieReportPage
                   FROM {$dtrans} AS d
                     LEFT JOIN departments AS e ON d.department=e.dept_no
                     LEFT JOIN ShrinkReasons AS s ON d.numflag=s.shrinkReasonID
-                    LEFT JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    LEFT JOIN {$superTable} AS m ON d.department=m.dept_ID
                     " . DTrans::joinProducts('d') . "
                   WHERE trans_status = 'Z'
                     AND trans_type IN ('D', 'I')
