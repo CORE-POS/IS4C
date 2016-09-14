@@ -60,7 +60,7 @@ class SmartMovementReport extends FannieReportPage
 
         $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
         foreach ($_GET as $key => $value) {
-            if ($key != 'date1' && $key != 'date2') {
+            if ($key != 'date1' && $key != 'date2' && $key != 'store') {
                 if (is_array($value)) {
                     foreach ($value as $v) {
                         $dates_form .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
@@ -71,7 +71,7 @@ class SmartMovementReport extends FannieReportPage
             }
         }
         foreach ($_POST as $key => $value) {
-            if ($key != 'date1' && $key != 'date2') {
+            if ($key != 'date1' && $key != 'date2' && $key != 'store') {
                 if (is_array($value)) {
                     foreach ($value as $v) {
                         $dates_form .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
