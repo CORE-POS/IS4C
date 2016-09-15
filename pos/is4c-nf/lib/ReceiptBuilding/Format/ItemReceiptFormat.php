@@ -102,7 +102,7 @@ class ItemReceiptFormat extends DefaultReceiptFormat
     /**
       Pad fields into a standard width and alignment
     */
-    private function align($description, $comment, $amount, $flags="")
+    protected function align($description, $comment, $amount, $flags="")
     {
         $amount = sprintf('%.2f',$amount);
         if ($amount=="0.00") $amount="";
