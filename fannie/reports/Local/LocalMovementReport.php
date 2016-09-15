@@ -153,10 +153,9 @@ class LocalMovementReport extends FannieReportPage
 
     public function unitTest($phpunit)
     {
-        $data = array('month'=>1, 'day'=>1, 'year'=>2000, 'upc'=>'4011',
+        $data = array('upc'=>'4011',
             'brand'=>'b','description'=>'test', 'department'=>1, 'dept_name'=>'test',
-            'salesCode'=>100, 'quantity'=>1,
-            'cost'=>1, 'total'=>1, 'shrinkReason'=>'test', 'charflag'=>'C');
+            'qty'=>1, 'local_name'=>'yes', 'total'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
