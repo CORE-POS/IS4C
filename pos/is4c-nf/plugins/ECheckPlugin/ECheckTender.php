@@ -40,14 +40,14 @@ class ECheckTender extends TenderModule
     public function errorCheck()
     {
         $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
-        if ( CoreLocal::get("isMember") != 0 && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
+        if ( (CoreLocal::get("isMember") != 0 || CoreLocal::get('isStaff') != 0) && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
             return DisplayLib::boxMsg(
                 _("member check tender cannot exceed total purchase by over $") . CoreLocal::get("dollarOver"),
                 '',
                 false,
                 $clearButton
             );
-        } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
+        } else if( CoreLocal::get("isMember") == 0 && CoreLocal::get('isStaff') == 0 && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'), $clearButton);
         }
 

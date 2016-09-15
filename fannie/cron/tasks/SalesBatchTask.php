@@ -165,6 +165,11 @@ class SalesBatchTask extends FannieTask
                 // list of UPCs that should be on sale
                 $sale_upcs = $this->addSaleUPC($sale_upcs, $upc, $product->store_id());
 
+                // for qtyEnforcedGroupPM the salePrice is the whole group price
+                if ($specialpricemethod == 2) {
+                    $special_price = $product->normal_price();
+                }
+
                 $changed = false;
                 if ($product->special_price() != $special_price) {
                     $changed = true;
