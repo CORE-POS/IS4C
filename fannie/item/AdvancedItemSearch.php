@@ -828,6 +828,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 d.dept_name,
                 p.normal_price, 
                 p.special_price,
+                p.cost,
                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
                 0 as selected
             FROM ' . $search->from . '
@@ -908,7 +909,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $ret .= '<thead><tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
                 <th>UPC</th><th>Brand</th><th>Desc</th><th>Super</th><th>Dept</th>
-                <th>Retail</th><th>On Sale</th><th>Sale</th>
+                <th>cost</th><th>Retail</th><th>On Sale</th><th>Sale</th>
                 </tr></thead><tbody>';
         foreach ($data as $upc => $record) {
             $ret .= sprintf('<tr>
@@ -920,6 +921,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             <td>%s</td>
                             <td>%d %s</td>
                             <td>$%.2f</td>
+                            <td>$%.2f</td>
                             <td>%s</td>
                             <td>$%.2f</td>
                             </tr>', 
@@ -929,6 +931,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             $record['description'],
                             $record['super_name'],
                             $record['department'], $record['dept_name'],
+                            $record['cost'],
                             $record['normal_price'],
                             $record['onSale'],
                             $record['special_price']
