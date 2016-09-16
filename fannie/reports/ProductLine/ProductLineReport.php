@@ -63,7 +63,7 @@ class ProductLineReport extends FannieReportPage
                 d.dept_name,
                 {$loc_col}
             FROM products AS p
-                LEFT JOIN departments AS d ON p.department=d.dept_no,
+                LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN productUser AS u ON p.upc=u.upc
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN prodPhysicalLocation AS y ON p.upc=y.upc
