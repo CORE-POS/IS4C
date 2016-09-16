@@ -141,6 +141,15 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     </td>
 </tr>
 <tr>
+    <td><b>Line width</b>:</td>
+    <td>
+    <?php
+    echo $form->textField('ReceiptLineWidth', 56); 
+    ?>
+    <span class="noteTxt"></span>
+    </td>
+</tr>
+<tr>
     <td colspan="2"><h3>PHP Receipt Modules</h3></td>
 </tr>
 <tr>

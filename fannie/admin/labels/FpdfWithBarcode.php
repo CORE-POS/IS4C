@@ -9,12 +9,14 @@ class FpdfWithBarcode extends FPDF
 {
    function EAN13($x,$y,$barcode,$h=16,$w=.35)
    {
-      $this->Barcode($x,$y,$barcode,$h,$w,13);
+      $numDigits = strlen(ltrim($barcode, '0')) <= 11 ? 12 : 13;
+      $this->Barcode($x,$y,$barcode,$h,$w,$numDigits);
    }
 
    function UPC_A($x,$y,$barcode,$h=16,$w=.35)
    {
-      $this->Barcode($x,$y,$barcode,$h,$w,12);
+      $numDigits = strlen(ltrim($barcode, '0')) <= 11 ? 12 : 13;
+      $this->Barcode($x,$y,$barcode,$h,$w,$numDigits);
     }
 
     function GetCheckDigit($barcode)

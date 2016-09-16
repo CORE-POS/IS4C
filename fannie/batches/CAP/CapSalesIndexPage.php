@@ -48,6 +48,7 @@ class CapSalesIndexPage extends FanniePage
         <li>EDLP<ul>
             <li><a href="EdlpUploadPage.php">Upload EDLP Max Prices</a></li>
             <li><a href="EdlpBatchPage.php">Create Price Change Batch</a></li>
+            <li><a href="EdlpCatalogOverwrite.php">Update Item and Vendor Catalog Costs</a></li>
         </ul></li>
         </ul>
         <?php

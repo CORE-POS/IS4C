@@ -544,10 +544,14 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $recordset = $tag->tag($recordset);
 
     $ret = "";
+    $width = CoreLocal::get('ReceiptLineWidth');
+    if (!is_numeric($width) || $width <= 0 || !$width) {
+        $width = 56;
+    }
     foreach ($recordset as $record) {
         $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Format\\' . $record['tag'] . 'ReceiptFormat';
         if (!class_exists($class_name)) continue;
-        $obj = new $class_name(self::$PRINT_OBJ);
+        $obj = new $class_name(self::$PRINT_OBJ, $width);
 
         $line = $obj->format($record);
 

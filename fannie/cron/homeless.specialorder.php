@@ -62,6 +62,17 @@ and max(trans_id) > 0
 )
 and trans_id > 0
 order by datetime
+
+UNION ALL
+
+select s.order_id,description,datetime,
+case when c.lastName ='' then b.LastName else c.lastName END as name
+from PendingSpecialOrder
+as s left join SpecialOrders as c on s.order_id=c.specialOrderID
+left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
+WHERE c.storeID NOT IN (1, 2)
+and trans_id > 0
+order by datetime
 ";
 
 $r = $sql->query($q);
@@ -74,7 +85,7 @@ if ($sql->num_rows($r) > 0){
     $msg_body .= "These messages will be sent daily until orders get departments\n";
     $msg_body .= "or orders are closed\n";
 
-    $to = "buyers, michael";
+    $to = "buyers, dbuyers";
     $subject = "Incomplete SO(s)";
     mail($to,$subject,$msg_body);
 }
