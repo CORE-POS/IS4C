@@ -149,6 +149,9 @@ class FannieSignage
             if ($row['pricePerUnit'] == '') {
                 $row['pricePerUnit'] = PriceLib::pricePerUnit($row['normal_price'], $row['size']);
             }
+            if ($row['sku'] == $row['upc']) {
+                $row['sku'] = '';
+            }
             if (!isset($row['signMultiplier'])) {
                 $row['signMultiplier'] = 1;
             }
