@@ -104,6 +104,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             $this->error_details = 'Cannot find vendor';
             return False;
         }
+        $this->prepareStatements($dbc);
 
         $SKU_TO_PLU_MAP = $this->buildSkuMap($dbc, $VENDOR_ID);
         $rm_checks = (FormLib::get('rm_cds') != '') ? true : false;
