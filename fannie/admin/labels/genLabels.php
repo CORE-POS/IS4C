@@ -111,7 +111,9 @@ class genLabels extends FannieRESTfulPage
                 $count = $row['count'];
             }
             for ($i=0; $i<$count; $i++) {
-                if (strlen($row['sku']) > 7) {
+                if ($row['sku'] == $row['upc']) {
+                    $row['sku'] = '';
+                } elseif (strlen($row['sku']) > 7) {
                     $row['sku'] = ltrim($row['sku'], '0');
                 }
                 $myrow = array(
@@ -149,6 +151,11 @@ class genLabels extends FannieRESTfulPage
         $result = $dbc->execute($testQ,$args);
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
+            if ($row['sku'] == $row['upc']) {
+                $row['sku'] = '';
+            } elseif (strlen($row['sku']) > 7) {
+                $row['sku'] = ltrim($row['sku'], '0');
+            }
             $myrow = array(
             'normal_price' => $row['normal_price'],
             'description' => $row['description'],
