@@ -113,6 +113,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $brand = FormLib::get('update_brand', array());
             $desc = FormLib::get('update_desc', array());
             $origin = FormLib::get('update_origin', array());
+            $custom = FormLib::get('custom_origin', array());
+            $knownOrigins = $this->signage_obj->getOrigins();
             for ($i=0; $i<count($upc); $i++) {
                 if (isset($brand[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
@@ -120,8 +122,10 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 if (isset($desc[$i])) {
                     //$this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
                 }
-                if (isset($origin[$i])) {
-                    $this->signage_obj->addOverride($upc[$i], 'originName', $origin[$i]);
+                if (isset($custom[$i]) && !empty($custom[$i])) {
+                    $this->signage_obj->addOverride($upc[$i], 'originName', $custom[$i]);
+                } elseif (isset($origin[$i]) && isset($knownOrigins[$origin[$i]])) {
+                    $this->signage_obj->addOverride($upc[$i], 'originName', $knownOrigins[$origin[$i]]);
                 }
             }
         }

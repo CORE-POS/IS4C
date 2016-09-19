@@ -31,6 +31,7 @@ use \FannieDB;
 use \FormLib;
 use \ProductsModel;
 use \ProductUserModel;
+use \OriginsModel;
 use \ShelftagsModel;
 
 class FannieSignage 
@@ -160,8 +161,8 @@ class FannieSignage
                 // check for additional origins
                 $mapR = $dbc->execute($mapP, array($row['upc'], $row['originName'], $row['originShortName']));
                 while ($mapW = $dbc->fetch_row($mapR)) {
-                    $row['originName'] .= _(' or ') . $mapW['name'];
-                    $row['originShortName'] .= _(' or ') . $mapW['shortName'];
+                    $row['originName'] .= _(' and ') . $mapW['name'];
+                    $row['originShortName'] .= _(' and ') . $mapW['shortName'];
                 }
             }
 
@@ -200,6 +201,7 @@ class FannieSignage
                     \'\' AS startDate,
                     \'\' AS endDate,
                     \'\' AS unitofmeasure,
+                    o.originID,
                     o.name AS originName,
                     o.shortName AS originShortName
                   FROM shelftags AS s
@@ -237,6 +239,7 @@ class FannieSignage
                     p.numflag,
                     b.startDate,
                     b.endDate,
+                    o.originID,
                     o.name AS originName,
                     o.shortName AS originShortName
                   FROM batchBarcodes AS s
@@ -301,6 +304,7 @@ class FannieSignage
             $query .= '1 AS signCount,';
         }
         $query .= ' o.name AS originName,
+                    o.originID,
                     o.shortName AS originShortName,
                     p.unitofmeasure,
                     b.batchType
@@ -374,6 +378,7 @@ class FannieSignage
                     \'\' AS startDate,
                     \'\' AS endDate,
                     p.unitofmeasure,
+                    o.originID,
                     o.name AS originName,
                     o.shortName AS originShortName
                  FROM products AS p
@@ -415,6 +420,7 @@ class FannieSignage
                     \'\' AS startDate,
                     \'\' AS endDate,
                     p.unitofmeasure,
+                    o.originID,
                     o.name AS originName,
                     o.shortName AS originShortName
                  FROM products AS p
@@ -461,6 +467,7 @@ class FannieSignage
                     p.start_date AS startDate,
                     p.end_date AS endDate,
                     p.unitofmeasure,
+                    o.originID,
                     o.name AS originName,
                     o.shortName AS originShortName,
                     CASE WHEN l.signMultiplier IS NULL THEN 1 ELSE l.signMultiplier END AS signMultiplier
@@ -505,6 +512,7 @@ class FannieSignage
                     b.startDate,
                     b.endDate,
                     p.unitofmeasure,
+                    o.originID,
                     o.name AS originName,
                     o.shortName AS originShortName
                  FROM products AS p
@@ -610,6 +618,18 @@ class FannieSignage
         return $pdf;
     }
 
+    public function getOrigins()
+    {
+        $dbc = $this->getDB();
+        $model = new OriginsModel($dbc);
+        $origins = array();
+        foreach ($model->find('shortName') as $o) {
+            $origins[$o->originID()] = $o->shortName();
+        }
+
+        return $origins;
+    }
+
     public function listItems()
     {
         $url = FannieConfig::factory()->get('URL');
@@ -624,7 +644,14 @@ class FannieSignage
             </tr>';
         $ret .= '</thead><tbody>';
         $data = $this->loadItems();
+        $origins = $this->getOrigins();
         foreach ($data as $item) {
+            $oselect = '<select name="update_origin[]" class="FannieSignageField form-control originField"><option value="0"></option>'; 
+            foreach ($origins as $id => $name) {
+                $oselect .= sprintf('<option %s value="%d">%s</option>',
+                    ($id == $item['originID'] ? 'selected' : ''), $id, $name);
+            }
+            $oselect .= '</select>';
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
                             <input type="hidden" name="update_upc[]" value="%d" />
@@ -637,8 +664,9 @@ class FannieSignage
                                 <input class="FannieSignageField form-control" type="text" 
                                 name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
-                            <td><input class="FannieSignageField form-control" type="text" 
-                                name="update_origin[]" value="%s" /></td>
+                            <td class="form-inline">%s<input type="text" name="custom_origin[]" 
+                                class="form-control FannieSignageField originField" placeholder="Custom origin..." value="" />
+                            </td>
                             <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" /></td>
                             </tr>',
                             $url,
@@ -649,7 +677,7 @@ class FannieSignage
                             str_replace('"', '&quot;', $item['description']),
                             str_replace('"', '&quot;', $item['description']),
                             $item['normal_price'],
-                            $item['originName'],
+                            $oselect,
                             $item['upc']
             );
         }
@@ -658,7 +686,7 @@ class FannieSignage
         return $ret;
     }
 
-    public function updateItem($upc, $brand, $description)
+    public function updateItem($upc, $brand, $description, $originID)
     {
         switch (strtolower($this->source)) {
             case 'shelftags':
@@ -669,7 +697,7 @@ class FannieSignage
                 break;
             case 'batch':
             case '':
-                $this->updateRealItem($upc, $brand, $description);
+                $this->updateRealItem($upc, $brand, $description, $originID);
                 break;
         }
     }
@@ -706,7 +734,7 @@ class FannieSignage
         return $dbc->execute($prep, $args);
     }
 
-    protected function updateRealItem($upc, $brand, $description)
+    protected function updateRealItem($upc, $brand, $description, $originID)
     {
         $dbc = $this->getDB();
         $model = new ProductUserModel($dbc);
@@ -718,6 +746,7 @@ class FannieSignage
         $model->upc(BarcodeLib::padUPC($upc));
         foreach ($model->find('store_id') as $obj) {
             $obj->brand($brand);
+            $obj->current_origin_id($originID);
             $obj->save();
         }
     }
@@ -727,11 +756,12 @@ class FannieSignage
         $upcs = FormLib::get('update_upc', array());
         $brands = FormLib::get('update_brand', array());
         $descs = FormLib::get('update_desc', array());
+        $origins = FormLib::get('update_origin', array());
         for ($i=0; $i<count($upcs); $i++) {
             if (!isset($brands[$i]) || !isset($descs[$i])) {
                 continue;
             }
-            $this->updateItem($upcs[$i], $brands[$i], $descs[$i]);
+            $this->updateItem($upcs[$i], $brands[$i], $descs[$i], $origins[$i]);
         }
     }
 
