@@ -33,7 +33,7 @@ class NarrowTagsModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'upc' => array('type'=>'VARCHAR', 'primary_key'=>true),
+    'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     );
 
 }
