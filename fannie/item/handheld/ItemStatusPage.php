@@ -138,7 +138,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $product = new ProductsModel($dbc);
         $narrowTag = new NarrowTagsModel($dbc);
         $narrowTag->upc($upc);
-        $isNarrow = $narrowTag->find();
+        $isNarrow = $narrowTag->load();
         $vendor = new VendorsModel($dbc);
         $product->upc($upc);
         if (!$product->load()) {
