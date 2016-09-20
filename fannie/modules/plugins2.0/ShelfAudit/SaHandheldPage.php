@@ -29,90 +29,51 @@ if (!class_exists('FannieAPI')) {
 /**
   @class SaHandheldPage
 */
-class SaHandheldPage extends FanniePage {
+class SaHandheldPage extends FannieRESTfulPage 
+{
     private $section=0;
     protected $current_item_data=array();
-    private $linea_ios_mode = False;
+    private $linea_ios_mode = false;
 
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Handheld] is an interface for scanning and entering quantities on
     hand using a handheld device.';
-    public $themed = true;
     protected $title = 'ShelfAudit Inventory';
     protected $header = '';
 
-    private function linea_support_available(){
-        global $FANNIE_ROOT;
-        if (file_exists($FANNIE_ROOT.'src/javascript/linea/cordova-2.2.0.js')
-        && file_exists($FANNIE_ROOT.'src/javascript/linea/ScannerLib-Linea-2.0.0.js'))
-            return True;
-        else
-            return False;
+    private function linea_support_available()
+    {
+        if (file_exists($this->config->get('ROOT') . 'src/javascript/linea/cordova-2.2.0.js')
+        && file_exists($this->config->get('ROOT') . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js')) {
+            return true;
+        }
+
+        return false;
     }
 
-    function preprocess(){
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_URL;
-
-        /**
-          Store session in browser section.
-        */
-        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
-            @session_start();
-        }
-        if (!isset($_SESSION['SaPluginSection'])) {
-            $_SESSION['SaPluginSection'] = 0;
-        }
-        $section = FormLib::get('section', false);
-        if ($section !== false) {
-            $this->section = $section;
-            $_SESSION['SaPluginSection'] = $section;
-        } else {
-            $this->section = $_SESSION['SaPluginSection'];
-        }
-
-        /* ajax callbacks */
-        $ajax = FormLib::get_form_value('action','');
-        /* save new quantity */
-        if ($ajax === 'save'){
-            $upc = FormLib::get_form_value('upc','');
-            $qty = FormLib::get_form_value('qty',0);
-            $store = FormLib::get('store', 0);
-
-            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']);
-            $delP = $dbc->prepare('DELETE FROM sa_inventory
-                    WHERE upc=? AND clear=0 AND section=? AND storeID=?');
-            $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section,storeID)
-                    VALUES ('.$dbc->now().',?,0,?,?,?)');
-            $dbc->execute($delP, array($upc, $this->section, $store));
-            if ($qty > 0){
-                $dbc->execute($insP, array($upc, $qty, $this->section, $store));
-            }
-            echo $qty;
-            echo 'quantity updated';
-            return False;
-        }
-
-        /* upc scan; lookup item */
-        $upc = FormLib::get_form_value('upc_in','');
-        if ($upc !== ''){
-            $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
-            $upc = BarcodeLib::padUPC($upc);
-            $this->current_item_data['upc'] = $upc;     
+    protected function get_id_handler()
+    {
+        $ret = array();
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        if ($this->id !== '') {
+            $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
+            $upc = BarcodeLib::padUPC($this->id);
+            $ret['upc'] = $upc;     
             $store = FormLib::get('store', 0);
             $q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
                 products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
-                LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
+                LEFT JOIN '.$settings['ShelfAuditDB'].$dbc->sep().
                 'sa_inventory AS s ON p.upc=s.upc AND s.clear=0 AND s.storeID=?
                     AND s.section=?
                 WHERE p.upc=? 
                 ORDER BY v.vendorID';
             $p = $dbc->prepare($q);
             $r = $dbc->execute($p,array($store, $this->section, $upc));
-            if($dbc->num_rows($r)==0){
+            if ($dbc->numRows($r)==0) {
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
                     vendorItems AS v 
-                    LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
+                    LEFT JOIN '.$settings['ShelfAuditDB'].$dbc->sep().
                     'sa_inventory AS s ON s.upc=v.upc AND s.clear=0 AND s.storeID=?
                         AND s.section=?
                     WHERE v.upc=? 
@@ -121,34 +82,93 @@ class SaHandheldPage extends FanniePage {
                 $r = $dbc->execute($p,array($store, $this->section, $upc));
             }
 
-            
-            while($w = $dbc->fetch_row($r)){
+            while ($w = $dbc->fetchRow($r)) {
                 if (!isset($this->current_item_data['desc'])){
-                    $this->current_item_data['desc'] = $w['brand'].' '.$w['description'];
+                    $ret['desc'] = $w['brand'].' '.$w['description'];
                 }
                 if (!isset($this->current_item_data['qty'])){
-                    $this->current_item_data['qty'] = is_numeric($w['quantity']) ? $w['quantity'] : 0;
+                    $ret['qty'] = is_numeric($w['quantity']) ? $w['quantity'] : 0;
                 }
                 if (!isset($this->current_item_data['case_sizes'])){
-                    $this->current_item_data['case_sizes'] = array();
+                    $ret['case_sizes'] = array();
                 }
-                if ($w['units'] > 0)
-                    $this->current_item_data['case_sizes'][] = $w['units'];
+                if ($w['units'] > 0) {
+                    $ret['case_sizes'][] = $w['units'];
+                }
             }
         }
 
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        if (isset($ret['upc']) && !isset($ret['desc'])) {
+            echo '<div class="alert alert-danger">Item not found (';
+            echo $ret['upc'];
+            echo ')</div>';
+        } elseif (isset($ret['upc'])) {
+            echo $this->qtyForm($ret);
+        }
+
+        return false;
+    }
+
+    protected function post_id_handler()
+    {
+        $ret = array();
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $upc = $this->id;
+        $qty = FormLib::get('qty',0);
+        $store = FormLib::get('store', 0);
+
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']);
+        $delP = $dbc->prepare('DELETE FROM sa_inventory
+                WHERE upc=? AND clear=0 AND section=? AND storeID=?');
+        $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section,storeID)
+                VALUES ('.$dbc->now().',?,0,?,?,?)');
+        $dbc->execute($delP, array($upc, $this->section, $store));
+        if ($qty > 0){
+            $dbc->execute($insP, array($upc, $qty, $this->section, $store));
+        }
+        $ret['qty'] = $qty;
+        
+        echo json_encode($ret);
+
+        return false;
+    }
+
+    protected function setSection()
+    {
+        if (!isset($_SESSION['SaPluginSection'])) {
+            $_SESSION['SaPluginSection'] = 0;
+        }
+        $section = FormLib::get('section', false);
+        if ($section !== false) {
+            $_SESSION['SaPluginSection'] = $section;
+        } else {
+            $section = $_SESSION['SaPluginSection'];
+        }
+
+        return $section;
+    }
+
+    function preprocess()
+    {
+        /**
+          Store session in browser section.
+        */
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
+            @session_start();
+        }
+        $this->section = $this->setSection();
 
         $this->linea_ios_mode = $this->linea_support_available();
         if ($this->linea_ios_mode){
-            $this->add_script($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
-            $this->add_script($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+            $this->add_script($this->config->get('URL').'src/javascript/linea/cordova-2.2.0.js');
+            $this->add_script($this->config->get('URL').'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
         }
         
-        return True;
+        return parent::preprocess();
     }
 
-    function css_content(){
+    function css_content()
+    {
         ob_start();
         ?>
 input#cur_qty {
@@ -162,71 +182,11 @@ input.focused {
         return ob_get_clean();
     }
 
-    function javascript_content(){
+    function javascript_content()
+    {
         ob_start();
         ?>
-function paint_focus(elem){
-    if (elem == 'upc_in'){
-        $('#upc_in').addClass('focused');
-        $('#cur_qty').removeClass('focused');
-    }
-    else {
-        $('#cur_qty').addClass('focused');
-        $('#upc_in').removeClass('focused');
-    }
-}
-function update_qty(amt){
-    var cur = Number($('#cur_qty').val());
-    if (cur + amt < 0)
-        cur = 0;
-    else
-        cur = cur+amt;
-    $('#cur_qty').val(cur);
-
-    cur += Number($('#old-qty').html());
-    $('#live-qty').html(cur);
-
-    // save new quantity, return cursor to upc input
-    var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur+'&store='+$('#store').val();
-    $.ajax({
-        data: args,
-        cache: false,
-        error: function(){
-            $('#upc_in').focus();
-            paint_focus('upc_in');
-        },
-        success: function(){
-            $('#upc_in').focus();
-            paint_focus('upc_in');
-        }
-    });
-}
-
-function qty_typed(ev){
-    var cur = Number($('#cur_qty').val()) + Number($('#old-qty').html());
-    $('#live-qty').html(cur);
-    // save new quantity, return cursor to upc input
-    var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur+'&store='+$('#store').val();
-    $.ajax({
-        data: args,
-        cache: false,
-        error: function(){
-        },
-        success: function(){
-        }
-    });
-    if (ev.keyCode==13){
-        $('#upc_in').focus();
-        paint_focus('upc_in');
-    }
-    else if (ev.keyCode >= 37 && ev.keyCode <= 40){
-        $('#upc_in').focus();
-        paint_focus('upc_in');
-    }
-}
-
-function doubleBeep()
-{
+function doubleBeep() {
     if (typeof cordova.exec != 'function') {
         setTimeout('doubleBeep()', 500);
     } else {
@@ -272,84 +232,74 @@ if (typeof WebBarcode == 'object') {
         return ob_get_clean();
     }
 
-    protected function upcForm($elem, $store)
+    protected function upcForm($store)
     {
         ?>
-<form method="get" id="upcScanForm">
+<form method="get" id="upcScanForm" onsubmit="handheld.lookupItem(event);">
 <a href="SaMenuPage.php">Menu</a>
  - Store # <?php echo $store; ?>
 <input type="hidden" name="store" id="store" value="<?php echo ((int)$store); ?>" />
 <label>
-    <input type="radio" name="section" value=0 <?php echo $_SESSION['SaPluginSection']==0 ? 'checked' : ''; ?>/> Backstock
+    <input tabindex="-1" type="radio" name="section" value=0 <?php echo $_SESSION['SaPluginSection']==0 ? 'checked' : ''; ?>/> Backstock
 </label>
 <label>
-    <input type="radio" name="section" value=1 <?php echo $_SESSION['SaPluginSection']==1 ? 'checked' : ''; ?>/> Floor
+    <input tabindex="-1" type="radio" name="section" value=1 <?php echo $_SESSION['SaPluginSection']==1 ? 'checked' : ''; ?>/> Floor
 </label>
 <br />
 <div class="form-group form-inline">
     <div class="input-group">
         <label class="input-group-addon">UPC</label>
-        <input type="number" size="10" name="upc_in" id="upc_in" 
-            onfocus="paint_focus('upc_in');"
-            <?php echo ($elem=='#upc_in')?'class="focused form-control"':'class="form-control"'; ?> 
+        <input type="number" size="10" name="id" id="upc_in" 
+            onfocus="handheld.paintFocus('upc_in');"
+            class="focused form-control" tabindex="1"
         />
     </div>
-    <button type="submit" class="btn btn-success" id="goBtn">Go</button>
+    <button type="submit" class="btn btn-success" tabindex="-1" id="goBtn">Go</button>
 </div>
 </form>
         <?php
     }
 
-    protected function qtyForm($elem)
+    protected function qtyForm($data)
     {
-        echo '<p>';
-        echo $this->current_item_data['upc'];
-        echo ' ';
-        echo $this->current_item_data['desc'];
-        echo '<br />';
-        echo '<strong>Current Qty</strong>: '
-            . '<span id="old-qty" class="collapse">' . $this->current_item_data['qty'] . '</span>'
-            . '<span id="live-qty">' . $this->current_item_data['qty'] . '</span>';
-        echo '</p>';
-        echo '<div class="form-group form-inline">';
-        printf('<input type="number" min="-99999" max="99999" step="0.01" %s
-            onfocus="paint_focus(\'cur_qty\');$(this).select();" 
-            onkeyup="qty_typed(event);" id="cur_qty" />
-            <input type="hidden" id="cur_upc" value="%s" />',
-            (($elem=='#cur_qty')?'class="focused form-control input-lg"':'class="form-control input-lg"'),
-            $this->current_item_data['upc']
-        );
-    }
-
-    function body_content()
-    {
-        ob_start();
-        $elem = '#upc_in';
-        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
-        if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
-        $this->add_onload_command('$(\'' . $elem . '\').focus();');
-        $this->upcForm($elem, $store);
-if (isset($this->current_item_data['upc'])){
-    if (!isset($this->current_item_data['desc'])){
-        echo '<div class="alert alert-danger">Item not found (';
-        echo $this->current_item_data['upc'];
-        echo ')</div>';
-        $this->add_onload_command('doubleBeep();');
-    } else {
-        $this->qtyForm($elem);
-        printf('<button type="button" onclick="update_qty(%d);" class="btn btn-success btn-lg">+%d</button>
-            <button type="button" onclick="update_qty(%d);" class="btn btn-danger btn-lg">-%d</button>',
-            1,1,-1,1);
         $used = array(1=>true);
-        foreach($this->current_item_data['case_sizes'] as $s){
+        $cases = '';
+        foreach($ret['case_sizes'] as $s){
             if (isset($used[$s])) continue;
-            printf('<button type="button" onclick="update_qty(%d)" class="btn btn-success btn-lg">+%d</button>
-                <button type="button" onclick="update_qty(%d)" class="btn btn-danger btn-lg">-%d</button>',
+            $cases.= sprintf('<button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-success btn-lg">+%d</button>
+                <button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-danger btn-lg">-%d</button>',
                 $s,$s,-1*$s,$s);
         }
-        echo '</div>';
+        echo <<<HTML
+<p>
+    {$data['upc']} {$data['desc']}<br />
+    <strong>Current Qty</strong>: 
+    <span id="old-qty" class="collapse">{$data['qty']}</span>
+    <span id="live-qty">{$data['qty']}</span>
+</p>
+<div class="form-group form-inline">
+    <input type="number" min="-99999" max="99999" step="0.01" 
+        class="focused form-control input-lg" tabindex="2"
+        onfocus="handheld.paintFocus('cur_qty');$(this).select();" 
+        onkeyup="handheld.qtyTyped(event);" id="cur_qty" 
+        onkeydown="handheld.catchTab(event);" />
+    <input type="hidden" id="cur_upc" value="{$data['upc']}" />
+    <button tabindex="-1" type="button" onclick="handheld.updateQty(1);" class="btn btn-success btn-lg">+1</button>
+    <button tabindex="-1" type="button" onclick="handheld.updateQty(-1);" class="btn btn-danger btn-lg">-1</button>
+    {$cases}
+</div>
+HTML;
     }
-}
+
+    function get_view()
+    {
+        ob_start();
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $this->addOnloadCommand("\$('#upc_in').focus();\n");
+        $this->upcForm($store);
+        echo '<div id="qtyArea"></div>';
+        $this->addScript('js/handheld.js');
+
         return ob_get_clean();
     }
 }
