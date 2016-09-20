@@ -77,7 +77,7 @@ class PIApply extends FannieRESTfulPage
         }
         \COREPOS\Fannie\API\member\MemberREST::post($json['card_no'], $rest);
 
-        $custdata = new CustdataModel($this->connection);
+        $custdata = new CustdataModel(FannieDB::get(FannieConfig::config('OP_DB')));
         $custdata->CardNo($json['card_no']);
         foreach ($custdata->find() as $c) {
             $c->pushToLanes();
