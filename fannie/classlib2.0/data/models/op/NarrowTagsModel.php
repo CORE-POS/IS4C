@@ -26,10 +26,11 @@
 /**
   @class NarrowTagsModel
 */
-class NarrowTagsModel extends \COREPOS\common\BasicModel
+class NarrowTagsModel extends BasicModel
 {
 
     protected $name = "NarrowTags";
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR', 'primary_key'=>true),
