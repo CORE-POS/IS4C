@@ -488,10 +488,11 @@ class MarginToolFromSearch extends FannieRESTfulPage
                     p.normal_price, m.superID, q.percentageStoreSales,
                     q.percentageSuperDeptSales, q.percentageDeptSales
                   FROM products AS p
-                  LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                  LEFT JOIN ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'productSummaryLastQuarter AS q
-                    ON p.upc=q.upc
+                      LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                      LEFT JOIN ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'productSummaryLastQuarter AS q
+                        ON p.upc=q.upc
                   WHERE p.upc IN (' . $in_sql . ')
+                    AND p.store_id=1
                   ORDER BY p.upc';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
