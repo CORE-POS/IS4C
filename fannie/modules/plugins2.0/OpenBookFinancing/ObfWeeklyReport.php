@@ -1025,7 +1025,9 @@ class ObfWeeklyReport extends FannieReportPage
 
             /** plugged new store numbers **/
             foreach (array(1, 2, 3, 7, 8, 9) as $catID) {
-                $sales->lastYearTransactions($trans_info[2]);
+                if ($catID > 3) {
+                    $sales->lastYearTransactions($trans_info[2]);
+                }
                 $sales->obfCategoryID($catID);
                 if ($future) {
                     $sales->actualSales(0);
