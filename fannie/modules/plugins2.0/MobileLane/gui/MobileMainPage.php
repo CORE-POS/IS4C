@@ -11,6 +11,7 @@ if (!class_exists('MobileLanePage')) {
 class MobileMainPage extends MobileLanePage
 {
     private $msg = '';
+    protected $enable_linea = true;
 
     public function preprocess()
     {
@@ -137,6 +138,7 @@ class MobileMainPage extends MobileLanePage
         $ttl = sprintf('%.2f', $ttl);
         $msg = $this->msg != '' ? "<div class=\"alert alert-danger\">{$this->msg}</div>" : '';
         $this->addOnloadCommand("\$('#mainInput').focus();\n");
+        $this->addOnloadCommand("enableLinea('#mainInput');\n");
         return <<<HTML
 <form method="post">
 {$items}

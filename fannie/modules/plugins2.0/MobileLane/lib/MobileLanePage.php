@@ -7,6 +7,8 @@ class MobileLanePage extends FannieRESTfulPage
         $this->addJQuery();
         $this->addBootstrap();
         $url = $this->config->get('URL');
+        $this->addScript($url . 'src/javascript/linea/cordova-2.2.0.js');
+        $this->addScript($url . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
         $bcss = array();
         if (file_exists(__DIR__ . '/../../../../' . 'src/javascript/composer-components/bootstrap/js/bootstrap.min.js')) {
             $bcss = array(

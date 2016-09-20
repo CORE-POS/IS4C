@@ -25,10 +25,23 @@ class MobileMenuPage extends MobileLanePage
 
         $this->addRoute(
             'get<cancel><e><r>',
-            'get<suspend><e><r>'
+            'get<suspend><e><r>',
+            'get<signout><e><r>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function get_signout_e_r_handler()
+    {
+        $dbc = $this->connection;
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc->selectDB($settings['MobileLaneDB']);
+        $model = new MobileSessionsModel($dbc);
+        $model->empNo($e);
+        $model->delete();
+
+        return 'MobileLoginPage.php';
     }
 
     protected function get_cancel_e_r_handler()
@@ -138,6 +151,13 @@ HTML;
                 <a href="?resumelist=1&e=' . $this->emp . '&r=' . $this->reg . '" 
                 class="btn btn-block btn-success">
                 Resume Transaction<a/>
+            </p>';
+        }
+        if ($trans === false) {
+            $ret .= '<p>
+                <a href="?signout=1&e=' . $this->emp . '&r=' . $this->reg . '"
+                class="btn btn-block btn-info">
+                Sign Out<a/>
             </p>';
         }
 
