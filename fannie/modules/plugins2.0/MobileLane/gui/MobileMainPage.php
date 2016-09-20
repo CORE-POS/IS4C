@@ -54,6 +54,7 @@ class MobileMainPage extends MobileLanePage
             $settings = $this->config->get('PLUGIN_SETTINGS');
             $dbc->selectDB($settings['MobileLaneDB']);
             $model = new MobileTransModel();
+            $model->datetime(date('Y-m-d H:i:s'));
             $model->emp_no($this->emp);
             $model->register_no($this->reg);
             $model->trans_no($this->getTransNo($dbc, $this->emp, $this->reg));
@@ -155,7 +156,7 @@ class MobileMainPage extends MobileLanePage
         <a href="" class="btn btn-default btn-success">Tender Out</a>
     </div>
     <div class="col-sm-3">
-        <a href="" class="btn btn-default btn-warning">Menu</a>
+        <a href="MobileMenuPage.php?e={$this->emp}&r={$this->reg}" class="btn btn-default btn-warning">Menu</a>
     </div>
 </div>
 <input type="hidden" name="e" value="{$this->emp}" />
