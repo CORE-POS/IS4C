@@ -43,7 +43,7 @@ class PIEmailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
         /** extract valid mime types **/
         $mimes = array('application/json');
         $info = $this->parseEmail($msg);
-        $fp = fopen('/tmp/pik.out');
+        $fp = fopen('/tmp/pik.out', 'a');
         fwrite($fp, date('r') . ": Got message\n");
         
         $boundary = $this->hasAttachments($info['headers']);
@@ -58,11 +58,13 @@ class PIEmailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     continue;
                 }
                 $json = base64_encode($a['content']);
+                fwrite($fp, $json . "\n");
                 $page = new PIApply();
                 $page->setJson($json);
                 $page->get_json_handler();
             }
         }
+        fclose($fp);
     }
 }
 
