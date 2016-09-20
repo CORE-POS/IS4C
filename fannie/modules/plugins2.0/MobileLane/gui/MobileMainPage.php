@@ -54,11 +54,12 @@ class MobileMainPage extends MobileLanePage
         } else {
             $settings = $this->config->get('PLUGIN_SETTINGS');
             $dbc->selectDB($settings['MobileLaneDB']);
+            $mgr = new MobileTransManager($dbc, $this->config);
             $model = new MobileTransModel();
             $model->datetime(date('Y-m-d H:i:s'));
             $model->emp_no($this->emp);
             $model->register_no($this->reg);
-            $model->trans_no($this->getTransNo($dbc, $this->emp, $this->reg));
+            $model->trans_no($mgr->getTransNo($this->emp, $this->reg));
             $model->trans_type('I');
             $model->department($item['department']);
             $model->quantity(1);
@@ -84,22 +85,6 @@ class MobileMainPage extends MobileLanePage
         }
 
         return true;
-    }
-
-    protected function getTransNo($dbc, $emp, $reg)
-    {
-        $getP = $dbc->prepare('SELECT trans_no FROM MobileTrans WHERE emp_no=? AND register_no=?');
-        $get = $dbc->getValue($getP, array($emp, $reg));
-        if ($get !== false) {
-            return $get;
-        }
-        $getP = $dbc->prepare('SELECT MAX(trans_no) FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dtransactions WHERE emp_no=? AND register_no=?');
-        $get = $dbc->getValue($getP, array($emp, $reg));
-        if ($get !== false) {
-            return $get+1;
-        }
-
-        return 1;
     }
 
     private function listItems($dbc)
@@ -155,7 +140,7 @@ class MobileMainPage extends MobileLanePage
         <button type="submit" class="btn btn-default btn-info">Add Item</button>
     </div>
     <div class="col-sm-3">
-        <a href="" class="btn btn-default btn-success">Tender Out</a>
+        <a href="MobileTenderPage.php?e={$this->emp}&r={$this->reg}" class="btn btn-default btn-success">Tender Out</a>
     </div>
     <div class="col-sm-3">
         <a href="MobileMenuPage.php?e={$this->emp}&r={$this->reg}" class="btn btn-default btn-warning">Menu</a>

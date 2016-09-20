@@ -57,30 +57,8 @@ class MobileMenuPage extends MobileLanePage
                 AND register_no=?"); 
         $dbc->execute($canP, array($this->e, $this->r));
 
-        /**
-          MobileTrans.pos_row_id is going into both
-          dtransactions.pos_row_id AND dtransactions.trans_id
-        */
-        $model = new MobileTransModel($dbc);
-        $cols = array_keys($model->getColumns());
-        $cols = implode(',', $colums);
-        $dt_cols = str_replace('pos_row_id', 'trans_id,pos_row_id', $cols);
-        $mt_cols = $cols . ',pos_row_id';
-
-        $xfer = $dbc->prepare("
-            INSERT INTO " . $this->config->get('TRANS_DB') . $dbc->sep() . "dtransactions
-                ({$dt_cols})
-            SELECT {$mt_cols}
-            FROM MobileTrans
-            WHERE emp_no=?
-                AND register_no=?");
-        $dbc->execute($xfer, array($this->e, $this->r));
-
-        $clearP = $dbc->prepare('
-            DELETE FROM MobileTrans
-            WHERE emp_no=?
-                AND register_no=?');
-        $dbc->execute($clearP, array($this->e, $this->r));
+        $mgr = new MobileTransManager($dbc, $this->config);
+        $mgr->endTransaction($this->e, $this->r);
 
         return "MobileMainPage.php?e={$this->e}&r={$this->r}";
     }
@@ -113,11 +91,8 @@ class MobileMenuPage extends MobileLanePage
                 AND register_no=?");
         $dbc->execute($xfer, array($this->e, $this->r));
 
-        $clearP = $dbc->prepare('
-            DELETE FROM MobileTrans
-            WHERE emp_no=?
-                AND register_no=?');
-        $dbc->execute($clearP, array($this->e, $this->r));
+        $mgr = new MobileTransManager($dbc, $this->config);
+        $mgr->endTransaction($this->e, $this->r);
 
         return "MobileMainPage.php?e={$this->e}&r={$this->r}";
     }

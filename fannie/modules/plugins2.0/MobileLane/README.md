@@ -15,10 +15,11 @@ This plugin is a stripped down, barebones mobile interface for ringing up items.
   * Linea integration probably works along with any other HID-style scanner
 * Canceling a transaction
 * Suspending a transaction
+* Tender entry
+* Member entry (accessed via Tender Out)
 
 ## TODO
 * Must-haves
-  * Tender entry procedure. Member entry/selection should be the first step in tendering to avoid extra screen clutter.
   * Basic sales tax calculations
   * Void item entry
 * Nice-to-haves
