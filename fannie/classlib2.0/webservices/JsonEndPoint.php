@@ -2,6 +2,7 @@
 
 namespace COREPOS\Fannie\API\webservices; 
 use \FannieConfig;
+use \FannieDispatch;
 
 /**
   FannieDispatch-compatible JSON request handler
@@ -89,6 +90,14 @@ abstract class JsonEndPoint
                 header('HTTP/1.0 405 Method Not Allowed');
                 echo "Unknown HTTP method";
                 break;
+        }
+    }
+
+    public static function dispatch($class)
+    {
+        $frames = debug_backtrace();
+        if (count($frames) == 1) {
+            FannieDispatch::runPage($class);
         }
     }
 }
