@@ -2,7 +2,7 @@
   "name": "mobilelane",
   "version": "1.0.0",
   "description": "This plugin is a stripped down, barebones mobile interface for ringing up items. This is a client-server setup with Office serving the UI to mobile clients. Hardware integration beyond barcode scanning may require either an additional host machine in a convenient location or additional mobile add-ons that are accessible via javascript.",
-  "main": "src/index.js",
+  "main": "src/index.jsx",
   "dependencies": {
     "babel-core": "^6.14.0",
     "babel-loader": "^6.2.5",
