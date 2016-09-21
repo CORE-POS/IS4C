@@ -36,7 +36,7 @@ class App extends React.Component {
         if (this.state.loggedIn) {
             content = <LoginForm doLogin={login.bind(this)} />;
         } else {
-            content = <ItemList />;
+            content = <ItemList empNo={this.state.emp} registerNo={this.state.reg} />;
         }
 
         return content;
