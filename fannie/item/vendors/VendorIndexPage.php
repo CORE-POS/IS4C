@@ -337,9 +337,9 @@ class VendorIndexPage extends FannieRESTfulPage
             $ret .= "This vendor's items are divided into ";
             $ret .= $num." subcategories";
             $ret .= "<br />";
-            $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">View or Edit vendor-specific margin(s)</a>";
+            $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">View or Edit vendor subcategory margin(s)</a>";
             $ret .= "<br />";
-            $ret .= "<a href=\"VendorMarginsPage.php?id=$id\">And Even More Margins</a>";
+            $ret .= "<a href=\"VendorMarginsPage.php?id=$id\">View or Edit vendor-specific POS department margins</a>";
             $ret .= '<p />';
             $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Subcategory List</a>";
         }
@@ -568,12 +568,28 @@ class VendorIndexPage extends FannieRESTfulPage
             <p>PLU/SKU mapping is for resolving situations where the
             store and the vendor use different UPCs. This is often
             the case with items sold in bulk using a PLU.</p>
-            <p>Vendor Subcategories are optional. If the vendor\'s
-            catalog is divided into vendor-specific subcategories,
-            custom margin targets can be set for those sets of
-            items.</p>
             <p>Contact Info and Delivery Schedule are wholly optional.
-            Jot down whatever is useful.</p>';
+            Jot down whatever is useful.</p>
+            <p>Several margin adjustments can be associated with a vendor.
+            An item\'s default margin is chosen, from lowest to highest priority, 
+            from these options:
+                <ul>
+                    <li><em>(default)</em> The POS department\'s margin.</li>
+                    <li>The vendor catalog subcategory\'s margin</li>
+                    <li>The vendor <strong>and</strong> POS department specific margin</li>
+                </ul>
+            This structure creates increasingly specific overrides from the default, POS-department
+            based margins. Higher priority rules only need to exist where the target margin
+            deviates from the default. Both vendor subcategories and the additional vendor+POS-department
+            overrides are entirely optional.</p>
+            <p>Two additional adjustments can be applied <em>in addition</em> to the baseline margin above.
+            The shipping percentage <strong>increases</strong> the item\'s cost before applying the
+            baseline margin resulting in a higher retail price. The discount rate <strong>decreases</strong>
+            an item\'s cost before applying the baseline margin resulting in a lower retail price. The names
+            refer to common use cases, but in practice to price all a vendor\'s items e.g. 5% above or below
+            the default POS department margin it\'s easier to use one of these fields than create dozens and/or
+            hundreds of subcategory or vendor+POS-department overrides.</p>
+            ';
     }
 
     public function unitTest($phpunit)
