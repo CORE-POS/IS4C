@@ -1,6 +1,9 @@
 var webpack = require('webpack');
 var path = require('path');
 
+// workaround for old node version shipping w/ ubuntu
+var es6_promise = require('es6-promise').polyfill()
+
 var BUILD_DIR = path.resolve(__dirname, 'build');
 var APP_DIR = path.resolve(__dirname, 'src');
 
@@ -8,7 +11,9 @@ var config = {
     entry: APP_DIR + '/index.jsx',
     output: {
         path: BUILD_DIR,
-        filename: 'bundle.js'
+        filename: 'bundle.js',
+        libraryTarget: 'var',
+        library: 'MobileLane'
     },
     module : {
         loaders : [

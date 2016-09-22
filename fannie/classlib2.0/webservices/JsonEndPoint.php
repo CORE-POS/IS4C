@@ -49,25 +49,25 @@ abstract class JsonEndPoint
     protected function get()
     {
         header('HTTP/1.0 405 Method Not Allowed');
-        return array('error' => 'Not implemented');
+        return array('error' => 'GET Not implemented');
     }
 
     protected function post(array $json)
     {
         header('HTTP/1.0 405 Method Not Allowed');
-        return array('error' => 'Not implemented');
+        return array('error' => 'POST Not implemented');
     }
 
     protected function put(array $json)
     {
         header('HTTP/1.0 405 Method Not Allowed');
-        return array('error' => 'Not implemented');
+        return array('error' => 'PUT Not implemented');
     }
 
     protected function delete()
     {
         header('HTTP/1.0 405 Method Not Allowed');
-        return array('error' => 'Not implemented');
+        return array('error' => 'DELETE Not implemented');
     }
 
     public function draw_page()

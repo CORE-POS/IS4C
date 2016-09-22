@@ -5,6 +5,8 @@ This plugin is a stripped down, barebones mobile interface for ringing up items.
 ## Install
 1. Enable the plugin
 2. Go the Updates tab of install/config and create Mobile- tables
+3. In this directory run `npm install`
+4. Run `./node_modules/.bin/webpack -p` to build the app
 
 ## Supports (in theory)
 * Sign in/out
@@ -31,5 +33,3 @@ This plugin is a stripped down, barebones mobile interface for ringing up items.
 * Hardware question marks
   * Some way to print or email a receipt
 
-## Dev
-Multiple devices should be able to connect to the interface at once as long as they are logged in as different cashiers. All the current transaction data co-exists in MobileTrans. There is no session (and I'd like to avoid adding one) so employee and register numbers get passed from page to page as "e" and "r".
