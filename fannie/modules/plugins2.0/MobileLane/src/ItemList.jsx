@@ -98,7 +98,7 @@ export default class ItemList extends React.Component {
                     </Col>
                     <Col sm={3}>
                         <Button 
-                            onclick={() => this.props.memNo ? this.props.nav('tender') : this.props.nav('member')} 
+                            onClick={() => this.props.memNo ? this.props.nav('tender') : this.props.nav('member')} 
                             bsStyle="success">
                             Tender Out
                         </Button>

@@ -12,7 +12,7 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            loggedIn: true,
+            loggedIn: false,
             emp: 0,
             reg: 0,
             nav: 'items',
