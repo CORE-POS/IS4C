@@ -4,7 +4,7 @@ var path = require('path');
 // workaround for old node version shipping w/ ubuntu
 var es6_promise = require('es6-promise').polyfill()
 
-var BUILD_DIR = path.resolve(__dirname, 'build');
+var BUILD_DIR = path.resolve(__dirname, 'dist');
 var APP_DIR = path.resolve(__dirname, 'src');
 
 var config = {
