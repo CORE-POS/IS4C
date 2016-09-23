@@ -15,6 +15,7 @@ This plugin is a stripped down, barebones mobile interface for ringing up items.
   * Quantity is implicitly 1
   * Scale items are simply rejected as invalid
   * Linea integration probably works along with any other HID-style scanner
+* Void item entry
 * Canceling a transaction
 * Suspending a transaction
 * Tender entry
@@ -23,7 +24,6 @@ This plugin is a stripped down, barebones mobile interface for ringing up items.
 ## TODO
 * Must-haves
   * Basic sales tax calculations
-  * Void item entry
 * Nice-to-haves
   * Resume transaction
   * Scale items w/ keyed weight

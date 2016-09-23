@@ -29,7 +29,9 @@ export default class ItemList extends React.Component {
             <Row>
                 <Col sm={7}>{i.description}</Col>
                 <Col sm={3}>{i.total}</Col>
-                <Col sm={2}>[Void]</Col>
+                <Col sm={2}>
+                    <Button bsClass="danger" onClick={() => this.voidItem(i.id)}>[Void]</Button>
+                </Col>
             </Row>
         );
     }
@@ -37,6 +39,22 @@ export default class ItemList extends React.Component {
     addItem(e) {
         e.preventDefault();
         this.postItem(this.state.upc);
+    }
+
+    voidItem(id) {
+        $.ajax({
+            url: 'api/void/',
+            method: 'post',
+            data: JSON.stringify({id: id})
+        }).fail((xhr, stat, err) => {
+            this.setState({errors: "Error voiding item"});
+        }).done(resp => {
+            if (resp.error) {
+                this.setState({errors: resp.error});
+            } else {
+                this.props.morph({type: ADDITEM, value: resp.item});
+            }
+        });
     }
 
     postItem(upc) {

@@ -69,7 +69,7 @@ class ItemEndPoint extends JsonEndPoint
             $settings = $this->config->get('PLUGIN_SETTINGS');
             $dbc->selectDB($settings['MobileLaneDB']);
             $mgr = new MobileTransManager($dbc, $this->config);
-            $model = new MobileTransModel();
+            $model = new MobileTransModel($dbc);
             $model->datetime(date('Y-m-d H:i:s'));
             $model->emp_no($this->emp);
             $model->register_no($this->reg);
