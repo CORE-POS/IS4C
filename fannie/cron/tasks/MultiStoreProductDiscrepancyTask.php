@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class PriceDiscrepancyTask extends FannieTask
+class MultiStoreProductDiscrepancyTask extends FannieTask
 {
     public $name = 'Product Price-discrepancy Check';
 
@@ -74,7 +74,6 @@ class PriceDiscrepancyTask extends FannieTask
         $diffR = $dbc->query("
             SELECT upc
             FROM products
-            WHERE inUse = 1
             GROUP BY upc
             HAVING MIN({$field}) <> MAX({$field})
             ORDER BY department
