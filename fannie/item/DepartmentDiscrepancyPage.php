@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DepartmentDiscrepancyNew extends FannieRESTfulPage {
+class DepartmentDiscrepancPage extends FannieRESTfulPage {
 
     protected $header = 'Discrepancies Within Departments';
     protected $title = 'Discrepancies Within Departments';
