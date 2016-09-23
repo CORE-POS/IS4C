@@ -154,7 +154,7 @@ class adminlist extends NoInputCorePage
             ?>
         </div>
         <p>
-            <button class="pos-button" type="submit"><?php echo _(Select [enter]); ?></button>
+            <button class="pos-button" type="submit"><?php echo _('Select [enter]'); ?></button>
             <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
                 <?php echo _('Cancel [clear]'); ?>
             </button>
