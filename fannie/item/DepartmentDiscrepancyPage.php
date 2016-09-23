@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DepartmentDiscrepancPage extends FannieRESTfulPage {
+class DepartmentDiscrepancyPage extends FannieRESTfulPage {
 
     protected $header = 'Discrepancies Within Departments';
     protected $title = 'Discrepancies Within Departments';
@@ -82,7 +82,7 @@ class DepartmentDiscrepancPage extends FannieRESTfulPage {
             }
         }
         
-        echo '<a class="btn btn-default" href="DepartmentDiscrepancyNew.php">Back</a><br><br>';
+        echo '<a class="btn btn-default" href="DepartmentDiscrepancyPage.php">Back</a><br><br>';
 
         $update = new ProdUpdateModel($dbc);
         $update->logManyUpdates($upcs, 'EDIT');
@@ -259,7 +259,7 @@ class DepartmentDiscrepancPage extends FannieRESTfulPage {
             $ret .= '<td><input type="hidden" name="upc[]" value="' . $row['upc'] . '"></td>';
               
         }
-        $ret .= '<a href="DepartmentDiscrepancyNew.php">Back</a><br><br>';
+        $ret .= '<a href="DepartmentDiscrepancyPage.php">Back</a><br><br>';
         $ret .= '</tr><tr><td><input type="submit" class="btn btn-default" 
             value="Update Products"></td>';
         $ret .= '</table>
@@ -296,7 +296,7 @@ class DepartmentDiscrepancPage extends FannieRESTfulPage {
         }
         foreach ($dept as $dept_no => $dept_name) {
             $ret .= '<tr>';
-            $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no='
+            $ret .= '<td><a href="DepartmentDiscrepancyPage.php?dept=1&dept_no='
                 . $dept_no . '&dept_name=' . $dept_name . '&order=department">' . $dept_no . ' ' . $dept_name . '</a></td>';            
             $queryD = $dbc->prepare('
                 SELECT 
@@ -330,7 +330,7 @@ class DepartmentDiscrepancPage extends FannieRESTfulPage {
                         $k = '<span class="redcircle"><b>' . $k . '</b></span>';
                     }
                 }
-                $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="DepartmentDiscrepancyPage.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=tax">' . $i . ' ' . $j . ' ' . $k . '</a></td>'; //Tax
                 
                 unset($k);                    
@@ -345,7 +345,7 @@ class DepartmentDiscrepancPage extends FannieRESTfulPage {
                 } elseif ($min == $j && $i != 0) {
                     $j = '<span class="redcircle"><b>' . $j . '</b></span>';
                 }
-                $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="DepartmentDiscrepancyPage.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=foodstamp">' . $i . ' ' . $j . '</a></td>'; //Foodstamp
                 
                 unset($k);                    
@@ -360,7 +360,7 @@ class DepartmentDiscrepancPage extends FannieRESTfulPage {
                 } elseif ($min == $j && $i != 0) {
                     $j = '<span class="redcircle"><b>' . $j . '</b></span>';
                 }
-                $ret .= '<td><a href="DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="DepartmentDiscrepancyPage.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=wic">' . $i . ' ' . $j . '</a></td>'; //Wic
                    
             }
