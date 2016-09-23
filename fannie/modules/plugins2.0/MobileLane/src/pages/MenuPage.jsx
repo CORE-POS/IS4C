@@ -6,30 +6,19 @@ import {
     Alert
 } from 'react-bootstrap';
 var $ = require('jquery');
+import { LOGOUT, NAVIGATE } from './../lib/State.jsx';
 
 export default class MenuForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { msg: false, msgStyle: 'danger', emptyTrans: false};
-    }
-
-    componentDidMount() {
-        $.ajax({
-            url: 'api/item/',
-            method: 'get',
-            data: 'e='+this.props.empNo+'&r='+this.props.registerNo
-        }).done(resp => {
-            if (resp.items.length == 0) {
-                this.setState({emptyTrans: true});
-            }
-        });
+        this.state = { msg: false, msgStyle: 'danger' };
     }
 
     api(url, verb) {
         $.ajax({
             url: url,
             method: 'post',
-            data: JSON.stringify({e: this.props.empNo, r: this.props.registerNo})
+            data: JSON.stringify({e: this.props.s.emp, r: this.props.s.reg})
         }).fail((xhr, stat, err) => {
             this.setState({msg: 'Error ' + verb + 'ing transaction', msgStyle: 'danger'});
         }).done(resp => {
@@ -45,11 +34,11 @@ export default class MenuForm extends React.Component {
         $.ajax({
             url: 'api/logout/',
             method: 'post',
-            data: JSON.stringify({e: this.props.empNo})
+            data: JSON.stringify({e: this.props.s.emp})
         }).fail((xhr, stat, err) => {
             this.setState({msg: "Failed to sing out", msgStyle: "danger"});
         }).done(resp => {
-            this.props.doLogout();
+            this.props.morph({type: LOGOUT});
         });
     }
 
@@ -58,7 +47,7 @@ export default class MenuForm extends React.Component {
             <div>
                 {this.state.msg ? <Alert bsStyle={this.state.msgStyle}>{this.state.msg}</Alert> : null}
                 <p>
-                    <Button block={true} onClick={() => this.props.nav('items')}>Go Back</Button>
+                    <Button block={true} onClick={() => this.props.morph({type: NAVIGATE, value:'items'})}>Go Back</Button>
                 </p>
                 <p>
                     <Button block={true} onClick={() => this.api('api/cancel/', 'cancell')} bsStyle="danger">Cancel Transaction</Button>
@@ -66,7 +55,7 @@ export default class MenuForm extends React.Component {
                 <p>
                     <Button block={true} onClick={() => this.api('api/suspend/', 'suspend')} bsStyle="warning">Suspend Transaction</Button>
                 </p>
-                { this.state.emptyTrans ?
+                { this.props.s.items.length == 0 ?
                 <p>
                     <Button block={true} onClick={() => this.logout()} bsStyle="info">Sign Out</Button>
                 </p>

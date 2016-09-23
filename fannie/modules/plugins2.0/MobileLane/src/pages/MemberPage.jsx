@@ -25,10 +25,10 @@ export default class MemberPage extends React.Component {
         $.ajax({
             url: 'api/member/',
             method: 'post',
-            data: JSON.stringify({cardNo: card, personNum: person, e: this.props.empNo, r: this.props.registerNo})
+            data: JSON.stringify({cardNo: card, personNum: person, e: this.props.s.emp, r: this.props.s.reg})
         }).done(resp => {
-            this.props.mem(card);
-            this.props.nav('tender');
+            this.props.morph({type: MEMBER, value: card});
+            this.props.morph({type: NAVIGATE, value: 'tender'});
         });
     }
 
@@ -67,7 +67,7 @@ export default class MemberPage extends React.Component {
                     <Button bsStyle="success" block={true} type="submit">Search</Button>
                 </FormGroup>
                 <FormGroup>
-                    <Button block={true} onClick={() => this.props.nav('items')}>Go Back </Button>
+                    <Button block={true} onClick={() => this.props.morph({type: NAVIGATE, value: 'items'})}>Go Back </Button>
                 </FormGroup>
             </form>
         );

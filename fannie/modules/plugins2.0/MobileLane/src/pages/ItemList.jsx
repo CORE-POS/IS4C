@@ -11,14 +11,14 @@ import {
     Row,
     Alert
 } from 'react-bootstrap';
-import enableScanner from './Devices.jsx';
+import enableScanner from './../lib/Devices.jsx';
+import { NAVIGATE, ADDITEM, SETITEMS } from './../lib/State.jsx';
 var $ = require('jquery');
 
 export default class ItemList extends React.Component {
     constructor(props) {
         super(props);
         this.state = { 
-            items: [],
             upc: "",
             errors: false 
         };
@@ -43,16 +43,15 @@ export default class ItemList extends React.Component {
         $.ajax({
             url: 'api/item/',
             type: 'post',
-            data: JSON.stringify({upc: upc, r: this.props.registerNo, e: this.props.empNo})
+            data: JSON.stringify({upc: upc, r: this.props.s.reg, e: this.props.s.emp})
         }).fail((xhr,stat,err) => {
             this.setState({errors: "Error adding item"});
         }).done(resp => {
             if (resp.error) {
                 this.setState({errors: resp.error});
             } else {
-                var newlist = this.state.items;
-                newlist.push(resp.item);
-                this.setState({items: newlist, errors: false, upc: ""});
+                this.props.morph({type: ADDITEM, value: resp.item});
+                this.setState({errors: false, upc: ""});
             }
         });
     }
@@ -63,23 +62,24 @@ export default class ItemList extends React.Component {
         $.ajax({
             url: 'api/item/',
             type: 'get',
-            data: 'e='+this.props.empNo+'&r='+this.props.registerNo
+            data: 'e='+this.props.s.emp+'&r='+this.props.s.reg
         }).fail((xhr,stat,err) => {
             this.setState({errors: 'Error retreiving items'});
         }).done(resp => {
             if (resp.error) {
                 this.setState(errors: resp.error);
             } else {
-                this.setState({items: resp.items, errors: false});
+                this.props.morph({type: SETITEMS, value: resp.items});
+                this.setState({errors: false});
             }
         });
     }
 
     render() {
-        var ttl = this.state.items.reduce((c,i) => c + i.total, 0);
+        var ttl = this.props.s.items.reduce((c,i) => c + i.total, 0);
         return (
             <form onSubmit={this.addItem.bind(this)}>
-                {this.state.items.map(this.renderItem)}
+                {this.props.s.items.map(this.renderItem)}
                 {this.state.errors ? <Alert bsStyle="danger">{this.state.errors}</Alert> : null}
                 <Row>
                     <Col sm={7}>
@@ -98,13 +98,13 @@ export default class ItemList extends React.Component {
                     </Col>
                     <Col sm={3}>
                         <Button 
-                            onClick={() => this.props.memNo ? this.props.nav('tender') : this.props.nav('member')} 
+                            onClick={() => this.props.s.member ? this.props.morph({type: NAVIGATE, value: 'tender'}) : this.props.morph({type: NAVIGATE, value: 'member'})} 
                             bsStyle="success">
                             Tender Out
                         </Button>
                     </Col>
                     <Col sm={3}>
-                        <Button onClick={() => this.props.nav('menu')} bsStyle="warning">Menu</Button>
+                        <Button onClick={() => this.props.morph({type: NAVIGATE, value: 'menu'})} bsStyle="warning">Menu</Button>
                     </Col>
                 </Row>
             </form>

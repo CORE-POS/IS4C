@@ -10,6 +10,7 @@ import {
     Alert
 } from 'react-bootstrap';
 var $ = require('jquery');
+import { MEMBER, NAVIGATE } from './../lib/State.jsx';
 
 export default class TenderPage extends React.Component {
     constructor(props) {
@@ -18,30 +19,24 @@ export default class TenderPage extends React.Component {
     }
 
     componentDidMount() {
+        var ttl = this.props.s.items.reduce((c,i) => c + i.total, 0);
+        this.setState({total: ttl});
         $.ajax({
             url: 'api/tenders/',
             method: 'get',
         }).done(resp => this.setState({tenders: resp.tenders}));
-        $.ajax({
-            url: 'api/item/',
-            type: 'get',
-            data: 'e='+this.props.empNo+'&r='+this.props.registerNo
-        }).done(resp => {
-            var ttl = resp.items.reduce((c,i) => c + i.total, 0);
-            this.setState({total: ttl});
-        });
     }
 
     doTender() {
         $.ajax({
             url: 'api/tender/',
             type: 'post',
-            data: JSON.stringify({type: this.state.type, amt: this.state.amt, e: this.props.empNo, r: this.props.registerNo})
+            data: JSON.stringify({type: this.state.type, amt: this.state.amt, e: this.props.s.emp, r: this.props.s.reg})
         }).done(resp => {
             if (resp.ended) {
-                this.props.mem(false);
+                this.props.morph({type: MEMBER, value: false});
             }
-            this.props.nav('items'); 
+            this.props.morph({type: NAVIGATE, value: 'items'}); 
         });
     }
 
@@ -67,7 +62,7 @@ export default class TenderPage extends React.Component {
                     <Button bsStyle="success" block={true} type="submit">Enter Tender</Button>
                 </FormGroup>
                 <FormGroup>
-                    <Button block={true} onClick={() => this.props.nav('items')}>Go Back </Button>
+                    <Button block={true} onClick={() => this.props.morph({type: NAVIGATE, value: 'items'})}>Go Back </Button>
                 </FormGroup>
             </form>
         );

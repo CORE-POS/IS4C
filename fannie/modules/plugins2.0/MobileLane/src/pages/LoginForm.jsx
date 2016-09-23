@@ -10,6 +10,7 @@ import {
     Alert
 } from 'react-bootstrap';
 var $ = require('jquery');
+import LOGIN from './../lib/State.jsx';
 
 export default class LoginForm extends React.Component {
     constructor(props) {
@@ -25,7 +26,7 @@ export default class LoginForm extends React.Component {
             data: JSON.stringify({ passwd: this.state.passwd })
         }).done(resp => {
             if (resp.emp && resp.reg) {
-                this.props.doLogin(resp.emp, resp.reg);
+                this.props.morph({type: LOGIN, e: resp.emp, r: resp.reg});
             } else {
                 this.setState({ error: "Invalid login" });
             }
