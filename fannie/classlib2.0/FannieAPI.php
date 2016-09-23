@@ -212,7 +212,7 @@ class FannieAPI
         $ret = false;
         while ($dir && ($file=readdir($dir)) !== false) {
             $fullname = realpath($path.'/'.$file);
-            if ($file[0] != '.' && $file != 'noauto' && is_dir($fullname)) {
+            if ($file[0] != '.' && $file != 'noauto' && $file != 'node_modules' && is_dir($fullname)) {
                 // recurse looking for file
                 $file = self::findClass($name, $fullname);
                 if ($file !== false) { 
