@@ -90,8 +90,5 @@ class App extends React.Component {
     }
 }
 
-export default function startReact() {
-    ReactDOM.render(<App />, document.getElementById('app-main'));
-}
-
+ReactDOM.render(<App />, document.getElementById('app-main'));
 

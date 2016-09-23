@@ -8,12 +8,13 @@ var BUILD_DIR = path.resolve(__dirname, 'build');
 var APP_DIR = path.resolve(__dirname, 'src');
 
 var config = {
-    entry: APP_DIR + '/index.jsx',
+    entry: {
+        entry: APP_DIR + '/index.jsx',
+        vendor: ['react', 'react-dom', 'jquery', 'react-bootstrap']
+    },
     output: {
         path: BUILD_DIR,
-        filename: 'bundle.js',
-        libraryTarget: 'var',
-        library: 'MobileLane'
+        filename: 'bundle.js'
     },
     module : {
         loaders : [
@@ -33,7 +34,10 @@ var config = {
             { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file' },
             { test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=image/svg+xml' }
         ]
-    }
+    },
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin("vendor", "vendor.bundle.js")
+    ]
 };
 
 module.exports = config;
