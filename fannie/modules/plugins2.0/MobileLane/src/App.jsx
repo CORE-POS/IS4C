@@ -9,7 +9,7 @@ import MemberPage from './pages/MemberPage.jsx';
 import TenderPage from './pages/TenderPage.jsx';
 import * as State from './lib/State.jsx';
 
-class App extends React.Component {
+export default class App extends React.Component {
 
     constructor(props) {
         super(props);

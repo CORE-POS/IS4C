@@ -7,7 +7,7 @@ const ADDITEM   = 5;
 const SETITEMS  = 6;
 const RESET     = 99;
 
-function initalState() {
+function initialState() {
     return {
         loggedIn: false,
         emp: 0,
@@ -36,14 +36,14 @@ function nextState(state, action) {
         case SETITEMS:
             return Object.assign({}, state, {items: a.value}); 
         case RESET:
-            return initalState();
+            return initialState();
         default:
             return state;
     }
 }
 
 export { 
-    initalState,
+    initialState,
     nextState,
     LOGIN,
     LOGOUT,
