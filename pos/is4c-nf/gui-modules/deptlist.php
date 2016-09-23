@@ -122,12 +122,12 @@ class deptlist extends NoInputCorePage
         }
         echo "<div class=\"listboxText coloredText centerOffset\">"
             . _("use arrow keys to navigate")
-            . '<p><button type="submit" class="pos-button wide-button coloredArea">
-                OK <span class="smaller">[enter]</span>
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">'
+            . _('OK') . ' <span class="smaller">' . _('[enter]') . '</span>
                 </button></p>'
             . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
-                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">
-                Cancel <span class="smaller">[clear]</span>
+                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">'
+            . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
                 </button></p>'
             ."</div><!-- /.listboxText coloredText .centerOffset -->"
             .'<input type="hidden" name="in" value="' . $input . '" />'

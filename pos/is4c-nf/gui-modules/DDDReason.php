@@ -84,7 +84,7 @@ class DDDReason extends NoInputCorePage
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored">
-                <span class="larger">Why are these items being marked as shrink/unsellable?</span>
+                <span class="larger"><?php echo _('Why are these items being marked as shrink/unsellable?'); ?></span>
         <form name="selectform" method="post" 
             id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
             <select name="selectlist" id="selectlist"
@@ -97,7 +97,7 @@ class DDDReason extends NoInputCorePage
             </select>
         </form>
         <p>
-        <span class="smaller">[clear] to cancel</span>
+        <span class="smaller"><?php echo _('[clear] to cancel'); ?></span>
         </p>
         </div>
         </div>    

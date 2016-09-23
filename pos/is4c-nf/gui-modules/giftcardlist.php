@@ -52,7 +52,7 @@ class giftcardlist extends NoInputCorePage
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">
-        <span class="larger">gift card transaction</span>
+        <span class="larger"><?php echo _('gift card transaction'); ?></span>
         <form name="selectform" method="post" id="selectform"
             action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <?php if (CoreLocal::get('touchscreen')) { ?>
@@ -63,10 +63,10 @@ class giftcardlist extends NoInputCorePage
         <?php } ?>
         <select id="selectlist" name="selectlist" 
             onblur="$('#selectlist').focus()">
-        <option value="">Sale
-        <option value="AC">Activate
-        <option value="AV">Add Value
-        <option value="PV">Balance
+        <option value=""><?php echo _('Sale'); ?>
+        <option value="AC"><?php echo _('Activate'); ?>
+        <option value="AV"><?php echo _('Add Value'); ?>
+        <option value="PV"><?php echo _('Balance'); ?>
         </select>
         <?php if (CoreLocal::get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
@@ -75,9 +75,9 @@ class giftcardlist extends NoInputCorePage
         </button>
         <?php } ?>
         <p>
-            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit"><?php echo _('Select [enter]'); ?></button>
             <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
-                Cancel [clear]
+                <?php echo _('Cancel [clear]'); ?>
             </button>
         </p>
         </div>

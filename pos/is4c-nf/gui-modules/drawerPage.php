@@ -118,9 +118,9 @@ class drawerPage extends NoInputCorePage
 
     function body_content() 
     {
-        $msg = 'You are using drawer #'.$this->my_drawer;
+        $msg = sprintf(_('You are using drawer #%d'), $this->my_drawer);
         if ($this->my_drawer == 0)
-            $msg = 'You do not have a drawer';
+            $msg = _('You do not have a drawer');
         $num_drawers = (CoreLocal::get('dualDrawerMode')===1) ? 2 : 1;
         $dbc = Database::pDataConnect();
         ?>
@@ -140,19 +140,19 @@ class drawerPage extends NoInputCorePage
                 $name = $dbc->query($nameQ);
                 if ($dbc->num_rows($name) > 0)
                     $name = array_pop($dbc->fetch_row($name));
-                if (empty($name)) $name = 'Unassigned';
-                printf('<option value="TO%d">Take over drawer #%d (%s)</option>',
-                    ($i+1),($i+1),$name);
+                if (empty($name)) $name = _('Unassigned');
+                $opt = sprintf(_('Take over drawer #%d (%s)'), ($i+1), $name);
+                printf('<option value="TO%d">%s</option>', ($i+1), $opt);
             }
         }
         elseif (count($this->available) > 0){
             foreach($this->available as $num){
-                printf('<option value="SW%d">Switch to drawer #%d</option>',
-                    $num,$num);
+                $opt = sprintf(_('Switch to drawer #%d'), $num);
+                printf('<option value="SW%d">%s</option>', $num, $opt);
             }
         }
         else 
-            echo '<option value="">No actions available</option>';
+            echo '<option value="">' . _('No actions available') . '</option>';
         ?>
         </select>
         </form>

@@ -58,7 +58,7 @@ class PaidOutComment extends NoInputCorePage
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored">
-        <span class="larger">reason for paidout</span>
+        <span class="larger"><?php echo 'reason for paidout'; ?></span>
         <form name="selectform" method="post" 
             id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <?php
@@ -72,19 +72,19 @@ class PaidOutComment extends NoInputCorePage
         ?>
             <select name="selectlist" id="selectlist"
                 onblur="$('#selectlist').focus();">
-            <option>Paid to Supplier</option>
-            <option>Store Use</option>
-            <option>Coupon</option>
-            <option>Other</option>
-            <option>Discount</option>
-            <option>Gift Card Refund</option>
+            <option><?php echo _('Paid to Supplier'); ?></option>
+            <option><?php echo _('Store Use'); ?></option>
+            <option><?php echo _('Coupon'); ?></option>
+            <option><?php echo _('Other'); ?></option>
+            <option><?php echo _('Discount'); ?></option>
+            <option><?php echo _('Gift Card Refund'); ?></option>
             </select>
         <?php
         }
         ?>
         </form>
         <p>
-        <span class="smaller">[clear] to cancel</span>
+        <span class="smaller"><?php echo _('[clear] to cancel'); ?></span>
         </p>
         </div>
         </div>    

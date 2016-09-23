@@ -131,13 +131,13 @@ class cablist extends NoInputCorePage
         <?php echo _("use arrow keys to navigate"); ?><br />
         <p>
             <button type="submit" class="pos-button wide-button coloredArea">
-            Reprint <span class="smaller">[enter]</span>
+            <?php echo _('Reprint'); ?> <span class="smaller"><?php echo _('[enter]'); ?></span>
             </button>
         </p>
         <p>
             <button type="submit" class="pos-button wide-button errorColoredArea"
             onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
-            Cancel <span class="smaller">[clear]</span>
+            <?php echo _('Cancel'); ?> <span class="smaller"><?php echo _('[clear]'); ?></span>
         </button></p>
         </div>
         </form>

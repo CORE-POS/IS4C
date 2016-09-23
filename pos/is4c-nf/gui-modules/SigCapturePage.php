@@ -52,8 +52,8 @@ class SigCapturePage extends BasicCorePage
                     width: 250 
                 });
                 $('#imgArea').append(img);
-                $('.boxMsgAlert').html('Approve Signature');
-                $('#sigInstructions').html('[enter] to approve, [clear] to cancel');
+                $('.boxMsgAlert').html('<?php echo _('Approve Signature'); ?>');
+                $('#sigInstructions').html('<?php echo _('[enter] to approve, [clear] to cancel'); ?>');
             } 
         }
         function addToForm(n, v) {
@@ -159,7 +159,7 @@ class SigCapturePage extends BasicCorePage
         echo "<div id=\"boxMsg\" class=\"centeredDisplay\">";
 
         echo "<div class=\"boxMsgAlert coloredArea\">";
-        echo "Waiting for signature";
+        echo _("Waiting for signature");
         echo "</div>";
 
         echo "<div class=\"\">";
@@ -178,7 +178,7 @@ class SigCapturePage extends BasicCorePage
         echo '$' . sprintf('%.2f', $_REQUEST['amt']) . ' as ' . $_REQUEST['type'];
         echo '<br />';
         echo '<span id="sigInstructions" style="font-size:90%;">';
-        echo '[enter] to get re-request signature, [clear] to cancel';
+        echo _('[enter] to get re-request signature, [clear] to cancel');
         echo '</span>';
         echo "</div>";
 

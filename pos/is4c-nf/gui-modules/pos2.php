@@ -165,32 +165,32 @@ class pos2 extends BasicCorePage
         <button type="submit" 
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1001\');">
-            Items
+            onclick="parseWrapper(\'QO1001\');">'
+            . _('Items') . '
         </button>
         <button type="submit"
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1002\');">
-            Total
+            onclick="parseWrapper(\'QO1002\');">'
+            . _('Total') . '
         </button>
         <button type="submit" 
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1003\');">
-            Member
+            onclick="parseWrapper(\'QO1003\');">'
+            . _('Member') . '
         </button>
         <button type="submit" 
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1004\');">
-            Tender
+            onclick="parseWrapper(\'QO1004\');">'
+            . _('Tender') . '
         </button>
         <button type="submit"
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1005\');">
-            Misc
+            onclick="parseWrapper(\'QO1005\');">'
+            . _('Misc') . '
         </button>
         </div>';
     }
