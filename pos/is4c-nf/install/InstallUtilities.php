@@ -116,9 +116,9 @@ class InstallUtilities
             // allow loose comparison on numbers
             // i.e., permit integer 1 equal string '1'
         } elseif ($p_value !== $i_value) {
-            printf('<span style="color:red;">Setting mismatch for</span>
+            printf('<span style="color:red;">' . _('Setting mismatch for') . '</span>
                 <a href="" onclick="$(this).next().toggle(); return false;">%s</a>
-                <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
+                <span style="display:none;"> ' . _('parameters says') . ' %s, ' . _('ini says') . ' %s</span></p>',
                 $param->param_key(), print_r($p_value, true), print_r($i_value, true)
             );
             $wrong[$param->param_key()] = $p_value;

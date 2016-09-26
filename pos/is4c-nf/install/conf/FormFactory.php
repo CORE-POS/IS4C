@@ -245,9 +245,9 @@ class FormFactory
     private function storageAttribute($name, $storage)
     {
         if ($storage == Conf::INI_SETTING) {
-            return 'Stored in ' . Conf::file();
+            return _('Stored in ') . Conf::file();
         } else {
-            return 'Stored in opdata.parameters';
+            return _('Stored in ') . 'opdata.parameters';
         }
     }
 
