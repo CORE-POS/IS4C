@@ -33,7 +33,7 @@ class AdminIndexPage extends FanniePage
     public $description = '[Admin Tools] is a landing page listing various administrative tools.';
     public $has_unit_tests = true;
 
-    protected function setTwig($t)
+    public function setTwig($t)
     {
         parent::setTwig($t);
         var_dump($t);
