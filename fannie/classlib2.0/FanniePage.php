@@ -397,5 +397,11 @@ function enableLinea(selector, callback)
     {
         $this->auth_classes = array($p);
     }
+
+    protected $twig = null;
+    public function setTwig($t)
+    {
+        $this->twig = $t;
+    }
 }
 

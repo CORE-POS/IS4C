@@ -35,6 +35,7 @@ class AdminIndexPage extends FanniePage
 
     public function body_content()
     {
+        return $this->twig->loadTemplate('admin.twig.html')->render();
         return <<<HTML
 <a href="../mem/index.php"><font size=4>Membership Management</font></a></br>
 Utilities for managing membership database
