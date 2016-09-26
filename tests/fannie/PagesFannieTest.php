@@ -64,6 +64,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             $obj->setLogger($logger);
             $dbc->selectDB($op_db);
             $obj->setConnection($dbc);
+            $obj = FannieDispatch::twig($obj);
             if ($page_class == 'WfcHtViewSalaryPage') continue; // header/redirect problem
 
             ob_start();
