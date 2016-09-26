@@ -88,7 +88,7 @@ class FannieDispatch
         $obj->draw_page();
     }
 
-    static private function twig($obj)
+    static public function twig($obj)
     {
         if (!class_exists('Twig_Environment') || !method_exists($obj, 'setTwig')) {
             return $obj;
