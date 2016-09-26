@@ -91,6 +91,8 @@ class FannieDispatch
     static public function twig($obj)
     {
         if (!class_exists('Twig_Environment') || !method_exists($obj, 'setTwig')) {
+            var_dump(class_exists('Twig_Environment'));
+            var_dump(method_exists($obj, 'setTwig'));
             return $obj;
         }
 
