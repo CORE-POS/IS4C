@@ -50,7 +50,7 @@ class ItemReceiptFormat extends DefaultReceiptFormat
             return $description;
         } else if ($row['trans_status'] == 'M') {
             // member special line
-            return $this->align($row['description'], 'Owner Special', $row['total'], '');
+            return $this->align($row['description'], _('Owner Special'), $row['total'], '');
         } else {
             // an item record
 

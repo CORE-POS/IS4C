@@ -42,7 +42,7 @@ class MemStatusAdminLogin
             CoreLocal::set('strRemembered', '');
             CoreLocal::set("isMember", 1);
             CoreLocal::set("memType", 1);
-            CoreLocal::set("boxMsg", "Member Status Toggled!");
+            CoreLocal::set("boxMsg", _("Member Status Toggled!"));
             CoreLocal::set('boxMsgButtons', array(
                 'Dismiss [clear]' => '$(\'#reginput\').val(\'\');submitWrapper();',
             ));

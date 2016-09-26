@@ -48,7 +48,7 @@ class TotalReceiptFormat extends DefaultReceiptFormat
                 return $this->align($row['upc'],$row['total']);    
                 break;
             case 'DISCOUNT':
-                $text = sprintf("** %d%% Discount Applied **",$row['percentDiscount']);
+                $text = sprintf(_("** %d%% Discount Applied **"),$row['percentDiscount']);
                 $pad = $this->line_width - 12;
                 $text = str_pad($text, $pad, ' ', STR_PAD_RIGHT);
                 $amount = str_pad(sprintf('%.2f',$row['total']), 
