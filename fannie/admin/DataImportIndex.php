@@ -37,18 +37,18 @@ class DataImportIndex extends FannieRESTfulPage
     public function get_view()
     {
         return '<ul>
-            <li>Item Related
+            <li>' . _('Item Related') . '
                 <ul>
-                    <li><a href="../item/import/ProductImportPage.php">Products</a></li>
-                    <li><a href="../item/import/DepartmentImportPage.php">Departments</a></li>
-                    <li><a href="../item/import/SubDeptImportPage.php">Sub Departments</a></li>
+                    <li><a href="../item/import/ProductImportPage.php">' . _('Products') . '</a></li>
+                    <li><a href="../item/import/DepartmentImportPage.php">' . _('Departments') . '</a></li>
+                    <li><a href="../item/import/SubDeptImportPage.php">' . _('Sub Departments') . '</a></li>
                 </ul>
             </li>
-            <li>Member Related
+            <li>' . _('Member Related') . '
                 <ul>
-                    <li><a href="../mem/import/MemNameNumImportPage.php">Names &amp; Numbers</a></li>
-                    <li><a href="../mem/import/MemContactImportPage.php">Contact Information</a></li>
-                    <li><a href="../mem/import/EquityHistoryImportPage.php">Existing Equity</a></li>
+                    <li><a href="../mem/import/MemNameNumImportPage.php">' . _('Names & Numbers')  . '</a></li>
+                    <li><a href="../mem/import/MemContactImportPage.php">' . _('Contact Information') . '</a></li>
+                    <li><a href="../mem/import/EquityHistoryImportPage.php">' . _('Existing Equity') . '</a></li>
                 </ul>
             </li>
         </ul>';
@@ -56,12 +56,12 @@ class DataImportIndex extends FannieRESTfulPage
 
     public function helpContent()
     {
-        return '<p>
+        return _('<p>
             These data import tools can load different kinds
             of data from spreadsheets (generally CSVs). The tools
             are intended for initializing the system as opposed to
             for ongoing maintenance.
-            </p>';
+            </p>');
     }
 
     public function unitTest($phpunit)

@@ -35,13 +35,12 @@ class AdminIndexPage extends FanniePage
 
     public function body_content()
     {
-        ob_start();
-        ?>
+        return <<<HTML
 <a href="../mem/index.php"><font size=4>Membership Management</font></a></br>
 Utilities for managing membership database
 </br></br>
 
-            <a href="Cashiers/"><font size=4>Cashier Management</font></a></br>
+<a href="Cashiers/"><font size=4>Cashier Management</font></a></br>
 Utilities for managing cashier database and cashier reports
 </br></br>
 
@@ -59,16 +58,15 @@ Manage special orders
 
 <a href="LookupReceipt"><font size=4>Transaction Look-up</font></a></br>
     Search transaction history and reprint receipts
-        <?php
-        return ob_get_clean();
+HTML;
     }
 
     public function helpContent()
     {
-        return '<p>
+        return '<p>' . _('
             This landing page provides a handful of links to administrative tools.
             Each is already described.
-            </p>';
+            ') . '</p>';
     }
 
     /**
