@@ -35,6 +35,10 @@ class AdminIndexPage extends FanniePage
 
     public function body_content()
     {
+        if (!$this->twig)) {
+            var_dump($this->twig);
+            return 'WHERE IS TWIG';
+        }
         return $this->twig->loadTemplate('admin.twig.html')->render();
         return <<<HTML
 <a href="../mem/index.php"><font size=4>Membership Management</font></a></br>

@@ -91,13 +91,8 @@ class FannieDispatch
     static public function twig($obj)
     {
         if (!class_exists('Twig_Environment') || !method_exists($obj, 'setTwig')) {
-            var_dump("CANNOT ADD TWIG");
-            var_dump(class_exists('Twig_Environment'));
-            var_dump(method_exists($obj, 'setTwig'));
             return $obj;
         }
-
-        var_dump("ADDING TWIG OBJ");
 
         $refl = new ReflectionClass($obj);
         $path = dirname($refl->getFileName());
