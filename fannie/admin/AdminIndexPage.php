@@ -35,7 +35,7 @@ class AdminIndexPage extends FanniePage
 
     public function body_content()
     {
-        if (!$this->twig)) {
+        if (!$this->twig) {
             var_dump($this->twig);
             return 'WHERE IS TWIG';
         }
