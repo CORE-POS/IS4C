@@ -56,7 +56,6 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $op_db = $config->get('OP_DB');
         $dbc = FannieDB::get($op_db);
         $dbc->throwOnFailure(true);
-        echo "HAS TWIG? " . (class_exists('Twig_Environment') ? 'Yes' : 'No') . PHP_EOL;
 
         $speed = array();
         foreach ($pages as $page_class) {
