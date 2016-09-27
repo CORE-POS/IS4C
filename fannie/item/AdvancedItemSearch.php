@@ -715,7 +715,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
 
             $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
-            list($upc_in, $args) = $this->connection->safeInClause($items, $args);
+            list($upc_in, $args) = $this->connection->safeInClause(array_keys($items), $args);
 
             $query = "SELECT t.upc
                       FROM $dlog AS t
