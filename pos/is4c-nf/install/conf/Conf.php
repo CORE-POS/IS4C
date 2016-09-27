@@ -144,5 +144,19 @@ class Conf
             return true;
         }
     }
+
+    static public function getLocales()
+    {
+        $path = __DIR__ . '/../../locale';
+        $dir = opendir($path);
+        $ret = array();
+        while (($file=readdir($dir)) !== false) {
+            if (file_exists($path . '/' . $file . '/LC_MESSAGES/pos-nf.mo')) {
+                $ret[] = $file;
+            }
+        }
+
+        return empty($ret) ? array('en_US') : $ret;
+    }
 }
 

@@ -140,7 +140,7 @@ if (is_array(CoreLocal::get('LaneMap'))) {
 </tr>
 <tr>
     <td><?php echo _('Locale:'); ?></td>
-    <td><?php echo $form->selectField('locale', array('en_US','en_CA'), 'en_US'); ?></td>
+    <td><?php echo $form->selectField('locale', Conf::getLocales(), 'en_US'); ?></td>
 <?php if (CoreLocal::get('laneno') === '' || CoreLocal::get('laneno') != 0) { ?>
 <tr>
     <td colspan=2 class="tblheader">
