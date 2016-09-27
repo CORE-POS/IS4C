@@ -736,7 +736,7 @@ HTML;
         &nbsp;&nbsp;&nbsp;&nbsp;
         <label>InUse
         <input type="checkbox" value="{$store_id}" name="prod-in-use[]" 
-            class="in-use-checkbox syncable-checkbox" {$inUseCheck} 
+            class="in-use-checkbox" {$inUseCheck} 
             onchange="$('#extra-in-use-checkbox').prop('checked', $(this).prop('checked'));" />
         </label>
         </td>
