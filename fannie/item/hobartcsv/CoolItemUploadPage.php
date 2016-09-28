@@ -57,9 +57,10 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc->selectDB($this->config->get('OP_DB'));
 
         $itemP = $dbc->prepare('
-            SELECT itemdesc,
-                description,
-                weight
+            SELECT s.itemdesc,
+                p.description,
+                s.weight,
+                s.text
             FROM scaleItems AS s
                 LEFT JOIN products AS p ON s.plu=p.upc
             WHERE plu=?');
@@ -101,6 +102,12 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 }
             }
 
+            $text = preg_replace('/Product of .*?\n/', '', $item['text']);
+            $text = $cool . "\n" . $text;
+            if (strpos($cool, 'Product of') === false) {
+                $text = 'Product of ' . $text;
+            }
+
             $scale_info = array(
                 'RecordType' => 'ChangeOneItem',
                 'PLU' => substr($upc, 3, 4),
@@ -108,6 +115,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 'Price' => $price,
                 'Type' => $item['weight'] == 0 ? 'Random Weight' : 'Fixed Weight',
                 'ReportingClass' => 1,
+                'ExpandedText' => $text,
             );
             $scale_items[] = $scale_info;
         }
