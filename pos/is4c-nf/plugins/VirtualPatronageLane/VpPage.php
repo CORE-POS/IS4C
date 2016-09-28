@@ -21,7 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\gui\NoInputCorePage;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class VpPage extends NoInputCorePage 
@@ -30,6 +34,7 @@ class VpPage extends NoInputCorePage
     {
         $choice = FormLib::get('selectlist');
         if ($choice !== '') {
+
             switch ($choice) {
                 case 'CASH':
                     $amt = -1*FormLib::get('amount');

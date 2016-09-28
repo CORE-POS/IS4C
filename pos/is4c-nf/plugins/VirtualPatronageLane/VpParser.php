@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\parse\Parser;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+
 class VpParser extends Parser 
 {
     public function check($str)
