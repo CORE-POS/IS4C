@@ -73,14 +73,14 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
 
-        $superID = FormLib::get_form_value('super',99);
+        $superID = FormLib::get('super', -1);
         $queueID = FormLib::get('queueID');
         $vendorID = $this->id;
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
 
         /* lookup vendor and superdept names to build a batch name */
         $sname = "All";
-        if ($superID != 99) {
+        if ($superID >= 0) {
             $smodel = new SuperDeptNamesModel($dbc);
             $smodel->superID($superID);
             $smodel->load();
@@ -189,13 +189,15 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
-        if ($superID != 99){
+        if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 
                     AND v.vendorID=?";
-        if ($superID != 99) {
+        if ($superID == -2) {
+            $query .= " AND m.superID<>0 ";
+        } elseif ($superID != -1) {
             $query .= " AND m.superID=? ";
             $args[] = $superID;
         }
@@ -325,7 +327,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             GROUP BY superID,
                 super_name");
         $res = $dbc->execute($prep);
-        $opts = "<option value=99 selected>All</option>";
+        $opts = "<option value=\"-1\" selected>All</option>";
+        $opts .= "<option value=\"-2\" selected>All Retail</option>";
         while ($row = $dbc->fetch_row($res)) {
             $opts .= "<option value=$row[0]>$row[1]</option>";
         }
