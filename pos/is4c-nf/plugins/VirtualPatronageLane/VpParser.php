@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-use COREPOS\pos\parse\Parser;
+use COREPOS\pos\parser\Parser;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 
