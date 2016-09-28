@@ -9,12 +9,13 @@ import {
     Button,
     Alert
 } from 'react-bootstrap';
-var $ = require('jquery');
+const $ = require('jquery');
 
 export default class MemberPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = { search: "", results: [], noResults: false }
+        this.search = this.search.bind(this);
     }
 
     componentDidMount() {
@@ -39,14 +40,14 @@ export default class MemberPage extends React.Component {
             method: 'get',
             data: 'term='+this.state.search
         }).done(resp => {
-            var empty = resp.members.length == 0 ? true : false;
+            const empty = resp.members.length == 0 ? true : false;
             this.setState({results: resp.members, noResults: empty});
         });
     }
 
     render() {
         return (
-            <form onsubmit={this.search.bind(this)}>
+            <form onsubmit={this.search}>
                 {results.map(i => {
                     <p>
                         <a className="h3" 

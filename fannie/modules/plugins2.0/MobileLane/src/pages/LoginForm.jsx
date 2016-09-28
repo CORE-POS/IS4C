@@ -9,13 +9,14 @@ import {
     Button,
     Alert
 } from 'react-bootstrap';
-var $ = require('jquery');
+const $ = require('jquery');
 import LOGIN from './../lib/State.jsx';
 
 export default class LoginForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { passwd: "", error: false };
+        this.state = { passwd: '', error: false };
+        this.submitForm = this.submitForm.bind(this);
     }
 
     submitForm(e) {
@@ -28,10 +29,10 @@ export default class LoginForm extends React.Component {
             if (resp.emp && resp.reg) {
                 this.props.morph({type: LOGIN, e: resp.emp, r: resp.reg});
             } else {
-                this.setState({ error: "Invalid login" });
+                this.setState({ error: 'Invalid login' });
             }
         }).fail((xhr, stat, err) => {
-            this.setState({ error: "Login error: " + err });
+            this.setState({ error: 'Login error: ' + err });
         });
     }
 
@@ -41,7 +42,7 @@ export default class LoginForm extends React.Component {
 
     render() {
         return (
-            <form onSubmit={this.submitForm.bind(this)}>
+            <form onSubmit={this.submitForm}>
                 {this.state.error ? <Alert bsStyle="danger">{this.state.error}</Alert> : null}
                 <FormGroup>
                     <ControlLabel>Enter password</ControlLabel>

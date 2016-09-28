@@ -5,7 +5,7 @@ import {
     Button,
     Alert
 } from 'react-bootstrap';
-var $ = require('jquery');
+const $ = require('jquery');
 import { LOGOUT, NAVIGATE } from './../lib/State.jsx';
 
 export default class MenuForm extends React.Component {
@@ -20,12 +20,12 @@ export default class MenuForm extends React.Component {
             method: 'post',
             data: JSON.stringify({e: this.props.s.emp, r: this.props.s.reg})
         }).fail((xhr, stat, err) => {
-            this.setState({msg: 'Error ' + verb + 'ing transaction', msgStyle: 'danger'});
+            this.setState({msg: `Error ${verb}ing transaction`, msgStyle: 'danger'});
         }).done(resp => {
             if (resp.error) {
                 this.setState({msg: resp.error, msgStyle: 'danger'});
             } else {
-                this.setState({msg: 'Transaction ' + verb + 'ed', msgStyle: 'success'});
+                this.setState({msg: `Transaction ${verb}ed`, msgStyle: 'success'});
             }
         }); 
     }
@@ -36,7 +36,7 @@ export default class MenuForm extends React.Component {
             method: 'post',
             data: JSON.stringify({e: this.props.s.emp})
         }).fail((xhr, stat, err) => {
-            this.setState({msg: "Failed to sing out", msgStyle: "danger"});
+            this.setState({msg: 'Failed to sign out', msgStyle: 'danger'});
         }).done(resp => {
             this.props.morph({type: LOGOUT});
         });

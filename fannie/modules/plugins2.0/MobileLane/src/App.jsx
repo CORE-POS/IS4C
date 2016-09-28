@@ -14,6 +14,7 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = State.initialState();
+        this.morph = this.morph.bind(this);
     }
 
     morph(action) {
@@ -21,23 +22,23 @@ export default class App extends React.Component {
     }
 
     render() {
-        var content;
+        let content = null;
         if (!this.state.loggedIn) {
-            content = <LoginForm morph={this.morph.bind(this)} />;
+            content = <LoginForm morph={this.morph} />;
         } else {
             switch (this.state.nav) {
                 case 'member':
-                    content = <MemberPage s={this.state} morph={this.morph.bind(this)} />
+                    content = <MemberPage s={this.state} morph={this.morph} />
                     break; 
                 case 'tender':
-                    content = <TenderPage s={this.state} morph={this.morph.bind(this)} />
+                    content = <TenderPage s={this.state} morph={this.morph} />
                     break; 
                 case 'menu':
-                    content = <MenuPage s={this.state} morph={this.morph.bind(this)} />
+                    content = <MenuPage s={this.state} morph={this.morph} />
                     break; 
                 case 'items':
                 default:
-                    content = <ItemList s={this.state} morph={this.morph.bind(this)} />
+                    content = <ItemList s={this.state} morph={this.morph} />
                     break;
             }
         }

@@ -9,17 +9,18 @@ import {
     Button,
     Alert
 } from 'react-bootstrap';
-var $ = require('jquery');
+const $ = require('jquery');
 import { MEMBER, NAVIGATE } from './../lib/State.jsx';
 
 export default class TenderPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = { tenders: [], total: false, amount: false, type: false }
+        this.doTender = this.doTender.bind(this);
     }
 
     componentDidMount() {
-        var ttl = this.props.s.items.reduce((c,i) => c + i.total, 0);
+        const ttl = this.props.s.items.reduce((c,i) => c + i.total, 0);
         this.setState({total: ttl});
         $.ajax({
             url: 'api/tenders/',
@@ -42,7 +43,7 @@ export default class TenderPage extends React.Component {
 
     render() {
         return (
-            <form onSubmit={this.doTender.bind(this)}>
+            <form onSubmit={this.doTender}>
                 <h3>Amount due: ${this.state.total}</h3>
                 <FormGroup>
                     <ControlLabel>Tender as</ControlLabel>

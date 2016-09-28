@@ -13,15 +13,16 @@ import {
 } from 'react-bootstrap';
 import enableScanner from './../lib/Devices.jsx';
 import { NAVIGATE, ADDITEM, SETITEMS } from './../lib/State.jsx';
-var $ = require('jquery');
+const $ = require('jquery');
 
 export default class ItemList extends React.Component {
     constructor(props) {
         super(props);
         this.state = { 
-            upc: "",
+            upc: '',
             errors: false 
         };
+        this.addItem = this.addItem.bind(this);
     }
 
     renderItem(i) {
@@ -47,7 +48,7 @@ export default class ItemList extends React.Component {
             method: 'post',
             data: JSON.stringify({id: id})
         }).fail((xhr, stat, err) => {
-            this.setState({errors: "Error voiding item"});
+            this.setState({errors: 'Error voiding item'});
         }).done(resp => {
             if (resp.error) {
                 this.setState({errors: resp.error});
@@ -63,13 +64,13 @@ export default class ItemList extends React.Component {
             type: 'post',
             data: JSON.stringify({upc: upc, r: this.props.s.reg, e: this.props.s.emp})
         }).fail((xhr,stat,err) => {
-            this.setState({errors: "Error adding item"});
+            this.setState({errors: 'Error adding item'});
         }).done(resp => {
             if (resp.error) {
                 this.setState({errors: resp.error});
             } else {
                 this.props.morph({type: ADDITEM, value: resp.item});
-                this.setState({errors: false, upc: ""});
+                this.setState({errors: false, upc: ''});
             }
         });
     }
@@ -80,7 +81,7 @@ export default class ItemList extends React.Component {
         $.ajax({
             url: 'api/item/',
             type: 'get',
-            data: 'e='+this.props.s.emp+'&r='+this.props.s.reg
+            data: `e=${this.props.s.emp}&r=${this.props.s.reg}`
         }).fail((xhr,stat,err) => {
             this.setState({errors: 'Error retreiving items'});
         }).done(resp => {
@@ -94,9 +95,9 @@ export default class ItemList extends React.Component {
     }
 
     render() {
-        var ttl = this.props.s.items.reduce((c,i) => c + i.total, 0);
+        const ttl = this.props.s.items.reduce((c,i) => c + i.total, 0);
         return (
-            <form onSubmit={this.addItem.bind(this)}>
+            <form onSubmit={this.addItem}>
                 {this.props.s.items.map(this.renderItem)}
                 {this.state.errors ? <Alert bsStyle="danger">{this.state.errors}</Alert> : null}
                 <Row>

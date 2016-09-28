@@ -15,7 +15,7 @@ function initialState() {
         nav: 'items',
         items: [],
         member: false,
-        transComplete: false
+        transComplete: false,
     };
 }
 
@@ -30,7 +30,7 @@ function nextState(state, action) {
         case MEMBER:
             return Object.assign({}, state, {member: a.value}); 
         case ADDITEM:
-            var newitems = state.items.slice(0);
+            let newitems = state.items.slice(0);
             newitems.push(a.value);
             return Object.assign({}, state, {items: newitems}); 
         case SETITEMS:
@@ -51,6 +51,6 @@ export {
     MEMBER,
     ADDITEM,
     SETITEMS,
-    RESET
+    RESET,
 };
 
