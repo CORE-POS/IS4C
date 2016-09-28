@@ -215,9 +215,10 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($weight == 1 && $bycount == 1) {
             $p = new ProductsModel($dbc);
             $p->upc($upc);
-            $p->store_id(1);
-            if($p->load()) {
-                $p->Scale(0);
+            $stores = FormLib::get('store_id');
+            foreach ($stores as $s) {
+                $p->store_id($s);
+                $p->scale(0);
                 $p->enableLogging(false);
                 $p->save();
             }
