@@ -44,7 +44,7 @@ class VirtualPatronageTask extends FannieTask
 
         $markP = $dbc->prepare("
             UPDATE VirtualVouchers
-            SET redeemd=1,
+            SET redeemed=1,
                 redeemDate=?,
                 redeemTrans=?,
                 redeemedAs=?
