@@ -439,30 +439,42 @@ static public function unbold()
     return self::$PRINT_OBJ->TextStyle(true, false);
 }
 
-static public function localTTL()
+static private function lookupLocal($ref)
 {
-    if (CoreLocal::get("localTotal") == 0) return "";
+    $dbc = Database::tDataConnect();
+    list($empNo, $laneNo, $transNo) = self::parseRef($ref);
 
-    $str = sprintf(_("LOCAL PURCHASES = \$%.2f"),
-        CoreLocal::get("localTotal"));
+    $lookup = sprintf("SELECT 
+        SUM(CASE WHEN p.local=1 THEN l.total ELSE 0 END) as localTTL,
+        SUM(CASE WHEN l.trans_type IN ('I','D') then l.total ELSE 0 END) as itemTTL
+        FROM localtrans AS l LEFT JOIN ".
+        CoreLocal::get('pDatabase').$dbc->sep()."products AS p
+        ON l.upc=p.upc
+        WHERE l.trans_type IN ('I','D')
+            AND emp_no=%d AND register_no=%d AND trans_no=%d",
+        $empNo, $laneNo, $transNo);
+    $lookup = $dbc->query($lookup);
+    $ret = array('localTTL' => 0, 'itemTTL' => 0);
+    if ($dbc->numRows($lookup) > 0) {
+        $ret = $dbc->fetch_row($lookup);
+    }
+ 
+    return $ret;
+}
+
+static public function localTTL($ref)
+{
+    $row = self::lookupLocal($ref);
+    if ($row['localTTL'] == 0) 
+        return '';
+
+    $str = sprintf(_("LOCAL PURCHASES = \$%.2f"), $row['localTTL']);
     return $str."\n";
 }
 
-static public function graphedLocalTTL()
+static public function graphedLocalTTL($ref)
 {
-    $dbc = Database::tDataConnect();
-
-    $lookup = "SELECT 
-        SUM(CASE WHEN p.local=1 THEN l.total ELSE 0 END) as localTTL,
-        SUM(CASE WHEN l.trans_type IN ('I','D') then l.total ELSE 0 END) as itemTTL
-        FROM localtemptrans AS l LEFT JOIN ".
-        CoreLocal::get('pDatabase').$dbc->sep()."products AS p
-        ON l.upc=p.upc
-        WHERE l.trans_type IN ('I','D')";
-    $lookup = $dbc->query($lookup);
-    if ($dbc->num_rows($lookup) == 0)
-        return '';
-    $row = $dbc->fetch_row($lookup);
+    $row = self::lookupLocal($ref);
     if ($row['localTTL'] == 0) 
         return '';
 
@@ -978,9 +990,9 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
               Default to $ total if no setting exists
             */
             if (CoreLocal::get('ReceiptLocalMode') == 'total' || CoreLocal::get('ReceiptLocalMode') == '') {
-                $receipt['any'] .= self::localTTL();
+                $receipt['any'] .= self::localTTL($ref);
             } elseif (CoreLocal::get('ReceiptLocalMode') == 'percent') {
-                $receipt['any'] .= self::graphedLocalTTL();
+                $receipt['any'] .= self::graphedLocalTTL($ref);
             }
             $receipt['any'] .= "\n";
     
