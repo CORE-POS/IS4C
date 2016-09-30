@@ -61,7 +61,6 @@ having max(department)=0 and max(noteSuperID)=0
 and max(trans_id) > 0
 )
 and trans_id > 0
-order by datetime
 
 UNION ALL
 
@@ -72,6 +71,7 @@ as s left join SpecialOrders as c on s.order_id=c.specialOrderID
 left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
 WHERE c.storeID NOT IN (1, 2)
 and trans_id > 0
+
 order by datetime
 ";
 
