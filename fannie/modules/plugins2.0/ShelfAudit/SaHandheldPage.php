@@ -117,7 +117,7 @@ class SaHandheldPage extends FannieRESTfulPage
         $qty = FormLib::get('qty',0);
         $store = FormLib::get('store', 0);
 
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']);
+        $dbc = FannieDB::get($settings['ShelfAuditDB']);
         $delP = $dbc->prepare('DELETE FROM sa_inventory
                 WHERE upc=? AND clear=0 AND section=? AND storeID=?');
         $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section,storeID)
