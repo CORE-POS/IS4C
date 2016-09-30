@@ -102,7 +102,7 @@ class DDDReport extends FannieReportPage
                     SUM(d.quantity) AS quantity,
                     SUM(d.total) AS total,
                     s.description AS shrinkReason,
-                    m.super_name,
+                    " . ($superTable == 'MasterSuperDepts' ? 'm.super_name,' : "'' AS super_name,") . "
                     e.salesCode,
                     d.charflag
                   FROM {$dtrans} AS d
