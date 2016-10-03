@@ -74,6 +74,7 @@ var handheld = (function($) {
             }
         });
         if (ev.keyCode==13){
+            ev.preventDefault();
             $('#upc_in').focus();
             mod.paintFocus('upc_in');
         }

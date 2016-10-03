@@ -98,22 +98,30 @@ class SaHandheldPage extends FannieRESTfulPage
             }
         }
 
+        ob_start();
         if (isset($ret['upc']) && !isset($ret['desc'])) {
             echo '<div class="alert alert-danger">Item not found (';
             echo $ret['upc'];
             echo ')</div>';
         } elseif (isset($ret['upc'])) {
             echo $this->qtyForm($ret);
+            $this->hasQty = true;
         }
+        $this->qtyArea = ob_get_clean();
 
-        return false;
+        return true;
+    }
+
+    protected function get_id_view()
+    {
+        return $this->get_view() . '<div id="qtyArea">' . $this->qtyArea . '</div>';
     }
 
     protected function post_id_handler()
     {
         $ret = array();
         $settings = $this->config->get('PLUGIN_SETTINGS');
-        $upc = $this->id;
+        $upc = BarcodeLib::padUPC($this->id);
         $qty = FormLib::get('qty',0);
         $store = FormLib::get('store', 0);
 
@@ -235,7 +243,7 @@ if (typeof WebBarcode == 'object') {
     protected function upcForm($store)
     {
         ?>
-<form method="get" id="upcScanForm" onsubmit="handheld.lookupItem(event);">
+<form method="get" id="upcScanForm">
 <a href="SaMenuPage.php">Menu</a>
  - Store # <?php echo $store; ?>
 <input type="hidden" name="store" id="store" value="<?php echo ((int)$store); ?>" />
@@ -295,9 +303,12 @@ HTML;
     {
         ob_start();
         $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
-        $this->addOnloadCommand("\$('#upc_in').focus();\n");
+        if (isset($this->hasQty)) {
+            $this->addOnloadCommand("\$('#cur_qty').focus();\n");
+        } else {
+            $this->addOnloadCommand("\$('#upc_in').focus();\n");
+        }
         $this->upcForm($store);
-        echo '<div id="qtyArea"></div>';
         $this->addScript('js/handheld.js');
 
         return ob_get_clean();
