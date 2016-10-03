@@ -66,6 +66,8 @@ class HouseCouponList extends NoInputCorePage
         $query = "SELECT h.coupID, h.description
                 FROM houseCoupons AS h
                 WHERE h.description <> ''
+                    AND h.description NOT LIKE '%*'
+                    AND h.startDate <= " . $dbc->now() . "
                     AND " . $dbc->datediff('endDate', $dbc->now()) . " >= 0
                 ORDER BY h.description";
     
