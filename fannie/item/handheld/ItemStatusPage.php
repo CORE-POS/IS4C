@@ -116,7 +116,6 @@ class ItemStatusPage extends FannieRESTfulPage
         } elseif ($action == 'add') {
             $narrowTag->save();
         }
-        $_SESSION['LastTagQueue'] = $this->tagID;
         
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
 
@@ -138,7 +137,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $product = new ProductsModel($dbc);
         $narrowTag = new NarrowTagsModel($dbc);
         $narrowTag->upc($upc);
-        $isNarrow = $narrowTag->load();
+        $isNarrow = $narrowTag->find();
         $vendor = new VendorsModel($dbc);
         $product->upc($upc);
         if (!$product->load()) {
