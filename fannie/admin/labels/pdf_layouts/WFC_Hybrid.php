@@ -52,7 +52,7 @@ $pdf=new WFC_Hybrid_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-$narrowP = $dbc->prepare('SELECT upc FROM woodshed_no_replicate.NarrowTags WHERE upc=?');
+$narrowP = $dbc->prepare('SELECT upc FROM NarrowTags WHERE upc=?');
 
 $full = array();
 $half = array();
