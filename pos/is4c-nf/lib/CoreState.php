@@ -779,6 +779,22 @@ static public function loadParams()
         $value = $local->materializeValue();
         CoreLocal::set($key, $value);
     }
+
+    // load tender map from tenders instead of parameters
+    $map = array();
+    if (CoreLocal::get('NoCompat') == 1) {
+        $model = new TendersModel($dbc);
+        $map = $model->getMap();
+    } else {
+        $table = $dbc->tableDefinition('tenders');
+        if (isset($table['TenderModule'])) {
+            $model = new TendersModel($dbc);
+            $map = $model->getMap();
+        }
+    }
+    if (count($map) > 0 || !is_array(CoreLocal::get('TenderMap'))) {
+        CoreLocal::set('TenderMap', $map);
+    }
 }
 
 }
