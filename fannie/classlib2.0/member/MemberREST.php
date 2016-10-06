@@ -229,6 +229,15 @@ class MemberREST
         } else {
             // plug a value so the returned structure is complete
             $ret['customerAccountID'] = 0;
+            $personNum = 2;
+            for ($i=0; $i<count($ret['customers']); $i++) {
+                if ($ret['customers'][$i]['accountHolder']) {
+                    $ret['customers'][$i]['customerID'] = 1;
+                } else {
+                    $ret['customers'][$i]['customerID'] = $personNum;
+                    $personNum++;
+                }
+            }
         }
 
         return $ret;
