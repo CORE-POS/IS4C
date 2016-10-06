@@ -500,7 +500,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             || ($dept==34 ) ) {
             // Cool 4
             return 15;
-	        } elseif( ($dept>=170 && $dept<=173)
+        } elseif( ($dept>=170 && $dept<=173)
             || ($dept==160 ) || ($dept==169) ) {
             // Grocery 1
             return 1;
