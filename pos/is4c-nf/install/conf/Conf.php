@@ -52,16 +52,16 @@ class Conf
         $real_file = realpath(dirname($filename)) . DIRECTORY_SEPARATOR . $basename;
 
         if (!file_exists($filename)) {
-            echo "<span style=\"color:$failure;\"><b>$status</b>: $basename does not exist</span><br />";
+            echo "<span style=\"color:$failure;\"><b>$status</b>: $basename " . _('does not exist') . "</span><br />";
             if (!$optional) {
-                echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
+                echo "<b>" . _('Advice') . "</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
                     touch \"". $real_file ."\"<br />
                     chown ".self::whoami()." \"". $real_file ."\"</div>";
             }
         } elseif (is_writable($filename)) {
-            echo "<span style=\"color:green;\">$basename is writeable</span><br />";
+            echo "<span style=\"color:green;\">$basename " . _('is writeable') . "</span><br />";
         } else {
-            echo "<span style=\"color:red;\"><b>Warning</b>: $basename is not writeable</span><br />";
+            echo "<span style=\"color:red;\"><b>" . _('Warning') . "</b>: $basename " . _('is not writeable') . "</span><br />";
             echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
                 chown ".self::whoami()." \"". $real_file ."\"<br />
                 chmod 600 \"". $real_file ."\"</div>";
@@ -75,7 +75,7 @@ class Conf
         } elseif (file_exists(__DIR__ . '/../../ini.php')) {
             return 'ini.php';
         } else {
-            return 'ini file is missing!';
+            return _('ini file is missing!');
         }
     }
 
@@ -143,6 +143,20 @@ class Conf
         } else {
             return true;
         }
+    }
+
+    static public function getLocales()
+    {
+        $path = __DIR__ . '/../../locale';
+        $dir = opendir($path);
+        $ret = array();
+        while (($file=readdir($dir)) !== false) {
+            if (file_exists($path . '/' . $file . '/LC_MESSAGES/pos-nf.mo')) {
+                $ret[] = $file;
+            }
+        }
+
+        return empty($ret) ? array('en_US') : $ret;
     }
 }
 

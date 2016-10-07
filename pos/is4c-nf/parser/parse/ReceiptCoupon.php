@@ -27,7 +27,7 @@ class ReceiptCoupon extends Parser
 
         $ret = $this->default_json();
         if (time() > $expireTS) {
-            $ret['output'] = DisplayLib::boxMsg('Coupon is expired');
+            $ret['output'] = DisplayLib::boxMsg(_('Coupon is expired'));
             return $ret;
         } else {
             $upc = '004' . '99999' . str_pad($couponID, 5, '0', STR_PAD_LEFT);

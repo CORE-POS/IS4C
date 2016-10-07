@@ -73,14 +73,14 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
 
-        $superID = FormLib::get_form_value('super',99);
+        $superID = FormLib::get('super', -1);
         $queueID = FormLib::get('queueID');
         $vendorID = $this->id;
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
 
         /* lookup vendor and superdept names to build a batch name */
         $sname = "All";
-        if ($superID != 99) {
+        if ($superID >= 0) {
             $smodel = new SuperDeptNamesModel($dbc);
             $smodel->superID($superID);
             $smodel->load();
@@ -154,8 +154,18 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 WHEN g.margin IS NOT NULL AND g.margin <> 0 THEN g.margin
                 WHEN s.margin IS NOT NULL AND s.margin <> 0 THEN s.margin
                 ELSE d.margin
-            END';
+            END';   
         $srpSQL = Margin::toPriceSQL($costSQL, $marginCase);
+        
+        /*
+        //  Scan both stores to find a list of items that are inUse.  
+        $itemsInUse = array();
+        $query = $dbc->prepare("SELECT upc FROM products WHERE inUse = 1");
+        $result = $dbc->execute($query);
+        while ($row = $dbc->fetchRow($result)) {
+            $itemsInUse[$row['upc']] = 1;
+        }
+        */
 
         $query = "SELECT p.upc,
             p.description,
@@ -179,24 +189,24 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
-        if ($superID != 99){
+        if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 
-                    AND v.vendorID=?
-                    AND p.inUse=1 ";
-        if ($superID != 99) {
+                    AND v.vendorID=?";
+        if ($superID == -2) {
+            $query .= " AND m.superID<>0 ";
+        } elseif ($superID != -1) {
             $query .= " AND m.superID=? ";
             $args[] = $superID;
         }
         if ($filter === false) {
             $query .= " AND p.normal_price <> v.srp ";
         }
-        if ($this->config->get('STORE_MODE') == 'HQ') {
-            $query .= ' AND p.store_id=? ';
-            $args[] = $this->config->get('STORE_ID');
-        }
+        
+        $query .= ' AND p.upc IN (SELECT upc FROM products WHERE inUse = 1) ';
+        $query .= ' GROUP BY p.upc ';
 
         $query .= " ORDER BY p.upc";
         if (isset($p_def['price_rule_id'])) {
@@ -317,7 +327,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             GROUP BY superID,
                 super_name");
         $res = $dbc->execute($prep);
-        $opts = "<option value=99 selected>All</option>";
+        $opts = "<option value=\"-1\" selected>All</option>";
+        $opts .= "<option value=\"-2\" selected>All Retail</option>";
         while ($row = $dbc->fetch_row($res)) {
             $opts .= "<option value=$row[0]>$row[1]</option>";
         }

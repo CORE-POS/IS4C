@@ -110,7 +110,7 @@ class checklist extends NoInputCorePage
             ."</form>"
             ."</div>"
             ."<div class=\"listboxText coloredText centerOffset\">"
-            ."[Clear] to Cancel</div>"
+            ._("[Clear] to Cancel") . "</div>"
             ."<div class=\"clear\"></div>";
         echo "</div>";
 

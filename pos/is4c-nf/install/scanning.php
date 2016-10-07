@@ -24,7 +24,7 @@ body {
 <body>
 <?php include('tabs.php'); ?>
 <div id="wrapper">
-<h2>IT CORE Lane Installation: Scanning Options</h2>
+<h2><?php echo _('IT CORE Lane Installation: Scanning Options'); ?></h2>
 
 <div class="alert"><?php Conf::checkWritable('../ini.json', False, 'JSON'); ?></div>
 <div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
@@ -34,22 +34,22 @@ body {
 <tr>
 <td colspan="2">
     <hr />
-    <b>Check Digits</b>
-    <p>
+    <b><?php echo _('Check Digits'); ?></b>
+    <p><?php echo _('
     Most users omit check digits. If you have no particular preference, this
     option is more thoroughly tested. Mixing and matching is not recommended.
     It should work but uniformly omitting or including check digits for
-    all barcodes will make some back end tasks easier.
+    all barcodes will make some back end tasks easier.'); ?>
     </p>
 </td>
 </tr>
 <tr>
     <td style="width: 30%;">
-        <b>UPCs</b>
+        <b><?php echo _('UPCs'); ?></b>
     </td>
     <td>
     <?php
-    $checkOpts = array(1=>'Include Check Digits', 0=>'Omit Check Digits');
+    $checkOpts = array(1=>_('Include Check Digits'), 0=>_('Omit Check Digits'));
     echo $form->selectField('UpcIncludeCheckDigits', $checkOpts, 0);
     ?>
     </td>
@@ -57,31 +57,31 @@ body {
 <tr>
 <td colspan="2">
     <hr />
-    <b>Forced Keyed Weight</b>
-    <p>
+    <b><?php echo _('Forced Keyed Weight'); ?></b>
+    <p><?php echo _('
     By-weight / scaleable items will prompt the cashier to key a weight when QtyFrc is also enabled.
     This is commonly used when items must be weighed on a non-integrated scale. In Three Digit Thousandths
     mode the cashier must enter exactly three digits and these will be interpretted as thousandths of a
-    pound (i.e., 123 = 0.123 lb.). This is intended for very light items. In Verbatim mode the cashier's
+    pound (i.e., 123 = 0.123 lb.). This is intended for very light items. In Verbatim mode the cashier\'s
     entry is taken exactly as entered, with or without decimal. This provides greater flexibility but cannot
-    enforce a range of valid values.
+    enforce a range of valid values.'); ?>
     </p>
 </td>
 </tr>
 <tr>
     <td style="width: 30%;">
-        <b>Entry Mode</b>
+        <b><?php echo _('Entry Mode'); ?></b>
     </td>
     <td>
     <?php
-    $opts = array(1=>'Verbatim', 0=>'Three Digit Thousandths');
+    $opts = array(1=>_('Verbatim'), 0=>_('Three Digit Thousandths'));
     echo $form->selectField('ManualWeightMode', $opts, 0);
     ?>
     </td>
 </tr>
 <tr>
     <td style="width: 30%;">
-        <b>EANs</b>
+        <b><?php echo _('EANs'); ?></b>
     </td>
     <td>
     <?php
@@ -94,7 +94,7 @@ body {
 </tr>
 <tr>
 <tr>
-    <td><b>Unknown Item Handler</b></td>
+    <td><b><?php echo _('Unknown Item Handler'); ?></b></td>
     <?php
     $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ItemNotFound', true);
     $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
@@ -104,12 +104,12 @@ body {
     $val = str_replace('-', '\\', CoreLocal::get('ItemNotFound'));
     InstallUtilities::paramSave('ItemNotFound', $val);
     ?>
-    <span class='noteTxt'>Module called when a UPC does not match any item or Special UPC handler</span>
+    <span class='noteTxt'><?php echo _('Module called when a UPC does not match any item or Special UPC handler'); ?></span>
     </td>
 </tr>
     <td style="width:30%;">
-    <b>Special UPCs</b>:<br />
-    <p>Special handling modules for UPCs that aren't products (e.g., coupons)</p>
+    <b><?php echo _('Special UPCs'); ?></b>:<br />
+    <p><?php echo _('Special handling modules for UPCs that aren\'t products (e.g., coupons)'); ?></p>
     </td>
     <td>
     <?php
@@ -128,24 +128,24 @@ body {
     </td>
 </tr>
 <tr>
-    <td><b>House Coupon Prefix</b></td>
+    <td><b><?php echo _('House Coupon Prefix'); ?></b></td>
     <td><?php echo $form->textField('houseCouponPrefix', '00499999'); ?>
-    <span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
+    <span class='noteTxt'><?php echo _('Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Coupons &amp; Sales Tax</b>:</td>
+    <td><b><?php echo _('Coupons & Sales Tax'); ?></b>:</td>
     <td>
     <?php
-    $couponTax = array(1=>'Tax pre-coupon total', 0=>'Tax post-coupon total');
+    $couponTax = array(1=>_('Tax pre-coupon total'), 0=>_('Tax post-coupon total'));
     echo $form->selectField('CouponsAreTaxable', $couponTax, 1);
     ?>
-    <span class='noteTxt'>Apply sales tax based on item price before any coupons, or
-    apply sales tax to item price inclusive of coupons.</span>
+    <span class='noteTxt'><?php echo _('Apply sales tax based on item price before any coupons, or
+    apply sales tax to item price inclusive of coupons.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Equity Department(s)</b></td>
+    <td><b><?php echo _('Equity Department(s)'); ?></b></td>
     <td>
     <?php
     // try to find a sane default automatically
@@ -159,22 +159,22 @@ body {
     }
     echo $form->textField('EquityDepartments', $default, Conf::EITHER_SETTING, false);
     ?>
-    <span class='noteTxt'>Set the department number(s) that are considered member equity</span>
+    <span class='noteTxt'><?php echo _('Set the department number(s) that are considered member equity'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Open Ring Min/Max Limits</b></td>
+    <td><b><?php echo _('Open Ring Min/Max Limits'); ?></b></td>
     <td>
     <?php
-    echo $form->selectField('OpenRingHardMinMax', array(1=>'Absolute Limit', 0=>'Warning Only'), 0);
+    echo $form->selectField('OpenRingHardMinMax', array(1=>_('Absolute Limit'), 0=>_('Warning Only')), 0);
     ?>
     <span class='noteTxt'>
-    Set whether open ring department limits are bypassable warnings or complete blocks.
+    <?php echo _('Set whether open ring department limits are bypassable warnings or complete blocks.'); ?>
     </span>
     </td>
 </tr>
 <tr>
-    <td><b>AR Department(s)</b></td>
+    <td><b><?php echo _('AR Department(s)'); ?></b></td>
     <td>
     <?php
     // try to find a sane default automatically
@@ -188,12 +188,12 @@ body {
     }
     echo $form->textField('ArDepartments', $default, Conf::EITHER_SETTING, false);
     ?>
-    <span class='noteTxt'>Set the department number(s) that are store charge balance payments. 
-        Also known as AR or accounts receivable.</span>
+    <span class='noteTxt'><?php echo _('Set the department number(s) that are store charge balance payments. 
+        Also known as AR or accounts receivable.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Donation Department</b></td>
+    <td><b><?php echo _('Donation Department'); ?></b></td>
     <td>
     <?php
     // try to find a sane default automatically
@@ -206,17 +206,17 @@ body {
     }
     echo $form->textField('roundUpDept', $default);
     ?>
-    <span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
+    <span class='noteTxt'><?php echo _('Set the department number for lines entered via the "round up" donation function.'); ?></span>
     </td>
 </tr>
 <tr>
     <td colspan="2">
     <hr />
-    <p>Discount type modules control how sale discounts are calculated.</p>
+    <p><?php echo _('Discount type modules control how sale discounts are calculated.'); ?></p>
     </td>
 </tr>
 <tr><td>
-<b>Default Discounts</b>:</td><td>
+<b><?php echo _('Default Discounts'); ?></b>:</td><td>
 <?php
 foreach (DiscountType::$MAP as $id => $name) {
     echo '[' . $id . '] => ' . $name . '<br />';
@@ -224,7 +224,7 @@ foreach (DiscountType::$MAP as $id => $name) {
 ?>
 </td></tr>
 <tr><td>
-<b>Custom Discount Mapping</b>:</td><td>
+<b><?php echo _('Custom Discount Mapping'); ?></b>:</td><td>
 <?php
 if (is_array(FormLib::get('DT_MODS'))) {
     $new_val = array();
@@ -245,7 +245,7 @@ $i = 64;
 foreach ($dt_conf as $entry) {
     echo '[' . $i . '] => ';
     echo "<select name=DT_MODS[]>";
-    echo '<option value="">[None]</option>';
+    echo '<option value="">' . _('[None]') . '</option>';
     foreach($discounts as $d) {
         if (in_array($d, DiscountType::$MAP)) {
             continue;
@@ -268,12 +268,12 @@ InstallUtilities::paramSave('DiscountTypeClasses',$save);
 ?></td></tr>
 
 <tr><td colspan=2>
-<hr />    <p>Price Methods dictate how item prices are calculated.
-    There's some overlap with Discount Types, but <i>often</i>
-    price methods deal with grouped items.</p></td></tr>
+<hr />    <p><?php echo _('Price Methods dictate how item prices are calculated.
+    There\'s some overlap with Discount Types, but <i>often</i>
+    price methods deal with grouped items.'); ?></p></td></tr>
 </td></tr>
 <tr><td>
-<b>Default Methods</b>:</td><td>
+<b><?php echo _('Default Methods'); ?></b>:</td><td>
 <?php
 foreach (PriceMethod::$MAP as $id => $name) {
     echo '[' . $id . '] => ' . $name . '<br />';
@@ -281,7 +281,7 @@ foreach (PriceMethod::$MAP as $id => $name) {
 ?>
 </td></tr>
 <tr><td>
-<b>Custom Method Mapping</b>:</td><td>
+<b><?php echo _('Custom Method Mapping'); ?></b>:</td><td>
 <?php
 if (is_array(FormLib::get('PM_MODS'))) {
     $new_val = array();
@@ -302,7 +302,7 @@ $i = 100;
 foreach ($pm_conf as $entry) {
     echo "[$i] => ";
     echo "<select name=PM_MODS[]>";
-    echo '<option value="">[None]</option>';
+    echo '<option value="">' . _('[None]') . '</option>';
     foreach($pms as $p) {
         if (in_array($p, PRiceMethod::$MAP)) {
             continue;
@@ -324,29 +324,29 @@ foreach(CoreLocal::get("PriceMethodClasses") as $r){
 InstallUtilities::paramSave('PriceMethodClasses',$save);
 ?></td></tr>
 <tr><td>
-<b>Sale Items Are Discountable</b>:</td><td>
+<b><?php echo _('Sale Items Are Discountable'); ?></b>:</td><td>
 <?php
 if (FormLib::get('SALEDISC') !== '') CoreLocal::set('DiscountableSaleItems', FormLib::get('SALEDISC'));
 if (CoreLocal::get('DiscountableSaleItems') === '') CoreLocal::set('DiscountableSaleItems', 1);
 echo '<select name="SALEDISC">';
 if (CoreLocal::get('DiscountableSaleItems') == 0) {
-    echo '<option value="1">Yes</option>';
-    echo '<option value="0" selected>No</option>';
+    echo '<option value="1">' . _('Yes') . '</option>';
+    echo '<option value="0" selected>' . _('No') . '</option>';
 } else {
-    echo '<option value="1" selected>Yes</option>';
-    echo '<option value="0">No</option>';
+    echo '<option value="1" selected>' . _('Yes') . '</option>';
+    echo '<option value="0">' . _('No') . '</option>';
 }
 echo '</select>';
 InstallUtilities::paramSave('DiscountableSaleItems', CoreLocal::get('DiscountableSaleItems'));
 ?>
-<span class='noteTxt'>
+<span class='noteTxt'><?php echo _('
 Items that are on sale are eligible for transaction-level discounts - e.g., members
-save 5%.
+save 5%.'); ?>
 </span>
 </td></tr>
 <tr><td colspan=2>
-<hr />    <p>Special Department modules add extra steps to open rings in specific departments.
-    Enter department number(s) that each module should apply to.*</p>
+<hr />    <p><?php echo _('Special Department modules add extra steps to open rings in specific departments.
+    Enter department number(s) that each module should apply to.*'); ?></p>
 </td></tr>
 <tr><td>
 <?php
@@ -435,15 +435,15 @@ if (!$specialDeptMapExists) {
 </td></tr>
 <tr>
     <td colspan=2>
-    <b>Variable Weight Item Mapping</b> (UPC Prefix "2"):<br />
-    Variable-weight items do not have identical barcodes because the
+    <b><?php echo _('Variable Weight Item Mapping'); ?></b> <?php echo _('(UPC Prefix "2")'); ?>:<br />
+    <?php echo _('Variable-weight items do not have identical barcodes because the
     price is encoded in the barcode. A translator is required to map
-    these different barcodes back to one logical product.
+    these different barcodes back to one logical product.'); ?>
     </td>
 </tr>
 <tr>
     <td>
-    <b>Translator</b>:
+    <b><?php echo _('Translator'); ?></b>:
     </td>
     <td>
     <?php
@@ -456,7 +456,7 @@ if (!$specialDeptMapExists) {
 <hr />
 </td></tr>
 <tr><td>
-<input type=submit name=scansubmit value="Save Changes" />
+<input type=submit name=scansubmit value="<?php echo _('Save Changes'); ?>" />
 </td></tr></table>
 </form>
 </div> <!--    wrapper -->

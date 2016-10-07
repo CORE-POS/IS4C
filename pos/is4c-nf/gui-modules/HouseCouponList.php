@@ -66,6 +66,8 @@ class HouseCouponList extends NoInputCorePage
         $query = "SELECT h.coupID, h.description
                 FROM houseCoupons AS h
                 WHERE h.description <> ''
+                    AND h.description NOT LIKE '%*'
+                    AND h.startDate <= " . $dbc->now() . "
                     AND " . $dbc->datediff('endDate', $dbc->now()) . " >= 0
                 ORDER BY h.description";
     
@@ -106,13 +108,13 @@ class HouseCouponList extends NoInputCorePage
         <?php echo _("use arrow keys to navigate"); ?><br />
         <p>
             <button type="submit" class="pos-button wide-button coloredArea">
-            Reprint <span class="smaller">[enter]</span>
+            <?php echo _('Reprint'); ?> <span class="smaller"><?php echo _('[enter]'); ?></span>
             </button>
         </p>
         <p>
             <button type="submit" class="pos-button wide-button errorColoredArea"
             onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
-            Cancel <span class="smaller">[clear]</span>
+            <?php echo _('Cancel'); ?> <span class="smaller"><?php echo _('[clear]'); ?></span>
         </button></p>
         </div>
         </form>

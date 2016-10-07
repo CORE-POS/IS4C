@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "98f521111e98c47bd9dd862d0cad2a53",
-    "content-hash": "7f84fe61c3e0d0632956a26249bff78b",
+    "hash": "3b7ffe54e555294a6f34a4ce2b0749b2",
+    "content-hash": "d5db14e7a78ee7312c6ca16e0c7506fb",
     "packages": [
         {
             "name": "components/bootstrap",
@@ -1044,6 +1044,119 @@
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
             "time": "2015-06-30 16:10:16"
+        },
+        {
+            "name": "twig/extensions",
+            "version": "v1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twigphp/Twig-extensions.git",
+                "reference": "531eaf4b9ab778b1d7cdd10d40fc6aa74729dfee"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twigphp/Twig-extensions/zipball/531eaf4b9ab778b1d7cdd10d40fc6aa74729dfee",
+                "reference": "531eaf4b9ab778b1d7cdd10d40fc6aa74729dfee",
+                "shasum": ""
+            },
+            "require": {
+                "twig/twig": "~1.20|~2.0"
+            },
+            "require-dev": {
+                "symfony/translation": "~2.3"
+            },
+            "suggest": {
+                "symfony/translation": "Allow the time_diff output to be translated"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.4-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Twig_Extensions_": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                }
+            ],
+            "description": "Common additional features for Twig that do not directly belong in core",
+            "homepage": "http://twig.sensiolabs.org/doc/extensions/index.html",
+            "keywords": [
+                "i18n",
+                "text"
+            ],
+            "time": "2016-09-22 16:50:57"
+        },
+        {
+            "name": "twig/twig",
+            "version": "v1.25.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twigphp/Twig.git",
+                "reference": "f16a634ab08d87e520da5671ec52153d627f10f6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/f16a634ab08d87e520da5671ec52153d627f10f6",
+                "reference": "f16a634ab08d87e520da5671ec52153d627f10f6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.7"
+            },
+            "require-dev": {
+                "symfony/debug": "~2.7",
+                "symfony/phpunit-bridge": "~2.7"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.25-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Twig_": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com",
+                    "role": "Project Founder"
+                },
+                {
+                    "name": "Twig Team",
+                    "homepage": "http://twig.sensiolabs.org/contributors",
+                    "role": "Contributors"
+                }
+            ],
+            "description": "Twig, the flexible, fast, and secure template language for PHP",
+            "homepage": "http://twig.sensiolabs.org",
+            "keywords": [
+                "templating"
+            ],
+            "time": "2016-09-21 23:05:12"
         }
     ],
     "packages-dev": [
@@ -1088,13 +1201,13 @@
                     "homepage": "http://www.lickmychip.com/"
                 },
                 {
-                    "name": "nlegoff",
-                    "email": "legoff.n@gmail.com"
-                },
-                {
                     "name": "Phraseanet Team",
                     "email": "info@alchemy.fr",
                     "homepage": "http://www.phraseanet.com/"
+                },
+                {
+                    "name": "Nicolas Le Goff",
+                    "email": "legoff.n@gmail.com"
                 }
             ],
             "description": "A set of tools to build binary drivers",
@@ -1349,6 +1462,7 @@
                 "rest",
                 "web service"
             ],
+            "abandoned": "guzzlehttp/guzzle",
             "time": "2015-03-18 18:23:50"
         },
         {

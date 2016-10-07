@@ -31,14 +31,12 @@ use \CoreLocal;
 */
 class ItemReceiptFormat extends DefaultReceiptFormat 
 {
-
     /**
       Formatting function
       @param $row a single receipt record
       @return a formatted string
     */
-    // @hintable
-    public function format($row)
+    public function format(array $row)
     {
         if ($row['trans_type'] == 'D') {
             // department open ring; not much to format
@@ -52,7 +50,7 @@ class ItemReceiptFormat extends DefaultReceiptFormat
             return $description;
         } else if ($row['trans_status'] == 'M') {
             // member special line
-            return $this->align($row['description'], 'Owner Special', $row['total'], '');
+            return $this->align($row['description'], _('Owner Special'), $row['total'], '');
         } else {
             // an item record
 
@@ -83,8 +81,7 @@ class ItemReceiptFormat extends DefaultReceiptFormat
     /**
       Determine flags for a row
     */
-    // @hintable
-    private function flags($row)
+    private function flags(array $row)
     {
         if ($row['trans_status']=='V') {
             return 'VD';
@@ -105,13 +102,22 @@ class ItemReceiptFormat extends DefaultReceiptFormat
     /**
       Pad fields into a standard width and alignment
     */
-    private function align($description, $comment, $amount, $flags="")
+    protected function align($description, $comment, $amount, $flags="")
     {
         $amount = sprintf('%.2f',$amount);
         if ($amount=="0.00") $amount="";
 
+        /**
+          squeeze comment column to fit into line width
+        */
+        $comment_width = $this->line_width - 30 - 8 - 4;
+        $comment_width = $comment_width < 0 ? 0 : $comment_width;
+        if ($comment_width < strlen($comment)) {
+            $comment = substr($comment, 0, $comment_width);
+        }
+
         $ret = str_pad($description,30,' ',STR_PAD_RIGHT);
-        $ret .= str_pad($comment,14,' ',STR_PAD_RIGHT);
+        $ret .= str_pad($comment, $comment_width,' ',STR_PAD_RIGHT);
         $ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
         $ret .= str_pad($flags,4,' ',STR_PAD_LEFT);
         

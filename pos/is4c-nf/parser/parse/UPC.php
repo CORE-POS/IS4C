@@ -227,10 +227,10 @@ class UPC extends Parser
         */
         if ($this->duplicateWeight($row, $scaleStickerItem)) {
             CoreLocal::set("strEntered",$row["upc"]);
-            CoreLocal::set("boxMsg","<b>Same weight as last item</b>");
+            CoreLocal::set("boxMsg",_("<b>Same weight as last item</b>"));
             CoreLocal::set('boxMsgButtons', array(
-                'Confirm Weight [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                _('Confirm Weight [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
             return $ret;
@@ -297,7 +297,7 @@ class UPC extends Parser
             CoreLocal::set("SNR",CoreLocal::get('strEntered'));
             $ret['output'] = DisplayLib::boxMsg(
                 _("please put item on scale"),
-                'Weighed Item',
+                _('Weighed Item'),
                 true,
                 DisplayLib::standardClearButton()
             );

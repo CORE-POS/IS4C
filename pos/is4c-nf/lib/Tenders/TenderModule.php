@@ -84,7 +84,7 @@ class TenderModule
             $this->amount = -1 * $this->amount;
         }
 
-        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
+        $clearButton = array(_('OK [clear]') => 'parseWrapper(\'CL\');');
 
         if (CoreLocal::get("LastID") == 0) {
             return DisplayLib::boxMsg(
@@ -113,7 +113,7 @@ class TenderModule
                 _("transaction must be totaled before tender can be accepted"),
                 '',
                 false,
-                array('Total [subtotal]' => 'parseWrapper(\'TL\');$(\'#reginput\').focus();', 'Dimiss [clear]' => 'parseWrapper(\'CL\');')
+                array(_('Total [subtotal]') => 'parseWrapper(\'TL\');$(\'#reginput\').focus();', _('Dimiss [clear]') => 'parseWrapper(\'CL\');')
             );
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
@@ -158,8 +158,8 @@ class TenderModule
             );
             CoreLocal::set('lastRepeat', 'confirmTenderAmount');
             CoreLocal::set('boxMsgButtons', array(
-                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
 
             return MiscLib::base_url().'gui-modules/boxMsg2.php';
@@ -239,12 +239,12 @@ class TenderModule
         $amt = $this->DefaultTotal();
         CoreLocal::set('boxMsg',
             '<br />'
-          . 'tender $' . sprintf('%.2f',$amt) . ' as ' . $this->name_string 
+          . _('tender $') . sprintf('%.2f',$amt) . ' as ' . $this->name_string 
         );
         CoreLocal::set('strEntered', (100*$amt).$this->tender_code);
         CoreLocal::set('boxMsgButtons', array(
-            'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+            _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
         ));
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
@@ -257,7 +257,7 @@ class TenderModule
     */
     public function disabledPrompt()
     {
-        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
+        $clearButton = array(_('OK [clear]') => 'parseWrapper(\'CL\');');
         return DisplayLib::boxMsg(
             _('Amount required for ') . $this->name_string,
             '',
@@ -286,16 +286,16 @@ class TenderModule
             ' for $'.sprintf('%.2f',$this->amount) . '<br />';
         if (CoreLocal::get("LastEquityReference") == $ref) {
             $msg .= "<div style=\"background:#993300;color:#ffffff;
-                margin:3px;padding: 3px;\">
-                There was an equity sale on this transaction. Did it get
-                endorsed yet?</div>";
+                margin:3px;padding: 3px;\">"
+                . _('There was an equity sale on this transaction. Did it get
+                endorsed yet?') . "</div>";
         }
 
         CoreLocal::set("boxMsg",$msg);
         CoreLocal::set('strEntered', (100*$this->amount).$this->tender_code);
         CoreLocal::set('boxMsgButtons', array(
-            'Endorse [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            _('Endorse [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+            _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
         ));
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;

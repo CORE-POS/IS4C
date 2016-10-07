@@ -213,7 +213,7 @@ class DeptLib
                                             _('Department is member-only'),
                                             _('Enter member number first'),
                                             false,
-                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
+                                            array(_('Member Search [ID]') => 'parseWrapper(\'ID\');', _('Dismiss [clear]') => 'parseWrapper(\'CL\');')
                                         ));
                         $modified = true;
                     }
@@ -222,8 +222,8 @@ class DeptLib
                     if (\CoreLocal::get('isMember') == 0) {
                         if (\CoreLocal::get('msgrepeat') == 0 || \CoreLocal::get('lastRepeat') != 'memberOnlyDept') {
                             \CoreLocal::set('boxMsg', _(
-                                'Department is member-only<br />' .
-                                '[enter] to continue, [clear] to cancel'
+                                _('Department is member-only<br />') .
+                                _('[enter] to continue, [clear] to cancel')
                             ));
                             \CoreLocal::set('lastRepeat', 'memberOnlyDept');
                             $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
@@ -239,7 +239,7 @@ class DeptLib
                                             _('Department is member-only'),
                                             _('Enter member number first'),
                                             false,
-                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
+                                            array(_('Member Search [ID]') => 'parseWrapper(\'ID\');', _('Dismiss [clear]') => 'parseWrapper(\'CL\');')
                                         ));
                         $modified = true;
                     } else if (\CoreLocal::get('memberID') == \CoreLocal::get('defaultNonMem')) {
@@ -275,8 +275,8 @@ class DeptLib
         list($tax, $foodstamp, $deptDiscount) = PrehLib::applyToggles($tax, $foodstamp, $deptDiscount);
 
         $minMaxButtons = array(
-            'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+            _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
         );
         // remove Confirm button/text if hard limits enforced
         if (\CoreLocal::get('OpenRingHardMinMax')) {

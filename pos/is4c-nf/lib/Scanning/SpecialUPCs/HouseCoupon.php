@@ -197,7 +197,7 @@ class HouseCoupon extends SpecialUPC
                     _("Apply member number first"),
                     _('Member only coupon'),
                     false,
-                    array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+                    array_merge(array(_('Member Search [ID]') => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
                 );
             }
         }

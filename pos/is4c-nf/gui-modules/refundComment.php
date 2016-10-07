@@ -67,7 +67,7 @@ class RefundComment extends NoInputCorePage
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">
-        <span class="larger">reason for refund</span>
+        <span class="larger"><?php echo _('reason for refund'); ?></span>
         <form name="selectform" method="post" 
             id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <?php
@@ -87,11 +87,11 @@ class RefundComment extends NoInputCorePage
             <?php } ?>
             <select name="selectlist" id="selectlist"
                 onblur="$('#selectlist').focus();">
-            <option>Overcharge</option>
-            <option>Spoiled</option>
-            <option>Did not Need</option>
-            <option>Did not Like</option>
-            <option>Other</option>
+            <option><?php echo _('Overcharge'); ?></option>
+            <option><?php echo _('Spoiled'); ?></option>
+            <option><?php echo _('Did not Need'); ?></option>
+            <option><?php echo _('Did not Like'); ?></option>
+            <option><?php echo _('Other'); ?></option>
             </select>
             <?php if (CoreLocal::get('touchscreen')) { ?>
             <button type="button" class="pos-button coloredArea"
@@ -104,10 +104,10 @@ class RefundComment extends NoInputCorePage
         }
         ?>
         <p>
-            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit"><?php echo _('Select [enter]'); ?></button>
             <button class="pos-button" type="submit" 
                 onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
-                Cancel [clear]
+                <?php echo _('Cancel [clear]'); ?>
             </button>
         </p>
         </div>

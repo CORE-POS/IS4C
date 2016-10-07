@@ -51,11 +51,11 @@ class SiteSearch extends FannieRESTfulPage
         }
 
         if (count($strong) == 0) {
-            return '<div class="alert alert-danger">No matches</div>' . $this->get_view();
+            return '<div class="alert alert-danger">' . _('No matches') . '</div>' . $this->get_view();
         }
 
         $ret = '<div class="panel panel-default">
-            <div class="panel-heading">Search Results</div>
+            <div class="panel-heading">' . _('Search Results') . '</div>
             <div class="panel-body"><ul>';
         $URL = $this->config->URL;
         $ROOT = $this->config->ROOT;
@@ -82,20 +82,20 @@ class SiteSearch extends FannieRESTfulPage
             <form method="get">
                 <div class="form-group">
                     <input type="text" class="form-control" id="search-term"
-                        placeholder="Enter search term" name="id" required
-                        pattern=".{3,}" title="Three characters minimum" />
-                    <button type="submit" class="btn btn-default">Search</button>
+                        placeholder="' . _('Enter search term') . '" name="id" required
+                        pattern=".{3,}" title="' . _('Three characters minimum') . '" />
+                    <button type="submit" class="btn btn-default">' . _('Search') . '</button>
                 </div>
             </form>';
     }
 
     public function helpContent()
     {
-        return '<p>
+        return _('<p>
             Enter search term(s) to locate pages, tools, and reports
             within CORE. For example, enter "Site Search" to find this
             particular page.
-            </p>';
+            </p>');
     }
 
     public function unitTest($phpunit)

@@ -19,59 +19,59 @@ body {
 <body>
 <?php include('tabs.php'); ?>
 <div id="wrapper">
-<h2>IT CORE Lane Installation: Security</h2>
+<h2><?php echo _('IT CORE Lane Installation: Security'); ?></h2>
 <form action=security.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <tr>
-    <td><b>Scale Beep on Login</b>: </td>
+    <td><b><?php echo _('Scale Beep on Login'); ?></b>: </td>
     <td>
-    <?php echo $form->selectField('LoudLogins', array(1=>'Yes',0=>'No'), 0); ?>
-    (Scale makes noise when admin login attempted)
+    <?php echo $form->selectField('LoudLogins', array(1=>_('Yes'),0=>_('No')), 0); ?>
+    <?php echo _('(Scale makes noise when admin login attempted)'); ?>
     </td>
 </tr>
 <tr>
-    <td><b>Cancel Transaction</b>: </td>
+    <td><b><?php echo _('Cancel Transaction'); ?></b>: </td>
     <td>
     <?php
-    $privLevels = array(30=>'Admin only', 25=>'Current & Admin', 20=>'All');
+    $privLevels = array(30=>_('Admin only'), 25=>_('Current & Admin'), 20=>_('All'));
     echo $form->selectField('SecurityCancel', $privLevels, 20);
     ?>
     </td>
 </tr>
 <tr>
-    <td><b>Suspend/Resume</b>: </td>
+    <td><b><?php echo _('Suspend/Resume'); ?></b>: </td>
     <td>
     <?php
-    $privLevels = array(30=>'Admin only', 20=>'All');
+    $privLevels = array(30=>_('Admin only'), 20=>_('All'));
     echo $form->selectField('SecuritySR', $privLevels, 20);
     ?>
     </td>
 </tr>
 <tr>
-    <td><b>Print Tender Report</b>: </td>
+    <td><b><?php echo _('Print Tender Report'); ?></b>: </td>
     <td><?php echo $form->selectField('SecurityTR', $privLevels, 20); ?></td>
 </tr>
 <tr>
-    <td><b>Refund Item</b>: </td>
+    <td><b><?php echo _('Refund Item'); ?></b>: </td>
     <td><?php echo $form->selectField('SecurityRefund', $privLevels, 20); ?></td>
 </tr>
 <tr>
-    <td><b>Line Item Discount</b>: </td>
+    <td><b><?php echo _('Line Item Discount'); ?></b>: </td>
     <td><?php echo $form->selectField('SecurityLineItemDiscount', $privLevels, 20); ?></td>
 </tr>
 <tr>
-    <td><b>Void Limit</b>:</td>
+    <td><b><?php echo _('Void Limit'); ?></b>: </td>
     <td>
     <?php
     echo $form->textField('VoidLimit', 0);
     ?> 
-    (in dollars, per transaction. Zero for unlimited).
+    <?php echo _('(in dollars, per transaction. Zero for unlimited).'); ?>
     </td>
 </tr>
 <tr>
     <td colspan=2>
     <hr />
-    <input type=submit name=secsubmit value="Save Changes" />
+    <input type=submit name=secsubmit value="<?php echo _('Save Changes'); ?>" />
     </td>
 </tr>
 </table>

@@ -233,7 +233,7 @@ class SigTermCommands extends Parser
         }
         if ($this->cb_error) {
             $ret['output'] = DisplayLib::boxMsg(
-                'Cash back set to zero instead',
+                _('Cash back set to zero instead'),
                 _('Invalid cash back selection'),
                 false,
                 DisplayLib::standardClearButton()

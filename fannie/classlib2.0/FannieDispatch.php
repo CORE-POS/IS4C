@@ -84,7 +84,29 @@ class FannieDispatch
             $dbc = FannieDB::getReadOnly($op_db);
         }
         $obj->setConnection($dbc);
+        $obj = self::twig($obj);
         $obj->draw_page();
+    }
+
+    static public function twig($obj)
+    {
+        if (!class_exists('Twig_Environment') || !method_exists($obj, 'setTwig')) {
+            return $obj;
+        }
+
+        $refl = new ReflectionClass($obj);
+        $path = dirname($refl->getFileName());
+        $paths = array($path . DIRECTORY_SEPARATOR . 'twig', $path);
+        if (!is_dir($paths[0])) {
+            $paths = $paths[1];
+        }
+        $loader = new Twig_Loader_Filesystem($paths);
+        $temp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'core.twig';
+        $twig = new Twig_Environment($loader, array('cache'=>$temp));
+        $twig->addExtension(new Twig_Extensions_Extension_I18n());
+        $obj->setTwig($twig);
+
+        return $obj;
     }
 
     /**

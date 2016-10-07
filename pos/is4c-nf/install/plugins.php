@@ -24,7 +24,7 @@ body {
 <body>
 <?php include('tabs.php'); ?>
 <div id="wrapper">
-<h2>IT CORE Lane Installation: Plugins</h2>
+<h2><?php echo _('IT CORE Lane Installation: Plugins'); ?></h2>
 
 <div class="alert"><?php Conf::checkWritable('../ini.json', False, 'JSON'); ?></div>
 <div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
@@ -32,7 +32,7 @@ body {
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 
 <form action=plugins.php method=post>
-<b>Available plugins</b>:<br />
+<b><?php echo _('Available plugins'); ?></b>:<br />
 <?php
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
     $oldset = CoreLocal::get('PluginList');
@@ -114,7 +114,7 @@ echo '</table>';
 InstallUtilities::paramSave('PluginList',CoreLocal::get('PluginList'));
 ?>
 <hr />
-<input type=submit name=psubmit value="Save Changes" />
+<input type=submit name=psubmit value="<?php echo _('Save Changes'); ?>" />
 </form>
 </div> <!--    wrapper -->
 </body>

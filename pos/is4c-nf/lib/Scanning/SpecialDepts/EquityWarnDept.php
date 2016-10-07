@@ -35,17 +35,17 @@ class EquityWarnDept extends SpecialDept
     {
         if (CoreLocal::get("memberID") == "0" || CoreLocal::get("memberID") == CoreLocal::get("defaultNonMem")) {
             CoreLocal::set('strEntered','');
-            CoreLocal::set('boxMsg','Equity requires member.<br />Apply member number first');
+            CoreLocal::set('boxMsg',_('Equity requires member.<br />Apply member number first'));
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 
             return $json;
         }
 
         if (CoreLocal::get('msgrepeat') == 0) {
-            CoreLocal::set("boxMsg","<b>Equity Sale</b><br>please confirm");
+            CoreLocal::set("boxMsg",_("<b>Equity Sale</b><br>please confirm"));
             CoreLocal::set('boxMsgButtons', array(
-                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
         }

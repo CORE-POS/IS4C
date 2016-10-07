@@ -51,7 +51,7 @@ class BalanceCheck extends Parser
             $msg, 
             $title, 
             true, 
-            array_merge(array('Tender [Store Credit]' => 'parseWrapper(\'MI\');'), DisplayLib::standardClearButton())
+            array_merge(array(_('Tender [Store Credit]') => 'parseWrapper(\'MI\');'), DisplayLib::standardClearButton())
         );
 
         return $ret;

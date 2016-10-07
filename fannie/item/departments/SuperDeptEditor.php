@@ -176,9 +176,12 @@ class SuperDeptEditor extends FanniePage {
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $superQ = $dbc->prepare("SELECT s.superID,super_name FROM superdepts as s
-            LEFT JOIN superDeptNames AS n ON s.superID=n.superID
-            GROUP BY s.superID,super_name
+        $superQ = $dbc->prepare("
+            SELECT n.superID,
+                super_name 
+            FROM superDeptNames as n
+                LEFT JOIN superdepts AS s ON s.superID=n.superID
+            GROUP BY n.superID,super_name
             ORDER BY super_name");
         $superR = $dbc->execute($superQ);
         $opts = "";

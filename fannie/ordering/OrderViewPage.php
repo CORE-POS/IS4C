@@ -573,6 +573,7 @@ class OrderViewPage extends FannieRESTfulPage
             3 => 'Text (Sprint)',
             4 => 'Text (T-Mobile)',
             5 => 'Text (Verizon)',
+            6 => 'Text (Google Fi)',
         );
         $contactHtml = '';
         foreach ($contactOpts as $id=>$val) {
@@ -805,7 +806,7 @@ class OrderViewPage extends FannieRESTfulPage
         }
         
         echo <<<HTML
-<form> 
+<form onkeydown="return event.keyCode != 13;">
 <div class="form-inline">
     <div class="input-group">
         <span class="input-group-addon">UPC</span> 

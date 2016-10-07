@@ -26,6 +26,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\models\op\TendersModel;
 use \CoreLocal;
 
 /**
@@ -657,6 +658,22 @@ static public function loadParams()
         $key = $local->param_key();
         $value = $local->materializeValue();
         CoreLocal::set($key, $value, true);
+    }
+
+    // load tender map from tenders instead of parameters
+    $map = array();
+    if (CoreLocal::get('NoCompat') == 1) {
+        $model = new TendersModel($dbc);
+        $map = $model->getMap();
+    } else {
+        $table = $dbc->tableDefinition('tenders');
+        if (isset($table['TenderModule'])) {
+            $model = new TendersModel($dbc);
+            $map = $model->getMap();
+        }
+    }
+    if (count($map) > 0 || !is_array(CoreLocal::get('TenderMap'))) {
+        CoreLocal::set('TenderMap', $map);
     }
 }
 

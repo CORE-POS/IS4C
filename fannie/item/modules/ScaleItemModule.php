@@ -119,6 +119,9 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             <textarea name=s_text rows=4 cols=45 class=\"form-control\">";
         $ret .= $scale['text'];
         $ret .= "</textarea>";
+        $ret .= '<br /><b>Linked PLU</b><br />';
+        $linkedPLU = isset($scale['linkedPLU']) ? $scale['linkedPLU'] : '';
+        $ret .= '<input type="text" class="form-control" name="s_linkedPLU" value="' . $linkedPLU . '" />';
         $ret .= '</div>';
         $scales = new ServiceScalesModel($dbc);
         $mapP = $dbc->prepare('SELECT upc
@@ -189,6 +192,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $text = FormLib::get('s_text','');
         $align = FormLib::get('s_label','horizontal');
         $netWeight = FormLib::get('s_netwt', 0);
+        $linkedPLU = FormLib::get('s_linkedPLU', null);
 
         $label = \COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel(
             $align,
@@ -215,9 +219,10 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($weight == 1 && $bycount == 1) {
             $p = new ProductsModel($dbc);
             $p->upc($upc);
-            $p->store_id(1);
-            if($p->load()) {
-                $p->Scale(0);
+            $stores = FormLib::get('store_id');
+            foreach ($stores as $s) {
+                $p->store_id($s);
+                $p->scale(0);
                 $p->enableLogging(false);
                 $p->save();
             }
@@ -240,6 +245,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $scaleItem->label($label);
         $scaleItem->graphics( ($graphics) ? 121 : 0 );
         $scaleItem->netWeight($netWeight);
+        $scaleItem->linkedPLU($linkedPLU);
         $scaleItem->save();
 
         // extract scale PLU

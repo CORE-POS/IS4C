@@ -81,7 +81,7 @@ class fsTotalConfirm extends NoInputCorePage
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">
-        <span class="larger">Customer is using the</span>
+        <span class="larger"><?php _('Customer is using the'); ?></span>
         <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
 
         <?php $stem = MiscLib::baseURL() . 'graphics/'; ?>
@@ -93,8 +93,8 @@ class fsTotalConfirm extends NoInputCorePage
         <?php } ?>
         <select size="2" name="selectlist" 
             id="selectlist" onblur="$('#selectlist').focus();">
-        <option value='EC' <?php echo ($default == 'EC') ? 'selected' : ''; ?>>Cash Portion
-        <option value='EF' <?php echo ($default == 'EF') ? 'selected' : ''; ?>>Food Portion
+        <option value='EC' <?php echo ($default == 'EC') ? 'selected' : ''; ?>><?php echo _('Cash Portion'); ?>
+        <option value='EF' <?php echo ($default == 'EF') ? 'selected' : ''; ?>><?php echo _('Food Portion'); ?>
         </select>
         <?php if (CoreLocal::get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
@@ -103,10 +103,10 @@ class fsTotalConfirm extends NoInputCorePage
         </button>
         <?php } ?>
         <p>
-            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit"><?php echo _('Select [enter]'); ?></button>
             <button class="pos-button" type="submit" 
                 onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
-                Cancel [clear]
+                <?php echo _('Cancel [clear]'); ?>
             </button>
         </p>
         </div>

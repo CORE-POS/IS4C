@@ -192,7 +192,6 @@ class ProdLocationEditor extends FannieRESTfulPage
                     AND department NOT BETWEEN 508 AND 998
                     AND department NOT BETWEEN 250 AND 259
                     AND department NOT BETWEEN 225 AND 234
-                    AND department NOT BETWEEN 1 AND 25
                     AND department NOT BETWEEN 61 AND 78
                     AND department != 46
                     AND department != 150
@@ -494,10 +493,10 @@ class ProdLocationEditor extends FannieRESTfulPage
         } elseif ($dept==38 || $dept==41 || $dept==42){
             // Cool 2
             return 13;
-        } elseif ($dept==32 || $dept==35 || $dept==37 ) {
+        } elseif ($dept==32 || $dept==35 || $dept==37 || $dept==30) {
             // Cool 3
             return 14;
-        } elseif ( ($dept>=26 && $dept<=31)
+        } elseif ( ($dept>=26 && $dept<=31 && $dept!=30)
             || ($dept==34 ) ) {
             // Cool 4
             return 15;

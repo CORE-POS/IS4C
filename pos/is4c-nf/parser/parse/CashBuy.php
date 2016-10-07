@@ -50,7 +50,7 @@ class CashBuy extends Parser
         }
         
         $ret = $this->default_json();
-        $title = _('Cash Buy') . _(''/*put register number here*/);
+        $title = _('Cash Buy') . CoreLocal::get('laneno');
         $msg = '
             <form method="post">
                 <table>
