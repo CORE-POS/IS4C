@@ -207,9 +207,19 @@ function buildLTTViewsGeneric($db, $type, $errors=array())
         $createStr .= convertOrCast($type, "(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$rates[$i]." and discountable <> 0 and foodstamp=1 then total else 0 end))") . " as fsDiscTaxable_".$desc[$i].",\n";
     }
 
+    $ar_depts = COREPOS\pos\lib\MiscLib::getNumbers(CoreLocal::get('ArDepartments'));
+    if (count($ar_depts) == 0) {
+        $ar_depts = array(-999);
+    }
+    $ar_in = '';
+    foreach ($ar_depts as $a) {
+        $ar_in .= ((int)$a) . ',';
+    }
+    $ar_in = substr($ar_in, 0, strlen($ar_in)-1);
+
     $createStr .= "
     " . convertOrCast($type, "(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX'  then total else 0 end))") . " as chargeTotal,
-    " . convertOrCast($type, "(sum(case when department = 990  then total else 0 end))") . " as paymentTotal,
+    " . convertOrCast($type, "(sum(case when department IN ({$ar_in}) then total else 0 end))") . " as paymentTotal,
     " . convertOrCast($type, "(sum(case when trans_type = 'T' and department = 0 then total else 0 end))") . " as tenderTotal,\n";
     $createStr .= 
     convertOrCast($type, "(sum(case when trans_subtype = 'FS' or trans_subtype = 'EF' then total else 0 end))") . " as fsTendered,
