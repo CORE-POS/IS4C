@@ -558,6 +558,9 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
 	$labels['debit'] = array("Debit available:"
 			, -1
 	);
+    if ($CORE_LOCAL->get('InvertAR')) {
+        $labels['charge'][1] = -1;
+    }
 
 	$db = Database::tDataConnect();
     list($emp, $reg, $trans) = explode('-', $trans_num, 3);

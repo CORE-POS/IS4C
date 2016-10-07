@@ -110,6 +110,15 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
+    <td></td>
+    <td>
+    <?php echo $form->checkboxField('InvertAR', 'Invert Display A/R', 0); ?>
+    <span class='noteTxt'>Normally a positive A/R balance indicates the amount the customer
+    owes to the store (i.e., a debt). Inverting this means a positive A/R balance indicates
+    the amount the store owes to the customer (i.e., a credit)</span>
+    </td>
+</tr>
+<tr>
     <td><b>Bottle Return Department number</b>: </td>
     <td><?php echo InstallUtilities::installTextField('BottleReturnDept', ''); ?>
     <span class='noteTxt'>Add a BOTTLE RETURN item to your products table with a normal_price of 0, 

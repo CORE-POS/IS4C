@@ -32,10 +32,11 @@ class BalanceCheck extends Parser {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		PrehLib::chargeOk();
-		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
+        $bal = $CORE_LOCAL->get('InvertAR') ? -1*$CORE_LOCAL->get('balance') : $CORE_LOCAL->get('balance');
+        $avail = $CORE_LOCAL->get('InvertAR') ? -1*$CORE_LOCAL->get('availBal') : $CORE_LOCAL->get('availBal');
 		$ret['output'] = DisplayLib::boxMsg(_("Member")." #". $CORE_LOCAL->get("memberID")."<br />".
-					_("Current AR balance is")." " . $CORE_LOCAL->get("balance") . "<br />".
-					_("Available AR balance is")." ".$CORE_LOCAL->get("availBal"). "</b>","",True);
+					_(sprintf("Current AR balance is %s", $bal)) . "<br />".
+					_(sprintf("Available AR balance is %s", $avail)) . "</b>","",True);
 		return $ret;
 	}
 
