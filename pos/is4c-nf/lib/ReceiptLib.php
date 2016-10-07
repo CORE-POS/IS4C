@@ -382,6 +382,9 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     $labels = array();
     $labels['charge'] = array(_("Current IOU Balance:") , 1);
     $labels['debit'] = array(_("Debit available:"), -1);
+    if (CoreLocal::get('InvertAR')) {
+        $labels['charge'][1] = -1;
+    }
 
     $dbc = Database::tDataConnect();
     list($emp, $reg, $trans) = self::parseRef($trans_num);

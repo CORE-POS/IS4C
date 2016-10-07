@@ -115,6 +115,15 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     </td>
 </tr>
 <tr>
+    <td></td>
+    <td>
+    <?php echo $form->checkboxField('InvertAR', 'Invert Display A/R', 0); ?>
+    <span class='noteTxt'><?php echo _('Normally a positive A/R balance indicates the amount the customer
+    owes to the store (i.e., a debt). Inverting this means a positive A/R balance indicates
+    the amount the store owes to the customer (i.e., a credit)'); ?></span>
+    </td>
+</tr>
+<tr>
     <td><b><?php echo _('Bottle Return Department number'); ?></b>: </td>
     <td><?php echo $form->textField('BottleReturnDept', ''); ?>
     <span class='noteTxt'><?php echo _('Add a BOTTLE RETURN item to your products table with a normal_price of 0, 
