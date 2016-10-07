@@ -562,11 +562,21 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
         $labels['charge'][1] = -1;
     }
 
+    $ar_depts = self::_getNumbers($CORE_LOCAL->get('ArDepartments'));
+    if (count($ar_depts) == 0) {
+        $ar_depts = array(-999);
+    }
+    $ar_in = '';
+    foreach ($ar_depts as $a) {
+        $ar_in .= ((int)$a) . ',';
+    }
+    $ar_in = substr($ar_in, 0, strlen($ar_in)-1);
+
 	$db = Database::tDataConnect();
     list($emp, $reg, $trans) = explode('-', $trans_num, 3);
 	$checkQ = "SELECT trans_id 
                FROM localtranstoday 
-               WHERE (department=990 or trans_subtype='MI')
+               WHERE (department IN {$ar_in} or trans_subtype='MI')
                 AND emp_no=" . ((int)$emp) . "
                 AND register_no=" . ((int)$reg) . "
                 AND trans_no=" . ((int)$trans);
@@ -1656,6 +1666,26 @@ static public function code39($barcode)
     }
 
     return self::$PRINT_OBJ->BarcodeCODE39($barcode);
+}
+
+// taken from upstream MiscLib
+// can be deleted when MiscLib::getNumbers exists
+static private function _getNumbers($string)
+{
+    if (empty($string)) {
+        return array(-999999);
+    } elseif (is_array($string)) {
+        $ret = array();
+        foreach ($string as $s) {
+            $ret[] = (int)$s;
+        }
+        return $ret;
+    }
+    $pieces = preg_split('/[^\d]+/', $string, 0, PREG_SPLIT_NO_EMPTY);
+    for ($i=0; $i<count($pieces); $i++) {
+        $pieces[$i] = (int)$pieces[$i];
+    }
+    return $pieces;
 }
 
 }

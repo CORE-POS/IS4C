@@ -29,6 +29,7 @@ function buildLTTViews($db,$type,$errors=array()){
 }
 
 function buildLTTViewsMySQL($db, $errors=array()){
+global $CORE_LOCAL;
 
 //--------------------------------------------------------------
 // CREATE lttSummary VIEW
@@ -55,9 +56,19 @@ while ($taxRatesW = $db->fetch_row($taxRatesR)){
 	$createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 and foodstamp=1 then total else 0 end) AS decimal(10,2)) as fsDiscTaxable_".$taxRatesW[1].",\n";
 }
 
+$ar_depts = _getNumbers($CORE_LOCAL->get('ArDepartments'));
+if (count($ar_depts) == 0) {
+    $ar_depts = array(-999);
+}
+$ar_in = '';
+foreach ($ar_depts as $a) {
+    $ar_in .= ((int)$a) . ',';
+}
+$ar_in = substr($ar_in, 0, strlen($ar_in)-1);
+
 $createStr .= "
 CAST(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX'  then total else 0 end) AS decimal(10,2)) as chargeTotal,
-CAST(sum(case when department = 990  then total else 0 end) AS decimal(10,2)) as paymentTotal,
+CAST(sum(case when department IN ({$ar_in}) then total else 0 end) AS decimal(10,2)) as paymentTotal,
 CAST(sum(case when trans_type = 'T' and department = 0 then total else 0 end) AS decimal(10,2)) as tenderTotal,\n";
 $createStr .= "CAST(sum(case when trans_subtype = 'FS' or trans_subtype = 'EF' then total else 0 end) AS decimal(10,2)) as fsTendered,
 CAST(sum(case when foodstamp = 1 and discountable = 0 then total else 0 end) AS decimal(10,2)) as fsNoDiscTTL,
@@ -397,6 +408,26 @@ $db->query($rpQ);
 //echo $createStr."<br />";
 //echo "SubTotals view created<br />";
 
+}
+
+// taken from upstream MiscLib
+// can be deleted when MiscLib::getNumbers exists
+function _getNumbers($string)
+{
+    if (empty($string)) {
+        return array(-999999);
+    } elseif (is_array($string)) {
+        $ret = array();
+        foreach ($string as $s) {
+            $ret[] = (int)$s;
+        }
+        return $ret;
+    }
+    $pieces = preg_split('/[^\d]+/', $string, 0, PREG_SPLIT_NO_EMPTY);
+    for ($i=0; $i<count($pieces); $i++) {
+        $pieces[$i] = (int)$pieces[$i];
+    }
+    return $pieces;
 }
 
 ?>
