@@ -129,7 +129,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         string result = "";
                         if (message.Contains("EMV")) {
                             result = ProcessEMV(message);
-                        } else {
+                        } elseif (message.Length > 0) {
                             result = ProcessPDC(message);
                         }
                         result = WrapHttpResponse(result);

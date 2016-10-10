@@ -172,7 +172,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             char fs = (char)0x1c;
             string buttons = "Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             WriteMessageToDevice(UpdateScreenMessage(buttons));
-        } catch (Exception ex) {
+        } catch (Exception) {
         }
     }
 
