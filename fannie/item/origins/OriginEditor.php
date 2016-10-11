@@ -355,9 +355,9 @@ class OriginEditor extends FannieRESTfulPage
         <tr>
             <th>Short Name</th>
             <th>Full Name</th>
-            <th><a href="{$self}'?custom=1">Region</a></th>
-            <th><a href="{$self}'?state=1">State/Prov</a></th>
-            <th><a href="{$self}'?country=1">Country</a></th>
+            <th><a href="{$self}?custom=1">Region</a></th>
+            <th><a href="{$self}?state=1">State/Prov</a></th>
+            <th><a href="{$self}?country=1">Country</a></th>
             <th>Local</th>
         </tr>
 HTML;
