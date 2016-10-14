@@ -334,6 +334,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             $ins_array['unitPrice'] = $pdW['normal_price'];
             if ($pdW['priceRuleTypeID'] == 6 || $pdW['priceRuleTypeID'] == 7 || $pdW['priceRuleTypeID'] == 8) {
                 $pdW['discount'] = 0;
+                $ins_array['discountable'] = 0;
             }
             if ($pdW['discount'] != 0 && $pdW['discounttype'] == 1) {
                 /**
@@ -1319,7 +1320,7 @@ function itemList($orderID,$table="PendingSpecialOrder")
     $ret .= '<tr><th>UPC</th><th>Description</th><th>Cases</th><th>Pricing</th><th>&nbsp;</th></tr>';
         //<th>Est. Price</th>
         //<th>Qty</th><th>Est. Savings</th><th>&nbsp;</th></tr>';
-    $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,
+    $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,discountable,
         department,regPrice,ItemQtty,discounttype,trans_id FROM {$TRANS}$table as o
         WHERE order_id=? AND trans_type='I'");
     $res = $dbc->execute($prep, array($orderID));
@@ -1333,6 +1334,8 @@ function itemList($orderID,$table="PendingSpecialOrder")
             } else {
                 $pricing = "% Discount";
             }
+        } elseif ($w['discountable'] == 0) {
+            $pricing = 'Basics';
         }
         $ret .= sprintf('<tr>
                 <td>%s</td>
