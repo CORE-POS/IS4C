@@ -197,7 +197,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             ';   
         }
        
-        $ret .= '<br><a class="btn btn-default" href="http://192.168.1.2/scancoord/SaleChangeScanner.php">
+        $ret .= '<br><a class="btn btn-default" href="http://192.168.1.2/scancoord/item/SalesChange/SaleChangeScanner.php">
             Back to Sign info<br>Scanner</a><br><br>';
         
         return $ret;
@@ -221,7 +221,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
                 <input type="submit" class="btn btn-default" value="go">
             </form>
-            <a class="btn btn-default" href="http://192.168.1.2/scancoord/SaleChangeScanner.php">
+            <a class="btn btn-default" href="http://192.168.1.2/scancoord/item/SalesChange/SaleChangeScanner.php">
             Back to Sign info<br>Scanner</a><br><br>
         ';
 
