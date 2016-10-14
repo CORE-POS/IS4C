@@ -47,9 +47,16 @@ class EpScaleLib
         }
 
         if ($item_info['RecordType'] == 'WriteOneItem') {
-            return self::getAddItemLine($item_info) . $scale_fields;
+            $line = self::getAddItemLine($item_info) . $scale_fields;
         } else {
-            return self::getUpdateItemLine($item_info) . $scale_fields;
+            $line = self::getUpdateItemLine($item_info) . $scale_fields;
+        }
+
+        if ($scale_model->scaleType() == 'HOBART_HTI') {
+            preg_match('/UTA(\d\d\d)/', $line, $matches);    
+            $tare = $matches[1];
+            $fixed_tare = substr($tare . '0', -3);
+            $line = str_replace($matches[0], 'UTA' . $fixed_tare, $line);
         }
 
         return $line;
@@ -73,11 +80,7 @@ class EpScaleLib
     static private function expandedText($text)
     {
         $text = str_replace("\r", '', $text);
-        $ret = '';
-        foreach (explode("\n", $text) as $line) {
-            $ret .= wordwrap($line, 35, "\n") . "\n";
-        }
-        return str_replace("\n", chr(0xE), $ret);
+        return str_replace("\n", chr(0xE), $text);
     }
 
     static private function getAddItemLine($item_info)
