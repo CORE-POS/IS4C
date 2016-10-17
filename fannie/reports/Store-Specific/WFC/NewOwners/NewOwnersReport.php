@@ -115,6 +115,10 @@ function showGraph() {
 
         $prep = $this->connection->prepare($realQuery);
         $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
+        if ($union) {
+            $args[] = $date1 . ' 00:00:00';
+            $args[] = $date2 . ' 23:59:59';
+        }
         $data = array();
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
