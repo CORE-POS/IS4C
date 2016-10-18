@@ -245,7 +245,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $scaleItem->label($label);
         $scaleItem->graphics( ($graphics) ? 121 : 0 );
         $scaleItem->netWeight($netWeight);
-        $scaleItem->linkedPLU($linkedPLU);
+        $scaleItem->linkedPLU(BarcodeLib::padUPC($linkedPLU));
         $scaleItem->save();
 
         // extract scale PLU
