@@ -181,7 +181,11 @@ date of birth. This flag should be set to the age
 required to purchase the product - e.g., 21 for 
 alcohol in the US.
 
-cost is the item\'s cost
+Cost:
+cost is the item\'s normal cost. special_cost is a temporary, 
+promotional cost. Most pricing tools use normal cost to generate
+retail prices. special_cost is recorded in transaction logs to
+more closely reflect actual cost at the time of sale.
 
 isUse indicates whether the item is currently
 available for sale. Whether cashiers can bypass this
