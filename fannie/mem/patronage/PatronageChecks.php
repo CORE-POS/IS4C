@@ -120,6 +120,7 @@ class PatronageChecks extends FannieRESTfulPage
         $this->files = array();
         $filenumber = 1;
         set_time_limit(0);
+        $barcoder = new COREPOS\Fannie\API\item\FannieSignage();
         while ($row = $dbc->fetch_row($result)) {
             if (empty($filename)) {
                 $filename = $filenumber . '-' . substr($row['zip'], 0, 5);
@@ -145,9 +146,8 @@ class PatronageChecks extends FannieRESTfulPage
             $pdf->AddPage();
             $pdf->Image('rebate_body.png', 10, 0, 190);
             $check = new GumCheckTemplate($custdata, $meminfo, $row['cash_pat'], 'Rebate ' . $fiscal_year, $row['check_number']);
-            $check->addBankLine('Net Purchases: $' . number_format($row['net_purch'], 2));
-            $check->addBankLine('Retained Equity: $' . number_format($row['equit_pat'], 2));
             $check->renderAsPDF($pdf);
+            $barcoder->drawBarcode('0049999900131', $pdf, 85, 240, array('height'=>9));
             if ($pdf->PageNo() == $per_page) {
                 $filename .= '-' . substr($row['zip'], 0, 5) . '.pdf';
                 $filenumber++;
