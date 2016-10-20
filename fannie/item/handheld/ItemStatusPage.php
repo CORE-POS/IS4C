@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -140,6 +142,10 @@ class ItemStatusPage extends FannieRESTfulPage
         $isNarrow = $narrowTag->find();
         $vendor = new VendorsModel($dbc);
         $product->upc($upc);
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $product->store_id(Store::getIdByIp());
+        }
+
         if (!$product->load()) {
             $ret .= '<div class="alert alert-danger">Item not found</div>';
             return $ret;
