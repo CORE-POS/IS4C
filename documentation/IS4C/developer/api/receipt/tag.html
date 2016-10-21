@@ -1,0 +1,42 @@
+<html>
+	<head>
+	<title>DefaultReceiptTag</title>
+	</head>
+<body>
+<div style="text-align:center;">
+<h2>DefaultReceiptTag</h2>
+<a href="#change_log">Revised: 10Apr2013</a>
+</div>
+<p>Tagging data is the forth step in building a receipt. Modules
+implementing DefaultReceiptTag take the array of records from
+the third step and add a <b>tag</b> field to each one. The tag
+setting is used to route each record to the correct formatting
+module for final display. A record tagged as <b>Item</b> will
+be rendered using <b>ItemReceiptFormat</b>; a record tagged
+as <b>Tender</b> will be rendered using <b>TenderReceiptFormat</b>;
+etc. When applying tags, make sure a corresponding ReceiptFormat
+module exists. Subclasses must implement the method <b>tag</b>
+which takes an array of records and returns an array of 
+records with the "tag" field added to each one.
+</p>
+<p><b>Example</b>:
+<pre>
+class ExampleTag extends DefaultReceiptTag {
+	function tag($rowset){
+		$rowset = parent::tag($rowset);
+		for($i=0;$i&lt;count($rowset);$i++){
+			if($rowset[$i]['upc'] == '0000000004011')
+				$rowset[$i]['tag'] = 'CustomBananas';
+		return $rowset;
+	}
+}
+</pre>
+</p>
+<hr />
+<pre>
+<a name="change_log">Change Log:</a>
+
+10Apr13 Andy Theuninck - Created document
+</pre>
+</body>
+</html>

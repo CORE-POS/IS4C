@@ -1,0 +1,38 @@
+<?php
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 16Apr13 EL + Use FanniePage functions to get JS and CSS.
+	* 16Apr2013 Eric Lee Extracted from header.html for a "plain" page
+	*           extending InstallPage which extends FanniePage
+	*           that uses authentication, e.g. fannie/install pages.
+*/
+?>
+<?php
+/* try to deal with relative paths for includes */
+/* EL Could this code itself be included? */
+/* EL FanniePage-based pages may make this unnecessary. */
+$path = "";
+$found = False;
+$uri = $_SERVER['REQUEST_URI'];
+$tmp = explode("?",$uri);
+if (count($tmp) > 1) $uri = $tmp[0];
+foreach(explode("/",$uri) as $x){
+	if (strpos($x,".php") === False
+		&& strlen($x) != 0){
+		$path .= "../";
+	}
+	if (!$found && stripos($x,"fannie") !== False){
+		$found = True;
+		$path = "";
+	}
+}
+?>
+<!doctype html>
+<html lang="en">
+<head>
+<title><?php echo $page_title; ?></title>
+</head>
+<body>
+<!-- See about generating tabs and page heading here.
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="STYLESHEET" href="<?php echo $path; ?>src/style.css" type="text/css">
+-->

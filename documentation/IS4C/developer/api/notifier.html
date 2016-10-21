@@ -1,0 +1,72 @@
+<html>
+<head>
+	<title>Notifier</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>Notifier</h1>
+<!--
+17Jan14 AT Doc first written
+-->
+<br />as of: January 17, 2014
+</div>
+<p>
+Notifer modules are displayed on the right side of the screen
+below the scale weight. They can display information constantly
+or conditionally. Notifiers have the following methods:
+</p>
+<blockquote>
+string <b>draw</b>()<br />
+void <b>transactionReset</b>()<br />
+</blockquote>
+<p>
+The <b>draw</b> method should return an HTML string containing
+the informtion to display. This should almost always include some
+block-level HTML tag like a &lt;div;&gt; so that different notifiers
+don't run together. Return the empty string if there's nothing to
+display currently. The <b>transactionReset</b> method does not
+have to do anything. This method is simply called after the end
+of each transaction. It is provided as a convenience in case
+your Notifier is keeping track of any state that needs to be
+reliably reset after a transaction.
+</p>
+<p>
+Developers should be aware that Notifiers will only be
+refreshed when a) the whole page reloads or b) a parser triggers
+a redraw of that section. Setting a parser's return value for
+<i>scale</i> to any non-false value will redraw that section.
+This could be refactored if it bothers anyone sufficiently.
+</p>
+<p>
+<b>Example</b>: display the current member's IOU balance
+<pre>
+class MemBalanceNotifier extends Notifier 
+{
+	public function draw(){
+        global $CORE_LOCAL;
+
+        if ($CORE_LOCAL->get('memberID') == 0 || $CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('defaultNonMem')) {
+            return '';
+        }
+
+		$db = Database::pDataConnect();
+
+        $query = $db->prepare_statement('SELECT Balance FROM custdata WHERE CardNo=?');
+        $result = $db->exec_statement($query, array($CORE_LOCAL->get('memberID')));
+
+        // non-valid member number apparently
+        if ($db->num_rows($result) == 0) {
+            return '';
+        }
+
+        $row = $db->fetch_row($result);
+
+        return sprintf('&lt;div style="border:1px solid black;"&gt;Balance $%.2f&lt;/div&gt;',
+                        $row['Balance']);
+
+	}
+}
+</pre>
+</p>
+</body>
+</html>

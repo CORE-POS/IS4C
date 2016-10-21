@@ -1,0 +1,7 @@
+#  2Oct2014 Updating a table structure from the model
+# php BasicModel.php --update <Database name> <Subclass Filename>
+# This is Fannie-side.
+# $ php $FCL2DM/BasicModel.php --update coop_cred $CCRED/models/CCredMembershipsModel.php
+# This is Lane-side.
+# $ php $GLM/BasicModel.php --update coop_cred_lane $LCCRED/models/CCredMembershipsModel.php
+

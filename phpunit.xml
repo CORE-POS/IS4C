@@ -1,0 +1,117 @@
+<phpunit bootstrap="tests/bootstrap.php"> 
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
+    <testsuites>
+        <testsuite name="common">
+            <file>tests/common/WhiteSpaceTest.php</file>
+        </testsuite>
+        <testsuite name="main">
+            <file>tests/fannie/InstallFannieTest.php</file>
+            <file>tests/fannie/ApiLibTest.php</file>
+            <file>tests/fannie/AuthTest.php</file>
+            <file>tests/fannie/FannieSQLManagerTest.php</file>
+            <file>tests/fannie/ItemsTest.php</file>
+            <file>tests/fannie/LogTest.php</file>
+            <file>tests/fannie/MembersTest.php</file>
+            <file>tests/fannie/ModelsTest.php</file>
+            <file>tests/fannie/MonitorsTest.php</file>
+            <file>tests/fannie/OrdersTest.php</file>
+            <file>tests/fannie/PagesFannieTest.php</file>
+            <file>tests/fannie/PluginFannieTest.php</file>
+            <file>tests/fannie/TagTest.php</file>
+            <file>tests/fannie/TasksTest.php</file>
+            <file>tests/fannie/WebServicesTest.php</file>
+            <file>tests/fannie/ConfigFannieTest.php</file>
+
+            <file>tests/common/CommonTest.php</file>
+
+            <file>tests/pos/InstallTest.php</file>
+            <file>tests/pos/AdminLoginTest.php</file>
+            <file>tests/pos/AjaxTest.php</file>
+            <file>tests/pos/BaseLibsTest.php</file>
+            <file>tests/pos/DisplayTest.php</file>
+            <file>tests/pos/FooterBoxesTest.php</file>
+            <file>tests/pos/KickersTest.php</file>
+            <file>tests/pos/LocalStorageTest.php</file>
+            <file>tests/pos/PagesTest.php</file>
+            <file>tests/pos/ParsersTest.php</file>
+            <file>tests/pos/PluginsTest.php</file>
+            <file>tests/pos/PosModelsTest.php</file>
+            <file>tests/pos/PrintHandlersTest.php</file>
+            <file>tests/pos/ReceiptTest.php</file>
+            <file>tests/pos/SQLManagerTest.php</file>
+            <file>tests/pos/ScaleTest.php</file>
+            <file>tests/pos/ScanningTest.php</file>
+            <file>tests/pos/SearchTest.php</file>
+            <file>tests/pos/TendersTest.php</file>
+            <file>tests/pos/TotalActionsTest.php</file>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">common</directory>
+            <directory suffix=".php">fannie</directory>
+            <directory suffix=".php">pos/is4c-nf</directory>
+            <directory suffix=".php">pos/is4c-nf/plugins/Paycards/</directory>
+            <exclude>
+                <directory>vendor</directory>
+                <directory>common/adodb5</directory>
+                <directory>fannie/legacy</directory>
+                <directory>fannie/install/LaneConfigPages/extra_directory_layer</directory>
+                <directory>fannie/install/LaneConfigPages/lane_install</directory>
+                <directory>fannie/modules</directory>
+                <directory>fannie/cron/CC</directory>
+                <directory>fannie/cron/CompressProdUpdate</directory>
+                <directory>fannie/cron/LanePush</directory>
+                <directory>fannie/cron/Suspensions</directory>
+                <directory>fannie/per_coop</directory>
+                <directory>fannie/reports/Store-Specific</directory>
+                <directory>fannie/src/Excel</directory>
+                <directory>fannie/src/fpdf</directory>
+                <directory>fannie/sync/special</directory>
+                <directory>pos/is4c-nf/ajax-callbacks/</directory>
+                <file>pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php</file>
+                <directory>pos/is4c-nf/plugins</directory>
+                <directory>pos/is4c-nf/test</directory>
+                <directory suffix="index.php">.</directory>
+                <file>fannie/classlib2.0/data/SpeedTestReport.php</file>
+                <file>fannie/cron/arbalance.sanitycheck.php</file>
+                <file>fannie/cron/demographics.monthly.php</file>
+                <file>fannie/cron/homeless.specialorder.php</file>
+                <file>fannie/cron/lanes.clean.php</file>
+                <file>fannie/cron/lanesync.api.php</file>
+                <file>fannie/cron/manage.cache.php</file>
+                <file>fannie/cron/members.sync.with.CiviCRM.php</file>
+                <file>fannie/cron/members.update.from.CiviCRM.php</file>
+                <file>fannie/cron/memdates.fix.php</file>
+                <file>fannie/cron/monthly.inventory.php</file>
+                <file>fannie/cron/monthly.nabs.php</file>
+                <file>fannie/cron/monthly.virtualcoupon.php</file>
+                <file>fannie/cron/nightly.ar.php</file>
+                <file>fannie/cron/nightly.batch.php</file>
+                <file>fannie/cron/nightly.clipboard.php</file>
+                <file>fannie/cron/nightly.db.backup.php</file>
+                <file>fannie/cron/nightly.dtrans.php</file>
+                <file>fannie/cron/nightly.equity.php</file>
+                <file>fannie/cron/nightly.lanesync.php</file>
+                <file>fannie/cron/nightly.memcoupon.php</file>
+                <file>fannie/cron/nightly.pcbatch.php</file>
+                <file>fannie/cron/nightly.seniordiscount.php</file>
+                <file>fannie/cron/nightly.specialorder.php</file>
+                <file>fannie/cron/nightly.storepull.php</file>
+                <file>fannie/cron/nightly.supplementdiscount.php</file>
+                <file>fannie/cron/nightly.table.snapshot.php</file>
+                <file>fannie/cron/nightly.tablecache.php</file>
+                <file>fannie/cron/nightly.virtualcoupon-new.php</file>
+                <file>fannie/cron/nightly.virtualcoupon.php</file>
+                <file>fannie/cron/nightly.voidhistory.php</file>
+                <file>fannie/cron/weekly.spins.php</file>
+                <file>pos/is4c-nf/parser-class-lib/preparse/WFCFixup.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+    <listeners>
+        <listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener" />
+    </listeners>
+</phpunit>

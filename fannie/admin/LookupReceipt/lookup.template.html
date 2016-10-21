@@ -1,0 +1,75 @@
+<?php
+return <<<HTML
+<form action=ReprintReceiptPage.php method="get">
+<div class="container"> 
+<div class="row form-group form-inline">
+    <label>Date*</label>
+    <input type="text" name="date" class="form-control date-field" id="date"
+        placeholder="Date" />
+    <input type="text" name="date2" class="form-control date-field" id="date2"
+        placeholder="2nd Date (optional)" />
+    <label>Receipt #</label>
+    <input type="text" name="trans_num" class="form-control" />
+</div>
+<div class="row form-group form-inline">
+    <label>Member #</label>
+    <input type="text" name="card_no" class="form-control" />
+    <label>Cashier #</label>
+    <input type="text" name="emp_no" class="form-control" />
+    <label>Lane #</label>
+    <input type="text" name="register_no" class="form-control" />
+</div>
+<div class="row form-group form-inline">
+    <label>
+        Refund
+        <input type="checkbox" class="checkbox-inline" name="is_refund" value="1" />
+    </label>
+    &nbsp;
+    <label>
+        Mem Discount
+        <input type="checkbox" class="checkbox-inline" name="mem_discount" value="1" />
+    </label>
+    &nbsp;
+    <label>
+        Exclude Canceled
+        <input type="checkbox" class="checkbox-inline" name="no-canceled" value="1" checked />
+    </label>
+    &nbsp;
+    <label>
+        Exclude Training
+        <input type="checkbox" class="checkbox-inline" name="no-training" value="1" checked />
+    </label>
+</div>
+<div class="row form-group form-inline">
+    <label>Tender Type</label>
+    <select name="trans_subtype" class="form-control">
+        <option value="">Select one...</option>
+        {$tenders}
+    </select>
+    <label>Tender Amount</label>
+    <div class="input-group">
+        <span class="input-group-addon">$</span>
+        <input type="text" name="tenderTotal" class="form-control" />
+    </div>
+</div>
+<div class="row form-group form-inline">
+    <label>Department</label>
+    <select name="department" class="form-control">
+        {$depts}
+    </select>
+    <button type="submit" name="submit" value="1" 
+        class="btn btn-default">Find Receipts</button>
+</div>
+</div>
+<div class="well">
+    <b>Tips</b>:<br />
+    <ul>
+        <li>If no date is given, all matching receipts from the past 15 days will be returned</li>
+        <li>A date and a receipt number is sufficient to find any receipt</li>
+        <li>If you have a receipt number, you don't need to specify a lane or cashier number</li>
+        <li>ALL fields are optional. You can specify a tender type without an amount (or vice versa)</li>
+    </ul>
+</div>
+</form>
+HTML;
+

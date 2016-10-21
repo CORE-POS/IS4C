@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+    <title>Keypress Tester</title>
+    <script type="text/javascript" src="../js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $('#test-field').keydown(function(e){
+            $('#output').append('keydown '+e.which+'<br />');
+	    return false;
+        });
+        $('#test-field').focus();
+    });
+    </script>
+</head>
+<body>
+<input type="text" id="test-field" />
+<div id="output">
+</div>
+</body>
+</html>

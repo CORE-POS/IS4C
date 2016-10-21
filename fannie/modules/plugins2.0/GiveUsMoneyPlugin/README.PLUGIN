@@ -1,0 +1,55 @@
+==============================================
+SETUP INFO
+==============================================
+This plugin stores some sensitive information
+using RSA encryption. This requires some
+additional setup.
+
+REQUIREMENTS:
+* OpenSSL extension for PHP
+* OpenSSL itself (or some other way of generating keys)
+
+CREATE KEYS:
+Instructions assume using OpenSSL.
+Create private key
+# openssl genrsa -out private.key 2048
+Create a corresponding public key
+# openssl rsa -in private.key -pubout -out public.key
+
+You should now have two files named "public.key" and
+"private.key". 
+
+USE KEYS:
+The public key file must go in this plugin's "keys" directory. 
+No other files are allowed in that directory. The public
+key will be used to encrypt information before saving it.
+No other files are allowed in the "keys" directory.
+
+To retrieve the information, you must supply the private key.
+Once you've got everything setup, it is highly recommended
+that you remove the private key from the server. Also, do
+not lose your key.
+
+REVOCATION:
+There's no formal key revocation built in. Recommendation in
+that scenario is:
+1. Shut off any network access
+2. Decrypt data with current private key
+3. Generate new keys
+4. Re-encrypt data with new public key
+5. Distribute new private key to whoever needs access
+
+If this isn't sufficient for your use case, feel free to
+suggest changes.
+
+==============================================
+CUSTOM IMAGES
+==============================================
+The plugin will use the following images if
+present in the "img" directory. Do not commit
+these to git; everyone will have different
+images.
+
+1. sig.png (signature for checks)
+2. logo.png
+3. letterhead.png

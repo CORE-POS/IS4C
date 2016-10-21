@@ -1,0 +1,1 @@
+../../../../fannie/install/sql/magic-doc.php

@@ -1,0 +1,28 @@
+Deb packages are generated using alien. To get alien set up
+on CentOS:
+
+1. Install some pre-requisites from official repos
+$ yum install fakeroot dpkg-devel
+
+2. Install Getopt from rpmforge. If done via yum, this conflicts
+(just on a manpage; can be safely ignored).
+$ yum install perl-Getopt-Long
+$ rpm -Uvh --force /var/cache/yum/rpmforge/packages/perl-Getopt-Long*
+
+3. Get debhelper (source version) from debian. It's just a bunch of perl
+scripts.
+$ tar xzf debhelper*
+$ cd debhelper*
+$ make install
+
+4. Get alien (source version and .deb version) from debian. Use alien to
+convert itself.
+$ tar xzf alien*.tar.gz
+$ cd alien
+$ mv ../alien*.deb .
+$ ./alien.pl -r alien*.deb
+$ rpm -Uvh alien*.rpm
+
+Everything's now installed. Alien installs to an odd path though, so
+you have to correct for it in the shell before using the alien command.
+$ export PERL5LIB="/usr/share/perl5"

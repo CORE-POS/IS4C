@@ -1,0 +1,61 @@
+<?php
+return <<<HTML
+<div class="row">
+    <label class="control-label col-sm-2">Dept #</label>
+    <label class="control-label col-sm-4">Name</label>
+    <label class="control-label col-sm-2">Tax</label>
+    <label class="control-label col-sm-1">FS</label>
+    <label class="control-label col-sm-1">WIC</label>
+</div>
+<div class="row">
+    <div class="col-sm-2">
+        {$vals['textID']}
+    </div>
+    <div class="col-sm-4"><input type=text maxlength=30 name=name 
+            id=deptname value="{$vals['name']}" class="form-control" /></div>
+    <div class="col-sm-2"><select class="form-control" id=depttax name=tax>
+        {$vals['tax']}
+    </select></div>
+    <div class="col-sm-1"><input type=checkbox value=1 name=fs id=deptfs 
+        {$vals['fs']} class="checkbox" /></div>
+    <div class="col-sm-1"><input type=checkbox value=1 name=wic id=deptwic 
+        {$vals['wic']} class="checkbox" /></div>
+</div>
+<div class="row">
+    <label class="control-label col-sm-2">Discount</label>
+    <label class="control-label col-sm-2">Min</label>
+    <label class="control-label col-sm-2">Max</label>
+    <label class="control-label col-sm-2">Margin</label>
+    <label class="control-label col-sm-2">Sales Code</label>
+</div>
+<div class="row form-inline">
+    <div class="col-sm-2">
+        <select name="disc" id="deptdisc" class="form-control">
+            {$vals['dOpts']}
+        </select>
+    </div>
+    <div class="col-sm-2"><div class="input-group">
+        <span class="input-group-addon">\$</span>
+        <input type=number name=min class="form-control" 
+            id=deptmin value="{$vals['min']}" min="0" max="9999" step="0.01" />
+    </div></div>
+    <div class="col-sm-2"><div class="input-group">
+        <span class="input-group-addon">\$</span>
+        <input type=number name=max class="form-control" id=deptmax 
+            value="{$vals['max']}" min="0" max="99999" step="0.01" />
+    </div></div>
+    <div class="col-sm-2"><div class="input-group">
+        <input type=number name=margin class="form-control" id=deptmargin 
+            value="{$vals['margin']}" min="0" max="999" step="0.01" />
+            <span class="input-group-addon">%</span>
+    </div></div>
+    <div class="col-sm-2"><input type=text id=deptsalescode 
+       class="form-control" name=pcode value="{$vals['pcode']}" />
+   </div>
+</div>
+{$vals['hiddenID']}
+<input type=hidden id=isNew name=new value="{$vals['isNew']}" />
+<p><button type=submit value=Save onclick="deptEdit.deptSave(); return false;"
+    class="btn btn-default">Save</button></p>
+HTML;
+

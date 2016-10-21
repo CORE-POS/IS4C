@@ -1,0 +1,40 @@
+<html>
+	<head>
+	<title>DefaultReceiptFilter</title>
+	</head>
+<body>
+<div style="text-align:center;">
+<h2>DefaultReceiptFilter</h2>
+<a href="#change_log">Revised: 10Apr2013</a>
+</div>
+<p>Filtering data is the second step in building a receipt. Modules
+implementing DefaultReceiptFilter take the SQL result from the first
+step and return an array of records. The filtering step may discard
+some of the records from the SQL result, create additional records,
+or both. Subclasses must implement the method <b>filter</b> which
+takes a SQL result as an argument and returns an array of records. 
+</p>
+<p><b>Example</b>:
+<pre>
+class ExampleFilter extends DefaultReceiptFilter {
+	function filter($data){
+		$db = Database::tDataConnect();
+		$results = array();
+		while($row = $db->fetch_row($data)){
+			// filter out logging records
+			if ($row['trans_type'] != 'L')
+				$results[] = $row;
+		}
+		return $results;
+	}
+}
+</pre>
+</p>
+<hr />
+<pre>
+<a name="change_log">Change Log:</a>
+
+10Apr13 Andy Theuninck - Created document
+</pre>
+</body>
+</html>

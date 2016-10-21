@@ -1,0 +1,11 @@
+Unit tests are built using PHPUnit. Use bootstrap.php with
+PHPUnit's --bootstrap option. This file sets up $CORE_LOCAL,
+loads the configuration from ini.php, and sets up class
+autoloading. 
+
+A functional database (and correct configuration in ini.php)
+is required. The unit tests can be run in any order. Adding
+more scripted testing that runs the install to create+initialize
+databases and then runs all the tests would be a good next step.
+
+Last updated: 2013-05-30

@@ -1,0 +1,85 @@
+<html>
+<head>
+	<title>Install Guide: DEB</title>
+</head>
+<body>
+This guide is for installing it-core from DEBs. These instructions
+are based on Ubuntu, but should work on any Debian-ish distro.
+<p />
+This mostly command-line references. Be not afraid. It's just more
+concise and accurate than verbally describing graphic interfaces.
+<p />
+<h3>Step one</h3>
+Install your OS. If your chosen distribution doesn't have good 
+documentation for this step, choose a new distribution.
+<p />
+<h3>Step two</h3>
+Install some required packages.
+<pre>
+$ sudo apt-get install apache2 mysql-server php5 php5-mysql php5-ldap php5-cli php5-curl php-pear
+</pre>
+The first command, sudo, changes to the root user. You will be prompted for
+root's password. The remainder installs a bunch of packages via apt, Debian's
+package manager. The install process prompts you to set up a mysql password.
+<h3>Step three</h3>
+Download and install it-core. Your filenames may differ slightly, depending on
+the version number.
+<pre>
+$ sudo dpkg -i it-core-0.1.0-1_all.deb
+$ sudo dpkg -i it-core-doc-0.1.0-1_all.deb
+$ sudo dpkg -i it-core-fannie-0.1.0-1_all.deb
+$ sudo dpkg -i it-core-is4c-nf-0.1.0-1_all.deb
+</pre>
+These commands should be run as root. The base it-core package is always
+required. The it-core-doc package is just documentation and thus always
+optional. The it-core-fannie package contains the backend server; it-core-is4c-nf
+contains the lane point of sale system. Neither is strictly required, but
+omitting both wouldn't make much sense.
+<h3>Step four</h3>
+Start required services
+<pre>
+$ sudo /etc/init.d/mysql start
+$ sudo update-rc.d mysql defaults 
+</pre>
+The first command starts the mysql database. The second makes mysql start
+automatically when the machine boots. Now do the same for apache.
+<pre>
+$ sudo /etc/init.d/apache2 start
+$ sudo update-rc.d apache2 defaults
+</pre>
+<h3>Step five</h3>
+Open a browser and go to http://localhost/it-core/. You should see at least a
+license as well as documentation, fannie, and/or is4c-nf folders depending
+on what you installed.
+<hr />
+<h3>Further ideas (Production environment)</h3>
+<ul>
+<li>You probably want a static IP address. Go to System Settings =&gt; Internet and Network
+=&gt; Network Connections (if your menu is different, try running nm-connection-editor
+from the command line). Pick the appropriate connection - wired is recommended
+- and edit.</li>
+<li>You probably want SSH access. Ubuntu does not include it by default.
+<pre>
+$ sudo apt-get install openssh-server
+$ sudo /etc/init.d/ssh start
+$ sudo update-rc.d ssh defaults
+</pre> 
+</li>
+<li>VNC can be useful for remote debugging. Go to System Settings =&gt;
+Internet and Network =&gt; Remote Desktop (if your menu is different, try running
+vino-preferences from the command line). Turn on sharing. Security options
+are up to you. A password is recommended. Automatically accepting connections
+is not recommended. Tunneling VNC through SSH is more secure.
+</li>
+<li>Setting up a firewall is probably a good idea.
+<pre>
+$ sudo ufw enable
+$ sudo ufw default deny
+$ sudo ufw allow ssh
+$ sudo ufw allow from 127.0.0.1
+</pre>
+In order this turns on the firewall, denies all access by default, permits remote access via SSH, and permits full access locally.
+</li>
+</ul>
+</body>
+</html>

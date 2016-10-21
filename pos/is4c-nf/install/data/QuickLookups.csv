@@ -1,0 +1,21 @@
+1,1001,"Search","PV",0
+2,1001,"All Departments","DP",0
+3,1001,"Grocery","DP1860",1
+4,1001,"Deli","DP680",2
+5,1001,"Produce","DP2040",3
+6,1001,"Meat","DP2600",4
+7,1002,"Subtotal","TL",0
+8,1002,"EBT Total","FNTL",1
+9,1003,"Search","ID",0
+10,1003,"Equity A","DP9920",1
+11,1003,"Equity B","DP9910",2
+12,1004,"Cash","CA",0
+13,1004,"Credit","CC",1
+14,1004,"Check","CK",2
+15,1004,"EBT Food","EF",3
+16,1004,"EBT Cash","EC",4
+17,1004,"Coupon","CP",5
+18,1005,"Admin","MG",0
+19,1005,"Cancel","CN",1
+20,1005,"Lock","LOCK",2
+21,1005,"Sign Out","SO",3

@@ -1,0 +1,27 @@
+{
+  "name": "core-pos-app",
+  "version": "1.0.0",
+  "description": "node-based browser app to run POS",
+  "main": "http://localhost/IS4C/pos/is4c-nf/",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CORE-POS/IS4C.git"
+  },
+  "author": "",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/CORE-POS/IS4C/issues"
+  },
+  "homepage": "https://github.com/CORE-POS/IS4C#readme",
+  "dependencies": {
+  },
+  "node-remote": "<local>",
+  "node-main": "index.js",
+  "window": {
+    "title": "CORE-POS",
+    "fullscreen": true
+  }
+}

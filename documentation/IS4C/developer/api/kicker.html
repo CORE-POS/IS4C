@@ -1,0 +1,57 @@
+<html>
+<head>
+	<title>Kicker</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>Kicker</h1>
+<!--
+14Feb13 AT Doc first written
+-->
+<br />as of: February 14, 2013
+</div>
+<p>
+Kicker modules control whether or not the cash drawer
+opens. The base class provides methods for three different
+scenarios. Subclasses may override any combination of the 
+three.
+</p>
+<blockquote>
+boolean <b>doKick</b>()<br />
+boolean <b>kickOnSignIn</b>()<br />
+boolean <b>kickOnSignOut</b>()
+</blockquote>
+<p>
+For all three methods, a return value of <b>True</b> means the
+drawer should open and a return value of <b>False</b> means it
+should not. The <b>kickOnSignIn</b> method is checked when the
+cashier first signs into POS. The <b>doKick</b> method is checked
+at the end of each transaction. The <b>kickOnSignOut</b> method
+is checked when the cashier signs out.
+</p>
+<p>
+<b>Example</b>: open the drawer on another tender type in addition
+the default, cash.
+<pre>
+class KickCCandCA extends Kicker {
+	function doKick(){
+		$db = Database::tDataConnect();
+
+		/* check for any records that match the conditions */
+		$query = "SELECT trans_id FROM localtemptrans
+			WHERE trans_subtype = 'CC' OR
+			(trans_subtype = 'CA' AND total <> 0)";
+		$result = $db->query($query);
+
+		$num_rows = $db->num_rows($result);
+
+		if ($num_rows > 0)
+			return True;
+		else
+			return False;
+	}
+}
+</pre>
+</p>
+</body>
+</html>

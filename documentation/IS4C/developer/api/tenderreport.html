@@ -1,0 +1,42 @@
+<html>
+	<head>
+	<title>TenderReport</title>
+	</head>
+<body>
+<div style="text-align:center;">
+<h2>TenderReport</h2>
+<a href="#change_log">Revised: 14Feb2013</a>
+</div>
+<p>
+Tender reporting needs and conventions can vary pretty widely. If the included
+reports don't meet your needs, you can create a custom one. Just create a class
+that inherits from the TenderReport base class. Inside the class, define a static
+method named <b>get</b>. This method should return a string containing what you'd
+like to print. Functions in the ReceiptLib class are useful for text formatting
+and positioning. Functions in the Database class are useful for consulting 
+transaction data to determine what to print. The details are entirely up to you.
+</p>
+<p>
+By convention, the file name should match the class name (i.e., the example would
+be named ExampleTenderReport.php). If the file is in lib/ReceiptBuilding/TenderReports
+<b>or</b> anywhere inside an enabled plugin, the custom tender report will be
+listed as an option on the <i>Extras</i> tab of the configuration page.
+</p>
+<p><b>Example</b>:
+<pre>
+class ExampleTenderReport extends TenderReport {
+	public static function get(){
+		return ReceiptLib::centerString('A very useless report');
+	}
+}
+</pre>
+</p>
+<hr />
+<pre>
+<a name="change_log">Change Log:</a>
+
+14Feb13 Andy Theuninck - Moved into API section
+12Feb13 Andy Theuninck - Created document
+</pre>
+</body>
+</html>
