@@ -93,6 +93,30 @@ class WfcVcTask extends FannieTask
 
         // normalize everyone to zero
         $dbc->query('UPDATE custdata AS c SET memCoupons=0, blueLine=' . $default_blueline);
+
+        $res = $dbc->query('SELECT DISTINCT c.CardNo FROM custdata AS c WHERE Type=\'PC\' AND c.CardNo NOT IN (
+            SELECT cardNo FROM CustomerNotifications WHERE source=\'WFC.OAM\'
+        )');
+        $insP = $dbc->prepare('INSERT INTO CustomerNotifications (cardNo, source, type, message) VALUES (?, \'WFC.OAM\', \'blueline\', \'OAM\')');
+        while ($row = $dbc->fetchRow($res)) {
+            $dbc->execute($insP, array($row['CardNo']));
+        }
+
+        // lookup OAM usage in the last month
+        $usageP = $dbc->prepare("SELECT card_no 
+                                FROM $dlog
+                                WHERE upc='0049999900015'
+                                    AND tdate BETWEEN ? AND ?
+                                GROUP BY card_no
+                                HAVING SUM(total) <> 0");
+        $usageR = $dbc->execute($usageP, array($start . ' 00:00:00', $end . ' 23:59:59'));
+        $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
+        while ($row = $dbc->fetchRow($usageR)) {
+            $dbc->execute($upP, array($row['card_no']));
+            echo "Update {$row['card_no']}\n";
+            echo $dbc->error() . PHP_EOL;
+        }
+
         // grant coupon to all members
         /*
         $dbc->query("UPDATE custdata AS c SET memCoupons=1 WHERE Type='PC'");
