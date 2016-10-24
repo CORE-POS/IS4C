@@ -745,7 +745,6 @@ class FannieSignage
         $model = new ProductsModel($dbc);
         $model->upc(BarcodeLib::padUPC($upc));
         foreach ($model->find('store_id') as $obj) {
-            $obj->brand($brand);
             $obj->current_origin_id($originID);
             $obj->save();
         }
