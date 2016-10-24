@@ -145,6 +145,9 @@ class PatronageChecks extends FannieRESTfulPage
 
             $pdf->AddPage();
             $pdf->Image('rebate_body.png', 10, 0, 190);
+            if ($row['cash_pat'] < 0.05) {
+                $row['cash_pat'] = 0.05;
+            }
             $check = new GumCheckTemplate($custdata, $meminfo, $row['cash_pat'], 'Rebate ' . $fiscal_year, $row['check_number']);
             $check->renderAsPDF($pdf);
             $barcoder->drawBarcode('0049999900131', $pdf, 85, 240, array('height'=>9));
