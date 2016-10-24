@@ -1164,6 +1164,9 @@ HTML;
     protected function get_orderID_view()
     {
         $orderID = (int)$this->orderID;
+        if ($orderID === 0) {
+            return '<div class="alert alert-danger">Invalid order. <a href="OrderViewPage.php">Create new order</a>?</div>';
+        }
         $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
         $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {
