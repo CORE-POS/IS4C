@@ -877,6 +877,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
         $record['total'] *= -1;
+        $record['cost'] *= -1;
         $record['quantity'] *= -1;
         $record['ItemQtty'] *= -1;
         $record['voided'] = 1;
@@ -921,6 +922,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
         $record['total'] *= -1;
+        $record['cost'] *= -1;
         $record['quantity'] *= -1;
         $record['ItemQtty'] *= -1;
         $record['voided'] = 1;
@@ -958,6 +960,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
         $record['total'] *= -1;
+        $record['cost'] *= -1;
         $record['quantity'] *= -1;
         $record['ItemQtty'] *= -1;
         $record['voided'] = 1;
