@@ -42,7 +42,7 @@ class SoPoBridge
         $prep = $this->dbc->prepare('
             SELECT v.sku, n.vendorID
             FROM ' . $pending . ' AS o
-                INNER JOIN vendors AS n ON n.vendorName=o.mixMatch
+                INNER JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 INNER JOIN vendorItems AS v on n.vendorID=v.vendorID AND o.upc=v.upc
             WHERE o.order_id=?
                 AND o.trans_id=?

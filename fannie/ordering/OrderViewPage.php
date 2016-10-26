@@ -862,7 +862,7 @@ HTML;
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
             o.trans_id,o.unitPrice,o.memType,o.staff
             FROM {$TRANS}PendingSpecialOrder as o
-                LEFT JOIN vendors AS n ON o.mixMatch=n.vendorName
+                LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
             WHERE order_id=? AND trans_type='I' 
             ORDER BY trans_id DESC");
@@ -979,7 +979,7 @@ HTML;
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
             o.trans_id,o.unitPrice,o.memType,o.staff,o.discountable
             FROM {$TRANS}PendingSpecialOrder as o
-                LEFT JOIN vendors AS n ON o.mixMatch=n.vendorName
+                LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
             WHERE order_id=? AND trans_type='I' 
             ORDER BY trans_id DESC");
