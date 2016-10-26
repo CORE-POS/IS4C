@@ -108,7 +108,7 @@ class MarginMovementReport extends FannieReportPage
                     t.dept_name,
                     SUM(total) AS total,
                     SUM(
-                        CASE WHEN (d.cost > 0 AND d.total < 0) || (d.cost < 0 AND d.total > 0)
+                        CASE WHEN (d.cost > 0 AND d.total < 0) OR (d.cost < 0 AND d.total > 0)
                             THEN -1*d.cost
                             ELSE d.cost
                         END
