@@ -736,8 +736,12 @@ class UPC extends Parser
                 line_item_discountable, 
                 formatted_name, 
                 special_limit,
-                CASE WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
-                    THEN special_cost ELSE cost END AS cost';
+                CASE 
+                    WHEN received_cost <> 0 AND received_cost IS NOT NULL
+                        THEN received_cost
+                    WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
+                        THEN special_cost 
+                    ELSE cost END AS cost';
         } else {
             $table = $dbc->tableDefinition('products');
             // New column 16Apr14
@@ -759,8 +763,9 @@ class UPC extends Parser
                 $query .= ', 0 AS special_limit';
             }
             // New column 20Oct16
-            if (isset($table['special_cost'])) {
-                $query .= ', CASE WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
+            if (isset($table['special_cost']) && isset($table['received_cost'])) {
+                $query .= ', CASE WHEN received_cost <> 0 AND received_cost IS NOT NULL THEN received_cost
+                    CASE WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
                     THEN special_cost ELSE cost END AS cost';
             } else {
                 $query .= ', cost';

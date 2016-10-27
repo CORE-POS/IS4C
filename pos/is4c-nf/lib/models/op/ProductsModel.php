@@ -66,6 +66,7 @@ class ProductsModel extends BasicModel
     'idEnforced'=>array('type'=>'TINYINT'),
     'cost'=>array('type'=>'MONEY', 'default'=>0),
     'special_cost'=>array('type'=>'MONEY', 'default'=>0),
+    'received_cost'=>array('type'=>'MONEY', 'default'=>0),
     'inUse'=>array('type'=>'TINYINT'),
     'numflag'=>array('type'=>'INT','default'=>0),
     'subdept'=>array('type'=>'SMALLINT'),
@@ -182,10 +183,11 @@ required to purchase the product - e.g., 21 for
 alcohol in the US.
 
 Cost:
-cost is the item\'s normal cost. special_cost is a temporary, 
-promotional cost. Most pricing tools use normal cost to generate
-retail prices. special_cost is recorded in transaction logs to
-more closely reflect actual cost at the time of sale.
+cost is the item\'s normal cost as used for calculating retail price. 
+special_cost is a temporary, promotional cost. received_cost is filled in
+via purchase orders. Most pricing tools  use normal cost to generate retail 
+prices. special_cost or received_cost is recorded in transaction logs to more 
+closely reflect actual cost at the time of sale.
 
 isUse indicates whether the item is currently
 available for sale. Whether cashiers can bypass this
