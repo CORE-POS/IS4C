@@ -530,7 +530,7 @@ class OrderViewPage extends FannieRESTfulPage
         if (empty($names)) {
             $ret .= sprintf('<tr><th>First Name</th><td>
                     <input type="text" id="t_firstName" name="fn"
-                    class="form-control input-sm conact-field"
+                    class="form-control input-sm contact-field"
                     value="%s" 
                     /></td>',$orderModel->firstName());
             $ret .= sprintf('<th>Last Name</th><td><input 
@@ -573,6 +573,7 @@ class OrderViewPage extends FannieRESTfulPage
             3 => 'Text (Sprint)',
             4 => 'Text (T-Mobile)',
             5 => 'Text (Verizon)',
+            6 => 'Text (Google Fi)',
         );
         $contactHtml = '';
         foreach ($contactOpts as $id=>$val) {
@@ -655,6 +656,9 @@ class OrderViewPage extends FannieRESTfulPage
         }
         $unitPrice = OrderItemLib::getUnitPrice($item, $mempricing);
         $casePrice = OrderItemLib::getCasePrice($item, $mempricing);
+        if (!OrderItemLib::useSalePrice($item, $mempricing)) {
+            $item['discounttype'] = 0;
+        }
 
         $ins_array['upc'] = $item['upc'];
         $ins_array['quantity'] = $item['caseSize'];
@@ -802,7 +806,7 @@ class OrderViewPage extends FannieRESTfulPage
         }
         
         echo <<<HTML
-<form> 
+<form onkeydown="return event.keyCode != 13;">
 <div class="form-inline">
     <div class="input-group">
         <span class="input-group-addon">UPC</span> 
@@ -973,7 +977,7 @@ HTML;
 
         $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
-            o.trans_id,o.unitPrice,o.memType,o.staff
+            o.trans_id,o.unitPrice,o.memType,o.staff,o.discountable
             FROM {$TRANS}PendingSpecialOrder as o
                 LEFT JOIN vendors AS n ON o.mixMatch=n.vendorName
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
@@ -1000,6 +1004,8 @@ HTML;
                 } else {
                     $pricing = "% Discount";
                 }
+            } elseif ($w['discountable'] == 0) {
+                $pricing = _('Basics');
             }
             $ret .= sprintf('<tr>
                     <td>%s</td>
@@ -1158,6 +1164,9 @@ HTML;
     protected function get_orderID_view()
     {
         $orderID = (int)$this->orderID;
+        if ($orderID === 0) {
+            return '<div class="alert alert-danger">Invalid order. <a href="OrderViewPage.php">Create new order</a>?</div>';
+        }
         $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
         $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {

@@ -36,10 +36,10 @@ class TenderReceiptFormat extends DefaultReceiptFormat
       @param $row a single receipt record
       @return a formatted string
     */
-    // @hintable
-    public function format($row)
+    public function format(array $row)
     {
-        $ret = str_pad($row['description'],44,' ',STR_PAD_LEFT);
+        $tender_width = $this->line_width - 12;
+        $ret = str_pad($row['description'], $tender_width,' ',STR_PAD_LEFT);
         $ret .= str_pad(sprintf('%.2f',-1*$row['total']),8,' ',STR_PAD_LEFT);
 
         return $ret;

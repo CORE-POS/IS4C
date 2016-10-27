@@ -141,6 +141,9 @@ class OrderGenTask extends FannieTask
                     $order->creationDate(date('Y-m-d H:i:s'));
                     $order->storeID($row['storeID']);
                     $poID = $order->save();
+                    $order->vendorOrderID('CPO-' . $poID);
+                    $order->orderID($poID);
+                    $order->save();
                     $orders[$row['vid'].'-'.$row['storeID']] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));

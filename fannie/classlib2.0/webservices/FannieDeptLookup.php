@@ -22,8 +22,10 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\webservices;
+use \FannieDB;
+use \FannieConfig;
 
-class FannieDeptLookup extends \COREPOS\Fannie\API\webservices\FannieWebService
+class FannieDeptLookup extends FannieWebService
 {
     
     public $type = 'json'; // json/plain by default
@@ -94,7 +96,7 @@ class FannieDeptLookup extends \COREPOS\Fannie\API\webservices\FannieWebService
         }
 
         // lookup results
-        $dbc = \FannieDB::getReadOnly(\FannieConfig::factory()->get('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->type)) {
             case 'settings':
                 $model = new \DepartmentsModel($dbc);

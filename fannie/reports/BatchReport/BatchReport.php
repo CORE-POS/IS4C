@@ -138,12 +138,14 @@ class BatchReport extends FannieReportPage
     {
         $sumQty = 0.0;
         $sumSales = 0.0;
+        $sumRings = 0.0;
         foreach ($data as $row) {
             $sumQty += $row[4];
             $sumSales += $row[3];
+            $sumRings += $row[5];
         }
 
-        return array('Total',null,null,$sumSales,$sumQty, '', '');
+        return array('Total',null,null,$sumSales,$sumQty, $sumRings, '');
     }
 
     private function getBatches($dbc, $filter1, $filter2)

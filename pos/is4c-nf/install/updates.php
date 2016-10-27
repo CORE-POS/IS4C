@@ -20,7 +20,7 @@ body {
 <body>
 <?php include('tabs.php'); ?>
 <div id="wrapper">
-<h2>IT CORE Lane Installation: Database Updates</h2>
+<h2><?php echo _('IT CORE Lane Installation: Database Updates'); ?></h2>
 <?php
 // apply selected update
 if (FormLib::get('mupdate') !== '') {
@@ -29,27 +29,27 @@ if (FormLib::get('mupdate') !== '') {
         $updateClass = str_replace('-', '\\', $updateClass);
     }
     echo '<div style="border: solid 1px #999; padding:10px;">';
-    echo 'Attempting to update model: "'.$updateClass.'"<br />';
+    echo _('Attempting to update model') . ': "'.$updateClass.'"<br />';
     if (!class_exists($updateClass)) {
-        echo 'Error: class not found<br />';
+        echo _('Error: class not found<br />');
     } elseif(!is_subclass_of($updateClass, 'COREPOS\\pos\\lib\\models\\BasicModel')) {
-        echo 'Error: not a valid model<br />';    
+        echo _('Error: not a valid model<br />');
     } else {
         $updateModel = new $updateClass(null);
         $db_name = InstallUtilities::normalizeDbName($updateModel->preferredDB());
         if ($db_name === false) {
-            echo 'Error: requested database unknown';
+            echo _('Error: requested database unknown');
         } else {
             ob_start();
             $changes = $updateModel->normalize($db_name, COREPOS\pos\lib\models\BasicModel::NORMALIZE_MODE_APPLY, true);
             $details = ob_get_clean();
             if ($changes === false) {
-                echo 'An error occurred.';
+                echo _('An error occurred.');
             } else {
-                echo 'Update complete.';
+                echo _('Update complete.');
             }
             printf(' <a href="" onclick="$(\'#updateDetails\').toggle();return false;"
-                >Details</a><pre style="display:none;" id="updateDetails">%s</pre>',
+                >' . _('Details') . '</a><pre style="display:none;" id="updateDetails">%s</pre>',
                 $details);
         }
     }
@@ -99,9 +99,9 @@ foreach ($mods as $class) {
     $refl = new ReflectionClass($model);
     if ($changes > 0) {
         printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
-            >Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />
-            To apply changes <a href="updates.php?mupdate=%s">Click Here</a>
-            or run the following command:<br />
+            >' . _('Details') . '</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />'
+            . _('To apply changes') . ' <a href="updates.php?mupdate=%s">' . _('Click Here') . '</a>' 
+            . _('or run the following command') . ':<br />
             <pre>php %s --update %s %s</pre>
             </li>',
             $noslash_class, $noslash_class, $details, $noslash_class,
@@ -109,7 +109,7 @@ foreach ($mods as $class) {
             );
     } else if ($changes < 0 || $changes === false) {
         printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
-            >Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre></li>',
+            >' . _('Details') . '</a><br /><pre style="display:none;" id="mDetails%s">%s</pre></li>',
             $noslash_class, $noslash_class, $details
         );
     }
@@ -117,7 +117,7 @@ foreach ($mods as $class) {
 echo '</ul>';
 echo '<hr />';
 echo '<table cellspacing="0" cellpadding="4" border="1">';
-echo '<tr><th colspan="2">Check Complete</td></tr>';
+echo '<tr><th colspan="2">' . _('Check Complete') . '</td></tr>';
 printf('<tr><td>Errors</td><td align="right">%d</td></tr>', $errors);
 printf('<tr><td>Updates</td><td align="right">%d</td></tr>', $adds);
 printf('<tr><td>Oddities</td><td align="right">%d</td></tr>', $unknowns);

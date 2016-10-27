@@ -263,7 +263,7 @@ static public function inputUnknown()
 
 static public function standardClearButton()
 {
-    return array('[Clear]' => 'parseWrapper(\'CL\');');
+    return array(_('[Clear]') => 'parseWrapper(\'CL\');');
 }
 
 //--------------------------------------------------------------------//
@@ -533,9 +533,9 @@ static public function scaledisplaymsg($input="")
     } elseif (substr($reginput, 0, 4) == "S141") {
         $display_weight = "_ _ _ _";
     } elseif (substr($reginput, 0, 4) == "S145") {
-        $display_weight = "err -0";
+        $display_weight = _("err -0");
     } elseif (substr($reginput, 0, 4) == "S142") {
-        $display_weight = "error";
+        $display_weight = _("error");
     } else {
         $display_weight = "? ? ? ?";
     }

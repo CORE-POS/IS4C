@@ -120,7 +120,7 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $this->stats['error'][] = ' Problem updating LC# ' . $likecode . ';';
             } else {
                 $upcR = $dbc->execute($getUPCs, array($likecode));
-                while ($upcW = $dbc->fetchRow($res)) {
+                while ($upcW = $dbc->fetchRow($upcR)) {
                     $upcs[] = $upcW['upc'];
                     $sets[] = array($price, $cost, $upcW['upc']);
                 }

@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\parser\Parser;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
-use COREPOS\pos\parser\Parser;
 
 class WicParser extends Parser 
 {
@@ -88,9 +88,9 @@ class WicParser extends Parser
         if ($wicable !== false  && $wicable == 0 && !in_array($upc, $this->bulk)) {
             return false;
         } else {
-            if (in_array($upc, $this->bulk) && (CoreLocal::get('weight') - CoreLocal::get('tare')) > 1.105) {
+            if (in_array($upc, $this->bulk) && (CoreLocal::get('weight') - CoreLocal::get('tare')) > 1.10) {
                 return false;
-            } elseif (in_array($upc, $this->bulk) && (CoreLocal::get('weight') - CoreLocal::get('tare')) > 1.10) {
+            } elseif (in_array($upc, $this->bulk) && (CoreLocal::get('weight') - CoreLocal::get('tare')) > 1) {
                 CoreLocal::set('quantity', 1);
                 CoreLocal::set('multiplier', 1);
                 CoreLocal::set('tare', 0);

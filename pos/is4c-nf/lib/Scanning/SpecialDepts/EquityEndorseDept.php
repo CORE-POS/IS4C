@@ -35,7 +35,7 @@ class EquityEndorseDept extends SpecialDept
     {
         if (CoreLocal::get("memberID") == "0" || CoreLocal::get("memberID") == CoreLocal::get("defaultNonMem")) {
             CoreLocal::set('strEntered','');
-            CoreLocal::set('boxMsg','Equity requires member.<br />Apply member number first');
+            CoreLocal::set('boxMsg',_('Equity requires member.<br />Apply member number first'));
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 
             return $json;
@@ -47,10 +47,10 @@ class EquityEndorseDept extends SpecialDept
                 .trim(CoreLocal::get("transno"));
             if (CoreLocal::get("LastEquityReference") != $ref) {
                 CoreLocal::set("equityAmt",$amount);
-                CoreLocal::set("boxMsg","<b>Equity Sale</b><br>Insert paperwork");
+                CoreLocal::set("boxMsg",_("<b>Equity Sale</b><br>Insert paperwork"));
                 CoreLocal::set('boxMsgButtons', array(
-                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
                 ));
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1&endorse=stock&endorseAmt='.$amount;
             }

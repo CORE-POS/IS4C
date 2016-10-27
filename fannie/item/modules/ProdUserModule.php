@@ -60,7 +60,8 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '<div class="row form-group">'
                 . '<label class="col-sm-1">Brand</label> '
                 . '<div class="col-sm-8">'
-                . '<input type="text" class="form-control" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" />'
+                . '<input type="text" class="form-control" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" 
+                    placeholder="Optional longer brand" />'
                 . '</div>'
                 . '<div class="col-sm-3">'
                 . ' <a href="" onclick="createSign(); return false;">Make Sign</a>'
@@ -69,7 +70,8 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '<div class="row form-group">'
                 . '<label class="col-sm-1">Desc.</label> '
                 . '<div class="col-sm-8">'
-                . '<textarea class="form-control" rows="2" id="lf_desc" name="lf_desc">'
+                . '<textarea class="form-control" rows="2" id="lf_desc" name="lf_desc"
+                    placeholder="Optional longer description; values from above are used if this brand and description are blank." >'
                 . $model->description()
                 . '</textarea>'
                 . '</div>'

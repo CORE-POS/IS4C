@@ -67,8 +67,6 @@ class AjaxCallback
             //self::perfStart();
             self::executeCallback($callback_class);
             //self::perfEnd();
-        } else {
-            self::$logger->debug("Unknown AJAX request: {$callback_class} (File: {$file}, NS: {$nsClass}");
         }
     }
 

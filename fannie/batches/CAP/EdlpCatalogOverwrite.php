@@ -38,38 +38,25 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
     protected $preview_opts = array(
         'upc' => array(
             'display_name' => 'UPC *',
-            'default' => 14,
-            'required' => True
+            'default' => 8,
+            'required' => true
         ),
         'srp' => array(
             'display_name' => 'SRP *',
-            'default' => 16,
+            'default' => 37,
             'required' => True
         ),
         'sku' => array(
             'display_name' => 'SKU *',
-            'default' => 1,
+            'default' => 9,
             'required' => true
         ),
-        'qty' => array(
-            'display_name' => 'Case Qty *',
-            'default' => 3,
-            'required' => True
-        ),
-        'cost' => array(
-            'display_name' => 'Case Cost (Reg) *',
-            'default' => 8,
-            'required' => True
-        ),
-        'saleCost' => array(
-            'display_name' => 'Case Cost (Sale)',
-            'default' => 12,
-            'required' => false
+        'unitCost' => array(
+            'display_name' => 'Unit Cost *',
+            'default' => 36,
+            'required' => true
         ),
     );
-
-    protected $use_splits = false;
-    protected $use_js = true;
 
     private function buildSkuMap($dbc, $VENDOR_ID)
     {
@@ -97,31 +84,14 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
         $this->itemP = $dbc->prepare('
             UPDATE vendorItems
             SET cost=?,
-                saleCost=?,
                 srp=?,
                 modified=?
             WHERE sku=?
                 AND vendorID=?');
         $this->srpP = false;
         if ($dbc->tableExists('vendorSRPs')) {
-            $this->srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
+            $this->srpP = $dbc->prepare("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
         }
-        $this->upcP = $dbc->prepare('SELECT price_rule_id FROM products WHERE upc=? AND inUse=1');
-        $this->ruleP = $dbc->prepare('SELECT * FROM PriceRules WHERE priceRuleID=?');
-        $this->ruleInsP = $dbc->prepare('
-            INSERT INTO PriceRules 
-                (priceRuleTypeID, maxPrice, reviewDate, details)
-            VALUES 
-                (?, ?, ?, ?)
-        ');
-        $this->ruleUpP = $dbc->prepare('
-            UPDATE PriceRules
-            SET priceRuleTypeID=?,
-                maxPrice=?,
-                reviewDate=?,
-                details=?
-            WHERE priceRuleID=?');
-        $this->prodRuleP = $dbc->prepare('UPDATE products SET price_rule_id=? WHERE upc=?');
     }
 
     function process_file($linedata, $indexes)
@@ -134,11 +104,10 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             $this->error_details = 'Cannot find vendor';
             return False;
         }
-
-        $ruleType = FormLib::get('ruleType');
-        $review = FormLib::get('reviewDate');
+        $this->prepareStatements($dbc);
 
         $SKU_TO_PLU_MAP = $this->buildSkuMap($dbc, $VENDOR_ID);
+        $rm_checks = (FormLib::get('rm_cds') != '') ? true : false;
 
         $updated_upcs = array();
 
@@ -151,19 +120,18 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
             $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
             $qty = $data[$indexes['qty']];
-            $upc = substr($data[$indexes['upc']],0,13);
+            $upc = str_replace("-","",$data[$indexes['upc']]);
+            $upc = str_replace(" ","",$upc);
+            if ($rm_checks)
+                $upc = substr($upc,0,strlen($upc)-1);
+            $upc = BarcodeLib::padUPC($upc);
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $upc = $SKU_TO_PLU_MAP[$sku];
             }
-            $reg = trim($data[$indexes['cost']]);
-            $net = ($indexes['saleCost'] !== false) ? trim($data[$indexes['saleCost']]) : 0.00;
-            // blank spreadsheet cell
-            if (empty($net)) {
-                $net = 0;
-            }
+            $reg = trim($data[$indexes['unitCost']]);
             $srp = trim($data[$indexes['srp']]);
             // can't process items w/o price (usually promos/samples anyway)
             if (empty($reg) or empty($srp))
@@ -173,13 +141,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             // trim $ off amounts as well as commas for the
             // occasional > $1,000 item
             $reg = $this->sanitizePrice($reg);
-            $net = $this->sanitizePrice($net);
             $srp = $this->sanitizePrice($srp);
-
-            // sale price isn't really a discount
-            if ($reg == $net) {
-                $net = 0;
-            }
 
             // skip the item if prices aren't numeric
             // this will catch the 'label' line in the first CSV split
@@ -189,17 +151,12 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             }
 
-            // need unit cost, not case cost
-            $reg_unit = $reg / $qty;
-            $net_unit = $net / $qty;
-
-            $dbc->execute($this->extraP, array($reg_unit,$upc));
-            $dbc->execute($this->prodP, array($reg_unit,$upc,$VENDOR_ID));
+            $dbc->execute($this->extraP, array($reg,$upc));
+            $dbc->execute($this->prodP, array($reg,$upc,$VENDOR_ID));
             $updated_upcs[] = $upc;
 
             $args = array(
-                $reg_unit,
-                $net_unit,
+                $reg,
                 $srp,
                 date('Y-m-d H:i:s'),
                 $sku,
@@ -208,21 +165,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             $dbc->execute($this->itemP,$args);
 
             if ($this->srpP) {
-                $dbc->execute($this->srpP,array($VENDOR_ID,$upc,$srp));
-            }
-            $rule_id = $dbc->getValue($this->upcP, array($upc));
-            $ruleR = $dbc->execute($this>ruleP, array($rule_id));
-            if ($rule_id > 1 && $dbc->numRows($ruleR)) {
-                // update existing rule with latest price
-                $args = array($ruleType, $srp, $review, 'NCG MAX ' . $srp, $rule_id);
-                $dbc->execute($this->ruleUpP, $args);
-            } else {
-                // create a new pricing rule
-                // attach it to the item
-                $args = array($ruleType, $srp, $review, 'NCG MAX ' . $srp);
-                $dbc->execute($this->ruleInsP, $args);
-                $rule_id = $dbc->insertID();
-                $dbc->execute($this->prodRuleP, array($rule_id, $upc));
+                $dbc->execute($this->srpP,array($srp,$upc,$VENDOR_ID));
             }
         }
 
@@ -242,14 +185,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
 
     function preview_content()
     {
-        $model = new PriceRuleTypesModel($this->connection);
         $ret = '<p><div class="form-inline">
-            <label>Rule type</label>
-            <select name="ruleType" class="form-control">
-            ' . $model->toOptions() . '
-            </select>
-            <label>Review Date</label>
-            <input type="text" class="form-control date-field" name="reviewDate" required />
             <label><input type="checkbox" name="rm_cds" /> Remove check digits</label>
             </div></p>
         ';

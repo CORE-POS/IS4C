@@ -204,7 +204,7 @@ class CWDemographicsReport extends FannieReportPage {
                 $ttl[1] += $row[2];
             }
             $ret = array('Total', $ttl[0], $ttl[1],
-                sprintf('%.2f%%',100*$ttl[0]/($ttl[0]+$ttl[1]))
+                sprintf('%.2f%%',100*$ttl[1]/($ttl[0]))
             );
             $this->report_headers = array('Activated', '', 'Still Active', '');
             break;

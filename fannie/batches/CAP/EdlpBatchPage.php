@@ -75,6 +75,9 @@ class EdlpBatchPage extends FannieRESTfulPage
         $batch->batchType($typeID);
         $batch->discountType(0);
         $batchID = $batch->save();
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            StoreBatchMapModel::initBatch($batchID);
+        }
 
         $list = new BatchListModel($dbc);
         $list->batchID($batchID);

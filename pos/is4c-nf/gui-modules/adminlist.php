@@ -90,13 +90,13 @@ class adminlist extends NoInputCorePage
         if (CoreLocal::get("LastID") != 0) {
             CoreLocal::set("boxMsg",_("transaction in progress"));
             CoreLocal::set('boxMsgButtons', array(
-                'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $this->change_page($this->page_url."gui-modules/boxMsg2.php");
         } elseif (SuspendLib::checksuspended() == 0) {
             CoreLocal::set("boxMsg",_("no suspended transaction"));
             CoreLocal::set('boxMsgButtons', array(
-                'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             CoreLocal::set("strRemembered","");
             $this->change_page($this->page_url."gui-modules/boxMsg2.php");
@@ -154,9 +154,9 @@ class adminlist extends NoInputCorePage
             ?>
         </div>
         <p>
-            <button class="pos-button" type="submit">Select [enter]</button>
+            <button class="pos-button" type="submit"><?php echo _('Select [enter]'); ?></button>
             <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
-                Cancel [clear]
+                <?php echo _('Cancel [clear]'); ?>
             </button>
         </p>
         </div>

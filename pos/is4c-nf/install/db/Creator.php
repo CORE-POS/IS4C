@@ -48,9 +48,9 @@ class Creator
         $errors = array();
         if (\CoreLocal::get('laneno') == 0) {
             $errors[] = array(
-                'struct' => 'No structures created for lane #0',
-                'query' => 'None',
-                'details' => 'Zero is reserved for server',
+                'struct' => _('No structures created for lane #0'),
+                'query' => _('None'),
+                'details' => _('Zero is reserved for server'),
             );
 
             return $errors;
@@ -76,8 +76,8 @@ class Creator
                 if (!$loaded) {
                     $errors[] = array(
                         'struct' => $table,
-                        'query' => 'None',
-                        'details' => 'Failed loading sample data',
+                        'query' => _('None'),
+                        'details' => _('Failed loading sample data'),
                     );
                 }
             } else {
@@ -132,9 +132,9 @@ class Creator
 
         if (\CoreLocal::get('laneno') == 0) {
             $errors[] = array(
-                'struct' => 'No structures created for lane #0',
-                'query' => 'None',
-                'details' => 'Zero is reserved for server',
+                'struct' => _('No structures created for lane #0'),
+                'query' => _('None'),
+                'details' => _('Zero is reserved for server'),
             );
 
             return $errors;
@@ -327,9 +327,9 @@ class Creator
         $type = $db->dbmsName();
         if (\CoreLocal::get('laneno') == 0) {
             $errors[] = array(
-                'struct' => 'No structures created for lane #0',
-                'query' => 'None',
-                'details' => 'Zero is reserved for server',
+                'struct' => _('No structures created for lane #0'),
+                'query' => _('None'),
+                'details' => _('Zero is reserved for server'),
             );
 
             return $errors;

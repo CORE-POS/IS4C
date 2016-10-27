@@ -57,8 +57,8 @@ class DefaultTender extends Parser
             if (CoreLocal::get('ccTermState') == 'ready' && !in_array($tender_code, $except_array)) {
                 CoreLocal::set('boxMsg', _('Tender customer card before other tenders'));
                 CoreLocal::set('boxMsgButtons', array(
-                    'Charge Card [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                    _('Charge Card [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
                 ));
                 CoreLocal::set('strEntered', 'CCFROMCACHE');
                 $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';

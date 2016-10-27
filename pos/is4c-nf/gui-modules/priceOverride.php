@@ -125,7 +125,7 @@ class PriceOverride extends NoInputCorePage {
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored">
-        <span class="larger">enter purchase price</span>
+        <span class="larger"><?php echo _('enter purchase price'); ?></span>
         <form name="overrideform" method="post" 
             id="overrideform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
@@ -133,7 +133,7 @@ class PriceOverride extends NoInputCorePage {
         <span><?php echo $this->item_description; ?> - <?php echo $this->price; ?>
             <?php echo ($this->scale ? ' /lb' : 'each'); ?></span>
         <p>
-        <span class="smaller">[clear] to cancel</span>
+        <span class="smaller"><?php echo _('[clear] to cancel'); ?></span>
         </p>
         </div>
         </div>    

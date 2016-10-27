@@ -69,12 +69,12 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFont($this->font, '', $this->MED_FONT);
             $item['description'] = str_replace("\r", '', $item['description']);
-            $pdf->Cell($effective_width, 10, str_replace("\n", '', $item['description']), 0, 1, 'C');
+            $pdf->Cell($effective_width, 6, str_replace("\n", '', $item['description']), 0, 1, 'C');
 
             $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
-            //$item['size'] = $this->formatSize($item['size'], $item);
-            //$pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
+            $item['size'] = $this->formatSize($item['size'], $item);
+            $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 35);
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
@@ -83,6 +83,8 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-29);
             } elseif (strstr($price, 'OFF')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
+            } elseif (strstr($price, 'SAVE')) {
+                $pdf->SetFont($this->font, '', $this->BIG_FONT-40);
             }
             $pdf->Cell($effective_width, 20, $price, 0, 1, 'C');
 

@@ -105,20 +105,20 @@ class ViewModel extends BasicModel
         }
 
         if ($mode != BasicModel::NORMALIZE_MODE_CHECK && $mode != BasicModel::NORMALIZE_MODE_APPLY) {
-            echo "Error: Unknown mode ($mode)\n";
+            printf("Error: Unknown mode (%s)\n", $mode);
             return false;
         }
 
         echo "==========================================\n";
         printf("%s view %s\n", 
-            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Checking":"Updating", 
+            ($mode==BasicModel::NORMALIZE_MODE_CHECK)?_("Checking"):_("Updating"), 
             "{$db_name}.{$this->name}"
         );
         echo "==========================================\n";
 
         $this->setConnectionByName($db_name);
         if (!$this->connection->isConnected($db_name)) {
-            echo "Error: Unknown database ($db_name)";
+            printf("Error: Unknown database (%s)", $db_name);
             return false;
         }
 
@@ -134,18 +134,18 @@ class ViewModel extends BasicModel
     protected function normalizeCreate($mode, $doCreate)
     {
         if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
-            echo "View {$this->name} not found!\n";
+            echo "View {$this->name} " . _('not found!') . "\n";
             echo "==========================================\n";
-            printf("%s view %s\n","Check complete. Need to create", $this->name);
+            printf("%s view %s\n",_("Check complete. Need to create"), $this->name);
             echo "==========================================\n\n";
             return 999;
         } elseif ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
             echo "==========================================\n";
             if ($doCreate) {
                 $cResult = $this->create(); 
-                printf("Update complete. Creation of view %s %s\n",$this->name, ($cResult)?"OK":"failed");
+                printf(_("Update complete. Creation of view %s %s\n"),$this->name, ($cResult)?_("OK"):_("failed"));
             } else {
-                printf("Update complete. Creation of view %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
+                printf(_("Update complete. Creation of view %s %s\n"),$this->name, ($doCreate)?_("OK"):_("not supported"));
             }
             echo "==========================================\n\n";
             return true;
@@ -155,9 +155,9 @@ class ViewModel extends BasicModel
     protected function normalizeTableToView($mode, $doCreate)
     {
         if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
-            echo "Table {$this->name} should be a view!\n";
+            echo "Table {$this->name} " . _('should be a view!') . "\n";
             echo "==========================================\n";
-            printf("%s view %s\n","Check complete. Need to drop and re-create", $this->name);
+            printf("%s view %s\n",_("Check complete. Need to drop and re-create"), $this->name);
             echo "==========================================\n\n";
             return 999;
         } else if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
@@ -167,9 +167,9 @@ class ViewModel extends BasicModel
                 if ($cResult) {
                     $cResult = $this->create(); 
                 }
-                printf("Update complete. Creation of view %s %s\n",$this->name, ($cResult)?"OK":"failed");
+                printf(_("Update complete. Creation of view %s %s\n"),$this->name, ($cResult)?_("OK"):_("failed"));
             } else {
-                printf("Update complete. Creation of view %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
+                printf(_("Update complete. Creation of view %s %s\n"),$this->name, ($doCreate)?_("OK"):_("not supported"));
             }
             echo "==========================================\n\n";
             return true;

@@ -21,7 +21,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
 <body>
 <?php include('tabs.php'); ?>
 <div id="wrapper">    
-<h2>IT CORE Lane Installation: Additional Configuration (Extras)</h2>
+<h2><?php echo _('IT CORE Lane Installation: Additional Configuration (Extras)'); ?></h2>
 
 <div class="alert"><?php Conf::checkWritable('../ini.json', False, 'JSON'); ?></div>
 <div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
@@ -29,108 +29,117 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
 <form action=extra_config.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <tr>
-    <td colspan=2 class="tblHeader"><h3>General Settings</h3></td>
+    <td colspan=2 class="tblHeader"><h3><?php echo _('General Settings'); ?></h3></td>
 </tr>
 <tr>
-    <td style="width: 30%;"><b>Organization</b>:</td>
+    <td style="width: 30%;"><b><?php echo _('Organization'); ?></b>:</td>
     <td>
     <?php echo $form->textField('store', ''); ?>
-    <span class='noteTxt'>In theory, any hard-coded, organization specific sequences should be blocked
-    off based on the organization setting. Adherence to this principle is less than ideal.</span>
+    <span class='noteTxt'><?php echo _('In theory, any hard-coded, organization specific sequences should be blocked
+    off based on the organization setting. Adherence to this principle is less than ideal.'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td>
-    <?php echo $form->checkboxField('discountEnforced', 'Discounts Enabled', 0); ?>
-    <span class='noteTxt'>If yes, members get a percentage discount as specified in custdata.</span>
+    <?php echo $form->checkboxField('discountEnforced', _('Discounts Enabled'), 0); ?>
+    <span class='noteTxt'><?php echo _('If yes, members get a percentage discount as specified in custdata.'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td> 
-    <?php echo $form->checkboxField('NonStackingDiscounts', 'Only One Discount Applies', 0); ?>
-    <span class='noteTxt'>If a customer is eligible for a 5% discount and a 10% discount and
+    <?php echo $form->checkboxField('NonStackingDiscounts', _('Only One Discount Applies'), 0); ?>
+    <span class='noteTxt'><?php echo _('If a customer is eligible for a 5% discount and a 10% discount and
     only one applies, then the customer will get a 10% discount. Otherwise they stack and
-    the total discount is 15%.</span>
+    the total discount is 15%.'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td> 
-    <?php echo $form->checkboxField('refundDiscountable', 'Discounts on refunds', 0); ?>
-    <span class='noteTxt'>If yes, percent discount is applied to refunds</span>
+    <?php echo $form->checkboxField('refundDiscountable', _('Discounts on refunds'), 0); ?>
+    <span class='noteTxt'><?php echo _('If yes, percent discount is applied to refunds'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Line Item Discount (member)</b>: </td>
+    <td><b><?php echo _('Line Item Discount (member)'); ?></b>: </td>
     <td>
     <?php echo $form->textField('LineItemDiscountMem', 0); ?>
-    <span class='noteTxt'>(percentage; 0.05 =&gt; 5%)</span>
+    <span class='noteTxt'><?php echo _('(percentage; 0.05 => 5%)'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Line Item Discount (non-member)</b>: </td>
+    <td><b><?php echo _('Line Item Discount (non-member)'); ?></b>: </td>
     <td>
     <?php echo $form->textField('LineItemDiscountNonMem', 0); ?>
-    <span class='noteTxt'>(percentage; 0.05 =&gt; 5%)</span>
+    <span class='noteTxt'><?php echo _('(percentage; 0.05 => 5%)'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Default Non-member #</b>: </td>
+    <td><b><?php echo _('Default Non-member #'); ?></b>: </td>
     <td>
     <?php echo $form->textField('defaultNonMem', 99999); ?>
-    <span class='noteTxt'>Normally a single account number is used for most if not all non-member
-    transactions. Specify that account number here.</span>
+    <span class='noteTxt'><?php echo _('Normally a single account number is used for most if not all non-member
+    transactions. Specify that account number here.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Default Non-member behavior</b>: </td><td>
+    <td><b><?php echo _('Default Non-member behavior'); ?></b>: </td><td>
     <?php
-    $behavior = array('1' => 'Cannot override other accounts', '0' => 'No different than other accounts');
+    $behavior = array('1' => _('Cannot override other accounts'), '0' => _('No different than other accounts'));
     echo $form->selectField('RestrictDefaultNonMem', $behavior, 0);
     ?>
     </td>
 </tr>
 <tr>
-    <td><b>Visiting Member #</b>: </td>
+    <td><b><?php echo _('Visiting Member #'); ?></b>: </td>
     <td><?php echo $form->textField('visitingMem', ''); ?>
-    <span class='noteTxt'>This account provides members of other co-ops with member pricing
-    but no other benefits. Leave blank to disable.</span>
+    <span class='noteTxt'><?php echo _('This account provides members of other co-ops with member pricing
+    but no other benefits. Leave blank to disable.'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td>
-    <?php echo $form->checkboxField('memlistNonMember', 'Show non-member', 0); ?>
-    <span class='noteTxt'>Display non-member acct. in member searches?</span>
+    <?php echo $form->checkboxField('memlistNonMember', _('Show non-member'), 0); ?>
+    <span class='noteTxt'><?php echo _('Display non-member acct. in member searches?'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td>
-    <?php echo $form->checkboxField('useMemTypeTable', 'Use memtype table', 0); ?>
-    <span class='noteTxt'>Use memtype table when applicable. This forces all memberships of a given
-    type to have the same discount, among other things.</span>
+    <?php echo $form->checkboxField('useMemTypeTable', _('Use memtype table'), 0); ?>
+    <span class='noteTxt'><?php echo _('Use memtype table when applicable. This forces all memberships of a given
+    type to have the same discount, among other things.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Bottle Return Department number</b>: </td>
+    <td></td>
+    <td>
+    <?php echo $form->checkboxField('InvertAR', 'Invert Display A/R', 0); ?>
+    <span class='noteTxt'><?php echo _('Normally a positive A/R balance indicates the amount the customer
+    owes to the store (i.e., a debt). Inverting this means a positive A/R balance indicates
+    the amount the store owes to the customer (i.e., a credit)'); ?></span>
+    </td>
+</tr>
+<tr>
+    <td><b><?php echo _('Bottle Return Department number'); ?></b>: </td>
     <td><?php echo $form->textField('BottleReturnDept', ''); ?>
-    <span class='noteTxt'>Add a BOTTLE RETURN item to your products table with a normal_price of 0, 
-    CORE will prompt for Bottle Return amt. and then make it a negative value.</span>
+    <span class='noteTxt'><?php echo _('Add a BOTTLE RETURN item to your products table with a normal_price of 0, 
+    CORE will prompt for Bottle Return amt. and then make it a negative value.'); ?></span>
     </td>
 </tr>
 <tr>
     <td colspan=2 class="tblHeader">
-    <h3>Hardware Settings</h3>
+    <h3><?php echo _('Hardware Settings'); ?></h3>
     </td>
 </tr>
 <?php
 // 28Jan14 EL There's an inch or so of whitespace at the bottom of this row.
 // I don't know what causes it.
 ?>
-<tr><td><b>Printer port</b>:
+<tr><td><b><?php echo _('Printer port'); ?></b>:
 </td><td><?php
 // If values entered on the form are being saved, set session variable
 //  and flag type of port choice: "other" or not.
@@ -182,9 +191,9 @@ if (FormLib::get('PPORT',false) !== false) {
                 echo "checked";
 ?> /> <input type=text name="otherpport"
     value="<?php echo "$otherPortText"; ?>"><br />
-<span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",CoreLocal::get('printerPort')); ?>
-Path to the printer. Select from common values, or enter a custom path.
-Some ubuntu distros might put your USB printer at /dev/usblp0</span>
+<span class='noteTxt' style="top:-110px;"> <?php printf("<p>" . _('Current value') . ": <span class='pre'>%s</span></p>",CoreLocal::get('printerPort')); ?>
+<?php echo _('Path to the printer. Select from common values, or enter a custom path.
+Some ubuntu distros might put your USB printer at /dev/usblp0'); ?></span>
 </td></tr>
 <?php
 // Write to database.
@@ -194,11 +203,11 @@ InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
 <tr>
     <td></td>
     <td>
-    <?php echo $form->checkboxField('enableFranking', 'Enable Check Franking', 0); ?>
+    <?php echo $form->checkboxField('enableFranking', _('Enable Check Franking'), 0); ?>
     </td>
 </tr>
 <tr>
-    <td><b>Drawer Behavior Module</b>:</td>
+    <td><b><?php echo _('Drawer Behavior Module'); ?></b>:</td>
     <td>
     <?php
     $kmods = AutoLoader::listModules('COREPOS\pos\lib\Kickers\Kicker',True);
@@ -212,45 +221,45 @@ InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
 <tr>
     <td></td>
     <td>
-    <?php echo $form->checkboxField('dualDrawerMode', 'Dual Drawer Mode', 0); ?>
+    <?php echo $form->checkboxField('dualDrawerMode', _('Dual Drawer Mode'), 0); ?>
     </td>
 </tr>
 <tr>
-    <td><b>Scanner/scale driver</b>:</td>
+    <td><b><?php echo _('Scanner/scale driver'); ?></b>:</td>
     <td><?php echo $form->selectField('scaleDriver', array('NewMagellan', 'ssd'), 'NewMagellan'); ?></td>
 </tr>
 <tr>
     <td colspan=2>
-    <p>The name of your scale driver. Known good values include "ssd" and "NewMagellan".</p>
+    <p><?php echo _('The name of your scale driver. Known good values include "ssd" and "NewMagellan".'); ?></p>
     </td>
 </tr>
 <tr>
     <td colspan=2 class="tblHeader">
-    <h3>Display Settings</h3>
+    <h3><?php echo _('Display Settings'); ?></h3>
     </td>
 </tr>
 <tr>
-    <td><b>Screen Height</b>:</td>
+    <td><b><?php echo _('Screen Height'); ?></b>:</td>
     <td><?php echo $form->selectField('screenLines', range(9, 19), 11); ?>
-    <span class='noteTxt'>Number of items to display at once</span>
+    <span class='noteTxt'><?php echo _('Number of items to display at once'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Alert Bar</b>:</td>
+    <td><b><?php echo _('Alert Bar'); ?></b>:</td>
     <td><?php echo $form->textField('alertBar', ''); ?></td>
 </tr>
 <tr>
     <td></td>
-    <td><?php echo $form->checkboxField('lockScreen', 'Lock screen on idle', 0); ?></td>
+    <td><?php echo $form->checkboxField('lockScreen', _('Lock screen on idle'), 0); ?></td>
 </tr>
 <tr>
-    <td><b>Lock Screen Timeout</b>:</td>
+    <td><b><?php echo _('Lock Screen Timeout'); ?></b>:</td>
     <td><?php echo $form->textField('timeout', 180000); ?>
-    <span class='noteTxt'>Enter timeout in milliseconds. Default: 180000 (3 minutes)</span>
+    <span class='noteTxt'><?php echo _('Enter timeout in milliseconds. Default: 180000 (3 minutes)'); ?></span>
     </td>
 </tr>
 <tr><td>
-<b>Footer Modules</b> (left to right):</td><td>
+<b><?php echo _('Footer Modules'); ?></b> <?php echo _('(left to right)'); ?>:</td><td>
 <?php
 $footer_mods = array();
 // get current settings
@@ -289,7 +298,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
 </td></tr>
 <tr>
-    <td><b>Notifier Modules</b>:</td>
+    <td><b><?php echo _('Notifier Modules'); ?></b>:</td>
     <td>
     <?php
     // get current settings
@@ -302,34 +311,34 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
         array('size'=>5,'multiple'=>'multiple')
     );
     ?>
-    <span class='noteTxt'>Notifiers are displayed on the right below the scale weight</span>
+    <span class='noteTxt'><?php echo _('Notifiers are displayed on the right below the scale weight'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Enable onscreen keys</b>:</td>
-    <td><?php echo $form->selectField('touchscreen', array(true=>'Yes', false=>'No'), false); ?></td>
+    <td><b><?php echo _('Enable onscreen keys'); ?></b>:</td>
+    <td><?php echo $form->selectField('touchscreen', array(true=>_('Yes'), false=>_('No')), false); ?></td>
 </tr>
 <tr>
-    <td><b>Separate customer display</b>:</td>
-    <td><?php echo $form->selectField('CustomerDisplay', array(1=>'Yes', 0=>'No'), 0); ?></td>
+    <td><b><?php echo _('Separate customer display'); ?></b>:</td>
+    <td><?php echo $form->selectField('CustomerDisplay', array(1=>_('Yes'), 0=>_('No')), 0); ?></td>
 </tr>
 <tr>
     <td colspan=2>
-    <p>Touchscreen keys and menus really don't need to appear on
+    <p><?php echo _('Touchscreen keys and menus really don\'t need to appear on
     the customer-facing display. Experimental feature where one
-    window always shows the item listing. Very alpha.</p>
+    window always shows the item listing. Very alpha.'); ?></p>
     </td>
 </tr>
 <tr>
-    <td colspan=2 class="tblHeader"><h3>Subtotal Settings</h3></td>
+    <td colspan=2 class="tblHeader"><h3><?php echo _('Subtotal Settings'); ?></h3></td>
 </tr>
 <!-- Normal/default Yes/True -->
 <tr>
-    <td><b>Member ID trigger subtotal</b>:</td>
-    <td><?php echo $form->selectField('member_subtotal', array(true=>'Yes', false=>'No'), true); ?></td>
+    <td><b><?php echo _('Member ID trigger subtotal'); ?></b>:</td>
+    <td><?php echo $form->selectField('member_subtotal', array(true=>_('Yes'), false=>_('No')), true); ?></td>
 </tr>
 <tr>
-    <td><b>Subtotal Actions</b></td>
+    <td><b><?php echo _('Subtotal Actions'); ?></b></td>
     <td rowspan="2">
     <?php
     $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\TotalActions\\TotalAction');
@@ -347,35 +356,35 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     </td>
 </tr>
 <tr>
-    <td>These are additional bits of functionality that
-    will occur whenever a transaction is subtotalled.</td>
+    <td><?php echo _('These are additional bits of functionality that
+    will occur whenever a transaction is subtotalled.'); ?></td>
 </tr>
 <tr>
-    <td colspan=2 class="tblHeader"><h3>Tender Settings</h3></td>
+    <td colspan=2 class="tblHeader"><h3><?php echo _('Tender Settings'); ?></h3></td>
 </tr>
 <tr>
-    <td><b>Tender min/max limits</b>: </td>
-    <td><?php echo $form->selectField('TenderHardMinMax', array(1=>'Absolute Limit',0=>'Warning Only'), 0); ?></td>
+    <td><b><?php echo _('Tender min/max limits'); ?></b>: </td>
+    <td><?php echo $form->selectField('TenderHardMinMax', array(1=>_('Absolute Limit'),0=>_('Warning Only')), 0); ?></td>
 </tr>
 <tr>
-    <td><b>Allow members to write checks over purchase amount</b>: </td>
-    <td><?php echo $form->selectField('cashOverLimit', array(1=>'Yes',0=>'No'), 0); ?></td>
+    <td><b><?php echo _('Allow members to write checks over purchase amount'); ?></b>: </td>
+    <td><?php echo $form->selectField('cashOverLimit', array(1=>_('Yes'),0=>_('No')), 0); ?></td>
 </tr>
 <tr>
-    <td><b>Check over limit</b>:</td>
+    <td><b><?php echo _('Check over limit'); ?></b>:</td>
     <td>$<?php echo $form->textField('dollarOver', 0); ?></td>
 </tr>
 <tr>
-    <td><b>EBT Total Default</b>: </td>
+    <td><b><?php echo _('EBT Total Default'); ?></b>: </td>
     <td>
     <?php 
-    $ebtOpts = array(1 => 'Cash Side', 0 => 'Food Side');
+    $ebtOpts = array(1 => _('Cash Side'), 0 => _('Food Side'));
     echo $form->selectField('fntlDefault', $ebtOpts, 1);
     ?>
     </td>
 </tr>
 <tr>
-    <td><b>Tender Report</b>:</td>
+    <td><b><?php echo _('Tender Report'); ?></b>:</td>
     <td>
     <?php
     $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport');
@@ -388,9 +397,9 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     </td>
 </tr>
 <tr><td>
-<b>Tender Mapping</b>:<br />
-<p>Map custom tenders to CORE's expected tenders Tender Rpt. column: Include the checked tenders 
-    in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
+<b><?php echo _('Tender Mapping'); ?></b>:<br />
+<p><?php echo _('Map custom tenders to CORE\'s expected tenders Tender Rpt. column: Include the checked tenders 
+    in the Tender Report (available via Mgrs. Menu [MG])'); ?></p></td><td>
 <?php
 $settings = CoreLocal::get("TenderMap");
 $db = Database::pDataConnect();
@@ -468,11 +477,11 @@ $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderNam
 ?>
 <table cellspacing="0" cellpadding="4" border="1">
 <?php
-echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
+echo "<thead><tr><th>" . _('Tender Name') . "</th><th>" . _('Map To') . "</th><th>" . _('Tender Rpt') . "</th></tr></thead><tbody>\n";
 while($row = $db->fetch_row($res)){
     printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
     echo '<td><select name="TenderMapping[]">';
-    echo '<option value="">default</option>';
+    echo '<option value="">' . _('default') . '</option>';
     foreach($mods as $m){
         /**
           Map unnamespaced values to namespaced values
@@ -510,7 +519,7 @@ while($row = $db->fetch_row($res)){
 -->
 
 <tr><td colspan=2 class="submitBtn">
-<input type=submit name=esubmit value="Save Changes" />
+<input type=submit name=esubmit value="<?php echo _('Save Changes'); ?>" />
 </td></tr>
 </table>
 </form>

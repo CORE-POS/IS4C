@@ -129,8 +129,8 @@ if (!class_exists('FpdfWithBarcode')) {
         $brand = ucwords(strtolower(substr($row['brand'],0,13)));
         $pak = $row['units'];
         $size = $row['units'] . "-" . $row['size'];
-        $sku = $row['sku'];
-        $upc = substr($row['upc'],1,12);
+        $sku = ($row['sku'] == $row['upc']) ? "" : $row['sku'];
+        $upc = ltrim($row['upc'],0);
         /** 
         * determine check digit using barcode.php function
         */
@@ -144,6 +144,7 @@ if (!class_exists('FpdfWithBarcode')) {
         /**
         * begin creating tag
         */
+        $pdf->SetFont('Arial','',10);
         $pdf->SetXY($genLeft, $descTop);
         $pdf->Cell($w,4,substr($desc,0,20),0,0,'L');
         $pdf->SetXY($genLeft,$brandTop);
@@ -152,7 +153,6 @@ if (!class_exists('FpdfWithBarcode')) {
         $pdf->Cell($w/2,4,$size,0,0,'L');
         $pdf->SetXY($priceLeft+9,$skuTop);
         $pdf->Cell($w/3,4,$tagdate,0,0,'R');
-        // $pdf->SetFont('Arial','',10);
         $pdf->SetXY($genLeft,$skuTop);
         $pdf->Cell($w/3,4,$sku,0,0,'L');
         $pdf->SetXY($vendLeft,$skuTop);
@@ -164,7 +164,10 @@ if (!class_exists('FpdfWithBarcode')) {
         * add check digit to pid from testQ
         */
         $newUPC = $upc . $check;
-        $pdf->UPC_A($barLeft,$barTop,$upc,7);
+        if (strlen($upc) <= 11)
+            $pdf->UPC_A($barLeft,$barTop,$upc,7);
+        else
+            $pdf->EAN13($barLeft,$barTop,$upc,7);
         /**
         * increment label parameters for next label
         */

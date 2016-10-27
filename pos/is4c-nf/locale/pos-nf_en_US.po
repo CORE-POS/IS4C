@@ -8,708 +8,3750 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-23 11:46-0500\n"
+"POT-Creation-Date: 2016-09-26 12:49-0500\n"
 "PO-Revision-Date: 2015-03-23 11:46-0500\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: lib/PrehLib.php:322 parser-class-lib/parse/SimpleTender.php:49
-#: parser-class-lib/parse/SimpleTender.php:70
-#: parser-class-lib/parse/SimpleTender.php:104
-#: parser-class-lib/parse/SimpleTender.php:114 gui-modules/adminlist.php:41
-#: lib/Tenders/TenderModule.php:81 parser-class-lib/parse/TenderOut.php:35
-msgid "no transaction in progress"
-msgstr "No transction in progress"
-
-#: lib/PrehLib.php:330
-msgid "WIC tender not applicable"
+#: lib/PrehLib.php:237 pos/is4c-nf/lib/MemberLib.php:232
+msgid " : Pre Pay: $"
 msgstr ""
 
-#: lib/PrehLib.php:334
-msgid ""
-"member or staff check tender cannot \n"
-"\t\t\texceed total purchase by over $"
-msgstr "Member or staff check tender cannot exceed total purchase by over $"
-
-#: lib/PrehLib.php:339 lib/Tenders/GiftCardTender.php:38
-#: lib/Tenders/CreditCardTender.php:38
-msgid "tender cannot exceed purchase amount"
-msgstr "Tender cannot exceed purchase amount"
-
-#: lib/PrehLib.php:343 lib/Tenders/FoodstampTender.php:40
-msgid "no cash back with EBT cash tender"
-msgstr "No cash back with EBT cash tender"
-
-#: lib/PrehLib.php:347 lib/Tenders/CheckTender.php:41
-#: lib/Tenders/CheckTender.php:40
-msgid "non-member check tender cannot exceed total purchase by over $5.00"
-msgstr "Non-member check tender cannot exceed total purchase by over $5.00"
-
-#: lib/PrehLib.php:375 lib/Tenders/TenderModule.php:87
-msgid "transaction must be totaled before tender can be accepted"
-msgstr "Transaction must be totaled before tender can be accepted"
-
-#: lib/PrehLib.php:379 lib/Tenders/FoodstampTender.php:37
-msgid "eligible amount must be totaled before foodstamp tender can be accepted"
-msgstr ""
-"Eligible amount must be totaled before foodstamp tender can be accepted"
-
-#: lib/PrehLib.php:383 lib/Tenders/FoodstampTender.php:43
-msgid "Foodstamp tender cannot exceed eligible amount by over $10.00"
-msgstr "Foodstamp tender cannot exceed eligible amount by over $10.00"
-
-#: lib/PrehLib.php:396
-msgid "is overlimit"
-msgstr "is overlimit"
-
-#: lib/PrehLib.php:400 parser-class-lib/parse/SimpleTender.php:122
-msgid "is not authorized to make employee charges"
-msgstr "is not authorized to make employee charges"
-
-#: lib/PrehLib.php:404
-msgid "has exceeded charge limit"
+#: lib/PrehLib.php:242 pos/is4c-nf/lib/MemberLib.php:237
+msgid " : Store Charge: $"
 msgstr ""
 
-#: lib/PrehLib.php:414 lib/Tenders/StoreChargeTender.php:51
-msgid "charge tender exceeds purchase amount"
-msgstr "Charge tender exceeds purchase amount"
-
-#: lib/PrehLib.php:443
-msgid ""
-"WFC no longer excepts paper foods stamps. Please choose a different tender "
-"type"
+#: lib/PrehLib.php:251 pos/is4c-nf/lib/MemberLib.php:246
+msgid " : Intra Coop spent: $"
 msgstr ""
 
-#: lib/PrehLib.php:448
-msgid "is greater than coupon limit"
+#: lib/PrehLib.php:349 pos/is4c-nf/lib/MemberLib.php:266
+msgid " AR"
 msgstr ""
 
-#: lib/PrehLib.php:449 lib/PrehLib.php:456 lib/PrehLib.php:855
-#: lib/PrehLib.php:860 parser-class-lib/parse/UPC.php:135
-#: parser-class-lib/parse/UPC.php:261 parser-class-lib/parse/UPC.php:274
-#: parser-class-lib/parse/SimpleTender.php:80 lib/Tenders/TenderModule.php:105
-#: lib/Tenders/CheckTender.php:63 lib/Tenders/GiftCertificateTender.php:55
-#: gui-modules/memlist.php:205 gui-modules/deptlist.php:123
-#: gui-modules/productlist.php:180 gui-modules/rplist.php:105
-#: gui-modules/suspendedlist.php:130 gui-modules/tenderlist.php:124
-#: gui-modules/adminlist.php:126 lib/Tenders/CheckTender.php:62
-msgid "clear to cancel"
-msgstr "[clear] to cancel"
-
-#: lib/PrehLib.php:449 lib/PrehLib.php:456 lib/PrehLib.php:855
-#: lib/PrehLib.php:860 lib/Tenders/TenderModule.php:105
-msgid "enter to proceed"
-msgstr "[enter] to proceed"
-
-#: lib/PrehLib.php:454
-msgid "is greater than tender limit"
-msgstr ""
-
-#: lib/PrehLib.php:662
+#: lib/PrehLib.php:582 pos/is4c-nf/lib/PrehLib.php:112
 msgid "tender is misconfigured"
 msgstr "Tender is misconfigured"
 
-#: lib/PrehLib.php:776
+#: lib/PrehLib.php:583 pos/is4c-nf/lib/PrehLib.php:113
+msgid "Notify Administrator"
+msgstr ""
+
+#: lib/PrehLib.php:708 pos/is4c-nf/lib/DeptLib.php:84
 #, fuzzy
 msgid "department unknown"
 msgstr "Input unknown"
 
-#: lib/PrehLib.php:791
+#: lib/PrehLib.php:726 pos/is4c-nf/lib/DeptLib.php:161
 msgid "no item found in"
 msgstr "No item found in"
 
-#: lib/PrehLib.php:797
+#: lib/PrehLib.php:736 pos/is4c-nf/lib/DeptLib.php:171
 msgid "coupon amount greater than department total"
 msgstr "Coupon amount greater than department total"
 
-#: lib/PrehLib.php:854
+#: lib/PrehLib.php:797 lib/PrehLib.php:823 pos/is4c-nf/lib/DeptLib.php:213
+#: pos/is4c-nf/lib/DeptLib.php:239
+msgid "Department is member-only"
+msgstr ""
+
+#: lib/PrehLib.php:798 lib/PrehLib.php:824 pos/is4c-nf/lib/DeptLib.php:214
+#: pos/is4c-nf/lib/DeptLib.php:240
+#, fuzzy
+msgid "Enter member number first"
+msgstr "Enter member number or name"
+
+#: lib/PrehLib.php:809
+msgid "Department is member-only<br />[enter] to continue, [clear] to cancel"
+msgstr ""
+
+#: lib/PrehLib.php:831 pos/is4c-nf/lib/DeptLib.php:247
+msgid "Department not allowed with this member"
+msgstr ""
+
+#: lib/PrehLib.php:879 pos/is4c-nf/lib/DeptLib.php:287
 msgid "is greater than department limit"
 msgstr ""
 
-#: lib/PrehLib.php:859
+#: lib/PrehLib.php:886 pos/is4c-nf/lib/DeptLib.php:291
 msgid "is lower than department minimum"
 msgstr ""
 
-#: lib/DisplayLib.php:339 test.php:7
-msgid "input unknown"
-msgstr "Input unknown"
+#: lib/PrehLib.php:1410 pos/is4c-nf/lib/PrehLib.php:522
+#, fuzzy
+msgid "discount invalid"
+msgstr "Password Invalid"
 
-#: parser-class-lib/parse/UPC.php:110
-msgid "is not a valid item"
-msgstr ""
+#: lib/PrehLib.php:1437
+#, fuzzy, php-format
+msgid "10% discount already applied"
+msgstr "Coupon already applied"
 
-#: parser-class-lib/parse/UPC.php:134
-msgid "Item not for sale"
-msgstr ""
-
-#: parser-class-lib/parse/UPC.php:135
-msgid "enter to continue sale"
-msgstr "[enter] to continue sale"
-
-#: parser-class-lib/parse/UPC.php:162
-msgid "product cannot be sold right now"
-msgstr "product cannot be sold right now"
-
-#: parser-class-lib/parse/UPC.php:198
-msgid "Claims to be more than $100,000"
-msgstr ""
-
-#: parser-class-lib/parse/UPC.php:211
-msgid "please put item on scale"
-msgstr "Please put item on scale"
-
-#: parser-class-lib/parse/UPC.php:227
-msgid "item weight must be greater than tare weight"
-msgstr "Item weight must be greater than tare weight"
-
-#: parser-class-lib/parse/UPC.php:235
-msgid "fractional quantity cannot be accepted for this item"
-msgstr "Fractional quantity cannot be accepted for this item"
-
-#: parser-class-lib/parse/UPC.php:260
-msgid "insert document"
-msgstr "Insert document"
-
-#: parser-class-lib/parse/UPC.php:260 parser-class-lib/parse/UPC.php:273
-#: parser-class-lib/parse/SimpleTender.php:80 lib/Tenders/CheckTender.php:62
-#: lib/Tenders/GiftCertificateTender.php:54 lib/Tenders/CheckTender.php:61
-msgid "press enter to endorse"
-msgstr "Press [enter] to endorse"
-
-#: parser-class-lib/parse/UPC.php:273
-msgid "insert form"
-msgstr "Insert form"
-
-#: parser-class-lib/parse/SimpleTender.php:38
-msgid "EBT tender must specify amount"
-msgstr ""
-
-#: parser-class-lib/parse/SimpleTender.php:62
-#: parser-class-lib/parse/SimpleTender.php:95
-#: parser-class-lib/parse/SimpleTender.php:108
-#: parser-class-lib/parse/Steering.php:178
-msgid "transaction must be totaled"
-msgstr "Transaction must be totaled"
-
-#: parser-class-lib/parse/SimpleTender.php:63
-#: parser-class-lib/parse/SimpleTender.php:96
-#: parser-class-lib/parse/SimpleTender.php:109
-#: parser-class-lib/parse/Steering.php:179
-msgid "before tender can be accepted"
-msgstr ""
-
-#: gui-modules/suspendedlist.php:100 gui-modules/adminlist.php:68
-msgid "no suspended transaction"
-msgstr "No suspended transaction"
-
-#: gui-modules/adminlist.php:64
-msgid "transaction in progress"
-msgstr "Transaction in progress"
-
-#: lib/FooterBoxes/EveryoneSales.php:30
+#: lib/FooterBoxes/EveryoneSales.php:33
+#: pos/is4c-nf/lib/FooterBoxes/EveryoneSales.php:36
 msgid "Special"
 msgstr ""
 
-#: lib/FooterBoxes/SavedOrCouldHave.php:32
+#: lib/FooterBoxes/SavedOrCouldHave.php:33
+#: pos/is4c-nf/lib/FooterBoxes/SavedOrCouldHave.php:36
 msgid "You Saved"
 msgstr ""
 
-#: lib/FooterBoxes/SavedOrCouldHave.php:34
+#: lib/FooterBoxes/SavedOrCouldHave.php:35
+#: pos/is4c-nf/lib/FooterBoxes/SavedOrCouldHave.php:38
 msgid "Could Have Saved"
 msgstr ""
 
-#: lib/FooterBoxes/TransPercentDiscount.php:32
 #: lib/FooterBoxes/TransPercentDiscount.php:34
+#: lib/FooterBoxes/TransPercentDiscount.php:36
+#: plugins/NeedBasedDiscount/NeedDiscountFooter.php:32
+#: plugins/NeedBasedDiscount/NeedDiscountFooter.php:35
+#: pos/is4c-nf/plugins/NeedBasedDiscount/NeedDiscountFooter.php:34
+#: pos/is4c-nf/plugins/NeedBasedDiscount/NeedDiscountFooter.php:37
+#: pos/is4c-nf/lib/FooterBoxes/TransPercentDiscount.php:37
+#: pos/is4c-nf/lib/FooterBoxes/TransPercentDiscount.php:39
 msgid "% Discount"
 msgstr ""
 
 #: lib/FooterBoxes/MultiTotal.php:34
+#: pos/is4c-nf/lib/FooterBoxes/MultiTotal.php:37
 msgid "fs Amount Due"
 msgstr ""
 
-#: lib/FooterBoxes/MultiTotal.php:38
+#: lib/FooterBoxes/MultiTotal.php:37
+#: plugins/AlwaysFoodstampTotal/AlwaysFsTotalFooter.php:33
+#: pos/is4c-nf/plugins/AlwaysFoodstampTotal/AlwaysFsTotalFooter.php:52
+#: pos/is4c-nf/lib/FooterBoxes/MultiTotal.php:40
 msgid "Amount Due"
 msgstr ""
 
-#: lib/FooterBoxes/MultiTotal.php:43
+#: lib/FooterBoxes/MultiTotal.php:41
+#: plugins/AlwaysFoodstampTotal/AlwaysFsTotalFooter.php:37
+#: pos/is4c-nf/plugins/AlwaysFoodstampTotal/AlwaysFsTotalFooter.php:55
+#: pos/is4c-nf/lib/FooterBoxes/MultiTotal.php:44
 msgid "Change"
 msgstr ""
 
-#: lib/FooterBoxes/MultiTotal.php:47
+#: lib/FooterBoxes/MultiTotal.php:44
+#: plugins/AlwaysFoodstampTotal/AlwaysFsTotalFooter.php:41
+#: pos/is4c-nf/gui-modules/pos2.php:175
+#: pos/is4c-nf/plugins/AlwaysFoodstampTotal/AlwaysFsTotalFooter.php:58
+#: pos/is4c-nf/lib/FooterBoxes/MultiTotal.php:47
 msgid "Total"
 msgstr ""
 
-#: lib/FooterBoxes/MemSales.php:30
+#: lib/FooterBoxes/MemSales.php:33 pos/is4c-nf/lib/FooterBoxes/MemSales.php:36
 msgid "Mbr Special"
 msgstr ""
 
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:66
+#: lib/FooterBoxes/PatronagePts.php:32
+#: pos/is4c-nf/lib/FooterBoxes/PatronagePts.php:35
+msgid "Patronage Pts."
+msgstr ""
+
+#: lib/ItemNotFound.php:47 plugins/PriceCheck/PriceCheckPage.php:133
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:146
+#: pos/is4c-nf/lib/ItemNotFound.php:61
+msgid "not a valid item"
+msgstr ""
+
+#: lib/ItemNotFound.php:48 pos/is4c-nf/lib/ItemNotFound.php:62
+msgid "UPC: "
+msgstr ""
+
+#: lib/Scanning/PriceMethods/BasicPM.php:60
+#: pos/is4c-nf/lib/Scanning/PriceMethods/BasicPM.php:71
+msgid "item only allows "
+msgstr ""
+
+#: lib/Scanning/PriceMethods/BasicPM.php:62
+#: pos/is4c-nf/lib/Scanning/PriceMethods/BasicPM.php:73
+#, fuzzy
+msgid " per transaction"
+msgstr "No suspended transaction"
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:138
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:361
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:180
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:329
 msgid "coupon not found"
 msgstr "Coupon not found"
 
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:72
-msgid "coupon expired"
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:152
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:185
+#, fuzzy
+msgid "coupon expired "
 msgstr "Coupon expired"
 
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:87
-msgid "coupon already applied"
-msgstr "Coupon already applied"
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:163
+#, fuzzy
+msgid "coupon not available yet"
+msgstr "Discount not applicable after tender"
 
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:96
-msgid "Member only coupon"
-msgstr ""
-
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:97
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:186
+#: plugins/VirtualCoupon/VirtualCouponParser.php:39
+#: plugins/NeedBasedDiscount/NeedDiscountParser.php:37
+#: plugins/AccessProgram/AccessProgramParser.php:39
+#: pos/is4c-nf/plugins/AccessProgram/AccessProgramParser.php:43
+#: pos/is4c-nf/plugins/VirtualCoupon/VirtualCouponParser.php:42
+#: pos/is4c-nf/plugins/NeedBasedDiscount/NeedDiscountParser.php:42
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:197
 msgid "Apply member number first"
 msgstr ""
 
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:108
-msgid "Coupon already used"
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:187
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:198
+msgid "Member only coupon"
 msgstr ""
 
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:109
-msgid "on this membership"
-msgstr ""
-
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:129
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:145
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:161
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:177
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:208
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:218
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:228
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:197
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:218
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:220
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:232
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:234
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:247
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:249
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:267
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:290
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:301
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:303
 msgid "coupon requirements not met"
 msgstr "Coupon requirements not met"
 
-#: lib/Scanning/SpecialUPCs/HouseCoupon.php:236
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:341
 msgid "unknown minimum type"
 msgstr "Unknown minimum type"
 
-#: lib/Scanning/SpecialUPCs/SpecialOrder.php:57
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:387
+#: lib/Scanning/SpecialUPCs/CouponCode.php:125
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:133
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:350
+msgid "coupon already applied"
+msgstr "Coupon already applied"
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:440
+msgid "Coupon already used"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:440
+msgid "on this membership"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/MagicPLU.php:63
+#: pos/is4c-nf/plugins/WedgeStaffCharge/MagicPLU.php:67
+#, fuzzy
+msgid "member discount not applicable"
+msgstr "Case discount not applicable to staff"
+
+#: lib/Scanning/SpecialUPCs/SpecialOrder.php:60
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/SpecialOrder.php:68
 msgid "Not a valid order"
 msgstr ""
 
-#: lib/Scanning/SpecialUPCs/SpecialOrder.php:71
+#: lib/Scanning/SpecialUPCs/SpecialOrder.php:80
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/SpecialOrder.php:89
 msgid "Order not found"
 msgstr ""
 
-#: lib/Scanning/SpecialUPCs/MemberCard.php:52
-msgid "Card not assigned"
-msgstr ""
-
-#: lib/Scanning/SpecialUPCs/CouponCode.php:69
+#: lib/Scanning/SpecialUPCs/CouponCode.php:96
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:155
 #, fuzzy
 msgid "coupon type unknown"
 msgstr "Input unknown"
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:69
+#: lib/Scanning/SpecialUPCs/CouponCode.php:96
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:155
 #, fuzzy
 msgid "enter coupon manually"
 msgstr "[enter] to continue sale"
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:136
+#: lib/Scanning/SpecialUPCs/CouponCode.php:111
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:119
+#, fuzzy
+msgid "coupon disabled"
+msgstr "Coupon expired"
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:210 unit-tests/ScanningTest.php:518
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:241
 msgid "product not found"
 msgstr "Product not found"
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:136
+#: lib/Scanning/SpecialUPCs/CouponCode.php:210 unit-tests/ScanningTest.php:518
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:241
 #, fuzzy
 msgid "in transaction"
 msgstr "No suspended transaction"
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:164
+#: lib/Scanning/SpecialUPCs/CouponCode.php:244
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:481
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:276
 msgid "Coupon already applied"
 msgstr ""
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:164
+#: lib/Scanning/SpecialUPCs/CouponCode.php:244
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:276
 msgid "for this item"
 msgstr ""
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:170
+#: lib/Scanning/SpecialUPCs/CouponCode.php:254
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:286
 #, php-format
 msgid "coupon requires %d items"
 msgstr "Coupon requires %d items"
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:171
+#: lib/Scanning/SpecialUPCs/CouponCode.php:255
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:287
 #, php-format
 msgid "there are only %d item(s)"
 msgstr "There are only %d item(s)"
 
-#: lib/Scanning/SpecialUPCs/CouponCode.php:171
+#: lib/Scanning/SpecialUPCs/CouponCode.php:256
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/CouponCode.php:288
 #, fuzzy
 msgid "in this transaction"
 msgstr "No suspended transaction"
 
-#: lib/DisplayLib.php:365
+#: lib/DisplayLib.php:274 pos/is4c-nf/lib/DisplayLib.php:257
+msgid "input unknown"
+msgstr "Input unknown"
+
+#: lib/DisplayLib.php:309 pos/is4c-nf/lib/DisplayLib.php:292
 msgid "M E M B E R"
 msgstr ""
 
-#: lib/DisplayLib.php:371
+#: lib/DisplayLib.php:315 pos/is4c-nf/lib/DisplayLib.php:298
 msgid "C A S H I E R"
 msgstr ""
 
-#: lib/SuspendLib.php:59
+#: lib/DisplayLib.php:988 pos/is4c-nf/lib/DisplayLib.php:884
+msgid "Total "
+msgstr ""
+
+#: lib/DisplayLib.php:990 pos/is4c-nf/gui-modules/PaidOutComment.php:79
+#: pos/is4c-nf/lib/DisplayLib.php:886
+msgid "Discount"
+msgstr ""
+
+#: lib/DisplayLib.php:996 pos/is4c-nf/lib/DisplayLib.php:892
+msgid "1 w/ vol adj"
+msgstr ""
+
+#: lib/ReceiptBuilding/TenderReports/WefcTorontoTenderReport.php:327
+#: pos/is4c-nf/lib/ReceiptBuilding/TenderReports/WefcTorontoTenderReport.php:333
+msgid "The list includes items for all lanes."
+msgstr ""
+
+#: lib/SuspendLib.php:63 pos/is4c-nf/lib/SuspendLib.php:69
 #, fuzzy
 msgid "transaction suspended"
 msgstr "Transaction must be totaled"
 
-#: lib/Tenders/StoreChargeTender.php:39 lib/Tenders/StoreChargeTender.php:43
+#: lib/Tenders/StoreChargeTender.php:42 lib/Tenders/StoreChargeTender.php:50
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:48
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:56
 msgid "member"
 msgstr "Member"
 
-#: lib/Tenders/StoreChargeTender.php:40
+#: lib/Tenders/StoreChargeTender.php:43
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:49
 msgid "is not authorized"
 msgstr ""
 
-#: lib/Tenders/StoreChargeTender.php:40
+#: lib/Tenders/StoreChargeTender.php:43
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:49
 msgid "to make charges"
 msgstr ""
 
-#: lib/Tenders/StoreChargeTender.php:43
+#: lib/Tenders/StoreChargeTender.php:51
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:57
 #, fuzzy
 msgid "is over limit"
 msgstr "is overlimit"
 
-#: lib/Tenders/StoreChargeTender.php:48
+#: lib/Tenders/StoreChargeTender.php:60
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:66
 msgid "available balance for charge"
 msgstr "Available balance for charge"
 
-#: lib/Tenders/StoreChargeTender.php:48
+#: lib/Tenders/StoreChargeTender.php:61
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:67
 msgid "is only $"
 msgstr ""
 
-#: lib/Tenders/DisabledTender.php:34
+#: lib/Tenders/StoreChargeTender.php:66
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:72
+msgid "charge tender exceeds purchase amount"
+msgstr "Charge tender exceeds purchase amount"
+
+#: lib/Tenders/FoodstampTender.php:39
+#: pos/is4c-nf/lib/Tenders/FoodstampTender.php:44
+msgid "eligible amount must be totaled before foodstamp tender can be accepted"
+msgstr ""
+"Eligible amount must be totaled before foodstamp tender can be accepted"
+
+#: lib/Tenders/FoodstampTender.php:46
+#: pos/is4c-nf/lib/Tenders/FoodstampTender.php:51
+#, fuzzy
+msgid "Foodstamp tender cannot exceed eligible amount"
+msgstr "Foodstamp tender cannot exceed eligible amount by over $10.00"
+
+#: lib/Tenders/NoChangeTender.php:31
+#: pos/is4c-nf/lib/Tenders/NoChangeTender.php:35
+#, fuzzy
+msgid "max tender is "
+msgstr "Tender disabled"
+
+#: lib/Tenders/NoChangeTender.php:32
+#: pos/is4c-nf/lib/Tenders/NoChangeTender.php:36
+msgid "no change allowed"
+msgstr ""
+
+#: lib/Tenders/ManagerApproveTender.php:40 lib/Tenders/GiftCardTender.php:39
+#: lib/Tenders/CreditCardTender.php:39
+#: pos/is4c-nf/lib/Tenders/GiftCardTender.php:43
+#: pos/is4c-nf/lib/Tenders/CreditCardTender.php:43
+#: pos/is4c-nf/lib/Tenders/ManagerApproveTender.php:45
+msgid "tender cannot exceed purchase amount"
+msgstr "Tender cannot exceed purchase amount"
+
+#: lib/Tenders/DisabledTender.php:36
+#: pos/is4c-nf/lib/Tenders/DisabledTender.php:39
 msgid "tender disabled"
 msgstr "Tender disabled"
 
-#: lib/Tenders/TenderModule.php:84
+#: lib/Tenders/TenderModule.php:90 parser-class-lib/parse/TenderOut.php:40
+#: gui-modules/adminlist.php:52 pos/is4c-nf/gui-modules/adminlist.php:72
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:91
+#: pos/is4c-nf/parser/parse/TenderOut.php:48
+msgid "no transaction in progress"
+msgstr "No transction in progress"
+
+#: lib/Tenders/TenderModule.php:97
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:106
 msgid "tender amount of"
 msgstr "Tender amount of"
 
-#: lib/Tenders/TenderModule.php:84
+#: lib/Tenders/TenderModule.php:97
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:106
 msgid "exceeds allowable limit"
 msgstr ""
 
-#: lib/Tenders/TenderModule.php:103
+#: lib/Tenders/TenderModule.php:104
+#: pos/is4c-nf/plugins/WicPlugin/WicMenuPage.php:44
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:113
+msgid "transaction must be totaled before tender can be accepted"
+msgstr "Transaction must be totaled before tender can be accepted"
+
+#: lib/Tenders/TenderModule.php:116
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:129
+msgid "return tender must be exact"
+msgstr ""
+
+#: lib/Tenders/TenderModule.php:121
+msgid "Why are you using a negative number for a positve sale?"
+msgstr ""
+
+#: lib/Tenders/TenderModule.php:137
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:139
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:157
 msgid "is greater than tender limit for"
 msgstr ""
 
-#: lib/Tenders/CheckTender.php:62 lib/Tenders/GiftCertificateTender.php:54
-#: lib/Tenders/CheckTender.php:61
+#: lib/Tenders/TenderModule.php:242
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:262
+#, fuzzy
+msgid "Amount required for "
+msgstr "Quantity required"
+
+#: lib/Tenders/CheckTender.php:49 plugins/ECheckPlugin/ECheckTender.php:41
+#: pos/is4c-nf/plugins/ECheckPlugin/ECheckTender.php:45
+#: pos/is4c-nf/lib/Tenders/CheckTender.php:44
+#, fuzzy
+msgid "member check tender cannot exceed total purchase by over $"
+msgstr "Non-member check tender cannot exceed total purchase by over $5.00"
+
+#: lib/Tenders/CheckTender.php:64 plugins/ECheckPlugin/ECheckTender.php:56
+#: pos/is4c-nf/lib/Tenders/CheckTender.php:59
+#, fuzzy
+msgid "member check tender cannot exceed total purchase if equity is owed"
+msgstr "Non-member check tender cannot exceed total purchase by over $5.00"
+
+#: lib/Tenders/CheckTender.php:80 plugins/ECheckPlugin/ECheckTender.php:72
+#: pos/is4c-nf/lib/Tenders/CheckTender.php:75
+msgid "already used check over benefit today"
+msgstr ""
+
+#: lib/Tenders/CheckTender.php:85 pos/is4c-nf/lib/Tenders/CheckTender.php:79
+msgid "Non-members may not write checks for more than the total purchase."
+msgstr ""
+
+#: lib/Tenders/CheckTender.php:87 plugins/ECheckPlugin/ECheckTender.php:76
+#: pos/is4c-nf/plugins/ECheckPlugin/ECheckTender.php:51
+#, fuzzy
+msgid "non-member check tender cannot exceed total purchase"
+msgstr "Non-member check tender cannot exceed total purchase by over $5.00"
+
+#: lib/Tenders/CheckTender.php:138 lib/Tenders/RebateCheckTender.php:97
+#: lib/Tenders/GiftCertificateTender.php:74
+#: plugins/ECheckPlugin/ECheckTender.php:131
+#: pos/is4c-nf/plugins/ECheckPlugin/ECheckTender.php:106
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:285
 #, fuzzy
 msgid "insert"
 msgstr "Insert form"
 
-#: lib/Tenders/StoreTransferTender.php:39
+#: lib/Tenders/StoreTransferTender.php:40
+#: pos/is4c-nf/lib/Tenders/StoreTransferTender.php:46
 #, fuzzy
 msgid "store transfer exceeds purchase amount"
 msgstr "Charge tender exceeds purchase amount"
 
-#: lib/Tenders/StoreTransferTender.php:55
-msgid "Login for store transfer"
+#: lib/Tenders/StoreTransferTender.php:50
+#: pos/is4c-nf/lib/Tenders/StoreTransferTender.php:56
+msgid "member cannot make transfers"
 msgstr ""
 
-#: parser-class-lib/parse/BalanceCheck.php:36
-msgid "Member"
+#: lib/ReceiptLib.php:1021
+msgid "DISCOUNT SAVINGS = $"
 msgstr ""
 
-#: parser-class-lib/parse/BalanceCheck.php:37
-msgid "Current AR balance is"
+#: lib/ReceiptLib.php:1024
+#: pos/is4c-nf/lib/ReceiptBuilding/Savings/SeparateReceiptSavings.php:67
+msgid "SALE SAVINGS = $"
 msgstr ""
 
-#: parser-class-lib/parse/BalanceCheck.php:38
-msgid "Available AR balance is"
+#: lib/ReceiptLib.php:1027
+msgid "OWNER SALE SAVINGS = $"
 msgstr ""
 
-#: parser-class-lib/parse/Steering.php:76
+#: lib/ReceiptLib.php:1029
+msgid "OWNER COULD HAVE SAVED = $"
+msgstr ""
+
+#: parser-class-lib/parse/BalanceCheck.php:40
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:201
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:211
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:228
+#: pos/is4c-nf/parser/parse/EquityCheck.php:57
+#: pos/is4c-nf/parser/parse/BalanceCheck.php:45
 #, fuzzy
-msgid "Login to void transactions"
-msgstr "No suspended transaction"
+msgid "Member #"
+msgstr "Member"
 
-#: parser-class-lib/parse/Steering.php:92
-#, fuzzy
-msgid "Login to suspend/resume transactions"
-msgstr "No suspended transaction"
+#: parser-class-lib/parse/BalanceCheck.php:41
+#: pos/is4c-nf/parser/parse/BalanceCheck.php:46
+msgid "Current AR balance is "
+msgstr ""
 
-#: parser-class-lib/parse/Steering.php:134
-#: parser-class-lib/parse/Steering.php:147
+#: parser-class-lib/parse/BalanceCheck.php:42
+#: pos/is4c-nf/parser/parse/BalanceCheck.php:47
 #, fuzzy
-msgid "Transaction in Progress"
+msgid "Available AR balance is "
+msgstr "Available balance for charge"
+
+#: parser-class-lib/parse/Steering.php:63 gui-modules/adminlist.php:92
+#: pos/is4c-nf/gui-modules/adminlist.php:91
+#: pos/is4c-nf/parser/parse/Steering.php:74
+msgid "transaction in progress"
 msgstr "Transaction in progress"
 
-#: parser-class-lib/parse/Steering.php:169 gui-modules/mgrlogin.php:154
-#, fuzzy
-msgid "transaction cancelled"
-msgstr "Transaction must be totaled"
-
-#: parser-class-lib/parse/Steering.php:187
-msgid "Login to alter price"
+#: parser-class-lib/parse/Steering.php:90
+#: pos/is4c-nf/parser/parse/Steering.php:103
+msgid "Cannot UNset a member status"
 msgstr ""
 
-#: parser-class-lib/parse/Steering.php:200
-msgid "processor error"
-msgstr "Processor error"
+#: parser-class-lib/parse/Steering.php:99
+#: pos/is4c-nf/parser/parse/Steering.php:112
+msgid "You must be an admin to do this."
+msgstr ""
 
-#: parser-class-lib/parse/Void.php:37 parser-class-lib/parse/ItemPD.php:35
+#: parser-class-lib/parse/Steering.php:100
+#: pos/is4c-nf/parser/parse/Steering.php:113
+msgid "Access Denied"
+msgstr ""
+
+#: parser-class-lib/parse/Steering.php:148
+#: pos/is4c-nf/parser/parse/Steering.php:160
+#, fuzzy
+msgid "no receipt found"
+msgstr "No item found in"
+
+#: parser-class-lib/parse/DefaultTender.php:51
+#: pos/is4c-nf/parser/parse/DefaultTender.php:58
+msgid "Tender customer card before other tenders"
+msgstr ""
+
+#: parser-class-lib/parse/Totals.php:65 pos/is4c-nf/parser/parse/Totals.php:71
+msgid "WIC Total"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:59 parser-class-lib/parse/ItemPD.php:39
+#: pos/is4c-nf/parser/parse/Void.php:58
 msgid "No Item on Order"
 msgstr ""
 
-#: parser-class-lib/parse/Void.php:47
+#: parser-class-lib/parse/Void.php:88 pos/is4c-nf/parser/parse/Void.php:103
 msgid "Cannot void this entry"
 msgstr ""
 
-#: parser-class-lib/parse/Void.php:54 parser-class-lib/parse/Void.php:88
-#: parser-class-lib/parse/Void.php:244
+#: parser-class-lib/parse/Void.php:99 parser-class-lib/parse/Void.php:168
+#: parser-class-lib/parse/Void.php:409 pos/is4c-nf/parser/parse/Void.php:114
+#: pos/is4c-nf/parser/parse/Void.php:147 pos/is4c-nf/parser/parse/Void.php:367
 msgid "Item already voided"
 msgstr ""
 
-#: parser-class-lib/parse/Void.php:82 parser-class-lib/parse/Void.php:227
-#: parser-class-lib/parse/ItemPD.php:64 parser-class-lib/parse/ItemPD.php:130
-#: parser-class-lib/parse/LineItemDiscount.php:49
+#: parser-class-lib/parse/Void.php:150 parser-class-lib/parse/Void.php:186
+#: parser-class-lib/parse/ItemPD.php:74
+#: parser-class-lib/parse/LineItemDiscount.php:52
+#: pos/is4c-nf/parser/parse/LineItemDiscount.php:55
+#: pos/is4c-nf/parser/parse/Void.php:140 pos/is4c-nf/parser/parse/Void.php:159
 #, fuzzy
 msgid "Item not found"
 msgstr "No item found in"
 
-#: parser-class-lib/parse/Void.php:245
+#: parser-class-lib/parse/Void.php:275 parser-class-lib/parse/Void.php:550
+#: parser-class-lib/parse/ClubCard.php:95
+#: parser-class-lib/parse/ClubCard.php:102
+#: pos/is4c-nf/plugins/WedgeStaffCharge/ClubCard.php:101
+#: pos/is4c-nf/plugins/WedgeStaffCharge/ClubCard.php:108
+#: pos/is4c-nf/parser/parse/Void.php:495
+msgid "Item already paid for"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:385 parser-class-lib/parse/ItemPD.php:150
+#: pos/is4c-nf/parser/parse/Void.php:353
+#, fuzzy
+msgid "Item not found: "
+msgstr "No item found in"
+
+#: parser-class-lib/parse/Void.php:417 pos/is4c-nf/parser/parse/Void.php:374
 msgid "Items already voided"
 msgstr ""
 
-#: parser-class-lib/parse/Void.php:246
+#: parser-class-lib/parse/Void.php:425 pos/is4c-nf/parser/parse/Void.php:381
 #, fuzzy
 msgid "tare weight cannot be greater than item weight"
 msgstr "Item weight must be greater than tare weight"
 
-#: parser-class-lib/parse/Void.php:248 parser-class-lib/parse/Void.php:253
+#: parser-class-lib/parse/Void.php:432 parser-class-lib/parse/Void.php:437
+#: pos/is4c-nf/parser/parse/Void.php:387 pos/is4c-nf/parser/parse/Void.php:391
 msgid "Void request exceeds"
 msgstr ""
 
-#: parser-class-lib/parse/Void.php:248
+#: parser-class-lib/parse/Void.php:432 pos/is4c-nf/parser/parse/Void.php:387
 #, fuzzy
 msgid "weight of item rung in"
 msgstr "No item found in"
 
-#: parser-class-lib/parse/Void.php:249
+#: parser-class-lib/parse/Void.php:433 pos/is4c-nf/parser/parse/Void.php:388
 #, php-format
 msgid "You can void up to %.2f lb"
 msgstr ""
 
-#: parser-class-lib/parse/Void.php:253
+#: parser-class-lib/parse/Void.php:437 pos/is4c-nf/parser/parse/Void.php:391
 #, fuzzy
 msgid "number of items rung in"
 msgstr "No item found in"
 
-#: parser-class-lib/parse/Void.php:254
+#: parser-class-lib/parse/Void.php:438 pos/is4c-nf/parser/parse/Void.php:392
 #, php-format
 msgid "You can void up to %d"
 msgstr ""
 
-#: parser-class-lib/parse/Void.php:382 parser-class-lib/parse/Void.php:386
-#: parser-class-lib/parse/ClubCard.php:76
-#: parser-class-lib/parse/ClubCard.php:78
-msgid "Item already paid for"
-msgstr ""
-
-#: parser-class-lib/parse/DiscountApplied.php:36
-#: parser-class-lib/parse/StackableDiscount.php:34
+#: parser-class-lib/parse/DiscountApplied.php:39
+#: parser-class-lib/parse/StackableDiscount.php:37
+#: pos/is4c-nf/parser/parse/StackableDiscount.php:43
+#: pos/is4c-nf/parser/parse/DiscountApplied.php:45
 msgid "discount not applicable after tender"
 msgstr "Discount not applicable after tender"
 
-#: parser-class-lib/parse/DiscountApplied.php:38
-#: parser-class-lib/parse/StackableDiscount.php:36
+#: parser-class-lib/parse/DiscountApplied.php:46
+#: parser-class-lib/parse/StackableDiscount.php:44
+#: pos/is4c-nf/parser/parse/StackableDiscount.php:50
+#: pos/is4c-nf/parser/parse/DiscountApplied.php:52
 msgid "discount exceeds maximum"
 msgstr "Discount exceeds maximum"
 
-#: parser-class-lib/parse/DiscountApplied.php:40
-#: parser-class-lib/parse/StackableDiscount.php:38
+#: parser-class-lib/parse/DiscountApplied.php:53
+#: parser-class-lib/parse/StackableDiscount.php:51
+#: pos/is4c-nf/parser/parse/StackableDiscount.php:57
 #, fuzzy
 msgid "discount must be greater than zero"
 msgstr "Coupon amount greater than department total"
 
-#: parser-class-lib/parse/DiscountApplied.php:42
-msgid "Staff discount not applicable"
+#: parser-class-lib/parse/SigTermCommands.php:193
+#: pos/is4c-nf/parser/parse/SigTermCommands.php:237
+msgid "Invalid cash back selection"
 msgstr ""
 
-#: parser-class-lib/parse/DiscountApplied.php:44
-msgid "Member discount not applicable"
+#: parser-class-lib/parse/UPC.php:298
+msgid "Item not for sale"
 msgstr ""
 
-#: parser-class-lib/parse/UPC.php:51 parser-class-lib/parse/DeptKey.php:62
-msgid "Login to issue refund"
+#: parser-class-lib/parse/UPC.php:370 pos/is4c-nf/parser/parse/UPC.php:243
+msgid "product cannot be sold right now"
+msgstr "product cannot be sold right now"
+
+#: parser-class-lib/parse/UPC.php:371 pos/is4c-nf/parser/parse/UPC.php:244
+msgid "Date Restriction"
 msgstr ""
 
-#: parser-class-lib/parse/ClubCard.php:70
+#: parser-class-lib/parse/UPC.php:416 pos/is4c-nf/parser/parse/UPC.php:276
+msgid "Claims to be more than $100,000"
+msgstr ""
+
+#: parser-class-lib/parse/UPC.php:417 pos/is4c-nf/parser/parse/UPC.php:277
+msgid "Invalid Item"
+msgstr ""
+
+#: parser-class-lib/parse/UPC.php:438 pos/is4c-nf/parser/parse/UPC.php:299
+msgid "please put item on scale"
+msgstr "Please put item on scale"
+
+#: parser-class-lib/parse/UPC.php:456 pos/is4c-nf/parser/parse/UPC.php:327
+msgid "item weight must be greater than tare weight"
+msgstr "Item weight must be greater than tare weight"
+
+#: parser-class-lib/parse/UPC.php:457 pos/is4c-nf/parser/parse/UPC.php:328
+#, fuzzy
+msgid "Invalid Weight"
+msgstr "Invalid quantity"
+
+#: parser-class-lib/parse/UPC.php:469 pos/is4c-nf/parser/parse/UPC.php:340
+msgid "fractional quantity cannot be accepted for this item"
+msgstr "Fractional quantity cannot be accepted for this item"
+
+#: parser-class-lib/parse/UPC.php:470 pos/is4c-nf/parser/parse/UPC.php:341
+#, fuzzy
+msgid "Invalid Quantity"
+msgstr "Invalid quantity"
+
+#: parser-class-lib/parse/UPC.php:496
+msgid "insert document"
+msgstr "Insert document"
+
+#: parser-class-lib/parse/UPC.php:510
+msgid "insert form"
+msgstr "Insert form"
+
+#: parser-class-lib/parse/ClubCard.php:74
+#: pos/is4c-nf/plugins/WedgeStaffCharge/ClubCard.php:80
 msgid "Discount already taken"
 msgstr ""
 
-#: parser-class-lib/parse/ClubCard.php:74
+#: parser-class-lib/parse/ClubCard.php:81
+#: parser-class-lib/parse/ClubCard.php:88
+#: pos/is4c-nf/plugins/WedgeStaffCharge/ClubCard.php:87
+#: pos/is4c-nf/plugins/WedgeStaffCharge/ClubCard.php:94
 msgid "Item cannot be discounted"
 msgstr ""
 
-#: parser-class-lib/parse/CaseDiscMsgs.php:38
+#: parser-class-lib/parse/CaseDiscMsgs.php:41
+#: pos/is4c-nf/plugins/WedgeStaffCharge/CaseDiscMsgs.php:44
 #, php-format
 msgid "% case discount invalid"
 msgstr ""
 
-#: parser-class-lib/parse/CaseDiscMsgs.php:40
+#: parser-class-lib/parse/CaseDiscMsgs.php:48
+#: pos/is4c-nf/plugins/WedgeStaffCharge/CaseDiscMsgs.php:51
 msgid "case discount not applicable to staff"
 msgstr "Case discount not applicable to staff"
 
-#: parser-class-lib/parse/CaseDiscMsgs.php:42
+#: parser-class-lib/parse/CaseDiscMsgs.php:55
+#: pos/is4c-nf/plugins/WedgeStaffCharge/CaseDiscMsgs.php:58
 msgid "hit 10% key to apply case discount for member"
 msgstr "Hit 10% key to apply case discount for member"
 
-#: parser-class-lib/parse/LineItemDiscount.php:55
+#: parser-class-lib/parse/ItemPD.php:84
+msgid "Not a valid item"
+msgstr ""
+
+#: parser-class-lib/parse/LineItemDiscount.php:62
+#: pos/is4c-nf/parser/parse/LineItemDiscount.php:64
 msgid "Line is not discountable"
 msgstr ""
 
-#: parser-class-lib/parse/LineItemDiscount.php:61
+#: parser-class-lib/parse/LineItemDiscount.php:72
+#: pos/is4c-nf/parser/parse/LineItemDiscount.php:74
 msgid "Item already discounted"
 msgstr ""
 
-#: parser-class-lib/parse/AutoTare.php:43
-msgid "tare not supported"
+#: parser-class-lib/parse/CoopCredCheck.php:39
+#: pos/is4c-nf/gui-modules/pos2.php:181
+#: pos/is4c-nf/plugins/CoopCred/CoopCredCheckQ.php:97
+#: pos/is4c-nf/plugins/CoopCred/CoopCredTender.php:79
+#: pos/is4c-nf/parser/parse/CoopCredCheck.php:44
+msgid "Member"
+msgstr ""
+
+#: parser-class-lib/parse/CoopCredCheck.php:41
+#: pos/is4c-nf/parser/parse/CoopCredCheck.php:46
+msgid "Available Coop Cred"
+msgstr ""
+
+#: parser-class-lib/parse/CoopCredCheck.php:42
+#: pos/is4c-nf/parser/parse/CoopCredCheck.php:47
+msgid "Balance is:"
+msgstr ""
+
+#: parser-class-lib/parse/CoopCredCheck.php:45
+#: pos/is4c-nf/parser/parse/CoopCredCheck.php:50
+#, fuzzy
+msgid "Is not authorized to use"
+msgstr "is not authorized to make employee charges"
+
+#: parser-class-lib/parse/CoopCredCheck.php:45
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredUsedBalances.php:92
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredSigSlip.php:96
+#: pos/is4c-nf/parser/parse/CoopCredCheck.php:50
+msgid "Coop Cred"
+msgstr ""
+
+#: parser-class-lib/parse/AutoTare.php:48
+#: pos/is4c-nf/parser/parse/AutoTare.php:55
+#, fuzzy
+msgid " tare not supported"
 msgstr "Tare not supported"
 
-#: parser-class-lib/parse/AutoTare.php:45
+#: parser-class-lib/parse/AutoTare.php:49
+#: pos/is4c-nf/parser/parse/AutoTare.php:56
+#, fuzzy
+msgid "Invalid Tare"
+msgstr "Invalid password"
+
+#: parser-class-lib/parse/AutoTare.php:55
+#: pos/is4c-nf/parser/parse/AutoTare.php:62
 msgid "Tare cannot be"
 msgstr ""
 
-#: parser-class-lib/parse/AutoTare.php:45
+#: parser-class-lib/parse/AutoTare.php:55
+#: pos/is4c-nf/parser/parse/AutoTare.php:62
 #, fuzzy
 msgid "greater than item weight"
 msgstr "Item weight must be greater than tare weight"
 
-#: gui-modules/nslogin.php:34
-msgid "enter manager password"
-msgstr "Enter manager password"
+#: parser-class-lib/parse/AutoTare.php:56
+#: pos/is4c-nf/parser/parse/AutoTare.php:63
+msgid "Excess Tare"
+msgstr ""
 
-#: gui-modules/nslogin.php:35
-msgid "confirm no sales"
-msgstr "Confirm no sales"
+#: plugins/MemberCard/MemberBarcode.php:54
+#: pos/is4c-nf/plugins/MemberCard/MemberBarcode.php:58
+msgid "Card not assigned"
+msgstr ""
 
-#: gui-modules/nslogin.php:48 gui-modules/mgrlogin.php:116
-msgid "re-enter manager password"
-msgstr "Re-enter manager password"
+#: plugins/AlwaysFoodstampTotal/AlwaysFsEligibleFooter.php:40
+#: pos/is4c-nf/plugins/AlwaysFoodstampTotal/AlwaysFsEligibleFooter.php:43
+msgid "FS Eligible"
+msgstr ""
 
-#: gui-modules/nslogin.php:49
-msgid "invalid password"
-msgstr "Invalid password"
+#: plugins/PriceCheck/PriceCheckPage.php:126
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:177
+msgid "price check"
+msgstr ""
 
-#: gui-modules/adminlogin.php:40
-msgid "enter admin password"
-msgstr "Enter admin password"
+#: plugins/PriceCheck/PriceCheckPage.php:128
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:179
+msgid "[scan] item"
+msgstr ""
 
-#: gui-modules/adminlogin.php:54 gui-modules/adminlogin.php:71
-msgid "re-enter admin password"
-msgstr "Re-enter admin password"
+#: plugins/PriceCheck/PriceCheckPage.php:129
+#: plugins/PriceCheck/PriceCheckPage.php:136
+#: plugins/PriceCheck/PriceCheckPage.php:152
+#: pos/is4c-nf/gui-modules/PaidOutComment.php:87
+#: pos/is4c-nf/gui-modules/priceOverride.php:136
+#: pos/is4c-nf/gui-modules/DDDReason.php:100
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:149
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:168
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:180
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:273
+#, fuzzy
+msgid "[clear] to cancel"
+msgstr "[clear] to cancel"
 
-#: gui-modules/memlist.php:171
-msgid "member search"
+#: plugins/PriceCheck/PriceCheckPage.php:135
+#: plugins/PriceCheck/PriceCheckPage.php:150
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:148
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:166
+msgid "[scan] another item"
+msgstr ""
+
+#: plugins/PriceCheck/PriceCheckPage.php:143
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:159
+msgid "Current Price"
+msgstr ""
+
+#: plugins/PriceCheck/PriceCheckPage.php:144
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:160
+msgid "Regular Price"
+msgstr ""
+
+#: plugins/PriceCheck/PriceCheckPage.php:146
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:162
+#, fuzzy
+msgid "Member Price"
 msgstr "Member Search"
 
-#: gui-modules/memlist.php:171
-msgid "enter member number or name"
-msgstr "Enter member number or name"
-
-#: gui-modules/memlist.php:173 gui-modules/productlist.php:148
+#: plugins/PriceCheck/PriceCheckPage.php:151
+#: pos/is4c-nf/plugins/PriceCheck/PriceCheckPage.php:167
 #, fuzzy
-msgid "no match found"
-msgstr "No item found in"
+msgid "[enter] to ring this item"
+msgstr "[enter] to proceed"
 
-#: gui-modules/memlist.php:173
-msgid "next search or member number"
-msgstr "Next search or member number"
+#: plugins/ECheckPlugin/ECheckTender.php:133
+#: pos/is4c-nf/plugins/ECheckPlugin/ECheckTender.php:108
+msgid "press enter to endorse"
+msgstr "Press [enter] to endorse"
 
-#: gui-modules/memlist.php:205 gui-modules/rplist.php:103
-#: gui-modules/suspendedlist.php:130
+#: plugins/ECheckPlugin/ECheckTender.php:134
+#: plugins/Paycards/gui/PaycardTransListPage.php:119
+#: plugins/VirtualCoupon/VirtCoupDisplay.php:154
+#: gui-modules/memlist_cards.php:300 gui-modules/bigComment.php:122
+#: gui-modules/drawerPage.php:150
+#: pos/is4c-nf/gui-modules/memlist_cards.php:303
+#: pos/is4c-nf/gui-modules/drawerPage.php:160
+#: pos/is4c-nf/gui-modules/bigComment.php:127
+#: pos/is4c-nf/plugins/VirtualCoupon/VirtCoupDisplay.php:160
+#: pos/is4c-nf/plugins/ECheckPlugin/ECheckTender.php:109
+#: pos/is4c-nf/plugins/Paycards/gui/PaycardTransListPage.php:115
+msgid "clear to cancel"
+msgstr "[clear] to cancel"
+
+#: plugins/Paycards/MercuryE2E.php:955 plugins/Paycards/MercuryE2E.php:966
+#: plugins/Paycards/GoEMerchant.php:723 plugins/Paycards/GoEMerchant.php:731
+#: plugins/Paycards/gui/paycardSuccess.php:127
+#: plugins/Paycards/gui/paycardSuccess.php:231
+#: pos/is4c-nf/plugins/Paycards/MercuryE2E.php:386
+#: pos/is4c-nf/plugins/Paycards/MercuryE2E.php:397
+#: pos/is4c-nf/plugins/Paycards/GoEMerchant.php:273
+#: pos/is4c-nf/plugins/Paycards/GoEMerchant.php:281
+#: pos/is4c-nf/plugins/Paycards/gui/paycardSuccess.php:107
+#: pos/is4c-nf/plugins/Paycards/gui/PaycardEmvSuccess.php:107
+#: pos/is4c-nf/plugins/Paycards/gui/PaycardEmvSuccess.php:196
+msgid "to reverse the charge"
+msgstr ""
+
+#: plugins/Paycards/lib/paycardEntered.php:173
+#: pos/is4c-nf/plugins/Paycards/lib/paycardEntered.php:115
+msgid "Zero Total"
+msgstr ""
+
+#: plugins/Paycards/gui/paycardboxMsgAuth.php:146
+#: pos/is4c-nf/plugins/Paycards/gui/PaycardEmvPage.php:147
+#: pos/is4c-nf/plugins/Paycards/gui/paycardboxMsgAuth.php:126
+msgid "Not all items eligible"
+msgstr ""
+
+#: plugins/Paycards/gui/PaycardTransListPage.php:117
+#: plugins/VirtualCoupon/VirtCoupDisplay.php:154 gui-modules/memlist.php:266
+#: gui-modules/HouseCouponList.php:101 gui-modules/deptlist.php:111
+#: gui-modules/memlist_cards.php:300 gui-modules/cablist.php:134
+#: gui-modules/productlist.php:167 gui-modules/rplist.php:114
+#: gui-modules/suspendedlist.php:126 gui-modules/tenderlist.php:112
+#: gui-modules/adminlist.php:165 pos/is4c-nf/gui-modules/memlist_cards.php:303
+#: pos/is4c-nf/gui-modules/deptlist.php:124
+#: pos/is4c-nf/gui-modules/tenderlist.php:128
+#: pos/is4c-nf/gui-modules/adminlist.php:153
+#: pos/is4c-nf/gui-modules/rplist.php:141
+#: pos/is4c-nf/gui-modules/memlist.php:357
+#: pos/is4c-nf/gui-modules/suspendedlist.php:129
+#: pos/is4c-nf/gui-modules/cablist.php:131
+#: pos/is4c-nf/gui-modules/HouseCouponList.php:106
+#: pos/is4c-nf/plugins/VirtualCoupon/VirtCoupDisplay.php:160
+#: pos/is4c-nf/plugins/Paycards/gui/PaycardTransListPage.php:113
 msgid "use arrow keys to navigate"
 msgstr "Use arrow keys to navigate"
 
-#: gui-modules/login2.php:35
-msgid "please enter your password"
-msgstr "Please enter your password"
-
-#: gui-modules/login2.php:48 gui-modules/login3.php:49
-msgid "password invalid, please re-enter"
-msgstr "Password invalid, please re-enter"
-
-#: gui-modules/login2.php:76
-msgid "W E L C O M E"
-msgstr ""
-
-#: gui-modules/login2.php:80
-msgid "log in"
-msgstr "Log In"
-
-#: gui-modules/login2.php:91
-msgid "EXIT"
-msgstr ""
-
-#: gui-modules/login3.php:37
-msgid "please enter password"
-msgstr "Please enter password"
-
-#: gui-modules/qtty2.php:35
-msgid "quantity required"
-msgstr "Quantity required"
-
-#: gui-modules/qtty2.php:62
-msgid "invalid quantity"
-msgstr "Invalid quantity"
-
-#: gui-modules/qtty2.php:78
-#, fuzzy
-msgid "enter number or clear to cancel"
-msgstr "[clear] to cancel"
-
-#: gui-modules/productlist.php:148
-msgid "next search or enter upc"
-msgstr "Next search or enter UPC"
-
-#: gui-modules/rplist.php:104
+#: plugins/Paycards/gui/PaycardTransListPage.php:118
+#: pos/is4c-nf/plugins/Paycards/gui/PaycardTransListPage.php:114
 #, fuzzy
 msgid "enter to reprint receipt"
 msgstr "[enter] to proceed"
 
-#: gui-modules/mgrlogin.php:92
+#: plugins/WedgeStaffCharge/WedgeScParser.php:61
+#: pos/is4c-nf/plugins/WedgeStaffCharge/WedgeScParser.php:67
+msgid "unable to authenticate staff "
+msgstr ""
+
+#: plugins/VirtualCoupon/VirtCoupDisplay.php:127
+#: pos/is4c-nf/plugins/VirtualCoupon/VirtCoupDisplay.php:133
+msgid "virtual coupons"
+msgstr ""
+
+#: plugins/VirtualCoupon/VirtCoupDisplay.php:127
+#: pos/is4c-nf/plugins/VirtualCoupon/VirtCoupDisplay.php:133
+#, fuzzy
+msgid "no coupons available"
+msgstr "[enter] to continue sale"
+
+#: plugins/VirtualCoupon/VirtualCouponParser.php:40
+#: plugins/NeedBasedDiscount/NeedDiscountParser.php:38
+#: plugins/AccessProgram/AccessProgramParser.php:40
+#: pos/is4c-nf/plugins/AccessProgram/AccessProgramParser.php:44
+#: pos/is4c-nf/plugins/VirtualCoupon/VirtualCouponParser.php:43
+#: pos/is4c-nf/plugins/NeedBasedDiscount/NeedDiscountParser.php:43
+#, fuzzy
+msgid "No member selected"
+msgstr "Member Search"
+
+#: plugins/NeedBasedDiscount/NeedDiscountParser.php:45
+#: pos/is4c-nf/plugins/NeedBasedDiscount/NeedDiscountParser.php:50
+#, fuzzy
+msgid "discount already applied"
+msgstr "Coupon already applied"
+
+#: plugins/AccessProgram/AccessProgramReceipt.php:39
+#, php-format
+msgid ""
+"WFC is offering to its Owners an Access Discount for a once a month "
+"10% discount on one total purchase when an Owner chooses to apply that "
+"discount.  The Access Discount is a use it or lose it once a month benefit "
+"only for Owners who register annually at Customer Service by presenting "
+"proof of participation (e.g., a current card or current award letter) in an "
+"applicable program."
+msgstr ""
+
+#: plugins/AccessProgram/AccessProgramReceipt.php:71
+#: pos/is4c-nf/plugins/AccessProgram/AccessProgramReceipt.php:110
+msgid "Owner Address: "
+msgstr ""
+
+#: plugins/AccessProgram/AccessProgramReceipt.php:72
+#: pos/is4c-nf/plugins/AccessProgram/AccessProgramReceipt.php:111
+msgid "Zip Code: "
+msgstr ""
+
+#: plugins/AccessProgram/AccessProgramReceipt.php:73
+#: pos/is4c-nf/plugins/AccessProgram/AccessProgramReceipt.php:112
+msgid "Owner Phone(s): "
+msgstr ""
+
+#: plugins/AccessProgram/AccessProgramReceipt.php:74
+#: pos/is4c-nf/plugins/AccessProgram/AccessProgramReceipt.php:113
+msgid "Owner Email: "
+msgstr ""
+
+#: gui-modules/nslogin.php:36 pos/is4c-nf/gui-modules/nslogin.php:52
+#, fuzzy
+msgid "enter password"
+msgstr "Enter admin password"
+
+#: gui-modules/nslogin.php:37 pos/is4c-nf/gui-modules/nslogin.php:53
+msgid "confirm no sales"
+msgstr "Confirm no sales"
+
+#: gui-modules/nslogin.php:60 gui-modules/mgrlogin.php:114
+#: pos/is4c-nf/gui-modules/nslogin.php:71
+#: pos/is4c-nf/gui-modules/mgrlogin.php:88
+#, fuzzy
+msgid "re-enter password"
+msgstr "Re-enter admin password"
+
+#: gui-modules/nslogin.php:61 pos/is4c-nf/gui-modules/nslogin.php:72
+msgid "invalid password"
+msgstr "Invalid password"
+
+#: gui-modules/adminlogin.php:48 pos/is4c-nf/gui-modules/adminlogin.php:75
+msgid "enter admin password"
+msgstr "Enter admin password"
+
+#: gui-modules/adminlogin.php:93 gui-modules/adminlogin.php:125
+#: pos/is4c-nf/gui-modules/adminlogin.php:103
+#: pos/is4c-nf/gui-modules/adminlogin.php:112
+msgid "re-enter admin password"
+msgstr "Re-enter admin password"
+
+#: gui-modules/memlist.php:213 gui-modules/memlist.php:228
+#: gui-modules/memlist_cards.php:251 gui-modules/memlist_cards.php:266
+#: pos/is4c-nf/gui-modules/memlist_cards.php:254
+#: pos/is4c-nf/gui-modules/memlist_cards.php:269
+#: pos/is4c-nf/gui-modules/memlist.php:264
+msgid "enter member number or name"
+msgstr "Enter member number or name"
+
+#: gui-modules/memlist.php:228 gui-modules/memlist_cards.php:266
+#: pos/is4c-nf/gui-modules/memlist_cards.php:269
+#: pos/is4c-nf/gui-modules/memlist.php:264
+msgid "member search"
+msgstr "Member Search"
+
+#: gui-modules/memlist.php:230 gui-modules/memlist_cards.php:268
+#: gui-modules/productlist.php:132
+#: pos/is4c-nf/gui-modules/memlist_cards.php:271
+#: pos/is4c-nf/gui-modules/memlist.php:266
+#: pos/is4c-nf/gui-modules/productlist.php:153
+#, fuzzy
+msgid "no match found"
+msgstr "No item found in"
+
+#: gui-modules/memlist.php:230 gui-modules/memlist_cards.php:268
+#: pos/is4c-nf/gui-modules/memlist_cards.php:271
+#: pos/is4c-nf/gui-modules/memlist.php:266
+msgid "next search or member number"
+msgstr "Next search or member number"
+
+#: gui-modules/login2.php:39 pos/is4c-nf/gui-modules/login2.php:59
+msgid "please enter your password"
+msgstr "Please enter your password"
+
+#: gui-modules/login2.php:100 pos/is4c-nf/gui-modules/login2.php:89
+msgid "password invalid, please re-enter"
+msgstr "Password invalid, please re-enter"
+
+#: gui-modules/login2.php:136 pos/is4c-nf/gui-modules/login2.php:125
+msgid "W E L C O M E"
+msgstr ""
+
+#: gui-modules/login2.php:141 pos/is4c-nf/gui-modules/login2.php:130
+msgid "log in"
+msgstr "Log In"
+
+#: gui-modules/login2.php:155 pos/is4c-nf/gui-modules/login2.php:144
+msgid "EXIT"
+msgstr ""
+
+#: gui-modules/login3.php:37 gui-modules/mgrlogin.php:102
+#: pos/is4c-nf/gui-modules/login3.php:56
+#: pos/is4c-nf/gui-modules/mgrlogin.php:76
+msgid "please enter password"
+msgstr "Please enter password"
+
+#: gui-modules/login3.php:56 pos/is4c-nf/gui-modules/login3.php:76
+#, fuzzy
+msgid "Password Invalid, Please Re-Enter"
+msgstr "Password invalid, please re-enter"
+
+#: gui-modules/bigComment.php:120 pos/is4c-nf/gui-modules/bigComment.php:125
+#, fuzzy
+msgid "press [enter] twice to save"
+msgstr "Press [enter] to endorse"
+
+#: gui-modules/qtty2.php:34 pos/is4c-nf/gui-modules/QuantityEntryPage.php:98
+msgid "quantity required"
+msgstr "Quantity required"
+
+#: gui-modules/qtty2.php:61 pos/is4c-nf/gui-modules/QuantityEntryPage.php:132
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:162
+msgid "invalid quantity"
+msgstr "Invalid quantity"
+
+#: gui-modules/qtty2.php:81
+#, fuzzy
+msgid "enter number or clear to cancel"
+msgstr "[clear] to cancel"
+
+#: gui-modules/productlist.php:132 pos/is4c-nf/gui-modules/productlist.php:153
+msgid "next search or enter upc"
+msgstr "Next search or enter UPC"
+
+#: gui-modules/mgrlogin.php:93 pos/is4c-nf/gui-modules/mgrlogin.php:66
 msgid "confirm cancellation"
 msgstr "Confirm cancellation"
 
-#: gui-modules/mgrlogin.php:100
-msgid "please enter manager password"
-msgstr "Please enter manager password"
-
-#: gui-modules/mgrlogin.php:115
+#: gui-modules/mgrlogin.php:113 pos/is4c-nf/gui-modules/mgrlogin.php:87
 msgid "password invalid"
 msgstr "Password Invalid"
 
-#: gui-modules/adminlist.php:116
+#: gui-modules/mgrlogin.php:157 pos/is4c-nf/gui-modules/mgrlogin.php:130
+#, fuzzy
+msgid "transaction cancelled"
+msgstr "Transaction must be totaled"
+
+#: gui-modules/suspendedlist.php:89 gui-modules/adminlist.php:99
+#: pos/is4c-nf/gui-modules/adminlist.php:97
+#: pos/is4c-nf/gui-modules/suspendedlist.php:74
+msgid "no suspended transaction"
+msgstr "No suspended transaction"
+
+#: gui-modules/tenderlist.php:106 pos/is4c-nf/gui-modules/tenderlist.php:122
+msgid "tendering"
+msgstr ""
+
+#: gui-modules/tenderlist.php:108 pos/is4c-nf/gui-modules/tenderlist.php:124
+msgid "refunding"
+msgstr ""
+
+#: gui-modules/adminlist.php:136 pos/is4c-nf/gui-modules/adminlist.php:123
 msgid "administrative tasks"
 msgstr "Administrative Tasks"
 
-#: gui-modules/adminlist.php:121
+#: gui-modules/adminlist.php:146 pos/is4c-nf/gui-modules/adminlist.php:133
+msgid "Select a Task"
+msgstr ""
+
+#: gui-modules/adminlist.php:147 pos/is4c-nf/gui-modules/adminlist.php:134
 #, fuzzy
 msgid "Suspend Transaction"
 msgstr "No suspended transaction"
 
-#: gui-modules/adminlist.php:122
+#: gui-modules/adminlist.php:148 pos/is4c-nf/gui-modules/adminlist.php:135
 #, fuzzy
 msgid "Resume Transaction"
 msgstr "No suspended transaction"
 
-#: gui-modules/adminlist.php:123
-msgid "Tender Reports"
+#: gui-modules/adminlist.php:150 pos/is4c-nf/install/extra_config.php:378
+#: pos/is4c-nf/gui-modules/adminlist.php:137
+msgid "Tender Report"
 msgstr ""
 
-#: gui-class-lib/BasicPage.php:220 gui-class-lib/BasicPage.php:304
+#: gui-modules/adminlist.php:153 pos/is4c-nf/gui-modules/adminlist.php:140
+msgid "Any Tender Report"
+msgstr ""
+
+#: gui-class-lib/BasicPage.php:235 gui-class-lib/BasicPage.php:323
+#: pos/is4c-nf/lib/gui/BasicCorePage.php:218
 msgid "training"
 msgstr ""
 
-#: gui-class-lib/BasicPage.php:339
+#: gui-class-lib/BasicPage.php:362 pos/is4c-nf/lib/gui/BasicCorePage.php:281
 msgid "weight"
 msgstr ""
 
-#: lib/Tenders/CheckTender.php:37
+#: pos/is4c-nf/install/tabs.php:4
+msgid "NECESSITIES"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:5
+msgid "EXTRAS"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:6
+msgid "HW DRIVER"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:7
+msgid "RECEIPT"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:8
+msgid "SCANNING"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:9
+msgid "SECURITY"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:10
+msgid "PLUGINS"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:11
+msgid "DEBUG"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:12
+msgid "DB UPDATES"
+msgstr ""
+
+#: pos/is4c-nf/install/tabs.php:13
+msgid "SAMPLE DATA"
+msgstr ""
+
+#: pos/is4c-nf/install/conf/Conf.php:55
+msgid "does not exist"
+msgstr ""
+
+#: pos/is4c-nf/install/conf/Conf.php:57
+msgid "Advice"
+msgstr ""
+
+#: pos/is4c-nf/install/conf/Conf.php:62
+msgid "is writeable"
+msgstr ""
+
+#: pos/is4c-nf/install/conf/Conf.php:64
+msgid "Warning"
+msgstr ""
+
+#: pos/is4c-nf/install/conf/Conf.php:64
+msgid "is not writeable"
+msgstr ""
+
+#: pos/is4c-nf/install/conf/Conf.php:78
+msgid "ini file is missing!"
+msgstr ""
+
+#: pos/is4c-nf/install/conf/FormFactory.php:248
+#: pos/is4c-nf/install/conf/FormFactory.php:250
+msgid "Stored in "
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:24
+msgid "IT CORE Lane Installation: Additional Configuration (Extras)"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:32 pos/is4c-nf/install/driver.php:95
+msgid "General Settings"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:35
 #, fuzzy
-msgid "member or staff check tender cannot exceed total purchase by over $"
-msgstr "Member or staff check tender cannot exceed total purchase by over $"
+msgid "Organization"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/install/extra_config.php:38
+msgid ""
+"In theory, any hard-coded, organization specific sequences should be "
+"blocked\n"
+"    off based on the organization setting. Adherence to this principle is "
+"less than ideal."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:45
+msgid "Discounts Enabled"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:46
+msgid "If yes, members get a percentage discount as specified in custdata."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:52
+msgid "Only One Discount Applies"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:53
+msgid ""
+"If a customer is eligible for a 5% discount and a 10% discount and\n"
+"    only one applies, then the customer will get a 10% discount. Otherwise "
+"they stack and\n"
+"    the total discount is 15%."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:61
+msgid "Discounts on refunds"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:62
+msgid "If yes, percent discount is applied to refunds"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:66
+msgid "Line Item Discount (member)"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:69
+#: pos/is4c-nf/install/extra_config.php:76
+msgid "(percentage; 0.05 => 5%)"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:73
+msgid "Line Item Discount (non-member)"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:80
+msgid "Default Non-member #"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:83
+msgid ""
+"Normally a single account number is used for most if not all non-member\n"
+"    transactions. Specify that account number here."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:88
+msgid "Default Non-member behavior"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:90
+msgid "Cannot override other accounts"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:90
+msgid "No different than other accounts"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:96
+msgid "Visiting Member #"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:98
+msgid ""
+"This account provides members of other co-ops with member pricing\n"
+"    but no other benefits. Leave blank to disable."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:105
+msgid "Show non-member"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:106
+msgid "Display non-member acct. in member searches?"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:112
+msgid "Use memtype table"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:113
+msgid ""
+"Use memtype table when applicable. This forces all memberships of a given\n"
+"    type to have the same discount, among other things."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:118
+msgid "Bottle Return Department number"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:120
+msgid ""
+"Add a BOTTLE RETURN item to your products table with a normal_price of 0, \n"
+"    CORE will prompt for Bottle Return amt. and then make it a negative "
+"value."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:126
+msgid "Hardware Settings"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:133
+msgid "Printer port"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:185
+#, php-format
+msgid "Current value"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:186
+msgid ""
+"Path to the printer. Select from common values, or enter a custom path.\n"
+"Some ubuntu distros might put your USB printer at /dev/usblp0"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:197
+msgid "Enable Check Franking"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:201
+msgid "Drawer Behavior Module"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:215
+msgid "Dual Drawer Mode"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:219
+msgid "Scanner/scale driver"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:224
+msgid ""
+"The name of your scale driver. Known good values include \"ssd\" and "
+"\"NewMagellan\"."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:229
+msgid "Display Settings"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:233
+msgid "Screen Height"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:235
+#, fuzzy
+msgid "Number of items to display at once"
+msgstr "No item found in"
+
+#: pos/is4c-nf/install/extra_config.php:239
+msgid "Alert Bar"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:244
+msgid "Lock screen on idle"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:247
+msgid "Lock Screen Timeout"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:249
+msgid "Enter timeout in milliseconds. Default: 180000 (3 minutes)"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:253
+msgid "Footer Modules"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:253
+msgid "(left to right)"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:292
+msgid "Notifier Modules"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:305
+msgid "Notifiers are displayed on the right below the scale weight"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:309
+msgid "Enable onscreen keys"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:310
+#: pos/is4c-nf/install/extra_config.php:314
+#: pos/is4c-nf/install/extra_config.php:329
+#: pos/is4c-nf/install/extra_config.php:362
+#: pos/is4c-nf/install/scanning.php:333 pos/is4c-nf/install/scanning.php:336
+#: pos/is4c-nf/install/debug.php:43 pos/is4c-nf/install/debug.php:54
+#: pos/is4c-nf/install/debug.php:61 pos/is4c-nf/install/debug.php:72
+#: pos/is4c-nf/install/receipt.php:255 pos/is4c-nf/install/security.php:28
+msgid "Yes"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:310
+#: pos/is4c-nf/install/extra_config.php:314
+#: pos/is4c-nf/install/extra_config.php:329
+#: pos/is4c-nf/install/extra_config.php:362
+#: pos/is4c-nf/install/scanning.php:334 pos/is4c-nf/install/scanning.php:337
+#: pos/is4c-nf/install/debug.php:43 pos/is4c-nf/install/debug.php:54
+#: pos/is4c-nf/install/debug.php:61 pos/is4c-nf/install/debug.php:72
+#: pos/is4c-nf/install/receipt.php:255 pos/is4c-nf/install/security.php:28
+msgid "No"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:313
+msgid "Separate customer display"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:318
+msgid ""
+"Touchscreen keys and menus really don't need to appear on\n"
+"    the customer-facing display. Experimental feature where one\n"
+"    window always shows the item listing. Very alpha."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:324
+msgid "Subtotal Settings"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:328
+msgid "Member ID trigger subtotal"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:332
+msgid "Subtotal Actions"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:350
+msgid ""
+"These are additional bits of functionality that\n"
+"    will occur whenever a transaction is subtotalled."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:354
+msgid "Tender Settings"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:357
+msgid "Tender min/max limits"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:358
+#: pos/is4c-nf/install/scanning.php:169
+msgid "Absolute Limit"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:358
+#: pos/is4c-nf/install/scanning.php:169
+msgid "Warning Only"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:361
+#, fuzzy
+msgid "Allow members to write checks over purchase amount"
+msgstr "Tender cannot exceed purchase amount"
+
+#: pos/is4c-nf/install/extra_config.php:365
+#, fuzzy
+msgid "Check over limit"
+msgstr "is overlimit"
+
+#: pos/is4c-nf/install/extra_config.php:369
+msgid "EBT Total Default"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:372
+msgid "Cash Side"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:372
+msgid "Food Side"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:391
+msgid "Tender Mapping"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:392
+msgid ""
+"Map custom tenders to CORE's expected tenders Tender Rpt. column: Include "
+"the checked tenders \n"
+"    in the Tender Report (available via Mgrs. Menu [MG])"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:471
+#, fuzzy
+msgid "Tender Name"
+msgstr "Tender disabled"
+
+#: pos/is4c-nf/install/extra_config.php:471
+msgid "Map To"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:471
+msgid "Tender Rpt"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:475
+msgid "default"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_config.php:513
+#: pos/is4c-nf/install/scanning.php:459 pos/is4c-nf/install/plugins.php:117
+#: pos/is4c-nf/install/debug.php:115 pos/is4c-nf/install/receipt.php:295
+#: pos/is4c-nf/install/driver.php:177 pos/is4c-nf/install/security.php:74
+msgid "Save Changes"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:27
+msgid "IT CORE Lane Installation: Scanning Options"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:37
+msgid "Check Digits"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:38
+msgid ""
+"\n"
+"    Most users omit check digits. If you have no particular preference, "
+"this\n"
+"    option is more thoroughly tested. Mixing and matching is not "
+"recommended.\n"
+"    It should work but uniformly omitting or including check digits for\n"
+"    all barcodes will make some back end tasks easier."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:48
+msgid "UPCs"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:52
+msgid "Include Check Digits"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:52
+msgid "Omit Check Digits"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:60
+msgid "Forced Keyed Weight"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:61
+msgid ""
+"\n"
+"    By-weight / scaleable items will prompt the cashier to key a weight when "
+"QtyFrc is also enabled.\n"
+"    This is commonly used when items must be weighed on a non-integrated "
+"scale. In Three Digit Thousandths\n"
+"    mode the cashier must enter exactly three digits and these will be "
+"interpretted as thousandths of a\n"
+"    pound (i.e., 123 = 0.123 lb.). This is intended for very light items. In "
+"Verbatim mode the cashier's\n"
+"    entry is taken exactly as entered, with or without decimal. This "
+"provides greater flexibility but cannot\n"
+"    enforce a range of valid values."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:73
+msgid "Entry Mode"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:77
+msgid "Verbatim"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:77
+msgid "Three Digit Thousandths"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:84
+msgid "EANs"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:97
+msgid "Unknown Item Handler"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:107
+msgid "Module called when a UPC does not match any item or Special UPC handler"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:111
+msgid "Special UPCs"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:112
+msgid "Special handling modules for UPCs that aren't products (e.g., coupons)"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:131
+msgid "House Coupon Prefix"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:133
+msgid ""
+"Set the barcode prefix for houseCoupons.  Should be 8 digits starting with "
+"004. Default is 00499999."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:137
+msgid "Coupons & Sales Tax"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:140
+msgid "Tax pre-coupon total"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:140
+msgid "Tax post-coupon total"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:143
+msgid ""
+"Apply sales tax based on item price before any coupons, or\n"
+"    apply sales tax to item price inclusive of coupons."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:148
+msgid "Equity Department(s)"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:162
+msgid "Set the department number(s) that are considered member equity"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:166
+msgid "Open Ring Min/Max Limits"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:172
+msgid ""
+"Set whether open ring department limits are bypassable warnings or complete "
+"blocks."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:177
+msgid "AR Department(s)"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:191
+msgid ""
+"Set the department number(s) that are store charge balance payments. \n"
+"        Also known as AR or accounts receivable."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:196
+msgid "Donation Department"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:209
+msgid ""
+"Set the department number for lines entered via the \"round up\" donation "
+"function."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:215
+msgid "Discount type modules control how sale discounts are calculated."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:219
+msgid "Default Discounts"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:227
+msgid "Custom Discount Mapping"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:248 pos/is4c-nf/install/scanning.php:305
+#: pos/is4c-nf/install/receipt.php:230
+msgid "[None]"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:271
+msgid ""
+"Price Methods dictate how item prices are calculated.\n"
+"    There's some overlap with Discount Types, but <i>often</i>\n"
+"    price methods deal with grouped items."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:276
+msgid "Default Methods"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:284
+msgid "Custom Method Mapping"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:327
+msgid "Sale Items Are Discountable"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:342
+msgid ""
+"\n"
+"Items that are on sale are eligible for transaction-level discounts - e.g., "
+"members\n"
+"save 5%."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:348
+msgid ""
+"Special Department modules add extra steps to open rings in specific "
+"departments.\n"
+"    Enter department number(s) that each module should apply to.*"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:438
+msgid "Variable Weight Item Mapping"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:438
+msgid "(UPC Prefix \"2\")"
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:439
+msgid ""
+"Variable-weight items do not have identical barcodes because the\n"
+"    price is encoded in the barcode. A translator is required to map\n"
+"    these different barcodes back to one logical product."
+msgstr ""
+
+#: pos/is4c-nf/install/scanning.php:446
+msgid "Translator"
+msgstr ""
+
+#: pos/is4c-nf/install/plugins.php:27
+msgid "IT CORE Lane Installation: Plugins"
+msgstr ""
+
+#: pos/is4c-nf/install/plugins.php:35
+msgid "Available plugins"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:25
+msgid "IT CORE Lane Installation: Debug Settings"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:26
+msgid "Logs"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:27
+msgid "Default logs:"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:29
+msgid ""
+"contains failed queries, PHP errors, warnings, notices, etc depending on "
+"error reporting settings for PHP installation."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:30
+msgid "contains informational logging"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:34
+msgid "Optional logs:"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:36
+msgid "lists changes to session/state values. Fills FAST."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:41
+msgid "Disable DB Compatibility checks"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:46
+msgid ""
+"\n"
+"By default CORE will often query the status of tables to verify whether "
+"newer columns\n"
+"exist before attempting to use them. Disabling these checks may yield modest "
+"performance\n"
+"gains but if database schemas are not up to date any resulting crashes will "
+"not be\n"
+"graceful."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:52
+msgid "Log State Changes"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:57
+msgid "See optional logs above."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:59
+msgid "Show Page Changes"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:64
+msgid ""
+"\n"
+"This option changes HTTP redirects into manual, clickable links. A stack\n"
+"trace is also included. There are some javascript-based URL changes that\n"
+"this won't catch, but your browser surely has a fancy javascript console\n"
+"available for those. If not, find a better browser."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:70
+msgid "Show AJAX errors"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:75
+msgid ""
+"This option will write information along the bottom of the screen when\n"
+"an AJAX request dies with a fatal error."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:78
+msgid "Character Set"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:83
+msgid ""
+"Change the character set used to display pages. Common values are \"utf-8\" "
+"and \"iso-8859-1\".\n"
+"This value is embedded in the content of pages but may be overriden by your "
+"web server."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:86
+msgid "Additional Character Set Information"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:91
+msgid "Headers sent by the web server for "
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:98
+msgid ""
+"If these headers include a <em>charset</em> other than your desired charset "
+"your\n"
+"webserver configuration needs to be adjusted."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:101
+msgid "Character Set used by Database Connections"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:102
+msgid "Local connection"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:104
+msgid "Server connection"
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:107
+msgid ""
+"\n"
+"To correctly display characters the database character set settings\n"
+"should match the one used for serving webpages above. In MySQL you can\n"
+"adjust this in the [mysql] section of the configuration file (my.cnf on\n"
+"Linux, my.ini on Windows)."
+msgstr ""
+
+#: pos/is4c-nf/install/debug.php:112
+msgid "Note: \"latin1\" and \"ISO-8859-1\" are the same thing."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:18
+msgid "IT CORE Lane Installation: Sample Data"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:30
+msgid "Loading employees"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:35
+msgid "Loading custdata"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:40
+msgid "Loading products"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:45
+msgid "Loading tenders"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:49
+msgid "Loading departments"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:52
+msgid "<br />Loading super departments"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:56
+msgid "Loading QuickLookups"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:62
+msgid ""
+"Some sample data is available to get a test lane\n"
+"up & running quickly. Keep in mind this data\n"
+"overwrites whatever is currently in the table."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:67
+msgid ""
+"This table contains login information for cashiers. The two\n"
+"included logins are '56' and '7000'."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:69
+msgid "Load sample employees"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:72
+msgid ""
+"Customer data is the membership information. Sample data includes\n"
+" a way too many mostly identical lines. A very scrubbed version\n"
+"of someone's customer table I think."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:75
+msgid "Load sample customers"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:78
+msgid ""
+"Stuff to sell. There's a lot of sample data. I think this might\n"
+"be the Wedge's or at least a snapshot of it."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:80
+msgid "Load sample products"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:83
+msgid ""
+"Products get categorized into departments & super departments.\n"
+"You can also ring amounts directly to a department. Not needed,\n"
+"strictly speaking, for a basic lane (Ring up items, total, \n"
+"accept tender, provide change)."
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:87
+msgid "Load sample departments"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:90
+msgid "Methods of payment such as cash, check, credit, etc"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:91
+msgid "Load sample tenders"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:95
+msgid "Basic menus for QuickKeys and QuickLookups plugins"
+msgstr ""
+
+#: pos/is4c-nf/install/extra_data.php:96
+msgid "Load sample menus"
+msgstr ""
+
+#: pos/is4c-nf/install/InstallUtilities.php:119
+#, php-format
+msgid "Setting mismatch for"
+msgstr ""
+
+#: pos/is4c-nf/install/InstallUtilities.php:121
+#, php-format
+msgid "parameters says"
+msgstr ""
+
+#: pos/is4c-nf/install/InstallUtilities.php:121
+#, php-format
+msgid "ini says"
+msgstr ""
+
+#: pos/is4c-nf/install/db/Creator.php:51
+#: pos/is4c-nf/install/db/Creator.php:135
+#: pos/is4c-nf/install/db/Creator.php:330
+msgid "No structures created for lane #0"
+msgstr ""
+
+#: pos/is4c-nf/install/db/Creator.php:52 pos/is4c-nf/install/db/Creator.php:79
+#: pos/is4c-nf/install/db/Creator.php:136
+#: pos/is4c-nf/install/db/Creator.php:331
+msgid "None"
+msgstr ""
+
+#: pos/is4c-nf/install/db/Creator.php:53
+#: pos/is4c-nf/install/db/Creator.php:137
+#: pos/is4c-nf/install/db/Creator.php:332
+msgid "Zero is reserved for server"
+msgstr ""
+
+#: pos/is4c-nf/install/db/Creator.php:80
+msgid "Failed loading sample data"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:25
+msgid "IT CORE Lane Installation: Receipt Configuration"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:34
+msgid "Receipt Settings"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:39
+msgid "Enable receipts"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:43
+#, fuzzy
+msgid "Print receipt on canceled transaction"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/install/receipt.php:47
+#, fuzzy
+msgid "Print receipt on suspended transaction"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/install/receipt.php:51
+#, fuzzy
+msgid "Print receipt on shrink/DDD transaction"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/install/receipt.php:54
+msgid "Receipt Type"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:58
+msgid "Modular"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:59
+msgid "Grouped (static, legacy)"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:60
+msgid "In Order (static, legacy)"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:72
+msgid ""
+"\n"
+"    The Modular receipt uses the modules below to assemble the receipt's "
+"contents.\n"
+"    The Grouped option groups items together in categories. The In Order "
+"option\n"
+"    simply prints items in the order they were entered. The default set of "
+"modulars\n"
+"    will group items in categories. The InOrder modules will print items in "
+"order.\n"
+"    Legacy options may not be supported in the future."
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:82
+msgid "List Savings"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:91
+msgid ""
+"\n"
+"    Different options for displaying lines about total savings from\n"
+"    sales and discounts"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:98
+msgid "List Local Items"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:102
+msgid "As $ Amount"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:103
+#, php-format
+msgid "As % of Purchase"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:104
+msgid "Do not print"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:108
+msgid ""
+"\n"
+"    Display information about items in the transaction marked \"local\". "
+"This\n"
+"    can be displayed as the total dollar value or as a percent of all\n"
+"    items on the receipt."
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:116
+msgid "Thank You Line"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:125
+msgid ""
+"\n"
+"    Different options for the receipt line(s) thanking the customer and/or "
+"member"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:131
+msgid "Receipt Driver"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:144
+msgid "Line width"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:153
+msgid "PHP Receipt Modules"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:156
+msgid "Data Fetch Mod"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:169
+msgid "Filtering Mod"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:182
+msgid "Sorting Mod"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:195
+msgid "Tagging Mod"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:207
+msgid "Message Modules"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:209
+msgid ""
+"Message Modules provide special blocks of text on the end\n"
+"of the receipt & special non-item receipt types."
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:243
+msgid "Email Receipts"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:246
+msgid "Email Receipt Sender Address"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:250
+msgid "Email Receipt Sender Name"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:254
+msgid "Use SMTP"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:258
+msgid "SMTP Server"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:262
+msgid "SMTP Port"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:266
+msgid "SMTP Username"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:270
+msgid "SMTP Password"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:274
+msgid "SMTP Security"
+msgstr ""
+
+#: pos/is4c-nf/install/receipt.php:278
+msgid "HTML Receipt Builder"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:21
+#: pos/is4c-nf/install/data/Loader.php:56
+#: pos/is4c-nf/install/data/Loader.php:84
+#: pos/is4c-nf/install/data/Loader.php:94
+msgid "Unknown error"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:22
+#: pos/is4c-nf/install/data/Loader.php:57
+#: pos/is4c-nf/install/data/Loader.php:95
+msgid " executing"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:32
+#: pos/is4c-nf/install/data/Loader.php:108
+msgid " success!"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:32
+#: pos/is4c-nf/install/data/Loader.php:108
+msgid "load"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:32
+#: pos/is4c-nf/install/data/Loader.php:108
+msgid "partial success;"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:32
+#: pos/is4c-nf/install/data/Loader.php:108
+msgid "failed;"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:33
+#: pos/is4c-nf/install/data/Loader.php:109
+msgid "record was"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:33
+#: pos/is4c-nf/install/data/Loader.php:109
+msgid "records were"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:33
+msgid " loaded."
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:66
+msgid "line-by-line"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:85
+msgid " preparing"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:109
+msgid " loaded"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:125
+msgid "Loading"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:129
+msgid "from"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:142
+#, fuzzy
+msgid "File not found: "
+msgstr "No item found in"
+
+#: pos/is4c-nf/install/data/Loader.php:156
+msgid "succeeded!"
+msgstr ""
+
+#: pos/is4c-nf/install/data/Loader.php:162
+msgid "Table data not found in either"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:23
+msgid "IT CORE Lane Installation: Database Updates"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:32
+msgid "Attempting to update model"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:34
+msgid "Error: class not found<br />"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:36
+msgid "Error: not a valid model<br />"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:41
+msgid "Error: requested database unknown"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:47
+msgid "An error occurred."
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:49
+msgid "Update complete."
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:52 pos/is4c-nf/install/updates.php:102
+#: pos/is4c-nf/install/updates.php:112 pos/is4c-nf/install/index.php:429
+#, php-format
+msgid "Details"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:103
+#, php-format
+msgid "To apply changes"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:103
+#, php-format
+msgid "Click Here"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:104
+#, php-format
+msgid "or run the following command"
+msgstr ""
+
+#: pos/is4c-nf/install/updates.php:120
+msgid "Check Complete"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:18
+msgid "Magellan Scanner/scale (recommended)"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:22
+msgid "Magellan Scanner/scale"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:26
+msgid "ID Tech Sign&Pay (recommended)"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:30
+msgid "Datacap ActiveX compatible devices (Windows-only)"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:32 pos/is4c-nf/install/driver.php:40
+msgid "Verifone VX805 on COM*"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:33 pos/is4c-nf/install/driver.php:41
+msgid "Verifone VX805 with Mercury encryption on COM*"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:34 pos/is4c-nf/install/driver.php:42
+msgid "Ingenico iSC250 with Mercury encryption on COM*"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:38
+msgid "Datacap ActiveX compatible devices with EMV support (Windows-only)"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:46
+msgid "ID Tech Sign&Pay (not recommended in Linux)"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:50
+msgid "ID Tech Sign&Pay (not recommended)"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:88
+msgid "IT CORE Lane Installation: Hardware Driver Settings (NewMagellan)"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:98
+msgid "Add Device"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:101
+msgid "Select device..."
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:113
+msgid "Current Devices"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:153
+#, php-format
+msgid "Device"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:155
+msgid "Stored in ini.json"
+msgstr ""
+
+#: pos/is4c-nf/install/driver.php:166
+#, php-format
+msgid "Delete entry"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:57
+msgid "PHP is running as: "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:60
+msgid ""
+"<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not "
+"work quite right"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:76
+msgid "Error: invalid entry for "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:78
+msgid "Error: missing register_id for "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:80
+msgid "Error: missing store_id for "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:87
+msgid "Warning: store_id is set to "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:88 pos/is4c-nf/install/index.php:99
+msgid ". Based on IP "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:89 pos/is4c-nf/install/index.php:100
+msgid " it should be set to "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:98
+msgid "Warning: register_id is set to "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:114
+msgid "Lane number*:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:118 pos/is4c-nf/install/index.php:136
+msgid " (assigned by IP; cannot be edited)"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:125
+msgid ""
+"Lane #99 is used strictly for testing. Transaction data generated by lane "
+"#99 is\n"
+"            automatically excluded from sales reports."
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:132
+msgid "Store number*:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:142
+msgid "Locale:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:147
+msgid "Database set up"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:151
+msgid "Lane database host*: "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:155
+msgid "Lane database type*: "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:166
+msgid "Lane user name*: "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:170
+#, fuzzy
+msgid "Lane password*: "
+msgstr "Please enter password"
+
+#: pos/is4c-nf/install/index.php:178
+msgid "Lane operational DB*: "
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:184
+msgid "Testing operational DB Connection:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:196 pos/is4c-nf/install/index.php:242
+#: pos/is4c-nf/install/index.php:342
+msgid "Failed"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:199 pos/is4c-nf/install/index.php:345
+msgid ""
+"<i>Try enabling PHP's socket extension in php.ini for better diagnostics</i>"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:202 pos/is4c-nf/install/index.php:348
+#, php-format
+msgid ""
+"<i>Database found at %s. Verify username and password\n"
+"            and/or database account permissions.</i>"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:206 pos/is4c-nf/install/index.php:352
+#, php-format
+msgid ""
+"<i>Database does not appear to be listening for connections on \n"
+"            %s. Verify host is correct, database is running and\n"
+"            firewall is allowing connections.</i>"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:212 pos/is4c-nf/install/index.php:249
+#: pos/is4c-nf/install/index.php:359
+msgid "Succeeded"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:228
+#, fuzzy
+msgid "Lane transaction DB*: "
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/install/index.php:235
+msgid "Testing transactional DB connection:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:244
+msgid ""
+"<i>If both connections failed, see above. If just this one\n"
+"        is failing, it's probably an issue of database user \n"
+"        permissions.</i>"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:269
+#, php-format
+msgid ""
+"<br /><b>Error</b>: the given\n"
+"                    tax rate, %s, doesn't seem to\n"
+"                    be a number."
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:301
+msgid "Server database host:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:305
+msgid "Server database type:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:316
+msgid "Server user name:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:320
+#, fuzzy
+msgid "Server password:"
+msgstr "Enter manager password"
+
+#: pos/is4c-nf/install/index.php:328
+msgid "Server database name:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:334
+msgid "Testing server connection:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:371
+msgid "Tax"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:373
+msgid ""
+"Provided tax rates are used to create database views. As such,\n"
+"descriptions should be DB-legal syntax (e.g., no spaces). A rate of\n"
+"0% with ID 0 is automatically included. Enter exact values - e.g.,\n"
+"0.05 to represent 5%."
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:400
+msgid "ID"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:400
+msgid "Rate"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:400
+msgid "Description"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:410
+msgid "Save & Re-run installation checks"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:421
+msgid "There were some errors creating transactional DB structure"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:428
+msgid "Error on structure"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:432
+msgid "Query:"
+msgstr ""
+
+#: pos/is4c-nf/install/index.php:433
+msgid "Error Message: "
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:22
+msgid "IT CORE Lane Installation: Security"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:26
+msgid "Scale Beep on Login"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:29
+msgid "(Scale makes noise when admin login attempted)"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:33
+#, fuzzy
+msgid "Cancel Transaction"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/install/security.php:36 pos/is4c-nf/install/security.php:45
+msgid "Admin only"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:36
+msgid "Current & Admin"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:36 pos/is4c-nf/install/security.php:45
+msgid "All"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:42
+msgid "Suspend/Resume"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:51
+msgid "Print Tender Report"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:55
+msgid "Refund Item"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:59
+msgid "Line Item Discount"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:63
+msgid "Void Limit"
+msgstr ""
+
+#: pos/is4c-nf/install/security.php:68
+msgid "(in dollars, per transaction. Zero for unlimited)."
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/drawerPage.php:121
+#, php-format
+msgid "You are using drawer #%d"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/drawerPage.php:123
+msgid "You do not have a drawer"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/drawerPage.php:143
+msgid "Unassigned"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/drawerPage.php:144
+#, php-format
+msgid "Take over drawer #%d (%s)"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/drawerPage.php:150
+#, php-format
+msgid "Switch to drawer #%d"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/drawerPage.php:155
+msgid "No actions available"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/deptlist.php:126
+#: pos/is4c-nf/gui-modules/tenderlist.php:130
+#: pos/is4c-nf/gui-modules/memlist.php:359
+#: pos/is4c-nf/gui-modules/suspendedlist.php:131
+#: pos/is4c-nf/gui-modules/productlist.php:199
+#: pos/is4c-nf/lib/models/ViewModel.php:146
+#: pos/is4c-nf/lib/models/ViewModel.php:148
+#: pos/is4c-nf/lib/models/ViewModel.php:170
+#: pos/is4c-nf/lib/models/ViewModel.php:172
+msgid "OK"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/deptlist.php:126
+#: pos/is4c-nf/gui-modules/tenderlist.php:130
+#: pos/is4c-nf/gui-modules/rplist.php:144
+#: pos/is4c-nf/gui-modules/memlist.php:359
+#: pos/is4c-nf/gui-modules/suspendedlist.php:131
+#: pos/is4c-nf/gui-modules/productlist.php:199
+#: pos/is4c-nf/gui-modules/cablist.php:134
+#: pos/is4c-nf/gui-modules/HouseCouponList.php:109
+msgid "[enter]"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/deptlist.php:130
+#: pos/is4c-nf/gui-modules/tenderlist.php:134
+#: pos/is4c-nf/gui-modules/rplist.php:150
+#: pos/is4c-nf/gui-modules/memlist.php:363
+#: pos/is4c-nf/gui-modules/suspendedlist.php:135
+#: pos/is4c-nf/gui-modules/productlist.php:203
+#: pos/is4c-nf/gui-modules/cablist.php:140
+#: pos/is4c-nf/gui-modules/HouseCouponList.php:115
+msgid "Cancel"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/deptlist.php:130
+#: pos/is4c-nf/gui-modules/tenderlist.php:134
+#: pos/is4c-nf/gui-modules/rplist.php:150
+#: pos/is4c-nf/gui-modules/memlist.php:363
+#: pos/is4c-nf/gui-modules/suspendedlist.php:135
+#: pos/is4c-nf/gui-modules/productlist.php:203
+#: pos/is4c-nf/gui-modules/cablist.php:140
+#: pos/is4c-nf/gui-modules/HouseCouponList.php:115
+msgid "[clear]"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/adminlist.php:93
+#: pos/is4c-nf/gui-modules/adminlist.php:99 pos/is4c-nf/lib/DeptLib.php:216
+#: pos/is4c-nf/lib/DeptLib.php:242
+msgid "Dismiss [clear]"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/adminlist.php:141
+#, fuzzy
+msgid "Undo Transaction"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/gui-modules/adminlist.php:157
+#: pos/is4c-nf/gui-modules/giftcardlist.php:78
+#: pos/is4c-nf/gui-modules/fsTotalConfirm.php:106
+#: pos/is4c-nf/gui-modules/refundComment.php:107
+msgid "Select [enter]"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/adminlist.php:159
+#: pos/is4c-nf/gui-modules/giftcardlist.php:80
+#: pos/is4c-nf/gui-modules/fsTotalConfirm.php:109
+#: pos/is4c-nf/gui-modules/refundComment.php:110
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:162
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:247
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:298
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/ArWarnDept.php:42
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityEndorseDept.php:53
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityWarnDept.php:48
+#: pos/is4c-nf/lib/DeptLib.php:279 pos/is4c-nf/parser/parse/UPC.php:233
+#: pos/is4c-nf/parser/parse/DefaultTender.php:61
+msgid "Cancel [clear]"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/giftcardlist.php:55
+#, fuzzy
+msgid "gift card transaction"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/gui-modules/giftcardlist.php:66
+msgid "Sale"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/giftcardlist.php:67
+msgid "Activate"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/giftcardlist.php:68
+msgid "Add Value"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/giftcardlist.php:69
+msgid "Balance"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/rplist.php:144
+#: pos/is4c-nf/gui-modules/cablist.php:134
+#: pos/is4c-nf/gui-modules/HouseCouponList.php:109
+msgid "Reprint"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/memlist.php:275
+#: pos/is4c-nf/gui-modules/productlist.php:230
+msgid "Cancel [enter]"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/PaidOutComment.php:75
+msgid "Paid to Supplier"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/PaidOutComment.php:76
+msgid "Store Use"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/PaidOutComment.php:77
+msgid "Coupon"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/PaidOutComment.php:78
+#: pos/is4c-nf/gui-modules/refundComment.php:94
+msgid "Other"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/PaidOutComment.php:80
+msgid "Gift Card Refund"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/pos2.php:169
+msgid "Items"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/pos2.php:187
+msgid "Tender"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/pos2.php:193
+msgid "Misc"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/checklist.php:113
+#, fuzzy
+msgid "[Clear] to Cancel"
+msgstr "[clear] to cancel"
+
+#: pos/is4c-nf/gui-modules/priceOverride.php:128
+#, fuzzy
+msgid "enter purchase price"
+msgstr "[enter] to proceed"
+
+#: pos/is4c-nf/gui-modules/fsTotalConfirm.php:84
+msgid "Customer is using the"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/fsTotalConfirm.php:96
+msgid "Cash Portion"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/fsTotalConfirm.php:97
+msgid "Food Portion"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/SigCapturePage.php:55
+msgid "Approve Signature"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/SigCapturePage.php:56
+#, fuzzy
+msgid "[enter] to approve, [clear] to cancel"
+msgstr "[clear] to cancel"
+
+#: pos/is4c-nf/gui-modules/SigCapturePage.php:162
+msgid "Waiting for signature"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/SigCapturePage.php:181
+#, fuzzy
+msgid "[enter] to get re-request signature, [clear] to cancel"
+msgstr "[clear] to cancel"
+
+#: pos/is4c-nf/gui-modules/UnpaidAR.php:84
+#, php-format
+msgid ""
+"Old A/R Balance: $%.2f<br />\n"
+"                [Enter] to pay balance now<br />\n"
+"                [Clear] to leave balance"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/UnpaidAR.php:89
+#, php-format
+msgid ""
+"Old A/R Balance: $%.2f<br />\n"
+"                Total A/R Balance: $%.2f<br />\n"
+"                [Enter] to pay old balance<br />\n"
+"                [Balance] to pay the entire balance<br />\n"
+"                [Clear] to leave the balance"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/refundComment.php:70
+msgid "reason for refund"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/refundComment.php:90
+msgid "Overcharge"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/refundComment.php:91
+msgid "Spoiled"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/refundComment.php:92
+msgid "Did not Need"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/refundComment.php:93
+msgid "Did not Like"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/undo.php:45
+#, fuzzy
+msgid "Enter transaction number<br />[clear to cancel]"
+msgstr "[clear] to cancel"
+
+#: pos/is4c-nf/gui-modules/undo.php:64 pos/is4c-nf/gui-modules/undo.php:72
+#: pos/is4c-nf/gui-modules/undo.php:83 pos/is4c-nf/gui-modules/undo.php:111
+#: pos/is4c-nf/gui-modules/undo.php:133
+#, fuzzy
+msgid "Transaction not found"
+msgstr "Coupon not found"
+
+#: pos/is4c-nf/gui-modules/undo.php:148
+#, fuzzy
+msgid "Undo transaction"
+msgstr "No suspended transaction"
+
+#: pos/is4c-nf/gui-modules/DDDReason.php:87
+msgid "Why are these items being marked as shrink/unsellable?"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/productlist.php:197
+#, fuzzy
+msgid "use arrow keys"
+msgstr "Use arrow keys to navigate"
+
+#: pos/is4c-nf/gui-modules/productlist.php:197
+msgid "to navigate"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/productlist.php:197
+msgid "the list"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:101
+msgid "precision weight required"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:134
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:158
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:170
+msgid "invalid precision weight"
+msgstr ""
+
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:153
+#, fuzzy
+msgid "invalid quantity<br />enter number"
+msgstr "Invalid quantity"
+
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:160
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:172
+#, fuzzy
+msgid "enter three digits"
+msgstr "[enter] to proceed"
+
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:164
+#, fuzzy
+msgid "enter whole number"
+msgstr "Enter member number or name"
+
+#: pos/is4c-nf/gui-modules/QuantityEntryPage.php:205
+#, fuzzy
+msgid "enter quantity or clear to cancel"
+msgstr "[clear] to cancel"
+
+#: pos/is4c-nf/plugins/AccessProgram/AccessProgramReceipt.php:43
+#, php-format
+msgid ""
+"WFC is offering to its Owners an Access Discount for a 10% discount on all "
+"eligible items.  The Access Discount is available only for Owners who "
+"register annually at Customer Service by presenting proof of participation "
+"(e.g., a current card or current award letter) in an applicable program."
+msgstr ""
+
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:242
+#, fuzzy
+msgid "Card transaction not successful"
+msgstr "No transction in progress"
+
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:246
+msgid "Processor platform mismatch"
+msgstr ""
+
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:248
+#, fuzzy
+msgid "Card transaction not approved"
+msgstr "Transaction in progress"
+
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:250
+msgid "Invalid reference number"
+msgstr ""
+
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:261
+msgid "Authorization and tender records do not match "
+msgstr ""
+
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:263
+msgid "Void records do not match"
+msgstr ""
+
+#: pos/is4c-nf/plugins/Paycards/lib/PaycardDialogs.php:272
+msgid "Unable to Void"
+msgstr ""
+
+#: pos/is4c-nf/plugins/WicPlugin/WicParser.php:56
+msgid "not allowed in WIC mode"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredCheckQ.php:45
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredBalanceMessage.php:68
+msgid "Coop Cred is not currently in use at this co-op."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredCheckQ.php:84
+msgid " is not registered for any Coop Cred Programs."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredCheckQ.php:98
+msgid "Can spend these amounts of Coop Cred:"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredCheckQ.php:148
+msgid ""
+"The amounts reflect any tenders of, or inputs to, Coop Cred in the current "
+"transaction."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredTender.php:80
+msgid "does not have enough Coop Cred in "
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredTender.php:82
+msgid " to cover this purchase."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredTender.php:95
+msgid "The amount of Coop Cred you have in "
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredTender.php:97
+msgid " is only $"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredTender.php:107
+msgid "The amount of Coop Cred tendered may not exceed the Amount Due."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:97
+msgid "Please enter the Member ID"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:103
+msgid "Coop Cred database connection failed:"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:121
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:125
+msgid "Error:"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:122
+msgid "is not used in any Coop Cred Program."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:126
+msgid "is used in more than one Coop Cred Program."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:133
+msgid " hasn't started yet."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:136
+msgid " is no longer operating."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:139
+msgid " is not active."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:142
+msgid " is not accepting purchases at this time."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:189
+#, fuzzy
+msgid "Member "
+msgstr "Member"
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:191
+msgid " is not registered for "
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:203
+msgid " is registered for "
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:205
+msgid " but may not use it"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:206
+msgid " at this time"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:213
+msgid " may not pay into "
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/CoopCredLib.php:230
+msgid " may not transfer Coop Cred to another Member"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredUsedBalances.php:120
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredUsedBalances.php:154
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredBalanceMessage.php:122
+msgid "Balance not available."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredUsedBalances.php:124
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredUsedBalances.php:158
+msgid "Remaining"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredSigSlip.php:97
+msgid "COOP CRED"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/receiptMessages/CCredBalanceMessage.php:126
+msgid "Available"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/tenderlist_coopCred.php:132
+msgid "Tendering"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/tenderlist_coopCred.php:134
+msgid "Refunding"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/tenderlist_coopCred.php:137
+#, fuzzy
+msgid "[Clear] to exit"
+msgstr "[clear] to cancel"
+
+#: pos/is4c-nf/plugins/CoopCred/tenderlist_coopCred.php:146
+msgid "No Coop Cred available"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/tenderlist_coopCred.php:152
+msgid "There are no active Coop Cred tenders"
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/tenderlist_coopCred.php:154
+msgid "available to the Member."
+msgstr ""
+
+#: pos/is4c-nf/plugins/CoopCred/tenderlist_coopCred.php:156
+msgid "[Enter] or [Clear] to exit"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:240
+msgid "C U S T O M E R   C O P Y"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:244 pos/is4c-nf/lib/ReceiptLib.php:307
+msgid "Name: "
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:245 pos/is4c-nf/lib/ReceiptLib.php:308
+msgid "Member Number: "
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:246 pos/is4c-nf/lib/ReceiptLib.php:309
+msgid "Date: "
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:247 pos/is4c-nf/lib/ReceiptLib.php:310
+msgid "REFERENCE #: "
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:281
+msgid "CUSTOMER CHARGE ACCOUNT\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:282
+msgid "Charge Amount:"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:283
+msgid "I AGREE TO PAY THE ABOVE AMOUNT\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:284
+msgid "TO MY CHARGE ACCOUNT\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:287
+msgid "CUSTOMER DEBIT ACCOUNT\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:288
+msgid "Debit Amount:"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:289
+msgid "I ACKNOWLEDGE THE ABOVE DEBIT\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:290
+msgid "TO MY DEBIT ACCOUNT\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:314
+msgid ""
+"Purchaser Sign Below\n"
+"\n"
+"\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:383
+msgid "Current IOU Balance:"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:384
+msgid "Debit available:"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:446
+#, php-format
+msgid "LOCAL PURCHASES = $%.2f"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:470
+#, php-format
+msgid "LOCAL PURCHASES = $%.2f (%.2f%%)"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:948
+msgid "( S T O R E   C O P Y )"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:951
+msgid "***   R E P R I N T   ***"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:1084
+msgid "*    P A R T I A L  T R A N S A C T I O N    *"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:1087
+msgid "*  T R A N S A C T I O N  C A N C E L L E D  *"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:1090
+msgid "*    T R A N S A C T I O N  R E S U M E D    *"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptLib.php:1095
+msgid "*  T R A N S A C T I O N  S U S P E N D E D  *"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/StoreChargeTender.php:97
+msgid ""
+"<BR>please verify member ID</B><BR>press [enter] to continue<P><FONT "
+"size='-1'>[clear] to cancel</FONT>"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:87
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:260
+#: pos/is4c-nf/lib/Tenders/CheckTender.php:41
+msgid "OK [clear]"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:99
+#, fuzzy
+msgid "refund cannot apply to tender"
+msgstr "Discount not applicable after tender"
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:116
+msgid "Total [subtotal]"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:116
+#: pos/is4c-nf/lib/Tenders/FoodstampTender.php:47
+msgid "Dimiss [clear]"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:134
+msgid "Why are you using a negative number for a positive sale?"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:161
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:246
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/ArWarnDept.php:41
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityEndorseDept.php:52
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityWarnDept.php:47
+#: pos/is4c-nf/lib/DeptLib.php:278
+msgid "Confirm [enter]"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:242
+#, fuzzy
+msgid "tender $"
+msgstr "Tender disabled"
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:290
+msgid ""
+"There was an equity sale on this transaction. Did it get\n"
+"                endorsed yet?"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/TenderModule.php:297
+msgid "Endorse [enter]"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/FoodstampTender.php:47
+msgid "Total [FS Total]"
+msgstr ""
+
+#: pos/is4c-nf/lib/Tenders/FoodstampTender.php:56
+#, fuzzy
+msgid "Foodstamp return cannot exceed eligible amount"
+msgstr "Foodstamp tender cannot exceed eligible amount by over $10.00"
+
+#: pos/is4c-nf/lib/DisplayLib.php:266
+msgid "[Clear]"
+msgstr ""
+
+#: pos/is4c-nf/lib/DisplayLib.php:536
+msgid "err -0"
+msgstr ""
+
+#: pos/is4c-nf/lib/DisplayLib.php:538
+msgid "error"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:200
+#, fuzzy
+msgid "Coupon expired "
+msgstr "Coupon expired"
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:217
+#, php-format
+msgid "Coupon not valid until %d/%d/%d"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:322
+msgid "Malformed coupon"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:353
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:446
+msgid "Error: bad coupon"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:429
+#, fuzzy
+msgid "Coupon requirements not met"
+msgstr "Coupon requirements not met"
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:443
+#, fuzzy
+msgid "Tender coupon manually"
+msgstr "[enter] to continue sale"
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/DatabarCoupon.php:483
+#, fuzzy, php-format
+msgid "Coupon requires %d items"
+msgstr "Coupon requires %d items"
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:187
+msgid "coupon not available yet "
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:200
+#: pos/is4c-nf/lib/DeptLib.php:216 pos/is4c-nf/lib/DeptLib.php:242
+#, fuzzy
+msgid "Member Search [ID]"
+msgstr "Member Search"
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:310
+#, fuzzy
+msgid "unknown minimum type "
+msgstr "Unknown minimum type"
+
+#: pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php:399
+msgid "coupon already used<br />on this membership"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/ArWarnDept.php:38
+msgid ""
+"<b>A/R Payment Sale</b><br>remember to retain you<br>\n"
+"                reprinted receipt"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityEndorseDept.php:38
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityWarnDept.php:38
+msgid "Equity requires member.<br />Apply member number first"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityEndorseDept.php:50
+msgid "<b>Equity Sale</b><br>Insert paperwork"
+msgstr ""
+
+#: pos/is4c-nf/lib/Scanning/SpecialDepts/EquityWarnDept.php:45
+msgid "<b>Equity Sale</b><br>please confirm"
+msgstr ""
+
+#: pos/is4c-nf/lib/FooterBoxes/TotalSavingFooter.php:34
+msgid "Today You Saved"
+msgstr ""
+
+#: pos/is4c-nf/lib/models/ViewModel.php:114
+msgid "Checking"
+msgstr ""
+
+#: pos/is4c-nf/lib/models/ViewModel.php:114
+msgid "Updating"
+msgstr ""
+
+#: pos/is4c-nf/lib/models/ViewModel.php:137
+#, fuzzy
+msgid "not found!"
+msgstr "No item found in"
+
+#: pos/is4c-nf/lib/models/ViewModel.php:139
+msgid "Check complete. Need to create"
+msgstr ""
+
+#: pos/is4c-nf/lib/models/ViewModel.php:146
+#: pos/is4c-nf/lib/models/ViewModel.php:148
+#: pos/is4c-nf/lib/models/ViewModel.php:170
+#: pos/is4c-nf/lib/models/ViewModel.php:172
+#, php-format
+msgid "Update complete. Creation of view %s %s\n"
+msgstr ""
+
+#: pos/is4c-nf/lib/models/ViewModel.php:146
+#: pos/is4c-nf/lib/models/ViewModel.php:170
+msgid "failed"
+msgstr ""
+
+#: pos/is4c-nf/lib/models/ViewModel.php:148
+#: pos/is4c-nf/lib/models/ViewModel.php:172
+#, fuzzy
+msgid "not supported"
+msgstr "Tare not supported"
+
+#: pos/is4c-nf/lib/models/ViewModel.php:158
+msgid "should be a view!"
+msgstr ""
+
+#: pos/is4c-nf/lib/models/ViewModel.php:160
+msgid "Check complete. Need to drop and re-create"
+msgstr ""
+
+#: pos/is4c-nf/lib/adminlogin/MemStatusAdminLogin.php:45
+msgid "Member Status Toggled!"
+msgstr ""
+
+#: pos/is4c-nf/lib/Authenticate.php:99
+msgid "Training Mode"
+msgstr ""
+
+#: pos/is4c-nf/lib/DeptLib.php:225
+msgid "Department is member-only<br />"
+msgstr ""
+
+#: pos/is4c-nf/lib/DeptLib.php:226
+#, fuzzy
+msgid "[enter] to continue, [clear] to cancel"
+msgstr "[clear] to cancel"
+
+#: pos/is4c-nf/lib/ReceiptBuilding/Messages/DeclineReceiptMessage.php:106
+#: pos/is4c-nf/lib/ReceiptBuilding/Messages/CCReceiptMessage.php:140
+msgid "(Customer Copy)"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/Messages/CCReceiptMessage.php:138
+msgid "(Merchant Copy)"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/Format/ItemReceiptFormat.php:53
+msgid "Owner Special"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/Format/TotalReceiptFormat.php:51
+#, php-format
+msgid "** %d%% Discount Applied **"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/ThankYou/DefaultReceiptThanks.php:48
+msgid "thank you"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/ThankYou/DefaultReceiptThanks.php:50
+msgid " - owner "
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/Savings/DefaultReceiptSavings.php:79
+msgid "TODAY YOU SAVED = $"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/Savings/SeparateReceiptSavings.php:64
+msgid "% DISCOUNT SAVINGS = $"
+msgstr ""
+
+#: pos/is4c-nf/lib/ReceiptBuilding/Savings/SeparateReceiptSavings.php:70
+msgid "COUPONS = $"
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:37
+msgid "AMT: "
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:37
+msgid "  CHANGE: "
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:58
+msgid "ref: "
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:74
+msgid "Equity Payment ref: "
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:78
+msgid "Stock Payment $"
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:78
+msgid " ref: "
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:91
+msgid "Validated: "
+msgstr ""
+
+#: pos/is4c-nf/lib/Franking.php:91
+msgid "  ref: "
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/SigTermCommands.php:236
+msgid "Cash back set to zero instead"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/DriverStatus.php:50
+msgid "No response to status request"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/DriverStatus.php:54
+msgid "Status Check"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/EquityCheck.php:58
+msgid "Current amount of Equity paid is "
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/EquityCheck.php:59
+msgid "Amount of Equity left is "
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/EquityCheck.php:64
+msgid "Tender [Remaining Equity]"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/CashBuy.php:53
+msgid "Cash Buy"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/DiscountApplied.php:59
+#, fuzzy
+msgid "discount cannot be negative"
+msgstr "Discount not applicable after tender"
+
+#: pos/is4c-nf/parser/parse/UPC.php:230
+msgid "<b>Same weight as last item</b>"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/UPC.php:232
+msgid "Confirm Weight [enter]"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/UPC.php:300
+msgid "Weighed Item"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/BalanceCheck.php:52
+msgid "Tender [Store Credit]"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/DefaultTender.php:60
+msgid "Charge Card [enter]"
+msgstr ""
+
+#: pos/is4c-nf/parser/parse/ReceiptCoupon.php:30
+#, fuzzy
+msgid "Coupon is expired"
+msgstr "Coupon expired"
+
+#: pos/is4c-nf/parser/parse/RepeatKey.php:57
+#, fuzzy
+msgid "product cannot be repeated"
+msgstr "product cannot be sold right now"
+
+#: pos/is4c-nf/parser/parse/RepeatKey.php:58
+msgid "Ineligible line"
+msgstr ""
+
+#~ msgid ""
+#~ "member or staff check tender cannot \n"
+#~ "\t\t\texceed total purchase by over $"
+#~ msgstr "Member or staff check tender cannot exceed total purchase by over $"
+
+#~ msgid "no cash back with EBT cash tender"
+#~ msgstr "No cash back with EBT cash tender"
+
+#~ msgid "is overlimit"
+#~ msgstr "is overlimit"
+
+#~ msgid "enter to continue sale"
+#~ msgstr "[enter] to continue sale"
+
+#~ msgid "transaction must be totaled"
+#~ msgstr "Transaction must be totaled"
+
+#, fuzzy
+#~ msgid "Login to suspend/resume transactions"
+#~ msgstr "No suspended transaction"
+
+#, fuzzy
+#~ msgid "Transaction in Progress"
+#~ msgstr "Transaction in progress"
+
+#~ msgid "processor error"
+#~ msgstr "Processor error"
+
+#~ msgid "re-enter manager password"
+#~ msgstr "Re-enter manager password"
+
+#~ msgid "please enter manager password"
+#~ msgstr "Please enter manager password"
+
+#, fuzzy
+#~ msgid "member or staff check tender cannot exceed total purchase by over $"
+#~ msgstr "Member or staff check tender cannot exceed total purchase by over $"

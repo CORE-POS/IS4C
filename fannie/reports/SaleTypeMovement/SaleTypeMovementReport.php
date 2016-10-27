@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class SaleTypeMovementReport extends FannieReportPage 
 {
     public $description = '[Sale Type Movement] breaks down sales by type of promotion';
-    public $report_set = 'Movement';
+    public $report_set = 'Movement Reports';
 
     protected $report_headers = array('Type', '$ Sales', '# Items', '% Sales');
     protected $sort_direction = 1;

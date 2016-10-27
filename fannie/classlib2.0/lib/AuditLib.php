@@ -22,6 +22,9 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\lib;
+use \FannieDB;
+use \FannieConfig;
+use \FannieAuth;
 
 /**
   @class AuditLib
@@ -41,8 +44,8 @@ class AuditLib
     */
     public static function itemUpdate($upc, $likecode=false)
     {
-        $conf = \FannieConfig::factory();
-        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
+        $conf = FannieConfig::factory();
+        $dbc = FannieDB::getReadOnly($conf->get('OP_DB'));
 
         $product = new \ProductsModel($dbc);
         $product->upc($upc);
@@ -73,7 +76,7 @@ class AuditLib
         $server_name = $conf->get('HTTP_HOST');
         $message .= "http://{$server_name}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
-        $username = \FannieAuth::checkLogin();
+        $username = FannieAuth::checkLogin();
         if (!$username) {
             $username = 'unknown';
         }
@@ -92,8 +95,8 @@ class AuditLib
 
     static public function batchNotification($batchID, $upc, $type, $is_likecode=false)
     {
-        $conf = \FannieConfig::factory();
-        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
+        $conf = FannieConfig::factory();
+        $dbc = FannieDB::getReadOnly($conf->get('OP_DB'));
 
         $likecode = '';
         $desc = '';
@@ -179,7 +182,7 @@ class AuditLib
         $message .= "View this item:\n";
         $message .= "http://{$server_name}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
-        $username = \FannieAuth::checkLogin();
+        $username = FannieAuth::checkLogin();
         if (!$username) {
             $username = 'unknown';
         }
@@ -199,8 +202,8 @@ class AuditLib
     */
     public static function getAddresses($dept)
     {
-        $conf = \FannieConfig::factory();
-        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
+        $conf = FannieConfig::factory();
+        $dbc = FannieDB::getReadOnly($conf->get('OP_DB'));
         
         $query = 'SELECT superID from superdepts WHERE dept_ID=? GROUP BY superID';
         $prep = $dbc->prepare($query);

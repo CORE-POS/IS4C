@@ -120,6 +120,21 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
         }
 
+        // Repack items that are mapped to bulk items
+        $LINKED_MAP = array();
+        $linkP = $dbc->prepare('
+            SELECT p.upc,
+                s.plu
+            FROM products AS p 
+                INNER JOIN scaleItems AS s ON p.upc=s.linkedPLU
+            WHERE p.default_vendor_id=?
+            GROUP BY p.upc,
+                s.plu');
+        $linkR = $dbc->execute($linkP, array($VENDOR_ID));
+        while ($linkW = $dbc->fetchRow($linkR)) {
+            $LINKED_MAP[$row['upc']] = $row['plu'];
+        }
+
         $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products
@@ -253,6 +268,19 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             if ($srpP) {
                 $dbc->execute($srpP,array($VENDOR_ID,$upc,$srp));
+            }
+
+            if (isset($LINKED_MAP[$upc])) {
+                $dbc->execute($extraP, array($reg_unit,$LINKED_MAP[$upc]));
+                $dbc->execute($prodP, array($reg_unit,$organic_flag,$gf_flag,$LINKED_MAP[$upc],$VENDOR_ID));
+                $updated_upcs[] = $LINKED_MAP[$upc];
+                $linkedArgs = $args;
+                $linkedArgs[1] = $LINKED_MAP[$upc]; // sku re-write
+                $linkedArgs[3] = $LINKED_MAP[$upc]; // upc re-write
+                $dbc->execute($itemP, $linkedArgs);
+                if ($srpP) {
+                    $dbc->execute($srpP,array($VENDOR_ID,$LINKED_MAP[$upc],$srp));
+                }
             }
         }
 

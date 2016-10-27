@@ -34,7 +34,7 @@ class Franking
     {
         $date = strftime("%m/%d/%y %I:%M %p", time());
         $ref = trim(\CoreLocal::get("memberID"))." ".trim(\CoreLocal::get("CashierNo"))." ".trim(\CoreLocal::get("laneno"))." ".trim(\CoreLocal::get("transno"));
-        $tender = "AMT: ".MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2(\CoreLocal::get("change"));
+        $tender = _("AMT: ").MiscLib::truncate2($amount)._("  CHANGE: ").MiscLib::truncate2(\CoreLocal::get("change"));
         $output = self::center_check($ref)."\n"
             .self::center_check($date)."\n"
             .self::center_check(\CoreLocal::get("ckEndorse1"))."\n"
@@ -55,7 +55,7 @@ class Franking
         // lines 200-207 edited 03/24/05 apbw Wedge Printer Swap Patch
         $output = "";
         $output .= str_repeat("\n", 6);
-        $output .= "ref: " .$ref. "\n";
+        $output .= _("ref: ") .$ref. "\n";
         $output .= str_repeat(" ", 5).$time_now;
         $output .= str_repeat(" ", 12).$next_year;
         $output .= str_repeat("\n", 3);
@@ -71,11 +71,11 @@ class Franking
         $output  = "";
         $output .= str_repeat("\n", 40);    // 03/24/05 apbw Wedge Printer Swap Patch
         if (\CoreLocal::get("equityAmt")){
-            $output = "Equity Payment ref: ".$ref."   ".$time_now; // WFC 
+            $output = _("Equity Payment ref: ").$ref."   ".$time_now; // WFC 
             \CoreLocal::set("equityAmt","");
             \CoreLocal::set("LastEquityReference",$ref);
         } else {
-            $output .= "Stock Payment $".$amount." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
+            $output .= _("Stock Payment $").$amount._(" ref: ").$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
         }
 
         self::endorse($output);
@@ -88,7 +88,7 @@ class Franking
         $output  = "";        
         $output .= str_repeat("\n", 11);        // apbw 3/24/05 Wedge Printer Swap Patch
         $output .= str_repeat(" ", 5);        // apbw 3/24/05 Wedge Printer Swap Patch
-        $output .= "Validated: ".$time_now."  ref: ".$ref;     // apbw 3/24/05 Wedge Printer Swap Patch
+        $output .= _("Validated: ").$time_now._("  ref: ").$ref;     // apbw 3/24/05 Wedge Printer Swap Patch
 
         self::endorse($output);    
     }
