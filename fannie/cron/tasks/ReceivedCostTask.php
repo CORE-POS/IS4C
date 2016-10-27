@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class ArHistoryTask extends FannieTask
+class ReceivedCostTask extends FannieTask
 {
 
     public $name = 'Set Received Costs';
