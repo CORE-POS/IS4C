@@ -727,12 +727,21 @@ class UPC extends Parser
     {
         $dbc = Database::pDataConnect();
         $query = "SELECT inUse,upc,description,normal_price,scale,deposit,
-            qttyEnforced,department,local,cost,tax,foodstamp,discount,
+            qttyEnforced,department,local,tax,foodstamp,discount,
             discounttype,specialpricemethod,special_price,groupprice,
             pricemethod,quantity,specialgroupprice,specialquantity,
             mixmatchcode,idEnforced,tareweight,scaleprice";
         if (CoreLocal::get('NoCompat') == 1) {
-            $query .= ', line_item_discountable, formatted_name, special_limit ';
+            $query .= ', 
+                line_item_discountable, 
+                formatted_name, 
+                special_limit,
+                CASE 
+                    WHEN received_cost <> 0 AND received_cost IS NOT NULL
+                        THEN received_cost
+                    WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
+                        THEN special_cost 
+                    ELSE cost END AS cost';
         } else {
             $table = $dbc->tableDefinition('products');
             // New column 16Apr14
@@ -752,6 +761,14 @@ class UPC extends Parser
                 $query .= ', special_limit';
             } else {
                 $query .= ', 0 AS special_limit';
+            }
+            // New column 20Oct16
+            if (isset($table['special_cost']) && isset($table['received_cost'])) {
+                $query .= ', CASE WHEN received_cost <> 0 AND received_cost IS NOT NULL THEN received_cost
+                    CASE WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
+                    THEN special_cost ELSE cost END AS cost';
+            } else {
+                $query .= ', cost';
             }
         }
         $query .= " FROM products WHERE upc = '".$upc."'";
