@@ -273,10 +273,15 @@ the correct store (e.g., 192.168.0.0/24)<br />
 <?php 
 $model->hasOwnItems(1);
 foreach($model->find('storeID') as $store) {
+    $nets = '';
+    if (isset($FANNIE_STORE_NETS) && isset($FANNIE_STORE_NETS[$store->storeID()])) {
+        $nets = implode(', ', $FANNIE_STORE_NETS[$store->storeID()]);
+    }
+
     echo 'Store #' . $store->storeID();
     echo '<input type="hidden" name="storeNetId[]" value="' . $store->storeID() . '" />';
     echo '<input type="text" name="storeNet[]" class="form-control" value="'
-        . implode(', ', $FANNIE_STORE_NETS[$store->storeID()])
+        . $nets
         . ' " /><br />';
 } ?>
 </p>
