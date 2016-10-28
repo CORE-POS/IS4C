@@ -100,7 +100,7 @@ class ServerMonitor extends Monitor
             FROM dlog_90_view
         ');
         $dlog90 = $dbc->getValue($prep);
-        $old_dlog = \DTransactionsModel::selectDlog(date('Y-m-d', strtotime('100 days ago')), date('Y-m-d', 'yesterday'));
+        $old_dlog = \DTransactionsModel::selectDlog(date('Y-m-d', strtotime('100 days ago')), date('Y-m-d', strtotime('yesterday')));
         $prep = $dbc->prepare('
             SELECT MAX(tdate)
             FROM ' . $old_dlog . '
