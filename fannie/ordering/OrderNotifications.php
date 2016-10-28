@@ -18,7 +18,7 @@ class OrderNotifications
         $order = $this->getOrder($orderID);
         $items = $this->getItems($orderID, $transID);
         $ret = false;
-        if ($items[0]['staff'] && $order->sendEmails()) {
+        if (isset($items[0]) && $items[0]['staff'] && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
             $formatted['store'] = $this->getStore($orderID);
             $addr = $this->getAddress($order);
