@@ -82,7 +82,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
-        $this->assertInternalType('array', $json);
+        $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
         $record['total'] *= -1;
         $record['voided'] = 1;
         $record['trans_status'] = 'V';

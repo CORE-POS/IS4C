@@ -74,10 +74,6 @@ class InstallTest extends PHPUnit_Framework_TestCase
             $this->assertEquals(true, $loaded, 'Error with sample data for ' . $sample . ' (' . $output . ')');
         }
 
-        $res = $dbc->query('SELECT * FROM products LIMIT 1');
-        $row = $dbc->fetchRow($res);
-        var_dump($row);
-
         $dbc = Database::tDataConnect();
         $dbc->query('INSERT INTO taxrates (id, rate, description) VALUES (1, 0.05, \'SalesTax\')');
     }
