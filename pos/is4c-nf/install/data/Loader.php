@@ -160,6 +160,7 @@ class Loader
             }
         } else {
             echo "<br><span style='color:red;'>" . _('Table data not found in either') . " {$table}.sql or {$table}.csv</span><br>\n";
+            $success = false;
         }
 
         $verbose = ob_get_clean();
