@@ -339,6 +339,18 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return $ret;
     }
 
+    private $empty_vendor = array(
+        'vendorName'=>'',
+        'phone'=>'',
+        'fax'=>'',
+        'email'=>'',
+        'address'=>'',
+        'city'=>'',
+        'state'=>'',
+        'zip'=>'',
+        'notes'=>'',
+    );
+
     protected function get_id_view()
     {
         $dbc = $this->connection;
@@ -356,7 +368,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $notes = $dbc->getValue($notes, $this->id);
         $vname = $dbc->prepare('SELECT * FROM vendors WHERE vendorID=?');
         $vendor = $dbc->getRow($vname, array($orderObj->vendorID));
-        $vendor['notes'] = nl2br($vendor['notes']);
+        if ($vendor) {
+            $vendor['notes'] = nl2br($vendor['notes']);
+        } else {
+            $vendor = $this->empty_vendor;
+        }
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
