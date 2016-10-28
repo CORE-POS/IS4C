@@ -298,6 +298,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
         FROM products AS p
             LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
         WHERE upc=?
+            AND inUse=1
         ");
     $pdR = $dbc->execute($pdP, array($upc));
     $qtyReq = False;

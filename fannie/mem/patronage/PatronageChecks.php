@@ -80,8 +80,6 @@ class PatronageChecks extends FannieRESTfulPage
         $pdf->AddPage();
         $pdf->Image('rebate_body.png', 10, 0, 190);
         $check = new GumCheckTemplate($custdata, $meminfo, $patronage->cash_pat(), 'Rebate ' . $this->fy, $patronage->check_number());
-        $check->addBankLine('Net Purchases: $' . number_format($patronage->net_purch(), 2));
-        $check->addBankLine('Retained Equity: $' . number_format($patronage->equit_pat(), 2));
         $check->renderAsPDF($pdf);
 
         $pdf->Output('Rebate_' . $this->mem . '_' . $this->fy . '.pdf', 'I');
