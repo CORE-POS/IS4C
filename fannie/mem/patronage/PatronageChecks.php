@@ -91,8 +91,8 @@ class PatronageChecks extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $fiscal_year = FormLib::get('fy');
-        $per_page = FormLib::get('per_page');
+        $fiscal_year = FormLib::get('fy', '2016');
+        $per_page = FormLib::get('per_page', 3000);
 
         $custdata = new CustdataModel($dbc);
         $meminfo = new MeminfoModel($dbc);
@@ -103,15 +103,18 @@ class PatronageChecks extends FannieRESTfulPage
                 p.equit_pat,
                 p.net_purch,
                 m.zip,
-                p.check_number
+                p.check_number,
+                c.LastName,
+                c.FirstName
             FROM patronage AS p
                 INNER JOIN meminfo AS m ON p.cardno=m.card_no
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
             WHERE p.FY=?
                 AND p.cash_pat > 0
-            ORDER BY m.zip,
-                c.LastName,
-                c.FirstName');
+
+            ORDER BY zip,
+                LastName,
+                FirstName');
         $result = $dbc->execute($query, array($fiscal_year));
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
@@ -121,7 +124,11 @@ class PatronageChecks extends FannieRESTfulPage
         $filenumber = 1;
         set_time_limit(0);
         $barcoder = new COREPOS\Fannie\API\item\FannieSignage();
+        $count = 1;
+        $ttl = $dbc->numRows($result);
         while ($row = $dbc->fetch_row($result)) {
+            echo "Processing {$row['cardno']} ({$count}/{$ttl})\n";
+            $count++;
             if (empty($filename)) {
                 $filename = $filenumber . '-' . substr($row['zip'], 0, 5);
             }
@@ -212,5 +219,4 @@ class PatronageChecks extends FannieRESTfulPage
 }
 
 FannieDispatch::conditionalExec();
-
 
