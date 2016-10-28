@@ -84,6 +84,13 @@ class SuperDeptEditor extends FanniePage {
             $model->save();
             echo json_encode($ret);
             break;
+        case 'Delete':
+            $id = FormLib::get('id', 0);
+            $model = new SuperDeptNamesModel(FannieDB::get($FANNIE_OP_DB));
+            $model->superID($id);
+            $error = $model->delete() ? false : 'Failed to delete #' . $id;
+            echo json_encode(array('error'=>$error));
+            break;
         default:
             echo 'Bad request';
             break;
@@ -176,11 +183,13 @@ class SuperDeptEditor extends FanniePage {
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $def = $dbc->tableDefinition('superDeptNames');
         $superQ = $dbc->prepare("
             SELECT n.superID,
                 super_name 
             FROM superDeptNames as n
                 LEFT JOIN superdepts AS s ON s.superID=n.superID
+            " . (isset($def['deleted']) ? ' WHERE deleted=0 ' : '') . "
             GROUP BY n.superID,super_name
             ORDER BY super_name");
         $superR = $dbc->execute($superQ);
@@ -205,6 +214,7 @@ class SuperDeptEditor extends FanniePage {
         }
 
         $deptRange = $dbc->getRow('SELECT MIN(dept_no) AS min, MAX(dept_no) AS max FROM departments');
+        $firstDepts = $this->depts_in_super($firstID);
 
         ob_start();
         ?>
@@ -232,7 +242,7 @@ class SuperDeptEditor extends FanniePage {
             <label class="control-label">Members</label>
             <select class="form-control" id="deptselect" multiple size=15>
             <?php 
-            foreach ($this->depts_in_super($firstID) as $id=>$name) {
+            foreach ($firstDepts as $id=>$name) {
                 printf('<option value=%d>%d %s</option>',$id,$id,$name);
             }
             ?>
@@ -265,6 +275,11 @@ class SuperDeptEditor extends FanniePage {
         <p>
             <button type="submit" value="Save" onclick="superDept.saveData(); return false;"
                 class="btn btn-default">Save</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <button type="button" class="btn btn-default btn-danger" id="deleteBtn" 
+                onclick="superDept.deleteCurrent(); return false;"
+                <?php echo (count($firstDepts) > 0 ? 'disabled' : ''); ?>>
+                Delete Super Department</button>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <a class="btn btn-default"
             href="../../reports/DepartmentSettings/DeptSettingsReport.php?dept1=<?php echo $deptRange['min']; ?>&dept2=<?php echo $deptRange['max']; ?>&submit=by_dr">View All Departments' Primary Super Department</a>
