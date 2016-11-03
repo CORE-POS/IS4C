@@ -40,13 +40,7 @@ class WicProdReport extends FannieReportPage
 
     public function fetch_report_data()
     {        
-        $item = array( array() );
-        $upc = array();
-        $brand = array();
-        $desc = array();
-        $vendor = array();
-        $cost = array();
-        $price = array();
+        $item = array();
         
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -89,7 +83,7 @@ class WicProdReport extends FannieReportPage
         }
 
         sort($item);
-        return $item;
+        return $this->dekey_array($item);
     }
 
     public function form_content()
