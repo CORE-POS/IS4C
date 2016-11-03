@@ -69,6 +69,9 @@ $errors = False;
 // connect to each lane and update balances
 foreach($FANNIE_LANES as $lane){
     $db = new SQLManager($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
+    if (!$db->isConnected()) {
+        echo "Failed on {$lane['host']}\n";
+    }
 
     if ($db === False){
         echo cron_msg("Can't connect to lane: ".$lane['host']);
