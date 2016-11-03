@@ -38,7 +38,7 @@ class WicTenderReport extends FannieReportPage
     protected $header = "WIC Tender Report";
     protected $required_fields = array('date1', 'date2');
 
-    public function fetch_report_data()
+    function report_description_content()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
@@ -58,8 +58,20 @@ class WicTenderReport extends FannieReportPage
                 " 00:00:00' and tdate<='" . $date2 . " 23:59:59';
             ";
         $result = $dbc->query($query);
-        while ($row = $dbc->fetch_row($result)) {
-            echo $row['count'] . " <strong>WIC transactions</strong> occured during this period.";
+        $row = $dbc->fetch_row($result);
+
+        return array($row['count'] . " <strong>WIC transactions</strong> occured during this period.");
+    }
+
+    public function fetch_report_data()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        try {
+            $date1 = $this->form->date1;
+            $date2 = $this->form->date2;
+        } catch (Exception $ex) {
+            return array();
         }
         
         /**
@@ -72,7 +84,7 @@ class WicTenderReport extends FannieReportPage
                 MONTH(tdate) AS month,
                 DAY(tdate) AS day,
                 trans_num,
-                SUM(CASE WHEN d.trans_subtype=\'WT\' THEN 1 ELSE 0 END) as usedWic
+                SUM(CASE WHEN d.description=\'WIC\' THEN 1 ELSE 0 END) as usedWic
             FROM dlog_90_view AS d
                 LEFT JOIN ' . $this->config->get('OP_DB') . $dbc->sep() . 'products AS p ON p.upc=d.upc AND p.store_id=d.store_id
             WHERE d.tdate BETWEEN \'' . $date1 . ' 00:00:00\'
