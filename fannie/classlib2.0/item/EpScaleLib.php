@@ -72,13 +72,22 @@ class EpScaleLib
         $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
         $et_line .= 'PNO' . $item_info['PLU'] . chr(253);
         $et_line .= 'INO' . $item_info['PLU'] . chr(253);
-        $et_line .= 'ITE' . self::expandedText($item_info['ExpandedText']) . chr(253);
+        $et_line .= 'ITE' . self::expandedText($item_info['ExpandedText'], $item_info, $scale_model) . chr(253);
 
         return $et_line;
     }
 
-    static private function expandedText($text)
+    static private function expandedText($text, $item_info, $scale_model)
     {
+        if ($scale_model->epDeptNo() <= 3 && $item_info['MOSA']) {
+            $text = str_replace('{mosa}', 'Certified Organic By MOSA', $text);
+        } else {
+            $text = str_replace('{mosa}', '', $text);
+        }
+        if (!isset($item_info['OriginText'])) {
+            $item_info['OriginText'] = '';
+        }
+        $text = str_replace('{cool}', $item_info['OriginText'], $text);
         $text = str_replace("\r", '', $text);
         return str_replace("\n", chr(0xE), $text);
     }
