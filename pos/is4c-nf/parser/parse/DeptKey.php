@@ -33,7 +33,8 @@ class DeptKey extends Parser
     public function check($str)
     {
         if (strstr($str,"DP") && strlen($str) > 3 &&
-            substr($str,0,2) != "VD") {
+            substr($str,0,2) != "VD" &&
+            substr($str,-2,2) != "PV") {
             return true;
         }
 
