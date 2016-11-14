@@ -34,6 +34,8 @@ class AutoParsReport extends FannieReportPage
     protected $header = "Auto Pars Report";
     protected $report_headers = array('UPC','Brand','Item','Dept#','Dept Name','Daily Par');
     protected $required_fields = array('buyer');
+    protected $sort_direction = 1;
+    protected $sort_column = 5;
 
     public function fetch_report_data()
     {
@@ -82,15 +84,19 @@ class AutoParsReport extends FannieReportPage
                 LEFT JOIN {$superTable} AS m ON p.department=m.dept_ID
             WHERE {$where}
                 AND p.store_id=?
-                AND (p.inUse=1 OR p.auto_par > 0)";
+                AND (p.inUse=1 OR p.auto_par > 0)
+            ORDER BY auto_par DESC";
         $args[] = $store;
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
+        $date1 = date('Y-m-d', strtotime('90 days ago'));
+        $date2 = date('Y-m-d', strtotime('yesterday'));
 
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
             $data[] = array(
-                $row['upc'],
+                sprintf('<a href="../ProductMovement/ProductMovementModular.php?date1=%s&date2=%s&upc=%s&store=%d">%s</a>',
+                    $date1, $date2, $row['upc'], $store, $row['upc']),
                 $row['brand'],
                 $row['description'],
                 $row['department'],
