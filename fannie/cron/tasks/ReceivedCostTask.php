@@ -43,14 +43,15 @@ on received order invoices';
         $cutoff = date('Y-m-d', strtotime('7 days ago'));
 
         $query = $dbc->prepare("
-            SELECT o.upc,
+            SELECT o.internalUPC AS upc,
                r.storeID,
                MAX(o.receivedTotalCost / receivedQty) AS cost
             FROM PurchaseOrderItems AS o
                 INNER JOIN PurchaseOrder AS r ON o.orderID=r.orderID
-                INNER JOIN products AS p ON o.upc=p.upc AND r.vendorID=p.default_vendor_id 
+                INNER JOIN products AS p ON o.internalUPC=p.upc AND r.vendorID=p.default_vendor_id 
             WHERE o.receivedDate >= ?
-            GROUP BY o.upc,
+                AND receivedTotalCost > 0
+            GROUP BY o.internalUPC,
                 r.storeID");
         
         $update = $dbc->prepare("UPDATE products SET received_cost=? WHERE upc=? AND store_id=?");
