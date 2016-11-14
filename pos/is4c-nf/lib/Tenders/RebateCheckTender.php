@@ -63,6 +63,7 @@ class RebateCheckTender extends TenderModule
     public function add()
     {
         /* Discount disabled Jan01
+        */
         $db = Database::tDataConnect();
         $query = 'SELECT SUM(total) as ttl FROM localtemptrans
                 WHERE department IN (992, 991, 902)';
@@ -72,10 +73,9 @@ class RebateCheckTender extends TenderModule
             $row = $db->fetch_row($result);
             $ignore = (float)$row['ttl'];
         }
-        if ( (CoreLocal::get('runningTotal') - $ignore) >= 50) {
-            TransRecord::addhousecoupon('PATREBDISC', 703, -5.00);
+        if ( (CoreLocal::get('runningTotal') - $ignore) >= 150) {
+            TransRecord::addhousecoupon('PATREBDISC', 703, -25.00);
         }
-        */
 
         parent::add();
     }
