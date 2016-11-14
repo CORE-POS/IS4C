@@ -349,7 +349,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
                     WHERE l.upc=?
                         AND ' . $dbc->curdate() . ' >= b.startDate
                         AND ' . $dbc->curdate() . ' <= b.endDate
-                        AND b.batchType=11
+                        AND b.batchType IN (11, 12)
                 ');
                 $closeoutR = $dbc->execute($closeoutP, array($upc));
                 if ($closeoutR && $dbc->num_rows($closeoutR) == 0) {
