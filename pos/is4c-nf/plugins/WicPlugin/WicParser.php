@@ -72,6 +72,8 @@ class WicParser extends Parser
 
     private function wicUPC($str)
     {
+        $dbc = Database::tDataConnect();
+        $dbc->query('UPDATE localtemptrans SET percentDiscount=0');
         $arr = CoreLocal::get('WicOverride');
         $upc = substr('0000000000000' . $str, -13);
         if (is_array($arr) && in_array(ltrim($str, '0'), $arr)) {

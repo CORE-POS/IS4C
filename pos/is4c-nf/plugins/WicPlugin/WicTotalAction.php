@@ -35,7 +35,8 @@ class WicTotalAction extends TotalAction
             $dbc = Database::tDataConnect();
             $dbc->query('
                 UPDATE localtemptrans
-                SET discountable=0
+                SET discountable=0,
+                    percentDiscount=0
             ');
         }
     }
