@@ -172,7 +172,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             p.cost,
             b.shippingMarkup,
             b.discountRate,
-            p.normal_price,	
+            p.normal_price,
             " . Margin::toMarginSQL($costSQL, 'p.normal_price') . " AS current_margin,
             " . Margin::toMarginSQL($costSQL, 'v.srp') . " AS desired_margin,
             " . $costSQL . " AS adjusted_cost,
