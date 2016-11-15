@@ -59,7 +59,6 @@ class AutoOrderTask extends FannieTask
         }
         $export = new WfcPoExport();
         $vendor = new VendorsModel($dbc);
-        $mail = $this->getMailer();
         $costP = $dbc->prepare('SELECT SUM(unitCost*caseSize*quantity) FROM PurchaseOrderItems WHERE orderID=?');
         foreach ($map->find() as $obj) {
             echo "VENDOR: " . $obj->vendorID() . PHP_EOL;
@@ -94,6 +93,7 @@ class AutoOrderTask extends FannieTask
                 $dbc->execute($delP, array($orderID));
                 continue;
             }
+            $mail = $this->getMailer();
             $mail->addAddress($addr);
             $mail->Subject = 'WFC Purchase Order ' . date('Y-m-d');
             $mail->Body = $this->csvToHtml($csv);
