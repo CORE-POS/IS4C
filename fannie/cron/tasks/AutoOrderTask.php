@@ -42,7 +42,7 @@ class AutoOrderTask extends FannieTask
         $mail->Host = '127.0.0.1';
         $mail->Port = 25;
         $mail->SMTPAuth = false;
-        $mail->From = 'it@wholefods.coop';
+        $mail->From = 'it@wholefoods.coop';
         $mail->FromName = 'Whole Foods Co-op';
         $mail->isHTML = true;
 
