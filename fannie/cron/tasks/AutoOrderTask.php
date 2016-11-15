@@ -45,6 +45,8 @@ class AutoOrderTask extends FannieTask
         $mail->From = 'it@wholefods.coop';
         $mail->FromName = 'Whole Foods Co-op';
         $mail->isHTML = true;
+
+        return $mail;
     }
 
     public function run()
@@ -53,24 +55,28 @@ class AutoOrderTask extends FannieTask
         $place = $dbc->prepare("UPDATE PurchaseOrder SET placed=1, placedDate=? WHERE orderID=?");
         $map = new AutoOrderMapModel($dbc);
         if (!class_exists('WfcPoExport')) {
-            include(__DIR__ . '/../../purchasing/exporters/WfcPoExport');
+            include(__DIR__ . '/../../purchasing/exporters/WfcPoExport.php');
         }
         $export = new WfcPoExport();
         $vendor = new VendorsModel($dbc);
         $mail = $this->getMailer();
         foreach ($map->find() as $obj) {
+            echo "VENDOR: " . $obj->vendorID() . PHP_EOL;
             $task = new OrderGenTask();
             $task->setConfig($this->config);
             $task->setLogger($this->logger);
             $task->setVendors(array($obj->vendorID()));
             $task->setStore($obj->storeID());
+            $task->setSilent(true);
             $ids = $task->run();
             if (count($ids) == 0) {
                 continue;
             }
 
             $orderID = $ids[0];
-            $csv = $export->export_order($orderID);
+            ob_start();
+            $export->export_order($orderID);
+            $csv = ob_get_clean();
             $vendor->vendorID($obj->vendorID());
             if (!$vendor->load()) {
                 $this->cronMsg("Could not find vendor ID: " . $obj->vendorID());
@@ -101,15 +107,23 @@ class AutoOrderTask extends FannieTask
     {
         $lines = explode("\r\n", $csv);
         $ret = "<table>\n";
+        $para = '';
         foreach ($lines as $line) {
             $ret .= "<tr>\n";
             $row = str_getcsv($line);
-            foreach ($row as $entry) {
-                $ret .= "<td>{$entry}</td>";
+            if (count($row) == 1) {
+                $para .= $row[0] . '<br />';
+            } else {
+                foreach ($row as $entry) {
+                    $ret .= "<td>{$entry}</td>";
+                }
             }
             $ret .= "</tr>\n";
         }
         $ret .= "</table>\n";
+        if (strlen($para) > 0) {
+            $ret .= '<p>' . $para . '</p>';
+        }
 
         return $ret;
     }
