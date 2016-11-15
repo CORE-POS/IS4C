@@ -211,14 +211,14 @@ class FormLib extends \COREPOS\common\FormLib
       Generate a very standard form with date and department fields
       @return [string] html form
     */
-    public static function dateAndDepartmentForm()
+    public static function dateAndDepartmentForm($standardFieldNames=false)
     {
         ob_start();
         ?>
 <form method="get" class="form-horizontal">
 <div class="row">
     <div class="col-sm-6">
-        <?php echo self::standardDepartmentFields('buyer');  ?>
+        <?php echo $standardFieldNames ? self::standardDepartmentFields('super-dept', 'departments', 'dept-start', 'dept-end') : self::standardDepartmentFields('buyer');  ?>
         <div class="form-group">
             <label class="col-sm-4 control-label">Store</label>
             <div class="col-sm-8">
