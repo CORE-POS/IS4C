@@ -686,11 +686,13 @@ class MemberREST
                     if (isset($c_json['email'])) {
                         $meminfo->email_1($c_json['email']);
                     }
-                } elseif (isset($c_json['firstName']) && isset($c_json['lastName']) && $c_json['firstName'] == '' && $c_json['lastName'] == '') {
+                } elseif (isset($c_json['firstName']) && isset($c_json['lastName']) && trim($c_json['firstName']) == '' && trim($c_json['lastName']) == '') {
                     // blank name fields on non-account holder mean
                     // the customer was removed from the account
                     continue;
                 } else {
+                    var_dump($c_json['firstName']);
+                    var_dump($c_json['lastName']);
                     $loopCD->personNum($personNum);
                     $personNum++;
                 }
