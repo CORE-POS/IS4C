@@ -132,6 +132,10 @@ class OrderGenTask extends FannieTask
             $shrink = $dbc->getValue($shP, array($cache['cacheEnd'], $row['upc'], $row['storeID']));
             $cur = $shrink ? $cur - $shrink : $cur;
             if ($cur !== false && $cur < $row['par']) {
+                $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
+                if ($prodW === false || $prodW['inUse'] == 0) {
+                    continue;
+                }
                 /**
                   Allocate a purchase order to hold this vendors'
                   item(s)
@@ -164,17 +168,12 @@ class OrderGenTask extends FannieTask
                 // no catalog entry to create an order
                 if ($itemR === false || $itemR['units'] <= 0) {
                     $itemR['sku'] = $row['upc'];
-                    $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
-                    if ($prodW === false) {
-                        continue;
-                    } else {
-                        $itemR['brand'] = $prodW['brand'];
-                        $itemR['description'] = $prodW['description'];
-                        $itemR['cost'] = $prodW['cost'];
-                        $itemR['saleCost'] = 0;
-                        $itemR['size'] = $prodW['size'];
-                        $itemR['units'] = 1;
-                    }
+                    $itemR['brand'] = $prodW['brand'];
+                    $itemR['description'] = $prodW['description'];
+                    $itemR['cost'] = $prodW['cost'];
+                    $itemR['saleCost'] = 0;
+                    $itemR['size'] = $prodW['size'];
+                    $itemR['units'] = 1;
                 }
 
                 /**
