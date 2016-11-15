@@ -38,8 +38,16 @@ class WfcPoExport extends DefaultCsvPoExport
         $order->orderID($id);
         $order->load();
 
+        $auto = new AutoOrderMapModel($dbc);
+        $auto->vendorID($order->vendorID());
+        $auto->storeID($order->storeID());
+        $auto->load();
 
         echo "\r\n";
+        if ($auto->accountID() != '') {
+            echo "Account# " . $auto->accountID() . "\r\n";
+        }
+        echo "PO# " . $id . "\r\n";
         if ($order->storeID() == 1) {
             echo "Whole Foods Co-op\r\n";
             echo "610 E 4th St\r\n";

@@ -24,7 +24,7 @@
 class OrderGenTask extends FannieTask
 {
 
-    public $name = 'Auto Order';
+    public $name = 'Generate Purchase Orders';
 
     public $description = 'Generates orders based on inventory info';
 
@@ -83,6 +83,7 @@ class OrderGenTask extends FannieTask
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
         $prodP = $dbc->prepare('SELECT * FROM products WHERE upc=? AND store_id=?');
+        $orderIDs = array();
         $dtP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
             FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog
@@ -145,6 +146,7 @@ class OrderGenTask extends FannieTask
                     $order->orderID($poID);
                     $order->save();
                     $orders[$row['vid'].'-'.$row['storeID']] = $poID;
+                    $orderIDs[] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
 
@@ -204,6 +206,8 @@ class OrderGenTask extends FannieTask
         if (!$this->silent) {
             $this->sendNotifications($dbc, $orders);
         }
+
+        return $orderIDs;
     }
 
     private function sendNotifications($dbc, $orders)

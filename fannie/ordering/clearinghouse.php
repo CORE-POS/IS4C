@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+use COREPOS\Fannie\API\lib\Store;
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
@@ -28,8 +29,12 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (FannieConfig::config('SO_UI') === 'bootstrap') {
-    header('Location: NewSpecialOrdersPage.php');
+if (Store::getIdByIp() == 2 || FannieConfig::config('SO_UI') === 'bootstrap') {
+    $url = 'NewSpecialOrdersPage.php';
+    if (isset($_REQUEST['card_no'])) {
+        $url .= sprintf('?card_no=%d', $_REQUEST['card_no']);
+    }
+    header('Location: ' . $url);
     return;
 }
 if (!function_exists('checkLogin')) {
@@ -166,6 +171,7 @@ foreach($assignments as $k=>$v){
     printf("<option %s value=\"%d\">%s</option>",
         ($k==$f2?'selected':''),$k,$v);
 }
+printf('<option %s value="20">Spices</option>',($f2=="20"?'selected':''));
 printf('<option %s value="2%%2C8">Meat+Cool</option>',($f2=="2,8"?'selected':''));
 echo '</select>';
 echo '&nbsp;';
@@ -225,9 +231,10 @@ while($w = $dbc->fetch_row($r)){
 
 if ($f2 !== '' || $f3 !== ''){
     $filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR o.noteSuperID IN (%s))",$f2,$f2):'');
+    $supers = ($f2 !== '' ? 'superdepts' : 'MasterSuperDepts');
     $filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
     $q = "SELECT p.order_id FROM {$TRANS}PendingSpecialOrder AS p
-        LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+        LEFT JOIN {$supers} AS m ON p.department=m.dept_ID
         LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
         WHERE 1=1 $filter2 $filter3
         GROUP BY p.order_id";

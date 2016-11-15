@@ -55,10 +55,33 @@ class VendorIndexPage extends FannieRESTfulPage
             'post<delivery>',
             'post<id><shipping>',
             'post<id><rate>',
-            'post<id><inactive>'
+            'post<id><inactive>',
+            'post<id><autoID>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function post_id_autoID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $map = new AutoOrderMapModel($dbc);
+        $map->vendorID($this->id);
+        $enables = FormLib::get('autoEnable', array());
+        $accounts = FormLib::get('autoAccount', array());
+        var_dump($accounts);
+        for ($i=0; $i<count($this->autoID); $i++) {
+            $map->storeID($this->autoID[$i]);
+            if (in_array($map->storeID(), $enables)) {
+                $map->accountID($accounts[$i]);
+                $map->save();
+            } else {
+                $map->delete();
+            }
+        }
+
+        return false;
     }
 
     protected function get_id_autoAdd_handler()
@@ -445,6 +468,37 @@ class VendorIndexPage extends FannieRESTfulPage
         $ret .= '<button type="submit" class="btn btn-default">Save Vendor Contact Info</button>';
         $ret .= '</form>';
         $ret .= '</div></div>';
+
+        $stores = new StoresModel($dbc);
+        $stores->hasOwnItems(1);
+        $map = new AutoOrderMapModel($dbc);
+        $map->vendorID($id);
+        $ret .= '<div class="panel panel-default">
+            <div class="panel-heading">Auto Order (No, this is not enabled yet)</div>
+            <div class="panel-body">
+            <table class="table table-bordered">
+            <tr><th>Store</th><th>Enabled</th><th>Account#</th></tr>';
+        foreach ($stores->find() as $store) {
+            $map->storeID($store->storeID());
+            $exists = $map->load();
+            $ret .= sprintf('<tr>
+                <td>%s</td>
+                <input type="hidden" name="autoID[]" value="%d" class="auto-order" />
+                <td><input type="checkbox" %s class="auto-order" name="autoEnable[]" value="%d" /></td>
+                <td><input type="text" class="form-control auto-order" name="autoAccount[]" value="%s" /></td>
+                </tr>',
+                $store->description(),
+                $store->storeID(),
+                ($exists ? 'checked' : ''),
+                $store->storeID(),
+                $map->accountID()
+            );
+        }
+        $ret .= '</table>
+                <button type="button" class="btn btn-default" 
+                    onclick="vendorEditor.saveAutoOrder(' . $id . '); return false;">Save</button>
+                </div>
+            </div>';
 
         $delivery = new VendorDeliveriesModel($dbc);
         $delivery->vendorID($id);

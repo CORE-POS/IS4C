@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+use COREPOS\Fannie\API\lib\Store;
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
@@ -28,7 +29,7 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (FannieConfig::config('SO_UI') === 'bootstrap') {
+if (Store::getIdByIp() == 2 || FannieConfig::config('SO_UI') === 'bootstrap') {
     header('Location: OldSpecialOrdersPage.php');
     return;
 }

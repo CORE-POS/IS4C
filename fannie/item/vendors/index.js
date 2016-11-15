@@ -126,7 +126,16 @@ var vendorEditor = (function($) {
             method: 'post',
             data: dstr
         });
-    }
+    };
+
+    mod.saveAutoOrder = function(vid) {
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            method: 'post',
+            data: 'id='+vid+'&'+$('.auto-order').serialize()
+        }).done(function(resp) {
+        });
+    };
 
     return mod;
 
