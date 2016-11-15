@@ -70,7 +70,6 @@ class VendorIndexPage extends FannieRESTfulPage
         $map->vendorID($this->id);
         $enables = FormLib::get('autoEnable', array());
         $accounts = FormLib::get('autoAccount', array());
-        var_dump($accounts);
         for ($i=0; $i<count($this->autoID); $i++) {
             $map->storeID($this->autoID[$i]);
             if (in_array($map->storeID(), $enables)) {
@@ -80,6 +79,11 @@ class VendorIndexPage extends FannieRESTfulPage
                 $map->delete();
             }
         }
+
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorID($id);
+        $vendor->orderMinimum(FormLib::get('minOrder', 0));
+        $vendor->save();
 
         return false;
     }
@@ -476,6 +480,14 @@ class VendorIndexPage extends FannieRESTfulPage
         $ret .= '<div class="panel panel-default">
             <div class="panel-heading">Auto Order (No, this is not enabled yet)</div>
             <div class="panel-body">
+            <div class="form-group">
+                <label>Minimum Order</label>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input type="text" name="minOrder" class="form-control auto-order"
+                        value="' . $model->orderMinimum() . '" />
+                </div>
+            </div>
             <table class="table table-bordered">
             <tr><th>Store</th><th>Enabled</th><th>Account#</th></tr>';
         foreach ($stores->find() as $store) {
