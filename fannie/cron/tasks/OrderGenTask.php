@@ -131,7 +131,7 @@ class OrderGenTask extends FannieTask
             $cur = $sales ? $cache['onHand'] - $sales : $cache['onHand'];
             $shrink = $dbc->getValue($shP, array($cache['cacheEnd'], $row['upc'], $row['storeID']));
             $cur = $shrink ? $cur - $shrink : $cur;
-            if ($cur !== false && $cur < $row['par']) {
+            if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
                 $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
                 if ($prodW === false || $prodW['inUse'] == 0) {
                     continue;
@@ -174,6 +174,22 @@ class OrderGenTask extends FannieTask
                     $itemR['saleCost'] = 0;
                     $itemR['size'] = $prodW['size'];
                     $itemR['units'] = 1;
+                }
+
+                /**
+                  Special case: items with a par of 1 and
+                  case size of 1 are slow movers. These will be 
+                  ordered when on-hand *reaches* par instead of
+                  when on-hand *drops below* par. Replenishment
+                  then orders slightly above par depending on
+                  cost.
+                */
+                if ($row['par'] == 1 && $itemR['units'] == 1) {
+                    if ($itemR['cost'] >= 15) {
+                        $row['par'] = 2;
+                    } else {
+                        $row['par'] = 3;
+                    }
                 }
 
                 /**
