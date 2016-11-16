@@ -39,8 +39,7 @@ class AjaxCallback
         return $this->encoding;
     }
 
-    // @hintable
-    public function ajax($input=array())
+    public function ajax(array $input=array())
     {
 
     }
