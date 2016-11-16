@@ -127,15 +127,6 @@ class SaleEffectReport extends FannieReportPage
             number of days in the reporting period.
             </p>';
     }
-
-    public function unitTest($phpunit)
-    {
-        $data = array('month'=>1, 'day'=>1, 'year'=>2000, 'upc'=>'4011',
-            'brand'=>'b','description'=>'test', 'department'=>1, 'dept_name'=>'test',
-            'salesCode'=>100, 'super_name'=>'test', 'quantity'=>1,
-            'cost'=>1, 'total'=>1, 'shrinkReason'=>'test', 'charflag'=>'C');
-        $phpunit->assertInternalType('array', $this->rowToRecord($data));
-    }
 }
 
 FannieDispatch::conditionalExec();
