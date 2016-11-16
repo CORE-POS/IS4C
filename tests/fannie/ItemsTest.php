@@ -195,6 +195,8 @@ class ItemsTest extends PHPUnit_Framework_TestCase
             'NetWeight' => '1',
             'Graphics' => '1',
             'ExpandedText' => 'Ingredients go here',
+            'MOSA' => 0,
+            'OriginText' => '',
         );
 
         $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj));

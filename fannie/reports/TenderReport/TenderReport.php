@@ -1,4 +1,6 @@
 <?php
 // this is just here for WFC URL compatibility
-header('Location: BackendTenderReport.php');
+if (!headers_sent()) {
+    header('Location: BackendTenderReport.php');
+}
 

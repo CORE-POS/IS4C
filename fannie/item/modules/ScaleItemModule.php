@@ -32,7 +32,8 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $p = $dbc->prepare('SELECT * FROM scaleItems WHERE plu=?');
         $r = $dbc->execute($p,array($upc));
         $scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
-            'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0);
+            'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0,
+            'mosaStatement'=>0, 'originText'=>'');
         $found = false;
         if ($dbc->num_rows($r) > 0) {
             $scale = $dbc->fetch_row($r);

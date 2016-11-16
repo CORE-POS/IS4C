@@ -611,6 +611,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     private $op_models = array(
         // TABLES
         'AutoCouponsModel',
+        'AutoOrderMapModel',
         'BatchesModel',
         'BatchListModel',
         'BatchCutPasteModel',
