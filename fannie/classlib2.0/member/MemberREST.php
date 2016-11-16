@@ -691,8 +691,6 @@ class MemberREST
                     // the customer was removed from the account
                     continue;
                 } else {
-                    var_dump($c_json['firstName']);
-                    var_dump($c_json['lastName']);
                     $loopCD->personNum($personNum);
                     $personNum++;
                 }
