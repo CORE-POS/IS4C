@@ -198,8 +198,12 @@ class AjaxParser extends AjaxCallback
 
         if ($entered != "" && $entered != "PAYCARD") {
             $result = $this->runParsers($entered);
-            if ($result && is_array($result)) {
+            if ($result) {
                 $json = $this->runPostParsers($result);
+
+                if (!is_array($json)) {
+                    $json = $json->toArray();
+                }
 
                 if (isset($json['udpmsg']) && $json['udpmsg'] !== False && is_object($sdObj)){
                     $sdObj->WriteToScale($json['udpmsg']);

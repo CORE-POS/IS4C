@@ -25,6 +25,10 @@ class ParseResult implements ArrayAccess
         );
     }
 
+    public function toArray()
+    {
+        return $this->value;
+
     /**
       Use magic method to create fluent interface
     */
