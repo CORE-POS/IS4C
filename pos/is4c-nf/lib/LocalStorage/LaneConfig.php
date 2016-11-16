@@ -23,6 +23,8 @@
 
 namespace COREPOS\pos\lib\LocalStorage;
 
+// autoloading hasn't kicked in yet
+// this could be improved
 if (!class_exists('COREPOS\common\cache\file\CacheItemPool', false)) {
     include(dirname(__FILE__) . '/../../../../common/cache/file/CacheItemPool.php');
 }
