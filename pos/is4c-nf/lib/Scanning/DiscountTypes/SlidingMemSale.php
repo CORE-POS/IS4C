@@ -30,8 +30,7 @@ use \CoreLocal;
 class SlidingMemSale extends DiscountType 
 {
 
-    // @hintable
-    public function priceInfo($row,$quantity=1)
+    public function priceInfo(array $row, $quantity=1)
     {
         if (is_array($this->savedInfo)) {
             return $this->savedInfo;

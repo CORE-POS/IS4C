@@ -30,7 +30,6 @@ class EquityWarnDept extends SpecialDept
 {
     public $help_summary = 'Require cashier confirmation on equity sale';
 
-    // @hintable
     public function handle($deptID,$amount,$json)
     {
         if (CoreLocal::get("memberID") == "0" || CoreLocal::get("memberID") == CoreLocal::get("defaultNonMem")) {

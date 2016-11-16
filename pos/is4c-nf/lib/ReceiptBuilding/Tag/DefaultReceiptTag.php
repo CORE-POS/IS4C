@@ -37,8 +37,7 @@ class DefaultReceiptTag
       @param $rowset an array of records
       @return an array of records
     */
-    // @hintable
-    public function tag($rowset)
+    public function tag(array $rowset)
     {
         for($i=0;$i<count($rowset);$i++) {
             switch($rowset[$i]['trans_type']) {

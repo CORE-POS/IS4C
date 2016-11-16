@@ -36,8 +36,7 @@ class AjaxDecision extends AjaxCallback
 {
     protected $encoding = 'json';
 
-    // @hintable
-    public function ajax($input=array())
+    public function ajax(array $input=array())
     {
         $decision = strtoupper(FormLib::get('input', 'CL'));
 

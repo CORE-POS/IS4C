@@ -39,7 +39,6 @@ class DefaultReceiptFilter
       @param $data an SQL result object
       @return an array of records
     */
-    // @hintable
     public function filter($dbc, $data)
     {
         $reverseMap = array();

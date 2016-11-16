@@ -30,7 +30,6 @@ class PaidOutDept extends SpecialDept
 {
     public $help_summary = 'Negate entered amount and also prompt for comment';
 
-    // @hintable
     public function handle($deptID,$amount,$json)
     {
         if (CoreLocal::get('msgrepeat') == 0) { // invert has not happened yet

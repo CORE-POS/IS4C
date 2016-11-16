@@ -62,6 +62,9 @@ class rplist extends NoInputCorePage
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
             return false;
+        } elseif (isset($_REQUEST['preview'])) {
+            echo $this->previewTrans($_REQUEST['preview']);
+            return false;
         }
 
         return true;
@@ -71,6 +74,15 @@ class rplist extends NoInputCorePage
     {
         ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
+        <script type="text/javascript">
+        function updatePreview(trans) {
+            $.ajax({
+                data: 'preview='+trans
+            }).done(function(resp) {
+                $('#receipt-preview').html(resp);
+            });
+        }
+        </script>
         <?php
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
@@ -105,6 +117,32 @@ class rplist extends NoInputCorePage
 
         return $ret;
     }
+
+    private function previewTrans($trans)
+    {
+        list($reg, $emp, $tID) = explode('::', $trans);
+        $dbc = Database::tDataConnect();
+        $previewP = $dbc->prepare("
+            SELECT description
+            FROM localtranstoday
+            WHERE emp_no=?
+                AND register_no=?
+                AND trans_no=?
+                AND trans_type <> 'L'
+            ORDER BY trans_id");
+        $previewR = $dbc->execute($previewP, array($emp, $reg, $tID));
+        $ret = '';
+        $count = 0;
+        while ($row = $dbc->fetchRow($previewR)) {
+            $ret .= $row['description'] . '<br />';
+            $count++;
+            if ($count > 10) {
+                break;
+            }
+        }
+
+        return $ret;
+    }
     
     function body_content()
     {
@@ -114,10 +152,11 @@ class rplist extends NoInputCorePage
         <form name="selectform" method="post" id="selectform" 
             action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" >
         <select name="selectlist" size="15" id="selectlist"
-            onblur="$('#selectlist').focus()" >
+            onblur="$('#selectlist').focus()" onchange="updatePreview(this.value);" >
 
         <?php
         $selected = "selected";
+        $first = false;
         foreach ($this->getTransactions() as $row) {
             echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."'";
             echo $selected;
@@ -125,10 +164,15 @@ class rplist extends NoInputCorePage
                 ." #".$row["trans_no"]." -- $".
                 sprintf('%.2f',$row["total"]);
             $selected = "";
+            if (!$first) {
+                $first = $row['register_no'] . '::' . $row['emp_no'] . '::' . $row['trans_no'];
+            }
         }
         ?>
-
         </select>
+        </div>
+        <div class="listbox" id="receipt-preview" style="height: 15; font-size: 85%;">
+            <?php echo ($first) ? $this->previewTrans($first) : ''; ?>
         </div>
         <?php
         if (CoreLocal::get('touchscreen')) {

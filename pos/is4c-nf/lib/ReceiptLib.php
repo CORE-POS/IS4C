@@ -450,7 +450,7 @@ static private function lookupLocal($ref)
     $lookup = sprintf("SELECT 
         SUM(CASE WHEN p.local=1 THEN l.total ELSE 0 END) as localTTL,
         SUM(CASE WHEN l.trans_type IN ('I','D') then l.total ELSE 0 END) as itemTTL
-        FROM localtrans AS l LEFT JOIN ".
+        FROM localtranstoday AS l LEFT JOIN ".
         CoreLocal::get('pDatabase').$dbc->sep()."products AS p
         ON l.upc=p.upc
         WHERE l.trans_type IN ('I','D')

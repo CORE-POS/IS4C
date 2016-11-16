@@ -176,8 +176,7 @@ class AjaxParser extends AjaxCallback
         return $entered;
     }
 
-    // @hintable
-    public function ajax($input=array())
+    public function ajax(array $input=array())
     {
         if (CoreLocal::get('CashierNo') === '') { // session is missing/invalid
             return array(

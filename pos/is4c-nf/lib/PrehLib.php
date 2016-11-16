@@ -147,7 +147,6 @@ static public function tender($right, $strl)
     return $ret;
 }
 
-    // @hintable
 private static function tenderEndsTransaction($tender_object, $ret)
 {
     CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
@@ -164,7 +163,6 @@ private static function tenderEndsTransaction($tender_object, $ret)
     return $ret;
 }
 
-    // @hintable
 private static function tenderContinuesTransaction($ret)
 {
     CoreLocal::set("change",0);
@@ -510,7 +508,6 @@ static public function fsEligible()
   hard-coded percentages and PLUs that likely
   aren't applicable anywhere but the Wedge.
 */
-    // @hintable
 static public function percentDiscount($strl,$json=array()) 
 {
     if ($strl == 10.01) {
@@ -550,7 +547,6 @@ static public function percentDiscount($strl,$json=array())
    0 - boolean age-related approval required
    1 - array Parser-formatted return value
 */
-    // @hintable
 public static function ageCheck($required_age, $ret)
 {
     $my_url = MiscLib::baseURL();

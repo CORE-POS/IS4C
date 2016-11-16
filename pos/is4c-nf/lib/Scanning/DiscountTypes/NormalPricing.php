@@ -29,8 +29,7 @@ use \CoreLocal;
 class NormalPricing extends DiscountType 
 {
 
-    // @hintable
-    public function priceInfo($row,$quantity=1)
+    public function priceInfo(array $row, $quantity=1)
     {
         $ret = array();
         if (is_array($this->savedInfo)) {

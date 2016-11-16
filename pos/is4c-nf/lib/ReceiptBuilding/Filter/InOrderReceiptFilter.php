@@ -36,7 +36,6 @@ class InOrderReceiptFilter extends DefaultReceiptFilter
       @param $data an SQL result object
       @return an array of records
     */
-    // @hintable
     public function filter($dbc, $data)
     {
         $tenderTTL = 0.00;

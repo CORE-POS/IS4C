@@ -31,8 +31,7 @@ class AjaxScale extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    // @hintable
-    public function ajax($input=array())
+    public function ajax(array $input=array())
     {
         $input = isset($_REQUEST['input'])?$_REQUEST['input']:'';
         $display = DisplayLib::scaledisplaymsg($input);

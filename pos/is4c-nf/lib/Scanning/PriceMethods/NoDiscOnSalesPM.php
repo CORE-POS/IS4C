@@ -37,8 +37,8 @@ use COREPOS\pos\lib\TransRecord;
 
 class NoDiscOnSalesPM extends PriceMethod {
 
-    // @hintable
-    function addItem($row,$quantity,$priceObj){
+    public function addItem(array $row, $quantity, $priceObj)
+    {
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);

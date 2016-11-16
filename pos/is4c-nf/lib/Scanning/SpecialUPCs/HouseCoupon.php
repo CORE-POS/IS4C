@@ -58,7 +58,6 @@ class HouseCoupon extends SpecialUPC
         return false;
     }
 
-    // @hintable
     public function handle($upc, $json)
     {
         $coupID = ltrim(substr($upc, -5), "0");
@@ -649,7 +648,6 @@ class HouseCoupon extends SpecialUPC
     /**
       This FROM/WHERE is super repetitive
     */
-    // @hintable
     private function baseSQL($dbc, $coupID, $mode='upc')
     {
         $ret = '

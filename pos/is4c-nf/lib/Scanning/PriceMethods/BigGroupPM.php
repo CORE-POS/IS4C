@@ -47,8 +47,7 @@ use \CoreLocal;
 class BigGroupPM extends PriceMethod 
 {
 
-    // @hintable
-    function addItem($row,$quantity,$priceObj)
+    public function addItem(array $row, $quantity, $priceObj)
     {
         if ($quantity == 0) return false;
 
@@ -140,7 +139,7 @@ class BigGroupPM extends PriceMethod
             ));
 
             if (!$priceObj->isSale()){
-                TransRecord::addhousecoupon('0', 0, MiscLib::truncate2($sets*$row['groupprice']), 'SET DISCOUNT');
+                TransRecord::addhousecoupon('0', 0, MiscLib::truncate2(-1*$sets*$row['groupprice']), 'SET DISCOUNT');
             }
         }
         else {

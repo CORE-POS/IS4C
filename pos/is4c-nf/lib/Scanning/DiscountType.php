@@ -65,8 +65,7 @@ class DiscountType
        - discount The discount amount for everyone
        - memDiscount The discount amount for members
     */
-    // @hintable
-    public function priceInfo($row,$quantity=1)
+    public function priceInfo(array $row,$quantity=1)
     {
         return array(
             "regPrice"=>0,

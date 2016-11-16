@@ -34,7 +34,6 @@ class JsonLib {
   @param $arr an array of values
   @return A JSON string representing the array
 */
-    // @hintable
 static public function arrayToJson($arr)
 {
     $ret = "[";

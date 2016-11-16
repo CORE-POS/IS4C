@@ -689,8 +689,7 @@ static public function setglobalvalue($param, $value)
   and in session
   @param $arr An array of keys and values
 */
-    // @hintable
-static public function setglobalvalues($arr)
+static public function setglobalvalues(array $arr)
 {
     $setStr = "";
     foreach($arr as $param => $value) {

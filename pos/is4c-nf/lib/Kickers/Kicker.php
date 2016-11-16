@@ -45,7 +45,6 @@ class Kicker
         'YPSI_Kicker',
     );
 
-    // @hintable
     public static function factory($class)
     {
         if ($class != '' && in_array($class, self::$builtin)) {

@@ -28,8 +28,7 @@ namespace COREPOS\pos\lib\ReceiptBuilding\Sort;
 */
 class DoubleSubtotalReceiptSort extends DefaultReceiptSort 
 {
-    // @hintable
-    public function sort($rowset)
+    public function sort(array $rowset)
     {
         $rowset = parent::sort($rowset);
         $newset = array();

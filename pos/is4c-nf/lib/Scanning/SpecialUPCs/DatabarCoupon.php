@@ -41,7 +41,6 @@ class DatabarCoupon extends SpecialUPC
         return false;
     }
 
-    // @hintable
     public function handle($upc,$json)
     {
         $pos = 0;
@@ -402,7 +401,6 @@ class DatabarCoupon extends SpecialUPC
 
        return true/false based on whether requirement is met
     */
-    // @hintable
     private function validateRequirement(&$req, &$json)
     {
         $dbc = Database::tDataConnect();
@@ -450,7 +448,6 @@ class DatabarCoupon extends SpecialUPC
         return true; // requirement validated
     }
 
-    // @hintable
     private function validateTransactionTotal(&$req, &$json)
     {
         $dbc = Database::tDataConnect();
@@ -471,7 +468,6 @@ class DatabarCoupon extends SpecialUPC
         return true;
     }
 
-    // @hintable
     private function validateQty($qty, $couponqtty, &$req, &$json)
     {
         $available_qty = $qty - ($couponqtty * $req['value']);

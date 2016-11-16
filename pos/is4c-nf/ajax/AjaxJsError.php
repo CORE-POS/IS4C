@@ -31,8 +31,7 @@ class AjaxJsError extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    // @hintable
-    public function ajax($input=array())
+    public function ajax(array $input=array())
     {
         if (isset($_REQUEST['data'])) {
             $log = new LaneLogger();

@@ -99,6 +99,7 @@ class ECheckVerifyPage extends NoInputCorePage
                 id="selectlist" onblur="$('#selectlist').focus();">
             <option selected value="<?php echo $echeck; ?>">Electronic</option>
             <option value="<?php echo $paper; ?>">Paper</option>
+            <option value="TC">Gift Certificate</option>
             </select>
             <input type="hidden" name="amount" value="<?php echo $_REQUEST['amount']; ?>" />
         </form>
