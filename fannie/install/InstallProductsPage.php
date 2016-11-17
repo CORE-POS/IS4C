@@ -282,6 +282,10 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $mods = array_merge($mods, FannieAPI::listModules('\COREPOS\Fannie\API\item\Accounting'));
         echo installSelectField('FANNIE_ACCOUNTING_MODULE', $FANNIE_ACCOUNTING_MODULE, $mods);
         ?>
+        <label>From Email Address for Purchase Orders</label>
+        <?php echo installTextField('FANNIE_PO_EMAIL', $FANNIE_PO_EMAIL, ''); ?>
+        <label>From Email Name for Purchase Orders</label>
+        <?php echo installTextField('FANNIE_PO_EMAILNAME', $FANNIE_PO_EMAILNAME, ''); ?>
         <hr />
         <h4 class="install">Service Scale Integration</h4>
         <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Data Gate Weigh directory</b>

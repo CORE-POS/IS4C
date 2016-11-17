@@ -42,8 +42,8 @@ class AutoOrderTask extends FannieTask
         $mail->Host = '127.0.0.1';
         $mail->Port = 25;
         $mail->SMTPAuth = false;
-        $mail->From = 'it@wholefoods.coop';
-        $mail->FromName = 'Whole Foods Co-op';
+        $mail->From = $this->config->get('PO_EMAIL');
+        $mail->FromName = $this->config->get('PO_EMAIL_NAME');
         $mail->isHTML = true;
 
         return $mail;
@@ -54,14 +54,14 @@ class AutoOrderTask extends FannieTask
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $place = $dbc->prepare("UPDATE PurchaseOrder SET placed=1, placedDate=? WHERE orderID=?");
         $map = new AutoOrderMapModel($dbc);
-        if (!class_exists('WfcPoExport')) {
-            include(__DIR__ . '/../../purchasing/exporters/WfcPoExport.php');
+        $exportClass = $this->config->get('DEFAULT_PO_EXPORT');
+        if (!class_exists($exportClass)) {
+            include(__DIR__ . '/../../purchasing/exporters/' . $exportClass . '.php');
         }
         $export = new WfcPoExport();
         $vendor = new VendorsModel($dbc);
         $costP = $dbc->prepare('SELECT SUM(unitCost*caseSize*quantity) FROM PurchaseOrderItems WHERE orderID=?');
         foreach ($map->find() as $obj) {
-            echo "VENDOR: " . $obj->vendorID() . PHP_EOL;
             $task = new OrderGenTask();
             $task->setConfig($this->config);
             $task->setLogger($this->logger);
