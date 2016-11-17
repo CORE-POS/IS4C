@@ -120,7 +120,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
                 }
                 if (isset($desc[$i])) {
-                    //$this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
+                    $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
                 }
                 if (isset($custom[$i]) && !empty($custom[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $custom[$i]);
@@ -285,13 +285,14 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
         $ret .= $this->signage_obj->listItems();
 
+        /*
         $ret .= '<p><button type="submit" name="update" id="updateBtn" value="Save Text"
                     class="btn btn-default">Save Text</button></p>';
+        */
 
         $this->add_onload_command('$(".FannieSignageField").keydown(function(event) {
             if (event.which == 13) {
                 event.preventDefault();
-                $("#updateBtn").click();
             }
         });');
 

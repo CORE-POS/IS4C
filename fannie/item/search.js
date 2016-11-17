@@ -76,6 +76,12 @@ function goToSigns() {
         $('#actionForm').submit();
     }
 }
+function goToManualSigns() {
+    if (getItems()) {
+        $('#actionForm').attr('action', '../admin/labels/ManualSignsPage.php');
+        $('#actionForm').submit();
+    }
+}
 function goToMargins() {
     if (getItems()) {
         $('#actionForm').attr('action', 'MarginToolFromSearch.php');
