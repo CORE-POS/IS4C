@@ -95,7 +95,7 @@ class InUseTask extends FannieTask
         ");
         
         $resultA = $dbc->execute($reportInUse);
-        $resultB = $dbc->execute($reporUnUse);
+        $resultB = $dbc->execute($reportUnUse);
         $data = '';
         
         while ($row = $dbc->fetch_row($resultA)) {
@@ -106,9 +106,11 @@ class InUseTask extends FannieTask
             $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
         }
         
-        $to = $FANNIE_ADMIN_EMAIL;
+        $to = 'csather@wholefoods.coop';
         $headers = "from: automail@wholfoods.coop";
         $msg = '';
+		$msg .= 'In Use Task has ran. Following is a list of the results.';
+		$msg .= "\r\n";
         $msg .= 'Items removed from use' . "\r\n";
         foreach ($unUseData as $str) $msg .= $str;
         $msg .= "\r\n";
@@ -117,7 +119,7 @@ class InUseTask extends FannieTask
         $msg .= "\r\n";
         $msg .= "\r\n";
         
-        mail($to,'In Use Task',$msg,$headers);
+        mail($to,'Report: In Use Task',$msg,$headers);
         
     }
     
