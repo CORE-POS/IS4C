@@ -6,6 +6,7 @@ use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\PreParser;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\parser\PostParser;
+use COREPOS\pos\parser\ParseResult;
 
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/Parser.php');
@@ -18,6 +19,14 @@ if (!class_exists('lttLib')) {
  */
 class ParsersTest extends PHPUnit_Framework_TestCase
 {
+
+    public function testResult()
+    {
+        $res = new ParseResult();
+        $expect = '{"main_frame":false,"target":".baseHeight","output":false,"redraw_footer":false,"receipt":false,"trans_num":"--","scale":false,"udpmsg":false,"retry":false}';
+        $this->assertEquals($expect, json_encode($res));
+    }
+
     /**
       Check methods for getting available PreParser and Parser modules
     */

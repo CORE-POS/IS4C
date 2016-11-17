@@ -3,12 +3,18 @@
 namespace COREPOS\pos\parser;
 use COREPOS\pos\lib\ReceiptLib;
 use \ArrayAccess;
+use \Countable;
 use \InvalidArgumentException;
+use \Iterator;
 use \LogicException;
+use \Serializable;
+use \JsonSerializable;
+use \UnexpectedValueException;
 
-class ParseResult implements ArrayAccess
+class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, JsonSerializable
 {
     private $value = array();
+    private $position = null;
 
     public function __construct()
     {
@@ -23,11 +29,18 @@ class ParseResult implements ArrayAccess
             'udpmsg'=>false,
             'retry'=>false,
         );
+        $this->position = 0;
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->value;
     }
 
     public function toArray()
     {
         return $this->value;
+    }
 
     /**
       Use magic method to create fluent interface
@@ -45,6 +58,17 @@ class ParseResult implements ArrayAccess
         return $this;
     }
 
+    /**
+        Countable method(s)
+    */
+    public function count()
+    {
+        return count($this->value);
+    }
+
+    /**
+        ArrayAccess method(s)
+    */
     public function offsetExists($offset)
     {
         return isset($this->value[$offset]);
@@ -71,6 +95,57 @@ class ParseResult implements ArrayAccess
     public function offsetUnset($offset)
     {
         throw new LogicException("Cannot unset ParseResult values");
+    }
+
+    /**
+        Iterator method(s)
+    */
+    public function current()
+    {
+        $key = $this->key();
+        return $key === null ? $null : $this->value[$key];
+    }
+
+    public function key()
+    {
+        $keys = array_keys($this->value);
+        return $this->valid() ? $keys[$this->position] : null;
+    }
+
+    public function next()
+    {
+        $this->position++;
+    }
+
+    public function rewind()
+    {
+        $this->position = 0;
+    }
+
+    public function valid()
+    {
+        $keys = array_keys($this->value);
+        return isset($keys[$this->position]);
+    }
+
+    /**
+      Serializable method(s)
+    */
+    public function serialize()
+    {
+        $packed = array($this->value, $this->position);
+        return serialize($packed);
+    }
+
+    public function unserialize($data)
+    {
+        $packed = unserialize($data);
+        if (count($packed) !==2 || !isset($packed[0]) || !isset($packed[1])) {
+            throw new UnexpectedValueException('Serialized data is malformed');
+        }
+
+        $this->value = $packed[0];
+        $this->position = $packed[1];
     }
 }
 

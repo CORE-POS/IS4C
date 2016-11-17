@@ -42,6 +42,11 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(false, $json['main_frame']);
         $this->assertEquals('.baseHeight', $json['target']);
         $this->assertNotEquals(0, strlen($json['output']));
+
+        CoreLocal::set('strRemembered', 'CL');
+        CoreLocal::set('msgrepeat', 1);
+        $json = $ajax->ajax();
+        $this->assertNotEquals(false, strstr(json_encode($json), 'pos2.php'));
         CoreLocal::set('CashierNo', '');
     }
 

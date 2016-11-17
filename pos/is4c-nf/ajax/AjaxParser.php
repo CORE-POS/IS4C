@@ -201,10 +201,6 @@ class AjaxParser extends AjaxCallback
             if ($result) {
                 $json = $this->runPostParsers($result);
 
-                if (!is_array($json)) {
-                    $json = $json->toArray();
-                }
-
                 if (isset($json['udpmsg']) && $json['udpmsg'] !== False && is_object($sdObj)){
                     $sdObj->WriteToScale($json['udpmsg']);
                 }
