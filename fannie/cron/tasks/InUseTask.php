@@ -29,7 +29,7 @@ class InUseTask extends FannieTask
         updates in-use status based on a determined range by super-department.';
 
     public $default_schedule = array(
-        'min' => 45,
+        'min' => 50,
         'hour' => 3,
         'day' => '*',
         'month' => '*',
@@ -47,6 +47,7 @@ class InUseTask extends FannieTask
 
     public function run()
     {
+
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $p_def = $dbc->tableDefinition('products');
@@ -54,6 +55,25 @@ class InUseTask extends FannieTask
             $this->logger->warning('products table does not have a last_sold column');
             return;
         }
+
+		$reportInUse = $dbc->prepare("                                            
+		    SELECT upc, last_sold, store_id                                       
+		        FROM products AS p                                                
+		        INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department      
+		        INNER JOIN inUseTask AS i ON s.superID = i.superID                
+		    WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) < i.time
+		    AND p.inUse = 0;                                                      
+		");                                                                                                                                                 
+		$reportUnUse = $dbc->prepare("                                            
+		    SELECT upc, last_sold, store_id                                       
+		        FROM products AS p                                                
+		        INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department      
+		        INNER JOIN inUseTask AS i ON s.superID = i.superID                
+		    WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
+	    	AND p.inUse = 1;                                                      
+		");                                                                                                                                                 
+		$resultA = $dbc->execute($reportInUse);                                   
+		$resultB = $dbc->execute($reportUnUse);                                   
 
         $updateUnuse = $dbc->prepare('
             UPDATE products p
@@ -63,7 +83,6 @@ class InUseTask extends FannieTask
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                 AND p.store_id = ?;
         ');
-        
         $updateUse = $dbc->prepare('
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
@@ -72,32 +91,12 @@ class InUseTask extends FannieTask
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) < i.time
                 AND p.store_id = ?;
         ');
-        
         $dbc->execute($updateUnuse,1);
         $dbc->execute($updateUnuse,2);
         $dbc->execute($updateUse,1);
         $dbc->execute($updateUse,2);
         
-        $reportInUse = $dbc->prepare("
-            SELECT upc, last_sold, store_id
-                FROM products AS p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
-                INNER JOIN inUseTask AS i ON s.superID = i.superID 
-            WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) < i.time;
-        ");
-        
-        $reportUnUse = $dbc->prepare("
-            SELECT upc, last_sold, store_id
-                FROM products AS p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
-                INNER JOIN inUseTask AS i ON s.superID = i.superID 
-            WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time;
-        ");
-        
-        $resultA = $dbc->execute($reportInUse);
-        $resultB = $dbc->execute($reportUnUse);
-        $data = '';
-        
+        $data = '';        
         while ($row = $dbc->fetch_row($resultA)) {
             $inUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
         }
@@ -106,16 +105,17 @@ class InUseTask extends FannieTask
             $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
         }
         
+		$date = date('Y-m-d h:i:s');
         $to = 'csather@wholefoods.coop';
         $headers = "from: automail@wholfoods.coop";
         $msg = '';
-		$msg .= 'In Use Task has ran. Following is a list of the results.';
+		$msg .= 'In Use Task (Product In-Use Management) ran '.$date."\r\n";
 		$msg .= "\r\n";
         $msg .= 'Items removed from use' . "\r\n";
-        foreach ($unUseData as $str) $msg .= $str;
+        $msg .= $unUseData;
         $msg .= "\r\n";
         $msg .= 'Items added to use' . "\r\n";
-        foreach ($inUseData as $str) $msg .= $str;
+        $msg .= $inUseData;
         $msg .= "\r\n";
         $msg .= "\r\n";
         
@@ -124,4 +124,3 @@ class InUseTask extends FannieTask
     }
     
 }
-
