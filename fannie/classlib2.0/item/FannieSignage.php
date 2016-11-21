@@ -125,6 +125,7 @@ class FannieSignage
         $data = array();
         $prep = $dbc->prepare($sql['query']);
         $result = $dbc->execute($prep, $sql['args']);
+        $lastUPC = null;
 
         $mapP = $dbc->prepare('SELECT o.name, o.shortName
                                FROM ProductOriginsMap AS m
@@ -135,6 +136,10 @@ class FannieSignage
                                 AND o.shortName <> ?');
 
         while ($row = $dbc->fetch_row($result)) {
+
+            if ($row['upc'] == $lastUPC) {
+                continue;
+            }
 
             if (substr($row['upc'], 0, 2) == 'LC') {
                 $row = $this->unrollLikeCode($dbc, substr($row['upc'], 2), $row);
@@ -181,6 +186,8 @@ class FannieSignage
             for ($i=0; $i<$row['signCount']; $i++) {
                 $data[] = $row;
             }
+
+            $lastUPC = $row['upc'];
         }
 
         return $data;
