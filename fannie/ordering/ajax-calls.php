@@ -337,7 +337,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
                 $pdW['discount'] = 0;
                 $ins_array['discountable'] = 0;
             }
-            if ($pdW['discount'] != 0 && $pdW['discounttype'] == 1) {
+            if ($pdW['discounttype'] == 1) {
                 /**
                   Only apply sale pricing from non-closeout batches
                   At WFC closeout happens to be batch type #11
