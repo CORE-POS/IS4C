@@ -219,7 +219,7 @@ class UIGLib
             'quantity' => $line[$ORDERQTY],
             'unitCost' => $line[$UNITCOST],
             'caseSize' => $caseSize,
-            'receivedQty' => $line[$RECVQTY],
+            'receivedQty' => $line[$RECVQTY] * $caseSize,
             'receivedTotalCost' => $line[$TOTALCOST],
             'unitSize' => $line[$UNITSIZE],
             'brand' => $line[$BRAND],
