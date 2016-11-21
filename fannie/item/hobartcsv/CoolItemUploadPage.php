@@ -69,7 +69,6 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $saveP = $dbc->prepare('
             UPDATE scaleItems
             SET price=?,
-                itemdesc=?,
                 originText=?,
                 modified=' . $dbc->now() . '
             WHERE plu=?');
@@ -90,25 +89,13 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             }
             $itemdesc = !empty($item['itemdesc']) ? $item['itemdesc'] : $item['description'];
-            if (strstr($itemdesc, "\n")) {
-                list($line1, $line2) = explode("\n", $itemdesc);
-                $itemdesc = $line1 . "\n" . $cool;
-            } else {
-                $itemdesc .= "\n" . $cool;
-            }
-            $dbc->execute($saveP, array($price, $itemdesc, $cool, $upc));
+            $dbc->execute($saveP, array($price, $cool, $upc));
             if ($prodPricing) {
                 $product->upc($upc);
                 foreach ($product->find() as $obj) {
                     $obj->normal_price($price);
                     $obj->save();
                 }
-            }
-
-            $text = preg_replace('/Product of .*?\n/', '', $item['text']);
-            $text = $cool . "\n" . $text;
-            if (strpos($cool, 'Product of') === false) {
-                $text = 'Product of ' . $text;
             }
 
             $scale_info = array(
