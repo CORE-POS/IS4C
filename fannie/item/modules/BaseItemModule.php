@@ -1075,7 +1075,7 @@ HTML;
         try {
             $sku = $this->form->vendorSKU;
             $caseSize = $this->form->caseSize;
-            if (!empty($sku)) {
+            if (!empty($sku) && $sku != $upc) {
                 /**
                   If a SKU is provided, update any
                   old record that used the UPC as a
@@ -1087,15 +1087,8 @@ HTML;
                     WHERE sku=?
                         AND upc=?
                         AND vendorID=?');
-                $existsR = $dbc->execute($existsP, array($sku, $upc, $vendorID));
+                $existsR = $dbc->execute($existsP, array($upc, $upc, $vendorID));
                 if ($dbc->numRows($existsR) > 0 && $sku != $upc) {
-                    $delP = $dbc->prepare('
-                        DELETE FROM vendorItems
-                        WHERE sku =?
-                            AND upc=?
-                            AND vendorID=?');
-                    $dbc->execute($delP, array($upc, $upc, $vendorID));
-                } else {
                     $fixSkuP = $dbc->prepare('
                         UPDATE vendorItems
                         SET sku=?
