@@ -190,7 +190,9 @@ class EpScaleLib
                         $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);
                         break;
                     case 'Price':
-                        $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
+                        if ($item_info['Price'] != 0) {
+                            $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
+                        }
                         break;
                     case 'Type':
                         if ($item_info[$key] == 'Random Weight') {
