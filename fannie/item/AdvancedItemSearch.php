@@ -140,6 +140,13 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         if ($form->upcs !== '') {
             $upcs = explode("\n", $form->upcs);
+            $upcs = array_map(function($i) {
+                if (preg_match('/\d-\d+-\d+-\d/', $i)) {
+                    $ret = trim(str_replace('-', '', $i));
+                    return substr($ret, 0, strlen($ret)-1);
+                }
+                return $i;
+            }, $upcs);
             $upcs = array_map(function($i){ return BarcodeLib::padUPC(trim($i)); }, $upcs);
             $search->args = array_merge($search->args, $upcs);
             $search->where .= ' AND p.upc IN (' . str_repeat('?,', count($upcs));
@@ -905,7 +912,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function streamOutput($data) 
     {
         $ret = '';
-        $ret .= '<table class="table search-table">';
+        $ret .= '<table class="table search-table table-striped">';
         $ret .= '<thead><tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
                 <th>UPC</th><th>Brand</th><th>Desc</th><th>Super</th><th>Dept</th>
