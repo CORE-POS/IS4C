@@ -83,9 +83,8 @@ class SaItemList extends SaHandheldPage
                 FROM products AS p
                     LEFT JOIN ' . $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList AS s ON p.upc=s.upc AND s.clear=0
                 WHERE p.upc=?
-                    AND (s.uid=? OR s.uid IS NULL)
             ');
-            $row = $dbc->getRow($prep, array($upc, $uid));
+            $row = $dbc->getRow($prep, array($upc));
             if ($row) {
                 $this->saveRowToList($dbc, $upc, $row, $settings);
             }
