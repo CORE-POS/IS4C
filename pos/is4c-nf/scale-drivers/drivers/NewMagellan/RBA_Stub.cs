@@ -175,7 +175,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             WriteMessageToDevice(GetCardType());
-            Thread.Sleep(1750);
+            Thread.Sleep(2000);
             addPaymentButtons();
         } catch (Exception) {
         }
@@ -217,6 +217,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                         System.Console.WriteLine("NAK!");
                     }
                     last_message = null;
+                    WriteMessageToDevice(HardResetMessage());
                 } else {
                     // part of a message
                     // force to be byte-sized
