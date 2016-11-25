@@ -48,6 +48,7 @@ class SpecialOrdersModel extends BasicModel
     'email' => array('type'=>'VARCHAR(50)'),
     'storeID' => array('type'=>'INT'),
     'sendEmails' => array('type'=>'TINYINT', 'default'=>0),
+    'onlineID' => array('type'=>'INT'),
     );
 
     public function doc()
