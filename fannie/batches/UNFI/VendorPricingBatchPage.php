@@ -70,6 +70,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
     public function get_id_view()
     {
         $this->addScript('pricing-batch.js');
+        $this->addScript('../../src/javascript/bootstrap-table/dist/bootstrap-table.js');
+        $this->addCssFile('../../src/javascript/bootstrap-table/dist/bootstrap-table.min.css');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
 
@@ -216,8 +218,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
 
-        $ret .= "<table class=\"table table-bordered small\">";
-        $ret .= "<tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
+        $ret .= "<table data-toggle=\"table\" data-show-header=\"true\" data-height=\"200\" class=\"table table-bordered small\">";
+        $ret .= "<thead><tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
             <th colspan=3>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th>
             <th>Base Cost</th>
@@ -226,7 +228,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <th>Adj. Cost</th>
             <th>Price</th><th>Margin</th><th>Raw</th><th>SRP</th>
             <th>Margin</th><th>Cat</th><th>Var</th>
-            <th>Batch</th></tr>";
+            <th>Batch</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $background = "white";
             if (isset($batchUPCs[$row['upc']])) {
@@ -309,7 +311,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 (!isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc']
             );
         }
-        $ret .= "</table>";
+        $ret .= "</tbody></table>";
 
         return $ret;
     }
