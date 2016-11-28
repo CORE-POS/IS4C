@@ -139,6 +139,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             foreach (FormLib::get('exclude', array()) as $e) {
                 $this->signage_obj->addExclude($e);
             }
+            $this->signage_obj->setInUseFilter(FormLib::get('store', 0));
             $this->signage_obj->drawPDF();
             return false;
         } else {
@@ -297,6 +298,18 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 $ret .= sprintf('<input type="hidden" name="batch[]" value="%d" />', $b);
             }
         }
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+
+        $stores = new StoresModel($this->connection);
+        $stores->hasOwnItems(1);
+        $ret .= '<select class="form-control" name="store">
+                <option value="0">Any Store</option>';
+        foreach ($stores->find() as $s) {
+            $ret .= sprintf('<option value="%d">%s</option>',
+                $s->storeID(), $s->description());
+        }
+        $ret .= '</select>';
+
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="submit" name="pdf" value="Print" 
                     class="btn btn-default">Print</button>';

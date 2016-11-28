@@ -42,6 +42,7 @@ class FannieSignage
     protected $data = array();
     protected $overrides = array();
     protected $excludes = array();
+    protected $in_use_filter = 0;
 
     protected $width;
     protected $height;
@@ -80,6 +81,11 @@ class FannieSignage
     public function setDB($dbc)
     {
         $this->connection = $dbc;
+    }
+
+    public function setInUseFilter($store)
+    {
+        $this->in_use_filter = $store;
     }
 
     protected function getDB()
@@ -134,6 +140,9 @@ class FannieSignage
                                 m.upc = ?
                                 AND o.name <> ?
                                 AND o.shortName <> ?');
+        if ($this->in_use_filter) {
+            $useP = $dbc->prepare('SELECT inUse FROM products WHERE upc=? AND store_id=?');
+        }
 
         while ($row = $dbc->fetch_row($result)) {
 
@@ -146,6 +155,10 @@ class FannieSignage
             }
 
             if (in_array($row['upc'], $this->excludes)) {
+                continue;
+            }
+
+            if ($this->in_use_filter && !$dbc->getValue($useP, array($row['upc'], $this->in_use_filter))) {
                 continue;
             }
 
