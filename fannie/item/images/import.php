@@ -10,7 +10,7 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$p1 = $dbc->prepare("SELECT upc FROM productUser where upc=?");
+$p1 = $dbc->prepare("SELECT photo FROM productUser where upc=?");
 $p2 = $dbc->prepare("SELECT upc FROM products WHERE upc=?");
 $upP = $dbc->prepare("UPDATE productUser SET photo=? WHERE upc=?");
 $dh = opendir('new');
@@ -28,18 +28,20 @@ while( ($file = readdir($dh)) !== False){
 
     $r1 = $dbc->execute($p1,array($upc));
     if ($dbc->num_rows($r1) > 0){
-        echo "UPC $upc found in productUser\n";
-        $upR = $dbc->execute($upP,array($file,$upc));
-        rename('new/'.$file,'done/'.$file);
-        rename('new/'.$u.'.thumb.'.$e,
-            'done/'.$u.'.thumb.'.$e);
-    }
-    else {
+        $row = $dbc->fetchRow($r1);
+        if ($row['photo'] && file_exists('done/' . $row['photo'])) {
+            echo "UPC $upc already has image\n";
+            unlink('new/' . $file);
+        } else {
+            echo "UPC $upc found in productUser\n";
+            $upR = $dbc->execute($upP,array($file,$upc));
+            rename('new/'.$file,'done/'.$file);
+        }
+    } else {
         $r2 = $dbc->execute($p2,array($upc));
         if ($dbc->num_rows($r2) > 0){
             echo "UPC $upc found in products\n";    
-        }
-        else {
+        } else {
             echo "UPC $upc not found\n";
         }
     }
