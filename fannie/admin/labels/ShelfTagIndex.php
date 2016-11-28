@@ -117,7 +117,7 @@ function printMany(){
             </select>
         </div>
         </p>
-        <table class="table">
+        <table class="table table-striped">
         <?php
 
         $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
