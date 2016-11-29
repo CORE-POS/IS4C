@@ -554,7 +554,13 @@ HTML;
         $end_date = self::getDate('date2', date('Y-m-d'));
         $dlog = DTransactionsModel::selectDlog($start_date, $end_date);
         $lookupType = self::get('lookup-type', 'dept');
-        $store = self::get('store', 0);
+        $store = self::get('store', false);
+        if ($store === false) {
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            if ($store === false) {
+                $store = 0;
+            }
+        }
 
         $query = '
             FROM ' . $dlog . ' AS t 
@@ -728,6 +734,7 @@ HTML;
                 $query = substr($query, 0, strlen($query)-1) . ') ';
                 break;
         }
+        var_dump($store);
 
         return array('query'=>$query, 'args'=>$args);
     }
