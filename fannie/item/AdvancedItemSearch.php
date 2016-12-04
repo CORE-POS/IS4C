@@ -140,6 +140,13 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         if ($form->upcs !== '') {
             $upcs = explode("\n", $form->upcs);
+            $upcs = array_map(function($i) {
+                if (preg_match('/\d-\d+-\d+-\d/', $i)) {
+                    $ret = trim(str_replace('-', '', $i));
+                    return substr($ret, 0, strlen($ret)-1);
+                }
+                return $i;
+            }, $upcs);
             $upcs = array_map(function($i){ return BarcodeLib::padUPC(trim($i)); }, $upcs);
             $search->args = array_merge($search->args, $upcs);
             $search->where .= ' AND p.upc IN (' . str_repeat('?,', count($upcs));
@@ -715,7 +722,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
 
             $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
-            list($upc_in, $args) = $this->connection->safeInClause($items, $args);
+            list($upc_in, $args) = $this->connection->safeInClause(array_keys($items), $args);
 
             $query = "SELECT t.upc
                       FROM $dlog AS t
@@ -828,6 +835,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 d.dept_name,
                 p.normal_price, 
                 p.special_price,
+                p.cost,
                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
                 0 as selected
             FROM ' . $search->from . '
@@ -904,11 +912,11 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function streamOutput($data) 
     {
         $ret = '';
-        $ret .= '<table class="table search-table">';
+        $ret .= '<table class="table search-table table-striped">';
         $ret .= '<thead><tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
                 <th>UPC</th><th>Brand</th><th>Desc</th><th>Super</th><th>Dept</th>
-                <th>Retail</th><th>On Sale</th><th>Sale</th>
+                <th>cost</th><th>Retail</th><th>On Sale</th><th>Sale</th>
                 </tr></thead><tbody>';
         foreach ($data as $upc => $record) {
             $ret .= sprintf('<tr>
@@ -920,6 +928,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             <td>%s</td>
                             <td>%d %s</td>
                             <td>$%.2f</td>
+                            <td>$%.2f</td>
                             <td>%s</td>
                             <td>$%.2f</td>
                             </tr>', 
@@ -929,6 +938,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             $record['description'],
                             $record['super_name'],
                             $record['department'], $record['dept_name'],
+                            $record['cost'],
                             $record['normal_price'],
                             $record['onSale'],
                             $record['special_price']

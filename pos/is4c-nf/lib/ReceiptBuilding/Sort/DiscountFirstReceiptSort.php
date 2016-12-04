@@ -28,7 +28,7 @@ namespace COREPOS\pos\lib\ReceiptBuilding\Sort;
 */
 class DiscountFirstReceiptSort extends DefaultReceiptSort 
 {
-    public function sort($rowset)
+    public function sort(array $rowset)
     {
         $rowset = parent::sort($rowset);
         $newset = array();

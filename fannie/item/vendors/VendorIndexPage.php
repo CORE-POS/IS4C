@@ -55,10 +55,37 @@ class VendorIndexPage extends FannieRESTfulPage
             'post<delivery>',
             'post<id><shipping>',
             'post<id><rate>',
-            'post<id><inactive>'
+            'post<id><inactive>',
+            'post<id><autoID>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function post_id_autoID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $map = new AutoOrderMapModel($dbc);
+        $map->vendorID($this->id);
+        $enables = FormLib::get('autoEnable', array());
+        $accounts = FormLib::get('autoAccount', array());
+        for ($i=0; $i<count($this->autoID); $i++) {
+            $map->storeID($this->autoID[$i]);
+            if (in_array($map->storeID(), $enables)) {
+                $map->accountID($accounts[$i]);
+                $map->save();
+            } else {
+                $map->delete();
+            }
+        }
+
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorID($id);
+        $vendor->orderMinimum(FormLib::get('minOrder', 0));
+        $vendor->save();
+
+        return false;
     }
 
     protected function get_id_autoAdd_handler()
@@ -337,9 +364,9 @@ class VendorIndexPage extends FannieRESTfulPage
             $ret .= "This vendor's items are divided into ";
             $ret .= $num." subcategories";
             $ret .= "<br />";
-            $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">View or Edit vendor-specific margin(s)</a>";
+            $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">View or Edit vendor subcategory margin(s)</a>";
             $ret .= "<br />";
-            $ret .= "<a href=\"VendorMarginsPage.php?id=$id\">And Even More Margins</a>";
+            $ret .= "<a href=\"VendorMarginsPage.php?id=$id\">View or Edit vendor-specific POS department margins</a>";
             $ret .= '<p />';
             $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Subcategory List</a>";
         }
@@ -445,6 +472,45 @@ class VendorIndexPage extends FannieRESTfulPage
         $ret .= '<button type="submit" class="btn btn-default">Save Vendor Contact Info</button>';
         $ret .= '</form>';
         $ret .= '</div></div>';
+
+        $stores = new StoresModel($dbc);
+        $stores->hasOwnItems(1);
+        $map = new AutoOrderMapModel($dbc);
+        $map->vendorID($id);
+        $ret .= '<div class="panel panel-default">
+            <div class="panel-heading">Auto Order (No, this is not enabled yet)</div>
+            <div class="panel-body">
+            <div class="form-group">
+                <label>Minimum Order</label>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input type="text" name="minOrder" class="form-control auto-order"
+                        value="' . $model->orderMinimum() . '" />
+                </div>
+            </div>
+            <table class="table table-bordered">
+            <tr><th>Store</th><th>Enabled</th><th>Account#</th></tr>';
+        foreach ($stores->find() as $store) {
+            $map->storeID($store->storeID());
+            $exists = $map->load();
+            $ret .= sprintf('<tr>
+                <td>%s</td>
+                <input type="hidden" name="autoID[]" value="%d" class="auto-order" />
+                <td><input type="checkbox" %s class="auto-order" name="autoEnable[]" value="%d" /></td>
+                <td><input type="text" class="form-control auto-order" name="autoAccount[]" value="%s" /></td>
+                </tr>',
+                $store->description(),
+                $store->storeID(),
+                ($exists ? 'checked' : ''),
+                $store->storeID(),
+                $map->accountID()
+            );
+        }
+        $ret .= '</table>
+                <button type="button" class="btn btn-default" 
+                    onclick="vendorEditor.saveAutoOrder(' . $id . '); return false;">Save</button>
+                </div>
+            </div>';
 
         $delivery = new VendorDeliveriesModel($dbc);
         $delivery->vendorID($id);
@@ -568,12 +634,28 @@ class VendorIndexPage extends FannieRESTfulPage
             <p>PLU/SKU mapping is for resolving situations where the
             store and the vendor use different UPCs. This is often
             the case with items sold in bulk using a PLU.</p>
-            <p>Vendor Subcategories are optional. If the vendor\'s
-            catalog is divided into vendor-specific subcategories,
-            custom margin targets can be set for those sets of
-            items.</p>
             <p>Contact Info and Delivery Schedule are wholly optional.
-            Jot down whatever is useful.</p>';
+            Jot down whatever is useful.</p>
+            <p>Several margin adjustments can be associated with a vendor.
+            An item\'s default margin is chosen, from lowest to highest priority, 
+            from these options:
+                <ul>
+                    <li><em>(default)</em> The POS department\'s margin.</li>
+                    <li>The vendor catalog subcategory\'s margin</li>
+                    <li>The vendor <strong>and</strong> POS department specific margin</li>
+                </ul>
+            This structure creates increasingly specific overrides from the default, POS-department
+            based margins. Higher priority rules only need to exist where the target margin
+            deviates from the default. Both vendor subcategories and the additional vendor+POS-department
+            overrides are entirely optional.</p>
+            <p>Two additional adjustments can be applied <em>in addition</em> to the baseline margin above.
+            The shipping percentage <strong>increases</strong> the item\'s cost before applying the
+            baseline margin resulting in a higher retail price. The discount rate <strong>decreases</strong>
+            an item\'s cost before applying the baseline margin resulting in a lower retail price. The names
+            refer to common use cases, but in practice to price all a vendor\'s items e.g. 5% above or below
+            the default POS department margin it\'s easier to use one of these fields than create dozens and/or
+            hundreds of subcategory or vendor+POS-department overrides.</p>
+            ';
     }
 
     public function unitTest($phpunit)

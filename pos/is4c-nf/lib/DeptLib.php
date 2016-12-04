@@ -31,7 +31,7 @@ use COREPOS\pos\lib\TransRecord;
 /**
   @class DeptLib
 */
-class DeptLib extends \LibraryClass 
+class DeptLib 
 {
     /**
       Add an open ring to a department
@@ -41,6 +41,7 @@ class DeptLib extends \LibraryClass
       @returns An array. See Parser::default_json()
        for format explanation.
     */
+    // @hintable
     static public function deptkey($price, $dept,$ret=array()) 
     {
         if (\CoreLocal::get("quantity") == 0 && \CoreLocal::get("multiple") == 0) {
@@ -108,6 +109,7 @@ class DeptLib extends \LibraryClass
         return $ret;
     }
 
+    // @hintable
     static private function getDepartment($dbc, $dept)
     {
         $query = "SELECT dept_no,
@@ -144,6 +146,7 @@ class DeptLib extends \LibraryClass
         return $dbc->numRows($result) === 0 ? false : $dbc->fetchRow($result);
     }
 
+    // @hintable
     static private function deptCouponRing($dept, $price, $ret)
     {
         $query2 = "select department, sum(total) as total from localtemptrans where department = "
@@ -195,6 +198,7 @@ class DeptLib extends \LibraryClass
         return $ret;
     }
 
+    // @hintable
     static private function memberOnlyDept($dept, $ret)
     {
         /**
@@ -209,7 +213,7 @@ class DeptLib extends \LibraryClass
                                             _('Department is member-only'),
                                             _('Enter member number first'),
                                             false,
-                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
+                                            array(_('Member Search [ID]') => 'parseWrapper(\'ID\');', _('Dismiss [clear]') => 'parseWrapper(\'CL\');')
                                         ));
                         $modified = true;
                     }
@@ -218,8 +222,8 @@ class DeptLib extends \LibraryClass
                     if (\CoreLocal::get('isMember') == 0) {
                         if (\CoreLocal::get('msgrepeat') == 0 || \CoreLocal::get('lastRepeat') != 'memberOnlyDept') {
                             \CoreLocal::set('boxMsg', _(
-                                'Department is member-only<br />' .
-                                '[enter] to continue, [clear] to cancel'
+                                _('Department is member-only<br />') .
+                                _('[enter] to continue, [clear] to cancel')
                             ));
                             \CoreLocal::set('lastRepeat', 'memberOnlyDept');
                             $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
@@ -235,7 +239,7 @@ class DeptLib extends \LibraryClass
                                             _('Department is member-only'),
                                             _('Enter member number first'),
                                             false,
-                                            array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
+                                            array(_('Member Search [ID]') => 'parseWrapper(\'ID\');', _('Dismiss [clear]') => 'parseWrapper(\'CL\');')
                                         ));
                         $modified = true;
                     } else if (\CoreLocal::get('memberID') == \CoreLocal::get('defaultNonMem')) {
@@ -254,6 +258,7 @@ class DeptLib extends \LibraryClass
         return array($ret, $modified);
     }
 
+    // @hintable
     static private function deptOpenRing($dept, $price, $discount, $ret)
     {
         list($ret, $memberOnly) = self::memberOnlyDept($dept, $ret);
@@ -270,8 +275,8 @@ class DeptLib extends \LibraryClass
         list($tax, $foodstamp, $deptDiscount) = PrehLib::applyToggles($tax, $foodstamp, $deptDiscount);
 
         $minMaxButtons = array(
-            'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+            _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
         );
         // remove Confirm button/text if hard limits enforced
         if (\CoreLocal::get('OpenRingHardMinMax')) {

@@ -54,7 +54,7 @@ class SpecialDept
       @param $arr a handler map (array)
       @return handler map (array)
     */
-    public function register($deptID,$arr)
+    public function register($deptID, array $arr)
     {
         if (!is_array($arr)) {
             $arr = array();

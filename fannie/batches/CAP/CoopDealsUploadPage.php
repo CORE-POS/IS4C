@@ -109,6 +109,21 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         return $upc;
     }
 
+    private $scaleLinkedItems = null;
+    private function checkScaleItem($dbc, $upc)
+    {
+        if ($this->scaleLinkedItems === null) {
+            $res = $dbc->query("SELECT plu, linkedPLU from scaleItems WHERE linkedPLU IS NOT NULL AND linkedPLU <> ''");
+            $items = array();
+            while ($row = $dbc->fetchRow($res)) {
+                $items[$row['plu']] = $row['linkedPLU'];
+            }
+            $this->scaleLinkedItems = $items;
+        }
+
+        return isset($this->scaleLinkedItems[$upc]) ? $this->scaleLinkedItems[$upc] : false;
+    }
+
     private function dealTypes($type)
     {
         $abt = array();
@@ -163,6 +178,12 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $price = trim($data[$indexes['price']],"\$");
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
                 $dbc->execute($insP,array($month,$upc,$price,$type,$mult));
+            }
+            $linked = $this->checkScaleItem($dbc, $upc);
+            if ($linked) {
+                foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
+                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult));
+                }
             }
         }
 

@@ -51,6 +51,7 @@ class AutoParsTask extends FannieTask
                     AND d.store_id=?
                     AND charflag <> \'SO\'
                     AND trans_status <> \'R\'
+                    AND quantity < 1000
                 GROUP BY year(tdate), month(tdate), day(tdate)
                 ORDER BY year(tdate), month(tdate), day(tdate) DESC';
         $salesP = $dbc->prepare($salesQ);

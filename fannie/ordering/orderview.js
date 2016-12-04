@@ -21,7 +21,8 @@ var orderView = (function($) {
         var elem = $(this).closest('tbody');
         $.ajax({
             type: 'post',
-            data: dstr
+            data: dstr,
+            dataType: 'json'
         }).done(function(resp) {
             if (resp.regPrice) {
                 elem.find('input[name="srp"]').val(resp.regPrice);
@@ -49,33 +50,9 @@ var orderView = (function($) {
         }
     };
 
-    mod.memNumEntered = function(){
-        var oid = $('#orderID').val();
-        var cardno = $('#memNum').val();	
-        $.ajax({
-            type: 'get',
-            data: 'customer=1&orderID='+oid+'&memNum='+cardno,
-            dataType: 'json'
-        }).done(function(resp){
-            if (resp.customer) {
-                $('#customerDiv').html(resp.customer);
-                mod.AfterLoadCustomer();
-            }
-            if (resp.footer) {
-                $('#footerDiv').html(resp.footer);
-                $('#confirm-date').change(function(e) {
-                    mod.saveConfirmDate(e.target.checked, $('#orderID').val());
-                });
-            }
-        });
-    };
-
     mod.afterLoadCustomer = function() {
         $('.contact-field').change(mod.saveContactInfo);
         $('#memNum').change(mod.memNumEntered);
-        $('#ctcselect').change(function() {
-            mod.saveCtC($(this).val(), $('#orderID').val());
-        });
         $('#s_personNum').change(function() {
             mod.savePN($('#orderID').val(), $(this).val());
         });
@@ -98,8 +75,51 @@ var orderView = (function($) {
         $('.print-cb').change(function() {
             mod.togglePrint($('#orderID').val());
         });
-        $('#sendEmails').change(function() {
-            mod.toggleSendEmails($('#orderID').val(), $('#sendEmails').prop('checked'));
+        $('.btn-test-send').click(function(){
+            $.ajax({
+                url: 'OrderAjax.php',
+                type: 'post',
+                dataType: 'json',
+                data: 'id='+$('#orderID').val()+'&testNotify=1'
+            }).done(function(resp){
+                if (resp.sentEmail) {
+                    alert('Emailed Test Notification');
+                } else {
+                    alert('Notification Test Failed');
+                }
+            });
+        });
+    };
+
+    mod.saveCtC = function (val,oid){
+        $.ajax({
+            url: 'OrderAjax.php',
+            type: 'post',
+            data: 'id='+oid+'&ctc='+val
+        });
+    };
+
+    mod.memNumEntered = function(){
+        var oid = $('#orderID').val();
+        var cardno = $('#memNum').val();	
+        $.ajax({
+            type: 'get',
+            data: 'customer=1&orderID='+oid+'&memNum='+cardno,
+            dataType: 'json'
+        }).done(function(resp){
+            if (resp.footer) {
+                $('#footerDiv').html(resp.footer);
+                $('#confirm-date').change(function(e) {
+                    mod.saveConfirmDate(e.target.checked, $('#orderID').val());
+                });
+                $('#ctcselect').change(function() {
+                    mod.saveCtC($(this).val(), $('#orderID').val());
+                });
+            }
+            if (resp.customer) {
+                $('#customerDiv').html(resp.customer);
+                mod.afterLoadCustomer();
+            }
         });
     };
 
@@ -118,7 +138,8 @@ var orderView = (function($) {
                 return false;
             });
         } else if ($('#newdept').length) {
-            $('#newdept').focus();	
+            $('#newbrand').focus();	
+            bindAutoComplete('#newbrand', '../ws/', 'brand');
             $('#itemDiv form').submit(function (e) {
                 mod.newDept($(this).data('order'), $(this).data('trans'));
                 e.preventDefault();
@@ -193,13 +214,6 @@ var orderView = (function($) {
             mod.afterLoadItems();
         });
     };
-    mod.saveCtC = function (val,oid){
-        $.ajax({
-            url: 'OrderAjax.php',
-            type: 'post',
-            data: 'id='+oid+'&ctc='+val
-        });
-    };
     mod.newQty = function (oid,tid){
         var qty = $('#newqty').val();
         $.ajax({
@@ -211,10 +225,10 @@ var orderView = (function($) {
         });
     };
     mod.newDept = function (oid,tid){
-        var d = $('#newdept').val();
+        var dstr = $('.more-item-info :input').serialize();
         $.ajax({
             type: 'post',
-            data: 'orderID='+oid+'&transID='+tid+'&dept='+d
+            data: 'orderID='+oid+'&transID='+tid+'&'+dstr
         }).done(function(resp){
             $('#itemDiv').html(resp);
             mod.afterLoadItems();
@@ -251,13 +265,6 @@ var orderView = (function($) {
         $.ajax({
             type: 'post',
             data: 'togglePrint=1&orderID='+oid
-        });
-    };
-    mod.toggleSendEmails = function(oid, s) {
-        $.ajax({
-            url: 'OrderAjax.php',
-            type: 'post',
-            data: 'id='+oid+'&sendEmails='+(s?1:0)
         });
     };
     mod.toggleO = function (oid,tid)
@@ -324,6 +331,11 @@ var orderView = (function($) {
         var nT = $('#nText').val();
         if (nT !== '' && nD === '0') {
             window.alert("Assign your notes to a department");
+            return false;
+        }
+
+        if ($('#orderStore').val() == 0) {
+            window.alert('Choose a store');
         } else {
             window.location = $('#redirectURL').val();
         }
@@ -371,6 +383,9 @@ $(document).ready(function(){
             $('#footerDiv').html(resp.footer);
             $('#confirm-date').change(function(e) {
                 orderView.saveConfirmDate(e.target.checked, $('#orderID').val());
+            });
+            $('#ctcselect').change(function() {
+                orderView.saveCtC($(this).val(), $('#orderID').val());
             });
             $('.done-btn').click(function(e) {
                 orderView.validateAndHome();

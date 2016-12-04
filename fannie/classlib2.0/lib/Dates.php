@@ -22,15 +22,33 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\lib;
+use \FannieConfig;
+use \DateTime;
 
 class Dates
 {
     public static function lastWeek()
     {
-        $sunday = strtotime('last sunday');
+        $week_start = (!FannieConfig::config('FANNIE_WEEK_START')) ? 1 :  FannieConfig::config('FANNIE_WEEK_START');
+        $week_end = $week_start == 1 ? 7 : $week_start-1;
+        $day_name = strtolower(self::dayName($week_end));
+        $sunday = strtotime('last ' . $day_name);
         $monday = mktime(0, 0, 0, date('n', $sunday), date('j',$sunday)-6, date('Y', $sunday));
 
         return array(date('Y-m-d', $monday), date('Y-m-d', $sunday));
+    }
+
+    public static function dayName($num)
+    {
+        $date = new DateTime();
+        for ($i=0; $i<7; $i++) {
+            $date->modify('+1 day');
+            if ($date->format('N') == $num) {
+                return $date->format('l');
+            }
+        }
+
+        return 'octoday';
     }
 }
 

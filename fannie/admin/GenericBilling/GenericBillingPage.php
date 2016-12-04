@@ -160,6 +160,12 @@ class GenericBillingPage extends FannieRESTfulPage
         $params['total'] = -1*$amount;
         DTrans::addItem($sql, $trans_no, $params);
 
+        $params['description'] = $desc;
+        $params['trans_type'] = 'C';
+        $params['trans_subtype'] = 'CM';
+        $params['total'] = 0;
+        DTrans::addItem($sql, $trans_no, $params);
+
         $json['msg'] = sprintf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
                 Receipt is %d-%d-%d.",$this->id,$amount,
                 $this->EMP_NO,$this->LANE_NO,$t_no);

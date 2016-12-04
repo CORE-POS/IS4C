@@ -183,8 +183,6 @@ static public function getsubtotals()
     CoreLocal::set("memChargeTotal", CoreLocal::get("chargeTotal") + CoreLocal::get("paymentTotal") );
     // discountableTotal => SUM(localtemptrans.total) where discountable > 0
     CoreLocal::set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
-    // localTotal => SUM(localtemptrans.total) where numflag=1
-    CoreLocal::set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
     // voidTotal => SUM(localtemptrans.total) where trans_status=V
     CoreLocal::set("voidTotal", (!$row || !isset($row['voidTotal'])) ? 0 : (double)$row["voidTotal"] );
 
@@ -218,7 +216,6 @@ static public function getsubtotals()
             SUM(CASE WHEN discountable=0 THEN 0 ELSE total END) * (MAX(percentDiscount)/100.00) AS transDiscount,
             SUM(CASE WHEN trans_subtype IN ('MI', 'CX') THEN total ELSE 0 END) AS chargeTotal,
             SUM(CASE WHEN department=990 THEN total ELSE 0 END) as paymentTotal,
-            SUM(CASE WHEN numflag=1 THEN total ELSE 0 END) as localTotal,
             SUM(CASE WHEN trans_status='V' THEN total ELSE 0 END) as voidTotal,
             (
                 SUM(CASE WHEN foodstamp=1 THEN total ELSE 0 END) 
@@ -492,6 +489,7 @@ static public function uploadtoServer()
     local.table_name against remote.table2
    @return [string] comma separated list of column names
 */
+    // @hintable
 static public function getMatchingColumns($connection,$table_name,$table2="")
 {
     /**
@@ -549,6 +547,7 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
    @param $table2 a database table
    @return [string] comma separated list of column names
  */
+    // @hintable
 static public function localMatchingColumns($connection,$table1,$table2)
 {
     $poll1 = $connection->tableDefinition($table1);
@@ -690,7 +689,7 @@ static public function setglobalvalue($param, $value)
   and in session
   @param $arr An array of keys and values
 */
-static public function setglobalvalues($arr)
+static public function setglobalvalues(array $arr)
 {
     $setStr = "";
     foreach($arr as $param => $value) {

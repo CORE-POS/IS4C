@@ -237,14 +237,14 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
         }
     */
 
-    $receipt = chr(27).chr(33).chr(5)."\n\n\n".self::centerString("C U S T O M E R   C O P Y")."\n"
+    $receipt = chr(27).chr(33).chr(5)."\n\n\n".self::centerString(_("C U S T O M E R   C O P Y"))."\n"
            .self::centerString("................................................")."\n"
            .self::centerString(CoreLocal::get("chargeSlip1"))."\n\n"
            . $labels["$program"][0]
-           ."Name: ".trim($chgName)."\n"        // changed by apbw 2/14/05 SCR
-           ."Member Number: ".trim(CoreLocal::get("memberID"))."\n"
-           ."Date: ".$date."\n"
-           ."REFERENCE #: ".$ref."\n"
+           ._("Name: ").trim($chgName)."\n"        // changed by apbw 2/14/05 SCR
+           ._("Member Number: ").trim(CoreLocal::get("memberID"))."\n"
+           ._("Date: ").$date."\n"
+           ._("REFERENCE #: ").$ref."\n"
            . $labels["$program"][1] . " $".number_format(-1 * CoreLocal::get("chargeTotal"), 2)."\n"
            .self::centerString("................................................")."\n"
            ."\n\n\n\n\n\n\n"
@@ -277,15 +277,17 @@ static public function printChargeFooterStore($dateTimeStamp, $ref, $program="ch
        with the proper labels (or config settings for the labels)
     */
     $labels = array();
-    $labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n"
-            , "Charge Amount:"
-            , "I AGREE TO PAY THE ABOVE AMOUNT\n"
-            , "TO MY CHARGE ACCOUNT\n"
+    $labels['charge'] = array(
+            _("CUSTOMER CHARGE ACCOUNT\n"),
+            _("Charge Amount:"),
+            _("I AGREE TO PAY THE ABOVE AMOUNT\n"),
+            _("TO MY CHARGE ACCOUNT\n"),
     );
-    $labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n"
-            , "Debit Amount:"
-            , "I ACKNOWLEDGE THE ABOVE DEBIT\n"
-            , "TO MY DEBIT ACCOUNT\n"
+    $labels['debit'] = array(
+            _("CUSTOMER DEBIT ACCOUNT\n"),
+            _("Debit Amount:"),
+            _("I ACKNOWLEDGE THE ABOVE DEBIT\n"),
+            _("TO MY DEBIT ACCOUNT\n"),
     );
 
     /* Could append labels from other modules
@@ -302,14 +304,14 @@ static public function printChargeFooterStore($dateTimeStamp, $ref, $program="ch
            .self::centerString("................................................")."\n"
            .self::centerString(CoreLocal::get("chargeSlip1"))."\n\n"
            . $labels["$program"][0]
-           ."Name: ".trim($chgName)."\n"        // changed by apbw 2/14/05 SCR
-           ."Member Number: ".trim(CoreLocal::get("memberID"))."\n"
-           ."Date: ".$date."\n"
-           ."REFERENCE #: ".$ref."\n"
+           ._("Name: ").trim($chgName)."\n"        // changed by apbw 2/14/05 SCR
+           ._("Member Number: ").trim(CoreLocal::get("memberID"))."\n"
+           ._("Date: ").$date."\n"
+           ._("REFERENCE #: ").$ref."\n"
            .$labels["$program"][1] . " $".number_format(-1 * CoreLocal::get("chargeTotal"), 2)."\n"
            . $labels["$program"][2]
            . $labels["$program"][3]
-           ."Purchaser Sign Below\n\n\n"
+           ._("Purchaser Sign Below\n\n\n")
            ."X____________________________________________\n"
            .CoreLocal::get("fname")." ".CoreLocal::get("lname")."\n\n"
            .self::centerString(".................................................")."\n\n";
@@ -378,8 +380,11 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     \COREPOS\pos\lib\MemberLib::chargeOk();
 
     $labels = array();
-    $labels['charge'] = array("Current IOU Balance:" , 1);
-    $labels['debit'] = array("Debit available:", -1);
+    $labels['charge'] = array(_("Current IOU Balance:") , 1);
+    $labels['debit'] = array(_("Debit available:"), -1);
+    if (CoreLocal::get('InvertAR')) {
+        $labels['charge'][1] = -1;
+    }
 
     $dbc = Database::tDataConnect();
     list($emp, $reg, $trans) = self::parseRef($trans_num);
@@ -437,35 +442,47 @@ static public function unbold()
     return self::$PRINT_OBJ->TextStyle(true, false);
 }
 
-static public function localTTL()
+static private function lookupLocal($ref)
 {
-    if (CoreLocal::get("localTotal") == 0) return "";
+    $dbc = Database::tDataConnect();
+    list($empNo, $laneNo, $transNo) = self::parseRef($ref);
 
-    $str = sprintf("LOCAL PURCHASES = \$%.2f",
-        CoreLocal::get("localTotal"));
+    $lookup = sprintf("SELECT 
+        SUM(CASE WHEN p.local=1 THEN l.total ELSE 0 END) as localTTL,
+        SUM(CASE WHEN l.trans_type IN ('I','D') then l.total ELSE 0 END) as itemTTL
+        FROM localtranstoday AS l LEFT JOIN ".
+        CoreLocal::get('pDatabase').$dbc->sep()."products AS p
+        ON l.upc=p.upc
+        WHERE l.trans_type IN ('I','D')
+            AND emp_no=%d AND register_no=%d AND trans_no=%d",
+        $empNo, $laneNo, $transNo);
+    $lookup = $dbc->query($lookup);
+    $ret = array('localTTL' => 0, 'itemTTL' => 0);
+    if ($dbc->numRows($lookup) > 0) {
+        $ret = $dbc->fetch_row($lookup);
+    }
+ 
+    return $ret;
+}
+
+static public function localTTL($ref)
+{
+    $row = self::lookupLocal($ref);
+    if ($row['localTTL'] == 0) 
+        return '';
+
+    $str = sprintf(_("LOCAL PURCHASES = \$%.2f"), $row['localTTL']);
     return $str."\n";
 }
 
-static public function graphedLocalTTL()
+static public function graphedLocalTTL($ref)
 {
-    $dbc = Database::tDataConnect();
-
-    $lookup = "SELECT 
-        SUM(CASE WHEN p.local=1 THEN l.total ELSE 0 END) as localTTL,
-        SUM(CASE WHEN l.trans_type IN ('I','D') then l.total ELSE 0 END) as itemTTL
-        FROM localtemptrans AS l LEFT JOIN ".
-        CoreLocal::get('pDatabase').$dbc->sep()."products AS p
-        ON l.upc=p.upc
-        WHERE l.trans_type IN ('I','D')";
-    $lookup = $dbc->query($lookup);
-    if ($dbc->num_rows($lookup) == 0)
-        return '';
-    $row = $dbc->fetch_row($lookup);
+    $row = self::lookupLocal($ref);
     if ($row['localTTL'] == 0) 
         return '';
 
     $percent = ((float)$row['localTTL']) / ((float)$row['itemTTL']);
-    $str = sprintf('LOCAL PURCHASES = $%.2f (%.2f%%)', 
+    $str = sprintf(_('LOCAL PURCHASES = $%.2f (%.2f%%)'), 
             $row['localTTL'], 100*$percent);
     $str .= "\n";
 
@@ -544,11 +561,14 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $recordset = $tag->tag($recordset);
 
     $ret = "";
+    $width = CoreLocal::get('ReceiptLineWidth');
+    if (!is_numeric($width) || $width <= 0 || !$width) {
+        $width = 56;
+    }
     foreach ($recordset as $record) {
         $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Format\\' . $record['tag'] . 'ReceiptFormat';
         if (!class_exists($class_name)) continue;
-        $obj = new $class_name();
-        $obj->setPrintHandler(self::$PRINT_OBJ);
+        $obj = new $class_name(self::$PRINT_OBJ, $width);
 
         $line = $obj->format($record);
 
@@ -940,10 +960,10 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
         $receipt = self::printReceiptHeader($dateTimeStamp, $ref);
 
         if ($second) {
-            $ins = self::$PRINT_OBJ->centerString("( S T O R E   C O P Y )")."\n";
+            $ins = self::$PRINT_OBJ->centerString(_("( S T O R E   C O P Y )"))."\n";
             $receipt = substr($receipt,0,3).$ins.substr($receipt,3);
         } elseif ($reprint !== false) {
-            $ins = self::$PRINT_OBJ->centerString("***   R E P R I N T   ***")."\n";
+            $ins = self::$PRINT_OBJ->centerString(_("***   R E P R I N T   ***"))."\n";
             $receipt = substr($receipt,0,3).$ins.substr($receipt,3);
         }
 
@@ -973,9 +993,9 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
               Default to $ total if no setting exists
             */
             if (CoreLocal::get('ReceiptLocalMode') == 'total' || CoreLocal::get('ReceiptLocalMode') == '') {
-                $receipt['any'] .= self::localTTL();
+                $receipt['any'] .= self::localTTL($ref);
             } elseif (CoreLocal::get('ReceiptLocalMode') == 'percent') {
-                $receipt['any'] .= self::graphedLocalTTL();
+                $receipt['any'] .= self::graphedLocalTTL($ref);
             }
             $receipt['any'] .= "\n";
     
@@ -1076,18 +1096,18 @@ static private function simpleReceipt($receipt, $arg1, $where)
     $dashes = "\n".self::centerString("----------------------------------------------")."\n";
 
     if ($arg1 == "partial") {
-        $receipt .= $dashes.self::centerString("*    P A R T I A L  T R A N S A C T I O N    *").$dashes;
+        $receipt .= $dashes.self::centerString(_("*    P A R T I A L  T R A N S A C T I O N    *")).$dashes;
     }
     elseif ($arg1 == "cancelled") {
-        $receipt .= $dashes.self::centerString("*  T R A N S A C T I O N  C A N C E L L E D  *").$dashes;
+        $receipt .= $dashes.self::centerString(_("*  T R A N S A C T I O N  C A N C E L L E D  *")).$dashes;
     }
     elseif ($arg1 == "resume") {
-        $receipt .= $dashes.self::centerString("*    T R A N S A C T I O N  R E S U M E D    *").$dashes
+        $receipt .= $dashes.self::centerString(_("*    T R A N S A C T I O N  R E S U M E D    *")).$dashes
              .self::centerString("A complete receipt will be printed\n")
              .self::centerString("at the end of the transaction");
     }
     elseif ($arg1 == "suspended") {
-        $receipt .= $dashes.self::centerString("*  T R A N S A C T I O N  S U S P E N D E D  *").$dashes
+        $receipt .= $dashes.self::centerString(_("*  T R A N S A C T I O N  S U S P E N D E D  *")).$dashes
                  .self::mostRecentReceipt();
     }
 

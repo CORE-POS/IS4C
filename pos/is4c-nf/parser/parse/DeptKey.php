@@ -32,8 +32,12 @@ class DeptKey extends Parser
 {
     public function check($str)
     {
-        if (strstr($str,"DP") && strlen($str) > 3 &&
-            substr($str,0,2) != "VD") {
+        /**
+           Ex:
+           199DP10
+           199DP
+        */
+        if (preg_match('/^\d+DP\d*$/', $str)) {
             return true;
         }
 

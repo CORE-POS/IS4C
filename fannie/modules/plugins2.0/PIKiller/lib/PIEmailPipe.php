@@ -43,28 +43,33 @@ class PIEmailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
         /** extract valid mime types **/
         $mimes = array('application/json');
         $info = $this->parseEmail($msg);
+        $fp = fopen('/tmp/pik.out', 'a');
+        fwrite($fp, date('r') . ": Got message\n");
         
         $boundary = $this->hasAttachments($info['headers']);
         if ($boundary) {
             $pieces = $this->extractAttachments($info['body'], $boundary);
-            echo "Attachments: " . count($pieces['attachments']) . "\n";
+            fwrite($fp,"Attachments: " . count($pieces['attachments']) . "\n");
             foreach ($pieces['attachments'] as $a) {
-                echo "File: {$a['name']}\n";
-                echo "Mime-type: {$a['type']}\n";
+                fwrite($fp, "File: {$a['name']}\n");
+                fwrite($fp, "Mime-type: {$a['type']}\n");
                 if (!in_array($a['type'], $mimes)) {
-                    echo "Skipping (based on type)\n";
+                    fwrite($fp, "Skipping (based on type)\n");
                     continue;
                 }
                 $json = base64_encode($a['content']);
+                fwrite($fp, $json . "\n");
                 $page = new PIApply();
                 $page->setJson($json);
                 $page->get_json_handler();
             }
         }
+        fclose($fp);
     }
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+    ini_set('error_log', '/tmp/pik.err');
     $obj = new PIEmailPipe();
     $message = file_get_contents("php://stdin");
     if (!empty($message)) {

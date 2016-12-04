@@ -49,13 +49,14 @@ class pos2 extends BasicCorePage
         $this->setOutput($json);
         $this->registerRetry($json);
         $this->registerPrintJob($json);
-        if (CoreLocal::get('CustomerDisplay') === true) {
+        if (CoreLocal::get('CustomerDisplay') == true) {
             $this->loadCustomerDisplay();
         }
 
         return true;
     }
 
+    // @hintable
     private function doRedirect($json)
     {
         if (isset($json['main_frame']) && $json['main_frame'] != false) {
@@ -65,6 +66,7 @@ class pos2 extends BasicCorePage
         }
     }
 
+    // @hintable
     private function setOutput($json)
     {
         if (isset($json['output']) && !empty($json['output'])) {
@@ -72,6 +74,7 @@ class pos2 extends BasicCorePage
         }
     }
 
+    // @hintable
     private function registerRetry($json)
     {
         if (isset($json['retry']) && $json['retry'] != false) {
@@ -79,6 +82,7 @@ class pos2 extends BasicCorePage
         }
     }
 
+    // @hintable
     private function registerPrintJob($json)
     {
         if (isset($json['receipt']) && $json['receipt'] != false) {
@@ -89,10 +93,10 @@ class pos2 extends BasicCorePage
 
     private function loadCustomerDisplay()
     {
-        if (CoreLocal::get('CustomerDisplay') === true) {
+        if (CoreLocal::get('CustomerDisplay') == true) {
             $child_url = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
-            $this->add_onload_command("setCustomerURL('{$child_url}');\n");
-            $this->add_onload_command("reloadCustomerDisplay();\n");
+            $this->add_onload_command("CustomerDisplay.setURL('{$child_url}');\n");
+            $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
         }
     }
 
@@ -161,32 +165,32 @@ class pos2 extends BasicCorePage
         <button type="submit" 
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1001\');">
-            Items
+            onclick="parseWrapper(\'QO1001\');">'
+            . _('Items') . '
         </button>
         <button type="submit"
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1002\');">
-            Total
+            onclick="parseWrapper(\'QO1002\');">'
+            . _('Total') . '
         </button>
         <button type="submit" 
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1003\');">
-            Member
+            onclick="parseWrapper(\'QO1003\');">'
+            . _('Member') . '
         </button>
         <button type="submit" 
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1004\');">
-            Tender
+            onclick="parseWrapper(\'QO1004\');">'
+            . _('Tender') . '
         </button>
         <button type="submit"
             class="quick_button pos-button coloredBorder"
             style="margin: 0 10px 0 0;"
-            onclick="parseWrapper(\'QO1005\');">
-            Misc
+            onclick="parseWrapper(\'QO1005\');">'
+            . _('Misc') . '
         </button>
         </div>';
     }

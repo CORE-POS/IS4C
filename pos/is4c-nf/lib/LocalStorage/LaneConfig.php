@@ -23,8 +23,13 @@
 
 namespace COREPOS\pos\lib\LocalStorage;
 
+// autoloading hasn't kicked in yet
+// this could be improved
 if (!class_exists('COREPOS\common\cache\file\CacheItemPool', false)) {
     include(dirname(__FILE__) . '/../../../../common/cache/file/CacheItemPool.php');
+}
+if (!class_exists('COREPOS\common\cache\php\CacheItemPool', false)) {
+    include(dirname(__FILE__) . '/../../../../common/cache/php/CacheItemPool.php');
 }
 if (!class_exists('COREPOS\common\cache\file\CacheItem', false)) {
     include(dirname(__FILE__) . '/../../../../common/cache/file/CacheItem.php');
@@ -43,11 +48,16 @@ if (!class_exists('COREPOS\common\cache\file\CacheItem', false)) {
 class LaneConfig 
 {
     private static $instance = null;
+    private static $changed = false;
 
     private static function init()
     {
         if (self::$instance === null) {
-            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
+            if (function_exists('opcache_compile_file')) {
+                self::$instance = new \COREPOS\common\cache\php\CacheItemPool('lane.config.cache');
+            } else {
+                self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
+            }
         }
     }
 
@@ -68,7 +78,11 @@ class LaneConfig
         self::init();
         $item = self::$instance->getItem($key);
         $item->set($val);
-        self::$instance->save($item);
+        self::$instance->saveDeferred($item);
+        if (self::$changed === false) {
+            register_shutdown_function(array('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig', 'flush'));
+            self::$changed = true;
+        }
     }
 
     public static function has($key)
@@ -82,6 +96,12 @@ class LaneConfig
     {
         self::init();
         self::$instance->clear();
+        self::$instance->commit();
+    }
+
+    public static function flush()
+    {
+        self::init();
         self::$instance->commit();
     }
 }

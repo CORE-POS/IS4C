@@ -42,7 +42,7 @@ class BasicPM extends PriceMethod
 
     private $error_msg = '';
 
-    function addItem($row, $quantity, $priceObj)
+    public function addItem(array $row, $quantity, $priceObj)
     {
         if ($quantity == 0) {
             $this->error_msg = 'Quantity cannot be zero';

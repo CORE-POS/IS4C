@@ -22,19 +22,24 @@ class UpdateDevCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $git = new Git(__DIR__ . '/../../');
+        $path = $this->getApplication()->configValue("projectPath");
+        if ($path && $path[0] != "/") {
+            $path = __DIR__ . "/" . $path;
+        }
+        $git = new Git($path);
         $branch = $git->getCurrentBranch();
         $revs = $git->getRevisions();
         $last = array_pop($revs); 
+        $repo = $this->getApplication()->configValue('repo');
     
         try {
             // verify upstream is a remte
             $upstream = $git->remote('upstream');
         } catch (Exception $ex) {
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-                $output->writeln("Running: <comment>git remote add upstream https://github.com/CORE-POS/IS4C.git</comment>");
+                $output->writeln("Running: <comment>git remote add upstream {$repo}</comment>");
             }
-            $git->addRemote('upstream', 'https://github.com/CORE-POS/IS4C.git');
+            $git->addRemote('upstream', $repo);
         }
 
         $version = 'version-' . $input->getArgument('version');
@@ -51,9 +56,9 @@ class UpdateDevCommand extends Command
         $git->checkout($test_branch);
 
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln("Running: <comment>git pull --rebase https://github.com/CORE-POS/IS4C.git {$version}</comment>");
+            $output->writeln("Running: <comment>git pull --rebase {$repo} {$version}</comment>");
         }
-        $git->pull('https://github.com/CORE-POS/IS4C.git', $version);
+        $git->pull($repo, $version);
 
         $output->writeln("<info>You're on a new branch named</info> <error>{$test_branch}</error>");
         $output->writeln("\nTo get back to your previous environment run:");

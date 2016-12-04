@@ -43,13 +43,15 @@ class BalanceCheck extends Parser
         \COREPOS\pos\lib\MemberLib::chargeOk();
         $memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
         $title = _('Member #') . CoreLocal::get('memberID');
-        $msg = _("Current AR balance is ") . CoreLocal::get("balance") . "<br />"
-             . _("Available AR balance is ") . CoreLocal::get("availBal");
+        $bal = CoreLocal::get('InvertAR') ? -1*CoreLocal::get('balance') : CoreLocal::get('balance');
+        $avail = CoreLocal::get('InvertAR') ? -1*CoreLocal::get('availBal') : CoreLocal::get('availBal');
+        $msg = _(sprintf("Current AR balance is %.2f", $bal)) . '<br />'
+             . _(sprintf("Available AR balance is %.2f", $avail));
         $ret['output'] = DisplayLib::boxMsg(
             $msg, 
             $title, 
             true, 
-            array_merge(array('Tender [Store Credit]' => 'parseWrapper(\'MI\');'), DisplayLib::standardClearButton())
+            array_merge(array(_('Tender [Store Credit]') => 'parseWrapper(\'MI\');'), DisplayLib::standardClearButton())
         );
 
         return $ret;

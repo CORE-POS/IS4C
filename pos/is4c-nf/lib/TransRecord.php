@@ -125,6 +125,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
         $dbltotal = (-1 * $dbltotal);
         $dbldiscount = (-1 * $dbldiscount);
         $dblmemDiscount = (-1 * $dblmemDiscount);
+        $cost = (-1 * $cost);
 
         if ($strtransstatus != "V" && $strtransstatus != "D") {
             $strtransstatus = "R" ;    // edited by apbw 6/04/05 to correct voiding of refunded items
@@ -247,6 +248,7 @@ private static $default_record = array(
   @param $named_params [keyed array]
   @return [none]
 */
+    // @hintable
 static public function addRecord($named_params)
 {
     // start with default values
@@ -617,6 +619,7 @@ static public function addcdnotify()
   all tax jurisdictions. The ini setting 'CouponsAreTaxable'
   controls whether the tax parameter is used.
 */
+    // @hintable
 static public function addCoupon($strupc, $intdepartment, $dbltotal, $statusFlags=array())
 {
     if (CoreLocal::get('CouponsAreTaxable') !== 0) {
@@ -767,6 +770,7 @@ static public function addCashDrop($amt)
   total and regPrice (respectively). The other values go in the
   correspondingly named columns.
 */
+    // @hintable
 static public function addLogRecord($opts)
 {
     if (!is_array($opts)) {
@@ -795,6 +799,7 @@ static public function addLogRecord($opts)
     ));
 }
 
+    // @hintable
 static public function add_log_record($opts)
 {
     self::addLogRecord($opts);

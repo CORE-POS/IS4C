@@ -13,6 +13,7 @@ function pollScale(rel_prefix)
 }
 
 function scalePollError(e1,e2,e3){
+    errorLog.show(e1, e2, e3);
 	rePoll();
 }
 

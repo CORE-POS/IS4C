@@ -62,6 +62,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $this->mode = 'list';
         }
 
+        $this->addScript('productList.js');
+        if ($this->canEditItems) {
+            $this->addOnloadCommand('productList.enableEditing()');
+        }
+
         return true;
     }
 
@@ -98,10 +103,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         foreach ($vModel->find('vendorName') as $v) {
             $vendors[] = $v->vendorName();
         }
-        if ($this->canEditItems) {
-            $this->addOnloadCommand('productList.enableEditing()');
-        }
-        $this->addScript('productList.js');
         ob_start();
         ?>
         var deptObj = <?php echo json_encode($depts); ?>;
@@ -123,7 +124,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $store_id = FormLib::get('store_id');
             $upc = BarcodeLib::padUPC($upc);
             $form = new COREPOS\common\mvc\FormValueContainer();
-            $this->saveItem($dbc, $upc, $form);
+            $this->saveItem($dbc, $upc, $store_id, $form);
             break;  
         case 'deleteCheck':
             $upc = FormLib::get('upc');
@@ -157,7 +158,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         'local' => 'local',
     );
 
-    private function saveItem($dbc, $upc, $form)
+    private function saveItem($dbc, $upc, $store_id, $form)
     {
         $model = new ProductsModel($dbc);
         $model->upc($upc);

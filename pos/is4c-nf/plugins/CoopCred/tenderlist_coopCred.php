@@ -168,6 +168,5 @@ class tenderlist_coopCred extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new tenderlist_coopCred();
+AutoLoader::dispatch();
 

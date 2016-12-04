@@ -35,9 +35,8 @@ class WicTotalAction extends TotalAction
             $dbc = Database::tDataConnect();
             $dbc->query('
                 UPDATE localtemptrans
-                SET discountable=0
-                WHERE department NOT IN (41, 42, 156, 201, 204, 208)
-                    AND department NOT BETWEEN 509 AND 557
+                SET discountable=0,
+                    percentDiscount=0
             ');
         }
     }

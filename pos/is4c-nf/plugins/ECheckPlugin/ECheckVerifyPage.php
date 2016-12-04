@@ -32,7 +32,7 @@ class ECheckVerifyPage extends NoInputCorePage
         $amount = $_REQUEST['amount'];
         if (isset($_REQUEST['selectlist'])) {
             $opt = $_REQUEST['selectlist'];
-            if ($opt == '' || $opt == 'CL') {
+            if ($opt == '' || strtoupper($opt) == 'CL') {
                 CoreLocal::set('lastRepeat', '');
                 $this->change_page($this->page_url."gui-modules/pos2.php");
 
@@ -99,6 +99,7 @@ class ECheckVerifyPage extends NoInputCorePage
                 id="selectlist" onblur="$('#selectlist').focus();">
             <option selected value="<?php echo $echeck; ?>">Electronic</option>
             <option value="<?php echo $paper; ?>">Paper</option>
+            <option value="TC">Gift Certificate</option>
             </select>
             <input type="hidden" name="amount" value="<?php echo $_REQUEST['amount']; ?>" />
         </form>
@@ -114,7 +115,5 @@ class ECheckVerifyPage extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new ECheckVerifyPage();
-}
+AutoLoader::dispatch();
 

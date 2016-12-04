@@ -18,9 +18,11 @@ class OrderNotifications
         $order = $this->getOrder($orderID);
         $items = $this->getItems($orderID, $transID);
         $ret = false;
-        if ($items[0]['staff'] && $order->sendEmails()) {
+        if (isset($items[0]) && $items[0]['staff'] && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
-            $ret = $this->sendArrivedEmail($order->email(), $formatted);
+            $formatted['store'] = $this->getStore($orderID);
+            $addr = $this->getAddress($order);
+            $ret = $this->sendArrivedEmail($addr, $formatted);
         }
 
         return $ret;
@@ -36,10 +38,46 @@ class OrderNotifications
         $ret = false;
         if ($order->statusFlag() == 5 && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
-            $ret = $this->sendArrivedEmail($order->email(), $formatted);
+            $formatted['store'] = $this->getStore($orderID);
+            $addr = $this->getAddress($order);
+            $ret = $this->sendArrivedEmail($addr, $formatted);
         }
 
         return $ret;
+    }
+
+    public function orderTestEmail($orderID)
+    {
+        $order = $this->getOrder($orderID);
+        $ret = false;
+        $formatted = array(
+            'text' => 'This is just a test message to verify delivery',
+            'html' => 'This is just a test message to verify delivery',
+        );
+        $addr = $this->getAddress($order);
+        $ret = $this->sendArrivedEmail($addr, $formatted);
+
+        return $ret;
+    }
+
+    private function getAddress($order)
+    {
+        switch ($order->sendEmails()) {
+            case 1:
+                return $order->email();
+            case 2:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@mms.att.net';
+            case 3:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@pm.sprint.com';
+            case 4:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@tmomail.net';
+            case 5:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@vzwpix.com';
+            case 6:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@msg.fi.google.com';
+            default:
+                return false;
+        }
     }
 
     /**
@@ -51,6 +89,7 @@ class OrderNotifications
         if (class_exists('ScheduledEmailSendTask')) {
             $config = FannieConfig::factory();
             $settings = $config->get('PLUGIN_SETTINGS');
+            $dbc = $this->dbc;
             $dbc->selectDB($settings['ScheduledEmailDB']);
             $template = new ScheduledEmailTemplatesModel($dbc);
             $template->scheduledEmailTemplateID($config->get('SO_TEMPLATE'));
@@ -75,10 +114,23 @@ class OrderNotifications
                 $item['ItemQtty'] > 1 ? 's' : '',
                 $item['quantity'],
                 $item['total']) . "\n";
-            $ret['html'] = $ret['text'] . '<br>';
         }
+        $ret['html'] = nl2br($ret['text']);
 
         return $ret;
+    }
+
+    private function getStore($orderID)
+    {
+        $config = FannieConfig::factory();
+        $query = '
+            SELECT s.description
+            FROM SpecialOrders AS o
+                INNER JOIN ' . $config->get('OP_DB') . $this->dbc->sep() . 'Stores AS s
+                    ON s.storeID=o.storeID
+            WHERE o.specialOrderID=?';
+        $prep = $this->dbc->prepare($query);
+        return $this->dbc->getValue($prep, array($orderID));
     }
 
     /**

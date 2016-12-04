@@ -204,7 +204,8 @@ class InvCountPage extends FannieRESTfulPage
             SELECT p.upc,
                 p.brand,
                 p.description,
-                v.sku
+                v.sku,
+                p.auto_par
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
             WHERE p.default_vendor_id=?
@@ -232,6 +233,7 @@ class InvCountPage extends FannieRESTfulPage
                 <th>Last Counted</th>
                 <th>Last Count</th>
                 <th>Current Par</th>
+                <th>Avg. Daily Sales</th>
                 <th>New Count</th>
                 <th>New Par</th>
             </tr>';
@@ -251,6 +253,7 @@ class InvCountPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
+                <td %s>%.2f</td>
                 <td><input type="text" class="form-control input-sm" value="" name="count[]" /></td>
                 <td><input type="text" class="form-control input-sm" value="%s" name="par[]" /></td>
                 </tr>',
@@ -263,6 +266,8 @@ class InvCountPage extends FannieRESTfulPage
                     . $info['countDate'] . '</a>' : 'n/a'),
                 ($info ? $info['count'] : 'n/a'),
                 ($info ? $info['par'] : 'n/a'),
+                ($info['par'] > (7*$row['auto_par']) ? 'class="danger"' : ''),
+                $row['auto_par'],
                 ($info ? $info['par'] : '0')
             );
         }

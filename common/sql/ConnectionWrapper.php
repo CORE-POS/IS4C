@@ -26,25 +26,25 @@ namespace COREPOS\common\sql;
 class ConnectionWrapper
 {
     private $connection;
-    private $db_name;
+    private $dbName;
 
-    public function __construct($con, $database_name)
+    public function __construct($con, $databaseName)
     {
         $this->connection = $con;
-        $this->db_name = $database_name;
+        $this->dbName = $databaseName;
     }
 
     /**
       Switch to the desired database, execute query, and switch
       back again (if needed)
     */
-    public function query($query_text,$which_connection='',$params=false)
+    public function query($query_text,$whichCon='',$params=false)
     {
-        $current = $this->connection->defaultDatabase($which_connection);
-        $this->connection->selectDB($this->db_name, $which_connection);
-        $ret = $this->connection->query($query_text, $which_connection='', $params);
+        $current = $this->connection->defaultDatabase($whichCon);
+        $this->connection->selectDB($this->dbName, $whichCon);
+        $ret = $this->connection->query($query_text, $whichCon='', $params);
         if ($current) {
-            $this->connection->selectDB($current, $which_connection);
+            $this->connection->selectDB($current, $whichCon);
         }
 
         return $ret;

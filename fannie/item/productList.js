@@ -1,3 +1,4 @@
+
 var productList = (function($) {
     var mod = {};
 
@@ -15,7 +16,7 @@ var productList = (function($) {
 
     var drawKeyValSelect = function(elem, cell, field, obj) {
         var dept = elem.find('.' + cell + ':first').text();
-        var content = '<select class=\"" + field + " form-control input-sm\"><optgroup style="font-size: 90%;">';
+        var content = "<select class=\"" + field + " form-control input-sm\"><optgroup style=\"font-size: 90%;\">";
         for (var i in obj) {
             if (obj.hasOwnProperty(i)) {
                 content += "<option value=\""+i+"\" "+((dept==obj[i])?'selected':'')+">";
@@ -28,7 +29,8 @@ var productList = (function($) {
 
     var drawTupleSelect = function(elem, cell, field, obj) {
         var tax = elem.find('.' + cell + ':first').html();
-        var content = '<select class=\"" + field + " form-control input-sm\">';
+        console.log(field);
+        var content = "<select class=\"" + field + " form-control input-sm\">";
         for (var ch in obj) {
             if (obj.hasOwnProperty(ch)) {
                 var t_sel = (tax == ch) ? 'selected' : '';

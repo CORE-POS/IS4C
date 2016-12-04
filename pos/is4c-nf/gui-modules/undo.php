@@ -42,7 +42,7 @@ class undo extends NoInputCorePage
         <input type="text" name="reginput" id="reginput" tabindex="0" onblur="($'#reginput').focus();" >
         </form>
         <p>
-        Enter transaction number<br />[clear to cancel]
+        <?php echo _('Enter transaction number<br />[clear to cancel]'); ?>
         </p>
         </div>
         </div>
@@ -61,7 +61,7 @@ class undo extends NoInputCorePage
         // error: malformed transaction number
         if (!strpos($trans_num,"-")){
             $this->box_color="errorColoredArea";
-            $this->msg = "Transaction not found";
+            $this->msg = _("Transaction not found");
             return true;
         }
 
@@ -69,7 +69,7 @@ class undo extends NoInputCorePage
         // error: malformed transaction number (2)
         if (count($temp) != 3){
             $this->box_color="errorColoredArea";
-            $this->msg = "Transaction not found";
+            $this->msg = _("Transaction not found");
             return true;
         }
 
@@ -80,7 +80,7 @@ class undo extends NoInputCorePage
         if (!is_numeric($emp_no) || !is_numeric($register_no)
             || !is_numeric($old_trans_no)){
             $this->box_color="errorColoredArea";
-            $this->msg = "Transaction not found";
+            $this->msg = _("Transaction not found");
             return true;
         }
 
@@ -108,7 +108,7 @@ class undo extends NoInputCorePage
         } elseif (CoreLocal::get("standalone") == 1) {
             // error: remote lookups won't work in standalone
             $this->box_color="errorColoredArea";
-            $this->msg = "Transaction not found";
+            $this->msg = _("Transaction not found");
             return true;
         } else {
             // look up transaction remotely
@@ -130,7 +130,7 @@ class undo extends NoInputCorePage
         // transaction not found
         if ($dbc->num_rows($result) < 1) {
             $this->box_color="errorColoredArea";
-            $this->msg = "Transaction not found";
+            $this->msg = _("Transaction not found");
             return true;
         }
 
@@ -145,7 +145,7 @@ class undo extends NoInputCorePage
     function preprocess()
     {
         $this->box_color = "coloredArea";
-        $this->msg = "Undo transaction";
+        $this->msg = _("Undo transaction");
 
         if (isset($_REQUEST['reginput'])){
             $trans_num = strtoupper($_REQUEST['reginput']);

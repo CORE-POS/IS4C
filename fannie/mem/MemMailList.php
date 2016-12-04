@@ -71,6 +71,7 @@ class MemMailList extends FannieReportPage
                   AND ads_OK = 1
                   AND personNum = 1
                   AND LastName <> 'NEW MEMBER'
+                  AND LastName <> 'NEW WEB MEMBER'
                   order by m.card_no";
                 break;
              case 'Members (All)':
@@ -82,6 +83,7 @@ class MemMailList extends FannieReportPage
                     or end_date='0000-00-00 00:00:00')
                   AND personNum = 1
                   AND LastName <> 'NEW MEMBER'
+                  AND LastName <> 'NEW WEB MEMBER'
                   order by m.card_no";
                 break;
              case 'Business':

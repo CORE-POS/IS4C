@@ -150,6 +150,38 @@ class UIGLib
         );
     }
 
+    static private $lookups = null;
+    static private function getCaseSize($dbc, $upc, $sku, $vendorID)
+    {
+        if (self::$lookups === null) { 
+            $vend = $dbc->prepare('
+                SELECT units 
+                FROM vendorItems 
+                WHERE vendorID=? 
+                    AND (upc=? OR sku=?)
+                    AND units IS NOT NULL
+                    AND units > 0');
+            $order = $dbc->prepare('
+                SELECT caseSize
+                FROM PurchaseOrderItems AS i
+                    INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
+                WHERE o.vendorID=?
+                    AND (i.internalUPC=? OR i.sku=?)
+                    AND i.caseSize <> 1
+                ORDER BY i.receivedDate DESC');
+            self::$lookups = array($vend, $order);
+        }
+
+        foreach (self::$lookups as $lookup) {
+            $size = $dbc->getValue($lookup, array($vendorID, $upc, $sku));
+            if ($size !== false) {
+                return $size;
+            }
+        }
+
+        return 1;
+    }
+
     static private function parseItem($line, $vendorID)
     {
         global $FANNIE_OP_DB;
@@ -171,36 +203,16 @@ class UIGLib
         $upc = str_replace(' ', '', $upc);
         $upc = substr($upc, 0, strlen($upc)-1);
         $upc = BarcodeLib::padUPC($upc);
+        $line[$SKU] = str_pad($line[$SKU], 7, '0', STR_PAD_LEFT);
 
         $caseSize = $line[$CASESIZE];
         // invoice does not include proper case size
         // try to find actual size in vendorItems table
         // via SKU or UPC
-        if (strtoupper($caseSize) == 'CS') {
+        if (strtoupper($caseSize) == 'CS' || !is_numeric($caseSize)) {
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $vmodel = new VendorItemsModel($dbc);
-            $vmodel->sku($line[$SKU]);
-            $vmodel->vendorID($vendorID);
-            $vmodel->load();
-            if ($vmodel->units() != '') {
-                $caseSize = $vmodel->units();
-            } else {
-                $vmodel->reset();
-                $vmodel->upc($upc);
-                $vmodel->vendorID($vendorID);
-                foreach($vmodel->find() as $item) {
-                    if ($item->units() != '') {
-                        $caseSize = $item->units();
-                    }
-                }
-            }
-
+            $caseSize = self::getCaseSize($dbc, $upc, $line[$SKU], $vendorID);
         } 
-
-        // never found a valid size
-        if (!is_numeric($caseSize)) {
-            $caseSize = 1;
-        }
 
         return array(
             'sku' => $line[$SKU],

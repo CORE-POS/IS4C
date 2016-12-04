@@ -70,17 +70,19 @@ class VendorPricingBatchPage extends FannieRESTfulPage
     public function get_id_view()
     {
         $this->addScript('pricing-batch.js');
+        $this->addScript('../../src/javascript/bootstrap-table/dist/bootstrap-table.js');
+        $this->addCssFile('../../src/javascript/bootstrap-table/dist/bootstrap-table.min.css');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
 
-        $superID = FormLib::get_form_value('super',99);
+        $superID = FormLib::get('super', -1);
         $queueID = FormLib::get('queueID');
         $vendorID = $this->id;
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
 
         /* lookup vendor and superdept names to build a batch name */
         $sname = "All";
-        if ($superID != 99) {
+        if ($superID >= 0) {
             $smodel = new SuperDeptNamesModel($dbc);
             $smodel->superID($superID);
             $smodel->load();
@@ -146,7 +148,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $batchUPCs[$obj->upc()] = true;
         }
 
-        $costSQL = Margin::adjustedCostSQL('v.cost', 'b.discountRate', 'b.shippingMarkup');
+        $costSQL = Margin::adjustedCostSQL('p.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
         $p_def = $dbc->tableDefinition('products');
         $marginCase = '
@@ -154,12 +156,22 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 WHEN g.margin IS NOT NULL AND g.margin <> 0 THEN g.margin
                 WHEN s.margin IS NOT NULL AND s.margin <> 0 THEN s.margin
                 ELSE d.margin
-            END';
+            END';   
         $srpSQL = Margin::toPriceSQL($costSQL, $marginCase);
+        
+        /*
+        //  Scan both stores to find a list of items that are inUse.  
+        $itemsInUse = array();
+        $query = $dbc->prepare("SELECT upc FROM products WHERE inUse = 1");
+        $result = $dbc->execute($query);
+        while ($row = $dbc->fetchRow($result)) {
+            $itemsInUse[$row['upc']] = 1;
+        }
+        */
 
         $query = "SELECT p.upc,
             p.description,
-            v.cost,
+            p.cost,
             b.shippingMarkup,
             b.discountRate,
             p.normal_price,
@@ -179,24 +191,24 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
-        if ($superID != 99){
+        if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 
-                    AND v.vendorID=?
-                    AND p.inUse=1 ";
-        if ($superID != 99) {
+                    AND v.vendorID=?";
+        if ($superID == -2) {
+            $query .= " AND m.superID<>0 ";
+        } elseif ($superID != -1) {
             $query .= " AND m.superID=? ";
             $args[] = $superID;
         }
         if ($filter === false) {
             $query .= " AND p.normal_price <> v.srp ";
         }
-        if ($this->config->get('STORE_MODE') == 'HQ') {
-            $query .= ' AND p.store_id=? ';
-            $args[] = $this->config->get('STORE_ID');
-        }
+        
+        $query .= ' AND p.upc IN (SELECT upc FROM products WHERE inUse = 1) ';
+        $query .= ' GROUP BY p.upc ';
 
         $query .= " ORDER BY p.upc";
         if (isset($p_def['price_rule_id'])) {
@@ -206,8 +218,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
 
-        $ret .= "<table class=\"table table-bordered small\">";
-        $ret .= "<tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
+        $ret .= "<table data-toggle=\"table\" data-show-header=\"true\" data-height=\"200\" class=\"table table-bordered small\">";
+        $ret .= "<thead><tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
             <th colspan=3>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th>
             <th>Base Cost</th>
@@ -216,7 +228,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <th>Adj. Cost</th>
             <th>Price</th><th>Margin</th><th>Raw</th><th>SRP</th>
             <th>Margin</th><th>Cat</th><th>Var</th>
-            <th>Batch</th></tr>";
+            <th>Batch</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $background = "white";
             if (isset($batchUPCs[$row['upc']])) {
@@ -234,7 +246,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                     )?'yellow':'green';
                 }
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
-                $background = ($row['normal_price'] < $row['srp']) ?'red':'green';
+                $background = ($row['normal_price'] < $row['rawSRP']
+                    && $row['srp'] > $row['normal_price']) ?'red':'green';
                 if ($row['normal_price']-0.49 > $row['rawSRP']) {
                     $background = ($row['normal_price']-0.49 > $row['rawSRP']
                         && ($row['normal_price'] > $row['srp'])
@@ -298,7 +311,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 (!isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc']
             );
         }
-        $ret .= "</table>";
+        $ret .= "</tbody></table>";
 
         return $ret;
     }
@@ -316,7 +329,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             GROUP BY superID,
                 super_name");
         $res = $dbc->execute($prep);
-        $opts = "<option value=99 selected>All</option>";
+        $opts = "<option value=\"-1\" selected>All</option>";
+        $opts .= "<option value=\"-2\" selected>All Retail</option>";
         while ($row = $dbc->fetch_row($res)) {
             $opts .= "<option value=$row[0]>$row[1]</option>";
         }

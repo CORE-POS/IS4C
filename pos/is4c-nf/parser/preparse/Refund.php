@@ -30,12 +30,16 @@ class Refund extends PreParser
     
     function check($str)
     {
-        // ignore comments; they may have all sorts of
-        // random character cominations
-        if (substr($str, 0, 2) == "CM") {
+        /* Ignore product searches and comments; they may have all sorts of
+         * random character combinations.
+         */
+        if (
+            substr($str, -2, 2) == "PV" ||
+            substr($str, 0, 2) == "PV" ||
+            substr($str, 0, 2) == "CM"
+        ) {
             return false;
         }
-
 
         if (strstr($str, 'RF')) {
             // void and refund cannot combine

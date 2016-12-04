@@ -66,7 +66,7 @@ namespace SPH {
 */
 public class SPH_IngenicoRBA_RS232 : SPH_IngenicoRBA_Common 
 {
-    protected new bool auto_state_change = true;
+    protected new bool auto_state_change = false;
 
     public SPH_IngenicoRBA_RS232(string p) : base(p)
     {
@@ -146,17 +146,6 @@ public class SPH_IngenicoRBA_RS232 : SPH_IngenicoRBA_Common
     override public void Read()
     {
         WriteMessageToDevice(OfflineMessage());
-        // enable ebt cash
-        WriteMessageToDevice(WriteConfigMessage("11", "3", EBT_CA));
-        // enable ebt food
-        WriteMessageToDevice(WriteConfigMessage("11", "4", EBT_FS));
-        // mute beep volume
-        WriteMessageToDevice(WriteConfigMessage("7", "14", "5"));
-        // new style save/restore state
-        WriteMessageToDevice(WriteConfigMessage("7", "15", "1"));
-        // do not show messages between screens
-        WriteMessageToDevice(WriteConfigMessage("7", "1", "0"));
-        WriteMessageToDevice(WriteConfigMessage("7", "9", "1"));
         WriteMessageToDevice(OnlineMessage());
         HandleMsg("termReset");
 
@@ -176,7 +165,9 @@ public class SPH_IngenicoRBA_RS232 : SPH_IngenicoRBA_Common
                     if (this.verbose_mode > 0) {
                         System.Console.WriteLine("NAK!");
                     }
-                    ByteWrite(last_message);
+                    if (last_message != null) {
+                        ByteWrite(last_message);
+                    }
                 } else {
                     // part of a message
                     // force to be byte-sized

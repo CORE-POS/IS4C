@@ -80,8 +80,6 @@ class PatronageChecks extends FannieRESTfulPage
         $pdf->AddPage();
         $pdf->Image('rebate_body.png', 10, 0, 190);
         $check = new GumCheckTemplate($custdata, $meminfo, $patronage->cash_pat(), 'Rebate ' . $this->fy, $patronage->check_number());
-        $check->addBankLine('Net Purchases: $' . number_format($patronage->net_purch(), 2));
-        $check->addBankLine('Retained Equity: $' . number_format($patronage->equit_pat(), 2));
         $check->renderAsPDF($pdf);
 
         $pdf->Output('Rebate_' . $this->mem . '_' . $this->fy . '.pdf', 'I');
@@ -93,8 +91,8 @@ class PatronageChecks extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $fiscal_year = FormLib::get('fy');
-        $per_page = FormLib::get('per_page');
+        $fiscal_year = FormLib::get('fy', '2016');
+        $per_page = FormLib::get('per_page', 3000);
 
         $custdata = new CustdataModel($dbc);
         $meminfo = new MeminfoModel($dbc);
@@ -105,15 +103,18 @@ class PatronageChecks extends FannieRESTfulPage
                 p.equit_pat,
                 p.net_purch,
                 m.zip,
-                p.check_number
+                p.check_number,
+                c.LastName,
+                c.FirstName
             FROM patronage AS p
                 INNER JOIN meminfo AS m ON p.cardno=m.card_no
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
             WHERE p.FY=?
                 AND p.cash_pat > 0
-            ORDER BY m.zip,
-                c.LastName,
-                c.FirstName');
+
+            ORDER BY zip,
+                LastName,
+                FirstName');
         $result = $dbc->execute($query, array($fiscal_year));
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
@@ -122,7 +123,12 @@ class PatronageChecks extends FannieRESTfulPage
         $this->files = array();
         $filenumber = 1;
         set_time_limit(0);
+        $barcoder = new COREPOS\Fannie\API\item\FannieSignage();
+        $count = 1;
+        $ttl = $dbc->numRows($result);
         while ($row = $dbc->fetch_row($result)) {
+            echo "Processing {$row['cardno']} ({$count}/{$ttl})\n";
+            $count++;
             if (empty($filename)) {
                 $filename = $filenumber . '-' . substr($row['zip'], 0, 5);
             }
@@ -146,10 +152,12 @@ class PatronageChecks extends FannieRESTfulPage
 
             $pdf->AddPage();
             $pdf->Image('rebate_body.png', 10, 0, 190);
+            if ($row['cash_pat'] < 0.05) {
+                $row['cash_pat'] = 0.05;
+            }
             $check = new GumCheckTemplate($custdata, $meminfo, $row['cash_pat'], 'Rebate ' . $fiscal_year, $row['check_number']);
-            $check->addBankLine('Net Purchases: $' . number_format($row['net_purch'], 2));
-            $check->addBankLine('Retained Equity: $' . number_format($row['equit_pat'], 2));
             $check->renderAsPDF($pdf);
+            $barcoder->drawBarcode('0049999900131', $pdf, 85, 240, array('height'=>9));
             if ($pdf->PageNo() == $per_page) {
                 $filename .= '-' . substr($row['zip'], 0, 5) . '.pdf';
                 $filenumber++;
@@ -211,5 +219,4 @@ class PatronageChecks extends FannieRESTfulPage
 }
 
 FannieDispatch::conditionalExec();
-
 

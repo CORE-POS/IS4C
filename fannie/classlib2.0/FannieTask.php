@@ -79,7 +79,7 @@ class FannieTask
         $this->config = $fc;
     }
 
-    public function setLogger(FannieLogger $fl)
+    public function setLogger($fl)
     {
         $this->logger = $fl;
     }
@@ -107,6 +107,29 @@ class FannieTask
 
     }
 
+    private function psrSeverity($s)
+    {
+        switch($s) {
+            case 0:
+                return 'emergency';
+            case 1:
+                return 'alert';
+            case 2:
+                return 'critical';
+            case 3:
+                return 'error';
+            case 4:
+                return 'warning';
+            case 5:
+                return 'notice';
+            case 6:
+                return 'info';
+            case 7:
+            default:
+                return 'debug';
+        }
+    }
+
     /**
       Write message to log and if necessary raise it to stderr
       to trigger an email
@@ -118,6 +141,7 @@ class FannieTask
     {
         $info = new ReflectionClass($this);
         $msg = date('r').': '.$info->getName().': '.$str."\n";
+        $severity = $this->psrSeverity($severity);
 
         $this->logger->log($severity, $info->getName() . ': ' . $str); 
 
@@ -213,7 +237,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     include(dirname(__FILE__).'/FannieAPI.php');
 
     $config = FannieConfig::factory();
-    $logger = new FannieLogger();
+    $logger = FannieLogger::factory();
     COREPOS\common\ErrorHandler::setLogger($logger);
     COREPOS\common\ErrorHandler::setErrorHandlers();
 

@@ -104,6 +104,13 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         SPH_Thread.Join();
     }
 
+    public void addScreenMessage(string message)
+    {
+        try {
+            WriteMessageToDevice(SetVariableMessage("104", message));
+        } catch (Exception) { }
+    }
+
     /**
       Simple wrapper to write an array of bytes
     */
@@ -169,10 +176,18 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         try {
             WriteMessageToDevice(GetCardType());
             Thread.Sleep(2000);
+            addPaymentButtons();
+        } catch (Exception) {
+        }
+    }
+
+    private void addPaymentButtons()
+    {
+        try {
             char fs = (char)0x1c;
-            string buttons = "Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            string buttons = "TPROMPT6,Whole Foods Co-op"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             WriteMessageToDevice(UpdateScreenMessage(buttons));
-        } catch (Exception ex) {
+        } catch (Exception) {
         }
     }
 
@@ -181,6 +196,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         showPaymentScreen();
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+        int ackCount = 0;
 
         ArrayList bytes = new ArrayList();
         while (SPH_Running) {
@@ -192,13 +208,16 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                         System.Console.WriteLine("ACK!");
                     }
                     last_message = null;
+                    ackCount++;
                 } else if (b == 0x15) {
                     // NAK
-                    // re-send
+                    // Do not re-send
+                    // RBA_Stub is not vital functionality
                     if (this.verbose_mode > 0) {
                         System.Console.WriteLine("NAK!");
                     }
-                    ByteWrite(last_message);
+                    last_message = null;
+                    WriteMessageToDevice(HardResetMessage());
                 } else {
                     // part of a message
                     // force to be byte-sized
@@ -217,8 +236,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     }
                     if (Choice(enc.GetString(buffer))) {
                         WriteMessageToDevice(SimpleMessageScreen("Waiting for total"));
-                    } else {
-                        showPaymentScreen();
                     }
                     bytes.Clear();
                 }

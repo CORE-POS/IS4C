@@ -39,7 +39,7 @@ use \CoreLocal;
 
 class GroupPM extends PriceMethod {
 
-    function addItem($row,$quantity,$priceObj)
+    public function addItem(array $row, $quantity, $priceObj)
     {
         if ($quantity == 0) return false;
 

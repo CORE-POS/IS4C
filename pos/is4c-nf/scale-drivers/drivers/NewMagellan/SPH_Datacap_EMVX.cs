@@ -47,9 +47,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private string com_port = "0";
     protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
+    protected short CONNECT_TIMEOUT = 60;
     protected string sequence_no = null;
-    private bool log_xml = true;
     private RBA_Stub rba = null;
+    private string xml_log = null;
+    private bool enable_xml_log = false;
+    private ManualResetEvent emv_active;
+    private ManualResetEvent pdc_active;
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -59,9 +63,17 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             device_identifier = parts[0];
             com_port = parts[1];
         }
+        /* see if terminal is more consistent
         if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
             rba = new RBA_Stub("COM"+com_port);
         }
+        */
+
+        string my_location = AppDomain.CurrentDomain.BaseDirectory;
+        char sep = Path.DirectorySeparatorChar;
+        xml_log = my_location + sep + "xml.log";
+        emv_active = new ManualResetEvent(false);
+        pdc_active = new ManualResetEvent(false);
     }
 
     /**
@@ -73,20 +85,31 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (pdc_ax_control == null) {
             pdc_ax_control = new DsiPDCX();
             pdc_ax_control.ServerIPConfig(server_list, 0);
+            pdc_ax_control.SetResponseTimeout(CONNECT_TIMEOUT);
             InitPDCX();
         }
-        pdc_ax_control.CancelRequest();
+        if (emv_active.WaitOne(0) == false) {
+            Console.WriteLine("Reset PDC");
+            pdc_ax_control.CancelRequest();
+        }
 
         if (emv_ax_control == null) {
             emv_ax_control = new DsiEMVX();
         }
-        PadReset();
+        if (pdc_active.WaitOne(0) == false) {
+            Console.WriteLine("Reset EMV");
+            PadReset();
+        }
 
+        /* see if terminal is more consistent
         if (rba != null) {
             rba.SetParent(this.parent);
             rba.SetVerbose(this.verbose_mode);
-            rba.stubStart();
+            try {
+                rba.stubStart();
+            } catch (Exception) {}
         }
+        */
 
         return true;
     }
@@ -123,13 +146,12 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         }
 
                         message = GetHttpBody(message);
-
                         // Send EMV messages to EMVX, others
                         // to PDCX
-                        string result = "";
+                        string result = "Error";
                         if (message.Contains("EMV")) {
-                            result = ProcessEMV(message);
-                        } else {
+                            result = ProcessEMV(message, true);
+                        } else if (message.Length > 0) {
                             result = ProcessPDC(message);
                         }
                         result = WrapHttpResponse(result);
@@ -139,11 +161,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
-                        if (log_xml) {
-                            using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                                file.WriteLine(result);
-                            }
-                        }
                     }
                     client.Close();
                 }
@@ -199,6 +216,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             //sig_message = msg.Substring(7);
             msg = "termSig";
         }
+        if (msg.Length > 10 && msg.Substring(0, 10) == "screenLine") {
+            string line = msg.Substring(10);
+            msg = "IGNORE";
+            if (rba != null) {
+                rba.addScreenMessage(line);
+            }
+        }
         switch(msg) {
             case "termReset":
             case "termReboot":
@@ -231,7 +255,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     /**
       Process XML transaction using dsiPDCX
     */
-    protected string ProcessEMV(string xml)
+    protected string ProcessEMV(string xml, bool autoReset)
     {
         /* 
            Substitute values into the XML request
@@ -254,17 +278,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (this.verbose_mode > 0) {
             Console.WriteLine(xml);
         }
-        if (log_xml) {
-            using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                file.WriteLine(xml);
-            }
-        }
 
         try {
             /**
               Extract HostOrIP field and split it on commas
               to allow multiple IPs
             */
+            emv_active.Set();
             XmlDocument request = new XmlDocument();
             request.LoadXml(xml);
             var IPs = request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml.Split(new Char[]{','}, StringSplitOptions.RemoveEmptyEntries);
@@ -272,7 +292,21 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             foreach (string IP in IPs) {
                 // try request with an IP
                 request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
+                if (autoReset) {
+                    PadReset();
+                } else {
+                    Console.WriteLine(request.OuterXml);
+                }
                 result = emv_ax_control.ProcessTransaction(request.OuterXml);
+                if (!autoReset) {
+                    Console.WriteLine(result);
+                }
+                if (enable_xml_log) {
+                    using (StreamWriter sw = new StreamWriter(xml_log, true)) {
+                        sw.WriteLine(DateTime.Now.ToString() + " (send emv): " + request.OuterXml);
+                        sw.WriteLine(DateTime.Now.ToString() + " (recv emv): " + result);
+                    }
+                }
                 XmlDocument doc = new XmlDocument();
                 try {
                     doc.LoadXml(result);
@@ -298,6 +332,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     break;
                 }
             }
+            if (autoReset) {
+                PadReset();
+            }
+            emv_active.Reset();
 
             return result;
 
@@ -306,6 +344,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             if (this.verbose_mode > 0) {
                 Console.WriteLine(ex);
             }
+            emv_active.Reset();
         }
 
         return "";
@@ -316,6 +355,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     */
     protected string ProcessPDC(string xml)
     {
+        pdc_active.Set();
         xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
         xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
@@ -323,13 +363,18 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (this.verbose_mode > 0) {
             Console.WriteLine(xml);
         }
-        if (log_xml) {
-            using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                file.WriteLine(xml);
+
+        string ret = "";
+        ret = pdc_ax_control.ProcessTransaction(xml, 1, null, null);
+        if (enable_xml_log) {
+            using (StreamWriter sw = new StreamWriter(xml_log, true)) {
+                sw.WriteLine(DateTime.Now.ToString() + " (send pdc): " + xml);
+                sw.WriteLine(DateTime.Now.ToString() + " (recv pdc): " + ret);
             }
         }
+        pdc_active.Reset();
 
-        return pdc_ax_control.ProcessTransaction(xml, 1, null, null);
+        return ret;
     }
 
     /**
@@ -377,7 +422,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "</Transaction>"
             + "</TStream>";
     
-        return ProcessEMV(xml);
+        return ProcessEMV(xml, false);
     }
 
     /**

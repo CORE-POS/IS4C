@@ -144,6 +144,7 @@ class EditVendorItems extends FannieRESTfulPage
             <th>Unit Size</th>
             <th>Case Qty</th>
             <th>Unit Cost</th>
+            <th></th>
             </tr></thead>';
         $ret .= '<tbody>';
         foreach ($items->find() as $item) {
@@ -162,6 +163,10 @@ class EditVendorItems extends FannieRESTfulPage
                     <input type="text" class="form-control input-sm editable" name="caseQty" value="%.2f" size="5" /></td>
                 <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm costing" name="unitCost" value="%.2f" size="5" /></td>
+                    
+                </td><td><button href="" class="btn btn-danger btn-xs"
+                    onclick="deleteVendorItem(this, \'%s\', \'%s\', \'%s\', \'%s\'); return false;"><span class="glyphicon glyphicon-trash" title="Delete"></span></button></td>
+                    
                 </tr>',
                 $item->sku(),
                 $item->sku(),
@@ -178,16 +183,23 @@ class EditVendorItems extends FannieRESTfulPage
                 $item->units(),
                 $item->units(),
                 $item->cost(),
-                $item->cost()
+                $item->cost(),
+                $item->upc(),
+                $item->sku(),
+                $item->description(),
+                $item->vendorID()
+                
             );
         }
         $ret .= '</tbody></table>';
         $ret .= '<input type="hidden" id="vendor-id" value="' . $this->id . '" />';
         $ret .= '<p><a href="VendorIndexPage.php?vid=' . $this->id . '" class="btn btn-default">Home</a></p>';
+        //$this->add_onload_command('deleteVendorItem(\'button\',1234,4567);');
         $this->add_onload_command('itemEditing();');
         $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
         $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
+        
 
         return $ret;
     }
@@ -264,10 +276,27 @@ function itemEditing()
         });
     });
 }
+function deleteVendorItem(button, upc, sku, desc, vendorID)
+{
+    //alert('this button is doing something');
+    var r = confirm("Are you sure you want to delete: \n\nUPC\n" +upc+"\n\nSKU\n"+sku+"\n\nDescription\n"+desc);
+    if (r == true) {
+        $.ajax({
+            url: 'DeleteVendorItems.php',
+            data: 'upc='+upc+'&sku='+sku+'&vendorID='+vendorID,
+            success: function(response)
+            {
+                $(button).closest('tr').hide();
+            }
+        });
+    } else {
+        resp = "Item not deleted.";
+    }
+}
         <?php
         return ob_get_clean();
     }
-
+    
     public function helpContent()
     {
         return '<p>

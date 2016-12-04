@@ -33,7 +33,7 @@ class AjaxPollScale extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    public function ajax($input=array())
+    public function ajax(array $input=array())
     {
         $sd = ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
 

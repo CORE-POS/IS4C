@@ -27,8 +27,10 @@ env:
 install:
     - sh tests/fannie/travis-init.sh
     - sh tests/pos/travis-init.sh
+    - rm composer.json
+    - rm composer.lock
     - composer init -n
-    - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap
+    - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap twig/twig twig/extensions
     - mkdir -p build/logs
     - npm install acorn
 

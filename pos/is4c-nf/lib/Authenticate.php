@@ -96,7 +96,7 @@ static public function checkPassword($password, $activity=1)
             $transno = Database::gettransno(9999);
             $globals = array(
                 "CashierNo" => 9999,
-                "Cashier" => "Training Mode",
+                "Cashier" => _("Training Mode"),
                 "TransNo" => $transno,
                 "LoggedIn" => 1
             );

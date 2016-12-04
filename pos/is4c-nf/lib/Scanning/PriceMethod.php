@@ -63,7 +63,7 @@ class PriceMethod
       @param $priceObj A DiscountType object 
       @return boolean success/failure
     */
-    public function addItem($row, $quantity, $priceObj)
+    public function addItem(array $row, $quantity, $priceObj)
     {
         return true;
     }

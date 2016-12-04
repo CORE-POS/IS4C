@@ -127,12 +127,12 @@ class suspendedlist extends NoInputCorePage
         }
         echo "<div class=\"listboxText coloredText centerOffset\">"
             . _("use arrow keys to navigate")
-            . '<p><button type="submit" class="pos-button wide-button coloredArea">
-                OK <span class="smaller">[enter]</span>
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">'
+            . _('OK') . ' <span class="smaller">' . _('[enter]') . '</span>
                 </button></p>'
             . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
-                onclick="$(\'#selectlist\').append($(\'<option>\').val(\'\'));$(\'#selectlist\').val(\'\');">
-                Cancel <span class="smaller">[clear]</span>
+                onclick="$(\'#selectlist\').append($(\'<option>\').val(\'\'));$(\'#selectlist\').val(\'\');">'
+            . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
                 </button></p>'
             ."</div><!-- /.listboxText coloredText .centerOffset -->"
             ."</form>"

@@ -143,10 +143,10 @@ class SiteMap extends FannieRESTfulPage
 
     public function helpContent()
     {
-        return '<p>A list of all known Fannie tools and reports including those
+        return _('<p>A list of all known Fannie tools and reports including those
             provided by plugins. Pages <em>may</em> opt out of this list but the
             vast majority do not. This is provided to ensure users can locate
-            most everything regardless of how the menus are set up.</p>';
+            most everything regardless of how the menus are set up.</p>');
     }
 
     public function unitTest($phpunit)

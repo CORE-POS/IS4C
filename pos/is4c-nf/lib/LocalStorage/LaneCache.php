@@ -40,30 +40,46 @@ if (!class_exists('COREPOS\common\cache\file\CacheItem', false)) {
 class LaneCache 
 {
     private static $instance = null;
+    private static $changed = false;
+
+    private static function init()
+    {
+        if (self::$instance === null) {
+            if (function_exists('opcache_compile_file')) {
+                self::$instance = new \COREPOS\common\cache\php\CacheItemPool('lane.cache');
+            } else {
+                self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
+            }
+        }
+    }
 
     public static function get($key)
     {
-        if (self::$instance === null) {
-            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
-        }
+        self::init();
 
         return self::$instance->getItem($key);
     }
 
     public static function set($item)
     {
-        if (self::$instance === null) {
-            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
+        self::init();
+        self::$instance->saveDeferred($item);
+        if (self::$changed === false) {
+            register_shutdown_function(array('COREPOS\\pos\\lib\\LocalStorage\\LaneCache', 'flush'));
+            self::$changed = true;
         }
-        self::$instance->save($item);
     }
 
     public static function clear()
     {
-        if (self::$instance === null) {
-            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
-        }
+        self::init();
         self::$instance->clear();
+        self::$instance->commit();
+    }
+
+    public static function flush()
+    {
+        self::init();
         self::$instance->commit();
     }
 }

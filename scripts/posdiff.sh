@@ -14,5 +14,6 @@ diff -r -b -B --exclude="ini.php" --exclude="*.dll" \
     --exclude="*FilesWrittenAbsolute.txt" --exclude="*.mdb" \
     --exclude="cc-modules" --exclude="fakereceipt.txt" \
     --exclude="magic-doc.php" --exclude="ini.json" \
+    --exclude="*.csv" \
     "$1" "$2"
 #    --exclude="Paycards" \

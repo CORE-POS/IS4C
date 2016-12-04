@@ -52,7 +52,7 @@ $end = date("Y-m-t",$stamp);
 $args = array($start.' 00:00:00',$end.' 23:59:59', $store);
 
 $output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
-if (true || !$output || isset($_REQUEST['recache'])){
+if (!$output || isset($_REQUEST['recache'])){
     if (isset($_REQUEST['recache'])) {
         $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF']; // remove recache from URI
         $_SERVER['REQUEST_URI'] = str_replace("index.php","",$_SERVER['REQUEST_URI']);

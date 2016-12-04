@@ -234,7 +234,7 @@ static public function getAllIPs()
     return $ret;
 }
 
-static private function globalIPs($ret)
+static private function globalIPs(array $ret)
 {
     /**
       $_SERVER may simply contain an IP address

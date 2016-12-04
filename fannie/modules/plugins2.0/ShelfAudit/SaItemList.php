@@ -58,17 +58,23 @@ class SaItemList extends SaHandheldPage
                 WHERE uid=?
             ');
             $dbc->execute($prep, array($uid));
-            return true;
+            return parent::preprocess();
         } elseif (FormLib::get('export') === '1') {
             echo $this->exportList();
             $this->enable_linea=false;
             return false;
         }
 
-        $upc = FormLib::get('upc_in','');
-        if ($upc !== '') {
-            $upc = BarcodeLib::padUPC($upc);
-            $this->current_item_data['upc'] = $upc;
+        return parent::preprocess();
+    } 
+
+    protected function get_id_handler()
+    {
+        $dbc = $this->connection;
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $uid = FannieAuth::getUID($this->current_user);
+        if ($this->id !== '') {
+            $upc = BarcodeLib::padUPC($this->id);
             $prep = $dbc->prepare('
                 SELECT p.description,
                     p.brand,
@@ -77,21 +83,23 @@ class SaItemList extends SaHandheldPage
                 FROM products AS p
                     LEFT JOIN ' . $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList AS s ON p.upc=s.upc AND s.clear=0
                 WHERE p.upc=?
-                    AND (s.uid=? OR s.uid IS NULL)
             ');
-            $row = $dbc->getRow($prep, array($upc, $uid));
+            $row = $dbc->getRow($prep, array($upc));
             if ($row) {
                 $this->saveRowToList($dbc, $upc, $row, $settings);
             }
         }
-
+        
         return true;
-    } 
+    }
+
+    protected function get_id_view()
+    {
+        return $this->get_view();
+    }
 
     private function saveRowToList($dbc, $upc, $row, $settings)
     {
-        $this->current_item_data['desc'] = $row['brand'] . ' ' . $row['description'] . ' ' . $row['size'];
-        $this->current_item_data['qty'] = $row['qty'];
         $dbc->selectDB($settings['ShelfAuditDB']);
         $model = new SaListModel($dbc);
         $model->upc($upc);
@@ -109,14 +117,25 @@ class SaItemList extends SaHandheldPage
         }
     }
 
-    public function body_content()
+    // override ajax behavior of SaHandheldPage
+    protected function upcForm($store)
+    {
+        ob_start();
+        parent::upcForm($store);
+        $form = ob_get_clean();
+
+        $form = str_replace('onsubmit="handheld.lookupItem(event);"', '', $form);
+        echo $form;
+    }
+
+    public function get_view()
     {
         $elem = '#upc_in';
         if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
-        $this->addOnloadCommand('$(\'' . $elem . '\').focus();');
+        $this->addOnloadCommand('$(\'#upc_in\').focus();');
         $this->addOnloadCommand("enableLinea('#upc_in');\n");
         ob_start();
-        $this->upcForm($elem, 1);
+        $this->upcForm(1);
         if (isset($this->current_item_data['upc']) && !isset($this->current_item_data['desc'])) {
             echo '<div class="alert alert-danger">Item not found (' 
                 . $this->current_item_data['upc'] . ')</div>'; 
@@ -137,6 +156,7 @@ class SaItemList extends SaHandheldPage
             </a>
             </p>';
 
+        $this->addScript('js/handheld.js');
         return ob_get_clean();
     }
 
@@ -174,6 +194,7 @@ class SaItemList extends SaHandheldPage
                 <th>Size</th>
                 <th>Qty</th>
             </tr>';
+        $upcs = '';
         while ($row = $this->connection->fetchRow($res)) {
             $ret .= sprintf('<tr>
                 <td>%s</td>
@@ -184,16 +205,19 @@ class SaItemList extends SaHandheldPage
                 <td>%s</td>
                 <td>%d</td>
                 </tr>',
-                $row['brand'],
-                $row['description'],
                 $row['upc'],
                 $row['sku'],
                 $row['vendorName'],
+                $row['brand'],
+                $row['description'],
                 $row['size'],
                 $row['qty']
             ); 
+            $upcs .= $row['upc'] . "\n";
         }
         $ret .= '</table>';
+
+        $ret .= '<textarea>' . $upcs . '</textarea>';
 
         return $ret;
     }

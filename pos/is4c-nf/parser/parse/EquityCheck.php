@@ -61,7 +61,7 @@ class EquityCheck extends Parser
             $msg, 
             $title, 
             true, 
-            array_merge(array('Tender [Remaining Equity]' => 'parseWrapper(\' ' . $equityBalance . 'DP9910\');'), DisplayLib::standardClearButton())
+            array_merge(array(_('Tender [Remaining Equity]') => 'parseWrapper(\' ' . $equityBalance . 'DP9910\');'), DisplayLib::standardClearButton())
         );
 
         return $ret;

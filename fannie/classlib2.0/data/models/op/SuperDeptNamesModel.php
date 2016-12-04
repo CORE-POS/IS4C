@@ -33,6 +33,7 @@ class SuperDeptNamesModel extends BasicModel
     protected $columns = array(
     'superID' => array('type'=>'INT', 'primary_key'=>true),
     'super_name' => array('type'=>'VARCHAR(50)'),
+    'deleted' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()

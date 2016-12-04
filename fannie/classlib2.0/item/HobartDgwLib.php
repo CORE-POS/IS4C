@@ -155,6 +155,15 @@ class HobartDgwLib
                     $has_et = true;
                     $mode = $new_item ? 'WriteOneExpandedText' : 'ChangeOneExpandedText';
                     fwrite($fp,"Record Type,Expanded Text Number,Expanded Text\r\n");
+                    if ($item['MOSA']) {
+                        $item['ExpandedText'] = str_replace('{mosa}', 'Certified Organic By MOSA', $item['ExpandedText']);
+                    } else {
+                        $item['ExpandedText'] = str_replace('{mosa}', '', $item['ExpandedText']);
+                    }
+                    if (!isset($item['OriginText'])) {
+                        $item['OriginText'] = '';
+                    }
+                    $item['ExpandedText'] = str_replace('{cool}', $item['OriginText'], $item['ExpandedText']);
                     $text = '';
                     foreach (explode("\n", $item['ExpandedText']) as $line) {
                         $text .= wordwrap($line, 50, "\n") . "\n";

@@ -87,7 +87,7 @@ class CCReceiptMessage extends ReceiptMessage {
                     AND transNo=" . $trans . $idclause . "
                     AND p.validResponse=1
                     AND (p.xResultMessage LIKE '%APPROVE%' OR p.xResultMessage LIKE '%PENDING%')
-                    AND p.cardType IN ('Credit', 'Debit')
+                    AND p.cardType IN ('Credit', 'Debit', 'EMV')
                   ORDER BY p.requestDatetime";
 
         $result = $dbc->query($query);

@@ -552,6 +552,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         //Use I18N language codes.
         $langs = array("en"=>"English", "fr"=>"French", "sp"=>"Spanish");
         echo installSelectField('FANNIE_LANGUAGE', $FANNIE_LANGUAGE, $langs, '');
+        
+        echo '<br />Week Start Date:  ';
+        $weekStartDay = array("7"=>"Sunday","1"=>"Monday","2"=>"Tuesday","3"=>"Wednesday","4"=>"Thursday",
+            "5"=>"Friday","6"=>"Saturday");
+        echo installSelectField('FANNIE_WEEK_START', $FANNIE_WEEK_START, $weekStartDay, '1');
+        
         ?>
         <hr />
         <h4 class="install">Back Office Transactions</h4>
@@ -605,6 +611,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     private $op_models = array(
         // TABLES
         'AutoCouponsModel',
+        'AutoOrderMapModel',
         'BatchesModel',
         'BatchListModel',
         'BatchCutPasteModel',
@@ -619,6 +626,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'CustAvailablePrefsModel',
         'CustPreferencesModel',
         'CustReceiptMessageModel',
+        'CustomerAccountsModel',
+        'CustomersModel',
         'CustomerAccountSuspensionsModel',
         'CustomerNotificationsModel',
         'CustomReceiptModel',
@@ -648,6 +657,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'MemContactModel',
         'MemContactPrefsModel',
         'MetaProductRulesModel',
+        'NarrowTagsModel',
         'OriginsModel',
         'OriginCountryModel',
         'OriginStateProvModel',
@@ -727,6 +737,14 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $rules->priceRuleID(1);
             $rules->details('Generic Variable Price');
             $rules->save();
+        }
+
+        $stores = new StoresModel($con);
+        if (count($stores->find()) == 0) {
+            $stores->storeID(1);
+            $stores->description('DEFAULT STORE');
+            $stores->hasOwnItems(1);
+            $stores->save();
         }
 
         $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems', true);

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -45,7 +47,8 @@ class ItemStatusPage extends FannieRESTfulPage
         }
 
         $this->__routes[] = 'get<tagID><upc>';
-        $this->__routes[] = 'get<floorID><upc>';
+        $this->__routes[] = 'get<floorID><upc>';           
+        $this->__routes[] = 'get<narrowTag><upc>';
 
         return parent::preprocess();
     }
@@ -102,6 +105,24 @@ class ItemStatusPage extends FannieRESTfulPage
 
         return false;
     }
+    
+    public function get_narrowTag_upc_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $narrowTag = new NarrowTagsModel($dbc);
+        $narrowTag->upc(BarcodeLib::padUPC($this->upc));
+        $action = FormLib::get('narrowTag');
+        if ($action == 'remove') {
+            $narrowTag->delete();
+        } elseif ($action == 'add') {
+            $narrowTag->save();
+        }
+        
+        header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
+
+        return false;
+    }
 
     public function get_id_view()
     {
@@ -116,8 +137,15 @@ class ItemStatusPage extends FannieRESTfulPage
 
         $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
         $product = new ProductsModel($dbc);
+        $narrowTag = new NarrowTagsModel($dbc);
+        $narrowTag->upc($upc);
+        $isNarrow = $narrowTag->find();
         $vendor = new VendorsModel($dbc);
         $product->upc($upc);
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $product->store_id(Store::getIdByIp());
+        }
+
         if (!$product->load()) {
             $ret .= '<div class="alert alert-danger">Item not found</div>';
             return $ret;
@@ -129,7 +157,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= ', <strong>Desc.</strong>: ' . $product->description();
         $ret .= ', <strong>Vendor</strong>:'; 
         if ($vendor->vendorName() != 'UNFI') {
-            $ret .= '<span class="alert-danger">' . $vendor->vendorName() . '</span></p>';
+            $ret .= '<span class="alert-warning">' . $vendor->vendorName() . '</span></p>';
         } else {
             $ret .= $vendor->vendorName() . '</p>';
         }
@@ -206,6 +234,13 @@ class ItemStatusPage extends FannieRESTfulPage
             $sub->subdept_no(), $sub->subdept_name());
         
         $ret .= '<p> Tags in this queue: ' . $tags . '</p> ';
+        if(isset($isNarrow[0])) {
+            $ret .= 'Flagged As: <span class="alert-warning">Narrow Tag</span>';
+            $ret .= '
+                <form class="form-inline" method="get">
+                </form>
+            ';
+        }
 
         $ret .= '<p><form class="form-inline" method="get">';
         $tags = new ShelftagsModel($dbc);
@@ -233,6 +268,25 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= $queues->toOptions($master);
         $ret .= '</select></form></p>';
 
+        $ret .= '<form class="form-inline" method="get">';    
+        if(isset($isNarrow[0])) {
+            $ret .= '
+                <input type="hidden" name="narrowTag" value="remove">
+                <input type="hidden" name="upc" value="' . $upc . '" />
+                <button class="btn btn-default" type="submit">
+                    Remove Flag: <span class="text-warning">Narrow</span></button>
+            ';
+        } else {
+            $ret .= '
+                <input type="hidden" name="narrowTag" value="add">
+                <input type="hidden" name="upc" value="' . $upc . '" />
+                <button class="btn btn-default" type="submit">
+                    Add Flag: Narrow</button>
+            ';
+        }
+        $ret .= '</form><br>';
+        
+        /*
         $ret .= '<p><form class="form-inline" method="get">
             <label>Loc.</label>
             <select name="floorID" class="form-control">
@@ -257,7 +311,8 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '<input type="hidden" name="upc" value="' . $upc . '" />
             <button class="btn btn-default" type="submit">Update Location</button>
             </form></p>';
-
+        */
+        
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
             $ret .= '<p><a href="../ItemEditorPage.php?searchupc=' . $this->id . '"
                 class="btn btn-default">Edit This Item</a></p>';

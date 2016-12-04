@@ -124,6 +124,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($this->id);
         $cache = new InventoryCacheModel($this->connection);
+        if (!class_exists('SoPoBridge')) {
+            include(__DIR__ . '/../ordering/SoPoBridge.php');
+        }
         $bridge = new SoPoBridge($this->connection, $this->config);
         foreach ($poi->find() as $item) {
             $cache->recalculateOrdered($item->internalUPC(), $model->storeID());
@@ -336,6 +339,18 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return $ret;
     }
 
+    private $empty_vendor = array(
+        'vendorName'=>'',
+        'phone'=>'',
+        'fax'=>'',
+        'email'=>'',
+        'address'=>'',
+        'city'=>'',
+        'state'=>'',
+        'zip'=>'',
+        'notes'=>'',
+    );
+
     protected function get_id_view()
     {
         $dbc = $this->connection;
@@ -353,6 +368,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $notes = $dbc->getValue($notes, $this->id);
         $vname = $dbc->prepare('SELECT * FROM vendors WHERE vendorID=?');
         $vendor = $dbc->getRow($vname, array($orderObj->vendorID));
+        if ($vendor) {
+            $vendor['notes'] = nl2br($vendor['notes']);
+        } else {
+            $vendor = $this->empty_vendor;
+        }
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
@@ -436,7 +456,8 @@ HTML;
 Ph: {$vendor['phone']}<br />
 Fax: {$vendor['fax']}<br />
 Email: {$vendor['email']}<br />
-{$vendor['address']}, {$vendor['city']}, {$vendor['state']} {$vendor['zip']}
+{$vendor['address']}, {$vendor['city']}, {$vendor['state']} {$vendor['zip']}<br />
+{$vendor['notes']}
 </div></div>
 HTML;
         $ret .= '</div></div>';

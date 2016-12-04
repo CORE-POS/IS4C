@@ -35,7 +35,7 @@ class AjaxCabReceipt extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    public function ajax($input=array())
+    public function ajax(array $input=array())
     {
         if (isset($_REQUEST['input'])) {
             CoreLocal::set("cabReference",$_REQUEST['input']);

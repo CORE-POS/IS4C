@@ -18,8 +18,8 @@ class Loader
                 $error = $sql->error();
                 $success = false;
                 echo "<br><small style='color:red;'>"
-                    . (strlen($error)? $error : 'Unknown error')
-                    . " executing:<br><code>$query</code></small><br>\n";
+                    . (strlen($error)? $error : _('Unknown error'))
+                    . _(" executing") . ":<br><code>$query</code></small><br>\n";
             } else {
                 if(++$loaded % 50 === 0) {
                     echo "<br>\n";
@@ -29,8 +29,8 @@ class Loader
             }
         }
         fclose($fptr);
-        echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
-            . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+        echo ($success? _(' success!') : "<br>\n'$table' " . _('load') . " " . ($loaded? _('partial success;') : _('failed;')))
+            . " $loaded " . ($loaded == 1? _('record was') : _('records were')) . _(" loaded.") . "<br>\n";
 
         return $success;
     }
@@ -53,8 +53,8 @@ class Loader
         if ($try === false) {
             $error = $sql->error();
             echo "<br><span style='color:red;'>"
-                . (strlen($error)? $error : 'Unknown error')
-                . " executing:<br><code>$query</code><br></span><br>\n";
+                . (strlen($error)? $error : _('Unknown error'))
+                . _(" executing") . ":<br><code>$query</code><br></span><br>\n";
         }
 
         return $try;
@@ -63,7 +63,7 @@ class Loader
     static private function loadCsvLines($sql, $table, $path)
     {
         $loaded = 0;
-        echo "line-by-line<br>\n";
+        echo _("line-by-line") . "<br>\n";
         $fptr = fopen($path, 'r');
         $stmt = false;
         $success = false;
@@ -81,8 +81,8 @@ class Loader
                     $error = $sql->error();
                     $success = false;
                     echo "<br><span style='color:red;'>"
-                        . (strlen($error)? $error : 'Unknown error')
-                        . " preparing:<br><code>$query</code></span><br>\n";
+                        . (strlen($error)? $error : _('Unknown error'))
+                        . _(" preparing") . ":<br><code>$query</code></span><br>\n";
                     break;
                 }
             }
@@ -91,8 +91,8 @@ class Loader
                 $error = $sql->error();
                 $success = false;
                 echo "<br><span style='color:red;'>"
-                    . (strlen($error)? $error : 'Unknown error')
-                    . " executing:<br><code>$query</code><br>("
+                    . (strlen($error)? $error : _('Unknown error'))
+                    . _(" executing") . ":<br><code>$query</code><br>("
                     . "'" . join("', '", $line) . "')"
                     . ' [' . count($line) . ' operands]'
                     . "</span><br>\n";
@@ -105,8 +105,8 @@ class Loader
             }
         }
         fclose($fptr);
-        echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
-            . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+        echo ($success? _(' success!') : "<br>\n'$table' " . _('load') . " " . ($loaded? _('partial success;') : _('failed;')))
+            . " $loaded " . ($loaded == 1? _('record was') : _('records were')) . _(" loaded") . ".<br>\n";
 
         return $success;
     }
@@ -122,11 +122,11 @@ class Loader
     {
         $success = true; 
         ob_start();
-        echo "Loading `$table` ";
+        echo _("Loading") . " `$table` ";
         if (file_exists(__DIR__ . "/$table.sql")) {
             $success = self::loadFromSql($sql, $table);
         } elseif (file_exists(__DIR__ . "/$table.csv")) {
-            echo "from data/$table.csv ";
+            echo _("from") . " data/$table.csv ";
             $path = realpath(__DIR__ . "/$table.csv");
             /**
               Handle symlinks on windows by checking if the first line
@@ -139,7 +139,7 @@ class Loader
                     $path = realpath(substr($first_line, 3));
                     if (!file_exists($path)) {
                         if (!$quiet) {
-                            echo 'File not found: ' . $path . '<br />';
+                            echo _('File not found: ') . $path . '<br />';
                             echo ob_end_clean();
                         }
                         return false;
@@ -153,13 +153,14 @@ class Loader
             for non-mysql and/or LOAD DATA LOCAL
             not allowed */
             if ($try !== false) {
-                echo "succeeded!<br>\n";
+                echo _("succeeded!") . "<br>\n";
                 $success = true;
             } else {
                 $success = self::loadCsvLines($sql, $table, $path);
             }
         } else {
-            echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
+            echo "<br><span style='color:red;'>" . _('Table data not found in either') . " {$table}.sql or {$table}.csv</span><br>\n";
+            $success = false;
         }
 
         $verbose = ob_get_clean();

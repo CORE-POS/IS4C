@@ -38,15 +38,16 @@ if (!is_dir('vendor') || !file_exists('vendor/autoload.php')) {
 }
 
 include(__DIR__ . '/../vendor/autoload.php');
+include(__DIR__ . '/update/ConfiguredApplication.php');
 include(__DIR__ . '/update/VersionCommand.php');
+include(__DIR__ . '/update/UpdateAutoCommand.php');
 include(__DIR__ . '/update/UpdateMinorCommand.php');
 include(__DIR__ . '/update/UpdateMajorCommand.php');
 include(__DIR__ . '/update/UpdateDevCommand.php');
 
-use Symfony\Component\Console\Application;
-
-$application = new Application('CORE Updater');
+$application = new ConfiguredApplication('CORE Updater');
 $application->add(new VersionCommand());
+$application->add(new UpdateAutoCommand());
 $application->add(new UpdateMinorCommand());
 $application->add(new UpdateMajorCommand());
 $application->add(new UpdateDevCommand());

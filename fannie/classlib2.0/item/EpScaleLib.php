@@ -47,9 +47,16 @@ class EpScaleLib
         }
 
         if ($item_info['RecordType'] == 'WriteOneItem') {
-            return self::getAddItemLine($item_info) . $scale_fields;
+            $line = self::getAddItemLine($item_info) . $scale_fields;
         } else {
-            return self::getUpdateItemLine($item_info) . $scale_fields;
+            $line = self::getUpdateItemLine($item_info) . $scale_fields;
+        }
+
+        if ($scale_model->scaleType() == 'HOBART_HTI') {
+            preg_match('/UTA(\d\d\d)/', $line, $matches);    
+            $tare = $matches[1];
+            $fixed_tare = substr($tare . '0', -3);
+            $line = str_replace($matches[0], 'UTA' . $fixed_tare, $line);
         }
 
         return $line;
@@ -65,19 +72,24 @@ class EpScaleLib
         $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
         $et_line .= 'PNO' . $item_info['PLU'] . chr(253);
         $et_line .= 'INO' . $item_info['PLU'] . chr(253);
-        $et_line .= 'ITE' . self::expandedText($item_info['ExpandedText']) . chr(253);
+        $et_line .= 'ITE' . self::expandedText($item_info['ExpandedText'], $item_info, $scale_model) . chr(253);
 
         return $et_line;
     }
 
-    static private function expandedText($text)
+    static private function expandedText($text, $item_info, $scale_model)
     {
-        $text = str_replace("\r", '', $text);
-        $ret = '';
-        foreach (explode("\n", $text) as $line) {
-            $ret .= wordwrap($line, 35, "\n") . "\n";
+        if ($scale_model->epDeptNo() <= 3 && $item_info['MOSA']) {
+            $text = str_replace('{mosa}', 'Certified Organic By MOSA', $text);
+        } else {
+            $text = str_replace('{mosa}', '', $text);
         }
-        return str_replace("\n", chr(0xE), $ret);
+        if (!isset($item_info['OriginText'])) {
+            $item_info['OriginText'] = '';
+        }
+        $text = str_replace('{cool}', $item_info['OriginText'], $text);
+        $text = str_replace("\r", '', $text);
+        return str_replace("\n", chr(0xE), $text);
     }
 
     static private function getAddItemLine($item_info)
@@ -102,7 +114,7 @@ class EpScaleLib
         if ($item_info['Type'] == 'Random Weight') {
             $line .= 'UMELB' . chr(253);
         } else {
-            $line .= 'UMEFW' . chr(253);
+            $line .= 'UMEBC' . chr(253);
         }
         $line .= 'BCO' . '0' . chr(253);
         $line .= 'WTA' . '0' . chr(253);
@@ -178,13 +190,15 @@ class EpScaleLib
                         $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);
                         break;
                     case 'Price':
-                        $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
+                        if ($item_info['Price'] != 0) {
+                            $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
+                        }
                         break;
                     case 'Type':
                         if ($item_info[$key] == 'Random Weight') {
                             $line .= 'UMELB' . chr(253);
                         } else {
-                            $line .= 'UMEFW' . chr(253);
+                            $line .= 'UMEBC' . chr(253);
                         }
                         break;
                     case 'NetWeight':
@@ -206,7 +220,7 @@ class EpScaleLib
         $lines = explode("\n", $desc);
         $keys = array_filter(array_keys($lines), function($i) use ($limit) { return strlen($i)<$limit; });
         return array_reduce($keys, function($carry, $key) use ($lines) {
-            return $carry . 'DN' . ($key+1) . $lines[$key] . chr(253)
+            return $carry . 'DN' . ($key+1) . trim($lines[$key]) . chr(253)
                 . 'DS' . ($key+1) . '0' . chr(253);
         });
     }

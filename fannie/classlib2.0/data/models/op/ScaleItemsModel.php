@@ -44,6 +44,9 @@ class ScaleItemsModel extends BasicModel
     'label' => array('type'=>'INT'),
     'graphics' => array('type'=>'INT'),
     'modified' => array('type'=>'DATETIME', 'ignore_updates'=>true),
+    'linkedPLU' => array('type'=>'VARCHAR(13)'),
+    'mosaStatement' => array('type'=>'TINYINT', 'default'=>0),
+    'originText' => array('type'=>'VARCHAR(100)'),
     );
 
     protected $preferred_db = 'op';

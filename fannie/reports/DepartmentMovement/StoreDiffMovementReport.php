@@ -78,6 +78,9 @@ class StoreDiffMovementReport extends FannieReportPage
         }
 
         $upcs = array_keys($data);
+        if (count($upcs) == 0) {
+            return array();
+        }
         $start_date = FormLib::getDate('date1', date('Y-m-d'));
         $end_date = FormLib::getDate('date2', date('Y-m-d'));
         $dlog = DTransactionsModel::selectDlog($start_date, $end_date);

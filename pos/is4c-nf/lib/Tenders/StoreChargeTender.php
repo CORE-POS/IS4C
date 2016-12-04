@@ -94,7 +94,7 @@ class StoreChargeTender extends TenderModule
         $pref = CoreState::getCustomerPref('store_charge_see_id');
         if ($pref == 'yes') {
             if (CoreLocal::get('msgrepeat') == 0) {
-                CoreLocal::set("boxMsg","<BR>please verify member ID</B><BR>press [enter] to continue<P><FONT size='-1'>[clear] to cancel</FONT>");
+                CoreLocal::set("boxMsg",_("<BR>please verify member ID</B><BR>press [enter] to continue<P><FONT size='-1'>[clear] to cancel</FONT>"));
                 CoreLocal::set('lastRepeat', 'storeChargeSeeID');
 
                 return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';

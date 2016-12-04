@@ -37,6 +37,58 @@ class TrendsReport extends FannieReportPage
     public $report_set = 'Movement Reports';
     public $themed = true;
 
+    public function report_description_content()
+    {
+        if ($this->report_format != 'html') {
+            return array();
+        }
+
+        $url = $this->config->get('URL');
+        $this->add_script($url . 'src/javascript/jquery.js');
+        $this->add_script($url . 'src/javascript/jquery-ui.js');
+        $this->add_css_file($url . 'src/javascript/jquery-ui.css');
+
+        $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+        foreach ($_GET as $key => $value) {
+            if ($key != 'date1' && $key != 'date2' && $key != 'store') {
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        $dates_form .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
+                    }
+                } else {
+                    $dates_form .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $value);
+                }
+            }
+        }
+        foreach ($_POST as $key => $value) {
+            if ($key != 'date1' && $key != 'date2' && $key != 'store') {
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        $dates_form .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
+                    }
+                } else {
+                    $dates_form .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $value);
+                }
+            }
+        }
+        $stores = FormLib::storePicker();
+        $dates_form .= '
+            <label>Start Date</label>
+            <input class="date-field" type="text" name="date1" value="' . FormLib::get('date1') . '" /> 
+            <label>End Date</label>
+            <input class="date-field" type="text" name="date2" value="' . FormLib::get('date2') . '" /> 
+            <input type="hidden" name="excel" value="" id="excel" />
+            ' . $stores['html'] . '
+            <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Change Dates</button>
+            <button type="submit" onclick="$(\'#excel\').val(\'csv\');return true;">Download</button>
+            </form>';
+
+        $this->add_onload_command("\$('.date-field').datepicker({dateFormat:'yy-mm-dd'});");
+        
+        return array($dates_form);
+ 
+    }
+
     public function fetch_report_data()
     {
         $dbc = $this->connection;

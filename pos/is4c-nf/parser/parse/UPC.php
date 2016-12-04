@@ -227,10 +227,10 @@ class UPC extends Parser
         */
         if ($this->duplicateWeight($row, $scaleStickerItem)) {
             CoreLocal::set("strEntered",$row["upc"]);
-            CoreLocal::set("boxMsg","<b>Same weight as last item</b>");
+            CoreLocal::set("boxMsg",_("<b>Same weight as last item</b>"));
             CoreLocal::set('boxMsgButtons', array(
-                'Confirm Weight [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                _('Confirm Weight [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
             return $ret;
@@ -297,7 +297,7 @@ class UPC extends Parser
             CoreLocal::set("SNR",CoreLocal::get('strEntered'));
             $ret['output'] = DisplayLib::boxMsg(
                 _("please put item on scale"),
-                'Weighed Item',
+                _('Weighed Item'),
                 true,
                 DisplayLib::standardClearButton()
             );
@@ -727,12 +727,21 @@ class UPC extends Parser
     {
         $dbc = Database::pDataConnect();
         $query = "SELECT inUse,upc,description,normal_price,scale,deposit,
-            qttyEnforced,department,local,cost,tax,foodstamp,discount,
+            qttyEnforced,department,local,tax,foodstamp,discount,
             discounttype,specialpricemethod,special_price,groupprice,
             pricemethod,quantity,specialgroupprice,specialquantity,
             mixmatchcode,idEnforced,tareweight,scaleprice";
         if (CoreLocal::get('NoCompat') == 1) {
-            $query .= ', line_item_discountable, formatted_name, special_limit ';
+            $query .= ', 
+                line_item_discountable, 
+                formatted_name, 
+                special_limit,
+                CASE 
+                    WHEN received_cost <> 0 AND received_cost IS NOT NULL
+                        THEN received_cost
+                    WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
+                        THEN special_cost 
+                    ELSE cost END AS cost';
         } else {
             $table = $dbc->tableDefinition('products');
             // New column 16Apr14
@@ -752,6 +761,14 @@ class UPC extends Parser
                 $query .= ', special_limit';
             } else {
                 $query .= ', 0 AS special_limit';
+            }
+            // New column 20Oct16
+            if (isset($table['special_cost']) && isset($table['received_cost'])) {
+                $query .= ', CASE WHEN received_cost <> 0 AND received_cost IS NOT NULL THEN received_cost
+                    WHEN discounttype > 0 AND special_cost <> 0 AND special_cost IS NOT NULL 
+                    THEN special_cost ELSE cost END AS cost';
+            } else {
+                $query .= ', cost';
             }
         }
         $query .= " FROM products WHERE upc = '".$upc."'";

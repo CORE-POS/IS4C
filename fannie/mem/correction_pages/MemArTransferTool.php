@@ -124,9 +124,9 @@ class MemArTransferTool extends FannieRESTfulPage
     
     protected function post_dept_amount_memFrom_memTo_view()
     {
+        if (!empty($this->errors)) return $this->errors;
         $name1 = $this->getName($this->memFrom);
         $name2 = $this->getName($this->memTo);
-        if (!empty($this->errors)) return $this->errors;
 
         $ret = "<form action=\"MemArTransferTool.php\" method=\"post\">";
         $ret .= "<b>Confirm transfer</b>";

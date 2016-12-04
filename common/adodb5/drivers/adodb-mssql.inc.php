@@ -1,6 +1,8 @@
 <?php
 /*
-V5.20dev  ??-???-2014  (c) 2000-2014 John Lim (jlim#natsoft.com). All rights reserved.
+@version   v5.20.6  31-Aug-2016
+@copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
+@copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
   Released under both BSD license and Lesser GPL library license.
   Whenever there is any discrepancy between the two licenses,
   the BSD license will take precedence.
@@ -876,7 +878,7 @@ class ADORecordset_mssql extends ADORecordSet {
 
 		}
 		$this->fetchMode = $mode;
-		return $this->ADORecordSet($id,$mode);
+		return parent::__construct($id,$mode);
 	}
 
 
@@ -1049,10 +1051,14 @@ class ADORecordset_mssql extends ADORecordSet {
 
 	function _close()
 	{
-		$rez = mssql_free_result($this->_queryID);
-		$this->_queryID = false;
-		return $rez;
+		if($this->_queryID) {
+			$rez = mssql_free_result($this->_queryID);
+			$this->_queryID = false;
+			return $rez;
+		}
+		return true;
 	}
+
 	// mssql uses a default date like Dec 30 2000 12:00AM
 	static function UnixDate($v)
 	{
@@ -1070,7 +1076,7 @@ class ADORecordset_mssql extends ADORecordSet {
 class ADORecordSet_array_mssql extends ADORecordSet_array {
 	function __construct($id=-1,$mode=false)
 	{
-		$this->ADORecordSet_array($id,$mode);
+		parent::__construct($id,$mode);
 	}
 
 		// mssql uses a default date like Dec 30 2000 12:00AM

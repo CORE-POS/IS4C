@@ -538,7 +538,7 @@ class Void extends Parser
             $mixMatch = MiscLib::nullwrap($row["mixMatch"]);
             $matched = -1 * $row['matched'];
             $item_num = $row['trans_id'];
-            $cost = $row['cost'];
+            $cost = -1* $row['cost'];
             $numflag = $row['numflag'];
             $charflag = $row['charflag'];
             $unitPrice = $this->adjustUnitPrice($upc, $row);

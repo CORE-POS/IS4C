@@ -21,8 +21,13 @@ class UpdateMinorCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $git = new Git(__DIR__ . '/../../');
+        $path = $this->getApplication()->configValue("projectPath");
+        if ($path && $path[0] != "/") {
+            $path = __DIR__ . "/" . $path;
+        }
+        $git = new Git($path);
         $branch = $git->getCurrentBranch();
+        $repo = $this->getApplication()->configValue('repo');
         if (!strstr($branch, 'version-')) {
             $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion("You're not running a stable version; are you sure you want to continue? (y/n) ", false);
@@ -33,9 +38,9 @@ class UpdateMinorCommand extends Command
         }
 
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln("Running: <comment>git pull --rebase https://github.com/CORE-POS/IS4C.git {$branch}</comment>");
+            $output->writeln("Running: <comment>git pull --rebase {$repo} {$branch}</comment>");
         }
-        $success = $git->pull('https://github.com/CORE-POS/IS4C.git', $branch);
+        $success = $git->pull($repo, $branch);
 
         if ($success) {
             $output->writeln('<info>Update complete</info>');

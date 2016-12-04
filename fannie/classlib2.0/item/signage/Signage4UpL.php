@@ -92,6 +92,9 @@ class Signage4UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+                if ($item['originShortName'] != '' && $item['nonSalePrice'] != '') {
+                    $text .= sprintf('%sRegular Price: $%.2f', str_repeat(' ', 52-strlen($text)), $item['nonSalePrice']);
+                }
                 $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             }
 

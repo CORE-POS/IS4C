@@ -249,11 +249,10 @@ function existingOrder(orderJSON, itemsJSON)
         var total = Number(item.receivedTotalCost);
         var unit = Number(item.unitCost);
         var cases = Number(item.quantity);
+        var caseSize = Number(item.caseSize);
 
-        var caseCost = total / cases;
-        var caseSize = Math.round(caseCost / unit);
-        if (isNaN(caseSize)) {
-            caseSize = 0;
+        if (isNaN(total)) {
+            total = unit * cases * caseSize;
         }
 
         addInvoiceLine();

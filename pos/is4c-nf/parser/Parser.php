@@ -47,8 +47,9 @@ class Parser {
          processing will proceed to the next Parser module.
 
     */
-    function check($str){
-    
+    function check($str)
+    {
+        return false; 
     }
 
     /**
@@ -74,8 +75,9 @@ class Parser {
        The utility method default_json() provides an array
        with the proper keys and sane default values.
     */
-    function parse($str){
-
+    function parse($str)
+    {
+        return $this->default_json();
     }
 
     /**
@@ -86,17 +88,7 @@ class Parser {
     */
     function default_json()
     {
-        return array(
-            'main_frame'=>false,
-            'target'=>'.baseHeight',
-            'output'=>false,
-            'redraw_footer'=>false,
-            'receipt'=>false,
-            'trans_num'=>ReceiptLib::receiptNumber(),
-            'scale'=>false,
-            'udpmsg'=>false,
-            'retry'=>false
-            );
+        return new ParseResult();
     }
 
     /**

@@ -30,7 +30,7 @@
 */
 class FannieLogger extends \COREPOS\common\Logger
 {
-    protected $program_name = 'fannie';
+    protected $programName = 'fannie';
 
     /**
       Get filename for log
@@ -59,6 +59,35 @@ class FannieLogger extends \COREPOS\common\Logger
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+      If monolog is present, use monolog instead of FannieLogger.
+      When using monolog file based logging to fannie/logs/fannie.log
+      is enabled automatically. If a fannie/logs/monolog.php file is
+      present that file is included here. Its purpose is to add any
+      additional, custom handlers.
+    */
+    public static function factory()
+    {
+        if (!class_exists('Monolog\\Logger')) {
+            return new self();
+        }
+
+        try {
+            $monolog = new Monolog\Logger('fannie');
+            $file = __DIR__ . '/../logs/fannie.log';
+            $stream = new Monolog\Handler\StreamHandler($file);
+            $monolog->pushHandler($stream);
+            if (file_exists(__DIR__ . '/../logs/monolog.php')) {
+                include(__DIR__ . '/../logs/monolog.php');
+            }
+
+            return $monolog;
+
+        } catch (Exception $ex) {
+            return new self();
         }
     }
 }

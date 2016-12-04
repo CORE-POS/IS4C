@@ -41,6 +41,11 @@ var superDept = (function($) {
             showAlert('danger', 'Unable to load department data');
         }).done(function(resp){
             $('#deptselect').html(resp);	
+            if (resp.length == 0) {
+                $('#deleteBtn').prop('disabled', false);
+            } else {
+                $('#deleteBtn').prop('disabled', true);
+            }
         });
     };
 
@@ -94,10 +99,16 @@ var superDept = (function($) {
 
     mod.addDepts = function(){
         shiftOptions('#deptselect2', '#deptselect');
+        if ($('#deptselect option').length > 0) {
+            $('#deleteBtn').prop('disabled', true);
+        }
     };
 
     mod.remDepts = function(){
         shiftOptions('#deptselect', '#deptselect2');
+        if ($('#deptselect option').length == 0) {
+            $('#deleteBtn').prop('disabled', false);
+        }
     };
 
     mod.saveData = function(){
@@ -127,6 +138,24 @@ var superDept = (function($) {
                 var newOpt = $('<option/>').val(resp.id).html(resp.name);
                 $('#superselect').append(newOpt);
                 $('#superselect').val(resp.id);
+            }
+        });
+    };
+
+    mod.deleteCurrent = function() {
+        var sID = $('#superselect').val();
+        $.ajax({
+            url: 'SuperDeptEditor.php',
+            type: 'post',
+            data: 'action=delete&id='+sID,
+            dataType: 'json'
+        }).fail(function() {
+            showAlert('danger', 'Delete failed!');
+        }).success(function (resp) {
+            if (resp.error) {
+                showAlert('danger', resp.error);
+            } else {
+                window.location = 'SuperDeptEditor.php';
             }
         });
     };

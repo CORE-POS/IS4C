@@ -49,7 +49,6 @@ class PluginsTest extends PHPUnit_Framework_TestCase
                 // class already defined
                 continue;
             }
-            var_dump($name . '-' . $ns_class);
             ob_start();
             include($file);
             $output = ob_get_clean();

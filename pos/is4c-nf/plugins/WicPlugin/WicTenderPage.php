@@ -29,7 +29,7 @@ class WicTenderPage extends BasicCorePage
     public function preprocess()
     {
         if (FormLib::get('reginput', false) !== false) {
-            $inp = FormLib::get('reginput');
+            $inp = strtoupper(FormLib::get('reginput'));
             $this->step = FormLib::get('step', 0);
             // clear backtracks through steps
             if ($inp == 'CL' && $this->step == 0) {
@@ -181,5 +181,6 @@ class WicTenderPage extends BasicCorePage
             </p>';
     }
 }
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new WicTenderPage();
+
+AutoLoader::dispatch();
+

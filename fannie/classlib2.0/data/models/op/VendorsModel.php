@@ -47,6 +47,7 @@ class VendorsModel extends BasicModel
     'notes' => array('type'=>'TEXT'),
     'localOriginID' => array('type'=>'INT', 'default'=>0),
     'inactive' => array('type'=>'TINYINT', 'default'=>0),
+    'orderMinimum' => array('type'=>'MONEY', 'default'=>0),
     );
 
     public function hookAddColumnvendorAbbreviation()

@@ -24,7 +24,7 @@
 class OrderGenTask extends FannieTask
 {
 
-    public $name = 'Auto Order';
+    public $name = 'Generate Purchase Orders';
 
     public $description = 'Generates orders based on inventory info';
 
@@ -83,6 +83,7 @@ class OrderGenTask extends FannieTask
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
         $prodP = $dbc->prepare('SELECT * FROM products WHERE upc=? AND store_id=?');
+        $orderIDs = array();
         $dtP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
             FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog
@@ -130,7 +131,11 @@ class OrderGenTask extends FannieTask
             $cur = $sales ? $cache['onHand'] - $sales : $cache['onHand'];
             $shrink = $dbc->getValue($shP, array($cache['cacheEnd'], $row['upc'], $row['storeID']));
             $cur = $shrink ? $cur - $shrink : $cur;
-            if ($cur !== false && $cur < $row['par']) {
+            if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
+                $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
+                if ($prodW === false || $prodW['inUse'] == 0) {
+                    continue;
+                }
                 /**
                   Allocate a purchase order to hold this vendors'
                   item(s)
@@ -141,7 +146,11 @@ class OrderGenTask extends FannieTask
                     $order->creationDate(date('Y-m-d H:i:s'));
                     $order->storeID($row['storeID']);
                     $poID = $order->save();
+                    $order->vendorOrderID('CPO-' . $poID);
+                    $order->orderID($poID);
+                    $order->save();
                     $orders[$row['vid'].'-'.$row['storeID']] = $poID;
+                    $orderIDs[] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
 
@@ -159,16 +168,27 @@ class OrderGenTask extends FannieTask
                 // no catalog entry to create an order
                 if ($itemR === false || $itemR['units'] <= 0) {
                     $itemR['sku'] = $row['upc'];
-                    $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
-                    if ($prodW === false) {
-                        continue;
+                    $itemR['brand'] = $prodW['brand'];
+                    $itemR['description'] = $prodW['description'];
+                    $itemR['cost'] = $prodW['cost'];
+                    $itemR['saleCost'] = 0;
+                    $itemR['size'] = $prodW['size'];
+                    $itemR['units'] = 1;
+                }
+
+                /**
+                  Special case: items with a par of 1 and
+                  case size of 1 are slow movers. These will be 
+                  ordered when on-hand *reaches* par instead of
+                  when on-hand *drops below* par. Replenishment
+                  then orders slightly above par depending on
+                  cost.
+                */
+                if ($row['par'] == 1 && $itemR['units'] == 1) {
+                    if ($itemR['cost'] >= 15) {
+                        $row['par'] = 2;
                     } else {
-                        $itemR['brand'] = $prodW['brand'];
-                        $itemR['description'] = $prodW['description'];
-                        $itemR['cost'] = $prodW['cost'];
-                        $itemR['saleCost'] = 0;
-                        $itemR['size'] = $prodW['size'];
-                        $itemR['units'] = 1;
+                        $row['par'] = 3;
                     }
                 }
 
@@ -201,6 +221,8 @@ class OrderGenTask extends FannieTask
         if (!$this->silent) {
             $this->sendNotifications($dbc, $orders);
         }
+
+        return $orderIDs;
     }
 
     private function sendNotifications($dbc, $orders)

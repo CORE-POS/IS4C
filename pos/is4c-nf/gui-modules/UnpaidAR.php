@@ -81,16 +81,16 @@ class UnpaidAR extends BasicCorePage
 
         <?php
         if ($amt == CoreLocal::get("balance")){
-            echo DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
+            echo DisplayLib::boxMsg(sprintf(_("Old A/R Balance: $%.2f<br />
                 [Enter] to pay balance now<br />
-                [Clear] to leave balance",$amt));
+                [Clear] to leave balance"),$amt));
         }
         else {
-            echo DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
+            echo DisplayLib::boxMsg(sprintf(_("Old A/R Balance: $%.2f<br />
                 Total A/R Balance: $%.2f<br />
                 [Enter] to pay old balance<br />
                 [Balance] to pay the entire balance<br />
-                [Clear] to leave the balance",
+                [Clear] to leave the balance"),
                 $amt,CoreLocal::get("balance")));
         }
         echo "</div>";
@@ -100,6 +100,5 @@ class UnpaidAR extends BasicCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new UnpaidAR();
+AutoLoader::dispatch();
 

@@ -88,7 +88,17 @@ class ObfWeeklyReport extends FannieReportPage
         $start_ts = strtotime($week->startDate());
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
 
-        return array('Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts));
+        $store = FormLib::get('store');
+        $prev = $this->form->weekID - 1;
+        $next = $this->form->weekID + 1;
+        $other = $store == 1 ? 2 : 1;
+
+        return array(
+            'Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts) . '<br />',
+            "<a href=\"?weekID={$prev}&store={$store}\">Prev Week</a> 
+            | <a href=\"?weekID={$next}&store={$store}\">Next Week</a>
+            | <a href=\"?weekID={$this->form->weekID}&store={$other}\">Other Store</a>",
+        );
     }
 
     protected function initTotalSales()
@@ -199,10 +209,10 @@ class ObfWeeklyReport extends FannieReportPage
         return $average_wage;
     }
 
-    protected function projectHours($category, $dept_proj, $dept_trend)
+    protected function projectHours($splhGoal, $dept_proj, $dept_trend)
     {
-        $proj_hours = $dept_proj / $category->salesPerLaborHourTarget();
-        $trend_hours = $dept_trend / $category->salesPerLaborHourTarget();
+        $proj_hours = $dept_proj / $splhGoal;
+        $trend_hours = $dept_trend / $splhGoal;
 
         return array($proj_hours, $trend_hours);
     }
@@ -1014,8 +1024,10 @@ class ObfWeeklyReport extends FannieReportPage
             }
 
             /** plugged new store numbers **/
-            foreach (array(7, 8, 9) as $catID) {
-                $sales->lastYearTransactions($trans_info[2]);
+            foreach (array(1, 2, 3, 7, 8, 9) as $catID) {
+                if ($catID > 3) {
+                    $sales->lastYearTransactions($trans_info[2]);
+                }
                 $sales->obfCategoryID($catID);
                 if ($future) {
                     $sales->actualSales(0);
@@ -1026,7 +1038,46 @@ class ObfWeeklyReport extends FannieReportPage
                         $sales->growthTarget($l->growthTarget());
                     }
                 }
-                if ($catID == 7) {
+                if ($catID == 1) {
+                    $sales->superID(6);
+                    $sales->lastYearSales(1.096*54178.24);
+                    $sales->save();
+                } elseif ($catID == 2) {
+                    $sales->superID(10); 
+                    $sales->lastYearSales(1.03*10778.62);
+                    $sales->save();
+                    $sales->superID(11); 
+                    $sales->lastYearSales(1.03*35928.54);
+                    $sales->save();
+                    $sales->superID(16); 
+                    $sales->lastYearSales(1.03*13173.87);
+                    $sales->save();
+                } elseif ($catID == 3) {
+                    $sales->superID(1); 
+                    $sales->lastYearSales(1.096*27089.13);
+                    $sales->save();
+                    $sales->superID(4); 
+                    $sales->lastYearSales(1.096*61306.97);
+                    $sales->save();
+                    $sales->superID(5); 
+                    $sales->lastYearSales(1.096*23524.77);
+                    $sales->save();
+                    $sales->superID(7); 
+                    $sales->lastYearSales(1.096*285.16);
+                    $sales->save();
+                    $sales->superID(8); 
+                    $sales->lastYearSales(1.096*17108.92);
+                    $sales->save();
+                    $sales->superID(9); 
+                    $sales->lastYearSales(1.096*2566.35);
+                    $sales->save();
+                    $sales->superID(13); 
+                    $sales->lastYearSales(1.096*15683.19);
+                    $sales->save();
+                    $sales->superID(17); 
+                    $sales->lastYearSales(1.096*26376.25);
+                    $sales->save();
+                } elseif ($catID == 7) {
                     $sales->superID(6);
                     $sales->lastYearSales(0.92*25576.85);
                     $sales->save();

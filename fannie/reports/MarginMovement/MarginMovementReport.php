@@ -107,7 +107,12 @@ class MarginMovementReport extends FannieReportPage
                     d.department,
                     t.dept_name,
                     SUM(total) AS total,
-                    SUM(d.cost) AS cost,"
+                    SUM(
+                        CASE WHEN (d.cost > 0 AND d.total < 0) OR (d.cost < 0 AND d.total > 0)
+                            THEN -1*d.cost
+                            ELSE d.cost
+                        END
+                    ) AS cost,"
                     . DTrans::sumQuantity('d') . " AS qty
                   FROM $dlog AS d "
                     . DTrans::joinProducts('d', 'p', 'inner')
