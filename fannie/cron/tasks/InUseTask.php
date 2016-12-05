@@ -55,6 +55,36 @@ class InUseTask extends FannieTask
             $this->logger->warning('products table does not have a last_sold column');
             return;
         }
+        
+        $upcs = array();
+        $prepZ = $dbc->prepare("SELECT upc FROM products GROUP BY upc");
+        $resZ = $dbc->execute($prepZ);
+        while ($row = $dbc->fetchRow($resZ)) {
+            $upcs[] = $row['upc'];
+        }
+        
+        $y = date('Y');
+        $m = date('m') - 1;
+        $d = date('d');
+        $checkDate = $y.'-'.$m.'-'.$d;
+        
+        $exempts1 = array();
+        $exempts2 = array();
+        foreach ($upcs as $upc) {
+            $stores = array(1,2);
+            foreach ($stores as $store) {
+                $args = array($store,$upc,$checkDate);
+                $prepA = $dbc->prepare("SELECT upc, modified, inUse FROM prodUpdate WHERE storeID = ? AND upc = ? AND modified >= ? ORDER BY modified DESC LIMIT 1;");
+                $resA = $dbc->execute($prepA,$args);
+                while ($row = $dbc->fetchRow($resA)) {
+                    if($row['inUse'] == 1 && $store == 1) {
+                        $exempts1[] = $row['upc'];
+                    } elseif ($row['inUse'] == 1 && $store == 2) {
+                        $exempts2[] = $row['upc'];
+                    }
+                }
+            }
+        }
 
 		$reportInUse = $dbc->prepare("                                            
 		    SELECT upc, last_sold, store_id                                       
@@ -75,14 +105,31 @@ class InUseTask extends FannieTask
 		$resultA = $dbc->execute($reportInUse);                                   
 		$resultB = $dbc->execute($reportUnUse);                                   
 
-        $updateUnuse = $dbc->prepare('
+        list($inClause1,$args1) = $dbc->safeInClause($exempts1);
+        list($inClause2,$args2) = $dbc->safeInClause($exempts2);
+        array_unshift($args1,1);
+        array_unshift($args2,2);
+        $updateQunuse1 = '
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
                 INNER JOIN inUseTask AS i ON s.superID = i.superID 
             SET p.inUse = 0
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
-                AND p.store_id = ?;
-        ');
+                AND p.store_id = ?
+                AND p.upc NOT IN ('.$inClause1.')
+            ';
+        $updateQunuse2 = '
+            UPDATE products p
+                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
+                INNER JOIN inUseTask AS i ON s.superID = i.superID 
+            SET p.inUse = 0
+            WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
+                AND p.store_id = ?
+                AND p.upc NOT IN ('.$inClause2.')
+            ';
+        $updateUnuse1 = $dbc->prepare($updateQunuse1);
+        $updateUnuse2 = $dbc->prepare($updateQunuse2);
+        
         $updateUse = $dbc->prepare('
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
@@ -91,8 +138,9 @@ class InUseTask extends FannieTask
 			WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
                 AND p.store_id = ?;
         ');
-        $dbc->execute($updateUnuse,1);
-        $dbc->execute($updateUnuse,2);
+        $dbc->execute($updateUnuse1,$args1);
+        $dbc->execute($updateUnuse2,$args2);
+        
         $dbc->execute($updateUse,1);
         $dbc->execute($updateUse,2);
         
@@ -102,7 +150,12 @@ class InUseTask extends FannieTask
         }
         
         while ($row = $dbc->fetch_row($resultB)) {
-            $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+            if ($row['store_id'] == 1) {
+                if (!in_array($row['upc'],$exempts1)) $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+            } elseif ($row['store_id'] == 2) {
+                if (!in_array($row['upc'],$exempts2)) $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+            }
+            
         }
         
 		$date = date('Y-m-d h:i:s');
