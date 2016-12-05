@@ -150,7 +150,12 @@ class InUseTask extends FannieTask
         }
         
         while ($row = $dbc->fetch_row($resultB)) {
-            if (!in_array($row['upc'],$exempts)) $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+            if ($row['store_id'] == 1) {
+                if (!in_array($row['upc'],$exempts1)) $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+            } elseif ($row['store_id'] == 2) {
+                if (!in_array($row['upc'],$exempts2)) $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+            }
+            
         }
         
 		$date = date('Y-m-d h:i:s');
