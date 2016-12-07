@@ -50,6 +50,14 @@ class ItemList4UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->AddPage();
 
         $data = $this->loadItems();
+        usort($data, function($a, $b) {
+            if ($a['description'] < $b['description']) {
+                return -1;
+            } elseif ($a['description'] > $b['description']) {
+                return 1;
+            }
+            return 0;
+        });
         $count = 0;
         $sign = 0;
         $itemsPerSign = 9;
