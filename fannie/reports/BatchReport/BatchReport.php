@@ -124,7 +124,12 @@ class BatchReport extends FannieReportPage
     {
         $record = array();
         $record[] = $row['upc'];
-		$record[] = $row['sku'];
+		if ($row['upc'] == $row['sku'] || $row['sku'] == NULL) {
+			$record[] = '<div align="right"><i class="text-warning">
+			&nbsp;no sku on record</i></div>';
+		} else {
+			$record[] = $row['sku'];
+		}
         $record[] = $row['brand'];
         $record[] = $row['description'];
         $record[] = sprintf('%.2f',$row['sales']);
