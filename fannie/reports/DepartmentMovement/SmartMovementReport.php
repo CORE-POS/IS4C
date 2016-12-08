@@ -116,7 +116,8 @@ class SmartMovementReport extends FannieReportPage
                         t.department,
                         d.dept_name,
                         m.super_name,
-                        COALESCE(v.vendorName,x.distributor) AS distributor
+                        COALESCE(v.vendorName,x.distributor) AS distributor,
+                        i.sku
                     " . $from_where['query'] . "
                     GROUP BY t.upc,
                         COALESCE(p.brand, ''),
@@ -191,6 +192,7 @@ class SmartMovementReport extends FannieReportPage
                         $row['dept_name'],
                         $row['super_name'],
                         $row['distributor'],
+                        $row['sku'] == $row['upc'] ? '' : $row['sku'],
                     );
                     break;
                 case 'Department':
@@ -229,7 +231,7 @@ class SmartMovementReport extends FannieReportPage
         switch ($this->mode) {
             case 'PLU':
                 $this->report_headers = array('UPC','Brand','Description','Rings','Qty','$',
-                    'Dept#','Department','Super','Vendor');
+                    'Dept#','Department','Super','Vendor', 'SKU');
                 $this->sort_column = 4;
                 $this->sort_direction = 1;
                 $sumQty = 0.0;
