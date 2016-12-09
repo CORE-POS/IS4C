@@ -46,6 +46,11 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    private function asciiFilter($str)
+    {
+        return preg_replace('/[^\x20-\x7E]/','', $str);
+    }
+
     /**
       AJAX call: ?id=<vendor ID>&search=<search string>
       Find vendor items based on search string
@@ -65,7 +70,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         while($w = $dbc->fetch_row($skuR)){
             $result = array(
             'sku' => $w['sku'],
-            'title' => $w['brand'].' - '.$w['description'],
+            'title' => $w['brand'].' - '. $this->asciiFilter($w['description']),
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
@@ -87,7 +92,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         while($w = $dbc->fetch_row($upcR)){
             $result = array(
             'sku' => $w['sku'],
-            'title' => $w['brand'].' - '.$w['description'],
+            'title' => $w['brand'].' - '. $this->asciiFilter($w['description']),
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
