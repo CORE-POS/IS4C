@@ -85,9 +85,10 @@ class ItemOrderHistoryReport extends FannieReportPage
         }
 
         $query = 'SELECT i.sku, i.quantity, i.unitCost, i.caseSize,
-                        i.quantity * i.unitCost * i.caseSize AS ttl,
+                        i.receivedTotalCost AS ttl,
                         o.vendorInvoiceID, v.vendorName, o.placedDate,
-                        o.orderID
+                        o.orderID,
+                        i.receivedQty
                         FROM PurchaseOrderItems AS i
                             LEFT JOIN PurchaseOrder AS o ON i.orderID=o.orderID
                             LEFT JOIN vendors AS v ON o.vendorID=v.vendorID
@@ -123,7 +124,7 @@ class ItemOrderHistoryReport extends FannieReportPage
             $row['sku'],
             $row['quantity'],
             $row['caseSize'],
-            $row['unitCost'],
+            sprintf('%.2f', $row['receivedQty'] == 0 ? $row['unitCost'] : $row['ttl'] / $row['receivedQty']),
             $row['ttl'],
         );
     }
@@ -172,7 +173,7 @@ class ItemOrderHistoryReport extends FannieReportPage
     {
         $data = array('placedDate'=>'2000-01-01', 'vendorName'=>'test',
             'vendorInvoiceID'=>'1234', 'sku'=>'111', 'quantity'=>1,
-            'caseSize'=>5, 'unitCost'=>1, 'ttl'=>5, 'orderID'=>1);
+            'caseSize'=>5, 'unitCost'=>1, 'ttl'=>5, 'orderID'=>1, 'receivedQty'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
