@@ -157,12 +157,24 @@ class InUseTask extends FannieTask
             }
             
         }
-        
-		$date = date('Y-m-d h:i:s');
+
+   		$date = date('Y-m-d h:i:s');
+		$h = date('h');                
+        $m = date('i');                
+        $s = date('s');          
+        //  Task is scheduled to run at 12:15AM        
+        $n = $m - 15;
+        if ($n < 0) {
+            $runtime = ($h - 1) .':'. (60 - $n) .':'. $s;
+        } else {
+            $runtime = $h .':'. ($m - 15) .':'. $s;
+        }
+
         $to = 'csather@wholefoods.coop';
-        $headers = "from: automail@wholfoods.coop";
+        $headers = "from: automail@wholefoods.coop";
         $msg = '';
-		$msg .= 'In Use Task (Product In-Use Management) ran '.$date."\r\n";
+		$msg .= 'In Use Task (Product In-Use Management) completed at '.$date."\r\n";
+		$msg .= 'Runtime: '.$runtime."\r\n";
 		$msg .= "\r\n";
         $msg .= 'Items removed from use' . "\r\n";
         $msg .= $unUseData;
