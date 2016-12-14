@@ -36,6 +36,7 @@ class SaListModel extends BasicModel
     'clear' => array('type'=>'TINYINT', 'default'=>0),
     'quantity' => array('type'=>'DOUBLE', 'default'=>0),
     'uid' => array('type'=>'INT'),
+    'section' => array('type'=>'TINYINT', 'default'=>1),
     );
 }
 

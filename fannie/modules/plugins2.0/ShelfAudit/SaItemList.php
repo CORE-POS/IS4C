@@ -33,6 +33,7 @@ class SaItemList extends SaHandheldPage
     hand using a handheld device.';
     protected $enable_linea = true;
     protected $must_authenticate = true;
+    private $section = 1;
 
     private function exportList()
     {
@@ -49,6 +50,7 @@ class SaItemList extends SaHandheldPage
         $dbc = $this->connection;
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $uid = FannieAuth::getUID($this->current_user);
+        $this->section = FormLib::get('section', 1);
 
         if (FormLib::get('clear') === '1') {
             $table = $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList';
@@ -103,6 +105,7 @@ class SaItemList extends SaHandheldPage
         $dbc->selectDB($settings['ShelfAuditDB']);
         $model = new SaListModel($dbc);
         $model->upc($upc);
+        $model->section($this->section);
         $model->clear(0);
         $model->uid(FannieAuth::getUID($this->current_user));
         $entries = $model->find('date', true);
@@ -118,14 +121,25 @@ class SaItemList extends SaHandheldPage
     }
 
     // override ajax behavior of SaHandheldPage
-    protected function upcForm($store)
+    protected function upcForm($section)
     {
-        ob_start();
-        parent::upcForm($store);
-        $form = ob_get_clean();
-
-        $form = str_replace('onsubmit="handheld.lookupItem(event);"', '', $form);
-        echo $form;
+        ?>
+<form method="get" id="upcScanForm">
+<a href="SaMenuPage.php">Menu</a>
+<input type="hidden" name="section" id="section" value="<?php echo ((int)$section); ?>" />
+<br />
+<div class="form-group form-inline">
+    <div class="input-group">
+        <label class="input-group-addon">UPC</label>
+        <input type="number" size="10" name="id" id="upc_in" 
+            onfocus="handheld.paintFocus('upc_in');"
+            class="focused form-control" tabindex="1"
+        />
+    </div>
+    <button type="submit" class="btn btn-success" tabindex="-1" id="goBtn">Go</button>
+</div>
+</form>
+        <?php
     }
 
     public function get_view()
@@ -135,7 +149,7 @@ class SaItemList extends SaHandheldPage
         $this->addOnloadCommand('$(\'#upc_in\').focus();');
         $this->addOnloadCommand("enableLinea('#upc_in');\n");
         ob_start();
-        $this->upcForm(1);
+        $this->upcForm($this->section);
         if (isset($this->current_item_data['upc']) && !isset($this->current_item_data['desc'])) {
             echo '<div class="alert alert-danger">Item not found (' 
                 . $this->current_item_data['upc'] . ')</div>'; 
@@ -180,44 +194,60 @@ class SaItemList extends SaHandheldPage
             WHERE s.clear=0
                 AND s.quantity <> 0
                 AND s.uid=?
+                AND s.section=?
             ORDER BY s.tdate DESC
         ');
-        $res = $this->connection->execute($prep, array($uid));
-        $ret = '
-            <table class="table table-bordered table-striped small">
-            <tr>
-                <th>UPC</th>
-                <th>SKU</th>
-                <th>Vendor</th>
-                <th>Brand</th>
-                <th>Description</th>
-                <th>Size</th>
-                <th>Qty</th>
-            </tr>';
-        $upcs = '';
-        while ($row = $this->connection->fetchRow($res)) {
-            $ret .= sprintf('<tr>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%d</td>
-                </tr>',
-                $row['upc'],
-                $row['sku'],
-                $row['vendorName'],
-                $row['brand'],
-                $row['description'],
-                $row['size'],
-                $row['qty']
-            ); 
-            $upcs .= $row['upc'] . "\n";
+        $ret = '<ul class="nav nav-tabs" role="tablist">';
+        for ($i=1; $i<=3; $i++) {
+            $ret .= sprintf('<li role="presentation" %s>
+                <a href="#section%d" aria-controls="section%d" role="tab" data-toggle="tab"
+                onclick="$(\'#section\').val(%d); return false;">Set %d</a></li>',
+                ($i == $this->section ? 'class="active"' : ''),
+                $i, $i, $i, $i);
         }
-        $ret .= '</table>';
-
-        $ret .= '<textarea>' . $upcs . '</textarea>';
+        $ret .= '</ul>';
+        $ret .= '<div class="tab-content">';
+        for ($i=1; $i<=3; $i++) {
+            $res = $this->connection->execute($prep, array($uid, $i));
+            $ret .= sprintf('<div role=tablepanel" class="tab-pane %s" id="section%d">',
+                ($i == $this->section ? 'active' : ''), $i, $i);
+            $ret .= '
+                <table class="table table-bordered table-striped small">
+                <tr>
+                    <th>UPC</th>
+                    <th>SKU</th>
+                    <th>Vendor</th>
+                    <th>Brand</th>
+                    <th>Description</th>
+                    <th>Size</th>
+                    <th>Qty</th>
+                </tr>';
+            $upcs = '';
+            while ($row = $this->connection->fetchRow($res)) {
+                $ret .= sprintf('<tr>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%d</td>
+                    </tr>',
+                    $row['upc'],
+                    $row['sku'],
+                    $row['vendorName'],
+                    $row['brand'],
+                    $row['description'],
+                    $row['size'],
+                    $row['qty']
+                ); 
+                $upcs .= $row['upc'] . "\n";
+            }
+            $ret .= '</table>';
+            $ret .= '<textarea>' . $upcs . '</textarea>';
+            $ret .= '</div>';
+        }
+        $ret .= '</div>';
 
         return $ret;
     }
