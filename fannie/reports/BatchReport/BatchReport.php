@@ -339,7 +339,7 @@ HTML;
     public function unitTest($phpunit)
     {
         $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
-            'sales'=>1, 'quantity'=>1, 'rings'=>1, 'location'=>'test');
+            'sales'=>1, 'quantity'=>1, 'rings'=>1, 'location'=>'test', 'sku'=>'123');
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
         $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
