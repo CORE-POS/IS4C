@@ -7,7 +7,7 @@
 
 namespace COREPOS\Fannie\Plugin\CoopDealsSigns {
 
-class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage 
+class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\signage\Signage16UpP 
 {
     protected $BIG_FONT = 40;
     protected $MED_FONT = 14;
@@ -22,14 +22,7 @@ class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage
 
     public function drawPDF()
     {
-        $pdf = new \FPDF('P', 'mm', 'Letter');
-        $pdf->SetMargins(0, 3.175, 0);
-        $pdf->SetAutoPageBreak(false);
-        define('FPDF_FONTPATH', dirname(__FILE__) . '/noauto/fonts/');
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-        $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
-        $pdf->SetFont('Gill', '', 16);
+        $pdf = $this->createPDF();
 
         $data = $this->loadItems();
         $count = 0;
@@ -75,52 +68,9 @@ class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage
                 $price = $this->formatPrice($item['normal_price']);
             }
 
+            $pdf = $this->drawItem($pdf, $item, $row, $column);
+
             $pdf->Image(dirname(__FILE__) . '/cd_head_16.png', ($left-2) + ($width*$column), ($top-17) + ($row*$height), $width-6);
-
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height) - 2);
-            $pdf->SetFont('Gill', 'B', $this->SMALL_FONT);
-            $pdf = $this->fitText($pdf, $this->SMALL_FONT, 
-                strtoupper($item['brand']), array($column, 6, 1));
-
-            $pdf->SetX($left + ($width*$column));
-            $pdf->SetFont('Gill', '', $this->MED_FONT);
-            $pdf = $this->fitText($pdf, $this->MED_FONT, 
-                $item['description'], array($column, 6, 2));
-
-            $pdf->SetX($left + ($width*$column));
-            $pdf->SetFont('GillBook', '', $this->SMALLER_FONT);
-            $item['size'] = strtolower($item['size']);
-            if (substr($item['size'], -1) != '.') {
-                $item['size'] .= '.'; // end abbreviation w/ period
-                $item['size'] = str_replace('fz.', 'fl oz.', $item['size']);
-            }
-            if (substr($item['size'], 0, 1) == '.') {
-                $item['size'] = '0' . $item['size']; // add leading zero on decimal qty
-            }
-            if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
-                $item['size'] = 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
-            }
-            $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
-            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height-$top-18));
-            $pdf->SetFont('Gill', '', $this->BIG_FONT);
-            $pdf->MultiCell($effective_width, 10, $price, 0, 'C');
-
-            if ($item['startDate'] != '' && $item['endDate'] != '') {
-                // intl would be nice
-                $datestr = date('M d', strtotime($item['startDate']))
-                    . chr(0x96) // en dash in cp1252
-                    . date('M d', strtotime($item['endDate']));
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 7));
-                $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
-                $pdf->Cell($effective_width+4, 6, strtoupper($datestr), 0, 1, 'R');
-            }
-
-            if ($item['upc'] != '') {
-                $pdf->SetXY($left-2 + ($width*$column), $top + ($height*$row) + ($height - $top - 7));
-                $pdf->SetFont('GillBook', '', $this->SMALLEST_FONT);
-                $pdf->Cell($effective_width, 6, $item['upc'], 0, 1, 'L');
-            }
-
             $pdf->Image(dirname(__FILE__) . '/' . $this->footer_image, ($left-2)+($width*$column), $top + ($height*$row) + ($height-$top-2), $width-6);
 
             $count++;
