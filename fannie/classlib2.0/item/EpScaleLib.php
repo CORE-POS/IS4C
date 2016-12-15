@@ -83,6 +83,7 @@ class EpScaleLib
             $text = str_replace('{mosa}', 'Certified Organic By MOSA', $text);
         } else {
             $text = str_replace('{mosa}', '', $text);
+            $text = str_ireplace('CERTIFIED ', '', $text);
         }
         if (!isset($item_info['OriginText'])) {
             $item_info['OriginText'] = '';
