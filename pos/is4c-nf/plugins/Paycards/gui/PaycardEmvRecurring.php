@@ -97,6 +97,7 @@ function emvSubmit() {
     }
     emv.submit(xmlData);
 }
+</script>
         <?php
     }
 

@@ -117,11 +117,11 @@ class MercuryDC extends MercuryE2E
         $dbc = Database::tDataConnect();
         $query = 'UPDATE PaycardTransactions
             SET transType=' . $dbc->concat("'R.'", 'transType', '') . '
-            WHERE paycardTransactionID=?');
+            WHERE paycardTransactionID=?';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($this->last_request->last_paycard_transaction_id));
 
-        return $res ? true : false;
+        return $res ? $xml : false;
     }
 
     /**
