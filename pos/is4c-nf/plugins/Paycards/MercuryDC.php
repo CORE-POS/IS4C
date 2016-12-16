@@ -111,6 +111,19 @@ class MercuryDC extends MercuryE2E
         return $msgXml;
     }
 
+    public function switchToRecurring($xml)
+    {
+        $xml = str_replace('OneTime', 'Recurring', $xml);
+        $dbc = Database::tDataConnect();
+        $query = 'UPDATE PaycardTransactions
+            SET transType=' . $dbc->concat("'R.'", 'transType', '') . '
+            WHERE paycardTransactionID=?');
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, array($this->last_request->last_paycard_transaction_id));
+
+        return $res ? true : false;
+    }
+
     /**
       Prepare an XML request body to void an PDCX
       or EMVX transaction

@@ -87,7 +87,7 @@ class CCReceiptMessage extends ReceiptMessage {
                     AND transNo=" . $trans . $idclause . "
                     AND p.validResponse=1
                     AND (p.xResultMessage LIKE '%APPROVE%' OR p.xResultMessage LIKE '%PENDING%')
-                    AND p.cardType IN ('Credit', 'Debit', 'EMV')
+                    AND p.cardType IN ('Credit', 'Debit', 'EMV', 'R.Credit', 'R.EMV')
                   ORDER BY p.requestDatetime";
 
         $result = $dbc->query($query);
@@ -101,6 +101,10 @@ class CCReceiptMessage extends ReceiptMessage {
                 AND transNo=?
                 AND transID=?
         ');
+        $recurring = 20;
+        $payments_left = 4;
+        $r_phone = '218-728-0884';
+        $r_email = 'billing@wholefoods.coop';
         
         while ($row = $dbc->fetchRow($result)) {
             $slip .= ReceiptLib::centerString("................................................")."\n";
@@ -176,6 +180,12 @@ class CCReceiptMessage extends ReceiptMessage {
                     $col2[] = "Authorization:  ".$row['xResultMessage'];
                     $col2[] = ReceiptLib::boldFont()."Amount: ".$amt.ReceiptLib::normalFont();
                     $slip .= ReceiptLib::twoColumns($col1,$col2);
+                    if (strpos($row['tranType'], ' R.')) {
+                        $slip .= ReceiptLib::boldFont() . 'This is a recurring payment' . ReceiptLib::normalizeFont() . "\n"
+                            . sprintf('You will be billed monthly %d additional times for $%.2f.', $payments_left, $recurring) . "\n"
+                            . 'Call %s or email %s to cancel.' . "\n"
+                            . 'Please do not include your credit card number in an email.' . "\n";
+                    }
                 }
             }
             $slip .= ReceiptLib::centerString(".................................................")."\n";
