@@ -79,6 +79,9 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
     {
         $limit = FormLib::get_form_value('AR_limit',0);
         $json['chargeLimit'] = $limit;
+        foreach (array_keys($json['customers']) as $c) {
+            $json['customers'][$c]['chargeAllowed'] = $limit > 0 ? 1 : 0;
+        }
 
         return $json;
     }
