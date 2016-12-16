@@ -165,7 +165,7 @@ class InUseTask extends FannieTask
         //  Task is scheduled to run at 12:15AM        
         $n = $m - 15;
         if ($n < 0) {
-            $runtime = ($h - 1) .':'. (60 - $n) .':'. $s;
+            $runtime = ($h - 1) .':'. (60 + $n) .':'. $s;
         } else {
             $runtime = $h .':'. ($m - 15) .':'. $s;
         }
