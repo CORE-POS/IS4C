@@ -97,7 +97,7 @@ class WfcVcTask extends FannieTask
         $res = $dbc->query('SELECT DISTINCT c.CardNo FROM custdata AS c WHERE Type=\'PC\' AND c.CardNo NOT IN (
             SELECT cardNo FROM CustomerNotifications WHERE source=\'WFC.OAM\'
         )');
-        $insP = $dbc->prepare('INSERT INTO CustomerNotifications (cardNo, source, type, message) VALUES (?, \'WFC.OAM\', \'blueline\', \'OAM\')');
+        $insP = $dbc->prepare('INSERT INTO CustomerNotifications (cardNo, source, type, message) VALUES (?, \'WFC.OAM\', \'blueline\', \'\')');
         while ($row = $dbc->fetchRow($res)) {
             $dbc->execute($insP, array($row['CardNo']));
         }
