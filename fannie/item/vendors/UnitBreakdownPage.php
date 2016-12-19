@@ -28,13 +28,13 @@ if (!class_exists('FannieAPI')) {
 
 class UnitBreakdownPage extends FannieRESTfulPage 
 {
-    protected $title = "Fannie : Vendor Case Breakdowns";
-    protected $header = "Vendor Case Breakdowns";
+    protected $title = "Fannie : Vendor Unit Breakdowns";
+    protected $header = "Vendor Unit Breakdowns";
 
     protected $must_authenticate = true;
     protected $auth_classes = array('pricechange');
 
-    public $description = '[Vendor Case Breakdowns] manages items where the splits a package
+    public $description = '[Vendor Unit Breakdowns] manages items where the splits a package
         and sells items individually';
 
     public function preprocess()
@@ -60,15 +60,10 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 continue;
             }
             $split_factor = false;
-            if ($obj->units() == 1 || $obj->units() == null) {
-                list($split_factor, $unit_size) = $obj->getSplit($original->size());
-                if ($split_factor) {
-                    $obj->units($split_factor);
-                    $obj->save();
-                }
-            } else {
-                $split_factor = $obj->units();
-                $unit_size = '';
+            list($split_factor, $unit_size) = $obj->getSplit($original->size());
+            if ($split_factor) {
+                $obj->units($split_factor);
+                $obj->save();
             }
             if (!$split_factor) {
                 $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Vendor SKU #" . $obj->sku() . ' ' . $original->size() . " cannot be broken down');\n");
@@ -230,10 +225,10 @@ class UnitBreakdownPage extends FannieRESTfulPage
 
         $ret .= '<table class="table table-bordered">';
         $ret .= '<thead><tr>
-            <th>Vendor SKU</th>
-            <th>Our PLU</th>
-            <th>Vendor Description</th>
-            <th>Our Description</th>
+            <th>Parent SKU</th>
+            <th>Child UPC</th>
+            <th>Parent Description</th>
+            <th>Child Description</th>
             <th>Units</th>
             <th>&nbsp;</th>
             </tr></thead><tbody>';
