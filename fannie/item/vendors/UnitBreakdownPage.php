@@ -195,6 +195,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
 
         $prep = $dbc->prepare("
             SELECT m.sku,
+                v.upc AS parentUPC,
                 m.upc,
                 v.description AS vendorDescript,
                 p.description as storeDescript,
@@ -242,7 +243,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
             }
             $ret .= sprintf('
                 <tr>
-                    <td>%s</td>
+                    <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
@@ -252,7 +253,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
                         onclick="return confirm(\'Delete entry for PLU #%s?\');">%s</a>
                     </td>
                 </tr>',
-                $row['sku'],
+                $row['parentUPC'], $row['sku'],
                 $row['upc'], $row['upc'],
                 $row['vendorDescript'],
                 $row['storeDescript'],
