@@ -235,16 +235,25 @@ class HouseCoupon extends SpecialUPC
                 break;
             case 'C': // must purchase at least amount in qty (count) from department
             case 'C+': // must purchase more than amount in qty (count) from department
+            case 'C!':
+            case 'C^':
                 $minQ = "select case when sum(ItemQtty) is null
                     then 0 else sum(ItemQtty) end
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
                     AND l.trans_type IN ('I','D')";
+                if ($infoW['minType'] == 'C!' || $infoW['minType'] == 'C^') {
+                    $minQ .= ' AND l.discounttype=0 ';
+                }
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
                 if ($infoW['minType'] == 'C+' && $validQtty <= $infoW["minValue"]) {
                     return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'C^' && $validQtty <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 } elseif ($infoW['minType'] == 'C' && $validQtty < $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'C!' && $validQtty < $infoW["minValue"]) {
                     return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
