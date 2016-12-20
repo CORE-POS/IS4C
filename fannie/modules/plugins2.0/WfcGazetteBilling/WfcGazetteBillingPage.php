@@ -230,13 +230,14 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $cn = $data[$CONTACT];
             $sz = trim(strtoupper($data[$SIZE]));
             $clr = trim(strtoupper($data[$COLOR]));
+            $data[$MEMBER] = trim(strtoupper($data[$MEMBER])); // match on YES
             if (isset($clr[0]) && $clr[0] == "B") $clr = "B/W";
             elseif($clr == "COLOR") $clr = "FULL";
             elseif($clr == 'FC') $clr = 'FULL';
             if (!strstr($sz, '/')) {
                 $sz = $this->decimal_to_fraction($sz);
                 if (!strstr($sz, '/')) {
-                    $sz = $this->letterToSize($sz);
+                    $sz = $this->letterToSize(trim($sz, ' *'));
                 }
             }
 
