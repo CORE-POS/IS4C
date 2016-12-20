@@ -108,6 +108,7 @@ class WfcVcTask extends FannieTask
             WHERE trans_type='T'
                 AND description='REBATE CHECK'
                 AND tdate > '2016-10-31'
+                AND card_no NOT IN (15590)
             GROUP BY card_no
             HAVING SUM(total) <> 0");
         $checkR = $dbc->execute($checkP);
