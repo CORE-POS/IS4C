@@ -387,6 +387,8 @@ class HouseCouponEditor extends FanniePage
             'Q+'=>'Quantity (more than)',
             'C'=>'Department (at least qty)',
             'C+'=>'Department (more than qty)',
+            'C!'=>'Dept w/o sales (at least qty)',
+            'C^'=>'Dept w/o sales (more than qty)',
             'D'=>'Department (at least $)',
             'D+'=>'Department (more than $)',
             'M'=>'Mixed (Item+Item)',
@@ -453,7 +455,7 @@ class HouseCouponEditor extends FanniePage
             $ret .= '<label class="control-label">Add UPC</label>
                 <input type=text class="form-control add-item-field" name=new_upc /> ';
         } 
-        if ($mType == "D" || $mType == "D+" || $mType == 'C' || $mType == 'C+' || $dType == '%D' || $dType == 'S' || $mType == 'MX') {
+        if ($mType == "D" || $mType == "D+" || $mType == 'C' || $mType == 'C+' || $dType == '%D' || $dType == 'S' || $mType == 'MX' || $mType == 'C!' || $mType == 'C^') {
             $ret .= '
                 <label class="control-label">Add Dept</label>
                 <select class="form-control add-item-field" name=new_dept>
@@ -528,7 +530,7 @@ class HouseCouponEditor extends FanniePage
                     LEFT JOIN products AS p ON p.upc=h.upc AND h.type='DISCOUNT'
                     LEFT JOIN departments AS d ON h.upc=d.dept_no AND h.type='QUALIFIER'
                 WHERE h.coupID=?";
-        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D' || $hc->discountType() == 'S') {
+        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D' || $hc->discountType() == 'S' || $hc->minType() == 'C!' || $hc->minType == 'C^') {
             $query = '
                 SELECT h.upc,
                     COALESCE(d.dept_name, \'Unknown department\') AS description,
