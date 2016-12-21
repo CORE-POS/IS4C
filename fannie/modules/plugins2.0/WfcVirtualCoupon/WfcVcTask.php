@@ -97,7 +97,7 @@ class WfcVcTask extends FannieTask
         $res = $dbc->query('SELECT DISTINCT c.CardNo FROM custdata AS c WHERE Type=\'PC\' AND c.CardNo NOT IN (
             SELECT cardNo FROM CustomerNotifications WHERE source=\'WFC.OAM\'
         )');
-        $insP = $dbc->prepare('INSERT INTO CustomerNotifications (cardNo, source, type, message) VALUES (?, \'WFC.OAM\', \'blueline\', \'OAM\')');
+        $insP = $dbc->prepare('INSERT INTO CustomerNotifications (cardNo, source, type, message) VALUES (?, \'WFC.OAM\', \'blueline\', \'\')');
         while ($row = $dbc->fetchRow($res)) {
             $dbc->execute($insP, array($row['CardNo']));
         }
@@ -108,6 +108,7 @@ class WfcVcTask extends FannieTask
             WHERE trans_type='T'
                 AND description='REBATE CHECK'
                 AND tdate > '2016-10-31'
+                AND card_no NOT IN (15590)
             GROUP BY card_no
             HAVING SUM(total) <> 0");
         $checkR = $dbc->execute($checkP);

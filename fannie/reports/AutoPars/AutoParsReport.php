@@ -49,6 +49,7 @@ class AutoParsReport extends FannieReportPage
         $dEnd = FormLib::get('deptEnd');
         $subs = FormLib::get('subdepts', array());
         $store = FormLib::get('store');
+        $asLC = FormLib::get('lc', false);
         $superTable = ($superID >= 0) ? 'superdepts' : 'MasterSuperDepts';
         $where = '1=1';
         $args = array();
@@ -86,6 +87,30 @@ class AutoParsReport extends FannieReportPage
                 AND p.store_id=?
                 AND (p.inUse=1 OR p.auto_par > 0)
             ORDER BY auto_par DESC";
+        if ($asLC) {
+            $query = "
+                SELECT u.likeCode AS upc,
+                    'Likecode' AS brand,
+                    l.likeCodeDesc AS description,
+                    p.department,
+                    d.dept_name,
+                    SUM(p.auto_par) AS auto_par
+                FROM products AS p
+                    LEFT JOIN departments AS d ON p.department=d.dept_no
+                    LEFT JOIN subdepts AS b ON p.subdept=b.subdept_no 
+                    LEFT JOIN {$superTable} AS m ON p.department=m.dept_ID
+                    LEFT JOIN upcLike AS u ON p.upc=u.upc
+                    LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
+                WHERE {$where}
+                    AND p.store_id=?
+                    AND (p.inUse=1 OR p.auto_par > 0)
+                GROUP BY u.likeCode,
+                    l.likeCodeDesc,
+                    p.department,
+                    d.dept_name
+                ORDER BY SUM(p.auto_par) DESC";
+            $this->report_headers[0] = 'Likecode';
+        }
         $args[] = $store;
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
@@ -139,6 +164,7 @@ class AutoParsReport extends FannieReportPage
 <div class="col-sm-6">
     <p>{$dept}</p>
     <p>{$stores['html']}</p>
+    <p><label><input type="checkbox" value="1" name="lc" /> As likecodes</p>
     <p>
         <button type="submit" class="btn btn-default btn-core">Submit</button>
         <button type="reset" class="btn btn-default btn-reset"

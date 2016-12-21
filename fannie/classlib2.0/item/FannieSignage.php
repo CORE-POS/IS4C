@@ -24,6 +24,7 @@
 namespace COREPOS\Fannie\API\item;
 use COREPOS\Fannie\API\FanniePlugin;
 use COREPOS\Fannie\API\lib\PriceLib;
+use COREPOS\Fannie\API\lib\Store;
 use \BarcodeLib;
 use \DTrans;
 use \FannieConfig;
@@ -500,7 +501,7 @@ class FannieSignage
                  WHERE p.upc IN (' . $ids . ') ';
         if (FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
-            $args[] = FannieConfig::config('STORE_ID');
+            $args[] = Store::getIdByIp();
         }
         $query .= 'ORDER BY p.department, p.upc';
 
