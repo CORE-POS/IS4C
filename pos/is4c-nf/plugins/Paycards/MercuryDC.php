@@ -166,10 +166,10 @@ class MercuryDC extends MercuryE2E
         $tranCode = '';
         $tranType = '';
         $cardType = false;
-        if ($prev['mode'] == 'EMVSale') {
+        if ($prev['cardType'] == 'EMV' && $prev['mode'] == 'Sale') {
             $tranCode = 'EMVVoidSale';
             $tranType = 'EMV';
-        } elseif ($prev['mode'] == 'EMVReturn') {
+        } elseif ($prev['cardType'] == 'EMV' && $prev['mode'] == 'Return') {
             $tranCode = 'EMVVoidReturn';
             $tranType = 'EMV';
         } elseif ($prev['mode'] == 'NoNSFSale') {
