@@ -131,6 +131,9 @@ class OrderGenTask extends FannieTask
             $cur = $sales ? $cache['onHand'] - $sales : $cache['onHand'];
             $shrink = $dbc->getValue($shP, array($cache['cacheEnd'], $row['upc'], $row['storeID']));
             $cur = $shrink ? $cur - $shrink : $cur;
+            if ($cur < 0) { 
+                $cur = 0;
+            }
             if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
                 $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
                 if ($prodW === false || $prodW['inUse'] == 0) {
