@@ -413,6 +413,7 @@ class HouseCouponEditor extends FanniePage
              </div>";
 
         $dts = array('Q'=>'Quantity Discount',
+            'QD' => 'Quantity Discount (Department)',
             'P'=>'Set Price Discount',
             'FI'=>'Scaling Discount (Item)',
             'FD'=>'Scaling Discount (Department)',
