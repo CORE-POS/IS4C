@@ -55,6 +55,12 @@ class PIPurchasesPage extends PIKillerPage {
             case 'R':
                 $sql = ' AND trans_status=\'R\' ';
                 break;
+            case '1':
+                $sql .= ' AND store_id=1 ';
+                break;
+            case '2':
+                $sql .= ' AND store_id=2 ';
+                break;
         }
 
         return array($sql, $args);
@@ -128,6 +134,8 @@ class PIPurchasesPage extends PIKillerPage {
         $filters = array(
             'No filter' => '',
             'Returns' => 'R',
+            'Hillside' => 1,
+            'Denfeld' => 2,
         );
         foreach ($filters as $label => $val) {
             printf('<option %s value="%s">%s</option>',
