@@ -98,7 +98,7 @@ class EditVendorItems extends FannieRESTfulPage
             if (!$saved) {
                 $ret['error'] = 1;
                 $ret['error_msg'] = 'Save failed';
-            } else {
+            } elseif ($this->field === 'cost') {
                 /**
                   If cost was updated, update the corresponding
                   product cost
