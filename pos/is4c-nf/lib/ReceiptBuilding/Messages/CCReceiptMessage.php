@@ -182,9 +182,12 @@ class CCReceiptMessage extends ReceiptMessage {
                     $slip .= ReceiptLib::twoColumns($col1,$col2);
                     if (strpos($row['tranType'], ' R.')) {
                         $slip .= ReceiptLib::boldFont() . 'This is a recurring payment' . ReceiptLib::normalizeFont() . "\n"
-                            . sprintf('You will be billed monthly %d additional times for $%.2f.', $payments_left, $recurring) . "\n"
-                            . sprintf('Call %s or email %s to cancel.', $r_phone, $r_email) . "\n"
-                            . 'Please do not include your credit card number in an email.' . "\n";
+                            . wordwrap(
+                                sprintf('You will be billed monthly %d additional times for $%.2f. ', $payments_left, $recurring)
+                                . 'The charges on your bank statement will be labeled "recurring". '
+                                . sprintf('Call %s or email %s to cancel. ', $r_phone, $r_email)
+                                . 'Please do not include your credit card number in an email. ',
+                                55) . "\n";
                     }
                 }
             }
