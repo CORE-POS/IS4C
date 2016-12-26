@@ -216,7 +216,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
 
-        $ret .= "<table data-toggle=\"table\" data-show-header=\"true\" data-height=\"200\" class=\"table table-bordered small\">";
+        $ret .= "<table class=\"table table-bordered small\">";
         $ret .= "<thead><tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
             <th colspan=3>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th>
