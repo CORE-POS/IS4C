@@ -808,6 +808,7 @@ class FannieSignage
             return self::formatOffString($price, $multiplier, $regPrice);
         }
 
+
         if (substr($price, -3) == '.33') {
             $ttl = round(3*$price);
             return '3/$' . $ttl;
@@ -825,7 +826,7 @@ class FannieSignage
             return '4/$' . $ttl;
         } elseif ($price == 1) {
             return '5/$5';
-        } elseif (substr($price, -3) == '.00' && $price <= 5.00) {
+        } elseif ($price > 0 && substr($price, -3) == '.00' && $price <= 5.00) {
             $mult = 2;
             while (($mult+1)*$price <= 10) {
                 $mult++;
