@@ -169,7 +169,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // grab data from appropriate columns
             $sku = $data[$indexes['sku']];
             $brand = ($indexes['brand'] === false) ? $vendorName : substr($data[$indexes['brand']], 0, 50);
-            $description = ($indexes['desc'] === false) ? '' : substr($data[$indexes['desc']], 0 50);
+            $description = ($indexes['desc'] === false) ? '' : substr($data[$indexes['desc']], 0, 50);
             if ($indexes['qty'] === false) {
                 $qty = 1.0;
             } else {
@@ -236,7 +236,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $srp = 0;
             }
 
-            if ($dbc->getValue($existsP, array($upc, $VENDOR_ID)) {
+            if ($dbc->getValue($existsP, array($upc, $VENDOR_ID))) {
                 $query = 'UPDATE vendorItems SET ';
                 $args = array();
                 if ($indexes['brand'] !== false) {
