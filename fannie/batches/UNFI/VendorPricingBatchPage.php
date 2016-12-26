@@ -70,8 +70,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
     public function get_id_view()
     {
         $this->addScript('pricing-batch.js');
-        $this->addScript('../../src/javascript/bootstrap-table/dist/bootstrap-table.js');
-        $this->addCssFile('../../src/javascript/bootstrap-table/dist/bootstrap-table.min.css');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
 
