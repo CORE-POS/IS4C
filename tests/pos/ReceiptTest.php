@@ -16,6 +16,7 @@ use COREPOS\pos\lib\ReceiptBuilding\Format\ItemReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\WfcEquityMessage;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
 use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DefaultHtmlEmail;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 
 /**
  * @backupGlobals disabled
@@ -29,9 +30,11 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     {
         $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\ReceiptMessage', true);
         $db = Database::tDataConnect();
+        $ph = new PrintHandler();
 
         foreach($mods as $message_class) {
             $obj = new $message_class();
+            $obj->setPrintHandler($ph);
 
             $selectStr = $obj->select_condition();
             $this->assertInternalType('string', $selectStr);
