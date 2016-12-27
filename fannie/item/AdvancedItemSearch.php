@@ -84,23 +84,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
         return parent::preprocess();
     }
 
-    // failover on ajax call
-    // if javascript breaks somewhere and the form
-    // winds up submitted, at least display the results
-    private $post_results = '';
     protected function post_upc_handler()
     {
-        ob_start();
-        $this->get_search_handler();
-        $this->post_results = ob_get_clean();
-
-        return true;
-    }
-
-    // failover on ajax call
-    protected function post_upc_view()
-    {
-        return $this->get_view() . $this->post_results;
+        return $this->get_search_handler();
     }
 
     protected function post_search_handler()

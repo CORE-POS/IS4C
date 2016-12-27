@@ -8,7 +8,7 @@ function getResults() {
     $('#resultArea').html('');
     $.ajax({
         url: 'AdvancedItemSearch.php',
-        type: 'get',
+        type: 'post',
         data: 'search=1&' + dstr,
     }).done(function(data) {
         $('.progress').hide();
