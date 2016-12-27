@@ -14,7 +14,7 @@ function discountTypeFixup() {
 function useSRPs() {
     $('tr.batchItem').each(function(){
         var srp = $(this).find('.itemSRP').val();
-        $(this).find('.itemPrice').val(fixupPrice(srp));
+        $(this).find('.itemPrice').val(srp);
     });
 }
 function reCalcSRPs() {
@@ -42,7 +42,7 @@ function discount(amt) {
     $('tr.batchItem').each(function(){
         var price = $(this).find('.currentPrice').val();
         price = price - amt;
-        $(this).find('.itemPrice').val(fixupPrice(price));
+        $(this).find('.itemPrice').val(price);
     });
 }
 function markDown(amt) {
@@ -50,27 +50,11 @@ function markDown(amt) {
     $('tr.batchItem').each(function(){
         var price = $(this).find('.currentPrice').val();
         price = price * (1 - amt);
-        $(this).find('.itemPrice').val(fixupPrice(price));
+        $(this).find('.itemPrice').val(price);
     });
 }
 function markUp(amt) {
     markDown(-1 * amt);
-}
-function fixupPrice(val) {
-    var bt_id = $('#batchType').val();
-    var dt_id = $('#discType'+bt_id).val();
-    val = Math.round(val*100);
-    if (dt_id == 0) {
-        while(lastDigit(val) != 5 && lastDigit(val) != 9)
-            val++;
-    } else {
-        while(lastDigit(val) != 9)
-            val++;
-    }
-    return val / 100;
-}
-function lastDigit(val) {
-    return val - (10 * Math.floor(val/10));
 }
 function noEnter(e) {
     if (e.keyCode == 13) {
