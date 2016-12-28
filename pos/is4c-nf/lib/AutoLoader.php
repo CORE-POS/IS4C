@@ -29,9 +29,6 @@ use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 if (!defined('CONF_LOADED')) {
     include_once(dirname(__FILE__).'/LocalStorage/conf.php');
 }
-if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneCache', false)) {
-    include(dirname(__FILE__) . '/LocalStorage/LaneCache.php');
-}
 
 /**
   @class AutoLoader
