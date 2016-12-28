@@ -33,6 +33,7 @@ use COREPOS\pos\lib\Scanning\SpecialUPCs\CouponCode;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\DatabarCoupon;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\SpecialOrder;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
  * @backupGlobals disabled
@@ -600,6 +601,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
     public function testCouponCode()
     {
+        $session = new WrappedStorage();
         if (!class_exists('lttLib')) {
             include (dirname(__FILE__) . '/lttLib.php');
         }
@@ -634,7 +636,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         $db = Database::tDataConnect();
         $db->query('TRUNCATE TABLE couponApplied');
-        $u = new UPC();
+        $u = new UPC($session);
         $u->parse('0001101312028');
 
         $out = $cc->handle('0051101399901', array());
@@ -659,12 +661,13 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         if (!class_exists('lttLib')) {
             include (dirname(__FILE__) . '/lttLib.php');
         }
+        $session = new WrappedStorage();
 
         /**
           TEST 1: minType M, discountType Q
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000000111');
         $upc->parse('0000000000234');
 
@@ -688,7 +691,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 2: no minimum, discountType %D 
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000001009');
         $upc->parse('0000000001011');
 
@@ -712,7 +715,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 3: minimum D, discountType F 
         */
         lttLib::clear();
-        $dept = new DeptKey();
+        $dept = new DeptKey($session);
         $dept->parse('2300DP10');
         $dept->parse('200DP10');
 
@@ -736,9 +739,9 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 4: minimum MX, discountType F 
         */
         lttLib::clear();
-        $dept = new DeptKey();
+        $dept = new DeptKey($session);
         $dept->parse('900DP10');
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000000234');
 
         $hc = new HouseCoupon();
@@ -761,7 +764,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 5: minType Q, discountType PI 
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000000111');
         $upc->parse('0000000000234');
 
@@ -785,7 +788,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 6: dept qty minimum, discountType %D 
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000001009');
         $upc->parse('0000000001011');
 
