@@ -159,7 +159,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $pmodel = new ProductsModel($dbc);
-        $existsP = $dbc->prepaare("SELECT 1 FROM vendorItems WHERE upc=? AND vendorID=?");
+        $existsP = $dbc->prepare("SELECT 1 FROM vendorItems WHERE upc=? AND vendorID=?");
 
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
