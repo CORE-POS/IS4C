@@ -10,10 +10,6 @@
  
 */ 
 
-if (!class_exists('ADODB_pdo', false)) {
-	include(dirname(__FILE__).'/adodb-pdo.inc.php');
-}
-
 class ADODB_pdo_mysql extends ADODB_pdo {
 	var $metaTablesSQL = "SELECT
 			TABLE_NAME,
@@ -38,18 +34,6 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		$parentDriver->_connectionID->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 	}
 
-	function _connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist=false){
-		if (substr($argDSN,0,6) !== "mysql:"){
-			if (strpos($argDSN, ':') > 0){
-				list($host, $port) = explode(':', $argDSN, 2);
-				$argDSN = 'mysql:host='.$host.';port='.$port;
-			}
-			else
-				$argDSN = "mysql:host=".$argDSN;
-		}
-		return parent::_connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist);
-	}
-	
 	// dayFraction is a day in floating point
 	function OffsetDate($dayFraction, $date=false)
 	{		
