@@ -27,7 +27,7 @@ use COREPOS\pos\lib\AjaxCallback;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\LocalStorage\LaneCache;
-use COREPOS\pos\lib\LocalStorage\WrappedStoragee;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\parser\PostParser;
