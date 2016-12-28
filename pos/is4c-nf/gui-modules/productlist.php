@@ -40,7 +40,7 @@ class productlist extends NoInputCorePage
     {
         // expand UPC-E to UPC-A
         if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
-            $parser = new UPC();
+            $parser = new UPC($this->session);
             $entered = $parser->expandUPCE($entered);
         }
 

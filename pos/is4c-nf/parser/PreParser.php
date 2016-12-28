@@ -35,6 +35,16 @@ namespace COREPOS\pos\parser;
 class PreParser {
 
     /**
+      A LocalStorage instance representing session data
+    */
+    protected $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
+
+    /**
       Check whether the module handles this input
       @param $str The input string
       @return 

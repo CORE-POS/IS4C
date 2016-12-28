@@ -45,7 +45,7 @@ class RepeatKey extends Parser
         $multiplier = strlen($str) > 1 ? substr($str, 1) : 1;
         $peek = PrehLib::peekItem(true, CoreLocal::get('currentid'));
         if ($peek && $peek['trans_type'] == 'I' && $peek['trans_status'] == '') {
-            $upcP = new UPC();
+            $upcP = new UPC($this->session);
             CoreLocal::set('quantity', $multiplier);
             CoreLocal::set('multiple', 1);
             $ret = $upcP->parse($peek['upc']);

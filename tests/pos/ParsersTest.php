@@ -7,6 +7,7 @@ use COREPOS\pos\parser\PreParser;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\parser\PostParser;
 use COREPOS\pos\parser\ParseResult;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/Parser.php');
@@ -65,6 +66,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('togglefoodstamp',0);
         CoreLocal::set('toggleDiscountable',0);
         CoreLocal::set('nd',0);
+        $session = new WrappedStorage();
     
         /* inputs and expected outputs */
         $input_output = array(
@@ -90,7 +92,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $chain = PreParser::get_preparse_chain();
         foreach($input_output as $input => $output){
             foreach($chain as $class){
-                $obj = new $class();
+                $obj = new $class($session);
                 $chk = $obj->check($input);
                 $this->assertInternalType('boolean',$chk);
                 if ($chk){
@@ -122,7 +124,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     {
         $plugins = CoreLocal::get('PluginList');
         CoreLocal::set('PluginList', array('Paycards'), true);
-        $obj = new COREPOS\pos\parser\preparse\CCMenu();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\preparse\CCMenu($session);
         $this->assertEquals(true, $obj->check('CC'));
         $this->assertEquals('QM1', $obj->parse('CC'));
         CoreLocal::set('PluginList', $plugins);
@@ -130,7 +133,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testMemStatusToggle()
     {
-        $obj = new COREPOS\pos\parser\preparse\MemStatusToggle();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\preparse\MemStatusToggle($session);
         $this->assertEquals(false, $obj->check('foo'));
         $this->assertEquals('foo', $obj->parse('foo'));
     }
@@ -141,12 +145,13 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $input_output = array(
         'WillNotMatchAnythingEver' => array(),
         );
+        $session = new WrappedStorage();
 
         $chain = Parser::get_parse_chain();
         foreach($input_output as $input => $output){
             $actual = $output;
             foreach($chain as $class){
-                $obj = new $class();
+                $obj = new $class($session);
                 $chk = $obj->check($input);
                 $this->assertInternalType('boolean',$chk, $class . ' returns non-boolean');
                 if ($chk){
@@ -161,7 +166,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testWakeup()
     {
-        $obj = new COREPOS\pos\parser\parse\Wakeup();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\Wakeup($session);
         $this->assertEquals(true, $obj->check('WAKEUP'));
 
         $out = $obj->parse('WAKEUP');
@@ -170,7 +176,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testToggleReceipt()
     {
-        $obj = new COREPOS\pos\parser\parse\ToggleReceipt();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\ToggleReceipt($session);
         CoreLocal::set('receiptToggle', 0);
         $obj->parse('NR');
         $this->assertEquals(1, CoreLocal::get('receiptToggle'));
@@ -181,7 +188,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testTotals()
     {
-        $t = new COREPOS\pos\parser\parse\Totals();
+        $session = new WrappedStorage();
+        $t = new COREPOS\pos\parser\parse\Totals($session);
 
         $out = $t->parse('FNTL');
         $this->assertEquals('/fsTotalConfirm.php', substr($out['main_frame'], -19));
@@ -216,7 +224,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testTenderOut()
     {
-        $to = new COREPOS\pos\parser\parse\TenderOut();
+        $session = new WrappedStorage();
+        $to = new COREPOS\pos\parser\parse\TenderOut($session);
         $this->assertEquals(true, $to->check('TO'));
 
         CoreLocal::set('LastID', 0);
@@ -240,7 +249,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testTenderKey()
     {
-        $tk = new COREPOS\pos\parser\parse\TenderKey();
+        $session = new WrappedStorage();
+        $tk = new COREPOS\pos\parser\parse\TenderKey($session);
         $this->assertEquals(true, $tk->check('TT'));
         $out = $tk->parse('TT');
         $this->assertNotEquals(false, strstr($out['main_frame'], '/tenderlist.php'));
@@ -252,7 +262,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testSigTermCommands()
     {
-        $st = new COREPOS\pos\parser\parse\SigTermCommands();
+        $session = new WrappedStorage();
+        $st = new COREPOS\pos\parser\parse\SigTermCommands($session);
 
         $this->assertEquals(true, $st->check('TERMAUTOENABLE'));
         $this->assertEquals('direct', CoreLocal::get('PaycardsStateChange'));
@@ -333,7 +344,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testReceiptCoupon()
     {
-        $rc = new COREPOS\pos\parser\parse\ReceiptCoupon();
+        $session = new WrappedStorage();
+        $rc = new COREPOS\pos\parser\parse\ReceiptCoupon($session);
         $one = 'RC9901001'; // expire 2099-01-01
         $two = 'RC0001001'; // expire 2000-01-01
         $this->assertEquals(true, $rc->check($one));
@@ -346,7 +358,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testEndOfShift()
     {
-        $e = new COREPOS\pos\parser\parse\EndOfShift();
+        $session = new WrappedStorage();
+        $e = new COREPOS\pos\parser\parse\EndOfShift($session);
         $this->assertEquals(true, $e->check('ES'));
         $out = $e->parse('ES');
         lttLib::clear();
@@ -357,7 +370,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testSteering()
     {
-        $obj = new COREPOS\pos\parser\parse\Steering();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\Steering($sessin);
 
         CoreLocal::set('LastID', 1);
         $obj->check('CAB');
@@ -487,7 +501,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testStackableDiscount()
     {
-        $sd = new COREPOS\pos\parser\parse\StackableDiscount();
+        $session = new WrappedStorage();
+        $sd = new COREPOS\pos\parser\parse\StackableDiscount($session);
         $this->assertEquals(false, $sd->check('ZSD'));
         CoreLocal::set('tenderTotal', 1);
         $this->assertEquals(true, $sd->check('100SD'));
@@ -512,7 +527,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testScrollItems()
     {
         $inputs = array('D', 'U', 'D5', 'U5');
-        $obj = new COREPOS\pos\parser\parse\ScrollItems();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\ScrollItems($session);
         foreach ($inputs as $input) {
             $this->assertEquals(true, $obj->check($input));
             $out = $obj->parse($input);
@@ -522,7 +538,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testScaleInput()
     {
-        $obj = new COREPOS\pos\parser\parse\ScaleInput();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\ScaleInput($session);
         $out = $obj->parse('S111234');
         $this->assertEquals(1, CoreLocal::get('scale'));
         $this->assertEquals(12.34, CoreLocal::get('weight'));
@@ -535,7 +552,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testRepeatKey()
     {
-        $rk = new COREPOS\pos\parser\parse\RepeatKey();
+        $session = new WrappedStorage();
+        $rk = new COREPOS\pos\parser\parse\RepeatKey($session);
         $this->assertEquals(true, $rk->check('*'));
         $this->assertEquals(true, $rk->check('*2'));
         $dbc = Database::tDataConnect();
@@ -563,7 +581,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testRRR()
     {
-        $r = new COREPOS\pos\parser\parse\RRR();
+        $session = new WrappedStorage();
+        $r = new COREPOS\pos\parser\parse\RRR($session);
         $this->assertEquals(true, $r->check('RRR'));
         $this->assertEquals(true, $r->check('2*RRR'));
         CoreLocal::set('LastID', 0);
@@ -576,7 +595,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testPartialReceipt()
     {
-        $obj = new COREPOS\pos\parser\parse\PartialReceipt();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\PartialReceipt($session);
         $out = $obj->parse('PP');
         $this->assertEquals('partial', $out['receipt']);
         $this->assertNotEquals(0, strlen($out['output']));
@@ -584,7 +604,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testMemberID()
     {
-        $m = new COREPOS\pos\parser\parse\MemberID();
+        $session = new WrappedStorage();
+        $m = new COREPOS\pos\parser\parse\MemberID($session);
         $this->assertEquals(true, $m->check('1ID'));
         $out = $m->parse('0ID');
         $this->assertNotEquals(0, strlen($out['output']));
@@ -607,14 +628,16 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testLock()
     {
-        $obj = new COREPOS\pos\parser\parse\Lock();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\Lock($session);
         $out = $obj->parse('LOCK');
         $this->assertEquals('/login3.php', substr($out['main_frame'], -11));
     }
 
     function testDonationKey()
     {
-        $d = new COREPOS\pos\parser\parse\DonationKey();
+        $session = new WrappedStorage();
+        $d = new COREPOS\pos\parser\parse\DonationKey($session);
         CoreLocal::set('roundUpDept', 1, true);
         $this->assertEquals(true, $d->check('RU'));
         $this->assertEquals(true, $d->check('2RU'));
@@ -634,7 +657,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDiscountApplied()
     {
-        $sd = new COREPOS\pos\parser\parse\DiscountApplied();
+        $session = new WrappedStorage();
+        $sd = new COREPOS\pos\parser\parse\DiscountApplied($sesson);
         $this->assertEquals(false, $sd->check('ZDA'));
         CoreLocal::set('tenderTotal', 1);
         $this->assertEquals(true, $sd->check('100DA'));
@@ -658,7 +682,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDeptKey()
     {
-        $d = new COREPOS\pos\parser\parse\DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey($session);
         CoreLocal::set('refund', 1);
         CoreLocal::set('SpecialDeptMap', false);
         $out = $d->parse('1.00DP');
@@ -676,7 +700,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testBalanceCheck()
     {
-        $obj = new COREPOS\pos\parser\parse\BalanceCheck();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\BalanceCheck($session);
         $this->assertEquals(true, $obj->check('BQ'));
         $out = $obj->parse('BQ');
         $this->assertNotEquals(0, strlen($out['output']));
@@ -684,7 +709,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testComment()
     {
-        $cm = new COREPOS\pos\parser\parse\Comment();
+        $session = new WrappedStorage();
+        $cm = new COREPOS\pos\parser\parse\Comment($session);
         lttLib::clear();
         $out = $cm->parse('CMTEST');
         $dbc = Database::tDataConnect();
@@ -697,7 +723,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testClear()
     {
-        $obj = new COREPOS\pos\parser\parse\Clear();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\Clear($session);
         $out = $obj->parse('CL');
         $this->assertEquals(0, CoreLocal::get('msgrepeat'));
         $this->assertEquals('', CoreLocal::get('strRemembered'));
@@ -708,14 +735,16 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testCheckKey()
     {
-        $obj = new COREPOS\pos\parser\parse\CheckKey();
+        $session = new WrappedStorage();
+        $obj = new COREPOS\pos\parser\parse\CheckKey($session);
         $out = $obj->parse('100CQ');
         $this->assertNotEquals(false, strstr($out['main_frame'], '/checklist.php'));
     }
 
     function testAutoTare()
     {
-        $tare = new COREPOS\pos\parser\parse\AutoTare();
+        $session = new WrappedStorage();
+        $tare = new COREPOS\pos\parser\parse\AutoTare($session);
         $this->assertEquals(true, $tare->check('TW'));
         $this->assertEquals(true, $tare->check('5TW'));
         CoreLocal::set('weight', 0);
@@ -735,6 +764,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testItemsEntry()
     {
+        $session = new WrappedStorage();
         CoreLocal::set('mfcoupon',0);
         CoreLocal::set('itemPD',0);
         CoreLocal::set('multiple',0);
@@ -748,7 +778,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // test regular price item
         lttLib::clear();
-        $u = new COREPOS\pos\parser\parse\UPC();
+        $u = new COREPOS\pos\parser\parse\UPC($session);
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -766,7 +796,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -781,7 +811,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         CoreLocal::set('quantity', 2);
         CoreLocal::set('multiple', 1);
-        $u = new COREPOS\pos\parser\parse\UPC();
+        $u = new COREPOS\pos\parser\parse\UPC($session);
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -799,7 +829,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 2;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -816,7 +846,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('multiple', 0);
         CoreLocal::set('refund', 1);
         CoreLocal::set('refundComment', 'TEST REFUND');
-        $u = new COREPOS\pos\parser\parse\UPC();
+        $u = new COREPOS\pos\parser\parse\UPC($session);
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -835,7 +865,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -850,7 +880,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         CoreLocal::set('refund', 0);
         CoreLocal::set('refundComment', '');
-        $u = new COREPOS\pos\parser\parse\UPC();
+        $u = new COREPOS\pos\parser\parse\UPC($session);
         $this->assertEquals(true, $u->check('4627'));
         $json = $u->parse('4627');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -880,7 +910,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -896,7 +926,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         // test member sale
         lttLib::clear();
         CoreLocal::set('isMember', 1);
-        $u = new COREPOS\pos\parser\parse\UPC();
+        $u = new COREPOS\pos\parser\parse\UPC($session);
         $this->assertEquals(true, $u->check('0003049488122'));
         $json = $u->parse('0003049488122');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -925,7 +955,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -941,7 +971,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         // test member sale as non-member
         lttLib::clear();
         CoreLocal::set('isMember', 0);
-        $u = new COREPOS\pos\parser\parse\UPC();
+        $u = new COREPOS\pos\parser\parse\UPC($session);
         $this->assertEquals(true, $u->check('0003049488122'));
         $json = $u->parse('0003049488122');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -963,7 +993,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -979,8 +1009,9 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testOpenRings()
     {
+        $session = new WrappedStorage();
         lttLib::clear();
-        $d = new COREPOS\pos\parser\parse\DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey($session);
         $this->assertEquals(true, $d->check('100DP10'));
         $json = $d->parse('100DP10');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -997,7 +1028,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -1011,7 +1042,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         CoreLocal::set('refund', 1);
         CoreLocal::set('refundComment', 'TEST REFUND');
-        $d = new COREPOS\pos\parser\parse\DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey($session);
         $this->assertEquals(true, $d->check('100DP10'));
         $json = $d->parse('100DP10');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -1029,7 +1060,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -1047,11 +1078,12 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     */
     function testTaxFoodShift()
     {
+        $session = new WrappedStorage();
         if (!class_exists('lttLib')) {
             include (dirname(__FILE__) . '/lttLib.php');
         }
         lttLib::clear();
-        $upc = new COREPOS\pos\parser\parse\UPC();
+        $upc = new COREPOS\pos\parser\parse\UPC($session);
         $upc->parse('0000000000111');
         $record = lttLib::genericRecord();
         $record['upc'] = '0000000000111';
@@ -1069,7 +1101,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['discountable'] = 1;
         $record['mixMatch'] = '499';
         lttLib::verifyRecord(1, $record, $this);
-        $tfs = new COREPOS\pos\parser\parse\TaxFoodShift();
+        $tfs = new COREPOS\pos\parser\parse\TaxFoodShift($session);
         $tfs->parse('TFS');
         $record['tax'] = 0;
         $record['foodstamp'] = 1;
@@ -1080,7 +1112,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testLineItemDiscount()
     {
-        $ld = new COREPOS\pos\parser\parse\LineItemDiscount();
+        $session = new WrappedStorage();
+        $ld = new COREPOS\pos\parser\parse\LineItemDiscount($session);
         $this->assertEquals(true, $ld->check('LD'));
         $ld->parse('LD');
         $upc = new COREPOS\pos\parser\parse\UPC();
@@ -1093,7 +1126,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDefaultTender()
     {
-        $t = new COREPOS\pos\parser\parse\DefaultTender();
+        $session = new WrappedStorage();
+        $t = new COREPOS\pos\parser\parse\DefaultTender($session);
         $this->assertEquals(true, $t->check('123ZZ'));
         $this->assertEquals(true, $t->check('CA'));
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $t->parse('CA'));
@@ -1105,7 +1139,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testUPC()
     {
-        $u = new COREPOS\pos\parser\parse\UPC();
+        $session = new WrappedStorage();
+        $u = new COREPOS\pos\parser\parse\UPC($session);
         foreach (array(COREPOS\pos\parser\parse\UPC::SCANNED_PREFIX, COREPOS\pos\parser\parse\UPC::MACRO_PREFIX, COREPOS\pos\parser\parse\UPC::HID_PREFIX, COREPOS\pos\parser\parse\UPC::GS1_PREFIX) as $prefix) {
             $this->assertEquals(true, $u->check($prefix . '4011'));
         }
@@ -1156,7 +1191,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDriverStatus()
     {
-        $ds = new COREPOS\pos\parser\parse\DriverStatus();
+        $session = new WrappedStorage();
+        $ds = new COREPOS\pos\parser\parse\DriverStatus($session);
         $this->assertEquals(true, $ds->check('POS'));
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $ds->parse('POS'));
     }
@@ -1164,8 +1200,9 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     // mostly for coverage's sake
     function testBaseClasses()
     {
-        $parser = new Parser();
-        $pre = new PreParser();
+        $session = new WrappedStorage();
+        $parser = new Parser($session);
+        $pre = new PreParser($session);
         $post = new PostParser();
 
         $pre->check('');

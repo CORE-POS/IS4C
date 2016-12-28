@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\pos\lib\gui\InputCorePage;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
  * @backupGlobals disabled
@@ -11,16 +12,17 @@ class PagesTest extends PHPUnit_Framework_TestCase
     public function testLib()
     {
         $classes = array('COREPOS\\pos\\lib\\gui\\BasicCorePage', 'COREPOS\\pos\\lib\\gui\\InputCorePage', 'COREPOS\\pos\\lib\\gui\\NoInputCorePage');
+        $session = new WrappedStorage();
         foreach ($classes as $class) {
             ob_start();
-            $obj = new $class();
+            $obj = new $class($session);
             $no_draw = ob_get_clean();
             $this->assertNotEquals(0, strlen($obj->getHeader()));
             $this->assertNotEquals(0, strlen($obj->getFooter()));
         }
 
         ob_start();
-        $obj = new InputCorePage();
+        $obj = new InputCorePage($session);
         $no_draw = ob_get_clean();
         $obj->hide_input(true);
         $this->assertEquals(true, (false !== strpos($obj->getHeader(), 'type="password"')));
@@ -30,6 +32,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
     public function testDrawing()
     {
         $dh = opendir(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules');
+        $session = new WrappedStorage();
         $pages = array();
         while( ($file=readdir($dh)) !== False){
             if ($file[0] == '.') continue;
@@ -44,7 +47,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
             // get the default output
             ob_start();
-            $obj = new $class();
+            $obj = new $class($session);
             $output = ob_get_clean();
             $output = trim($output);
 

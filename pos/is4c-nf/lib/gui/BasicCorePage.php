@@ -53,6 +53,11 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
     protected $hardware_polling = true;
 
     /**
+      A LocalStorage instance representing session data
+    */
+    protected $session;
+
+    /**
       Constructor
 
       The constructor automatically runs
@@ -60,8 +65,9 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
       (if applicable). Creating a new instance
       will output the entire page contents
     */
-    public function __construct()
+    public function __construct($session)
     {
+        $this->session = $session;
         $this->page_url = MiscLib::base_url();
         if (file_exists(dirname(__FILE__) . '/../../graphics/is4c.gif')) {
             $this->body_class = 'mainBGimage';

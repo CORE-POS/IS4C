@@ -27,6 +27,7 @@ use COREPOS\pos\lib\AjaxCallback;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\LocalStorage\LaneCache;
+use COREPOS\pos\lib\LocalStorage\WrappedStoragee;
 use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\parser\PostParser;
@@ -64,9 +65,10 @@ class AjaxParser extends AjaxCallback
             LaneCache::set($preItem);
         }
 
+        $session = new WrappedStorage();
         foreach ($preChain as $cn){
             if (!class_exists($cn)) continue;
-            $pre = new $cn();
+            $pre = new $cn($session);
             if ($pre->check($entered)) {
                 $entered = $pre->parse($entered);
                 if (!$entered || $entered == "")
@@ -94,9 +96,10 @@ class AjaxParser extends AjaxCallback
         }
 
         $result = False;
+        $session = new WrappedStorage();
         foreach ($parseChain as $cn){
             if (!class_exists($cn)) continue;
-            $parse = new $cn();
+            $parse = new $cn($session);
             if ($parse->check($entered)){
                 $result = $parse->parse($entered);
                 break;
