@@ -451,7 +451,6 @@ class MarginToolFromSearch extends FannieRESTfulPage
                         AND cost <> 0
                         AND p.store_id=?
                     GROUP BY department, dept_name";
-        $args[] = $store;
         $marginP = $dbc->prepare($marginQ);
         $marginR = $dbc->execute($marginP, $args);
         while($marginW = $dbc->fetch_row($marginR)) {
