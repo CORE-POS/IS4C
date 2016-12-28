@@ -21,15 +21,11 @@
 
 *********************************************************************************/
 
-use COREPOS\pos\lib\LocalStorage\LaneConfig;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\JsonLib;
 
 if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
     include_once(__DIR__ . '/LocalStorage.php');
-}
-if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig')) {
-    include(__DIR__ . '/LaneConfig.php');
 }
 
 /**
@@ -74,11 +70,7 @@ class CoreLocal
             self::init();
         }
 
-        if (LaneConfig::has($key)) {
-            return LaneConfig::get($key);
-        } else {
-            return self::$storage_object->get($key);
-        }
+        return self::$storage_object->get($key);
     }
 
     /**
@@ -95,11 +87,7 @@ class CoreLocal
             self::init();
         }
         
-        if ($immutable) {
-            LaneConfig::set($key, $val);
-        } else {
-            return self::$storage_object->set($key, $val);
-        }
+        return self::$storage_object->set($key, $val);
     }
 
     /**
@@ -290,7 +278,7 @@ class CoreLocal
     */
     public static function isImmutable($key)
     {
-        return LaneConfig::has($key);
+        return false;
     }
 
     /**

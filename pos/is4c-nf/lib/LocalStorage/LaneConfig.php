@@ -61,6 +61,21 @@ class LaneConfig
         }
     }
 
+    public static function refresh()
+    {
+        self::clear();
+        $json = __DIR__ . '/../../ini.json';
+        if (file_exists($json)) {
+            $json = json_decode(file_get_contents($json), true);
+            if (is_array($json)) {
+                foreach ($json as $key => $val) {
+                    self::set($key, $val);
+                }
+                self::flush();
+            }
+        }
+    }
+
     public static function get($key)
     {
         self::init();
@@ -103,6 +118,7 @@ class LaneConfig
     {
         self::init();
         self::$instance->commit();
+        self::$changed = false;
     }
 }
 
