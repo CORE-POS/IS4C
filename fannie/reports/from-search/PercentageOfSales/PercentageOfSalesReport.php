@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -43,6 +45,7 @@ class PercentageOfSalesReport extends FannieReportPage
 
         $upcs = FormLib::get('u', array());
         list($in, $args) = $dbc->safeInClause($upcs);
+        $store = Store::getIdByIp();
 
         $query = "SELECT p.upc, p.description, p.department,
                     d.dept_name, l.quantity, l.total,
@@ -53,12 +56,14 @@ class PercentageOfSalesReport extends FannieReportPage
                     LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                     LEFT JOIN departments AS d ON p.department=d.dept_no
                     LEFT JOIN " . $this->config->get('ARCHIVE_DB') . $dbc->sep() . "productWeeklyLastQuarter AS l
-                        ON p.upc=l.upc
+                        ON p.upc=l.upc AND p.store_id=l.storeID
                     LEFT JOIN " . $this->config->get('ARCHIVE_DB') . $dbc->sep() . "weeksLastQuarter AS w
                         ON l.weekLastQuarterID=w.weekLastQuarterID 
                 WHERE p.upc IN ($in)
+                    AND p.store_id=?
                 ORDER BY l.weekLastQuarterID, p.upc";
         $prep = $dbc->prepare($query);
+        $args[] = $store;
         $result = $dbc->execute($prep, $args);
 
         $upc_data = array();
