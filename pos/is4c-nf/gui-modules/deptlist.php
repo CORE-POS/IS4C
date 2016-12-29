@@ -153,6 +153,7 @@ HTML;
         ob_start();
         $phpunit->assertEquals(false, $this->handleInput(''));
         $phpunit->assertEquals(false, $this->handleInput('CL'));
+        $this->form->in = '';
         $phpunit->assertEquals(false, $this->handleInput('7'));
         $phpunit->assertEquals(true, $this->handleInput('z'));
         ob_get_clean();
