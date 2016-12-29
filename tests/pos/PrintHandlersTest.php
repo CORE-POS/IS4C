@@ -83,7 +83,6 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
     {
         $html = new COREPOS\pos\lib\PrintHandlers\HtmlEmailPrintHandler();
         $this->assertEquals('<div style="text-align:center">foo</div>', $html->centerString('foo'));
-        $this->assertEquals('<div style="text-align:center"><strong>foo</strong></div>', $html->centerString('foo', true));
         $this->assertEquals('<!-- foo -->', $html->addRenderingSpacer('foo'));
     }
 
