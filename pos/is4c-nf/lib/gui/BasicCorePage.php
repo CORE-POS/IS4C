@@ -28,7 +28,7 @@ use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
 use \CoreLocal;
 
-use COREPOs\common\ui\CorePage;
+use COREPOS\common\ui\CorePage;
 
 /**
 
