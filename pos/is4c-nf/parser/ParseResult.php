@@ -90,6 +90,8 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
         }
 
         $this->value[$offset] = $value;
+
+        return $this;
     }
 
     public function offsetUnset($offset)
