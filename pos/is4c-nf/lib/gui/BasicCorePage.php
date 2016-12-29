@@ -28,6 +28,8 @@ use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
 use \CoreLocal;
 
+use COREPOs\common\ui\CorePage;
+
 /**
 
  @class BasicCorePage
@@ -41,7 +43,7 @@ use \CoreLocal;
 
  */
 
-class BasicCorePage extends \COREPOS\common\ui\CorePage
+class BasicCorePage extends CorePage
 {
     /**
       Relative URL for POS root directory
@@ -58,6 +60,11 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
     protected $session;
 
     /**
+      A COREPOS\common\mvc\ValueContainer
+    */
+    protected $form;
+
+    /**
       Constructor
 
       The constructor automatically runs
@@ -65,9 +72,10 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
       (if applicable). Creating a new instance
       will output the entire page contents
     */
-    public function __construct($session)
+    public function __construct($session, $form)
     {
         $this->session = $session;
+        $this->form = $form;
         $this->page_url = MiscLib::base_url();
         if (file_exists(dirname(__FILE__) . '/../../graphics/is4c.gif')) {
             $this->body_class = 'mainBGimage';

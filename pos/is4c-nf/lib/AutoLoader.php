@@ -26,6 +26,8 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\plugins\Plugin;
 use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
+use COREPOS\common\mvc\FormValueContainer;
+
 if (!defined('CONF_LOADED')) {
     include_once(dirname(__FILE__).'/LocalStorage/conf.php');
 }
@@ -286,10 +288,11 @@ class AutoLoader
         $stack = debug_backtrace();
         if (count($stack) == 1) {
             $session = new WrappedStorage();
+            $form = new FormValueContainer();
             $page = basename($_SERVER['PHP_SELF']);
             $class = substr($page,0,strlen($page)-4);
             if (CoreLocal::get('CashierNo') !== '' && $class != 'index' && class_exists($class)) {
-                $page = new $class($session);
+                $page = new $class($session, $form);
             } elseif ($redirect) {
                 $url = MiscLib::baseURL();
                 header('Location: ' . $url . 'login.php');
