@@ -49,7 +49,7 @@ class DefaultReceiptThanks
             $thanks .= _(' - owner ') . trim(CoreLocal::get('memberID'));
         }
         $ret  = $this->print_handler->TextStyle(true,false,true);
-        $ret .= $this->print_handler->centerString($thanks, true);
+        $ret .= $this->print_handler->centerString($thanks);
         $ret .= $this->print_handler->TextStyle(true);
         $ret .= "\n\n";
 

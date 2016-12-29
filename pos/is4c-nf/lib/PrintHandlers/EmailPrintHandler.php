@@ -31,7 +31,8 @@ class EmailPrintHandler extends PrintHandler {
         return "";
     }
     
-    function centerString($text,$big=false){
+    function centerString($text)
+    {
         $width = 60;
 
         $blank = str_repeat(" ", $width);

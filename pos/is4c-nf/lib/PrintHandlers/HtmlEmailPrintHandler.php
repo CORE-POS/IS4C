@@ -16,12 +16,8 @@ use \PHPMailer;
 
 class HtmlEmailPrintHandler extends EmailPrintHandler 
 {
-    public function centerString($text, $big=false)
+    public function centerString($text)
     {
-        if ($big) {
-            $text = '<strong>' . $text . '</strong>';
-        }
-
         return '<div style="text-align:center">' . $text . '</div>';
     }
     

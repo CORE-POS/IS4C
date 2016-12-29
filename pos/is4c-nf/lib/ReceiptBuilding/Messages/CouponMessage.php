@@ -52,7 +52,7 @@ class CouponMessage extends ReceiptMessage
         return 
             str_repeat('.', 55) . "\n" .
             $this->print_handler->TextStyle(true,false,true) .
-            $this->print_handler->centerString('SAVE $2.00', true) .
+            $this->print_handler->centerString('SAVE $2.00') .
             $this->print_handler->TextStyle(true) .
             "\n\n" .
             $this->print_handler->BarcodeHeight(81) .

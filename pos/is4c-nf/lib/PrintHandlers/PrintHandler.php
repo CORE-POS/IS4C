@@ -84,9 +84,9 @@ class PrintHandler {
      Replaces old center(), centerString(),
      and centerBig() functions. 
     */
-    function centerString($text,$big=false)
+    function centerString($text)
     {
-        $width = ($big) ? 59 : 59;
+        $width = 59;
 
         $blank = str_repeat(" ", $width);
         $text = trim($text);

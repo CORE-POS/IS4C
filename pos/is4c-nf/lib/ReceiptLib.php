@@ -188,7 +188,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
             /** put first header line in larger font **/
             if ($i == 1) {
                 $receipt .= self::$PRINT_OBJ->TextStyle(true, false, true);
-                $receipt .= self::$PRINT_OBJ->centerString(CoreLocal::get("receiptHeader$i"), true);
+                $receipt .= self::$PRINT_OBJ->centerString(CoreLocal::get("receiptHeader$i"));
                 $receipt .= self::$PRINT_OBJ->TextStyle(true);
             } else {
                 $receipt .= self::$PRINT_OBJ->centerString(CoreLocal::get("receiptHeader$i"), false);
@@ -572,7 +572,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
 
         $line = $obj->format($record);
 
-        if ($obj->is_bold){
+        if ($obj->isBold()){
             $ret .= self::$PRINT_OBJ->TextStyle(True,True);
             $ret .= $line;
             $ret .= self::$PRINT_OBJ->TextStyle(True,False);
