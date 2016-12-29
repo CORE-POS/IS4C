@@ -48,7 +48,7 @@ class LaneLogger extends \COREPOS\common\Logger
         // if the logs directory is not writable, try
         // failing over to /tmp
         $dir = dirname(__FILE__) . '/../log/';
-        if ((file_exists($dir . $filename) && !is_writable($dir .  $filename)) || !is_writable($dir)) {
+        if ((file_exists($dir . $filename) && !is_writable($dir .  $filename)) && !is_writable($dir)) {
             $dir = sys_get_temp_dir() . '/';
         }
 
