@@ -24,7 +24,6 @@
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
-use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class deptlist extends NoInputCorePage 
@@ -46,7 +45,7 @@ class deptlist extends NoInputCorePage
             // built department input string and set it
             // to be the next POS entry
             // Redirect to main screen
-            $input = FormLib::get('in')."DP".$entered."0";
+            $input = $this->form->in . "DP" . $entered . "0";
             $qty = CoreLocal::get("quantity");
             if ($qty != "" & $qty != 1 & $qty != 0) {
                 $input = $qty."*".$input;
@@ -67,10 +66,11 @@ class deptlist extends NoInputCorePage
     */
     function preprocess()
     {
-        // a selection was made
-        if (isset($_REQUEST['search'])){
-            return $this->handleInput($_REQUEST['search']);
-        }
+        try {
+            // a selection was made
+            return $this->handleInput($this->form->input);
+        } catch (Exception $ex) {}
+
         return true;
     } // END preprocess() FUNCTION
 
@@ -91,52 +91,61 @@ class deptlist extends NoInputCorePage
     */
     function body_content()
     {
-        $input = FormLib::get('in');
+        $input = $this->form->tryGet('in');
         $dbc = Database::pDataConnect();
         $res = $dbc->query("SELECT dept_no,dept_name FROM departments ORDER BY dept_name");
-
-        echo "<div class=\"baseHeight\">"
-            ."<div class=\"listbox\">"
-            ."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
-            ." id=\"selectform\">"
-            ."<select name=\"search\" id=\"search\" "
-            .' style="min-height: 200px; min-width: 220px;" '
-            ."size=\"15\" onblur=\"\$('#search').focus();\">";
+        $action = filter_input(INPUT_SERVER, 'PHP_SELF');
 
         $selected = "selected";
+        $options = '';
         while ($row = $dbc->fetchRow($res)) {
-            echo "<option value='".$row["dept_no"]."' ".$selected.">";
+            $options .= "<option value='".$row["dept_no"]."' ".$selected.">";
             // &shy; prevents the cursor from moving out of
             // step with filter-as-you-type
-            echo '&shy; ' . $row['dept_name'];
-            echo '</option>';
+            $options .= '&shy; ' . $row['dept_name'];
+            $options .= '</option>';
             $selected = "";
         }
-        echo "</select>"
-            . '<div id="filter-div"></div>'
-            ."</div>";
-        if (CoreLocal::get('touchscreen')) {
-            echo '<div class="listbox listboxText">'
-                . DisplayLib::touchScreenScrollButtons()
-                . '</div>';
-        }
-        echo "<div class=\"listboxText coloredText centerOffset\">"
-            . _("use arrow keys to navigate")
-            . '<p><button type="submit" class="pos-button wide-button coloredArea">'
-            . _('OK') . ' <span class="smaller">' . _('[enter]') . '</span>
-                </button></p>'
-            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
-                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">'
-            . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
-                </button></p>'
-            ."</div><!-- /.listboxText coloredText .centerOffset -->"
-            .'<input type="hidden" name="in" value="' . $input . '" />'
-            ."</form>"
-            ."<div class=\"clear\"></div>";
-        echo "</div>";
+        $touch = CoreLocal::get('touchscreen') ? '<div class="listbox listboxText">' . DisplayLib::touchScreenScrollButtons() . '</div>' : '';
 
-        $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-div')\n");
-        $this->add_onload_command("\$('#search').focus();\n");
+        $text = array(
+            'arrows' => _("use arrow keys to navigate"),
+            'ok' => _('OK'),
+            'cancel' => _('Cancel'),
+            'enter' => _('[enter]'),
+            'clear' => _('[clear]'),
+        );
+
+        echo <<<HTML
+<div class="baseHeight">
+    <form name="selectform" method="post" action="{$action}" id="selectform">
+    <div class="listbox">
+            <select name="search" id="search"
+              style="min-height: 200px; min-width: 220px;"
+              size="15" onblur="$('#search').focus();">";
+                {$options}
+            </select>
+            <div id="filter-div"></div>
+    </div>
+    {$touch}
+    <div class="listboxText coloredText centerOffset">
+            {$text['arrows']}
+            <p><button type="submit" class="pos-button wide-button coloredArea">
+            {$text['ok']} <span class="smaller">{$text['enter']}</span>
+            </button></p>
+            <p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$('#search').append($('<option>').val(''));$('#search').val('');">
+            {$text['cancel']} <span class="smaller">{$text['clear']}</span>
+            </button></p>
+    </div><!-- /.listboxText coloredText .centerOffset -->
+    <input type="hidden" name="in" value="{$input}" />
+    </form>
+    <div class="clear"></div>
+</div>
+HTML;
+
+        $this->addOnloadCommand("selectSubmit('#search', '#selectform', '#filter-div')\n");
+        $this->addOnloadCommand("\$('#search').focus();\n");
     } // END body_content() FUNCTION
 
     public function unitTest($phpunit)

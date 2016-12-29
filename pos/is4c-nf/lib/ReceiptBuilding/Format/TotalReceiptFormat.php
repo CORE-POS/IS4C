@@ -40,7 +40,7 @@ class TotalReceiptFormat extends DefaultReceiptFormat
     {
         switch($row['upc']) {
             case 'TOTAL':
-                $this->is_bold = true;
+                $this->bold = true;
                 return $this->align($row['upc'],$row['total']);    
                 break;
             case 'SUBTOTAL':

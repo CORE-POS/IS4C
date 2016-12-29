@@ -28,15 +28,14 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class UnpaidAR extends BasicCorePage 
 {
-
     function preprocess()
     {
-            $AR_department = '990';
-            if (CoreLocal::get("store") == 'WEFC_Toronto') {
-                $AR_department = '1005';
-            }
-        if (isset($_REQUEST['reginput'])){
-            $dec = $_REQUEST['reginput'];
+        $ArDepartment = '990';
+        if (CoreLocal::get("store") == 'WEFC_Toronto') {
+            $ArDepartment = '1005';
+        }
+        try {
+            $dec = $this->form->reginput;
             $amt = CoreLocal::get("old_ar_balance");
 
             if (strtoupper($dec) == "CL"){
@@ -49,7 +48,7 @@ class UnpaidAR extends BasicCorePage
             elseif ($dec == "" || strtoupper($dec) == "BQ"){
                 if (strtoupper($dec)=="BQ")
                     $amt = CoreLocal::get("balance");
-                $inp = ($amt*100)."DP{$AR_department}0";
+                $inp = ($amt*100)."DP{$ArDepartment}0";
                 $memtype = CoreLocal::get("memType");
                 $type = CoreLocal::get("Type");
                 if ($memtype == 1 || $memtype == 3 || $type == "INACT"){
@@ -63,7 +62,8 @@ class UnpaidAR extends BasicCorePage
                     . '&repeat=1');
                 return false;
             }
-        }
+        } catch (Exception $ex) {}
+
         return true;
     }
 
@@ -84,8 +84,7 @@ class UnpaidAR extends BasicCorePage
             echo DisplayLib::boxMsg(sprintf(_("Old A/R Balance: $%.2f<br />
                 [Enter] to pay balance now<br />
                 [Clear] to leave balance"),$amt));
-        }
-        else {
+        } else {
             echo DisplayLib::boxMsg(sprintf(_("Old A/R Balance: $%.2f<br />
                 Total A/R Balance: $%.2f<br />
                 [Enter] to pay old balance<br />

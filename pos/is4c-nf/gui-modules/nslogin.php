@@ -24,7 +24,6 @@
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -38,9 +37,9 @@ class nslogin extends NoInputCorePage
 
     private function getPassword()
     {
-        $ret = FormLib::get('reginput');
+        $ret = $this->form->tryGet('reginput');
         if ($ret === '') {
-            $ret = FormLib::get('userPassword');
+            $ret = $this->form->tryGet('userPassword');
         }
 
         return $ret;
@@ -52,7 +51,7 @@ class nslogin extends NoInputCorePage
         $this->heading = _("enter password");
         $this->msg = _("confirm no sales");
 
-        if (FormLib::get('reginput', false) !== false || FormLib::get('userPassword', false) !== false) {
+        if ($this->form->tryGet('reginput', false) !== false || $this->form->tryGet('userPassword', false) !== false) {
 
             $passwd = $this->getPassword();
 
@@ -111,7 +110,7 @@ class nslogin extends NoInputCorePage
         </div>
         </div>
         <?php
-        $this->add_onload_command("\$('#userPassword').focus();\n");
+        $this->addOnloadCommand("\$('#userPassword').focus();\n");
     } // END true_body() FUNCTION
 
 }

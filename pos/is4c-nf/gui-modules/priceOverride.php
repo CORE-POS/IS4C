@@ -28,76 +28,78 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputCorePage {
 
-    private $item_description = '';
+    private $itemDescription = '';
     private $price = '';
     private $scale = 0;
 
     function preprocess()
     {
-        $line_id = CoreLocal::get("currentid");
+        $lineID = CoreLocal::get("currentid");
         $dbc = Database::tDataConnect();
         
         $query = "SELECT description,unitPrice,department,scale FROM localtemptrans
             WHERE trans_type IN ('I','D') AND upc <> '0'
-            AND trans_id=".((int)$line_id);
+            AND trans_id=".((int)$lineID);
         $res = $dbc->query($query);
-        if ($dbc->num_rows($res)==0){
+        if ($dbc->numRows($res)==0){
             // current record cannot be repriced
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         }
-        $row = $dbc->fetch_row($res);
-        $this->item_description = $row['description'];
+        $row = $dbc->fetchRow($res);
+        $this->itemDescription = $row['description'];
         $this->price = sprintf('$%.2f',$row['unitPrice']);
         $this->scale = $row['scale'];
 
-        if (isset($_REQUEST['reginput'])){
-            $input = strtoupper($_REQUEST['reginput']);
+        try {
+            $input = strtoupper($this->form->input);
 
             if ($input == "CL"){
                 if ($this->price == "$0.00"){
-                    $this->markZeroRecord($line_id);
+                    $this->markZeroRecord($lineID);
                 }
                 // override canceled; go home
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif (is_numeric($input) && $input != 0){
-                $this->rePrice($input, $line_id, $this->isBottleReturn($row['department']));
+                $this->rePrice($input, $lineID, $this->isBottleReturn($row['department']));
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
             }
-        }
+        } catch (Exception $ex) {}
 
         return True;
     }
 
-    private function markZeroRecord($line_id)
+    private function markZeroRecord($lineID)
     {
         $dbc = Database::tDataConnect();
         $query = sprintf("UPDATE localtemptrans SET trans_type='L',
                     trans_subtype='OG',charflag='PO',total=0
-                    WHERE trans_id=".(int)$line_id);
+                    WHERE trans_id=".(int)$lineID);
         $res = $dbc->query($query);
+
+        return $res === false ? false : true;
     }
 
     private function isBottleReturn($dept)
     {
         if ($dept == CoreLocal::get("BottleReturnDept")) {
             return true;
-        } else {
-            $deptmods = CoreLocal::get('SpecialDeptMap');
-            if (is_array($deptmods) && isset($deptmods[$row['department']])){
-                foreach($deptmods[$row['department']] as $mod){
-                    if ($mod === 'BottleReturnDept') {
-                        return true;
-                    }
+        }
+
+        $deptmods = CoreLocal::get('SpecialDeptMap');
+        if (is_array($deptmods) && isset($deptmods[$row['department']])){
+            foreach($deptmods[$row['department']] as $mod){
+                if ($mod === 'BottleReturnDept') {
+                    return true;
                 }
             }
-            return false;
         }
+        return false;
     }
 
-    private function rePrice($input, $line_id, $negate)
+    private function rePrice($input, $lineID, $negate)
     {
         $dbc = Database::tDataConnect();
         $cents = 0;
@@ -116,8 +118,10 @@ class PriceOverride extends NoInputCorePage {
             
         $query = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
             total = quantity*%.2f, charflag='PO'
-            WHERE trans_id=%d",$ttl,$ttl,$ttl,$line_id);
+            WHERE trans_id=%d",$ttl,$ttl,$ttl,$lineID);
         $res = $dbc->query($query);    
+
+        return $res === false ? false : true;
     }
     
     function body_content() 
@@ -130,7 +134,7 @@ class PriceOverride extends NoInputCorePage {
             id="overrideform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
         </form>
-        <span><?php echo $this->item_description; ?> - <?php echo $this->price; ?>
+        <span><?php echo $this->itemDescription; ?> - <?php echo $this->price; ?>
             <?php echo ($this->scale ? ' /lb' : 'each'); ?></span>
         <p>
         <span class="smaller"><?php echo _('[clear] to cancel'); ?></span>
