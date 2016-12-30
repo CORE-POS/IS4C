@@ -371,7 +371,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testSteering()
     {
         $session = new WrappedStorage();
-        $obj = new COREPOS\pos\parser\parse\Steering($sessin);
+        $obj = new COREPOS\pos\parser\parse\Steering($session);
 
         CoreLocal::set('LastID', 1);
         $obj->check('CAB');
