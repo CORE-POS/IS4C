@@ -66,7 +66,7 @@ class login2 extends BasicCorePage
                 UdpComm::udpSend("termReset");
                 $sdObj = MiscLib::scaleObject();
                 if (is_object($sdObj)) {
-                    $sdObj->ReadReset();
+                    $sdObj->readReset();
                 }
 
                 $drawer = $this->getDrawer();

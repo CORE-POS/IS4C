@@ -159,7 +159,7 @@ static public function goodBeep()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("goodBeep");
+        $sdh->writeToScale("goodBeep");
     }
 }
 
@@ -170,7 +170,7 @@ static public function rePoll()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("rePoll");
+        $sdh->writeToScale("rePoll");
     }
 }
 
@@ -181,7 +181,7 @@ static public function errorBeep()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("errorBeep");
+        $sdh->writeToScale("errorBeep");
     }
 }
 
@@ -192,7 +192,7 @@ static public function twoPairs()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("twoPairs");
+        $sdh->writeToScale("twoPairs");
     }
 }
 

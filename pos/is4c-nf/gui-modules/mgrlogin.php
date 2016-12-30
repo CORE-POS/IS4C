@@ -98,10 +98,10 @@ class mgrlogin extends NoInputCorePage
         }
 
         $priv = sprintf("%d",$this->session->get("SecurityCancel"));
-        $ok = false;
-        $ok = ($priv == 25) ? Authenticate::checkPassword($password) : Authenticate::checkPermission($password, $priv);
+        $chk = false;
+        $chk = ($priv == 25) ? Authenticate::checkPassword($password) : Authenticate::checkPermission($password, $priv);
 
-        if ($ok) {
+        if ($chk) {
             $this->cancelorder();
             $ret['cancelOrder'] = true;
             $ret['trans_num'] = ReceiptLib::receiptNumber();

@@ -51,14 +51,14 @@ class CouponMessage extends ReceiptMessage
 
         return 
             str_repeat('.', 55) . "\n" .
-            $this->print_handler->TextStyle(true,false,true) .
-            $this->print_handler->centerString('SAVE $2.00') .
-            $this->print_handler->TextStyle(true) .
+            $this->printHandler->TextStyle(true,false,true) .
+            $this->printHandler->centerString('SAVE $2.00') .
+            $this->printHandler->TextStyle(true) .
             "\n\n" .
-            $this->print_handler->BarcodeHeight(81) .
-            $this->print_handler->LeftMargin(100) .
-            $this->print_handler->BarcodeUPC($upc) . "\n" .
-            $this->print_handler->LeftMargin(0) .
+            $this->printHandler->BarcodeHeight(81) .
+            $this->printHandler->LeftMargin(100) .
+            $this->printHandler->BarcodeUPC($upc) . "\n" .
+            $this->printHandler->LeftMargin(0) .
             wordwrap($msg, 55);
     }
 }

@@ -41,18 +41,17 @@ var pos2 = (function($, errorLog) {
     */
     mod.getScaleWeight = function() {
         var current_input = $('#reginput').val().toUpperCase();
-        if (current_input.indexOf('SCAL') != -1) {
+        if (current_input.indexOf('SCAL') !== -1) {
             var wgt = $.trim($('#scaleBottom').html());
             wgt = parseFloat(wgt);
             if (isNaN(wgt) || wgt == 0.00) {
                 // weight not available
                 return true;
-            } else {
-                var new_input = current_input.replace('SCAL', wgt);
-                $('#reginput').val(new_input);
-                
-                return false;
             }
+            var new_input = current_input.replace('SCAL', wgt);
+            $('#reginput').val(new_input);
+            
+            return false;
         }
 
         return true;

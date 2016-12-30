@@ -147,22 +147,22 @@ class DiscountType
     public static function getObject($discounttype)
     {
         $discounttype = MiscLib::nullwrap($discounttype);
-        $DiscountObject = null;
-        $DTClasses = CoreLocal::get("DiscountTypeClasses");
+        $discountObject = null;
+        $dtClasses = CoreLocal::get("DiscountTypeClasses");
         if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
             $class = DiscountType::$MAP[$discounttype];
-            $DiscountObject = new $class();
-        } else if ($discounttype >= 64 && isset($DTClasses[($discounttype-64)])) {
-            $class = $DTClasses[($discounttype)-64];
-            $DiscountObject = new $class();
+            $discountObject = new $class();
+        } elseif ($discounttype >= 64 && isset($dtClasses[($discounttype-64)])) {
+            $class = $dtClasses[($discounttype)-64];
+            $discountObject = new $class();
         } else {
             // If the requested discounttype isn't available,
             // fallback to normal pricing. Debatable whether
             // this should be a hard error.
-            $DiscountObject = new NormalPricing();
+            $discountObject = new NormalPricing();
         }
 
-        return $DiscountObject;
+        return $discountObject;
     }
 
 }

@@ -32,7 +32,7 @@ namespace COREPOS\pos\lib\ReceiptBuilding\Sort;
 class DefaultReceiptSort 
 {
 
-    private $BLANK_LINE = array(
+    private $BLANKLINE = array(
         'upc' => 'BLANKLINE',
         'description' => '',
         'trans_type' => '0',
@@ -69,16 +69,14 @@ class DefaultReceiptSort
             } elseif($row['trans_type'] == 'T' && $row['department'] == 0) {
                 $tenders[] = $row;
             } else {
+                $set = '_uncategorized';
                 if(isset($row['category']) && !empty($row['category'])) {
                     if (!isset($items[$row['category']])) {
                         $items[$row['category']] = array();
                     }
-                    //$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
-                    $items[$row['category']][] = $row;
-                } else {
-                    //$items['_uncategorized'] = $this->upc_merge($items['_uncategorized'],$row);
-                    $items['_uncategorized'][] = $row;
+                    $set = $row['category'];
                 }
+                $items[$set][] = $row;
             }
         }
 
@@ -86,7 +84,7 @@ class DefaultReceiptSort
     
         // first add uncategorized item records
         if (count($items['_uncategorized'] > 0)) {
-            usort($items['_uncategorized'],array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','record_compare'));
+            usort($items['_uncategorized'],array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','recordCompare'));
             foreach($items['_uncategorized'] as $row) {
                 $returnset[] = $row;
             }
@@ -100,7 +98,7 @@ class DefaultReceiptSort
             foreach($headers as $hrow) {
                 if (count($items[$hrow['description']]) > 0) {
                     $returnset[] = $hrow;
-                    usort($items[$hrow['description']],array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','record_compare'));
+                    usort($items[$hrow['description']],array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','recordCompare'));
                     foreach($items[$hrow['description']] as $irow) {
                         $returnset[] = $irow;
                     }
@@ -109,7 +107,7 @@ class DefaultReceiptSort
         }
 
         // blank line between items & totals
-        $returnset[] = $this->BLANK_LINE;
+        $returnset[] = $this->BLANKLINE;
 
         // then discount, subtotal, tax, total
         if ($discount !== false) {
@@ -126,11 +124,11 @@ class DefaultReceiptSort
         }
 
         // blank line between totals & tenders
-        $returnset[] = $this->BLANK_LINE;
+        $returnset[] = $this->BLANKLINE;
 
         // finally tenders
         if(count($tenders) > 0) {
-            usort($tenders, array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','record_compare'));
+            usort($tenders, array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','recordCompare'));
             foreach($tenders as $trow) {
                 $returnset[] = $trow;
             }
@@ -140,48 +138,13 @@ class DefaultReceiptSort
     }
 
     // utility function to sort records by the trans_id field
-    static public function record_compare(array $r1, array $r2){
-        if (!isset($r1['trans_id']) || !isset($r2['trans_id'])) {
+    static public function recordCompare(array $rec1, array $rec2){
+        if (!isset($rec1['trans_id']) || !isset($rec2['trans_id'])) {
             return 0;
-        } else if ($r1['trans_id'] == $r2['trans_id']) {
+        } elseif ($rec1['trans_id'] == $rec2['trans_id']) {
             return 0;
-        } else {
-            return $r1['trans_id'] < $r2['trans_id'] ? -1 : 1;
         }
-    }
-
-    /**
-      Combine item records when appropriate
-      @param $cur an array of records some of which
-        are keyed by UPC
-      @param $new a new record
-      @return $cur with the new record added
-    */
-    protected function upc_merge(array $cur, array $new) {
-        if ($new['trans_status'] != '' || $new['trans_type'] != 'I'
-           || $new['scale'] != 0 || $new['matched'] != 0) {
-            /**
-              By-weight, refund, void, or group discount
-              items shouldn't be combined. They
-              get added with a simple numerical key
-            */
-            $cur[] = $new;
-        } else if (isset($cur[$new['upc']])) {
-            /**
-              Valid item to merge; add to the existing record
-            */
-            $cur[$new['upc']]['ItemQtty'] += $new['ItemQtty'];
-            $cur[$new['upc']]['quantity'] += $new['quantity'];
-            $cur[$new['upc']]['total'] += $new['total'];
-        } else {
-            /**
-              Valid item to merge; add record with
-              UPC key.
-            */
-            $cur[$new['upc']] = $new;
-        }
-
-        return $cur;
+        return $rec1['trans_id'] < $rec2['trans_id'] ? -1 : 1;
     }
 }    
 

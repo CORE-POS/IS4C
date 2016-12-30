@@ -39,23 +39,22 @@ class EbtReceiptMessage extends ReceiptMessage
 
     public function message($val, $ref, $reprint=false)
     {
-        $date = ReceiptLib::build_time(time());
         list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
         $slip = '';
 
         // query database for receipt info 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         if ($reprint) {
-            $db = Database::mDataConnect();
+            $dbc = Database::mDataConnect();
         }
 
-        $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
+        $transType = $dbc->concat('p.cardType', "' '", 'p.transType', '');
 
         $query = "SELECT p.amount,
                     p.name,
                     p.PAN,
                     p.refNum,
-                    $trans_type AS ebtMode,
+                    $transType AS ebtMode,
                     p.xResultMessage,
                     p.xTransactionID,
                     p.xBalance,
@@ -70,9 +69,9 @@ class EbtReceiptMessage extends ReceiptMessage
                     AND p.cardType LIKE 'EBT%'
                   ORDER BY p.requestDatetime";
 
-        $result = $db->query($query);
+        $result = $dbc->query($query);
         $prevRefNum = false;
-        while ($row = $db->fetch_row($result)) {
+        while ($row = $dbc->fetchRow($result)) {
 
             // failover to mercury's backup server can
             // result in duplicate refnums. this is
@@ -96,12 +95,12 @@ class EbtReceiptMessage extends ReceiptMessage
             $col1[] = "Authorization: " . $row['xResultMessage'];
             $col2[] = ReceiptLib::boldFont() . "Amount: " . $row['amount'] . ReceiptLib::normalFont();
             $balance = 'unknown';
-            $ebt_type = substr(strtoupper($row['ebtMode']), 0, 5);
-            if ($ebt_type == 'EBT F' || $ebt_type == 'EBTFO') {
+            $ebtType = substr(strtoupper($row['ebtMode']), 0, 5);
+            if ($ebtType == 'EBT F' || $ebtType == 'EBTFO') {
                 if (is_numeric(CoreLocal::get('EbtFsBalance'))) {
                     $balance = sprintf('%.2f', CoreLocal::get('EbtFsBalance'));
                 }
-            } else if ($ebt_type == 'EBT C' || $ebt_type == 'EBTCA') {
+            } elseif ($ebtType == 'EBT C' || $ebtType == 'EBTCA') {
                 if (is_numeric(CoreLocal::get('EbtCaBalance'))) {
                     $balance = sprintf('%.2f', CoreLocal::get('EbtCaBalance'));
                 }

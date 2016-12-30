@@ -30,11 +30,11 @@ use COREPOS\pos\lib\Database;
 */
 class DefaultReceiptSavings 
 {
-    protected $print_handler;
+    protected $printHandler;
 
-    public function setPrintHandler($ph)
+    public function setPrintHandler($phObj)
     {
-        $this->print_handler = $ph;
+        $this->printHandler = $phObj;
     }
 
     /**
@@ -44,15 +44,15 @@ class DefaultReceiptSavings
     */
     public function savingsMessage($trans_num)
     {
-        if (preg_match('/^(\d+)\D+(\d+)\D+(\d+)$/', $trans_num, $matches)) {
-            $emp = $matches[1];
-            $reg = $matches[2];
-            $trans = $matches[3];
-        } else {
+        $valid = preg_match('/^(\d+)\D+(\d+)\D+(\d+)$/', $trans_num, $matches);
+        if (!$valid) {
             return '';
         }
+        $emp = $matches[1];
+        $reg = $matches[2];
+        $trans = $matches[3];
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         $query = "
             SELECT
                 SUM(CASE WHEN discounttype IN (1) THEN discount ELSE 0 END) AS sales,
@@ -65,11 +65,11 @@ class DefaultReceiptSavings
             WHERE emp_no=" . ((int)$emp)
                 . " AND register_no=" . ((int)$reg)
                 . " AND trans_no=" . ((int)$trans);
-        $result = $db->query($query);
-        if (!$result || $db->num_rows($result) == 0) {
+        $result = $dbc->query($query);
+        if (!$result || $dbc->numRows($result) == 0) {
             return '';
         }
-        $row = $db->fetch_row($result);
+        $row = $dbc->fetchRow($result);
 
         if ($row['sales'] + $row['memSales'] + $row['transDiscount'] <= 0) {
             return '';

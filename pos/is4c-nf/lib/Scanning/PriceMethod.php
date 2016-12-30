@@ -90,20 +90,20 @@ class PriceMethod
     */
     public static function getObject($pricemethod)
     {
-        $PMClasses = CoreLocal::get("PriceMethodClasses");
-        $PriceMethodObject = null;
+        $pmClasses = CoreLocal::get("PriceMethodClasses");
+        $priceMethodObject = null;
 
         if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
             $class = PriceMethod::$MAP[$pricemethod];
-            $PriceMethodObject = new $class();
-        } else if ($pricemethod >= 100 && isset($PMClasses[($pricemethod-100)])) {
-            $class = $PMClasses[($pricemethod-100)];
-            $PriceMethodObject = new $class();
+            $priceMethodObject = new $class();
+        } else if ($pricemethod >= 100 && isset($pmClasses[($pricemethod-100)])) {
+            $class = $pmClasses[($pricemethod-100)];
+            $priceMethodObject = new $class();
         } else {
-            $PriceMethodObject = new BasicPM();
+            $priceMethodObject = new BasicPM();
         }
 
-        return $PriceMethodObject;
+        return $priceMethodObject;
     }
 }
 

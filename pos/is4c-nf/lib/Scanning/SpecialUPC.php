@@ -67,11 +67,6 @@ class SpecialUPC
         return false;
     }
 
-    public function is_special($upc)
-    {
-        return $this->isSpecial($upc);
-    }
-
     /**
       Process the UPC
       @param $upc The UPC

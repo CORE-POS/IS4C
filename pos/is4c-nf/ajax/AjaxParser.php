@@ -43,10 +43,10 @@ class AjaxParser extends AjaxCallback
 {
     protected $encoding = 'json';
 
-    private $draw_page_parts = true;
-    public function enablePageDrawing($p)
+    private $drawPageParts = true;
+    public function enablePageDrawing($page)
     {
-        $this->draw_page_parts = $p;
+        $this->drawPageParts = $page;
     }
 
     private function runPreParsers($entered)
@@ -161,11 +161,11 @@ class AjaxParser extends AjaxCallback
     // @hintable
     private function readInput($input)
     {
-        $in_field = 'input';
+        $inField = 'input';
         if (isset($input['field'])) {
-            $in_field = $input['field'];
+            $inField = $input['field'];
         }
-        $entered = strtoupper(trim(FormLib::get($in_field)));
+        $entered = strtoupper(trim(FormLib::get($inField)));
         if (substr($entered, -2) == "CL") $entered = "CL";
 
         if ($entered == "RI") $entered = CoreLocal::get("strEntered");
@@ -205,7 +205,7 @@ class AjaxParser extends AjaxCallback
                 $json = $this->runPostParsers($result);
 
                 if (isset($json['udpmsg']) && $json['udpmsg'] !== False && is_object($sdObj)){
-                    $sdObj->WriteToScale($json['udpmsg']);
+                    $sdObj->writeToScale($json['udpmsg']);
                 }
             } else {
                 $arr = array(
@@ -214,22 +214,22 @@ class AjaxParser extends AjaxCallback
                     'output'=>DisplayLib::inputUnknown());
                 $json = $arr;
                 if (is_object($sdObj))
-                    $sdObj->WriteToScale('errorBeep');
+                    $sdObj->writeToScale('errorBeep');
             }
         }
 
         CoreLocal::set("msgrepeat",0);
 
-        if (!empty($json) && $this->draw_page_parts) {
+        if (!empty($json) && $this->drawPageParts) {
             if (isset($json['redraw_footer']) && $json['redraw_footer'] !== false){
                 $json['redraw_footer'] = DisplayLib::printfooter();
             }
             if (isset($json['scale']) && $json['scale'] !== False){
                 $display = DisplayLib::scaledisplaymsg($json['scale']);
                 $json['scale'] = is_array($display) ? $display['display'] : $display;
-                $term_display = DisplayLib::drawNotifications();
-                if (!empty($term_display)) {
-                    $json['term'] = $term_display;
+                $termDisplay = DisplayLib::drawNotifications();
+                if (!empty($termDisplay)) {
+                    $json['term'] = $termDisplay;
                 }
             }
         }

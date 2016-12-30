@@ -118,7 +118,7 @@ class SplitABGroupPM extends PriceMethod {
         }
         if ($quantity != (int)$quantity && $mixMatch < 0){
             $discountIsScale = true;
-            $scaleDiscMax = $quantity * $unitPrice;
+            $scaleDiscMax = $quantity * $pricing['unitPrice'];
         }
 
         // items that have already been used in an AB set
@@ -139,16 +139,15 @@ class SplitABGroupPM extends PriceMethod {
         $discs -= $matches;
 
         // where does the currently scanned item go?
-        if ($mixMatch > 0){
+        if ($mixMatch > 0) {
             $quals = ($quals >0)?$quals+floor($quantity):floor($quantity);
             $dept1 = $department;
-        }
-        else {
+        } else {
             // again, scaled items count once per line
-            if ($quantity != (int)$quantity)
+            $discs = ($discs >0)?$discs+$quantity:$quantity;
+            if ($quantity != (int)$quantity) {
                 $discs = ($discs >0)?$discs+1:1;
-            else
-                $discs = ($discs >0)?$discs+$quantity:$quantity;
+            }
             $dept2 = $department;
         }
 

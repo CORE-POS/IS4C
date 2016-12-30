@@ -58,7 +58,7 @@ class login3 extends BasicCorePage
 
             $passwd = $this->getPassword();
 
-            if (Authenticate::checkPassword($passwd,4)){
+            if (Authenticate::checkPassword($passwd)){
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
             } elseif ($this->session->get('LastID') == 0 && Authenticate::checkPermission($passwd, 25)) {

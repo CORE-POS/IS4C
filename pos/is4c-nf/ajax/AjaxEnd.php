@@ -59,9 +59,7 @@ class AjaxEnd extends AjaxCallback
         list($doEmail, $customerEmail) = $this->sendEmail();
 
         $receiptContent = array();
-        if ($this->isDisabled($receiptType) || $receiptType === 'none') {
-            $receiptContent = array();
-        } else {
+        if (!$this->isDisabled($receiptType) && $receiptType !== 'none') {
             if ($receiptType != "none") {
                 $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
             }
@@ -88,18 +86,18 @@ class AjaxEnd extends AjaxCallback
             Drawers::kick();
         }
 
-        $PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
-        $EMAIL_OBJ = $this->emailObj();
+        $PRINT = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+        $EMAIL = $this->emailObj();
         foreach ($receiptContent as $receipt) {
             if (is_array($receipt)) {
                 if (!empty($receipt['print'])) {
-                    $PRINT_OBJ->writeLine($receipt['print']);
+                    $PRINT->writeLine($receipt['print']);
                 }
                 if (!empty($receipt['any'])) {
-                    $EMAIL_OBJ->writeLine($receipt['any'],$customerEmail);
+                    $EMAIL->writeLine($receipt['any'],$customerEmail);
                 }
             } elseif(!empty($receipt)) {
-                $PRINT_OBJ->writeLine($receipt);
+                $PRINT->writeLine($receipt);
             }
         }
 
@@ -118,17 +116,17 @@ class AjaxEnd extends AjaxCallback
             return true;
         } elseif ($receiptType == 'ddd' && CoreLocal::get('ShrinkReceipt') == 0 && CoreLocal::get('ShrinkReceipt') !== '') {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     private function emailObj()
     {
         // use same email class for sending the receipt
         // as was used to generate the receipt
-        $email_class = ReceiptLib::emailReceiptMod();
-        return new $email_class();
+        $emailClass = ReceiptLib::emailReceiptMod();
+        return new $emailClass();
     }
 
     private function sendEmail()
@@ -171,9 +169,9 @@ class AjaxEnd extends AjaxCallback
             $receiptType == 'suspended' || $receiptType == 'none' ||
             $receiptType == 'ddd') {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     private function uploadAndReset($type) 

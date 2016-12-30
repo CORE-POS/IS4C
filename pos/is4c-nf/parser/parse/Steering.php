@@ -44,18 +44,12 @@ use COREPOS\pos\lib\Kickers\Kicker;
  */
 class Steering extends Parser 
 {
-    private $dest_input_page;
-    private $dest_main_page;
-    private $dest_scale;
     private $ret;
 
     function check($str)
     {
-        $my_url = MiscLib::baseURL();
+        $myUrl = MiscLib::baseURL();
         
-        $this->dest_input_page = "";
-        $this->dest_main_page = "";
-        $this->dest_scale = False;
         $this->ret = $this->default_json();
 
         // Argument to PV, either before or after.
@@ -83,12 +77,12 @@ class Steering extends Parser
                 if ($this->session->get("LastID") != "0") {
                     $this->ret['output'] = $in_progress_msg;
                 } else {
-                    $this->ret['main_frame'] = $my_url."gui-modules/cablist.php";
+                    $this->ret['main_frame'] = $myUrl."gui-modules/cablist.php";
                 }
                 return true;
 
             case "PV":
-                $this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
+                $this->ret['main_frame'] = $myUrl."gui-modules/productlist.php";
                 if (isset($pvsearch) && $pvsearch != '') {
                     $this->ret['main_frame'] .= "?search=" . $pvsearch;
                 }
@@ -105,7 +99,7 @@ class Steering extends Parser
                         DisplayLib::standardClearButton()
                     );
                 } elseif ($this->session->get("SecuritySR") > 20){
-                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-MemStatusAdminLogin";
+                    $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-MemStatusAdminLogin";
                 } else {
                     $this->ret['output'] = DisplayLib::boxMsg(
                         _("You must be an admin to do this."),
@@ -120,25 +114,25 @@ class Steering extends Parser
                 if ($this->session->get("LastID") != "0") {
                     $this->ret['output'] = $in_progress_msg;
                 } else {
-                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-UndoAdminLogin";
+                    $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-UndoAdminLogin";
                 }
                 return true;
 
             case 'SK':
             case "DDD":
-                $this->ret['main_frame'] = $my_url."gui-modules/DDDReason.php";
+                $this->ret['main_frame'] = $myUrl."gui-modules/DDDReason.php";
                 return true;
             case 'MG':
-                $this->ret['main_frame'] = $my_url."gui-modules/adminlist.php";
+                $this->ret['main_frame'] = $myUrl."gui-modules/adminlist.php";
                 if ($this->session->get("SecuritySR") > 20) {
-                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
+                    $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
                 }
                 return true;
             case 'RP':
                 if ($this->session->get("LastID") != "0") {
                     $tgl = $this->session->get('receiptToggle');
                     $this->session->set('receiptToggle', $tgl == 1 ? 0 : 1);
-                    $this->ret['main_frame'] = $my_url."gui-modules/pos2.php";
+                    $this->ret['main_frame'] = $myUrl."gui-modules/pos2.php";
                 } else {
                     $dbc = Database::tDataConnect();
                     $query = "select register_no, emp_no, trans_no, "
@@ -158,17 +152,17 @@ class Steering extends Parser
                             DisplayLib::standardClearButton()
                         );
                     } else {
-                        $this->ret['main_frame'] = $my_url."gui-modules/rplist.php";
+                        $this->ret['main_frame'] = $myUrl."gui-modules/rplist.php";
                     }
                 }                
                 return true;
 
             case 'ID':
-                $this->ret['main_frame'] = $my_url."gui-modules/memlist.php";
+                $this->ret['main_frame'] = $myUrl."gui-modules/memlist.php";
                 return true;
 
             case 'DDM':
-                $this->ret['main_frame'] = $my_url.'gui-modules/drawerPage.php';
+                $this->ret['main_frame'] = $myUrl.'gui-modules/drawerPage.php';
                 return true;
             case 'SS':
             case 'SO':
@@ -203,7 +197,7 @@ class Steering extends Parser
                         }
                         Drawers::free(Drawers::current());
                     }
-                    $this->ret['main_frame'] = $my_url."login.php";
+                    $this->ret['main_frame'] = $myUrl."login.php";
                 }
                 return true;
 
@@ -211,24 +205,24 @@ class Steering extends Parser
                 if ($this->session->get("LastID") != 0) {
                     $this->ret['output'] = $in_progress_msg;
                 } else {
-                    $this->ret['main_frame'] = $my_url."gui-modules/nslogin.php";
+                    $this->ret['main_frame'] = $myUrl."gui-modules/nslogin.php";
                 }
                 return true;
 
             case 'GD':
-                $this->ret['main_frame'] = $my_url."gui-modules/giftcardlist.php";
+                $this->ret['main_frame'] = $myUrl."gui-modules/giftcardlist.php";
                 return true;
 
             case 'IC':
-                $this->ret['main_frame'] = $my_url."gui-modules/HouseCouponList.php";
+                $this->ret['main_frame'] = $myUrl."gui-modules/HouseCouponList.php";
                 return true;
 
             case "CN":
-                $this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
+                $this->ret['main_frame'] = $myUrl."gui-modules/mgrlogin.php";
                 return true;
 
             case "PO":
-                $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-PriceOverrideAdminLogin";
+                $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-PriceOverrideAdminLogin";
                 return true;
         }
 

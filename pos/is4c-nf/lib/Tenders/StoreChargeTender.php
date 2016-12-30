@@ -40,10 +40,10 @@ class StoreChargeTender extends TenderModule
     */
     public function errorCheck()
     {
-        $charge_ok = \COREPOS\pos\lib\MemberLib::chargeOk();
+        $chargeOk = \COREPOS\pos\lib\MemberLib::chargeOk();
     
         $buttons = array('[clear]' => 'parseWrapper(\'CL\');');
-        if ($charge_ok == 0) {
+        if ($chargeOk == 0) {
             return DisplayLib::boxMsg(
                 _("member") . ' ' . CoreLocal::get("memberID") . '<br />' .
                 _("is not authorized") . '<br />' ._("to make charges"),

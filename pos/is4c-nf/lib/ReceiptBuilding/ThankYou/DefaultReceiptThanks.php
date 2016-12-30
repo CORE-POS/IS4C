@@ -30,11 +30,11 @@ use \CoreLocal;
 */
 class DefaultReceiptThanks 
 {
-    protected $print_handler;
+    protected $printHandler;
 
-    public function setPrintHandler($ph)
+    public function setPrintHandler($phObj)
     {
-        $this->print_handler = $ph;
+        $this->printHandler = $phObj;
     }
 
     /**
@@ -48,9 +48,9 @@ class DefaultReceiptThanks
         if (trim(CoreLocal::get("memberID")) != CoreLocal::get("defaultNonMem")) {
             $thanks .= _(' - owner ') . trim(CoreLocal::get('memberID'));
         }
-        $ret  = $this->print_handler->TextStyle(true,false,true);
-        $ret .= $this->print_handler->centerString($thanks);
-        $ret .= $this->print_handler->TextStyle(true);
+        $ret  = $this->printHandler->TextStyle(true,false,true);
+        $ret .= $this->printHandler->centerString($thanks);
+        $ret .= $this->printHandler->TextStyle(true);
         $ret .= "\n\n";
 
         return $ret;

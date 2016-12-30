@@ -35,13 +35,13 @@ class Franking
         $date = strftime("%m/%d/%y %I:%M %p", time());
         $ref = trim(\CoreLocal::get("memberID"))." ".trim(\CoreLocal::get("CashierNo"))." ".trim(\CoreLocal::get("laneno"))." ".trim(\CoreLocal::get("transno"));
         $tender = _("AMT: ").MiscLib::truncate2($amount)._("  CHANGE: ").MiscLib::truncate2(\CoreLocal::get("change"));
-        $output = self::center_check($ref)."\n"
-            .self::center_check($date)."\n"
-            .self::center_check(\CoreLocal::get("ckEndorse1"))."\n"
-            .self::center_check(\CoreLocal::get("ckEndorse2"))."\n"
-            .self::center_check(\CoreLocal::get("ckEndorse3"))."\n"
-            .self::center_check(\CoreLocal::get("ckEndorse4"))."\n"
-            .self::center_check($tender)."\n";
+        $output = self::centerCheck($ref)."\n"
+            .self::centerCheck($date)."\n"
+            .self::centerCheck(\CoreLocal::get("ckEndorse1"))."\n"
+            .self::centerCheck(\CoreLocal::get("ckEndorse2"))."\n"
+            .self::centerCheck(\CoreLocal::get("ckEndorse3"))."\n"
+            .self::centerCheck(\CoreLocal::get("ckEndorse4"))."\n"
+            .self::centerCheck($tender)."\n";
 
         self::endorse($output);
     }
@@ -49,15 +49,15 @@ class Franking
     static public function frankgiftcert($amount) 
     {
         $ref = trim(\CoreLocal::get("CashierNo"))."-".trim(\CoreLocal::get("laneno"))."-".trim(\CoreLocal::get("transno"));
-        $time_now = strftime("%m/%d/%y", time());                // apbw 3/10/05 "%D" didn't work - Franking patch
-        $next_year_stamp = mktime(0,0,0,date("m"), date("d"), date("Y")+1);
-        $next_year = strftime("%m/%d/%y", $next_year_stamp);        // apbw 3/10/05 "%D" didn't work - Franking patch
+        $timeNow = strftime("%m/%d/%y", time());                // apbw 3/10/05 "%D" didn't work - Franking patch
+        $nextYearStamp = mktime(0,0,0,date("m"), date("d"), date("Y")+1);
+        $nextYear = strftime("%m/%d/%y", $nextYearStamp);        // apbw 3/10/05 "%D" didn't work - Franking patch
         // lines 200-207 edited 03/24/05 apbw Wedge Printer Swap Patch
         $output = "";
         $output .= str_repeat("\n", 6);
         $output .= _("ref: ") .$ref. "\n";
-        $output .= str_repeat(" ", 5).$time_now;
-        $output .= str_repeat(" ", 12).$next_year;
+        $output .= str_repeat(" ", 5).$timeNow;
+        $output .= str_repeat(" ", 12).$nextYear;
         $output .= str_repeat("\n", 3);
         $output .= str_repeat(" ", 75);
         $output .= "$".MiscLib::truncate2($amount);
@@ -66,16 +66,16 @@ class Franking
 
     static public function frankstock($amount) 
     {
-        $time_now = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
+        $timeNow = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
         $ref = trim(\CoreLocal::get("CashierNo"))."-".trim(\CoreLocal::get("laneno"))."-".trim(\CoreLocal::get("transno"));
         $output  = "";
         $output .= str_repeat("\n", 40);    // 03/24/05 apbw Wedge Printer Swap Patch
         if (\CoreLocal::get("equityAmt")){
-            $output = _("Equity Payment ref: ").$ref."   ".$time_now; // WFC 
+            $output = _("Equity Payment ref: ").$ref."   ".$timeNow; // WFC 
             \CoreLocal::set("equityAmt","");
             \CoreLocal::set("LastEquityReference",$ref);
         } else {
-            $output .= _("Stock Payment $").$amount._(" ref: ").$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
+            $output .= _("Stock Payment $").$amount._(" ref: ").$ref."   ".$timeNow; // apbw 3/24/05 Wedge Printer Swap Patch
         }
 
         self::endorse($output);
@@ -84,11 +84,11 @@ class Franking
     static public function frankclassreg() 
     {
         $ref = trim(\CoreLocal::get("CashierNo"))."-".trim(\CoreLocal::get("laneno"))."-".trim(\CoreLocal::get("transno"));
-        $time_now = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
+        $timeNow = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
         $output  = "";        
         $output .= str_repeat("\n", 11);        // apbw 3/24/05 Wedge Printer Swap Patch
         $output .= str_repeat(" ", 5);        // apbw 3/24/05 Wedge Printer Swap Patch
-        $output .= _("Validated: ").$time_now._("  ref: ").$ref;     // apbw 3/24/05 Wedge Printer Swap Patch
+        $output .= _("Validated: ").$timeNow._("  ref: ").$ref;     // apbw 3/24/05 Wedge Printer Swap Patch
 
         self::endorse($output);    
     }
@@ -103,7 +103,7 @@ class Franking
             .chr(27).chr(33).chr(5));
     }
 
-    static private function center_check($text) 
+    static private function centerCheck($text) 
     {
         return ReceiptLib::center($text, 60);                // apbw 03/24/05 Wedge printer swap patch
     }

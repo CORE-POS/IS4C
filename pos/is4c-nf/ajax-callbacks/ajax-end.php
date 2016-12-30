@@ -101,7 +101,7 @@ if (strlen($receiptType) > 0) {
         UdpComm::udpSend("termReset");
         $sd = MiscLib::scaleObject();
         if (is_object($sd)) {
-            //$sd->ReadReset();
+            //$sd->readReset();
         }
         CoreLocal::set('ccTermState','swipe');
         uploadAndReset($receiptType);

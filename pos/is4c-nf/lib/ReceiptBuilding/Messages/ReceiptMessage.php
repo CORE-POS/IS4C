@@ -28,11 +28,11 @@ namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
 */
 class ReceiptMessage 
 {
-    protected $print_handler;
+    protected $printHandler;
 
-    public function setPrintHandler($ph)
+    public function setPrintHandler($phObj)
     {
-        $this->print_handler = $ph;
+        $this->printHandler = $phObj;
     }
 
     /**

@@ -39,7 +39,7 @@ class AjaxPollScale extends AjaxCallback
 
         if (is_object($sd)) {
             ob_start();
-            $sd->ReadFromScale();    
+            $sd->readFromScale();    
             return ob_get_clean();
         } else {
             return "{}"; // no driver => empty json

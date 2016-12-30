@@ -66,11 +66,11 @@ class QttyEnforcedGroupPM extends PriceMethod {
         /* calculate how many complete sets are
            present in this scan and how many remain
            after complete sets */
-        $new_sets = floor($quantity / $groupQty);
+        $newSets = floor($quantity / $groupQty);
         $remainder = $quantity % $groupQty;
 
         /* add complete sets */
-        if ($new_sets > 0){
+        if ($newSets > 0){
 
             $percentDiscount = 0;
             if (!$priceObj->isSale() && $pricing['unitPrice'] != $row['normal_price']){
@@ -83,9 +83,9 @@ class QttyEnforcedGroupPM extends PriceMethod {
             }
 
             /* discount for complete set */
-            $discount = $new_sets * (($pricing['unitPrice']*$groupQty) - $groupPrice);
-            $total = ($new_sets* $groupQty * $pricing['unitPrice']) - $discount;
-            $unit = $total / ($new_sets * $groupQty);
+            $discount = $newSets * (($pricing['unitPrice']*$groupQty) - $groupPrice);
+            $total = ($newSets* $groupQty * $pricing['unitPrice']) - $discount;
+            $unit = $total / ($newSets * $groupQty);
             $memDiscount = 0;
             if ($priceObj->isMemberSale() || $priceObj->isStaffSale()){
                 $memDiscount = $discount;
@@ -98,7 +98,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
                 'trans_type' => 'I',
                 'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
-                'quantity' => $new_sets * $groupQty,
+                'quantity' => $newSets * $groupQty,
                 'unitPrice' => MiscLib::truncate2($unit),
                 'total' => MiscLib::truncate2($total),
                 'regPrice' => $pricing['regPrice'],
@@ -109,13 +109,13 @@ class QttyEnforcedGroupPM extends PriceMethod {
                 'memDiscount' => $memDiscount,
                 'discountable' => $row['discount'],
                 'discounttype' => $row['discounttype'],
-                'ItemQtty' => $new_sets * $groupQty,
+                'ItemQtty' => $newSets * $groupQty,
                 'volDiscType' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
                 'volume' => ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
                 'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
                 'mixMatch' => $row['mixmatchcode'],
-                'matched' => $new_sets * $groupQty,
-                'cost' => (isset($row['cost']) ? $row['cost']*$new_sets*$groupQty : 0.00),
+                'matched' => $newSets * $groupQty,
+                'cost' => (isset($row['cost']) ? $row['cost']*$newSets*$groupQty : 0.00),
                 'numflag' => (isset($row['numflag']) ? $row['numflag'] : 0),
                 'charflag' => (isset($row['charflag']) ? $row['charflag'] : '')
             ));
@@ -125,7 +125,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
             }
             TransRecord::adddiscount($discount,$row['department']);
 
-            $quantity = $quantity - ($new_sets * $groupQty);
+            $quantity = $quantity - ($newSets * $groupQty);
             if ($quantity < 0) $quantity = 0;
         }
 
@@ -148,18 +148,18 @@ class QttyEnforcedGroupPM extends PriceMethod {
             }
             $dbt = Database::tDataConnect();
             $resultt = $dbt->query($queryt);
-            $num_rowst = $dbt->num_rows($resultt);
+            $numRowst = $dbt->num_rows($resultt);
 
-            $trans_qty = 0;
-            if ($num_rowst > 0){
+            $transQty = 0;
+            if ($numRowst > 0){
                 $rowt = $dbt->fetchRow($resultt);
-                $trans_qty = floor($rowt['mmqtty']);
+                $transQty = floor($rowt['mmqtty']);
             }
 
             /* remainder from current scan plus existing
                unmatched items complete a new set, so
                add one item with the group discount */
-            if ($trans_qty + $remainder >= $groupQty){
+            if ($transQty + $remainder >= $groupQty){
                 /* adjusted price for the "last" item in a set */
                 $priceAdjust = $groupPrice - (($groupQty-1) * $pricing['unitPrice']);
                 $discount = $pricing['unitPrice'] - $priceAdjust;
@@ -192,7 +192,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
                     'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
                     'mixMatch' => $row['mixmatchcode'],
                     'matched' => $groupQty,
-                    'cost' => (isset($row['cost']) ? $row['cost']*$new_sets*$groupQty : 0.00),
+                    'cost' => (isset($row['cost']) ? $row['cost']*$newSets*$groupQty : 0.00),
                     'numflag' => (isset($row['numflag']) ? $row['numflag'] : 0),
                     'charflag' => (isset($row['charflag']) ? $row['charflag'] : '')
                 ));

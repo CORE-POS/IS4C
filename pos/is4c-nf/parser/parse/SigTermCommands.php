@@ -100,9 +100,9 @@ class SigTermCommands extends Parser
                 SET param_value='direct'
                 WHERE param_key='PaycardsStateChange'
                     AND (lane_id=0 OR lane_id=?)";
-            $db = Database::pDataConnect();
-            $prep = $db->prepare($query);
-            $res = $db->execute($prep, array($this->session->get('laneno')));
+            $dbc = Database::pDataConnect();
+            $prep = $dbc->prepare($query);
+            $res = $dbc->execute($prep, array($this->session->get('laneno')));
 
             return true;
         } elseif ($str == 'TERMAUTODISABLE') {
@@ -112,9 +112,9 @@ class SigTermCommands extends Parser
                 SET param_value='coordinated'
                 WHERE param_key='PaycardsStateChange'
                     AND (lane_id=0 OR lane_id=?)";
-            $db = Database::pDataConnect();
-            $prep = $db->prepare($query);
-            $res = $db->execute($prep, array($this->session->get('laneno')));
+            $dbc = Database::pDataConnect();
+            $prep = $dbc->prepare($query);
+            $res = $dbc->execute($prep, array($this->session->get('laneno')));
 
             return true;
         } elseif (substr($str, 0, 7) == "TERM:DC") { 

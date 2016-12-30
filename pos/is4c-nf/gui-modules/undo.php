@@ -50,22 +50,22 @@ class undo extends NoInputCorePage
         $this->add_onload_command("\$('#reginput').focus();");
     }
 
-    private function checkInput($trans_num)
+    private function checkInput($transNum)
     {
         // clear/cancel undo attempt
-        if ($trans_num == "" || $trans_num == "CL"){
+        if ($transNum == "" || $transNum == "CL"){
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         }
 
         // error: malformed transaction number
-        if (!strpos($trans_num,"-")){
+        if (!strpos($transNum,"-")){
             $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
 
-        $temp = explode("-",$trans_num);
+        $temp = explode("-",$transNum);
         // error: malformed transaction number (2)
         if (count($temp) != 3){
             $this->boxColor="errorColoredArea";
@@ -73,25 +73,25 @@ class undo extends NoInputCorePage
             return true;
         }
 
-        $emp_no = $temp[0];
-        $register_no = $temp[1];
-        $old_trans_no = $temp[2];
+        $empNo = $temp[0];
+        $registerNo = $temp[1];
+        $oldTransNo = $temp[2];
         // error: malformed transaction number (3)
-        if (!is_numeric($emp_no) || !is_numeric($register_no)
-            || !is_numeric($old_trans_no)){
+        if (!is_numeric($empNo) || !is_numeric($registerNo)
+            || !is_numeric($oldTransNo)){
             $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
 
-        return array($emp_no, $register_no, $old_trans_no);
+        return array($empNo, $registerNo, $oldTransNo);
     }
 
-    private function getTransaction($emp_no, $register_no, $old_trans_no)
+    private function getTransaction($empNo, $registerNo, $oldTransNo)
     {
         $dbc = 0;
         $query = "";
-        if ($register_no == $this->session->get("laneno")){
+        if ($registerNo == $this->session->get("laneno")){
             // look up transation locally
             $dbc = Database::tDataConnect();
             $query = "select upc, description, trans_type, trans_subtype,
@@ -100,8 +100,8 @@ class undo extends NoInputCorePage
                 discountable, discounttype, voided, PercentDiscount,
                 ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
                 matched, card_no, trans_id
-                from localtranstoday where register_no = $register_no
-                and emp_no = $emp_no and trans_no = $old_trans_no
+                from localtranstoday where register_no = $registerNo
+                and emp_no = $empNo and trans_no = $oldTransNo
                 and datetime >= " . $dbc->curdate() . "
                 and trans_status <> 'X'
                 order by trans_id";
@@ -119,8 +119,8 @@ class undo extends NoInputCorePage
                 discountable, discounttype, voided, PercentDiscount,
                 ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
                 matched, card_no, trans_id
-                from dtransactions where register_no = $register_no
-                and emp_no = $emp_no and trans_no = $old_trans_no
+                from dtransactions where register_no = $registerNo
+                and emp_no = $empNo and trans_no = $oldTransNo
                 and datetime >= " . $dbc->curdate() . "
                 and trans_status <> 'X'
                 order by trans_id";
@@ -148,26 +148,25 @@ class undo extends NoInputCorePage
         $this->msg = _("Undo transaction");
 
         try {
-            $trans_num = strtoupper($this->form->reginput);
-            $chk = $this->checkInput($trans_num);
+            $transNum = strtoupper($this->form->reginput);
+            $chk = $this->checkInput($transNum);
             if (!is_array($chk)) {
                 return $chk;
             }
-            list($emp_no, $register_no, $old_trans_no) = $chk;
-            $trans = $this->getTransaction($emp_no, $register_no, $old_trans_no);
+            list($empNo, $registerNo, $oldTransNo) = $chk;
+            $trans = $this->getTransaction($empNo, $registerNo, $oldTransNo);
             if (!is_array($trans)) {
                 return $trans;
             }
             /* change the cashier to the original transaction's cashier */
-            $prevCashier = $this->session->get("CashierNo");
-            $this->session->set("CashierNo",$emp_no);
-            $this->session->set("transno",Database::gettransno($emp_no));    
+            $this->session->set("CashierNo",$empNo);
+            $this->session->set("transno",Database::gettransno($empNo));    
 
             /* rebuild the transaction, line by line, in reverse */
-            $card_no = 0;
-            TransRecord::addcomment("VOIDING TRANSACTION $trans_num");
+            $cardNo = 0;
+            TransRecord::addcomment("VOIDING TRANSACTION $transNum");
             foreach ($trans as $row) {
-                $card_no = $row["card_no"];
+                $cardNo = $row["card_no"];
 
                 if ($row["upc"] == "TAX"){
                     //TransRecord::addtax();
@@ -215,7 +214,7 @@ class undo extends NoInputCorePage
                 }
             }
 
-            COREPOS\pos\lib\MemberLib::setMember($card_no, 1);
+            COREPOS\pos\lib\MemberLib::setMember($cardNo, 1);
             $this->session->set("autoReprint",0);
 
             /* do NOT restore logged in cashier until this transaction is complete */

@@ -118,7 +118,7 @@ class SigCapturePage extends BasicCorePage
         return true;
     }
 
-    private function saveImage($format, $img_content)
+    private function saveImage($format, $imgContent)
     {
         $dbc = Database::tDataConnect();
         $capQ = 'INSERT INTO CapturedSignature
@@ -136,7 +136,7 @@ class SigCapturePage extends BasicCorePage
             $this->session->get('transno'),
             $this->session->get('LastID') + 1,
             $format,
-            $img_content,
+            $imgContent,
         );
         $capR = $dbc->execute($capP, $args);
 
@@ -204,10 +204,10 @@ if (function_exists('imagecreatefromstring')) {
     if ($image !== false) {
         ob_start();
         $success = imagepng($image);
-        $png_content = ob_get_clean();
+        $pngContent = ob_get_clean();
         if ($success) {
             $format = 'PNG';
-            $img_content = $png_content;
+            $imgContent = $pngContent;
         }
     }
 }
