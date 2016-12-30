@@ -23,7 +23,6 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\MiscLib;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class ToggleReceipt extends Parser {
@@ -36,11 +35,8 @@ class ToggleReceipt extends Parser {
 
     function parse($str)
     {
-        $rt = CoreLocal::get("receiptToggle");
-        if ($rt == 1)
-            CoreLocal::set("receiptToggle",0);
-        else
-            CoreLocal::set("receiptToggle",1);
+        $rt = $this->session->get("receiptToggle");
+        $this->session->set("receiptToggle", $rt == 1 ? 0 : 1);
         $ret = $this->default_json();
         // redirect to main screen so receipt icon reloads
         $ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';

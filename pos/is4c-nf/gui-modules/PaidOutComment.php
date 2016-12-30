@@ -30,8 +30,8 @@ class PaidOutComment extends NoInputCorePage
 
     function preprocess()
     {
-        if (isset($_REQUEST["selectlist"])){
-            $input = $_REQUEST["selectlist"];
+        try {
+            $input = $this->form->selectlist;
             $qstr = '';
             if ($input == "Other"){
                 return true;
@@ -42,8 +42,9 @@ class PaidOutComment extends NoInputCorePage
             }
             $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             return false;
-        }
-        return True;
+        } catch (Exception $ex) {}
+
+        return true;
     }
     
     function head_content()

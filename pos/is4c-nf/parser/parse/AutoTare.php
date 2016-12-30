@@ -25,7 +25,6 @@ namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class AutoTare extends Parser 
@@ -57,7 +56,7 @@ class AutoTare extends Parser
                 false,
                 DisplayLib::standardClearButton()
             );
-        } elseif ($left/100 > CoreLocal::get("weight") && CoreLocal::get("weight") > 0) {
+        } elseif ($left/100 > $this->session->get("weight") && $this->session->get("weight") > 0) {
             $ret['output'] = DisplayLib::boxMsg(
                 _("Tare cannot be")."<br />"._("greater than item weight"),
                 _('Excess Tare'),

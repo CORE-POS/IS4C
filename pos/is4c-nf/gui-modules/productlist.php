@@ -33,7 +33,7 @@ class productlist extends NoInputCorePage
 {
 
     private $boxSize;
-    private $search_results = array();
+    private $searchResults = array();
     private $quantity = 0;
 
     private function adjustUPC($entered)
@@ -59,13 +59,12 @@ class productlist extends NoInputCorePage
 
     private function getQuantity($entered)
     {
+        $qty = 0;
         if (strstr($entered, '*')) {
-            list($qty,$rest) = explode('*', $entered, 2);
+            list($qty,) = explode('*', $entered, 2);
             $qty = is_numeric($qty) ? $qty : 1;
-        } elseif (isset($_REQUEST['qty'])) {
-            $qty = is_numeric($_REQUEST['qty']) ? $_REQUEST['qty'] : 0;
-        } else {
-            $qty = 0;
+        } elseif ($this->tryGet('qty') !== '') {
+            $qty = is_numeric($this->form->qty) ? $this->form->qty : 0;
         }
 
         return array($qty, $entered);
@@ -74,16 +73,16 @@ class productlist extends NoInputCorePage
     function preprocess()
     {
         $entered = "";
-        if (isset($_REQUEST["search"])) {
-            $entered = strtoupper(trim($_REQUEST["search"]));
-        } else {
-            return True;
+        try {
+            $entered = strtoupper(trim($this->form->search));
+        } catch (Exception $ex) {
+            return true;
         }
 
         // canceled
         if (empty($entered)) {
             $this->change_page($this->page_url."gui-modules/pos2.php");
-            return False;
+            return false;
         }
 
         list($qty, $entered) = $this->getQuantity($entered);
@@ -104,7 +103,7 @@ class productlist extends NoInputCorePage
             $entered = $this->adjustUPC($entered);
         }
 
-        $this->search_results = $this->runSearch($entered);
+        $this->searchResults = $this->runSearch($entered);
 
         return true;
     } // END preprocess() FUNCTION
@@ -120,10 +119,10 @@ class productlist extends NoInputCorePage
          * Keep only the first instance of each upc.
          * Increase the depth of the list from module parameters.
          */
-        foreach($modules as $mod_name){
-            $mod = new $mod_name();
-            $mod_results = $mod->search($entered);
-            foreach($mod_results as $upc => $record){
+        foreach($modules as $modName){
+            $mod = new $modName();
+            $modResults = $mod->search($entered);
+            foreach($modResults as $upc => $record){
                 if (!isset($results[$upc]))
                     $results[$upc] = $record;
             }
@@ -140,7 +139,7 @@ class productlist extends NoInputCorePage
     function head_content()
     {
         // Javascript is only really needed if there are results
-        if (count($this->search_results) > 0) {
+        if (count($this->searchResults) > 0) {
             ?>
             <script type="text/javascript" src="../js/selectSubmit.js"></script>
             <?php
@@ -149,67 +148,62 @@ class productlist extends NoInputCorePage
 
     function body_content()
     {
-        if (count($this->search_results) == 0) {
-            $this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
-        } else {
-            $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-span')\n");
+        if (count($this->searchResults) == 0) {
+            return $this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
+        } 
 
-            // originally 390
-            if (CoreLocal::get('touchscreen')) {
-                $maxSelectWidth = 470;
-            } else {
-                $maxSelectWidth = 530;
-            }
-            echo "<div class=\"baseHeight\">"
-                ."<div class=\"listbox\">"
-                ."<form name=\"selectform\" method=\"post\" action=\""
-                . filter_input(INPUT_SERVER, 'PHP_SELF') . "\""
-                ." id=\"selectform\">"
-                ."<select name=\"search\" id=\"search\" "
-                .' style="min-height: 200px; min-width: 220px;'
-                ." max-width: {$maxSelectWidth}px;\""
-                ."size=".$this->boxSize." onblur=\"\$('#search').focus();\" "
-                ."ondblclick=\"document.forms['selectform'].submit();\">";
+        $this->addOnloadCommand("selectSubmit('#search', '#selectform', '#filter-span')\n");
 
-            $selected = "selected";
-            foreach ($this->search_results as $row){
-                $price = $row["normal_price"];    
+        // originally 390
+        $maxSelectWiddth = $this->session->get('touchscreen') ? 470 : 530;
+        echo "<div class=\"baseHeight\">"
+            ."<div class=\"listbox\">"
+            ."<form name=\"selectform\" method=\"post\" action=\""
+            . filter_input(INPUT_SERVER, 'PHP_SELF') . "\""
+            ." id=\"selectform\">"
+            ."<select name=\"search\" id=\"search\" "
+            .' style="min-height: 200px; min-width: 220px;'
+            ." max-width: {$maxSelectWidth}px;\""
+            ."size=".$this->boxSize." onblur=\"\$('#search').focus();\" "
+            ."ondblclick=\"document.forms['selectform'].submit();\">";
 
-                if ($row["scale"] != 0) $Scale = "S";
-                else $Scale = " ";
+        $selected = "selected";
+        foreach ($this->searchResults as $row){
+            $price = $row["normal_price"];    
 
-                $price = MiscLib::truncate2($price);
+            $scale = $row['scale'] != 0 ? 'S' : '';
 
-                echo "<option value='".$row["upc"]."' ".$selected.">".$row["upc"]." - ".$row["description"]
-                    ." -- [".$price."] ".$Scale."\n";
-                    
-                $selected = "";
-            }
-            echo "</select>"
-                . '<div id="filter-span"></div>'
-                ."</div>";
-            if (CoreLocal::get('touchscreen')) {
-                echo '<div class="listbox listboxText">'
-                    . DisplayLib::touchScreenScrollButtons()
-                    . '</div>';
-            }
-            echo "<div class=\"listboxText coloredText centerOffset\">"
-                . _("use arrow keys") . '<br />' . _("to navigate") . '<br />' . _("the list")
-                . '<p><button type="submit" class="pos-button wide-button coloredArea">'
-                . _('OK') . ' <span class="smaller">' . _('[enter]') . '</span>
-                    </button></p>'
-                . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
-                    onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">'
-                . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
-                    </button></p>'
-                ."</div><!-- /.listboxText coloredText .centerOffset -->"
-                .'<input type="hidden" name="qty" value="' . $this->quantity . '" />'
-                ."</form>"
-                ."<div class=\"clear\"></div>";
-            echo "</div>";
+            $price = MiscLib::truncate2($price);
+
+            echo "<option value='".$row["upc"]."' ".$selected.">".$row["upc"]." - ".$row["description"]
+                ." -- [".$price."] ".$scale."\n";
+                
+            $selected = "";
         }
+        echo "</select>"
+            . '<div id="filter-span"></div>'
+            ."</div>";
+        if ($this->session->get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons()
+                . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">"
+            . _("use arrow keys") . '<br />' . _("to navigate") . '<br />' . _("the list")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">'
+            . _('OK') . ' <span class="smaller">' . _('[enter]') . '</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">'
+            . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            .'<input type="hidden" name="qty" value="' . $this->quantity . '" />'
+            ."</form>"
+            ."<div class=\"clear\"></div>";
+        echo "</div>";
 
-        $this->add_onload_command("\$('#search').focus();\n");
+        $this->addOnloadCommand("\$('#search').focus();\n");
     } // END body_content() FUNCTION
 
     function productsearchbox($strmsg) {
@@ -241,7 +235,7 @@ class productlist extends NoInputCorePage
         $phpunit->assertInternalType('array', $res);
         $phpunit->assertNotEquals(0, count($res));
         $one = array_pop($res);
-        $this->search_results = array($one); // no need to loop whole list
+        $this->searchResults = array($one); // no need to loop whole list
         ob_start();
         $this->body_content();
         $phpunit->assertNotEquals(0, ob_get_clean());

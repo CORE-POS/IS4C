@@ -34,7 +34,7 @@ class undo extends NoInputCorePage
     {
         ?>
         <div class="baseHeight">
-        <div class="<?php echo $this->box_color; ?> centeredDisplay">
+        <div class="<?php echo $this->boxColor; ?> centeredDisplay">
         <span class="larger">
         <?php echo $this->msg ?>
         </span><br />
@@ -60,7 +60,7 @@ class undo extends NoInputCorePage
 
         // error: malformed transaction number
         if (!strpos($trans_num,"-")){
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
@@ -68,7 +68,7 @@ class undo extends NoInputCorePage
         $temp = explode("-",$trans_num);
         // error: malformed transaction number (2)
         if (count($temp) != 3){
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
@@ -79,7 +79,7 @@ class undo extends NoInputCorePage
         // error: malformed transaction number (3)
         if (!is_numeric($emp_no) || !is_numeric($register_no)
             || !is_numeric($old_trans_no)){
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
@@ -91,7 +91,7 @@ class undo extends NoInputCorePage
     {
         $dbc = 0;
         $query = "";
-        if ($register_no == CoreLocal::get("laneno")){
+        if ($register_no == $this->session->get("laneno")){
             // look up transation locally
             $dbc = Database::tDataConnect();
             $query = "select upc, description, trans_type, trans_subtype,
@@ -105,9 +105,9 @@ class undo extends NoInputCorePage
                 and datetime >= " . $dbc->curdate() . "
                 and trans_status <> 'X'
                 order by trans_id";
-        } elseif (CoreLocal::get("standalone") == 1) {
+        } elseif ($this->session->get("standalone") == 1) {
             // error: remote lookups won't work in standalone
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         } else {
@@ -129,7 +129,7 @@ class undo extends NoInputCorePage
         $result = $dbc->query($query);
         // transaction not found
         if ($dbc->num_rows($result) < 1) {
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
@@ -144,25 +144,24 @@ class undo extends NoInputCorePage
 
     function preprocess()
     {
-        $this->box_color = "coloredArea";
+        $this->boxColor = "coloredArea";
         $this->msg = _("Undo transaction");
 
-        if (isset($_REQUEST['reginput'])){
-            $trans_num = strtoupper($_REQUEST['reginput']);
+        try {
+            $trans_num = strtoupper($this->form->reginput);
             $chk = $this->checkInput($trans_num);
-            if (is_array($chk)) {
-                list($emp_no, $register_no, $old_trans_no) = $chk;
-            } else {
+            if (!is_array($chk)) {
                 return $chk;
             }
+            list($emp_no, $register_no, $old_trans_no) = $chk;
             $trans = $this->getTransaction($emp_no, $register_no, $old_trans_no);
             if (!is_array($trans)) {
                 return $trans;
             }
             /* change the cashier to the original transaction's cashier */
-            $prevCashier = CoreLocal::get("CashierNo");
-            CoreLocal::set("CashierNo",$emp_no);
-            CoreLocal::set("transno",Database::gettransno($emp_no));    
+            $prevCashier = $this->session->get("CashierNo");
+            $this->session->set("CashierNo",$emp_no);
+            $this->session->set("transno",Database::gettransno($emp_no));    
 
             /* rebuild the transaction, line by line, in reverse */
             $card_no = 0;
@@ -217,14 +216,15 @@ class undo extends NoInputCorePage
             }
 
             COREPOS\pos\lib\MemberLib::setMember($card_no, 1);
-            CoreLocal::set("autoReprint",0);
+            $this->session->set("autoReprint",0);
 
             /* do NOT restore logged in cashier until this transaction is complete */
             
             $this->change_page($this->page_url."gui-modules/undo_confirm.php");
             return false;
-        }
-        return True;
+        } catch (Exception $ex) {}
+        
+        return true;
     }
 
     public function unitTest($phpunit)

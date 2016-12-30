@@ -24,7 +24,6 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrehLib;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class RepeatKey extends Parser 
@@ -35,33 +34,32 @@ class RepeatKey extends Parser
             return true;
         } elseif ($str === '*') {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function parse($str)
     {
         $multiplier = strlen($str) > 1 ? substr($str, 1) : 1;
-        $peek = PrehLib::peekItem(true, CoreLocal::get('currentid'));
+        $peek = PrehLib::peekItem(true, $this->session->get('currentid'));
         if ($peek && $peek['trans_type'] == 'I' && $peek['trans_status'] == '') {
             $upcP = new UPC($this->session);
-            CoreLocal::set('quantity', $multiplier);
-            CoreLocal::set('multiple', 1);
+            $this->session->set('quantity', $multiplier);
+            $this->session->set('multiple', 1);
             $ret = $upcP->parse($peek['upc']);
-            CoreLocal::set('multiple', 0);
+            $this->session->set('multiple', 0);
             return $ret;
-        } else {
-            $json = $this->default_json();
-            $json['output'] = DisplayLib::boxMsg(
-                    _('product cannot be repeated'),
-                    _('Ineligible line'),
-                    false,
-                    DisplayLib::standardClearButton()
-            );
-
-            return $json;
         }
+        $json = $this->default_json();
+        $json['output'] = DisplayLib::boxMsg(
+                _('product cannot be repeated'),
+                _('Ineligible line'),
+                false,
+                DisplayLib::standardClearButton()
+        );
+
+        return $json;
     }
 
     public function doc()

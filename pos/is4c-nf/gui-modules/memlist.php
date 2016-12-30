@@ -28,36 +28,35 @@
     *  5Oct2012 Eric Lee Added:
     *                    + A WEFC_Toronto-only chunk for collecting Member Card#
     *                    + A general facility for displaying an error encountered in preprocess()
-    *                       in body_content() using temp_message.
+    *                       in body_content() using tempMessage.
 
 */
 
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
-use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputCorePage 
 {
-
     private $entered;
-    private $temp_message = '';
+    private $tempMessage = '';
 
     private $results = array();
     private $submitted = false;
 
-    private $notice_cache = array();
-    private $notice_statement = null;
+    private $noticeCache = array();
+    private $noticeStatement = null;
 
     private function getInput()
     {
         $entered = false;
-        if (FormLib::get('idSearch', false) !== false) {
-            $entered = FormLib::get('idSearch');
-        } elseif (FormLib::get('search', false) !== false) {
-            $entered = FormLib::get('search');
-        } else {
+        if ($this->form->tryGet('idSearch', false) !== false) {
+            $entered = $this->form->idSearch;
+        } elseif ($this->form->tryGet('search', false) !== false) {
+            $entered = $this->form->search;
+        }
+        if ($entered === false) {
             return false;
         }
 
@@ -130,7 +129,7 @@ class memlist extends NoInputCorePage
                 return false;
             }
 
-            if (count($this->results) == 1 && (CoreLocal::get('verifyName') == 0 || $entered == CoreLocal::get('defaultNonMem'))) {
+            if (count($this->results) == 1 && ($this->session->get('verifyName') == 0 || $entered == $this->session->get('defaultNonMem'))) {
                 $members = array_keys($this->results);
                 $match = $members[0];
                 list($memberID, $personNum) = explode('::', $match, 2);
@@ -145,31 +144,29 @@ class memlist extends NoInputCorePage
             if ($callback != false) {
                 $callback->apply();
             }
-            if ($memberID == CoreLocal::get('defaultNonMem')) {
+            if ($memberID == $this->session->get('defaultNonMem')) {
                 $personNum = 1;
             }
             COREPOS\pos\lib\MemberLib::setMember($memberID, $personNum);
 
-            if (CoreLocal::get('store') == "WEFC_Toronto") {
+            if ($this->session->get('store') == "WEFC_Toronto") {
                 $error_msg = $this->wefcCardCheck($memberID);
                 if ($error_msg !== true) {
-                    $this->temp_message = $error_msg;
+                    $this->tempMessage = $error_msg;
 
                     return true;
                 }
             }
 
             // don't bother with unpaid balance check if there is no balance
-            if ($memberID != CoreLocal::get("defaultNonMem") && CoreLocal::get('balance') > 0) {
+            $url = $this->page_url."gui-modules/pos2.php";
+            if ($memberID != $this->session->get("defaultNonMem") && $this->session->get('balance') > 0) {
                 $unpaid = COREPOS\pos\lib\MemberLib::checkUnpaidAR($memberID);
                 if ($unpaid) {
-                    $this->change_page($this->page_url."gui-modules/UnpaidAR.php");
-                } else {
-                    $this->change_page($this->page_url."gui-modules/pos2.php");
+                    $url = $this->page_url."gui-modules/UnpaidAR.php";
                 }
-            } else {
-                $this->change_page($this->page_url."gui-modules/pos2.php");
             }
+            $this->change_page($url);
 
             return false;
         }
@@ -185,7 +182,7 @@ class memlist extends NoInputCorePage
     private function getCallbackAction($card_no)
     {
         $dbc = Database::pDataConnect();
-        if (CoreLocal::get('NoCompat') != 1 && !$dbc->tableExists('CustomerNotifications')) {
+        if ($this->session->get('NoCompat') != 1 && !$dbc->tableExists('CustomerNotifications')) {
             echo 'no notifications';
             return false;
         }
@@ -214,25 +211,23 @@ class memlist extends NoInputCorePage
     private function wefcCardCheck($card_no)
     {
         $db_a = Database::pDataConnect();
-        if (FormLib::get('memberCard') !== '') {
-            $memberCard = FormLib::get('memberCard');
+        if ($this->form->tryGet('memberCard') !== '') {
+            $memberCard = $this->form->memberCard;
             if (!is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0) {
                 return "Bad Member Card# format >{$memberCard}<";
-            } else {
-                $upc = sprintf("00401229%05d", $memberCard);
-                // Check that it isn't already there, perhaps for someone else.
-                $memQ = "SELECT card_no FROM memberCards where card_no = {$card_no}";
-                $mResult = $db_a->query($memQ);
-                $mNumRows = $db_a->num_rows($mResult);
-                if ($mNumRows > 0) {
-                    return "{$card_no} is already associated with another Member Card";
-                } else {
-                    $memQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$card_no}, '$upc')";
-                    $mResult = $db_a->query($memQ);
-                    if ( !$mResult ) {
-                        return "Linking membership to Member Card failed.";
-                    }
-                }
+            }
+            $upc = sprintf("00401229%05d", $memberCard);
+            // Check that it isn't already there, perhaps for someone else.
+            $memQ = "SELECT card_no FROM memberCards where card_no = {$card_no}";
+            $mResult = $db_a->query($memQ);
+            $mNumRows = $db_a->num_rows($mResult);
+            if ($mNumRows > 0) {
+                return "{$card_no} is already associated with another Member Card";
+            }
+            $memQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$card_no}, '$upc')";
+            $mResult = $db_a->query($memQ);
+            if ( !$mResult ) {
+                return "Linking membership to Member Card failed.";
             }
         }
 
@@ -281,28 +276,27 @@ class memlist extends NoInputCorePage
 
     private function noticeStatement($dbc)
     {
-        if ($this->notice_statement !== null) {
-            return $this->notice_statement;
+        if ($this->noticeStatement !== null) {
+            return $this->noticeStatement;
         }
 
-        if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
-            $this->notice_statement = $dbc->prepare('
+        $this->noticeStatement = false;
+        if ($this->session->get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
+            $this->noticeStatement = $dbc->prepare('
                 SELECT message
                 FROM CustomerNotifications
                 WHERE cardNo=?
                     AND type=\'memlist\'
                 ORDER BY message');
-        } else {
-            $this->notice_statement = false;
         }
 
-        return $this->notice_statement;
+        return $this->noticeStatement;
     }
 
     private function getNotification($card_no)
     {
-        if (isset($this->notice_cache[$card_no])) {
-            return $this->notice_cache[$card_no];
+        if (isset($this->noticeCache[$card_no])) {
+            return $this->noticeCache[$card_no];
         }
 
         $dbc = Database::pDataConnect();
@@ -315,7 +309,7 @@ class memlist extends NoInputCorePage
         while ($row = $dbc->fetchRow($noticeR)) {
             $notice .= ' ' . $row['message'];
         }
-        $this->notice_cache[$card_no] = $notice;
+        $this->noticeCache[$card_no] = $notice;
 
         return $notice;
     }
@@ -348,7 +342,7 @@ class memlist extends NoInputCorePage
         echo "</select>"
             . '<div id="filter-div"></div>'
             . "</div><!-- /.listbox -->";
-        if (CoreLocal::get('touchscreen')) {
+        if ($this->session->get('touchscreen')) {
             echo '<div class="listbox listboxText">'
                 . DisplayLib::touchScreenScrollButtons()
                 . '</div>';
@@ -377,8 +371,8 @@ class memlist extends NoInputCorePage
         /* for no results or a problem found in preprocess, just throw up a re-do
          * otherwise, put results in a select box
          */
-        if ($this->temp_message !== '' || count($this->results) < 1) {
-            echo $this->searchDialog($this->temp_message);
+        if ($this->tempMessage !== '' || count($this->results) < 1) {
+            echo $this->searchDialog($this->tempMessage);
         } else {
             echo $this->listDisplay();
         }

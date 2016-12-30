@@ -35,11 +35,12 @@ class adminlist extends NoInputCorePage
     private $security;
     function preprocess()
     {
-        $emp = CoreLocal::get('CashierNo');    
+        $emp = $this->session->get('CashierNo');    
         $this->security = Authenticate::getPermission($emp);
 
         if (FormLib::get('selectlist', false) !== false) {
-            $choice = FormLib::get('selectlist');
+        try {
+            $choice = $this->form->selectlist;
             if (!FormLib::validateToken()) {
                 return false;
             }
@@ -61,44 +62,46 @@ class adminlist extends NoInputCorePage
                 $this->change_page($this->page_url . 'gui-modules/undo.php');
                 return false;
             }
-        }
-        return True;
+        } catch (Exception $ex) {}
+
+        return true;
     }
 
     private function suspendTransaction()
     {
         Database::getsubtotals();
-        if (CoreLocal::get("LastID") == 0) {
-            CoreLocal::set("boxMsg",_("no transaction in progress"));
-            CoreLocal::set('boxMsgButtons', array(
+        if ($this->session->get("LastID") == 0) {
+            $this->session->set("boxMsg",_("no transaction in progress"));
+            $this->session->set('boxMsgButtons', array(
                 'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $this->change_page($this->page_url."gui-modules/boxMsg2.php");
-            return False;
-        } else {
-            // ajax call to end transaction
-            // and print receipt
-            $ref = SuspendLib::suspendorder();
-            $this->add_onload_command("adminlist.suspendOrder('{$ref}');\n");
-            return True;
+            return false;
         }
+
+        // ajax call to end transaction
+        // and print receipt
+        $ref = SuspendLib::suspendorder();
+        $this->add_onload_command("adminlist.suspendOrder('{$ref}');\n");
+
+        return True;
     }
 
     private function resumeTransaction()
     {
         Database::getsubtotals();
-        if (CoreLocal::get("LastID") != 0) {
-            CoreLocal::set("boxMsg",_("transaction in progress"));
-            CoreLocal::set('boxMsgButtons', array(
+        if ($this->session->get("LastID") != 0) {
+            $this->session->set("boxMsg",_("transaction in progress"));
+            $this->session->set('boxMsgButtons', array(
                 _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $this->change_page($this->page_url."gui-modules/boxMsg2.php");
         } elseif (SuspendLib::checksuspended() == 0) {
-            CoreLocal::set("boxMsg",_("no suspended transaction"));
-            CoreLocal::set('boxMsgButtons', array(
+            $this->session->set("boxMsg",_("no suspended transaction"));
+            $this->session->set('boxMsgButtons', array(
                 _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
-            CoreLocal::set("strRemembered","");
+            $this->session->set("strRemembered","");
             $this->change_page($this->page_url."gui-modules/boxMsg2.php");
         } else {
             $this->change_page($this->page_url."gui-modules/suspendedlist.php");
@@ -123,7 +126,7 @@ class adminlist extends NoInputCorePage
             <span class="larger"><?php echo _("administrative tasks"); ?></span>
             <br />
         <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <?php if ($this->session->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">
             <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
@@ -133,7 +136,7 @@ class adminlist extends NoInputCorePage
         <option value=''><?php echo _("Select a Task"); ?>
         <option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
         <option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
-        <?php if (CoreLocal::get('SecurityTR') != 30 || $this->security >= 30) { ?>
+        <?php if ($this->session->get('SecurityTR') != 30 || $this->security >= 30) { ?>
             <option value='TR'>3. <?php echo _("Tender Report"); ?>
         <?php } ?>
         <?php if ($this->security >= 30){ ?>
@@ -141,7 +144,7 @@ class adminlist extends NoInputCorePage
             <option value='UNDO'><?php echo _('Undo Transaction'); ?>
         <?php } ?>
         </select>
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <?php if ($this->session->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollUp('#selectlist');">
             <img src="<?php echo $stem; ?>up.png" width="16" height="16" />

@@ -25,7 +25,6 @@ namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class EndOfShift extends Parser 
@@ -43,8 +42,8 @@ class EndOfShift extends Parser
     {
         $json = $this->default_json();
 
-        CoreLocal::set("memberID", CoreLocal::get('defaultNonMem'));
-        CoreLocal::set("memMsg","End of Shift");
+        $this->session->set("memberID", $this->session->get('defaultNonMem'));
+        $this->session->set("memMsg","End of Shift");
         TransRecord::addRecord(array(
             'upc' => 'ENDOFSHIFT',
             'description' => 'End of Shift',
@@ -56,9 +55,9 @@ class EndOfShift extends Parser
             $json['main_frame'] = $chk;
             return $json;
         }
-        CoreLocal::set("runningtotal",CoreLocal::get("amtdue"));
+        $this->session->set("runningtotal",$this->session->get("amtdue"));
 
-        return PrehLib::tender("CA", CoreLocal::get("runningtotal") * 100);
+        return PrehLib::tender("CA", $this->session->get("runningtotal") * 100);
     }
 
     function doc()

@@ -25,7 +25,6 @@ namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class RRR extends Parser 
@@ -50,14 +49,14 @@ class RRR extends Parser
             }
             $qty = $split[0];
         }
-        $no_trans = CoreLocal::get('LastID') == 0 ? true : false;
+        $no_trans = $this->session->get('LastID') == 0 ? true : false;
         $this->add($qty);
 
         $ret['output'] = DisplayLib::lastpage();
         $ret['udpmsg'] = 'goodBeep';
 
         Database::getsubtotals();
-        if ($no_trans && CoreLocal::get("runningTotal") == 0) {
+        if ($no_trans && $this->session->get("runningTotal") == 0) {
             TransRecord::finalizeTransaction(true);
         }
 

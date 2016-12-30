@@ -60,25 +60,20 @@ class nslogin extends NoInputCorePage
                 return False;
             } elseif (Authenticate::checkPassword($passwd)) {
                 Drawers::kick();
-                if (CoreLocal::get('LoudLogins') == 1) {
+                if ($this->session->get('LoudLogins') == 1) {
                     UdpComm::udpSend('twoPairs');
                 }
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
-            } else {
-                $this->color ="errorColoredArea";
-                $this->heading = _("re-enter password");
-                $this->msg = _("invalid password");
+            }
 
-                if (CoreLocal::get('LoudLogins') == 1) {
-                    UdpComm::udpSend('errorBeep');
-                }
-            }
-        } else {
-            // beep on initial page load
-            if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('twoPairs');
-            }
+            $this->color ="errorColoredArea";
+            $this->heading = _("re-enter password");
+            $this->msg = _("invalid password");
+        }
+        // beep on initial page load
+        if ($this->session->get('LoudLogins') == 1) {
+            UdpComm::udpSend('twoPairs');
         }
 
         return true;

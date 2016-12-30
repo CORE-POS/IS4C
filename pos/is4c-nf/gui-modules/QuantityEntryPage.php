@@ -23,7 +23,6 @@
 
 use COREPOS\pos\lib\gui\BasicCorePage;
 use COREPOS\pos\lib\DisplayLib;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\UdpComm;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -55,26 +54,24 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 */
 class QuantityEntryPage extends BasicCorePage 
 {
-    protected $box_color;
+    protected $boxColor;
     protected $msg;
 
     const MODE_INTEGER = 0;
     const MODE_PRECISE = 1;
     const MODE_VERBATIM = 2;
 
-    private function getPrefixes($input_string)
+    private function getPrefixes($input)
     {
-        $plu = '';
+        $plu = $input;
         $prefix = '';
         // trim numeric characters from right side of
         // input. what remains, if anything, should be
         // prefixes to the UPC
-        $matched = preg_match('/^(\D*)(\d+)$/', $input_string, $matches);
+        $matched = preg_match('/^(\D*)(\d+)$/', $input, $matches);
         if ($matched) {
             $prefix = $matches[1];
             $plu = $matches[2];
-        } else {
-            $plu = $input_string;
         }
 
         return array($plu, $prefix);
@@ -86,28 +83,28 @@ class QuantityEntryPage extends BasicCorePage
     private function refineMode($mode)
     {
         if ($mode == self::MODE_PRECISE) {
-            return CoreLocal::get('ManualWeightMode') == 1 ? self::MODE_VERBATIM : self::MODE_PRECISE;
-        } else {
-            return $mode;
+            return $this->session->get('ManualWeightMode') == 1 ? self::MODE_VERBATIM : self::MODE_PRECISE;
         }
+
+        return $mode;
     }
 
     function preprocess()
     {
-        $this->box_color="coloredArea";
+        $this->boxColor="coloredArea";
         $this->msg = _("quantity required");
-        $mode = $this->refineMode(FormLib::get('qty-mode'));
+        $mode = $this->refineMode($this->form->tryGet('qty-mode'));
         if ($mode == self::MODE_PRECISE) {
             $this->msg = _('precision weight required');
         }
 
-        $qtty = strtoupper(trim(FormLib::get('reginput')));
+        $qtty = strtoupper(trim($this->form->tryGet('reginput')));
         if ($qtty == "CL") {
             /**
               Clear cancels
             */
-            CoreLocal::set("qttyvalid",0);
-            CoreLocal::set("quantity",0);
+            $this->session->set("qttyvalid",0);
+            $this->session->set("quantity",0);
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         } elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
@@ -116,9 +113,9 @@ class QuantityEntryPage extends BasicCorePage
                 return true;
             }
 
-            $input_string = FormLib::get('entered-item');
-            list($plu, $prefix) = $this->getPrefixes($input_string);
-            CoreLocal::set("qttyvalid",1);
+            $input = FormLib::get('entered-item');
+            list($plu, $prefix) = $this->getPrefixes($input);
+            $this->session->set("qttyvalid",1);
             $inp = $prefix . $qtty . '*' . $plu;
             $this->change_page(
                 $this->page_url
@@ -128,7 +125,7 @@ class QuantityEntryPage extends BasicCorePage
 
             return false;
         } elseif ($qtty !== '') {
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             $this->msg = _("invalid quantity");
             if ($mode == self::MODE_PRECISE) {
                 $this->msg = _('invalid precision weight');
@@ -153,7 +150,7 @@ class QuantityEntryPage extends BasicCorePage
             $this->msg = _('invalid quantity<br />enter number');
             return true;
         } elseif ($mode != self::MODE_VERBATIM && $qtty != ((int)$qtty)) {
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             if ($mode == self::MODE_PRECISE) {
                 $this->msg = _("invalid precision weight") 
                         . '<br />'
@@ -166,7 +163,7 @@ class QuantityEntryPage extends BasicCorePage
 
             return true;
         } elseif ($mode == self::MODE_PRECISE && strlen($qtty) != 3) {
-            $this->box_color="errorColoredArea";
+            $this->boxColor="errorColoredArea";
             $this->msg = _('invalid precision weight')
                     . '<br />'
                     . _('enter three digits');
@@ -190,14 +187,14 @@ class QuantityEntryPage extends BasicCorePage
         $this->input_header();
         echo DisplayLib::printheaderb();
 
-        $mode = FormLib::get('qty-mode', 0);
-        $this->add_onload_command("formAdd('#formlocal','qty-mode','{$mode}');\n");
-        $item = FormLib::get('entered-item', CoreLocal::get('strEntered'));
-        $this->add_onload_command("formAdd('#formlocal','entered-item','{$item}');\n");
+        $mode = $this->form->tryGet('qty-mode', 0);
+        $this->addOnloadCommand("formAdd('#formlocal','qty-mode','{$mode}');\n");
+        $item = $this->form->tryGet('entered-item', $this->session->get('strEntered'));
+        $this->addOnloadCommand("formAdd('#formlocal','entered-item','{$item}');\n");
 
         ?>
         <div class="baseHeight">
-        <div class="<?php echo $this->box_color; ?> centeredDisplay">
+        <div class="<?php echo $this->boxColor; ?> centeredDisplay">
         <span class="larger">
         <?php echo $this->msg ?>
         </span><br />

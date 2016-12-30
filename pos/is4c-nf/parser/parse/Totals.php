@@ -57,7 +57,7 @@ class Totals extends Parser {
         } elseif ($str == "FTTL") {
             $this->finalttl();
         } elseif ($str == "TL"){
-            CoreLocal::set('End', 0);
+            $this->session->set('End', 0);
             $chk = PrehLib::ttl();
             if ($chk !== True)
                 $ret['main_frame'] = $chk;
@@ -129,7 +129,7 @@ class Totals extends Parser {
     private function wicableTotal()
     {
         $dbc = Database::tDataConnect();
-        $products = CoreLocal::get('pDatabase') . $dbc->sep() . 'products';
+        $products = $this->session->get('pDatabase') . $dbc->sep() . 'products';
 
         $query = '
             SELECT SUM(total) AS wicableTotal
@@ -140,13 +140,12 @@ class Totals extends Parser {
         ';
 
         $result = $dbc->query($query);
-        if (!$result || $dbc->num_rows($result) == 0) {
+        if (!$result || $dbc->numRows($result) == 0) {
             return 0.00;
-        } else {
-            $row = $dbc->fetch_row($result);
-            
-            return $row['wicableTotal'];
         }
+        $row = $dbc->fetchRow($result);
+        
+        return $row['wicableTotal'];
     }
 
     /**
@@ -157,12 +156,12 @@ class Totals extends Parser {
     */
     private function finalttl() 
     {
-        if (CoreLocal::get("percentDiscount") > 0) {
+        if ($this->session->get("percentDiscount") > 0) {
             TransRecord::addRecord(array(
                 'description' => 'Discount',
                 'trans_type' => 'C',
                 'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
+                'unitPrice' => MiscLib::truncate2(-1 * $this->session->get('transDiscount')),
                 'voided' => 5,
             ));
         }
@@ -172,17 +171,17 @@ class Totals extends Parser {
             'description' => 'Subtotal',
             'trans_type' => 'C',
             'trans_status' => 'D',
-            'unitPrice' => MiscLib::truncate2(CoreLocal::get('taxTotal') - CoreLocal::get('fsTaxExempt')),
+            'unitPrice' => MiscLib::truncate2($this->session->get('taxTotal') - $this->session->get('fsTaxExempt')),
             'voided' => 11,
         ));
 
-        if (CoreLocal::get("fsTaxExempt")  != 0) {
+        if ($this->session->get("fsTaxExempt")  != 0) {
             TransRecord::addRecord(array(
                 'upc' => 'Tax',
                 'description' => 'FS Taxable',
                 'trans_type' => 'C',
                 'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsTaxExempt')),
+                'unitPrice' => MiscLib::truncate2($this->session->get('fsTaxExempt')),
                 'voided' => 7,
             ));
         }
@@ -192,7 +191,7 @@ class Totals extends Parser {
             'description' => 'Total',
             'trans_type' => 'C',
             'trans_status' => 'D',
-            'unitPrice' => MiscLib::truncate2(CoreLocal::get('amtdue')),
+            'unitPrice' => MiscLib::truncate2($this->session->get('amtdue')),
             'voided' => 11,
         ));
     }

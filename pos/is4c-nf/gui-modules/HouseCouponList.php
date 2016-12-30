@@ -24,24 +24,22 @@
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
-use COREPOS\pos\lib\FormLib;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class HouseCouponList extends NoInputCorePage 
 {
-
     function preprocess()
     {
-        if (FormLib::get('selectlist', false) !== false) {
+        try {
             $qstr = '';
-            if (FormLib::get('selectlist', false) != '') {
-                $qstr .= '?reginput=' . urlencode(FormLib::get('selectlist')) . '&repeat=1';
+            if ($this->form->selectlist != '') {
+                $qstr .= '?reginput=' . urlencode($this->form->selectlist) . '&repeat=1';
             }
             $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
 
             return false;
-        }
+        } catch (Exception $ex) {}
 
         return true;
     }
@@ -57,7 +55,7 @@ class HouseCouponList extends NoInputCorePage
     
     function body_content()
     {
-        $prefix = CoreLocal::get('houseCouponPrefix');
+        $prefix = $this->session->get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
@@ -98,7 +96,7 @@ class HouseCouponList extends NoInputCorePage
         </select>
         </div>
         <?php
-        if (CoreLocal::get('touchscreen')) {
+        if ($this->session->get('touchscreen')) {
             echo '<div class="listbox listboxText">'
                 . DisplayLib::touchScreenScrollButtons('#selectlist')
                 . '</div>';

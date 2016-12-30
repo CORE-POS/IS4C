@@ -50,17 +50,17 @@ class DefaultTender extends Parser
           If customer card is available, prevent other tenders
           unless specficially allowed (e.g., coupons).
         */
-        if (CoreLocal::get('PaycardsBlockTenders') == 1) {
-            $tender_code = strtoupper(substr($str, -2));
-            $exceptions = strtoupper(CoreLocal::get('PaycardsBlockExceptions'));
-            $except_array = preg_split('/[^A-Z]+/', $exceptions, 0, PREG_SPLIT_NO_EMPTY);
-            if (CoreLocal::get('ccTermState') == 'ready' && !in_array($tender_code, $except_array)) {
-                CoreLocal::set('boxMsg', _('Tender customer card before other tenders'));
-                CoreLocal::set('boxMsgButtons', array(
+        if ($this->session->get('PaycardsBlockTenders') == 1) {
+            $tenderCode = strtoupper(substr($str, -2));
+            $exceptions = strtoupper($this->session->get('PaycardsBlockExceptions'));
+            $exceptArray = preg_split('/[^A-Z]+/', $exceptions, 0, PREG_SPLIT_NO_EMPTY);
+            if ($this->session->get('ccTermState') == 'ready' && !in_array($tenderCode, $exceptArray)) {
+                $this->session->set('boxMsg', _('Tender customer card before other tenders'));
+                $this->session->set('boxMsgButtons', array(
                     _('Charge Card [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
                     _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
                 ));
-                CoreLocal::set('strEntered', 'CCFROMCACHE');
+                $this->session->set('strEntered', 'CCFROMCACHE');
                 $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
 
                 return $ret;
@@ -83,39 +83,38 @@ class DefaultTender extends Parser
             $left = substr($str,0,strlen($str)-2);
             $right = substr($str,-2);
             return PrehLib::tender($right,$left);
-        } else {
-            $base_object = new TenderModule($str, False);
-            $objs = array($base_object);
-            $map = CoreLocal::get("TenderMap");
-            if (is_array($map) && isset($map[$str])){
-                $class = $map[$str];
-                if (!class_exists($class)) { // try namespaced version
-                    $class = 'COREPOS\\pos\\lib\\Tenders\\' . $class;
-                }
-                $tender_object = new $class($str, False);
-                $objs[] = $tender_object;
-            }
+        } 
 
-            foreach ($objs as $object) {
-                $errors = $object->ErrorCheck();
-                if ($errors !== true){
-                    $ret['output'] = $errors;
-                    return $ret;
-                }
+        $baseObject = new TenderModule($str, False);
+        $objs = array($baseObject);
+        $map = $this->session->get("TenderMap");
+        if (is_array($map) && isset($map[$str])){
+            $class = $map[$str];
+            if (!class_exists($class)) { // try namespaced version
+                $class = 'COREPOS\\pos\\lib\\Tenders\\' . $class;
             }
-            
-            $objs = array_reverse($objs);
+            $tenderObject = new $class($str, False);
+            $objs[] = $tenderObject;
+        }
 
-            foreach ($objs as $object) {
-                if (!$object->AllowDefault()) {
-                    $ret['output'] = $object->DisabledPrompt();
-                    return $ret;
-                } else {
-                    CoreLocal::set('RepeatAgain', true);
-                    $ret['main_frame'] = $object->DefaultPrompt();
-                    return $ret;
-                }
+        foreach ($objs as $object) {
+            $errors = $object->ErrorCheck();
+            if ($errors !== true){
+                $ret['output'] = $errors;
+                return $ret;
             }
+        }
+        
+        $objs = array_reverse($objs);
+
+        foreach ($objs as $object) {
+            if (!$object->AllowDefault()) {
+                $ret['output'] = $object->DisabledPrompt();
+                return $ret;
+            }
+            $this->session->set('RepeatAgain', true);
+            $ret['main_frame'] = $object->DefaultPrompt();
+            return $ret;
         }
     }
 

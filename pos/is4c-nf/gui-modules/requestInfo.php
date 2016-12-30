@@ -36,15 +36,14 @@
  */
 
 use COREPOS\pos\lib\gui\NoInputCorePage;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class requestInfo extends NoInputCorePage 
 {
 
-    private $request_header = '';
-    private $request_msg = '';
+    private $requestHeader = '';
+    private $requestMsg = '';
 
     private function validateClass($class)
     {
@@ -94,7 +93,7 @@ class requestInfo extends NoInputCorePage
     public function preprocess()
     {
         // get calling class (required)
-        $class = isset($_REQUEST['class']) ? $_REQUEST['class'] : '';
+        $class = $this->form->tryGet('class');
         $pos_home = MiscLib::base_url().'gui-modules/pos2.php';
         if ($class === '' || !class_exists($class)){
             $this->change_page($pos_home);
@@ -111,13 +110,13 @@ class requestInfo extends NoInputCorePage
             return false;
         }
 
-        $this->request_header = $class::$requestInfoHeader;
-        $this->request_msg = $class::$requestInfoMsg;
+        $this->requestHeader = $class::$requestInfoHeader;
+        $this->requestMsg = $class::$requestInfoMsg;
 
         // info was submitted
-        if (isset($_REQUEST['input'])){
-            return $this->handleInput($_REQUEST['input'], $class, $pos_home);
-        }
+        try {
+            return $this->handleInput($this->form->input, $class, $pos_home);
+        } catch (Exception $ex) {}
 
         return true;
     }
@@ -128,15 +127,15 @@ class requestInfo extends NoInputCorePage
         <div class="baseHeight">
         <div class="colored centeredDisplay">
         <span class="larger">
-        <?php echo $this->request_header; ?>
+        <?php echo $this->requestHeader; ?>
         </span>
         <form name="form" method="post" autocomplete="off" 
             action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
-        <input type="hidden" name="class" value="<?php echo FormLib::get('class'); ?>" />
+        <input type="hidden" name="class" value="<?php echo $this->form->tryGet('class'); ?>" />
         </form>
         <p>
-        <?php echo $this->request_msg; ?>
+        <?php echo $this->requestMsg; ?>
         </p>
         </div>
         </div>

@@ -25,85 +25,76 @@ namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\UdpComm;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class SigTermCommands extends Parser 
 {
-    private $cb_error;
+    private $cbError;
 
     function check($str)
     {
         if ($str == "TERMMANUAL") {
             UdpComm::udpSend("termManual");
-            CoreLocal::set("paycard_keyed", true);
+            $this->session->set("paycard_keyed", true);
 
             return true;
 
-        } else if ($str == "TERMRESET" || $str == "TERMREBOOT") {
-            if ($str == "TERMRESET") {
-                UdpComm::udpSend("termReset");
-            } else {
-                UdpComm::udpSend("termReboot");
-            }
+        } elseif ($str == "TERMRESET" || $str == "TERMREBOOT") {
+            UdpComm::udpSend($str == 'TERMRESET' ? 'termReset' : 'termReboot');
             $this->stateReset();
 
             return true;
 
-        } else if ($str == "CCFROMCACHE") {
+        } elseif ($str == "CCFROMCACHE") {
 
             return true;
 
-        } else if (substr($str,0,9) == "PANCACHE:") {
-            CoreLocal::set("CachePanEncBlock",substr($str,9));
-            CoreLocal::set('ccTermState','type');
-            if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
-                if (CoreLocal::get('PaycardsAllowEBT') == 1) {
-                    UdpComm::udpSend('termGetTypeWithFS');
-                } else {
-                    UdpComm::udpSend('termGetType');
-                }
+        } elseif (substr($str,0,9) == "PANCACHE:") {
+            $this->session->set("CachePanEncBlock",substr($str,9));
+            $this->session->set('ccTermState','type');
+            if ($this->session->get('PaycardsStateChange') == 'coordinated') {
+                UdpComm::udpSend($this->session->get('PaycardsAllowEBT') == 1 ? 'termGetTypeWithFS' : 'termGetType'); 
             } else {
                 // check for out of order messages from terminal
-                if (CoreLocal::get('CacheCardType') != '' && CoreLocal::get('CacheCardType') == 'CREDIT') {
-                    CoreLocal::set('ccTermState', 'ready');
-                } else if (CoreLocal::get('CacheCardType') != '' && CoreLocal::get('CachePinEncBlock') != '') {
-                    CoreLocal::set('ccTermState', 'ready');
+                if ($this->session->get('CacheCardType') != '' && $this->session->get('CacheCardType') == 'CREDIT') {
+                    $this->session->set('ccTermState', 'ready');
+                } elseif ($this->session->get('CacheCardType') != '' && $this->session->get('CachePinEncBlock') != '') {
+                    $this->session->set('ccTermState', 'ready');
                 }
             }
 
             return true;
 
-        } else if (substr($str,0,9) == "PINCACHE:") {
-            CoreLocal::set("CachePinEncBlock",substr($str,9));
-            CoreLocal::set('ccTermState','ready');
-            if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
+        } elseif (substr($str,0,9) == "PINCACHE:") {
+            $this->session->set("CachePinEncBlock",substr($str,9));
+            $this->session->set('ccTermState','ready');
+            if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                 UdpComm::udpSend('termWait');
             }
 
             return true;
 
-        } else if (substr($str,0,6) == "VAUTH:") {
-            CoreLocal::set("paycard_voiceauthcode",substr($str,6));
+        } elseif (substr($str,0,6) == "VAUTH:") {
+            $this->session->set("paycard_voiceauthcode",substr($str,6));
 
             return true;
 
-        } else if (substr($str,0,8) == "EBTAUTH:") {
-            CoreLocal::set("ebt_authcode",substr($str,8));
+        } elseif (substr($str,0,8) == "EBTAUTH:") {
+            $this->session->set("ebt_authcode",substr($str,8));
 
             return true;
 
-        } else if (substr($str,0,5) == "EBTV:"){
-            CoreLocal::set("ebt_vnum",substr($str,5));
+        } elseif (substr($str,0,5) == "EBTV:"){
+            $this->session->set("ebt_vnum",substr($str,5));
 
             return true;
 
-        } else if ($str == "TERMCLEARALL") {
+        } elseif ($str == "TERMCLEARALL") {
             $this->stateReset();
 
             return true;
         } elseif ($str == 'TERMAUTOENABLE') {
-            CoreLocal::set('PaycardsStateChange', 'direct');
+            $this->session->set('PaycardsStateChange', 'direct');
             $query = "
                 UPDATE parameters
                 SET param_value='direct'
@@ -111,11 +102,11 @@ class SigTermCommands extends Parser
                     AND (lane_id=0 OR lane_id=?)";
             $db = Database::pDataConnect();
             $prep = $db->prepare($query);
-            $res = $db->execute($prep, array(CoreLocal::get('laneno')));
+            $res = $db->execute($prep, array($this->session->get('laneno')));
 
             return true;
         } elseif ($str == 'TERMAUTODISABLE') {
-            CoreLocal::set('PaycardsStateChange', 'coordinated');
+            $this->session->set('PaycardsStateChange', 'coordinated');
             $query = "
                 UPDATE parameters
                 SET param_value='coordinated'
@@ -123,79 +114,79 @@ class SigTermCommands extends Parser
                     AND (lane_id=0 OR lane_id=?)";
             $db = Database::pDataConnect();
             $prep = $db->prepare($query);
-            $res = $db->execute($prep, array(CoreLocal::get('laneno')));
+            $res = $db->execute($prep, array($this->session->get('laneno')));
 
             return true;
         } elseif (substr($str, 0, 7) == "TERM:DC") { 
-            CoreLocal::set('ccTermState', substr($str, -4));
+            $this->session->set('ccTermState', substr($str, -4));
             return true;
-        } else if (substr($str,0,5) == "TERM:") {
-            CoreLocal::set("CacheCardType",substr($str,5));
-            switch(CoreLocal::get('CacheCardType')) {
+        } elseif (substr($str,0,5) == "TERM:") {
+            $this->session->set("CacheCardType",substr($str,5));
+            switch($this->session->get('CacheCardType')) {
                 case 'CREDIT':
-                    CoreLocal::set('ccTermState','ready');
-                    if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
+                    $this->session->set('ccTermState','ready');
+                    if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                         UdpComm::udpSend('termWait');
                     }
                     break;
                 case 'DEBIT':
-                    if (CoreLocal::get('PaycardsOfferCashBack') == 1) {
-                        CoreLocal::set('ccTermState','cashback');
-                        if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
-                            if (CoreLocal::get('runningtotal') >= 0) {
+                    if ($this->session->get('PaycardsOfferCashBack') == 1) {
+                        $this->session->set('ccTermState','cashback');
+                        if ($this->session->get('PaycardsStateChange') == 'coordinated') {
+                            if ($this->session->get('runningtotal') >= 0) {
                                 UdpComm::udpSend('termCashBack');
                             } else { // skip ahead to PIN entry on refunds
-                                CoreLocal::set('ccTermState','cashback');
+                                $this->session->set('ccTermState','cashback');
                                 UdpComm::udpSend('termGetPin');
                             }
                         }
-                    } elseif (CoreLocal::get('PaycardsOfferCashBack') == 2 && CoreLocal::get('isMember') == 1) {
-                        CoreLocal::set('ccTermState','cashback');
-                        if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
-                            if (CoreLocal::get('runningtotal') >= 0) {
+                    } elseif ($this->session->get('PaycardsOfferCashBack') == 2 && $this->session->get('isMember') == 1) {
+                        $this->session->set('ccTermState','cashback');
+                        if ($this->session->get('PaycardsStateChange') == 'coordinated') {
+                            if ($this->session->get('runningtotal') >= 0) {
                                 UdpComm::udpSend('termCashBack');
                             } else { // skip ahead to PIN entry on refunds
-                                CoreLocal::set('ccTermState','cashback');
+                                $this->session->set('ccTermState','cashback');
                                 UdpComm::udpSend('termGetPin');
                             }
                         }
                     } else {
-                        CoreLocal::set('ccTermState','pin');
-                        if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
+                        $this->session->set('ccTermState','pin');
+                        if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                             UdpComm::udpSend('termGetPin');
                         }
                     }
                     break;
                 case 'EBTFOOD':
-                    CoreLocal::set('ccTermState','pin');
-                    if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
+                    $this->session->set('ccTermState','pin');
+                    if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                         UdpComm::udpSend('termGetPin');
                     }
                     break;
                 case 'EBTCASH':
-                    if (CoreLocal::get('PaycardsOfferCashBack') == 1) {
-                        CoreLocal::set('ccTermState','cashback');
-                        if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
-                            if (CoreLocal::get('runningtotal') >= 0) {
+                    if ($this->session->get('PaycardsOfferCashBack') == 1) {
+                        $this->session->set('ccTermState','cashback');
+                        if ($this->session->get('PaycardsStateChange') == 'coordinated') {
+                            if ($this->session->get('runningtotal') >= 0) {
                                 UdpComm::udpSend('termCashBack');
                             } else { // skip ahead to PIN entry on refunds
-                                CoreLocal::set('ccTermState','cashback');
+                                $this->session->set('ccTermState','cashback');
                                 UdpComm::udpSend('termGetPin');
                             }
                         }
                     } else {
-                        CoreLocal::set('ccTermState','pin');
-                        if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
+                        $this->session->set('ccTermState','pin');
+                        if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                             UdpComm::udpSend('termGetPin');
                         }
                     }
                     break;
             }
 
-            if (CoreLocal::get('PaycardsStateChange') == 'direct') {
+            if ($this->session->get('PaycardsStateChange') == 'direct') {
                 // check for out of order messages from terminal
-                if (CoreLocal::get('CacheCardType') != '' && CoreLocal::get('CachePanEncBlock') != '' && CoreLocal::get('CachePinEncBlock') != '') {
-                    CoreLocal::set('ccTermState', 'ready');
+                if ($this->session->get('CacheCardType') != '' && $this->session->get('CachePanEncBlock') != '' && $this->session->get('CachePinEncBlock') != '') {
+                    $this->session->set('ccTermState', 'ready');
                 }
             }
 
@@ -203,18 +194,17 @@ class SigTermCommands extends Parser
 
         } elseif (substr($str,0,7) == "TERMCB:") {
             $cashback = substr($str,7);
-            $termLimit = CoreLocal::get('PaycardsTermCashBackLimit');
+            $termLimit = $this->session->get('PaycardsTermCashBackLimit');
             if ($termLimit === '') {
                 $termLimit = 40;
             }
+            $this->cbError = true;
             if ($cashback <= $termLimit) {
-                $this->cb_error = false;
-                CoreLocal::set("CacheCardCashBack",$cashback);
-            } else {
-                $this->cb_error = true;
+                $this->cbError = false;
+                $this->session->set("CacheCardCashBack",$cashback);
             }
-            CoreLocal::set('ccTermState','pin');
-            if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
+            $this->session->set('ccTermState','pin');
+            if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                 UdpComm::udpSend('termGetPin');
             }
 
@@ -229,9 +219,9 @@ class SigTermCommands extends Parser
         $ret = $this->default_json();
         $ret['scale'] = ''; // redraw righthand column
         if ($str == "CCFROMCACHE") {
-            $ret['retry'] = CoreLocal::get("CachePanEncBlock");
+            $ret['retry'] = $this->session->get("CachePanEncBlock");
         }
-        if ($this->cb_error) {
+        if ($this->cbError) {
             $ret['output'] = DisplayLib::boxMsg(
                 _('Cash back set to zero instead'),
                 _('Invalid cash back selection'),
@@ -245,12 +235,12 @@ class SigTermCommands extends Parser
 
     private function stateReset()
     {
-        CoreLocal::set("paycard_keyed", false);
-        CoreLocal::set("CachePanEncBlock","");
-        CoreLocal::set("CachePinEncBlock","");
-        CoreLocal::set("CacheCardType","");
-        CoreLocal::set("CacheCardCashBack",0);
-        CoreLocal::set('ccTermState', 'swipe');
+        $this->session->set("paycard_keyed", false);
+        $this->session->set("CachePanEncBlock","");
+        $this->session->set("CachePinEncBlock","");
+        $this->session->set("CacheCardType","");
+        $this->session->set("CacheCardCashBack",0);
+        $this->session->set('ccTermState', 'swipe');
     }
 
     function doc()

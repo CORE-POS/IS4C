@@ -24,7 +24,6 @@
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 
@@ -46,13 +45,13 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlogin extends NoInputCorePage 
 {
-    private $box_color;
+    private $boxColor;
     private $msg;
     private $heading;
 
     private function getClass()
     {
-        $class = FormLib::get('class');
+        $class = $this->form->tryGet('class');
         $class = str_replace('-', '\\', $class);
         // make sure calling class implements required
         // method and properties
@@ -71,10 +70,10 @@ class adminlogin extends NoInputCorePage
 
     function preprocess()
     {
-        $this->box_color="coloredArea";
+        $this->boxColor="coloredArea";
         $this->msg = _("enter admin password");
 
-        $pos_home = MiscLib::base_url().'gui-modules/pos2.php';
+        $posHome = MiscLib::base_url().'gui-modules/pos2.php';
         // get calling class (required)
         try {
             $class = $this->getClass();
@@ -82,16 +81,16 @@ class adminlogin extends NoInputCorePage
             $class = '';
         }
         if ($class === '' || !class_exists($class)){
-            $this->change_page($pos_home);
+            $this->change_page($posHome);
             return False;
         }
 
         $this->heading = $class::$adminLoginMsg;
 
-        if (FormLib::get('reginput') !== '' || FormLib::get('userPassword') !== '') {
-            $passwd = FormLib::get('reginput');
+        if ($this->form->tryGet('reginput') !== '' || $this->form->tryGet('userPassword') !== '') {
+            $passwd = $this->form->tryGet('reginput');
             if ($passwd === '') {
-                $passwd = FormLib::get('userPassword');
+                $passwd = $this->form->tryGet('userPassword');
             }
 
             if (strtoupper($passwd) == "CL") {
@@ -99,7 +98,7 @@ class adminlogin extends NoInputCorePage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;    
             } elseif (empty($passwd)) {
-                $this->box_color="errorColoredArea";
+                $this->boxColor="errorColoredArea";
                 $this->msg = _("re-enter admin password");
             } else {
                 $dbc = Database::pDataConnect();
@@ -107,18 +106,16 @@ class adminlogin extends NoInputCorePage
                     $this->approvedAction($class, $passwd);
 
                     return false;
-                } else {
-                    $this->box_color="errorColoredArea";
-                    $this->msg = _("re-enter admin password");
-
-                    TransRecord::add_log_record(array(
-                        'upc' => $passwd,
-                        'description' => substr($class::$adminLoginMsg,0,30),
-                        'charflag' => 'PW'
-                    ));
-
-                    $this->beep();
                 }
+                $this->boxColor="errorColoredArea";
+                $this->msg = _("re-enter admin password");
+
+                TransRecord::add_log_record(array(
+                    'upc' => $passwd,
+                    'description' => substr($class::$adminLoginMsg,0,30),
+                    'charflag' => 'PW'
+                ));
+                $this->beep();
             }
         } else {
             // beep on initial page load
@@ -130,7 +127,7 @@ class adminlogin extends NoInputCorePage
 
     private function beep()
     {
-        if (CoreLocal::get('LoudLogins') == 1) {
+        if ($this->session->get('LoudLogins') == 1) {
             UdpComm::udpSend('errorBeep');
         }
     }
@@ -162,7 +159,7 @@ class adminlogin extends NoInputCorePage
     {
         ?>
         <div class="baseHeight">
-        <div class="<?php echo $this->box_color; ?> centeredDisplay">
+        <div class="<?php echo $this->boxColor; ?> centeredDisplay">
         <span class="larger">
         <?php echo $this->heading ?>
         </span><br />
@@ -170,7 +167,7 @@ class adminlogin extends NoInputCorePage
             autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="password" id="userPassword" name="userPassword" tabindex="0" onblur="$('#userPassword').focus();" />
         <input type="hidden" name="reginput" id="reginput" value="" />
-        <input type="hidden" name="class" value="<?php echo FormLib::get('class'); ?>" />
+        <input type="hidden" name="class" value="<?php echo $this->form->tryGet('class'); ?>" />
         </form>
         <p>
         <?php echo $this->msg ?>

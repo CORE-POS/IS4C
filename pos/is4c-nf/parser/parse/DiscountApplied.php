@@ -24,7 +24,6 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrehLib;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class DiscountApplied extends Parser 
@@ -40,7 +39,7 @@ class DiscountApplied extends Parser
                 $this->ret = PrehLib::percentDiscount(0,$this->ret);
             } elseif (!is_numeric($strl)) {
                 return false;
-            } elseif (CoreLocal::get("tenderTotal") != 0) {
+            } elseif ($this->session->get("tenderTotal") != 0) {
                 $this->ret['output'] = DisplayLib::boxMsg(
                     _("discount not applicable after tender"),
                     '',

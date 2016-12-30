@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\parse;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class ScaleInput extends Parser {
@@ -35,15 +34,14 @@ class ScaleInput extends Parser {
 
     function parse($str)
     {
+        $this->session->set("scale",0);
         if (substr($str,0,3) == "S11"){
             $weight = substr($str,3);
             if (is_numeric($weight) || $weight < 9999){
-                CoreLocal::set("scale",1);
-                CoreLocal::set("weight",$weight / 100);
+                $this->session->set("scale",1);
+                $this->session->set("weight",$weight / 100);
             }
         }
-        else
-            CoreLocal::set("scale",0);
 
         $ret = $this->default_json();
         $ret['scale'] = $str;

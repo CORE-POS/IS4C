@@ -34,7 +34,6 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 */
 class undo_confirm extends BasicCorePage 
 {
-    private $box_color;
     private $msg;
 
     function body_content()
@@ -43,18 +42,14 @@ class undo_confirm extends BasicCorePage
         ?>
         <div class="baseHeight">
         <?php 
-            if (empty($this->msg))
-                echo DisplayLib::lastpage(); 
-            else {
-                echo $this->msg;    
-            }
+            echo empty($this->msg) ? DisplayLib::lastPage() : $this->msg;
         ?>
         </div>
         <?php
         echo "<div id=\"footer\">";
         echo DisplayLib::printfooter();
         echo "</div>";
-        $this->add_onload_command("\$('#reginput').keyup(function(ev){
+        $this->addOnloadCommand("\$('#reginput').keyup(function(ev){
                     switch(ev.keyCode){
                     case 33:
                         \$('#reginput').val('U11');
@@ -74,7 +69,7 @@ class undo_confirm extends BasicCorePage
                         break;
                     }
                 });\n");
-        $this->add_onload_command("undoInstructions();");
+        $this->addOnloadCommand("undoInstructions();");
     }
 
     function head_content(){
@@ -92,8 +87,8 @@ class undo_confirm extends BasicCorePage
     function preprocess()
     {
         $this->msg = "";
-        if (FormLib::get('reginput', false) !== false) {
-            $input = strtoupper(FormLib::get('reginput'));
+        try {
+            $input = strtoupper($this->form->reginput);
             switch($input) {
                 case 'CL':
                     return $this->cancel();
@@ -108,7 +103,7 @@ class undo_confirm extends BasicCorePage
                 default:
                     break;
             }
-        }
+        } catch (Exception $ex) {}
 
         return true;
     }
@@ -116,14 +111,14 @@ class undo_confirm extends BasicCorePage
     private function assignTransaction()
     {
         $dbc = Database::tDataConnect();
-        $emp_no = CoreLocal::get('CashierNo');
-        $trans_no = CoreLocal::get('transno');
+        $emp = $this->session->get('CashierNo');
+        $trans = $this->session->get('transno');
         $dbc->query('UPDATE localtemptrans SET
-                    emp_no='.((int)$emp_no).',
-                    trans_no='.((int)$trans_no).'
+                    emp_no='.((int)$emp).',
+                    trans_no='.((int)$trans).'
                     WHERE
-                    emp_no<>'.((int)$emp_no).' OR
-                    trans_no<>'.((int)$trans_no));
+                    emp_no<>'.((int)$emp).' OR
+                    trans_no<>'.((int)$trans));
     }
 
     private function cancel()

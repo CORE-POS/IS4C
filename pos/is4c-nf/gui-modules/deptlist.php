@@ -68,7 +68,7 @@ class deptlist extends NoInputCorePage
     {
         try {
             // a selection was made
-            return $this->handleInput($this->form->input);
+            return $this->handleInput($this->form->search);
         } catch (Exception $ex) {}
 
         return true;

@@ -26,12 +26,10 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class LineItemDiscount extends Parser 
 {
-
     /* Parse module matches input LD */
     function check($str)
     {
@@ -46,7 +44,7 @@ class LineItemDiscount extends Parser
         $ret = $this->default_json();
 
         // this is the currently selected item
-        $transID = CoreLocal::get("currentid");
+        $transID = $this->session->get("currentid");
         $row = PrehLib::peekItem(true, $transID);
 
         if ($row === false) {
@@ -94,16 +92,16 @@ class LineItemDiscount extends Parser
             memDiscount=((regPrice*quantity*%f) - (regPrice*quantity*%f)),
             discounttype=2
             WHERE trans_id=%d",
-            CoreLocal::get("LineItemDiscountNonMem"),
-            CoreLocal::get("LineItemDiscountNonMem"),
-            CoreLocal::get("LineItemDiscountMem"),
-            CoreLocal::get("LineItemDiscountNonMem"),
+            $this->session->get("LineItemDiscountNonMem"),
+            $this->session->get("LineItemDiscountNonMem"),
+            $this->session->get("LineItemDiscountMem"),
+            $this->session->get("LineItemDiscountNonMem"),
             $transID);
         $dbc = Database::tDataConnect();
         $dbc->query($discQ);
 
         // add notification line for nonMem discount
-        TransRecord::adddiscount($row['regPrice']*$row['quantity']*CoreLocal::get("LineItemDiscountNonMem"),
+        TransRecord::adddiscount($row['regPrice']*$row['quantity']*$this->session->get("LineItemDiscountNonMem"),
             $row['department']);
 
         // footer should be redrawn since savings and totals

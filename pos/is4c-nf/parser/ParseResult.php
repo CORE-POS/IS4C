@@ -105,7 +105,7 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
     public function current()
     {
         $key = $this->key();
-        return $key === null ? $null : $this->value[$key];
+        return $key === null ? null : $this->value[$key];
     }
 
     public function key()

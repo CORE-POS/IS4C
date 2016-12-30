@@ -23,9 +23,9 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MemberLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class MemberID extends Parser 
@@ -41,22 +41,22 @@ class MemberID extends Parser
 
     function parse($str)
     {
+        $ret = $this->default_json();
         if ($str == "0ID") {
             // Member zero clears member info from the transaction
-            \COREPOS\pos\lib\MemberLib::clear();
+            MemberLib::clear();
             $ret = array("main_frame"=>false,
                 "output"=>DisplayLib::lastpage(),
                 "target"=>".baseHeight",
                 "redraw_footer"=>true
             );
             return $ret;
-        } else if (CoreLocal::get('RestrictDefaultNonMem') == 1 && $str == (CoreLocal::get('defaultNonMem') . 'ID')) {
+        } elseif ($this->session->get('RestrictDefaultNonMem') == 1 && $str == ($this->session->get('defaultNonMem') . 'ID')) {
             // PrehLib::ttl will automatically prompt for member if it
             // has not been entered; otherwise just total
-            $ret = $this->default_json();
             $try = PrehLib::ttl();
             if ($try !== true) {
-                $ret['main_frame'] = $try.'?idSearch='.CoreLocal::get('defaultNonMem');
+                $ret['main_frame'] = $try.'?idSearch='.$this->session->get('defaultNonMem');
             } else {
                 $ret['output'] = DisplayLib::lastpage();
             }
@@ -64,11 +64,10 @@ class MemberID extends Parser
         } elseif ($str === 'ID') {
             $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/memlist.php';
             return $ret;
-        } else {
-            // always re-apply other member numbers
-            $ret = \COREPOS\pos\lib\MemberLib::memberID(substr($str,0,strlen($str)-2));
-            return $ret;
         }
+        // always re-apply other member numbers
+        $ret = MemberLib::memberID(substr($str,0,strlen($str)-2));
+        return $ret;
     }
 
     function doc()

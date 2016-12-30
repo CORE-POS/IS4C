@@ -25,7 +25,6 @@ use COREPOS\pos\lib\gui\BasicCorePage;
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
@@ -38,16 +37,16 @@ CoreState::loadParams();
 class login2 extends BasicCorePage 
 {
 
-    private $box_css_class;
+    private $boxCSS;
     private $msg;
 
     private function getPassword()
     {
-        $passwd = FormLib::get('reginput');
+        $passwd = $this->form->tryGet('reginput');
         if ($passwd !== '') {
             UdpComm::udpSend('goodBeep');
         } else {
-            $passwd = FormLib::get('userPassword');
+            $passwd = $this->form->tryGet('userPassword');
         }
 
         return $passwd;
@@ -55,11 +54,11 @@ class login2 extends BasicCorePage
 
     public function preprocess()
     {
-        $this->box_css_class = 'coloredArea';
+        $this->boxCSS = 'coloredArea';
         $this->msg = _('please enter your password');
         $this->body_class = '';
 
-        if (FormLib::get('reginput', false) !== false || FormLib::get('userPassword', false) !== false) {
+        if ($this->form->tryGet('reginput', false) !== false || $this->form->tryGet('userPassword', false) !== false) {
             $passwd = $this->getPassword();
             if (Authenticate::checkPassword($passwd)) {
 
@@ -70,24 +69,23 @@ class login2 extends BasicCorePage
                     $sdObj->ReadReset();
                 }
 
-                $my_drawer = $this->getDrawer();
+                $drawer = $this->getDrawer();
                 TransRecord::addLogRecord(array(
                     'upc' => 'SIGNIN',
-                    'description' => 'Sign In Emp#' . CoreLocal::get('CashierNo'),
+                    'description' => 'Sign In Emp#' . $this->session->get('CashierNo'),
                 ));
                 $this->kick();
 
-                if ($my_drawer == 0) {
+                if ($drawer == 0) {
                     $this->change_page($this->page_url."gui-modules/drawerPage.php");
                 } else {
                     $this->change_page($this->page_url."gui-modules/pos2.php");
                 }
 
                 return false;
-            } else {
-                $this->box_css_class = 'errorColoredArea';
-                $this->msg = _('password invalid, please re-enter');
             }
+            $this->boxCSS = 'errorColoredArea';
+            $this->msg = _('password invalid, please re-enter');
         }
 
         return true;
@@ -126,7 +124,7 @@ class login2 extends BasicCorePage
             </div>
         </div>
         <div id="loginCenter">
-        <div class="box <?php echo $this->box_css_class; ?> rounded">
+        <div class="box <?php echo $this->boxCSS; ?> rounded">
                 <b><?php echo _("log in"); ?></b>
                 <form id="formlocal" name="form" method="post" autocomplete="off" 
                     action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
@@ -160,18 +158,17 @@ class login2 extends BasicCorePage
         /**
           Find a drawer for the cashier
         */
-        $my_drawer = Drawers::current();
-        if ($my_drawer == 0) {
+        $drawer = Drawers::current();
+        Drawers::assign($this->session->get('CashierNo'),$drawer);
+        if ($drawer == 0) {
             $available = Drawers::available();    
             if (count($available) > 0) { 
-                Drawers::assign(CoreLocal::get('CashierNo'),$available[0]);
-                $my_drawer = $available[0];
+                Drawers::assign($this->session->get('CashierNo'),$available[0]);
+                $drawer = $available[0];
             }
-        } else {
-            Drawers::assign(CoreLocal::get('CashierNo'),$my_drawer);
         }
 
-        return $my_drawer;
+        return $drawer;
     }
 
     private function kick()
@@ -184,8 +181,8 @@ class login2 extends BasicCorePage
         if (session_id() != '') {
             session_write_close();
         }
-        $kicker_object = Kicker::factory(CoreLocal::get('kickerModule'));
-        if ($kicker_object->kickOnSignIn()) {
+        $kicker = Kicker::factory($this->session->get('kickerModule'));
+        if ($kicker->kickOnSignIn()) {
             Drawers::kick();
         }
     }

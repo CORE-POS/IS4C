@@ -49,7 +49,7 @@ class pos2 extends BasicCorePage
         $this->setOutput($json);
         $this->registerRetry($json);
         $this->registerPrintJob($json);
-        if (CoreLocal::get('CustomerDisplay') == true) {
+        if ($this->session->get('CustomerDisplay') == true) {
             $this->loadCustomerDisplay();
         }
 
@@ -61,9 +61,9 @@ class pos2 extends BasicCorePage
     {
         if (isset($json['main_frame']) && $json['main_frame'] != false) {
             return $json['main_frame'];
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // @hintable
@@ -93,9 +93,9 @@ class pos2 extends BasicCorePage
 
     private function loadCustomerDisplay()
     {
-        if (CoreLocal::get('CustomerDisplay') == true) {
-            $child_url = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
-            $this->add_onload_command("CustomerDisplay.setURL('{$child_url}');\n");
+        if ($this->session->get('CustomerDisplay') == true) {
+            $childUrl = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
+            $this->add_onload_command("CustomerDisplay.setURL('{$childUrl}');\n");
             $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
         }
     }
@@ -119,8 +119,8 @@ class pos2 extends BasicCorePage
     {
         $lines = DisplayLib::screenLines();
         $this->input_header('action="pos2.php" onsubmit="return pos2.submitWrapper();"');
-        if (CoreLocal::get("timeout") != "") {
-            $timeout = sprintf('%d', CoreLocal::get('timeout'));
+        if ($this->session->get("timeout") != "") {
+            $timeout = sprintf('%d', $this->session->get('timeout'));
             $this->add_onload_command("pos2.enableScreenLock({$timeout});\n");
         }
         $this->add_onload_command("pos2.setNumLines({$lines});\n");
@@ -128,19 +128,19 @@ class pos2 extends BasicCorePage
 
         echo '<div class="baseHeight">';
 
-        CoreLocal::set("quantity",0);
-        CoreLocal::set("multiple",0);
-        CoreLocal::set("casediscount",0);
+        $this->session->set("quantity",0);
+        $this->session->set("multiple",0);
+        $this->session->set("casediscount",0);
         // set memberID if not set already
-        if (!CoreLocal::get("memberID")) {
-            CoreLocal::set("memberID","0");
+        if (!$this->session->get("memberID")) {
+            $this->session->set("memberID","0");
         }
 
-        if (CoreLocal::get("plainmsg") && strlen(CoreLocal::get("plainmsg")) > 0) {
+        if ($this->session->get("plainmsg") && strlen($this->session->get("plainmsg")) > 0) {
             echo DisplayLib::printheaderb();
             echo "<div class=\"centerOffset\">";
-            echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
-            CoreLocal::set("plainmsg",0);
+            echo DisplayLib::plainmsg($this->session->get("plainmsg"));
+            $this->session->set("plainmsg",0);
             echo "</div>";
         } elseif (!empty($this->display)) {
             echo $this->display;
@@ -154,7 +154,7 @@ class pos2 extends BasicCorePage
         echo DisplayLib::printfooter();
         echo "</div>";
 
-        if (CoreLocal::get("touchscreen")) {
+        if ($this->session->get("touchscreen")) {
             $this->touchScreenKeys();
         }
     } // END body_content() FUNCTION

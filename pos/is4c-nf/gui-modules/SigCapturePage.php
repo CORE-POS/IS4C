@@ -24,14 +24,12 @@
 use COREPOS\pos\lib\gui\BasicCorePage;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class SigCapturePage extends BasicCorePage 
 {
-
-    private $bmp_path;
+    private $bmpPath;
 
     function head_content()
     {
@@ -40,7 +38,7 @@ class SigCapturePage extends BasicCorePage
         <script type="text/javascript">
         function parseWrapper(str) {
             if (str.substring(0, 7) == 'TERMBMP') {
-                var fn = '<?php echo $this->bmp_path; ?>' + str.substring(7);
+                var fn = '<?php echo $this->bmpPath; ?>' + str.substring(7);
                 $('<input>').attr({
                     type: 'hidden',
                     name: 'bmpfile',
@@ -72,21 +70,19 @@ class SigCapturePage extends BasicCorePage
 
     function preprocess()
     {
-        $this->bmp_path = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
+        $this->bmpPath = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
 
-        $terminal_msg = 'termSig';
-        $amt = FormLib::get('amt');
+        $terminalMsg = 'termSig';
+        $amt = $this->form->tryGet('amt');
         if ($amt !== '') {
-            if (FormLib::get('type') !== '') {
-               $terminal_msg .= sprintf('%s: $.%2f', FormLib::get('type'), $amt);
-            } else {
-                $terminal_msg .= sprintf('Amount: $.%2f', $amt);
-            }
+            $type = $this->form->tryGet('type');
+            $terminalMsg .= $type !== '' ? sprintf('%s: $.%2f', $type, $amt) : sprintf('Amount: $.%2f', $amt);
         }
 
-        if (FormLib::get('reginput', false) !== false) {
-            $bmpfile = FormLib::get('bmpfile');
-            if (strtoupper(FormLib::get('reginput')) === 'CL') {
+        try {
+            $input = $this->form->reginput;
+            $bmpfile = $this->form->tryGet('bmpfile');
+            if (strtoupper($input) === 'CL') {
                 if ($bmpfile !== '' && file_exists($bmpfile)) {
                     unlink($bmpfile);
                 }
@@ -94,14 +90,14 @@ class SigCapturePage extends BasicCorePage
                 UdpComm::udpSend('termReset');
 
                 return false;
-            } elseif (FormLib::get('reginput', false) === '') {
+            } elseif ($input === '') {
                 if ($bmpfile !== '' && file_exists($bmpfile)) {
 
                     // this should have been set already, but if we have sufficient info
                     // we can make sure it's correct.
                     $qstr = '';
-                    if (FormLib::get('code') !== '') {
-                        $qstr = '?reginput=' . urlencode((100*$amt) . FormLib::get('code'))
+                    if ($this->form->tryGet('code') !== '') {
+                        $qstr = '?reginput=' . urlencode((100*$amt) . $this->form->code)
                             . '&repeat=1';
                     }
 
@@ -112,13 +108,11 @@ class SigCapturePage extends BasicCorePage
                     $this->change_page($this->page_url.'gui-modules/pos2.php' . $qstr);
 
                     return false;
-
-                } else {
-                    UdpComm::udpSend($terminal_msg);
                 }
+                UdpComm::udpSend($terminalMsg);
             }
-        } else {
-            UdpComm::udpSend($terminal_msg);
+        } catch (Exception $ex) {
+            UdpComm::udpSend($terminalMsg);
         }
 
         return true;
@@ -137,10 +131,10 @@ class SigCapturePage extends BasicCorePage
         Database::getsubtotals();
         $args = array(
             date('Y-m-d H:i:s'),
-            CoreLocal::get('CashierNo'),
-            CoreLocal::get('laneno'),
-            CoreLocal::get('transno'),
-            CoreLocal::get('LastID') + 1,
+            $this->session->get('CashierNo'),
+            $this->session->get('laneno'),
+            $this->session->get('transno'),
+            $this->session->get('LastID') + 1,
             $format,
             $img_content,
         );
@@ -166,16 +160,10 @@ class SigCapturePage extends BasicCorePage
 
         echo "<div id=\"imgArea\"></div>";
         echo '<div class="textArea">';
-        if (!isset($_REQUEST['amt'])) {
-            $_REQUEST['amt'] = 0.00;
-        }
-        if (!isset($_REQUEST['type'])) {
-            $_REQUEST['type'] = 'Unknown';
-        }
-        if (!isset($_REQUEST['code'])) {
-            $_REQUEST['code'] = '??';
-        }
-        echo '$' . sprintf('%.2f', $_REQUEST['amt']) . ' as ' . $_REQUEST['type'];
+        $amt = $this->form->tryGet('amt', 0.00);
+        $type = $this->form->tryGet('type', 'Unknown');
+        $code = $this->form->tryGet('code', '??');
+        echo '$' . sprintf('%.2f', $amt) . ' as ' . $type;
         echo '<br />';
         echo '<span id="sigInstructions" style="font-size:90%;">';
         echo _('[enter] to get re-request signature, [clear] to cancel');
@@ -189,11 +177,11 @@ class SigCapturePage extends BasicCorePage
         echo DisplayLib::printfooter();
         echo "</div>";
 
-        $this->add_onload_command("addToForm('amt', '{$_REQUEST['amt']}');\n");
-        $this->add_onload_command("addToForm('type', '{$_REQUEST['type']}');\n");
-        $this->add_onload_command("addToForm('code', '{$_REQUEST['code']}');\n");
+        $this->add_onload_command("addToForm('amt', '{$amt}');\n");
+        $this->add_onload_command("addToForm('type', '{$type}');\n");
+        $this->add_onload_command("addToForm('code', '{$code}');\n");
         
-        CoreLocal::set("boxMsg",'');
+        $this->session->set("boxMsg",'');
     } // END body_content() FUNCTION
 }
 

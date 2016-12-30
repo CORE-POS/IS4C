@@ -27,7 +27,6 @@ use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 use \Exception;
 
@@ -40,9 +39,9 @@ class Void extends Parser
     {
         if (substr($str,0,2) == "VD" && strlen($str) <= 15) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function parse($str)
@@ -53,7 +52,7 @@ class Void extends Parser
             $this->checkVoidLimit(0);
             if (strlen($str) > 2) {
                 $ret = $this->voidupc(substr($str,2), $ret);
-            } elseif (CoreLocal::get("currentid") == 0) {
+            } elseif ($this->session->get("currentid") == 0) {
                 $ret['output'] = DisplayLib::boxMsg(
                     _("No Item on Order"),
                     '',
@@ -61,7 +60,7 @@ class Void extends Parser
                     DisplayLib::standardClearButton()
                 );
             } else {
-                $trans_id = CoreLocal::get("currentid");
+                $trans_id = $this->session->get("currentid");
 
                 $status = $this->checkstatus($trans_id);
                 $this->scaleprice = $status['scaleprice'];
@@ -213,7 +212,7 @@ class Void extends Parser
         } elseif ($row['trans_status'] == 'R' && $row['trans_type'] == 'D') {
             // set refund flag and let that logic reverse
             // the total and quantity
-            CoreLocal::set('refund', 1);
+            $this->session->set('refund', 1);
             $total = $row['total'];
             $quantity = $row['quantity'];
         }
@@ -275,7 +274,7 @@ class Void extends Parser
             ));
 
             if ($row["trans_type"] != "T") {
-                CoreLocal::set("ttlflag",0);
+                $this->session->set("ttlflag",0);
             } else {
                 PrehLib::ttl();
             }
@@ -301,12 +300,11 @@ class Void extends Parser
             list($quantity, $upc) = explode('*', $upc, 2);
             if ($quantity === '' || $upc === '' || !is_numeric($quantity) || !is_numeric($upc)) {
                 throw new Exception(DisplayLib::inputUnknown());
-            } else {
-                $weight = 0;
             }
+            $weight = 0;
         } else {
             $quantity = 1;
-            $weight = CoreLocal::get("weight");
+            $weight = $this->session->get("weight");
         }
         
         return array($upc, $quantity, $weight);
@@ -322,7 +320,7 @@ class Void extends Parser
                 $scaleprice = substr($upc, 10, 4)/100;
                 $upc = substr($upc, 0, 8) . "0000";
                 $deliflag = true;
-            } else if (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
+            } elseif (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
                 $scaleprice = $this->scaleprice;
                 $deliflag = true;
             }
@@ -438,9 +436,9 @@ class Void extends Parser
         $result = $dbc->query($query_upc);
         if ($dbc->numRows($result) > 0) {
             return $dbc->fetchRow($result);
-        } else {
-            return $this->findUpcLine($upc, $scaleprice, $deliflag, -1);
         }
+
+        return $this->findUpcLine($upc, $scaleprice, $deliflag, -1);
     }
 
     private function adjustUnitPrice($upc, $row)
@@ -452,11 +450,11 @@ class Void extends Parser
           member status. I'm not sure this is actually
           necessary.
         */
-        if ((CoreLocal::get("isMember") != 1 && $row["discounttype"] == 2) || 
-            (CoreLocal::get("isStaff") == 0 && $row["discounttype"] == 4)) {
+        if (($this->session->get("isMember") != 1 && $row["discounttype"] == 2) || 
+            ($this->session->get("isStaff") == 0 && $row["discounttype"] == 4)) {
             $unitPrice = $row["regPrice"];
-        } elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
-            (CoreLocal::get("isStaff") != 0 && $row["discounttype"] == 4)) && 
+        } elseif ((($this->session->get("isMember") == 1 && $row["discounttype"] == 2) || 
+            ($this->session->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
             ($row["unitPrice"] == $row["regPrice"])) {
             $dbc_p = Database::pDataConnect();
             $query_p = "select special_price from products where upc = '".$upc."'";
@@ -475,11 +473,11 @@ class Void extends Parser
           Check if the voiding item will exceed the limit. If so,
           prompt for admin password. 
         */
-        if (is_numeric(CoreLocal::get('VoidLimit')) && CoreLocal::get('VoidLimit') > 0) {
-            $currentTotal = CoreLocal::get('voidTotal');
-            if ($currentTotal + (-1*$total) > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
-                CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-                CoreLocal::set('voidOverride', 0);
+        if (is_numeric($this->session->get('VoidLimit')) && $this->session->get('VoidLimit') > 0) {
+            $currentTotal = $this->session->get('voidTotal');
+            if ($currentTotal + (-1*$total) > $this->session->get('VoidLimit') && $this->session->get('voidOverride') != 1) {
+                $this->session->set('strRemembered', $this->session->get('strEntered'));
+                $this->session->set('voidOverride', 0);
                 throw new Exception(MiscLib::baseUL().'gui-modules/adminlogin.php?class=COREPOS-pos-parser-parse-Void', 1);
             }
         }
@@ -487,7 +485,7 @@ class Void extends Parser
 
     private function checkTendered($total)
     {
-        if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
+        if ($this->session->get("tenderTotal") < 0 && (-1 * $total) > $this->session->get("runningTotal") - $this->session->get("taxTotal")) {
             $dbc = Database::tDataConnect();
             $cash = $dbc->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
             if ($dbc->num_rows($cash) > 0) {
@@ -519,8 +517,8 @@ class Void extends Parser
             $row = $this->findUPC($upc, $deliflag, $scaleprice);
 
             if (($row["scale"] == 1) && $weight > 0) {
-                $quantity = $weight - CoreLocal::get("tare");
-                CoreLocal::set("tare", 0);
+                $quantity = $weight - $this->session->get("tare");
+                $this->session->set("tare", 0);
             }
             $volDiscType = $row["volDiscType"];
             $voidable = MiscLib::nullwrap($row["voidable"]);
@@ -599,7 +597,7 @@ class Void extends Parser
                 ));
 
                 if ($row["trans_type"] != "T") {
-                    CoreLocal::set("ttlflag",0);
+                    $this->session->set("ttlflag",0);
                 }
 
                 $this->voidDeposit($upc, $quantity);
@@ -652,13 +650,13 @@ class Void extends Parser
     public static function adminLoginCallback($success)
     {
         if ($success){
-            CoreLocal::set('voidOverride', 1);
-            CoreLocal::set('msgrepeat', 1);
+            $this->session->set('voidOverride', 1);
+            $this->session->set('msgrepeat', 1);
             return true;
-        } else {
-            CoreLocal::set('voidOverride', 0);
-            return false;
         }
+        $this->session->set('voidOverride', 0);
+
+        return false;
     }
 
     function doc(){
@@ -708,8 +706,8 @@ class Void extends Parser
             if ($row["trans_status"] == "V") {
                 $ret['status'] = 'V';
             } elseif ($row["trans_status"] == "R") {
-                CoreLocal::set("refund",1);
-                CoreLocal::set("autoReprint",1);
+                $this->session->set("refund",1);
+                $this->session->set("autoReprint",1);
                 $ret['status'] = 'R';
                 $ret['refund'] = true;
             }

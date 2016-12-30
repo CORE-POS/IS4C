@@ -37,19 +37,15 @@ class posCustDisplay extends BasicCorePage
         <div class="baseHeight">
         <?php
 
-        if (CoreLocal::get("plainmsg") && strlen(CoreLocal::get("plainmsg")) > 0) {
+        if ($this->session->get("plainmsg") && strlen($this->session->get("plainmsg")) > 0) {
             echo DisplayLib::printheaderb();
             echo "<div class=\"centerOffset\">";
-            echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
+            echo DisplayLib::plainmsg($this->session->get("plainmsg"));
             echo "</div>";
         } else {
             // No input and no messages, so
             // list the items
-            if (CoreLocal::get("End") == 1) {
-                echo DisplayLib::printReceiptfooter(true);
-            } else {
-                echo DisplayLib::lastpage(true);
-            }
+            echo ($this->session->get("End") == 1) ? DisplayLib::printReceiptfooter(true) : DisplayLib::lastpage(true);
         }
         echo "</div>"; // end base height
 
@@ -62,17 +58,17 @@ class posCustDisplay extends BasicCorePage
     public function unitTest($phpunit)
     {
         ob_start();
-        CoreLocal::set('plainmsg', 'foo');
+        $this->session->set('plainmsg', 'foo');
         $this->body_content();
         $body = ob_get_clean();
         $phpunit->assertNotEquals(0, strlen($body));
         ob_start();
-        CoreLocal::set('plainmsg', '');
-        CoreLocal::set('End', 1);
+        $this->session->set('plainmsg', '');
+        $this->session->set('End', 1);
         $this->body_content();
         $body = ob_get_clean();
         $phpunit->assertNotEquals(0, strlen($body));
-        CoreLocal::set('End', 0);
+        $this->session->set('End', 0);
     }
 }
 

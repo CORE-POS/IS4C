@@ -23,7 +23,6 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class DonationKey extends Parser 
@@ -32,14 +31,14 @@ class DonationKey extends Parser
     {
         if ($str == "RU" || substr($str,-2)=="RU") {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     function parse($str)
     {
-        $dept = CoreLocal::get('roundUpDept');
+        $dept = $this->session->get('roundUpDept');
         if ($dept === '') {
             $dept = 701;
         }
@@ -47,7 +46,7 @@ class DonationKey extends Parser
         $ret = $this->default_json();
         if ($str == "RU") {
             Database::getsubtotals();
-            $ttl = CoreLocal::get("amtdue");    
+            $ttl = $this->session->get("amtdue");    
             $next = ceil($ttl);
             $amt = sprintf('%.2f',(($ttl == $next) ? 1.00 : ($next - $ttl)));
             $ret = \COREPOS\pos\lib\DeptLib::deptkey($amt*100, $dept.'0', $ret);

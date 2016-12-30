@@ -23,7 +23,6 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\MiscLib;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class TenderKey extends Parser 
@@ -33,7 +32,7 @@ class TenderKey extends Parser
     {
         if (substr($str, -2) == "TT" && strlen($str) >=3 && is_numeric(substr($str, 0, strlen($str)-2))) {
             return true;
-        } else if ($str == "TT") {
+        } elseif ($str == "TT") {
             return true;
         }
 
@@ -46,7 +45,7 @@ class TenderKey extends Parser
 
         $amt = substr($str,0,strlen($str)-2);
         if ($amt === "") {
-            $amt = 100*CoreLocal::get("amtdue");
+            $amt = 100*$this->session->get("amtdue");
         }
         $ret = $this->default_json();
         $ret['main_frame'] = $my_url.'gui-modules/tenderlist.php?amt=' . $amt;
