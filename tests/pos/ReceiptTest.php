@@ -358,8 +358,6 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testLib()
     {
-        Franking::endorse('foo');
-
         CoreLocal::set('dualDrawerMode', 1, true);
         $drawers = new Drawers(new WrappedStorage(), Database::pDataConnect());
         $drawers->free(1);
@@ -376,10 +374,11 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterCust(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterStore(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printCabCoupon(time(), '1-1-1')));
-        Franking::frank(1);
-        Franking::frankgiftcert(1);
-        Franking::frankstock(1);
-        Franking::frankclassreg(1);
+        $frank = new Franking(new WrappedStorge());
+        $frank->frank(1);
+        $frank->frankgiftcert(1);
+        $frank->frankstock(1);
+        $frank->frankclassreg(1);
         $this->assertEquals(chr(27).chr(33).chr(5), ReceiptLib::normalFont());
         $this->assertEquals(chr(27).chr(33).chr(9), ReceiptLib::boldFont());
         ReceiptLib::bold();
