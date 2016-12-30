@@ -875,8 +875,13 @@ HTML;
             $ret .= "<a href=\"\" onclick=\"batchEdit.forceNow($id); return false;\">Force batch</a> | ";
         }
         if ($dtype != 0) {
-            $ret .= "<a href=\"\" onclick=\"batchEdit.unsaleNow($id); return false;\">Stop Sale</a> ";
+            $ret .= "<a href=\"\" onclick=\"batchEdit.unsaleNow($id); return false;\">Stop Sale</a> | ";
         }
+        
+        $ret .= "<a href=\"\" onclick=\"mod.cutAll($id,$uid); return false;\">Cut All</a> ";
+        //$ret .= "<a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutAll('{json_encode($blUpcs)}',$id,$uid,1); return false;\">Cut All</a> ";
+        
+        //<a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
 
         if ($dtype == 0) {
             $ret .= " <a href=\"\" onclick=\"batchEdit.trimPcBatch($id); return false;\">Trim Unchanged</a> ";
