@@ -565,7 +565,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         foreach($all as $class){
             $obj = new $class();
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialUPC',$obj);
-            $this->assertInternalType('boolean',$obj->is_special('silly nonsense input'));
+            $this->assertInternalType('boolean',$obj->isSpecial('silly nonsense input'));
         }
 
         $cc = new CouponCode();
@@ -595,7 +595,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $s = new SpecialUPC();
         $this->assertEquals(false, $s->isSpecial('foo'));
-        $this->assertEquals(false, $s->is_special('foo'));
+        $this->assertEquals(false, $s->isSpecial('foo'));
         $this->assertEquals(null, $s->handle('foo', array()));
     }
 
