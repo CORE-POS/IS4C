@@ -37,6 +37,7 @@ class Drawers
     {
         $this->session = $session;
         $this->dbc = $dbc;
+        var_dump($this->dbc);
     }
 
     public function kick() 
