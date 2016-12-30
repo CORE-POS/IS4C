@@ -557,7 +557,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $rk->check('*'));
         $this->assertEquals(true, $rk->check('*2'));
         $dbc = Database::tDataConnect();
-        $upc = new COREPOS\pos\parser\parse\UPC();
+        $upc = new COREPOS\pos\parser\parse\UPC($session);
         lttLib::clear();
         $out = $rk->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
