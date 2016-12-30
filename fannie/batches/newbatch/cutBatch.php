@@ -25,14 +25,12 @@ class cutBatch {} // compat
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 
-    include(dirname(__FILE__).'/../../../config.php');
+    include(dirname(__FILE__).'/../../config.php');
     if (!class_exists('FannieAPI')) {
         include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
     }
-    if (!class_exists('wfcuRegistryModel')) {
-        include_once($FANNIE_ROOT.'modules/plugins2.0/WfcClassRegistry/wfcuRegistryModel.php');
-    }
 
+	$ret = '';
     $timeStamp = date('Y-m-d h:i:s');
     $dbc = FannieDB::get($FANNIE_OP_DB);
     
@@ -46,6 +44,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
     $cut->batchID($id);
     $cut->uid($uid);
     
+    $ret = array('error' => 0);
     foreach ($blModel->find() as $item) {
         $cut->upc($item->upc());
         $cut->batchID($id);

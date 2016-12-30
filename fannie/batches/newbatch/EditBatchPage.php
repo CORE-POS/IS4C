@@ -878,11 +878,8 @@ HTML;
             $ret .= "<a href=\"\" onclick=\"batchEdit.unsaleNow($id); return false;\">Stop Sale</a> | ";
         }
         
-        $ret .= "<a href=\"\" onclick=\"mod.cutAll($id,$uid); return false;\">Cut All</a> ";
-        //$ret .= "<a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutAll('{json_encode($blUpcs)}',$id,$uid,1); return false;\">Cut All</a> ";
+        $ret .= "<a href=\"\" onclick=\"batchEdit.cutAll($id,$uid); return false;\">Cut All</a> ";
         
-        //<a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
-
         if ($dtype == 0) {
             $ret .= " <a href=\"\" onclick=\"batchEdit.trimPcBatch($id); return false;\">Trim Unchanged</a> ";
         } else {
@@ -988,13 +985,13 @@ HTML;
                 </td>";
             if ($fetchW['isCut'] == 1) {
                 $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
-                    <a href=\"\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 0); return false;\">Undo</a>
-                    <a href=\"\" class=\"collapse\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 1); return false;\">Cut</a>
+                    <a href=\"\" class=\"unCutLink\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 0); return false;\">Undo</a>
+                    <a href=\"\" class=\"cutLink collapse\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 1); return false;\">Cut</a>
                     </td>";
             } else {
                 $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
-                    <a href=\"\" class=\"collapse\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,0); return false;\">Undo</a>
-                    <a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
+                    <a href=\"\" class=\"unCutLink collapse\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,0); return false;\">Undo</a>
+                    <a href=\"\" class=\"cutLink\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
                     </td>";
             }
 
