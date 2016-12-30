@@ -528,17 +528,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::addfsones(3);
-        $record = lttLib::genericRecord();
-        $record['description'] = 'FS Change';
-        $record['trans_type'] = 'T';
-        $record['trans_subtype'] = 'FS';
-        $record['total'] = 3;
-        $record['voided'] = 8;
-        lttLib::verifyRecord(1, $record, $this);
-
-        lttLib::clear();
-
         CoreLocal::set('itemPD', 5);
         TransRecord::adddiscount(5.45,25);
         CoreLocal::set('itemPD', 0);
