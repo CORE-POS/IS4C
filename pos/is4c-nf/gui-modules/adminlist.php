@@ -38,7 +38,6 @@ class adminlist extends NoInputCorePage
         $emp = $this->session->get('CashierNo');    
         $this->security = Authenticate::getPermission($emp);
 
-        if (FormLib::get('selectlist', false) !== false) {
         try {
             $choice = $this->form->selectlist;
             if (!FormLib::validateToken()) {
