@@ -658,21 +658,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::addCashDrop('90.78');
-        $record = lttLib::genericRecord();
-        $record['upc'] = 'DROP';
-        $record['description'] = 'Cash Drop';
-        $record['trans_type'] = 'I';
-        $record['trans_status'] = 'X';
-        $record['quantity'] = 1;
-        $record['ItemQtty'] = 1;
-        $record['unitPrice'] = -90.78;
-        $record['total'] = -90.78;
-        $record['charflag'] = 'CD';
-        lttLib::verifyRecord(1, $record, $this);
-
-        lttLib::clear();
-
         $record = lttLib::genericRecord();
         $record['upc'] = 'UNITTEST';
         $record['description'] = 'Unit Test';
