@@ -30,25 +30,32 @@ use COREPOS\pos\lib\MiscLib;
 */
 class Franking 
 {
-    static public function frank($amount) 
-    {
-        $date = strftime("%m/%d/%y %I:%M %p", time());
-        $ref = trim(\CoreLocal::get("memberID"))." ".trim(\CoreLocal::get("CashierNo"))." ".trim(\CoreLocal::get("laneno"))." ".trim(\CoreLocal::get("transno"));
-        $tender = _("AMT: ").MiscLib::truncate2($amount)._("  CHANGE: ").MiscLib::truncate2(\CoreLocal::get("change"));
-        $output = self::centerCheck($ref)."\n"
-            .self::centerCheck($date)."\n"
-            .self::centerCheck(\CoreLocal::get("ckEndorse1"))."\n"
-            .self::centerCheck(\CoreLocal::get("ckEndorse2"))."\n"
-            .self::centerCheck(\CoreLocal::get("ckEndorse3"))."\n"
-            .self::centerCheck(\CoreLocal::get("ckEndorse4"))."\n"
-            .self::centerCheck($tender)."\n";
+    private $session;
 
-        self::endorse($output);
+    public function __construct($session)
+    {
+        $this->session = $session;
     }
 
-    static public function frankgiftcert($amount) 
+    public function frank($amount) 
     {
-        $ref = trim(\CoreLocal::get("CashierNo"))."-".trim(\CoreLocal::get("laneno"))."-".trim(\CoreLocal::get("transno"));
+        $date = strftime("%m/%d/%y %I:%M %p", time());
+        $ref = trim($this->session->get("memberID"))." ".trim($this->session->get("CashierNo"))." ".trim($this->session->get("laneno"))." ".trim($this->session->get("transno"));
+        $tender = _("AMT: ").MiscLib::truncate2($amount)._("  CHANGE: ").MiscLib::truncate2($this->session->get("change"));
+        $output = $this->centerCheck($ref)."\n"
+            .$this->centerCheck($date)."\n"
+            .$this->centerCheck($this->session->get("ckEndorse1"))."\n"
+            .$this->centerCheck($this->session->get("ckEndorse2"))."\n"
+            .$this->centerCheck($this->session->get("ckEndorse3"))."\n"
+            .$this->centerCheck($this->session->get("ckEndorse4"))."\n"
+            .$this->centerCheck($tender)."\n";
+
+        $this->endorse($output);
+    }
+
+    public function frankgiftcert($amount) 
+    {
+        $ref = trim($this->session->get("CashierNo"))."-".trim($this->session->get("laneno"))."-".trim($this->session->get("transno"));
         $timeNow = strftime("%m/%d/%y", time());                // apbw 3/10/05 "%D" didn't work - Franking patch
         $nextYearStamp = mktime(0,0,0,date("m"), date("d"), date("Y")+1);
         $nextYear = strftime("%m/%d/%y", $nextYearStamp);        // apbw 3/10/05 "%D" didn't work - Franking patch
@@ -61,39 +68,39 @@ class Franking
         $output .= str_repeat("\n", 3);
         $output .= str_repeat(" ", 75);
         $output .= "$".MiscLib::truncate2($amount);
-        self::endorse($output); 
+        $this->endorse($output); 
     }
 
-    static public function frankstock($amount) 
+    public function frankstock($amount) 
     {
         $timeNow = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
-        $ref = trim(\CoreLocal::get("CashierNo"))."-".trim(\CoreLocal::get("laneno"))."-".trim(\CoreLocal::get("transno"));
+        $ref = trim($this->session->get("CashierNo"))."-".trim($this->session->get("laneno"))."-".trim($this->session->get("transno"));
         $output  = "";
         $output .= str_repeat("\n", 40);    // 03/24/05 apbw Wedge Printer Swap Patch
-        if (\CoreLocal::get("equityAmt")){
+        if ($this->session->get("equityAmt")){
             $output = _("Equity Payment ref: ").$ref."   ".$timeNow; // WFC 
-            \CoreLocal::set("equityAmt","");
-            \CoreLocal::set("LastEquityReference",$ref);
+            $this->session->set("equityAmt","");
+            $this->session->set("LastEquityReference",$ref);
         } else {
             $output .= _("Stock Payment $").$amount._(" ref: ").$ref."   ".$timeNow; // apbw 3/24/05 Wedge Printer Swap Patch
         }
 
-        self::endorse($output);
+        $this->endorse($output);
     }
 
-    static public function frankclassreg() 
+    public function frankclassreg() 
     {
-        $ref = trim(\CoreLocal::get("CashierNo"))."-".trim(\CoreLocal::get("laneno"))."-".trim(\CoreLocal::get("transno"));
+        $ref = trim($this->session->get("CashierNo"))."-".trim($this->session->get("laneno"))."-".trim($this->session->get("transno"));
         $timeNow = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
         $output  = "";        
         $output .= str_repeat("\n", 11);        // apbw 3/24/05 Wedge Printer Swap Patch
         $output .= str_repeat(" ", 5);        // apbw 3/24/05 Wedge Printer Swap Patch
         $output .= _("Validated: ").$timeNow._("  ref: ").$ref;     // apbw 3/24/05 Wedge Printer Swap Patch
 
-        self::endorse($output);    
+        $this->endorse($output);    
     }
 
-    static public function endorse($text) 
+    private function endorse($text) 
     {
         ReceiptLib::writeLine(chr(27).chr(64).chr(27).chr(99).chr(48).chr(4)      
             // .chr(27).chr(33).chr(10)
@@ -103,7 +110,7 @@ class Franking
             .chr(27).chr(33).chr(5));
     }
 
-    static private function centerCheck($text) 
+    private function centerCheck($text) 
     {
         return ReceiptLib::center($text, 60);                // apbw 03/24/05 Wedge printer swap patch
     }

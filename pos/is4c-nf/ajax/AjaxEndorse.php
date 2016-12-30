@@ -42,22 +42,23 @@ class AjaxEndorse extends AjaxCallback
             if (session_id() != '')
                 session_write_close();
 
+            $frank = new Franking($this->session);
             switch ($endorseType) {
 
                 case "check":
-                    Franking::frank($amount);
+                    $frank->frank($amount);
                     break;
 
                 case "giftcert":
-                    Franking::frankgiftcert($amount);
+                    $frank->frankgiftcert($amount);
                     break;
 
                 case "stock":
-                    Franking::frankstock($amount);
+                    $frank->frankstock($amount);
                     break;
 
                 case "classreg":
-                    Franking::frankclassreg();
+                    $frank->frankclassreg();
                     break;
 
                 default:

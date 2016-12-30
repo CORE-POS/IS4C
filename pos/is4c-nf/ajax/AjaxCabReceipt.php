@@ -34,7 +34,7 @@ class AjaxCabReceipt extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    public function ajax() {
+    public function ajax()
     {
         try {
             $this->session->set("cabReference",$this->form->input);
