@@ -130,7 +130,6 @@ class pos2 extends BasicCorePage
 
         $this->session->set("quantity",0);
         $this->session->set("multiple",0);
-        $this->session->set("casediscount",0);
         // set memberID if not set already
         if (!$this->session->get("memberID")) {
             $this->session->set("memberID","0");

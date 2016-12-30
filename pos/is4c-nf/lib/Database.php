@@ -123,9 +123,9 @@ static public function mAltName()
     $ret = CoreLocal::get('mAlternative');
     if ($ret) {
         return $ret . '.';
-    } else {
-        return '';
     }
+
+    return '';
 }
 
 // ----------getsubtotals()----------
@@ -240,7 +240,7 @@ static public function getsubtotals()
        view is deprecated we can revisit how these two
        session variables should behave.
     */
-    $taxes = self::LineItemTaxes();
+    $taxes = self::lineItemTaxes();
     $taxTTL = 0.00;
     $exemptTTL = 0.00;
     foreach($taxes as $tax) {
@@ -288,7 +288,7 @@ static public function getsubtotals()
     - exempt (taxes exempted because of foodstamps) 
   There will always be one record for each existing tax rate.
 */
-static public function LineItemTaxes()
+static public function lineItemTaxes()
 {
     $dbc = self::tDataConnect();
     $taxQ = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
@@ -317,7 +317,7 @@ static public function LineItemTaxes()
             $taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
             $taxRows[$i]['fsExempt'] = $taxRows[$i]['fsTaxTotal'];
             $fsTenderTTL = 0;
-        } else if ($fsTenderTTL > $taxRows[$i]['fsTaxable']){
+        } elseif ($fsTenderTTL > $taxRows[$i]['fsTaxable']){
             // CASE 2:
             //    Available foodstamp tender exeeds foodstamp taxable total
             //    Decrement line item tax by foodstamp tax total
@@ -352,21 +352,20 @@ static public function LineItemTaxes()
 
 /**
  Get the next transaction number for a given cashier
- @param $CashierNo cashier number (emp_no in tables) 
+ @param $cashierNo cashier number (emp_no in tables) 
  @return integer transaction number
 */
-static public function gettransno($CashierNo) 
+static public function gettransno($cashierNo) 
 {
     $connection = self::tDataConnect();
-    $database = CoreLocal::get("tDatabase");
-    $register_no = CoreLocal::get("laneno");
+    $registerNo = CoreLocal::get("laneno");
     $query = "SELECT max(trans_no) as maxtransno from localtranstoday where emp_no = "
-        .((int)$CashierNo)." and register_no = "
-        .((int)$register_no).' AND datetime >= ' . $connection->curdate();
+        .((int)$cashierNo)." and register_no = "
+        .((int)$registerNo).' AND datetime >= ' . $connection->curdate();
     $result = $connection->query($query);
     $row = $connection->fetchRow($result);
     if (!$row || !$row["maxtransno"]) {
-        $trans_no = 1;
+        $transNo = 1;
         // automatically trim the relevant table
         // on some installs localtranstoday might be
         // a view pointed at localtrans_today
@@ -376,10 +375,10 @@ static public function gettransno($CashierNo)
         }
         $connection->query($cleanQ);
     } else {
-        $trans_no = $row["maxtransno"] + 1;
+        $transNo = $row["maxtransno"] + 1;
     }
 
-    return $trans_no;
+    return $transNo;
 }
 
 /**
@@ -423,6 +422,7 @@ static public function testremote()
 static public function uploadtoServer()
 {
     $uploaded = 0;
+    CoreLocal::set("standalone",1);
 
     // new upload method makes use of SQLManager's transfer method
     // to simulate cross-server queries
@@ -439,36 +439,29 @@ static public function uploadtoServer()
         return 0;    
     }
 
-    $dt_matches = self::getMatchingColumns($connect,"dtransactions");
+    $dtMatches = self::getMatchingColumns($connect,"dtransactions");
 
     if ($connect->transfer(CoreLocal::get("tDatabase"),
-        "select {$dt_matches} from dtransactions",
-        CoreLocal::get("mDatabase"),"insert into dtransactions ({$dt_matches})")) {
+        "select {$dtMatches} from dtransactions",
+        CoreLocal::get("mDatabase"),"insert into dtransactions ({$dtMatches})")) {
     
         // Moved up
         // DO NOT TRUNCATE; that resets AUTO_INCREMENT
         $connect->query("DELETE FROM dtransactions",
             CoreLocal::get("tDatabase"));
 
-        $su_matches = self::getMatchingColumns($connect,"suspended");
-        $su_success = $connect->transfer(CoreLocal::get("tDatabase"),
-            "select {$su_matches} from suspended",
+        $suMatches = self::getMatchingColumns($connect,"suspended");
+        $suSuccess = $connect->transfer(CoreLocal::get("tDatabase"),
+            "select {$suMatches} from suspended",
             CoreLocal::get("mDatabase"),
-            "insert into suspended ({$su_matches})");
+            "insert into suspended ({$suMatches})");
 
-        if ($su_success) {
+        if ($suSuccess) {
             $connect->query("truncate table suspended",
                 CoreLocal::get("tDatabase"));
             $uploaded = 1;
             CoreLocal::set("standalone",0);
-        } else {
-            $uploaded = 0;
-            CoreLocal::set("standalone",1);
         }
-
-    } else {
-        $uploaded = 0;
-        CoreLocal::set("standalone",1);
     }
 
     if (!self::uploadCCdata()) {
@@ -484,13 +477,13 @@ static public function uploadtoServer()
    and the server db for the given table.
    @param $connection a SQLManager object that's
     already connected
-   @param $table_name the table
+   @param $tableName the table
    @param $table2 is provided, it match columns from
-    local.table_name against remote.table2
+    local.tableName against remote.table2
    @return [string] comma separated list of column names
 */
     // @hintable
-static public function getMatchingColumns($connection,$table_name,$table2="")
+static public function getMatchingColumns($connection,$tableName,$table2="")
 {
     /**
       Cache column information by table in the session
@@ -503,37 +496,37 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     if (!is_array($cache)) {
         $cache = array();
     }
-    if (isset($cache[$table_name]) && CoreLocal::get('standalone') == 0) {
-        return $cache[$table_name];
+    if (isset($cache[$tableName]) && CoreLocal::get('standalone') == 0) {
+        return $cache[$tableName];
     }
 
-    $local_poll = $connection->tableDefinition($table_name,CoreLocal::get("tDatabase"));
-    if ($local_poll === false) {
+    $localPoll = $connection->tableDefinition($tableName,CoreLocal::get("tDatabase"));
+    if ($localPoll === false) {
         return '';
     }
-    $local_cols = array();
-    foreach($local_poll as $name=>$v) {
-        $local_cols[$name] = true;
+    $localCols = array();
+    foreach($localPoll as $name=>$v) {
+        $localCols[$name] = true;
     }
-    $remote_poll = $connection->tableDefinition((!empty($table2)?$table2:$table_name),
+    $remotePoll = $connection->tableDefinition((!empty($table2)?$table2:$tableName),
                 CoreLocal::get("mDatabase"));
-    if ($remote_poll === false) {
+    if ($remotePoll === false) {
         return '';
     }
-    $matching_cols = array();
-    foreach($remote_poll as $name=>$v) {
-        if (isset($local_cols[$name])) {
-            $matching_cols[] = $name;
+    $matchingCols = array();
+    foreach($remotePoll as $name=>$v) {
+        if (isset($localCols[$name])) {
+            $matchingCols[] = $name;
         }
     }
 
     $ret = "";
-    foreach($matching_cols as $col) {
+    foreach($matchingCols as $col) {
         $ret .= $col.",";
     }
     $ret = rtrim($ret,",");
 
-    $cache[$table_name] = $ret;
+    $cache[$tableName] = $ret;
     $cacheItem->set($cache);
     LaneCache::set($cacheItem);
 
@@ -556,15 +549,15 @@ static public function localMatchingColumns($connection,$table1,$table2)
         $cols1[$name] = true;
     }
     $poll2 = $connection->tableDefinition($table2);
-    $matching_cols = array();
+    $matchingCols = array();
     foreach($poll2 as $name=>$v) {
         if (isset($cols1[$name])) {
-            $matching_cols[] = $name;
+            $matchingCols[] = $name;
         }
     }
 
     $ret = "";
-    foreach($matching_cols as $col) {
+    foreach($matchingCols as $col) {
         $ret .= $col.",";
     }
 
@@ -724,14 +717,14 @@ static private function getTaxByName($name)
     $dbc = self::tDataConnect();
 
     // Get the codes for the names provided.
-    $query = "SELECT id FROM taxrates WHERE description = '$fromName'";
+    $query = "SELECT id FROM taxrates WHERE description = '$name'";
     $result = $dbc->query($query);
     $row = $dbc->fetch_row($result);
     if ($row) {
         return $row['id'];
-    } else {
-        throw new Exception('name: >' . $name . '< not known.');
     }
+
+    throw new Exception('name: >' . $name . '< not known.');
 }
 
 /**
@@ -815,8 +808,8 @@ static public function rotateTempData()
       value to the column. Otherwise it may be handled but some
       other mechanism such as triggers or column default values.
     */
-    $table_def = $connection->tableDefinition('dtransactions');
-    if (isset($table_def['store_id']) && CoreLocal::get('store_id') !== '') {
+    $tableDef = $connection->tableDefinition('dtransactions');
+    if (isset($tableDef['store_id']) && CoreLocal::get('store_id') !== '') {
         $assignQ = sprintf('
             UPDATE dtransactions
             SET store_id = %d',
@@ -861,11 +854,11 @@ static public function logger($msg="")
 {
     $connection = self::tDataConnect();
 
+    $ret = false;
     if (method_exists($connection, 'logger')) {
         $ret = $connection->logger($msg);
-    } else {
-        $ret = False;
     }
+
     return $ret;
 }
 

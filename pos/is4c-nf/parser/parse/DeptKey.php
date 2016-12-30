@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DeptLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use \CoreLocal;
@@ -90,7 +91,8 @@ class DeptKey extends Parser
         $ret = $this->applyMods($deptmods, $dept, $amt, $ret);
         
         if (!$ret['main_frame']) {
-            $ret = \COREPOS\pos\lib\DeptLib::deptkey($amt, $dept, $ret);
+            $lib = new DeptLib($this->session);
+            $ret = $lib->deptkey($amt, $dept, $ret);
         }
 
         return $ret;

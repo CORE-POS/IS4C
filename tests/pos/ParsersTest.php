@@ -2,6 +2,7 @@
 
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DeptLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\PreParser;
 use COREPOS\pos\parser\Parser;
@@ -233,7 +234,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen($out['output']));
 
         lttLib::clear();
-        COREPOS\pos\lib\DeptLib::deptkey(10, 100);
+        $lib = new DeptLib($session);
+        $lib->deptkey(10, 100);
         $out = $to->parse('TO');
         $this->assertNotEquals(0, strlen($out['output']));
 

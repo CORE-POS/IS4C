@@ -33,6 +33,13 @@ use COREPOS\pos\lib\TransRecord;
 */
 class DeptLib 
 {
+    private $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
+
     /**
       Add an open ring to a department
       @param $price amount in cents (100 = $1)
@@ -42,10 +49,10 @@ class DeptLib
        for format explanation.
     */
     // @hintable
-    static public function deptkey($price, $dept,$ret=array()) 
+    public function deptkey($price, $dept,$ret=array()) 
     {
-        if (\CoreLocal::get("quantity") == 0 && \CoreLocal::get("multiple") == 0) {
-            \CoreLocal::set("quantity",1);
+        if ($this->session->get("quantity") == 0 && $this->session->get("multiple") == 0) {
+            $this->session->set("quantity",1);
         }
 
         $ringAsCoupon = false;
@@ -56,28 +63,26 @@ class DeptLib
             
         if (!is_numeric($dept) || !is_numeric($price) || strlen($price) < 1 || strlen($dept) < 2) {
             $ret['output'] = DisplayLib::inputUnknown();
-            \CoreLocal::set("quantity",1);
+            $this->session->set("quantity",1);
             $ret['udpmsg'] = 'errorBeep';
             return $ret;
         }
 
-        $strprice = $price;
-        $strdept = $dept;
         $price = $price/100;
         $dept = $dept/10;
         $discount = 0;
 
         $dbc = Database::pDataConnect();
-        $row = self::getDepartment($dbc, $dept);
+        $row = $this->getDepartment($dbc, $dept);
 
-        if ($row['line_item_discount'] && \CoreLocal::get('itemPD') > 0 && \CoreLocal::get('SecurityLineItemDiscount') == 30 && \CoreLocal::get('msgrepeat')==0){
+        if ($row['line_item_discount'] && $this->session->get('itemPD') > 0 && $this->session->get('SecurityLineItemDiscount') == 30 && $this->session->get('msgrepeat')==0){
             $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-LineItemDiscountAdminLogin";
             return $ret;
-        } elseif ($row['line_item_discount'] && \CoreLocal::get('itemPD') > 0) {
-            $discount = MiscLib::truncate2($price * (\CoreLocal::get('itemPD')/100.00));
+        } elseif ($row['line_item_discount'] && $this->session->get('itemPD') > 0) {
+            $discount = MiscLib::truncate2($price * ($this->session->get('itemPD')/100.00));
             $price -= $discount;
         }
-        $discount = $discount * \CoreLocal::get('quantity');
+        $discount = $discount * $this->session->get('quantity');
 
         if ($row === false) {
             $ret['output'] = DisplayLib::boxMsg(
@@ -87,30 +92,28 @@ class DeptLib
                 DisplayLib::standardClearButton()
             );
             $ret['udpmsg'] = 'errorBeep';
-            \CoreLocal::set("quantity",1);
+            $this->session->set("quantity",1);
         } elseif ($ringAsCoupon) {
-            $ret = self::deptCouponRing($row, $price, $ret);
+            $ret = $this->deptCouponRing($row, $price, $ret);
         } else {
-            $my_url = MiscLib::baseURL();
-
             if ($row['dept_see_id'] > 0) {
-                list($bad_age, $ret) = PrehLib::ageCheck($row['dept_see_id'], $ret);
-                if ($bad_age === true) {
+                list($badAge, $ret) = PrehLib::ageCheck($row['dept_see_id'], $ret);
+                if ($badAge === true) {
                     return $ret;
                 }
             }
 
-            $ret = self::deptOpenRing($row, $price, $discount, $ret);
+            $ret = $this->deptOpenRing($row, $price, $discount, $ret);
         }
 
-        \CoreLocal::set("quantity",0);
-        \CoreLocal::set("itemPD",0);
+        $this->session->set("quantity",0);
+        $this->session->set("itemPD",0);
 
         return $ret;
     }
 
     // @hintable
-    static private function getDepartment($dbc, $dept)
+    private function getDepartment($dbc, $dept)
     {
         $query = "SELECT dept_no,
             dept_name,
@@ -119,7 +122,7 @@ class DeptLib
             dept_limit,
             dept_minimum,
             dept_discount,";
-        if (\CoreLocal::get('NoCompat') == 1) {
+        if ($this->session->get('NoCompat') == 1) {
             $query .= 'dept_see_id, memberOnly, line_item_discount';
         } else {
             $table = $dbc->tableDefinition('departments');
@@ -147,7 +150,7 @@ class DeptLib
     }
 
     // @hintable
-    static private function deptCouponRing($dept, $price, $ret)
+    private function deptCouponRing($dept, $price, $ret)
     {
         $query2 = "select department, sum(total) as total from localtemptrans where department = "
             .$dept['dept_no']." group by department";
@@ -155,8 +158,8 @@ class DeptLib
         $db2 = Database::tDataConnect();
         $result2 = $db2->query($query2);
 
-        $num_rows2 = $db2->num_rows($result2);
-        if ($num_rows2 == 0) {
+        $numRows2 = $db2->numRows($result2);
+        if ($numRows2 == 0) {
             $ret['output'] = DisplayLib::boxMsg(
                 _("no item found in")."<br />".$dept["dept_name"],
                 '',
@@ -188,7 +191,7 @@ class DeptLib
                     'regPrice' => -1 * $price,
                     'voided' => 0,
                 ));
-                \CoreLocal::set("ttlflag",0);
+                $this->session->set("ttlflag",0);
                 $ret['output'] = DisplayLib::lastpage();
                 $ret['redraw_footer'] = True;
                 $ret['udpmsg'] = 'goodBeep';
@@ -199,7 +202,7 @@ class DeptLib
     }
 
     // @hintable
-    static private function memberOnlyDept($dept, $ret)
+    private function memberOnlyDept($dept, $ret)
     {
         /**
           Enforce memberOnly flag
@@ -208,7 +211,7 @@ class DeptLib
         if ($dept['memberOnly'] > 0) {
             switch ($dept['memberOnly']) {
                 case 1: // member only, no override
-                    if (\CoreLocal::get('isMember') == 0) {
+                    if ($this->session->get('isMember') == 0) {
                         $ret['output'] = DisplayLib::boxMsg(_(
                                             _('Department is member-only'),
                                             _('Enter member number first'),
@@ -219,22 +222,22 @@ class DeptLib
                     }
                     break; 
                 case 2: // member only, can override
-                    if (\CoreLocal::get('isMember') == 0) {
-                        if (\CoreLocal::get('msgrepeat') == 0 || \CoreLocal::get('lastRepeat') != 'memberOnlyDept') {
-                            \CoreLocal::set('boxMsg', _(
+                    if ($this->session->get('isMember') == 0) {
+                        if ($this->session->get('msgrepeat') == 0 || $this->session->get('lastRepeat') != 'memberOnlyDept') {
+                            $this->session->set('boxMsg', _(
                                 _('Department is member-only<br />') .
                                 _('[enter] to continue, [clear] to cancel')
                             ));
-                            \CoreLocal::set('lastRepeat', 'memberOnlyDept');
+                            $this->session->set('lastRepeat', 'memberOnlyDept');
                             $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
                             $modified = true;
-                        } else if (\CoreLocal::get('lastRepeat') == 'memberOnlyDept') {
-                            \CoreLocal::set('lastRepeat', '');
+                        } else if ($this->session->get('lastRepeat') == 'memberOnlyDept') {
+                            $this->session->set('lastRepeat', '');
                         }
                     }
                     break;
                 case 3: // anyone but default non-member
-                    if (\CoreLocal::get('memberID') == '0') {
+                    if ($this->session->get('memberID') == '0') {
                         $ret['output'] = DisplayLib::boxMsg(_(
                                             _('Department is member-only'),
                                             _('Enter member number first'),
@@ -242,7 +245,7 @@ class DeptLib
                                             array(_('Member Search [ID]') => 'parseWrapper(\'ID\');', _('Dismiss [clear]') => 'parseWrapper(\'CL\');')
                                         ));
                         $modified = true;
-                    } else if (\CoreLocal::get('memberID') == \CoreLocal::get('defaultNonMem')) {
+                    } else if ($this->session->get('memberID') == $this->session->get('defaultNonMem')) {
                         $ret['output'] = DisplayLib::boxMsg(_(
                                             _('Department not allowed with this member'),
                                             '',
@@ -259,9 +262,9 @@ class DeptLib
     }
 
     // @hintable
-    static private function deptOpenRing($dept, $price, $discount, $ret)
+    private function deptOpenRing($dept, $price, $discount, $ret)
     {
-        list($ret, $memberOnly) = self::memberOnlyDept($dept, $ret);
+        list($ret, $memberOnly) = $this->memberOnlyDept($dept, $ret);
         if ($memberOnly === true) {
             return $ret;
         }
@@ -279,33 +282,29 @@ class DeptLib
             _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
         );
         // remove Confirm button/text if hard limits enforced
-        if (\CoreLocal::get('OpenRingHardMinMax')) {
+        if ($this->session->get('OpenRingHardMinMax')) {
             array_shift($minMaxButtons);
         }
 
-        if ($price > $deptmax && (\CoreLocal::get('OpenRingHardMinMax') || \CoreLocal::get("msgrepeat") == 0)) {
-            \CoreLocal::set("boxMsg","$".$price." "._("is greater than department limit"));
-            \CoreLocal::set('boxMsgButtons', $minMaxButtons);
-            $ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-        } elseif ($price < $deptmin && (\CoreLocal::get('OpenRingHardMinMax') || \CoreLocal::get("msgrepeat") == 0)) {
-            \CoreLocal::set("boxMsg","$".$price." "._("is lower than department minimum"));
-            \CoreLocal::set('boxMsgButtons', $minMaxButtons);
-            $ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+        if ($price > $deptmax && ($this->session->get('OpenRingHardMinMax') || $this->session->get("msgrepeat") == 0)) {
+            $this->session->set("boxMsg","$".$price." "._("is greater than department limit"));
+            $this->session->set('boxMsgButtons', $minMaxButtons);
+            $ret['main_frame'] = MiscLib::baseURL().'gui-modules/boxMsg2.php';
+        } elseif ($price < $deptmin && ($this->session->get('OpenRingHardMinMax') || $this->session->get("msgrepeat") == 0)) {
+            $this->session->set("boxMsg","$".$price." "._("is lower than department minimum"));
+            $this->session->set('boxMsgButtons', $minMaxButtons);
+            $ret['main_frame'] = MiscLib::baseURL().'gui-modules/boxMsg2.php';
         } else {
-            if (\CoreLocal::get("casediscount") > 0) {
-                TransRecord::addcdnotify();
-                \CoreLocal::set("casediscount",0);
-            }
             
             TransRecord::addRecord(array(
                 'upc' => $price . 'DP' . $dept['dept_no'],
                 'description' => $dept['dept_name'],
                 'trans_type' => 'D',
                 'department' => $dept['dept_no'],
-                'quantity' => \CoreLocal::get('quantity'),
-                'ItemQtty' => \CoreLocal::get('quantity'),
+                'quantity' => $this->session->get('quantity'),
+                'ItemQtty' => $this->session->get('quantity'),
                 'unitPrice' => $price,
-                'total' => $price * \CoreLocal::get('quantity'),
+                'total' => $price * $this->session->get('quantity'),
                 'regPrice' => $price,
                 'tax' => $tax,
                 'foodstamp' => $foodstamp,
@@ -313,10 +312,10 @@ class DeptLib
                 'voided' => 0,
                 'discount' => $discount,
             ));
-            \CoreLocal::set("ttlflag",0);
-            \CoreLocal::set("msgrepeat",0);
+            $this->session->set("ttlflag",0);
+            $this->session->set("msgrepeat",0);
 
-            if (\CoreLocal::get("itemPD") > 0) {
+            if ($this->session->get("itemPD") > 0) {
                 TransRecord::adddiscount($discount, $dept);
             }
 

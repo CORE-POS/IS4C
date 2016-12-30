@@ -9,5 +9,5 @@ use COREPOS\pos\lib\CoreState;
 if (!class_exists('AutoLoader')) include(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 AutoLoader::loadMap();
-CoreState::initiate_session();
+CoreState::initiateSession();
 

@@ -34,10 +34,10 @@ use \CoreLocal;
 */
 class ReceiptLib 
 {
-    static private $PRINT_OBJ;
+    static private $PRINT;
 
-    static private $EMAIL_PH = 'COREPOS\\pos\\lib\\PrintHandlers\EmailPrintHandler';
-    static private $HTML_PH  = 'COREPOS\\pos\\lib\\PrintHandlers\HtmlEmailPrintHandler';
+    static private $EMAIL = 'COREPOS\\pos\\lib\\PrintHandlers\EmailPrintHandler';
+    static private $HTML  = 'COREPOS\\pos\\lib\\PrintHandlers\HtmlEmailPrintHandler';
 
 // --------------------------------------------------------------
 static public function build_time($timestamp) {
@@ -54,9 +54,9 @@ static public function writeLine($text)
 {
     if (CoreLocal::get("print") != 0) {
 
-        $printer_port = CoreLocal::get('printerPort');
-        if (substr($printer_port, 0, 6) == "tcp://") {
-            self::printToServer(substr($printer_port, 6), $text);
+        $printerPort = CoreLocal::get('printerPort');
+        if (substr($printerPort, 0, 6) == "tcp://") {
+            self::printToServer(substr($printerPort, 6), $text);
         } else {
             /* check fails on LTP1: in PHP4
                suppress open errors and check result
@@ -72,18 +72,18 @@ static public function writeLine($text)
 
 /**
   Write text to server via TCP socket
-  @param $print_server [string] host or host:port
+  @param $printServer [string] host or host:port
   @param $text [string] text to print
   @return
    - [int]  1 => success
    - [int]  0 => problem sending text
    - [int] -1 => sent but no response. printer might be stuck/blocked
 */
-static public function printToServer($printer_server, $text)
+static public function printToServer($printerServer, $text)
 {
     $port = 9450;
-    if (strstr($printer_server, ':')) {
-        list($printer_server, $port) = explode(':', $printer_server, 2);
+    if (strstr($printerServer, ':')) {
+        list($printerServer, $port) = explode(':', $printerServer, 2);
     }
     if (!function_exists('socket_create')) {
         return 0;
@@ -97,39 +97,39 @@ static public function printToServer($printer_server, $text)
     socket_set_block($socket);
     socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
     socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 2, 'usec' => 0)); 
-    if (!socket_connect($socket, $printer_server, $port)) {
+    if (!socket_connect($socket, $printerServer, $port)) {
         return false;
     }
 
-    $send_failed = false;
+    $sendFailed = false;
     while(true) {
-        $num_written = socket_write($socket, $text);
-        if ($num_written === false) {
+        $numWritten = socket_write($socket, $text);
+        if ($numWritten === false) {
             // error occurred
-            $send_failed = true;
+            $sendFailed = true;
             break; 
         }
 
-        if ($num_written >= strlen($text)) {
+        if ($numWritten >= strlen($text)) {
             // whole message has been sent
             // send ETX to signal message complete
             socket_write($socket, chr(0x3));
             break;
-        } else {
-            $text = substr($text, $num_written);
         }
+
+        $text = substr($text, $numWritten);
     }
 
     $ack = socket_read($socket, 3);
     socket_close($socket);
 
-    if ($send_failed) {
+    if ($sendFailed) {
         return 0;
-    } else if ($ack === false) {
+    } elseif ($ack === false) {
         return -1;
-    } else {
-        return 1;
     }
+
+    return 1;
 }
 // --------------------------------------------------------------
 
@@ -146,9 +146,9 @@ static public function center($text, $linewidth) {
 // -------------------------------------------------------------
 static public function printReceiptHeader($dateTimeStamp, $ref) 
 {
-    $receipt = self::$PRINT_OBJ->TextStyle(True);
-    $img_cache = CoreLocal::get('ImageCache');
-    if (!is_array($img_cache)) $img_cache = array();
+    $receipt = self::$PRINT->TextStyle(True);
+    $imgCache = CoreLocal::get('ImageCache');
+    if (!is_array($imgCache)) $imgCache = array();
 
     for ($i=1; $i <= CoreLocal::get("receiptHeaderCount"); $i++){
 
@@ -162,36 +162,35 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
           text centered.
         */
         $headerLine = CoreLocal::get("receiptHeader".$i);
-        $graphics_path = MiscLib::base_url().'graphics';
+        $graphicsPath = MiscLib::base_url().'graphics';
         if (!ctype_print($headerLine)) {
-            $receipt .= self::$PRINT_OBJ->rawEscCommand($headerLine) . "\n";
+            $receipt .= self::$PRINT->rawEscCommand($headerLine) . "\n";
         } elseif (preg_match('/nv(\d{1,3})/i', $headerLine, $match)) {
-            $receipt .= self::$PRINT_OBJ->renderBitmapFromRam((int)$match[1]);
-        } elseif (substr($headerLine,-4) == ".bmp" && file_exists($graphics_path.'/'.$headerLine)){
+            $receipt .= self::$PRINT->renderBitmapFromRam((int)$match[1]);
+        } elseif (substr($headerLine,-4) == ".bmp" && file_exists($graphicsPath.'/'.$headerLine)){
             // save image bytes in cache so they're not recalculated
             // on every receipt
-            $img_file = $graphics_path.'/'.$headerLine;
-            if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) 
-                && get_class(self::$PRINT_OBJ)!=self::$EMAIL_PH
-                && get_class(self::$PRINT_OBJ)!=self::$HTML_PH
+            $imgFile = $graphicsPath.'/'.$headerLine;
+            if (isset($imgCache[basename($imgFile)]) && !empty($imgCache[basename($imgFile)]) 
+                && get_class(self::$PRINT)!=self::$EMAIL
+                && get_class(self::$PRINT)!=self::$HTML
                 ){
-                $receipt .= $img_cache[basename($img_file)]."\n";
-            }
-            else {
-                $img = self::$PRINT_OBJ->RenderBitmapFromFile($img_file);
+                $receipt .= $imgCache[basename($imgFile)]."\n";
+            } else {
+                $img = self::$PRINT->RenderBitmapFromFile($imgFile);
                 $receipt .= $img."\n";
-                $img_cache[basename($img_file)] = $img;
-                CoreLocal::set('ImageCache',$img_cache);
+                $imgCache[basename($imgFile)] = $img;
+                CoreLocal::set('ImageCache',$imgCache);
                 $receipt .= "\n";
             }
         } else {
             /** put first header line in larger font **/
             if ($i == 1) {
-                $receipt .= self::$PRINT_OBJ->TextStyle(true, false, true);
-                $receipt .= self::$PRINT_OBJ->centerString(CoreLocal::get("receiptHeader$i"));
-                $receipt .= self::$PRINT_OBJ->TextStyle(true);
+                $receipt .= self::$PRINT->TextStyle(true, false, true);
+                $receipt .= self::$PRINT->centerString(CoreLocal::get("receiptHeader$i"));
+                $receipt .= self::$PRINT->TextStyle(true);
             } else {
-                $receipt .= self::$PRINT_OBJ->centerString(CoreLocal::get("receiptHeader$i"), false);
+                $receipt .= self::$PRINT->centerString(CoreLocal::get("receiptHeader$i"), false);
             }
             $receipt .= "\n";
         }
@@ -375,7 +374,7 @@ static public function centerBig($text) {
 /***** jqh end change *****/
 
 /***** CvR 06/28/06 calculate current balance for receipt ****/
-static public function chargeBalance($receipt, $program="charge", $trans_num='')
+static public function chargeBalance($receipt, $program="charge", $transNum='')
 {
     \COREPOS\pos\lib\MemberLib::chargeOk();
 
@@ -387,30 +386,30 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     }
 
     $dbc = Database::tDataConnect();
-    list($emp, $reg, $trans) = self::parseRef($trans_num);
-    $ar_depts = MiscLib::getNumbers(CoreLocal::get('ArDepartments'));
+    list($emp, $reg, $trans) = self::parseRef($transNum);
+    $arDepts = MiscLib::getNumbers(CoreLocal::get('ArDepartments'));
     $checkQ = "SELECT trans_id 
                FROM localtranstoday 
                WHERE 
                 emp_no=" . ((int)$emp) . "
                 AND register_no=" . ((int)$reg) . "
                 AND trans_no=" . ((int)$trans);
-    if (count($ar_depts) == 0) {
+    if (count($arDepts) == 0) {
         $checkQ .= " AND trans_subtype='MI'";
     } else {
         $checkQ .= " AND (trans_subtype='MI' OR department IN (";
-        foreach ($ar_depts as $ar_dept) {
-            $checkQ .= $ar_dept . ',';
+        foreach ($arDepts as $arDept) {
+            $checkQ .= $arDept . ',';
         }
         $checkQ = substr($checkQ, 0, strlen($checkQ)-1) . '))';
     }
     $checkR = $dbc->query($checkQ);
-    $num_rows = $dbc->num_rows($checkR);
+    $numRows = $dbc->numRows($checkR);
 
     $currActivity = CoreLocal::get("memChargeTotal");
     $currBalance = CoreLocal::get("balance") - $currActivity;
     
-    if (($num_rows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem')) {
+    if (($numRows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem')) {
         $chargeString = $labels["$program"][0] .
             " $".sprintf("%.2f",($labels["$program"][1] * $currBalance));
         $receipt = $receipt."\n\n".self::biggerFont(self::centerBig($chargeString))."\n";
@@ -427,19 +426,19 @@ static public function boldFont() {
 }
 static private function initDriver()
 {
-    if (!is_object(self::$PRINT_OBJ)) {
-        self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+    if (!is_object(self::$PRINT)) {
+        self::$PRINT= PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
 }
 static public function bold()
 {
     self::initDriver(); 
-    return self::$PRINT_OBJ->TextStyle(true, true);
+    return self::$PRINT->TextStyle(true, true);
 }
 static public function unbold()
 {
     self::initDriver(); 
-    return self::$PRINT_OBJ->TextStyle(true, false);
+    return self::$PRINT->TextStyle(true, false);
 }
 
 static private function lookupLocal($ref)
@@ -459,7 +458,7 @@ static private function lookupLocal($ref)
     $lookup = $dbc->query($lookup);
     $ret = array('localTTL' => 0, 'itemTTL' => 0);
     if ($dbc->numRows($lookup) > 0) {
-        $ret = $dbc->fetch_row($lookup);
+        $ret = $dbc->fetchRow($lookup);
     }
  
     return $ret;
@@ -486,17 +485,17 @@ static public function graphedLocalTTL($ref)
             $row['localTTL'], 100*$percent);
     $str .= "\n";
 
-    $str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::barGraph($percent), 'L');
+    $str .= self::$PRINT->RenderBitmap(Bitmap::barGraph($percent), 'L');
     return $str."\n";
 }
 
 static private function getFetch()
 {
-    $FETCH_MOD = CoreLocal::get("RBFetchData");
-    if ($FETCH_MOD == 'DefaultReceiptDataFetch') {
-        $FETCH_MOD = 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\' . $FETCH_MOD;
+    $FETCH = CoreLocal::get("RBFetchData");
+    if ($FETCH == 'DefaultReceiptDataFetch') {
+        $FETCH = 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\' . $FETCH;
     }
-    return $FETCH_MOD == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\DefaultReceiptDataFetch' : $FETCH_MOD;
+    return $FETCH == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\DefaultReceiptDataFetch' : $FETCH;
 }
 
 static private function getFilter()
@@ -534,30 +533,30 @@ static private function getTag()
     return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\DefaultReceiptTag' : $mod;
 }
 
-static public function receiptFromBuilders($reprint=False,$trans_num='')
+static public function receiptFromBuilders($transNum='')
 {
     $empNo=0;$laneNo=0;$transNo=0;
-    list($empNo, $laneNo, $transNo) = self::parseRef($trans_num);
+    list($empNo, $laneNo, $transNo) = self::parseRef($transNum);
     self::initDriver();
 
-    $FETCH_MOD = self::getFetch();
-    $mod = new $FETCH_MOD();
+    $FETCH = self::getFetch();
+    $mod = new $FETCH();
     $data = array();
     $dbc = Database::tDataConnect();
     $data = $mod->fetch($dbc,$empNo,$laneNo,$transNo);
 
     // load module configuration
-    $FILTER_MOD = self::getFilter();
-    $SORT_MOD = self::getSort();
-    $TAG_MOD = self::getTag();
+    $FILTER = self::getFilter();
+    $SORT = self::getSort();
+    $TAG = self::getTag();
 
-    $fil = new $FILTER_MOD();
+    $fil = new $FILTER();
     $recordset = $fil->filter($dbc, $data);
 
-    $sort = new $SORT_MOD();
+    $sort = new $SORT();
     $recordset = $sort->sort($recordset);
 
-    $tag = new $TAG_MOD();
+    $tag = new $TAG();
     $recordset = $tag->tag($recordset);
 
     $ret = "";
@@ -566,16 +565,16 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
         $width = 56;
     }
     foreach ($recordset as $record) {
-        $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Format\\' . $record['tag'] . 'ReceiptFormat';
-        if (!class_exists($class_name)) continue;
-        $obj = new $class_name(self::$PRINT_OBJ, $width);
+        $className = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Format\\' . $record['tag'] . 'ReceiptFormat';
+        if (!class_exists($className)) continue;
+        $obj = new $className(self::$PRINT, $width);
 
         $line = $obj->format($record);
 
         if ($obj->isBold()){
-            $ret .= self::$PRINT_OBJ->TextStyle(True,True);
+            $ret .= self::$PRINT->TextStyle(True,True);
             $ret .= $line;
-            $ret .= self::$PRINT_OBJ->TextStyle(True,False);
+            $ret .= self::$PRINT->TextStyle(True,False);
             $ret .= "\n";
         } else {
             $ret .= $line;
@@ -586,17 +585,17 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     return $ret;
 }
 
-static public function receiptDetail($reprint=false, $trans_num='') 
+static public function receiptDetail($reprint=false, $transNum='') 
 { 
     // put into its own function to make it easier to follow, and slightly 
     // modified for wider-spread use of joe's "new" receipt format --- apbw 7/3/2007
     if (CoreLocal::get("newReceipt") == 2) {
-        return self::receiptFromBuilders($reprint, $trans_num);
+        return self::receiptFromBuilders($transNum);
     }
 
     $detail = "";
     $empNo=0; $laneNo=0; $transNo=0;
-    list($empNo, $laneNo, $transNo) = self::parseRef($trans_num);
+    list($empNo, $laneNo, $transNo) = self::parseRef($transNum);
         
     if (CoreLocal::get("newReceipt") == 0 ) {
         // if old style has been specifically requested 
@@ -606,9 +605,9 @@ static public function receiptDetail($reprint=false, $trans_num='')
             and trans_no=$transNo order by trans_id";
         $dbc = Database::tDataConnect();
         $result = $dbc->query($query);
-        $num_rows = $dbc->num_rows($result);
+        $numRows = $dbc->numRows($result);
         // loop through the results to generate the items listing.
-        for ($i = 0; $i < $num_rows; $i++) {
+        for ($i = 0; $i < $numRows; $i++) {
             $row = $dbc->fetchRow($result);
             $detail .= $row[0]."\n";
         }
@@ -621,7 +620,7 @@ static public function receiptDetail($reprint=false, $trans_num='')
           nothing.
         */
         if (!$dbc->tableExists('rp_receipt_reorder_unions_g')) {
-            return self::receiptFromBuilders($reprint, $trans_num);
+            return self::receiptFromBuilders($transNum);
         }
 
         // otherwise use new format 
@@ -634,7 +633,7 @@ static public function receiptDetail($reprint=false, $trans_num='')
                 .$dbc->identifierEscape('sequence');
 
         $result = $dbc->query($query);
-        $num_rows = $dbc->num_rows($result);
+        $numRows = $dbc->numRows($result);
             
         // loop through the results to generate the items listing.
         $lastDept="";
@@ -644,9 +643,9 @@ static public function receiptDetail($reprint=false, $trans_num='')
                 if ($row['2']==''){
                     $detail .= "\n";
                 } else{
-                    $detail .= self::$PRINT_OBJ->TextStyle(True,True);
+                    $detail .= self::$PRINT->TextStyle(True,True);
                     $detail .= $row[2];
-                    $detail .= self::$PRINT_OBJ->TextStyle(True,False);
+                    $detail .= self::$PRINT->TextStyle(True,False);
                     $detail .= "\n";
                 }
             }
@@ -670,9 +669,9 @@ static public function receiptDetail($reprint=false, $trans_num='')
                 } else {
                     if ( strpos($row[0]," TOTAL") ) {         
                         // if it's the grand total line . . .
-                        $detail .= self::$PRINT_OBJ->TextStyle(True,True);
+                        $detail .= self::$PRINT->TextStyle(True,True);
                         $detail .= $row[0]."\n";
-                        $detail .= self::$PRINT_OBJ->TextStyle(True,False);
+                        $detail .= self::$PRINT->TextStyle(True,False);
                     } else {
                         $detail .= $row[0]."\n";
                     }
@@ -735,7 +734,7 @@ static public function parseRef($ref)
     $emp=$reg=$trans=0;
     if (strstr($ref, '-')) {
         list($emp, $reg, $trans) = explode('-', $ref, 3);
-    } else if (strstr($ref, '::')) {
+    } elseif (strstr($ref, '::')) {
         // values in different order; rebuild correct $ref
         list($reg, $emp, $trans) = explode('::', $ref, 3);
         $ref = sprintf('%d-%d-%d',$emp,$reg,$trans);
@@ -767,7 +766,7 @@ static private function setupReprint($where)
             trans_no";
 
     $header = $dbc->query($queryHeader);
-    $row = $dbc->fetch_row($header);
+    $row = $dbc->fetchRow($header);
     $dateTimeStamp = $row["dateTimeStamp"];
     $dateTimeStamp = strtotime($dateTimeStamp);
     
@@ -821,7 +820,7 @@ static private $msgMods = array(
 
 static private function getTypeMap()
 {
-    $type_map = array();
+    $typeMap = array();
     foreach(self::messageMods() as $class){
         if (in_array($class, self::$msgMods)) {
             $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
@@ -831,10 +830,10 @@ static private function getTypeMap()
         }
         $obj = new $class();
         if ($obj->standalone_receipt_type != '')
-            $type_map[$obj->standalone_receipt_type] = $obj;
+            $typeMap[$obj->standalone_receipt_type] = $obj;
     }
 
-    return $type_map;
+    return $typeMap;
 }
 
 static private function memberFooter($receipt, $ref)
@@ -846,7 +845,7 @@ static private function memberFooter($receipt, $ref)
         $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\DefaultReceiptThanks';
     }
     $obj = new $mod();
-    $obj->setPrintHandler(self::$PRINT_OBJ);
+    $obj->setPrintHandler(self::$PRINT);
     $receipt['any'] .= $obj->message($ref);
 
     return $receipt;
@@ -855,13 +854,13 @@ static private function memberFooter($receipt, $ref)
 static private function receiptFooters($receipt, $ref)
 {
     for ($i = 1; $i <= CoreLocal::get("receiptFooterCount"); $i++){
-        $receipt['any'] .= self::$PRINT_OBJ->centerString(CoreLocal::get("receiptFooter$i"));
+        $receipt['any'] .= self::$PRINT->centerString(CoreLocal::get("receiptFooter$i"));
         $receipt['any'] .= "\n";
     }
 
     if (CoreLocal::get("store")=="wfc") {
-        $refund_date = date("m/d/Y",mktime(0,0,0,date("n"),date("j")+30,date("Y")));
-        $receipt['any'] .= self::$PRINT_OBJ->centerString("returns accepted with this receipt through ".$refund_date);
+        $refundDate = date("m/d/Y",mktime(0,0,0,date("n"),date("j")+30,date("Y")));
+        $receipt['any'] .= self::$PRINT->centerString("returns accepted with this receipt through ".$refundDate);
         $receipt['any'] .= "\n";
     }
 
@@ -879,7 +878,7 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
     // and add them to the receipt
     $dbc = Database::tDataConnect();
     $modQ = "SELECT ";
-    $select_mods = array();
+    $selectMods = array();
     foreach(self::messageMods() as $class){
         if (in_array($class, self::$msgMods)) {
             $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
@@ -888,19 +887,19 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
             continue;
         }
         $obj = new $class();
-        $obj->setPrintHandler(self::$PRINT_OBJ);
+        $obj->setPrintHandler(self::$PRINT);
         $modQ .= $obj->select_condition().' AS '.$dbc->identifierEscape($class).',';
-        $select_mods[$class] = $obj;
+        $selectMods[$class] = $obj;
     }
     $modQ = rtrim($modQ,',');
-    if (count($select_mods) > 0){
+    if (count($selectMods) > 0){
         $modQ .= ' FROM localtranstoday
                 WHERE ' . $where . '
                     AND datetime >= ' . $dbc->curdate();
         $modR = $dbc->query($modQ);
         $row = array();
-        if ($dbc->num_rows($modR) > 0) $row = $dbc->fetch_row($modR);
-        foreach($select_mods as $class => $obj){
+        if ($dbc->numRows($modR) > 0) $row = $dbc->fetchRow($modR);
+        foreach($selectMods as $class => $obj){
             if (!isset($row[$class])) continue;    
             if ($obj->paper_only)
                 $receipt['print'] .= $obj->message($row[$class], $ref, $reprint);
@@ -914,10 +913,10 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
 
 static private function messageMods()
 {
-    $message_mods = CoreLocal::get('ReceiptMessageMods');
-    if (!is_array($message_mods)) $message_mods = array();
+    $messageMods = CoreLocal::get('ReceiptMessageMods');
+    if (!is_array($messageMods)) $messageMods = array();
 
-    return $message_mods;
+    return $messageMods;
 }
 
 /**
@@ -947,23 +946,23 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     }
     $chargeProgram = 'charge';
 
-    self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+    self::$PRINT= PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     $receipt = "";
 
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
     $ignoreNR = array("ccSlip");
 
     // find receipt types, or segments, provided via modules
-    $type_map = self::getTypeMap();
+    $typeMap = self::getTypeMap();
 
     if ($noreceipt != 1 || in_array($arg1,$ignoreNR) || $email) {
         $receipt = self::printReceiptHeader($dateTimeStamp, $ref);
 
         if ($second) {
-            $ins = self::$PRINT_OBJ->centerString(_("( S T O R E   C O P Y )"))."\n";
+            $ins = self::$PRINT->centerString(_("( S T O R E   C O P Y )"))."\n";
             $receipt = substr($receipt,0,3).$ins.substr($receipt,3);
         } elseif ($reprint !== false) {
-            $ins = self::$PRINT_OBJ->centerString(_("***   R E P R I N T   ***"))."\n";
+            $ins = self::$PRINT->centerString(_("***   R E P R I N T   ***"))."\n";
             $receipt = substr($receipt,0,3).$ins.substr($receipt,3);
         }
 
@@ -971,12 +970,12 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $receipt = array('any'=>'','print'=>'');
             if ($email) {
                 $eph = self::emailReceiptMod();
-                self::$PRINT_OBJ = new $eph();
+                self::$PRINT= new $eph();
             }
             $receipt['any'] = self::printReceiptHeader($dateTimeStamp, $ref);
 
             $receipt['any'] .= self::receiptDetail($reprint, $ref);
-            $receipt['any'] .= self::$PRINT_OBJ->addRenderingSpacer('end of items');
+            $receipt['any'] .= self::$PRINT->addRenderingSpacer('end of items');
 
             $savingsMode = CoreLocal::get('ReceiptSavingsMode');
             if ($savingsMode != '' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode)) {
@@ -985,7 +984,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
                 $savingsMode = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\DefaultReceiptSavings';
             }
             $savings = new $savingsMode();
-            $savings->setPrintHandler(self::$PRINT_OBJ);
+            $savings->setPrintHandler(self::$PRINT);
             $receipt['any'] .= $savings->savingsMessage($ref);
 
             /**
@@ -1014,10 +1013,10 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             if (!$email) $receipt = ''.$receipt['any'].$receipt['print'];
 
             CoreLocal::set("headerprinted",0);
-        } else if (isset($type_map[$arg1])) {
-            $obj = $type_map[$arg1];
+        } elseif (isset($typeMap[$arg1])) {
+            $obj = $typeMap[$arg1];
             $receipt = $obj->standalone_receipt($ref, $reprint);
-        } else if ($arg1 == "cab") {
+        } elseif ($arg1 == "cab") {
             $ref = CoreLocal::get("cabReference");
             $receipt = self::printCabCoupon($dateTimeStamp, $ref);
             CoreLocal::set("cabReference","");
@@ -1084,10 +1083,10 @@ static private function simpleReceipt($receipt, $arg1, $where)
     }
     $dbc = Database::tDataConnect();
     $result = $dbc->query($query);
-    $num_rows = $dbc->num_rows($result);
+    $numRows = $dbc->numRows($result);
 
     // loop through the results to generate the items listing.
-    for ($i = 0; $i < $num_rows; $i++) {
+    for ($i = 0; $i < $numRows; $i++) {
         $row = $dbc->fetchRow($result);
         $receipt .= $row[0]."\n";
     }
@@ -1116,16 +1115,16 @@ static private function simpleReceipt($receipt, $arg1, $where)
 
 /** 
   Get per-member receipt messages
-  @param $card_no [int] member number
+  @param $cardNo [int] member number
   @return [array] receipt text
   Array keys are "any" and "print". 
  */
-static public function memReceiptMessages($card_no)
+static public function memReceiptMessages($cardNo)
 {
     $dbc = Database::pDataConnect();
     $memQ = 'SELECT msg_text,modifier_module
           FROM custReceiptMessage
-          WHERE card_no=' . ((int)$card_no) . '
+          WHERE card_no=' . ((int)$cardNo) . '
           ORDER BY msg_text';
     // use newer CustomerNotifications table if present
     if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
@@ -1133,31 +1132,31 @@ static public function memReceiptMessages($card_no)
             SELECT message AS msg_text,
                 modifierModule AS modifier_module
             FROM CustomerNotifications
-            WHERE cardNo=' . ((int)$card_no) . '
+            WHERE cardNo=' . ((int)$cardNo) . '
                 AND type=\'receipt\'
             ORDER BY message';
     }
     $memR = $dbc->query($memQ);
     $ret = array('any'=>'', 'print'=>'');
-    while ($row = $dbc->fetch_row($memR)) {
+    while ($row = $dbc->fetchRow($memR)) {
         // EL This bit new for messages from plugins.
-        $class_name = $row['modifier_module'];
-        if (!empty($class_name) && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $class_name)) {
-            $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $class_name;
+        $className = $row['modifier_module'];
+        if (!empty($className) && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $className)) {
+            $className = 'COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $className;
         }
-        if (!empty($class_name) && class_exists($class_name)) {
-            $obj = new $class_name();
-            $obj->setPrintHandler(self::$PRINT_OBJ);
-            $msg_text = $obj->message($row['msg_text']);
-            if (is_array($msg_text)) {
-                if (isset($msg_text['any'])) {
-                    $ret['any'] .= $msg_text['any'];
+        if (!empty($className) && class_exists($className)) {
+            $obj = new $className();
+            $obj->setPrintHandler(self::$PRINT);
+            $msgText = $obj->message($row['msg_text']);
+            if (is_array($msgText)) {
+                if (isset($msgText['any'])) {
+                    $ret['any'] .= $msgText['any'];
                 }
-                if (isset($msg_text['print'])) {
-                    $ret['print'] .= $msg_text['print'];
+                if (isset($msgText['print'])) {
+                    $ret['print'] .= $msgText['print'];
                 }
             } else {
-                $ret['any'] .= $msg_text;
+                $ret['any'] .= $msgText;
             }
         } else {
             $ret['any'] .= $row['msg_text']."\n";
@@ -1190,30 +1189,30 @@ static public function mostRecentReceipt()
               ORDER BY datetime DESC";
     $query = $dbc->addSelectLimit($query, 1);
     $result = $dbc->query($query);
-    if ($dbc->num_rows($result) == 0) {
+    if ($dbc->numRows($result) == 0) {
         return false;
-    } else {
-        $row = $dbc->fetchRow($result);
-        return $row['emp_no'] . '-' . $row['register_no'] . '-' . $row['trans_no'];
     }
+    $row = $dbc->fetchRow($result);
+
+    return $row['emp_no'] . '-' . $row['register_no'] . '-' . $row['trans_no'];
 }
 
 static public function code39($barcode)
 {
-    if (!is_object(self::$PRINT_OBJ)) {
-        self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+    if (!is_object(self::$PRINT)) {
+        self::$PRINT= PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
 
-    return self::$PRINT_OBJ->BarcodeCODE39($barcode);
+    return self::$PRINT->BarcodeCODE39($barcode);
 }
 
 static public function emailReceiptMod()
 {
     if (class_exists('PHPMailer') && CoreLocal::get('emailReceiptHtml') != '' && class_exists(CoreLocal::get('emailReceiptHtml'))) {
-        return self::$HTML_PH;
-    } else {
-        return self::$EMAIL_PH;
+        return self::$HTML;
     }
+
+    return self::$EMAIL;
 }
 
 }

@@ -31,7 +31,7 @@ COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 
 AutoLoader::loadMap();
 
-CoreState::initiate_session();
+CoreState::initiateSession();
 
 CoreLocal::set('ValidJson', false);
 CoreLocal::refresh();

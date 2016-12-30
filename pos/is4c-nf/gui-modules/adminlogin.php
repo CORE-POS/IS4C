@@ -110,7 +110,7 @@ class adminlogin extends NoInputCorePage
                 $this->boxColor="errorColoredArea";
                 $this->msg = _("re-enter admin password");
 
-                TransRecord::add_log_record(array(
+                TransRecord::addLogRecord(array(
                     'upc' => $passwd,
                     'description' => substr($class::$adminLoginMsg,0,30),
                     'charflag' => 'PW'
@@ -135,7 +135,7 @@ class adminlogin extends NoInputCorePage
     private function approvedAction($class, $passwd)
     {
         $row = Authenticate::getEmployeeByPassword($passwd);
-        TransRecord::add_log_record(array(
+        TransRecord::addLogRecord(array(
             'upc' => $row['emp_no'],
             'description' => substr($class::$adminLoginMsg . ' ' . $row['FirstName'],0,30),
             'charflag' => 'PW',

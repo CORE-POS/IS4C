@@ -174,8 +174,6 @@ class undo extends NoInputCorePage
                 elseif ($row["trans_type"] ==  "T"){
                     if ($row["description"] == "Change")
                         TransRecord::addchange(-1*$row["total"]);
-                    elseif ($row["description"] == "FS Change")
-                        TransRecord::addfsones(-1*$row["total"]);
                     else
                         TransRecord::addtender($row["description"],$row["trans_subtype"],-1*$row["total"]);
                 }

@@ -109,11 +109,10 @@ signs in
   @param $numflag localtemptrans.numflag
   @param $charflag localtemptrans.charflag
 
-  In many cases there is a simpler function that takes far
-  fewer arguments and adds a specific type of record.
-  All such functions should be in this file.
+  Use the other methods in this file that do not require
+  nearly as many arguments
 */
-static public function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') 
+static private function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') 
 {
     //$dbltotal = MiscLib::truncate2(str_replace(",", "", $dbltotal)); replaced by apbw 7/27/05 with the next 4 lines -- to fix thousands place errors
     $dbltotal = self::formatDouble($dbltotal);
@@ -211,7 +210,7 @@ private static function formatDouble($dbl)
     return $dbl;
 }
 
-private static $default_record = array(
+private static $defaultRecord = array(
     'upc'           => '',
     'description'   => '',
     'trans_type'    => 'I',
@@ -245,52 +244,52 @@ private static $default_record = array(
   Wrapper for addItem that accepted a keyed array instead
   of many, MANY arguments. All keys are optional and will have
   the default values listed below if ommitted (read the actual method) 
-  @param $named_params [keyed array]
+  @param $namedParams [keyed array]
   @return [none]
 */
     // @hintable
-static public function addRecord($named_params)
+static public function addRecord($namedParams)
 {
     // start with default values
-    $new_record = self::$default_record;
+    $newRecord = self::$defaultRecord;
 
     // override defaults with any values specified
-    // in $named_params
-    foreach(array_keys($new_record) as $key) {
-        if (isset($named_params[$key])) {
-            $new_record[$key] = $named_params[$key];
+    // in $namedParams
+    foreach(array_keys($newRecord) as $key) {
+        if (isset($namedParams[$key])) {
+            $newRecord[$key] = $namedParams[$key];
         }
     }
 
     // call addItem()
     self::addItem(
-        $new_record['upc'],
-        $new_record['description'],
-        $new_record['trans_type'],
-        $new_record['trans_subtype'],
-        $new_record['trans_status'],
-        $new_record['department'],
-        $new_record['quantity'],
-        $new_record['unitPrice'],
-        $new_record['total'],
-        $new_record['regPrice'],
-        $new_record['scale'],
-        $new_record['tax'],
-        $new_record['foodstamp'],
-        $new_record['discount'],
-        $new_record['memDiscount'],
-        $new_record['discountable'],
-        $new_record['discounttype'],
-        $new_record['ItemQtty'],
-        $new_record['volDiscType'],
-        $new_record['volume'],
-        $new_record['VolSpecial'],
-        $new_record['mixMatch'],
-        $new_record['matched'],
-        $new_record['voided'],
-        $new_record['cost'],
-        $new_record['numflag'],
-        $new_record['charflag']
+        $newRecord['upc'],
+        $newRecord['description'],
+        $newRecord['trans_type'],
+        $newRecord['trans_subtype'],
+        $newRecord['trans_status'],
+        $newRecord['department'],
+        $newRecord['quantity'],
+        $newRecord['unitPrice'],
+        $newRecord['total'],
+        $newRecord['regPrice'],
+        $newRecord['scale'],
+        $newRecord['tax'],
+        $newRecord['foodstamp'],
+        $newRecord['discount'],
+        $newRecord['memDiscount'],
+        $newRecord['discountable'],
+        $newRecord['discounttype'],
+        $newRecord['ItemQtty'],
+        $newRecord['volDiscType'],
+        $newRecord['volume'],
+        $newRecord['VolSpecial'],
+        $newRecord['mixMatch'],
+        $newRecord['matched'],
+        $newRecord['voided'],
+        $newRecord['cost'],
+        $newRecord['numflag'],
+        $newRecord['charflag']
     );
 
     $actions = CoreLocal::get('ItemActions');
@@ -300,7 +299,7 @@ static public function addRecord($named_params)
     }
     foreach ($actions as $class) {
         $obj = new $class();
-        $obj->callback($new_record);
+        $obj->callback($newRecord);
     }
 }
 
@@ -488,24 +487,6 @@ static public function addchange($dblcashreturn, $strtendercode='CA', $strchange
 }
 
 /**
-  Add a foodstamp change record
-  @param $intfsones the change amount
-
-  Please do verify cashback is permitted with EBT transactions
-  in your area before using this.
-*/
-static public function addfsones($intfsones) 
-{
-    self::addRecord(array(
-        'description' => 'FS Change',
-        'trans_type' => 'T',
-        'trans_subtype' => 'FS',
-        'total' => $intfsones,
-        'voided' => 8,
-    ));
-}
-
-/**
   Add a "YOU SAVED" record to the transaction. This is just informational
   and will not alter totals.
   @param $dbldiscount discount amount
@@ -587,21 +568,6 @@ static public function reverseTaxExempt()
     ));
     CoreLocal::set("TaxExempt",0);
     Database::setglobalvalue("TaxExempt", 0);
-}
-
-/** 
-  Add an informational record noting case discount
-  session setting "casediscount" controls the percentage
-  shown
-*/
-static public function addcdnotify() 
-{
-    self::addRecord(array(
-        'description' => '** ' . CoreLocal::get('casediscount') . '% Case Discount Applied',
-        'trans_type' => '0',
-        'trans_status' => 'D',
-        'voided' => 6,
-    ));
 }
 
 /**
@@ -734,24 +700,6 @@ static public function addTransDiscount()
 }
 
 /**
-  Add cash drop record
-*/
-static public function addCashDrop($amt) 
-{
-    self::addRecord(array(
-        'upc' => 'DROP',
-        'description' => 'Cash Drop',
-        'trans_type' => 'I',
-        'trans_status' => 'X',
-        'quantity' => 1,
-        'unitPrice' => MiscLib::truncate2(-1 * $amt),
-        'total' => MiscLib::truncate2(-1 * $amt),
-        'ItemQtty' => 1,
-        'charflag' => 'CD',
-    ));
-}
-
-/**
   Add a log entry to the transaction table.
   Log records do not appear onscreen or on receipts.
 
@@ -799,12 +747,6 @@ static public function addLogRecord($opts)
     ));
 }
 
-    // @hintable
-static public function add_log_record($opts)
-{
-    self::addLogRecord($opts);
-}
-
 /**
   Finish the current transaction
   @param $incomplete [boolean] optional, default false
@@ -825,7 +767,7 @@ static public function finalizeTransaction($incomplete=false)
     if (!$incomplete) {
         self::addtransDiscount();
         self::addTax();
-        $taxes = Database::LineItemTaxes();
+        $taxes = Database::lineItemTaxes();
         foreach($taxes as $tax) {
             if (CoreLocal::get('TaxExempt') == 1) {
                 $tax['amount'] = 0.00;
@@ -859,7 +801,7 @@ static public function debugLog($val)
     } else {
         $tdate = strftime("%Y-%m-%d %H:%M:%S", time());
     }
-    $trans_num = ReceiptLib::receiptNumber();
+    $transNum = ReceiptLib::receiptNumber();
     $lastID = CoreLocal::get('LastID');
 
     $dbc = Database::tDataConnect();
@@ -868,12 +810,12 @@ static public function debugLog($val)
                               (tdate, transNum, transID, entry)
                               VALUES
                               (?, ?, ?, ?)');
-        $res = $dbc->execute($prep, array($tdate, $trans_num, $lastID, $val));
+        $res = $dbc->execute($prep, array($tdate, $transNum, $lastID, $val));
 
         return $res ? true : false;
-    } else {
-        return false;
     }
+
+    return false;
 }
 
 }

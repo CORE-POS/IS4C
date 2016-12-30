@@ -61,7 +61,6 @@ class HouseCoupon extends SpecialUPC
     public function handle($upc, $json)
     {
         $coupID = ltrim(substr($upc, -5), "0");
-        $leadDigits = substr($upc, 3, 5);
 
         $qualified = $this->checkQualifications($coupID);
         if ($qualified !== true) {
@@ -88,7 +87,7 @@ class HouseCoupon extends SpecialUPC
     /**
       helper - lookup coupon record
     */
-    private function lookupCoupon($id)
+    private function lookupCoupon($coupID)
     {
         $dbc = Database::pDataConnect();
         $infoQ = "SELECT endDate," 
@@ -127,7 +126,7 @@ class HouseCoupon extends SpecialUPC
             }
         }
         $infoQ .= " FROM  houseCoupons 
-                    WHERE coupID=" . ((int)$id);
+                    WHERE coupID=" . ((int)$coupID);
         $infoR = $dbc->query($infoQ);
         if ($dbc->num_rows($infoR) == 0) {
             return false;
@@ -152,29 +151,29 @@ class HouseCoupon extends SpecialUPC
 
     private function isMember()
     {
-        $is_mem = false;
+        $isMem = false;
         if (CoreLocal::get('isMember') == 1) {
-            $is_mem = true;
+            $isMem = true;
         } elseif (CoreLocal::get('memberID') == CoreLocal::get('visitingMem')) {
-            $is_mem = true;
+            $isMem = true;
         } elseif (CoreLocal::get('memberID') == '0') {
-            $is_mem = false;
+            $isMem = false;
         }
 
-        return $is_mem;
+        return $isMem;
     }
 
     /**
       Validate coupon exists, is not expired, and
       transaction meets required qualifications
-      @param $id [int] coupon ID
+      @param $coupID [int] coupon ID
       @param $quiet [boolean] just return false rather than
         an error message on failure
       @return [boolean] true or [string] error message
     */
-    public function checkQualifications($id, $quiet=false)
+    public function checkQualifications($coupID, $quiet=false)
     {
-        $infoW = $this->lookupCoupon($id);
+        $infoW = $this->lookupCoupon($coupID);
         if ($infoW === false) {
             return $this->errorOrQuiet(_("coupon not found"), $quiet);
         }
@@ -203,7 +202,6 @@ class HouseCoupon extends SpecialUPC
 
         /* verify the minimum purchase has been made */
         $transDB = Database::tDataConnect();
-        $coupID = $id;
         switch ($infoW["minType"]) {
             case "Q": // must purchase at least X
             case "Q+": // must purchase more than X
@@ -327,12 +325,12 @@ class HouseCoupon extends SpecialUPC
       one per member, etc. This is a separate method from
       checkQualifications() so that calling code has the option
       of working around limits via voids or amount adjustments
-      @param $id [int] coupon ID
+      @param $coupID [int] coupon ID
       @return [boolean] true or [string] error message
     */
-    public function checkLimits($id)
+    public function checkLimits($coupID)
     {
-        $infoW = $this->lookupCoupon($id);
+        $infoW = $this->lookupCoupon($coupID);
         if ($infoW === false) {
             return $this->errorOrQuiet(_('coupon not found'), false);
         }
@@ -341,7 +339,7 @@ class HouseCoupon extends SpecialUPC
         if ($prefix == '') {
             $prefix = '00499999';
         }
-        $upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
+        $upc = $prefix . str_pad($coupID, 5, '0', STR_PAD_LEFT);
 
         /* check the number of times this coupon
          * has been used in this transaction
@@ -353,8 +351,8 @@ class HouseCoupon extends SpecialUPC
             upc = '" . $upc . "'" ;
         $limitR = $transDB->query($limitQ);
         $limitW = $transDB->fetch_row($limitR);
-        $times_used = $limitW[0];
-        if ($times_used >= $infoW["limit"]) {
+        $timesUsed = $limitW[0];
+        if ($timesUsed >= $infoW["limit"]) {
             return $this->errorOrQuiet(_('coupon already applied'), false);
         }
 
@@ -367,10 +365,11 @@ class HouseCoupon extends SpecialUPC
             $mDB = Database::mDataConnect();
             $mAlt = Database::mAltName();
 
-            // Lookup usage of this coupon by this member
+            // Future idea: lookup usage of this coupon by this member
             // Subquery is to combine today (dlog)
             // with previous days (dlog_90_view)
             // Potential replacement for houseCouponThisMonth
+            /*
             $monthStart = date('Y-m-01 00:00:00');
             $altQ = "SELECT SUM(s.quantity) AS quantity,
                         MAX(tdate) AS lastUse
@@ -395,6 +394,7 @@ class HouseCoupon extends SpecialUPC
                             AND tdate >= '$monthStart'
                      ) AS s
                      GROUP BY s.upc, s.card_no";
+            */
 
             $mRes = $mDB->query("SELECT quantity 
                                FROM {$mAlt}houseCouponThisMonth
@@ -415,15 +415,15 @@ class HouseCoupon extends SpecialUPC
     
     /**
       Get information about how much the coupon is worth
-      @param $id [int] coupon ID
+      @param $coupID [int] coupon ID
       @return array with keys:
         value => [float] coupon value
         department => [int] department number for the coupon
         description => [string] description for coupon
     */
-    public function getValue($id)
+    public function getValue($coupID)
     {
-        $infoW = $this->lookupCoupon($id);
+        $infoW = $this->lookupCoupon($coupID);
         if ($infoW === false) {
             return array('value' => 0, 'department' => 0, 'description' => '');
         }
@@ -433,7 +433,6 @@ class HouseCoupon extends SpecialUPC
          * should be valid
          */
         $value = 0;
-        $coupID = $id;
         $description = isset($infoW['description']) ? $infoW['description'] : '';
         $discountable = 1;
         switch ($infoW["discountType"]) {
@@ -576,8 +575,8 @@ class HouseCoupon extends SpecialUPC
                 break;
             case "%B": // better percent discount applies
                 Database::getsubtotals();
-                $coupon_discount = (int)($infoW['discountValue']*100);
-                if ($coupon_discount <= CoreLocal::get('percentDiscount')) {
+                $couponDiscount = (int)($infoW['discountValue']*100);
+                if ($couponDiscount <= CoreLocal::get('percentDiscount')) {
                     // customer's discount is better than coupon discount; skip
                     // applying coupon
                     $value = 0;
@@ -608,8 +607,8 @@ class HouseCoupon extends SpecialUPC
                 break;
             case "%E": // better percent discount applies to specified department only
                 Database::getsubtotals();
-                $coupon_discount = (int)($infoW['discountValue']*100);
-                if ($coupon_discount <= CoreLocal::get('percentDiscount')) {
+                $couponDiscount = (int)($infoW['discountValue']*100);
+                if ($couponDiscount <= CoreLocal::get('percentDiscount')) {
                     // customer's discount is better than coupon discount; skip
                     // applying coupon
                     $value = 0;
@@ -629,7 +628,7 @@ class HouseCoupon extends SpecialUPC
                         SET l.discountable=0
                         WHERE h.coupID = " . $coupID . "
                             AND h.type IN ('BOTH', 'DISCOUNT')";
-                    $clearR = $transDB->query($clearR);
+                    $clearR = $transDB->query($clearQ);
                 }
                 break;
             case 'PD': // modify customer percent discount

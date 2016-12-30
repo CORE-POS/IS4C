@@ -53,13 +53,13 @@ static private function getTenderMods($right)
       16Mar2015
     */
     if (CoreLocal::get('NoCompat') == 1) {
-        $tender_model = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
-        $map = $tender_model->getMap();
+        $tenderModel = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
+        $map = $tenderModel->getMap();
     } else {
-        $tender_table = $dbc->tableDefinition('tenders');
-        if (isset($tender_table['TenderModule'])) {
-            $tender_model = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
-            $map = $tender_model->getMap();
+        $tenderTable = $dbc->tableDefinition('tenders');
+        if (isset($tenderTable['TenderModule'])) {
+            $tenderModel = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
+            $map = $tenderModel->getMap();
         }
     }
     if (is_array($map) && isset($map[$right])) {
@@ -101,9 +101,9 @@ static public function tender($right, $strl)
         CoreLocal::set('RepeatAgain', false);
     }
 
-    $tender_mods = self::getTenderMods($right);
-    $tender_object = null;
-    foreach ($tender_mods as $class) {
+    $tenderMods = self::getTenderMods($right);
+    $tenderObject = null;
+    foreach ($tenderMods as $class) {
         if (!class_exists($class)) { // try namespaced version
             $class = 'COREPOS\\pos\\lib\\Tenders\\' . $class;
         }
@@ -116,16 +116,16 @@ static public function tender($right, $strl)
             );
             return $ret;
         } 
-        $tender_object = new $class($right, $strl);
+        $tenderObject = new $class($right, $strl);
         /**
           Do tender-specific error checking and prereqs
         */
-        $error = $tender_object->ErrorCheck();
+        $error = $tenderObject->ErrorCheck();
         if ($error !== true) {
             $ret['output'] = $error;
             return $ret;
         }
-        $prereq = $tender_object->PreReqCheck();
+        $prereq = $tenderObject->PreReqCheck();
         if ($prereq !== true) {
             $ret['main_frame'] = $prereq;
             return $ret;
@@ -133,12 +133,12 @@ static public function tender($right, $strl)
     }
 
     // add the tender record
-    $tender_object->Add();
+    $tenderObject->Add();
     Database::getsubtotals();
 
     // see if transaction has ended
     if (CoreLocal::get("amtdue") <= 0.005) {
-        $ret = self::tenderEndsTransaction($tender_object, $ret);
+        $ret = self::tenderEndsTransaction($tenderObject, $ret);
     } else {
         $ret = self::tenderContinuesTransaction($ret);
     }
@@ -147,13 +147,13 @@ static public function tender($right, $strl)
     return $ret;
 }
 
-private static function tenderEndsTransaction($tender_object, $ret)
+private static function tenderEndsTransaction($tenderObject, $ret)
 {
     CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
     CoreLocal::set('strEntered', '');
     CoreLocal::set('msgrepeat', 0);
-    $cash_return = CoreLocal::get("change");
-    TransRecord::addchange($cash_return, $tender_object->ChangeType(), $tender_object->ChangeMsg());
+    $cashReturn = CoreLocal::get("change");
+    TransRecord::addchange($cashReturn, $tenderObject->ChangeType(), $tenderObject->ChangeMsg());
                 
     CoreLocal::set("End",1);
     $ret['receipt'] = 'full';
@@ -202,11 +202,11 @@ static private function runTotalActions()
 {
     $ttlHooks = CoreLocal::get('TotalActions');
     if (is_array($ttlHooks)) {
-        foreach($ttlHooks as $ttl_class) {
-            if ("$ttl_class" == "") {
+        foreach($ttlHooks as $ttlClass) {
+            if ("$ttlClass" == "") {
                 continue;
             }
-            $mod = TotalAction::factory($ttl_class);
+            $mod = TotalAction::factory($ttlClass);
             $result = $mod->apply();
             if ($result !== true && is_string($result)) {
                 return $result; // redirect URL
@@ -234,7 +234,7 @@ static private function runTotalActions()
 static public function ttl() 
 {
     if (CoreLocal::get("memberID") == "0") {
-        return MiscLib::base_url()."gui-modules/memlist.php";
+        return MiscLib::baseURL()."gui-modules/memlist.php";
     } 
 
     self::addRemoveDiscountViews();
@@ -347,117 +347,112 @@ static public function omtr_ttl()
 {
     // Must have gotten member number before totaling.
     if (CoreLocal::get("memberID") == "0") {
-        return MiscLib::base_url()."gui-modules/memlist.php";
+        return MiscLib::baseURL()."gui-modules/memlist.php";
+    }
+
+    self::addRemoveDiscountViews();
+
+    CoreLocal::set("ttlflag",1);
+    Database::setglobalvalue("TTLFlag", 1);
+
+    // Refresh totals after staff and member discounts.
+    Database::getsubtotals();
+
+    // Is the before-tax total within range?
+    if (CoreLocal::get("runningTotal") <= 4.00 ) {
+        $totalBefore = CoreLocal::get("amtdue");
+        $ret = Database::changeLttTaxCode("HST","GST");
+        if ( $ret !== True ) {
+            TransRecord::addcomment("$ret");
+        } else {
+            Database::getsubtotals();
+            $saved = ($totalBefore - CoreLocal::get("amtdue"));
+            $comment = sprintf("OMTR OK. You saved: $%.2f", $saved);
+            TransRecord::addcomment("$comment");
+        }
     }
     else {
-        self::addRemoveDiscountViews();
-
-        CoreLocal::set("ttlflag",1);
-        Database::setglobalvalue("TTLFlag", 1);
-
-        // Refresh totals after staff and member discounts.
-        Database::getsubtotals();
-
-        // Is the before-tax total within range?
-        if (CoreLocal::get("runningTotal") <= 4.00 ) {
-            $totalBefore = CoreLocal::get("amtdue");
-            $ret = Database::changeLttTaxCode("HST","GST");
-            if ( $ret !== True ) {
-                TransRecord::addcomment("$ret");
-            } else {
-                Database::getsubtotals();
-                $saved = ($totalBefore - CoreLocal::get("amtdue"));
-                $comment = sprintf("OMTR OK. You saved: $%.2f", $saved);
-                TransRecord::addcomment("$comment");
-            }
-        }
-        else {
-            TransRecord::addcomment("Does NOT qualify for OMTR");
-        }
-
-        /* If member can do Store Charge, warn on certain conditions.
-         * Important preliminary is to refresh totals.
-        */
-        $temp = \COREPOS\pos\lib\MemberLib::chargeOk();
-        if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0){
-            if (CoreLocal::get('msgrepeat') == 0){
-                CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
-                    Total AR payments $%.2f exceeds AR balance %.2f<br />",
-                    CoreLocal::get("memChargeTotal"),
-                    CoreLocal::get("balance")));
-                CoreLocal::set('boxMsgButtons', array(
-                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                ));
-                CoreLocal::set("strEntered","TL");
-                return MiscLib::base_url()."gui-modules/boxMsg2.php?quiet=1";
-            }
-        }
-
-        // Display discount.
-        if (CoreLocal::get("percentDiscount") > 0) {
-            TransRecord::addRecord(array(
-                'description' => CoreLocal::get('percentDiscount') . '% Discount',
-                'trans_type' => 'C',
-                'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
-                'voided' => 5,
-            ));
-        }
-
-        $amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
-
-        // Compose the member ID string for the description.
-        if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {
-            $memline = " #" . CoreLocal::get("memberID");
-        } 
-        else {
-            $memline = "";
-        }
-
-        // Put out the Subtotal line.
-        $peek = self::peekItem();
-        if (True || substr($peek,0,9) != "Subtotal "){
-            TransRecord::addRecord(array(
-                'description' => 'Subtotal ' 
-                                 . MiscLib::truncate2(CoreLocal::get('subtotal')) 
-                                 . ', Tax' 
-                                 . MiscLib::truncate2(CoreLocal::get('taxTotal')) 
-                                 . $memline,
-                'trans_type' => 'C',
-                'trans_status' => 'D',
-                'unitPrice' => $amtDue,
-                'voided' => 3,
-            ));
-        }
-    
-        if (CoreLocal::get("fntlflag") == 1) {
-            TransRecord::addRecord(array(
-                'description' => 'Foodstamps Eligible',
-                'trans_type' => '0',
-                'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
-                'voided' => 7,
-            ));
-        }
-
+        TransRecord::addcomment("Does NOT qualify for OMTR");
     }
 
-    return True;
+    /* If member can do Store Charge, warn on certain conditions.
+     * Important preliminary is to refresh totals.
+    */
+    \COREPOS\pos\lib\MemberLib::chargeOk();
+    if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0){
+        if (CoreLocal::get('msgrepeat') == 0){
+            CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
+                Total AR payments $%.2f exceeds AR balance %.2f<br />",
+                CoreLocal::get("memChargeTotal"),
+                CoreLocal::get("balance")));
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
+            CoreLocal::set("strEntered","TL");
+            return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
+        }
+    }
 
+    // Display discount.
+    if (CoreLocal::get("percentDiscount") > 0) {
+        TransRecord::addRecord(array(
+            'description' => CoreLocal::get('percentDiscount') . '% Discount',
+            'trans_type' => 'C',
+            'trans_status' => 'D',
+            'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
+            'voided' => 5,
+        ));
+    }
+
+    $amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
+
+    // Compose the member ID string for the description.
+    $memline = "";
+    if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {
+        $memline = " #" . CoreLocal::get("memberID");
+    }
+
+    // Put out the Subtotal line.
+    $peek = self::peekItem();
+    if (True || substr($peek,0,9) != "Subtotal "){
+        TransRecord::addRecord(array(
+            'description' => 'Subtotal ' 
+                             . MiscLib::truncate2(CoreLocal::get('subtotal')) 
+                             . ', Tax' 
+                             . MiscLib::truncate2(CoreLocal::get('taxTotal')) 
+                             . $memline,
+            'trans_type' => 'C',
+            'trans_status' => 'D',
+            'unitPrice' => $amtDue,
+            'voided' => 3,
+        ));
+    }
+
+    if (CoreLocal::get("fntlflag") == 1) {
+        TransRecord::addRecord(array(
+            'description' => 'Foodstamps Eligible',
+            'trans_type' => '0',
+            'trans_status' => 'D',
+            'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
+            'voided' => 7,
+        ));
+    }
+
+    return true;
 // omtr_ttl
 }
 
 /**
   See what the last item in the transaction is currently
-  @param $full_record [boolean] return full database record.
+  @param $fullRecord [boolean] return full database record.
     Default is false. Just returns description.
   @return localtemptrans.description for the last item
     or localtemptrans record for the last item
 
     If no record exists, returns false
 */
-static public function peekItem($full_record=false, $transID=false)
+static public function peekItem($fullRecord=false, $transID=false)
 {
     $dbc = Database::tDataConnect();
     $query = "SELECT * FROM localtemptrans ";
@@ -466,13 +461,12 @@ static public function peekItem($full_record=false, $transID=false)
     }
     $query .= " ORDER BY trans_id DESC";
     $res = $dbc->query($query);
-    $row = $dbc->fetch_row($res);
+    $row = $dbc->fetchRow($res);
 
-    if ($full_record) {
+    if ($fullRecord) {
         return is_array($row) ? $row : false;
-    } else {
-        return isset($row['description']) ? $row['description'] : false;
     }
+    return isset($row['description']) ? $row['description'] : false;
 }
 
 /**
@@ -485,15 +479,14 @@ static public function fsEligible()
     Database::setglobalvalue("FntlFlag", 1);
     if (CoreLocal::get("ttlflag") != 1) {
         return self::ttl();
-    } else {
-        TransRecord::addRecord(array(
-            'description' => 'Foodstamps Eligible',
-            'trans_type' => '0',
-            'trans_status' => 'D',
-            'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
-            'voided' => 7,
-        ));
     }
+    TransRecord::addRecord(array(
+        'description' => 'Foodstamps Eligible',
+        'trans_type' => '0',
+        'trans_status' => 'D',
+        'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
+        'voided' => 7,
+    ));
 
     return true;
 }
@@ -541,17 +534,17 @@ static public function percentDiscount($strl,$json=array())
 
 /**
   Enforce age-based restrictions
-  @param $required_age [int] age in years
+  @param $requiredAge [int] age in years
   @param $ret [array] Parser-formatted return value
   @return [array]
    0 - boolean age-related approval required
    1 - array Parser-formatted return value
 */
-public static function ageCheck($required_age, $ret)
+public static function ageCheck($requiredAge, $ret)
 {
-    $my_url = MiscLib::baseURL();
+    $myUrl = MiscLib::baseURL();
     if (CoreLocal::get("cashierAge") < 18 && CoreLocal::get("cashierAgeOverride") != 1){
-        $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-AgeApproveAdminLogin";
+        $ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-AgeApproveAdminLogin";
         return array(true, $ret);
     }
 
@@ -559,11 +552,11 @@ public static function ageCheck($required_age, $ret)
         CoreLocal::set("memAge",date('Ymd'));
     }
     $stamp = strtotime(CoreLocal::get("memAge"));
-    $of_age_on_day = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp), date('Y', $stamp) + $required_age);
+    $ofAgeOnDay = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp), date('Y', $stamp) + $requiredAge);
     $today = strtotime( date('Y-m-d') );
-    if ($of_age_on_day > $today) {
+    if ($ofAgeOnDay > $today) {
         $ret['udpmsg'] = 'twoPairs';
-        $ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC';
+        $ret['main_frame'] = $myUurl.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC';
         return array(true, $ret);
     }
 

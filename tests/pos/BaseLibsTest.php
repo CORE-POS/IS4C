@@ -267,7 +267,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
           so the test would only catch changes to the
           defaults.
         */
-        CoreState::initiate_session();
+        CoreState::initiateSession();
 
         $str = CoreState::getCustomerPref('asdf');
         $this->assertInternalType('string',$str);
