@@ -22,10 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\AjaxCallback;
 use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
-use \CoreLocal;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -33,13 +31,13 @@ class AjaxPollScale extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-        $sd = ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
+        $sdObj = ScaleDriverWrapper::factory($this->session->get('scaleDriver'));
 
-        if (is_object($sd)) {
+        if (is_object($sdObj)) {
             ob_start();
-            $sd->readFromScale();    
+            $sdObj->readFromScale();    
             return ob_get_clean();
         } else {
             return "{}"; // no driver => empty json

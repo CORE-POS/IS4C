@@ -31,12 +31,12 @@ class AjaxJsError extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-        if (isset($_REQUEST['data'])) {
+        try {
             $log = new LaneLogger();
-            $log->debug('javascript: ' . $_REQUEST['data']);
-        }
+            $log->debug('javascript: ' . $this->form->data);
+        } catch (Exception $ex) {}
 
         return 'Done';
     }

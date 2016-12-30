@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Franking;
 use COREPOS\pos\lib\AjaxCallback;
 
@@ -32,10 +31,10 @@ class AjaxEndorse extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-        $endorseType = FormLib::get('type', '');
-        $amount = FormLib::get('amount', '');
+        $endorseType = $this->form->tryGet('type', '');
+        $amount = $this->form->tryGet('amount', '');
         if (strlen($endorseType) > 0) {
 
             // close session so if printer hangs

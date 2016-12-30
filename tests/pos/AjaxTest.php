@@ -1,6 +1,9 @@
 <?php
 
 use COREPOS\pos\lib\AjaxCallback;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+
+use COREPOS\common\mvc\ValueContainer;
 
 /**
  * @backupGlobals disabled
@@ -9,7 +12,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
 {
     public function testBase()
     {
-        $obj = new AjaxCallback();
+        $obj = new AjaxCallback(new WrappedStorage(), new ValueContainer());
         $this->assertEquals('json', $obj->getEncoding());
         $obj->run();
 
@@ -27,7 +30,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
     
     public function testParser()
     {
-        $ajax = new COREPOS\pos\ajax\AjaxParser();
+        $ajax = new COREPOS\pos\ajax\AjaxParser(new WrappedStorage(), new ValueContainer());
         $ajax->enablePageDrawing(true);
         CoreLocal::set('strRemembered', 'invalidInput');
         CoreLocal::set('msgrepeat', 1);    
@@ -52,13 +55,15 @@ class AjaxTest extends PHPUnit_Framework_TestCase
 
     public function testCabReceipt()
     {
-        $ajax = new COREPOS\pos\ajax\AjaxCabReceipt();
-        $this->assertEquals('Done', $ajax->ajax(array('cab-reference'=>'9999-99-1')));
+        $vals = new ValueContainer();
+        $vals->input = '9999-99-1';
+        $ajax = new COREPOS\pos\ajax\AjaxCabReceipt(new WrappedStorage(), $vals);
+        $this->assertEquals('Done', $ajax->ajax());
     }
 
     public function testDecision()
     {
-        $ajax = new COREPOS\pos\ajax\AjaxDecision();
+        $ajax = new COREPOS\pos\ajax\AjaxDecision(new WrappedStorage(), new ValueContainer());
         $json = $ajax->ajax();
         $this->assertInternalType('array', $json);
         $this->assertEquals(false, $json['endorse']);
@@ -68,20 +73,22 @@ class AjaxTest extends PHPUnit_Framework_TestCase
 
     public function testEnd()
     {
-        $ajax = new COREPOS\pos\ajax\AjaxEnd();
-        $input = array('receiptType'=>'full', 'ref'=>'1-1-1');
-        $this->assertEquals(array(), $ajax->ajax($input));
+        $vals = new ValueContainer();
+        $vals->receiptType = 'full';
+        $vals->ref = '1-1-1';
+        $ajax = new COREPOS\pos\ajax\AjaxEnd(new WrappedStorage(), $vals);
+        $this->assertEquals(array(), $ajax->ajax());
     }
 
     public function testEndorse()
     {
-        $ajax = new COREPOS\pos\ajax\AjaxEndorse();
+        $ajax = new COREPOS\pos\ajax\AjaxEndorse(new WrappedStorage(), new ValueContaier());
         $this->assertEquals('Done', $ajax->ajax());
     }
 
     public function testScale()
     {
-        $ajax = new COREPOS\pos\ajax\AjaxScale();
+        $ajax = new COREPOS\pos\ajax\AjaxScale(new WrappedStorage(), new ValueContainer());
         $this->assertEquals(' lb', $ajax->ajax());
         $ajax = new COREPOS\pos\ajax\AjaxPollScale();
         $this->assertInternalType('string', $ajax->ajax());

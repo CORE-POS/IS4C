@@ -52,30 +52,32 @@ class drawerPage extends NoInputCorePage
     private function takeOver($drawer)
     {
         // take over a drawer
+        $drawers = new Drawers($this->session, Database::pDataConnect());
         if ($this->myDrawer != 0){
             // free up the current drawer if it exists
-            Drawers::kick();
-            Drawers::free($this->myDrawer);
+            $drawers->kick();
+            $drawers->free($this->myDrawer);
         }
         // switch to the requested drawer
-        Drawers::assign($this->session->get('CashierNo'),$drawer);
-        Drawers::kick();
+        $drawers->assign($this->session->get('CashierNo'),$drawer);
+        $drawers->kick();
         $this->myDrawer = $drawer;
     }
 
     private function switchDrawer($drawer)
     {
+        $drawers = new Drawers($this->session, Database::pDataConnect());
         foreach($this->available as $id){
             // verify the requested drawer is available
             if ($drawer == $id){
                 if ($this->myDrawer != 0){
                     // free up the current drawer if it exists
-                    Drawers::kick();
-                    Drawers::free($this->myDrawer);
+                    $drawers->kick();
+                    $drawers->free($this->myDrawer);
                 }
                 // switch to the requested drawer
-                Drawers::assign($this->session->get('CashierNo'),$drawer);
-                Drawers::kick();
+                $drawers->assign($this->session->get('CashierNo'),$drawer);
+                $drawers->kick();
                 $this->myDrawer = $drawer;
 
                 break;
@@ -85,8 +87,9 @@ class drawerPage extends NoInputCorePage
 
     function preprocess()
     {
-        $this->myDrawer = Drawers::current();
-        $this->available = Drawers::available();
+        $drawers = new Drawers($this->session, Database::pDataConnect());
+        $this->myDrawer = $drawers->current();
+        $this->available = $drawers->available();
         $this->isAdmin = false;
         $sec = Authenticate::getPermission($this->session->get('CashierNo'));
         if ($sec >= 30) {

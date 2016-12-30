@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Kickers\Kicker;
@@ -31,7 +30,6 @@ use COREPOS\pos\lib\AjaxCallback;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\UdpComm;
-use \CoreLocal;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -42,13 +40,13 @@ class AjaxEnd extends AjaxCallback
 {
     protected $encoding = 'json';
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-        $receiptType = isset($input['receiptType']) ? $input['receiptType'] : FormLib::get('receiptType');
+        $receiptType = $this->form->tryGet('receiptType');
         if ($receiptType === '') {
             return array();
         }
-        $receiptNum = isset($input['ref']) ? $input['ref'] : FormLib::get('ref');
+        $receiptNum = $this->form->tryGet('ref');
 
         $transFinished = $this->transFinished($receiptType);
         if (!preg_match('/^\d+-\d+-\d+$/', $receiptNum)) {
@@ -63,17 +61,17 @@ class AjaxEnd extends AjaxCallback
             if ($receiptType != "none") {
                 $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
             }
-            if (CoreLocal::get('autoReprint') == 1 && $receiptType !== "ccSlip" && $receiptType !== 'gcSlip') {
-                CoreLocal::set("autoReprint",0);
+            if ($this->session->get('autoReprint') == 1 && $receiptType !== "ccSlip" && $receiptType !== 'gcSlip') {
+                $this->session->set("autoReprint",0);
                 $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, true);
             }
         }
 
         if ($transFinished) {
             UdpComm::udpSend("termReset");
-            CoreLocal::set('ccTermState','swipe');
+            $this->session->set('ccTermState','swipe');
             $this->uploadAndReset($receiptType);
-            CoreLocal::set("End",0);
+            $this->session->set("End",0);
         }
 
         // close session so if printer hangs
@@ -83,10 +81,11 @@ class AjaxEnd extends AjaxCallback
         }
 
         if ($receiptType == "full" && $dokick) {
-            Drawers::kick();
+            $drawer = new Drawers($this->session, null);
+            $drawer->kick();
         }
 
-        $PRINT = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+        $PRINT = PrintHandler::factory($this->session->get('ReceiptDriver'));
         $EMAIL = $this->emailObj();
         foreach ($receiptContent as $receipt) {
             if (is_array($receipt)) {
@@ -110,11 +109,11 @@ class AjaxEnd extends AjaxCallback
     */
     private function isDisabled($receiptType)
     {
-        if ($receiptType == 'cancelled' && CoreLocal::get('CancelReceipt') == 0 && CoreLocal::get('CancelReceipt') !== '') {
+        if ($receiptType == 'cancelled' && $this->session->get('CancelReceipt') == 0 && $this->session->get('CancelReceipt') !== '') {
             return true;
-        } elseif ($receiptType == 'suspended' && CoreLocal::get('SuspendReceipt') == 0 && CoreLocal::get('SuspendReceipt') !== '') {
+        } elseif ($receiptType == 'suspended' && $this->session->get('SuspendReceipt') == 0 && $this->session->get('SuspendReceipt') !== '') {
             return true;
-        } elseif ($receiptType == 'ddd' && CoreLocal::get('ShrinkReceipt') == 0 && CoreLocal::get('ShrinkReceipt') !== '') {
+        } elseif ($receiptType == 'ddd' && $this->session->get('ShrinkReceipt') == 0 && $this->session->get('ShrinkReceipt') !== '') {
             return true;
         }
 
@@ -142,7 +141,7 @@ class AjaxEnd extends AjaxCallback
     {
         $dokick = false;
         if ($transFinished) {
-            $kicker_object = Kicker::factory(CoreLocal::get('kickerModule'));
+            $kicker_object = Kicker::factory($this->session->get('kickerModule'));
             $dokick = $kicker_object->doKick($receiptNum);
         }
 
@@ -176,12 +175,12 @@ class AjaxEnd extends AjaxCallback
 
     private function uploadAndReset($type) 
     {
-        if (CoreLocal::get("testremote")==0) {
+        if ($this->session->get("testremote")==0) {
             Database::testremote(); 
         }
 
-        if (CoreLocal::get("TaxExempt") != 0) {
-            CoreLocal::set("TaxExempt",0);
+        if ($this->session->get("TaxExempt") != 0) {
+            $this->session->set("TaxExempt",0);
             Database::setglobalvalue("TaxExempt", 0);
         }
 

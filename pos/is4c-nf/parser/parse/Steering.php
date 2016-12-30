@@ -188,14 +188,15 @@ class Steering extends Parser
                         Database::clearTempTables();
                     }
                     if ($str == 'SO') {
+                        $drawer = new Drawers($this->session, Database::pDataConnect());
                         if (session_id() != '') {
                             session_write_close();
                         }
                         $kicker_object = Kicker::factory($this->session->get('kickerModule'));
                         if ($kicker_object->kickOnSignOut()) {
-                            Drawers::kick();
+                            $drawer->kick();
                         }
-                        Drawers::free(Drawers::current());
+                        $drawer->free($drawer->current());
                     }
                     $this->ret['main_frame'] = $myUrl."login.php";
                 }

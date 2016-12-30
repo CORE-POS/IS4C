@@ -22,13 +22,11 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\AjaxCallback;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\LocalStorage\LaneCache;
 use COREPOS\pos\lib\LocalStorage\WrappedStorage;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\parser\PostParser;
 use COREPOS\pos\parser\PreParser;
@@ -137,21 +135,21 @@ class AjaxParser extends AjaxCallback
         /* this breaks the model a bit, but I'm putting
          * putting the CC parser first manually to minimize
          * code that potentially handles the PAN */
-        if ($entered != '' && in_array("Paycards",CoreLocal::get("PluginList"))) {
+        if ($entered != '' && in_array("Paycards",$this->session->get("PluginList"))) {
             /* this breaks the model a bit, but I'm putting
              * putting the CC parser first manually to minimize
              * code that potentially handles the PAN */
-            if (CoreLocal::get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:") {
+            if ($this->session->get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:") {
                 /* cashier-facing device behavior; run card immediately */
                 $entered = substr($entered,9);
-                CoreLocal::set("CachePanEncBlock",$entered);
+                $this->session->set("CachePanEncBlock",$entered);
             }
 
             $pce = new paycardEntered();
             if ($pce->check($entered)){
                 $json = $pce->parse($entered);
                 $entered = "PAYCARD";
-                CoreLocal::set("strEntered","");
+                $this->session->set("strEntered","");
             }
         }
 
@@ -159,43 +157,39 @@ class AjaxParser extends AjaxCallback
     }
 
     // @hintable
-    private function readInput($input)
+    private function readInput()
     {
-        $inField = 'input';
-        if (isset($input['field'])) {
-            $inField = $input['field'];
-        }
-        $entered = strtoupper(trim(FormLib::get($inField)));
+        $entered = strtoupper(trim($this->form->tryGet('input')));
         if (substr($entered, -2) == "CL") $entered = "CL";
 
-        if ($entered == "RI") $entered = CoreLocal::get("strEntered");
+        if ($entered == "RI") $entered = $this->session->get("strEntered");
 
-        if (FormLib::get('repeat')) {
-            CoreLocal::set('msgrepeat', 1);
-        } elseif (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
-            $entered = CoreLocal::get("strRemembered");
+        if ($this->form->tryGet('repeat')) {
+            $this->session->set('msgrepeat', 1);
+        } elseif ($this->session->get("msgrepeat") == 1 && $entered != "CL") {
+            $entered = $this->session->get("strRemembered");
         }
 
         return $entered;
     }
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-        if (CoreLocal::get('CashierNo') === '') { // session is missing/invalid
+        if ($this->session->get('CashierNo') === '') { // session is missing/invalid
             return array(
                 'main_frame' => MiscLib::baseURL() . 'login.php',
             );
         }
 
-        $entered = $this->readInput($input);
-        CoreLocal::set("strEntered",$entered);
+        $entered = $this->readInput();
+        $this->session->set("strEntered",$entered);
 
         $json = array();
         $sdObj = MiscLib::scaleObject();
         list($entered, $json) = $this->handlePaycards($entered, $json);
 
-        CoreLocal::set("quantity",0);
-        CoreLocal::set("multiple",0);
+        $this->session->set("quantity",0);
+        $this->session->set("multiple",0);
 
         $entered = $this->runPreParsers($entered);
 
@@ -218,7 +212,7 @@ class AjaxParser extends AjaxCallback
             }
         }
 
-        CoreLocal::set("msgrepeat",0);
+        $this->session->set("msgrepeat",0);
 
         if (!empty($json) && $this->drawPageParts) {
             if (isset($json['redraw_footer']) && $json['redraw_footer'] !== false){

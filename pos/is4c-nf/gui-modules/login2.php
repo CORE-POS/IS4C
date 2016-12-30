@@ -74,9 +74,9 @@ class login2 extends BasicCorePage
                     'upc' => 'SIGNIN',
                     'description' => 'Sign In Emp#' . $this->session->get('CashierNo'),
                 ));
-                $this->kick();
+                $this->kick($drawer);
 
-                if ($drawer == 0) {
+                if ($drawer->current() == 0) {
                     $this->change_page($this->page_url."gui-modules/drawerPage.php");
                 } else {
                     $this->change_page($this->page_url."gui-modules/pos2.php");
@@ -158,20 +158,21 @@ class login2 extends BasicCorePage
         /**
           Find a drawer for the cashier
         */
-        $drawer = Drawers::current();
+        $drawer = new Drawers($this->session, Database::pDataConnect());
+        $drawerID = $drawer->current();
         Drawers::assign($this->session->get('CashierNo'),$drawer);
-        if ($drawer == 0) {
-            $available = Drawers::available();    
+        if ($drawerID == 0) {
+            $available = $drawer->available();    
             if (count($available) > 0) { 
-                Drawers::assign($this->session->get('CashierNo'),$available[0]);
-                $drawer = $available[0];
+                $drawer->assign($this->session->get('CashierNo'),$available[0]);
+                $drawerID = $available[0];
             }
         }
 
         return $drawer;
     }
 
-    private function kick()
+    private function kick($drawer)
     {
         /**
           Use Kicker object to determine whether the drawer should open
@@ -183,13 +184,13 @@ class login2 extends BasicCorePage
         }
         $kicker = Kicker::factory($this->session->get('kickerModule'));
         if ($kicker->kickOnSignIn()) {
-            Drawers::kick();
+            $drawer->kick();
         }
     }
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertEquals(1, $this->getDrawer());
+        $phpunit->assertEquals(1, $this->getDrawer()->current());
         $this->kick(); // coverage
     }
 

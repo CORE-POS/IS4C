@@ -4,6 +4,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Franking;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\StoreCreditIssuedReceiptMessage;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\GenericSigSlipMessage;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\GCBalanceReceiptMessage;
@@ -360,15 +361,16 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         Franking::endorse('foo');
 
         CoreLocal::set('dualDrawerMode', 1, true);
-        Drawers::free(1);
-        Drawers::free(2);
-        $this->assertEquals(0, Drawers::current());
+        $drawers = new Drawers(new WrappedStorage(), Database::pDataConnect());
+        $drawers->free(1);
+        $drawers->free(2);
+        $this->assertEquals(0, $drawers->current());
         $emp = CoreLocal::get('CashierNo');
         CoreLocal::set('CashierNo', 1);
-        $this->assertEquals(true, Drawers::assign(1, 2));
-        $this->assertEquals(2, Drawers::current());
-        Drawers::kick();
-        Drawers::free(2);
+        $this->assertEquals(true, $drawers->assign(1, 2));
+        $this->assertEquals(2, $drawers->current());
+        $drawers->kick();
+        $drawers->free(2);
         CoreLocal::set('CashierNo', $emp);
 
         $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterCust(time(), '1-1-1')));
