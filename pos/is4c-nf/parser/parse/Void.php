@@ -650,11 +650,11 @@ class Void extends Parser
     public static function adminLoginCallback($success)
     {
         if ($success){
-            $this->session->set('voidOverride', 1);
-            $this->session->set('msgrepeat', 1);
+            CoreLocal::set('voidOverride', 1);
+            CoreLocal::set('msgrepeat', 1);
             return true;
         }
-        $this->session->set('voidOverride', 0);
+        CoreLocal::set('voidOverride', 0);
 
         return false;
     }

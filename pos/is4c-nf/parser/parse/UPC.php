@@ -625,8 +625,8 @@ class UPC extends Parser
     public static function requestInfoCallback($info)
     {
         if ((is_numeric($info) && strlen($info)==8) || $info == 1){
-            $this->session->set("memAge",$info);
-            $inp = urlencode($this->session->get('strEntered'));
+            CoreLocal::set("memAge",$info);
+            $inp = urlencode(CoreLocal::get('strEntered'));
             return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
         }
         return False;
