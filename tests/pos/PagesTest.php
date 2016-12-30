@@ -65,8 +65,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
                 // output is a complete page
                 $this->assertEquals('</html>',substr($output,-7));
                 $this->assertEquals('<!DOCTYPE html>',substr($output,0,15));
-            }
-            else {
+            } else {
                 // output is a proper redirect message
                 $this->assertEquals('</ul>',substr($output,-5));
                 $this->assertEquals('Follow redirect', substr($output,0,15));
