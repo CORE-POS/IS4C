@@ -658,7 +658,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testDiscountApplied()
     {
         $session = new WrappedStorage();
-        $sd = new COREPOS\pos\parser\parse\DiscountApplied($sesson);
+        $sd = new COREPOS\pos\parser\parse\DiscountApplied($session);
         $this->assertEquals(false, $sd->check('ZDA'));
         CoreLocal::set('tenderTotal', 1);
         $this->assertEquals(true, $sd->check('100DA'));
