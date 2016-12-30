@@ -57,13 +57,11 @@ class DeclineReceiptMessage extends ReceiptMessage
     */
     public function standalone_receipt($ref, $reprint=false)
     {
-        $date = ReceiptLib::build_time(time());
         list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
-        $sort = 'asc';
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
-        $emvP = $db->prepare('
+        $emvP = $dbc->prepare('
             SELECT content
             FROM EmvReceipt
             WHERE dateID=?
@@ -73,10 +71,10 @@ class DeclineReceiptMessage extends ReceiptMessage
                 AND transID=?
             ORDER BY tdate DESC
         ');
-        $emvR = $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, CoreLocal::get('paycard_id')));
+        $emvR = $dbc->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, CoreLocal::get('paycard_id')));
         
         $slip = '';
-        while ($emvW = $db->fetchRow($emvR)) {
+        while ($emvW = $dbc->fetchRow($emvR)) {
             $slip .= ReceiptLib::centerString("................................................")."\n";
             $lines = explode("\n", $emvW['content']);
             for ($i=0; $i<count($lines); $i++) {
@@ -93,12 +91,8 @@ class DeclineReceiptMessage extends ReceiptMessage
                     }
                 } else {
                     if (strstr($lines[$i], 'x___')) {
-                        if ($sigSlip) {
-                            $slip .= "\n\n\n";
-                        } else {
                             $i++;
                             continue;
-                        }
                     }
                     $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
                 }

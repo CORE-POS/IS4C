@@ -171,7 +171,7 @@ class UPC extends Parser
     private function handleItem($upc, $row, $scaleStickerItem, $scalepriceUPC, $scalepriceEAN)
     {
         $ret = $this->default_json();
-        $my_url = MiscLib::base_url();
+        $myUrl = MiscLib::baseURL();
         $dbc = Database::pDataConnect();
 
         $quantity = $this->session->get("quantity");
@@ -231,7 +231,7 @@ class UPC extends Parser
                 _('Confirm Weight [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
                 _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
-            $ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
+            $ret['main_frame'] = $myUrl."gui-modules/boxMsg2.php?quiet=1";
             return $ret;
         }
 
@@ -247,8 +247,8 @@ class UPC extends Parser
                 return $ret;
             }
 
-            list($bad_age, $ret) = PrehLib::ageCheck($row['idEnforced'], $ret);
-            if ($bad_age === true) {
+            list($badAge, $ret) = PrehLib::ageCheck($row['idEnforced'], $ret);
+            if ($badAge === true) {
                 return $ret;
             }
         }
@@ -261,7 +261,7 @@ class UPC extends Parser
             if (strstr($peek,"** Tare Weight") === False)
                 TransRecord::addTare($row['tareweight']*100);
         } elseif ($row['scale'] != 0 && !$this->session->get("tare") && Plugin::isEnabled('PromptForTare') && !$this->session->get("tarezero")) {
-            $ret['main_frame'] = $my_url.'plugins/PromptForTare/TarePromptInputPage.php?item='.$entered;
+            $ret['main_frame'] = $myUrl.'plugins/PromptForTare/TarePromptInputPage.php?item='.$upc;
             return $ret;
         } else {
             $this->session->set('tarezero', False);
@@ -308,7 +308,7 @@ class UPC extends Parser
            entry page if one wasn't provided */
         if (($qttyEnforced == 1) && ($this->session->get("multiple") == 0) && ($this->session->get("msgrepeat" == 0) || $this->session->get('qttyvalid') == 0)) {
             $ret['main_frame'] = 
-                    $my_url . 'gui-modules/QuantityEntryPage.php'
+                    $myUrl . 'gui-modules/QuantityEntryPage.php'
                     . '?entered-item=' . $this->session->get('strEntered')
                     . '&qty-mode=' . $scale;
             return $ret;
@@ -363,13 +363,13 @@ class UPC extends Parser
         $row['foodstamp'] = $foodstamp;
         $row['discount'] = $discountable;
 
-        $this->enforceSaleLimit($dbc, $row);
+        $this->enforceSaleLimit($dbc, $row, $quantity);
 
         /*
             BEGIN: figure out discounts by type
         */
 
-        $DiscountObject = DiscountType::getObject($row['discounttype']);
+        $discountObject = DiscountType::getObject($row['discounttype']);
 
         /* add in sticker price and calculate a quantity
            if the item is stickered, scaled, and on sale. 
@@ -389,7 +389,7 @@ class UPC extends Parser
            assigned cannot calculate a proper quantity.
         */
         if ($scaleStickerItem) {
-            if ($DiscountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
+            if ($discountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
                 $quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
             } elseif ($scale == 1 && $row['normal_price'] != 0) {
                 $quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
@@ -407,17 +407,17 @@ class UPC extends Parser
         */
 
         $row['trans_subtype'] = $this->status;
-        $pricemethod = MiscLib::nullwrap($DiscountObject->isSale() ? $row['specialpricemethod'] : $row["pricemethod"]);
-        $PriceMethodObject = PriceMethod::getObject($pricemethod);
+        $pricemethod = MiscLib::nullwrap($discountObject->isSale() ? $row['specialpricemethod'] : $row["pricemethod"]);
+        $priceMethodObject = PriceMethod::getObject($pricemethod);
 
         // prefetch: otherwise object members 
         // pass out of scope in addItem()
-        $prefetch = $DiscountObject->priceInfo($row,$quantity);
-        $added = $PriceMethodObject->addItem($row, $quantity, $DiscountObject);
+        $prefetch = $discountObject->priceInfo($row,$quantity);
+        $added = $priceMethodObject->addItem($row, $quantity, $discountObject);
 
         if (!$added) {
             $ret['output'] = DisplayLib::boxMsg(
-                $PriceMethodObject->errorInfo(),
+                $priceMethodObject->errorInfo(),
                 '',
                 false,
                 DisplayLib::standardClearButton()
@@ -426,7 +426,7 @@ class UPC extends Parser
         }
 
         /* add discount notifications lines, if applicable */
-        $DiscountObject->addDiscountLine();
+        $discountObject->addDiscountLine();
 
         // cleanup, reset flags and beep
         if ($quantity != 0) {
@@ -450,7 +450,7 @@ class UPC extends Parser
         $ret['output'] = DisplayLib::lastpage();
 
         if ($prefetch['unitPrice']==0 && $row['discounttype'] == 0){
-            $ret['main_frame'] = $my_url.'gui-modules/priceOverride.php';
+            $ret['main_frame'] = $myUrl.'gui-modules/priceOverride.php';
         }
 
         return $ret;
@@ -486,7 +486,7 @@ class UPC extends Parser
             $quantity = $this->session->get("quantity");
         }
 
-        $save_refund = $this->session->get("refund");
+        $saveRefund = $this->session->get("refund");
 
         TransRecord::addRecord(array(
             'upc' => $upc,
@@ -506,7 +506,7 @@ class UPC extends Parser
             'discounttype' => $discounttype,
         ));
 
-        $this->session->set("refund",$save_refund);
+        $this->session->set("refund",$saveRefund);
     }
 
     function fixGS1($str){
@@ -606,13 +606,13 @@ class UPC extends Parser
                 $scalepriceUPC = MiscLib::truncate2(substr($upc, 8, 4)/100);
                 $scalepriceEAN = MiscLib::truncate2(substr($upc, 7, 5)/100);
             }
-            $rewrite_class = $this->session->get('VariableWeightReWriter');
-            if ($rewrite_class != '' && class_exists('COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewrite_class)) {
-                $rewrite_class = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewrite_class;
-            } elseif ($rewrite_class === '' || !class_exists($rewrite_class)) {
-                $rewrite_class = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\ZeroedPriceReWrite';
+            $rewriteClass = $this->session->get('VariableWeightReWriter');
+            if ($rewriteClass != '' && class_exists('COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewriteClass)) {
+                $rewriteClass = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewriteClass;
+            } elseif ($rewriteClass === '' || !class_exists($rewriteClass)) {
+                $rewriteClass = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\ZeroedPriceReWrite';
             }
-            $rewriter = new $rewrite_class();
+            $rewriter = new $rewriteClass();
             $upc = $rewriter->translate($upc, $scaleCheckDigits);
             // I think this is WFC special casing; needs revising.
             if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
@@ -635,19 +635,19 @@ class UPC extends Parser
 
     private function genericSecurity($ret)
     {
-        $my_url = MiscLib::baseURL();
+        $myUrl = MiscLib::baseURL();
         /* force cashiers to enter a comment on refunds */
         if ($this->session->get("refund")==1 && $this->session->get("refundComment") == ""){
             $ret['udpmsg'] = 'twoPairs';
-            $ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
+            $ret['main_frame'] = $myUrl.'gui-modules/refundComment.php';
             if ($this->session->get("SecurityRefund") > 20){
-                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-RefundAdminLogin";
+                $ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-RefundAdminLogin";
             }
             $this->session->set("refundComment",$this->session->get("strEntered"));
             return $ret;
         }
         if ($this->session->get('itemPD') > 0 && $this->session->get('SecurityLineItemDiscount') == 30 && $this->session->get('msgrepeat')==0){
-            $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-LineItemDiscountAdminLogin";
+            $ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-LineItemDiscountAdminLogin";
             return $ret;
         }
 
@@ -695,8 +695,8 @@ class UPC extends Parser
     {
         $dbc = Database::pDataConnect();
         $objs = is_array($this->session->get("SpecialUpcClasses")) ? $this->session->get('SpecialUpcClasses') : array();
-        foreach($objs as $class_name){
-            $instance = SpecialUPC::factory($class_name);
+        foreach($objs as $className){
+            $instance = SpecialUPC::factory($className);
             if ($instance->isSpecial($upc)){
                 return $instance->handle($upc,$ret);
             }
@@ -791,7 +791,7 @@ class UPC extends Parser
         }
     }
 
-    private function enforceSaleLimit($dbc, $row)
+    private function enforceSaleLimit($dbc, $row, $quantity)
     {
         /**
           Enforce per-transaction sale limits

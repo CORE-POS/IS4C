@@ -39,14 +39,12 @@ if (!defined('CONF_LOADED')) {
 */
 class AutoLoader 
 {
-
     /**
       Autoload class by name
       @param $name class name
     */
     static public function loadClass($name)
     {
-        global $CORE_LOCAL;
         $map = CoreLocal::get("ClassLookup");
         if (!is_array($map)) {
             // attempt to build map before giving up
@@ -57,17 +55,13 @@ class AutoLoader
         }
 
         if (!isset($map[$name]) && strpos($name, '\\') > 0) {
-            $pieces = explode('\\', $name);
             if ($name[0] == '\\') { // some old PHP5.3 versions leave the leading backslash
                 $name = substr($name, 1);
             }
             $sep = DIRECTORY_SEPARATOR;
-            $our_path = false;
             if (strpos($name, 'COREPOS\\pos\\') === 0) {
-                $our_path = __DIR__ . $sep . '..' . $sep . strtr(substr($name, 12), '\\', $sep) . '.php';
-            }
-            if ($our_path) {
-                $map[$name] = $our_path;
+                $ourPath = __DIR__ . $sep . '..' . $sep . strtr(substr($name, 12), '\\', $sep) . '.php';
+                $map[$name] = $ourPath;
                 CoreLocal::set('ClassLookup', $map);
             }
         } elseif (!isset($map[$name])) {
@@ -95,15 +89,15 @@ class AutoLoader
     */
     static public function loadMap()
     {
-        $class_map = array();
-        $search_path = realpath(dirname(__FILE__).'/../');
-        self::recursiveLoader($search_path, $class_map);
-        CoreLocal::set('ClassLookup', $class_map);
+        $classMap = array();
+        $searchPath = realpath(dirname(__FILE__).'/../');
+        self::recursiveLoader($searchPath, $classMap);
+        CoreLocal::set('ClassLookup', $classMap);
 
-        return $class_map;
+        return $classMap;
     }
 
-    static private $class_paths = array(
+    static private $classPaths = array(
         'COREPOS\pos\lib\Scanning\DiscountType' => '/Scanning/DiscountTypes',
         'COREPOS\pos\lib\FooterBoxes\FooterBox' => '/FooterBoxes',
         'COREPOS\pos\lib\Kickers\Kicker' => '/Kickers',
@@ -130,7 +124,7 @@ class AutoLoader
         'COREPOS\pos\lib\Scanning\VariableWeightReWrite' => '/Scanning/VariableWeightReWrites',
     );
 
-    private static $base_classes = array(
+    private static $baseClasses = array(
         'COREPOS\\pos\\lib\\MemberLookup' => '/MemberLookup.php',
         'COREPOS\\pos\\lib\\ItemNotFound' => '/ItemNotFound.php',
     );
@@ -138,32 +132,32 @@ class AutoLoader
     /**
       Get a list of available modules with the
       given base class
-      @param $base_class string class name
-      @param $include_base whether base class should be included
+      @param $baseClass string class name
+      @param $includeBase whether base class should be included
         in the return value
       @return an array of class names
     */
-    static public function listModules($base_class, $include_base=False)
+    static public function listModules($baseClass, $includeBase=False)
     {
         $ret = array();
         
         // lookup plugin modules, then standard modules
         $map = Plugin::pluginMap();
-        if (isset(self::$class_paths[$base_class])) {
-            $path = realpath(dirname(__FILE__) . self::$class_paths[$base_class]);
+        if (isset(self::$classPaths[$baseClass])) {
+            $path = realpath(dirname(__FILE__) . self::$classPaths[$baseClass]);
             $map = Plugin::pluginMap($path,$map);
         }
-        if (isset(self::$base_classes[$base_class])) {
-            $path = realpath(dirname(__FILE__) . self::$base_classes[$base_class]);
-            $map[$base_class] = $path;
+        if (isset(self::$baseClasses[$baseClass])) {
+            $path = realpath(dirname(__FILE__) . self::$baseClasses[$baseClass]);
+            $map[$baseClass] = $path;
 
         }
 
         foreach($map as $name => $file) {
 
             // matched base class
-            if ($name === $base_class) {
-                if ($include_base) $ret[] = $name;
+            if ($name === $baseClass) {
+                if ($includeBase) $ret[] = $name;
                 continue;
             }
             if (in_array($name, self::$blacklist)) {
@@ -172,23 +166,23 @@ class AutoLoader
 
             if (strstr($file,'plugins')) {
                 $parent = Plugin::memberOf($file);
-                if ($base_class !== 'COREPOS\\pos\\plugins\\Plugin' && $parent && !Plugin::isEnabled($parent)) {
+                if ($baseClass !== 'COREPOS\\pos\\plugins\\Plugin' && $parent && !Plugin::isEnabled($parent)) {
                     continue;
                 }
             }
 
             ob_start();
-            $ns_class = self::fileToFullClass($file);
-            if (!class_exists($name, false) && class_exists($ns_class)) {
-                $name = $ns_class;
+            $nsClass = self::fileToFullClass($file);
+            if (!class_exists($name, false) && class_exists($nsClass)) {
+                $name = $nsClass;
             } elseif (!class_exists($name)) { 
                 ob_end_clean();
                 continue;
             }
 
-            if (is_subclass_of($name,$base_class)) {
+            if (is_subclass_of($name,$baseClass)) {
                 $ret[] = $name;
-            } elseif ($ns_class === $base_class && $include_base) {
+            } elseif ($nsClass === $baseClass && $includeBase) {
                 $ret[] = $name;
             }
 
@@ -262,7 +256,7 @@ class AutoLoader
             $fullname = $path . DIRECTORY_SEPARATOR . $file;
             if (is_dir($fullname) && !in_array($file, $exclude)) {
                 self::recursiveLoader($fullname, $map);
-            } else if (substr($file,-4) == '.php') {
+            } elseif (substr($file,-4) == '.php') {
                 $class = substr($file,0,strlen($file)-4);
                 $map[$class] = realpath($fullname);
             }

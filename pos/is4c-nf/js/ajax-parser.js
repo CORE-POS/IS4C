@@ -69,7 +69,7 @@ function parserHandler(data)
 	}
 
 	if (data.retry){
-		setTimeout("runParser('"+encodeURI(data.retry)+"','"+CORE_JS_PREFIX+"');",150);
+		setTimeout(function() { runParser(encodeURI(data.retry), CORE_JS_PREFIX); },150);
 	}
 }
 

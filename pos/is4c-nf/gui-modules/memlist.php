@@ -39,7 +39,6 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputCorePage 
 {
-    private $entered;
     private $tempMessage = '';
 
     private $results = array();
@@ -150,9 +149,9 @@ class memlist extends NoInputCorePage
             COREPOS\pos\lib\MemberLib::setMember($memberID, $personNum);
 
             if ($this->session->get('store') == "WEFC_Toronto") {
-                $error_msg = $this->wefcCardCheck($memberID);
-                if ($error_msg !== true) {
-                    $this->tempMessage = $error_msg;
+                $errorMsg = $this->wefcCardCheck($memberID);
+                if ($errorMsg !== true) {
+                    $this->tempMessage = $errorMsg;
 
                     return true;
                 }
@@ -179,7 +178,7 @@ class memlist extends NoInputCorePage
       Check for a registered callback that runs when
       a given member number is applied
     */
-    private function getCallbackAction($card_no)
+    private function getCallbackAction($cardNo)
     {
         $dbc = Database::pDataConnect();
         if ($this->session->get('NoCompat') != 1 && !$dbc->tableExists('CustomerNotifications')) {
@@ -193,14 +192,14 @@ class memlist extends NoInputCorePage
             WHERE type='callback'
                 AND cardNo=?"
         );
-        $res = $dbc->getRow($prep, array($card_no));
+        $res = $dbc->getRow($prep, array($cardNo));
         if ($res === false || !class_exists($res['modifierModule']) || !is_subclass_of($res['modifierModule'], 'MemTotalAction')) {
             return false;
         }
 
         $class = $res['modifierModule'];
         $obj = new $class();
-        $obj->setMember($card_no);
+        $obj->setMember($cardNo);
         $obj->setMessage($res['message']);
 
         return $obj;
@@ -208,9 +207,9 @@ class memlist extends NoInputCorePage
 
     // WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
     // add the memberCards record.
-    private function wefcCardCheck($card_no)
+    private function wefcCardCheck($cardNo)
     {
-        $db_a = Database::pDataConnect();
+        $dba = Database::pDataConnect();
         if ($this->form->tryGet('memberCard') !== '') {
             $memberCard = $this->form->memberCard;
             if (!is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0) {
@@ -218,14 +217,14 @@ class memlist extends NoInputCorePage
             }
             $upc = sprintf("00401229%05d", $memberCard);
             // Check that it isn't already there, perhaps for someone else.
-            $memQ = "SELECT card_no FROM memberCards where card_no = {$card_no}";
-            $mResult = $db_a->query($memQ);
-            $mNumRows = $db_a->num_rows($mResult);
+            $memQ = "SELECT card_no FROM memberCards where card_no = {$cardNo}";
+            $mResult = $dba->query($memQ);
+            $mNumRows = $dba->num_rows($mResult);
             if ($mNumRows > 0) {
-                return "{$card_no} is already associated with another Member Card";
+                return "{$cardNo} is already associated with another Member Card";
             }
-            $memQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$card_no}, '$upc')";
-            $mResult = $db_a->query($memQ);
+            $memQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$cardNo}, '$upc')";
+            $mResult = $dba->query($memQ);
             if ( !$mResult ) {
                 return "Linking membership to Member Card failed.";
             }
@@ -293,10 +292,10 @@ class memlist extends NoInputCorePage
         return $this->noticeStatement;
     }
 
-    private function getNotification($card_no)
+    private function getNotification($cardNo)
     {
-        if (isset($this->noticeCache[$card_no])) {
-            return $this->noticeCache[$card_no];
+        if (isset($this->noticeCache[$cardNo])) {
+            return $this->noticeCache[$cardNo];
         }
 
         $dbc = Database::pDataConnect();
@@ -304,12 +303,12 @@ class memlist extends NoInputCorePage
         if ($noticeP === false) {
             return '';
         }
-        $noticeR = $dbc->execute($noticeP, array($card_no)); 
+        $noticeR = $dbc->execute($noticeP, array($cardNo)); 
         $notice = '';
         while ($row = $dbc->fetchRow($noticeR)) {
             $notice .= ' ' . $row['message'];
         }
-        $this->noticeCache[$card_no] = $notice;
+        $this->noticeCache[$cardNo] = $notice;
 
         return $notice;
     }
