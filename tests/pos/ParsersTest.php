@@ -682,6 +682,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDeptKey()
     {
+        $session = new WrappedStorage();
         $d = new COREPOS\pos\parser\parse\DeptKey($session);
         CoreLocal::set('refund', 1);
         CoreLocal::set('SpecialDeptMap', false);
