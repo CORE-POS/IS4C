@@ -159,14 +159,13 @@ class login2 extends BasicCorePage
           Find a drawer for the cashier
         */
         $dbc = Database::pDataConnect();
-        var_dump(is_null($dbc));
         $drawer = new Drawers($this->session, $dbc);
         $drawerID = $drawer->current();
-        Drawers::assign($this->session->get('CashierNo'),$drawer);
+        $drawer->assign($this->session->get('CashierNo'), $drawerID);
         if ($drawerID == 0) {
             $available = $drawer->available();    
             if (count($available) > 0) { 
-                $drawer->assign($this->session->get('CashierNo'),$available[0], $dbc);
+                $drawer->assign($this->session->get('CashierNo'),$available[0]);
                 $drawerID = $available[0];
             }
         }
