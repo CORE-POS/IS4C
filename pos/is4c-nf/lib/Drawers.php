@@ -83,7 +83,7 @@ class Drawers
       @param $num the drawer number
       @return success True/False
     */
-    static public function assign($emp,$num)
+    public function assign($emp,$num)
     {
         $dbc = $this->dbc;
         $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
@@ -97,7 +97,7 @@ class Drawers
       @param $num the drawer number
       @return success True/False
     */
-    static public function free($num)
+    public function free($num)
     {
         $dbc = $this->dbc;
         $upQ = sprintf('UPDATE drawerowner SET emp_no=NULL WHERE drawer_no=%d',$num);
@@ -110,7 +110,7 @@ class Drawers
       Get list of available drawers
       @return array of drawer numbers
     */
-    static public function available()
+    public function available()
     {
         $dbc = $this->dbc;
         $query = 'SELECT drawer_no FROM drawerowner WHERE emp_no IS NULL ORDER BY drawer_no';
