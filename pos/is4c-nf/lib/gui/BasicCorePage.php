@@ -108,7 +108,7 @@ class BasicCorePage extends CorePage
         <?php
         echo "<head>";
         echo "<title>".$this->title."</title>";
-        $charset = $this->form->get('CoreCharSet') === '' ? 'utf-8' : $this->form->get('CoreCharSet');
+        $charset = $this->session->get('CoreCharSet') === '' ? 'utf-8' : $this->session->get('CoreCharSet');
         // 18Aug12 EL Add content/charset.
         echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=$charset\" />\n";
         echo "<link rel=\"stylesheet\" type=\"text/css\"
@@ -168,7 +168,7 @@ class BasicCorePage extends CorePage
             $inputType = "password";
         }
         $form = '
-        <div class="inputform ' . ($this->form->get("training")==1?'training':'') . '">
+        <div class="inputform ' . ($this->session->get("training")==1?'training':'') . '">
             <form name="form" id="formlocal" method="post" autocomplete="off"
                 ' . $action . '>
             <input name="reginput" value="" onblur="$(\'#reginput\').focus();"
@@ -220,45 +220,45 @@ JAVASCRIPT;
         // a giant PHP warning for the moment
         $time = strftime("%m/%d/%y %I:%M %p", time());
 
-        $this->form->set("repeatable",0);
+        $this->session->set("repeatable",0);
         ob_start();
         echo $this->dateJS();
         ?>
         <div id="inputArea">
             {{FORM}}
-            <div class="notices coloredText <?php echo ($this->form->get("training")==1?'training':''); ?>">
+            <div class="notices coloredText <?php echo ($this->session->get("training")==1?'training':''); ?>">
             <?php
-            if ($this->form->get("training") == 1) {
+            if ($this->session->get("training") == 1) {
                 echo "<span class=\"text\">"._("training")." </span>"
                      ."<img alt=\"training\" src='{$myUrl}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-            } elseif ($this->form->get("standalone") == 0) {
+            } elseif ($this->session->get("standalone") == 0) {
                 echo "<img alt=\"online\" src='{$myUrl}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
             } else {
                 echo "<span class=\"text\">stand alone</span>"
                      ."<img alt=\"standalone\" src='{$myUrl}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
             }
-            if ($this->form->get("receiptToggle")==1){
+            if ($this->session->get("receiptToggle")==1){
                 echo "<img id=\"receipticon\" alt=\"receipt\" src='{$myUrl}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
             } else {
                 echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$myUrl}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
             }
-            if ($this->form->get("CCintegrate") == 1 && $this->form->get("training") == 0) {
-               if ($this->form->get("CachePanEncBlock")=="")
+            if ($this->session->get("CCintegrate") == 1 && $this->session->get("training") == 0) {
+               if ($this->session->get("CachePanEncBlock")=="")
                    echo "<img alt=\"cc mode\" src='{$myUrl}graphics/ccIn.gif'>&nbsp;";
                else
                    echo "<img alt=\"cc available\" src='{$myUrl}graphics/ccInLit.gif'>&nbsp;";
-            } elseif ($this->form->get("CCintegrate") == 1 && $this->form->get("training") == 1) {
-               if ($this->form->get("CachePanEncBlock")=="")
+            } elseif ($this->session->get("CCintegrate") == 1 && $this->session->get("training") == 1) {
+               if ($this->session->get("CachePanEncBlock")=="")
                    echo "<img alt=\"cc test mode\" src='{$myUrl}graphics/ccTest.gif'>&nbsp;";
                else
                    echo "<img alt=\"cc available (test)\" src='{$myUrl}graphics/ccTestLit.gif'>&nbsp;";
             }
 
             echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
-            if ($this->form->get("prefix") != ""){
+            if ($this->session->get("prefix") != ""){
                 $this->add_onload_command("\$('#reginput').val('"
-                    .$this->form->get("prefix")."');\n");
-                $this->form->set("prefix","");
+                    .$this->session->get("prefix")."');\n");
+                $this->session->set("prefix","");
             }
             ?>
 
@@ -316,7 +316,7 @@ JAVASCRIPT;
         if (!$include_scans) {
             return '';
         }
-        $scaleObj = ScaleDriverWrapper::factory($this->form->get('scaleDriver'));
+        $scaleObj = ScaleDriverWrapper::factory($this->session->get('scaleDriver'));
         ?>
         <script type="text/javascript"
             src="<?php echo $this->page_url; ?>js/<?php echo $scaleObj->javascriptFile(); ?>">
@@ -328,7 +328,7 @@ JAVASCRIPT;
             src="<?php echo $this->page_url; ?>js/stomp.min.js">
         </script>
         <?php
-        if ($this->form->get('MQ')) {
+        if ($this->session->get('MQ')) {
             UdpComm::udpSend('mq_up');
             $this->add_onload_command("subscribeToQueue('".$this->page_url."');\n");
         } else {
@@ -357,7 +357,7 @@ JAVASCRIPT;
     */
     protected function change_page($url)
     {
-        if ($this->form->get("Debug_Redirects") == 1){
+        if ($this->session->get("Debug_Redirects") == 1){
             $stack = debug_backtrace();
             printf('Follow redirect to <a href="%s">%s</a>',$url,$url);
             echo '<hr />Stack:';
