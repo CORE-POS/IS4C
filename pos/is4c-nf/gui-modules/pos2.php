@@ -38,7 +38,7 @@ class pos2 extends BasicCorePage
     {
         $this->display = "";
 
-        $ajax = new COREPOS\pos\ajax\AjaxParser();
+        $ajax = new COREPOS\pos\ajax\AjaxParser($this->session, $this->form);
         $ajax->enablePageDrawing(false);
         $json = $ajax->ajax(array('field'=>'reginput'));
         $redirect = $this->doRedirect($json);
