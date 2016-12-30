@@ -57,7 +57,7 @@ static public function checkPassword($password)
     $query = "select LoggedIn,CashierNo from globalvalues";
     $dbg = Database::pDataConnect();
     $result = $dbg->query($query);
-    $row = $dbg->fetchRow($resultg);
+    $row = $dbg->fetchRow($result);
 
     if ($row["LoggedIn"] == 0) {
         $queryq = '

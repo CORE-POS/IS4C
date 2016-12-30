@@ -65,9 +65,6 @@ class AutoLoader
             $our_path = false;
             if (strpos($name, 'COREPOS\\pos\\') === 0) {
                 $our_path = __DIR__ . $sep . '..' . $sep . strtr(substr($name, 12), '\\', $sep) . '.php';
-            } elseif (strpos($name, 'COREPOS\\common\\') === 0) {
-                $our_path = __DIR__ . $sep . '..' . $sep . '..' . $sep . '..' . $sep . 'common' . $sep
-                    . strtr(substr($name, 15), '\\', $sep) . '.php';
             }
             if ($our_path) {
                 $map[$name] = $our_path;
