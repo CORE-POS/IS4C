@@ -28,6 +28,7 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\Parser;
+use \CoreLocal;
 use \Exception;
 
 class Void extends Parser 
