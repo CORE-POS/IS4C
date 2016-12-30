@@ -13,6 +13,7 @@ use COREPOS\pos\lib\Tenders\NoDefaultAmountTender;
 use COREPOS\pos\lib\Tenders\StoreChargeTender;
 use COREPOS\pos\lib\Tenders\SignedStoreChargeTender;
 use COREPOS\pos\lib\Tenders\StoreTransferTender;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
  * @backupGlobals disabled
@@ -79,7 +80,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $record['total'] = -1.00;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void();
+        $v = new COREPOS\pos\parser\parse\Void(new WrappedStorage());
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
