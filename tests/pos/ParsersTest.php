@@ -1117,7 +1117,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $ld = new COREPOS\pos\parser\parse\LineItemDiscount($session);
         $this->assertEquals(true, $ld->check('LD'));
         $ld->parse('LD');
-        $upc = new COREPOS\pos\parser\parse\UPC();
+        $upc = new COREPOS\pos\parser\parse\UPC($session);
         $upc->parse('111');
         $ld->parse('LD');
         TransRecord::addtender('tender', 'TT', 1);
