@@ -77,6 +77,9 @@ class PaycardEmvPage extends PaycardProcessPage
             $xml = FormLib::get('xml-resp');
             $this->emvResponseHandler($xml);
             return false;
+        } elseif (FormLib::get('cancel') == 1) {
+            UdpComm::udpSend("termReset");
+            return false;
         } // post?
 
         return true;
@@ -102,6 +105,19 @@ function emvSubmit() {
         return false;
     }
     emv.submit(xmlData);
+    $(document).keyup(checkForCancel);
+}
+var ccKey1;
+var ccKey2;
+function checkForCancel(ev) {
+    var jsKey = ev.which ? ev.which : ev.keyCode;
+    if (jsKey == 13 && (ccKey2 == 99 || ccKey2 == 67) && (ccKey1 == 108 || ccKey1 == 76)) {
+        $.ajax({
+            data: 'cancel=1'
+        });
+    }
+    ccKey2 = ccKey1;
+    ccKey1 = jsKey;
 }
 </script>
         <?php

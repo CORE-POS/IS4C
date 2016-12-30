@@ -149,6 +149,13 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $ret .=  "<table class='table'  align='center' width='100%'>";
         $check = '';
         while ($row = $dbc->fetch_row($res)) {
+			$upc = $row['upc'];
+			$description = $row['description'];
+			$brand = $row['brand'];
+			$flyerPeriod = $row['flyerPeriod'];
+			$sku = $row['sku'];
+			$srp = $row['srp'];			
+
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
             $ret .=  '<td><b>Brand</b></td><td>' . $row['brand'] . '</tr>';
