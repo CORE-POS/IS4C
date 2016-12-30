@@ -13,7 +13,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("\r", $ph->CarriageReturn());
 
         $this->assertEquals(str_repeat(' ', 28) . 'foo', $ph->centerString('foo'));
-        $this->assertEquals(str_repeat(' ', 13) . 'foo', $ph->centerString('foo', true));
+        $this->assertEquals(str_repeat(' ', 28) . 'foo', $ph->centerString('foo', true));
 
         $blank_methods = array(
             'PageFeed',

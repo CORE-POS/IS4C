@@ -25,7 +25,7 @@ namespace COREPOS\Fannie\API\lib;
 
 class Store
 {
-    public static function getIdByIp()
+    public static function getIdByIp($default=false)
     {
         $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
         $ranges = \FannieConfig::config('STORE_NETS');
@@ -41,7 +41,7 @@ class Store
             }
         }
 
-        return false;
+        return $default;
     }
 }
 

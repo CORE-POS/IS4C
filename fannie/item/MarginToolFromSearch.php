@@ -401,7 +401,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
         $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
         $ret = '';
-        $store = Store::getIdByIp();
+        $store = Store::getIdByIp(1);
 
         // list super depts & starting margins
         list($in_sql, $args) = $dbc->safeInClause($this->depts);
@@ -451,7 +451,6 @@ class MarginToolFromSearch extends FannieRESTfulPage
                         AND cost <> 0
                         AND p.store_id=?
                     GROUP BY department, dept_name";
-        $args[] = $store;
         $marginP = $dbc->prepare($marginQ);
         $marginR = $dbc->execute($marginP, $args);
         while($marginW = $dbc->fetch_row($marginR)) {
