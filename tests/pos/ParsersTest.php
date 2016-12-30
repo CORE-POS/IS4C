@@ -1132,7 +1132,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $t->check('123ZZ'));
         $this->assertEquals(true, $t->check('CA'));
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $t->parse('CA'));
-        $d = new COREPOS\pos\parser\parse\DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey($session);
         $d->parse('100DP10'); // avoid ending transaction
         $this->assertInternalType('array', $t->parse('1CA'));
         lttLib::clear();
