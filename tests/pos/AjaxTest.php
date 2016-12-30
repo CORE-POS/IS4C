@@ -82,7 +82,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
 
     public function testEndorse()
     {
-        $ajax = new COREPOS\pos\ajax\AjaxEndorse(new WrappedStorage(), new ValueContaier());
+        $ajax = new COREPOS\pos\ajax\AjaxEndorse(new WrappedStorage(), new ValueContainer());
         $this->assertEquals('Done', $ajax->ajax());
     }
 
