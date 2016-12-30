@@ -583,16 +583,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        CoreLocal::set('casediscount',7);
-        TransRecord::addcdnotify();
-        $record = lttLib::genericRecord();
-        $record['description'] = '** 7% Case Discount Applied';
-        $record['trans_status'] = 'D';
-        $record['voided'] = 6;
-        lttLib::verifyRecord(1, $record, $this);
-
-        lttLib::clear();
-
         TransRecord::addCoupon('0051234512345',123,-1.23,array('foodstamp'=>1));
         $record = lttLib::genericRecord();
         $record['upc'] = '0051234512345';
