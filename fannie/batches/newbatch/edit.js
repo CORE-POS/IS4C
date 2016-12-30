@@ -126,6 +126,23 @@ var batchEdit = (function ($) {
             }
         });
     };
+    
+    mod.cutAll = function(batchID, userID)
+    {
+        var dataStr = 'id=' + batchID + '&uid=' + userID;
+        $.ajax({
+            type: 'post',
+            url: 'cutBatch.php',
+            dataType: 'json',
+            success: function(resp) {
+                if (resp.error) {
+                    showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
+                } else {
+                    showBootstrapPopover(elem, orig, '');
+                }
+            }
+        });
+    };
 
     mod.deleteUPC = function(id, upc)
     {
