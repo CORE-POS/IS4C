@@ -191,8 +191,9 @@ class login2 extends BasicCorePage
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertEquals(1, $this->getDrawer()->current());
-        $this->kick(); // coverage
+        $drawer = $this->getDrawer();
+        $phpunit->assertEquals(1, $drawer->current());
+        $this->kick($drawer); // coverage
     }
 
 }
