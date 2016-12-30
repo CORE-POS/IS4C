@@ -37,6 +37,7 @@ class Drawers
     {
         $this->session = $session;
         $this->dbc = $dbc;
+        var_dump($dbc);
     }
 
     public function kick() 
@@ -86,7 +87,6 @@ class Drawers
     public function assign($emp,$num)
     {
         $dbc = $this->dbc;
-        var_dump($dbc);
         $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
         $upR = $dbc->query($upQ);
 
