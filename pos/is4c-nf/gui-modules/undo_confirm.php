@@ -168,7 +168,7 @@ class undo_confirm extends BasicCorePage
         // just use the parser module here
         // for simplicity; all its really
         // doing is updating a couple session vars
-        $scroll = new ScrollItems();
+        $scroll = new ScrollItems($this->session);
         $json = $scroll->parse($dir);
         return $json['output'];
     }
