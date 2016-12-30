@@ -83,8 +83,12 @@ class Drawers
       @param $num the drawer number
       @return success True/False
     */
-    public function assign($emp,$num)
+    public function assign($emp,$num,$debug=false)
     {
+        if ($debug) {
+            var_dump(is_object($debug));
+            var_dump(is_object($this->dbc));
+        }
         $dbc = $this->dbc;
         $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
         $upR = $dbc->query($upQ);
