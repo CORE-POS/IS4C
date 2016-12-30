@@ -668,7 +668,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['total'] = 1.23;
         $record['amount2'] = 1.24;
         $record['regPrice'] = 1.24;
-        TransRecord::add_log_record($record);
+        TransRecord::addLogRecord($record);
         unset($record['amount1']); // not real column
         unset($record['amount2']); // not real column
         $record['trans_type'] = 'L';
