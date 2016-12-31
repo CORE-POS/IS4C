@@ -11,9 +11,8 @@ class ReceiptCoupon extends Parser
     {
         if (substr($str, 0, 2) == 'RC' && is_numeric(substr($str, 2))) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public function parse($str)
@@ -29,11 +28,11 @@ class ReceiptCoupon extends Parser
         if (time() > $expireTS) {
             $ret['output'] = DisplayLib::boxMsg(_('Coupon is expired'));
             return $ret;
-        } else {
-            $upc = '004' . '99999' . str_pad($couponID, 5, '0', STR_PAD_LEFT);
-            $hc = new HouseCoupon();
-            return $hc->handle($upc, $ret);
         }
+        $upc = '004' . '99999' . str_pad($couponID, 5, '0', STR_PAD_LEFT);
+        $hc = new HouseCoupon($this->session);
+
+        return $hc->handle($upc, $ret);
     }
 }
 
