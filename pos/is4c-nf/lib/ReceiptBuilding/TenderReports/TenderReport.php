@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
 use COREPOS\pos\lib\ReceiptLib;
-use \CoreLocal;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
   @class TenderReport
@@ -36,14 +36,11 @@ class TenderReport
   Write tender report to the printer
 */
 static public function printReport($class=false){
+    $session = new WrappedStorage();
     if ($class && !$class_exists($class)) {
         $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\' . $class;
     }
-    if ($class === false) {
-        $contents = self::get();
-    } else {
-        $contents = $class::get();
-    }
+    $contents = $class === false ? self::get($session) : $class::get($session);
     ReceiptLib::writeLine($contents);
 }
 
@@ -57,9 +54,9 @@ static public function printReport($class=false){
  setting "TenderReportMod". If nothing has been selected,
  the "DefaultTenderReport" module is used.
  */
-static public function get()
+static public function get($session)
 {
-    $trClass = CoreLocal::get("TenderReportMod");
+    $trClass = $session->get("TenderReportMod");
     if ($trClass == '' || !class_exists($trClass)) {
         $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\DefaultTenderReport';
     }

@@ -12,6 +12,7 @@ use COREPOS\pos\lib\Notifier;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
  * @backupGlobals disabled
@@ -120,8 +121,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000000000';
         $record['description'] = uniqid('TEST-');
         TransRecord::addRecord($record);
-        COREPOS\pos\lib\SuspendLib::suspendorder();
-        $this->assertEquals(1, COREPOS\pos\lib\SuspendLib::checksuspended());
+        $session = new WrappedStorage();
+        COREPOS\pos\lib\SuspendLib::suspendorder($session);
+        $this->assertEquals(1, COREPOS\pos\lib\SuspendLib::checksuspended($session));
 
         $query = "
             SELECT *

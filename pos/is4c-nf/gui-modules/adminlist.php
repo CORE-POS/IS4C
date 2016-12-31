@@ -80,7 +80,7 @@ class adminlist extends NoInputCorePage
 
         // ajax call to end transaction
         // and print receipt
-        $ref = SuspendLib::suspendorder();
+        $ref = SuspendLib::suspendorder($this->session);
         $this->add_onload_command("adminlist.suspendOrder('{$ref}');\n");
 
         return True;
@@ -95,7 +95,7 @@ class adminlist extends NoInputCorePage
                 _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $this->change_page($this->page_url."gui-modules/boxMsg2.php");
-        } elseif (SuspendLib::checksuspended() == 0) {
+        } elseif (SuspendLib::checksuspended($this->session) == 0) {
             $this->session->set("boxMsg",_("no suspended transaction"));
             $this->session->set('boxMsgButtons', array(
                 _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',

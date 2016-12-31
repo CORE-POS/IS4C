@@ -24,7 +24,6 @@
 namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
-use \CoreLocal;
 
 /**
   @class TenderReport
@@ -42,7 +41,7 @@ class WfcTenderReport extends TenderReport {
  special handling in the tender tape view (e.g., three
  tender types are actually compined under EBT)
  */
-static public function get(){
+static public function get($session){
 
     $DESIRED_TENDERS = array("CK"=>"CHECK TENDERS",
                  "CC"=>"CREDIT CARD TENDERS",
@@ -60,7 +59,7 @@ static public function get(){
                  "SC"=>"STORE CREDIT"
              );
 
-    $db_a = Database::mDataConnect();
+    $dba = Database::mDataConnect();
 
     $blank = "             ";
     $fieldNames = "  ".substr("Time".$blank, 0, 13)
@@ -68,86 +67,86 @@ static public function get(){
             .substr("Trans #".$blank, 0, 12)
             .substr("Change".$blank, 0, 14)
             .substr("Amount".$blank, 0, 14)."\n";
-    $ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
+    $ref = ReceiptLib::centerString(trim($session->get("CashierNo"))." ".trim($session->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
     $receipt = "";
 
     $itemize = 0;
     foreach($DESIRED_TENDERS as $tender_code => $header){ 
         $query = "select tdate,register_no,trans_no,-total AS tender
-                   from dlog where emp_no=".CoreLocal::get("CashierNo").
+                   from dlog where emp_no=".$session->get("CashierNo").
             " and trans_type='T' AND trans_subtype='".$tender_code."'
               ORDER BY tdate";
         switch($tender_code){
         case 'CC':
             $query = "select tdate,register_no,trans_no,-total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='T' AND trans_subtype IN ('CC','AX')
                   ORDER BY tdate";
             break;
         case 'CA':
             $query = "select tdate,register_no,trans_no,-total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='T' AND trans_subtype='CA' AND total <> 0
                   ORDER BY tdate";
             break;
         case 'CK':
             $query = "select tdate,register_no,trans_no,-total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='T' AND trans_subtype IN ('CK','TK', 'RC')
                   ORDER BY tdate";
             break;
         case 'EF':
             $query = "select tdate,register_no,trans_no,-total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='T' AND trans_subtype IN ('EF','EC')
                   ORDER BY tdate";
             break;
         case 'CP':
             $query = "select tdate,register_no,trans_no,-total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='T' AND trans_subtype ='CP' AND
                   upc NOT LIKE '%MAD%' ORDER BY tdate";
             break;
         case 'IC':
             $query = "select tdate,register_no,trans_no,-total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='T' AND trans_subtype ='IC' AND
                   upc NOT IN ('0049999900001', '0049999900002') ORDER BY tdate";
             break;
         case 'SC':
             $query = "select tdate,register_no,trans_no,-total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='T' AND trans_subtype ='SC' AND
                   total<0 ORDER BY tdate";
             break;
         case 'AR':
             $query = "select tdate,register_no,trans_no,total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='D' AND department = 990
                   ORDER BY tdate";
             break;
         case 'EQ':
             $query = "select tdate,register_no,trans_no,total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='D' AND department IN (991,992)
                   ORDER BY tdate";
             break;
         case 'SN':
             $query = "select tdate,register_no,trans_no,total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='I' AND upc LIKE '002001000%'
                   ORDER BY tdate";
             break;
         case 'CF':
             $query = "select tdate,register_no,trans_no,total AS tender
-                from dlog where emp_no=".CoreLocal::get("CashierNo").
+                from dlog where emp_no=".$session->get("CashierNo").
                 " and trans_type='I' AND upc LIKE '002000600%'
                   ORDER BY tdate";
             break;
         }
-        $result = $db_a->query($query);
-        $num_rows = $db_a->num_rows($result);
-        if ($num_rows <= 0) continue;
+        $result = $dba->query($query);
+        $numRows = $dba->numRows($result);
+        if ($numRows <= 0) continue;
 
         //$receipt .= chr(27).chr(33).chr(5);
 
@@ -160,16 +159,16 @@ static public function get(){
         $receipt .= $ref;
         if ($itemize == 1) $receipt .=    ReceiptLib::centerString("------------------------------------------------------");
 
-        if (CoreLocal::get("store") == "wfc") $itemize=1;
+        if ($session->get("store") == "wfc") $itemize=1;
         
         if ($itemize == 1) $receipt .= $fieldNames;
         $sum = 0;
 
-        for ($i = 0; $i < $num_rows; $i++) {
-            if ((CoreLocal::get("store") == "harvest-cb") && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
-            elseif (CoreLocal::get("store") == "wfc") $itemize=1;
-            else $itemize = 0;
-            $row = $db_a->fetchRow($result);
+        for ($i = 0; $i < $numRows; $i++) {
+            $itemize = 0;
+            if (($session->get("store") == "harvest-cb") && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
+            elseif ($session->get("store") == "wfc") $itemize=1;
+            $row = $dba->fetchRow($result);
             $timeStamp = self::timeStamp($row["tdate"]);
             if ($itemize == 1) {
                 $receipt .= "  ".substr($timeStamp.$blank, 0, 13)
@@ -183,17 +182,16 @@ static public function get(){
         
         $receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
-        $receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
+        $receipt .= substr($blank.$blank.$blank."Count: ".$numRows."  Total: ".number_format($sum,2), -56)."\n";
         $receipt .= str_repeat("\n", 4);
 
         // cut was commented out for non-wfc
-        if (CoreLocal::get("store") == "wfc") 
+        if ($session->get("store") == "wfc") 
             $receipt .= chr(27).chr(105);
     }
 
     return $receipt.chr(27).chr(105);
 }
-
 
 }
 

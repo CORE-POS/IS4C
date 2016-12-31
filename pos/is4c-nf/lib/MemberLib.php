@@ -117,33 +117,32 @@ class MemberLib
       Assign store-specific alternate member message line
       @param $store code for the coop
       @param $member CardNo from custdata
-      @param $personNumber personNum from custdata
       @param $row a record from custdata
       @param $chargeOk whether member can store-charge purchases
     */
     // @hintable
-    static public function setAltMemMsg($store, $member, $personNumber, $row)
+    static public function setAltMemMsg($store, $member, $row)
     {
         if ($store == 'WEFC_Toronto') {
             $chargeOk = self::chargeOk();
             /* Doesn't quite allow for StoreCharge/PrePay for regular members
              * either instead of or in addition to CoopCred
              */
-            if (isset($row['blueLine'])) {
-                $memMsg = $row['blueLine'];
-            } else {
-                $memMsg = '#'.$member;
-            }
+            $memMsg = isset($row['blueLine']) ? $row['blueLine'] : '#' . $member;
             if ($member == \CoreLocal::get('defaultNonMem')) {
                 \CoreLocal::set("memMsg", $memMsg);
                 return;
             }
 
-            if ($member < 99000) {
+            \CoreLocal::set("memMsg", $memMsg);
+            \CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
+               number_format(((float)CoreLocal::get("balance") * 1),2)
+            );
 
+            if ($member < 99000) {
                 if (in_array('CoopCred', \CoreLocal::get('PluginList'))) {
                     $conn = \CoopCredLib::ccDataConnect();
-                    if ($conn !== False) {
+                    if ($conn !== false) {
                         $ccQ = "SELECT p.programID AS ppID, p.programName, p.tenderType,
                             p.active, p.startDate, p.endDate,
                             p.bankID, p.creditOK, p.inputOK, p.transferOK,
@@ -186,8 +185,7 @@ class MemberLib
                                     \CoreLocal::get("{$programCode}availCreditBalance");
 
                                 $message .= " {$tenderKeyCap}: " .  number_format($programBalance,2);
-                            }
-                            else {
+                            } else {
                                 $message .= $row['tenderType'] . " not OK";
                             }
                         }
@@ -195,7 +193,6 @@ class MemberLib
                             \CoreLocal::set("memMsg", $memMsg . "$message");
                             return;
                         }
-
                     }
                 }
 
@@ -215,37 +212,27 @@ class MemberLib
                     }
                     $result = $conn->query($query);
                     $numRows = $conn->numRows($result);
+                    $row2 = array();
                     if ($numRows > 0) {
                         $row2 = $conn->fetchRow($result);
-                    } else {
-                        $row2 = array();
                     }
 
+                    $limit = 0.00;
                     if (isset($row2['CLimit'])) {
                         $limit = 1.00 * $row2['CLimit'];
-                    } else {
-                        $limit = 0.00;
                     }
 
+                    // Store Charge
+                    \CoreLocal::set("memMsg", $memMsg . _(' : Store Charge: $') .
+                        number_format(((float)CoreLocal::get("availBal") * 1),2)
+                    );
                     // Prepay
                     if ($limit == 0.00) {
                         \CoreLocal::set("memMsg", $memMsg . _(' : Pre Pay: $') .
                             number_format(((float)CoreLocal::get("availBal") * 1),2)
                         );
-                    // Store Charge
-                    } else {
-                        \CoreLocal::set("memMsg", $memMsg . _(' : Store Charge: $') .
-                            number_format(((float)CoreLocal::get("availBal") * 1),2)
-                        );
                     }
                 }
-
-            // Intra-coop transfer
-            } else {
-                \CoreLocal::set("memMsg", $memMsg);
-                \CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
-                   number_format(((float)CoreLocal::get("balance") * 1),2)
-                );
             }
         // WEFC_Toronto
         }
@@ -336,11 +323,7 @@ class MemberLib
         \CoreLocal::set("Type",$row["Type"]);
         \CoreLocal::set("isStaff",$row["staff"]);
         \CoreLocal::set("SSI",$row["SSI"]);
-        if (\CoreLocal::get("Type") == "PC") {
-            \CoreLocal::set("isMember",1);
-        } else {
-            \CoreLocal::set("isMember",0);
-        }
+        \CoreLocal::set($row['Type'] == 'PC' ? 1 : 0);
 
         /**
           Optinonally use memtype table to normalize attributes
@@ -363,7 +346,7 @@ class MemberLib
         }
 
         \CoreLocal::set("memMsg", self::defaultMemMsg($member, $row));
-        self::setAltMemMsg(\CoreLocal::get("store"), $member, $personNumber, $row);
+        self::setAltMemMsg(\CoreLocal::get("store"), $member, $row);
 
         /**
           Set member number and attributes
@@ -414,12 +397,13 @@ class MemberLib
     {
         // only attempt if server is available
         // and not the default non-member
-        if ($cardno == \CoreLocal::get("defaultNonMem")) return false;
-        if (\CoreLocal::get("balance") == 0) return false;
+        if ($cardno == \CoreLocal::get('defaultNonMem') || \CoreLocal::get('balance') == 0) {
+            return false;
+        }
 
         $dbc = Database::mDataConnect();
 
-        if (\CoreLocal::get('NoCompat') != 1 && !$dbc->table_exists("unpaid_ar_today")) return false;
+        if (\CoreLocal::get('NoCompat') != 1 && !$dbc->tableExists("unpaid_ar_today")) return false;
 
         $query = "SELECT old_balance,recent_payments FROM unpaid_ar_today
             WHERE card_no = $cardno";
@@ -434,9 +418,10 @@ class MemberLib
         if (\CoreLocal::get("memChargeTotal") > 0) {
             $paid += \CoreLocal::get("memChargeTotal");
         }
-        
-        if ($bal <= 0) return false;
-        if ($paid >= $bal) return false;
+
+        if ($bal <= 0 || $paid >= $bal) {
+            return false;
+        }
 
         // only case where customer prompt should appear
         if ($bal > 0 && $paid < $bal){

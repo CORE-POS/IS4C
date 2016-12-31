@@ -22,49 +22,43 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\FooterBoxes;
-use \CoreLocal;
 
 class MultiTotal extends FooterBox 
 {
-
     public $display_css = "font-weight:bold;font-size:150%;";
 
     public function header_content()
     {
-        if ( CoreLocal::get("ttlflag") == 1 and CoreLocal::get("End") != 1 ) {
-            if (CoreLocal::get("fntlflag") == 1) {
+        if ( $this->session->get("ttlflag") == 1 and $this->session->get("End") != 1 ) {
+            if ($this->session->get("fntlflag") == 1) {
                 $this->header_css_class = 'fsArea';
                 return _("fs Amount Due");
-            } else {
-                $this->header_css_class = 'errorColoredArea';
-                return _("Amount Due");
             }
-        } elseif (CoreLocal::get("ttlflag") == 1  and CoreLocal::get("End") == 1 ) {
+            $this->header_css_class = 'errorColoredArea';
+            return _("Amount Due");
+        } elseif ($this->session->get("ttlflag") == 1  and $this->session->get("End") == 1 ) {
             $this->header_css_class = 'coloredArea';
             return _("Change");
-        } else {
-            $this->header_css_class = 'totalArea';
-            return _("Total");
         }
+        $this->header_css_class = 'totalArea';
+        return _("Total");
     }
 
     public function display_content()
     {
-        if ( CoreLocal::get("ttlflag") == 1 and CoreLocal::get("End") != 1 ) {
-            if (CoreLocal::get("fntlflag") == 1) {
+        if ( $this->session->get("ttlflag") == 1 and $this->session->get("End") != 1 ) {
+            if ($this->session->get("fntlflag") == 1) {
                 $this->display_css_class = 'fsLine';
-                return number_format(CoreLocal::get("fsEligible"),2);
-            } else {
-                $this->display_css_class = 'errorColoredText';
-                return number_format(CoreLocal::get("runningTotal"),2);
+                return number_format($this->session->get("fsEligible"),2);
             }
-        } elseif (CoreLocal::get("ttlflag") == 1  and CoreLocal::get("End") == 1 ) {
+            $this->display_css_class = 'errorColoredText';
+            return number_format($this->session->get("runningTotal"),2);
+        } elseif ($this->session->get("ttlflag") == 1  and $this->session->get("End") == 1 ) {
             $this->display_css_class = 'coloredText';
-            return number_format(CoreLocal::get("runningTotal"),2);
-        } else {
-            $this->display_css_class = 'totalLine';
-            return number_format((double)CoreLocal::get("runningTotal"),2);
+            return number_format($this->session->get("runningTotal"),2);
         }
+        $this->display_css_class = 'totalLine';
+        return number_format((double)$this->session->get("runningTotal"),2);
     }
 }
 

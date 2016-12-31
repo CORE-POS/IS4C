@@ -20,7 +20,7 @@ class PdfPrintHandler extends PrintHandler
         }
     }
 
-    function PageFeed($reset=true) {
+    function pageFeed($reset=true) {
         $instance->AddPage();
     }
     
@@ -39,7 +39,7 @@ class PdfPrintHandler extends PrintHandler
       TextStyle(true,false,true) is equivalent to
         biggerFont().
     */
-    function TextStyle($altFont=false, $bold=false, $tall=false, $wide=false, $underline=false) 
+    function textStyle($altFont=false, $bold=false, $tall=false, $wide=false, $underline=false) 
     {
         $family = 'Courier';
         $style = '';
@@ -61,19 +61,19 @@ class PdfPrintHandler extends PrintHandler
         }
     }
     
-    function Underline($dots=1) 
+    function underline($dots=1) 
     {
         $this->TextStyle(false, false, false, false, true);
         return '';
     }
     
-    function ResetLineSpacing() 
+    function resetLineSpacing() 
     {
         $this->line_height = 5;
         return '';
     }
     
-    function LineSpacing($space=64) 
+    function lineSpacing($space=64) 
     {
         $this->line_height = $space;
         return '';
@@ -84,31 +84,31 @@ class PdfPrintHandler extends PrintHandler
      @param $on boolean enable
      @return string printer command
     */
-    function Bold($on=true) 
+    function bold($on=true) 
     {
         $this->TextStyle(false, true);
         return '';
     }
     
-    function AlignLeft() 
+    function alignLeft() 
     {
         $this->align = 'L';
         return '';
     }
     
-    function AlignCenter() 
+    function alignCenter() 
     {
         $this->align = 'C';
         return '';
     }
     
-    function AlignRight() 
+    function alignRight() 
     {
         $this->align = 'R';
         return '';
     }
     
-    function ColorBlack() 
+    function colorBlack() 
     {
         if (is_object($this->instance)) {
             $this->instance->SetTextColor(0, 0, 0);
@@ -116,7 +116,7 @@ class PdfPrintHandler extends PrintHandler
         return '';
     }
     
-    function ColorRed() 
+    function colorRed() 
     {
         if (is_object($this->instance)) {
             $this->instance->SetTextColor(0xff, 0, 0);
@@ -141,7 +141,7 @@ class PdfPrintHandler extends PrintHandler
       @param $fn a bitmap file
       @return printer command string
     */
-    function RenderBitmapFromFile($fn, $align='C')
+    function renderBitmapFromFile($fn, $align='C')
     {
         return $this->RenderBitmap($fn, $align);
     }
@@ -151,7 +151,7 @@ class PdfPrintHandler extends PrintHandler
       @param $arg string filename OR Bitmap obj
       @return receipt-formatted string
     */
-    function RenderBitmap($arg, $align='C')
+    function renderBitmap($arg, $align='C')
     {
         return '';
     }

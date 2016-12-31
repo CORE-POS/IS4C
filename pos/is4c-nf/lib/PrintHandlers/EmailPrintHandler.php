@@ -19,7 +19,7 @@ class EmailPrintHandler extends PrintHandler {
      Get printer tab
      @return string printer command
     */
-    function Tab() {
+    function tab() {
         return "    ";
     }
     
@@ -27,7 +27,7 @@ class EmailPrintHandler extends PrintHandler {
       Get carriage return
       @return string printer command
     */
-    function CarriageReturn() {
+    function carriageReturn() {
         return "";
     }
     
@@ -42,7 +42,7 @@ class EmailPrintHandler extends PrintHandler {
         return $newline;
     }
     
-    function DrawerKick($pin=2, $on=100, $off=100) {
+    function drawerKick($pin=2, $on=100, $off=100) {
         // ESC "p" pin on off
         return ("\x1B\x70"
             .chr( ($pin < 3.5) ? 0 : 1 )
@@ -71,7 +71,7 @@ class EmailPrintHandler extends PrintHandler {
         }
     }
 
-    function RenderBitmapFromFile($fn, $align='C')
+    function renderBitmapFromFile($fn, $align='C')
     {
         return '';
     }

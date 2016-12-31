@@ -16,12 +16,12 @@ Notes
 
 class ESCPOSPrintHandler extends PrintHandler {
     
-    function Tab() {
+    function tab() {
         // "\t"
         return "\x09";
     }
     
-    function LineFeed($lines=1) {
+    function lineFeed($lines=1) {
         // one line: "\n"
         if ($lines <= 1)
             return "\x0A";
@@ -29,17 +29,17 @@ class ESCPOSPrintHandler extends PrintHandler {
         return "\x1B\x64".chr( max(0, min(255, (int)$lines)) );
     }
     
-    function PageFeed($reset=true) {
+    function pageFeed($reset=true) {
         // "(ESC) FF"
         return ($reset?"":"\x1B")."\x0C";
     }
     
-    function CarriageReturn() {
+    function carriageReturn() {
         // "\r"
         return "\x0D";
     }
     
-    function ClearPage() {
+    function clearPage() {
         // CAN
         return "\x18";
     }
@@ -50,7 +50,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: realtime pulse;  DLE(\x10) DC4(\x14) 1 m t
     
-    function CharacterSpacing($dots=0) {
+    function characterSpacing($dots=0) {
         // ESC " " space
         return "\x1B\x20".chr( max(0, min(255, $dots)) );
     }
@@ -70,7 +70,7 @@ class ESCPOSPrintHandler extends PrintHandler {
       TextStyle(true,false,true) is equivalent to
         biggerFont().
     */
-    function TextStyle($altFont=false, $bold=false, $tall=false, $wide=false, $underline=false) {
+    function textStyle($altFont=false, $bold=false, $tall=false, $wide=false, $underline=false) {
         // ESC "!" bitfield
         return ("\x1B\x21"
             .chr(
@@ -83,7 +83,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function GotoX($dots=0) {
+    function gotoX($dots=0) {
         // ESC "$" xLO xHI
         return ("\x1B\x24"
             .chr( max(0, (int)($dots % 256)) )
@@ -105,7 +105,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         \x81 = \b10000001 = pixels on the top and bottom rows
     Multiple bytes are drawn top-to-bottom (if !$tallDots), then left-to-right.
     */
-    function InlineBitmap($data, $width, $tallDots=false, $wideDots=false) {
+    function inlineBitmap($data, $width, $tallDots=false, $wideDots=false) {
         // ESC "*" bitfield widthLO widthHI data
         $width = (int)max(0, min(1023, $width));
         $bytes = (int)($width * ($tallDots ? 1 : 3));
@@ -117,19 +117,17 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     } // InlineBitmap()
     
-    // TODO: InlineBitmapFromFile()
-    
-    function Underline($dots=1) {
+    function underline($dots=1) {
         // ESC "-" size
         return "\x1B\x2D".chr( max(0, min(2, $dots)) );
     }
     
-    function ResetLineSpacing() {
+    function resetLineSpacing() {
         // ESC "2"
         return "\x1B\x32";
     }
     
-    function LineSpacing($space=64) {
+    function lineSpacing($space=64) {
         // in some small increment; with 12x24 font, space=64 seems to be approximately single-spaced, space=128 double
         // ESC "3" space
         return "\x1B\x33".chr( max(0, min(255, $space)) );
@@ -141,12 +139,12 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: delete downloadable characters;  ESC(\x1B) "?"(\x3F) char
     
-    function Reset() {
+    function reset() {
         // ESC "@"
         return "\x1B\x40";
     }
     
-    function SetTabs($tabs=null) {
+    function setTabs($tabs=null) {
         // ESC "D" tabs NUL
         if (!is_array($tabs) || !count($tabs))
             return "\x1B\x44\x00";
@@ -158,35 +156,35 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function Bold($on=true) {
+    function bold($on=true) {
         // ESC "E" bit
         return "\x1B\x45".chr( $on ? 1 : 0 );
     }
     
-    function DoublePrint($on=true) {
+    function doublePrint($on=true) {
         // is this like a shadow effect?
         // ESC "G" bit
         return "\x1B\x47".chr( $on ? 1 : 0 );
     }
     
-    function PaperFeed($space) {
+    function paperFeed($space) {
         // in some small increment; with 12x24 font, space=64 seems to be approximately one printed line, space=128 two
         // ESC "J" space
         return "\x1B\x4A".chr( max(0, min(255, $space)) );
     }
     
-    function PaperFeedBack($space) {
+    function paperFeedBack($space) {
         // in some small increment
         // ESC "K" num
         return "\x1B\x4B".chr( max(0, min(24, $space)) );
     }
     
-    function PageMode() {
+    function pageMode() {
         // ESC "L"
         return "\x1B\x4C";
     }
     
-    function Font($font=0) {
+    function font($font=0) {
         // ESC "M" font
         // (FS "G" font)
         return "\x1B\x4D".chr( max(0, min(2, $font)) );
@@ -209,29 +207,29 @@ class ESCPOSPrintHandler extends PrintHandler {
         12: Latin America
         13: Korea
     */
-    function CharacterSet($set=0) {
+    function characterSet($set=0) {
         // ESC "R" set
         return "\x1B\x52".chr( max(0, min(13, $set)) );
     }
     
-    function LineMode() {
+    function lineMode() {
         // ESC "S"
         return "\x1B\x53";
     }
     
-    function PageOrient($orient=0) {
+    function pageOrient($orient=0) {
         // ESC "T" dir
         return "\x1B\x54".chr( max(0, min(3, (int)$orient)) );
     }
     
     // TODO: unidirectional printing;  ESC(\x1B) "U"(\x55) bit
     
-    function Rotate($on=true) {
+    function rotate($on=true) {
         // ESC "V" bit
         return "\x1B\x56".chr( $on ? 1 : 0 );
     }
     
-    function PageRegion($x=0, $y=0, $dx=65535, $dy=65535) {
+    function pageRegion($x=0, $y=0, $dx=65535, $dy=65535) {
         // ESC "W" xLO xHI yLO yHI dxLO dxHI dyLO dyHI
         return ("\x1B\x57"
             .chr( max(0, (int)($x % 256)) )
@@ -245,7 +243,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function MoveX($dots) {
+    function moveX($dots) {
         // ESC "\" dxLO dxHI
         if ($dots < 0 && $dots >= -32768)
             $dots += 65536;
@@ -255,22 +253,22 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function AlignLeft() {
+    function alignLeft() {
         // ESC "a" align
         return "\x1B\x61\x00";
     }
     
-    function AlignCenter() {
+    function alignCenter() {
         // ESC "a" align
         return "\x1B\x61\x01";
     }
     
-    function AlignRight() {
+    function alignRight() {
         // ESC "a" align
         return "\x1B\x61\x02";
     }
     
-    function PaperRoll($receipt=true, $journal=false, $endorse=false, $validation=false) {
+    function paperRoll($receipt=true, $journal=false, $endorse=false, $validation=false) {
         // ESC "c" "0" bitfield
         return ("\x1B\x63\x30"
             .chr(
@@ -286,12 +284,12 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: set paper out stop sensor;  ESC(\x1B) "c"(\x63) "4"(\x34) bitfield
     
-    function PanelButtons($on=true) {
+    function panelButtons($on=true) {
         // ESC "c" "5" flag
         return "\x1B\x63\x35".chr( $on ? 0 : 1 );
     }
     
-    function LineFeedBack() {
+    function lineFeedBack() {
         // ESC "e" 1
         return "\x1B\x65\x01";
     }
@@ -300,7 +298,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: run macro;  ESC(\x1B) "g"(\x67) num
     
-    function DrawerKick($pin=2, $on=100, $off=100) {
+    function drawerKick($pin=2, $on=100, $off=100) {
         // ESC "p" pin on off
         return ("\x1B\x70"
             .chr( ($pin < 3.5) ? 0 : 1 )
@@ -323,7 +321,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         19: PC858
         255: blank
     */
-    function CodeTable($table=0) {
+    function codeTable($table=0) {
         // ESC "t" table
         return "\x1B\x74".chr( max(0, min(255, $table)) );
     }
@@ -332,7 +330,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: send paper sensor status;  ESC(\x1B) "v"(\x76) ?
     
-    function UpsideDown($on=true) {
+    function upsideDown($on=true) {
         // ESC "{" flag
         return "\x1B\x7B".chr( $on ? 1 : 0 );
     }
@@ -361,7 +359,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: store bitmaps;  FS(\x1C) "q"(\x71) num [xLO xHI yLO yHI]{num}
     
-    function CharacterZoom($horiz=1, $vert=1) {
+    function characterZoom($horiz=1, $vert=1) {
         // GS "!" zoom
         return "\x1D\x21".chr(
             16 * (int)(max(1, min(8, $horiz)) - 1)
@@ -369,7 +367,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function GotoY($dots=0) {
+    function gotoY($dots=0) {
         // GS "$" yLO yHI
         return ("\x1D\x24"
             .chr( max(0, (int)($dots % 256)) )
@@ -379,7 +377,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: define downloadable image;  GS(\x1D) "*"(\x2A) x y data
     
-    function Test($type=3, $paper=0) {
+    function test($type=3, $paper=0) {
         // GS "(" "A"
         return ("\x1D\x28\x41\x02\x00"
             .chr( max(0, min(2, (int)$paper)) )
@@ -393,7 +391,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: user startup commands;  GS(\x1D) "("(\x28) "E"(\x45) ...
     
-    function Density($factor=1.0) {
+    function density($factor=1.0) {
         // GS "(" "K" \x02 \x00 \x31 factor
         // factor = 0.7 (\xFA) - 0.9 (\xFF) ; 1.0 (\x00) - 1.3 (\x06)
         return ("\x1D\x28\x4B\x02\x00\x31"
@@ -401,13 +399,13 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function ColorBlack() {
+    function colorBlack() {
         // GS "(" "N" \x02 \x00 \x30 color
         // ESC "r" color
         return "\x1D\x28\x4E\x02\x00\x30\x31";
     }
     
-    function ColorRed() {
+    function colorRed() {
         // GS "(" "N" \x02 \x00 \x30 color
         // ESC "r" color
         return "\x1D\x28\x4E\x02\x00\x30\x32";
@@ -417,7 +415,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: toggle macro recording;  GS(\x1D) ":"(\x3A)
     
-    function Invert($on=true) {
+    function invert($on=true) {
         // GS "B" flag
         return "\x1D\x42".chr( $on ? 1 : 0 );
     }
@@ -430,22 +428,22 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: set counter mode;  GS(\x1D) "C"(\x43) ";"(\x3B) sa ";"(\x3B) sb ";"(\x3B) sn ";"(\x3B) sr ";"(\x3B) sc ";"(\x3B)
     
-    function SpeedHigh() {
+    function speedHigh() {
         // GS "E" speed
         return "\x1D\x45\x00";
     }
     
-    function SpeedMedium() {
+    function speedMedium() {
         // GS "E" speed
         return "\x1D\x45\x10";
     }
     
-    function SpeedLow() {
+    function speedLow() {
         // GS "E" speed
         return "\x1D\x45\x20";
     }
     
-    function BarcodeHRI($below=true, $above=false) {
+    function barcodeHRI($below=true, $above=false) {
         // GS "H" bitfield
         return ("\x1D\x48"
             .chr( ($below ? 2 : 0) + ($above ? 1 : 0) )
@@ -454,7 +452,7 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: send printer ID;  GS(\x1D) "I"(\x49) type
     
-    function LeftMargin($dots=0) {
+    function leftMargin($dots=0) {
         // GS "L" marginLO marginHI
         return ("\x1D\x4C"
             .chr( max(0, (int)($dots % 256)) )
@@ -462,18 +460,18 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function DotPitch($primary=0, $secondary=0) {
+    function dotPitch($primary=0, $secondary=0) {
         // sets dot pitch to 1/Xth inch (25.4/Xth mm), or 0 for default
         // GS "P" pitch pitch
         return "\x1D\x50".chr($primary).chr($secondary);
     }
     
-    function DiscardLine() {
+    function discardLine() {
         // GS "T" printbit
         return "\x1D\x54\x00";
     }
     
-    function PreCutPaper($full=false) {
+    function preCutPaper($full=false) {
         // the cutter is above the print position, so cutting without feeding will put the cut above the last few lines printed
         // GS "V" bit
         // ESC "i"        (partial)
@@ -481,7 +479,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         return "\x1D\x56".chr( $full ? 0 : 1 );
     }
     
-    function CutPaper($full=false, $feed=0) {
+    function cutPaper($full=false, $feed=0) {
         // this version feeds the paper far enough to put the cutter just below the last line printed, plus the feed distance (in pixels?)
         // GS "V" bit feed
         return ("\x1D\x56"
@@ -490,7 +488,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function PrintableWidth($dots=65535) {
+    function printableWidth($dots=65535) {
         // GS "W" widthLO widthHI
         return ("\x1D\x57"
             .chr( max(0, (int)($dots % 256)) )
@@ -498,7 +496,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function MoveY($dots) {
+    function moveY($dots) {
         // GS "\" dyLO dyHI
         if ($dots < 0 && $dots >= -32768)
             $dots += 65536;
@@ -512,24 +510,24 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     // TODO: enable automatic status back;  GS(\x1D) "a"(\x61) bitfield
     
-    function Smooth($on=true) {
+    function smooth($on=true) {
         // GS "b" flag
         return "\x1D\x62".chr( $on ? 1 : 0 );
     }
     
     // TODO: print counter;  GS(\x1D) "c"(\x63)
     
-    function BarcodeHRIFont($font=0) {
+    function barcodeHRIFont($font=0) {
         // GS "f" font
         return "\x1D\x66".chr( max(0, min(2, $font)) );
     }
     
-    function BarcodeHeight($dots=162) {
+    function barcodeHeight($dots=162) {
         // GS "h" height
         return "\x1D\x68".chr( max(1, min(255, $dots)) );
     }
     
-    function BarcodeUPC($data, $upcE=false) {
+    function barcodeUPC($data, $upcE=false) {
         $bytes = max(11, min(12, strlen($data)));
         return ("\x1D\x6B"
             .chr( $upcE ? 66 : 65 )
@@ -538,7 +536,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function BarcodeEAN($data, $ean8=false) {
+    function barcodeEAN($data, $ean8=false) {
         $bytes = $ean8 ? max(7, min(8, strlen($data))) : max(12, min(13, strlen($data)));
         return ("\x1D\x6B"
             .chr( $ean8 ? 68 : 67 )
@@ -547,7 +545,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function BarcodeCODE39($data) {
+    function barcodeCODE39($data) {
         $bytes = max(1, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(69)
@@ -556,7 +554,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function BarcodeITF($data) {
+    function barcodeITF($data) {
         $bytes = max(2, min(254, (int)(strlen($data) / 2) * 2));
         return ("\x1D\x6B"
             .chr(70)
@@ -565,7 +563,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function BarcodeCODEABAR($data) {
+    function barcodeCODEABAR($data) {
         $bytes = max(1, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(71)
@@ -574,7 +572,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function BarcodeCODE93($data) {
+    function barcodeCODE93($data) {
         $bytes = max(1, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(72)
@@ -583,7 +581,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function BarcodeCODE128($data) {
+    function barcodeCODE128($data) {
         $bytes = max(2, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(73)
@@ -603,7 +601,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         \xC0 = \b11000000 = pixels in the left two columns
         \x81 = \b10000001 = pixels in the left and right columns
     */
-    function RasterBitmap($data, $width, $height, $tallDots=false, $wideDots=false) {
+    function rasterBitmap($data, $width, $height, $tallDots=false, $wideDots=false) {
         // GS "v" 0 bits widthLO widthHI heightLO heightHI data
         $width = (int)(($width + 7) / 8);
         $bytes = (int)($width * $height);
@@ -617,7 +615,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function BarcodeWidth($scale=3) {
+    function barcodeWidth($scale=3) {
         // ($scale * 0.141mm) is the width per single code line, not the total code width
         // GS "w" scale
         return "\x1D\x77".chr( max(1, min(6, $scale)) );
@@ -627,7 +625,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         ReceiptLib::writeLine($text);
     }
 
-    function RenderBitmapFromFile($fn, $align='C')
+    function renderBitmapFromFile($fn, $align='C')
     {
         return $this->RenderBitmap($fn, $align);
     }
@@ -637,7 +635,7 @@ class ESCPOSPrintHandler extends PrintHandler {
       @param $arg string filename OR Bitmap obj
       @return receipt-formatted string
     */
-    function RenderBitmap($arg, $align='C'){
+    function renderBitmap($arg, $align='C'){
         $slip = "";
 
         if (!class_exists('COREPOS\\pos\\lib\\Bitmap')) return "";

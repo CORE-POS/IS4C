@@ -22,34 +22,32 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\FooterBoxes;
-use \CoreLocal;
 
 class SavedOrCouldHave extends FooterBox 
 {
-
     public $display_css = "font-weight:bold;font-size:150%;";
     public $display_css_class = 'coloredText';
 
     public function header_content()
     {
-        if (CoreLocal::get("isMember") == 1) {
+        if ($this->session->get("isMember") == 1) {
             return _("You Saved");
-        } else {
-            return _("Could Have Saved");
         }
+
+        return _("Could Have Saved");
     }
 
     public function display_content()
     {
-        $saleTTL = (is_numeric(CoreLocal::get("discounttotal"))) ? number_format(CoreLocal::get("discounttotal"),2) : "0.00";
-        $memSaleTTL = is_numeric(CoreLocal::get("memSpecial")) ? number_format(CoreLocal::get("memSpecial"),2) : "0.00";
+        $saleTTL = (is_numeric($this->session->get("discounttotal"))) ? number_format($this->session->get("discounttotal"),2) : "0.00";
+        $memSaleTTL = is_numeric($this->session->get("memSpecial")) ? number_format($this->session->get("memSpecial"),2) : "0.00";
 
-        if (CoreLocal::get("isMember") == 1) {
-            return number_format(CoreLocal::get("transDiscount") +
+        if ($this->session->get("isMember") == 1) {
+            return number_format($this->session->get("transDiscount") +
                 $saleTTL + $memSaleTTL, 2);    
-        } else {
-            return $memSaleTTL;
         }
+
+        return $memSaleTTL;
     }
 }
 

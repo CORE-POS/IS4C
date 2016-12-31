@@ -168,10 +168,7 @@ class undo extends NoInputCorePage
             foreach ($trans as $row) {
                 $cardNo = $row["card_no"];
 
-                if ($row["upc"] == "TAX"){
-                    //TransRecord::addtax();
-                }
-                elseif ($row["trans_type"] ==  "T"){
+                if ($row["trans_type"] ==  "T"){
                     if ($row["description"] == "Change")
                         TransRecord::addchange(-1*$row["total"]);
                     else
@@ -196,9 +193,6 @@ class undo extends NoInputCorePage
                 elseif (strstr($row["description"],"** Tare Weight")){
                     $temp = explode(" ",$row["description"]);
                     TransRecord::addTare($temp[3]*100);
-                }
-                elseif ($row["upc"] == "DISCOUNT"){
-                    //TransRecord::addTransDiscount();
                 }
                 elseif ($row["trans_status"] != "M" && $row["upc"] != "0" &&
                     (is_numeric($row["upc"]) || strstr($row["upc"],"DP"))) {

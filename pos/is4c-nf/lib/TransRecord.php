@@ -141,11 +141,9 @@ static private function addItem($strupc, $strdescription, $strtransType, $strtra
 
     $dbc = Database::tDataConnect();
 
-    $datetimestamp = "";
+    $datetimestamp = strftime("%Y-%m-%d %H:%M:%S", time());
     if (CoreLocal::get("DBMS") == "mssql") {
         $datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
-    } else {
-        $datetimestamp = strftime("%Y-%m-%d %H:%M:%S", time());
     }
 
     CoreLocal::set("LastID",CoreLocal::get("LastID") + 1);
@@ -381,7 +379,7 @@ static public function addtax()
             // whole amount purchased w/ foodstamps; exempt all fsTax
             $w['taxTotal'] -= $w['fsTaxTotal'];
             $fsTenderAvailable -= $w['fsTaxable'];
-        } else if ($fsTenderAvailable > 0 && $fsTenderAvailable < $w['fsTaxable']) {
+        } elseif ($fsTenderAvailable > 0 && $fsTenderAvailable < $w['fsTaxable']) {
             // partial; exempt proportionally
             $exempt = $fsTenderAvailable * $w['taxrate'];
             $w['taxTotal'] -= $exempt;
@@ -795,11 +793,9 @@ static public function finalizeTransaction($incomplete=false)
 
 static public function debugLog($val)
 {
-    $tdate = "";
+    $tdate = strftime("%Y-%m-%d %H:%M:%S", time());
     if (CoreLocal::get("DBMS") == "mssql") {
         $tdate = strftime("%m/%d/%y %H:%M:%S %p", time());
-    } else {
-        $tdate = strftime("%Y-%m-%d %H:%M:%S", time());
     }
     $transNum = ReceiptLib::receiptNumber();
     $lastID = CoreLocal::get('LastID');

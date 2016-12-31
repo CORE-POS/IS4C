@@ -24,7 +24,6 @@
 namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
-use \CoreLocal;
 
 /**
   @class YPSITenderReport
@@ -33,32 +32,30 @@ use \CoreLocal;
 
 class YPSITenderReport extends TenderReport {
 
-static public function get()
+static public function get($session)
 {
-
-    $db_a = Database::mDataConnect();
     $shiftCutoff = date('Y-m-d 00:00:00');
     $excl = " AND emp_no <> 9999 ";
 
-    $DESIRED_TENDERS = is_array(CoreLocal::get("TRDesiredTenders")) ? CoreLocal::get('TRDesiredTenders') : array();
+    $DESIRED_TENDERS = is_array($session->get("TRDesiredTenders")) ? $session->get('TRDesiredTenders') : array();
 
-    $db_a = Database::mDataConnect();
+    $dba = Database::mDataConnect();
 
     $blank = self::standardBlank();
     $fieldNames = self::standardFieldNames();
-    $ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
+    $ref = ReceiptLib::centerString(trim($session->get("CashierNo"))." ".trim($session->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
     $receipt = "";
 
     $cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),e.Lastname) as cashier
         FROM dlog d, is4c_op.employees e
-        WHERE d.emp_no = e.emp_no AND d.register_no = ". CoreLocal::get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
+        WHERE d.emp_no = e.emp_no AND d.register_no = ". $session->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
         AND d.tdate >= '".$shiftCutoff."'
         GROUP BY d.emp_no ORDER BY d.tdate";
         
-    $cashierR = $db_a->query($cashierQ);
+    $cashierR = $dba->query($cashierQ);
 
-    for ($i = 0; $i < $row = $db_a->fetchRow($cashierR); $i++) {
+    for ($i = 0; $i < $row = $dba->fetchRow($cashierR); $i++) {
             $cashier_names .= $row['cashier'].", ";
     }
 
@@ -68,11 +65,11 @@ static public function get()
 
     // NET TOTAL
     $netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-        WHERE register_no=".CoreLocal::get('laneno').
+        WHERE register_no=".$session->get('laneno').
         " AND (trans_subtype IN('CA','CK','DC','CC','EF','FS','EC','GD','TC','WT') OR (trans_subtype = 'MI' AND staff <> 1))
         AND tdate >= '$shiftCutoff'$excl";
-    $netR = $db_a->query($netQ);
-    $net = $db_a->fetch_row($netR);
+    $netR = $dba->query($netQ);
+    $net = $dba->fetchRow($netR);
     $receipt .= "  ".substr("GROSS Total: ".$blank.$blank,0,20);
     $receipt .= substr($blank.number_format(($net[0]),2),-8)."\n";
 
@@ -93,11 +90,11 @@ static public function get()
     $receipt .= "\n\n";
 
     foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
-        $query = "select datetime from dtransactions where emp_no=".CoreLocal::get("CashierNo").
+        $query = "select datetime from dtransactions where emp_no=".$session->get("CashierNo").
             " and tender_code = '".$tender_code."' AND trans_status NOT IN ('X', 'Z') order by tdate";
-        $result = $db_a->query($query);
-        $num_rows = $db_a->num_rows($result);
-        if ($num_rows <= 0) continue;
+        $result = $dba->query($query);
+        $numRows = $dba->numRows($result);
+        if ($numRows <= 0) continue;
 
         //$receipt .= chr(27).chr(33).chr(5);
 
@@ -120,18 +117,18 @@ static public function get()
                         ELSE -1*total
                     END AS tender
                   FROM dtransactions 
-                  WHERE emp_no=".CoreLocal::get("CashierNo")."
+                  WHERE emp_no=".$session->get("CashierNo")."
                     AND tender_code = '".$tender_code."' 
                     AND trans_status NOT IN ('X','Z')
                   ORDER BY datetime";
-        $result = $db_a->query($query);
-        $num_rows = $db_a->num_rows($result);
+        $result = $dba->query($query);
+        $numRows = $dba->numRows($result);
         
         if ($itemize == 1) $receipt .= $fieldNames;
         $sum = 0;
 
-        for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db_a->fetchRow($result);
+        for ($i = 0; $i < $numRows; $i++) {
+            $row = $dba->fetchRow($result);
             $timeStamp = self::timeStamp($row["tdate"]);
             if ($itemize == 1) {
                 $receipt .= self::standardLine($row['tdate'], $row['register_no'], $row['trans_no'], $row['tender']);
@@ -141,7 +138,7 @@ static public function get()
         
         $receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
-        $receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
+        $receipt .= substr($blank.$blank.$blank."Count: ".$numRows."  Total: ".number_format($sum,2), -56)."\n";
         $receipt .= str_repeat("\n", 4);
     }
 
@@ -153,7 +150,7 @@ static public function get()
 
 function trTotal($k, $label,$i=False) 
 {
-    $db_a = Database::mDataConnect();
+    $dba = Database::mDataConnect();
 
     $blank = "             ";
     $fieldNames = "  ".substr("Time".$blank, 0, 10)
@@ -163,11 +160,11 @@ function trTotal($k, $label,$i=False)
             .substr("Mem #".$blank, 0, 10)
             .substr("Amount".$blank, 0, 12)."\n";
     $shiftCutoff = date('Y-m-d 00:00:00');
-    $lookup = $db_a->query("SELECT MAX(datetime) FROM dtransactions 
+    $lookup = $dba->query("SELECT MAX(datetime) FROM dtransactions 
         WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
-        register_no=".CoreLocal::get('laneno'));
-    if ($db_a->num_rows($lookup) > 0){
-        $row = $db_a->fetch_row($lookup);
+        register_no=".$session->get('laneno'));
+    if ($dba->numRows($lookup) > 0){
+        $row = $dba->fetchRow($lookup);
         if ($row[0] != '') $shiftCutoff = $row[0];
     }
 
@@ -187,16 +184,16 @@ function trTotal($k, $label,$i=False)
     
     if($i===False) {
         $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-            WHERE register_no=".CoreLocal::get('laneno').
+            WHERE register_no=".$session->get('laneno').
             " AND $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999";
     } else {
         $tenderQ = "SELECT tdate,register_no,emp_no,trans_no,card_no,total FROM dlog 
-            WHERE register_no=".CoreLocal::get('laneno').
+            WHERE register_no=".$session->get('laneno').
             " and $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999 order by tdate";
     }
-    $tenderR = $db_a->query($tenderQ);
-    $tender = $db_a->fetchRow($tenderR);
-    $num_rows = $db_a->num_rows($tenderR);
+    $tenderR = $dba->query($tenderQ);
+    $tender = $dba->fetchRow($tenderR);
+    $numRows = $dba->numRows($tenderR);
 
     if($i===False) {
         $ret = "  ".substr($label.$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
@@ -205,9 +202,9 @@ function trTotal($k, $label,$i=False)
         $ret = ReceiptLib::centerString($label)."\n";
         $ret .=    ReceiptLib::centerString("------------------------------------------------------");
         $ret .= $fieldNames;
-        // for ($i = 0; $i < $num_rows; $i++) {
-        while ($row = $db_a->fetchRow($tenderR)) {
-            // $row = $db_a->fetchRow($tenderR);
+        // for ($i = 0; $i < $numRows; $i++) {
+        while ($row = $dba->fetchRow($tenderR)) {
+            // $row = $dba->fetchRow($tenderR);
             $timeStamp = TenderReport::timeStamp($row["tdate"]);
             $ret .= "  ".substr($timeStamp.$blank, 0, 10)
                 .substr($row["register_no"].$blank, 0, 9)
@@ -218,7 +215,7 @@ function trTotal($k, $label,$i=False)
             $sum += $row["total"];
         }
         $ret .= ReceiptLib::centerString("------------------------------------------------------");
-        $ret .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
+        $ret .= substr($blank.$blank.$blank."Count: ".$numRows."  Total: ".number_format($sum,2), -56)."\n";
 
         $ret .= str_repeat("\n", 3);
     }    

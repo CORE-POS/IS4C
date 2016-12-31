@@ -58,9 +58,7 @@ class AjaxEnd extends AjaxCallback
 
         $receiptContent = array();
         if (!$this->isDisabled($receiptType) && $receiptType !== 'none') {
-            if ($receiptType != "none") {
-                $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
-            }
+            $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
             if ($this->session->get('autoReprint') == 1 && $receiptType !== "ccSlip" && $receiptType !== 'gcSlip') {
                 $this->session->set("autoReprint",0);
                 $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, true);
@@ -70,7 +68,7 @@ class AjaxEnd extends AjaxCallback
         if ($transFinished) {
             UdpComm::udpSend("termReset");
             $this->session->set('ccTermState','swipe');
-            $this->uploadAndReset($receiptType);
+            $this->uploadAndReset();
             $this->session->set("End",0);
         }
 
@@ -141,8 +139,8 @@ class AjaxEnd extends AjaxCallback
     {
         $dokick = false;
         if ($transFinished) {
-            $kicker_object = Kicker::factory($this->session->get('kickerModule'));
-            $dokick = $kicker_object->doKick($receiptNum);
+            $kickerObject = Kicker::factory($this->session->get('kickerModule'));
+            $dokick = $kickerObject->doKick($receiptNum);
         }
 
         return $dokick;
@@ -173,7 +171,7 @@ class AjaxEnd extends AjaxCallback
         return false;
     }
 
-    private function uploadAndReset($type) 
+    private function uploadAndReset() 
     {
         if ($this->session->get("testremote")==0) {
             Database::testremote(); 

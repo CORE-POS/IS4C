@@ -6,6 +6,7 @@ use COREPOS\pos\lib\FooterBoxes\SavedOrCouldHave;
 use COREPOS\pos\lib\FooterBoxes\PatronagePts;
 use COREPOS\pos\lib\FooterBoxes\MemSales;
 use COREPOS\pos\lib\FooterBoxes\MultiTotal;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
  * @backupGlobals disabled
@@ -41,7 +42,9 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('string',$display);
         }
 
-        $obj = new TransPercentDiscount();
+        $session = new WrappedStorage();
+
+        $obj = new TransPercentDiscount($session);
         CoreLocal::set('percentDiscount', 10);
         CoreLocal::set('transDiscount', 10);
         $this->assertEquals('10% Discount', $obj->header_content());
@@ -51,7 +54,7 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('% Discount', $obj->header_content());
         $this->assertEquals('n/a', $obj->display_content());
 
-        $obj = new SavedOrCouldHave();
+        $obj = new SavedOrCouldHave($session);
         CoreLocal::set('isMember', 1);
         CoreLocal::set('memSpecial', 10);
         CoreLocal::set('discounttotal', 10);
@@ -63,7 +66,7 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('memSpecial', 0);
         CoreLocal::set('discounttotal', 0);
 
-        $obj = new PatronagePts();
+        $obj = new PatronagePts($session);
         CoreLocal::set('isMember', 1);
         CoreLocal::set('discountableTotal', 10);
         $this->assertEquals('10.00', $obj->display_content());
@@ -71,7 +74,7 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('discountableTotal', 0);
         $this->assertEquals('n/a', $obj->display_content());
 
-        $obj = new MemSales();
+        $obj = new MemSales($session);
         CoreLocal::set('isMember', 1);
         CoreLocal::set('memSpecial', 10);
         $this->assertEquals('10.00', $obj->display_content());
@@ -79,7 +82,7 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('memSpecial', 0);
         $this->assertEquals('n/a', $obj->display_content());
 
-        $obj = new MultiTotal();
+        $obj = new MultiTotal($session);
         CoreLocal::set('ttlflag', 1);
         CoreLocal::set('End', 0);
         CoreLocal::set('fntlflag', 1);
@@ -99,3 +102,4 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('runningTotal', 0);
     }
 }
+

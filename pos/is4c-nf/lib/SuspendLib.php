@@ -25,7 +25,6 @@ namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 
 /**
   @class SuspendLib
@@ -40,18 +39,18 @@ class SuspendLib
   there. Otherwise it is suspended locally.
   @return [string] transaction identifier
 */
-static public function suspendorder() 
+static public function suspendorder($session) 
 {
     $dba = Database::tDataConnect();
     $transNum = ReceiptLib::receiptNumber();
 
-    if (CoreLocal::get("standalone") == 0) {
-        $dba->addConnection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
-            CoreLocal::get("mDatabase"),CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
+    if ($session->get("standalone") == 0) {
+        $dba->addConnection($session->get("mServer"),$session->get("mDBMS"),
+            $session->get("mDatabase"),$session->get("mUser"),$session->get("mPass"),false,true);
         $cols = Database::getMatchingColumns($dba,"localtemptrans","suspended");
-        $dba->transfer(CoreLocal::get("tDatabase"),"select {$cols} from localtemptrans",
-            CoreLocal::get("mDatabase"),"insert into suspended ($cols)");
-        $dba->close(CoreLocal::get("mDatabase"),True);
+        $dba->transfer($session->get("tDatabase"),"select {$cols} from localtemptrans",
+            $session->get("mDatabase"),"insert into suspended ($cols)");
+        $dba->close($session->get("mDatabase"),True);
     } else { 
         $query = "insert into suspended select * from localtemptrans";
         $dba->query($query);
@@ -61,13 +60,13 @@ static public function suspendorder()
     $dba->query("UPDATE localtemptrans SET trans_status='X',charflag='S'");
     TransRecord::finalizeTransaction(true);
 
-    CoreLocal::set("plainmsg",_("transaction suspended"));
+    $session->set("plainmsg",_("transaction suspended"));
     /**
       If the transaction is marked as complete but somehow did not
       actually finish, this will prevent the suspended receipt from
       adding tax/discount lines to the transaction
     */
-    CoreLocal::set('End', 0);
+    $session->set('End', 0);
 
     return $transNum;
 }
@@ -81,21 +80,14 @@ static public function suspendorder()
   This function ignores any transactions that
   are not from the current day.
 */
-static public function checksuspended() 
+static public function checksuspended($session) 
 {
-    $dba = Database::tDataConnect();
     $queryLocal = "SELECT upc 
                     FROM suspended
                     WHERE datetime >= " . date("'Y-m-d 00:00:00'");
         
-    $result = "";
-    if (CoreLocal::get("standalone") == 1) {
-        $result = $dba->query($queryLocal);
-    } else {
-        $dba = Database::mDataConnect();
-        $result = $dba->query($queryLocal);
-    }
-
+    $dba = $session->get('standalone') == 1 ? Database::tDataConnect() : Database:mDataConnect();
+    $result = $dba->query($queryLocal);
     $numRows = $dba->numRows($result);
 
     if ($numRows == 0) {

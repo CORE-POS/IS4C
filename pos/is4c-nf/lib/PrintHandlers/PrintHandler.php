@@ -39,7 +39,7 @@ class PrintHandler {
      Get printer tab
      @return string printer command
     */
-    function Tab() {
+    function tab() {
         return "\t";
     }
     
@@ -48,14 +48,14 @@ class PrintHandler {
       @param $lines number of lines
       @return string printer command
     */
-    function LineFeed($lines=1) {
+    function lineFeed($lines=1) {
         $ret = "\n";
         for($i=1;$i<$lines;$i++)
             $ret .= "\n";
         return $ret;
     }
     
-    function PageFeed($reset=true) {
+    function pageFeed($reset=true) {
         return '';
     }
     
@@ -63,15 +63,15 @@ class PrintHandler {
       Get carriage return
       @return string printer command
     */
-    function CarriageReturn() {
+    function carriageReturn() {
         return "\r";
     }
     
-    function ClearPage() {
+    function clearPage() {
         return '';
     }
     
-    function CharacterSpacing($dots=0) {
+    function characterSpacing($dots=0) {
         return '';
     }
 
@@ -110,11 +110,11 @@ class PrintHandler {
       TextStyle(true,false,true) is equivalent to
         biggerFont().
     */
-    function TextStyle($altFont=false, $bold=false, $tall=false, $wide=false, $underline=false) {
+    function textStyle($altFont=false, $bold=false, $tall=false, $wide=false, $underline=false) {
         return '';
     }
     
-    function GotoX($dots=0) {
+    function gotoX($dots=0) {
         return '';
     } // GotoX()
     
@@ -126,7 +126,7 @@ class PrintHandler {
     inline stripe (8 pixels tall with $tallDots, 24 otherwise) the array will have
     only one element.
     */
-    function TransposeBitmapData($data, $width, $tallDots=false) 
+    function transposeBitmapData($data, $width, $tallDots=false) 
     {
         $oldRowBytes = (int)(($width + 7) / 8);
         $newColBytes = $tallDots ? 1 : 3;
@@ -188,27 +188,27 @@ class PrintHandler {
         return $byte;
     }
     
-    function InlineBitmap($data, $width, $tallDots=false, $wideDots=false) {
+    function inlineBitmap($data, $width, $tallDots=false, $wideDots=false) {
         return '';
     } // InlineBitmap()
     
-    function Underline($dots=1) {
+    function underline($dots=1) {
         return '';
     }
     
-    function ResetLineSpacing() {
+    function resetLineSpacing() {
         return '';
     }
     
-    function LineSpacing($space=64) {
+    function lineSpacing($space=64) {
         return '';
     }
     
-    function Reset() {
+    function reset() {
         return '';
     }
     
-    function SetTabs($tabs=null) {
+    function setTabs($tabs=null) {
         return '';
     }
     
@@ -217,27 +217,27 @@ class PrintHandler {
      @param $on boolean enable
      @return string printer command
     */
-    function Bold($on=true) {
+    function bold($on=true) {
         return "";
     }
     
-    function DoublePrint($on=true) {
+    function doublePrint($on=true) {
         return "";
     }
     
-    function PaperFeed($space) {
+    function paperFeed($space) {
         return "";
     }
     
-    function PaperFeedBack($space) {
+    function paperFeedBack($space) {
         return "";
     }
     
-    function PageMode() {
+    function pageMode() {
         return "";
     }
     
-    function Font($font=0) {
+    function font($font=0) {
         return "";
     }
     
@@ -258,57 +258,57 @@ class PrintHandler {
         12: Latin America
         13: Korea
     */
-    function CharacterSet($set=0) {
+    function characterSet($set=0) {
         return '';
     }
     
-    function LineMode() {
+    function lineMode() {
         return '';
     }
     
-    function PageOrient($orient=0) {
+    function pageOrient($orient=0) {
         return '';
     }
     
     // TODO: unidirectional printing;  ESC(\x1B) "U"(\x55) bit
     
-    function Rotate($on=true) {
+    function rotate($on=true) {
         return '';
     }
     
-    function PageRegion($x=0, $y=0, $dx=65535, $dy=65535) {
+    function pageRegion($x=0, $y=0, $dx=65535, $dy=65535) {
         return '';
     }
     
-    function MoveX($dots) {
+    function moveX($dots) {
         return '';
     }
     
-    function AlignLeft() {
+    function alignLeft() {
         return '';
     }
     
-    function AlignCenter() {
+    function alignCenter() {
         return '';
     }
     
-    function AlignRight() {
+    function alignRight() {
         return '';
     }
     
-    function PaperRoll($receipt=true, $journal=false, $endorse=false, $validation=false) {
+    function paperRoll($receipt=true, $journal=false, $endorse=false, $validation=false) {
         return '';
     } // PaperRoll()
     
-    function PanelButtons($on=true) {
+    function panelButtons($on=true) {
         return '';
     }
     
-    function LineFeedBack() {
+    function lineFeedBack() {
         return '';
     }
     
-    function DrawerKick($pin=2, $on=100, $off=100) {
+    function drawerKick($pin=2, $on=100, $off=100) {
         return '';
     }
     
@@ -326,123 +326,123 @@ class PrintHandler {
         19: PC858
         255: blank
     */
-    function CodeTable($table=0) {
+    function codeTable($table=0) {
         return '';
     }
     
-    function UpsideDown($on=true) {
+    function upsideDown($on=true) {
         return '';
     }
     
-    function CharacterZoom($horiz=1, $vert=1) {
+    function characterZoom($horiz=1, $vert=1) {
         return '';
     }
     
-    function GotoY($dots=0) {
+    function gotoY($dots=0) {
         return '';
     }
     
-    function Test($type=3, $paper=0) {
+    function test($type=3, $paper=0) {
         return '';
     }
     
-    function Density($factor=1.0) {
+    function density($factor=1.0) {
         return '';
     }
     
-    function ColorBlack() {
+    function colorBlack() {
         return '';
     }
     
-    function ColorRed() {
+    function colorRed() {
         return '';
     }
     
-    function Invert($on=true) {
+    function invert($on=true) {
         return '';
     }
     
-    function SpeedHigh() {
+    function speedHigh() {
         return '';
     }
     
-    function SpeedMedium() {
+    function speedMedium() {
         return '';
     }
     
-    function SpeedLow() {
+    function speedLow() {
         return '';
     }
     
-    function BarcodeHRI($below=true, $above=false) {
+    function barcodeHRI($below=true, $above=false) {
         return '';
     }
     
-    function LeftMargin($dots=0) {
+    function leftMargin($dots=0) {
         return '';
     }
     
-    function DotPitch($primary=0, $secondary=0) {
+    function dotPitch($primary=0, $secondary=0) {
         return '';
     }
     
-    function DiscardLine() {
+    function discardLine() {
         return '';
     }
     
-    function PreCutPaper($full=false) {
+    function preCutPaper($full=false) {
         return '';
     }
     
-    function CutPaper($full=false, $feed=0) {
+    function cutPaper($full=false, $feed=0) {
         return '';
     }
     
-    function PrintableWidth($dots=65535) {
+    function printableWidth($dots=65535) {
         return '';
     }
     
-    function MoveY($dots) {
+    function moveY($dots) {
         return '';
     }
     
-    function Smooth($on=true) {
+    function smooth($on=true) {
         return '';
     }
     
-    function BarcodeHRIFont($font=0) {
+    function barcodeHRIFont($font=0) {
         return '';
     }
     
-    function BarcodeHeight($dots=162) {
+    function barcodeHeight($dots=162) {
         return '';
     }
     
-    function BarcodeUPC($data, $upcE=false) {
+    function barcodeUPC($data, $upcE=false) {
         return '';
     }
     
-    function BarcodeEAN($data, $ean8=false) {
+    function barcodeEAN($data, $ean8=false) {
         return '';
     }
     
-    function BarcodeCODE39($data) {
+    function barcodeCODE39($data) {
         return '';
     }
     
-    function BarcodeITF($data) {
+    function barcodeITF($data) {
         return '';
     }
     
-    function BarcodeCODEABAR($data) {
+    function barcodeCODEABAR($data) {
         return '';
     }
     
-    function BarcodeCODE93($data) {
+    function barcodeCODE93($data) {
         return '';
     }
     
-    function BarcodeCODE128($data) {
+    function barcodeCODE128($data) {
         return '';
     }
     
@@ -455,11 +455,11 @@ class PrintHandler {
         \xC0 = \b11000000 = pixels in the left two columns
         \x81 = \b10000001 = pixels in the left and right columns
     */
-    function RasterBitmap($data, $width, $height, $tallDots=false, $wideDots=false) {
+    function rasterBitmap($data, $width, $height, $tallDots=false, $wideDots=false) {
         return '';
     }
     
-    function BarcodeWidth($scale=3) {
+    function barcodeWidth($scale=3) {
         return '';
     }
 
@@ -476,7 +476,7 @@ class PrintHandler {
       @param $fn a bitmap file
       @return printer command string
     */
-    function RenderBitmapFromFile($fn, $align='C')
+    function renderBitmapFromFile($fn, $align='C')
     {
         return $this->RenderBitmap($fn, $align);
     }
@@ -486,7 +486,7 @@ class PrintHandler {
       @param $arg string filename OR Bitmap obj
       @return receipt-formatted string
     */
-    function RenderBitmap($arg, $align='C'){
+    function renderBitmap($arg, $align='C'){
         $slip = "";
 
         $bmp = null;

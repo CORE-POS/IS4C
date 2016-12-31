@@ -617,6 +617,15 @@ static public function cashierLogin($transno=False, $age=0)
     }
 }
 
+static private setParams($parameters)
+{
+    foreach ($parameters->find() as $global) {
+        $key = $global->param_key();
+        $value = $global->materializeValue();
+        CoreLocal::set($key, $value, true);
+    }
+}
+
 static public function loadParams()
 {
     $dbc = Database::pDataConnect();
@@ -631,33 +640,21 @@ static public function loadParams()
     $parameters = new \COREPOS\pos\lib\models\op\ParametersModel($dbc);
     $parameters->lane_id(0);
     $parameters->store_id(0);
-    foreach ($parameters->find() as $global) {
-        $key = $global->param_key();
-        $value = $global->materializeValue();
-        CoreLocal::set($key, $value, true);
-    }
+    self::setParams($parameters);
 
     // apply store-specific settings next
     // with any overrides that occur
     $parameters->reset();
     $parameters->store_id(CoreLocal::get('store_id'));
     $parameters->lane_id(0);
-    foreach ($parameters->find() as $local) {
-        $key = $local->param_key();
-        $value = $local->materializeValue();
-        CoreLocal::set($key, $value, true);
-    }
+    self::setParams($parameters);
 
     // apply lane-specific settings last
     // with any overrides that occur
     $parameters->reset();
     $parameters->lane_id(CoreLocal::get('laneno'));
     $parameters->store_id(0);
-    foreach ($parameters->find() as $local) {
-        $key = $local->param_key();
-        $value = $local->materializeValue();
-        CoreLocal::set($key, $value, true);
-    }
+    self::setParams($parameters);
 
     // load tender map from tenders instead of parameters
     $map = array();

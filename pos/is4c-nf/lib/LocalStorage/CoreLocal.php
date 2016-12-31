@@ -186,7 +186,7 @@ class CoreLocal
                         // and gets moved to a dedicated table
                         if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('SpecialDeptMap')) {
                             $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
-                            $mapModel->initTable($sconf);
+                            $mapModel->initTable($value);
                             \COREPOS\pos\install\conf\Conf::remove($key);
                         }
                     } else {
