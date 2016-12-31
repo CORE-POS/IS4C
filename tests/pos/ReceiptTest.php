@@ -416,7 +416,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     {
         $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport', true);
         foreach ($mods as $mod) {
-            $this->assertInternalType('string', $mod::get());
+            $this->assertInternalType('string', $mod::get(new WrappedStorage()));
         }
     }
 }
