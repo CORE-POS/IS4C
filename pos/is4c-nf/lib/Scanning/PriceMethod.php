@@ -97,16 +97,14 @@ class PriceMethod
     public static function getObject($pricemethod, $session)
     {
         $pmClasses = CoreLocal::get("PriceMethodClasses");
-
+        $class = 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\BasicPM';
         if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
             $class = PriceMethod::$MAP[$pricemethod];
-            return new $class($session);
         } elseif ($pricemethod >= 100 && isset($pmClasses[($pricemethod-100)])) {
             $class = $pmClasses[($pricemethod-100)];
-            return new $class($session);
         }
 
-        return new BasicPM();
+        return new $class($session);
     }
 }
 

@@ -33,11 +33,12 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     */
     public function testStatics()
     {
+        $session = new WrappedStorage();
         $chain = PreParser::get_preparse_chain();
         $this->assertInternalType('array',$chain);
         $this->assertNotEmpty($chain);
         foreach($chain as $class){
-            $instance = new $class();
+            $instance = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\parser\\PreParser',$instance);
             // just for coverage; not vital functionality
             $this->assertNotEquals(0, strlen($instance->doc()));
@@ -47,7 +48,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('array',$chain);
         $this->assertNotEmpty($chain);
         foreach($chain as $class){
-            $instance = new $class();
+            $instance = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\parser\\Parser',$instance);
             // just for coverage; not vital functionality
             $this->assertNotEquals(0, strlen($instance->doc()));

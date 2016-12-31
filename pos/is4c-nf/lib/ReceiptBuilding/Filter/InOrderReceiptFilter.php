@@ -49,19 +49,19 @@ class InOrderReceiptFilter extends DefaultReceiptFilter
             if ($tax === false && $row['upc'] == 'TAX') {
                 // keep tax row. relevant to total and subtotal
                 $tax = $row;
-            } else if ($discount === False && $row['upc'] == 'DISCOUNT') { 
+            } elseif ($discount === False && $row['upc'] == 'DISCOUNT') { 
                 if ($discount['total'] == 0) continue;
                 // keep discount row. need to pick up proper % discount still
                 $discount = $row;
                 $discount['trans_type'] = 'S';
-            } else if ($row['trans_type'] == 'T' && $row['department'] == 0){
+            } elseif ($row['trans_type'] == 'T' && $row['department'] == 0){
                 // keep tender rows. use them to calculate total
                 // rows with departments are usually coupons and those
                 // should be treated more like items than like tenders
                 $tenderTTL += $row['total'];
                 $returnset[] = $row;
                 $count++;
-            } else if ($row['trans_type'] == 'I' || $row['trans_type'] == 'D' || ($row['trans_type']=='T' && $row['department'] != 0)){
+            } elseif ($row['trans_type'] == 'I' || $row['trans_type'] == 'D' || ($row['trans_type']=='T' && $row['department'] != 0)){
                 // keep item rows
                 // save department for fetching category headers
                 // and update discount row if necessary
@@ -70,7 +70,7 @@ class InOrderReceiptFilter extends DefaultReceiptFilter
                 }
                 $returnset[] = $row;
                 $count++;    
-            } else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare") {
+            } elseif ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare") {
                 // only deal with tare lines
                 $prev = $count-1;
                 if (isset($returnset[$prev]) && strlen($returnset[$prev]['description'])>7

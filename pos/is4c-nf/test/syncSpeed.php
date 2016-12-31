@@ -6,7 +6,7 @@ function nl() { return php_sapi_name() === 'cli' ? "\n" : '<br />'; }
 echo 'Beginning upload' . nl();
 
 $time = microtime(true);
-Database::uploadToServer();
+Database::testremote();
 $done = microtime(true);
 
 echo 'Upload complete' . nl();

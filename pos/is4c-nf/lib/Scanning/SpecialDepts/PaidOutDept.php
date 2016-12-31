@@ -24,7 +24,6 @@
 namespace COREPOS\pos\lib\Scanning\SpecialDepts;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use COREPOS\pos\lib\MiscLib;
-use \CoreLocal;
 
 class PaidOutDept extends SpecialDept
 {
@@ -32,19 +31,12 @@ class PaidOutDept extends SpecialDept
 
     public function handle($deptID,$amount,$json)
     {
-        if (CoreLocal::get('msgrepeat') == 0) { // invert has not happened yet
-            CoreLocal::set('strEntered', (100*$amount * -1).'DP'.$deptID);
-            CoreLocal::set('msgrepeat', 1);
-           // $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?autoconfirm=1';
-            $json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
-            CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
+        if ($this->session->get('msgrepeat') == 0) { // invert has not happened yet
+            $this->session->set('strEntered', (100*$amount * -1).'DP'.$deptID);
+            $this->session->set('msgrepeat', 1);
+            $json['main_frame'] = MiscLib::baseURL().'gui-modules/PaidOutComment.php';
+            $this->session->set("refundComment",$this->session->get("strEntered"));
         }
-
-        //if (CoreLocal::get("refundComment") == ""){
-            
-            //$json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
-            //CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
-        //}
 
         return $json;
     }

@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\preparse;
-use \CoreLocal;
 use COREPOS\pos\parser\PreParser;
 
 class PercentDiscount extends PreParser 
@@ -35,15 +34,15 @@ class PercentDiscount extends PreParser
          $split = explode("DI",$str);
          if (is_numeric($split[0])){
             $this->remainder = $split[1];
-            CoreLocal::set("itemPD",(int)$split[0]);
+            $this->session->set("itemPD",(int)$split[0]);
 
             return true;
          }
-      } else if (strpos($str,"PD") > 0) {
+      } elseif (strpos($str,"PD") > 0) {
          $split = explode("PD",$str);   
          if (is_numeric($split[0]) && strlen($split[1]) > 0){
             $this->remainder = $split[1];
-            CoreLocal::set("itemPD",(int)$split[0]);
+            $this->session->set("itemPD",(int)$split[0]);
 
             return true;
          }

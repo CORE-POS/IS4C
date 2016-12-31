@@ -79,7 +79,7 @@ static public function writeLine($text)
    - [int]  0 => problem sending text
    - [int] -1 => sent but no response. printer might be stuck/blocked
 */
-static public function printToServer($printerServer, $text)
+static private function printToServer($printerServer, $text)
 {
     $port = 9450;
     if (strstr($printerServer, ':')) {
@@ -207,50 +207,6 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
     $receipt .= $time.str_repeat(' ',$spaces).$ref."\n";
             
     return $receipt;
-}
-
-// Charge Footer split into two functions by apbw 2/1/05
-//#'C - is this never called?
-static public function printChargeFooterCust($dateTimeStamp, $ref, $program="charge") 
-{
-    $chgName = \COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
-
-    $date = self::build_time($dateTimeStamp);
-
-    /* Where should the label values come from, be entered?
-       20Mar15 Eric Lee. Andy's comment was about Coop Cred which
-         is now implemented as he describes.
-       24Apr14 Andy
-       Implementing these as ReceiptMessage subclasses might work
-       better. Plugins could provide their own ReceiptMessage subclass
-       with the proper labels (or config settings for the labels)
-    */
-    $labels = array();
-    $labels['charge'] = array("CUSTOMER CHARGE ACCOUNT\n", "Charge Amount:");
-    $labels['coopcred'] = array("COOP CRED ACCOUNT\n", "Credit Amount:");
-    $labels['debit'] = array("CUSTOMER DEBIT ACCOUNT\n", "Debit Amount:");
-    /* Could append labels from other modules
-    foreach (CoreLocal::get('plugins') as $plugin)
-        if isset($plugin['printChargeFooterCustLabels']) {
-            $labels[]=$plugin['printChargeFooterCustLabels']
-        }
-    */
-
-    $receipt = chr(27).chr(33).chr(5)."\n\n\n".self::centerString(_("C U S T O M E R   C O P Y"))."\n"
-           .self::centerString("................................................")."\n"
-           .self::centerString(CoreLocal::get("chargeSlip1"))."\n\n"
-           . $labels["$program"][0]
-           ._("Name: ").trim($chgName)."\n"        // changed by apbw 2/14/05 SCR
-           ._("Member Number: ").trim(CoreLocal::get("memberID"))."\n"
-           ._("Date: ").$date."\n"
-           ._("REFERENCE #: ").$ref."\n"
-           . $labels["$program"][1] . " $".number_format(-1 * CoreLocal::get("chargeTotal"), 2)."\n"
-           .self::centerString("................................................")."\n"
-           ."\n\n\n\n\n\n\n"
-           .chr(27).chr(105);
-
-    return $receipt;
-
 }
 
 /**

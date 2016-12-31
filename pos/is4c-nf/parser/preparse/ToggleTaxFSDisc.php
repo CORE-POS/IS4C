@@ -22,12 +22,10 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\preparse;
-use \CoreLocal;
 use COREPOS\pos\parser\PreParser;
 
 class ToggleTaxFSDisc extends PreParser 
 {
-
     private $tfd;
     private $remainder;
 
@@ -77,13 +75,13 @@ class ToggleTaxFSDisc extends PreParser
     function parse($str)
     {
         if ($this->tfd & $this->TAX) {
-            CoreLocal::set("toggletax",1);
+            $this->session->set("toggletax",1);
         }
         if ($this->tfd & $this->FS) {
-            CoreLocal::set("togglefoodstamp",1);
+            $this->session->set("togglefoodstamp",1);
         }
         if ($this->tfd & $this->DISC) {
-            CoreLocal::set("toggleDiscountable",1);
+            $this->session->set("toggleDiscountable",1);
         }
 
         return $this->remainder;    

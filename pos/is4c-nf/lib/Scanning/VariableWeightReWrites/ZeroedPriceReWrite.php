@@ -44,10 +44,10 @@ class ZeroedPriceReWrite extends VariableWeightReWrite
         if ($includes_check_digit) {
             // 02 + 5 digit item number + 000000
             return substr($upc, 0, 7) . '000000';
-        } else {
-            // 002 + 5 digit item number + 00000
-            return substr($upc, 0, 8) . '00000';
         }
+
+        // 002 + 5 digit item number + 00000
+        return substr($upc, 0, 8) . '00000';
     }
 }
 

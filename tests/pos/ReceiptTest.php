@@ -371,7 +371,6 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $drawers->free(2);
         CoreLocal::set('CashierNo', $emp);
 
-        $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterCust(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterStore(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printCabCoupon(time(), '1-1-1')));
         $frank = new Franking(new WrappedStorage());

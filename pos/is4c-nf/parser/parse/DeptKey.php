@@ -26,7 +26,6 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DeptLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\Scanning\SpecialDept;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class DeptKey extends Parser 
@@ -116,7 +115,7 @@ class DeptKey extends Parser
         $index = (int)($dept/10);
         if (is_array($deptmods) && isset($deptmods[$index])) {
             foreach($deptmods[$index] as $mod) {
-                $obj = SpecialDept::factory($mod);
+                $obj = SpecialDept::factory($mod, $this->session);
                 $ret = $obj->handle($dept,$amt/100,$ret);
             }
         }

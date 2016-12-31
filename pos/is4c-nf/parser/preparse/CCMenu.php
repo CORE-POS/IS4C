@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\preparse;
-use \CoreLocal;
 use COREPOS\pos\parser\PreParser;
 
 class CCMenu extends PreParser 
@@ -31,12 +30,12 @@ class CCMenu extends PreParser
     
     function check($str)
     {
-        $plugins = CoreLocal::get('PluginList');
+        $plugins = $this->session->get('PluginList');
         if ($str == "CC" && is_array($plugins) && in_array('Paycards', $plugins)){
             $this->remainder = "QM1";
             return true;
         } elseif ($str == "MANUALCC") {
-            $this->remainder = ("".CoreLocal::get("runningTotal") * 100)."CC";
+            $this->remainder = ("".$this->session->get("runningTotal") * 100)."CC";
             return true;
         }
 

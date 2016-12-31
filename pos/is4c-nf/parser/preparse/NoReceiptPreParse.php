@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\preparse;
-use \CoreLocal;
 use COREPOS\pos\parser\PreParser;
 
 class NoReceiptPreParse extends PreParser 
@@ -43,7 +42,7 @@ class NoReceiptPreParse extends PreParser
 
     function parse($str)
     {
-        CoreLocal::set('receiptToggle', 0);
+        $this->session->set('receiptToggle', 0);
         return $this->remainder;
     }
 

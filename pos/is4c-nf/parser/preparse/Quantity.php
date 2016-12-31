@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\preparse;
-use \CoreLocal;
 use COREPOS\pos\parser\PreParser;
 
 class Quantity extends PreParser 
@@ -41,8 +40,8 @@ class Quantity extends PreParser
             $split = explode("*",$str);
             if (is_numeric($split[0]) &&
                (strpos($split[1],"DP") || is_numeric($split[1]))){
-                   CoreLocal::set("quantity",$split[0]);
-                   CoreLocal::set("multiple",1);
+                   $this->session->set("quantity",$split[0]);
+                   $this->session->set("multiple",1);
                    $str = $split[1];
             }
         }

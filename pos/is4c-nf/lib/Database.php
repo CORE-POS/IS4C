@@ -419,7 +419,7 @@ static public function testremote()
    - 1 upload succeeded
    - 0 upload failed
 */
-static public function uploadtoServer()
+static private function uploadtoServer()
 {
     $uploaded = 0;
     CoreLocal::set("standalone",1);
@@ -570,7 +570,7 @@ static public function localMatchingColumns($connection,$table1,$table2)
 
   @return boolean success / failure
 */
-static public function uploadCCdata()
+static private function uploadCCdata()
 {
     if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
         // plugin not enabled; nothing to upload
@@ -632,7 +632,7 @@ static public function loadglobalvalues()
   @param $param keycode
   @param $val new value
 */
-static public function loadglobalvalue($param,$val)
+static private function loadglobalvalue($param,$val)
 {
     switch (strtoupper($param)) {
         case 'CASHIERNO':
@@ -687,11 +687,7 @@ static public function setglobalvalues(array $arr)
     $setStr = "";
     foreach($arr as $param => $value) {
         $setStr .= $param." = ";
-        if (!is_numeric($value)) {
-            $setStr .= "'".$value."',";
-        } else {
-            $setStr .= $value.",";
-        }
+        $setStr .= !is_numeric($value) ? "'{$value}'," : $value . ',';
         self::loadglobalvalue($param,$value);
     }
     $setStr = rtrim($setStr,",");

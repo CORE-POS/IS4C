@@ -39,6 +39,13 @@ class SpecialDept
     */
     public $help_summary = 'Documentation Needed!';
 
+    protected $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
+
     /**
       More extensive help text, if needed
     */

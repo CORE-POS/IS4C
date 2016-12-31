@@ -816,7 +816,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
     public function testSpecialDepts()
     {
-        $sd = new SpecialDept();
+        $session = new WrappedStorage();
+        $sd = new SpecialDept($session);
         $this->assertEquals('Documentation Needed!', $sd->help_text());
         $arr = $sd->register(1, 'not-array');
         $expect = array(1 => array('COREPOS\\pos\\lib\\Scanning\\SpecialDept'));
@@ -839,7 +840,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $map = array();
         foreach($all as $class){
-            $obj = new $class();
+            $obj = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialDept',$obj);
             $map = $obj->register(1,$map);
             $this->assertInternalType('array',$map);
@@ -852,7 +853,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('msgrepeat',0);
 
         // first call should set warn vars
-        $arwarn = new ArWarnDept();
+        $arwarn = new ArWarnDept($session);
         $json = $arwarn->handle(1,1.00,array('main_frame'=>''));
         $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
@@ -869,7 +870,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEmpty($json['main_frame']);
 
         CoreLocal::set('autoReprint',0);
-        $auto = new AutoReprintDept();
+        $auto = new AutoReprintDept($session);
         $json = $auto->handle(1,1.00,array());
         $this->assertInternalType('array',$json);
         $this->assertEquals(1, CoreLocal::get('autoReprint'));    
@@ -878,7 +879,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('memberID',0);
 
         // error because member is required
-        $eEndorse = new EquityEndorseDept();
+        $eEndorse = new EquityEndorseDept($session);
         $json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
         $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
@@ -906,7 +907,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('msgrepeat', 0);
 
         // error because member is required
-        $eWarn = new EquityWarnDept();
+        $eWarn = new EquityWarnDept($session);
         $json = $eWarn->handle(1,1.00,array('main_frame'=>''));
         $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
@@ -934,7 +935,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('memberID', '0');
 
-        $brd = new BottleReturnDept();
+        $brd = new BottleReturnDept($session);
         CoreLocal::set('msgrepeat', 0);
         CoreLocal::set('strEntered', '100DP10');
         $json = $brd->handle(10, 1, array());
@@ -943,7 +944,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('msgrepeat', 0);
         CoreLocal::set('strEntered', '');
 
-        $brd = new PaidOutDept();
+        $brd = new PaidOutDept($session);
         CoreLocal::set('msgrepeat', 0);
         $json = $brd->handle(10, 1, array());
         $this->assertEquals('-100DP10', CoreLocal::get('strEntered'));
