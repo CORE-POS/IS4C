@@ -617,7 +617,7 @@ static public function cashierLogin($transno=False, $age=0)
     }
 }
 
-static private setParams($parameters)
+static private function setParams($parameters)
 {
     foreach ($parameters->find() as $global) {
         $key = $global->param_key();
