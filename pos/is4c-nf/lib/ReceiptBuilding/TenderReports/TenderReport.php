@@ -60,7 +60,7 @@ static public function get($session)
     if ($trClass == '' || !class_exists($trClass)) {
         $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\DefaultTenderReport';
     }
-    return $trClass::get();
+    return $trClass::get($session);
 }
 
 static public function timeStamp($time) {
