@@ -24,7 +24,6 @@
 namespace COREPOS\pos\lib\Scanning\DiscountTypes;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 
 class NormalPricing extends DiscountType 
 {
@@ -40,8 +39,8 @@ class NormalPricing extends DiscountType
         $ret["unitPrice"] = $row['normal_price'];
         $ret['discount'] = 0;
         $ret['memDiscount'] = 0;
-        if ($row['line_item_discountable'] == 1 && CoreLocal::get("itemPD") > 0) {
-            $discount = $row['normal_price'] * ((CoreLocal::get("itemPD")/100));
+        if ($row['line_item_discountable'] == 1 && $this->session->get("itemPD") > 0) {
+            $discount = $row['normal_price'] * (($this->session->get("itemPD")/100));
             $ret["unitPrice"] = $row['normal_price'] - $discount;
             $ret["discount"] = $discount * $quantity;
         }

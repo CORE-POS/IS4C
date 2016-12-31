@@ -43,16 +43,23 @@ class SpecialUPC
         'SpecialOrder',
     );
 
-    public static function factory($class)
+    protected $session;
+
+    public static function factory($class, $session)
     {
         if ($class != '' && in_array($class, self::$builtin)) {
             $class = 'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\' . $class;
-            return new $class();
+            return new $class($session);
         } elseif ($class != '' && class_exists($class)) {
-            return new $class();
+            return new $class($session);
         }
 
-        return new self();
+        return new self($session);
+    }
+
+    public function __construct($session)
+    {
+        $this->session = $session;
     }
 
     /**

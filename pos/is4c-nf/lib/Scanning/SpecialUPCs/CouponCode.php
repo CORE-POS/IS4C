@@ -23,7 +23,6 @@
 
 namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
 use COREPOS\pos\lib\Scanning\SpecialUPC;
-use \CoreLocal;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
@@ -53,11 +52,11 @@ class CouponCode extends SpecialUPC
     public function isSpecial($upc)
     {
         $upcPrefix = '005';
-        if (CoreLocal::get('UpcIncludeCheckDigits') == 1) {
+        if ($this->session->get('UpcIncludeCheckDigits') == 1) {
             $upcPrefix = '05';
         }
         $eanPrefix = '099';
-        if (CoreLocal::get('EanIncludeCheckDigits') == 1) {
+        if ($this->session->get('EanIncludeCheckDigits') == 1) {
             $eanPrefix = '99';
         }
 
@@ -82,8 +81,8 @@ class CouponCode extends SpecialUPC
         $manIdStart = 3;
         $famStart = 8;
         $valStart = 11;
-        if ( ($this->ean && CoreLocal::get('EanIncludeCheckDigits') == 1) ||
-             (!$this->ean && CoreLocal::get('UpcIncludeCheckDigits') == 1)
+        if ( ($this->ean && $this->session->get('EanIncludeCheckDigits') == 1) ||
+             (!$this->ean && $this->session->get('UpcIncludeCheckDigits') == 1)
            ) {
             $manIdStart = 2;
             $famStart = 9;
@@ -173,8 +172,8 @@ class CouponCode extends SpecialUPC
             // (since that's what would happen anyway when the
             // confused cashier does a generic coupon tender)
             $value = MiscLib::truncate2($value);
-            CoreLocal::set("couponupc",$upc);
-            CoreLocal::set("couponamt",$value);
+            $this->session->set("couponupc",$upc);
+            $this->session->set("couponamt",$value);
 
             $dept = 0;
             $dbc = Database::tDataConnect();

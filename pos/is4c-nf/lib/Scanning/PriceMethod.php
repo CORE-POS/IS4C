@@ -55,6 +55,12 @@ class PriceMethod
 
     protected $savedRow;
     protected $savedInfo;
+    protected $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
 
     /**
       Add the item to the transaction
@@ -88,22 +94,19 @@ class PriceMethod
        the PriceMethodClasses array is zero-indexed,
        subtract 100 as an offset  
     */
-    public static function getObject($pricemethod)
+    public static function getObject($pricemethod, $session)
     {
         $pmClasses = CoreLocal::get("PriceMethodClasses");
-        $priceMethodObject = null;
 
         if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
             $class = PriceMethod::$MAP[$pricemethod];
-            $priceMethodObject = new $class();
-        } else if ($pricemethod >= 100 && isset($pmClasses[($pricemethod-100)])) {
+            return new $class($session);
+        } elseif ($pricemethod >= 100 && isset($pmClasses[($pricemethod-100)])) {
             $class = $pmClasses[($pricemethod-100)];
-            $priceMethodObject = new $class();
-        } else {
-            $priceMethodObject = new BasicPM();
+            return new $class($session);
         }
 
-        return $priceMethodObject;
+        return new BasicPM();
     }
 }
 

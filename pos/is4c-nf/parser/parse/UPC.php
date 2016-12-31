@@ -369,7 +369,7 @@ class UPC extends Parser
             BEGIN: figure out discounts by type
         */
 
-        $discountObject = DiscountType::getObject($row['discounttype']);
+        $discountObject = DiscountType::getObject($row['discounttype'], $this->session);
 
         /* add in sticker price and calculate a quantity
            if the item is stickered, scaled, and on sale. 
@@ -408,7 +408,7 @@ class UPC extends Parser
 
         $row['trans_subtype'] = $this->status;
         $pricemethod = MiscLib::nullwrap($discountObject->isSale() ? $row['specialpricemethod'] : $row["pricemethod"]);
-        $priceMethodObject = PriceMethod::getObject($pricemethod);
+        $priceMethodObject = PriceMethod::getObject($pricemethod, $this->session);
 
         // prefetch: otherwise object members 
         // pass out of scope in addItem()
@@ -696,7 +696,7 @@ class UPC extends Parser
         $dbc = Database::pDataConnect();
         $objs = is_array($this->session->get("SpecialUpcClasses")) ? $this->session->get('SpecialUpcClasses') : array();
         foreach($objs as $className){
-            $instance = SpecialUPC::factory($className);
+            $instance = SpecialUPC::factory($className, $this->session);
             if ($instance->isSpecial($upc)){
                 return $instance->handle($upc,$ret);
             }

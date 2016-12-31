@@ -32,7 +32,6 @@ use \CoreLocal;
 */
 class DiscountType 
 {
-
     static public $MAP = array(
         0   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\NormalPricing',
         1   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale',
@@ -52,6 +51,13 @@ class DiscountType
       value for later if needed
     */
     protected $savedInfo;
+
+    protected $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
 
     /**
       Calculate pricing
@@ -144,25 +150,22 @@ class DiscountType
        the DiscountTypeClasses array is zero-indexed,
        subtract 64 as an offset  
     */
-    public static function getObject($discounttype)
+    public static function getObject($discounttype, $session)
     {
         $discounttype = MiscLib::nullwrap($discounttype);
-        $discountObject = null;
         $dtClasses = CoreLocal::get("DiscountTypeClasses");
         if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
             $class = DiscountType::$MAP[$discounttype];
-            $discountObject = new $class();
+            return new $class($session);
         } elseif ($discounttype >= 64 && isset($dtClasses[($discounttype-64)])) {
             $class = $dtClasses[($discounttype)-64];
-            $discountObject = new $class();
-        } else {
-            // If the requested discounttype isn't available,
-            // fallback to normal pricing. Debatable whether
-            // this should be a hard error.
-            $discountObject = new NormalPricing();
+            return new $class($session);
         }
 
-        return $discountObject;
+        // If the requested discounttype isn't available,
+        // fallback to normal pricing. Debatable whether
+        // this should be a hard error.
+        return new NormalPricing($session);
     }
 
 }

@@ -38,18 +38,6 @@ class DeclineReceiptMessage extends ReceiptMessage
     }
 
     /**
-      Generate the message
-      @param $val the value returned by the object's select_condition()
-      @param $ref a transaction reference (emp-lane-trans)
-      @param $reprint boolean
-      @return [string] message to print on receipt
-    */
-    public function message($val, $ref, $reprint=false)
-    {
-        return '';
-    }
-
-    /**
       Print message as its own receipt
       @param $ref a transaction reference (emp-lane-trans)
       @param $reprint boolean

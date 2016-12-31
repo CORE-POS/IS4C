@@ -26,7 +26,6 @@ use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 
 /** 
    @class QttyEnforcedGroupPM
@@ -47,7 +46,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
         $pricing = $priceObj->priceInfo($row,$quantity);
 
         // enforce limit on discounting sale items
-        $dsi = CoreLocal::get('DiscountableSaleItems');
+        $dsi = $this->session->get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }

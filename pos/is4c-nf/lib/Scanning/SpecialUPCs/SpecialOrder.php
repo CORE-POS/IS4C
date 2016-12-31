@@ -23,7 +23,6 @@
 
 namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
 use COREPOS\pos\lib\Scanning\SpecialUPC;
-use \CoreLocal;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\TransRecord;

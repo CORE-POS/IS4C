@@ -23,7 +23,6 @@
 
 namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
 use COREPOS\pos\lib\Scanning\SpecialUPC;
-use \CoreLocal;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DisplayLib;
@@ -46,7 +45,7 @@ class HouseCoupon extends SpecialUPC
 
     public function isSpecial($upc)
     {
-        $prefix = CoreLocal::get('houseCouponPrefix');
+        $prefix = $this->session->get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
@@ -102,7 +101,7 @@ class HouseCoupon extends SpecialUPC
                         WHEN endDate IS NULL THEN 0 
                         ELSE ". $dbc->datediff('endDate', $dbc->now()) . " 
                     END AS expired";
-        if (CoreLocal::get('NoCompat') == 1) {
+        if ($this->session->get('NoCompat') == 1) {
             $infoQ .= ", description, 
                         CASE 
                           WHEN startDate IS NULL THEN 0 
@@ -139,24 +138,23 @@ class HouseCoupon extends SpecialUPC
     {
             if ($quiet) {
                 return false;
-            } else {
-                return DisplayLib::boxMsg(
-                    $msg,
-                    '',
-                    false,
-                    DisplayLib::standardClearButton()
-                );
             }
+            return DisplayLib::boxMsg(
+                $msg,
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
     }
 
     private function isMember()
     {
         $isMem = false;
-        if (CoreLocal::get('isMember') == 1) {
+        if ($this->session->get('isMember') == 1) {
             $isMem = true;
-        } elseif (CoreLocal::get('memberID') == CoreLocal::get('visitingMem')) {
+        } elseif ($this->session->get('memberID') == $this->session->get('visitingMem')) {
             $isMem = true;
-        } elseif (CoreLocal::get('memberID') == '0') {
+        } elseif ($this->session->get('memberID') == '0') {
             $isMem = false;
         }
 
@@ -190,14 +188,13 @@ class HouseCoupon extends SpecialUPC
         if ($infoW["memberOnly"] == 1 && !$this->isMember()) {
             if ($quiet) {
                 return false;
-            } else {
-                return DisplayLib::boxMsg(
-                    _("Apply member number first"),
-                    _('Member only coupon'),
-                    false,
-                    array_merge(array(_('Member Search [ID]') => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
-                );
             }
+            return DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('Member only coupon'),
+                false,
+                array_merge(array(_('Member Search [ID]') => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
         }
 
         /* verify the minimum purchase has been made */
@@ -335,7 +332,7 @@ class HouseCoupon extends SpecialUPC
             return $this->errorOrQuiet(_('coupon not found'), false);
         }
 
-        $prefix = CoreLocal::get('houseCouponPrefix');
+        $prefix = $this->session->get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
@@ -360,8 +357,8 @@ class HouseCoupon extends SpecialUPC
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && CoreLocal::get("standalone")==0 
-            && CoreLocal::get('memberID') != CoreLocal::get('visitingMem')) {
+        if ($infoW["memberOnly"] == 1 && $this->session->get("standalone")==0 
+            && $this->session->get('memberID') != $this->session->get('visitingMem')) {
             $mDB = Database::mDataConnect();
             $mAlt = Database::mAltName();
 
@@ -380,7 +377,7 @@ class HouseCoupon extends SpecialUPC
                             trans_type='T'
                             AND trans_subtype='IC'
                             AND upc='$upc'
-                            AND card_no=" . ((int)CoreLocal::get('memberID')) . "
+                            AND card_no=" . ((int)$this->session->get('memberID')) . "
     
                         UNION ALL
 
@@ -390,7 +387,7 @@ class HouseCoupon extends SpecialUPC
                             trans_type='T'
                             AND trans_subtype='IC'
                             AND upc='$upc'
-                            AND card_no=" . ((int)CoreLocal::get('memberID')) . "
+                            AND card_no=" . ((int)$this->session->get('memberID')) . "
                             AND tdate >= '$monthStart'
                      ) AS s
                      GROUP BY s.upc, s.card_no";
@@ -398,7 +395,7 @@ class HouseCoupon extends SpecialUPC
 
             $mRes = $mDB->query("SELECT quantity 
                                FROM {$mAlt}houseCouponThisMonth
-                               WHERE card_no=" . CoreLocal::get("memberID") . " and
+                               WHERE card_no=" . $this->session->get("memberID") . " and
                                upc='$upc'");
             if ($mDB->num_rows($mRes) > 0) {
                 $mRow = $mDB->fetch_row($mRes);
@@ -571,20 +568,17 @@ class HouseCoupon extends SpecialUPC
                 break;
             case "%": // percent discount on all items
                 Database::getsubtotals();
-                $value = $infoW["discountValue"] * CoreLocal::get("discountableTotal");
+                $value = $infoW["discountValue"] * $this->session->get("discountableTotal");
                 break;
             case "%B": // better percent discount applies
                 Database::getsubtotals();
                 $couponDiscount = (int)($infoW['discountValue']*100);
-                if ($couponDiscount <= CoreLocal::get('percentDiscount')) {
-                    // customer's discount is better than coupon discount; skip
-                    // applying coupon
-                    $value = 0;
-                } else {
+                $value = 0;
+                if ($couponDiscount > $this->session->get('percentDiscount')) {
                     // coupon discount is better than customer's discount
                     // apply coupon & zero out customer's discount
-                    $value = $infoW["discountValue"] * CoreLocal::get("discountableTotal");
-                    CoreLocal::set('percentDiscount', 0);
+                    $value = $infoW["discountValue"] * $this->session->get("discountableTotal");
+                    $this->session->set('percentDiscount', 0);
                     $transDB->query('UPDATE localtemptrans SET percentDiscount=0');
                 }
                 break;
@@ -608,11 +602,8 @@ class HouseCoupon extends SpecialUPC
             case "%E": // better percent discount applies to specified department only
                 Database::getsubtotals();
                 $couponDiscount = (int)($infoW['discountValue']*100);
-                if ($couponDiscount <= CoreLocal::get('percentDiscount')) {
-                    // customer's discount is better than coupon discount; skip
-                    // applying coupon
-                    $value = 0;
-                } else {
+                $value = 0;
+                if ($couponDiscount > $this->session->get('percentDiscount')) {
                     // coupon discount is better than customer's discount
                     // apply coupon & exclude those items from customer's discount
                     $valQ = "select sum(total) 
@@ -624,7 +615,7 @@ class HouseCoupon extends SpecialUPC
 
                     $clearQ = "
                         UPDATE localtemptrans AS l 
-                            INNER JOIN " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems AS h ON l.department = h.upc
+                            INNER JOIN " . $this->session->get('pDatabase') . $transDB->sep() . "houseCouponItems AS h ON l.department = h.upc
                         SET l.discountable=0
                         WHERE h.coupID = " . $coupID . "
                             AND h.type IN ('BOTH', 'DISCOUNT')";
@@ -662,7 +653,7 @@ class HouseCoupon extends SpecialUPC
     {
         $ret = '
             FROM localtemptrans AS l
-                INNER JOIN ' . CoreLocal::get('pDatabase') . $dbc->sep() . 'houseCouponItems AS h 
+                INNER JOIN ' . $this->session->get('pDatabase') . $dbc->sep() . 'houseCouponItems AS h 
                 ON h.upc=' . ($mode=='upc' ? 'l.upc' : 'l.department') . '
             WHERE h.coupID=' . ((int)$coupID);
         return $ret;
