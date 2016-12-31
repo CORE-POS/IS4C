@@ -74,19 +74,19 @@ static public function get($session)
     $receipt .= substr($blank.number_format(($net[0]),2),-8)."\n";
 
     $receipt .= "\n";
-    $receipt .=    trTotal('CA','CASH');
-    $receipt .=    trTotal('CK','CHECK');
-    $receipt .=    trTotal('CC','CREDIT CARD');
-    $receipt .=    trTotal('DC','DEBIT CARD');
-    $receipt .=    trTotal('EF','EBT - FOOD');
-    $receipt .=    trTotal('EC','EBT - CASH');
-    $receipt .=    trTotal('GD','GIFT CARD');
-    $receipt .=    trTotal('TC','GIFT CERT.');    
-    $receipt .=    trTotal('WT','WIC');
+    $receipt .=    trTotal($session,'CA','CASH');
+    $receipt .=    trTotal($session,'CK','CHECK');
+    $receipt .=    trTotal($session,'CC','CREDIT CARD');
+    $receipt .=    trTotal($session,'DC','DEBIT CARD');
+    $receipt .=    trTotal($session,'EF','EBT - FOOD');
+    $receipt .=    trTotal($session,'EC','EBT - CASH');
+    $receipt .=    trTotal($session,'GD','GIFT CARD');
+    $receipt .=    trTotal($session,'TC','GIFT CERT.');    
+    $receipt .=    trTotal($session,'WT','WIC');
     $receipt .= "\n";
-    $receipt .=    trTotal(array('CP','MC'),'VENDOR COUPON');
-    $receipt .=    trTotal('MI','STORE CHARGE');
-    $receipt .=    trTotal('IC','INSTORE COUPON');
+    $receipt .=    trTotal($session,array('CP','MC'),'VENDOR COUPON');
+    $receipt .=    trTotal($session,'MI','STORE CHARGE');
+    $receipt .=    trTotal($session,'IC','INSTORE COUPON');
     $receipt .= "\n\n";
 
     foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
@@ -147,8 +147,7 @@ static public function get($session)
 
 }
 
-
-function trTotal($k, $label,$i=False) 
+function trTotal($session,$k, $label,$i=False) 
 {
     $dba = Database::mDataConnect();
 
