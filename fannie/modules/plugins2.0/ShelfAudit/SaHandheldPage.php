@@ -69,7 +69,21 @@ class SaHandheldPage extends FannieRESTfulPage
                 ORDER BY v.vendorID';
             $p = $dbc->prepare($q);
             $r = $dbc->execute($p,array($store, $this->section, $upc));
-            if ($dbc->numRows($r)==0) {
+            if ($dbc->numRows($r) == 0 && substr($upc, 0, 5) == '00454') {
+                // look up special order
+                $orderID = (int)substr($upc, 5, 6);
+                $transID = (int)substr($upc, -2); 
+                $q = "SELECT o.description, '' AS brand, s.quantity, o.ItemQtty AS units
+                    FROM " . $this->config->get('TRANS_DB') . $dbc->sep() . "PendingSpecialOrder AS o
+                    LEFT JOIN ".$settings['ShelfAuditDB'].$dbc->sep().
+                    "sa_inventory AS s ON s.upc=? AND s.clear=0 AND s.storeID=?
+                        AND s.section=?
+                    WHERE o.order_id=? AND o.trans_id=?";
+                $args = array($upc, $store, $this->section, $orderID, $transID);
+                $p = $dbc->prepare($q);
+                $r = $dbc->execute($p, $args);
+                    
+            } elseif ($dbc->numRows($r)==0) {
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
                     vendorItems AS v 

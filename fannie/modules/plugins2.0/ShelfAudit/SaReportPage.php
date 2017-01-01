@@ -86,7 +86,37 @@ class SaReportPage extends FanniePage {
         if ($this->config->get('STORE_MODE') !== 'HQ') {
             $store = 0;
         }
-        $q= $dbc->prepare('SELECT
+        $soP = $dbc->prepare("
+            SELECT s.id,
+                s.datetime,
+                s.upc,
+                s.quantity,
+                CASE
+                    WHEN s.section=0 THEN \'Backstock\'
+                    WHEN s.section=1 THEN \'Floor\'
+                    ELSE \'Unknown\'
+                END AS section,
+                o.description,
+                d.dept_no,
+                d.dept_name,
+                d.salesCode,
+                0 AS cost,
+                o.total / (o.quantity*o.ItemQtty) AS actual_retail,
+                '' AS retailstatus,
+                o.mixMatch AS vendor,
+                COALESCE(c.margin, d.margin, 0) AS margin
+            FROM sa_inventory AS s LEFT JOIN ".
+                $this->config->get('TRANS_DB') . $dbc->sep() . "PendingSpecialOrder AS o
+                ON o.orderID=? AND o.transID=? LEFT JOIN " .
+                $FANNIE_OP_DB.$dbc->sep().'departments AS d
+                ON o.department=d.dept_no LEFT JOIN '.
+                $FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
+                ON o.upc=v.upc AND v.vendorID=1 LEFT JOIN '.
+                $FANNIE_OP_DB.$dbc->sep().'vendorDepartments AS c
+                ON v.vendorID=c.vendorID AND v.vendorDept=c.deptID 
+            WHERE clear!=1
+                AND s.storeID=?');
+            $q= $dbc->prepare('SELECT
             s.id,
             s.datetime,
             s.upc,
@@ -134,6 +164,7 @@ class SaReportPage extends FanniePage {
             $FANNIE_OP_DB.$dbc->sep().'vendors AS z
             ON p.default_vendor_id=z.vendorID
             WHERE clear!=1
+                AND s.upc=?
                 AND s.storeID=?
             ORDER BY '.$order);
         $r=$dbc->execute($q, array($this->store));
@@ -144,6 +175,12 @@ class SaReportPage extends FanniePage {
             if ($num_rows>0) {
                 $this->scans=array();
                 while ($row = $dbc->fetchRow($r)){
+                    if (substr($row['upc'], 0, 5) == '00454') {
+                        $orderID = substr($row['upc'], 5, 6);
+                        $transID = substR($row['upc'], -2);
+                        $args = array($orderID, $transID, $row['upc'], $this->store);
+                        $row = $dbc->getRow($soP, $args);
+                    }
                     $key = $row['upc'] . '-' . $row['section'];
                     if (!isset($upcs[$key])) {
                         $this->scans[] = $row;
