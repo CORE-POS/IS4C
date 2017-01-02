@@ -76,7 +76,7 @@ class HouseCoupon extends SpecialUPC
         }
 
         $add = $this->getValue($coupID);
-        TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
+        TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description'], $add['discountable']);
 
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
@@ -435,6 +435,7 @@ class HouseCoupon extends SpecialUPC
         $value = 0;
         $coupID = $id;
         $description = isset($infoW['description']) ? $infoW['description'] : '';
+        $discountable = 1;
         switch ($infoW["discountType"]) {
             case "Q": // quantity discount
                 // discount = coupon's discountValue
@@ -567,6 +568,7 @@ class HouseCoupon extends SpecialUPC
                 break;
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
+                $discountable = 0;
                 break;
             case "%": // percent discount on all items
                 Database::getsubtotals();
@@ -651,7 +653,7 @@ class HouseCoupon extends SpecialUPC
                 break;
         }
 
-        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description);
+        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description, 'discountable'=>$discountable);
     }
 
     /**
