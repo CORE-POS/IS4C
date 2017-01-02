@@ -112,7 +112,7 @@ class WfcVcTask extends FannieTask
             GROUP BY card_no
             HAVING SUM(total) <> 0");
         $checkR = $dbc->execute($checkP);
-        $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'PAT\' WHERE cardNo=? AND source=\'WFC.OAM\'');
+        $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
         while ($row = $dbc->fetchRow($checkR)) {
             $dbc->execute($upP, array($row['card_no']));
         }
