@@ -181,10 +181,12 @@ class SaReportPage extends FanniePage {
                         $args = array($orderID, $transID, $row['upc'], $this->store);
                         $row = $dbc->getRow($soP, $args);
                     }
-                    $key = $row['upc'] . '-' . $row['section'];
+                    $key = $row['upc'];
                     if (!isset($upcs[$key])) {
-                        $this->scans[] = $row;
+                        $this->scans[$key] = $row;
                         $upcs[$key] = true;
+                    } else {
+                        $this->scans[$key]['quantity'] += $row['quantity'];
                     }
                 }
             } else {
