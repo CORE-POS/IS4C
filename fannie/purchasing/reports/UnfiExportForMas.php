@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class UnfiExportForMas extends FannieReportPage 
 {
 
-    protected $report_headers = array('Vendor', 'Inv#', 'Date', 'Inv Ttl', 'Code Ttl', 'Code');
+    protected $report_headers = array('Vendor', 'Inv#', 'PO#', 'Date', 'Inv Ttl', 'Code Ttl', 'Code');
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
@@ -73,6 +73,7 @@ class UnfiExportForMas extends FannieReportPage
 
         $codingQ = 'SELECT o.orderID, 
                         o.salesCode, 
+                        i.vendorOrderID,
                         i.vendorInvoiceID, 
                         SUM(o.receivedTotalCost) as rtc,
                         MAX(o.receivedDate) AS rdate,
@@ -82,7 +83,7 @@ class UnfiExportForMas extends FannieReportPage
                     WHERE i.vendorID=? 
                         AND i.userID=0
                         AND o.receivedDate BETWEEN ? AND ?
-                    GROUP BY o.orderID, o.salesCode, i.vendorInvoiceID
+                    GROUP BY o.orderID, o.salesCode, i.vendorInvoiceID, i.vendorOrderID
                     ORDER BY rdate, i.vendorInvoiceID, o.salesCode';
         $codingP = $dbc->prepare($codingQ);
 
@@ -104,6 +105,7 @@ class UnfiExportForMas extends FannieReportPage
             $record = array(
                 'UNFI',
                 '<a href="../ViewPurchaseOrders.php?id=' . $codingW['orderID'] . '">' . $codingW['vendorInvoiceID'] . '</a>',
+                $codingW['vendorOrderID'],
                 $codingW['rdate'],
                 0.00,
                 sprintf('%.2f', $codingW['rtc']),
