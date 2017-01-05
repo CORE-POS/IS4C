@@ -43,15 +43,17 @@ class ScanTransferPage extends FannieRESTfulPage
             $orderOut = new PurchaseOrderModel($this->connection);
             $orderOut->storeID($from);
             $orderOut->vendorID($this->getStoreVendor($this->connection, $dest));
-            $orderOut->placed(0);
+            $orderOut->placed(1);
             $orderOut->creationDate(date('Y-m-d H:i:s'));
+            $orderOut->placedDate(date('Y-m-d H:i:s'));
             $outID = $orderOut->save();
 
             $orderIn = new PurchaseOrderModel($this->connection);
             $orderIn->storeID($dest);
             $orderIn->vendorID($this->getStoreVendor($this->connection, $from));
-            $orderIn->placed(0);
+            $orderIn->placed(1);
             $orderIn->creationDate(date('Y-m-d H:i:s'));
+            $orderOut->placedDate(date('Y-m-d H:i:s'));
             $inID = $orderIn->save();
 
             $orderOut->orderID($outID);
