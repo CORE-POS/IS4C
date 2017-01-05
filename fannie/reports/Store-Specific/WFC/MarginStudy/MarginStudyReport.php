@@ -8,8 +8,8 @@ class MarginStudyReport extends FannieReportPage
 {
     protected $report_headers = array('Category-Store', 'Raw Sales', '% On Sale', '% Open Ring', '% SPO', 'Est. UNFI Sales', '% UNFI', 'Est. UNFI Purch', 'UNFI Margin');
     protected $required_fields = array('date1', 'date2');
-    protected $title = 'New Owners Report';
-    protected $header = 'New Owners Report';
+    protected $title = 'Margin Study Report';
+    protected $header = 'Margin Study Report';
 
     public function report_content() 
     {
