@@ -683,7 +683,9 @@ class FannieSignage
                             <td>
                                 <span class="collapse">%s</span>
                                 <input class="FannieSignageField form-control" type="text" 
-                                name="update_desc[]" value="%s" /></td>
+                                name="update_desc[]" value="%s" />
+                                <input type="hidden" name="ignore_desc[]" value="%d" />
+                            </td>
                             <td>%.2f</td>
                             <td class="form-inline">%s<input type="text" name="custom_origin[]" 
                                 class="form-control FannieSignageField originField" placeholder="Custom origin..." value="" />
@@ -697,6 +699,7 @@ class FannieSignage
                             $item['brand'],
                             str_replace('"', '&quot;', $item['description']),
                             str_replace('"', '&quot;', $item['description']),
+                            (strstr($item['description'], "\n") ? 1 : 0),
                             $item['normal_price'],
                             $oselect,
                             $item['upc']

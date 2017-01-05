@@ -112,6 +112,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $upc = FormLib::get('update_upc');
             $brand = FormLib::get('update_brand', array());
             $desc = FormLib::get('update_desc', array());
+            $ignore = FormLib::get('ignore_desc', array());
             $origin = FormLib::get('update_origin', array());
             $custom = FormLib::get('custom_origin', array());
             $knownOrigins = $this->signage_obj->getOrigins();
@@ -119,7 +120,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 if (isset($brand[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
                 }
-                if (isset($desc[$i])) {
+                if ($ignore[$i] == 0 && isset($desc[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
                 }
                 if (isset($custom[$i]) && !empty($custom[$i])) {
@@ -185,6 +186,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $upc = FormLib::get('update_upc');
             $brand = FormLib::get('update_brand', array());
             $desc = FormLib::get('update_desc', array());
+            $ignore = FormLib::get('ignore_desc', array());
             $origin = FormLib::get('update_origin', array());
             $custom = FormLib::get('custom_origin', array());
             $knownOrigins = $this->signage_obj->getOrigins();
@@ -192,7 +194,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 if (isset($brand[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
                 }
-                if (isset($desc[$i])) {
+                if ($ignore[$i] == 0 && isset($desc[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
                 }
                 if (isset($custom[$i]) && !empty($custom[$i])) {
