@@ -69,6 +69,7 @@ class ScanTransferPage extends FannieRESTfulPage
                 $item->brand($data['brand']);
                 $item->description = $data['desc'];
                 $item->unitCost($data['cost']);  
+                $item->salesCode($data['code']);
                 $item->caseSize(1);
                 
                 $item->quantity($data['qty']);
@@ -109,6 +110,7 @@ HTML;
                     'cost' => $this->form->cost,
                     'brand' => $this->form->brand,
                     'desc' => $this->form->desc,
+                    'code' => $this->form->coding,
                 );
             }
         } catch (Exception $ex) {
@@ -120,12 +122,14 @@ HTML;
     protected function get_id_view()
     {
         $prod = new ProductsModel($this->connection);
-        $prod->upc(BarcodeLib::padUPC($this->id));
-        $prod->store_id(1);
-        $prod->load();
-        $cost = $prod->cost();
-        $brand = $prod->brand();
-        $desc = $prod->description();
+        $infoP = $this->connection->prepare('
+            SELECT *
+            FROM products AS p
+                LEFT JOIN departments AS d ON p.department=d.dept_no
+            WHERE upc=?
+                AND store_id=1');
+        $upc = BarcodeLib::padUPC($this->id);
+        $info = $this->connection->getRow($infoP, array($upc));
         
         $ret = <<<HTML
 <form method="post">
@@ -135,18 +139,22 @@ HTML;
     </div>
     <div class="form-group">
         <label>Unit Cost</label>
-        <input type="number" min="-999" max="999" step="0.01" name="cost" class="form-control input-sm" value="{$cost}" />
+        <input type="number" min="-999" max="999" step="0.01" name="cost" class="form-control input-sm" value="{$info['cost']}" />
+    </div>
+    <div class="form-group">
+        <label>Coding</label>
+        <input type="number" min="0" max="99999" step="1" name="coding" class="form-control input-sm" value="{$info['salesCode']}" />
     </div>
     <div class="form-group">
         <label>Brand</label>
-        <input type="text" name="brand" class="form-control input-sm" value="{$brand}" />
+        <input type="text" name="brand" class="form-control input-sm" value="{$info['brand']}" />
     </div>
     <div class="form-group">
         <label>Description</label>
-        <input type="text" name="desc" class="form-control input-sm" value="{$desc}" />
+        <input type="text" name="desc" class="form-control input-sm" value="{$info['description']}" />
     </div>
     <p>
-        <input type="hidden" name="id" value="{$this->id}" />
+        <input type="hidden" name="id" value="{$upc}" />
         <button type="submit" class="btn btn-default">Add</button>
         <a href="ScanTransferPage.php" class="btn btn-default btn-reset">Go Back</a>
     </p>
@@ -161,7 +169,7 @@ HTML;
     {
         $ret = '<table class="table table-bordered table-striped small">
             <thead><tr>
-                <th>UPC</th>
+                <th>Coding</th>
                 <th>Brand</th>
                 <th>Description</th>
                 <th>Unit Cost</th>
@@ -169,7 +177,7 @@ HTML;
             </tr></thead><tbody>';
         foreach ($_SESSION['items'] as $upc => $data) {
             $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td></tr>',
-                    $upc, $data['brand'], $data['desc'], $data['cost'], $data['qty']);
+                    $data['code'], $data['brand'], $data['desc'], $data['cost'], $data['qty']);
         }
         $ret .= <<<HTML
 </tbody>
