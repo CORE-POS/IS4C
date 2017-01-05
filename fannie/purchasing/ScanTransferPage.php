@@ -62,7 +62,7 @@ class ScanTransferPage extends FannieRESTfulPage
             $orderIn->vendorInvoiceID('XFER-IN-' . $outID);
             $orderIn->save();
 
-            $item = new PurchaseOrderItems($this->connection);
+            $item = new PurchaseOrderItemsModel($this->connection);
             foreach ($_SESSION['items'] as $upc => $data) {
                 $item->internalUPC($upc);
                 $item->sku($upc);
