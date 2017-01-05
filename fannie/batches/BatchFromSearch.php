@@ -52,11 +52,15 @@ class BatchFromSearch extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $type = $this->form->batchType;
-        $name = $this->form->batchName;
-        $startdate = $this->form->startDate;
-        $enddate = $this->form->endDate;
-        $owner = $this->form->batchOwner;
+        try {
+            $type = $this->form->batchType;
+            $name = $this->form->batchName;
+            $startdate = $this->form->startDate;
+            $enddate = $this->form->endDate;
+            $owner = $this->form->batchOwner;
+        } catch (Exception $ex) {
+            return true;
+        }
         $priority = 0;
         $round = FALSE;
         //$round = $this->form->priceRound;
@@ -109,7 +113,7 @@ class BatchFromSearch extends FannieRESTfulPage
             $this->itemsToTags($tagset, $dbc, $upcs, $prices);
         }
 
-        return 'Location: newbatch/BatchManagementTool.php?startAt=' . $batchID;
+        return 'Location: newbatch/EditBatchPage.php?id=' . $batchID;
     }
 
     private function itemsToBatch($batchID, $dbc, $upcs, $prices, $round)
