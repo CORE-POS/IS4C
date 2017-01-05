@@ -429,14 +429,14 @@ HTML;
 <a class="btn btn-default btn-sm"
     href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
 &nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm collapse" id="receiveBtn"
-    href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
 <button class="btn btn-default btn-sm" 
     onclick="deleteOrder({$this->id}); return false;">Delete Order</button>
 HTML;
         } else {
-            $ret .= <<<HTML
+            $sentDate = new DateTime($order->creationDate());
+            $today = new DateTime();
+            if ($today->diff($sentDate)->format('%a') <= 30) {
+                $ret .= <<<HTML
 <a class="btn btn-default btn-sm"
     href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -449,6 +449,7 @@ HTML;
 <a class="btn btn-default btn-sm"
     href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
 HTML;
+            }
         }
         $ret .= <<<HTML
         </p>
