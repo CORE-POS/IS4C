@@ -107,6 +107,16 @@ class TransferPurchaseOrder extends FannieRESTfulPage
         return 'ViewPurchaseOrders.php?id=' . $destID;
     }
 
+    private function getStoreVendor($dbc, $storeID)
+    {
+        $prep = $dbc->prepare("
+            SELECT v.vendorID
+            FROM vendors AS v
+                INNER JOIN Stores AS s ON v.vendorName=s.description
+            WHERE s.storeID=?");
+        return $dbc->getValue($prep, array($storeID));
+    }
+
     protected function post_id_handler()
     {
         $dbc = $this->connection;
@@ -124,23 +134,23 @@ class TransferPurchaseOrder extends FannieRESTfulPage
         $original->load();
 
         $order1 = new PurchaseOrderModel($dbc);
-        $order1->vendorID($original->vendorID());
+        $order1->vendorID($this->getStoreVendor($dbc, $dest));
         $order1->storeID($from);
         $order1->placed($original->placed());
         $order1->placedDate(date('Y-m-d H:i:s'));
         $order1->creationDate(date('Y-m-d H:i:s'));
         $fromID = $order1->save();
-        $order1->vendorInvoiceID('XFER-' . $fromID);
+        $order1->vendorInvoiceID('XFER-OUT-' . $fromID);
         $order1->orderID($fromID);
         $order1->save();
 
         $order2 = new PurchaseOrderModel($dbc);
-        $order2->vendorID($original->vendorID());
+        $order1->vendorID($this->getStoreVendor($dbc, $from));
         $order2->storeID($dest);
         $order2->placed($original->placed());
         $order2->placedDate(date('Y-m-d H:i:s'));
         $order1->creationDate(date('Y-m-d H:i:s'));
-        $order2->vendorInvoiceID('XFER-' . $fromID);
+        $order2->vendorInvoiceID('XFER-IN-' . $fromID);
         $destID = $order2->save();
 
         $poi = new PurchaseOrderItemsModel($dbc);
