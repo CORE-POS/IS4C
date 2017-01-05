@@ -126,11 +126,11 @@ class UnfiExportForMas extends FannieReportPage
             $invTTL = 0;
             for ($i=0; $i<count($data); $i++) {
                 $row = $data[$i];
-                $invTTL += $row[4];
+                $invTTL += $row[5];
             }
 
             foreach ($orders[$id] as $row) {
-                $row[3] = $invTTL;
+                $row[4] = $invTTL;
                 $report[] = $row;
             }
         }
