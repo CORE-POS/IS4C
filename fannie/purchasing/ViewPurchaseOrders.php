@@ -428,8 +428,6 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             <tr>
                 <td><b>Created by</b>: {$uname}</td>
                 <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
             </tr>
         </table>
     </div>
