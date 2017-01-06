@@ -7,7 +7,9 @@ if (!class_exists('FannieAPI')) {
 
 class OverShortTransfers extends FannieReportPage
 {
-    protected $report_headers = array('Vendor', 'Inv#', 'PO#', 'Date', 'Inv Ttl', 'Code Ttl', 'Code');
+    protected $title = 'Transfers Report';
+    protected $header = 'Transfers Report';
+    protected $report_headers = array('Code', 'Total');
     public $description = '[Transfers Report] exports data about cross-store transfers.';
     protected $required_fields = array('date1', 'date2');
 
@@ -60,12 +62,12 @@ class OverShortTransfers extends FannieReportPage
         $dates = FormLib::standardDateFields();
         return <<<HTML
 <form method="get">
-    <div class="row">
+    <p>
         {$dates}
-    </div>
-    <div class="row">
+    </p>
+    <p>
         <button class="btn btn-submit btn-core">Submit</button>
-    </div>
+    </p>
 </form>
 HTML;
     }
