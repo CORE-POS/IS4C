@@ -12,6 +12,7 @@ class ScanTransferPage extends FannieRESTfulPage
     protected $title = 'Create Transfer';
     public $description = '[Scan Transfer] is a tool to build store-transfer purchase orders.';
     protected $enable_linea = true;
+    protected $must_authenticate = true;
 
     public function preprocess()
     {
@@ -40,9 +41,11 @@ class ScanTransferPage extends FannieRESTfulPage
         try {
             $from = $this->form->from;
             $dest = $this->form->to;
+            $uid = FannieAuth::getUID($this->current_user);
             $orderOut = new PurchaseOrderModel($this->connection);
             $orderOut->storeID($from);
             $orderOut->vendorID($this->getStoreVendor($this->connection, $dest));
+            $orderOut->userID($uid);
             $orderOut->placed(1);
             $orderOut->creationDate(date('Y-m-d H:i:s'));
             $orderOut->placedDate(date('Y-m-d H:i:s'));
@@ -51,6 +54,7 @@ class ScanTransferPage extends FannieRESTfulPage
             $orderIn = new PurchaseOrderModel($this->connection);
             $orderIn->storeID($dest);
             $orderIn->vendorID($this->getStoreVendor($this->connection, $from));
+            $orderIn->userID($uid);
             $orderIn->placed(1);
             $orderIn->creationDate(date('Y-m-d H:i:s'));
             $orderOut->placedDate(date('Y-m-d H:i:s'));

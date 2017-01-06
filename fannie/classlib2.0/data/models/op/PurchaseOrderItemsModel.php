@@ -44,6 +44,7 @@ class PurchaseOrderItemsModel extends BasicModel
     'internalUPC' => array('type'=>'VARCHAR(13)'),
     'salesCode' => array('type'=>'INT'),
     'isSpecialOrder' => array('type'=>'TINYINT', 'default'=>0),
+    'receivedBy' => array('type'=>'INT', 'default'=>0),
     );
 
     protected $preferred_db = 'op';

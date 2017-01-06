@@ -309,6 +309,17 @@ class FannieAuth
         return $uid;
     }
 
+    public static function getName($uid)
+    {
+        if (!self::enabled()) {
+            return 'n/a';
+        }
+
+        $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
+        $fetchQ = $sql->prepare("select name from Users where uid=?");
+        return $sql->getValue($fetchQ, array($uid));
+    }
+
     /**
       Create/update authorization class
       @param $auth_class [string] class name

@@ -54,6 +54,12 @@ class OrderGenTask extends FannieTask
         $this->store = $s;
     }
 
+    private $userID = 0;
+    public function setUser($u)
+    {
+        $this->userID = $u;
+    }
+
     private function freshenCache($dbc)
     {
         $items = $dbc->query('
@@ -151,6 +157,7 @@ class OrderGenTask extends FannieTask
                     $poID = $order->save();
                     $order->vendorOrderID('CPO-' . $poID);
                     $order->orderID($poID);
+                    $order->userID($this->userID);
                     $order->save();
                     $orders[$row['vid'].'-'.$row['storeID']] = $poID;
                     $orderIDs[] = $poID;
