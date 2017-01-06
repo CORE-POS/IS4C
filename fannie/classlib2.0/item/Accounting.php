@@ -65,5 +65,10 @@ class Accounting
     {
         return $code;
     }
+
+    public static function extend($code, $store_id)
+    {
+        return $code;
+    }
 }
 
