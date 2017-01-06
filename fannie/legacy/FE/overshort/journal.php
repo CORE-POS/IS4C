@@ -202,7 +202,7 @@ function display($date1,$date2,$excel=False){
     $data = array();
     $dataP = $sql->prepare("SELECT phpData FROM dailyDebitCredit WHERE dateStr=?");
     $dataR = $sql->execute($dataP, array($date1.' '.$date2));
-    if (true || $sql->num_rows($dataR) == 0){
+    if ($sql->num_rows($dataR) == 0){
         $data = fetch_data($date1,$date2);
         $saveP = $sql->prepare("INSERT INTO dailyDebitCredit (dateStr, phpData) VALUES (?, ?)");
         $saveR = $sql->execute($saveP, array($date1.' '.$date2, serialize($data)));
