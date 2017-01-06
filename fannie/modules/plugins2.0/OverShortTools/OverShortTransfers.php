@@ -70,3 +70,6 @@ class OverShortTransfers extends FannieReportPage
 HTML;
     }
 }
+
+FannieDispatch::conditionalExec();
+
