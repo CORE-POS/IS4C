@@ -1,7 +1,12 @@
 <?php
+use COREPOS\Fannie\API\item\StandardAccounting;
+
 include('../../../config.php');
 
 require($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 
 include('../../db.php');
 $sql->query('use is4c_trans');
@@ -78,7 +83,7 @@ $double_lookup = array(
 );
 
 if (filter_input(INPUT_GET, 'action')) {
-    $out = filter_input(INPUT_GET, 'action');
+    $out = filter_input(INPUT_GET, 'action') . '`';
 
     switch(filter_input(INPUT_GET, 'action')) {
     case 'repull':
@@ -197,7 +202,7 @@ function display($date1,$date2,$excel=False){
     $data = array();
     $dataP = $sql->prepare("SELECT phpData FROM dailyDebitCredit WHERE dateStr=?");
     $dataR = $sql->execute($dataP, array($date1.' '.$date2));
-    if ($sql->num_rows($dataR) == 0){
+    if (true || $sql->num_rows($dataR) == 0){
         $data = fetch_data($date1,$date2);
         $saveP = $sql->prepare("INSERT INTO dailyDebitCredit (dateStr, phpData) VALUES (?, ?)");
         $saveR = $sql->execute($saveP, array($date1.' '.$date2, serialize($data)));
@@ -335,7 +340,8 @@ function display($date1,$date2,$excel=False){
         $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
         if ($k > 40000){
             $ret .= "<td>";
-            $ret .= isset($pCodes_lookup[$k])?$pCodes_lookup[$k]:'';
+            $key = substr($k, 0, 5);
+            $ret .= isset($pCodes_lookup[$key])?$pCodes_lookup[$key]:'';
             $ret .= "</td>";
             $ret .= "<td>$k</td>";
         }
@@ -739,7 +745,7 @@ function fetch_data($date1,$date2){
     $salesP = $sql->prepare("select YEAR(tdate),MONTH(tdate),DAY(tdate),
         CASE WHEN department = 991 then '991' when department=992 then '992' 
             else convert(t.salesCode,char) end as pcode,
-        sum(total),trans_type
+        sum(total),trans_type, d.store_id
         FROM $dlog as d left join is4c_op.departments as t on
         d.department = t.dept_no 
         WHERE tdate BETWEEN ? AND ?
@@ -749,7 +755,8 @@ function fetch_data($date1,$date2){
         GROUP BY 
         YEAR(tdate),MONTH(tdate),DAY(tdate),
         trans_type,
-        CASE WHEN department = 991 then '991' when department=992 then '992' else convert(t.salesCode,char) end
+        CASE WHEN department = 991 then '991' when department=992 then '992' else convert(t.salesCode,char) end,
+        d.store_id
         ORDER BY
         CASE WHEN department = 991 then '991' when department=992 then '992' else convert(t.salesCode,char) end");
     $salesR = $sql->execute($salesP, $date_args);
@@ -760,10 +767,14 @@ function fetch_data($date1,$date2){
         /* fill in zeroes for all pcodes */
         if ($timestamp != $preTS){
             foreach($pCodes_lookup as $k=>$v){
-                if (!isset($data['sales'][$k]))
-                    $data['sales'][$k] = array();
-                if (!isset($data['sales'][$k][$timestamp]))
-                    $data['sales'][$k][$timestamp] = 0;
+                foreach (array(1,2) as $store) {
+                    $key = StandardAccounting::extend($k, $store);
+                    $pCodes_lookup[$key] = $v;
+                    if (!isset($data['sales'][$key]))
+                        $data['sales'][$key] = array();
+                    if (!isset($data['sales'][$key][$timestamp]))
+                        $data['sales'][$key][$timestamp] = 0;
+                }
             }
             $preTS = $timestamp;
         }
@@ -787,6 +798,7 @@ function fetch_data($date1,$date2){
             $data['other']['misc0'][1][$timestamp] += $salesW[4];
         }
         elseif ($pcode != 0){
+            $pcode = StandardAccounting::extend($pcode, $salesW['store_id']);
             if (!isset($data['sales'][$pcode]))
                 $data['sales'][$pcode] = array();
             if (!isset($data['sales'][$pcode][$timestamp]))
