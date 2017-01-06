@@ -1,4 +1,5 @@
 <?php
+use COREPOS\Fannie\API\item\StandardAccounting;
 include('../../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -144,22 +145,26 @@ if ($store != 50) {
 }
 
 
-$pCodeQ = $dbc->prepare("SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
+$pCodeQ = $dbc->prepare("SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) , l.store_id
 FROM $dlog as l 
 INNER JOIN {$OP_DB}departments AS s ON l.department=s.dept_no
 WHERE l.tdate BETWEEN ? AND ?
 AND l.department < 600 AND l.department <> 0
 AND l.trans_type <>'T'
 AND " . DTrans::isStoreID($store, 'l') . "
-GROUP BY s.salesCode
+GROUP BY s.salesCode, l.store_id
 order by s.salesCode");
 $pCodeR = $dbc->execute($pCodeQ, $store_dates);
 $pCodes = WfcLib::getPCodes();
+$data = array();
 while($row = $dbc->fetch_row($pCodeR)){
-    if (isset($pCodes[$row[0]])) $pCodes[$row[0]][0] = $row[1];
+    if (isset($pCodes[$row[0]])) {
+        $code = StandardAccounting::extend($row[0], $row['store_id']);
+        $data[$code] = array($row[1]);
+    }
 }
 echo "<br /><b>Sales</b>";
-echo WfcLib::tablify($pCodes,array(0,1),array("pCode","Sales"),
+echo WfcLib::tablify($data,array(0,1),array("pCode","Sales"),
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),1);
 
 $saleSumQ = $dbc->prepare("SELECT -1*sum(l.total) as totalSales
