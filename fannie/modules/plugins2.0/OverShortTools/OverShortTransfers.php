@@ -47,7 +47,7 @@ class OverShortTransfers extends FannieReportPage
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $code = $accounting::toPurchaseCode($row['salesCode']);
-            $code = $accounting::extend($code);
+            $code = $accounting::extend($code, $row['storeID']);
             if (!isset($data[$code])) {
                 $data[$code] = array($code, 0);
             }
