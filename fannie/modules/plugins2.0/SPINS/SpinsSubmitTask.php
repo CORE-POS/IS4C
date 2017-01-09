@@ -47,14 +47,8 @@ class SpinsSubmitTask extends FannieTask
     {
         global $argv, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dateObj = new SpinsDate($this->config->get('SpinsOffset'));
 
-        $iso_week = date('W');
-        $iso_week--;
-        $year = date('Y');
-        if ($iso_week <= 0) {
-            $iso_week = 52;
-            $year--;
-        }
         $upload = true;
 
         /**
@@ -63,40 +57,18 @@ class SpinsSubmitTask extends FannieTask
         if (isset($argv) && is_array($argv)) {
             foreach($argv as $arg) {
                 if (is_numeric($arg)) {
-                    $iso_week = $arg;
-                } else if ($arg == '--file') {
+                    $dateObj = new SpinsDate($this->config->get('SpinsOffset'), $arg);
+                } elseif ($arg == '--file') {
                     $upload = false;
                 }
             }
         }
 
-        /**
-          Keep SPINS week number separate for logging purposes
-        */
-        $spins_week = $iso_week;
-        if (isset($FANNIE_PLUGIN_SETTINGS['SpinsOffset'])) {
-            $iso_week += $FANNIE_PLUGIN_SETTINGS['SpinsOffset'];
-        }
+        $spins_week = $dateObj->spinsWeek();
+        $dlog = DTransactionsModel::selectDlog($dateObj->startDate(), $dateObj->endDate());
+        $lastDay = date("M d, Y", $dateObj->endTimeStamp()) . ' 11:59PM'; 
 
-        // First day of ISO week is a Monday
-        $start = strtotime($year . 'W' . str_pad($iso_week, 2, '0', STR_PAD_LEFT));
-        // if the SpinsOffset results in non-existant week 0, 
-        // use ISO week 1 and go back seven days
-        if ($iso_week == 0) {
-            $start = strtotime($year . 'W01');
-            $start = mktime(0, 0, 0, date('n', $start), date('j',$start)-7, date('Y', $start));
-        }
-        // walk forward to Sunday
-        $end = $start;
-        while (date('w', $end) != 0) {
-            $end = mktime(0,0,0,date('n',$end),date('j',$end)+1,date('Y',$end));
-        }
-
-        $dlog = DTransactionsModel::selectDlog(date('Y-m-d', $start), date('Y-m-d',$end));
-
-        $lastDay = date("M d, Y", $end) . ' 11:59PM'; 
-
-        $this->cronMsg('SPINS data for week #' . $spins_week . '(' . date('Y-m-d', $start) . ' to ' . date('Y-m-d', $end) . ')', FannieLogger::INFO);
+        $this->cronMsg('SPINS data for week #' . $spins_week . '(' . $dateObj->startDate() . ' to ' . $dateObj->endDate() . ')', FannieLogger::INFO);
 
         $filename = $FANNIE_PLUGIN_SETTINGS['SpinsPrefix'];
         if ($this->config->get('STORE_MODE') == 'HQ') {
@@ -105,7 +77,7 @@ class SpinsSubmitTask extends FannieTask
         if (!empty($filename)) {
             $filename .= '_';
         }
-        $filename .= date('mdY', $end) . '.csv';
+        $filename .= date('mdY', $dateObj->endTimeStamp()) . '.csv';
 
         // Odd "CASE" statement is to deal with special order
         // line items the have case size & number of cases
@@ -125,7 +97,7 @@ class SpinsSubmitTask extends FannieTask
         $fp = fopen($outfile,"w");
 
         $dataP = $dbc->prepare($dataQ);
-        $args = array(date('Y-m-d 00:00:00', $start), date('Y-m-d 23:59:59', $end));
+        $args = array($dateObj->startDate() . ' 00:00:00', $dateObj->endDate() . ' 23:59:59');
         if ($this->config->get('STORE_MODE') == 'HQ') {
             $args[] = $this->config->get('STORE_ID');
         }
