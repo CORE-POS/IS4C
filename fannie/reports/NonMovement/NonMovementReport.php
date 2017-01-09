@@ -89,6 +89,14 @@ class NonMovementReport extends FannieReportPage {
         $deptEnd = FormLib::get_form_value('deptEnd',0);
         $deptMulti = FormLib::get('departments', array());
         $subs = FormLib::get('subdepts', array());
+        $storeID = FormLib::get('storeID');
+        if ($storeID === 1) {
+            $reg1 = 0;
+            $reg2 = 7;
+        } else {
+            $reg1 = 10;
+            $reg2 = 16;
+        }
 
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
@@ -101,9 +109,10 @@ class NonMovementReport extends FannieReportPage {
             SELECT d.upc FROM $dlog AS d
             WHERE 
                 d.tdate BETWEEN ? AND ?
-                AND d.trans_type='I'
+                AND d.trans_type='I'  
+                AND register_no BETWEEN ? AND ?
             GROUP BY d.upc");
-        $dbc->execute($insQ, array($date1.' 00:00:00',$date2.' 23:59:59'));
+        $dbc->execute($insQ, array($date1.' 00:00:00',$date2.' 23:59:59',$reg1,$reg2));
 
         $where = ' 1=1 ';
         $buyer = FormLib::get('super');
@@ -229,6 +238,15 @@ class NonMovementReport extends FannieReportPage {
             <label class="col-sm-4 control-label">End Date</label>
             <div class="col-sm-8">
                 <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Store</label>
+            <div class="col-sm-8">
+                <select class="form-control" nanme="storeID">
+                    <option value=1>Hillside</option>
+                    <option value=2>Denfled</option>
+                </select>
             </div>
         </div>
         <div class="form-group">
