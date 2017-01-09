@@ -42,10 +42,10 @@ class EqRecurTask extends FannieTask
             $card_no = $this->getMemberID($dbc, $payment);
             $balance = $this->getBalance($dbc, $card_no);
             if ($card_no === false) {
-                printf("Cannot find memberID for PT %d,%d", $payment['paycardTransactionID'], $payment['storeRowId']);
+                $this->cronMsg(sprintf("Cannot find memberID for PT %d,%d", $payment['paycardTransactionID'], $payment['storeRowId']));
                 continue;
             } elseif ($balance >= 100) {
-                printf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']);
+                $this->cronMsg(sprintf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']));
                 $this->clearToken($dbc, $payment);
                 continue;
             }
@@ -130,7 +130,6 @@ class EqRecurTask extends FannieTask
                 $pcRow[] = ''; // xAcquirerRef
             }
 
-            print_r($pcRow);
             $dbc->execute($ptransP, $pcRow);
             $pcID = $dbc->insertID();
             if ($approvedAmount > 0) {
