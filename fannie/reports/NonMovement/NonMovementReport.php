@@ -89,14 +89,7 @@ class NonMovementReport extends FannieReportPage {
         $deptEnd = FormLib::get_form_value('deptEnd',0);
         $deptMulti = FormLib::get('departments', array());
         $subs = FormLib::get('subdepts', array());
-        $storeID = FormLib::get('storeID');
-        if ($storeID === 1) {
-            $reg1 = 0;
-            $reg2 = 7;
-        } else {
-            $reg1 = 10;
-            $reg2 = 16;
-        }
+        $storeID = FormLib::get('store');
 
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
@@ -110,9 +103,9 @@ class NonMovementReport extends FannieReportPage {
             WHERE 
                 d.tdate BETWEEN ? AND ?
                 AND d.trans_type='I'  
-                AND register_no BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($storeID, 'd') . "
             GROUP BY d.upc");
-        $dbc->execute($insQ, array($date1.' 00:00:00',$date2.' 23:59:59',$reg1,$reg2));
+        $dbc->execute($insQ, array($date1.' 00:00:00',$date2.' 23:59:59',$storeID));
 
         $where = ' 1=1 ';
         $buyer = FormLib::get('super');
@@ -207,6 +200,7 @@ class NonMovementReport extends FannieReportPage {
         while ($deptsW = $dbc->fetchRow($deptsR))
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
         ob_start();
+        $stores = FormLib::storePicker();
 ?>
 <form method="get" action="NonMovementReport.php" class="form-horizontal">
     <div class="col-sm-6">
@@ -243,10 +237,7 @@ class NonMovementReport extends FannieReportPage {
         <div class="form-group">
             <label class="control-label col-sm-4">Store</label>
             <div class="col-sm-8">
-                <select class="form-control" nanme="storeID">
-                    <option value=1>Hillside</option>
-                    <option value=2>Denfled</option>
-                </select>
+                <?php echo $stores['html']; ?>
             </div>
         </div>
         <div class="form-group">
