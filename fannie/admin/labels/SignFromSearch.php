@@ -129,6 +129,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     $this->signage_obj->addOverride($upc[$i], 'originName', $knownOrigins[$origin[$i]]);
                 }
             }
+            $this->signage_obj->setRepeats(FormLib::get('repeats', 1));
         }
 
         return $this->drawPdf();
@@ -203,6 +204,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     $this->signage_obj->addOverride($upc[$i], 'originName', $knownOrigins[$origin[$i]]);
                 }
             }
+            $this->signage_obj->setRepeats(FormLib::get('repeats', 1));
         }
  
         return $this->drawPdf();
@@ -311,6 +313,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 $s->storeID(), $s->description());
         }
         $ret .= '</select>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<input type="number" title="Number of copies" name="repeats" class="form-control" value="1" />';
 
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="submit" name="pdf" value="Print" 
