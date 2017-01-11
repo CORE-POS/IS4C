@@ -824,7 +824,7 @@ class MemberREST
             if (!$cards->save()) {
                 $ret['errors']++;
             }
-            self::$hook_cahe['MemberCardsModel'] = $cards->getHooks();
+            self::$hook_cache['MemberCardsModel'] = $cards->getHooks();
         }
 
         return $ret;
@@ -849,7 +849,7 @@ class MemberREST
                 $ret['errors']++;
                 $ret['error-msg'] .= 'ErrUPC ';
             }
-            self::$hook_cahe['MemContactModel'] = $contact->getHooks();
+            self::$hook_cache['MemContactModel'] = $contact->getHooks();
         }
 
         return $ret;
