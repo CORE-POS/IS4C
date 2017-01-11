@@ -119,6 +119,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         if ($this->enable_linea) {
             $this->addScript($url . 'src/javascript/linea/cordova-2.2.0.js');
             $this->addScript($url . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+            $this->addScript($url . 'src/javascript/linea/WebHub.js');
         }
 
         return ob_get_clean();
@@ -257,6 +258,22 @@ function enableLinea(selector, callback)
             }
         });
     }
+
+    // for webhub
+    WebHub.Settings.set({
+        barcodeFunction: function (upc, typeID, typeStr) {
+            alert('upc');
+            upc = upc.substring(0,upc.length-1);
+            if ($(selector).length > 0){
+                $(selector).val(upc);
+                if (typeof callback === 'function') {
+                    callback();
+                } else {
+                    $(selector).closest('form').submit();
+                }
+            }
+        }
+    });
 
     function lineaSilent()
     {
