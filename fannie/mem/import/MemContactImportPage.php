@@ -80,6 +80,7 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     function __construct()
     {
+        parent::__construct();
         $country = FannieConfig::config('COUNTRY', 'US');
         if ($country == 'CA') {
             $this->preview_opts['state']['display_name'] = 'Province';
