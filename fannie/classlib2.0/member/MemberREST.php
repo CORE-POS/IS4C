@@ -59,10 +59,33 @@ class MemberREST
         'lowIncomeBenefits' => array('map'=>'SSI', 'match'=>'strict'),
     );
 
+    private static $hook_cache = array();
+
     private static $test_mode = false;
     public static function testMode($mode)
     {
         self::$test_mode = $mode;
+    }
+
+    /**
+      A model class, on save, can trigger one or more hooks
+      to perform additional operations. Discovering available
+      hooks involves walking the file system. When creating 
+      multiple objects of the same class this means walking the
+      file system way more often than is really necessary. This
+      wrapper caches per-class information about known hooks so
+      subsequent instances don't have to re-walk the file system.
+      This caching only persists through the current request so
+      is only relevant to bulk edits.
+    */
+    private static function getModel($dbc, $class)
+    {
+        $model = new $class($dbc);
+        if (isset(self::$hook_cache[$class])) {
+            $model->setHooks(self::$hook_cache[$class]);
+        }
+
+        return $model;
     }
 
     /**
@@ -501,17 +524,20 @@ class MemberREST
         // even if using the old schema it should still create
         // this record if the new table exists.
         if ($dbc->tableExists('CustomerAccounts')) {
-            $account = new CustomerAccountsModel($dbc);
+            $account = self::getModel($dbc, 'CustomerAccountsModel');
             $account->cardNo($max);
             $account->save();
+            self::$hook_cache['CustomerAccountsModel'] = $account->getHooks();
         }
-        $custdata = new CustdataModel($dbc);
+        $custdata = self::getModel($dbc, 'CustdataModel');
         $custdata->CardNo($max);
         $custdata->personNum(1);
         $custdata->save();
-        $meminfo = new MeminfoModel($dbc);
+        self::$hook_cache['CustdataModel'] = $custdata->getHooks();
+        $meminfo = self::getModel($dbc, 'MeminfoModel');
         $meminfo->card_no($max);
         $meminfo->save();
+        self::$hook_cache['MeminfoModel'] = $meminfo->getHooks();
 
         return $max;
     }
@@ -524,8 +550,8 @@ class MemberREST
     {
         $ret = array('errors' => 0, 'error-msg' => '');
         $config = FannieConfig::factory();
-        $account = new CustomerAccountsModel($dbc);
-        $customers = new CustomersModel($dbc);
+        $account = self::getModel($dbc, 'CustomerAccountsModel');
+        $customers = self::getModel($dbc, 'CustomersModel');
 
         $account->cardNo($id);
         foreach ($account->getColumns() as $col_name => $info) {
@@ -540,6 +566,7 @@ class MemberREST
         if (!$account->save()) {
             $ret['errors']++;
         }
+        self::$hook_cache['CustomerAccountsModel'] = $account->getHooks();
 
         if (isset($json['customers']) && is_array($json['customers'])) {
             $columns = $customers->getColumns();
@@ -567,6 +594,7 @@ class MemberREST
                 }
             }
         }
+        self::$hook_cache['CustomersModel'] = $customers->getHooks();
 
         // mirror changes to older tables
         if ($config->get('CUST_SCHEMA') == 1) {
@@ -614,10 +642,10 @@ class MemberREST
           Custdata and meminfo are messier. Start with account-level
           settings.
         */
-        $custdata = new CustdataModel($dbc);
+        $custdata = self::getModel($dbc, 'CustdataModel');
         $custdata->CardNo($id);
         $custdata_changed = false;
-        $meminfo = new MeminfoModel($dbc);
+        $meminfo = self::getModel($dbc, 'MeminfoModel');
         $meminfo->card_no($id);
         if (isset($json['addressFirstLine'])) {
             $street = $json['addressFirstLine'];
@@ -736,6 +764,7 @@ class MemberREST
             $ret['errors']++;
             $ret['error-msg'] .= 'ErrMeminfo ';
         }
+        self::$hook_cache['MeminfoModel'] = $meminfo->getHooks();
 
         /**
           Finally, apply account-level settings to
@@ -751,6 +780,7 @@ class MemberREST
                     $ret['error-msg'] .= 'ErrGlobal ';
                 }
             }
+            self::$hook_cache['CustdataModel'] = $custdata->getHooks();
         }
         self::setBlueLines($id);
 
@@ -767,7 +797,7 @@ class MemberREST
     private static function postMemDates($dbc, $id, $json, $ret)
     {
         if (isset($json['startDate']) || isset($json['endDate'])) {
-            $dates = new MemDatesModel($dbc);
+            $dates = self::getModel($dbc, 'MemDatesModel');
             $dates->start_date($json['startDate']); 
             $dates->end_date($json['endDate']); 
             $dates->card_no($id);
@@ -775,6 +805,7 @@ class MemberREST
                 $ret['errors']++;
                 $ret['error-msg'] .= 'ErrDates ';
             }
+            self::$hook_cache['MemDatesModel'] = $dates->getHooks();
         }
 
         return $ret;
@@ -783,7 +814,7 @@ class MemberREST
     private static function postMemberCards($dbc, $id, $json, $ret)
     {
         if (isset($json['idCardUPC'])) {
-            $cards = new MemberCardsModel($dbc);
+            $cards = self::getModel($dbc, 'MemberCardsModel');
             $cards->card_no($id);
             if ($json['idCardUPC'] != '') {
                 $cards->upc(\BarcodeLib::padUPC($json['idCardUPC']));
@@ -793,6 +824,7 @@ class MemberREST
             if (!$cards->save()) {
                 $ret['errors']++;
             }
+            self::$hook_cahe['MemberCardsModel'] = $cards->getHooks();
         }
 
         return $ret;
@@ -802,6 +834,7 @@ class MemberREST
     {
         if (isset($json['contactMethod'])) {
             $contact = new MemContactModel($dbc);
+            $contact = self::getModel($dbc, 'MemContactModel');
             $contact->card_no($id);
             if (isset($json['contactAllowed']) && !$json['contactAllowed']) {
                 $contact->pref(0);
@@ -816,6 +849,7 @@ class MemberREST
                 $ret['errors']++;
                 $ret['error-msg'] .= 'ErrUPC ';
             }
+            self::$hook_cahe['MemContactModel'] = $contact->getHooks();
         }
 
         return $ret;
@@ -833,7 +867,7 @@ class MemberREST
             $template = '{{ACCOUNTNO}} {{FIRSTINITIAL}}. {{LASTNAME}}';
         }
         $dbc = FannieDB::get($config->get('OP_DB'));
-        $custdata = new CustdataModel($dbc);
+        $custdata = self::getModel($dbc, 'CustdataModel');
         $custdata->CardNo($id);
         $account = self::get($id); 
         $personNum = 2;
@@ -857,6 +891,7 @@ class MemberREST
             $custdata->blueLine($blueline);
             $custdata->save();
         }
+        self::$hook_cache['CustdataModel'] = $custdata->getHooks();
     }
 
     /**
