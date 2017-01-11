@@ -80,8 +80,7 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     function __construct()
     {
-        global $FANNIE_COUNTRY;
-        $country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
+        $country = $this->config->get('COUNTRY', 'US');
         if ($country == 'CA') {
             $this->preview_opts['state']['display_name'] = 'Province';
             $this->preview_opts['zip']['display_name'] = 'Postal Code';
@@ -95,31 +94,34 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
             // if applicable
             $cardno = $line[$indexes['memnum']];
             if (!is_numeric($cardno)) continue; // skip bad record
-            $street = ($indexes['street'] !== false) ? $line[$indexes['street']] : "";
-            $street2 = ($indexes['street2'] !== false) ? $line[$indexes['street2']] : "";
-            $city = ($indexes['city'] !== false) ? $line[$indexes['city']] : "";
-            $state = ($indexes['state'] !== false) ? $line[$indexes['state']] : "";
-            $zip = ($indexes['zip'] !== false) ? $line[$indexes['zip']] : "";
-            $ph1 = ($indexes['ph1'] !== false) ? $line[$indexes['ph1']] : "";
-            $ph2 = ($indexes['ph2'] !== false) ? $line[$indexes['ph2']] : "";
-            $email = ($indexes['email'] !== false) ? $line[$indexes['email']] : "";
-
-            $json = array(
-                'cardNo' => $cardno,
-                'addressFirstLine' => $street,
-                'addressSecondLine' => $street2,
-                'city' => $city,
-                'state' => $state,
-                'zip' => $zip,
-                'customers' => array(
-                    array(
-                        'phone' => $ph1,
-                        'altPhone' => $ph2,
-                        'email' => $email,
-                        'accountHolder' => 1,
-                    ),
-                ),
-            );
+            $json = array('cardNo' => $cardno);
+            if ($indexes['street'] !== false) {
+                $json['addressFirstLine'] = $line[$indexes['street']];
+            }
+            if ($indexes['street2'] !== false) {
+                $json['addressSecondLine'] = $line[$indexes['street2']];
+            }
+            if ($indexes['city'] !== false) {
+                $json['city'] = $line[$indexes['city']];
+            }
+            if ($indexes['state'] !== false) {
+                $json['state'] = $line[$indexes['state']];
+            }
+            if ($indexes['zip'] !== false) {
+                $json['zip'] = $line[$indexes['zip']];
+            }
+            if ($indexes['ph1'] !== false || $indexes['ph2'] !== false || $indexes['email'] !== false) {
+                $json['customers'] = array(array('accountHolder' => 1));
+                if ($indexes['ph1'] !== false) {
+                    $json['customers'][0]['phone'] = $line[$indexes['ph1']];
+                }
+                if ($indexes['ph2'] !== false) {
+                    $json['customers'][0]['altPhone'] = $line[$indexes['ph2']];
+                }
+                if ($indexes['email'] !== false) {
+                    $json['customers'][0]['email'] = $line[$indexes['email']];
+                }
+            }
 
             $resp = \COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
 
