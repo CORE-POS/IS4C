@@ -242,7 +242,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         //SendReport(BuildCommand(LcdCreateButton(BUTTON_CREDIT,"Credit",5,5,145,95)));
         SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_CREDIT,"Credit",5,5,145,95, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
         //SendReport(BuildCommand(LcdCreateButton(BUTTON_DEBIT,"Debit",224,5,314,95)));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_DEBIT,"Debit",174,5,314,95, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_DEBIT,"Debit",174,144,314,234, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
         if (this.type_include_fs) {
             //SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
             SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_EBT,"EBT",5,144,145,234, new byte[]{0x0,0x0,0x0}, new byte[]{0xbb,0xbb,0x0})));
@@ -349,8 +349,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
 
         SendReport(BuildCommand(LcdDrawText(sig_message, 1, 1)));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,28,115,73, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,28,314,73, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",204,28,314,73, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",5,28,115,73, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
         SendReport(BuildCommand(LcdTextFont(3,12,14)));
         SendReport(BuildCommand(LcdDrawText("please sign",100,83)));
         SendReport(BuildCommand(LcdSetClipArea(5,118,310,230,true,new byte[]{0,0,0})));
