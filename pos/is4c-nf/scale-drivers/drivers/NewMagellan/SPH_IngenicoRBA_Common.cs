@@ -355,6 +355,7 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
                     // otherwise see which type was selected
                     if (buffer.Length < 6 || buffer[4] != 0x30 || buffer[5] == 0x1b) {
                         WriteMessageToDevice(SwipeCardScreen());
+                        PushOutput("TERMCLEARALL");
                     } else if (buffer[5] == 0x41) {
                         PushOutput("TERM:Debit");
                         if (auto_state_change) {
@@ -397,6 +398,7 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
                     if (buffer.Length < 5 || buffer[4] != 0x30) {
                         // problem; start over
                         WriteMessageToDevice(SwipeCardScreen());
+                        PushOutput("TERMCLEARALL");
                     } else {
                         string pin_msg = enc.GetString(buffer);
                         // trim STX, command prefix, status byte, ETX, and LRC
