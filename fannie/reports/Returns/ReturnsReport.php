@@ -78,7 +78,7 @@ class ReturnsReport extends FannieReportPage
         return array(
             $row['upc'],
             $row['brand'] === null ? '' : $row['brand'],
-            $row['description'],
+            $row['description'] === null ? '' : $row['description'],
             $row['department'],
             $row['dept_name'],
             sprintf('%.2f', $row['qty']),
