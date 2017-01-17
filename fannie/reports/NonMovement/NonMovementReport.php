@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -52,7 +54,7 @@ class NonMovementReport extends FannieReportPage {
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $model = new ProductsModel($dbc);
             $model->upc($upc);
-            $model->store_id(1);
+            $model->store_id(Store::getIdByIp());
             $model->delete();
 
             echo 'Deleted';
@@ -62,7 +64,7 @@ class NonMovementReport extends FannieReportPage {
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $model = new ProductsModel($dbc);
             $model->upc($upc);
-            $model->store_id(1);
+            $model->store_id(Store::getIdByIp());
             $model->inUse(0);
             $model->save();
 
@@ -145,8 +147,10 @@ class NonMovementReport extends FannieReportPage {
                 )
                 AND $where
                 AND p.inUse=1
+                AND " . DTrans::isStoreID($storeID, 'p') . "
             ORDER BY p.upc";
         $prep = $dbc->prepare($query);
+        $args[] = $storeID;
         $result = $dbc->execute($prep,$args);
 
         /**
