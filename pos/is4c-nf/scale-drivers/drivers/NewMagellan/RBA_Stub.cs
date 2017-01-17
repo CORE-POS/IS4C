@@ -88,20 +88,24 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
     public void stubStart()
     {
-        initPort();
-        sp.Open();
-        SPH_Running = true;
-        this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
-        SPH_Thread.Start();
+        try {
+            initPort();
+            sp.Open();
+            SPH_Running = true;
+            this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
+            SPH_Thread.Start();
+        } catch (Exception) {}
     }
 
     public void showApproved()
     {
-        stubStop();
-        initPort();
-        sp.Open();
-        WriteMessageToDevice(SimpleMessageScreen("Approved"));
-        sp.Close();
+        try {
+            stubStop();
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(SimpleMessageScreen("Approved"));
+            sp.Close();
+        } catch (Exception) {}
     }
 
     public void stubStop()
