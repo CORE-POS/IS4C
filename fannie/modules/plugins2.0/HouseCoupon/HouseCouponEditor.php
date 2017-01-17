@@ -454,7 +454,8 @@ class HouseCouponEditor extends FanniePage
         $ret .= '<div class="form-group form-inline" id="add-item-form">';
         if ($mType == "Q" || $mType == "Q+" || $mType == "M" || $mType == 'MX') {
             $ret .= '<label class="control-label">Add UPC</label>
-                <input type=text class="form-control add-item-field" name=new_upc /> ';
+                <input type=text class="form-control add-item-field" name=new_upc 
+                    onkeydown="addSubmitDown(event);" />';
         } 
         if ($mType == "D" || $mType == "D+" || $mType == 'C' || $mType == 'C+' || $dType == '%D' || $dType == 'S' || $mType == 'MX' || $mType == 'C!' || $mType == 'C^') {
             $ret .= '
@@ -504,6 +505,16 @@ class HouseCouponEditor extends FanniePage
                     $('.add-item-field').val('');
                 }
             });
+        }
+        function addSubmitDown(ev) {
+            var keyCode = ev.which ? ev.which : ev.keyCode; 
+            if (keyCode == 13) {
+                ev.preventDefault();
+                addItemToCoupon();
+                return false;
+            }
+
+            return true;
         }
         <?php
         return ob_get_clean();
