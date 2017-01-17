@@ -60,7 +60,7 @@ class AutoLoader
             }
             $sep = DIRECTORY_SEPARATOR;
             if (strpos($name, 'COREPOS\\common\\') === 0) {
-                $ourPath = __DIR__ . $sep . '..' . $sep '..' . $sep . '..' . $sep . strtr(substr($name, 15), '\\', $sep) . '.php';
+                $ourPath = __DIR__ . $sep . '..' . $sep . '..' . $sep . '..' . $sep . strtr(substr($name, 15), '\\', $sep) . '.php';
                 $map[$name] = $ourPath;
                 CoreLocal::set('ClassLookup', $map);
             } elseif (strpos($name, 'COREPOS\\pos\\') === 0) {
