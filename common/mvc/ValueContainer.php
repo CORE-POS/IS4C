@@ -42,6 +42,11 @@ class ValueContainer implements \Iterator
         }
     }
 
+    public function tryGet($name, $default='')
+    {
+        return isset($this->values[$name]) ? $this->values[$name] : $default;
+    }
+
     public function __isset($name)
     {
         return isset($this->values[$name]);
