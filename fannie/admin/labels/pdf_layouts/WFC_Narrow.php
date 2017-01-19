@@ -102,7 +102,7 @@ function WFC_Narrow($data,$offset=0)
         $pdf->SetFont('Arial','B',18); //change font for price
         $pdf->TEXT($priceX,$priceY,$price);  //add price
 
-        $words = preg_split('/[ ,-]+/',$desc);
+        $words = preg_split('/[\s,-]+/',$desc);
         $limit = 13;
         $lineheight = 0;
         $curStr = "";
