@@ -260,11 +260,13 @@ class HouseCouponEditor extends FanniePage
                     <td>%s</td><td>%.2f%s</td><td>%s</td><td>%s</td>
                     <td>
                         <a href="%sws/barcode-pdf/?upc=%s&name=%s"
-                        class="btn btn-default">Print Barcode</a>
+                        class="btn btn-default btn-sm">Print Barcode</a>
                         <a href="%sreports/ProductMovement/ProductMovementModular.php?upc=%s&date1=%s&date2=%s"
-                        class="btn btn-default">Usage Report</a>
+                        class="btn btn-default btn-sm">Usage Report</a>
+                        <a href="HcBasketReport.php?upc=%s&date1=%s&date2=%s"
+                        class="btn btn-default btn-sm">Simple Baskets</a>
                         <a href="%smodules/plugins2.0/CoreWarehouse/reports/CWCouponReport.php?coupon-id=%d&date1=%s&date2=%s"
-                        class="btn btn-default %s">Member Baskets</a>
+                        class="btn btn-default btn-sm %s">Member Baskets</a>
                     </tr>',
                     $obj->coupID(),$obj->coupID(),$obj->description(),
                     $obj->discountValue(), $obj->discountType(),
@@ -273,6 +275,9 @@ class HouseCouponEditor extends FanniePage
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
                     urlencode($obj->description()),
                     $FANNIE_URL,
+                    ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
+                    $report_dates[0],
+                    $report_dates[1],
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
                     $report_dates[0],
                     $report_dates[1],
