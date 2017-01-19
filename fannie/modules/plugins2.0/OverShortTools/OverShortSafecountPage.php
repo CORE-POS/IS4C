@@ -137,7 +137,6 @@ class OverShortSafecountPage extends FanniePage {
 
         $model = new DailyDepositModel($dbc);
         $model->dateStr($dateStr);
-        var_dump($store);
         $model->storeID($store);
         foreach($model->find() as $obj){
             if ($obj->rowName() == 'buyAmount')
@@ -264,6 +263,12 @@ class OverShortSafecountPage extends FanniePage {
             $pars = array("0.01"=>60,"0.05"=>120,"0.10"=>320,"0.25"=>1200,"1.00"=>2600,"5.00"=>1000,"10.00"=>1300);
         } else {
             $pars = array("0.01"=>35,"0.05"=>80,"0.10"=>250,"0.25"=>800,"1.00"=>1755,"5.00"=>750,"10.00"=>830);
+        }
+        if (file_exists(__DIR__ . '/pars.json')) {
+            $json = json_decode(file_get_contents(__DIR__ . '/pars.json'), true);
+            if (isset($json[$store])) {
+                $pars = $json[$store];
+            }
         }
 
         $ret .= "<tr class=\"color\"><th>Deposit Amount</th>";
