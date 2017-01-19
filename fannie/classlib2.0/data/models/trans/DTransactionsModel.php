@@ -267,11 +267,17 @@ class DTransactionsModel extends BasicModel
                 $this->connection->query($sql);
             }
         }
+        $source = $this->connection->tableDefinition($table_name);
 
         $sql = 'CREATE VIEW '.$this->connection->identifierEscape($view_name).' AS '
             .'SELECT '
             .$this->connection->identifierEscape('datetime').' AS '
             .$this->connection->identifierEscape('tdate').',';
+        if (isset($source['date_id'])) {
+            $sql .= 'date_id,';
+        } else {
+            $sql .= $this->connection->dateymd('datetime') . ' AS date_id,';
+        }
         $c = $this->connection; // for more concise code below
         foreach($this->columns as $name => $definition) {
             if ($name == 'datetime') continue;
