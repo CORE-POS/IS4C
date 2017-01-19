@@ -361,7 +361,7 @@ class OverShortSafecountPage extends FanniePage {
         $actualTotal += $sum;
 
         $parTTL = 0; foreach($pars as $k=>$v) $parTTL += $v;
-        $ret .= "<tr class=\"color\"><th>Par Amounts</th>";
+        $ret .= "<tr class=\"color\"><th><a href=\"OverShortParsPage.php\">Par Amounts</a></th>";
         $ret .= "<td id=par0.01>".$pars['0.01']."</td>";
         $ret .= "<td id=par0.05>".$pars['0.05']."</td>";
         $ret .= "<td id=par0.10>".$pars['0.10']."</td>";
