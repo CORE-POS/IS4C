@@ -94,6 +94,7 @@ class requestInfo extends NoInputCorePage
     {
         // get calling class (required)
         $class = $this->form->tryGet('class');
+        $class = str_replace('-', '\\', $class);
         $pos_home = MiscLib::base_url().'gui-modules/pos2.php';
         if ($class === '' || !class_exists($class)){
             $this->change_page($pos_home);
@@ -101,7 +102,6 @@ class requestInfo extends NoInputCorePage
         }
         // make sure calling class implements required
         // method and properties
-        $class = str_replace('-', '\\', $class);
         try {
             $this->validateClass($class);
         }
