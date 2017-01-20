@@ -282,6 +282,7 @@ class DTransactionsModel extends BasicModel
         foreach($this->columns as $name => $definition) {
             if ($name == 'datetime') continue;
             elseif ($name == 'tdate') continue;
+            elseif ($name == 'date_id') continue;
             elseif ($name == 'trans_num'){
                 // create trans_num field
                 $sql .= $c->concat(
