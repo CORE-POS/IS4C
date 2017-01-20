@@ -33,8 +33,9 @@ class DLogModel extends DTransactionsModel
     {
         unset($this->columns['datetime']);
         $tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
+        $date_id = array('date_id'=>array('type'=>'INT'));
         $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
-        $this->columns = $tdate + $this->columns + $trans_num;
+        $this->columns = $tdate + $date_id + $this->columns + $trans_num;
         $this->columns['store_row_id']['increment'] = false;
         $this->columns['store_row_id']['primary_key'] = false;
         $this->columns['store_row_id']['index'] = false;
