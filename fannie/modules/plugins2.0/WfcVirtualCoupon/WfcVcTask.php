@@ -41,7 +41,6 @@ class WfcVcTask extends FannieTask
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
-        $last_year = '2014-06-01';
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
         $accessQ = 'SELECT card_no
                     FROM ' . $dlog_ly . '
