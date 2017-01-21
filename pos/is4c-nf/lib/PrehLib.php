@@ -29,6 +29,8 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\TotalActions\TotalAction;
 use \CoreLocal;
+use \DateTime;
+use \DateInterval;
 
 /**
   @class PrehLib
