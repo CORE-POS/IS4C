@@ -551,9 +551,9 @@ public static function ageCheck($requiredAge, $ret)
     if (CoreLocal::get("memAge")=="") {
         CoreLocal::set("memAge",date('Ymd'));
     }
-    $stamp = strtotime(CoreLocal::get("memAge"));
-    $ofAgeOnDay = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp), date('Y', $stamp) + $requiredAge);
-    $today = strtotime( date('Y-m-d') );
+    $ofAgeOnDay = new DateTime(CoreLocal::get('memAge'));
+    $ofAgeOnDay->add(new DateInterval("P{$requiredAge}Y"));
+    $today = new DateTime(date('Y-m-d'));
     if ($ofAgeOnDay > $today) {
         $ret['udpmsg'] = 'twoPairs';
         $ret['main_frame'] = $myUrl.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC';
