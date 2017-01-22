@@ -553,8 +553,12 @@ public static function ageCheck($requiredAge, $ret)
     if (CoreLocal::get("memAge")=="") {
         CoreLocal::set("memAge",date('Ymd'));
     }
-    $ofAgeOnDay = new DateTime(CoreLocal::get('memAge'));
-    $ofAgeOnDay->add(new DateInterval("P{$requiredAge}Y"));
+    try {
+        $ofAgeOnDay = new DateTime(CoreLocal::get('memAge'));
+        $ofAgeOnDay->add(new DateInterval("P{$requiredAge}Y"));
+    } catch (Exception $ex) {
+        $ofAgeOnDay = new DateTime(date('Y-m-d'));
+    }
     $today = new DateTime(date('Y-m-d'));
     if ($ofAgeOnDay > $today) {
         $ret['udpmsg'] = 'twoPairs';
