@@ -6,7 +6,7 @@ if (!class_exists('FannieAPI.php')) {
 
 class PayOffsReport extends FannieReportPage
 {
-    protected $report_headers = array('Date', '# of Owners');
+    protected $report_headers = array('Date', '# of Owners', '$ Total');
     protected $required_fields = array('date1', 'date2');
     protected $title = 'Pay Off Report';
     protected $header = 'Pay Off Report';
@@ -109,7 +109,8 @@ function showGraph() {
                 MONTH(tdate),
                 DAY(tdate),
                 trans_num,
-                card_no
+                card_no,
+                total
             FROM {$dlog}
             WHERE tdate BETWEEN ? AND ?
                 AND department=991
@@ -122,7 +123,7 @@ function showGraph() {
             $ts = mktime(0,0,0,$row[1],$row[2],$row[0]);
             $date = date('Y-m-d', $ts);
             if (!isset($data[$date])) {
-                $data[$date] = array($date, 0);
+                $data[$date] = array($date, 0, 0);
             }
             $equity = $this->connection->getRow($equityP, array($row['card_no']));
             if (!$equity || $equity['ttl'] < 100) {
@@ -137,6 +138,7 @@ function showGraph() {
                 continue;
             }
             $data[$date][1]++;
+            $data[$date][2] += $row['total'];
         }
 
         return $this->dekey_array($data);
@@ -145,7 +147,8 @@ function showGraph() {
     function calculate_footers($data)
     {
         $sum = array_reduce($data, function($c, $i) { return $c + $i[1]; }, 0);
-        return array('Total', $sum);
+        $sum2 = array_reduce($data, function($c, $i) { return $c + $i[2]; }, 0);
+        return array('Total', $sum, $sum2);
     }
 
     public function form_content()
