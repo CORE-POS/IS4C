@@ -47,7 +47,7 @@ class SpinsSubmitTask extends FannieTask
     {
         global $argv, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $dateObj = new SpinsDate($this->config->get('SpinsOffset'));
+        $dateObj = new SpinsDate($FANNIE_PLUGIN_SETTINGS['SpinsOffset']);
 
         $upload = true;
 
@@ -57,7 +57,7 @@ class SpinsSubmitTask extends FannieTask
         if (isset($argv) && is_array($argv)) {
             foreach($argv as $arg) {
                 if (is_numeric($arg)) {
-                    $dateObj = new SpinsDate($this->config->get('SpinsOffset'), $arg);
+                    $dateObj = new SpinsDate($FANNIE_PLUGIN_SETTINGS['SpinsOffset'], $arg);
                 } elseif ($arg == '--file') {
                     $upload = false;
                 }
