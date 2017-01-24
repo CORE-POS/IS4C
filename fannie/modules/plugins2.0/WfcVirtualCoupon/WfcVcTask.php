@@ -101,31 +101,39 @@ class WfcVcTask extends FannieTask
             $dbc->execute($insP, array($row['CardNo']));
         }
 
-        $checkP = $dbc->prepare("SELECT
-            card_no
-            FROM is4c_trans.dlog_90_view
-            WHERE trans_type='T'
-                AND description='REBATE CHECK'
-                AND tdate > '2016-10-31'
-                AND card_no NOT IN (15590)
-            GROUP BY card_no
-            HAVING SUM(total) <> 0");
-        $checkR = $dbc->execute($checkP);
-        $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
-        while ($row = $dbc->fetchRow($checkR)) {
-            $dbc->execute($upP, array($row['card_no']));
+        $coupons = array(
+            '0049999900142' => array('2017-01-01', '2017-01-15'),
+            '0049999900143' => array('2017-01-16', '2017-01-31'),
+            '0049999900144' => array('2017-02-01', '2017-02-15'),
+            '0049999900145' => array('2017-02-16', '2017-02-28'),
+            '0049999900146' => array('2017-03-01', '2017-03-15'),
+            '0049999900147' => array('2017-03-16', '2017-03-31'),
+        );
+        $today = new DateTime(date('Y-m-d'));
+        $currentUPC = false;
+        foreach ($coupons as $upc => $dates) {
+            $start = new DateTime($dates[0]);
+            $end = new DateTime($dates[1]);
+            if ($today >= $start && $today <= $end) {
+                $currentUPC = $upc;
+                break;
+            }
         }
+        echo "$currentUPC\n";
 
-        // lookup OAM usage in the last month
-        $usageP = $dbc->prepare("SELECT card_no 
-                                FROM is4c_trans.dlog_90_view
-                                WHERE upc IN ('0049999900131', 'PATREBDISC')
-                                GROUP BY card_no
-                                HAVING SUM(total) <> 0");
-        $usageR = $dbc->execute($usageP);
-        $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
-        while ($row = $dbc->fetchRow($usageR)) {
-            $dbc->execute($upP, array($row['card_no']));
+        if ($currentUPC) {
+            $dbc->query("UPDATE CustomerNotifications SET message='OAM' WHERE source='WFC.OAM'");
+            // lookup OAM usage in the last month
+            $usageP = $dbc->prepare("SELECT card_no 
+                                    FROM is4c_trans.dlog_90_view
+                                    WHERE upc = ?
+                                    GROUP BY card_no
+                                    HAVING SUM(total) <> 0");
+            $usageR = $dbc->execute($usageP, array($currentUPC));
+            $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
+            while ($row = $dbc->fetchRow($usageR)) {
+                $dbc->execute($upP, array($row['card_no']));
+            }
         }
 
         // grant coupon to all members
