@@ -171,6 +171,13 @@ HTML;
         return $ret;
     }
 
+    protected function delete_id_handler()
+    {
+        unset($_SESSION['items'][BarcodeLib::padUPC($this->id)]);
+
+        return 'ScanTransferPage.php';
+    }
+
     protected function get_view()
     {
         $ret = '<table class="table table-bordered table-striped small">
@@ -180,10 +187,14 @@ HTML;
                 <th>Description</th>
                 <th>Unit Cost</th>
                 <th>Qty</th>
+                <th>&nbsp;</th>
             </tr></thead><tbody>';
         foreach ($_SESSION['items'] as $upc => $data) {
-            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td></tr>',
-                    $data['code'], $data['brand'], $data['desc'], $data['cost'], $data['qty']);
+            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td>
+                    <td><a class="btn btn-xs btn-danger" href="?_method=delete&id=%s">%s</a></td></tr>',
+                    $data['code'], $data['brand'], $data['desc'], $data['cost'], $data['qty'],
+                    $upc, COREPOS\Fannie\API\lib\FannieUI::deleteIcon() 
+            );
         }
         $ret .= <<<HTML
 </tbody>
