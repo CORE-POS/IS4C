@@ -544,6 +544,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             'meta_foreground' => 'black',
         );
 
+        $data[] = $this->discountsThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly);
+
         $data[] = array(
             'Hours',
             '',
@@ -587,6 +589,55 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = $this->ownershipThisYear($dbc, $end_ts);
 
         return $data;
+    }
+
+    private function discountsThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly)
+    {
+        $date1 = date('Y-m-d', $start_ts);
+        $date2 = date('Y-m-d', $end_ts);
+        $date3 = date('Y-m-d', $start_ly);
+        $date4 = date('Y-m-d', $end_ly);
+
+        $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        $dlogLY = DTransactionsModel::selectDlog($date3, $date4);
+        $opdb = $this->config->get('OP_DB') . $dbc->sep();
+
+        $discountQ = "
+            SELECT SUM(d.total)
+            FROM __DLOG__ AS d
+                LEFT JOIN {$opdb}houseCoupons AS h ON RIGHT(d.upc,5) = h.coupID
+            WHERE d.tdate BETWEEN ? AND ?
+                AND (
+                    (d.upc='DISCOUNT' AND d.memType=5)
+                    OR
+                    (d.upc LIKE '00499999%' AND h.memberOnly=1)
+                )
+        ";
+
+        $obj = new DateTime($date3);
+        $days = $obj->diff(new DateTime($date4))->days;
+
+        $discountP = $dbc->prepare(str_replace('__DLOG__', $dlog, $discountQ));
+        $total = $dbc->getValue($discountP, array($date1 . ' 00:00:00', $date2 . ' 23:59:59'));
+        $discountP = $dbc->prepare(str_replace('__DLOG__', $dlogLY, $discountQ));
+        $totalLY = $dbc->getValue($discountP, array($date3 . ' 00:00:00', $date4 . ' 23:59:59'));
+        $totalLY = 7 * ($totalLY / $days);
+
+        return array(
+            'Owner Discounts',
+            sprintf('%.0f', $totalLY),
+            '',
+            '',
+            '',
+            sprintf('%.0f', $total),
+            sprintf('%.2f%%', $this->percentGrowth($total, $totalLY)),
+            '',
+            '',
+            '',
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $this->colors[0],
+            'meta_foreground' => 'black',
+        );
     }
 
     private function getOtherStore($storeID, $weekID)

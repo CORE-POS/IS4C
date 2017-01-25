@@ -1038,83 +1038,83 @@ class ObfWeeklyReport extends FannieReportPage
                         $sales->growthTarget($l->growthTarget());
                     }
                 }
-                if ($catID == 1) {
+                if ($catID == 1) { // Hillside Produce
                     $sales->superID(6);
-                    $sales->lastYearSales(1.096*54178.24);
+                    $sales->lastYearSales(48125.67);
                     $sales->save();
-                } elseif ($catID == 2) {
+                } elseif ($catID == 2) { // Hillside Deli
                     $sales->superID(10); 
-                    $sales->lastYearSales(1.03*10778.62);
+                    $sales->lastYearSales(11037.90);
                     $sales->save();
                     $sales->superID(11); 
-                    $sales->lastYearSales(1.03*35928.54);
+                    $sales->lastYearSales(30002.96);
                     $sales->save();
                     $sales->superID(16); 
-                    $sales->lastYearSales(1.03*13173.87);
+                    $sales->lastYearSales(12231.91);
                     $sales->save();
-                } elseif ($catID == 3) {
+                } elseif ($catID == 3) { // Hillside Grocey
                     $sales->superID(1); 
-                    $sales->lastYearSales(1.096*27089.13);
+                    $sales->lastYearSales(24806.33);
                     $sales->save();
                     $sales->superID(4); 
-                    $sales->lastYearSales(1.096*61306.97);
+                    $sales->lastYearSales(61459.93);
                     $sales->save();
                     $sales->superID(5); 
-                    $sales->lastYearSales(1.096*23524.77);
+                    $sales->lastYearSales(23038.55);
                     $sales->save();
                     $sales->superID(7); 
-                    $sales->lastYearSales(1.096*285.16);
+                    $sales->lastYearSales(98.48);
                     $sales->save();
                     $sales->superID(8); 
-                    $sales->lastYearSales(1.096*17108.92);
+                    $sales->lastYearSales(17579.95);
                     $sales->save();
                     $sales->superID(9); 
-                    $sales->lastYearSales(1.096*2566.35);
+                    $sales->lastYearSales(3313.16);
                     $sales->save();
                     $sales->superID(13); 
-                    $sales->lastYearSales(1.096*15683.19);
+                    $sales->lastYearSales(14085.38);
                     $sales->save();
                     $sales->superID(17); 
-                    $sales->lastYearSales(1.096*26376.25);
+                    $sales->lastYearSales(25413.22);
                     $sales->save();
-                } elseif ($catID == 7) {
+                } elseif ($catID == 7) { // Denfeld Produce
                     $sales->superID(6);
-                    $sales->lastYearSales(0.92*25576.85);
+                    $sales->lastYearSales(16406.47);
                     $sales->save();
-                } elseif ($catID == 8) {
+                } elseif ($catID == 8) { // Denfeld Deli
                     $sales->superID(10); 
-                    $sales->lastYearSales(0.92*5088.447);
+                    $sales->lastYearSales(4049.92);
                     $sales->save();
                     $sales->superID(11); 
-                    $sales->lastYearSales(0.92*16961.49);
+                    $sales->lastYearSales(12211.43);
                     $sales->save();
                     $sales->superID(16); 
-                    $sales->lastYearSales(0.92*6219.213);
+                    $sales->lastYearSales(4768.70);
                     $sales->save();
-                } elseif ($catID == 9) {
+                } elseif ($catID == 9) { // Denfeld Grocery
                     $sales->superID(1); 
-                    $sales->lastYearSales(0.92*12788.43);
+                    $sales->lastYearSales(8281.40);
                     $sales->save();
                     $sales->superID(4); 
-                    $sales->lastYearSales(0.92*28942.23);
+                    $sales->lastYearSales(24726.33);
                     $sales->save();
                     $sales->superID(5); 
-                    $sales->lastYearSales(0.92*11105.74);
+                    $sales->lastYearSales(9070.20);
                     $sales->save();
                     $sales->superID(7); 
-                    $sales->lastYearSales(0.92*134.62);
+                    $sales->lastYearSales(45.52);
                     $sales->save();
                     $sales->superID(8); 
-                    $sales->lastYearSales(0.92*8076.90);
+                    $sales->lastYearSales(5975.21);
                     $sales->save();
                     $sales->superID(9); 
-                    $sales->lastYearSales(0.92*1211.54);
+                    $sales->lastYearSales(1310.53);
                     $sales->save();
                     $sales->superID(13); 
-                    $sales->lastYearSales(0.92*7403.83);
+                    $sales->lastYearSales(4589.22);
                     $sales->save();
                     $sales->superID(17); 
-                    $sales->lastYearSales(0.92*12451.89);
+                    $sales->lastYearSales(8823.08);
                     $sales->save();
                 }
             }
