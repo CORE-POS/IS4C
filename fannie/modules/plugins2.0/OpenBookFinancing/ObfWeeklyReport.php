@@ -69,12 +69,13 @@ class ObfWeeklyReport extends FannieReportPage
         '#CDB49B',
         '#99C299',
         '#CDB49B',
-        '#6685C2',
-        '#FF4D4D',
         '#99C299',
-        '#C299EB',
-        '#FFB280',
-        '#FFFF66',
+        '#CDB49B',
+        '#99C299',
+        '#CDB49B',
+        '#99C299',
+        '#CDB49B',
+        '#99C299',
     );
 
     public function report_description_content()

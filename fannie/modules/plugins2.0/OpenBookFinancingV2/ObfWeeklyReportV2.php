@@ -274,6 +274,24 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 'meta_foreground' => 'black',
             );
 
+            /*
+            $data[] = array(
+                'Labor % of Sales',
+                '',
+                '',
+                '',
+                '',
+                sprintf('%.2f%%', $labor->wages() / $sum[0] * 100),
+                '',
+                '',
+                '',
+                '',
+                'meta' => FannieReportPage::META_COLOR,
+                'meta_background' => $this->colors[0],
+                'meta_foreground' => 'black',
+            );
+            */
+
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
 
             if (count($this->colors) > 1) {
@@ -346,6 +364,24 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
             );
+
+            /*
+            $data[] = array(
+                'Labor % of Sales',
+                '',
+                '',
+                '',
+                '',
+                sprintf('%.2f%%', $labor->wages() / $total_sales->thisYear * 100),
+                '',
+                '',
+                '',
+                '',
+                'meta' => FannieReportPage::META_COLOR,
+                'meta_background' => $this->colors[0],
+                'meta_foreground' => 'black',
+            );
+            */
 
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
 
@@ -512,6 +548,24 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
             );
+
+            /*
+            $data[] = array(
+                'Labor % of Sales',
+                '',
+                '',
+                '',
+                '',
+                sprintf('%.2f%%', $labor->wages() / ($total_sales->thisYear + $otherStore['actual']) * 100),
+                '',
+                '',
+                '',
+                '',
+                'meta' => FannieReportPage::META_COLOR,
+                'meta_background' => $this->colors[0],
+                'meta_foreground' => 'black',
+            );
+            */
 
             $total_hours->actual += $labor->hours();
             $total_hours->projected += $proj_hours;
