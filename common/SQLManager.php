@@ -276,6 +276,24 @@ class SQLManager
         return $con->Close();
     }
 
+    /**
+      Abstraction leaks here. Changing the connection's default DB
+      or SCHEMA via query works but calling SelectDB on the underying
+      ADOdb object is sometimes necessary to update the object's
+      internal state appropriately. This makes postgres a special case
+      where the SCHEMA should change but DB should not.
+    */
+    private function setDBorSchema($db_name)
+    {
+        if (strtolower($this->connectionType[$db_name]) === 'postgres9') {
+            $adapter = $this->getAdapter($this->connectionType($db_name));
+            $selectDbQuery = $adapter->useNamedDB($db_name);
+            return $this->connections[$db_name]->Execute($selectDbQuery);
+        }
+
+        return $this->connectins[$db_name]->SelectDB($db_name);
+    }
+
     public function setDefaultDB($db_name)
     {
         /** verify connection **/
@@ -284,23 +302,18 @@ class SQLManager
         }
 
         $this->default_db = $db_name;
-        $adapter = $this->getAdapter($this->connectionType($db_name));
         if ($this->isConnected()) {
-            $selectDbQuery = $adapter->useNamedDB($db_name);
-            $selected = $this->connections[$db_name]->Execute($selectDbQuery);
+            $selected = $this->setDBorSchema($db_name);
             if (!$selected) {
-                $this->query($adapter->createNamedDB($db_name), $db_name);
-                $selected = $this->connections[$db_name]->Execute($selectDbQuery);
+                $selected = $this->setDBorSchema($db_name);
             }
             if ($selected) {
                 $this->connections[$db_name]->database = $db_name;
                 return true;
-            } else {
-                return false;
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
