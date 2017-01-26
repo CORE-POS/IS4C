@@ -268,8 +268,9 @@ class DTransactionsModel extends BasicModel
             }
         }
         $source = $this->connection->tableDefinition($table_name);
+        $dbms = $this->connection->dbmsName();
 
-        $sql = 'CREATE VIEW '.$this->connection->identifierEscape($view_name).' AS '
+        $sql = 'CREATE VIEW '.$this->identifierEscape($dbms, $view_name).' AS '
             .'SELECT '
             .$this->connection->identifierEscape('datetime').' AS '
             .$this->connection->identifierEscape('tdate').',';
@@ -299,11 +300,11 @@ class DTransactionsModel extends BasicModel
                 $sql .= "CASE WHEN trans_subtype IN ('CP','IC') THEN 'T' 
                     WHEN upc = 'DISCOUNT' THEN 'S' ELSE trans_type END AS trans_type,\n";
             } else {
-                $sql .= $c->identifierEscape($name).",\n";
+                $sql .= $this->identifierEscape($dbms, $name).",\n";
             }
         }
         $sql = preg_replace("/,\n$/","\n",$sql);
-        $sql .= ' FROM '.$c->identifierEscape($table_name)
+        $sql .= ' FROM '.$this->identifierEscape($dbms, $table_name)
             .' WHERE '.$c->identifierEscape('trans_status')
             ." NOT IN ('D','X','Z') AND emp_no <> 9999
             AND register_no <> 99";
