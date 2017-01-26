@@ -757,6 +757,10 @@ HTML;
         }
 
         $fetchArgs = array();
+
+        // logically string "LC" followed by like code number
+        $joinColumn = $dbc->concat("'LC'", $dbc->convert('l.likeCode', 'CHAR'), '');
+
         $fetchQ = "
             SELECT b.upc,
                 CASE 
@@ -772,7 +776,7 @@ HTML;
                 NULL AS locationName
             FROM batchList AS b 
                 " . DTrans::joinProducts('b') . "
-                LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
+                LEFT JOIN likeCodes AS l ON b.upc = {$joinColumn}
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
                 LEFT JOIN FloorSections AS s ON y.section=s.floorSectionID
@@ -780,22 +784,6 @@ HTML;
             WHERE b.batchID = ? 
             $orderby";
         $fetchArgs[] = $id;
-        if ($dbc->dbmsName() == "mssql") {
-            $fetchQ = "select b.upc,
-                    case when l.likecode is null then p.description
-                    else l.likecodedesc end as description,
-                    p.normal_price,b.salePrice,
-                    CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
-                    b.quantity,b.pricemethod
-                    from batchList as b 
-                        " . DTrans::joinProducts('b') . "
-                        left join likeCodes as l on
-                    b.upc = 'LC'+convert(varchar,l.likecode)
-                    left join batchCutPaste as c ON
-                    b.upc=c.upc AND b.batchID=c.batchID
-                    where b.batchID = ? $orderby";
-        }
-
         if ($dbc->tableExists('FloorSectionsListView')) {
             $fetchQ = str_replace('NULL AS locationName', 'f.sections AS locationName', $fetchQ);
         } elseif ($dbc->tableExists('FloorSections')) {
@@ -1157,6 +1145,9 @@ HTML;
             $ret .= "<div class=\"alert alert-warning\">Add items first</div>";
         }
 
+        // logically string "LC" followed by like code number
+        $joinColumn = $dbc->concat("'LC'", $dbc->convert('l.likeCode', 'CHAR'), '');
+
         $fetchQ = $dbc->prepare("
             SELECT b.upc,
                 case when l.likeCode is null then p.description else l.likeCodeDesc end as description,
@@ -1165,20 +1156,9 @@ HTML;
                 b.batchID
             FROM batchList AS b 
                 " . DTrans::joinProducts('b') . "
-                LEFT JOIN likeCodes as l on b.upc = concat('LC'+convert(l.likeCode,char))
+                LEFT JOIN likeCodes as l on b.upc = {$joinColumn}
             WHERE b.batchID = ? 
                 AND b.salePrice >= 0");
-        if ($FANNIE_SERVER_DBMS == "MSSQL"){
-            $fetchQ = $dbc->prepare("select b.upc,
-                    case when l.likecode is null then p.description
-                    else l.likecodedesc end as description,
-                    p.normal_price,b.salePrice
-                    from batchList as b 
-                        " . DTrans::joinProducts('b') . "
-                        left join likeCodes as l on
-                    b.upc = 'LC'+convert(varchar,l.likecode)
-                    where b.batchID = ? AND b.salePrice >= 0");
-        }
         $fetchR = $dbc->execute($fetchQ,array($id));
 
         $ret .= '<table class="table" id="qualifier-table">';
@@ -1194,20 +1174,9 @@ HTML;
                 b.batchID
             FROM batchList AS b 
                 " . DTrans::joinProducts('b') . "
-                LEFT JOIN likeCodes as l on b.upc = concat('LC'+convert(l.likeCode,char))
+                LEFT JOIN likeCodes as l on b.upc = {$joinColumn}
             WHERE b.batchID = ? 
                 AND b.salePrice < 0");
-        if ($FANNIE_SERVER_DBMS == "MSSQL"){
-            $fetchQ = $dbc->prepare("select b.upc,
-                    case when l.likecode is null then p.description
-                    else l.likecodedesc end as description,
-                    p.normal_price,b.salePrice
-                    from batchList as b 
-                        " . DTrans::joinProducts('b') . "
-                        left join likeCodes as l on
-                    b.upc = 'LC'+convert(varchar,l.likecode)
-                    where b.batchID = ? AND b.salePrice < 0");
-        }
         $fetchR = $dbc->execute($fetchQ,array($id));
 
         $ret .= '<table class="table" id="discount-table">';

@@ -269,6 +269,12 @@ class SalesBatchTask extends FannieTask
                 products AS p
                 INNER JOIN upcLike AS u
                 ON p.upc=u.upc");
+        } elseif ($dbc->dbmsName() == 'postgres9') {
+            $dbc->query("
+                UPDATE products AS p
+                SET mixmatchcode = " . $dbc->convert('u.likeCode+500', 'CHAR') . "
+                FROM upcLike AS u
+                WHERE p.upc=u.upc");
         } else {
             $dbc->query("UPDATE products AS p
                 INNER JOIN upcLike AS u ON p.upc=u.upc
