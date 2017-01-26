@@ -291,7 +291,7 @@ class SQLManager
             return $this->connections[$db_name]->Execute($selectDbQuery);
         }
 
-        return $this->connectins[$db_name]->SelectDB($db_name);
+        return $this->connections[$db_name]->SelectDB($db_name);
     }
 
     public function setDefaultDB($db_name)
