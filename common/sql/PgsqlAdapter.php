@@ -141,7 +141,7 @@ class PgsqlAdapter implements DialectAdapter
     {
         $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . '||'; }, '');
         
-        return substr($ret, 0, strlen($ret)-1);
+        return substr($ret, 0, strlen($ret)-2);
     }
 
     public function setLockTimeout($seconds)
