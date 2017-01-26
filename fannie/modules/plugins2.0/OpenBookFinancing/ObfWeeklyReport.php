@@ -95,10 +95,10 @@ class ObfWeeklyReport extends FannieReportPage
         $other = $store == 1 ? 2 : 1;
 
         return array(
-            'Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts) . '<br />',
-            "<a href=\"?weekID={$prev}&store={$store}\">Prev Week</a> 
+            '<div>Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts) . '</div>',
+            "<div class=\"hidden-print\"><a href=\"?weekID={$prev}&store={$store}\">Prev Week</a> 
             | <a href=\"?weekID={$next}&store={$store}\">Next Week</a>
-            | <a href=\"?weekID={$this->form->weekID}&store={$other}\">Other Store</a>",
+            | <a href=\"?weekID={$this->form->weekID}&store={$other}\">Other Store</a></div>",
         );
     }
 
