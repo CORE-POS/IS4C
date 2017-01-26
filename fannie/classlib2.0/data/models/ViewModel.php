@@ -54,10 +54,11 @@ class ViewModel extends BasicModel
         if ($this->connection->isView($this->name)) {
             return true;
         }
+        $dbms = $this->connection->dbmsName();
 
         $selectQuery = $this->definition();
         $createQuery = 'CREATE VIEW '
-            . $this->connection->identifierEscape($this->name)
+            . $this->identifierEscape($dbms, $this->name)
             . ' AS '
             . $selectQuery;
 
