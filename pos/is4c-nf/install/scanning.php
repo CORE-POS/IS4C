@@ -145,6 +145,17 @@ body {
     </td>
 </tr>
 <tr>
+    <td><b><?php echo _('Enforce coupons family codes'); ?></b>:</td>
+    <td>
+    <?php
+    $familyCode = array(1=>_('Yes'), 0=>_('No'));
+    echo $form->selectField('EnforceFamilyCode', $familyCode, 0);
+    ?>
+    <span class='noteTxt'><?php echo _('Match both manufacturer prefixes and family codes
+    on coupons rather than just manufacturer prefixes.'); ?></span>
+    </td>
+</tr>
+<tr>
     <td><b><?php echo _('Equity Department(s)'); ?></b></td>
     <td>
     <?php

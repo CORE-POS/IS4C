@@ -164,7 +164,7 @@ class CouponCode extends SpecialUPC
             return $chk;
         }
 
-        if ($fam == "992") { 
+        if ($fam == "992") {
             // 992 basically means blanket accept
             // Old method of asking cashier to assign a department
             // just creates confusion
@@ -197,7 +197,13 @@ class CouponCode extends SpecialUPC
 
         // validate coupon
         $dbc = Database::tDataConnect();
-        $fam = substr($fam, 0, 2);
+
+        $matchLength = 5;
+        $matchOn = $manId;
+        if ($this->session->get('EnforceFamilyCode')) {
+            $matchLength = 8;
+            $matchOn = $manId  . $fam;
+        }
 
         /* the idea here is to track exactly which
            items in the transaction a coupon was 
@@ -219,12 +225,12 @@ class CouponCode extends SpecialUPC
             localtemptrans as t left join couponApplied as c
             on t.emp_no=c.emp_no and t.trans_no=c.trans_no
             and t.trans_id=c.trans_id
-            where (substring(t.upc," . ($manIdStart+1) . ",5)='$manId'";
+            where (substring(t.upc," . ($manIdStart+1) . ", {$matchLength})='{$matchOn}'";
         /* not right per the standard, but organic valley doesn't
          * provide consistent manufacturer ids in the same goddamn
          * coupon book */
         if ($this->ean) {
-            $query .= " or substring(t.upc," . $manIdStart . ",5)='$manId'";
+            $query .= " or substring(t.upc," . $manIdStart . ", {$matchLength})='{$matchOn}'";
         }
         $query .= ") and t.trans_status <> 'C'
             group by t.trans_id
