@@ -40,7 +40,7 @@ class Lib
             }
         }
         if (extension_loaded('pgsql')) {
-            $ret['PGSQL'] = 'PostgreSQL';
+            $ret['POSTGRES9'] = 'PostgreSQL';
         }
         if (extension_loaded('mssql')) {
             $ret['MSSQL'] = 'SQL Server';

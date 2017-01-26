@@ -124,6 +124,10 @@ class SQLManager
     {
         if (empty($type)) {
             return false;
+        } elseif (strtolower($type) == 'postgres9') {
+            // value here is really schema. Database name must match user name.
+            $savedDB = $database;
+            $database = $username;
         }
 
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
@@ -131,13 +135,17 @@ class SQLManager
         $conn = $this->setConnectTimeout($conn, $type);
         $connected = false;
         if (isset($this->connections[$database]) || $new) {
-            $connected = $conn->NConnect($this->getDSN($server,$type,$database),$username,$password,$database);
+            $connected = $conn->NConnect($this->getDSN($server,$type,$database),$username,$password, $database);
         } elseif ($persistent) {
             $connected = $conn->PConnect($this->getDSN($server,$type,$database),$username,$password,$database);
         } else {
             $connected = $conn->Connect($this->getDSN($server,$type,$database),$username,$password,$database);
         }
         $conn = $this->clearConnectTimeout($conn, $type);
+
+        if (strtolower($type) == 'postgres9') {
+            $database = $savedDB;
+        }
         $this->connections[$database] = $conn;
 
         $this->last_connect_error = false;
@@ -278,10 +286,11 @@ class SQLManager
         $this->default_db = $db_name;
         $adapter = $this->getAdapter($this->connectionType($db_name));
         if ($this->isConnected()) {
-            $selected = $this->connections[$db_name]->SelectDB($db_name);
+            $selectDbQuery = $adapter->useNamedDB($db_name);
+            $selected = $this->connections[$db_name]->Execute($selectDbQuery);
             if (!$selected) {
                 $this->query($adapter->createNamedDB($db_name), $db_name);
-                $selected = $this->connections[$db_name]->SelectDB($db_name);
+                $selected = $this->connections[$db_name]->Execute($selectDbQuery);
             }
             if ($selected) {
                 $this->connections[$db_name]->database = $db_name;
@@ -1740,6 +1749,7 @@ class SQLManager
         'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
         'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
         'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
+        'postgres9' => 'COREPOS\common\sql\PgsqlAdapter',
         'pdo_pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
         'sqlite3'   => 'COREPOS\common\sql\SqliteAdapter',
     );
