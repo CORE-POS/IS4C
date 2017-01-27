@@ -40,9 +40,25 @@ class WfcVcTask extends FannieTask
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $chkMsgP = $dbc->prepare("
+            SELECT card_no
+            FROM custReceiptMessage
+            WHERE card_no=?
+                AND msg_text like 'Access%'"
+        );
+        $upMsgP = $dbc->prepare("
+            UPDATE custReceiptMessage
+            SET msg_text=?
+            WHERE card_no=?
+                AND msg_text LIKE 'Access%'");
+        $insMsgP = $dbc->prepare("
+            INSERT INTO custReceiptMessage
+                (card_no, msg_text)
+                VALUES (?, ?)");
+
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
-        $accessQ = 'SELECT card_no
+        $accessQ = 'SELECT card_no, MAX(tdate) AS tdate
                     FROM ' . $dlog_ly . '
                     WHERE trans_type=\'I\'
                         AND upc=\'ACCESS\'
@@ -56,6 +72,15 @@ class WfcVcTask extends FannieTask
         while ($accessW = $dbc->fetch_row($accessR)) {
             $mems[] = $accessW['card_no'];
             $in .= '?,';
+            $expires = new DateTime($accessW['tdate']);
+            $expires->add(new DateInterval('P1Y'));
+            $text = 'Access Discount valid until ' . $expires->format('Y-m-d');
+            $msg = $dbc->getValue($chkMsgP, $accessW['card_no']);
+            if ($msg) {
+                $dbc->execute($upMsgP, array($text, $accessW['card_no']));
+            } else {
+                $dbc->execute($insMsgP, array($accessW['card_no'], $text));
+            }
         }
         $in = substr($in, 0, strlen($in)-1);
 
@@ -63,6 +88,12 @@ class WfcVcTask extends FannieTask
             $mems = array(-1);
             $in = '?';
         }
+
+        $delMsgP = $dbc->prepare("
+            DELETE FROM custReceiptMessage
+            WHERE msg_text LIKE 'Access%'
+                AND card_no NOT IN ({$in})");
+        $dbc->execute($delMsgP, $mems);
 
         $redo = $dbc->prepare('UPDATE custdata 
                                SET memType=5,
