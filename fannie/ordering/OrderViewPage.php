@@ -656,7 +656,7 @@ class OrderViewPage extends FannieRESTfulPage
         }
         $unitPrice = OrderItemLib::getUnitPrice($item, $mempricing);
         $casePrice = OrderItemLib::getCasePrice($item, $mempricing);
-        if (!OrderItemLib::useSalePrice($item, $mempricing)) {
+        if ($unitPrice == $item['normal_price'] && !OrderItemLib::useSalePrice($item, $mempricing)) {
             $item['discounttype'] = 0;
         }
 
