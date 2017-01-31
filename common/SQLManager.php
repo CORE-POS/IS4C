@@ -285,7 +285,7 @@ class SQLManager
     */
     private function setDBorSchema($db_name)
     {
-        if (strtolower($this->connectionType[$db_name]) === 'postgres9') {
+        if (strtolower($this->connectionType($db_name)) === 'postgres9') {
             $adapter = $this->getAdapter($this->connectionType($db_name));
             $selectDbQuery = $adapter->useNamedDB($db_name);
             return $this->connections[$db_name]->Execute($selectDbQuery);
