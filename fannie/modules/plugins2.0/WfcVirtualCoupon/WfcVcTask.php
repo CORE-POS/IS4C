@@ -97,14 +97,16 @@ class WfcVcTask extends FannieTask
 
         $redo = $dbc->prepare('UPDATE custdata 
                                SET memType=5,
-                                Discount=10
+                                Discount=10,
+                                SSI=1
                                WHERE Type=\'PC\' 
                                 AND memType IN (1,5)
                                 AND CardNo IN (' . $in . ')');
         $dbc->execute($redo, $mems);
         $undo = $dbc->prepare('UPDATE custdata 
                                SET memType=1,
-                                Discount=0
+                                Discount=0,
+                                SSI=0
                                WHERE Type=\'PC\'
                                 AND memType IN (5)
                                 AND CardNo NOT IN (' . $in . ')');
