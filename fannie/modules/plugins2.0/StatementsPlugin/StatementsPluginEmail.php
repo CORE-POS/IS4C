@@ -195,15 +195,22 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $invoice = sprintf('%s-%s', $card_no, date('ymd'));
             $mail->Subject = 'Invoice ' . $invoice;
             $body = "Invoice #: {$invoice}\n";
-            $body .= $startDate . "\n\n";
+            $html = "<p>Invoice #: {$invoice}<br>";
+            $body .= $stateDate . "\n\n";
+            $html .= $stateDate . "</p>";
             $body .= trim($card_no) . ' ' . trim($name) . "\n";
+            $html .= '<p>' . trim($card_no) . ' ' . trim($name) . "<br>";
             $body .= $account['addressFirstLine'] . "\n";
+            $html .= $account['addressFirstLine'] . "<br>";
             if ($account['addressSecondLine']) {
                 $body .= $account['addressSecondLine'] . "\n";
+                $html .= $account['addressSecondLine'] . "<br>";
             }
             $body .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "\n\n";
+            $html .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "</p>";
  
             $body .= "If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.\n\n";
+            $html .= "<p>If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.</p>";
 
             $priorQ = $dbc->prepare("
                 SELECT SUM(charges) - SUM(payments) AS priorBalance
@@ -217,8 +224,12 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $indent = 10;
             $columns = array(75, 35, 30, 30);
             $body .= sprintf('Balance Forward: $%.2f', $priorBalance) . "\n\n";
+            $html .= sprintf('<p>Balance Forward: $%.2f</p>', $priorBalance);
  
             $body .= "90-Day Billing History\n";
+            $html .= "<p>90-Day Billing History</p>";
+            $html .= '<table border="1" cellspacing="0" cellpadding="4">
+                <tr><td>Date</td><td>Receipt#</td><td>Amount</td></tr>';
  
             if (!isset($arRows[$card_no])) {
                 $arRows[$card_no] = array();
@@ -240,27 +251,36 @@ class StatementsPluginEmail extends FannieRESTfulPage
                 }
 
                 $body .= str_pad($date, 20) . str_pad($trans, 15);
+                $html .= "<tr><td>{$date}</td><td>{$trans}</td>";
                 if ($payment > $charges) {
                     $body .= sprintf('$%.2f',$payment-$charges);
+                    $html .= sprintf('<td>$%.2f</td></tr>',$payment-$charges);
                 } else {
                     $body .= sprintf('$(%.2f)',abs($payment-$charges));
+                    $html .= sprintf('<td>$(%.2f)</td></tr>',abs($payment-$charges));
                 }
                 $body .= "\n";
                 if (!empty($lineitem)){
                     $body .= "    {$lineitem}\n";
+                    $html .= '<tr><td>&nbsp;</td><td colspan="2">' . $lineitem . '</td></tr>';
                 }
             }
 
             $body .= "\n";
+            $html .= "</table>";
             if ($balance >= 0) {
                 $body .= 'Amount Due: ';
+                $html .= '<p>Amount Due: ';
             } else {
                 $body .= 'Credit Balance: ';
+                $html .= '<p>Credit Balance: ';
             }
             $body .= '$ ' . sprintf("%.2f",$balance) . "\n";
+            $html .= '$ ' . sprintf("%.2f",$balance) . "</p>";
 
-            $mail->isHTML(false);
-            $mail->Body = $body;
+            $mail->isHTML(true);
+            $mail->Body = $html;
+            $mail->AltBody = $body;
             $mail->addAddress($primary['email']);
             $mail->addBCC('bcarlson@wholefoods.coop');
             $mail->addBCC('andy@wholefoods.coop');
