@@ -89,18 +89,13 @@ $full_x = $left;
 $full_y = $top;
 
 // half size tag settings
-$i = 7;  //x location of barcode
-$j = 31; //y locaton of barcode
-$l = 30; //y location of size and price on label
-$k = 8; //x location of date and price on label
-$m = 0;  //number of labels created
-$n = 18; //y location of description for label
-$r = 24; //y location of date for label
-$p = 6;  //x location fields on label
-$t = 28; //y location of SKU and vendor info
-$u = 24; //x locaiton of vendor info for label
-$w = 7; //x location of Brand info for label
-$half_x = 42; //y location of Brand info for label
+$upcX = 7;  //x location of barcode
+$upcY = 15; //y locaton of barcode
+$priceY = 29; //y location of size and price on label
+$priceX = 8; //x location of date and price on label
+$count = 0;  //number of labels created
+$baseY = 31; // baseline Y location of label
+$baseX = 6;  // baseline X location of label
 $down = 31.0;
 
 //cycle through result array of query
@@ -159,8 +154,15 @@ foreach($data as $row) {
 
         //Start laying out a label 
         $pdf->SetFont('Arial','',8);  //Set the font 
+        if (strlen($upc) <= 11)
+            $pdf->UPC_A($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
+        else
+            $pdf->EAN13($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
 
-        $words = preg_split('/[ ,-]+/',$desc);
+        $pdf->SetFont('Arial','B',18); //change font for price
+        $pdf->TEXT($priceX,$priceY,$price);  //add price
+
+        $words = preg_split('/[\s,-]+/',$desc);
         $limit = 13;
         $lineheight = 0;
         $curStr = "";
@@ -179,13 +181,13 @@ foreach($data as $row) {
                 $length = strlen($word)+1;
             }
         }
-        $pdf->SetXY($p, $n-3);
+        $pdf->SetFont('Arial','',8);
+        $pdf->SetXY($baseX, $baseY);
         $pdf->MultiCell(100, 3, $curStr);
-
-        //$pdf->TEXT($p,$n,$desc);   //Add description to label
-
-        $pdf->TEXT($p,$r,$tagdate);  //Add date to label
-        $pdf->TEXT($p+12,$r,$size);  //Add size to label
+        $pdf->SetX($baseX);
+        $pdf->Cell(0, 3, $tagdate);
+        $pdf->SetX($baseX+12);
+        $pdf->Cell(0, 3, $size, 0, 1);
 
         $words = preg_split('/[ ,-]+/',$brand);
         $curStr = "";
@@ -208,15 +210,8 @@ foreach($data as $row) {
            }
            $curCnt++;
         }
-        $pdf->TEXT($w,$half_x,$curStr);  //add brand
-        $pdf->SetFont('Arial','B',18); //change font for price
-        $pdf->TEXT($k,$l,$price);  //add price
-
-        $newUPC = $upc . $check; //add check digit to upc
-        if (strlen($upc) <= 11)
-            $pdf->UPC_A($i,$j,$upc,4,.25);  //generate barcode and place on label
-        else
-            $pdf->EAN13($i,$j,$upc,4,.25);  //generate barcode and place on label
+        $pdf->SetX($baseX);
+        $pdf->Cell(0, 3, $curStr);
    }
 
    // move right by tag width
@@ -225,12 +220,10 @@ foreach($data as $row) {
    $full_x += $width;
 
    // half size
-   $i = $i + 52.7;
-   $k = $k + 52.7;
-   $m = $m + 1;
-   $p = $p + 52.7;
-   $u = $u + 52.7;
-   $w = $w + 52.7;
+   $upcX = $upcX + 52.7;
+   $priceX = $priceX + 52.7;
+   $count = $count + 1;
+   $baseX = $baseX + 52.7;
 
    // if it's the end of a page, add a new
    // one and reset x/y top left margins
@@ -243,19 +236,13 @@ foreach($data as $row) {
     $full_y = $top;
     
     // half size
-    $i = 7;  //x location of barcode
-    $j = 31; //y locaton of barcode
-    $l = 30; //y location of size and price on label
-    $k = 8; //x location of date and price on label
-    $m = 0;  //number of labels created
-    $m = 0;  //number of labels created
-    $n = 18; //y location of description for label
-    $r = 24; //y location of date for label
-    $p = 6;  //x location fields on label
-    $t = 28; //y location of SKU and vendor info
-    $u = 24; //x location of vendor info for label
-    $w = 7; //x location of Brand info for label
-    $half_x = 42; //y location of Brand info for label
+    $upcX = 7;  //x location of barcode
+    $upcY = 15; //y locaton of barcode
+    $priceY = 29; //y location of size and price on label
+    $priceX = 8; //x location of date and price on label
+    $count = 0;  //number of labels created
+    $baseY = 31; // baseline Y location of label
+    $baseX = 6;  // baseline X location of label
    }
    else if ($num % 4 == 0){
        // full size
@@ -263,17 +250,12 @@ foreach($data as $row) {
     $full_y += $height;
 
       // half size
-      $i = 7;
-      $j = $j + $down;
-      $k = 8;
-      $l = $l + $down;
-      $n = $n + $down;
-      $r = $r + $down;
-      $p = 6;
-      $u = 24;
-      $t = $t + $down;
-      $w = 7;
-      $half_x = $half_x + $down;
+      $upcX = 7;
+      $upcY = $upcY + $down;
+      $priceX = 8;
+      $priceY = $priceY + $down;
+      $baseY = $baseY + $down;
+      $baseX = 6;
    }
 
    $num++;
