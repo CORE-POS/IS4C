@@ -376,7 +376,7 @@ class MercuryE2E extends BasicCCModule
 
                 $isCredit = ($this->conf->get('CacheCardType') == 'CREDIT' || $this->conf->get('CacheCardType') == '') ? true : false;
                 $needSig = ($this->conf->get('paycard_amount') > $this->conf->get('CCSigLimit') || $this->conf->get('paycard_amount') < 0) ? true : false;
-                if (($isCredit || $this->conf->get('EmvSignature') === true) && $needSig) {
+                if ($this->conf->get('paycard_recurring')) {
                     $this->conf->set("boxMsg",
                             "<b>$apprType</b>
                             <font size=-1>
@@ -385,7 +385,17 @@ class MercuryE2E extends BasicCCModule
                             <br>\"rp\" to reprint slip
                             <br>[void] " . _('to reverse the charge') . "
                             </font>");
-                    if ($this->conf->get('PaycardsSigCapture') != 1) {
+                    $json['receipt'] = 'ccSlip';
+                } elseif (($isCredit || $this->conf->get('EmvSignature') === true) && $needSig) {
+                    $this->conf->set("boxMsg",
+                            "<b>$apprType</b>
+                            <font size=-1>
+                            <p>Please verify cardholder signature
+                            <p>[enter] to continue
+                            <br>\"rp\" to reprint slip
+                            <br>[void] " . _('to reverse the charge') . "
+                            </font>");
+                    if ($this->conf->get('PaycardsSigCapture')) {
                         $json['receipt'] = 'ccSlip';
                     }
                 } else {
