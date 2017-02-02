@@ -280,6 +280,18 @@ class OrderViewPage extends FannieRESTfulPage
         if (FormLib::get('ln', false) !== false) {
             $soModel->lastName(FormLib::get('ln'));
         }
+        if (FormLib::get('street', false) !== false) {
+            $soModel->street(FormLib::get('street'));
+        }
+        if (FormLib::get('city', false) !== false) {
+            $soModel->street(FormLib::get('city'));
+        }
+        if (FormLib::get('state', false) !== false) {
+            $soModel->street(FormLib::get('state'));
+        }
+        if (FormLib::get('zip', false) !== false) {
+            $soModel->street(FormLib::get('zip'));
+        }
         $json = array();
         $json['saved'] = $soModel->save() ? true : false;
         echo json_encode($json);
@@ -615,12 +627,32 @@ class OrderViewPage extends FannieRESTfulPage
                     </select>
                     <button class="btn btn-default btn-sm btn-test-send">Test Send</button>
                 </td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td><input type="text" class="form-control input-sm contact-field"
+                    name="street" value="%s" /></td>
+                <th>City</th>
+                <td><input type="text" class="form-control input-sm contact-field"
+                    name="city" value="%s" /></td>
+                <td class="form-inline">
+                    <strong>State</strong>
+                    <input type="text" class="form-control input-sm contact-field"
+                    name="state" value="%s" />
+                    <strong>Zip</strong>
+                    <input type="text" class="form-control input-sm contact-field"
+                    name="zip" value="%s" />
+                </td>
             </tr>',
             $orderModel->email(),
             $orderModel->phone(), 
             $orderModel->notes(),
             $orderModel->altPhone(),
-            $contactHtml
+            $contactHtml,
+            $orderModel->street(),
+            $orderModel->city(),
+            $orderModel->state(),
+            $orderModel->zip()
         );
 
         $ret .= '</table>';
