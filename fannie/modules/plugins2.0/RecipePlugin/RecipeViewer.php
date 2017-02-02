@@ -56,6 +56,7 @@ class RecipeViewer extends FannieRESTfulPage
             'PEANUTS'       => 'PEANUTS',
             'WHOLEWHEAT'    => 'WHEAT',
             'WHEAT'         => 'WHEAT',
+            'PANKO'         => 'WHEAT',
             'AP FLOUR'      => 'WHEAT',
             'ALL PURPOSE FLOUR' => 'WHEAT',
             'SEITAN'        => 'WHEAT',
@@ -65,6 +66,7 @@ class RecipeViewer extends FannieRESTfulPage
             'SOY BEANS'     => 'SOY',
             'EDAMAME'       => 'SOY',
             'TOFU'          => 'SOY',
+            'TEMPEH'        => 'SOY',
             'TAMARI'        => 'SOY',
         );
 
@@ -72,7 +74,7 @@ class RecipeViewer extends FannieRESTfulPage
         $ret = array();
         foreach ($lines as $line) {
             foreach ($terms as $term => $label) {
-                if (preg_match('/\s+' . $term . '\**\s*/', strtoupper($line))) {
+                if (preg_match('/\s+' . $term . '[\s\*]*/', strtoupper($line))) {
                     if (!in_array($label, $ret)) {
                         $ret[] = $label;
                     }
@@ -91,6 +93,7 @@ class RecipeViewer extends FannieRESTfulPage
         $splits = array(
             'CUP',
             'CUPS',
+            'C',
             'T',
             't',
             'QT',
@@ -172,7 +175,7 @@ class RecipeViewer extends FannieRESTfulPage
             Detected ingredients: " . implode(', ', $this->extractIngredients($get['ingredientList'])) . "
             </p>
             <p>
-            Detected allergens: " . implode(', ', $this->extractAllergens($get['ingredientList']));
+            Detected allergens: " . implode(', ', $this->extractAllergens($get['ingredientList'] . "\n" . $get['instructions']));
 
         return false;
     }
