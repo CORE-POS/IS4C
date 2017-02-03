@@ -20,6 +20,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+if (!class_exists('BasicModel')) {
+    include(dirname(__FILE__).'/../../classlib2.0/data/models/BasicModel.php');
+}
+if (!class_exists('ProdUpdateModel')) {
+    include(dirname(__FILE__).'/../../classlib2.0/data/models/op/ProdUpdateModel.php');
+}
 
 class InUseTask extends FannieTask
 {
@@ -74,7 +80,7 @@ class InUseTask extends FannieTask
             $stores = array(1,2);
             foreach ($stores as $store) {
                 $args = array($store,$upc,$checkDate);
-                $prepA = $dbc->prepare("SELECT upc, modified, inUse FROM prodUpdate WHERE storeID = ? AND upc = ? AND modified >= ? ORDER BY modified DESC LIMIT 1;");
+                $prepA = $dbc->prepare("SELECT upc, modified, inUse FROM products WHERE store_id = ? AND upc = ? AND modified >= ? ORDER BY modified DESC LIMIT 1;");
                 $resA = $dbc->execute($prepA,$args);
                 while ($row = $dbc->fetchRow($resA)) {
                     if($row['inUse'] == 1 && $store == 1) {
@@ -158,7 +164,11 @@ class InUseTask extends FannieTask
             
         }
 
-           $date = date('Y-m-d h:i:s');
+		$prodUpdate = new ProdUpdateModel();
+		$prodUpdate->logManyUpdates($inUseData);
+		$prodUpdate->logManyUpdates($unUseData);
+
+        $date = date('Y-m-d h:i:s');
         $h = date('h');                
         $m = date('i');                
         $s = date('s');          
