@@ -59,6 +59,7 @@ class RecipeViewer extends FannieRESTfulPage
             'PANKO'         => 'WHEAT',
             'AP FLOUR'      => 'WHEAT',
             'ALL PURPOSE FLOUR' => 'WHEAT',
+            'GOLD-N-WHITE FLOUR' => 'WHEAT',
             'SEITAN'        => 'WHEAT',
             'SOY'           => 'SOY',
             'SOYBEAN'       => 'SOY',
