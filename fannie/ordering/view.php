@@ -28,7 +28,8 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if ((Store::getIdByIp() == 2 || FannieConfig::config('SO_UI') === 'bootstrap') && count($_GET) === 0) {
+$edit = FannieAuth::validateUserQuiet('ordering_edit');
+if ((Store::getIdByIp() == 2 || $edit || FannieConfig::config('SO_UI') === 'bootstrap') && count($_GET) === 0) {
     header('Location: OrderViewPage.php');
     return;
 }
