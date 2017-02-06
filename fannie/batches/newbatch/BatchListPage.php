@@ -279,6 +279,10 @@ class BatchListPage extends FannieRESTfulPage
                 <input type="text" class="form-control" id="filterName" 
                     placeholder="Batch name..." onchange="reFilter();" />
             </div>
+            <div class="col-sm-2">
+                <input type="text" class="form-control date-field" id="filterDate"
+                    placeholder="Batch date..." onchange="reFilter();" />
+            </div>
             <a href="{$url}admin/labels/BatchShelfTags.php">Print shelf tags</a>
         </div>
         <input type="hidden" id="ownerJSON" value='{$oJSON}' />
@@ -393,6 +397,10 @@ HTML;
         if (isset($filters['name']) && $filters['name'] != '') {
             $fetchQ .= ' AND b.batchName LIKE ? ';
             $args[] = '%' . $filters['name'] . '%';
+        }
+        if (isset($filters['date']) && $filters['date'] != '') {
+            $fetchQ .= ' AND ? BETWEEN b.startDate AND b.endDate ';
+            $args[] = $filters['date'];
         }
         $fetchQ .= ' GROUP BY b.batchName, b.batchType, b.startDate, b.endDate, b.batchID,
                         t.typeDesc, ' . $owneralias . '.owner ';
