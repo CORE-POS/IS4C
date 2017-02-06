@@ -123,11 +123,16 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
         $dbc = $this->connection;
         $model = new ProductsModel($dbc);
         $model->upc($upc);
-        $stores = FormLib::get('store_id');
-        foreach ($stores as $s) {
-            $model->store_id($s);
-            $model->numflag($numflag);
-            $model->enableLogging(false);
+        $model->numflag($numflag);
+        $model->enableLogging(false);
+
+        if (FannieConfig::config('STORE_MODE') === 'HQ') {
+            $stores = FormLib::get('store_id');
+            foreach ($stores as $s) {
+                $model->store_id($s);
+                $saved = $model->save();
+            }
+        } else {
             $saved = $model->save();
         }
 
