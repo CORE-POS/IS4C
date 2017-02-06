@@ -151,28 +151,28 @@ class InUseTask extends FannieTask
         $dbc->execute($updateUse,2);
         
         $data = '';
-		$inUseData = '';
-		$unUseData = '';
-		$updateUpcs = array();
+        $inUseData = '';
+        $unUseData = '';
+        $updateUpcs = array();
         while ($row = $dbc->fetch_row($resultA)) {
             $inUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
-			$updateUpcs[] = $row['upc'];
+            $updateUpcs[] = $row['upc'];
         }
         
         while ($row = $dbc->fetch_row($resultB)) {
             if ($row['store_id'] == 1) {
                 if (!in_array($row['upc'],$exempts1)) {
-					$unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
-					$updateUpcs[] = $row['upc'];
-				}
+                    $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+                    $updateUpcs[] = $row['upc'];
+                }
             } elseif ($row['store_id'] == 2) {
                 if (!in_array($row['upc'],$exempts2)) $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
             }
             
         }
 
-		$prodUpdate = new ProdUpdateModel($dbc);
-		$prodUpdate->logManyUpdates($updateUpcs);
+        $prodUpdate = new ProdUpdateModel($dbc);
+        $prodUpdate->logManyUpdates($updateUpcs);
 
         $date = date('Y-m-d h:i:s');
         $h = date('h');                
