@@ -161,10 +161,24 @@ class RecipeViewer extends FannieRESTfulPage
         }
 
         $get = $this->connection->fetchRow($getR);
+        $ingP = $this->connection->prepare('SELECT * FROM RecipeIngredients WHERE recipeID=? ORDER BY position');
+        $ingR = $this->connection->execute($ingP, array($this->id));
+        $ing = '<table class="table table-bordered">';
+        $ingList = '';
+        while ($ingW = $this->connection->fetchRow($ingR)) {
+            if ($ingW['amount'] == 'SECTION') {
+                $ing .= '<tr><td colspan="4">' . $ingW['name'] . '</td></tr>';
+            } else {
+                $ing .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+                    $ingW['amount'], $ingW['unit'], $ingW['name'], $ingW['notes']);
+                $ingList .= $ingW['name'] . "\n";
+            }
+        }
+        $ing .= '</table>';
 
         echo "<h3>{$get['name']}</h3>
             <p>
-            " . nl2br($get['ingredientList']) . "
+            {$ing}
             </p>
             <p>
             " . nl2br($get['instructions']) . "
@@ -173,10 +187,7 @@ class RecipeViewer extends FannieRESTfulPage
                 style=\"color:#000;\" class=\"btn btn-default\">Print</a>
             </p>
             <p>
-            Detected ingredients: " . implode(', ', $this->extractIngredients($get['ingredientList'])) . "
-            </p>
-            <p>
-            Detected allergens: " . implode(', ', $this->extractAllergens($get['ingredientList'] . "\n" . $get['instructions']));
+            Detected allergens: " . implode(', ', $this->extractAllergens($ingList . "\n" . $get['instructions']));
 
         return false;
     }

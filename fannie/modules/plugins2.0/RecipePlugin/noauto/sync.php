@@ -16,9 +16,11 @@ if (count($argv) !== 2) {
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $dbc->query('TRUNCATE TABLE RecipeCategories');
 $dbc->query('TRUNCATE TABLE Recipes');
+$dbc->query('TRUNCATE TABLE RecipeIngredients');
 
 $catP = $dbc->prepare('INSERT INTO RecipeCategories (name) VALUES (?)');
 $addP = $dbc->prepare('INSERT INTO Recipes (name, recipeCategoryID, ingredientList, instructions) VALUES (?, ?, ?, ?)');
+$ingP = $dbc->prepare('INSERT INTO RecipeIngredients (recipeID, amount, unit, name, notes, position) VALUES (?, ?, ?, ?, ?, ?)');
 
 function extractText($obj, $text, $depth=0)
 {
@@ -81,42 +83,77 @@ while (($file=readdir($dir)) !== false) {
                 $text .= extractText($section, $text);
             }
             $name = substr($subfile, 0, strlen($subfile)-5);
-            $ingredients = '';
-            $instructions = '';
-            $section = 'none';
-            foreach (explode("\n", $text) as $line) {
-                if (preg_match('/INGREDIENTS/i', $line)) {
-                    $section = 'ingredients';
-                    continue;
-                }
-                if (strtoupper(trim($line)) == 'SPECIAL INSTRUCTIONS') {
-                    $section = 'instructions';
-                    continue;
-                }
-                if (strtoupper(trim($line)) == 'SPECIAL INSTRUCTIONS:') {
-                    $section = 'instructions';
-                    continue;
-                }
-                switch ($section) {
-                    case 'ingredients':
-                        if (trim($line) != '' || $ingredients != '') {
-                            $ingredients .= $line . "\n";
-                        } 
-                        break;
-                    case 'instructions':
-                        if (trim($line) != '' || $instructions != '') {
-                            $instructions .= $line . "\n";
-                        } 
-                        break;
-                }
+
+            $splits = array(
+                'CUP',
+                'CUPS',
+                'C',
+                'T',
+                't',
+                'QT',
+                'QTS',
+                'QUARTS',
+                'CAN',
+                'JAR',
+                'BUNCH',
+                'OZ',
+                'LB',
+                'LBS',
+                'POUNDS',
+                'BU',
+                'PACKAGE',
+                'PACKAGES',
+                'EA',
+                'EACH',
+                'LARGE',
+            );
+            $limit = count($splits);
+            for ($i=0; $i<$limit; $i++) {
+                $splits[] = $splits[$i] . '.';
             }
-            if ($instructions == '' && $ingredients == '') {
-                $instructions = $text;
-            } elseif ($ingredients == '') {
-                $ingredients = str_replace($instructions, '', $text);
+            $utfEmdash = pack('CCC', 0xe2, 0x80, 0x94);
+            $utfEndash = pack('CCC', 0xe2, 0x80, 0x93);
+            $dashes = array('-', chr(150), chr(151), $utfEmdash, $utfEndash);
+
+            $ingredients = array();
+            $instructions = '';
+            foreach (explode("\n", $text) as $line) {
+                $found = false;
+                foreach ($splits as $split) {
+                    if (strpos($line, " {$split} ")) {
+                        list($amt,$rest) = explode(" {$split} ", $line, 2);
+                        $ing = $rest;
+                        $notes = '';
+                        foreach ($dashes as $dash) {
+                            if (strstr($ing, $dash)) {
+                                list($ing, $notes) = explode($dash, $ing, 2);
+                                break;
+                            }
+                        }
+                        $ingredients[] = array(trim($amt), trim($split), trim($ing), trim($notes));
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found && preg_match('/^(\d+)\S*\s+(.+)/', $line, $matches)) {
+                    $ingredients[] = array($matches[1], '', $matches[2], '');
+                } elseif (!$found && substr(trim($line), -1) == ':') {
+                    $ingredients[] = array('SECTION', '', trim($line), '');
+                } elseif (!$found) {
+                    $instructions .= $line . "\n";
+                }
             }
 
-            $dbc->execute($addP, array($name, $catID, $ingredients, $instructions));
+            $dbc->execute($addP, array($name, $catID, '', $instructions));
+            $recipeID = $dbc->insertID();
+            $pos = 0;
+            foreach ($ingredients as $ing) {
+                array_unshift($ing, $recipeID);
+                array_push($ing, $pos);
+                $dbc->execute($ingP, $ing);
+                $pos++;
+            }
         }
     }
 }
+

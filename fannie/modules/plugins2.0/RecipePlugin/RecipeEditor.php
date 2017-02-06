@@ -7,6 +7,9 @@ if (!class_exists('FannieAPI')) {
 if (!class_exists('RecipesModel')) {
     include(__DIR__ . '/RecipesModel.php');
 }
+if (!class_exists('RecipeIngredientsModel')) {
+    include(__DIR__ . '/RecipeIngredientsModel.php');
+}
 
 class RecipeEditor extends FannieRESTfulPage
 {
@@ -161,17 +164,18 @@ class RecipeEditor extends FannieRESTfulPage
         if (FormLib::get('instructions', false) !== false) {
             $model->instructions(FormLib::get('instructions'));
         }
-        if (FormLib::get('ingredientList', false) !== false) {
-            $model->ingredientList(FormLib::get('ingredientList'));
-        }
-        if (FormLib::get('ingredientText', false) !== false) {
-            $model->ingredientText(FormLib::get('ingredientText'));
-        }
         if (FormLib::get('allergens', false) !== false) {
             $model->allergens(FormLib::get('allergens'));
         }
         if (FormLib::get('plu', false) !== false) {
             $model->scalePLU(FormLib::get('plu'));
+        }
+        if (FormLib::get('name', false) !== false) {
+            $ids = FormLib::get('ingID');
+            $name = FormLib::get('name');
+            $amount = FormLib::get('amount');
+            $unit = FormLib::get('unit');
+            $notes = FormLib::get('notes');
         }
         $model->save();
 
@@ -189,7 +193,35 @@ class RecipeEditor extends FannieRESTfulPage
 
         $get = $this->connection->fetchRow($getR);
 
-        $autoIng = $this->extractIngredients($get['ingredientList']);
+        $ing = '<table class="table table-bordered">
+            <tr><th>Amount</th><th>Unit</th><th>Ingredient</th><th>Notes</th>
+            <th><a class="btn btn-success btn-xs" href="" onclick="recipe.addRow(this); return false;"><span class="glyphicon glyphicon-plus"></span></a></th></tr>';
+        $ingList = '';
+        $ingP = $this->connection->prepare('SELECT * FROM RecipeIngredients WHERE recipeID=? ORDER BY position');
+        $ingR = $this->connection->execute($ingP, array($this->id));
+        while ($ingW = $this->connection->fetchRow($ingR)) {
+            $ing .= sprintf('<tr>
+                    <td><input type="hidden" name="ingID[]" value="%d" />
+                    <input type="text" class="form-control input-sm edit-field" name="amount[]" value="%s" /></td>
+                    <td><input type="text" class="form-control input-sm edit-field" name="unit[]" value="%s" /></td>
+                    <td><input type="text" class="form-control input-sm edit-field" name="name[]" value="%s" /></td>
+                    <td><input type="text" class="form-control input-sm edit-field" name="notes[]" value="%s" /></td>
+                    <td><a class="btn btn-success btn-xs" href="" onclick="recipe.addRow(this); return false;"><span
+                        class="glyphicon glyphicon-plus"></span></a>
+                        <a class="btn btn-danger btn-xs" href="" onclick="recipe.delRow(this); return false;"><span
+                        class="glyphicon glyphicon-minus"></span></a>
+                    </td>
+                    </tr>',
+                    $ingW['recipeIngredientID'],
+                    $ingW['amount'],
+                    $ingW['unit'],
+                    $ingW['name'],
+                    $ingW['notes']
+            );
+            $ingList .= $ingW['name'] . "\n";
+        }
+        $ing .= '</table>';
+
         $autoAller = $this->extractAllergens($get['ingredientList'] . "\n" . $get['instructions']);
 
         echo "<h3>{$get['name']}</h3>
@@ -197,11 +229,7 @@ class RecipeEditor extends FannieRESTfulPage
             <input name=\"plu\" class=\"form-control edit-field\" value=\"" . $get['scalePLU'] . "\" />
             </p>
             <p><label>Ingredients for Prep</label>
-            <textarea name=\"ingredientList\" rows=\"20\" class=\"form-control edit-field\">" . $get['ingredientList'] . "</textarea>
-            </p>
-            <p><label>Ingredients for Sign/Label</label>
-            <br />Suggested: " . implode(', ', $autoIng) . "
-            <textarea name=\"ingredientText\" rows=\"10\" class=\"form-control edit-field\">" . $get['ingredientText'] . "</textarea>
+            {$ing}
             </p>
             <p><label>Allergens</label>
             <br />Suggested: " . implode(', ', $autoAller) . "

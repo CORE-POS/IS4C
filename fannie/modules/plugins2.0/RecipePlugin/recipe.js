@@ -42,6 +42,27 @@ var recipe = (function ($) {
         window.open('RecipeViewer.php?id='+id, 'printRecipe', 'height=500,width=600');
     };
 
+    mod.addRow = function(elem) {
+        var newID = "inp_" + Math.random().toString(16).slice(2);
+        var newrow = '<tr>';
+        newrow += '<td><input type="hidden" name="ingID[]" value="0" /><input id="' + newID + '" type="text" class="form-control input-sm edit-field" name="amount[]" /></td>';
+        newrow += '<td><input type="text" class="form-control input-sm edit-field" name="unit[]" /></td>';
+        newrow += '<td><input type="text" class="form-control input-sm edit-field" name="name[]" /></td>';
+        newrow += '<td><input type="text" class="form-control input-sm edit-field" name="notes[]" /></td>';
+        newrow += '<td><a class="btn btn-success btn-xs" href="" onclick="recipe.addRow(this); return false;">';
+        newrow += '<span class="glyphicon glyphicon-plus"></span></a>';
+        newrow += ' <a class="btn btn-danger btn-xs" href="" onclick="recipe.delRow(this); return false;">';
+        newrow += '<span class="glyphicon glyphicon-minus"></span></a>';
+        newrow += '</td>';
+        newrow += '</tr>';
+        $(elem).closest('tr').after(newrow);
+        $('#' + newID).focus();
+    };
+
+    mod.delRow = function(elem) {
+        $(elem).closest('tr').remove();
+    };
+
     return mod;
 
 }(jQuery));
