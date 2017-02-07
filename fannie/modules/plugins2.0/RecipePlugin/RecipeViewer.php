@@ -75,7 +75,7 @@ class RecipeViewer extends FannieRESTfulPage
         $ret = array();
         foreach ($lines as $line) {
             foreach ($terms as $term => $label) {
-                if (preg_match('/\s+' . $term . '[\s\*]*/', strtoupper($line))) {
+                if (preg_match('/\s*' . $term . '[\s\*]*/', strtoupper($line))) {
                     if (!in_array($label, $ret)) {
                         $ret[] = $label;
                     }
