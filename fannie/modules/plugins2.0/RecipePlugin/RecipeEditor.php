@@ -176,8 +176,70 @@ class RecipeEditor extends FannieRESTfulPage
             $amount = FormLib::get('amount');
             $unit = FormLib::get('unit');
             $notes = FormLib::get('notes');
+            $json = array();
+            $upP = $this->connection->prepare('
+                UPDATE RecipeIngredients
+                SET name=?,
+                    amount=?,
+                    unit=?,
+                    notes=?,
+                    position=?
+                WHERE recipeIngredientID=?');
+            $insP = $this->connection->prepare('
+                INSERT INTO RecipeIngredients
+                    (name, amount, unit, notes, position, recipeID)
+                VALUES (?, ?, ?, ?, ?, ?)');
+            $validIDs = array();
+            /**
+              Update existing ingredients and add new ingredients
+
+              $json is an array mapping the fake, javascript-generated IDs
+              to the real, SQL-generated IDs. This needs to be returned to
+              the caller to update the form values.
+
+              $validIDs are ingredient IDs that are still present in the POST.
+              Any ID not in this list should be deleted
+            */
+            for ($i=0; $i<count($ids); $i++) {
+                if (!isset($name[$i]) || trim($name[$i]) == '') continue;
+                if (substr($ids[$i], 0, 3) == 'id_') { 
+                    // new addition placeholder
+                    $fakeID = $ids[$i];
+                    $args = array(
+                        trim($name[$i]),
+                        isset($amount[$i]) ? trim($amount[$i]) : '',
+                        isset($unit[$i]) ? trim($unit[$i]) : '',
+                        isset($notes[$i]) ? trim($notes[$i]) : '',
+                        $i,
+                        $this->id,
+                    );
+                    $this->connection->execute($insP, $args);
+                    $realID = $this->connection->insertID();
+                    $validIDs[] = $realID;
+                    $json[] = array('fakeID'=>$fakeID, 'realID'=>$realID);
+                } else {
+                    $args = array(
+                        trim($name[$i]),
+                        isset($amount[$i]) ? trim($amount[$i]) : '',
+                        isset($unit[$i]) ? trim($unit[$i]) : '',
+                        isset($notes[$i]) ? trim($notes[$i]) : '',
+                        $i,
+                        $ids[$i],
+                    ); 
+                    $this->connection->execute($upP, $args);
+                    $validIDs[] = $ids[$i];
+                }
+            }
+            list($inStr, $inArgs) = $this->connection->safeInClause($validIDs);
+            $cleanP = $this->connection->prepare("
+                DELETE FROM RecipeIngredients
+                WHERE recipeIngredientID NOT IN ({$inStr})
+                    AND recipeID=?");
+            $inArgs[] = $this->id;
+            $this->connection->execute($cleanP, $inArgs);
         }
         $model->save();
+        echo json_encode($json);
 
         return false;
     }
@@ -201,7 +263,7 @@ class RecipeEditor extends FannieRESTfulPage
         $ingR = $this->connection->execute($ingP, array($this->id));
         while ($ingW = $this->connection->fetchRow($ingR)) {
             $ing .= sprintf('<tr>
-                    <td><input type="hidden" name="ingID[]" value="%d" />
+                    <td><input type="hidden" class="edit-field" name="ingID[]" value="%d" />
                     <input type="text" class="form-control input-sm edit-field" name="amount[]" value="%s" /></td>
                     <td><input type="text" class="form-control input-sm edit-field" name="unit[]" value="%s" /></td>
                     <td><input type="text" class="form-control input-sm edit-field" name="name[]" value="%s" /></td>
