@@ -319,7 +319,8 @@ class InvCountPage extends FannieRESTfulPage
                 i.ordered,
                 i.sold,
                 i.shrunk,
-                i.onHand
+                i.onHand,
+                c.par
             FROM products AS p
                 INNER JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
                 INNER JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID AND c.mostRecent=1
@@ -374,7 +375,7 @@ class InvCountPage extends FannieRESTfulPage
                 <td>%.2f</td>
                 <td>%.2f</td>
                 <td>%.2f</td>
-                <td>%.2f</td>
+                <td %s>%.2f</td>
                 </tr>',
                 $row['upc'],
                 $row['brand'],
@@ -384,6 +385,7 @@ class InvCountPage extends FannieRESTfulPage
                 $row['ordered'],
                 $row['sold'],
                 $row['shrunk'],
+                ($this->underPar($row['onHand'],$row['par']) ? 'class="danger"' : ''),
                 $row['onHand']
             );
         }
@@ -394,6 +396,16 @@ class InvCountPage extends FannieRESTfulPage
             </p>';
 
         return $ret;
+    }
+
+    private function underPar($now, $par) {
+        if ($par == 1 && $now <= $par) {
+            return true;
+        } elseif ($now < $par) {
+            return true;
+        }
+
+        return false;
     }
 
     private function getMostRecent($upc, $storeID=1)

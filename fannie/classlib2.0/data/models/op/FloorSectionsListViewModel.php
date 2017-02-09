@@ -39,9 +39,13 @@ class FloorSectionsListViewModel extends ViewModel
 
     public function definition()
     {
+        $concat = 'GROUP_CONCAT(f.name SEPARATOR \',\')';
+        if ($this->connection->dbmsName() == 'postgres9') {
+            $concat = 'string_agg(f.name, \',\')';
+        }
         return '
             SELECT m.upc,
-                GROUP_CONCAT(f.name SEPARATOR \', \') AS sections
+                ' . $concat . ' AS sections
             FROM FloorSectionProductMap AS m
                 INNER JOIN FloorSections AS f ON m.floorSectionID=f.floorSectionID
             GROUP BY m.upc

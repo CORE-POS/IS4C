@@ -95,6 +95,7 @@ function check_db_host($host,$dbms)
             $port = 1433;
             break;    
         case 'PGSQL':
+        case 'POSTGRES9':
             $port = 5432;
             break;
         default:

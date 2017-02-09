@@ -41,9 +41,9 @@ class RAFC_Kicker extends Kicker
             OR (trans_subtype = 'CK' and total <> 0)";
 
         $result = $dbc->query($query);
-        $num_rows = $dbc->num_rows($result);
+        $numRows = $dbc->numRows($result);
 
-        $ret = ($num_rows > 0) ? true : false;
+        $ret = ($numRows > 0) ? true : false;
 
         return ($ret || $this->sessionOverride());
     }

@@ -109,6 +109,7 @@ function emvSubmit() {
         $this->conf->set('paycard_amount', $amt);
         $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
         $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+        $this->conf->set('paycard_recurring', true);
         $mode = $this->conf->get('PaycardsDatacapMode') == 1 ? 'EMV' : 'Credit';
         $this->conf->set('CacheCardType', $mode);
         if (CoreLocal::get('runningTotal') < $amt) {

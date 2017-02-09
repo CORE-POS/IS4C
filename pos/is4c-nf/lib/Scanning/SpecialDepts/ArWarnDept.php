@@ -24,23 +24,21 @@
 namespace COREPOS\pos\lib\Scanning\SpecialDepts;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use COREPOS\pos\lib\MiscLib;
-use \CoreLocal;
 
 class ArWarnDept extends SpecialDept 
 {
-
     public $help_summary = 'Require cashier confirmation on AR sale';
 
     public function handle($deptID,$amount,$json)
     {
-        if (CoreLocal::get('msgrepeat') == 0) {
-            CoreLocal::set("boxMsg",_("<b>A/R Payment Sale</b><br>remember to retain you<br>
+        if ($this->session->get('msgrepeat') == 0) {
+            $this->session->set("boxMsg",_("<b>A/R Payment Sale</b><br>remember to retain you<br>
                 reprinted receipt"));
-            CoreLocal::set('boxMsgButtons', array(
+            $this->session->set('boxMsgButtons', array(
                 _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
                 _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
-            $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
+            $json['main_frame'] = MiscLib::baseURL().'gui-modules/boxMsg2.php?quiet=1';
         }
 
         return $json;

@@ -19,18 +19,13 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
     var ignoreNextEnter = false;
 
     $(document).keydown(function (e){
-        var jsKey; 
-        if (e.which) {
-            jsKey = e.which;
-        } else if (e.keyCode) {
-            jsKey = e.keyCode;
-        }
+        var jsKey = e.which ? e.which : e.keyCode;
 
-        if (ignoreNextEnter && jsKey == 13) {
+        if (ignoreNextEnter && jsKey === 13) {
             ignoreNextEnter = false;
             e.preventDefault();
             e.stopPropagation();
-        } else if (jsKey == 13) {
+        } else if (jsKey === 13) {
             enterDown = 1;
             e.preventDefault();
             e.stopPropagation();
@@ -48,7 +43,7 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
           all cases, but we need it in keyup
           to edit the filtering string
         */
-        if (jsKey == 8) {
+        if (jsKey === 8) {
             e.preventDefault();
             e.stopPropagation();
         }
@@ -56,14 +51,9 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
     });
 
     $(document).keyup(function (e){
-        var jsKey; 
-        if (e.which) {
-            jsKey = e.which;
-        } else if (e.keyCode) {
-            jsKey = e.keyCode;
-        }
+        var jsKey = e.which ? e.which : e.keyCode;
 
-        if (jsKey == 13) {
+        if (jsKey === 13) {
             e.preventDefault();
             e.stopPropagation();
         }
@@ -72,14 +62,14 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
             return;
         }
 
-        if (jsKey == 13 && enterDown == 1 && enterUp == 0) {
+        if (jsKey === 13 && enterDown === 1 && enterUp === 0) {
             enterUp = 1;
-            if ( (prevPrevKey == 99 || prevPrevKey == 67) && (prevKey == 108 || prevKey == 76) ) {
+            if ( (prevPrevKey === 99 || prevPrevKey === 67) && (prevKey === 108 || prevKey === 76) ) {
                 /**
                   Filtering may have hidden ALL options in the select
                   Add one back if necessary
                 */
-                if ($(selector+' option').length == 0) {
+                if ($(selector+' option').length === 0) {
                     var opt = $('<option>').val('');
                     $(selector).append(opt);
                 } else {
@@ -115,7 +105,7 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
             if (isFilterKey(jsKey)) {
                 filter_string += String.fromCharCode(jsKey);
                 filter_changed = true;
-            } else if (jsKey == 8) {
+            } else if (jsKey === 8) {
                 e.preventDefault();
                 e.stopPropagation();
                 if (filter_string.length > 0) {
@@ -136,7 +126,7 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
                   interferes with how arrow keys work. It will "scroll"
                   through all the hidden options.
                 */
-                if ($('#hidden-filter-select').length == 0) {
+                if ($('#hidden-filter-select').length === 0) {
                     var new_select = $('<select id="hidden-filter-select">').css('display','none');
                     $('body').append(new_select);
                     $(selector+' option').each(function(){
@@ -165,7 +155,7 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
             prevPrevKey = prevKey;
             prevKey = jsKey;
         }
-        if (prevPrevKey == 52 && prevKey == 50) {
+        if (prevPrevKey === 52 && prevKey === 50) {
             ignoreNextEnter = true;
         }
     });
@@ -181,11 +171,11 @@ function isFilterKey(keyCode)
         return true;
     } else if (keyCode >= 48 && keyCode <= 57) {
         return true; // digits
-    } else if (keyCode == 32) {
+    } else if (keyCode === 32) {
         return true; // space
-    } else if (keyCode == 44) {
+    } else if (keyCode === 44) {
         return true; // comma
-    } else if (keyCode == 46) {
+    } else if (keyCode === 46) {
         return true; // period
     } else {
         return false;

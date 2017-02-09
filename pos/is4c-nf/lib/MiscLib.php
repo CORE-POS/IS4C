@@ -35,27 +35,27 @@ class MiscLib
 /**
   Path detection. Find the relative URL for 
   POS root.
-  @param $check_file file to search for
+  @param $checkFile file to search for
   @return A relative URL with trailing slash
 */
-static public function baseURL($check_file="css/pos.css")
+static public function baseURL($checkFile="css/pos.css")
 {
     $ret = "";
     $cutoff = 0;
-    while($cutoff < 20 && !file_exists($ret.$check_file)) {
+    while($cutoff < 20 && !file_exists($ret.$checkFile)) {
         $ret .= "../";
         $cutoff++;
     }
     if ($cutoff >= 20) {
         return false;
-    } else {
-        return $ret;    
     }
+
+    return $ret;    
 }
 
-static public function base_url($check_file="css/pos.css")
+static public function base_url($checkFile="css/pos.css")
 {
-    return self::baseURL($check_file);
+    return self::baseURL($checkFile);
 }
 
 /**
@@ -73,13 +73,13 @@ static public function nullwrap($num, $char=false)
 
     if ($char && ($num === '' || $num === null)) {
         return '';
-    } else if (!$num) {
+    } elseif (!$num) {
          return 0;
-    } else if (!is_numeric($num) && strlen($num) < 1) {
+    } elseif (!is_numeric($num) && strlen($num) < 1) {
         return ' ';
-    } else {
-        return $num;
     }
+
+    return $num;
 }
 
 /**
@@ -118,9 +118,9 @@ static public function pingport($host, $dbms)
     if ($sock) {
         fclose($sock);
         return 1;
-    } else {
-        return 0;
     }
+
+    return 0;
 }
 
 /**
@@ -159,7 +159,7 @@ static public function goodBeep()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("goodBeep");
+        $sdh->writeToScale("goodBeep");
     }
 }
 
@@ -170,7 +170,7 @@ static public function rePoll()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("rePoll");
+        $sdh->writeToScale("rePoll");
     }
 }
 
@@ -181,7 +181,7 @@ static public function errorBeep()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("errorBeep");
+        $sdh->writeToScale("errorBeep");
     }
 }
 
@@ -192,7 +192,7 @@ static public function twoPairs()
 {
     $sdh = self::scaleObject();
     if (is_object($sdh)) {
-        $sdh->WriteToScale("twoPairs");
+        $sdh->writeToScale("twoPairs");
     }
 }
 
@@ -262,9 +262,9 @@ static private function globalIPs(array $ret)
 static private function getWindowsIPs()
 {
     $cmd = "ipconfig.exe";
-    exec($cmd, $output_lines, $retval);
+    exec($cmd, $outputLines);
     $ret = array();
-    foreach ($output_lines as $line) {
+    foreach ($outputLines as $line) {
         if (preg_match('/IP Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
             $ret[] = $matches[1];
         } elseif (preg_match('/IPv4 Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
@@ -286,9 +286,9 @@ static private function getLinuxIPs()
         $cmd = 'ifconfig';
     }
 
-    exec($cmd, $output_lines, $retval);
+    exec($cmd, $outputLines);
     $ret = array();
-    foreach ($output_lines as $line) {
+    foreach ($outputLines as $line) {
         if (preg_match('/inet addr:([\d\.]+?) /', $line, $matches)) {
             $ret[] = $matches[1];
         }

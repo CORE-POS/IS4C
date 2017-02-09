@@ -97,6 +97,10 @@ class OverShortMAS extends FannieRESTfulPage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $store = FormLib::get('store', 0);
         $args = array($store, $this->startDate.' 00:00:00', $this->endDate.' 23:59:59');
+        $accounting = $this->config->get('ACCOUNTING_MODULE');
+        if (!class_exists($accounting)) {
+            $accounting = '\COREPOS\Fannie\API\item\Accounting';
+        }
 
         $tenderQ = "SELECT SUM(total) AS amount,
                 CASE WHEN description='REBATE CHECK' THEN 'RB'
@@ -128,27 +132,28 @@ class OverShortMAS extends FannieRESTfulPage {
             $records[] = $row;
         }
 
-        $discountQ = "SELECT SUM(total) as amount,
+        $discountQ = "SELECT SUM(total) as amount, d.store_id,
             CASE WHEN staff=1 OR memType IN (1,3) THEN 'Staff Discounts'
             ELSE 'Member Discounts' END as name
             FROM $dlog AS d WHERE upc='DISCOUNT'
                 AND " . DTrans::isStoreID($store, 'd') . "
             AND total <> 0 AND tdate BETWEEN ? AND ?
-            GROUP BY name ORDER BY name";
+            GROUP BY name, d.store_id ORDER BY name";
         $discountP = $dbc->prepare($discountQ);
         $discountR = $dbc->execute($discountP, $args);
         while($w = $dbc->fetch_row($discountR)){
             $coding = isset($codes[$w['name']]) ? $codes[$w['name']] : 66600;
+            $coding .= str_pad($w['store_id'], 2, '0', STR_PAD_LEFT) . '00';
             $name = $w['name'];
             $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
             $debit = $w['amount'] > 0 ? $w['amount'] : 0;
             $row = array($dateID, $dateStr,
-                str_pad($coding,9,'0',STR_PAD_RIGHT),
+                $coding,
                 $credit, $debit, $name);    
             $records[] = $row;
         }
 
-        $salesQ = "SELECT sum(total) as amount, salesCode,
+        $salesQ = "SELECT sum(total) as amount, salesCode, d.store_id,
             MIN(dept_name) as name
             FROM $dlog AS d 
             INNER JOIN departments as t
@@ -160,17 +165,18 @@ class OverShortMAS extends FannieRESTfulPage {
             AND tdate BETWEEN ? AND ?
             AND m.superID > 0
             AND register_no <> 20
-            GROUP BY salesCode HAVING sum(total) <> 0 
+            GROUP BY salesCode, d.store_id HAVING sum(total) <> 0 
             ORDER BY salesCode";
         $salesP = $dbc->prepare($salesQ);
         $salesR = $dbc->execute($salesP, $args);
         while($w = $dbc->fetch_row($salesR)){
             $coding = isset($codes[$w['salesCode']]) ? $codes[$w['salesCode']] : $w['salesCode'];
+            $coding = $accounting::extend($coding, $w['store_id']);
             $name = isset($names[$w['salesCode']]) ? $names[$w['salesCode']] : $w['name'];
             $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
             $debit = $w['amount'] > 0 ? $w['amount'] : 0;
             $row = array($dateID, $dateStr,
-                str_pad($coding,9,'0',STR_PAD_RIGHT),
+                str_replace('-', '', $coding),
                 $credit, $debit, $name);    
             $records[] = $row;
         }
@@ -182,12 +188,10 @@ class OverShortMAS extends FannieRESTfulPage {
             AND upc='TAX'";
         $taxP = $dbc->prepare($taxQ);
         $taxR = $dbc->execute($taxP, $args);
-        $taxes = 0.00;
-        if ($dbc->num_rows($taxR) > 0){
-            $taxW = $dbc->fetch_row($taxR);
-            $taxes = $taxW[0];
+        while ($row = $dbc->fetchRow($taxR)) {
+            $taxes = $row[0];
+            $records[] = array($dateID, $dateStr, '211800000', 0, $taxes, 'Sales Tax Collected');
         }
-        $records[] = array($dateID, $dateStr, 211800000, 0, $taxes, 'Sales Tax Collected');
 
         $salesQ = "SELECT sum(total) as amount, salesCode,
             MIN(dept_name) as name

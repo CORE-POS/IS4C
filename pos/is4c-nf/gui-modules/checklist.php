@@ -22,13 +22,11 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\gui\NoInputCorePage;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Database;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class checklist extends NoInputCorePage 
 {
-
     private function handleInput($entered)
     {
         $entered = strtoupper($entered);
@@ -46,7 +44,7 @@ class checklist extends NoInputCorePage
             // built department input string and set it
             // to be the next POS entry
             // Redirect to main screen
-            $input = FormLib::get('amt') . 'CQ' . $entered;
+            $input = $this->form->tryGet('amt') . 'CQ' . $entered;
             $this->change_page(
                 $this->page_url 
                 . "gui-modules/pos2.php"
@@ -64,10 +62,11 @@ class checklist extends NoInputCorePage
     function preprocess()
     {
         // a selection was made
-        if (isset($_REQUEST['search'])){
-            return $this->handleInput($_REQUEST['search']);
-        }
-        return True;
+        try {
+            return $this->handleInput($this->form->search);
+        } catch (Exception $ex) {}
+
+        return true;
     } // END preprocess() FUNCTION
 
     /**
@@ -87,7 +86,7 @@ class checklist extends NoInputCorePage
     */
     function body_content()
     {
-        $amount = FormLib::get('amt', 0);
+        $amount = $this->form->tryGet('amt', 0);
         $dbc = Database::pDataConnect();
         $res = $dbc->query("SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName");
 

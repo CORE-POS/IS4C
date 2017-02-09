@@ -26,7 +26,8 @@ use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
-use \CoreLocal;
+
+use COREPOS\common\ui\CorePage;
 
 /**
 
@@ -41,7 +42,7 @@ use \CoreLocal;
 
  */
 
-class BasicCorePage extends \COREPOS\common\ui\CorePage
+class BasicCorePage extends CorePage
 {
     /**
       Relative URL for POS root directory
@@ -53,6 +54,16 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
     protected $hardware_polling = true;
 
     /**
+      A LocalStorage instance representing session data
+    */
+    protected $session;
+
+    /**
+      A COREPOS\common\mvc\ValueContainer
+    */
+    protected $form;
+
+    /**
       Constructor
 
       The constructor automatically runs
@@ -60,9 +71,11 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
       (if applicable). Creating a new instance
       will output the entire page contents
     */
-    public function __construct()
+    public function __construct($session, $form)
     {
-        $this->page_url = MiscLib::base_url();
+        $this->session = $session;
+        $this->form = $form;
+        $this->page_url = MiscLib::baseURL();
         if (file_exists(dirname(__FILE__) . '/../../graphics/is4c.gif')) {
             $this->body_class = 'mainBGimage';
         } elseif (file_exists(dirname(__FILE__) . '/../../graphics/your_logo_here.gif')) {
@@ -94,7 +107,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         <?php
         echo "<head>";
         echo "<title>".$this->title."</title>";
-        $charset = CoreLocal::get('CoreCharSet') === '' ? 'utf-8' : CoreLocal::get('CoreCharSet');
+        $charset = $this->session->get('CoreCharSet') === '' ? 'utf-8' : $this->session->get('CoreCharSet');
         // 18Aug12 EL Add content/charset.
         echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=$charset\" />\n";
         echo "<link rel=\"stylesheet\" type=\"text/css\"
@@ -154,7 +167,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
             $inputType = "password";
         }
         $form = '
-        <div class="inputform ' . (CoreLocal::get("training")==1?'training':'') . '">
+        <div class="inputform ' . ($this->session->get("training")==1?'training':'') . '">
             <form name="form" id="formlocal" method="post" autocomplete="off"
                 ' . $action . '>
             <input name="reginput" value="" onblur="$(\'#reginput\').focus();"
@@ -199,52 +212,52 @@ JAVASCRIPT;
 
     protected function commonHeader()
     {
-        $my_url = $this->page_url;
+        $myUrl = $this->page_url;
         $this->add_onload_command("betterDate();\n\$('#reginput').focus();");
 
         // this needs to be configurable; just fixing
         // a giant PHP warning for the moment
         $time = strftime("%m/%d/%y %I:%M %p", time());
 
-        CoreLocal::set("repeatable",0);
+        $this->session->set("repeatable",0);
         ob_start();
         echo $this->dateJS();
         ?>
         <div id="inputArea">
             {{FORM}}
-            <div class="notices coloredText <?php echo (CoreLocal::get("training")==1?'training':''); ?>">
+            <div class="notices coloredText <?php echo ($this->session->get("training")==1?'training':''); ?>">
             <?php
-            if (CoreLocal::get("training") == 1) {
+            if ($this->session->get("training") == 1) {
                 echo "<span class=\"text\">"._("training")." </span>"
-                     ."<img alt=\"training\" src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-            } elseif (CoreLocal::get("standalone") == 0) {
-                echo "<img alt=\"online\" src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+                     ."<img alt=\"training\" src='{$myUrl}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+            } elseif ($this->session->get("standalone") == 0) {
+                echo "<img alt=\"online\" src='{$myUrl}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
             } else {
                 echo "<span class=\"text\">stand alone</span>"
-                     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+                     ."<img alt=\"standalone\" src='{$myUrl}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
             }
-            if (CoreLocal::get("receiptToggle")==1){
-                echo "<img id=\"receipticon\" alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
+            if ($this->session->get("receiptToggle")==1){
+                echo "<img id=\"receipticon\" alt=\"receipt\" src='{$myUrl}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
             } else {
-                echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
+                echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$myUrl}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
             }
-            if (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 0) {
-               if (CoreLocal::get("CachePanEncBlock")=="")
-                   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+            if ($this->session->get("CCintegrate") == 1 && $this->session->get("training") == 0) {
+               if ($this->session->get("CachePanEncBlock")=="")
+                   echo "<img alt=\"cc mode\" src='{$myUrl}graphics/ccIn.gif'>&nbsp;";
                else
-                   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
-            } elseif (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 1) {
-               if (CoreLocal::get("CachePanEncBlock")=="")
-                   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+                   echo "<img alt=\"cc available\" src='{$myUrl}graphics/ccInLit.gif'>&nbsp;";
+            } elseif ($this->session->get("CCintegrate") == 1 && $this->session->get("training") == 1) {
+               if ($this->session->get("CachePanEncBlock")=="")
+                   echo "<img alt=\"cc test mode\" src='{$myUrl}graphics/ccTest.gif'>&nbsp;";
                else
-                   echo "<img alt=\"cc available (test)\" src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
+                   echo "<img alt=\"cc available (test)\" src='{$myUrl}graphics/ccTestLit.gif'>&nbsp;";
             }
 
             echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
-            if (CoreLocal::get("prefix") != ""){
+            if ($this->session->get("prefix") != ""){
                 $this->add_onload_command("\$('#reginput').val('"
-                    .CoreLocal::get("prefix")."');\n");
-                CoreLocal::set("prefix","");
+                    .$this->session->get("prefix")."');\n");
+                $this->session->set("prefix","");
             }
             ?>
 
@@ -302,7 +315,7 @@ JAVASCRIPT;
         if (!$include_scans) {
             return '';
         }
-        $scaleObj = ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
+        $scaleObj = ScaleDriverWrapper::factory($this->session->get('scaleDriver'));
         ?>
         <script type="text/javascript"
             src="<?php echo $this->page_url; ?>js/<?php echo $scaleObj->javascriptFile(); ?>">
@@ -314,7 +327,7 @@ JAVASCRIPT;
             src="<?php echo $this->page_url; ?>js/stomp.min.js">
         </script>
         <?php
-        if (CoreLocal::get('MQ')) {
+        if ($this->session->get('MQ')) {
             UdpComm::udpSend('mq_up');
             $this->add_onload_command("subscribeToQueue('".$this->page_url."');\n");
         } else {
@@ -343,7 +356,7 @@ JAVASCRIPT;
     */
     protected function change_page($url)
     {
-        if (CoreLocal::get("Debug_Redirects") == 1){
+        if ($this->session->get("Debug_Redirects") == 1){
             $stack = debug_backtrace();
             printf('Follow redirect to <a href="%s">%s</a>',$url,$url);
             echo '<hr />Stack:';

@@ -42,17 +42,21 @@ class UploadVendorPriceFile extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $p = $dbc->prepare('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
         $r = $dbc->execute($p);
-        $ret = '<label>Use the Default import tool</label>'
+        $ret = '<div class="form-group"><label>Use the Default import tool</label>'
             . '<select id="vendor-id" class="form-control">';;
        
         while ($w = $dbc->fetch_row($r)) {
             $ret .= sprintf('<option value="%d">%s</option>',
                 $w['vendorID'],$w['vendorName']);
         }
-        $ret .= '</select>';
-        $ret .= '<button type="button" class="btn btn-default"
+        $ret .= '</select></div>';
+        $ret .= '<button type="button" class="btn btn-default btn-danger"
             onclick="location=\'../../item/vendors/DefaultUploadPage.php?vid=\'+$(\'#vendor-id\').val();
-            return false;">Upload Vendor File</button>';
+            return false;">Replace Catalog Entire via File</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="button" class="btn btn-default btn-info"
+            onclick="location=\'../../item/vendors/UpdateUploadPage.php?vid=\'+$(\'#vendor-id\').val();
+            return false;">Update Existing Catalog via File</button>';
         $ret .= '<hr />';
         $ret .= '<b>Use a Custom import tool</b>:<br /><ul>';
         $files = scandir(dirname(__FILE__) . '/load-classes');

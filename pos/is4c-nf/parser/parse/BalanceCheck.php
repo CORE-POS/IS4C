@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
-use \CoreLocal;
+use COREPOS\pos\lib\MemberLib;
 use COREPOS\pos\parser\Parser;
 
 class BalanceCheck extends Parser 
@@ -40,11 +40,11 @@ class BalanceCheck extends Parser
     function parse($str)
     {
         $ret = $this->default_json();
-        \COREPOS\pos\lib\MemberLib::chargeOk();
-        $memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
-        $title = _('Member #') . CoreLocal::get('memberID');
-        $bal = CoreLocal::get('InvertAR') ? -1*CoreLocal::get('balance') : CoreLocal::get('balance');
-        $avail = CoreLocal::get('InvertAR') ? -1*CoreLocal::get('availBal') : CoreLocal::get('availBal');
+        MemberLib::chargeOk();
+        $memChargeCommitted=$this->session->get("availBal") - $this->session->get("memChargeTotal");
+        $title = _('Member #') . $this->session->get('memberID');
+        $bal = $this->session->get('InvertAR') ? -1*$this->session->get('balance') : $this->session->get('balance');
+        $avail = $this->session->get('InvertAR') ? -1*$this->session->get('availBal') : $this->session->get('availBal');
         $msg = _(sprintf("Current AR balance is %.2f", $bal)) . '<br />'
              . _(sprintf("Available AR balance is %.2f", $avail));
         $ret['output'] = DisplayLib::boxMsg(

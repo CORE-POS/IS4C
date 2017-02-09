@@ -21,15 +21,11 @@
 
 *********************************************************************************/
 
-use COREPOS\pos\lib\LocalStorage\LaneConfig;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\JsonLib;
 
 if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
     include_once(__DIR__ . '/LocalStorage.php');
-}
-if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig')) {
-    include(__DIR__ . '/LaneConfig.php');
 }
 
 /**
@@ -38,7 +34,7 @@ if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig')) {
 
 class CoreLocal
 {
-    private static $storage_object = null;
+    private static $storageObject = null;
     private static $mechanism = 'SessionStorage';
 
     private static $INI_SETTINGS = array(
@@ -58,9 +54,9 @@ class CoreLocal
     private static function init()
     {
         if (class_exists(self::$mechanism)) {
-            self::$storage_object = new self::$mechanism();
+            self::$storageObject = new self::$mechanism();
         } else {
-            self::$storage_object = new SessionStorage();
+            self::$storageObject = new SessionStorage();
         }
     }
 
@@ -70,15 +66,11 @@ class CoreLocal
     */
     public static function get($key)
     {
-        if (self::$storage_object === null) {
+        if (self::$storageObject === null) {
             self::init();
         }
 
-        if (LaneConfig::has($key)) {
-            return LaneConfig::get($key);
-        } else {
-            return self::$storage_object->get($key);
-        }
+        return self::$storageObject->get($key);
     }
 
     /**
@@ -91,15 +83,11 @@ class CoreLocal
     */
     public static function set($key, $val, $immutable=false)
     {
-        if (self::$storage_object === null) {
+        if (self::$storageObject === null) {
             self::init();
         }
         
-        if ($immutable) {
-            LaneConfig::set($key, $val);
-        } else {
-            return self::$storage_object->set($key, $val);
-        }
+        return self::$storageObject->set($key, $val);
     }
 
     /**
@@ -121,13 +109,12 @@ class CoreLocal
     private static function validateJsonIni()
     {
         $json = dirname(__FILE__) . '/../../ini.json';
+        $settings = array();
         if (!file_exists($json) && !is_writable(dirname(__FILE__) . '/../../')) {
             return false;
         } elseif (file_exists($json)) {
             $settings = self::readIniJson();
             $settings = $settings->iteratorKeys();
-        } else {
-            $settings = array();
         }
 
         $all = true;
@@ -140,10 +127,10 @@ class CoreLocal
 
         if ($all) {
             return true;
-        } else {
-            $jsonStr = self::convertIniPhpToJson();
-            return file_put_contents($json, $jsonStr) ? true : false;
         }
+        $jsonStr = self::convertIniPhpToJson();
+
+        return file_put_contents($json, $jsonStr) ? true : false;
     }
 
     /**
@@ -191,20 +178,20 @@ class CoreLocal
         if (file_exists(dirname(__FILE__).'/../../ini.php')) {
             $file = dirname(__FILE__).'/../../ini.php';
             $settings = self::readIniPhp();
-            $db = Database::pDataConnect();
+            $dbc = Database::pDataConnect();
             foreach ($settings as $key => $value) {
                 if (!in_array($key, self::$INI_SETTINGS)) {
                     if ($key == 'SpecialDeptMap') {
                         // SpecialDeptMap has a weird array structure
                         // and gets moved to a dedicated table
-                        if (CoreLocal::get('NoCompat') == 1 || $db->table_exists('SpecialDeptMap')) {
-                            $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
-                            $mapModel->initTable($sconf);
+                        if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('SpecialDeptMap')) {
+                            $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
+                            $mapModel->initTable($value);
                             \COREPOS\pos\install\conf\Conf::remove($key);
                         }
                     } else {
                         // other settings go into opdata.parameters
-                        $saved = \COREPOS\pos\install\conf\ParamConf::save($db, $key, $value);
+                        $saved = \COREPOS\pos\install\conf\ParamConf::save($dbc, $key, $value);
                         if ($saved && is_writable($file)) {
                             \COREPOS\pos\install\conf\Conf::remove($key);
                         }
@@ -276,9 +263,9 @@ class CoreLocal
       session values
       @param $m [string] class name
     */
-    public static function setHandler($m)
+    public static function setHandler($mec)
     {
-        self::$mechanism = $m;
+        self::$mechanism = $mec;
     }
 
     /**
@@ -290,7 +277,7 @@ class CoreLocal
     */
     public static function isImmutable($key)
     {
-        return LaneConfig::has($key);
+        return false;
     }
 
     /**
@@ -305,11 +292,11 @@ class CoreLocal
     */
     public static function iteratorKeys()
     {
-        if (self::$storage_object === null) {
+        if (self::$storageObject === null) {
             self::init();
         }
 
-        return self::$storage_object->iteratorKeys();
+        return self::$storageObject->iteratorKeys();
     }
 }
 

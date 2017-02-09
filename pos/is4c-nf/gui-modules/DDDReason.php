@@ -33,43 +33,43 @@ class DDDReason extends NoInputCorePage
     public function preprocess()
     {
         // pre-emptively lookup available reasons
-        $db = Database::pDataConnect();
-        $result = $db->query('SELECT shrinkReasonID, description
+        $dbc = Database::pDataConnect();
+        $result = $dbc->query('SELECT shrinkReasonID, description
                               FROM ShrinkReasons');
-        if ($db->num_rows($result) == 0) {
+        if ($dbc->numRows($result) == 0) {
             // no reasons configured. skip the 
             // this page and continue to next step.
-            CoreLocal::set('shrinkReason', 0);
+            $this->session->set('shrinkReason', 0);
             $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
 
             return false;
-        } else if ($db->num_rows($result) == 1) {
+        } elseif ($dbc->numRows($result) == 1) {
             // exactly one reason configured. 
             // just use that reason and continue
             // to next step
-            $row = $db->fetch_row($result);
-            CoreLocal::set('shrinkReason', $row['shrinkReasonID']);
+            $row = $dbc->fetchRow($result);
+            $this->session->set('shrinkReason', $row['shrinkReasonID']);
             $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
 
             return false;
-        } else {
-            while($row = $db->fetch_row($result)) {
-                $this->reasons[$row['shrinkReasonID']] = $row['description'];
-            }
         }
 
-        if (isset($_REQUEST["selectlist"])) {
-            $input = $_REQUEST["selectlist"];
+        while($row = $dbc->fetchRow($result)) {
+            $this->reasons[$row['shrinkReasonID']] = $row['description'];
+        }
+
+        try {
+            $input = $this->form->selectlist;
             if ($input == "CL" || $input == '') {
-                CoreLocal::set("shrinkReason", 0);
+                $this->session->set("shrinkReason", 0);
                 $this->change_page($this->page_url."gui-modules/pos2.php");
             } else {
-                CoreLocal::set("shrinkReason", (int)$input);
+                $this->session->set("shrinkReason", (int)$input);
                 $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
             }
 
             return false;
-        }
+        } catch (Exception $ex) {}
 
         return true;
     }
@@ -102,8 +102,8 @@ class DDDReason extends NoInputCorePage
         </div>
         </div>    
         <?php
-        $this->add_onload_command("\$('#selectlist').focus();\n");
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
     } // END body_content() FUNCTION
 }
 

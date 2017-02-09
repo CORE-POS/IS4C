@@ -58,25 +58,20 @@ class SaReportPage extends FanniePage {
             } else {
                 $this->sql_actions='Unable to delete record, please try again. <!-- '.$query.' -->';
             }
-        } else if (FormLib::get_form_value('clear') == 'yes'){
+        } elseif (FormLib::get_form_value('clear') == 'yes'){
             $query=$dbc->prepare('update sa_inventory set clear=1;');
             $result=$dbc->execute($query);
             if ($result) {
                 $this->sql_actions='Cleared old scans.';
                 header ("Location: SaReportPage.php");
                 return False;
-            } else {
-                $this->sql_actions='Unable to clear old scans, try again. <!-- '.$query.' -->';
             }
-        } else if (FormLib::get('change')=='yes') {
+            $this->sql_actions='Unable to clear old scans, try again. <!-- '.$query.' -->';
         }
 
-        if (FormLib::get_form_value('view') == 'section'){
-            $order='s.section,d.dept_no,s.datetime';
-        } elseif(FormLib::get_form_value('excel') == 'yes'){
-            $order='salesCode, d.dept_no, s.datetime';
-        } else {
-            $order='d.dept_no,s.section,s.datetime';
+        $order='dept_no,s.section,s.datetime';
+        if(FormLib::get_form_value('excel') == 'yes'){
+            $order='salesCode, dept_no, s.datetime';
         }
     
         $this->store = FormLib::get('store', false);
@@ -86,56 +81,91 @@ class SaReportPage extends FanniePage {
         if ($this->config->get('STORE_MODE') !== 'HQ') {
             $store = 0;
         }
-        $q= $dbc->prepare('SELECT
+        $soP = $dbc->prepare("
+            SELECT s.id,
+                s.datetime,
+                s.upc,
+                s.quantity,
+                CASE
+                    WHEN s.section=0 THEN 'Backstock'
+                    WHEN s.section=1 THEN 'Floor'
+                    ELSE 'Unknown'
+                END AS section,
+                o.description,
+                d.dept_no,
+                d.dept_name,
+                d.salesCode,
+                0 AS cost,
+                o.total / (o.quantity*o.ItemQtty) AS actual_retail,
+                '' AS retailstatus,
+                o.mixMatch AS vendor,
+                COALESCE(c.margin, d.margin, 0) AS margin
+            FROM sa_inventory AS s LEFT JOIN ".
+                $this->config->get('TRANS_DB') . $dbc->sep() . "PendingSpecialOrder AS o
+                ON o.orderID=? AND o.transID=? LEFT JOIN " .
+                $FANNIE_OP_DB.$dbc->sep().'departments AS d
+                ON o.department=d.dept_no LEFT JOIN '.
+                $FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
+                ON o.upc=v.upc AND v.vendorID=1 LEFT JOIN '.
+                $FANNIE_OP_DB.$dbc->sep().'vendorDepartments AS c
+                ON v.vendorID=c.vendorID AND v.vendorDept=c.deptID 
+            WHERE clear!=1
+                AND s.upc=?
+                AND s.storeID=?');
+
+            $OPDB = $this->config->get('OP_DB') . $dbc->sep();
+            $q= $dbc->prepare("SELECT
             s.id,
             s.datetime,
             s.upc,
             s.quantity,
             CASE
-                WHEN s.section=0 THEN \'Backstock\'
-                WHEN s.section=1 THEN \'Floor\'
-                ELSE \'Unknown\'
+                WHEN s.section=0 THEN 'Backstock'
+                WHEN s.section=1 THEN 'Floor'
+                ELSE 'Unknown'
             END AS section,
             CASE 
-                WHEN p.description IS NULL AND v.description IS NULL THEN \'Not in POS\' 
+                WHEN p.description IS NULL AND v.description IS NULL THEN 'Not in POS' 
                 WHEN p.description IS NULL AND v.description IS NOT NULL THEN v.description
                 ELSE p.description END as description,
-            CASE WHEN d.dept_name IS NULL THEN \'Unknown\' ELSE d.dept_name END as dept_name,
-            CASE WHEN d.dept_no IS NULL THEN \'n/a\' ELSE d.dept_no END as dept_no,
-            CASE WHEN d.salesCode IS NULL THEN \'n/a\' ELSE d.salesCode END as salesCode,
-
-            CASE WHEN p.cost = 0 AND v.cost IS NOT NULL THEN v.cost ELSE p.cost END as cost,
-
-            p.normal_price as normal_retail,
-
-            CASE WHEN p.discounttype > 0 THEN p.special_price
-            ELSE p.normal_price END AS actual_retail,
-
-            CASE WHEN p.discounttype = 2 THEN \'M\'
-            ELSE \'\' END AS retailstatus,
-
-            COALESCE(z.vendorName,b.vendorName,\'n/a\') AS vendor,
-
+            CASE
+                WHEN d.dept_name IS NOT NULL THEN d.dept_name
+                WHEN z.dept_name IS NOT NULL THEN z.dept_name
+                ELSE 'Unknown'
+            END as dept_name,
+            CASE
+                WHEN d.dept_no IS NOT NULL THEN d.dept_no
+                WHEN z.dept_no IS NOT NULL THEN z.dept_no
+                ELSE -999
+            END AS dept_no,
+            CASE
+                WHEN d.salesCode IS NOT NULL THEN d.salesCode
+                WHEN z.salesCode IS NOT NULL THEN z.salesCode
+                ELSE 'n/a'
+            END AS salesCode,
+            CASE WHEN p.cost IS NULL AND v.cost IS NOT NULL THEN v.cost ELSE p.cost END as cost,
+            CASE WHEN p.normal_price IS NULL AND v.srp IS NOT NULL THEN v.srp ELSE p.normal_price END as normal_retail,
+            CASE 
+                WHEN p.discounttype IS NULL AND v.srp IS NOT NULL THEN v.srp
+                WHEN p.discounttype > 0 THEN p.special_price 
+                ELSE p.normal_price 
+            END AS actual_retail,
+            CASE WHEN p.discounttype = 2 THEN 'M' ELSE '' END AS retailstatus,
+            COALESCE(b.vendorName,'n/a') AS vendor,
             COALESCE(c.margin, d.margin, 0) AS margin
 
-            FROM sa_inventory AS s LEFT JOIN '.
-            $FANNIE_OP_DB.$dbc->sep().'products AS p
-            ON s.upc=p.upc AND p.store_id=1 LEFT JOIN '.
-            $FANNIE_OP_DB.$dbc->sep().'departments AS d
-            ON p.department=d.dept_no LEFT JOIN '.
-            $FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
-            ON s.upc=v.upc AND v.vendorID=1 LEFT JOIN '.
-            $FANNIE_OP_DB.$dbc->sep().'vendorItems AS a
-            ON p.upc=a.upc AND p.default_vendor_id=a.vendorID LEFT JOIN '.
-            $FANNIE_OP_DB.$dbc->sep().'vendors AS b
-            ON a.vendorID=b.vendorID LEFT JOIN '.
-            $FANNIE_OP_DB.$dbc->sep().'vendorDepartments AS c
-            ON a.vendorID=c.vendorID AND a.vendorDept=c.deptID LEFT JOIN '.
-            $FANNIE_OP_DB.$dbc->sep().'vendors AS z
-            ON p.default_vendor_id=z.vendorID
+            FROM sa_inventory AS s 
+                LEFT JOIN {$OPDB}products AS p ON s.upc=p.upc AND p.store_id=1 
+                LEFT JOIN {$OPDB}departments AS d ON p.department=d.dept_no
+                LEFT JOIN {$OPDB}vendorItems AS v ON s.upc=v.upc AND v.vendorID=1
+                LEFT JOIN {$OPDB}vendorDepartments AS y ON v.vendorDept=y.deptID AND v.vendorID=y.vendorID
+                LEFT JOIN {$OPDB}departments AS z ON y.posDeptID=z.dept_no
+                LEFT JOIN {$OPDB}vendorItems AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID 
+                LEFT JOIN {$OPDB}vendors AS b ON a.vendorID=b.vendorID
+                LEFT JOIN {$OPDB}vendorDepartments AS c ON a.vendorID=c.vendorID AND a.vendorDept=c.deptID
             WHERE clear!=1
                 AND s.storeID=?
-            ORDER BY '.$order);
+            ORDER BY ".$order);
         $r=$dbc->execute($q, array($this->store));
         $upcs = array();
         if ($r) {
@@ -144,10 +174,18 @@ class SaReportPage extends FanniePage {
             if ($num_rows>0) {
                 $this->scans=array();
                 while ($row = $dbc->fetchRow($r)){
-                    $key = $row['upc'] . '-' . $row['section'];
+                    if (substr($row['upc'], 0, 5) == '00454') {
+                        $orderID = substr($row['upc'], 5, 6);
+                        $transID = substR($row['upc'], -2);
+                        $args = array($orderID, $transID, $row['upc'], $this->store);
+                        $row = $dbc->getRow($soP, $args);
+                    }
+                    $key = $row['upc'];
                     if (!isset($upcs[$key])) {
-                        $this->scans[] = $row;
+                        $this->scans[$key] = $row;
                         $upcs[$key] = true;
+                    } else {
+                        $this->scans[$key]['quantity'] += $row['quantity'];
                     }
                 }
             } else {
@@ -293,7 +331,6 @@ table.shelf-audit tr:hover {
             <p><a href="SaHandheldPage.php">Alternate Scan Page</a></p>
             <p><?php echo($this->sql_actions); ?></p>
             <p><?php echo($this->status); ?></p>
-            <p><a href="SaReportPage.php">view by pos department</a> <a href="SaReportPage.php?view=section">view by scanned section</a></p>
             <p><?php echo $stores['html']; ?></p>
             <p><a href="?excel=yes&store=<?php echo $this->store; ?>">download as csv</a></p>
         <?php
@@ -303,19 +340,14 @@ table.shelf-audit tr:hover {
         }
         
         $table = '';
-        $view = FormLib::get_form_value('view','dept');
-        $counter = ($view == 'dept') ? 'd' : 's';
         $counter_total = 0;
         foreach($this->scans as $row) {
             
             if (!isset($counter_number)) {
-                if ($counter=='d') { $counter_number=$row['dept_no']; }
-                else { $counter_number=$row['section']; }
-                
+                $counter_number=$row['dept_no'];
                 $counter_total=$row['quantity']*$row['normal_retail'];
                 
-                if ($counter=='d') { $caption=$row['dept_name'].' Department'; }
-                else { $caption='Section: '.$row['section']; }
+                $caption=$row['dept_name'].' Department';
                 
                 $table .= '
         <table class="table shelf-audit">
@@ -350,12 +382,9 @@ table.shelf-audit tr:hover {
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
                         . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
-            } else if ($counter_number!=$row['section'] && $counter_number!=$row['dept_no']) {
-                if ($counter=='d') { $counter_number=$row['dept_no']; }
-                else { $counter_number=$row['section']; }
-                
-                if ($counter=='d') { $caption=$row['dept_name'].' Department'; }
-                else { $caption='Section: '.$row['section']; }
+            } elseif ($counter_number!=$row['dept_no']) {
+                $counter_number=$row['dept_no'];
+                $caption=$row['dept_name'].' Department';
                                 
                 $table .= '
             </tbody>

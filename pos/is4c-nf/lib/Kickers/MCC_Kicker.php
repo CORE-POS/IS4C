@@ -51,9 +51,9 @@ class MCC_Kicker extends Kicker
                     AND " . $this->refToWhere($trans_num);
 
         $result = $dbc->query($query);
-        $num_rows = $dbc->num_rows($result);
+        $numRows = $dbc->numRows($result);
 
-        return ($num_rows > 0) ? true : false;
+        return ($numRows > 0) ? true : false;
     }
 
     /**

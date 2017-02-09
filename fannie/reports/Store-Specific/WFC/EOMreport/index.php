@@ -1,4 +1,5 @@
 <?php
+use COREPOS\Fannie\API\item\StandardAccounting;
 //header('Content-Type: application/ms-excel');
 //header('Content-Disposition: attachment; filename="EOMreport.xls"');
 include('../../../../config.php');
@@ -66,7 +67,8 @@ if (!$output || isset($_REQUEST['recache'])){
     $query1="select t.department,
     s.superID,
     d.salesCode,d.dept_name,
-    SUM(t.total)
+    SUM(t.total),
+    t.store_id
     FROM $dlog as t 
         INNER JOIN departments as d ON t.department = d.dept_no
         LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = d.dept_no    
@@ -76,7 +78,7 @@ if (!$output || isset($_REQUEST['recache'])){
         AND t.trans_type <> 'T'
         AND t.trans_type IN ('I', 'D')
     GROUP BY
-    s.superID,t.department,d.dept_name,d.salesCode
+    s.superID,t.department,d.dept_name,d.salesCode,t.store_id
     order by s.superID,t.department";
 
     $query2 = "SELECT 
@@ -220,6 +222,9 @@ if (!$output || isset($_REQUEST['recache'])){
     $supers = array();
     $misc = array();
     while ($w = $dbc->fetchRow($res)) {
+        $code = StandardAccounting::extend($w['salesCode'], $w['store_id']);
+        $w['salesCode'] = $code;
+        $w[2] = $code;
         $s = $w['superID'];
         if ($s > 0) {
             $depts[] = $w;

@@ -25,7 +25,6 @@ namespace COREPOS\pos\lib\Scanning\DiscountTypes;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 
 class SlidingMemSale extends DiscountType 
 {
@@ -44,7 +43,7 @@ class SlidingMemSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = MiscLib::truncate2($row['special_price'] * $quantity);
 
-        if (CoreLocal::get("isMember")) {
+        if ($this->session->get("isMember")) {
             $ret['unitPrice'] -= $row['special_price'];
         }
 
@@ -56,7 +55,7 @@ class SlidingMemSale extends DiscountType
 
     public function addDiscountLine()
     {
-        if (CoreLocal::get("isMember")) {
+        if ($this->session->get("isMember")) {
             TransRecord::adddiscount($this->savedInfo['memDiscount'],
                 $this->savedRow['department']);
         }

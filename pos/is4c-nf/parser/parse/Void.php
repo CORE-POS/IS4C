@@ -27,22 +27,21 @@ use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
+use \CoreLocal;
 use \Exception;
 
 class Void extends Parser 
 {
-    private $caseprice = 0;
     private $scaleprice = 0;
 
     public function check($str)
     {
         if (substr($str,0,2) == "VD" && strlen($str) <= 15) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function parse($str)
@@ -53,7 +52,7 @@ class Void extends Parser
             $this->checkVoidLimit(0);
             if (strlen($str) > 2) {
                 $ret = $this->voidupc(substr($str,2), $ret);
-            } elseif (CoreLocal::get("currentid") == 0) {
+            } elseif ($this->session->get("currentid") == 0) {
                 $ret['output'] = DisplayLib::boxMsg(
                     _("No Item on Order"),
                     '',
@@ -61,12 +60,12 @@ class Void extends Parser
                     DisplayLib::standardClearButton()
                 );
             } else {
-                $trans_id = CoreLocal::get("currentid");
+                $transID = $this->session->get("currentid");
 
-                $status = $this->checkstatus($trans_id);
+                $status = $this->checkstatus($transID);
                 $this->scaleprice = $status['scaleprice'];
 
-                $ret = $this->branchByVoided($status['voided'], $trans_id, $status['status'], $ret);
+                $ret = $this->branchByVoided($status['voided'], $transID, $status['status'], $ret);
             }
 
             if (empty($ret['output']) && empty($ret['main_frame'])) {
@@ -83,7 +82,7 @@ class Void extends Parser
         return $ret;
     }
 
-    private function branchByVoided($voided, $trans_id, $status, $ret)
+    private function branchByVoided($voided, $transID, $status, $ret)
     {
         /**
           Voided values:
@@ -97,7 +96,7 @@ class Void extends Parser
         */
         if ($voided == 2) {
             // void preceeding item
-            $ret = $this->voiditem($trans_id - 1, $ret);
+            $ret = $this->voiditem($transID - 1, $ret);
         } elseif ($voided == 3 || $voided == 6 || $voided == 8) {
             $ret['output'] = DisplayLib::boxMsg(
                 _("Cannot void this entry"),
@@ -117,7 +116,7 @@ class Void extends Parser
                 DisplayLib::standardClearButton()
             );
         } else {
-            $ret = $this->voiditem($trans_id, $ret);
+            $ret = $this->voiditem($transID, $ret);
         }
 
         return $ret;
@@ -127,13 +126,13 @@ class Void extends Parser
       Lookup item and decide whether to void
       by simply reversing the record or by
       applying product UPC
-      @param $item_num localtemptrans.trans_id value to void
+      @param $itemNum localtemptrans.trans_id value to void
       @param $json parser return value structure
     */
-    public function voiditem($item_num, $json)
+    public function voiditem($itemNum, $json)
     {
-        if ($item_num) {
-            $row = $this->getLine($item_num);
+        if ($itemNum) {
+            $row = $this->getLine($itemNum);
 
             if (!$row) {
                 $json['output'] = DisplayLib::boxMsg(
@@ -150,9 +149,9 @@ class Void extends Parser
                     DisplayLib::standardClearButton()
                 );
             } elseif ($this->voidableNonUpc($row)) {
-                $json = $this->voidid($item_num, $json);
+                $json = $this->voidid($itemNum, $json);
             } else {
-                $json = $this->voidupc($row["ItemQtty"] . "*" . $row["upc"], $json, $item_num);
+                $json = $this->voidupc($row["ItemQtty"] . "*" . $row["upc"], $json, $itemNum);
             }
         } else {
             $json['output'] = DisplayLib::boxMsg(
@@ -176,14 +175,14 @@ class Void extends Parser
         );
     }
 
-    private function getLine($item_num)
+    private function getLine($itemNum)
     {
         $query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
             discount,memDiscount,discountable,scale,numflag,charflag,
             foodstamp,discounttype,total,cost,description,trans_type,
             department,regPrice,tax,volDiscType,volume,mixMatch,matched,
             trans_status,ItemQtty,voided
-                   from localtemptrans where trans_id = ".$item_num;
+                   from localtemptrans where trans_id = ".$itemNum;
         $dbc = Database::tDataConnect();
         $result = $dbc->query($query);
         return $dbc->fetchRow($result);
@@ -191,7 +190,7 @@ class Void extends Parser
 
     /**
       Void record by trans_id
-      @param $item_num [int] trans_id
+      @param $itemNum [int] trans_id
       @param $json parser return value structure
 
       This marks the specified record as voided
@@ -199,12 +198,12 @@ class Void extends Parser
       Neither record can be subsequently modified via
       voids.
     */
-    public function voidid($item_num, $json)
+    public function voidid($itemNum, $json)
     {
-        $row = $this->getLine($item_num);
+        $row = $this->getLine($itemNum);
 
         $upc = $row["upc"];
-        $VolSpecial = $row["VolSpecial"];
+        $volSpecial = $row["VolSpecial"];
         $quantity = -1 * $row["quantity"];
         $total = -1 * $row["total"];
         // 11Jun14 Andy => don't know why FS is different. legacy?
@@ -213,7 +212,7 @@ class Void extends Parser
         } elseif ($row['trans_status'] == 'R' && $row['trans_type'] == 'D') {
             // set refund flag and let that logic reverse
             // the total and quantity
-            CoreLocal::set('refund', 1);
+            $this->session->set('refund', 1);
             $total = $row['total'];
             $quantity = $row['quantity'];
         }
@@ -241,7 +240,7 @@ class Void extends Parser
             }
             $this->checkTendered($total);
             $dbc = Database::tDataConnect();
-            $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
+            $update = "update localtemptrans set voided = 1 where trans_id = ".$itemNum;
             $dbc->query($update);
 
             TransRecord::addRecord(array(
@@ -265,7 +264,7 @@ class Void extends Parser
                 'ItemQtty' => $quantity, 
                 'volDiscType' => $row["volDiscType"], 
                 'volume' => $row["volume"], 
-                'VolSpecial' => $VolSpecial, 
+                'VolSpecial' => $volSpecial, 
                 'mixMatch' => $mixmatch, 
                 'matched' => $matched, 
                 'voided' => 1, 
@@ -275,7 +274,7 @@ class Void extends Parser
             ));
 
             if ($row["trans_type"] != "T") {
-                CoreLocal::set("ttlflag",0);
+                $this->session->set("ttlflag",0);
             } else {
                 PrehLib::ttl();
             }
@@ -301,12 +300,11 @@ class Void extends Parser
             list($quantity, $upc) = explode('*', $upc, 2);
             if ($quantity === '' || $upc === '' || !is_numeric($quantity) || !is_numeric($upc)) {
                 throw new Exception(DisplayLib::inputUnknown());
-            } else {
-                $weight = 0;
             }
+            $weight = 0;
         } else {
             $quantity = 1;
-            $weight = CoreLocal::get("weight");
+            $weight = $this->session->get("weight");
         }
         
         return array($upc, $quantity, $weight);
@@ -322,7 +320,7 @@ class Void extends Parser
                 $scaleprice = substr($upc, 10, 4)/100;
                 $upc = substr($upc, 0, 8) . "0000";
                 $deliflag = true;
-            } else if (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
+            } elseif (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
                 $scaleprice = $this->scaleprice;
                 $deliflag = true;
             }
@@ -347,8 +345,8 @@ class Void extends Parser
         $query .= ' GROUP BY upc';
 
         $result = $dbc->query($query);
-        $num_rows = $dbc->num_rows($result);
-        if ($num_rows == 0 ) {
+        $numRows = $dbc->numRows($result);
+        if ($numRows == 0 ) {
             throw new Exception(DisplayLib::boxMsg(
                 _("Item not found: ") . $upc,
                 '',
@@ -396,11 +394,11 @@ class Void extends Parser
         return true;
     }
 
-    private function findUpcLine($upc, $scaleprice, $deliflag, $item_num)
+    private function findUpcLine($upc, $scaleprice, $deliflag, $itemNum)
     {
         $dbc = Database::tDataConnect();
         //----------------------Void Item------------------
-        $query_upc = "SELECT 
+        $queryUPC = "SELECT 
                         ItemQtty,
                         foodstamp,
                         discounttype,
@@ -427,20 +425,20 @@ class Void extends Parser
                       FROM localtemptrans 
                       WHERE upc = '" . $upc . "'"; 
         if ($deliflag) {
-            $query_upc .= ' AND unitPrice = ' . $scaleprice;
+            $queryUPC .= ' AND unitPrice = ' . $scaleprice;
         }
-        if ($item_num != -1) {
-            $query_upc .= ' AND trans_id = ' . $item_num . ' AND voided=0 ';
+        if ($itemNum != -1) {
+            $queryUPC .= ' AND trans_id = ' . $itemNum . ' AND voided=0 ';
         } else {
-            $query_upc .= ' AND voided=0 ORDER BY total';
+            $queryUPC .= ' AND voided=0 ORDER BY total';
         }
 
-        $result = $dbc->query($query_upc);
+        $result = $dbc->query($queryUPC);
         if ($dbc->numRows($result) > 0) {
             return $dbc->fetchRow($result);
-        } else {
-            return $this->findUpcLine($upc, $scaleprice, $deliflag, -1);
         }
+
+        return $this->findUpcLine($upc, $scaleprice, $deliflag, -1);
     }
 
     private function adjustUnitPrice($upc, $row)
@@ -452,18 +450,18 @@ class Void extends Parser
           member status. I'm not sure this is actually
           necessary.
         */
-        if ((CoreLocal::get("isMember") != 1 && $row["discounttype"] == 2) || 
-            (CoreLocal::get("isStaff") == 0 && $row["discounttype"] == 4)) {
+        if (($this->session->get("isMember") != 1 && $row["discounttype"] == 2) || 
+            ($this->session->get("isStaff") == 0 && $row["discounttype"] == 4)) {
             $unitPrice = $row["regPrice"];
-        } elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
-            (CoreLocal::get("isStaff") != 0 && $row["discounttype"] == 4)) && 
+        } elseif ((($this->session->get("isMember") == 1 && $row["discounttype"] == 2) || 
+            ($this->session->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
             ($row["unitPrice"] == $row["regPrice"])) {
-            $dbc_p = Database::pDataConnect();
-            $query_p = "select special_price from products where upc = '".$upc."'";
-            $result_p = $dbc_p->query($query_p);
-            $row_p = $dbc_p->fetchRow($result_p);
+            $dbcp = Database::pDataConnect();
+            $queryp = "select special_price from products where upc = '".$upc."'";
+            $resultp = $dbcp->query($queryp);
+            $rowp = $dbcp->fetchRow($resultp);
             
-            $unitPrice = $row_p["special_price"];
+            $unitPrice = $rowp["special_price"];
         }
 
         return $unitPrice;
@@ -475,11 +473,11 @@ class Void extends Parser
           Check if the voiding item will exceed the limit. If so,
           prompt for admin password. 
         */
-        if (is_numeric(CoreLocal::get('VoidLimit')) && CoreLocal::get('VoidLimit') > 0) {
-            $currentTotal = CoreLocal::get('voidTotal');
-            if ($currentTotal + (-1*$total) > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
-                CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-                CoreLocal::set('voidOverride', 0);
+        if (is_numeric($this->session->get('VoidLimit')) && $this->session->get('VoidLimit') > 0) {
+            $currentTotal = $this->session->get('voidTotal');
+            if ($currentTotal + (-1*$total) > $this->session->get('VoidLimit') && $this->session->get('voidOverride') != 1) {
+                $this->session->set('strRemembered', $this->session->get('strEntered'));
+                $this->session->set('voidOverride', 0);
                 throw new Exception(MiscLib::baseUL().'gui-modules/adminlogin.php?class=COREPOS-pos-parser-parse-Void', 1);
             }
         }
@@ -487,10 +485,10 @@ class Void extends Parser
 
     private function checkTendered($total)
     {
-        if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
+        if ($this->session->get("tenderTotal") < 0 && (-1 * $total) > $this->session->get("runningTotal") - $this->session->get("taxTotal")) {
             $dbc = Database::tDataConnect();
             $cash = $dbc->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
-            if ($dbc->num_rows($cash) > 0) {
+            if ($dbc->numRows($cash) > 0) {
                 throw new Exception(DisplayLib::boxMsg(
                     _("Item already paid for"),
                     '',
@@ -504,12 +502,11 @@ class Void extends Parser
     /**
       Void the given UPC
       @param $upc [string] upc to void. Optionally including quantity and asterisk
-      @param $item_num [int] trans_id of record to void. Optional.
+      @param $itemNum [int] trans_id of record to void. Optional.
       @param $json parser return value structure
     */
-    public function voidupc($upc, $json, $item_num=-1)
+    public function voidupc($upc, $json, $itemNum=-1)
     {
-        $lastpageflag = 1;
         $deliflag = false;
         $quantity = 0;
 
@@ -519,25 +516,24 @@ class Void extends Parser
             $row = $this->findUPC($upc, $deliflag, $scaleprice);
 
             if (($row["scale"] == 1) && $weight > 0) {
-                $quantity = $weight - CoreLocal::get("tare");
-                CoreLocal::set("tare", 0);
+                $quantity = $weight - $this->session->get("tare");
+                $this->session->set("tare", 0);
             }
             $volDiscType = $row["volDiscType"];
             $voidable = MiscLib::nullwrap($row["voidable"]);
-            $VolSpecial = 0;
+            $volSpecial = 0;
             $volume = 0;
             $scale = MiscLib::nullwrap($row["scale"]);
             $this->checkUpcQuantities($voidable, $quantity, $scale);
 
-            $row = $this->findUpcLine($upc, $scaleprice, $deliflag, $item_num);
+            $row = $this->findUpcLine($upc, $scaleprice, $deliflag, $itemNum);
             // if the selected line was already voided, findUpcLine() might locate
             // a different, equivalent line to proceed with
-            $item_num = $row['trans_id'];
+            $itemNum = $row['trans_id'];
             $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
             $discounttype = MiscLib::nullwrap($row["discounttype"]);
             $mixMatch = MiscLib::nullwrap($row["mixMatch"]);
             $matched = -1 * $row['matched'];
-            $item_num = $row['trans_id'];
             $cost = -1* $row['cost'];
             $numflag = $row['numflag'];
             $charflag = $row['charflag'];
@@ -565,7 +561,7 @@ class Void extends Parser
             if ($quantity != 0) {
                 $dbc = Database::tDataConnect();
 
-                $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
+                $update = "update localtemptrans set voided = 1 where trans_id = ".$itemNum;
                 $dbc->query($update);
 
                 TransRecord::addRecord(array(
@@ -589,7 +585,7 @@ class Void extends Parser
                     'ItemQtty' => $quantity, 
                     'volDiscType' => $volDiscType,
                     'volume' => $volume,
-                    'VolSpecial' => $VolSpecial, 
+                    'VolSpecial' => $volSpecial, 
                     'mixMatch' => $mixMatch, 
                     'matched' => $matched,
                     'voided' => 1, 
@@ -599,7 +595,7 @@ class Void extends Parser
                 ));
 
                 if ($row["trans_type"] != "T") {
-                    CoreLocal::set("ttlflag",0);
+                    $this->session->set("ttlflag",0);
                 }
 
                 $this->voidDeposit($upc, $quantity);
@@ -619,7 +615,7 @@ class Void extends Parser
     {
         $dbc = Database::pDataConnect();
         $chk = $dbc->query("SELECT deposit FROM products WHERE upc='$upc'");
-        if ($dbc->num_rows($chk) > 0) {
+        if ($dbc->numRows($chk) > 0) {
             $row = $dbc->fetch_row($chk);
             $dpt = $row['deposit'];
             if ($dpt <= 0) {
@@ -627,16 +623,16 @@ class Void extends Parser
             }
             $dbc = Database::tDataConnect();
             $dupc = str_pad((int)$dpt,13,'0',STR_PAD_LEFT);
-            $trans_id = $dbc->query(sprintf("SELECT trans_id FROM localtemptrans
+            $transID = $dbc->query(sprintf("SELECT trans_id FROM localtemptrans
                 WHERE upc='%s' AND voided=0 AND quantity=%d",
                 $dupc,(-1*$quantity)));
-            if ($dbc->num_rows($trans_id) > 0) {
-                $row = $dbc->fetch_row($trans_id);
-                $trans_id = $row['trans_id'];
+            if ($dbc->numRows($transID) > 0) {
+                $row = $dbc->fetchRow($transID);
+                $transID = $row['trans_id'];
                 // pass an empty array instead of $json so
                 // voiding the deposit doesn't result in an error
                 // message. 
-                $this->voidupc((-1*$quantity)."*".$dupc, array(), $trans_id);
+                $this->voidupc((-1*$quantity)."*".$dupc, array(), $transID);
 
                 return true;
             }
@@ -655,10 +651,10 @@ class Void extends Parser
             CoreLocal::set('voidOverride', 1);
             CoreLocal::set('msgrepeat', 1);
             return true;
-        } else {
-            CoreLocal::set('voidOverride', 0);
-            return false;
         }
+        CoreLocal::set('voidOverride', 0);
+
+        return false;
     }
 
     function doc(){
@@ -708,8 +704,8 @@ class Void extends Parser
             if ($row["trans_status"] == "V") {
                 $ret['status'] = 'V';
             } elseif ($row["trans_status"] == "R") {
-                CoreLocal::set("refund",1);
-                CoreLocal::set("autoReprint",1);
+                $this->session->set("refund",1);
+                $this->session->set("autoReprint",1);
                 $ret['status'] = 'R';
                 $ret['refund'] = true;
             }

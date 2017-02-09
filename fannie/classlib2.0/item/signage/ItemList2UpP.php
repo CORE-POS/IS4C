@@ -67,6 +67,8 @@ class ItemList2UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $first = true;
         $column = 0;
         foreach ($data as $item) {
+            $item['description'] = str_replace("\n", '', trim($item['description']));
+            $item['description'] = str_replace("\r", '', $item['description']);
             if ($first) {
                 $pdf->SetXY($this->left, $this->top + ($row*$this->height));
                 $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);

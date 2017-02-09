@@ -55,7 +55,7 @@ class ItemNotFound
     public function handle($upc, $json)
     {
         $opts = array('upc'=>$upc,'description'=>'BADSCAN');
-        TransRecord::add_log_record($opts);
+        TransRecord::addLogRecord($opts);
         $json['output'] = DisplayLib::boxMsg(
             _('not a valid item'),
             _('UPC: ') . $upc,
@@ -78,7 +78,7 @@ class LogNotFound extends ItemNotFound
     public function handle($upc, $json)
     {
         $opts = array('upc'=>$upc,'description'=>'NOTFOUND');
-        TransRecord::add_log_record($opts);
+        TransRecord::addLogRecord($opts);
         CoreLocal::set("boxMsg", $upc . ' ' . _("not a valid item"));
         $json['main_frame'] = $my_url . "gui-modules/boxMsg2.php";
 

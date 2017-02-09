@@ -23,7 +23,6 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class CoopCredCheck extends Parser {
@@ -39,13 +38,13 @@ class CoopCredCheck extends Parser {
         // Sets $balance and $availBal.
         $chargeOk = \COREPOS\pos\lib\MemberLib::chargeOk();
         // $memChargeCommitted isn't used here.
-        $memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
+        $memChargeCommitted=$this->session->get("availBal") - $this->session->get("memChargeTotal");
         $message = "<p style='font-weight:bold; text-align:center; margin: 0em 0em 0em -1.0em;'>".
-            _("Member")." #". CoreLocal::get("memberID")."<br />";
+            _("Member")." #". $this->session->get("memberID")."<br />";
         if ($chargeOk) {
             $message .= _("Available Coop Cred") . "<br />" .
             _("Balance is:") . "<br />" .
-            "<span style='font-size:1.4em;'>" . " ".CoreLocal::get("availBal") . "</span>";
+            "<span style='font-size:1.4em;'>" . " ".$this->session->get("availBal") . "</span>";
         } else {
             $message .= _("Is not authorized to use") . "<br />" . _("Coop Cred");
         }

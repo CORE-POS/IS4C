@@ -26,7 +26,7 @@ use \CoreLocal;
 
 class ssd extends ScaleDriverWrapper {
 
-    function ReadFromScale()
+    function readFromScale()
     {
         $scale_data = $this->getFile('scale');
         $scan_data = $this->getFile('scanner');
@@ -66,7 +66,7 @@ class ssd extends ScaleDriverWrapper {
         return $scale_data;
     }
 
-    function WriteToScale($str)
+    function writeToScale($str)
     {
         switch(strtolower($str)){
         case 'goodbeep':

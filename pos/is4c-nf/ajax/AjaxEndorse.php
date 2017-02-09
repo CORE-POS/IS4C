@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Franking;
 use COREPOS\pos\lib\AjaxCallback;
 
@@ -32,10 +31,10 @@ class AjaxEndorse extends AjaxCallback
 {
     protected $encoding = 'plain';
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-        $endorseType = FormLib::get('type', '');
-        $amount = FormLib::get('amount', '');
+        $endorseType = $this->form->tryGet('type', '');
+        $amount = $this->form->tryGet('amount', '');
         if (strlen($endorseType) > 0) {
 
             // close session so if printer hangs
@@ -43,22 +42,23 @@ class AjaxEndorse extends AjaxCallback
             if (session_id() != '')
                 session_write_close();
 
+            $frank = new Franking($this->session);
             switch ($endorseType) {
 
                 case "check":
-                    Franking::frank($amount);
+                    $frank->frank($amount);
                     break;
 
                 case "giftcert":
-                    Franking::frankgiftcert($amount);
+                    $frank->frankgiftcert($amount);
                     break;
 
                 case "stock":
-                    Franking::frankstock($amount);
+                    $frank->frankstock($amount);
                     break;
 
                 case "classreg":
-                    Franking::frankclassreg();
+                    $frank->frankclassreg();
                     break;
 
                 default:

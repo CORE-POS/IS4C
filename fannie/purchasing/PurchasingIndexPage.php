@@ -50,6 +50,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
             $task->setLogger($this->logger);
             $task->setSilent(true);
             $task->setVendors($vendors);
+            $task->setUser(FannieAuth::getUID($this->current_user));
             $task->setStore($this->form->store);
             $task->run();
 
@@ -114,6 +115,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 <li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
                 <li><a href="EditManyPurchaseOrders.php">By Item</a></li>
                 <li><a href="?_method=put">Generate Orders</a></li>
+                <li><a href="ScanTransferPage.php">Store Transfer</a></li>
                 </ul>
             </li>
             <li>Reports

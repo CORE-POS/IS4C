@@ -75,13 +75,9 @@ class PaycardEmvSuccess extends BasicCorePage
                     $this->conf->set('paycardTendered', true);
                 }
 
-                // only reset terminal if the terminal was used for the transaction
-                // activating a gift card should not reset terminal
-                if ($this->conf->get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
-                    UdpComm::udpSend('termReset');
-                    $this->conf->set('ccTermState','swipe');
-                    $this->conf->set("CacheCardType","");
-                }
+                UdpComm::udpSend('termReset');
+                $this->conf->set('ccTermState','swipe');
+                $this->conf->set("CacheCardType","");
                 $this->conf->reset();
 
                 $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);

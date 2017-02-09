@@ -22,28 +22,26 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\gui\NoInputCorePage;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\TransRecord;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class bigComment extends NoInputCorePage 
 {
-
     /**
       Input processing function
     */
     function preprocess()
     {
         // a selection was made
-        if (FormLib::get('comment') !== '') {
+        if ($this->form->tryGet('comment') !== '') {
 
-            if (FormLib::get('cleared') === '1') {
+            if ($this->form->tryGet('cleared') === '1') {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             }
             
-            $comment = str_replace("\r",'',FormLib::get('comment'));
+            $comment = str_replace("\r",'',$this->form->comment);
             // remove trailing newline from double enter
             $comment = substr($comment,0,strlen($comment)-1);
             $lines = explode("\n", $comment);

@@ -267,15 +267,23 @@ class DTransactionsModel extends BasicModel
                 $this->connection->query($sql);
             }
         }
+        $source = $this->connection->tableDefinition($table_name);
+        $dbms = $this->connection->dbmsName();
 
-        $sql = 'CREATE VIEW '.$this->connection->identifierEscape($view_name).' AS '
+        $sql = 'CREATE VIEW '.$this->identifierEscape($dbms, $view_name).' AS '
             .'SELECT '
             .$this->connection->identifierEscape('datetime').' AS '
             .$this->connection->identifierEscape('tdate').',';
+        if (isset($source['date_id'])) {
+            $sql .= 'date_id,';
+        } else {
+            $sql .= $this->connection->dateymd('datetime') . ' AS date_id,';
+        }
         $c = $this->connection; // for more concise code below
         foreach($this->columns as $name => $definition) {
             if ($name == 'datetime') continue;
             elseif ($name == 'tdate') continue;
+            elseif ($name == 'date_id') continue;
             elseif ($name == 'trans_num'){
                 // create trans_num field
                 $sql .= $c->concat(
@@ -292,11 +300,11 @@ class DTransactionsModel extends BasicModel
                 $sql .= "CASE WHEN trans_subtype IN ('CP','IC') THEN 'T' 
                     WHEN upc = 'DISCOUNT' THEN 'S' ELSE trans_type END AS trans_type,\n";
             } else {
-                $sql .= $c->identifierEscape($name).",\n";
+                $sql .= $this->identifierEscape($dbms, $name).",\n";
             }
         }
         $sql = preg_replace("/,\n$/","\n",$sql);
-        $sql .= ' FROM '.$c->identifierEscape($table_name)
+        $sql .= ' FROM '.$this->identifierEscape($dbms, $table_name)
             .' WHERE '.$c->identifierEscape('trans_status')
             ." NOT IN ('D','X','Z') AND emp_no <> 9999
             AND register_no <> 99";

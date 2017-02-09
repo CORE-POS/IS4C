@@ -27,7 +27,7 @@ use \CoreLocal;
 
 class NewMagellan extends ScaleDriverWrapper {
 
-    function ReadFromScale()
+    function readFromScale()
     {
         $readdir = __DIR__ . '/../../scale-drivers/drivers/NewMagellan/ss-output';
         // do not process any scale input while 
@@ -38,7 +38,7 @@ class NewMagellan extends ScaleDriverWrapper {
             return;
         }
 
-        $scale_display = "";
+        $scaleDisplay = "";
         $scans = array();
         $files = scandir($readdir);
         $files = array_filter($files, function($file) use ($readdir) { return !is_dir($readdir . '/' . $file); });
@@ -48,11 +48,11 @@ class NewMagellan extends ScaleDriverWrapper {
             $line = rtrim($data,"\r\n");
             if (empty($line)) continue;
             if ($line[0] == 'S'){
-                $scale_display = DisplayLib::scaledisplaymsg($line);
-                if (is_array($scale_display)){
-                    if (isset($scale_display['upc']))
-                        $scans[] = $scale_display['upc'];
-                    $scale_display = $scale_display['display'];
+                $scaleDisplay = DisplayLib::scaledisplaymsg($line);
+                if (is_array($scaleDisplay)){
+                    if (isset($scaleDisplay['upc']))
+                        $scans[] = $scaleDisplay['upc'];
+                    $scaleDisplay = $scaleDisplay['display'];
                 }
             } else {
                 $scans[] = $line;
@@ -61,17 +61,13 @@ class NewMagellan extends ScaleDriverWrapper {
         }
 
         $output = array();
-        if (!empty($scale_display)) $output['scale'] = $scale_display;
+        if (!empty($scaleDisplay)) $output['scale'] = $scaleDisplay;
         if (!empty($scans)) $output['scans'] = ltrim($scans[0],'0');
 
-        if (!empty($output)) {
-            echo json_encode($output);
-        } else {
-            echo "{}";
-        }
+        echo !empty($output) ? json_encode($output) : '{}';
     }
 
-    function ReadReset()
+    function readReset()
     {
         $readdir = __DIR__ . '/../../scale-drivers/drivers/NewMagellan/ss-output';
         $dir  = opendir($readdir);
@@ -84,7 +80,7 @@ class NewMagellan extends ScaleDriverWrapper {
 
     /* just wraps UDP send because commands 
        ARE case-sensitive on the c# side */
-    function WriteToScale($str)
+    function writeToScale($str)
     {
         switch(strtolower($str)){
         case 'goodbeep':

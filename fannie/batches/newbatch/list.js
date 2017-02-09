@@ -138,6 +138,7 @@ function getFilters()
     filters.owner = $('#filterOwner').val();
     filters.store = $('#filterStore').val();
     filters.name = $('#filterName').val();
+    filters.date = $('#filterDate').val();
 
     return JSON.stringify(filters);
 }

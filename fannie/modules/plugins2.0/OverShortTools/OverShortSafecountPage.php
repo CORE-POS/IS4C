@@ -137,7 +137,6 @@ class OverShortSafecountPage extends FanniePage {
 
         $model = new DailyDepositModel($dbc);
         $model->dateStr($dateStr);
-        var_dump($store);
         $model->storeID($store);
         foreach($model->find() as $obj){
             if ($obj->rowName() == 'buyAmount')
@@ -265,6 +264,12 @@ class OverShortSafecountPage extends FanniePage {
         } else {
             $pars = array("0.01"=>35,"0.05"=>80,"0.10"=>250,"0.25"=>800,"1.00"=>1755,"5.00"=>750,"10.00"=>830);
         }
+        if (file_exists(__DIR__ . '/pars.json')) {
+            $json = json_decode(file_get_contents(__DIR__ . '/pars.json'), true);
+            if (isset($json[$store])) {
+                $pars = $json[$store];
+            }
+        }
 
         $ret .= "<tr class=\"color\"><th>Deposit Amount</th>";
         $sum = 0;
@@ -356,7 +361,7 @@ class OverShortSafecountPage extends FanniePage {
         $actualTotal += $sum;
 
         $parTTL = 0; foreach($pars as $k=>$v) $parTTL += $v;
-        $ret .= "<tr class=\"color\"><th>Par Amounts</th>";
+        $ret .= "<tr class=\"color\"><th><a href=\"OverShortParsPage.php\">Par Amounts</a></th>";
         $ret .= "<td id=par0.01>".$pars['0.01']."</td>";
         $ret .= "<td id=par0.05>".$pars['0.05']."</td>";
         $ret .= "<td id=par0.10>".$pars['0.10']."</td>";

@@ -46,15 +46,18 @@ class boxMsg2 extends BasicCorePage
           Bounce through this page and back to pos2.php. This lets
           TenderModules use the msgrepeat feature during input parsing.
         */
-        if (isset($_REQUEST['autoconfirm'])) {
-            $this->change_page(
-                MiscLib::base_url()
-                .'gui-modules/pos2.php'
-                . '?reginput=' .urlencode(CoreLocal::get('strEntered'))
-                . '&repeat=1'
-            );
-            return false;
-        }
+        try {
+            if ($this->form->autoconfirm) {
+                $this->change_page(
+                    MiscLib::base_url()
+                    .'gui-modules/pos2.php'
+                    . '?reginput=' .urlencode($this->session->get('strEntered'))
+                    . '&repeat=1'
+                );
+                return false;
+            }
+        } catch (Exception $ex) {}
+
         return true;
     }
 
@@ -65,17 +68,17 @@ class boxMsg2 extends BasicCorePage
         <div class="baseHeight">
 
         <?php
-        $buttons = is_array(CoreLocal::get('boxMsgButtons')) ? CoreLocal::get('boxMsgButtons') : array();
-        echo DisplayLib::boxMsg(CoreLocal::get("boxMsg"), "", true, $buttons);
+        $buttons = is_array($this->session->get('boxMsgButtons')) ? $this->session->get('boxMsgButtons') : array();
+        echo DisplayLib::boxMsg($this->session->get("boxMsg"), "", true, $buttons);
         echo "</div>";
         echo "<div id=\"footer\">";
         echo DisplayLib::printfooter();
         echo "</div>";
         echo '<input type="hidden" id="endorseType" value="'
-            .(isset($_REQUEST['endorse'])?$_REQUEST['endorse']:'')
+            . $this->form->tryGet('endorse') 
             .'" />';
         echo '<input type="hidden" id="endorseAmt" value="'
-            .(isset($_REQUEST['endorseAmt'])?$_REQUEST['endorseAmt']:'')
+            . $this->form->tryGet('endorseAmt') 
             .'" />';
         /**
           Encode the last command entered in the page. With payment
@@ -83,12 +86,13 @@ class boxMsg2 extends BasicCorePage
           in the background and alter the value of strEntered
         */
         echo '<input type="hidden" id="repeat-cmd" value="'
-            . CoreLocal::get('strEntered') . '" />';
+            . $this->session->get('strEntered') . '" />';
         
-        CoreLocal::set("boxMsg",'');
-        CoreLocal::set("boxMsgButtons", array());
-        if (!isset($_REQUEST['quiet']))
+        $this->session->set("boxMsg",'');
+        $this->session->set("boxMsgButtons", array());
+        if ($this->form->tryGet('quiet') !== '') {
             MiscLib::errorBeep();
+        }
     } // END body_content() FUNCTION
 }
 

@@ -33,37 +33,37 @@ class rplist extends NoInputCorePage
 {
     private function printReceipt($trans)
     {
-        $PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
-        $saved = CoreLocal::get('receiptToggle');
-        CoreLocal::set('receiptToggle', 1);
+        $PRINT = PrintHandler::factory($this->session->get('ReceiptDriver'));
+        $saved = $this->session->get('receiptToggle');
+        $this->session->set('receiptToggle', 1);
         $receipt = ReceiptLib::printReceipt('reprint', $trans);
-        CoreLocal::set('receiptToggle', $saved);
+        $this->session->set('receiptToggle', $saved);
         if (session_id() != '') {
             session_write_close();
         }
         if(is_array($receipt)) {
             if (!empty($receipt['any'])) {
-                $PRINT_OBJ->writeLine($receipt['any']);
+                $PRINT->writeLine($receipt['any']);
             }
             if (!empty($receipt['print'])) {
-                $PRINT_OBJ->writeLine($receipt['print']);
+                $PRINT->writeLine($receipt['print']);
             }
         } elseif(!empty($receipt)) {
-            $PRINT_OBJ->writeLine($receipt);
+            $PRINT->writeLine($receipt);
         }
     }
 
     function preprocess()
     {
-        if (isset($_REQUEST['selectlist'])) {
-            if (!empty($_REQUEST['selectlist'])) {
-                $this->printReceipt($_REQUEST['selectlist']);
+        if ($this->form->tryGet('selectlist') !== '') {
+            if (!empty($this->form->selectlist)) {
+                $this->printReceipt($this->form->selectlist);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
             return false;
-        } elseif (isset($_REQUEST['preview'])) {
-            echo $this->previewTrans($_REQUEST['preview']);
+        } elseif ($this->form->tryGet('preview') !== '') {
+            echo $this->previewTrans($this->form->preview);
             return false;
         }
 
@@ -84,8 +84,8 @@ class rplist extends NoInputCorePage
         }
         </script>
         <?php
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-        $this->add_onload_command("\$('#selectlist').focus();\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
     }
 
     private function getTransactions()
@@ -107,7 +107,7 @@ class rplist extends NoInputCorePage
                 emp_no, 
                 trans_no 
             ORDER BY trans_no DESC";
-        $args = array(CoreLocal::get('laneno'), CoreLocal::get('CashierNo')); 
+        $args = array($this->session->get('laneno'), $this->session->get('CashierNo')); 
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
         $ret = array();
@@ -175,7 +175,7 @@ class rplist extends NoInputCorePage
             <?php echo ($first) ? $this->previewTrans($first) : ''; ?>
         </div>
         <?php
-        if (CoreLocal::get('touchscreen')) {
+        if ($this->session->get('touchscreen')) {
             echo '<div class="listbox listboxText">'
                 . DisplayLib::touchScreenScrollButtons('#selectlist')
                 . '</div>';

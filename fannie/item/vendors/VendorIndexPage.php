@@ -322,7 +322,9 @@ class VendorIndexPage extends FannieRESTfulPage
             }
         }
         $ret .= "<br />";
-        $ret .= "<a href=\"DefaultUploadPage.php?vid=$id\">Upload new vendor catalog</a>";
+        $ret .= "<a href=\"UpdateUploadPage.php?vid=$id\">Upload & Update vendor catalog</a>";
+        $ret .= "<br />";
+        $ret .= "<a href=\"DefaultUploadPage.php?vid=$id\">Upload & Replace vendor catalog</a>";
         $ret .= "<br />";
         $ret .= "<a href=\"VendorIndexPage.php?id=$id&autoAdd=1\">Add existing items to catalog</a>";
         $ret .= '</div></div>';

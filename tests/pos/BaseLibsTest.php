@@ -12,6 +12,7 @@ use COREPOS\pos\lib\Notifier;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
  * @backupGlobals disabled
@@ -120,8 +121,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000000000';
         $record['description'] = uniqid('TEST-');
         TransRecord::addRecord($record);
-        COREPOS\pos\lib\SuspendLib::suspendorder();
-        $this->assertEquals(1, COREPOS\pos\lib\SuspendLib::checksuspended());
+        $session = new WrappedStorage();
+        COREPOS\pos\lib\SuspendLib::suspendorder($session);
+        $this->assertEquals(1, COREPOS\pos\lib\SuspendLib::checksuspended($session));
 
         $query = "
             SELECT *
@@ -267,7 +269,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
           so the test would only catch changes to the
           defaults.
         */
-        CoreState::initiate_session();
+        CoreState::initiateSession();
 
         $str = CoreState::getCustomerPref('asdf');
         $this->assertInternalType('string',$str);
@@ -528,17 +530,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::addfsones(3);
-        $record = lttLib::genericRecord();
-        $record['description'] = 'FS Change';
-        $record['trans_type'] = 'T';
-        $record['trans_subtype'] = 'FS';
-        $record['total'] = 3;
-        $record['voided'] = 8;
-        lttLib::verifyRecord(1, $record, $this);
-
-        lttLib::clear();
-
         CoreLocal::set('itemPD', 5);
         TransRecord::adddiscount(5.45,25);
         CoreLocal::set('itemPD', 0);
@@ -591,16 +582,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['tax'] = 9;
         lttLib::verifyRecord(1, $record, $this);
         $this->assertEquals(0, CoreLocal::get('TaxExempt'));
-
-        lttLib::clear();
-
-        CoreLocal::set('casediscount',7);
-        TransRecord::addcdnotify();
-        $record = lttLib::genericRecord();
-        $record['description'] = '** 7% Case Discount Applied';
-        $record['trans_status'] = 'D';
-        $record['voided'] = 6;
-        lttLib::verifyRecord(1, $record, $this);
 
         lttLib::clear();
 
@@ -679,21 +660,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::addCashDrop('90.78');
-        $record = lttLib::genericRecord();
-        $record['upc'] = 'DROP';
-        $record['description'] = 'Cash Drop';
-        $record['trans_type'] = 'I';
-        $record['trans_status'] = 'X';
-        $record['quantity'] = 1;
-        $record['ItemQtty'] = 1;
-        $record['unitPrice'] = -90.78;
-        $record['total'] = -90.78;
-        $record['charflag'] = 'CD';
-        lttLib::verifyRecord(1, $record, $this);
-
-        lttLib::clear();
-
         $record = lttLib::genericRecord();
         $record['upc'] = 'UNITTEST';
         $record['description'] = 'Unit Test';
@@ -704,7 +670,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['total'] = 1.23;
         $record['amount2'] = 1.24;
         $record['regPrice'] = 1.24;
-        TransRecord::add_log_record($record);
+        TransRecord::addLogRecord($record);
         unset($record['amount1']); // not real column
         unset($record['amount2']); // not real column
         $record['trans_type'] = 'L';

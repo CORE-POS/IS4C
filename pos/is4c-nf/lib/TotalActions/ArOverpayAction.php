@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib\TotalActions;
 use \CoreLocal;
+use COREPOS\pos\lib\MemberLib;
 use COREPOS\pos\lib\MiscLib;
 
 /**
@@ -43,7 +44,7 @@ class ArOverpayAction  extends TotalAction
     */
     public function apply()
     {
-        $temp = \COREPOS\pos\lib\MemberLib::chargeOk();
+        MemberLib::chargeOk();
         if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0) {
             if (CoreLocal::get('msgrepeat') == 0) {
                 CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />

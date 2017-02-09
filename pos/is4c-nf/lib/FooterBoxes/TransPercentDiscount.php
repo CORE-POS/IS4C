@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\FooterBoxes;
-use \CoreLocal;
 
 class TransPercentDiscount extends FooterBox 
 {
@@ -33,20 +32,20 @@ class TransPercentDiscount extends FooterBox
 
     public function header_content()
     {
-        if (CoreLocal::get("percentDiscount") == 0) {
+        if ($this->session->get("percentDiscount") == 0) {
             return _("% Discount");
-        } else {
-            return CoreLocal::get("percentDiscount")._("% Discount");
         }
+
+        return $this->session->get("percentDiscount")._("% Discount");
     }
 
     public function display_content()
     {
-        if (CoreLocal::get("percentDiscount") != 0 ) {
-            return number_format(CoreLocal::get("transDiscount"), 2);
-        } else {
-            return "n/a";
+        if ($this->session->get("percentDiscount") != 0 ) {
+            return number_format($this->session->get("transDiscount"), 2);
         }
+
+        return "n/a";
     }
 }
 

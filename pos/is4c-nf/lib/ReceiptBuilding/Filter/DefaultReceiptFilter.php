@@ -49,37 +49,37 @@ class DefaultReceiptFilter
 
         // walk through backwards and pick rows to keep
         $count = 0;
-        $prev_row = array();
-        while($row = $dbc->fetch_row($data)) {
+        $prevRow = array();
+        while($row = $dbc->fetchRow($data)) {
             if ($tax === False && $row['upc'] == 'TAX') {
                 // keep tax row. relevant to total and subtotal
                 $tax = $row;
-            } else if ($discount === False && $row['upc'] == 'DISCOUNT') { 
+            } elseif ($discount === False && $row['upc'] == 'DISCOUNT') { 
                 if ($row['total'] == 0) continue;
                 // keep discount row. need to pick up proper % discount still
                 $discount = $row;
                 $discount['trans_type'] = 'S';
-            } else if ($row['trans_type'] == 'T' && $row['department'] == 0){
+            } elseif ($row['trans_type'] == 'T' && $row['department'] == 0){
                 // keep tender rows. use them to calculate total
                 // rows with departments are usually coupons and those
                 // should be treated more like items than like tenders
                 $tenderTTL += $row['total'];
                 $returnset[] = $row;
                 $count++;
-            } else if ($row['trans_type'] == 'I' || $row['trans_type'] == 'D' || ($row['trans_type']=='T' && $row['department'] != 0)){
+            } elseif ($row['trans_type'] == 'I' || $row['trans_type'] == 'D' || ($row['trans_type']=='T' && $row['department'] != 0)){
                 // skip the YOU SAVED lines
                 if ($row['trans_status'] == 'D') {
                     continue;
                 } elseif ($row['trans_subtype'] == 'AD') {
-                    if (isset($prev_row['department'])) {
+                    if (isset($prevRow['department'])) {
                         // auto-deposit records need to stay with their item
                         // rewrite department so they group together
-                        $row['department'] = $prev_row['department'];
+                        $row['department'] = $prevRow['department'];
                     }
-                    if (isset($prev_row['upc'])) {
+                    if (isset($prevRow['upc'])) {
                         // append parent item UPC to deposit UPC so that
                         // merging same-UPC records works correctly
-                        $row['upc'] .= $prev_row['upc'];
+                        $row['upc'] .= $prevRow['upc'];
                     }
                 }
                 // keep item rows
@@ -117,17 +117,17 @@ class DefaultReceiptFilter
                     $returnset[] = $row;
                     $count++;    
                 }
-            } else if ($row['trans_type'] == 'C' && $row['trans_subtype'] == 'CM') {
+            } elseif ($row['trans_type'] == 'C' && $row['trans_subtype'] == 'CM') {
                 // print comment rows as if they were items
                 $row['trans_type'] = 'I';
                 $row['upc'] = 'COMMENT';
-                if (isset($prev_row['department'])) {
+                if (isset($prevRow['department'])) {
                     // keep comment near item where it was entered
-                    $row['department'] = $prev_row['department'];
+                    $row['department'] = $prevRow['department'];
                 }
                 $returnset[] = $row;
                 $count++;    
-            } else if ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
+            } elseif ($row['trans_type'] == '0' && substr($row['description'],0,7)=="** Tare"){
                 // only deal with tare lines
                 $prev = $count-1;
                 if (isset($returnset[$prev]) && 
@@ -144,7 +144,7 @@ class DefaultReceiptFilter
                 $count++;
             }
 
-            $prev_row = $row;
+            $prevRow = $row;
         }
 
         $returnset = array_reverse($returnset);

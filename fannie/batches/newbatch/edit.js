@@ -127,19 +127,19 @@ var batchEdit = (function ($) {
         });
     };
     
-    mod.cutAll = function(batchID, userID)
-    {
+    mod.cutAll = function(batchID, userID) {
         var dataStr = 'id=' + batchID + '&uid=' + userID;
         $.ajax({
             type: 'post',
             url: 'cutBatch.php',
+            data: dataStr,
             dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
-                } else {
-                    showBootstrapPopover(elem, orig, '');
-                }
+        }).done(function (resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.error_msg);
+            } else {
+                $('.cutLink').hide();
+                $('.unCutLink').show();
             }
         });
     };

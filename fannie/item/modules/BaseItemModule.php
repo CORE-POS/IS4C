@@ -350,7 +350,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $rowItem['distributor'] = $this->getVendorName($rowItem['default_vendor_id']);
 
             /* find previous and next items in department */
-            list($prevUPC, $nextUPC) = $this->prevNextItem($rowItem['department'], $upc);
+            list($prevUPC, $nextUPC) = $this->prevNextItem($upc, $rowItem['department']);
 
             $lcP = $dbc->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
             $likeCode = $dbc->getValue($lcP,array($upc));

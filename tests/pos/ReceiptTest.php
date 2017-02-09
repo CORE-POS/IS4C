@@ -4,6 +4,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Franking;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\StoreCreditIssuedReceiptMessage;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\GenericSigSlipMessage;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\GCBalanceReceiptMessage;
@@ -16,6 +17,7 @@ use COREPOS\pos\lib\ReceiptBuilding\Format\ItemReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\WfcEquityMessage;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
 use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DefaultHtmlEmail;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 
 /**
  * @backupGlobals disabled
@@ -29,9 +31,11 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     {
         $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\ReceiptMessage', true);
         $db = Database::tDataConnect();
+        $ph = new PrintHandler();
 
         foreach($mods as $message_class) {
             $obj = new $message_class();
+            $obj->setPrintHandler($ph);
 
             $selectStr = $obj->select_condition();
             $this->assertInternalType('string', $selectStr);
@@ -354,27 +358,26 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testLib()
     {
-        Franking::endorse('foo');
-
         CoreLocal::set('dualDrawerMode', 1, true);
-        Drawers::free(1);
-        Drawers::free(2);
-        $this->assertEquals(0, Drawers::current());
+        $drawers = new Drawers(new WrappedStorage(), Database::pDataConnect());
+        $drawers->free(1);
+        $drawers->free(2);
+        $this->assertEquals(0, $drawers->current());
         $emp = CoreLocal::get('CashierNo');
         CoreLocal::set('CashierNo', 1);
-        $this->assertEquals(true, Drawers::assign(1, 2));
-        $this->assertEquals(2, Drawers::current());
-        Drawers::kick();
-        Drawers::free(2);
+        $this->assertEquals(true, $drawers->assign(1, 2));
+        $this->assertEquals(2, $drawers->current());
+        $drawers->kick();
+        $drawers->free(2);
         CoreLocal::set('CashierNo', $emp);
 
-        $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterCust(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterStore(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printCabCoupon(time(), '1-1-1')));
-        Franking::frank(1);
-        Franking::frankgiftcert(1);
-        Franking::frankstock(1);
-        Franking::frankclassreg(1);
+        $frank = new Franking(new WrappedStorage());
+        $frank->frank(1);
+        $frank->frankgiftcert(1);
+        $frank->frankstock(1);
+        $frank->frankclassreg(1);
         $this->assertEquals(chr(27).chr(33).chr(5), ReceiptLib::normalFont());
         $this->assertEquals(chr(27).chr(33).chr(9), ReceiptLib::boldFont());
         ReceiptLib::bold();
@@ -412,7 +415,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     {
         $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport', true);
         foreach ($mods as $mod) {
-            $this->assertInternalType('string', $mod::get());
+            $this->assertInternalType('string', $mod::get(new WrappedStorage()));
         }
     }
 }

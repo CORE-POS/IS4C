@@ -26,7 +26,6 @@ namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\ReceiptLib;
-use \CoreLocal;
 
 /**
   @class WefcTorontoTenderReport
@@ -47,7 +46,7 @@ static private $db_a = NULL;
  Prepare the tender report.
  @return string The report, ready to send to printer.
 */
-static public function get(){
+static public function get($session){
     global $CORE_LOCAL;
 
     /* First, check for anything still in
@@ -179,7 +178,7 @@ static public function get(){
         $shiftCutoff = date('Y-m-d 00:00:00');
         self::$shiftCutoff = $shiftCutoff;
 
-        $DESIRED_TENDERS = is_array(CoreLocal::get("TRDesiredTenders")) ? CoreLocal::get('TRDesiredTenders') : array();
+        $DESIRED_TENDERS = is_array($session->get("TRDesiredTenders")) ? $session->get('TRDesiredTenders') : array();
 
     self::$dashLine = str_repeat('-',54);
         $receipt = "";

@@ -26,10 +26,10 @@ function scalePollSuccess(data){
 		if (data.scans && data.scans.indexOf && data.scans.indexOf(':') !== -1){
 			// data from the cc terminal
 			// run directly; don't include user input
-			if (typeof runParser == 'function')
+			if (typeof runParser === 'function')
 				runParser(encodeURI(data.scans), SCALE_REL_PRE);
 		}
-		else if ($('#reginput').length != 0 && data.scans){
+		else if ($('#reginput').length !== 0 && data.scans){
 			// barcode scan input
 			var v = $('#reginput').val();
             var url = document.URL;
@@ -42,7 +42,7 @@ function scalePollSuccess(data){
             // is not added. Filtering out scans while the scale is waiting
             // for a weight uses the prefix, so once the scale is ready
             // a UPC has to go through w/o prefix
-            if (!data.scans && url.substring(url.length - 8) == 'pos2.php' && data.scans.substring(0, 3) != 'OXA') {
+            if (!data.scans && url.substring(url.length - 8) === 'pos2.php' && data.scans.substring(0, 3) !== 'OXA') {
                 data.scans = '0XA' + data.scans;
             }
 			parseWrapper(v+data.scans);
@@ -54,7 +54,7 @@ function scalePollSuccess(data){
 
 function rePoll(){
 	var timeout = 100;
-	setTimeout("pollScale('"+SCALE_REL_PRE+"')",timeout);
+	setTimeout(function() { pollScale(SCALE_REL_PRE); }, timeout);
 }
 
 function subscribeToQueue(rel_prefix)
@@ -86,7 +86,7 @@ function dataCallback(data)
     if (data.indexOf(":") !== -1) {
         // data from the cc terminal
         // run directly; don't include user input
-        if (typeof runParser == 'function') {
+        if (typeof runParser === 'function') {
             runParser(encodeURI(data), SCALE_REL_PRE);
         }
     } else if (/^S1\d+$/.test(data)) {

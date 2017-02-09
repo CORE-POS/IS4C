@@ -26,7 +26,6 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class TenderOut extends Parser 
@@ -35,14 +34,14 @@ class TenderOut extends Parser
     {
         if ($str == "TO") {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     function parse($str)
     {
-        if (CoreLocal::get("LastID") == 0){
+        if ($this->session->get("LastID") == 0){
             $ret = $this->default_json();
             $ret['output'] = DisplayLib::boxMsg(
                 _("no transaction in progress"),
@@ -51,30 +50,30 @@ class TenderOut extends Parser
                 DisplayLib::standardClearButton()
             );
             return $ret;
-        } else {
-            return $this->doTenderOut();
         }
+
+        return $this->doTenderOut();
     }
 
     private function doTenderOut()
     {
         $ret = $this->default_json();
         Database::getsubtotals();
-        if (CoreLocal::get("amtdue") <= 0.005) {
-            CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
-            $cash_return = CoreLocal::get("change");
-            TransRecord::addchange($cash_return,'CA');
-            CoreLocal::set("End",1);
+        if ($this->session->get("amtdue") <= 0.005) {
+            $this->session->set("change",-1 * $this->session->get("amtdue"));
+            $cashReturn = $this->session->get("change");
+            TransRecord::addchange($cashReturn,'CA');
+            $this->session->set("End",1);
             $ret['output'] = DisplayLib::printReceiptFooter();
             $ret['redraw_footer'] = true;
             $ret['receipt'] = 'full';
             TransRecord::finalizeTransaction();
         } else {
-            CoreLocal::set("change",0);
-            CoreLocal::set("fntlflag",0);
-            $ttl_result = PrehLib::ttl();
-            TransRecord::debugLog('Tender Out (PrehLib): ' . print_r($ttl_result, true));
-            TransRecord::debugLog('Tender Out (amtdue): ' . print_r(CoreLocal::get('amtdue'), true));
+            $this->session->set("change",0);
+            $this->session->set("fntlflag",0);
+            $ttlResult = PrehLib::ttl();
+            TransRecord::debugLog('Tender Out (PrehLib): ' . print_r($ttlResult, true));
+            TransRecord::debugLog('Tender Out (amtdue): ' . print_r($this->session->get('amtdue'), true));
             $ret['output'] = DisplayLib::lastpage();
         }
         return $ret;

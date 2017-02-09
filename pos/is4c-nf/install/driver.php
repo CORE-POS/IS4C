@@ -31,7 +31,7 @@ $known_good_modules = array(
         'common-ports' => array(
             'VX805XPI:*' => _('Verifone VX805 on COM*'),
             'VX805XPI_MERCURY_E2E:*' => _('Verifone VX805 with Mercury encryption on COM*'),
-            'INGENICOISC250_MERCURY_E2E' => _('Ingenico iSC250 with Mercury encryption on COM*'),
+            'INGENICOISC250_MERCURY_E2E:*' => _('Ingenico iSC250 with Mercury encryption on COM*'),
         ),
     ),
     'SPH_Datacap_EMVX' => array(
@@ -39,7 +39,7 @@ $known_good_modules = array(
         'common-ports' => array(
             'VX805XPI:*' => _('Verifone VX805 on COM*'),
             'VX805XPI_MERCURY_E2E:*' => _('Verifone VX805 with Mercury encryption on COM*'),
-            'INGENICOISC250_MERCURY_E2E' => _('Ingenico iSC250 with Mercury encryption on COM*'),
+            'INGENICOISC250_MERCURY_E2E:*' => _('Ingenico iSC250 with Mercury encryption on COM*'),
         ),
     ),
     'SPH_SignAndPay_Native' => array(

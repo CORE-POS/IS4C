@@ -26,7 +26,6 @@ use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 
 /**
    @class BasicPM
@@ -40,17 +39,17 @@ use \CoreLocal;
 class BasicPM extends PriceMethod 
 {
 
-    private $error_msg = '';
+    private $errorMsg = '';
 
     public function addItem(array $row, $quantity, $priceObj)
     {
         if ($quantity == 0) {
-            $this->error_msg = 'Quantity cannot be zero';
+            $this->errorMsg = _('Quantity cannot be zero');
             return false;
         }
 
         // enforce limit on discounting sale items
-        $dsi = CoreLocal::get('DiscountableSaleItems');
+        $dsi = $this->session->get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
@@ -60,14 +59,14 @@ class BasicPM extends PriceMethod
           limit. This is analogous to a similar feature with sale items.
         */
         if (!$priceObj->isSale() && $row['quantity'] > 0){
-            $db = Database::tDataConnect();
+            $dbc = Database::tDataConnect();
             $query = "SELECT SUM(quantity) as qty FROM localtemptrans
                 WHERE upc='{$row['upc']}'";
-            $result = $db->query($query);
-            if ($db->num_rows($result) > 0){
-                $chkRow = $db->fetch_row($result);
+            $result = $dbc->query($query);
+            if ($dbc->numRows($result) > 0){
+                $chkRow = $dbc->fetchRow($result);
                 if (($chkRow['qty']+$quantity) > $row['quantity']){
-                    $this->error_msg = _("item only allows ")
+                    $this->errorMsg = _("item only allows ")
                             .$row['quantity']
                             ._(" per transaction");
                     return False;
@@ -109,7 +108,7 @@ class BasicPM extends PriceMethod
 
     function errorInfo()
     {
-        return $this->error_msg;
+        return $this->errorMsg;
     }
 }
 

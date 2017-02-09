@@ -63,11 +63,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             device_identifier = parts[0];
             com_port = parts[1];
         }
-        /* see if terminal is more consistent
+
         if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
             rba = new RBA_Stub("COM"+com_port);
         }
-        */
 
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
         char sep = Path.DirectorySeparatorChar;
@@ -101,7 +100,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             PadReset();
         }
 
-        /* see if terminal is more consistent
         if (rba != null) {
             rba.SetParent(this.parent);
             rba.SetVerbose(this.verbose_mode);
@@ -109,7 +107,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 rba.stubStart();
             } catch (Exception) {}
         }
-        */
 
         return true;
     }

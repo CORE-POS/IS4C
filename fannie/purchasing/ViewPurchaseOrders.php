@@ -33,7 +33,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
     public $description = '[View Purchase Orders] lists pending orders and completed invoices.';
 
-    protected $must_authenticate = false;
+    protected $must_authenticate = true;
 
     private $show_all = true;
 
@@ -247,10 +247,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
         $re_date = FormLib::get('re-date', false);
+        $uid = FannieAuth::getUID($this->current_user);
         for ($i=0; $i<count($this->sku); $i++) {
             $model->sku($this->sku[$i]);
             $model->load();
             $model->receivedQty($this->qty[$i]);
+            $model->receivedBy($uid);
             $model->receivedTotalCost($model->receivedQty()*$model->unitCost());
             if ($model->receivedDate() === null || $re_date) {
                 $model->receivedDate(date('Y-m-d H:i:s'));
@@ -381,6 +383,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             $selected = $class === $this->config->get('DEFAULT_PO_EXPORT') ? 'selected' : '';
             $exportOpts .= '<option ' . $selected . ' value="'.$class.'">'.$name.'</option>';
         }
+        $uname = FannieAuth::getName($order->userID());
+        if (!$uname) {
+            $uname = 'n/a';
+        }
 
         $ret = <<<HTML
 <p>
@@ -419,6 +425,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                         onkeypress="autoSaveNotes({$this->id}, this);">{$notes}</textarea>
                 </td>
             {{CODING}}
+            <tr>
+                <td><b>Created by</b>: {$uname}</td>
+                <td>&nbsp;</td>
+            </tr>
         </table>
     </div>
     <div class="col-sm-6">
@@ -429,14 +439,14 @@ HTML;
 <a class="btn btn-default btn-sm"
     href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
 &nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm collapse" id="receiveBtn"
-    href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
 <button class="btn btn-default btn-sm" 
     onclick="deleteOrder({$this->id}); return false;">Delete Order</button>
 HTML;
         } else {
-            $ret .= <<<HTML
+            $sentDate = new DateTime($order->creationDate());
+            $today = new DateTime();
+            if ($today->diff($sentDate)->format('%a') <= 30) {
+                $ret .= <<<HTML
 <a class="btn btn-default btn-sm"
     href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -449,6 +459,7 @@ HTML;
 <a class="btn btn-default btn-sm"
     href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
 HTML;
+            }
         }
         $ret .= <<<HTML
         </p>
@@ -634,6 +645,7 @@ HTML;
         $model->sku($this->sku);
         $model->receivedQty($this->qty);
         $model->receivedTotalCost($this->cost);
+        $model->receivedBy(FannieAuth::getUID($this->current_user));
         if ($model->receivedDate() === null) {
             $model->receivedDate(date('Y-m-d H:i:s'));
         }
@@ -662,6 +674,7 @@ HTML;
         $model->receivedQty($this->receiveQty);
         $model->receivedTotalCost($this->receiveCost);
         $model->receivedDate(date('Y-m-d H:i:s'));
+        $model->receivedBy(FannieAuth::getUID($this->current_user));
         $model->save();
 
         return false;
@@ -749,11 +762,14 @@ HTML;
         echo '<table class="table table-bordered">';
         echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
+        $uid = FannieAuth::getUID($this->current_user);
         if ($model->receivedQty() === null) {
             $model->receivedQty($model->quantity());
+            $model->receivedBy($uid);
         }
         if ($model->receivedTotalCost() === null) {
             $model->receivedTotalCost($model->quantity()*$model->unitCost()*$model->caseSize());
+            $model->receivedBy($uid);
         }
         printf('<tr>
             <td>%s<input type="hidden" name="sku" value="%s" /></td>

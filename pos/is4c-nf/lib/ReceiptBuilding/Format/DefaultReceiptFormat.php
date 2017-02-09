@@ -34,30 +34,30 @@ class DefaultReceiptFormat
 {
     protected $print_handler;
     protected $line_width = 56;
+    protected $bold = false;
 
-    public function setPrintHandler(PrintHandler $ph)
+    public function setPrintHandler(PrintHandler $phObj)
     {
-        $this->print_handler = $ph;
+        $this->print_handler = $phObj;
     }
 
-    public function setWidth($w)
+    public function setWidth($width)
     {
-        $this->line_width = is_numeric($w) ? ((int)$w) : 56;
+        $this->line_width = is_numeric($width) ? ((int)$width) : 56;
+    }
+
+    public function isBold()
+    {
+        return $this->bold;
     }
     
-    /*
-      boolean. 
-    */
-    public $is_bold;
-
     /**
       constructor. disables bolding by default
     */
-    public function __construct(PrintHandler $ph=null, $w=56)
+    public function __construct(PrintHandler $phObj=null, $width=56)
     {
-        $is_bold = false;
-        $this->print_handler = $ph;
-        $this->line_width = is_numeric($w) ? ((int)$w) : 56;
+        $this->print_handler = $phObj;
+        $this->setWidth($width);
     }
 
     /**

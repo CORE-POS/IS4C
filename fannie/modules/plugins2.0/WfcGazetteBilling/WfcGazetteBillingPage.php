@@ -6,40 +6,31 @@ if (!class_exists('FannieAPI')) {
 
 class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
-    private $BILLING_MEMBER = array(
-        "1/20B/W" => 45.00, 
-        "1/15B/W" => 60.00,
-        "1/10B/W" => 90.00,
-        "1/5B/W" => 187.50,
-        "1/ 5B/W" => 187.50,
-        "1/2B/W" => 412.50,
-        "1/ 2B/W" => 412.50,
-        "1/20FULL" => 63.75,
-        "1/15FULL" => 75.00,
-        "1/10FULL"  => 112.50,
-        "0.1FULL"  => 112.50,
-        "1/5FULL" => 225,
-        "1/ 5FULL" => 225,
-        "1/2FULL" => 562.50,
-        "1/ 2FULL" => 562.50
-    );
-
     private $BILLING_NONMEMBER = array(
-        "1/20B/W" => 60,
-        "1/20B/W" => 60,
-        "1/15B/W" => 80,
-        "1/10B/W" => 120,
-        "1/5B/W" => 250,
-        "1/ 5B/W" => 250,
-        "1/2B/W" => 550,
-        "1/ 2B/W" => 550,
-        "1/20FULL" => 85,
-        "1/15FULL" => 100,
-        "1/10FULL"  => 150,
-        "1/5FULL" => 300,
-        "1/ 5FULL" => 300,
-        "1/2FULL" => 750,
-        "1/ 2FULL" => 750
+        // 1/20 = A or B
+        "1/20B/W" => 70,
+        // 1/15 = C
+        "1/15B/W" => 95,
+        // 1/10 = D
+        "1/10B/W" => 140,
+        // 1/5 = E
+        "1/5B/W" => 290,
+        "1/ 5B/W" => 290,
+        // 1/2 = F
+        "1/2B/W" => 630,
+        "1/ 2B/W" => 630,
+        // 1/20 = A or B
+        "1/20FULL" => 100,
+        // 1/15 = C
+        "1/15FULL" => 115,
+        // 1/10 = D
+        "1/10FULL"  => 175,
+        // 1/5 = E
+        "1/5FULL" => 345,
+        "1/ 5FULL" => 345,
+        // 1/2 = F
+        "1/2FULL" => 860,
+        "1/ 2FULL" => 860
     );
 
     public $page_set = 'Plugin :: WfcGazetteBilling';
@@ -189,7 +180,6 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
     public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
-        $BILLING_MEMBER = $this->BILLING_MEMBER;
         $BILLING_NONMEMBER = $this->BILLING_NONMEMBER;
         $PHONE = $this->get_column_index('phone');
         $CONTACT = $this->get_column_index('name');
@@ -265,14 +255,14 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $searchR = $sql->execute($altSearchQ, array($tmp[0].'%', $ph, $ph, $ph));
             }
 
-            if (strstr($cn, 'GREY DOFFIN') && strstr(strtoupper($cn),'FURNITURE')) {
-                $searchP = $sql->prepare('SELECT CardNo as card_no, LastName
-                        FROM custdata WHERE CardNo=? AND personNum=1');
-                $searchR = $sql->execute($searchP, array(13366));
-            } else if (strstr($cn, 'GREY DOFFIN')) {
+            if (strstr($cn, 'GREY DOFFIN') && strstr(strtoupper($cn),'BUYING')) {
                 $searchP = $sql->prepare('SELECT CardNo as card_no, LastName
                         FROM custdata WHERE CardNo=? AND personNum=1');
                 $searchR = $sql->execute($searchP, array(6880));
+            } elseif (strstr($cn, 'GREY DOFFIN')) {
+                $searchP = $sql->prepare('SELECT CardNo as card_no, LastName
+                        FROM custdata WHERE CardNo=? AND personNum=1');
+                $searchR = $sql->execute($searchP, array(13366));
             }
             
             if ($sql->num_rows($searchR) == 0){

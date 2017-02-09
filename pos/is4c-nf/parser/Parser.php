@@ -37,6 +37,16 @@ use \AutoLoader;
 class Parser {
 
     /**
+      A LocalStorage instance representing session data
+    */
+    protected $session;
+    
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
+
+    /**
       Check whether the module handles this input
       @param $str The input string
       @return 
@@ -147,7 +157,7 @@ class Parser {
         $parse_chain = array();
         $first = "";
         foreach ($set as $classname) {
-            $instance = new $classname();
+            $instance = new $classname(null);
             if ($instance->isLast()){
                 array_push($parse_chain,$classname);
             } elseif ($instance->isFirst()) {

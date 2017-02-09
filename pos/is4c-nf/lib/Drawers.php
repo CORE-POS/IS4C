@@ -30,7 +30,16 @@ use COREPOS\pos\lib\ReceiptLib;
 */
 class Drawers 
 {
-    static public function kick() 
+    private $session;
+    private $dbc;
+
+    public function __construct($session, $dbc)
+    {
+        $this->session = $session;
+        $this->dbc = $dbc;
+    }
+
+    public function kick() 
     {
         $pin = self::current();
         if ($pin == 1) {
@@ -51,21 +60,21 @@ class Drawers
       is enabled. Assignments in the table aren't
       relevant.
     */
-    static public function current()
+    public function current()
     {
-        if (\CoreLocal::get('dualDrawerMode') !== 1) {
+        if ($this->session->get('dualDrawerMode') !== 1) {
             return 1;
         }
 
-        $dbc = Database::pDataConnect();
-        $chkQ = 'SELECT drawer_no FROM drawerowner WHERE emp_no=' . \CoreLocal::get('CashierNo');
+        $dbc = $this->dbc;
+        $chkQ = 'SELECT drawer_no FROM drawerowner WHERE emp_no=' . $this->session->get('CashierNo');
         $chkR = $dbc->query($chkQ);
         if ($dbc->numRows($chkR) == 0) {
             return 0;
-        } else {
-            $chkW = $dbc->fetchRow($chkR);
-            return $chkW['drawer_no'];
         }
+        $chkW = $dbc->fetchRow($chkR);
+
+        return $chkW['drawer_no'];
     }
 
     /**
@@ -74,9 +83,9 @@ class Drawers
       @param $num the drawer number
       @return success True/False
     */
-    static public function assign($emp,$num)
+    public function assign($emp,$num)
     {
-        $dbc = Database::pDataConnect();
+        $dbc = $this->dbc;
         $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
         $upR = $dbc->query($upQ);
 
@@ -88,9 +97,9 @@ class Drawers
       @param $num the drawer number
       @return success True/False
     */
-    static public function free($num)
+    public function free($num)
     {
-        $dbc = Database::pDataConnect();
+        $dbc = $this->dbc;
         $upQ = sprintf('UPDATE drawerowner SET emp_no=NULL WHERE drawer_no=%d',$num);
         $upR = $dbc->query($upQ);
 
@@ -101,9 +110,9 @@ class Drawers
       Get list of available drawers
       @return array of drawer numbers
     */
-    static public function available()
+    public function available()
     {
-        $dbc = Database::pDataConnect();
+        $dbc = $this->dbc;
         $query = 'SELECT drawer_no FROM drawerowner WHERE emp_no IS NULL ORDER BY drawer_no';
         $res = $dbc->query($query);
         $ret = array();

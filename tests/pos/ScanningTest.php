@@ -33,6 +33,7 @@ use COREPOS\pos\lib\Scanning\SpecialUPCs\CouponCode;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\DatabarCoupon;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\SpecialOrder;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
  * @backupGlobals disabled
@@ -41,6 +42,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 {
     public function testDiscountType()
     {
+        $session = new WrappedStorage();
         $defaults = array(
             'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\NormalPricing',
             'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale',
@@ -58,7 +60,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $all[] = 'COREPOS\\pos\\lib\\Scanning\\DiscountType';
 
         foreach($all as $class){
-            $obj = new $class();
+            $obj = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\DiscountType',$obj);
             
             $this->assertInternalType('boolean',$obj->isSale());
@@ -76,7 +78,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
                 'specialquantity'=>0, 'line_item_discountable'=>1,
                 'department'=>1);
 
-        $norm = new DiscountType();
+        $norm = new DiscountType($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
@@ -86,7 +88,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $norm->addDiscountLine();
         lttLib::clear();
 
-        $norm = new NormalPricing();
+        $norm = new NormalPricing($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
@@ -101,7 +103,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
 
-        $norm = new EveryoneSale();
+        $norm = new EveryoneSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
@@ -116,7 +118,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
 
-        $norm = new EveryoneSale();
+        $norm = new EveryoneSale($session);
         $row['specialquantity'] = 5;
         $row['upc'] = '0000000004011';
         $row['mixmatchcode'] = '';
@@ -136,7 +138,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $row['specialquantity'] = 0;
 
         CoreLocal::set('isMember',1);
-        $norm = new MemberSale();
+        $norm = new MemberSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
@@ -152,7 +154,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$norm->isStaffOnly());
 
         CoreLocal::set('isStaff',1);
-        $norm = new StaffSale();
+        $norm = new StaffSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
@@ -171,7 +173,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
 
         $row['special_price'] = 0.10;
-        $norm = new SlidingMemSale();
+        $norm = new SlidingMemSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
@@ -189,7 +191,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $norm->addDiscountLine();
         lttLib::clear();
 
-        $norm = new PercentMemSale();
+        $norm = new PercentMemSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
@@ -211,14 +213,14 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('isStaff',0);
         $row['special_price'] = 1.49;
 
-        $norm = new MemberSale();
+        $norm = new MemberSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals(1.99,$info['regPrice']);
         $this->assertEquals(1.99,$info['unitPrice']);
         $this->assertEquals(0,$info['discount']);
         $this->assertEquals(0.50,$info['memDiscount']);
 
-        $norm = new StaffSale();
+        $norm = new StaffSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals(1.99,$info['regPrice']);
         $this->assertEquals(1.99,$info['unitPrice']);
@@ -226,14 +228,14 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0.50,$info['memDiscount']);
 
         $row['special_price'] = 0.10;
-        $norm = new SlidingMemSale();
+        $norm = new SlidingMemSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals(1.99,$info['regPrice']);
         $this->assertEquals(1.99,$info['unitPrice']);
         $this->assertEquals(0,$info['discount']);
         $this->assertEquals(0.10,$info['memDiscount']);
 
-        $norm = new PercentMemSale();
+        $norm = new PercentMemSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals(1.99,$info['regPrice']);
         $this->assertEquals(1.99,$info['unitPrice']);
@@ -243,12 +245,13 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
     public function testPriceMethods()
     {
+        $session = new WrappedStorage();
         if (!class_exists('lttLib')) {
             include (dirname(__FILE__) . '/lttLib.php');
         }
         lttLib::clear();
 
-        $pm = new PriceMethod();
+        $pm = new PriceMethod($session);
         $this->assertEquals(true, $pm->addItem(array(), 1, array()));
         $this->assertEquals('', $pm->errorInfo());
 
@@ -256,10 +259,10 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $q = "SELECT * FROM products WHERE upc='0000000000111'";
         $r = $db->query($q);
         $row = $db->fetch_row($r);
-        $discount = new NormalPricing();
+        $discount = new NormalPricing($session);
         $discount->priceInfo($row, 1);
 
-        $pm = new BasicPM();
+        $pm = new BasicPM($session);
         $this->assertEquals(false, $pm->addItem($row, 0, $discount));
         $pm->addItem($row, 1, $discount);
         $record = lttLib::genericRecord();
@@ -281,7 +284,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        $pm = new NoDiscOnSalesPM();
+        $pm = new NoDiscOnSalesPM($session);
         $this->assertEquals(false, $pm->addItem($row, 0, $discount));
         $pm->addItem($row, 1, $discount);
         $record = lttLib::genericRecord();
@@ -306,9 +309,9 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $row['pricemethod'] = 1;
         $row['groupprice'] = 2;
         $row['quantity'] = 2;
-        $discount = new NormalPricing();
+        $discount = new NormalPricing($session);
         $discount->priceInfo($row, 1);
-        $pm = new GroupPM();
+        $pm = new GroupPM($session);
         $pm->addItem($row, 1, $discount);
         $record = lttLib::genericRecord();
         $record['upc'] = '0000000000111';
@@ -353,9 +356,9 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
 
         $row['pricemethod'] = 2;
-        $discount = new NormalPricing();
+        $discount = new NormalPricing($session);
         $discount->priceInfo($row, 1);
-        $pm = new QttyEnforcedGroupPM();
+        $pm = new QttyEnforcedGroupPM($session);
         $pm->addItem($row, 1, $discount);
         $record = lttLib::genericRecord();
         $record['upc'] = '0000000000111';
@@ -410,11 +413,11 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $r = $db->query("SELECT * FROM products WHERE upc='$item2'");
         $row2 = $db->fetch_row($r);
         $row2['normal_price'] = 9.99;
-        $discount1 = new NormalPricing();
+        $discount1 = new NormalPricing($session);
         $discount1->priceInfo($row1, 1);
-        $discount2 = new NormalPricing();
+        $discount2 = new NormalPricing($session);
         $discount2->priceInfo($row2, 1);
-        $pm = new SplitABGroupPM();
+        $pm = new SplitABGroupPM($session);
         $pm->addItem($row1, 1, $discount1);
         $record = lttLib::genericRecord();
         $record['upc'] = '0027002000000';
@@ -485,11 +488,11 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $row1['pricemethod'] = 4;
         $row2['pricemethod'] = 4;
-        $discount1 = new NormalPricing();
+        $discount1 = new NormalPricing($session);
         $discount1->priceInfo($row1, 1);
-        $discount2 = new NormalPricing();
+        $discount2 = new NormalPricing($session);
         $discount2->priceInfo($row2, 1);
-        $pm = new ABGroupPM();
+        $pm = new ABGroupPM($session);
         $pm->addItem($row2, 1, $discount2);
         $record = lttLib::genericRecord();
         $record['upc'] = '0020140000000';
@@ -549,6 +552,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
     public function testSpecialUPCs() 
     {
+        $session = new WrappedStorage();
         $defaults = array(
             'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\CouponCode',
             'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\DatabarCoupon',
@@ -562,17 +566,17 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         }
 
         foreach($all as $class){
-            $obj = new $class();
+            $obj = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialUPC',$obj);
-            $this->assertInternalType('boolean',$obj->is_special('silly nonsense input'));
+            $this->assertInternalType('boolean',$obj->isSpecial('silly nonsense input'));
         }
 
-        $cc = new CouponCode();
+        $cc = new CouponCode($session);
         $this->assertEquals(True,$cc->isSpecial('0051234512345'));
         $this->assertEquals(True,$cc->isSpecial('0991234512345'));
         $this->assertEquals(False,$cc->isSpecial('0001234512345'));
 
-        $dat = new DatabarCoupon();
+        $dat = new DatabarCoupon($session);
         $this->assertEquals(True,$dat->isSpecial('811012345678901'));
         $this->assertEquals(False,$dat->isSpecial('8110123456790'));
         $this->assertEquals(False,$dat->isSpecial('0001234512345'));
@@ -580,11 +584,11 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $dat->handle('8110100707340143853100110110', array());
         lttLib::clear();
 
-        $hc = new HouseCoupon();
+        $hc = new HouseCoupon($session);
         $this->assertEquals(True,$hc->isSpecial('0049999900001'));
         $this->assertEquals(False,$hc->isSpecial('0001234512345'));
 
-        $so = new SpecialOrder();
+        $so = new SpecialOrder($session);
         $this->assertEquals(true, $so->isSpecial('0045400010001'));
         $this->assertEquals(false, $so->isSpecial('0001234512345'));
         $out = $so->handle('0045400000000', array());
@@ -592,19 +596,20 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $out = $so->handle('0045400010001', array());
         $this->assertNotEquals(0, strlen($out['output']));
 
-        $s = new SpecialUPC();
+        $s = new SpecialUPC($session);
         $this->assertEquals(false, $s->isSpecial('foo'));
-        $this->assertEquals(false, $s->is_special('foo'));
+        $this->assertEquals(false, $s->isSpecial('foo'));
         $this->assertEquals(null, $s->handle('foo', array()));
     }
 
     public function testCouponCode()
     {
+        $session = new WrappedStorage();
         if (!class_exists('lttLib')) {
             include (dirname(__FILE__) . '/lttLib.php');
         }
 
-        $cc = new CouponCode();
+        $cc = new CouponCode($session);
         $out = $cc->handle('0051234512345', array());
         $expected_error = DisplayLib::boxMsg(
             _("product not found")."<br />"._("in transaction"),
@@ -634,7 +639,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         $db = Database::tDataConnect();
         $db->query('TRUNCATE TABLE couponApplied');
-        $u = new UPC();
+        $u = new UPC($session);
         $u->parse('0001101312028');
 
         $out = $cc->handle('0051101399901', array());
@@ -659,16 +664,17 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         if (!class_exists('lttLib')) {
             include (dirname(__FILE__) . '/lttLib.php');
         }
+        $session = new WrappedStorage();
 
         /**
           TEST 1: minType M, discountType Q
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000000111');
         $upc->parse('0000000000234');
 
-        $hc = new HouseCoupon();
+        $hc = new HouseCoupon($session);
         $hc->handle('0049999900001', array());
         $record = lttLib::genericRecord();
         $record['upc'] = '0049999900001';
@@ -688,11 +694,11 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 2: no minimum, discountType %D 
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000001009');
         $upc->parse('0000000001011');
 
-        $hc = new HouseCoupon();
+        $hc = new HouseCoupon($session);
         $hc->handle('0049999900002', array());
         $record = lttLib::genericRecord();
         $record['upc'] = '0049999900002';
@@ -712,11 +718,11 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 3: minimum D, discountType F 
         */
         lttLib::clear();
-        $dept = new DeptKey();
+        $dept = new DeptKey($session);
         $dept->parse('2300DP10');
         $dept->parse('200DP10');
 
-        $hc = new HouseCoupon();
+        $hc = new HouseCoupon($session);
         $hc->handle('0049999900003', array());
         $record = lttLib::genericRecord();
         $record['upc'] = '0049999900003';
@@ -729,19 +735,19 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -5.00;
         $record['total'] = -5.00;
         $record['regPrice'] = -5.00;
-        $record['discountable'] = 1;
+        $record['discountable'] = 0;
         lttLib::verifyRecord(3, $record, $this);
 
         /**
           TEST 4: minimum MX, discountType F 
         */
         lttLib::clear();
-        $dept = new DeptKey();
+        $dept = new DeptKey($session);
         $dept->parse('900DP10');
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000000234');
 
-        $hc = new HouseCoupon();
+        $hc = new HouseCoupon($session);
         $hc->handle('0049999900004', array());
         $record = lttLib::genericRecord();
         $record['upc'] = '0049999900004';
@@ -754,18 +760,18 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -1.00;
         $record['total'] = -1.00;
         $record['regPrice'] = -1.00;
-        $record['discountable'] = 1;
+        $record['discountable'] = 0;
         lttLib::verifyRecord(3, $record, $this);
 
         /**
           TEST 5: minType Q, discountType PI 
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000000111');
         $upc->parse('0000000000234');
 
-        $hc = new HouseCoupon();
+        $hc = new HouseCoupon($session);
         $hc->handle('0049999900005', array());
         $record = lttLib::genericRecord();
         $record['upc'] = '0049999900005';
@@ -785,11 +791,11 @@ class ScanningTest extends PHPUnit_Framework_TestCase
           TEST 6: dept qty minimum, discountType %D 
         */
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new UPC($session);
         $upc->parse('0000000001009');
         $upc->parse('0000000001011');
 
-        $hc = new HouseCoupon();
+        $hc = new HouseCoupon($session);
         $hc->handle('0049999900006', array());
         $record = lttLib::genericRecord();
         $record['upc'] = '0049999900006';
@@ -810,7 +816,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
     public function testSpecialDepts()
     {
-        $sd = new SpecialDept();
+        $session = new WrappedStorage();
+        $sd = new SpecialDept($session);
         $this->assertEquals('Documentation Needed!', $sd->help_text());
         $arr = $sd->register(1, 'not-array');
         $expect = array(1 => array('COREPOS\\pos\\lib\\Scanning\\SpecialDept'));
@@ -833,7 +840,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $map = array();
         foreach($all as $class){
-            $obj = new $class();
+            $obj = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialDept',$obj);
             $map = $obj->register(1,$map);
             $this->assertInternalType('array',$map);
@@ -846,7 +853,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('msgrepeat',0);
 
         // first call should set warn vars
-        $arwarn = new ArWarnDept();
+        $arwarn = new ArWarnDept($session);
         $json = $arwarn->handle(1,1.00,array('main_frame'=>''));
         $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
@@ -863,7 +870,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEmpty($json['main_frame']);
 
         CoreLocal::set('autoReprint',0);
-        $auto = new AutoReprintDept();
+        $auto = new AutoReprintDept($session);
         $json = $auto->handle(1,1.00,array());
         $this->assertInternalType('array',$json);
         $this->assertEquals(1, CoreLocal::get('autoReprint'));    
@@ -872,7 +879,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('memberID',0);
 
         // error because member is required
-        $eEndorse = new EquityEndorseDept();
+        $eEndorse = new EquityEndorseDept($session);
         $json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
         $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
@@ -900,7 +907,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('msgrepeat', 0);
 
         // error because member is required
-        $eWarn = new EquityWarnDept();
+        $eWarn = new EquityWarnDept($session);
         $json = $eWarn->handle(1,1.00,array('main_frame'=>''));
         $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
@@ -928,7 +935,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('memberID', '0');
 
-        $brd = new BottleReturnDept();
+        $brd = new BottleReturnDept($session);
         CoreLocal::set('msgrepeat', 0);
         CoreLocal::set('strEntered', '100DP10');
         $json = $brd->handle(10, 1, array());
@@ -937,7 +944,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('msgrepeat', 0);
         CoreLocal::set('strEntered', '');
 
-        $brd = new PaidOutDept();
+        $brd = new PaidOutDept($session);
         CoreLocal::set('msgrepeat', 0);
         $json = $brd->handle(10, 1, array());
         $this->assertEquals('-100DP10', CoreLocal::get('strEntered'));

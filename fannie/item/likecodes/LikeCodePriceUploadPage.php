@@ -82,6 +82,22 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 FROM products AS p
                     INNER JOIN upcLike AS u ON p.upc=u.upc
                 WHERE u.likeCode=?');
+        } elseif ($dbc->dbmsName() == 'postgres9') {
+            $update = $dbc->prepare('
+                UPDATE products AS p
+                SET p.normal_price = ?,
+                    p.modified = ' . $dbc->now() . '
+                FROM upcLike AS u
+                WHERE p.upc=u.upc
+                    AND u.likeCode=?');
+            $updateWithCost = $dbc->prepare('
+                UPDATE products AS p
+                SET p.normal_price=?,
+                    p.cost = ?,
+                    p.modified = ' . $dbc->now() . '
+                FROM upcLike AS u
+                WHERE p.upc=u.upc
+                    AND u.likeCode=?');
         }
 
         $getUPCs = $dbc->prepare("SELECT upc FROM upcLike WHERE likeCode=?");

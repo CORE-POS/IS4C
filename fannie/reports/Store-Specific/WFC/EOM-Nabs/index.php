@@ -1,4 +1,5 @@
 <?php
+use COREPOS\Fannie\API\item\StandardAccounting;
 include('../../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -126,24 +127,25 @@ if (!$output){
 
     echo "<br /><b>Total by pCode</b>";
     $totalQ = $dbc->prepare("select d.salesCode,sum(l.total),
-        (sum(l.total)-(sum(l.total)*d.margin)) as cost
+        (sum(l.total)-(sum(l.total)*d.margin)) as cost, l.store_id
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no IN $accountStr
         and (l.department < 600 or l.department = 902)
         and l.department <> 0 and l.trans_type <> 'T'
         and tdate BETWEEN ? AND ?
         AND " . DTrans::isStoreID($store, 'l') . "
-        GROUP BY d.salesCode,d.margin
+        GROUP BY d.salesCode,d.margin,l.store_id
         ORDER BY d.salesCode");
     $totalR = $dbc->execute($totalQ,$args);
     $data = array();
     while ($totalW=$dbc->fetch_row($totalR)){
-        if (empty($data["$totalW[0]"])){
-            $data["$totalW[0]"] = array($totalW[1],$totalW[2]);
+        $code = StandardAccounting::extend($totalW['salesCode'], $totalW['store_id']);
+        if (empty($data[$code])){
+            $data[$code] = array($totalW[1],$totalW[2]);
         }
         else {
-            $data["$totalW[0]"][0] += $totalW[1];
-            $data["$totalW[0]"][1] += $totalW[2];
+            $data[$code][0] += $totalW[1];
+            $data[$code][1] += $totalW[2];
         }
     }
     echo tablify($data,array(0,1,2),array("pCode","Retail","Wholesale"),
@@ -151,26 +153,27 @@ if (!$output){
         2,array(1,2));
 
     $totalQ = $dbc->prepare("select d.salesCode,sum(l.total),
-        (sum(l.total)-(sum(l.total)*d.margin)) as cost
+        (sum(l.total)-(sum(l.total)*d.margin)) as cost, l.store_id
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no = ?
         and (l.department < 600 or l.department = 902)
         and l.department <> 0 and l.trans_type <> 'T'
         and tdate BETWEEN ? AND ?
         AND " . DTrans::isStoreID($store, 'l') . "
-        GROUP BY d.salesCode,d.margin
+        GROUP BY d.salesCode,d.margin, l.store_id
         ORDER BY d.salesCode");
     foreach ($accounts as $account){
         echo "<br /><b>Total for $account</b>";
         $totalR = $dbc->execute($totalQ,array($account,$span[0],$span[1],$store));
         $data = array();
         while ($totalW=$dbc->fetch_row($totalR)){
-            if (empty($data["$totalW[0]"])){
-                $data["$totalW[0]"] = array($totalW[1],$account,$totalW[2]);
+            $code = StandardAccounting::extend($totalW['salesCode'], $totalW['store_id']);
+            if (empty($data[$code])){
+                $data[$code] = array($totalW[1],$account,$totalW[2]);
             }
             else {
-                $data["$totalW[0]"][0] += $totalW[1];
-                $data["$totalW[0]"][2] += $totalW[2];
+                $data[$code][0] += $totalW[1];
+                $data[$code][2] += $totalW[2];
             }
         }
         echo tablify($data,array(0,1,2,3),array("pCode","Retail","Account","Wholesale"),

@@ -88,11 +88,24 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
     public void stubStart()
     {
-        initPort();
-        sp.Open();
-        SPH_Running = true;
-        this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
-        SPH_Thread.Start();
+        try {
+            initPort();
+            sp.Open();
+            SPH_Running = true;
+            this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
+            SPH_Thread.Start();
+        } catch (Exception) {}
+    }
+
+    public void showApproved()
+    {
+        try {
+            stubStop();
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(SimpleMessageScreen("Approved"));
+            sp.Close();
+        } catch (Exception) {}
     }
 
     public void stubStop()
@@ -185,7 +198,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             char fs = (char)0x1c;
-            string buttons = "TPROMPT6,Whole Foods Co-op"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            string buttons = "TPROMPT6,Whole Foods Co-op"+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             WriteMessageToDevice(UpdateScreenMessage(buttons));
         } catch (Exception) {
         }
@@ -235,7 +248,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                         System.Console.Write(buffer[i] + " ");
                     }
                     if (Choice(enc.GetString(buffer))) {
-                        WriteMessageToDevice(SimpleMessageScreen("Waiting for total"));
+                        WriteMessageToDevice(SimpleMessageScreen("Swipe card when prompted"));
                     }
                     bytes.Clear();
                 }

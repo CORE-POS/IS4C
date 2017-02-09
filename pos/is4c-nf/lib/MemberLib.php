@@ -45,12 +45,12 @@ class MemberLib
         $dbc->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
         \CoreLocal::set("ttlflag",0);    
         $opts = array('upc'=>'DEL_MEMENTRY');
-        TransRecord::add_log_record($opts);
+        TransRecord::addLogRecord($opts);
     }
 
     /**
       Begin setting a member number for a transaction
-      @param $member_number CardNo from custdata
+      @param $memberNumber CardNo from custdata
       @return An array. See Parser::default_json()
        for format.
 
@@ -61,13 +61,13 @@ class MemberLib
       this function. If you want to force the number
       to be set immediately, use setMember().
     */
-    static public function memberID($member_number) 
+    static public function memberID($memberNumber) 
     { 
         $query = "
             SELECT CardNo,
                 personNum
             FROM custdata
-            WHERE CardNo=" . ((int)$member_number);
+            WHERE CardNo=" . ((int)$memberNumber);
 
         $ret = array(
             "main_frame"=>false,
@@ -78,7 +78,7 @@ class MemberLib
         
         $dbc = Database::pDataConnect();
         $result = $dbc->query($query);
-        $num_rows = $dbc->num_rows($result);
+        $numRows = $dbc->numRows($result);
 
         /**
           If only a single record exists for the member number,
@@ -86,14 +86,14 @@ class MemberLib
           - the account is the designated, catchall non-member
           - the verifyName setting is disabled
         */
-        if ($num_rows == 1) {
-            if ($member_number == \CoreLocal::get("defaultNonMem") || \CoreLocal::get('verifyName') != 1) {
-                $row = $dbc->fetch_row($result);
+        if ($numRows == 1) {
+            if ($memberNumber == \CoreLocal::get("defaultNonMem") || \CoreLocal::get('verifyName') != 1) {
+                $row = $dbc->fetchRow($result);
                 self::setMember($row["CardNo"], $row["personNum"]);
                 $ret['redraw_footer'] = true;
                 $ret['output'] = DisplayLib::lastpage();
 
-                if ($member_number != \CoreLocal::get('defaultNonMem')) {
+                if ($memberNumber != \CoreLocal::get('defaultNonMem')) {
                     $ret['udpmsg'] = 'goodBeep';
                 }
 
@@ -108,7 +108,7 @@ class MemberLib
           be next.
           If verifyName is enabled, confirming the name should be next.
         */
-        $ret['main_frame'] = MiscLib::base_url() . "gui-modules/memlist.php?idSearch=" . $member_number;
+        $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/memlist.php?idSearch=" . $memberNumber;
 
         return $ret;
     }
@@ -117,33 +117,32 @@ class MemberLib
       Assign store-specific alternate member message line
       @param $store code for the coop
       @param $member CardNo from custdata
-      @param $personNumber personNum from custdata
       @param $row a record from custdata
       @param $chargeOk whether member can store-charge purchases
     */
     // @hintable
-    static public function setAltMemMsg($store, $member, $personNumber, $row)
+    static public function setAltMemMsg($store, $member, $row)
     {
         if ($store == 'WEFC_Toronto') {
             $chargeOk = self::chargeOk();
             /* Doesn't quite allow for StoreCharge/PrePay for regular members
              * either instead of or in addition to CoopCred
              */
-            if (isset($row['blueLine'])) {
-                $memMsg = $row['blueLine'];
-            } else {
-                $memMsg = '#'.$member;
-            }
+            $memMsg = isset($row['blueLine']) ? $row['blueLine'] : '#' . $member;
             if ($member == \CoreLocal::get('defaultNonMem')) {
                 \CoreLocal::set("memMsg", $memMsg);
                 return;
             }
 
-            if ($member < 99000) {
+            \CoreLocal::set("memMsg", $memMsg);
+            \CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
+               number_format(((float)CoreLocal::get("balance") * 1),2)
+            );
 
+            if ($member < 99000) {
                 if (in_array('CoopCred', \CoreLocal::get('PluginList'))) {
                     $conn = \CoopCredLib::ccDataConnect();
-                    if ($conn !== False) {
+                    if ($conn !== false) {
                         $ccQ = "SELECT p.programID AS ppID, p.programName, p.tenderType,
                             p.active, p.startDate, p.endDate,
                             p.bankID, p.creditOK, p.inputOK, p.transferOK,
@@ -167,7 +166,7 @@ class MemberLib
                             \CoreLocal::set("memMsg", $memMsg . "Query failed");
                             return;
                         }
-                        if ($conn->num_rows($ccR) == 0) {
+                        if ($conn->numRows($ccR) == 0) {
                             \CoreLocal::set("memMsg", $memMsg);
                             return;
                         }
@@ -186,8 +185,7 @@ class MemberLib
                                     \CoreLocal::get("{$programCode}availCreditBalance");
 
                                 $message .= " {$tenderKeyCap}: " .  number_format($programBalance,2);
-                            }
-                            else {
+                            } else {
                                 $message .= $row['tenderType'] . " not OK";
                             }
                         }
@@ -195,7 +193,6 @@ class MemberLib
                             \CoreLocal::set("memMsg", $memMsg . "$message");
                             return;
                         }
-
                     }
                 }
 
@@ -207,45 +204,35 @@ class MemberLib
                     if (\CoreLocal::get('NoCompat') == 1) {
                         $query = str_replace('ChargeLimit', 'MemDiscountLimit', $query);
                     } else {
-                        $table_def = $conn->tableDefinition('custdata');
+                        $tableDef = $conn->tableDefinition('custdata');
                         // 3Jan14 schema may not have been updated
-                        if (!isset($table_def['ChargeLimit'])) {
+                        if (!isset($tableDef['ChargeLimit'])) {
                             $query = str_replace('ChargeLimit', 'MemDiscountLimit', $query);
                         }
                     }
                     $result = $conn->query($query);
-                    $num_rows = $conn->num_rows($result);
-                    if ($num_rows > 0) {
+                    $numRows = $conn->numRows($result);
+                    $row2 = array();
+                    if ($numRows > 0) {
                         $row2 = $conn->fetchRow($result);
-                    } else {
-                        $row2 = array();
                     }
 
+                    $limit = 0.00;
                     if (isset($row2['CLimit'])) {
                         $limit = 1.00 * $row2['CLimit'];
-                    } else {
-                        $limit = 0.00;
                     }
 
+                    // Store Charge
+                    \CoreLocal::set("memMsg", $memMsg . _(' : Store Charge: $') .
+                        number_format(((float)CoreLocal::get("availBal") * 1),2)
+                    );
                     // Prepay
                     if ($limit == 0.00) {
                         \CoreLocal::set("memMsg", $memMsg . _(' : Pre Pay: $') .
                             number_format(((float)CoreLocal::get("availBal") * 1),2)
                         );
-                    // Store Charge
-                    } else {
-                        \CoreLocal::set("memMsg", $memMsg . _(' : Store Charge: $') .
-                            number_format(((float)CoreLocal::get("availBal") * 1),2)
-                        );
                     }
                 }
-
-            // Intra-coop transfer
-            } else {
-                \CoreLocal::set("memMsg", $memMsg);
-                \CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
-                   number_format(((float)CoreLocal::get("balance") * 1),2)
-                );
             }
         // WEFC_Toronto
         }
@@ -261,7 +248,7 @@ class MemberLib
         if (!empty($row['blueLine'])) {
             $memMsg = $row['blueLine'];
         }
-        $chargeOk = self::chargeOk();
+        self::chargeOk();
         if (\CoreLocal::get("balance") != 0 && $member != \CoreLocal::get("defaultNonMem")) {
             $memMsg .= _(" AR");
         }
@@ -327,7 +314,7 @@ class MemberLib
             WHERE CardNo = " . ((int)$member) . "
                 AND personNum = " . ((int)$personNumber);
         $result = $conn->query($query);
-        $row = $conn->fetch_row($result);
+        $row = $conn->fetchRow($result);
 
         \CoreLocal::set("memberID",$member);
         \CoreLocal::set("memType",$row["memType"]);
@@ -336,11 +323,7 @@ class MemberLib
         \CoreLocal::set("Type",$row["Type"]);
         \CoreLocal::set("isStaff",$row["staff"]);
         \CoreLocal::set("SSI",$row["SSI"]);
-        if (\CoreLocal::get("Type") == "PC") {
-            \CoreLocal::set("isMember",1);
-        } else {
-            \CoreLocal::set("isMember",0);
-        }
+        \CoreLocal::set($row['Type'] == 'PC' ? 1 : 0);
 
         /**
           Optinonally use memtype table to normalize attributes
@@ -351,11 +334,11 @@ class MemberLib
                                     FROM memtype
                                     WHERE memtype=?');
             $res = $conn->execute($prep, array((int)CoreLocal::get('memType')));
-            if ($conn->num_rows($res) > 0) {
-                $mt_row = $conn->fetch_row($res);
-                $row['Discount'] = $mt_row['discount'];
-                \CoreLocal::set('isStaff', $mt_row['staff']);
-                \CoreLocal::set('SSI', $mt_row['ssi']);
+            if ($conn->numRows($res) > 0) {
+                $mtRow = $conn->fetchRow($res);
+                $row['Discount'] = $mtRow['discount'];
+                \CoreLocal::set('isStaff', $mtRow['staff']);
+                \CoreLocal::set('SSI', $mtRow['ssi']);
             }
         }
         if (\CoreLocal::get("isStaff") == 0) {
@@ -363,7 +346,7 @@ class MemberLib
         }
 
         \CoreLocal::set("memMsg", self::defaultMemMsg($member, $row));
-        self::setAltMemMsg(\CoreLocal::get("store"), $member, $personNumber, $row);
+        self::setAltMemMsg(\CoreLocal::get("store"), $member, $row);
 
         /**
           Set member number and attributes
@@ -390,15 +373,13 @@ class MemberLib
         */
         \CoreLocal::set("memberID",$member);
         $opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
-        TransRecord::add_log_record($opts);
+        TransRecord::addLogRecord($opts);
 
         /**
           Optionally add a subtotal line depending
           on member_subtotal setting.
         */
-        if (\CoreLocal::get('member_subtotal') === 0 || \CoreLocal::get('member_subtotal') === '0') {
-            $noop = "";
-        } else {
+        if (\CoreLocal::get('member_subtotal') !== 0 && \CoreLocal::get('member_subtotal') !== '0') {
             PrehLib::ttl();
         } 
     }
@@ -416,29 +397,31 @@ class MemberLib
     {
         // only attempt if server is available
         // and not the default non-member
-        if ($cardno == \CoreLocal::get("defaultNonMem")) return false;
-        if (\CoreLocal::get("balance") == 0) return false;
+        if ($cardno == \CoreLocal::get('defaultNonMem') || \CoreLocal::get('balance') == 0) {
+            return false;
+        }
 
         $dbc = Database::mDataConnect();
 
-        if (\CoreLocal::get('NoCompat') != 1 && !$dbc->table_exists("unpaid_ar_today")) return false;
+        if (\CoreLocal::get('NoCompat') != 1 && !$dbc->tableExists("unpaid_ar_today")) return false;
 
         $query = "SELECT old_balance,recent_payments FROM unpaid_ar_today
             WHERE card_no = $cardno";
         $result = $dbc->query($query);
 
         // should always be a row, but just in case
-        if ($dbc->num_rows($result) == 0) return false;
-        $row = $dbc->fetch_row($result);
+        if ($dbc->numRows($result) == 0) return false;
+        $row = $dbc->fetchRow($result);
 
         $bal = $row["old_balance"];
         $paid = $row["recent_payments"];
         if (\CoreLocal::get("memChargeTotal") > 0) {
             $paid += \CoreLocal::get("memChargeTotal");
         }
-        
-        if ($bal <= 0) return false;
-        if ($paid >= $bal) return false;
+
+        if ($bal <= 0 || $paid >= $bal) {
+            return false;
+        }
 
         // only case where customer prompt should appear
         if ($bal > 0 && $paid < $bal){
@@ -470,15 +453,15 @@ class MemberLib
         if (\CoreLocal::get('NoCompat') == 1) {
             $query = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $query);
         } else {
-            $table_def = $conn->tableDefinition('custdata');
+            $tableDef = $conn->tableDefinition('custdata');
             // 3Jan14 schema may not have been updated
-            if (!isset($table_def['ChargeLimit'])) {
+            if (!isset($tableDef['ChargeLimit'])) {
                 $query = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $query);
             }
         }
 
         $result = $conn->query($query);
-        $num_rows = $conn->num_rows($result);
+        $numRows = $conn->numRows($result);
         $row = $conn->fetchRow($result);
 
         $availBal = $row["availBal"] + \CoreLocal::get("memChargeTotal");
@@ -486,7 +469,7 @@ class MemberLib
         \CoreLocal::set("balance",$row["Balance"]);
         \CoreLocal::set("availBal",number_format($availBal,2,'.',''));    
         
-        return ($num_rows == 0 || !$row['ChargeOk']) ? 0 : 1;
+        return ($numRows == 0 || !$row['ChargeOk']) ? 0 : 1;
     }
 
     static public function getChgName() 
@@ -494,14 +477,14 @@ class MemberLib
         $query = "select LastName, FirstName from custdata where CardNo = '" .\CoreLocal::get("memberID") ."'";
         $connection = Database::pDataConnect();
         $result = $connection->query($query);
-        $num_rows = $connection->num_rows($result);
+        $numRows = $connection->numRows($result);
 
-        if ($num_rows > 0) {
-            $LastInit = substr(\CoreLocal::get("lname"), 0, 1).".";
-            return trim(\CoreLocal::get("fname")) ." ". $LastInit;
-        } else {
-            return \CoreLocal::get('memMsg');
+        if ($numRows > 0) {
+            $lastInit = substr(\CoreLocal::get("lname"), 0, 1).".";
+            return trim(\CoreLocal::get("fname")) ." ". $lastInit;
         }
+
+        return \CoreLocal::get('memMsg');
     }
 
 }

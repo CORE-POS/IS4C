@@ -67,6 +67,8 @@ class PIKillerPage extends FannieRESTfulPage {
                 href="'.($this->card_no?'PIPurchasesPage.php?id='.$this->card_no:'').'">Detail</a>
             <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
                 href="'.($this->card_no?'PIPatronagePage.php?id='.$this->card_no:'').'">Patronage</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIAccessPage.php?id='.$this->card_no:'').'">Access</a>
             </div>
             </td>
             </tr>

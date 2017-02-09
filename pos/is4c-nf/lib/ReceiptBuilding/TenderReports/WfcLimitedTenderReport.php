@@ -24,7 +24,6 @@
 namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
-use \CoreLocal;
 
 /**
   @class WfcLimitedTenderReport
@@ -33,34 +32,34 @@ use \CoreLocal;
 */
 class WfcLimitedTenderReport extends TenderReport 
 {
-    static public function get()
+    static public function get($session)
     {
         $blank = self::standardBlank();
         $fieldNames = self::standardFieldNames();
         $time = ReceiptLib::build_time(time()); 
 
-        $receipt = ReceiptLib::biggerFont(ReceiptLib::centerBig('R E G I S T E R  ' . CoreLocal::get('laneno')))."\n\n";
+        $receipt = ReceiptLib::biggerFont(ReceiptLib::centerBig('R E G I S T E R  ' . $session->get('laneno')))."\n\n";
         $receipt .= ReceiptLib::biggerFont(ReceiptLib::centerBig($time)) . "\n\n";
         $receipt .=    ReceiptLib::centerString("------------------------------------------------------") . "\n";
-        $db_a = Database::mDataConnect();
+        $dba = Database::mDataConnect();
         $receipt .= ReceiptLib::centerString('T E L E C H E C K') . "\n";
         $receipt .=    ReceiptLib::centerString("------------------------------------------------------") . "\n";
         $receipt .= $fieldNames;
 
-        $query = $db_a->prepare("select tdate,register_no,trans_no,-total AS tender
+        $query = $dba->prepare("select tdate,register_no,trans_no,-total AS tender
                    from dlog where register_no=?
                    and trans_type='T' AND trans_subtype='TK'
                   ORDER BY tdate");
-        $res = $db_a->execute($query, array(CoreLocal::get('laneno')));
-        $num_rows = $db_a->numRows($res);
+        $res = $dba->execute($query, array($session->get('laneno')));
+        $numRows = $dba->numRows($res);
 
         $sum = 0;
-        while ($row = $db_a->fetchRow($res)) {
+        while ($row = $dba->fetchRow($res)) {
             $receipt .= self::standardLine($row['tdate'], $row['register_no'], $row['trans_no'], $row['tender']);
             $sum += $row["tender"];
         }
 
-        $receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
+        $receipt .= substr($blank.$blank.$blank."Count: ".$numRows."  Total: ".number_format($sum,2), -56)."\n";
         $receipt .= str_repeat("\n", 4);
         $receipt .= chr(27).chr(105);
 

@@ -41,7 +41,6 @@ class WfcAccessEmailTask extends FannieTask
         $dbc = FannieDB::get($settings['ScheduledEmailDB']);
 
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
-        $last_year = '2014-06-01';
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
         $accessQ = 'SELECT card_no,
                         MAX(tdate) AS renewed

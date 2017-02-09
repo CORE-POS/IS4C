@@ -39,7 +39,7 @@ use \CoreLocal;
 */
 class DiscountModule 
 {
-    protected $my_discount = 0;
+    protected $myDiscount = 0;
     public $name = 'custdata';
 
     /**
@@ -47,21 +47,21 @@ class DiscountModule
       current transaction. Automatically 
       subtotals if the discount changes.
     */
-    public static function updateDiscount(DiscountModule $mod, $do_subtotal=true)
+    public static function updateDiscount(DiscountModule $mod, $doSubtotal=true)
     {
         $changed = true;
         // serialize/unserialize before saving to avoid
         // auto-session errors w/ undefined classes
-        $current_discounts = unserialize(CoreLocal::get('CurrentDiscounts'));
-        if (!is_array($current_discounts)) {
-            $current_discounts = array();
+        $currentDiscounts = unserialize(CoreLocal::get('CurrentDiscounts'));
+        if (!is_array($currentDiscounts)) {
+            $currentDiscounts = array();
         }
 
         /**
           Examine current discounts to see if this
           one has already applied
         */
-        foreach ($current_discounts as $class => $obj) {
+        foreach ($currentDiscounts as $obj) {
             if ($mod->name == $obj->name) {
                 if ($mod->percentage() == $obj->percentage()) {
                     $changed = false;
@@ -77,14 +77,14 @@ class DiscountModule
               the effective discount with stacking settings
               taken into account
             */
-            $current_discounts[$mod->name] = $mod;
-            $old_effective_discount = CoreLocal::get('percentDiscount');
-            $new_effective_discount = 0;
-            foreach ($current_discounts as $obj) {
-                if (CoreLocal::get('NonStackingDiscounts') && $obj->percentage() > $new_effective_discount) {
-                    $new_effective_discount = $obj->percentage();
+            $currentDiscounts[$mod->name] = $mod;
+            $oldEffectiveDiscount = CoreLocal::get('percentDiscount');
+            $newEffectiveDiscount = 0;
+            foreach ($currentDiscounts as $obj) {
+                if (CoreLocal::get('NonStackingDiscounts') && $obj->percentage() > $newEffectiveDiscount) {
+                    $newEffectiveDiscount = $obj->percentage();
                 } elseif (CoreLocal::get('NonStackingDiscounts') == 0) {
-                    $new_effective_discount += $obj->percentage();
+                    $newEffectiveDiscount += $obj->percentage();
                 }
             }
 
@@ -94,18 +94,18 @@ class DiscountModule
               2. Update the localtemptrans.percentDiscount value
               3. Subtotal the transaction
             */
-            if ($old_effective_discount != $new_effective_discount) {
-                CoreLocal::set('percentDiscount', $new_effective_discount);
+            if ($oldEffectiveDiscount != $newEffectiveDiscount) {
+                CoreLocal::set('percentDiscount', $newEffectiveDiscount);
                 $dbc = Database::tDataConnect();
-                $dbc->query('UPDATE localtemptrans SET percentDiscount=' . ((int)$new_effective_discount));
-                if ($do_subtotal) {
+                $dbc->query('UPDATE localtemptrans SET percentDiscount=' . ((int)$newEffectiveDiscount));
+                if ($doSubtotal) {
                     PrehLib::ttl();
                 }
             }
 
             // serialize/unserialize before saving to avoid
             // auto-session errors w/ undefined classes
-            CoreLocal::set('CurrentDiscounts', serialize($current_discounts));
+            CoreLocal::set('CurrentDiscounts', serialize($currentDiscounts));
         }
     }
 
@@ -124,29 +124,29 @@ class DiscountModule
     */
     public static function lineItems()
     {
-        $current_discounts = unserialize(CoreLocal::get('CurrentDiscounts'));
-        if (!is_array($current_discounts)) {
-            $current_discounts = array();
+        $currentDiscounts = unserialize(CoreLocal::get('CurrentDiscounts'));
+        if (!is_array($currentDiscounts)) {
+            $currentDiscounts = array();
         }
         if (CoreLocal::get('NonStackingDiscounts')) {
             $applies = null;
-            foreach ($current_discounts as $name => $obj) {
+            foreach ($currentDiscounts as $name => $obj) {
                 if ($applies == null) {
                     $applies = $name;
-                } elseif ($current_discounts[$name]->percentage() < $obj->percentage()) {
+                } elseif ($currentDiscounts[$name]->percentage() < $obj->percentage()) {
                     $applies = $name;
                 }
             }
-            if ($applies != null && isset($current_discounts[$applies])) {
+            if ($applies != null && isset($currentDiscounts[$applies])) {
                 TransRecord::addLogRecord(array(
                     'upc' => 'DISCLINEITEM',
                     'description' => $applies,
-                    'amount1' => $current_discounts[$applies]->percentage(),
-                    'amount2' => ($current_discounts[$applies]->percentage()/100.00) * CoreLocal::get('discountableTotal'),
+                    'amount1' => $currentDiscounts[$applies]->percentage(),
+                    'amount2' => ($currentDiscounts[$applies]->percentage()/100.00) * CoreLocal::get('discountableTotal'),
                 ));
             }
         } else {
-            foreach ($current_discounts as $name => $obj) {
+            foreach ($currentDiscounts as $name => $obj) {
                 TransRecord::addLogRecord(array(
                     'upc' => 'DISCLINEITEM',
                     'description' => $name,
@@ -158,7 +158,7 @@ class DiscountModule
 
     public function __construct($percent, $name='custdata')
     {
-        $this->my_discount = $percent;
+        $this->myDiscount = $percent;
         $this->name = $name;
     }
 
@@ -169,7 +169,7 @@ class DiscountModule
     */
     public function percentage()
     {
-        return $this->my_discount;
+        return $this->myDiscount;
     }
 }
 

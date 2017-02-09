@@ -36,13 +36,13 @@ class cablist extends NoInputCorePage
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
         <script type="text/javascript" src="js/cablist.js"></script>
         <?php
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform', false, true)\n");
-        $this->add_onload_command("\$('#selectlist').focus();\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform', false, true)\n");
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
     }
 
     private function getTransactions()
     {
-        $fes = Authenticate::getPermission(CoreLocal::get('CashierNo'));
+        $fes = Authenticate::getPermission($this->session->get('CashierNo'));
         /* if front end security >= 25, pull all
          * available receipts; other wise, just
          * current cashier's receipt */
@@ -55,7 +55,7 @@ class cablist extends NoInputCorePage
             having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
             order by register_no,emp_no,trans_no desc";
             $dbc = Database::tDataConnect();
-            if (CoreLocal::get("standalone") == 0) {
+            if ($this->session->get("standalone") == 0) {
                 $query = str_replace("localtranstoday","dtransactions",$query);
                 $dbc = Database::mDataConnect();
             }
@@ -78,7 +78,7 @@ class cablist extends NoInputCorePage
                     trans_no
                 HAVING SUM((CASE WHEN trans_type='T' THEN -1*total ELSE 0 END)) >= 30
                 ORDER BY trans_no desc";
-            $args = array(CoreLocal::get('laneno'), CoreLocal::get('CashierNo'));
+            $args = array($this->session->get('laneno'), $this->session->get('CashierNo'));
             $prep = $dbc->prepare($query);
             $result = $dbc->execute($prep, $args);
         }
@@ -121,7 +121,7 @@ class cablist extends NoInputCorePage
         </select>
         </div>
         <?php
-        if (CoreLocal::get('touchscreen')) {
+        if ($this->session->get('touchscreen')) {
             echo '<div class="listbox listboxText">'
                 . DisplayLib::touchScreenScrollButtons('#selectlist')
                 . '</div>';

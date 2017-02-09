@@ -74,8 +74,12 @@ class BasicModel
     */
     protected $meta_types = array(
         'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY'),
-        'BIGINT UNSIGNED' => array('default'=>'BIGINT UNSIGNED', 'mssql'=>'BIGINT'),
+        'BIGINT UNSIGNED' => array('default'=>'BIGINT UNSIGNED', 'mssql'=>'BIGINT', 'postgres9'=>'BIGINT'),
         'REAL' => array('default'=>'DOUBLE'),
+        'TINYINT' => array('default'=>'TINYINT', 'postgres9'=>'SMALLINT'),
+        'DATETIME' => array('default'=>'DATETIME', 'postgres9'=>'TIMESTAMP'),
+        'DOUBLE' => array('default'=>'DOUBLE', 'postgres9'=>'DOUBLE PRECISION'),
+        'BLOB' => array('default'=>'BLOB', 'postgres9'=>'BYTEA'),
     );
 
     /**
@@ -278,6 +282,16 @@ class BasicModel
     }
 
     /**
+      Don't escape column and table names with postgres. 
+      Postgres heavily favors case insensitivity and escaping
+      identifiers with capital letters makes a mess later
+    */
+    protected function identifierEscape($dbms, $name)
+    {
+        return $dbms === 'postgres9' ? $this->connection->identifierEscape(strtolower($name)) : $this->connection->identifierEscape($name);
+    }
+
+    /**
       Create the table
       @return boolean
     */
@@ -296,7 +310,7 @@ class BasicModel
                 return false;
             }
 
-            $sql .= $this->connection->identifierEscape($cname);    
+            $sql .= $this->identifierEscape($dbms, $cname);
             $sql .= ' ' . $this->arrayToSQL($definition, $dbms);
             $sql .= ',';
 
@@ -310,11 +324,11 @@ class BasicModel
         if (!empty($pkey)) {
             $sql .= ' PRIMARY KEY (';
             foreach($pkey as $col) {
-                $sql .= $this->connection->identifierEscape($col).',';
+                $sql .= $this->identifierEscape($dbms, $col).',';
             }
             $sql = substr($sql,0,strlen($sql)-1).'),';
         }
-        if (!empty($indexes)) {
+        if (!empty($indexes) && $dbms !== 'postgres9') {
             foreach($indexes as $index) {
                 $sql .= ' INDEX (';
                 $sql .= $this->connection->identifierEscape($index);
@@ -328,6 +342,12 @@ class BasicModel
             $sql .= ' ON [PRIMARY]';
 
         $result = $this->connection->execute($sql);
+
+        if ($result && !empty($indexes) && $dbms === 'postgres9') {
+            foreach ($indexes as $index) {
+                $this->connection->query("CREATE INDEX {$index}_idx ON {$this->fq_name} ({$index})");
+            }
+        }
 
         /**
           Clear out any cached definition
@@ -356,8 +376,8 @@ class BasicModel
         if (isset($definition['increment']) && $definition['increment']) {
             if ($dbms == 'mssql') {
                 $sql .= ' IDENTITY (1, 1) NOT NULL';
-            } elseif ($dbms === 'pgsql' || $dbms === 'pdo_pgsql') {
-                $sql = preg_replace('/$' . $type . '/', 'SERIAL', $sql, 1);
+            } elseif ($dbms === 'pgsql' || $dbms === 'pdo_pgsql' || $dbms === 'postgres9') {
+                $sql = preg_replace('/^' . $type . '/', 'SERIAL', $sql, 1);
             } else {
                 $sql .= ' NOT NULL AUTO_INCREMENT';
             }

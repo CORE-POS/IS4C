@@ -76,7 +76,7 @@ class ScaleDriverWrapper
        appropriate weight-related session variables are
        updated.
     */
-    public function ReadFromScale(){}
+    public function readFromScale(){}
 
     /** 
        Sends output to the scale. 
@@ -88,7 +88,7 @@ class ScaleDriverWrapper
         4. rePoll
         5. wakeup
     */
-    public function WriteToScale($str){}
+    public function writeToScale($str){}
 
     /** Clear all pending input 
         
@@ -97,7 +97,7 @@ class ScaleDriverWrapper
         accumulated weight data. POS uses this method
         to discard everything on startup. 
      */
-    public function ReadReset(){}
+    public function readReset(){}
 
 }
 

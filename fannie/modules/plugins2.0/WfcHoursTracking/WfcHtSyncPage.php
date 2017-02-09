@@ -40,39 +40,28 @@ class WfcHtSyncPage extends FanniePage
 
     private function checkLocalAccounts($EXCLUDE_EMAILS)
     {
+        $ldap = ldap_connect('ldaps://email.wholefoods.coop:636');
+        $bind = ldap_bind($ldap);
+        $search = ldap_search($ldap, 'ou=People,dc=wholefoods,dc=coop', 'gidnumber=100');
+        $info = ldap_get_entries($ldap, $search);
+        $accounts = array();
+        for ($i=0; $i<$info['count']; $i++) {
+            $entry = $info[$i];
+            $shortname = $entry['uid'][0];
+            $uid = $entry['uidnumber'][0];
+            $name = $entry['cn'][0];
+            $accounts[$uid] = array($shortname, $name);
+        }
         $new_accounts = array();
         $dbc = WfcHtLib::hours_dbconnect();
         $chkQ = $dbc->prepare("SELECT empID, name FROM employees WHERE empID=?");
         $insQ = $dbc->prepare("INSERT INTO employees VALUES (?,?,NULL,0,8,NULL,0)");
-        exec('getent passwd', $users, $exit_code);
-        foreach ($users as $line) {
-            // extract users with group 100 from unix passwd file
-            $fields = explode(":",$line);
-            $uid = $fields[2];
-            $group = $fields[3];
-            if ($group != "100") {
-                continue;
-            }
-
-            $shortname = $fields[0];
+        foreach ($accounts as $uid => $names) {
+            $shortname = $names[0];
             if (isset($EXCLUDE_EMAILS[$shortname])) {
                 continue;
             }
-
-            // reformat name as "last, first"
-            $tmp = explode(" ",$fields[4]);
-            $name = "";
-            for($i=1;$i<count($tmp);$i++) {
-                $name .= $tmp[$i]." ";
-            }
-            if (count($tmp) > 1) {
-                $name = trim($name).", ";
-            }
-            if (count($tmp) == 0) {
-                $name = $shortname;
-            } else {
-                $name .= $tmp[0];
-            }
+            $name = $names[1];
 
             // create entry in hours database
             $chkR = $dbc->execute($chkQ, array($uid));
@@ -93,24 +82,6 @@ class WfcHtSyncPage extends FanniePage
         return $new_accounts;
     }
 
-    private function checkPosAccounts($new_accoutns)
-    {
-        /**
-          Create corresponding POS user accounts
-        */
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $chkQ = $dbc->prepare("SELECT uid FROM Users WHERE uid=?");
-        $insQ = $dbc->prepare("INSERT INTO Users VALUES (?,'','',?,'','')");
-        foreach($new_accounts as $uid => $uname){
-            $uid = str_pad($uid,4,'0',STR_PAD_LEFT);
-            $chkR = $dbc->execute($chkQ, array($uid));
-            if ($dbc->num_rows($chkR) == 0) {
-                $dbc->execute($insQ, array($uname, $uid));
-                echo "Added user account for $uname<br />";
-            }
-        }
-    }
-
     public function body_content()
     {
         ob_start();
@@ -126,16 +97,10 @@ class WfcHtSyncPage extends FanniePage
             'csc'=>True,
             'ldap'=>True,
             'relfvin'=>True,
-            'jkresha'=>True
+            'jkresha'=>True,
+            'wpulford'=>true,
         );
-
         $new_accounts = $this->checkLocalAccounts($EXCLUDE_EMAILS);
-
-        echo '<hr />';
-
-        if (count($new_accounts) == 0){
-            echo '<i>No new employees found</i><br />';
-        }
 
         echo '<p />
             <a href="WfcHtMenuPage.php">Main Menu</a>';

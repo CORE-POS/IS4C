@@ -24,19 +24,17 @@
 namespace COREPOS\pos\lib\Scanning\SpecialDepts;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use COREPOS\pos\lib\MiscLib;
-use \CoreLocal;
 
 class BottleReturnDept extends SpecialDept
 {
-
     public $help_summary = 'Negate entered amount e.g. 100 means $1 refund not $1 sale';
 
     public function handle($deptID,$amount,$json)
     {
-        if (strstr(CoreLocal::get('strEntered'), 'DP') && CoreLocal::get('msgrepeat') == 0) { // invert has not happened yet
-            CoreLocal::set('strEntered', (100*$amount * -1).'DP'.$deptID);
-            CoreLocal::set('msgrepeat', 1);
-            $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?autoconfirm=1';
+        if (strstr($this->session->get('strEntered'), 'DP') && $this->session->get('msgrepeat') == 0) { // invert has not happened yet
+            $this->session->set('strEntered', (100*$amount * -1).'DP'.$deptID);
+            $this->session->set('msgrepeat', 1);
+            $json['main_frame'] = MiscLib::baseURL().'gui-modules/boxMsg2.php?autoconfirm=1';
         }
 
         return $json;

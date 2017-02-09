@@ -23,8 +23,11 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\LaneLogger;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 use \AutoLoader;
 use \ReflectionClass;
+
+use COREPOS\common\mvc\FormValueContainer;
 
 /**
   @class AjaxCallback
@@ -33,15 +36,22 @@ class AjaxCallback
 {
     protected $encoding = 'json';
     protected static $logger;
+    protected $session;    
+    protected $form;    
+
+    public function __construct($session, $form)
+    {
+        $this->session = $session;
+        $this->form = $form;
+    }
 
     public function getEncoding()
     {
         return $this->encoding;
     }
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-
     }
 
     // @hintable
@@ -72,7 +82,7 @@ class AjaxCallback
     // @hintable
     private static function executeCallback($callback_class)
     {
-        $obj = new $callback_class();
+        $obj = new $callback_class(new WrappedStorage(), new FormValueContainer());
         ob_start();
         $output = $obj->ajax();
         $extra_output = ob_get_clean();

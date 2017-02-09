@@ -56,15 +56,15 @@ class ManagerApproveTender extends TenderModule
     */
     public function preReqCheck()
     {
-        $my_url = MiscLib::base_url();
+        $myUrl = MiscLib::baseURL();
 
         if (CoreLocal::get("approvetender") != 1) {
             CoreLocal::set("approvetender",1);
-            return $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-ManagerApproveTender";
-        } else {
-            CoreLocal::set("approvetender",0);
-            return true;
+            return $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-ManagerApproveTender";
         }
+        CoreLocal::set("approvetender",0);
+
+        return true;
     }
 
     /**
@@ -79,10 +79,10 @@ class ManagerApproveTender extends TenderModule
         if ($success) {
             $inp = urlencode(CoreLocal::get('strEntered'));
             return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
-        } else {
-            CoreLocal::set('approvetender', 0);
-            return false;
         }
+        CoreLocal::set('approvetender', 0);
+
+        return false;
     }
 }
 

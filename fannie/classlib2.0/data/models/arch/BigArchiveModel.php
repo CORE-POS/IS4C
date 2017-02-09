@@ -72,7 +72,6 @@ class BigArchiveModel extends DTransactionsModel
     public function initPartitions($year, $month)
     {
         $timestamp = mktime(0, 0, 0, $month, 1, $year);
-        $partition_name = 'p' . date('Ym', $timestamp);
         $next_month = date('Y-m-d', mktime(
             0, 0, 0,
             date('n', $timestamp)+1,
@@ -80,15 +79,75 @@ class BigArchiveModel extends DTransactionsModel
             date('Y', $timestamp)
         ));
 
-        $partitionQ = "
-            ALTER TABLE " . $this->connection->identifierEscape($this->name) . "
-            PARTITION BY RANGE(TO_DAYS(" . $this->connection->identifierEscape('datetime') . "))
-            (PARTITION {$partition_name}
-                VALUES LESS THAN (TO_DAYS('{$next_month}'))
-            )";
-        $added = $this->connection->query($partitionQ);
+        $dbms = $this->connection->dbmsName();
 
-        return ($added) ? true : false;
+        if (strstr($dbms, 'mysql')) {
+            $partition_name = 'p' . date('Ym', $timestamp);
+            $partitionQ = "
+                ALTER TABLE " . $this->connection->identifierEscape($this->name) . "
+                PARTITION BY RANGE(TO_DAYS(" . $this->connection->identifierEscape('datetime') . "))
+                (PARTITION {$partition_name}
+                    VALUES LESS THAN (TO_DAYS('{$next_month}'))
+                )";
+            $added = $this->connection->query($partitionQ);
+
+            return ($added) ? true : false;
+        } elseif ($dbms === 'postgres9') {
+            $partition_name = 'bigArchive' . date('Ym', $timestamp);
+            $start = date('Y-m-01', $timestamp);
+            $end = date('Y-m-t', $timestamp);
+            $partitionQ = "
+                CREATE TABLE {$partition_name}
+                    (CHECK (datetime >= '{$start}' AND datetime <= '{$end}'))
+                    INHERITS (bigArchive)";
+            $added = $this->connection->query($partitionQ);
+            $this->connection->query("CREATE INDEX datetime_idx ON {$partition_name} (datetime)");
+            $this->connection->query($this->generateTrigger($year, $month, $year, $month));
+            $this->connection->query("
+                CREATE TRIGGER bigarchive_insert
+                    BEFORE INSERT ON bigArchive
+                    FOR EACH ROW EXECUTE PROCEDURE bigarchive_input_mapper();
+            ");
+
+            $added = $this->connection->query($partitionQ);
+        }
+
+        return false;
+    }
+
+    /**
+      Generate postgres trigger function to insert records into appropriate
+      partitions between the given dates
+    */
+    private function generateTrigger($startYear, $startMonth, $endYear, $endMonth)
+    {
+        $trigger = "
+            CREATE OR REPLACE FUNCTION bigarchive_input_mapper()
+            RETURNS TRIGGER AS \$\$
+            BEGIN ";
+        while ($startYear < $endYear || ($startYear == $endYear && $startMonth <= $endMonth)) {
+            $timestamp = mktime(0,0,0, $startMonth, 1, $startYear);
+            $start = date('Y-m-01', $timestamp);
+            $end = date('Y-m-t', $timestamp);
+            $partition_name = 'bigArchive' . date('Ym', $timestamp);
+            $trigger .= " IF (NEW.datetime >= '{$start}' AND NEW.datetime <= '{$end}') THEN
+                            INSERT INTO {$partition_name} VALUES (NEW.*);\n";
+            $startMonth++;
+            if ($startMonth > 12) {
+                $startYear++;
+                $startMonth = 1;
+            }
+        }
+        $trigger .= "
+                ELSE
+                    RAISE EXCEPTION 'Date out of range';
+                END IF;
+                RETURN NULL;
+            END;
+            \$\$
+            LANGUAGE plpgsql;";
+
+        return $trigger;
     }
 
     /**
@@ -100,7 +159,6 @@ class BigArchiveModel extends DTransactionsModel
     public function addPartition($year, $month)
     {
         $timestamp = mktime(0, 0, 0, $month, 1, $year);
-        $partition_name = 'p' . date('Ym', $timestamp);
         $next_month = date('Y-m-d', mktime(
             0, 0, 0,
             date('n', $timestamp)+1,
@@ -108,15 +166,45 @@ class BigArchiveModel extends DTransactionsModel
             date('Y', $timestamp)
         ));
 
-        $partitionQ = "
-            ALTER TABLE " . $this->connection->identifierEscape($this->name) . "
-            ADD PARTITION
-            (PARTITION {$partition_name}
-                VALUES LESS THAN (TO_DAYS('{$next_month}'))
-            )";
-        $added = $this->connection->query($partitionQ);
+        $dbms = $this->connection->dbmsName();
 
-        return ($added) ? true : false;
+        if (strstr($dbms, 'mysql')) {
+            $partition_name = 'p' . date('Ym', $timestamp);
+            $partitionQ = "
+                ALTER TABLE " . $this->connection->identifierEscape($this->name) . "
+                ADD PARTITION
+                (PARTITION {$partition_name}
+                    VALUES LESS THAN (TO_DAYS('{$next_month}'))
+                )";
+            $added = $this->connection->query($partitionQ);
+
+            return ($added) ? true : false;
+        } elseif ($dbms === 'postgres9') {
+            $partition_name = 'bigArchive' . date('Ym', $timestamp);
+            $start = date('Y-m-01', $timestamp);
+            $end = date('Y-m-t', $timestamp);
+            // create new partition table
+            $partitionQ = "
+                CREATE TABLE {$partition_name}
+                    (CHECK (datetime >= '{$start}' AND datetime <= '{$end}'))
+                    INHERITS (bigArchive)";
+            $added = $this->connection->query($partitionQ);
+            // ensure indexing
+            $this->connection->query("CREATE INDEX datetime_idx ON {$partition_name} (datetime)");
+
+            // lookup minimum date to see where partitioning starts
+            $minP = $this->connection->prepare("SELECT MIN(datetime) FROM bigArchive");
+            $min = $this->connection->getValue($minP);
+            $startTS = strtotime($min);
+            $startYear = date('Y', $startTS);
+            $startMonth = date('n', $startTS);
+            // regenerate the partition function for the full date range
+            $this->connection->query($this->generateTrigger($startYear, $startMonth, $year, $month));
+
+            return ($added) ? true : false;
+        }
+
+        return false;
     }
 }
 

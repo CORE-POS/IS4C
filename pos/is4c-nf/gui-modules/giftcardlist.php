@@ -30,12 +30,13 @@ class giftcardlist extends NoInputCorePage
 
     function preprocess()
     {
-        if (isset($_REQUEST["selectlist"])){
-            CoreLocal::set("prefix",$_REQUEST["selectlist"]);
+        try {
+            $this->session->set("prefix",$this->form->selectlist);
             $this->change_page($this->page_url."gui-modules/pos2.php");
-            return False;
-        }
-        return True;
+            return false;
+        } catch (Exception $ex) {}
+
+        return true;
     }
     
     function head_content(){
@@ -55,7 +56,7 @@ class giftcardlist extends NoInputCorePage
         <span class="larger"><?php echo _('gift card transaction'); ?></span>
         <form name="selectform" method="post" id="selectform"
             action="<?php echo $_SERVER['PHP_SELF']; ?>">
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <?php if ($this->session->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">
             <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
@@ -68,7 +69,7 @@ class giftcardlist extends NoInputCorePage
         <option value="AV"><?php echo _('Add Value'); ?>
         <option value="PV"><?php echo _('Balance'); ?>
         </select>
-        <?php if (CoreLocal::get('touchscreen')) { ?>
+        <?php if ($this->session->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollUp('#selectlist');">
             <img src="<?php echo $stem; ?>up.png" width="16" height="16" />

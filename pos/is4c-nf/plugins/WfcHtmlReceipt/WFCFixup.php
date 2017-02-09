@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\preparse;
-use \CoreLocal;
 use COREPOS\pos\parser\PreParser;
 
 class WFCFixup extends PreParser {
@@ -30,7 +29,7 @@ class WFCFixup extends PreParser {
     
     function check($str)
     {
-        if (CoreLocal::get('store') !== 'wfc') {
+        if ($this->session->get('store') !== 'wfc') {
             return false;
         }
         $as_upc = str_pad($str, 13, '0', STR_PAD_LEFT);
@@ -40,13 +39,13 @@ class WFCFixup extends PreParser {
         } else if (substr($str,-4) == "QK10"){
             $this->remainder = str_replace("QK10","QM10",$str);
             return True;
-        } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && CoreLocal::get('msgrepeat') == 0) {
+        } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && $this->session->get('msgrepeat') == 0) {
             $this->remainder = 'QM708';
             return true;
-        } elseif (preg_match('/(\d+)\*0*1112/', $str, $matches) && CoreLocal::get('msgrepeat') == 0) {
+        } elseif (preg_match('/(\d+)\*0*1112/', $str, $matches) && $this->session->get('msgrepeat') == 0) {
             $this->remainder = $matches[1] . '*QM708';
             return true;
-        } elseif (preg_match('/(\d+)\*0*1113/', $str, $matches) && CoreLocal::get('msgrepeat') == 0) {
+        } elseif (preg_match('/(\d+)\*0*1113/', $str, $matches) && $this->session->get('msgrepeat') == 0) {
             $this->remainder = $matches[1] . '*QM708';
             return true;
         } elseif ($as_upc == '0049999900047') {

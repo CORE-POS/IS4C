@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\LocalStorage\LaneConfig;
 
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
@@ -30,11 +31,12 @@ COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 
 AutoLoader::loadMap();
 
-CoreState::initiate_session();
+CoreState::initiateSession();
 
 CoreLocal::set('ValidJson', false);
 CoreLocal::refresh();
 CoreLocal::migrateSettings();
+LaneConfig::refresh();
 
 if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
     CoreLocal::set('MQ', true);

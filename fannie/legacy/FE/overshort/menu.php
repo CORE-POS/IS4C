@@ -34,6 +34,11 @@
         <a href="../../../modules/plugins2.0/OverShortTools/OverShortMAS.php">Link</a></td>
     <td>Export POS data as CSV formatted for input into MAS</td>
 </tr>
+<tr>
+    <td><b>Transfers</b><br />
+        <a href="../../../modules/plugins2.0/OverShortTools/OverShortTransfers.php">Link</a></td>
+    <td>View total transfer activity for a date range</td>
+</tr>
 
 </table>
 

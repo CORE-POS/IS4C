@@ -23,4 +23,8 @@
         margin-left: auto !important;
         margin-right: auto !important;
     }
+
+    .hidden-print {
+        display: none;
+    }
 }

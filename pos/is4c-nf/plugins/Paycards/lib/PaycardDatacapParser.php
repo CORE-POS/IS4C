@@ -54,6 +54,7 @@ class PaycardDatacapParser extends Parser
         'PVDATACAPEC',
         'ACDATACAPGD',
         'AVDATACAPGD',
+        'DATACAPRECUR',
     );
     
     public function __construct()

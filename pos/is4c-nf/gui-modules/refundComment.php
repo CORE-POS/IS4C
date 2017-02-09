@@ -28,32 +28,32 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class RefundComment extends NoInputCorePage 
 {
-
     function preprocess()
     {
-        if (isset($_REQUEST["selectlist"])){
-            $input = $_REQUEST["selectlist"];
+        try {
+            $input = $this->form->selectlist;
             $qstr = '';
             if ($input == "CL" || $input == ''){
-                CoreLocal::set("refundComment","");
-                CoreLocal::set("refund",0);
+                $this->session->set("refundComment","");
+                $this->session->set("refund",0);
             } elseif ($input == "Other"){
                 return True;
             } else {
                 $input = str_replace("'","",$input);
-                $output = CoreLocal::get("refundComment");
+                $output = $this->session->get("refundComment");
                 $qstr = '?reginput=' . urlencode($output) . '&repeat=1';
 
                 // add comment calls additem(), which wipes
                 // out refundComment; save it
                 TransRecord::addcomment("RF: ".$input);
-                CoreLocal::set("refundComment", $output);
-                CoreLocal::set("refund",1);
+                $this->session->set("refundComment", $output);
+                $this->session->set("refund",1);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             return false;
-        }
-        return True;
+        } catch (Exception $ex) {}
+
+        return true;
     }
     
     function head_content(){
@@ -69,9 +69,9 @@ class RefundComment extends NoInputCorePage
         <div class="centeredDisplay colored rounded">
         <span class="larger"><?php echo _('reason for refund'); ?></span>
         <form name="selectform" method="post" 
-            id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            id="selectform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <?php
-        if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') {
+        if ($this->form->tryGet('selectlist') == 'Other') {
         ?>
             <input type="text" id="selectlist" name="selectlist" 
                 onblur="$('#selectlist').focus();" />
@@ -79,7 +79,7 @@ class RefundComment extends NoInputCorePage
         } else {
             $stem = MiscLib::baseURL() . 'graphics/';
         ?>
-            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <?php if ($this->session->get('touchscreen')) { ?>
             <button type="button" class="pos-button coloredArea"
                 onclick="scrollDown('#selectlist');">
                 <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
@@ -93,14 +93,14 @@ class RefundComment extends NoInputCorePage
             <option><?php echo _('Did not Like'); ?></option>
             <option><?php echo _('Other'); ?></option>
             </select>
-            <?php if (CoreLocal::get('touchscreen')) { ?>
+            <?php if ($this->session->get('touchscreen')) { ?>
             <button type="button" class="pos-button coloredArea"
                 onclick="scrollUp('#selectlist');">
                 <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
             </button>
             <?php } ?>
         <?php
-            $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
+            $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
         }
         ?>
         <p>
@@ -114,8 +114,7 @@ class RefundComment extends NoInputCorePage
         </form>
         </div>    
         <?php
-        $this->add_onload_command("\$('#selectlist').focus();\n");
-        //if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
     } // END body_content() FUNCTION
 }
 

@@ -50,10 +50,10 @@ class PaycardProcessPage extends BasicCorePage
     protected $action = '';
     protected $conf;
 
-    public function __construct()
+    public function __construct($session, $form)
     {
         $this->conf = new PaycardConf();
-        parent::__construct();
+        parent::__construct($session, $form);
     }
 
     public function getHeader()

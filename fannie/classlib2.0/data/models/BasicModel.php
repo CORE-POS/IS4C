@@ -171,6 +171,16 @@ class BasicModel extends COREPOS\common\BasicModel
        $this->hooks[] = '_loaded';
     }
 
+    public function getHooks()
+    {
+        return $this->hooks;
+    }
+
+    public function setHooks(array $hooks)
+    {
+        $this->hooks = $hooks;
+    }
+
     /**
       Interface method
       Should eventually inherit from \COREPOS\common\BasicModel

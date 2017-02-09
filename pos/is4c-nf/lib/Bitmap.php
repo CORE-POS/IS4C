@@ -16,28 +16,26 @@ References
 
 class Bitmap 
 {
+    private $DIB1 = 12;
+    private $DIB2 = 64;
+    private $DIB3 = 40;
+    private $DIB4 = 108;
+    private $DIB5 = 124;
     
-    public $DIB1;
-    public $DIB2;
-    public $DIB3;
-    public $DIB4;
-    public $DIB5;
+    private $error;
     
-    public $error;
-    
-    public $magic;
-    public $dibVersion;
-    public $width;
-    public $height;
-    public $bpp; // bits per pixel
-    public $hppm; // horiz. pixels per meter
-    public $vppm; // vert. pixels per meter
-    public $palSize;
-    public $palSizeImp;
-    public $palette;
-    public $image;
-    public $rowBytes;
-    
+    private $magic;
+    private $dibVersion;
+    private $width;
+    private $height;
+    private $bpp; // bits per pixel
+    private $hppm; // horiz. pixels per meter
+    private $vppm; // vert. pixels per meter
+    private $palSize;
+    private $palSizeImp;
+    private $palette;
+    private $image;
+    private $rowBytes;
     
     /*
     * INTERNAL METHODS
@@ -57,7 +55,7 @@ class Bitmap
             if ($right < 0) {
                 $right = strlen($data) - 1;
             }
-        } else if (is_array($data)) {
+        } elseif (is_array($data)) {
             $isarray = true;
             $data = array_values($data);
             if ($right < 0) {
@@ -238,7 +236,7 @@ class Bitmap
         $rowDataSize = (int)((($width * $bpp) + 31) / 32) * 4;
         if ($imgDataSize === null || $imgDataSize === 0) {
             $imgDataSize = abs($height) * $rowDataSize;
-        } else if ($imgDataSize != (abs($height) * $rowDataSize)){
+        } elseif ($imgDataSize != (abs($height) * $rowDataSize)){
             /** modification by Andy 09Aug13
                 I think this makes more sense and it's incorrect
                 to assume all zero bytes at the end of the
@@ -270,6 +268,9 @@ class Bitmap
         if (!$palSize && $bpp < 16) {
             $palSize = pow(2, $bpp);
         }
+        $palColorSize = 0;
+        $palDataSize = 0;
+        $palette = null;
         if ($palSize) {
             $palColorSize = ($headerSize == $this->DIB1) ? 3 : 4;
             $palDataSize = $palSize * $palColorSize;
@@ -281,10 +282,6 @@ class Bitmap
                 // pad each palette color to 4 bytes for simpler lookup (remember "." doesn't match newline, hence "|\\n")
                 $palette = preg_replace('/(.|\\n){'.$palColorSize.'}/', '\\1'.str_repeat("\x00",(4-$palColorSize)), $palette);
             }
-        } else {
-            $palColorSize = 0;
-            $palDataSize = 0;
-            $palette = null;
         }
         
         // read the image
@@ -348,12 +345,6 @@ class Bitmap
     
     public function __construct($width=1, $height=1, $bpp=1, $dpi=72) 
     {
-        $this->DIB1 = 12;
-        $this->DIB2 = 64;
-        $this->DIB3 = 40;
-        $this->DIB4 = 108;
-        $this->DIB5 = 124;
-
         $this->error = null;
         
         if (!is_numeric($width) || (int)$width < 1) {
@@ -398,11 +389,10 @@ class Bitmap
         }
         
         // prepare the palette
+        $palette = "";
         if ($this->palSize) {
             $palette = $this->palette;
             // if ($this->dibVersion == self::DIB1)  // strip padding...
-        } else {
-            $palette = "";
         }
         $palDataSize = strlen($palette);
         
@@ -507,12 +497,12 @@ class Bitmap
         // validate coordinates
         if ($x < 0) {
             $x += $this->width;
-        } else if ($x >= $this->width) {
+        } elseif ($x >= $this->width) {
             return null;
         }
         if ($y < 0) {
             $y += $this->height;
-        } else if ($y >= $this->height) {
+        } elseif ($y >= $this->height) {
             return null;
         }
         // fetch pixel
@@ -547,12 +537,12 @@ class Bitmap
         // validate coordinates
         if ($x < 0) {
             $x += $this->width;
-        } else if ($x >= $this->width) {
+        } elseif ($x >= $this->width) {
             return null;
         }
         if ($y < 0) {
             $y += $this->height;
-        } else if ($y >= $this->height) {
+        } elseif ($y >= $this->height) {
             return null;
         }
         // validate new pixel value
@@ -603,9 +593,8 @@ class Bitmap
             return $val + $max;
         } elseif ($val >= $max) {
             throw new Exception('Coordinate out of range');
-        } else {
-            return $val;
         }
+        return $val;
     }
     
     // @hintable
@@ -728,7 +717,7 @@ class Bitmap
         $bmp = null;
         if (is_object($arg) && is_a($arg, 'Bitmap')) {
             $bmp = $arg;
-        } else if (file_exists($arg)) {
+        } elseif (file_exists($arg)) {
             $bmp = new Bitmap();
             $bmp->load($arg);
         }

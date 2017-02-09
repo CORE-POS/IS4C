@@ -22,10 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\AjaxCallback;
-use \CoreLocal;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -36,9 +34,9 @@ class AjaxDecision extends AjaxCallback
 {
     protected $encoding = 'json';
 
-    public function ajax(array $input=array())
+    public function ajax()
     {
-        $decision = strtoupper(FormLib::get('input', 'CL'));
+        $decision = strtoupper($this->form->tryGet('input', 'CL'));
 
         $ret = array(
             'dest_page'=>MiscLib::baseURL() . 'gui-modules/pos2.php',
@@ -47,11 +45,11 @@ class AjaxDecision extends AjaxCallback
         );
 
         if ($decision == "CL") {
-            CoreLocal::set("msgrepeat",0);
-            CoreLocal::set("lastRepeat",'');
-            CoreLocal::set("toggletax",0);
-            CoreLocal::set("togglefoodstamp",0);
-            CoreLocal::set("RepeatAgain", false);
+            $this->session->set("msgrepeat",0);
+            $this->session->set("lastRepeat",'');
+            $this->session->set("toggletax",0);
+            $this->session->set("togglefoodstamp",0);
+            $this->session->set("RepeatAgain", false);
             $ret['cleared'] = true;
         }
 

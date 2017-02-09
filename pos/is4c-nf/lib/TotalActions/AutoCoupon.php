@@ -26,6 +26,7 @@ use \CoreLocal;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 
 /**
   @class AutoCoupon
@@ -68,7 +69,7 @@ class AutoCoupon extends TotalAction
         $repeat = CoreLocal::get('msgrepeat');
         $coupons = $this->getCoupons();
 
-        $hcoup = new HouseCoupon();
+        $hcoup = new HouseCoupon(new WrappedStorage());
         $prefix = CoreLocal::get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';

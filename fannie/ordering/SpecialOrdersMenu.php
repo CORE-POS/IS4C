@@ -38,8 +38,9 @@ class SpecialOrdersMenu extends FanniePage
     public function body_content()
     {
         $myID = Store::getIdByIp();
-        $view = ($myID == 2 || $this->config->get('SO_UI') === 'bootstrap') ? 'OrderViewPage.php' : 'view.php';
-        $list = ($myID == 2 || $this->config->get('SO_UI') === 'bootstrap') ? 'NewSpecialOrdersPage.php' : 'clearinghouse.php';
+        $edit = FannieAuth::validateUserQuiet('ordering_edit');
+        $view = ($myID == 2 || $edit || $this->config->get('SO_UI') === 'bootstrap') ? 'OrderViewPage.php' : 'view.php';
+        $list = ($myID == 2 || $edit || $this->config->get('SO_UI') === 'bootstrap') ? 'NewSpecialOrdersPage.php' : 'clearinghouse.php';
         return <<<HTML
 <ul>
 <li><a href="{$view}">Create Order</a></li>

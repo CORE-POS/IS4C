@@ -111,12 +111,19 @@ so better to not use them in favour of custdata.
     */
     public function hookAddColumnmodified()
     {
-        if ($this->connection->dbmsName() == 'mssql') {
+        $dbms = $this->connection->dbmsName();
+        if ($dbms == 'mssql') {
             $this->connection->query('
                 UPDATE meminfo
                 SET m.modified=c.LastChange
                 FROM meminfo AS m
                     INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1');
+        } elseif ($dbms === 'postgres9') {
+            $this->connection->query('
+                UPDATE meminfo AS m
+                SET m.modified=c.LastChange
+                FROM custdata AS c
+                WHERE m.card_no=c.CardNo AND c.personNum=1');
         } else {
             $this->connection->query('
                 UPDATE meminfo AS m

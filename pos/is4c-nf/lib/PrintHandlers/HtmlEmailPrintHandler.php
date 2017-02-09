@@ -16,12 +16,8 @@ use \PHPMailer;
 
 class HtmlEmailPrintHandler extends EmailPrintHandler 
 {
-    public function centerString($text, $big=false)
+    public function centerString($text)
     {
-        if ($big) {
-            $text = '<strong>' . $text . '</strong>';
-        }
-
         return '<div style="text-align:center">' . $text . '</div>';
     }
     
@@ -50,12 +46,11 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
                 } elseif (CoreLocal::get('emailReceiptSecurity') == 'TLS') {
                     $mail->SMTPSecure = 'tls';
                 }
+                $mail->SMTPAuth = false;
                 if (CoreLocal::get('emailReceiptUser') != '' && CoreLocal::get('emailReceiptPw') != '') {
                     $mail->SMTPAuth = true;
                     $mail->Username = CoreLocal::get('emailReceiptUser');
                     $mail->Password = CoreLocal::get('emailReceiptPw');
-                } else {
-                    $mail->SMTPAuth = false;
                 }
             } else {
                 /** or just use PHP mail() **/
@@ -66,9 +61,9 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
             $mail->addAddress($to);
             $mail->Subject = $subject;
             
-            $e_class = CoreLocal::get('emailReceiptHtml');
-            $e_obj = new $e_class();
-            $message = $e_obj->receiptHeader();
+            $eClass = CoreLocal::get('emailReceiptHtml');
+            $eObj = new $eClass();
+            $message = $eObj->receiptHeader();
 
             $message .= '<table border="0" cellpadding="10" cellspacing="0" width="600" id="email-container">';
             $table = true;
@@ -94,7 +89,7 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
                     $message .= $line ."<br>\n";
                 }
             }
-            $message .= $e_obj->receiptFooter();
+            $message .= $eObj->receiptFooter();
 
             $mail->isHTML(true);
             $mail->Body = $message;

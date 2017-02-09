@@ -260,11 +260,13 @@ class HouseCouponEditor extends FanniePage
                     <td>%s</td><td>%.2f%s</td><td>%s</td><td>%s</td>
                     <td>
                         <a href="%sws/barcode-pdf/?upc=%s&name=%s"
-                        class="btn btn-default">Print Barcode</a>
+                        class="btn btn-default btn-sm">Print Barcode</a>
                         <a href="%sreports/ProductMovement/ProductMovementModular.php?upc=%s&date1=%s&date2=%s"
-                        class="btn btn-default">Usage Report</a>
+                        class="btn btn-default btn-sm">Usage Report</a>
+                        <a href="HcBasketReport.php?upc=%s&date1=%s&date2=%s"
+                        class="btn btn-default btn-sm">Simple Baskets</a>
                         <a href="%smodules/plugins2.0/CoreWarehouse/reports/CWCouponReport.php?coupon-id=%d&date1=%s&date2=%s"
-                        class="btn btn-default %s">Member Baskets</a>
+                        class="btn btn-default btn-sm %s">Member Baskets</a>
                     </tr>',
                     $obj->coupID(),$obj->coupID(),$obj->description(),
                     $obj->discountValue(), $obj->discountType(),
@@ -273,6 +275,9 @@ class HouseCouponEditor extends FanniePage
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
                     urlencode($obj->description()),
                     $FANNIE_URL,
+                    ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
+                    $report_dates[0],
+                    $report_dates[1],
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
                     $report_dates[0],
                     $report_dates[1],
@@ -454,7 +459,8 @@ class HouseCouponEditor extends FanniePage
         $ret .= '<div class="form-group form-inline" id="add-item-form">';
         if ($mType == "Q" || $mType == "Q+" || $mType == "M" || $mType == 'MX') {
             $ret .= '<label class="control-label">Add UPC</label>
-                <input type=text class="form-control add-item-field" name=new_upc /> ';
+                <input type=text class="form-control add-item-field" name=new_upc 
+                    onkeydown="addSubmitDown(event);" />';
         } 
         if ($mType == "D" || $mType == "D+" || $mType == 'C' || $mType == 'C+' || $dType == '%D' || $dType == 'S' || $mType == 'MX' || $mType == 'C!' || $mType == 'C^') {
             $ret .= '
@@ -504,6 +510,16 @@ class HouseCouponEditor extends FanniePage
                     $('.add-item-field').val('');
                 }
             });
+        }
+        function addSubmitDown(ev) {
+            var keyCode = ev.which ? ev.which : ev.keyCode; 
+            if (keyCode == 13) {
+                ev.preventDefault();
+                addItemToCoupon();
+                return false;
+            }
+
+            return true;
         }
         <?php
         return ob_get_clean();

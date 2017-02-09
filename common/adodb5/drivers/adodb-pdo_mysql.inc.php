@@ -1,6 +1,6 @@
 <?php
 /*
-@version   v5.20.6  31-Aug-2016
+@version   v5.20.9  21-Dec-2016
 @copyright (c) 2000-2013 John Lim (jlim#natsoft.com). All rights reserved.
 @copyright (c) 2014      Damien Regad, Mark Newnham and the ADOdb community
   Released under both BSD license and Lesser GPL library license. 
@@ -9,10 +9,6 @@
   Set tabs to 8.
  
 */ 
-
-if (!class_exists('ADODB_pdo', false)) {
-	include(dirname(__FILE__).'/adodb-pdo.inc.php');
-}
 
 class ADODB_pdo_mysql extends ADODB_pdo {
 	var $metaTablesSQL = "SELECT
@@ -38,18 +34,6 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		$parentDriver->_connectionID->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 	}
 
-	function _connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist=false){
-		if (substr($argDSN,0,6) !== "mysql:"){
-			if (strpos($argDSN, ':') > 0){
-				list($host, $port) = explode(':', $argDSN, 2);
-				$argDSN = 'mysql:host='.$host.';port='.$port;
-			}
-			else
-				$argDSN = "mysql:host=".$argDSN;
-		}
-		return parent::_connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist);
-	}
-	
 	// dayFraction is a day in floating point
 	function OffsetDate($dayFraction, $date=false)
 	{		
@@ -86,9 +70,9 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 	{	
 		$save = $this->metaTablesSQL;
 		if ($showSchema && is_string($showSchema)) {
-			$this->metaTablesSQL .= " from $showSchema";
+			$this->metaTablesSQL .= $this->qstr($showSchema);
 		} else {
-			$this->metaTablesSQL .= "schema()";
+			$this->metaTablesSQL .= 'schema()';
 		}
 		
 		if ($mask) {

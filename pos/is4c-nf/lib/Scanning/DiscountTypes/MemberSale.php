@@ -25,7 +25,6 @@ namespace COREPOS\pos\lib\Scanning\DiscountTypes;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 
 class MemberSale extends DiscountType 
 {
@@ -44,14 +43,14 @@ class MemberSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - $row['special_price']) * $quantity);
 
-        if (CoreLocal::get("isMember") == 1 || (
-            CoreLocal::get("memberID") == CoreLocal::get("visitingMem") && CoreLocal::get('visitingMem') !== ''
+        if ($this->session->get("isMember") == 1 || (
+            $this->session->get("memberID") == $this->session->get("visitingMem") && $this->session->get('visitingMem') !== ''
             )) {
             $ret["unitPrice"] = $row['special_price'];
         }
 
-        if ($row['line_item_discountable'] == 1 && CoreLocal::get("itemPD") > 0) {
-            $discount = $ret['unitPrice'] * ((CoreLocal::get("itemPD")/100));
+        if ($row['line_item_discountable'] == 1 && $this->session->get("itemPD") > 0) {
+            $discount = $ret['unitPrice'] * (($this->session->get("itemPD")/100));
             $ret["unitPrice"] -= $discount;
             $ret["discount"] += ($discount * $quantity);
         }
@@ -64,7 +63,7 @@ class MemberSale extends DiscountType
 
     public function addDiscountLine()
     {
-        if (CoreLocal::get("isMember") == 1 || CoreLocal::get("memberID") == CoreLocal::get("visitingMem")) {
+        if ($this->session->get("isMember") == 1 || $this->session->get("memberID") == $this->session->get("visitingMem")) {
             TransRecord::adddiscount($this->savedInfo['memDiscount'],
                 $this->savedRow['department']);
         }

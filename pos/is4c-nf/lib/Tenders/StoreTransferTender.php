@@ -34,7 +34,6 @@ use \CoreLocal;
 */
 class StoreTransferTender extends TenderModule 
 {
-
     /**
       Check for errors
       @return True or an error message string
@@ -48,10 +47,10 @@ class StoreTransferTender extends TenderModule
             );
         }
 
-        $db = Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $query = 'SELECT chargeOk FROM custdata WHERE chargeOk=1 AND CardNo='.CoreLocal::get('memberID');
-        $result = $db->query($query);
-        if ($db->num_rows($result) == 0) {
+        $result = $dbc->query($query);
+        if ($dbc->numRows($result) == 0) {
             return DisplayLib::xboxMsg(
                 _("member cannot make transfers"),
                 DisplayLib::standardClearButton()
@@ -67,15 +66,15 @@ class StoreTransferTender extends TenderModule
     */
     public function preReqCheck()
     {
-        $my_url = MiscLib::base_url();
+        $myUrl = MiscLib::baseURL();
 
         if (CoreLocal::get("transfertender") != 1) {
             CoreLocal::set("transfertender",1);
-            return $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-StoreTransferTender";
-        } else {
-            CoreLocal::set("transfertender",0);
-            return true;
+            return $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-StoreTransferTender";
         }
+        CoreLocal::set("transfertender",0);
+
+        return true;
     }
 
     /**
@@ -90,10 +89,10 @@ class StoreTransferTender extends TenderModule
         if ($success) {
             $inp = urlencode(CoreLocal::get('strEntered'));
             return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
-        } else {
-            CoreLocal::set('transfertender', 0);
-            return false;
         }
+        CoreLocal::set('transfertender', 0);
+
+        return false;
     }
 }
 

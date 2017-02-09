@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -57,6 +59,7 @@ class ItemLastQuarterReport extends FannieReportPage
 
         $upc = $this->form->upc;
         $upc = BarcodeLib::padUPC($upc);
+        $store = Store::getIdByIp();
 
         $query = "SELECT 
                     l.quantity, l.total,
@@ -65,13 +68,14 @@ class ItemLastQuarterReport extends FannieReportPage
                     w.weekStart, w.weekEnd
                 FROM products AS p
                     LEFT JOIN " . $FANNIE_ARCHIVE_DB . $dbc->sep() . "productWeeklyLastQuarter AS l
-                        ON p.upc=l.upc
+                        ON p.upc=l.upc AND p.store_id=l.storeID
                     LEFT JOIN " . $FANNIE_ARCHIVE_DB . $dbc->sep() . "weeksLastQuarter AS w
                         ON l.weekLastQuarterID=w.weekLastQuarterID 
                 WHERE p.upc = ?
+                    AND p.store_id=?
                 ORDER BY l.weekLastQuarterID";
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, array($upc));
+        $result = $dbc->execute($prep, array($upc, $store));
 
         $data = array();
         while ($row = $dbc->fetchRow($result)) {

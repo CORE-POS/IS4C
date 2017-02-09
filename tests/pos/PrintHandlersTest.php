@@ -13,7 +13,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("\r", $ph->CarriageReturn());
 
         $this->assertEquals(str_repeat(' ', 28) . 'foo', $ph->centerString('foo'));
-        $this->assertEquals(str_repeat(' ', 13) . 'foo', $ph->centerString('foo', true));
+        $this->assertEquals(str_repeat(' ', 28) . 'foo', $ph->centerString('foo', true));
 
         $blank_methods = array(
             'PageFeed',
@@ -83,7 +83,6 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
     {
         $html = new COREPOS\pos\lib\PrintHandlers\HtmlEmailPrintHandler();
         $this->assertEquals('<div style="text-align:center">foo</div>', $html->centerString('foo'));
-        $this->assertEquals('<div style="text-align:center"><strong>foo</strong></div>', $html->centerString('foo', true));
         $this->assertEquals('<!-- foo -->', $html->addRenderingSpacer('foo'));
     }
 

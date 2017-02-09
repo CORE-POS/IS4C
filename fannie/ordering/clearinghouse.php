@@ -29,7 +29,8 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (Store::getIdByIp() == 2 || FannieConfig::config('SO_UI') === 'bootstrap') {
+$edit = FannieAuth::validateUserQuiet('ordering_edit');
+if (Store::getIdByIp() == 2 || $edit || FannieConfig::config('SO_UI') === 'bootstrap') {
     $url = 'NewSpecialOrdersPage.php';
     if (isset($_REQUEST['card_no'])) {
         $url .= sprintf('?card_no=%d', $_REQUEST['card_no']);

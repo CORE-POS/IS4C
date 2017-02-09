@@ -154,6 +154,14 @@ class CCReceiptMessage extends ReceiptMessage {
                     for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
                         $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
                     }
+                    if (strpos($row['tranType'], ' R.')) {
+                        $para1 = 'Whole Foods Co-op (WFC) will charge four (4) additional $20 payments to your card. Payments will occur monthly starting one month from today. Each payment will purchase four (4) shares of class B equity in WFC. Entries on your bank statement may be labeled recurring.';
+                        $para2 = 'To cancel this arrangement at any point, contact WFC by phone at 218-728-0884 or by email at equity@wholefoods.coop.';
+                        $para3 = 'If a monthly payment fails or is declined, no future monthly charges will be made. You will retain ownership of all equity purchased up to that point and may pay the remaining balance any time before the due date, one year from today.';
+                        $slip .= wordwrap($para1, 55) . "\n\n";
+                        $slip .= wordwrap($para2, 55) . "\n\n";
+                        $slip .= wordwrap($para3, 55) . "\n\n";
+                    }
                     $slip .= $row['tranType']."\n" // trans type:  purchase, canceled purchase, refund or canceled refund
                         ."Card: ".$row['issuer']."  ".$row['PAN']."\n"
                         ."Reference:  ".$ref."\n"
@@ -182,9 +190,12 @@ class CCReceiptMessage extends ReceiptMessage {
                     $slip .= ReceiptLib::twoColumns($col1,$col2);
                     if (strpos($row['tranType'], ' R.')) {
                         $slip .= ReceiptLib::boldFont() . 'This is a recurring payment' . ReceiptLib::normalizeFont() . "\n"
-                            . sprintf('You will be billed monthly %d additional times for $%.2f.', $payments_left, $recurring) . "\n"
-                            . sprintf('Call %s or email %s to cancel.', $r_phone, $r_email) . "\n"
-                            . 'Please do not include your credit card number in an email.' . "\n";
+                            . wordwrap(
+                                sprintf('You will be billed monthly %d additional times for $%.2f. ', $payments_left, $recurring)
+                                . 'The charges on your bank statement will be labeled "recurring". '
+                                . sprintf('Call %s or email %s to cancel. ', $r_phone, $r_email)
+                                . 'Please do not include your credit card number in an email. ',
+                                55) . "\n";
                     }
                 }
             }

@@ -44,7 +44,7 @@ class OtherReceiptFormat extends DefaultReceiptFormat
             $description = str_replace('**',' =', $description);
             return $description;
         } else if ($row['trans_type'] == 'H' && $row['description'] != '') {
-            $this->is_bold = True;
+            $this->bold = true;
             return $row['description'];
         }
         return "";

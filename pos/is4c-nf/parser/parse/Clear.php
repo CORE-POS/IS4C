@@ -24,7 +24,6 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class Clear extends Parser {
@@ -36,14 +35,14 @@ class Clear extends Parser {
 
     function parse($str)
     {
-        CoreLocal::set("msgrepeat",0);
-        CoreLocal::set("strendered","");
-        CoreLocal::set("strRemembered","");
-        CoreLocal::set("SNR",0);
+        $this->session->set("msgrepeat",0);
+        $this->session->set("strendered","");
+        $this->session->set("strRemembered","");
+        $this->session->set("SNR",0);
         // added by apbw 6/04/05 to correct voiding of refunded items
-        CoreLocal::set("refund",0);    
-        //CoreLocal::set("autoReprint",0);
-        if (CoreLocal::get("tare") > 0) 
+        $this->session->set("refund",0);    
+        //$this->session->set("autoReprint",0);
+        if ($this->session->get("tare") > 0) 
             TransRecord::addTare(0);
 
         $ret = $this->default_json();

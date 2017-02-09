@@ -33,7 +33,7 @@ class CouponsReport extends FannieReportPage {
 
     protected $title = "Fannie : Coupons Report";
     protected $header = "Coupons Report";
-    protected $report_headers = array('UPC', 'Qty', '$ Total');
+    protected $report_headers = array('UPC', 'Brand', 'Qty', '$ Total');
     protected $required_fields = array('date1', 'date2');
 
     public function calculate_footers($data)
@@ -45,7 +45,7 @@ class CouponsReport extends FannieReportPage {
             $sum2 += $row[2];
         }
 
-        return array('Total', sprintf('%.2f', $sum), sprintf('%.2f',$sum2));
+        return array('Total', null, sprintf('%.2f', $sum), sprintf('%.2f',$sum2));
     }
 
     public function fetch_report_data()
@@ -68,8 +68,17 @@ class CouponsReport extends FannieReportPage {
             ORDER BY upc");
         $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 
+        $brandP = $dbc->prepare('
+            SELECT p.brand
+            FROM products AS p
+            WHERE upc LIKE ?
+            GROUP BY p.brand
+            ORDER BY COUNT(*) DESC');
+
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
+            $prefix = substr($row['upc'], 3, 5);
+            $row['brand'] = $dbc->getValue($brandP, array('%' . $prefix . '%'));
             $data[] = $this->rowToRecord($row);
         }
 
@@ -80,6 +89,7 @@ class CouponsReport extends FannieReportPage {
     {
         return array(
             $row['upc'],
+            $row['brand'],
             sprintf('%.2f', $row['qty']),
             sprintf('%.2f', $row['ttl'])
         );
@@ -131,7 +141,7 @@ class CouponsReport extends FannieReportPage {
 
     public function unitTest($phpunit)
     {
-        $data = array('upc'=>'4011', 'qty'=>1, 'ttl'=>1);
+        $data = array('upc'=>'4011', 'qty'=>1, 'ttl'=>1, 'brand'=>'n/a');
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
         $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }

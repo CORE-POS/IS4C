@@ -42,7 +42,7 @@ class CoreState
   in this file. Normally called once on
   startup.
 */
-static public function initiate_session() 
+static public function initiateSession() 
 {
     self::systemInit();
     self::memberReset();
@@ -133,8 +133,8 @@ static public function systemInit()
       if present
     */
     if (is_array(CoreLocal::get('LaneMap'))) {
-        $my_ips = MiscLib::getAllIPs();
-        foreach ($my_ips as $ip) {
+        $myIPs = MiscLib::getAllIPs();
+        foreach ($myIPs as $ip) {
             if (!isset($map[$ip])) {
                 continue;
             }
@@ -537,17 +537,17 @@ static public function memberReset()
 */
 static public function loadData() 
 {
-    $query_local = "select card_no from localtemptrans";
+    $queryLocal = "select card_no from localtemptrans";
     
-    $db_local = Database::tDataConnect();
-    $result_local = $db_local->query($query_local);
-    $num_rows_local = $db_local->num_rows($result_local);
+    $dbLocal = Database::tDataConnect();
+    $resultLocal = $dbLocal->query($queryLocal);
+    $numRowsLocal = $dbLocal->numRows($resultLocal);
 
-    if ($num_rows_local > 0) {
-        $row_local = $db_local->fetchRow($result_local);
+    if ($numRowsLocal > 0) {
+        $rowLocal = $dbLocal->fetchRow($resultLocal);
         
-        if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-            \COREPOS\pos\lib\MemberLib::setMember($row_local['card_no'], 1);
+        if ($rowLocal["card_no"] && strlen($rowLocal["card_no"]) > 0) {
+            \COREPOS\pos\lib\MemberLib::setMember($rowLocal['card_no'], 1);
         }
     }
 }
@@ -578,10 +578,9 @@ static public function customReceipt()
         CoreLocal::set($typeStr.$numeral,$text);
 
         if (!isset($counts[$typeStr])) {
-            $counts[$typeStr] = 1;
-        } else {
-            $counts[$typeStr]++;
+            $counts[$typeStr] = 0;
         }
+        $counts[$typeStr]++;
     }
     
     foreach($counts as $key => $num) {
@@ -618,6 +617,15 @@ static public function cashierLogin($transno=False, $age=0)
     }
 }
 
+static private function setParams($parameters)
+{
+    foreach ($parameters->find() as $global) {
+        $key = $global->param_key();
+        $value = $global->materializeValue();
+        CoreLocal::set($key, $value, true);
+    }
+}
+
 static public function loadParams()
 {
     $dbc = Database::pDataConnect();
@@ -632,33 +640,21 @@ static public function loadParams()
     $parameters = new \COREPOS\pos\lib\models\op\ParametersModel($dbc);
     $parameters->lane_id(0);
     $parameters->store_id(0);
-    foreach ($parameters->find() as $global) {
-        $key = $global->param_key();
-        $value = $global->materializeValue();
-        CoreLocal::set($key, $value, true);
-    }
+    self::setParams($parameters);
 
     // apply store-specific settings next
     // with any overrides that occur
     $parameters->reset();
     $parameters->store_id(CoreLocal::get('store_id'));
     $parameters->lane_id(0);
-    foreach ($parameters->find() as $local) {
-        $key = $local->param_key();
-        $value = $local->materializeValue();
-        CoreLocal::set($key, $value, true);
-    }
+    self::setParams($parameters);
 
     // apply lane-specific settings last
     // with any overrides that occur
     $parameters->reset();
     $parameters->lane_id(CoreLocal::get('laneno'));
     $parameters->store_id(0);
-    foreach ($parameters->find() as $local) {
-        $key = $local->param_key();
-        $value = $local->materializeValue();
-        CoreLocal::set($key, $value, true);
-    }
+    self::setParams($parameters);
 
     // load tender map from tenders instead of parameters
     $map = array();

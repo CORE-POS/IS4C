@@ -44,6 +44,7 @@ class FannieSignage
     protected $overrides = array();
     protected $excludes = array();
     protected $in_use_filter = 0;
+    protected $repeats = 1;
 
     protected $width;
     protected $height;
@@ -87,6 +88,11 @@ class FannieSignage
     public function setInUseFilter($store)
     {
         $this->in_use_filter = $store;
+    }
+
+    public function setRepeats($repeats)
+    {
+        $this->repeats = $repeats;
     }
 
     protected function getDB()
@@ -197,7 +203,7 @@ class FannieSignage
             if (!isset($row['signCount']) || $row['signCount'] < 0) {
                 $row['signCount'] = 1;
             }
-            for ($i=0; $i<$row['signCount']; $i++) {
+            for ($i=0; $i<$row['signCount']*$this->repeats; $i++) {
                 $data[] = $row;
             }
 
@@ -653,6 +659,25 @@ class FannieSignage
 
     public function listItems()
     {
+        // preserve values from re-posting form
+        $overrides = array();
+        $upc = FormLib::get('update_upc');
+        $brand = FormLib::get('update_brand', array());
+        $desc = FormLib::get('update_desc', array());
+        $ignore = FormLib::get('ignore_desc', array());
+        for ($i=0; $i<count($upc); $i++) {
+            $bOver = isset($brand[$i]) ? $brand[$i] : '';
+            $dOver = '';
+            if (isset($ignore[$i]) && $ignore[$i] == 0 && isset($desc[$i])) {
+                $dOver = $desc[$i];
+            }
+            $overrides[$upc[$i]] = array('brand' => $bOver, 'desc' => $dOver);
+        }
+        $excludes = array();
+        foreach (FormLib::get('exclude', array()) as $e) {
+            $excludes[] = $e;
+        }
+
         $url = FannieConfig::factory()->get('URL');
         $ret = '<table class="table tablesorter tablesorter-core">';
         $ret .= '<thead>';
@@ -673,6 +698,12 @@ class FannieSignage
                     ($id == $item['originID'] ? 'selected' : ''), $id, $name);
             }
             $oselect .= '</select>';
+            if (isset($overrides[$item['upc']]) && $overrides[$item['upc']]['brand'] != '') {
+                $item['brand'] = $overrides[$item['upc']]['brand'];
+            }
+            if (isset($overrides[$item['upc']]) && $overrides[$item['upc']]['desc'] != '') {
+                $item['desc'] = $overrides[$item['upc']]['desc'];
+            }
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
                             <input type="hidden" name="update_upc[]" value="%d" />
@@ -683,12 +714,14 @@ class FannieSignage
                             <td>
                                 <span class="collapse">%s</span>
                                 <input class="FannieSignageField form-control" type="text" 
-                                name="update_desc[]" value="%s" /></td>
+                                name="update_desc[]" value="%s" />
+                                <input type="hidden" name="ignore_desc[]" value="%d" />
+                            </td>
                             <td>%.2f</td>
                             <td class="form-inline">%s<input type="text" name="custom_origin[]" 
                                 class="form-control FannieSignageField originField" placeholder="Custom origin..." value="" />
                             </td>
-                            <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" /></td>
+                            <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" %s /></td>
                             </tr>',
                             $url,
                             $item['upc'], $item['upc'], $item['upc'],
@@ -697,9 +730,11 @@ class FannieSignage
                             $item['brand'],
                             str_replace('"', '&quot;', $item['description']),
                             str_replace('"', '&quot;', $item['description']),
+                            (strstr($item['description'], "\n") ? 1 : 0),
                             $item['normal_price'],
                             $oselect,
-                            $item['upc']
+                            $item['upc'],
+                            (in_array($item['upc'], $excludes) ? 'checked' : '')
             );
         }
         $ret .= '</tbody></table>';
@@ -808,6 +843,7 @@ class FannieSignage
             return self::formatOffString($price, $multiplier, $regPrice);
         }
 
+
         if (substr($price, -3) == '.33') {
             $ttl = round(3*$price);
             return '3/$' . $ttl;
@@ -825,7 +861,7 @@ class FannieSignage
             return '4/$' . $ttl;
         } elseif ($price == 1) {
             return '5/$5';
-        } elseif (substr($price, -3) == '.00' && $price <= 5.00) {
+        } elseif ($price > 0 && substr($price, -3) == '.00' && $price <= 5.00) {
             $mult = 2;
             while (($mult+1)*$price <= 10) {
                 $mult++;

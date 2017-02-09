@@ -38,18 +38,6 @@ class DeclineReceiptMessage extends ReceiptMessage
     }
 
     /**
-      Generate the message
-      @param $val the value returned by the object's select_condition()
-      @param $ref a transaction reference (emp-lane-trans)
-      @param $reprint boolean
-      @return [string] message to print on receipt
-    */
-    public function message($val, $ref, $reprint=false)
-    {
-        return '';
-    }
-
-    /**
       Print message as its own receipt
       @param $ref a transaction reference (emp-lane-trans)
       @param $reprint boolean
@@ -57,13 +45,11 @@ class DeclineReceiptMessage extends ReceiptMessage
     */
     public function standalone_receipt($ref, $reprint=false)
     {
-        $date = ReceiptLib::build_time(time());
         list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
-        $sort = 'asc';
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
-        $emvP = $db->prepare('
+        $emvP = $dbc->prepare('
             SELECT content
             FROM EmvReceipt
             WHERE dateID=?
@@ -73,10 +59,10 @@ class DeclineReceiptMessage extends ReceiptMessage
                 AND transID=?
             ORDER BY tdate DESC
         ');
-        $emvR = $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, CoreLocal::get('paycard_id')));
+        $emvR = $dbc->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, CoreLocal::get('paycard_id')));
         
         $slip = '';
-        while ($emvW = $db->fetchRow($emvR)) {
+        while ($emvW = $dbc->fetchRow($emvR)) {
             $slip .= ReceiptLib::centerString("................................................")."\n";
             $lines = explode("\n", $emvW['content']);
             for ($i=0; $i<count($lines); $i++) {
@@ -93,12 +79,8 @@ class DeclineReceiptMessage extends ReceiptMessage
                     }
                 } else {
                     if (strstr($lines[$i], 'x___')) {
-                        if ($sigSlip) {
-                            $slip .= "\n\n\n";
-                        } else {
                             $i++;
                             continue;
-                        }
                     }
                     $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
                 }

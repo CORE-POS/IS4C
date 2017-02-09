@@ -52,15 +52,15 @@ class GCReceiptMessage extends ReceiptMessage
         $slip = '';
 
         // query database for gc receipt info 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         if ($reprint) {
-            $db = Database::mDataConnect();
+            $dbc = Database::mDataConnect();
         }
 
         $order = ($sigSlip) ? 'DESC' : 'ASC';
-        $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
+        $transType = $dbc->concat('p.cardType', "' '", 'p.transType', '');
 
-        $sql = "SELECT $trans_type AS tranType,
+        $sql = "SELECT $transType AS tranType,
                     CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
                     p.registerNo as terminalID,
                     p.PAN,
@@ -80,9 +80,9 @@ class GCReceiptMessage extends ReceiptMessage
                     AND p.cardType = 'Gift'
                 ORDER BY p.requestDatetime " . $order;
 
-        $result = $db->query($sql);
-        $num = $db->num_rows($result);
-        while($row = $db->fetch_row($result)){
+        $result = $dbc->query($sql);
+        $num = $dbc->numRows($result);
+        while($row = $dbc->fetchRow($result)){
             $slip .= ReceiptLib::centerString("................................................")."\n";
             // store header
             for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {

@@ -26,6 +26,8 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\ajax\AjaxEnd;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+use COREPOS\common\mvc\ValueContainer;
 
 ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -53,17 +55,16 @@ CoreLocal::set("plainmsg","items marked as shrink/unsellable");
 CoreLocal::set("End",2);
 CoreLocal::set('shrinkReason', 0);
 
-$input = array(
-    'receiptType' => 'ddd',
-    'ref' => ReceiptLib::receiptNumber(),
-);
+$vals = new ValueContainer();
+$vals->receiptType = 'ddd';
+$vals->ref = ReceiptLib::receiptNumber();
 TransRecord::finalizeTransaction(true);
 
 if (!class_exists('AjaxEnd')) {
     include(__DIR__ . '/../AjaxEnd.php');
 }
-$ajax = new AjaxEnd();
-$ajax->ajax($input);
+$ajax = new AjaxEnd(new WrappedStorage(), $vals);
+$ajax->ajax();
 if (!headers_sent()) {
     header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
 }

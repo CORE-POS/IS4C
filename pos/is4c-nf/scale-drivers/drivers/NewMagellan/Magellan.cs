@@ -53,6 +53,7 @@ public class Magellan : DelegateForm
 {
     private List<SerialPortHandler> sph;
     private UDPMsgBox u;
+    private bool asyncUDP = false;
     private Object msgLock = new Object();
     private ushort msgCount = 0;
 
@@ -138,7 +139,7 @@ public class Magellan : DelegateForm
 
     private void UdpListen()
     {
-        u = new UDPMsgBox(9450);
+        u = new UDPMsgBox(9450, this.asyncUDP);
         u.SetParent(this);
         u.My_Thread.Start();
     }
@@ -236,8 +237,8 @@ public class Magellan : DelegateForm
             return conf;
         }
 
+        string ini_json = File.ReadAllText(ini_file);
         try {
-            string ini_json = File.ReadAllText(ini_file);
             JObject o = JObject.Parse(ini_json);
             // filter list to valid entries
             var valid = o["NewMagellanPorts"].Where(p=> p["port"] != null && p["module"] != null);
@@ -263,6 +264,11 @@ public class Magellan : DelegateForm
             // unexpected exception
             Console.WriteLine(ex);
         }
+        try {
+            JObject o = JObject.Parse(ini_json);
+            var ua = (bool)o["asyncUDP"];
+            this.asyncUDP = ua;
+        } catch (Exception ex) {}
 
         return conf;
     }

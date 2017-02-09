@@ -24,7 +24,6 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrehLib;
-use \CoreLocal;
 use COREPOS\pos\parser\Parser;
 
 class StackableDiscount extends Parser 
@@ -38,7 +37,7 @@ class StackableDiscount extends Parser
             $strl = substr($str,0,strlen($str)-2);
             if (!is_numeric($strl)) {
                 return False;
-            } elseif (CoreLocal::get("tenderTotal") != 0) {
+            } elseif ($this->session->get("tenderTotal") != 0) {
                 $this->ret['output'] = DisplayLib::boxMsg(
                     _("discount not applicable after tender"),
                     '',
@@ -60,9 +59,9 @@ class StackableDiscount extends Parser
                     DisplayLib::standardClearButton()
                 );
             } elseif ($strl <= 50 and $strl > 0) {
-                $existingPD = CoreLocal::get("percentDiscount");
+                $existingPD = $this->session->get("percentDiscount");
                 $stackablePD = $strl;
-                $equivalentPD = ($existingPD + $stackablePD);                                //    sum discounts
+                $equivalentPD = ($existingPD + $stackablePD); // sum discounts
                 $this->ret = PrehLib::percentDiscount($equivalentPD,$this->ret);
             } else {
                 return false;

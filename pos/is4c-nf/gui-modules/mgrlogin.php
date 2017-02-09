@@ -24,7 +24,6 @@
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
-use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
@@ -33,19 +32,20 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class mgrlogin extends NoInputCorePage 
 {
-
-    function preprocess(){
-        if (FormLib::get('input') !== '') {
-            $arr = $this->mgrauthenticate(FormLib::get('input'));
+    function preprocess()
+    {
+        try {
+            $arr = $this->mgrauthenticate($this->form->input);
             echo json_encode($arr);
-            return False;
-        } else {
+            return false;
+        } catch (Exception $ex) {
             // beep on initial page load
-            if (CoreLocal::get('LoudLogins') == 1) {
+            if ($this->session->get('LoudLogins') == 1) {
                 UdpComm::udpSend('twoPairs');
             }
+
+            return true;
         } 
-        return True;
     }
 
     function head_content(){
@@ -97,14 +97,11 @@ class mgrlogin extends NoInputCorePage
             return $ret;
         }
 
-        $priv = sprintf("%d",CoreLocal::get("SecurityCancel"));
-        $ok = false;
-        if ($priv == 25) {
-            $ok = Authenticate::checkPassword($password);
-        } else {
-            $ok = Authenticate::checkPermission($password, $priv);
-        }
-        if ($ok) {
+        $priv = sprintf("%d",$this->session->get("SecurityCancel"));
+        $chk = false;
+        $chk = ($priv == 25) ? Authenticate::checkPassword($password) : Authenticate::checkPermission($password, $priv);
+
+        if ($chk) {
             $this->cancelorder();
             $ret['cancelOrder'] = true;
             $ret['trans_num'] = ReceiptLib::receiptNumber();
@@ -112,14 +109,9 @@ class mgrlogin extends NoInputCorePage
             $dbc = Database::tDataConnect();
             $dbc->query("update localtemptrans set trans_status = 'X'");
             TransRecord::finalizeTransaction(true);
-
-            if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('twoPairs');
-            }
-        } else {
-            if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('errorBeep');
-            }
+        }
+        if ($this->session->get('LoudLogins') == 1) {
+            UdpComm::udpSend('twoPairs');
         }
 
         return $ret;
@@ -127,21 +119,21 @@ class mgrlogin extends NoInputCorePage
 
     function cancelorder() 
     {
-        CoreLocal::set("plainmsg",_("transaction cancelled"));
+        $this->session->set("plainmsg",_("transaction cancelled"));
         UdpComm::udpSend("rePoll");
     }
 
     public function unitTest($phpunit)
     {
         $this->cancelorder();
-        $phpunit->assertEquals('transaction cancelled', CoreLocal::get('plainmsg'));
+        $phpunit->assertEquals('transaction cancelled', $this->session->get('plainmsg'));
         $ret = $this->mgrauthenticate('CL');
         $phpunit->assertEquals(true, $ret['giveUp']);
         $ret = $this->mgrauthenticate('56');
         $phpunit->assertEquals(true, $ret['cancelOrder']);
         $ret = $this->mgrauthenticate('12345');
         $phpunit->assertEquals(false, $ret['cancelOrder']);
-        CoreLocal::set('plainmsg', '');
+        $this->session->set('plainmsg', '');
     }
 }
 

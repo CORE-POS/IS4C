@@ -24,7 +24,6 @@
 namespace COREPOS\pos\lib\Scanning\SpecialDepts;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use COREPOS\pos\lib\MiscLib;
-use \CoreLocal;
 
 class EquityEndorseDept extends SpecialDept 
 {
@@ -32,22 +31,22 @@ class EquityEndorseDept extends SpecialDept
 
     public function handle($deptID,$amount,$json)
     {
-        if (CoreLocal::get("memberID") == "0" || CoreLocal::get("memberID") == CoreLocal::get("defaultNonMem")) {
-            CoreLocal::set('strEntered','');
-            CoreLocal::set('boxMsg',_('Equity requires member.<br />Apply member number first'));
+        if ($this->session->get("memberID") == "0" || $this->session->get("memberID") == $this->session->get("defaultNonMem")) {
+            $this->session->set('strEntered','');
+            $this->session->set('boxMsg',_('Equity requires member.<br />Apply member number first'));
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 
             return $json;
         }
 
-        if (CoreLocal::get('msgrepeat') == 0) {
-            $ref = trim(CoreLocal::get("CashierNo"))."-"
-                .trim(CoreLocal::get("laneno"))."-"
-                .trim(CoreLocal::get("transno"));
-            if (CoreLocal::get("LastEquityReference") != $ref) {
-                CoreLocal::set("equityAmt",$amount);
-                CoreLocal::set("boxMsg",_("<b>Equity Sale</b><br>Insert paperwork"));
-                CoreLocal::set('boxMsgButtons', array(
+        if ($this->session->get('msgrepeat') == 0) {
+            $ref = trim($this->session->get("CashierNo"))."-"
+                .trim($this->session->get("laneno"))."-"
+                .trim($this->session->get("transno"));
+            if ($this->session->get("LastEquityReference") != $ref) {
+                $this->session->set("equityAmt",$amount);
+                $this->session->set("boxMsg",_("<b>Equity Sale</b><br>Insert paperwork"));
+                $this->session->set('boxMsgButtons', array(
                     _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
                     _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
                 ));

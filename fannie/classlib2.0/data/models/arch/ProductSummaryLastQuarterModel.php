@@ -33,6 +33,7 @@ class ProductSummaryLastQuarterModel extends BasicModel
     protected $columns = array(
     'productSummaryLastQuarterID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
+    'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'qtyThisWeek' => array('type'=>'DECIMAL(10,2)'),
     'totalThisWeek' => array('type'=>'MONEY'),
     'qtyLastQuarter' => array('type'=>'DECIMAL(10,2)'),

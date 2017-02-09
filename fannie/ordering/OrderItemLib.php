@@ -265,9 +265,10 @@ class OrderItemLib
     {
         if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
             return $item['special_price'];
-        } else {
-            return $item['normal_price'];
         }
+        $altSale = self::alternateSaleApplies($item);
+
+        return $altSale ? $altSale : $item['normal_price'];
     }
 
     /**
@@ -279,10 +280,11 @@ class OrderItemLib
         if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
             return $item['special_price'];
         } elseif ($item['stocked']) {
-            return self::stockedUnitPrice($item, $is_member);
-        } else {
-            return self::notStockedUnitPrice($item, $is_member);
+            $altSale = self::alternateSaleApplies($item);
+            return $altSale ? $altSale : self::stockedUnitPrice($item, $is_member);
         }
+
+        return self::notStockedUnitPrice($item, $is_member);
     }
 
     public static function getCasePrice($item, $is_member)
@@ -311,9 +313,9 @@ class OrderItemLib
     {
         if ($item['discountable']) {
             return self::markUpOrDown($item, $is_member);
-        } else {
-            return $item['normal_price'];
         }
+
+        return $item['normal_price'];
     }
 
     public static function markUpOrDown($item, $is_member)
@@ -381,6 +383,38 @@ class OrderItemLib
         $eligible = $dbc->getValue($saleP, array('LC' . $like, $item['special_price']));
 
         return $eligible ? true : false;
+    }
+
+    /**
+      Batches may overlap. An item will actively be in the batch with
+      the lowest sale price but may be in an additional batch as well.
+      Further, not all batch types may be special-order-eligible.
+
+      E.g., an item is in two batches:
+      1. DISCONTINUED batch type, $1.79, not SPO eligible
+      2. REGULAR SALE batch type, $1.99, SPO eligible
+
+      The item will be actively in the DISCONINTUED batch and self::saleApplies()
+      will return false since that batch is not SPO eligible. This method
+      however will return 1.99 as an alternate sale price point.
+    */
+    private static function alternateSaleApplies($item)
+    {
+        $dbc = self::dbc();
+        $saleP = $dbc->prepare("
+            SELECT MIN(l.salePrice)
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchId=b.batchID
+                INNER JOIN batchType AS t ON t.batchTypeID=b.batchType
+            WHERE l.upc=?
+                AND t.specialOrderEligible=1
+                AND l.salePrice < ?
+                AND b.startDate <= " . $dbc->curdate() . "
+                AND b.endDate >= " . $dbc->curdate()
+        );
+        $altSale = $dbc->getValue($saleP, array($item['upc'], $item['normal_price']));
+
+        return $altSale ? $altSale : false;
     }
 
     /**
