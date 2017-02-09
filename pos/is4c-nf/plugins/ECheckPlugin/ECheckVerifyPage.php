@@ -95,7 +95,7 @@ class ECheckVerifyPage extends NoInputCorePage
         <div class="centeredDisplay colored">
         <span class="larger">Check Type ($<?php echo sprintf('%.2f', $_REQUEST['amount']); ?>)</span>
         <form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-            <select size="2" name="selectlist" 
+            <select size="3" name="selectlist"
                 id="selectlist" onblur="$('#selectlist').focus();">
             <option selected value="<?php echo $echeck; ?>">Electronic</option>
             <option value="<?php echo $paper; ?>">Paper</option>

@@ -37,7 +37,7 @@ class TenderReport
 */
 static public function printReport($class=false){
     $session = new WrappedStorage();
-    if ($class && !$class_exists($class)) {
+    if ($class && !class_exists($class)) {
         $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\' . $class;
     }
     $contents = $class === false ? self::get($session) : $class::get($session);

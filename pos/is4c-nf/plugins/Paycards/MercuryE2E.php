@@ -395,7 +395,7 @@ class MercuryE2E extends BasicCCModule
                             <br>\"rp\" to reprint slip
                             <br>[void] " . _('to reverse the charge') . "
                             </font>");
-                    if ($this->conf->get('PaycardsSigCapture')) {
+                    if ($this->conf->get('PaycardsSigCapture') != 1) {
                         $json['receipt'] = 'ccSlip';
                     }
                 } else {

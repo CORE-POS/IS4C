@@ -157,7 +157,7 @@ class Parser {
         $parse_chain = array();
         $first = "";
         foreach ($set as $classname) {
-            $instance = new $classname();
+            $instance = new $classname(null);
             if ($instance->isLast()){
                 array_push($parse_chain,$classname);
             } elseif ($instance->isFirst()) {

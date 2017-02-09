@@ -166,6 +166,7 @@ class AjaxParser extends AjaxCallback
 
         if ($this->form->tryGet('repeat')) {
             $this->session->set('msgrepeat', 1);
+            $entered = $this->form->tryGet('reginput');
         } elseif ($this->session->get("msgrepeat") == 1 && $entered != "CL") {
             $entered = $this->session->get("strRemembered");
         }

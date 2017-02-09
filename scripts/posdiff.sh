@@ -8,7 +8,7 @@ fi
 diff -r -b -B --exclude="ini.php" --exclude="*.dll" \
     --exclude="*.log" --exclude="*.exe" \
     --exclude="ports.conf" --exclude="log.xml" \
-    --exclude="TenderReport.php" --exclude="graphics" \
+    --exclude="graphics" \
     --exclude="*.cs" --exclude="*.bmp" \
     --exclude="*~" --exclude="MemcacheStorage*" \
     --exclude="*FilesWrittenAbsolute.txt" --exclude="*.mdb" \
