@@ -45,6 +45,33 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected $class_lib = 'ObfLibV2';
 
+    protected $PLAN_SALES = array(
+        '1,6' => 48125.67,      // Hillside Produce
+        '2,10' => 11037.90,     // Hillside Deli
+        '2,11' => 30002.96,
+        '2,16' => 12231.91,
+        '3,1' => 24806.33,      // Hillside Grocery
+        '3,4' => 61459.93,
+        '3,5' => 23038.55,
+        '3,7' => 98.48,
+        '3,8' => 17579.95,
+        '3,9' => 3313.16,
+        '3,13' => 14085.38,
+        '3,17' => 25413.22,
+        '7,6' => 16406.47,      // Denfeld Produce
+        '8,10' => 4049.92,      // Denfeld Deli
+        '8,11' => 12211.43,
+        '8,16' => 4768.70,
+        '9,1' => 8281.40,       // Denfeld Grocery
+        '9,4' => 24726.33,
+        '9,5' => 9070.20,
+        '9,7' => 45.52,
+        '9,8' => 5975.21,
+        '9,9' => 1310.53,
+        '9,13' => 4589.22,
+        '9,17' => 8823.08,
+    );
+
     public function preprocess()
     {
         return FannieReportPage::preprocess();
@@ -62,7 +89,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());
 
-        $store = FormLib::get('store');
+        $store = FormLib::get('store', 1);
         
         /**
            Timestamps for the start and end of
@@ -72,12 +99,11 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
         list($year, $month) = $this->findYearMonth($start_ts, $end_ts);
 
-        /**
-          Use the entire month from the previous calendar year
-          as the time period for year-over-year comparisons
-        */
-        $start_ly = mktime(0, 0, 0, $month, 1, $year-1);
-        $end_ly = mktime(0, 0, 0, $month, date('t', $start_ly), $year-1);
+        $start_ly = mktime(0, 0, 0, date('n',$start_ts), date('j', $start_ts), $year-1);
+        while (date('N', $start_ly) != 1) {
+            $start_ly = mktime(0,0,0, date('n', $start_ly), date('j', $start_ly)+1, date('Y', $start_ly));
+        }
+        $end_ly = mktime(0, 0, 0, date('n', $start_ly), date('j', $start_ly)+6, date('Y', $start_ly));
 
         $future = $end_ts >= strtotime(date('Y-m-d')) ? true: false;
 
@@ -99,6 +125,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 'end_ts' => $end_ts,
                 'start_ly' => $start_ly,
                 'end_ly' => $end_ly,
+                'averageWeek' => false,
             );
             $this->updateSalesCache($week, array($num_cached, $ly_cached), $dateInfo);
         }
@@ -137,7 +164,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
               Go through sales records for the category
             */
             while ($row = $dbc->fetch_row($salesR)) {
-                $proj = ($row['lastYearSales'] * $row['growthTarget']) + $row['lastYearSales'];
+                $projIndex = $category->obfCategoryID() . ',' . $row['superID'];
+                $proj = $this->PLAN_SALES[$projIndex];
                 $trend1 = $this->calculateTrend($dbc, $category->obfCategoryID(), $row['superID']);
                 $dept_trend += $trend1;
                 $total_sales->trend += $trend1;
@@ -639,7 +667,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         }
 
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
-        $data[] = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly);
+        $data[] = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly, false);
         $data[] = $this->ownershipThisYear($dbc, $end_ts);
 
         return $data;
@@ -668,14 +696,10 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 )
         ";
 
-        $obj = new DateTime($date3);
-        $days = $obj->diff(new DateTime($date4))->days;
-
         $discountP = $dbc->prepare(str_replace('__DLOG__', $dlog, $discountQ));
         $total = $dbc->getValue($discountP, array($date1 . ' 00:00:00', $date2 . ' 23:59:59'));
         $discountP = $dbc->prepare(str_replace('__DLOG__', $dlogLY, $discountQ));
         $totalLY = $dbc->getValue($discountP, array($date3 . ' 00:00:00', $date4 . ' 23:59:59'));
-        $totalLY = 7 * ($totalLY / $days);
 
         return array(
             'Owner Discounts',
