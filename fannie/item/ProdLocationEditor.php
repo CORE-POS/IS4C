@@ -350,9 +350,11 @@ class ProdLocationEditor extends FannieRESTfulPage
                 p.department,
                 pu.description as pudesc,
                 p.brand,
-                d.dept_name
+                d.dept_name,
+                fslv.sections
             from products as p 
                 left join FloorSectionProductMap as pp on pp.upc=p.upc 
+                left join FloorSectionsListView AS fslv ON fslv.upc=p.upc
                 left join productUser as pu on pu.upc=p.upc
                 left join departments as d on d.dept_no=p.department
             WHERE p.upc IN ('.$inClause.')
@@ -367,6 +369,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             $item[$row['upc']]['desc'] = $row['pdesc'];
             $item[$row['upc']]['brand'] = $row['brand'];
             $item[$row['upc']]['dept_name'] = $row['dept_name'];
+            $item[$row['upc']]['curSections'] = $row['sections'];
         }
         if ($dbc->error()) {
             echo '<div class="alert alert-danger">' . $dbc->error() . '</div>'; 
@@ -399,6 +402,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 <th>Description</th>
                 <th>Dept. No.</th>
                 <th>Department</th>
+                <th>Current Location(s)</th>
                 <th>
                     Location 
                     <div class="input-group">
@@ -427,6 +431,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 <td>' . $row['desc'] . '</td>
                 <td>' . $row['dept'] . '</td>
                 <td>' . $row['dept_name'] . '</td>
+                <td>' . $row['curSections'] . '</td>
                 <td><Span class="collapse"> </span>
                     <select class="locationSelect form-control input-sm" name="' . $key . '" value="" />
                         <option value="0">* no location selected *</option>';
