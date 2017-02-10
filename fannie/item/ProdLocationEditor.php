@@ -43,6 +43,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $this->__routes[] = 'get<start>';
         $this->__routes[] = 'get<batch>';
         $this->__routes[] = 'post<batch><save>';
+        $this->__routes[] = 'post<list><save>';
         $this->__routes[] = 'post<upc><save>';
         $this->__routes[] = 'get<start>';
         $this->__routes[] = 'get<searchupc>';
@@ -145,6 +146,43 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         foreach ($item as $upc => $section) {
             $args = array($upc, $section );
+            $prep = $dbc->prepare('
+                INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
+            ');
+            $dbc->execute($prep, $args);    
+        }
+        if (mysql_errno() > 0) {
+            echo mysql_errno() . ": " . mysql_error(). "<br>";
+        } else {
+            $ret .= '<div class="alert alert-success">Update Successful</div>';
+        }        
+        
+        $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
+        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
+        
+        return $ret;
+    }
+    
+    function post_list_save_view()
+    {
+        
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $store_id = $_POST['store_id'];
+        $start = $_GET['start'];
+        $end = $_GET['end'];
+        $ret = '';
+        $item = array();
+        foreach ($_POST as $upc => $section) {
+            $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+            if ($section > 0) $item[$upc] = $section;
+        }
+
+        foreach ($item as $upc => $section) {
+            $prepZ = ("DELETE from FloorSectionProductMap where upc = ?");
+            $dbc->execute($prepZ,$upc);
+            
+            $args = array($upc,$section);
             $prep = $dbc->prepare('
                 INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
             ');
@@ -357,15 +395,30 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '<table class="table">
             <thead>
                 <th>UPC</th>
-                <td>Brand</th>
-                <td>Description</th>
-                <td>Dept. No.</th>
-                <td>Department</th>
-                <td>Location</th>
+                <th>Brand</th>
+                <th>Description</th>
+                <th>Dept. No.</th>
+                <th>Department</th>
+                <th>
+                    Location 
+                    <div class="input-group">
+                        <span class="input-group-addon">Change All</span>
+                            <select class="form-control input-sm" onchange="updateAll(this.value, \'.locationSelect\');">
+                    
+                        ';
+        foreach ($floor_section as $fs_key => $fs_value) {
+            if ($fs_key == $item[$key]['sugDept']) {
+                $ret .= '<option value="' . $fs_key . '" name="' . $key . '" selected>' . $fs_value . '</option>';
+            } else {
+                $ret .= '<option value="' . $fs_key . '" name="' . $key . '">' . $fs_value . '</option>';
+            }
+        }   
+        $ret .= '
+                    </select></div>
+                </th>
             </thead>
             <form method="post">
                 <input type="hidden" name="save" value="1">
-                <input type="hidden" name="batch" value="1">
             ';
         foreach ($item as $key => $row) {
             $ret .= '
@@ -375,7 +428,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 <td>' . $row['dept'] . '</td>
                 <td>' . $row['dept_name'] . '</td>
                 <td><Span class="collapse"> </span>
-                    <select class="form-control input-sm" name="' . $key . '" value="" />
+                    <select class="locationSelect form-control input-sm" name="' . $key . '" value="" />
                         <option value="0">* no location selected *</option>';
                 
                 foreach ($floor_section as $fs_key => $fs_value) {
@@ -386,7 +439,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     }
                 }
                         
-                $ret .= '</tr>';
+                $ret .= '</select></tr>';
         }
             
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
@@ -578,6 +631,39 @@ class ProdLocationEditor extends FannieRESTfulPage
             </div>
         ';
     }
+    
+    private function arrayToOpts($arr, $selected=-999, $id_label=false)
+    {
+        $opts = '';
+        foreach ($arr as $num => $name) {
+            if ($id_label === true) {
+                $name = $num . ' ' . $name;
+            }
+            $opts .= sprintf('<option %s value="%d">%s</option>',
+                                ($num == $selected ? 'selected' : ''),
+                                $num, $name);
+        }
+
+        return $opts;
+    }
+    
+   public function javascript_content()
+   {
+       ob_start();
+       ?>
+function toggleAll(elem, selector) {
+    if (elem.checked) {
+        $(selector).prop('checked', true);
+    } else {
+        $(selector).prop('checked', false);
+    }
+}
+function updateAll(val, selector) {
+    $(selector).val(val);
+}
+       <?php
+       return ob_get_clean();
+   }
 
     public function helpContent()
     {
