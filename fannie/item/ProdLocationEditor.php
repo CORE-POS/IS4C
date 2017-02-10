@@ -301,9 +301,9 @@ class ProdLocationEditor extends FannieRESTfulPage
             $plus = array();
             $chunks = explode("\r\n", $upcs);
             foreach ($chunks as $key => $str) {
-                $plus[] = $str;
-            }
-        }
+				$plus[] = str_pad($str, 13, '0', STR_PAD_LEFT);
+        	}
+		}
         
         list($inClause,$args) = $dbc->safeInClause($plus);
         $qString = 'select 
