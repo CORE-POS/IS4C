@@ -688,7 +688,7 @@ HTML;
                     FROM products AS p
                         LEFT JOIN prodExtra AS x ON p.upc=x.upc
                         LEFT JOIN vendors AS v ON x.distributor=v.vendorName
-                    WHERE (p.default_vendor_id=? OR v.vendorID=?
+                    WHERE (p.default_vendor_id=? OR v.vendorID=?)
                     GROUP BY p.department');
                 $optimizeR = $dbc->execute($optimizeP, array($vID, $vID));
                 $dept_in = '';
