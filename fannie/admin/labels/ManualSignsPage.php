@@ -84,6 +84,7 @@ class ManualSignsPage extends FannieRESTfulPage
             $items[] = array(
                 'upc' => '',
                 'description' => $descriptions[$i],
+                'posDescription' => $descriptions[$i],
                 'brand' => $brands[$i],
                 'normal_price' => $prices[$i],
                 'units' => 1,
