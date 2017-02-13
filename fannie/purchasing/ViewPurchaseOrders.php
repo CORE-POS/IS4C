@@ -445,7 +445,7 @@ HTML;
         } else {
             $sentDate = new DateTime($order->creationDate());
             $today = new DateTime();
-            if ($today->diff($sentDate)->format('%a') <= 30) {
+            if ($today->diff($sentDate)->format('%a') <= 90) {
                 $ret .= <<<HTML
 <a class="btn btn-default btn-sm"
     href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
