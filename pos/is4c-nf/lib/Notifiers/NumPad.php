@@ -36,7 +36,7 @@ class NumPad extends Notifier
     */
     public function draw()
     {
-        if (false && !CoreLocal::get('touchscreen')) {
+        if (!CoreLocal::get('touchscreen')) {
             return '';
         }
 
