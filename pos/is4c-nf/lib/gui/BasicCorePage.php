@@ -121,6 +121,24 @@ class BasicCorePage extends CorePage
         echo "<script type=\"text/javascript\"
             src=\"{$my_url}/js/{$jquery}\"></script>";
         echo '<script type="text/javascript" src="' . $my_url . '/js/errorLog.js"></script>';
+        if ($this->session->get('touchscreen')) {
+            echo '<link rel="stylesheet" type="text/css" href="' . $my_url . 'js/numpad/jquery.numpad.css">';
+            echo '<script type="text/javascript" src="' . $my_url . 'js/numpad/jquery.numpad.js"></script>';
+            $this->addOnloadCommand("\$('input.touchtype').numpad({
+                onKeypadClose: function(ev, target) {
+                    $(target).focus();
+                    if ($(target).hasClass('submitable')) {
+                        $(target).closest('form').submit();
+                    }
+                }
+            });\n");
+        } else {
+            echo '<style type="text/css">
+            .touch-optional {
+                display:none;
+            }
+            </style>';
+        }
         $this->head_content();
         echo "</head>";
         echo '<body class="'.$this->body_class.'">';

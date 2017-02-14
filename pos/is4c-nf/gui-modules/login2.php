@@ -129,7 +129,7 @@ class login2 extends BasicCorePage
                 <form id="formlocal" name="form" method="post" autocomplete="off" 
                     action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
                 <input type="password" name="userPassword" size="20" tabindex="0" 
-                    onblur="$('#userPassword').focus();" id="userPassword" >
+                    onblur="$('#userPassword').focus();" id="userPassword" class="touchtype submitable" >
                 <input type="hidden" name="reginput" id="reginput" value="" />
                 <p>
                 <?php echo $this->msg ?>
