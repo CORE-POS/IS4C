@@ -105,6 +105,7 @@ class AutoLoader
         'COREPOS\pos\lib\Scanning\DiscountType' => '/Scanning/DiscountTypes',
         'COREPOS\pos\lib\FooterBoxes\FooterBox' => '/FooterBoxes',
         'COREPOS\pos\lib\Kickers\Kicker' => '/Kickers',
+        'COREPOS\pos\lib\Notifier' => '/Notifiers',
         'COREPOS\\pos\\parser\\Parser' => '/../parser/parse',
         'COREPOS\\pos\\parser\\PreParser' => '/../parser/preparse',
         'COREPOS\pos\lib\Scanning\PriceMethod' => '/Scanning/PriceMethods',
