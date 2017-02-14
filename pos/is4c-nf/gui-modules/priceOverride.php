@@ -52,7 +52,7 @@ class PriceOverride extends NoInputCorePage {
         $this->scale = $row['scale'];
 
         try {
-            $input = strtoupper($this->form->input);
+            $input = strtoupper($this->form->reginput);
 
             if ($input == "CL"){
                 if ($this->price == "$0.00"){
