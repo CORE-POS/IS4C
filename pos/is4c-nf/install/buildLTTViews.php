@@ -185,7 +185,6 @@ $errors = \COREPOS\pos\install\db\Creator::dbStructureModify($db,'rp_subtotals',
 
 return $errors;
 }
-*/
 
 function buildLTTViewsGeneric($db, $type, $errors=array())
 {
