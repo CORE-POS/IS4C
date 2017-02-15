@@ -20,6 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /** 
    @class MoreThanQttyPM
    
@@ -32,12 +39,12 @@
 
 class MoreThanQttyPM extends PriceMethod {
 
-    function addItem($row,$quantity,$priceObj){
-        global $CORE_LOCAL;
+    public function addItem(array $row, $quantity, $priceObj)
+    {
         if ($quantity == 0) return false;
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = $this->session->get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
@@ -82,7 +89,7 @@ class MoreThanQttyPM extends PriceMethod {
         $trans_qty = 0;
         $undisc_ttl = 0;
         if ($num_rowst > 0){
-            $rowt = $dbt->fetch_array($resultt);
+            $rowt = $dbt->fetchRow($resultt);
             $trans_qty = floor($rowt['mmqtty']);
             $undisc_ttl = $rowt['unDiscountedTotal'];
         }
@@ -114,6 +121,7 @@ class MoreThanQttyPM extends PriceMethod {
             'upc' => $row['upc'],
             'description' => $row['description'],
             'trans_type' => 'I',
+            'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
             'department' => $row['department'],
             'quantity' => $quantity,
             'unitPrice' => $pricing['unitPrice'],
@@ -139,4 +147,3 @@ class MoreThanQttyPM extends PriceMethod {
     }
 }
 
-?>

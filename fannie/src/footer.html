@@ -11,8 +11,8 @@
 		</div>
 		<div style="float:left; margin-right: 50px;">
 <?php
-if($FANNIE_AUTH_ENABLED){
-	if (!function_exists("checkLogin")) include($FANNIE_ROOT.'auth/login.php');
+if(isset($FANNIE_AUTH_ENABLED) && $FANNIE_AUTH_ENABLED){
+	if (!function_exists("checkLogin")) include(dirname(__FILE__) . '/../auth/login.php');
 	$name = checkLogin();
 	if (!$name){
 		echo "You are not logged in.";
@@ -38,5 +38,3 @@ if (file_exists($version_file) && is_readable($version_file)) {
 </tr>
 </table>
 </div>
-</body>
-</html>

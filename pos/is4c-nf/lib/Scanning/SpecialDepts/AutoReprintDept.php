@@ -21,14 +21,17 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialDepts;
+use COREPOS\pos\lib\Scanning\SpecialDept;
+
 class AutoReprintDept extends SpecialDept 
 {
 
     public $help_summary = 'Print two receipts when sales in this department occur';
     
-    public function handle($deptID,$amount,$json){
-        global $CORE_LOCAL;
-        $CORE_LOCAL->set('autoReprint',1);
+    public function handle($deptID,$amount,$json)
+    {
+        $this->session->set('autoReprint',1);
 
         return $json;
     }

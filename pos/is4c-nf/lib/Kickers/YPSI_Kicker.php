@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
+
 /**
   @class YPSI_Kicker
   Opens drawer for cash, debit, CC, EBT
@@ -28,47 +31,20 @@
 class YPSI_Kicker extends Kicker 
 {
 
-    public function doKick()
+    public function doKick($trans_num)
     {
-        global $CORE_LOCAL;
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         $query = "select trans_id from localtemptrans where 
             (trans_subtype = 'CA' and total <> 0)
-			OR (trans_subtype IN('DC','CC','EF'))";
+            OR (trans_subtype IN('DC','CC','EF'))";
 
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $numRows = $dbc->numRows($result);
 
-        $ret = ($num_rows > 0) ? true : false;
+        $ret = ($numRows > 0) ? true : false;
 
-        // use session to override default behavior
-        // based on specific cashier actions rather
-        // than transaction state
-        $override = $CORE_LOCAL->get('kickOverride');
-        $CORE_LOCAL->set('kickOverride',false);
-        if ($override === true) $ret = true;
-
-        return $ret;
-    }
-
-    public function kickOnSignIn() 
-	{
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
-            return false;
-        }
-
-        return true;
-    }
-    public function kickOnSignOut()
-    {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
-            return false;
-        }
-
-        return true;
+        return ($ret || $this->sessionOverride());
     }
 }
 

@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\DisplayLib;
+
 /**
   @class DisabledTender
   Tender module for disabling tenders
@@ -32,7 +35,10 @@ class DisabledTender extends TenderModule
 {
     public function errorCheck()
     {
-        return DisplayLib::xboxMsg($this->name_string." "._("tender disabled"));
+        return DisplayLib::xboxMsg(
+            $this->name_string." "._("tender disabled"),
+            DisplayLib::standardClearButton()
+        );
     }
 }
 

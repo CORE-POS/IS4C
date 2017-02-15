@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,119 +41,5 @@ class GumLoanValidTermsModel extends BasicModel
     'termInMonths' => array('type'=>'INT', 'primary_key'=>true),
     'totalPrincipalLimit' => array('type'=>'MONEY', 'default'=>0),
     );
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function gumLoanValidTermID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["gumLoanValidTermID"])) {
-                return $this->instance["gumLoanValidTermID"];
-            } else if (isset($this->columns["gumLoanValidTermID"]["default"])) {
-                return $this->columns["gumLoanValidTermID"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'gumLoanValidTermID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["gumLoanValidTermID"]) || $this->instance["gumLoanValidTermID"] != func_get_args(0)) {
-                if (!isset($this->columns["gumLoanValidTermID"]["ignore_updates"]) || $this->columns["gumLoanValidTermID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["gumLoanValidTermID"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function termInMonths()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["termInMonths"])) {
-                return $this->instance["termInMonths"];
-            } else if (isset($this->columns["termInMonths"]["default"])) {
-                return $this->columns["termInMonths"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'termInMonths',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["termInMonths"]) || $this->instance["termInMonths"] != func_get_args(0)) {
-                if (!isset($this->columns["termInMonths"]["ignore_updates"]) || $this->columns["termInMonths"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["termInMonths"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function totalPrincipalLimit()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["totalPrincipalLimit"])) {
-                return $this->instance["totalPrincipalLimit"];
-            } else if (isset($this->columns["totalPrincipalLimit"]["default"])) {
-                return $this->columns["totalPrincipalLimit"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'totalPrincipalLimit',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["totalPrincipalLimit"]) || $this->instance["totalPrincipalLimit"] != func_get_args(0)) {
-                if (!isset($this->columns["totalPrincipalLimit"]["ignore_updates"]) || $this->columns["totalPrincipalLimit"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["totalPrincipalLimit"] = func_get_arg(0);
-        }
-        return $this;
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

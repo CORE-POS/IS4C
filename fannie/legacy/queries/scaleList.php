@@ -36,8 +36,8 @@ if ($orderby == 'itemdesc' and $sort == 'Asc'){
 // commented out one is for paging
 //$query = "select top $perpage plu, itemdesc from scaleItems order by $orderby $sort";
 $query = "select plu,itemdesc from 
-	scaleItems 
-	order by ";
+    scaleItems 
+    order by ";
 if (isset($_GET['orderby']) && $_GET['orderby'] == 'itemdesc')
     $query .= 'itemdesc';
 else
@@ -80,4 +80,3 @@ echo "<a href=scaleSynch.php?asnew=yes>Send all items as new</a>";
 // wrap up html
 echo "</body></html>";
 
-?>

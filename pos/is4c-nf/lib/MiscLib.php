@@ -20,38 +20,42 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
+use \CoreLocal;
  
 /**
   @clss MiscLib
   Generic functions
 */
-class MiscLib extends LibraryClass 
+class MiscLib 
 {
 
 /**
   Path detection. Find the relative URL for 
   POS root.
-  @param $check_file file to search for
+  @param $checkFile file to search for
   @return A relative URL with trailing slash
 */
-static public function baseURL($check_file="css/pos.css")
+static public function baseURL($checkFile="css/pos.css")
 {
-	$ret = "";
-	$cutoff = 0;
-	while($cutoff < 20 && !file_exists($ret.$check_file)) {
-		$ret .= "../";
-		$cutoff++;
-	}
-	if ($cutoff >= 20) {
-        return false;
-	} else {
-        return $ret;	
+    $ret = "";
+    $cutoff = 0;
+    while($cutoff < 20 && !file_exists($ret.$checkFile)) {
+        $ret .= "../";
+        $cutoff++;
     }
+    if ($cutoff >= 20) {
+        return false;
+    }
+
+    return $ret;    
 }
 
-static public function base_url($check_file="css/pos.css")
+static public function base_url($checkFile="css/pos.css")
 {
-    return self::baseURL($check_file);
+    return self::baseURL($checkFile);
 }
 
 /**
@@ -69,13 +73,13 @@ static public function nullwrap($num, $char=false)
 
     if ($char && ($num === '' || $num === null)) {
         return '';
-	} else if (!$num) {
-		 return 0;
-	} else if (!is_numeric($num) && strlen($num) < 1) {
-		return ' ';
-	} else {
-		return $num;
-	}
+    } elseif (!$num) {
+         return 0;
+    } elseif (!is_numeric($num) && strlen($num) < 1) {
+        return ' ';
+    }
+
+    return $num;
 }
 
 /**
@@ -89,7 +93,7 @@ static public function truncate2($num)
         $num = 0;
     }
 
-	return number_format($num, 2);
+    return number_format($num, 2);
 }
 
 /**
@@ -106,17 +110,17 @@ static public function truncate2($num)
 */
 static public function pingport($host, $dbms)
 {
-	$port = strstr($dbms,'mysql') ? 3306 : 1433;	
-	if (strstr($host,":")) {
-		list($host,$port) = explode(":",$host);
+    $port = strstr(strtolower($dbms),'mysql') ? 3306 : 1433;    
+    if (strstr($host,":")) {
+        list($host,$port) = explode(":",$host);
     }
-	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-	socket_set_block($sock);
-	$test = socket_connect($sock,$host,$port);
-	socket_close($sock);
+    $sock = @stream_socket_client('tcp://' . $host . ':' . $port, $errno, $error, 1);
+    if ($sock) {
+        fclose($sock);
+        return 1;
+    }
 
-	return ($test ? 1 : 0);
+    return 0;
 }
 
 /**
@@ -127,12 +131,12 @@ static public function pingport($host, $dbms)
 */
 static public function win32() 
 {
-	$winos = 0;
-	if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
+    $winos = 0;
+    if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
         $winos = 1;
     }
 
-	return $winos;
+    return $winos;
 }
 
 /**
@@ -140,41 +144,12 @@ static public function win32()
   @return An ScaleDriverWrapper object
   
   The driver is chosen via "scaleDriver"
-  in $CORE_LOCAL. If the object cannot be 
+  in session. If the object cannot be 
   found this returns zero
 */
 static public function scaleObject()
 {
-	global $CORE_LOCAL;
-	$scaleDriver = $CORE_LOCAL->get("scaleDriver");
-	$sd = 0;
-	if ($scaleDriver != ""){
-		$sd = new $scaleDriver();
-	}
-
-	return $sd;
-}
-
-/**
-  Get the signature capture wrapper object
-  @return An ScaleDriverWrapper object
-  
-  The driver is chosen via "termDriver"
-  in $CORE_LOCAL. If the object cannot be 
-  found this returns zero.
-
-  Signature capture support is very alpha.
-*/
-static public function sigTermObject()
-{
-	global $CORE_LOCAL;
-	$termDriver = $CORE_LOCAL->get("termDriver");
-	$st = 0;
-	if ($termDriver != "") {
-		$st = new $termDriver();
-	}
-
-	return $st;
+    return ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
 }
 
 /**
@@ -182,10 +157,9 @@ static public function sigTermObject()
 */
 static public function goodBeep() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("goodBeep");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->writeToScale("goodBeep");
     }
 }
 
@@ -194,10 +168,9 @@ static public function goodBeep()
 */
 static public function rePoll() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("rePoll");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->writeToScale("rePoll");
     }
 }
 
@@ -206,10 +179,9 @@ static public function rePoll()
 */
 static public function errorBeep() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("errorBeep");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->writeToScale("errorBeep");
     }
 }
 
@@ -218,10 +190,9 @@ static public function errorBeep()
 */
 static public function twoPairs() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("twoPairs");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->writeToScale("twoPairs");
     }
 }
 
@@ -230,7 +201,7 @@ static public function twoPairs()
   to determine all available IP addresses
   @return [array] of [string] IP addresses
 */
-function getAllIPs()
+static public function getAllIPs()
 {
     /**
       First: use OS utilities to check IP(s)
@@ -240,52 +211,10 @@ function getAllIPs()
     $ret = array();
     if (strstr(strtoupper(PHP_OS), 'WIN')) {
         // windows
-        $cmd = "ipconfig.exe";
-        exec($cmd, $output_lines, $retval);
-        foreach ($output_lines as $line) {
-            if (preg_match('/IP Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
-                $ret[] = $matches[1];
-            } elseif (preg_match('/IPv4 Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
-                $ret[] = $matches[1];
-            }
-        }
+        $ret = self::getWindowsIPs();
     } else {
         // unix-y system
-        $cmd = '/sbin/ifconfig';
-        $count = 0;
-        // try to locate ifconfig
-        while (!file_exists($cmd)) {
-            switch ($count) {
-                case 0:
-                    $cmd = '/usr/sbin/ifconfig';
-                    break;
-                case 1:
-                    $cmd = '/usr/bin/ifconfig';
-                    break;
-                case 2:
-                    $cmd = '/bin/ifconfig';
-                    break;
-                case 3:
-                    $cmd = '/usr/local/sbin/ifconfig';
-                    break;
-                case 4:
-                    $cmd = '/usr/local/bin/ifconfig';
-                    break;
-            }
-            $count++;
-            // give up; hope $PATH is correct
-            if ($count <= 5) {
-                $cmd = 'ifconfig';
-                break;
-            }
-        }
-
-        exec($cmd, $output_lines, $retval);
-        foreach ($output_lines as $line) {
-            if (preg_match('/inet addr:([\d\.]+?) /', $line, $matches)) {
-                $ret[] = $matches[1];
-            }
-        }
+        $ret = self::getLinuxIPs();
     }
 
     /**
@@ -300,25 +229,117 @@ function getAllIPs()
         }
     }
     
+    $ret = self::globalIPs($ret);
+
+    return $ret;
+}
+
+static private function globalIPs(array $ret)
+{
     /**
       $_SERVER may simply contain an IP address
     */
-    if (isset($_SERVER['SERVER_ADDR']) && !in_array($_SERVER['SERVER_ADDR'], $ret)) {
-        $ret[] = $_SERVER['SERVER_ADDR'];
+    $addr = filter_input(INPUT_SERVER, 'SERVER_ADDR');
+    if ($addr !== null && !in_array($addr, $ret)) {
+        $ret[] = $addr;
     }
 
     /**
       $_SERVER may contain a host name that can
       be resolved to an IP address
     */
-    if (isset($_SERVER['SERVER_NAME'])) {
-        $resolved = gethostbyname($_SERVER['SERVER_NAME']);
+    $sname = filter_input(INPUT_SERVER, 'SERVER_NAME');
+    if ($sname !== null) {
+        $resolved = gethostbyname($sname);
         if (preg_match('/^[\d\.+]$/', $resolved) && !in_array($resolved, $ret)) {
             $ret[] = $resolved;
         }
     }
 
     return $ret;
+}
+
+static private function getWindowsIPs()
+{
+    $cmd = "ipconfig.exe";
+    exec($cmd, $outputLines);
+    $ret = array();
+    foreach ($outputLines as $line) {
+        if (preg_match('/IP Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+            $ret[] = $matches[1];
+        } elseif (preg_match('/IPv4 Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+            $ret[] = $matches[1];
+        }
+    }
+
+    return $ret;
+}
+
+static private function getLinuxIPs()
+{
+    $bins = array('/sbin/', '/usr/sbin/', '/usr/bin/', '/bin/', '/usr/local/sbin/', '/usr/local/bin/');
+    $bins = array_filter($bins, function($i){ return file_exists($i . 'ifconfig'); });
+    if (count($bins) > 0) {
+        $cmd = array_shift($bins) . 'ifconfig';
+    } else {
+        // give up; hope $PATH is correct
+        $cmd = 'ifconfig';
+    }
+
+    exec($cmd, $outputLines);
+    $ret = array();
+    foreach ($outputLines as $line) {
+        if (preg_match('/inet addr:([\d\.]+?) /', $line, $matches)) {
+            $ret[] = $matches[1];
+        }
+    }
+
+    return $ret;
+}
+
+static public function getNumbers($string)
+{
+    if (empty($string)) {
+        return array(-999999);
+    } elseif (is_array($string)) {
+        $ret = array();
+        foreach ($string as $s) {
+            $ret[] = (int)$s;
+        }
+        return $ret;
+    }
+    $pieces = preg_split('/[^\d]+/', $string, 0, PREG_SPLIT_NO_EMPTY);
+    for ($i=0; $i<count($pieces); $i++) {
+        $pieces[$i] = (int)$pieces[$i];
+    }
+
+    return $pieces;
+}
+
+public static function centStrToDouble($str)
+{
+    if (strlen($str) == 0) {
+        return 0.0;
+    }
+    /* when processing as strings, weird things happen
+     * in excess of 1000, so use floating point */
+    $str .= ""; // force type to string
+    $mult = 1;
+    if ($str[0] == "-") {
+        $mult = -1;
+        $str = substr($str,1,strlen($str));
+    }
+    $dollars = (int)substr($str,0,strlen($str)-2);
+    $cents = ((int)substr($str,-2))/100.0;
+    $ret = (double)($dollars+round($cents,2));
+    $ret *= $mult;
+
+    return $ret;
+}
+
+public static function jqueryFile()
+{
+    return self::win32() ? 'jquery-1.8.3.min.js' : 'jquery.js';
 }
 
 } // end class MiscLib

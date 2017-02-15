@@ -21,18 +21,27 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+
 /**
   @class TenderReport
   Generate a tender report
 */
-class TenderReport extends LibraryClass {
+class TenderReport 
+{
 
 /**
   Write tender report to the printer
 */
-static public function printReport(){
-	$contents = self::get();
-	ReceiptLib::writeLine($contents);
+static public function printReport($class=false){
+    $session = new WrappedStorage();
+    if ($class && !class_exists($class)) {
+        $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\' . $class;
+    }
+    $contents = $class === false ? self::get($session) : $class::get($session);
+    ReceiptLib::writeLine($contents);
 }
 
 /** 
@@ -45,18 +54,51 @@ static public function printReport(){
  setting "TenderReportMod". If nothing has been selected,
  the "DefaultTenderReport" module is used.
  */
-static public function get(){
-	global $CORE_LOCAL;
-	$trClass = $CORE_LOCAL->get("TenderReportMod");
-	if ($trClass == '') $trClass = 'DefaultTenderReport';
-	return $trClass::get();
+static public function get($session)
+{
+    $trClass = $session->get("TenderReportMod");
+    if ($trClass == '' || !class_exists($trClass)) {
+        $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\DefaultTenderReport';
+    }
+    return $trClass::get($session);
 }
 
 static public function timeStamp($time) {
 
-	return strftime("%I:%M %p", strtotime($time));
+    return strftime("%I:%M %p", strtotime($time));
+}
+
+static protected function standardLine($tdate, $lane, $trans, $amt)
+{
+    $timeStamp = self::timeStamp($tdate);
+    $blank = self::standardBlank();
+    $line = "  ".substr($timeStamp . $blank, 0, 13)
+        .substr($lane . $blank, 0, 9)
+        .substr($trans . $blank, 0, 8)
+        .substr($blank . number_format("0", 2), -10)
+        .substr($blank . number_format($amt, 2), -14)
+        ."\n";
+
+    return $line;
+}
+
+static protected function standardBlank()
+{
+    $blank = "             ";
+    return $blank;
+}
+
+static protected function standardFieldNames()
+{
+    $blank = self::standardBlank();
+    $fieldNames = "  ".substr("Time".$blank, 0, 13)
+            .substr("Lane".$blank, 0, 9)
+            .substr("Trans #".$blank, 0, 12)
+            .substr("Change".$blank, 0, 14)
+            .substr("Amount".$blank, 0, 14)."\n";
+
+    return $fieldNames;
 }
 
 }
 
-?>

@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,13 +25,14 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class AdTextImportPage extends FannieUploadPage 
+class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Ad Text";
     protected $header = "Import Product Ad Text";
 
     public $description = '[Ad Text Import] uploads long brand names and product descriptions
     for use in signage. The default format is set for Co+op Deals signage spreadsheets.';
+    public $themed = true;
 
     /**
       Default based on Co+op Deals Signage Data spreadsheets
@@ -39,49 +40,36 @@ class AdTextImportPage extends FannieUploadPage
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC*',
             'default' => 5,
             'required' => true
         ),
         'brand' => array(
-            'name' => 'brand',
             'display_name' => 'Brand',
             'default' => 0,
-            'required' => false
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Description',
             'default' => 1,
-            'required' => false
         ),
         'size' => array(
-            'name' => 'size',
             'display_name' => 'Unit Size',
             'default' => 3,
-            'required' => false
         ),
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'Vendor SKU',
             'default' => 4,
-            'required' => false
         ),
     );
 
-    public function process_file($linedata)
+    private $stats = array('total'=>0, 'here'=>0);
+
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upc_index = $this->get_column_index('upc');
-        $desc_index = $this->get_column_index('desc');
-        $size_index = $this->get_column_index('size');
-        $brand_index = $this->get_column_index('brand');
-        $sku_index = $this->get_column_index('sku');
-
-        if ($desc_index === false && $brand_index === false) {
+        if ($indexes['desc'] === false && $indexes['brand'] === false) {
             $this->error_details = 'Neither brand nor description provided; nothing to import!';
 
             return false;
@@ -89,8 +77,8 @@ class AdTextImportPage extends FannieUploadPage
 
         $ret = true;
 
-        $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
-        $normalize = (FormLib::get_form_value('norm')=='yes') ? true : false;
+        $checks = (FormLib::get('checks')=='yes') ? true : false;
+        $normalize = (FormLib::get('norm')=='yes') ? true : false;
 
         $model = new ProductUserModel($dbc);
 
@@ -103,16 +91,18 @@ class AdTextImportPage extends FannieUploadPage
         $skuP = $dbc->prepare('
             SELECT p.upc
             FROM vendorItems AS v
-                INNER JOIN products AS p ON v.upc=p.upc
+                INNER JOIN products AS p ON v.upc=p.upc AND p.default_vendor_id=v.vendorID
             WHERE v.sku = ?
         ');
 
         foreach ($linedata as $line) {
-            $upc = $line[$upc_index];
+            $upc = $line[$indexes['upc']];
             // upc cleanup
             $upc = str_replace(" ","",$upc);
             $upc = str_replace("-","",$upc);
             if (!is_numeric($upc)) continue; // skip header(s) or blank rows
+
+            $this->stats['total']++;
 
             if ($checks) {
                 $upc = substr($upc,0,strlen($upc)-1);
@@ -121,8 +111,8 @@ class AdTextImportPage extends FannieUploadPage
 
             $verifyR = $dbc->execute($verifyP, array($upc));
             if ($dbc->num_rows($verifyR) == 0) {
-                if ($sku_index !== false) {
-                    $skuR = $dbc->execute($skuP, array($line[$sku_index]));
+                if ($indexes['sku'] !== false) {
+                    $skuR = $dbc->execute($skuP, array($line[$indexes['sku']]));
                     if ($dbc->num_rows($skuR) == 0) {
                         // no UPC match, no vendor sku match
                         continue;
@@ -138,25 +128,26 @@ class AdTextImportPage extends FannieUploadPage
 
             $model->reset();
             $model->upc($upc);
+            $model->load();
             $changed = false;
-            if ($brand_index !== false && !empty($line[$brand_index])) {
-                $brand = $line[$brand_index];
+            if ($model->brand() == '' && $indexes['brand'] !== false && !empty($line[$indexes['brand']])) {
+                $brand = $line[$indexes['brand']];
                 if ($normalize) {
                     $brand = ucwords(strtolower($brand));
                 }
                 $model->brand($brand);
                 $changed = true;
             }
-            if ($desc_index !== false && !empty($line[$desc_index])) {
-                $desc = $line[$desc_index];
+            if ($model->description() == '' && $indexes['desc'] !== false && !empty($line[$indexes['desc']])) {
+                $desc = $line[$indexes['desc']];
                 if ($normalize) {
                     $desc = ucwords(strtolower($desc));
                 }
                 $model->description($desc);
                 $changed = true;
             }
-            if ($size_index !== false && !empty($line[$size_index])) {
-                $size = $line[$size_index];
+            if ($model->sizing() == '' && $indexes['size'] !== false && !empty($line[$indexes['size']])) {
+                $size = $line[$indexes['size']];
                 $model->sizing($size);
                 $changed = true;
             }
@@ -165,6 +156,7 @@ class AdTextImportPage extends FannieUploadPage
             // but are blank for the given row. No need to update.
             if ($changed) {
                 $model->save();
+                $this->stats['here']++;
             }
         }
 
@@ -173,12 +165,12 @@ class AdTextImportPage extends FannieUploadPage
 
     public function form_content()
     {
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing product UPCs, descriptions and/or brands,
         and optionally vendor SKU numbers
         <br />A preview helps you to choose and map columns to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div>';
     }
 
     public function preview_content()
@@ -193,10 +185,35 @@ class AdTextImportPage extends FannieUploadPage
 
     public function results_content()
     {
-        return 'Import completed successfully' 
+        return '<div class="alert alert-success">
+            Import completed successfully<br />'
+            . $this->stats['total'] . ' items examined<br />'
+            . $this->stats['here'] . ' items updated<br />'
+            . '</div>'
             . '<hr />' 
             . $this->form_content()
             . $this->basicForm();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Import alternate brands and descriptions for products.
+            These are typically more verbose versions. Often the full 
+            name of an item will not fit well on a receipt but it\'s still
+            useful to have the full name in the system for things like 
+            sale signs.</p>
+            <p>The default column layout matches NCGA Co+op Deal sign data
+            spreadsheets.</p>'
+            . parent::helpContent();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->stats = array('total'=>0, 'here'=>0);
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array('4011', 'Nature', 'Bananas', 'per LB', '4011');
+        $indexes = array('upc'=>0, 'brand'=>1, 'desc'=>2, 'size'=>3, 'sku'=>4);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 

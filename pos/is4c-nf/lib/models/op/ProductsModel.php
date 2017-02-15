@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 class ProductsModel extends BasicModel 
 {
 
@@ -41,6 +44,7 @@ class ProductsModel extends BasicModel
     'specialpricemethod'=>array('type'=>'SMALLINT'),
     'specialgroupprice'=>array('type'=>'MONEY'),
     'specialquantity'=>array('type'=>'SMALLINT'),
+    'special_limit'=>array('type'=>'TINYINT'),
     'start_date'=>array('type'=>'DATETIME'),
     'end_date'=>array('type'=>'DATETIME'),
     'department'=>array('type'=>'SMALLINT','index'=>True),
@@ -51,7 +55,7 @@ class ProductsModel extends BasicModel
     'scaleprice'=>array('type'=>'MONEY'),
     'mixmatchcode'=>array('type'=>'VARCHAR(13)'),
     'modified'=>array('type'=>'DATETIME'),
-    'advertised'=>array('type'=>'TINYINT'),
+    'batchID'=>array('type'=>'TINYINT', 'replaces'=>'advertised'),
     'tareweight'=>array('type'=>'DOUBLE'),
     'discount'=>array('type'=>'SMALLINT'),
     'discounttype'=>array('type'=>'TINYINT'),
@@ -60,7 +64,9 @@ class ProductsModel extends BasicModel
     'wicable'=>array('type'=>'SMALLINT'),
     'qttyEnforced'=>array('type'=>'TINYINT'),
     'idEnforced'=>array('type'=>'TINYINT'),
-    'cost'=>array('type'=>'MONEY'),
+    'cost'=>array('type'=>'MONEY', 'default'=>0),
+    'special_cost'=>array('type'=>'MONEY', 'default'=>0),
+    'received_cost'=>array('type'=>'MONEY', 'default'=>0),
     'inUse'=>array('type'=>'TINYINT'),
     'numflag'=>array('type'=>'INT','default'=>0),
     'subdept'=>array('type'=>'SMALLINT'),
@@ -69,627 +75,144 @@ class ProductsModel extends BasicModel
     'store_id'=>array('type'=>'SMALLINT','default'=>0),
     'default_vendor_id'=>array('type'=>'INT','default'=>0),
     'current_origin_id'=>array('type'=>'INT','default'=>0),
-    'id'=>array('type'=>'INT','default'=>0,'primary_key'=>True,'increment'=>True)
+    'auto_par'=>array('type'=>'DOUBLE','default'=>0),
+    'price_rule_id'=>array('type'=>'INT', 'default'=>0),
+    'last_sold'=>array('type'=>'DATETIME'),
+    'id'=>array('type'=>'INT','primary_key'=>True,'increment'=>True)
     );
 
     protected $unique = array('upc');
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function upc()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["upc"])) {
-                return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
-                return $this->columns["upc"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["upc"] = func_get_arg(0);
-        }
-    }
+        return '
+Use:
+This table lists items in the system.
 
-    public function description()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["description"])) {
-                return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
-                return $this->columns["description"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["description"] = func_get_arg(0);
-        }
-    }
+upc is how items are identified. Regardless of
+whether it\'s an integer or a varchar, it should
+always have length 13. Whether or not to include
+check digits is up to the individual store.
 
-    public function brand()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["brand"])) {
-                return $this->instance["brand"];
-            } elseif(isset($this->columns["brand"]["default"])) {
-                return $this->columns["brand"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["brand"] = func_get_arg(0);
-        }
-    }
+id provides a unique row identifier, but upc
+should probably be unique too. If not, you\'ll have
+to add code to either let the cashier choose which
+matching record or to limit which records are
+pushed to the registers.
 
-    public function formatted_name()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["formatted_name"])) {
-                return $this->instance["formatted_name"];
-            } elseif(isset($this->columns["formatted_name"]["default"])) {
-                return $this->columns["formatted_name"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["formatted_name"] = func_get_arg(0);
-        }
-    }
+description is used for screen display, reporting,
+and receipts. formatted_name is an alternative that
+will be used instead of description if it has a
+non-NULL, non-empty value. brand and description are
+intended to be distinct fields for use in things
+like shelf tags and signage. formatted_name can
+be used to combine these two fields or otherwise
+create a standardized screen/receipt description
+containing extra information. 
 
-    public function normal_price()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["normal_price"])) {
-                return $this->instance["normal_price"];
-            } elseif(isset($this->columns["normal_price"]["default"])) {
-                return $this->columns["normal_price"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["normal_price"] = func_get_arg(0);
-        }
-    }
+Pricing:
+When an item has pricemethod 0, the price is
+simply normal_price. If pricemethod is greater than
+0, groupprice and quantity are used to calculate
+the price. There is variance here by implementation,
+but generally pricemethod 1 or 2 will yield the
+most obvious grouped pricing. Example: buy one, get
+the second 50% off
+    normal_price => 1.00
+    pricemethod => 1 (or maybe 2)
+    groupprice => 1.50
+    quantity => 2
+If discounttype is greater than zero, the special*
+columns get used instead but otherwise behavior
+should be similar.
 
-    public function pricemethod()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["pricemethod"])) {
-                return $this->instance["pricemethod"];
-            } elseif(isset($this->columns["pricemethod"]["default"])) {
-                return $this->columns["pricemethod"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["pricemethod"] = func_get_arg(0);
-        }
-    }
+start_date and end_date indicate the start and end
+of a sale. The current register code does not check
+these to validate sales.
 
-    public function groupprice()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["groupprice"])) {
-                return $this->instance["groupprice"];
-            } elseif(isset($this->columns["groupprice"]["default"])) {
-                return $this->columns["groupprice"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["groupprice"] = func_get_arg(0);
-        }
-    }
+department and subdept are an item\'s department
+and subdepartment settings.
 
-    public function quantity()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["quantity"])) {
-                return $this->instance["quantity"];
-            } elseif(isset($this->columns["quantity"]["default"])) {
-                return $this->columns["quantity"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["quantity"] = func_get_arg(0);
-        }
-    }
+tax indicates if an item is taxable and at what rate
 
-    public function special_price()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["special_price"])) {
-                return $this->instance["special_price"];
-            } elseif(isset($this->columns["special_price"]["default"])) {
-                return $this->columns["special_price"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["special_price"] = func_get_arg(0);
-        }
-    }
+foodstamp indicates whether an item can be purchased
+using foodstamps
 
-    public function specialpricemethod()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["specialpricemethod"])) {
-                return $this->instance["specialpricemethod"];
-            } elseif(isset($this->columns["specialpricemethod"]["default"])) {
-                return $this->columns["specialpricemethod"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["specialpricemethod"] = func_get_arg(0);
-        }
-    }
+scale indicates whether an item should be sold by weight
 
-    public function specialgroupprice()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["specialgroupprice"])) {
-                return $this->instance["specialgroupprice"];
-            } elseif(isset($this->columns["specialgroupprice"]["default"])) {
-                return $this->columns["specialgroupprice"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["specialgroupprice"] = func_get_arg(0);
-        }
-    }
+scaleprice indicates what type of random-weight barcodes
+are used. Value zero means UPC-A where the last 4 digits
+contains price with max value $99.99. Value one means
+EAN-13 where the last 5 digits contain price with
+max value $999.99.
 
-    public function specialquantity()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["specialquantity"])) {
-                return $this->instance["specialquantity"];
-            } elseif(isset($this->columns["specialquantity"]["default"])) {
-                return $this->columns["specialquantity"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["specialquantity"] = func_get_arg(0);
-        }
-    }
+mixmatchcode relates to pricing when pricemethod is
+greater than zero. Items with the same mixmatchcode
+are considred equivalent when determining whether the
+customer has reached the required quantity.
 
-    public function start_date()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["start_date"])) {
-                return $this->instance["start_date"];
-            } elseif(isset($this->columns["start_date"]["default"])) {
-                return $this->columns["start_date"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["start_date"] = func_get_arg(0);
-        }
-    }
+modified [ideally] lists the last time a product was
+changed. Not all back end tools remember to update this
+and of course direct updates via SQL may forget too.
 
-    public function end_date()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["end_date"])) {
-                return $this->instance["end_date"];
-            } elseif(isset($this->columns["end_date"]["default"])) {
-                return $this->columns["end_date"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["end_date"] = func_get_arg(0);
-        }
-    }
+tareweight is a default tare for by weight items
 
-    public function department()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["department"])) {
-                return $this->instance["department"];
-            } elseif(isset($this->columns["department"]["default"])) {
-                return $this->columns["department"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["department"] = func_get_arg(0);
-        }
-    }
+discount indicates whether an item is eligible for
+percentage discounts on a whole transactions. Value 0
+means exclude from discounts.
 
-    public function size()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["size"])) {
-                return $this->instance["size"];
-            } elseif(isset($this->columns["size"]["default"])) {
-                return $this->columns["size"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["size"] = func_get_arg(0);
-        }
-    }
+discounttype indicates if an item is on sale
+    0 => not on sale
+    1 => on sale for everyone
+    2 => on sale for members
+Values greater than 2 may be used, but results will
+vary based on whose code you\'re running
 
-    public function tax()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["tax"])) {
-                return $this->instance["tax"];
-            } elseif(isset($this->columns["tax"]["default"])) {
-                return $this->columns["tax"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["tax"] = func_get_arg(0);
-        }
-    }
+line_item_discount indicates whether an item is eligible
+for line item discounts. Value 0 means not eligible.
 
-    public function foodstamp()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["foodstamp"])) {
-                return $this->instance["foodstamp"];
-            } elseif(isset($this->columns["foodstamp"]["default"])) {
-                return $this->columns["foodstamp"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["foodstamp"] = func_get_arg(0);
-        }
-    }
+unitofmeasure might be used for screen display and
+receipt listings of quantity. 
 
-    public function scale()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["scale"])) {
-                return $this->instance["scale"];
-            } elseif(isset($this->columns["scale"]["default"])) {
-                return $this->columns["scale"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["scale"] = func_get_arg(0);
-        }
-    }
+qttyEnforced forces the cashier to enter an explicit
+quantity when ringing up the item
 
-    public function scaleprice()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["scaleprice"])) {
-                return $this->instance["scaleprice"];
-            } elseif(isset($this->columns["scaleprice"]["default"])) {
-                return $this->columns["scaleprice"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["scaleprice"] = func_get_arg(0);
-        }
-    }
+idEnforced forces the cashier to enter the customer\'s
+date of birth. This flag should be set to the age
+required to purchase the product - e.g., 21 for 
+alcohol in the US.
 
-    public function mixmatchcode()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["mixmatchcode"])) {
-                return $this->instance["mixmatchcode"];
-            } elseif(isset($this->columns["mixmatchcode"]["default"])) {
-                return $this->columns["mixmatchcode"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["mixmatchcode"] = func_get_arg(0);
-        }
-    }
+Cost:
+cost is the item\'s normal cost as used for calculating retail price. 
+special_cost is a temporary, promotional cost. received_cost is filled in
+via purchase orders. Most pricing tools  use normal cost to generate retail 
+prices. special_cost or received_cost is recorded in transaction logs to more 
+closely reflect actual cost at the time of sale.
 
-    public function modified()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["modified"])) {
-                return $this->instance["modified"];
-            } elseif(isset($this->columns["modified"]["default"])) {
-                return $this->columns["modified"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["modified"] = func_get_arg(0);
-        }
-    }
+isUse indicates whether the item is currently
+available for sale. Whether cashiers can bypass this
+setting probably varies by front end implementation.
 
-    public function advertised()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["advertised"])) {
-                return $this->instance["advertised"];
-            } elseif(isset($this->columns["advertised"]["default"])) {
-                return $this->columns["advertised"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["advertised"] = func_get_arg(0);
-        }
-    }
+local indicates whether the item is locally sourced.
 
-    public function tareweight()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["tareweight"])) {
-                return $this->instance["tareweight"];
-            } elseif(isset($this->columns["tareweight"]["default"])) {
-                return $this->columns["tareweight"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["tareweight"] = func_get_arg(0);
-        }
-    }
+deposit is a PLU. The product record with this UPC will
+be added to the transaction automatically when the item
+is rung.
 
-    public function discount()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["discount"])) {
-                return $this->instance["discount"];
-            } elseif(isset($this->columns["discount"]["default"])) {
-                return $this->columns["discount"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["discount"] = func_get_arg(0);
-        }
-    }
+default_vendor_id is the identifier (vendors.vendorID)
+for the vendor who typically supplies the product.
 
-    public function discounttype()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["discounttype"])) {
-                return $this->instance["discounttype"];
-            } elseif(isset($this->columns["discounttype"]["default"])) {
-                return $this->columns["discounttype"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["discounttype"] = func_get_arg(0);
-        }
-    }
+current_origin_id is the identifier (origins.originID)
+for the geographical location where the product is
+currently sourced from.
 
-    public function line_item_discountable()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["line_item_discountable"])) {
-                return $this->instance["line_item_discountable"];
-            } elseif(isset($this->columns["line_item_discountable"]["default"])) {
-                return $this->columns["line_item_discountable"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["line_item_discountable"] = func_get_arg(0);
-        }
+Other columns:
+size, advertised, wicable, and numflag
+have no current meaning on the
+front or back end. Or no current implementation.
+The meaning of idEnforced is pretty clear, but setting
+it won\'t *do* anything.
+        ';
     }
-
-    public function unitofmeasure()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["unitofmeasure"])) {
-                return $this->instance["unitofmeasure"];
-            } elseif(isset($this->columns["unitofmeasure"]["default"])) {
-                return $this->columns["unitofmeasure"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["unitofmeasure"] = func_get_arg(0);
-        }
-    }
-
-    public function wicable()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["wicable"])) {
-                return $this->instance["wicable"];
-            } elseif(isset($this->columns["wicable"]["default"])) {
-                return $this->columns["wicable"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["wicable"] = func_get_arg(0);
-        }
-    }
-
-    public function qttyEnforced()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["qttyEnforced"])) {
-                return $this->instance["qttyEnforced"];
-            } elseif(isset($this->columns["qttyEnforced"]["default"])) {
-                return $this->columns["qttyEnforced"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["qttyEnforced"] = func_get_arg(0);
-        }
-    }
-
-    public function idEnforced()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["idEnforced"])) {
-                return $this->instance["idEnforced"];
-            } elseif(isset($this->columns["idEnforced"]["default"])) {
-                return $this->columns["idEnforced"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["idEnforced"] = func_get_arg(0);
-        }
-    }
-
-    public function cost()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["cost"])) {
-                return $this->instance["cost"];
-            } elseif(isset($this->columns["cost"]["default"])) {
-                return $this->columns["cost"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["cost"] = func_get_arg(0);
-        }
-    }
-
-    public function inUse()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["inUse"])) {
-                return $this->instance["inUse"];
-            } elseif(isset($this->columns["inUse"]["default"])) {
-                return $this->columns["inUse"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["inUse"] = func_get_arg(0);
-        }
-    }
-
-    public function numflag()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["numflag"])) {
-                return $this->instance["numflag"];
-            } elseif(isset($this->columns["numflag"]["default"])) {
-                return $this->columns["numflag"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["numflag"] = func_get_arg(0);
-        }
-    }
-
-    public function subdept()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["subdept"])) {
-                return $this->instance["subdept"];
-            } elseif(isset($this->columns["subdept"]["default"])) {
-                return $this->columns["subdept"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["subdept"] = func_get_arg(0);
-        }
-    }
-
-    public function deposit()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["deposit"])) {
-                return $this->instance["deposit"];
-            } elseif(isset($this->columns["deposit"]["default"])) {
-                return $this->columns["deposit"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["deposit"] = func_get_arg(0);
-        }
-    }
-
-    public function local()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["local"])) {
-                return $this->instance["local"];
-            } elseif(isset($this->columns["local"]["default"])) {
-                return $this->columns["local"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["local"] = func_get_arg(0);
-        }
-    }
-
-    public function store_id()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["store_id"])) {
-                return $this->instance["store_id"];
-            } elseif(isset($this->columns["store_id"]["default"])) {
-                return $this->columns["store_id"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["store_id"] = func_get_arg(0);
-        }
-    }
-
-    public function default_vendor_id()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["default_vendor_id"])) {
-                return $this->instance["default_vendor_id"];
-            } elseif(isset($this->columns["default_vendor_id"]["default"])) {
-                return $this->columns["default_vendor_id"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["default_vendor_id"] = func_get_arg(0);
-        }
-    }
-
-    public function current_origin_id()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["current_origin_id"])) {
-                return $this->instance["current_origin_id"];
-            } elseif(isset($this->columns["current_origin_id"]["default"])) {
-                return $this->columns["current_origin_id"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["current_origin_id"] = func_get_arg(0);
-        }
-    }
-
-    public function id()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["id"])) {
-                return $this->instance["id"];
-            } elseif(isset($this->columns["id"]["default"])) {
-                return $this->columns["id"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["id"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

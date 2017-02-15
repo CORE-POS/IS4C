@@ -33,14 +33,14 @@ else {
   // containing the upc
   $batchIDQ = $sql->prepare("select b.batchID from batches as b, batchList as l where
                b.batchID = l.batchID and l.upc = ? and b.discountType = ?
-	       AND ".$sql->now()." BETWEEN b.startDate and b.endDate");
+           AND ".$sql->now()." BETWEEN b.startDate and b.endDate");
   $batchIDR = $sql->execute($batchIDQ, array($upc, $discounttype));
 
   // if there isn't a batch putting that item on sale, then
   // i don't know what's going on.  SO DON'T CHANGE ANYTHING
   if ($sql->num_rows($batchIDR) != 0){
     // now delete the upc from the batch list(s)
-    while ($row = $sql->fetch_array($batchIDR)){
+    while ($row = $sql->fetchRow($batchIDR)){
       $batchID = $row['batchID'];
       $batchQ = $sql->prepare("delete from batchList where
                upc = ? and batchID = ?");
@@ -75,4 +75,3 @@ else {
   }
 }
 
-?>

@@ -21,80 +21,86 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\parser\Parser;
+
 class WedgeScParser extends Parser 
 {
-	private $left;
+    private $left;
 
-	function check($str)
+    function check($str)
     {
-		if (substr($str,-2) == "SC") {
-			$left = substr($str,0,strlen($str)-2);
-			$left = str_replace($left,"."," ");
-			$left = str_replace($left,","," ");
-			if (!is_numeric($left) || strlen($left != 6)) {
-				return false;
+        if (substr($str,-2) == "SC") {
+            $left = substr($str,0,strlen($str)-2);
+            $left = str_replace($left,"."," ");
+            $left = str_replace($left,","," ");
+            if (!is_numeric($left) || strlen($left != 6)) {
+                return false;
             }
-			$this->left = $left;
+            $this->left = $left;
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		global $CORE_LOCAL;
-		$json = $this->default_json();
-		$arg = $this->left;
+        $json = $this->default_json();
+        $arg = $this->left;
 
-		$CORE_LOCAL->set("sc",1);
-		$staffID = substr($arg, 0, 4);
+        CoreLocal::set("sc",1);
+        $staffID = substr($arg, 0, 4);
 
-		$pQuery = "select staffID,chargecode,blueLine from chargecodeview where chargecode = '".$arg."'";
-		$pConn = Database::pDataConnect();
-		$result = $pConn->query($pQuery);
-		$num_rows = $pConn->num_rows($result);
-		$row = $pConn->fetch_array($result);
+        $pQuery = "select staffID,chargecode,blueLine from chargecodeview where chargecode = '".$arg."'";
+        $pConn = Database::pDataConnect();
+        $result = $pConn->query($pQuery);
+        $num_rows = $pConn->num_rows($result);
+        $row = $pConn->fetchRow($result);
 
-		if ($num_rows == 0) {
-			$json['output'] = DisplayLib::xboxMsg("unable to authenticate staff ".$staffID);
-			$CORE_LOCAL->set("isStaff",0);			// apbw 03/05/05 SCR
-			return $json;
-		} else {
-			$CORE_LOCAL->set("isStaff",1);			// apbw 03/05/05 SCR
-			$CORE_LOCAL->set("memMsg",$row["blueLine"]);
-			$tQuery = "update localtemptrans set card_no = '".$staffID."', percentDiscount = 15";
-			$tConn = Database::tDataConnect();
+        if ($num_rows == 0) {
+            $json['output'] = DisplayLib::xboxMsg(
+                _("unable to authenticate staff ").$staffID,
+                DisplayLib::standardClearButton()
+            );
+            CoreLocal::set("isStaff",0);            // apbw 03/05/05 SCR
+            return $json;
+        } else {
+            CoreLocal::set("isStaff",1);            // apbw 03/05/05 SCR
+            CoreLocal::set("memMsg",$row["blueLine"]);
+            $tQuery = "update localtemptrans set card_no = '".$staffID."', percentDiscount = 15";
+            $tConn = Database::tDataConnect();
 
-			$this->addscDiscount();
-			TransRecord::discountnotify(15);
-			$tConn->query($tQuery);
-			Database::getsubtotals();
+            $this->addscDiscount();
+            TransRecord::discountnotify(15);
+            $tConn->query($tQuery);
+            Database::getsubtotals();
 
-			$chk = self::ttl();
-			if ($chk !== True){
-				$json['main_frame'] = $chk;
-				return $json;
-			}
-			$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-			return self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
-		}
-	}
+            $chk = self::ttl();
+            if ($chk !== True){
+                $json['main_frame'] = $chk;
+                return $json;
+            }
+            CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));
+            return self::tender("MI", CoreLocal::get("runningTotal") * 100);
+        }
+    }
 
     private function addscDiscount() 
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("scDiscount") != 0) {
+        if (CoreLocal::get("scDiscount") != 0) {
             TransRecord::addRecord(array(
                 'upc' => "DISCOUNT", 
                 'description' => "** 10% Deli Discount **", 
                 'trans_type' => "I",
                 'quantity' => 1, 
                 'ItemQtty' => 1, 
-                'unitPrice' => MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 
-                'total' => MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 
+                'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get("scDiscount")), 
+                'total' => MiscLib::truncate2(-1 * CoreLocal::get("scDiscount")), 
                 'discountable' => 1,
                 'voided' => 2,
             ));
@@ -103,25 +109,23 @@ class WedgeScParser extends Parser
 
     private function addStaffCoffeeDiscount() 
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("staffCoffeeDiscount") != 0) {
-            self::addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
+        if (CoreLocal::get("staffCoffeeDiscount") != 0) {
+            self::addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * CoreLocal::get("staffCoffeeDiscount")), MiscLib::truncate2(-1 * CoreLocal::get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
         }
     }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>amount</i>SC</td>
-				<td>Tender <i>amount</i> to staff
-				charge</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>amount</i>SC</td>
+                <td>Tender <i>amount</i> to staff
+                charge</td>
+            </tr>
+            </table>";
+    }
 }
 

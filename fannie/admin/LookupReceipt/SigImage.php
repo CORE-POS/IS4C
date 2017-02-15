@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,10 +30,23 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 */
 class SigImage 
 {
+    public function setConfig()
+    {
+    }
+
+    public function setLogger()
+    {
+    }
+
+    public function setConnection()
+    {
+    }
+
+
     public function draw_page()
     {
         include(dirname(__FILE__).'/../../config.php');
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = FannieDB::getReadOnly($FANNIE_TRANS_DB);
 
         $id = FormLib::get('id', 0);
         $prep = $dbc->prepare('SELECT filetype, filecontents FROM CapturedSignature WHERE capturedSignatureID=?');
@@ -63,6 +76,16 @@ class SigImage
 
             echo $row['filecontents'];
         }
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->setConfig();
+        $this->setLogger();
+        $this->setConnection();
+        ob_start();
+        $this->draw_page();
+        ob_get_clean();
     }
 }
 

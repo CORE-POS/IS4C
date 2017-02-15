@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class LineItemDiscountAdminLogin
   adminlogin callback for approving
@@ -35,11 +39,9 @@ class LineItemDiscountAdminLogin
 
     static public function adminLoginCallback($success)
     {
-        global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
-            $CORE_LOCAL->set('msgrepeat', 1);
-            return true;
+            $inp = urlencode(CoreLocal::get('strEntered'));
+            return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
         } else {
             return false;
         }

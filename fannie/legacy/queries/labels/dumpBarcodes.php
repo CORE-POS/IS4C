@@ -18,7 +18,7 @@ if($checkNoN == 0){
       $deleteQ = $sql->prepare("UPDATE shelftags SET id=-1*id WHERE id=?");
       $args = array($id);
       if ($id==0) {
-	      $deleteQ = $sql->prepare("UPDATE shelftags SET id=-999 WHERE id=0");
+          $deleteQ = $sql->prepare("UPDATE shelftags SET id=-999 WHERE id=0");
           $args = array();
       }
       $deleteR = $sql->execute($deleteQ, $args);
@@ -31,4 +31,3 @@ if($checkNoN == 0){
 
 echo "</body>";
 
-?>

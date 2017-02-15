@@ -9,14 +9,14 @@ include('../../db.php');
 $buyID = (isset($_POST['buyID']))?$_POST['buyID']:0;
 $buyer = "All";
 if ($buyID == 99){
-	$buyID=0;
+    $buyID=0;
 }
 else if ($buyID != 0){
-	$getBuyerQ = $sql->prepare("SELECT subdept_name from subdepts where subdept_no = ?");
+    $getBuyerQ = $sql->prepare("SELECT subdept_name from subdepts where subdept_no = ?");
 
-	$getBuyerR = $sql->execute($getBuyerQ, array($buyID));
-	$getBuyerW = $sql->fetch_array($getBuyerR);
-	$buyer = $getBuyerW['subdept_name'];
+    $getBuyerR = $sql->execute($getBuyerQ, array($buyID));
+    $getBuyerW = $sql->fetchRow($getBuyerR);
+    $buyer = $getBuyerW['subdept_name'];
 }
 $date = date('mjY');
 $batchName = "priceUpdate".$buyer.$date;
@@ -25,13 +25,13 @@ $insBatchQ = $sql->prepare("INSERT INTO batchTest(startDate,endDate,batchName,ba
               VALUES(".$sql->now().','.$sql->now().",?,7,0)");
 //echo $insBatchQ;
 $insBatchR = $sql->execute($insBatchQ, array($batchName));
-$maxID = $sql->insert_id();
+$maxID = $sql->insertID();
 
 echo "<b>".$buyer."</b><br>";
 echo "<html><head><title>Check tag info</title></head><body bgcolor='ffffcc'>";
 echo "<table border=1 cellspacing=0 cellpadding=0><th>UPC<th><font color=blue>Description</font><th>SKU<th>Brand<th>Pack<th>Size<th>Price";
 echo "<form action=newBarBatch.php method=Post>";
-$getUNFIPriceQ = $sql->prepare('SELECT upc, srp as wfc_srp FROM vendorSRPs WHERE vendorID=1 AND upc=?');
+$getUNFIPriceQ = $sql->prepare('SELECT upc, srp as wfc_srp FROM vendorItems WHERE vendorID=1 AND upc=?');
 $insBItemQ = $sql->prepare("INSERT INTO batchListTest(upc,batchID,salePrice)
             VALUES(?,?,?)");
 $getTagInfoQ = $sql->prepare('SELECT description as item_desc, sku as unfi_sku, brand, units as pack, size as pack_size
@@ -40,7 +40,7 @@ $shelftag = new ShelftagsModel($sql);
 foreach ($_POST["pricechange"] as $value) {
       //echo $getUNFIPriceQ . "<br>";
       $getUNFIPriceR = $sql->execute($getUNFIPriceQ, array($value));
-      $getUNFIPriceW = $sql->fetch_array($getUNFIPriceR);
+      $getUNFIPriceW = $sql->fetchRow($getUNFIPriceR);
       $upc = $getUNFIPriceW['upc'];
       $upcl = ltrim($getUNFIPriceW['upc'],0);
       $upcl = str_pad($upcl,10,"0",STR_PAD_LEFT);
@@ -52,7 +52,7 @@ foreach ($_POST["pricechange"] as $value) {
 
       //echo $getTagInfoQ;
       $getTagInfoR = $sql->execute($getTagInfoQ, array('%'.$upcl.'%'));
-      $getTagInfoW = $sql->fetch_array($getTagInfoR);
+      $getTagInfoW = $sql->fetchRow($getTagInfoR);
       $desc = $getTagInfoW['item_desc'];
       $sku = $getTagInfoW['unfi_sku'];
       $brand = addslashes($getTagInfoW['brand']);
@@ -84,4 +84,4 @@ echo "</form>";
 echo "</table>";
 
 echo "<a href=/queries/labels/barcodenew.php?id=$buyID>Go to barcode page</a>";
-?>
+

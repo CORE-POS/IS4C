@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class StoreTransfer
   Tender module for inter-departmental transfers
@@ -28,24 +34,27 @@
 */
 class StoreTransferTender extends TenderModule 
 {
-
     /**
       Check for errors
       @return True or an error message string
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-
-        if(MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($this->amount)) {
-            return DisplayLib::xboxMsg(_("store transfer exceeds purchase amount"));
+        if(MiscLib::truncate2(CoreLocal::get("amtdue")) < MiscLib::truncate2($this->amount)) {
+            return DisplayLib::xboxMsg(
+                _("store transfer exceeds purchase amount"),
+                DisplayLib::standardClearButton()
+            );
         }
 
-        $db = Database::pDataConnect();
-        $query = 'SELECT chargeOk FROM custdata WHERE chargeOk=1 AND CardNo='.$CORE_LOCAL->get('memberID');
-        $result = $db->query($query);
-        if ($db->num_rows($result) == 0) {
-            return DisplayLib::xboxMsg(_("member cannot make transfers"));
+        $dbc = Database::pDataConnect();
+        $query = 'SELECT chargeOk FROM custdata WHERE chargeOk=1 AND CardNo='.CoreLocal::get('memberID');
+        $result = $dbc->query($query);
+        if ($dbc->numRows($result) == 0) {
+            return DisplayLib::xboxMsg(
+                _("member cannot make transfers"),
+                DisplayLib::standardClearButton()
+            );
         }
 
         return true;
@@ -57,16 +66,15 @@ class StoreTransferTender extends TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-        $my_url = MiscLib::base_url();
+        $myUrl = MiscLib::baseURL();
 
-        if ($CORE_LOCAL->get("transfertender") != 1) {
-            $CORE_LOCAL->set("transfertender",1);
-            return $my_url."gui-modules/adminlogin.php?class=StoreTransferTender";
-        } else {
-            $CORE_LOCAL->set("transfertender",0);
-            return true;
+        if (CoreLocal::get("transfertender") != 1) {
+            CoreLocal::set("transfertender",1);
+            return $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-StoreTransferTender";
         }
+        CoreLocal::set("transfertender",0);
+
+        return true;
     }
 
     /**
@@ -78,15 +86,13 @@ class StoreTransferTender extends TenderModule
 
     static public function adminLoginCallback($success)
     {
-        global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));    
-            $CORE_LOCAL->set('msgrepeat', 1);
-            return true;
-        } else {
-            $CORE_LOCAL->set('transfertender', 0);
-            return false;
+            $inp = urlencode(CoreLocal::get('strEntered'));
+            return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
         }
+        CoreLocal::set('transfertender', 0);
+
+        return false;
     }
 }
 

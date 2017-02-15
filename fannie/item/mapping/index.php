@@ -3,14 +3,14 @@
 
     Copyright 2012 Whole Foods Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,7 +30,7 @@ if (isset($_REQUEST['ajax'])){
     foreach($req as $key){
         if (!isset($_REQUEST[$key]) || !is_numeric($_REQUEST[$key])){
             echo json_encode(array('errors'=>'invalid request '));
-            exit;
+            return;
         }
     }
     $store = $_REQUEST['store_id'];
@@ -47,7 +47,7 @@ if (isset($_REQUEST['ajax'])){
     case 'set':
         if (!isset($_REQUEST['upc']) || !is_numeric($_REQUEST['upc'])){
             echo json_encode(array('errors'=>'invalid request'));
-            exit;
+            return;
         }
         saveItem($store,$section,$subsection,$shelfset,$shelf,$location,$_REQUEST['upc']);
         $output = lookupItem($store,$section,$subsection,$shelfset,$shelf,$location+1);
@@ -57,18 +57,18 @@ if (isset($_REQUEST['ajax'])){
         echo json_encode(array('errors'=>'invalid request'));
         break;
     }
-    exit;
+    return;
 }
 
 function lookupItem($store,$sec,$subsec,$sh_set,$shelf,$loc){
     global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
-    $q = $dbc->prepare_statement("SELECT l.upc,p.description FROM prodPhysicalLocation AS l
-        LEFT JOIN products AS p ON l.upc=p.upc
+    $q = $dbc->prepare("SELECT l.upc,p.description FROM prodPhysicalLocation AS l
+        " . DTrans::joinProducts('l') . "
         WHERE l.store_id=? AND section=? AND subsection=?
         AND shelf_set=? AND shelf=? AND location=?");
     $args = array($store,$sec,$subsec,$sh_set,$shelf,$loc);
-    $r = $dbc->exec_statement($q,$args);
+    $r = $dbc->execute($q,$args);
     $ret = array('upc'=>'','description'=>'no item at this location');
     if ($dbc->num_rows($r) > 0){
         $w = $dbc->fetch_row($r);
@@ -86,20 +86,20 @@ function saveItem($store,$sec,$subsec,$sh_set,$shelf,$loc,$upc){
         store_id=? AND section=? AND subsection=?
         AND shelf_set=? AND shelf=? AND location=?");
     $args = array($store,$sec,$subsec,$sh_set,$shelf,$loc);
-    $r = $dbc->exec_statement($q,$args);
-    $q = $dbc->prepare_statement("INSERT INTO prodPhysicalLocation (upc,
+    $r = $dbc->execute($q,$args);
+    $q = $dbc->prepare("INSERT INTO prodPhysicalLocation (upc,
         store_id,section,subsection,shelf_set,shelf,
         location) VALUES (?,?,?,?,?,?,?)");
     $args = array($upc,$store,$sec,$subsec,$sh_set,
         $shelf,$loc);
-    $r = $dbc->exec_statement($q,$args);
+    $r = $dbc->execute($q,$args);
 }
 
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
-$sectionsQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
+$sectionsQ = $dbc->prepare("SELECT superID,super_name FROM MasterSuperDepts
     WHERE superID > 0 ORDER BY superID");
-$sectionsR = $dbc->exec_statement($sectionsQ);
+$sectionsR = $dbc->execute($sectionsQ);
 $supers = array();
 while($sectionsW = $dbc->fetch_row($sectionsR))
     $supers[$sectionsW[0]] = $sectionsW[1];

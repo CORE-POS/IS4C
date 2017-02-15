@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /** 
    @class SplitABGroupPM
    
@@ -37,15 +43,15 @@
 
 class SplitABGroupPM extends PriceMethod {
 
-    function addItem($row,$quantity,$priceObj){
-        global $CORE_LOCAL;
+    public function addItem(array $row, $quantity, $priceObj)
+    {
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
         $department = $row['department'];
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = $this->session->get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
@@ -76,14 +82,14 @@ class SplitABGroupPM extends PriceMethod {
         $dbt = Database::tDataConnect();
         // lookup existing qualifiers (i.e., item As)
         // by-weight items are rounded down here
-        $q1 = "SELECT floor(sum(ItemQtty)),max(department) 
+        $qualQ = "SELECT floor(sum(ItemQtty)),max(department) 
             FROM localtemptrans WHERE mixMatch='$qualMM' 
             and trans_status <> 'R'";
-        $r1 = $dbt->query($q1);
+        $qualR = $dbt->query($qualQ);
         $quals = 0;
         $dept1 = 0;
-        if($dbt->num_rows($r1)>0){
-            $rowq = $dbt->fetch_row($r1);
+        if($dbt->num_rows($qualR)>0){
+            $rowq = $dbt->fetch_row($qualR);
             $quals = round($rowq[0]);
             $dept1 = $rowq[1];    
         }
@@ -93,17 +99,17 @@ class SplitABGroupPM extends PriceMethod {
         //
         // extra checks to make sure the maximum
         // discount on scale items is "free"
-        $q2 = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END),
+        $discQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END),
             max(department),max(scale),max(total) FROM localtemptrans 
             WHERE mixMatch='$discMM' 
             and trans_status <> 'R'";
-        $r2 = $dbt->query($q2);
+        $discR = $dbt->query($discQ);
         $dept2 = 0;
         $discs = 0;
         $discountIsScale = false;
         $scaleDiscMax = 0;
-        if($dbt->num_rows($r2)>0){
-            $rowd = $dbt->fetch_row($r2);
+        if($dbt->num_rows($discR)>0){
+            $rowd = $dbt->fetch_row($discR);
             $discs = round($rowd[0]);
             $dept2 = $rowd[1];
             if ($rowd[2]==1) $discountIsScale = true;
@@ -111,14 +117,18 @@ class SplitABGroupPM extends PriceMethod {
         }
         if ($quantity != (int)$quantity && $mixMatch < 0){
             $discountIsScale = true;
-            $scaleDiscMax = $quantity * $unitPrice;
+            $scaleDiscMax = $quantity * $pricing['unitPrice'];
         }
 
         // items that have already been used in an AB set
-        $q3 = "SELECT sum(matched) FROM localtemptrans WHERE
+        $matchQ = "SELECT sum(matched) FROM localtemptrans WHERE
             mixmatch IN ('$qualMM','$discMM')";
-        $r3 = $dbt->query($q3);
-        $matches = ($dbt->num_rows($r3)>0)?array_pop($dbt->fetch_array($r3)):0;
+        $matchR = $dbt->query($matchQ);
+        $matches = 0;
+        if ($matchR && $dbt->num_rows($matchR) > 0) {
+            $matchW = $dbt->fetch_row($matchR);
+            $matches = $matchW[0];
+        }
 
         // reduce totals by existing matches
         // implicit: quantity required for B = 1
@@ -128,16 +138,15 @@ class SplitABGroupPM extends PriceMethod {
         $discs -= $matches;
 
         // where does the currently scanned item go?
-        if ($mixMatch > 0){
+        if ($mixMatch > 0) {
             $quals = ($quals >0)?$quals+floor($quantity):floor($quantity);
             $dept1 = $department;
-        }
-        else {
+        } else {
             // again, scaled items count once per line
-            if ($quantity != (int)$quantity)
+            $discs = ($discs >0)?$discs+$quantity:$quantity;
+            if ($quantity != (int)$quantity) {
                 $discs = ($discs >0)?$discs+1:1;
-            else
-                $discs = ($discs >0)?$discs+$quantity:$quantity;
+            }
             $dept2 = $department;
         }
 
@@ -165,6 +174,7 @@ class SplitABGroupPM extends PriceMethod {
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $sets,
                 'unitPrice' => $pricing['unitPrice'],
@@ -200,6 +210,7 @@ class SplitABGroupPM extends PriceMethod {
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],
@@ -225,4 +236,3 @@ class SplitABGroupPM extends PriceMethod {
     }
 }
 
-?>

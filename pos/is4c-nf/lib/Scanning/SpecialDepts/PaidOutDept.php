@@ -21,26 +21,22 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialDepts;
+use COREPOS\pos\lib\Scanning\SpecialDept;
+use COREPOS\pos\lib\MiscLib;
+
 class PaidOutDept extends SpecialDept
 {
     public $help_summary = 'Negate entered amount and also prompt for comment';
 
     public function handle($deptID,$amount,$json)
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get('msgrepeat') == 0) { // invert has not happened yet
-            $CORE_LOCAL->set('strEntered', (100*$amount * -1).'DP'.$deptID);
-            $CORE_LOCAL->set('msgrepeat', 1);
-           // $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?autoconfirm=1';
-            $json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
-            $CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
+        if ($this->session->get('msgrepeat') == 0) { // invert has not happened yet
+            $this->session->set('strEntered', (100*$amount * -1).'DP'.$deptID);
+            $this->session->set('msgrepeat', 1);
+            $json['main_frame'] = MiscLib::baseURL().'gui-modules/PaidOutComment.php';
+            $this->session->set("refundComment",$this->session->get("strEntered"));
         }
-
-        //if ($CORE_LOCAL->get("refundComment") == ""){
-            
-            //$json['main_frame'] = MiscLib::base_url().'gui-modules/PaidOutComment.php';
-            //$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
-        //}
 
         return $json;
     }

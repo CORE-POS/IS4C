@@ -18,22 +18,15 @@ define('IDENTIFIER_OLE', pack("CCCCCCCC",0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1
 
 //echo 'ROOT_START_BLOCK_POS = '.ROOT_START_BLOCK_POS."\n";
 
-//echo bin2hex($data[ROOT_START_BLOCK_POS])."\n";
-//echo "a=";
-//echo $data[ROOT_START_BLOCK_POS];
-//function log
-
 
 class OLERead {
     var $data = '';
     
-    
-    function OLERead(){
-        
-        
+    function OLERead()
+    {
     }
 
-    function GetInt4d($data, $pos)
+    public function GetInt4d($data, $pos)
     {
         $value = ord($data[$pos]) | (ord($data[$pos+1])	<< 8) | (ord($data[$pos+2]) << 16) | (ord($data[$pos+3]) << 24);
         if ($value>=4294967294)
@@ -43,54 +36,40 @@ class OLERead {
         return $value;
     }
 
-    
-    function read($sFileName){
-        
+    function openValidFile($sFileName)
+    {
     	// check if file exist and is readable (Darko Miljanovic)
-    	if(!is_readable($sFileName)) {
+    	if (!is_readable($sFileName)) {
     		$this->error = 1;
     		return false;
     	}
-    	
-    	$this->data = @file_get_contents($sFileName);
+    	$this->data = file_get_contents($sFileName);
     	if (!$this->data) { 
     		$this->error = 1; 
     		return false; 
    		}
-   		//echo IDENTIFIER_OLE;
-   		//echo 'start';
    		if (substr($this->data, 0, 8) != IDENTIFIER_OLE) {
     		$this->error = 1; 
     		return false; 
    		}
-        $this->numBigBlockDepotBlocks = $this->GetInt4d($this->data, NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
-        $this->sbdStartBlock = $this->GetInt4d($this->data, SMALL_BLOCK_DEPOT_BLOCK_POS);
-        $this->rootStartBlock = $this->GetInt4d($this->data, ROOT_START_BLOCK_POS);
-        $this->extensionBlock = $this->GetInt4d($this->data, EXTENSION_BLOCK_POS);
-        $this->numExtensionBlocks = $this->GetInt4d($this->data, NUM_EXTENSION_BLOCK_POS);
-        
-	/*
-        echo $this->numBigBlockDepotBlocks." ";
-        echo $this->sbdStartBlock." ";
-        echo $this->rootStartBlock." ";
-        echo $this->extensionBlock." ";
-        echo $this->numExtensionBlocks." ";
-        */
-        //echo "sbdStartBlock = $this->sbdStartBlock\n";
+
+        return true;
+    }
+
+    private function readDepotBlocks()
+    {
         $bigBlockDepotBlocks = array();
         $pos = BIG_BLOCK_DEPOT_BLOCKS_POS;
-       // echo "pos = $pos";
-	$bbdBlocks = $this->numBigBlockDepotBlocks;
+        $bbdBlocks = $this->numBigBlockDepotBlocks;
         
-            if ($this->numExtensionBlocks != 0) {
-                $bbdBlocks = (BIG_BLOCK_SIZE - BIG_BLOCK_DEPOT_BLOCKS_POS)/4; 
-            }
-        
+        if ($this->numExtensionBlocks != 0) {
+            $bbdBlocks = (BIG_BLOCK_SIZE - BIG_BLOCK_DEPOT_BLOCKS_POS)/4; 
+        }
+
         for ($i = 0; $i < $bbdBlocks; $i++) {
               $bigBlockDepotBlocks[$i] = $this->GetInt4d($this->data, $pos);
               $pos += 4;
         }
-        
         
         for ($j = 0; $j < $this->numExtensionBlocks; $j++) {
             $pos = ($this->extensionBlock + 1) * BIG_BLOCK_SIZE;
@@ -107,26 +86,28 @@ class OLERead {
             }
         }
 
-       // var_dump($bigBlockDepotBlocks);
-        
-        // readBigBlockDepot
+        return $bigBlockDepotBlocks;
+    }
+
+    private function readBigBlocks()
+    {
         $pos = 0;
         $index = 0;
         $this->bigBlockChain = array();
+        $bigBlockDepotBlocks = $this->readDepotBlocks();
         
         for ($i = 0; $i < $this->numBigBlockDepotBlocks; $i++) {
             $pos = ($bigBlockDepotBlocks[$i] + 1) * BIG_BLOCK_SIZE;
-            //echo "pos = $pos";	
             for ($j = 0 ; $j < BIG_BLOCK_SIZE / 4; $j++) {
                 $this->bigBlockChain[$index] = $this->GetInt4d($this->data, $pos);
                 $pos += 4 ;
                 $index++;
             }
         }
+    }
 
-	//var_dump($this->bigBlockChain);
-        //echo '=====2';
-        // readSmallBlockDepot();
+    private function readSmallBlocks()
+    {
         $pos = 0;
 	    $index = 0;
 	    $sbdBlock = $this->sbdStartBlock;
@@ -144,23 +125,28 @@ class OLERead {
 	
 	      $sbdBlock = $this->bigBlockChain[$sbdBlock];
 	    }
-
+    }
+    
+    function read($sFileName)
+    {
+        if ($this->openValidFile($sFileName) === false) {
+            return false;
+        }
+    	
+        $this->numBigBlockDepotBlocks = $this->GetInt4d($this->data, NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
+        $this->sbdStartBlock = $this->GetInt4d($this->data, SMALL_BLOCK_DEPOT_BLOCK_POS);
+        $this->rootStartBlock = $this->GetInt4d($this->data, ROOT_START_BLOCK_POS);
+        $this->extensionBlock = $this->GetInt4d($this->data, EXTENSION_BLOCK_POS);
+        $this->numExtensionBlocks = $this->GetInt4d($this->data, NUM_EXTENSION_BLOCK_POS);
         
-        // readData(rootStartBlock)
+        $this->readBigBlocks();
+        $this->readSmallBlocks();
+
         $block = $this->rootStartBlock;
         $pos = 0;
         $this->entry = $this->__readData($block);
         
-        /*
-        while ($block != -2)  {
-            $pos = ($block + 1) * BIG_BLOCK_SIZE;
-            $this->entry = $this->entry.substr($this->data, $pos, BIG_BLOCK_SIZE);
-            $block = $this->bigBlockChain[$block];
-        }
-        */
-        //echo '==='.$this->entry."===";
         $this->__readPropertySets();
-
     }
     
      function __readData($bl) {
@@ -172,77 +158,92 @@ class OLERead {
             $pos = ($block + 1) * BIG_BLOCK_SIZE;
             $data = $data.substr($this->data, $pos, BIG_BLOCK_SIZE);
             //echo "pos = $pos data=$data\n";	
+            if (!isset($this->bigBlockChain[$block])) break;
 	    $block = $this->bigBlockChain[$block];
         }
 		return $data;
      }
         
-    function __readPropertySets(){
+    function __readPropertySets()
+    {
         $offset = 0;
-        //var_dump($this->entry);
         while ($offset < strlen($this->entry)) {
-              $d = substr($this->entry, $offset, PROPERTY_STORAGE_BLOCK_SIZE);
-            
-              $nameSize = ord($d[SIZE_OF_NAME_POS]) | (ord($d[SIZE_OF_NAME_POS+1]) << 8);
-              
-              $type = ord($d[TYPE_POS]);
-              //$maxBlock = strlen($d) / BIG_BLOCK_SIZE - 1;
-        
-              $startBlock = $this->GetInt4d($d, START_BLOCK_POS);
-              $size = $this->GetInt4d($d, SIZE_POS);
-        
-            $name = '';
-            for ($i = 0; $i < $nameSize ; $i++) {
-              $name .= $d[$i];
-            }
-            
-            $name = str_replace("\x00", "", $name);
-            
-            $this->props[] = array (
-                'name' => $name, 
-                'type' => $type,
-                'startBlock' => $startBlock,
-                'size' => $size);
+            $data = substr($this->entry, $offset, PROPERTY_STORAGE_BLOCK_SIZE);
+            $props = $this->propertyToArray($data);
+            $this->props[] = $props;
 
-            if (($name == "Workbook") || ($name == "Book")) {
+            if (($props['name'] == "Workbook") || ($props['name'] == "Book")) {
                 $this->wrkbook = count($this->props) - 1;
             }
 
-            if ($name == "Root Entry") {
+            if ($props['name'] == "Root Entry") {
                 $this->rootentry = count($this->props) - 1;
             }
             
-            //echo "name ==$name=\n";
-
-            
             $offset += PROPERTY_STORAGE_BLOCK_SIZE;
-        }   
-        
+        }
+    }
+
+    private function propertyToArray($data)
+    {
+        $nameSize = ord($data[SIZE_OF_NAME_POS]) | (ord($data[SIZE_OF_NAME_POS+1]) << 8);
+        $type = ord($data[TYPE_POS]);
+        $startBlock = $this->GetInt4d($data, START_BLOCK_POS);
+        $size = $this->GetInt4d($data, SIZE_POS);
+
+        $name = '';
+        for ($i = 0; $i < $nameSize ; $i++) {
+            $name .= $data[$i];
+        }
+        $name = str_replace("\x00", "", $name);
+
+        return array (
+            'name' => $name, 
+            'type' => $type,
+            'startBlock' => $startBlock,
+            'size' => $size,
+        );
+    }
+   
+    // added to elminate near-duplicate loops
+    // in getWorkBook()
+    private function getBlockStream($data, $startBlock, $blockChain, $blockSize)
+    {
+        $streamData = '';
+        $pos = 0;
+        while ($startBlock != -2) {
+              $pos = $startBlock * $blockSize;
+              if ($blockSize == BIG_BLOCK_SIZE) {
+                  $pos = ($startBlock + 1) * $blockSize;
+              }
+              $streamData .= substr($data, $pos, $blockSize);
+              $startBlock = $blockChain[$startBlock];
+        }
+
+        return $streamData;
+    }
+
+    private function getSmallBlock($rootdata, $block, $chain, $size)
+    {
+        $streamData = '';
+        //$count = 0;
+        $pos = 0;
+        while ($block != -2) {
+            $pos = $block * $size;
+            $streamData .= substr($rootdata, $pos, $size);
+            $block = $chain[$block];
+        }
+            
+        return $streamData;
     }
     
-    
-    function getWorkBook(){
-    	if ($this->props[$this->wrkbook]['size'] < SMALL_BLOCK_THRESHOLD){
-//    	  getSmallBlockStream(PropertyStorage ps)
-
+    function getWorkBook()
+    {
+    	if ($this->props[$this->wrkbook]['size'] < SMALL_BLOCK_THRESHOLD) {
 			$rootdata = $this->__readData($this->props[$this->rootentry]['startBlock']);
-	        
-			$streamData = '';
 	        $block = $this->props[$this->wrkbook]['startBlock'];
-	        //$count = 0;
-	        $pos = 0;
-		    while ($block != -2) {
-      	          $pos = $block * SMALL_BLOCK_SIZE;
-		          $streamData .= substr($rootdata, $pos, SMALL_BLOCK_SIZE);
-
-			      $block = $this->smallBlockChain[$block];
-		    }
-			
-		    return $streamData;
-    		
-
-    	}else{
-    	
+            return $this->getSmallBlock($rootdata, $block, $this->smallBlockChain, SMALL_BLOCK_SIZE);
+    	} else {
 	        $numBlocks = $this->props[$this->wrkbook]['size'] / BIG_BLOCK_SIZE;
 	        if ($this->props[$this->wrkbook]['size'] % BIG_BLOCK_SIZE != 0) {
 	            $numBlocks++;
@@ -250,23 +251,10 @@ class OLERead {
 	        
 	        if ($numBlocks == 0) return '';
 	        
-	        //echo "numBlocks = $numBlocks\n";
-	    //byte[] streamData = new byte[numBlocks * BIG_BLOCK_SIZE];
-	        //print_r($this->wrkbook);
-	        $streamData = '';
 	        $block = $this->props[$this->wrkbook]['startBlock'];
-	        //$count = 0;
-	        $pos = 0;
-	        //echo "block = $block";
-	        while ($block != -2) {
-	          $pos = ($block + 1) * BIG_BLOCK_SIZE;
-	          $streamData .= substr($this->data, $pos, BIG_BLOCK_SIZE);
-	          $block = $this->bigBlockChain[$block];
-	        }   
-	        //echo 'stream'.$streamData;
-	        return $streamData;
+            return $this->getBlockStream($this->data, $block, $this->bigBlockChain, BIG_BLOCK_SIZE);
     	}
     }
     
 }
-?>
+

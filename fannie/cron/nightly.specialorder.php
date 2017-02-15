@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -31,21 +31,27 @@
 
 */
 
-include('../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
 set_time_limit(0);
 
 // clean cache
 $cachepath = sys_get_temp_dir()."/ordercache/";
-$dh = opendir($cachepath);
-while (($file = readdir($dh)) !== false) {
-    if ($file == "." || $file == "..") continue;
-    if (!is_file($cachepath.$file)) continue;
-    unlink($cachepath.$file);
+if (file_exists($cachepath)) {
+    $dh = opendir($cachepath);
+    while (($file = readdir($dh)) !== false) {
+        if ($file == "." || $file == "..") continue;
+        if (!is_file($cachepath.$file)) continue;
+        unlink($cachepath.$file);
+    }
+    closedir($dh);
 }
-closedir($dh);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
@@ -253,17 +259,3 @@ if (strlen($empty) > 2){
     $delR = $sql->query($delQ);
 }
 
-/* blueLine flagging disabled
-$q = "SELECT card_no,count(*) FROM PendingSpecialOrder as p LEFT JOIN
-    SpecialOrders AS s ON p.order_id=s.specialOrderID
-    WHERE s.statusFlag=5 AND trans_id > 0 
-    GROUP BY card_no";
-$r = $sql->query($q);
-while($w = $sql->fetch_row($r)){
-    $upQ = "UPDATE {$FANNIE_OP_DB}.custdata SET blueLine=CONCAT(blueLine, ' SO({$w[1]})')
-        WHERE CardNo={$w[0]}";
-    $upR = $sql->query($upQ);
-}
-*/
-
-?>

@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,7 @@ class SuspensionHistoryReport extends FannieReportPage
 {
     public $description = '[Suspension History] lists when a membership was deactivated &amp; reactivated.';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $title = "Fannie : Suspension History";
     protected $header = "Suspension History";
@@ -37,30 +38,23 @@ class SuspensionHistoryReport extends FannieReportPage
     protected $report_headers = array('Date', 'Reason', 'User');
     protected $required_fields = array('memNum');
 
-    public function preprocess()
-    {
-        $this->card_no = FormLib::get('memNum','');
-
-        return parent::preprocess();
-    }
-
     public function report_description_content()
     {
-        return array('History for account #'.$this->card_no);
+        return array('History for account #'.$this->form->memNum);
     }
 
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $q = $dbc->prepare_statement("select username,postdate,post,textStr
+        $q = $dbc->prepare("select username,postdate,post,textStr
                 from suspension_history AS s 
                 LEFT JOIN reasoncodes AS r ON
                 s.reasoncode & r.mask > 0
                 WHERE s.cardno=? ORDER BY postdate DESC");
-        $r = $dbc->exec_statement($q,array($this->card_no));
+        $r = $dbc->execute($q,array($this->form->memNum));
         $data = array();
         while($w = $dbc->fetch_row($r)){
             $record = array(
@@ -76,14 +70,25 @@ class SuspensionHistoryReport extends FannieReportPage
 
     public function form_content()
     {
+        $this->add_onload_command('$(\'#memNum\').focus()');
         return '<form method="get" action="SuspensionHistoryReport.php">
-            <b>Member #</b> <input type="text" name="memNum" value="" size="6" />
-            <br /><br />
-            <input type="submit" value="Get Report" />
+            <label>Member #</label>
+            <input type="text" name="memNum" required 
+                class="form-control" id="memNum" />
+            <p>
+            <button type="submit" class="btn btn-default">Get Report</button> 
+            </p>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists all changes to a membership\'s
+            active/inactive status.
+            </p>';
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

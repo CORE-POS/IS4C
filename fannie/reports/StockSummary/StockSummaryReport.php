@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -33,27 +33,29 @@ class StockSummaryReport extends FannieReportPage
     protected $header = 'Stock Summary';
     protected $title = 'Fannie : Stock Summary';
 
-    protected $report_headers = array('Mem#', 'Name', 'Status', 'A', 'B', 'Unknown');
-    protected $report_cache = 'day';
+    protected $report_headers = array('Mem#', 'Name', 'Effective Status', 'Status', 'A', 'B', 'Unknown');
+    protected $report_cache = 'none';
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_TRANS_DB;
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $q = $dbc->prepare_statement("select 
+        $q = $dbc->prepare("select 
             card_no,
             LastName,FirstName,Type,
+            m.memDesc,
             sum(case when tdate <= '2005-11-26 23:59:59' then stockPurchase else 0 end) as unknown,
             sum(case when tdate > '2005-11-26 23:59:59' and dept=992 then stockPurchase else 0 end) as classA,
             sum(case when tdate > '2005-11-26 23:59:59' and dept=991 then stockPurchase else 0 end) as classB
             from ".$FANNIE_TRANS_DB.$dbc->sep()."stockpurchases as s
-            left join custdata as c
-            on s.card_no=c.CardNo and c.personNum=1
+                left join custdata as c on s.card_no=c.CardNo and c.personNum=1
+                LEFT JOIN memtype AS m ON c.memType=m.memtype
             where card_no > 0
             group by card_no,LastName,FirstName,Type
             order by card_no");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
 
         $types = array('PC'=>'Member','REG'=>'NonMember',
             'TERM'=>'Termed','INACT'=>'Inactive',
@@ -67,6 +69,7 @@ class StockSummaryReport extends FannieReportPage
                     $w['card_no'],
                     $w['LastName'].', '.$w['FirstName'],
                     $types[$w['Type']],
+                    $w['memDesc'],
                     $w['classA'],
                     $w['classB'],
                     $w['unknown'],
@@ -76,7 +79,12 @@ class StockSummaryReport extends FannieReportPage
 
         return $data;
     }
+
+    public function form_content()
+    {
+        return 'Direct input not allowed on this report';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

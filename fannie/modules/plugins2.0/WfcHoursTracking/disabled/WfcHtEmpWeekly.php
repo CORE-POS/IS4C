@@ -19,15 +19,15 @@ if (isset($_GET["empID"])) $empID = $_GET["empID"];
 if (isset($_POST["empID"])){
     $empID = $_POST["empID"];
     $notes = str_replace("'","''",$_POST["notes"]);
-    $checkP = $sql->prepare_statement("SELECT empID FROM EmpWeeklyNotes WHERE empID=?");
-    $checkR = $sql->exec_statement($checkP, array($empID));
+    $checkP = $sql->prepare("SELECT empID FROM EmpWeeklyNotes WHERE empID=?");
+    $checkR = $sql->execute($checkP, array($empID));
     if ($sql->num_rows($checkR) == 0){
-        $ins = $sql->prepare_statement("INSERT INTO EmpWeeklyNotes VALUES (?,?)");
-        $sql->exec_statement($ins, array($empID, $notes));
+        $ins = $sql->prepare("INSERT INTO EmpWeeklyNotes VALUES (?,?)");
+        $sql->execute($ins, array($empID, $notes));
     }
     else{
-        $up = $sql->prepare_statement("UPDATE EmpWeeklyNotes SET notes=? WHERE empID=?");
-        $sql->exec_statement($up, array($notes, $empID));
+        $up = $sql->prepare("UPDATE EmpWeeklyNotes SET notes=? WHERE empID=?");
+        $sql->execute($up, array($notes, $empID));
     }
 }
 
@@ -59,8 +59,8 @@ $query = "SELECT e.name,e.adpID,d.name,n.notes,
     AND datediff(w.weekStart,?) <= 0
     AND e.empID=?
     ORDER BY w.weekStart";
-$prep = $sql->prepare_statement($query);
-$result = $sql->exec_statement($prep, array($limitDay, $limit2, $empID));
+$prep = $sql->prepare($query);
+$result = $sql->execute($prep, array($limitDay, $limit2, $empID));
 
 $name = "";
 $adpID = "";

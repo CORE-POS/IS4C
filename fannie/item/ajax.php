@@ -23,11 +23,11 @@ function GetLikecodeItems($lc){
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $ret = "<table border=0 bgcolor=\"#FFFFCC\">";
     if (is_numeric($lc)){
-        $prep = $dbc->prepare_statement("SELECT p.upc,p.description FROM
+        $prep = $dbc->prepare("SELECT p.upc,p.description FROM
             products AS p INNER JOIN upcLike AS u ON
             p.upc=u.upc WHERE u.likeCode=?
             ORDER BY p.upc");
-        $res = $dbc->exec_statement($prep, array($lc));
+        $res = $dbc->execute($prep, array($lc));
         while($row = $dbc->fetch_row($res)){
             $ret .= sprintf("<tr><td><a href=itemMaint.php?upc=%s>%s</a></td>
                     <td>%s</td></tr>",$row[0],$row[0],$row[1]);
@@ -58,8 +58,8 @@ function MarginFS($upc,$cost,$deptID)
     }
 
     if ((empty($dm) || $dm == 'Unknown') && $dbc->tableExists('deptMargin')) {
-        $prep = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
-        $dm = $dbc->exec_statement($prep, array($deptID));
+        $prep = $dbc->prepare("SELECT margin FROM deptMargin WHERE dept_ID=?");
+        $dm = $dbc->execute($prep, array($deptID));
         if ($dbc->num_rows($dm) > 0) {
             $row = $dbc->fetch_row($dm);
             $dm = $dm['margin'];
@@ -98,5 +98,3 @@ function getSRP($cost,$margin){
     return $srp;
 }
 
-
-?>

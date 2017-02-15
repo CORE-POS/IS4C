@@ -1,10 +1,10 @@
 <?php
 include('../../../config.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../../db.php');
 if (!class_exists('FannieAPI'))
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 
 $batchID = $_REQUEST['batchID'];
 //echo $batchID;
@@ -25,9 +25,9 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
      if(substr($key,0,4) == 'sale'){
         $$key = $value;
         $upc1 = substr($key,4);
-	    $queryTest = $sql->prepare("UPDATE batchListTest SET salePrice = ? WHERE upc = ? and batchID = ?");
+        $queryTest = $sql->prepare("UPDATE batchListTest SET salePrice = ? WHERE upc = ? and batchID = ?");
         //echo $queryTest . "<br>";
-	    $resultTest = $sql->execute($queryTest, array($value, $upc1, $batchID));
+        $resultTest = $sql->execute($queryTest, array($value, $upc1, $batchID));
         $updateBarQ = $sql->prepare("UPDATE newbarcodes SET normal_price=? WHERE upc = ?");
         $updateBarR = $sql->execute($updateBarQ, array($value, $upc1));
       }
@@ -36,9 +36,9 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
        $$key = $value;
        $upc1 = substr($key,3);
        $infoQ = $sql->prepare("select b.batchName,l.salePrice from batchListTest as l left join batchTest as b on b.batchID
-		= l.batchID where b.batchID = ? and l.upc = ?");
+        = l.batchID where b.batchID = ? and l.upc = ?");
        $infoR = $sql->execute($infoQ, array($batchID, $upc1));
-       $infoW = $sql->fetch_array($infoR);
+       $infoW = $sql->fetchRow($infoR);
        $name = $infoW[0];
        preg_match("/priceUpdate(.*?)\d+/",$name,$matches);
        $name = $matches[1];
@@ -58,7 +58,7 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
 
 $batchInfoQ = $sql->prepare("SELECT * FROM batchTest WHERE batchID = ?");
 $batchInfoR = $sql->execute($batchInfoQ, array($batchID));
-$batchInfoW = $sql->fetch_array($batchInfoR);
+$batchInfoW = $sql->fetchRow($batchInfoR);
 
 
 $selBItemsQ = $sql->prepare("SELECT b.*,p.*  from batchListTest as b LEFT JOIN 
@@ -76,7 +76,7 @@ echo "<td><input type=submit value=\"Change Dates\" name=datechange></td></tr>";
 echo "<input type=hidden name=batchID value=$batchID>";
 echo "</form>";
 echo "<th>UPC<th>Description<th>Normal Price<th>UNFI SRP<th>Delete";
-while($selBItemsW = $sql->fetch_array($selBItemsR)){
+while($selBItemsW = $sql->fetchRow($selBItemsR)){
    $upc = $selBItemsW[1];
    $field = 'sale'.$upc;
    $del = 'del'.$upc;
@@ -92,4 +92,3 @@ echo "</form>";
 
 echo "</table>";
 
-?>

@@ -21,52 +21,28 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class cablist extends NoInputPage 
+class cablist extends NoInputCorePage 
 {
 
     function head_content()
     {
         ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-        <script type="text/javascript">
-        function submitWrapper(){
-            var ref = $('#selectlist').val();
-            if (ref != ""){
-                $.ajax({
-                    url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-cabreceipt.php',
-                    type: 'get',
-                    cache: false,
-                    data: 'input='+ref,
-                    success: function(data){
-                        location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
-                    }
-                });
-            }
-            else {
-                location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
-            }
-
-            return false;
-        }
-        </script> 
+        <script type="text/javascript" src="js/cablist.js"></script>
         <?php
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-        $this->add_onload_command("\$('#selectlist').focus();\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform', false, true)\n");
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
     }
-    
-    function body_content()
+
+    private function getTransactions()
     {
-        global $CORE_LOCAL;
-
-        $db = Database::pDataConnect();
-        $query = "SELECT frontendsecurity FROM employees WHERE emp_no=".$CORE_LOCAL->get("CashierNo");
-        $result = $db->query($query);
-        $fes = 0;
-        if ($db->num_rows($result) > 0)
-            $fes = array_pop($db->fetch_row($result));
-
+        $fes = Authenticate::getPermission($this->session->get('CashierNo'));
         /* if front end security >= 25, pull all
          * available receipts; other wise, just
          * current cashier's receipt */
@@ -78,40 +54,59 @@ class cablist extends NoInputPage
             ." group by register_no, emp_no, trans_no
             having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
             order by register_no,emp_no,trans_no desc";
-            $db = Database::tDataConnect();
-            if ($CORE_LOCAL->get("standalone") == 0) {
+            $dbc = Database::tDataConnect();
+            if ($this->session->get("standalone") == 0) {
                 $query = str_replace("localtranstoday","dtransactions",$query);
-                $db = Database::mDataConnect();
+                $dbc = Database::mDataConnect();
             }
-            $result = $db->query($query);
+            $result = $dbc->query($query);
 
         } else {
-            $db = Database::tDataConnect();
+            $dbc = Database::tDataConnect();
 
-            $query = "select emp_no, register_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."from localtranstoday where register_no = " . $CORE_LOCAL->get("laneno")
-            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
-            ." AND datetime >= " . $db->curdate()
-            ." group by register_no, emp_no, trans_no
-            having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
-            order by trans_no desc";
-
-            $result = $db->query($query);
+            $query = "
+                SELECT emp_no, 
+                    register_no, 
+                    trans_no, 
+                    SUM((CASE WHEN trans_type = 'T' THEN -1 * total ELSE 0 END)) AS total 
+                FROM localtranstoday 
+                WHERE register_no = ?
+                    AND emp_no = ?
+                    AND datetime >= " . $dbc->curdate() . "
+                GROUP BY register_no, 
+                    emp_no, 
+                    trans_no
+                HAVING SUM((CASE WHEN trans_type='T' THEN -1*total ELSE 0 END)) >= 30
+                ORDER BY trans_no desc";
+            $args = array($this->session->get('laneno'), $this->session->get('CashierNo'));
+            $prep = $dbc->prepare($query);
+            $result = $dbc->execute($prep, $args);
         }
 
-        $num_rows = $db->num_rows($result);
+        $ret = array();
+        while ($row = $dbc->fetchRow($result)) {
+            $ret[] = $row;
+        }
+
+        return $ret;
+    }
+    
+    function body_content()
+    {
+        $trans = $this->getTransactions();
+        $num_rows = count($trans);
         ?>
 
         <div class="baseHeight">
         <div class="listbox">
-        <form id="selectform" name="selectform" onsubmit="return submitWrapper();">
-        <select name="selectlist" size="10" onblur="$('#selectlist').focus()"
+        <form id="selectform" name="selectform" 
+            onsubmit="return cablist.submitWrapper('<?php echo $this->page_url; ?>');">
+        <select name="selectlist" size="15" onblur="$('#selectlist').focus()"
             id="selectlist">
 
         <?php
         $selected = "selected";
-        for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db->fetch_array($result);
+        foreach ($trans as $row) {
             echo "<option value='".$row["emp_no"]."-".$row["register_no"]."-".$row["trans_no"]."'";
             echo $selected;
             echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".$row["emp_no"]
@@ -124,11 +119,28 @@ class cablist extends NoInputPage
         ?>
 
         </select>
-        </form>
         </div>
+        <?php
+        if ($this->session->get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        ?>
         <div class="listboxText coloredText centerOffset">
-        use arrow keys to navigate<br />[enter] to reprint receipt<br />[clear] to cancel
+        <?php echo _("use arrow keys to navigate"); ?><br />
+        <p>
+            <button type="submit" class="pos-button wide-button coloredArea">
+            <?php echo _('Reprint'); ?> <span class="smaller"><?php echo _('[enter]'); ?></span>
+            </button>
+        </p>
+        <p>
+            <button type="submit" class="pos-button wide-button errorColoredArea"
+            onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+            <?php echo _('Cancel'); ?> <span class="smaller"><?php echo _('[clear]'); ?></span>
+        </button></p>
         </div>
+        </form>
         <div class="clear"></div>
         </div>
 
@@ -136,7 +148,5 @@ class cablist extends NoInputPage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new cablist();
+AutoLoader::dispatch();
 
-?>

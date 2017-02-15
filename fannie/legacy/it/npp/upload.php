@@ -1,9 +1,9 @@
 <?php
 if (isset($_POST['MAX_FILE_SIZE'])){
-	move_uploaded_file($_FILES['upload']['tmp_name'],"csv/unfi.zip");
-	$output = system("unzip csv/unfi.zip -d csv/ &> /dev/null");
-	unlink("csv/unfi.zip");
-	header("Location: readall.php");
+    move_uploaded_file($_FILES['upload']['tmp_name'],"csv/unfi.zip");
+    $output = system("unzip csv/unfi.zip -d csv/ &> /dev/null");
+    unlink("csv/unfi.zip");
+    header("Location: readall.php");
 }
 else {
 ?>
@@ -22,4 +22,4 @@ Filename: <input type="file" id="file" name="upload" />
 </html>
 <?php
 }
-?>
+

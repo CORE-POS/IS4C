@@ -26,7 +26,7 @@ if (isset($_POST['name']) && !isset($_POST['proj0'])){
   echo "<table cellspacing=2 cellpadding=2 border=1><tr><th>Description</th><th>Request Date</th>";
   echo "<th>Priority</th><th>Include</th><th>No details</th></tr>";  
   $complete_flag = false;
-  while ($row = $sql->fetch_array($r)){
+  while ($row = $sql->fetchRow($r)){
     if (!$complete_flag && $row['status'] == 2){
        echo "</table>";
        echo "<h3>Completed</h3>";
@@ -86,7 +86,7 @@ else if (isset($_POST['proj0'])){
   for ($i = 0; $i < count($projID); $i++){
     if ($include[$i]){
       $r = $sql->execute($q, array($projID[$i]));
-      $row = $sql->fetch_array($r);
+      $row = $sql->fetchRow($r);
       echo "Project: <a href=project.php?projID=$projID[$i]>{$row['projDesc']}</a><br />";
       echo "Request date: {$row['reqestDate']} Priority: {$row['priority']}<br />";
       if ($row['status'] == 2)
@@ -100,7 +100,7 @@ else if (isset($_POST['proj0'])){
         if ($num > 0){
           echo "<br /><u>Additional notes on this project:</u><br />";
           for ($j = 0; $j < $num; $j++){
-            $row = $sql->fetch_array($notesR);
+            $row = $sql->fetchRow($notesR);
             echo "Posted by {$row['ITName']} on {$row['stamp']}";
             echo "<blockquote>{$row['notes']}</blockquote>";
           }
@@ -115,7 +115,7 @@ else {
   echo "<select name=name>\n";
   $q = "select distinct ITName from projects where ITName is not NULL";
   $r = $sql->query($q);
-  while ($row = $sql->fetch_array($r)){
+  while ($row = $sql->fetchRow($r)){
     echo "<option>".$row['ITName']."</option>\n";
   }  
   echo "</select>\n";
@@ -124,4 +124,3 @@ else {
   echo "</form>";
 }
 
-?>

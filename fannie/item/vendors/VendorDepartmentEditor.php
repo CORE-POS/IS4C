@@ -3,14 +3,14 @@
 
     Copyright 2009,2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,10 +30,14 @@ class VendorDepartmentEditor extends FanniePage {
     protected $title = "Fannie : Manage Vendors";
     protected $header = "Manage Vendors";
 
-    public $description = '[Vendor Departments] manages vendor-specific departments or categories.
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
+
+    public $description = '[Vendor Subcategories] manages vendor-specific subcategories.
     These are distinct from POS departments.';
 
-    function preprocess(){
+    function preprocess()
+    {
 
         $ajax = FormLib::get_form_value('action');
         if ($ajax !== ''){
@@ -44,38 +48,42 @@ class VendorDepartmentEditor extends FanniePage {
         return True;
     }
 
-    function ajax_callbacks($action){
+    function ajax_callbacks($action)
+    {
         global $FANNIE_OP_DB;
+        $json = array('error' => 0);
         switch($action){
         case 'createCat':
-            $this->createVendorDepartment(
-                FormLib::get_form_value('vid'),
-                FormLib::get_form_value('deptID'),
-                FormLib::get_form_value('name')
+            $json = $this->createVendorDepartment(
+                FormLib::get('vid'),
+                FormLib::get('deptID'),
+                FormLib::get('name')
             );
+            echo json_encode($json);
             break;
         case 'deleteCat':
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $q = $dbc->prepare_statement("DELETE FROM vendorDepartments
+            $delP = $dbc->prepare("DELETE FROM vendorDepartments
                 WHERE vendorID=? AND deptID=?");
-            $dbc->exec_statement($q,
-                array(FormLib::get_form_value('vid'),
-                FormLib::get_form_value('deptID')) );
-            echo "Department deleted";
+            $gone = $dbc->execute($delP, array(FormLib::get('vid'), FormLib::get('deptID')));
+            if (!$gone) {
+                $json['error'] = 'Error deleting #' + FormLib::get('deptID');
+            }
+            echo json_encode($json);
             break;
         case 'updateCat':
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $q = $dbc->prepare_statement("UPDATE vendorDepartments
-                SET name=?, margin=?
-                WHERE vendorID=? AND deptID=?");
-            $args = array(
-                FormLib::get_form_value('name'),
-                trim(FormLib::get_form_value('margin',0),'%')/100,
-                FormLib::get_form_value('vid'),
-                FormLib::get_form_value('deptID')
-            );
-            $dbc->exec_statement($q,$args);
-            echo 'Saved';
+            $dept = new VendorDepartmentsModel($dbc);
+            $dept->vendorID(FormLib::get('vid'));
+            $dept->deptID(FormLib::get('deptID'));
+            $dept->name(FormLib::get('name'));
+            $dept->margin(trim(FormLib::get('margin',0), '%') / 100.00);
+            $dept->posDeptID(FormLib::get('pos'));
+            $saved = $dept->save();
+            if ($saved === false) {
+                $json['error'] = 'Error saving #' . FormLib::get('deptID');
+            }
+            echo json_encode($json);
             break;
         default:
             echo 'bad request';
@@ -83,45 +91,57 @@ class VendorDepartmentEditor extends FanniePage {
         }
     }
 
-    private function createVendorDepartment($vid,$did,$name){
+    private function createVendorDepartment($vid,$did,$name)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $json = array('error' => 0);
         
-        $chkQ = $dbc->prepare_statement("SELECT * FROM vendorDepartments WHERE
+        $chkQ = $dbc->prepare("SELECT * FROM vendorDepartments WHERE
                 vendorID=? AND deptID=?");
-        $chkR = $dbc->exec_statement($chkQ,array($vid,$did));
-        if ($dbc->num_rows($chkR) > 0){
-            echo "Number #$did is already in use!";
-            return;
+        $chkR = $dbc->execute($chkQ,array($vid,$did));
+        if ($dbc->numRows($chkR) > 0) {
+            $json['error'] = "Number #$did is already in use!";
         }
 
-        $insQ = $dbc->prepare_statement("INSERT INTO vendorDepartments (vendorID,deptID,
+        $insQ = $dbc->prepare("INSERT INTO vendorDepartments (vendorID,deptID,
             name,margin,testing,posDeptID) VALUES (?,?,
             ?,0.00,0.00,0)");
-        $insR = $dbc->exec_statement($insQ,array($vid,$did,$name));
+        $insR = $dbc->execute($insQ,array($vid,$did,$name));
+
+        if ($insR) {
+            $row = array('deptID'=>$did, 'name'=>$name, 'margin'=>0, 'posDeptID'=>0);
+            $json['row'] = $this->rowToTable($did, $row);
+        } else {
+            $json['error'] = 'Error creating new subcategory';
+        }
     
-        echo "Department created";
+        return $json;
     }
 
-    function body_content(){
-        global $FANNIE_URL;
+    function body_content()
+    {
         $vid = FormLib::get_form_value('vid');
-        if ($vid === '')
-            return "<i>Error: no vendor selected</i>";
+        if ($vid === '') {
+            return '<div class="alert alert-danger">Error: no vendor selected</div>';
+        }
 
         ob_start();
         ?>
+        <div id="alert-area"></div>
         <div id="newdeptdiv">
-        <a href="" onclick="$('#newform').show(); return false;">New vendor department</a>
-        <div id="newform" style="display:none;">
-        <p />
-        <b>No.</b> <input type=text size=4 id=newno />
-        &nbsp;&nbsp;&nbsp;
-        <b>Name</b> <input type=text id=newname />
-        <p />
-        <input onclick="newdept();" type=submit value="Add department" />
-        &nbsp;&nbsp;&nbsp;
-        <a href="" onclick="$('#newform').hide(); return false;">Cancel</a>
+        <a href="" onclick="$('#newform').show();$('#newno').focus(); return false;">New vendor subcategory</a>
+        <div id="newform" class="collapse">
+            <div class="form-group">
+                <label>No.</label>
+                <input type=number id=newno class="form-control" />
+                <label>Name</label>
+                <input type=text id=newname class="form-control" />
+            </div>
+            <button onclick="vDept.newdept();return false;" type=submit 
+                class="btn btn-default">Add subcategory</button>
+            &nbsp;&nbsp;&nbsp;
+            <a href="" onclick="$('#newform').hide(); return false;">Cancel</a>
         </div>
         </div>
         <hr />
@@ -129,7 +149,6 @@ class VendorDepartmentEditor extends FanniePage {
         <?php echo $this->vendorDeptDisplay($vid); ?>
         </div>
         <input type="hidden" id="vendorID" value="<?php echo $vid; ?>" />
-        <input type="hidden" id="urlpath" value="<?php echo $FANNIE_URL; ?>" />
         <?php
 
         $this->add_script('vdepts.js');
@@ -137,44 +156,99 @@ class VendorDepartmentEditor extends FanniePage {
         return ob_get_clean();
     }
 
-    private function vendorDeptDisplay($id){
-        global $FANNIE_OP_DB, $FANNIE_URL;
+    private function vendorDeptDisplay($id)
+    {
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
-        $nameQ = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
-        $nameR = $dbc->exec_statement($nameQ,array($id));
-        $name = array_pop($dbc->fetch_row($nameR));
+        $v = new VendorsModel($dbc);
+        $v->vendorID($id);
+        $v->load();
+        $name = $v->vendorName();
 
-        $ret = "<b>Departments in $name</b><br />";
-        $ret .= "<table cellspacing=0 cellpadding=4 border=1>";
-        $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th>
+        $ret = "<strong>Subcategories in $name</strong><br />";
+        $ret .= "<table class=\"table\">"; 
+        $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th><th>POS Dept#</th>
             <th>&nbsp;</th><th>&nbsp;</th></tr>";
 
-        $deptQ = $dbc->prepare_statement("SELECT * FROM vendorDepartments WHERE vendorID=?
-            ORDER BY deptID");;
-        $deptR = $dbc->exec_statement($deptQ,array($id));
-        while($row = $dbc->fetch_row($deptR)){
-            $ret .= sprintf("<tr>
-                <td>%d</td>
-                <td id=nametd%d>%s</td>
-                <td id=margintd%d>%.2f%%</td>
-                <td id=button%d><a href=\"\" onclick=\"edit(%d);return false;\">
-                <img src=\"%s\" alt=\"Edit\" border=0 /></a></td>
-                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">
-                <img src=\"%s\" alt=\"Delete\" border=0 /></a></td>
-                </tr>",
-                $row[1],$row[1],$row[2],$row[1],
-                $row[3]*100,
-                $row[1],$row[1],
-                $FANNIE_URL.'src/img/buttons/b_edit.png',
-                $row[1],$row[2],
-                $FANNIE_URL.'src/img/buttons/b_drop.png');
+        $deptQ = $dbc->prepare("
+            SELECT d.vendorID,
+                deptID,
+                name,
+                margin,
+                testing,
+                posDeptID
+            FROM vendorDepartments AS d
+            WHERE d.vendorID=?
+            ORDER BY deptID");
+        $deptR = $dbc->execute($deptQ,array($id));
+        while ($row = $dbc->fetchRow($deptR)){
+            $ret .= $this->rowToTable($id, $row);
         }
         $ret .= "</table>";
+
+        $ret .= '<p><a href="VendorIndexPage.php?vid=' . $id . '" class="btn btn-default">Home</a></p>';
+
         return $ret;
+    }
+
+    private function rowToTable($id, $row)
+    {
+        return sprintf("<tr id=\"row-%d\">
+            <td>%d</td>
+            <td id=nametd%d>%s</td>
+            <td id=margintd%d>%.2f%%</td>
+            <td id=posdepttd%d>%d</td>
+            <td id=button%d>
+                <a href=\"\" onclick=\"vDept.edit(%d);return false;\"
+                    class=\"edit-link\">%s</a>
+                <a href=\"\" onclick=\"vDept.save(%d);return false;\"
+                    class=\"save-link collapse\">%s</a>
+            </td>
+            <td><a href=\"\" onclick=\"vDept.deleteCat(%d,'%s');return false\">%s</a></td>
+            <td><a href=\"../../reports/VendorCategory/VendorCategoryReport.php?id=%d&category=%d\"
+                title=\"View Items in this Category\">
+                <span class=\"glyphicon glyphicon-th-list\"></span>
+                </a></td>
+            </tr>",
+            $row['deptID'],
+            $row['deptID'],
+            $row['deptID'], $row['name'],
+            $row['deptID'], $row['margin']*100,
+            $row['deptID'], $row['posDeptID'],
+            $row['deptID'],
+            $row['deptID'],
+            \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
+            $row['deptID'],
+            \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
+            $row['deptID'], $row['name'],
+            \COREPOS\Fannie\API\lib\FannieUI::deleteIcon(),
+            $id, $row['deptID'] 
+        );
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Vendor subcategories are distinct from POS\' department
+            hierarchy. The primary purpose for dividing vendor
+            items into vendor-specific subcategories is that specialize
+            margin targets can be assigned to each vendor subcategory.
+            </p>
+            <p>
+            To simply set a vendor-specific margin, create a single
+            vendor subcategory containing all the vendor\'s items.
+            Depending how entries were created, this should be
+            vendor subcategory #0 or #1.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->vendorDeptDisplay(1)));
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

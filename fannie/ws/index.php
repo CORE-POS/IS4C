@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -106,7 +106,7 @@ if (!class_exists($input->method)) {
 
 $service_class = $input->method;
 $service_obj = new $service_class();
-if (!$service_obj instanceof FannieWebService) {
+if (!$service_obj instanceof \COREPOS\Fannie\API\webservices\FannieWebService) {
     $response['error'] = array(
         'code' => -32601,
         'message' => 'Method not found',

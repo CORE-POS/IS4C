@@ -3,7 +3,7 @@
 
     Copyright 2007 Alberta Cooperative Grocery, Portland, Oregon.
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,8 +32,7 @@ class MemCorrectionIndex extends FanniePage {
     protected $header='Make Member Corrections';
 
     public $description = '[Member Correction Menu] lists tools for correcting account imbalances.';
-
-    private $msgs = '';
+    public $themed = true;
 
     function body_content(){
         ob_start();
@@ -46,10 +45,23 @@ class MemCorrectionIndex extends FanniePage {
         <li><a href="correction_pages/PatronageTransferTool.php">Transfer Patronage</a></li>
         </ul>
         <?php
-        return $this->msgs.ob_get_clean();
+        return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This is a set of tools for adjusting activity on a member
+            account or moving activity from one member account to
+            another.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

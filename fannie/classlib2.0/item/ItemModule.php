@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,17 +21,50 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\item;
+
 class ItemModule 
 {
+    const META_WIDTH_FULL = 100;
+    const META_WIDTH_HALF = 50;
+    const META_WIDTH_THIRD = 33;
+
+    protected $config;
+    protected $connection;
+    protected $form;
 
     public function db()
     {
-        global $FANNIE_ROOT,$FANNIE_OP_DB;
-        if (!class_exists('FannieDB')) {
-            include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+        if (is_object($this->connection)) {
+            return $this->connection;
         }
 
-        return FannieDB::get($FANNIE_OP_DB);
+        if (!class_exists('FannieDB')) {
+            include_once(dirname(__FILE__) . '/../data/FannieDB.php');
+        }
+
+        return \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
+    }
+
+    public function setConfig(\FannieConfig $c)
+    {
+        $this->config = $c; 
+    }
+
+    public function setForm(\COREPOS\common\mvc\ValueContainer $f)
+    {
+        $this->form = $f;
+    }
+
+    public function setConnection(\SQLManager $s)
+    {
+        $this->connection = $s;
+    }
+
+
+    public function width()
+    {
+        return self::META_WIDTH_FULL;
     }
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)

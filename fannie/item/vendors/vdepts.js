@@ -1,82 +1,119 @@
-function deleteCat(num,name){
-	var vid = $('#vendorID').val();
-	if (confirm('Delete '+name+' ('+num+')?')){
-		$.ajax({
-			url: 'VendorDepartmentEditor.php',
-			type: 'POST',
-			timeout: 5000,
-			data: 'deptID='+num+'&vid='+vid+'&action=deleteCat',
-			error: function(){
-			alert('Error loading XML document');
-			},
-			success: function(resp){
-				alert(resp);
-				top.location='VendorDepartmentEditor.php?vid='+vid;
-			}
-		});
-	}
-}
+var vDept = (function($) {
+    var mod = {};
 
-function newdept(){
-	var vid = $('#vendorID').val();
-	var num = $('#newno').val();
-	var name = $('#newname').val();
+    var showError = function(msg) {
+        showBootstrapAlert('#alert-area', 'danger', msg);
+    };
 
-	$.ajax({
-		url: 'VendorDepartmentEditor.php',
-		type: 'POST',
-		timeout: 5000,
-		data: 'deptID='+num+'&vid='+vid+'&name='+name+'&action=createCat',
-		error: function(){
-		alert('Error loading XML document');
-		},
-		success: function(resp){
-			alert(resp);
-			if (resp == "Department created")
-				top.location='VendorDepartmentEditor.php?vid='+vid;
-		}
-	});
-}
+    mod.deleteCat = function(num,name){
+        var vid = $('#vendorID').val();
+        if (window.confirm('Delete '+name+' ('+num+')?')){
+            $.ajax({
+                url: 'VendorDepartmentEditor.php',
+                type: 'POST',
+                dataType: 'json',
+                timeout: 5000,
+                data: 'deptID='+num+'&vid='+vid+'&action=deleteCat'
+            }).fail(function(){
+                showError('Network error deleting #' + num);
+            }).done(function(resp){
+                if (resp.error) {
+                    showError(resp.error);
+                } else {
+                    $('#row-'+num).hide();
+                }
+            });
+        }
+    };
 
-function edit(did){
-	var name = $('#nametd'+did).html();
-	var margin = $('#margintd'+did).html();
-	var path = $('#urlpath').val();
+    mod.newdept = function(){
+        var vid = $('#vendorID').val();
+        var num = $('#newno').val();
+        var name = $('#newname').val();
 
-	$('#nametd'+did).html("<input id=in"+did+" type=text size=25 value=\""+name+"\" />");
-	$('#margintd'+did).html("<input id=im"+did+" type=text size=6 value=\""+margin+"\" />");
+        $.ajax({
+            url: 'VendorDepartmentEditor.php',
+            type: 'POST',
+            dataType: 'json',
+            timeout: 5000,
+            data: 'deptID='+num+'&vid='+vid+'&name='+name+'&action=createCat'
+        }).fail(function(){
+            showError('Network error creating department');
+        }).done(function(resp){
+            if (resp.error) {
+                showError(resp.error);
+            } else if (resp.row) {
+                $('.table').append(resp.row);
+                $('#newform').hide();
+                $('#newform :input').each(function(){
+                    $(this).val('');
+                });
+            } else {
+                showError('Error: invalid response from server');
+            }
+        });
+    };
 
-	var newbutton = "<a href=\"\" onclick=\"save("+did+"); return false;\">";
-	newbutton += "<img src=\""+path+"src/img/buttons/b_save.png\" ";
-	newbutton += "alt=\"Save\" border=0 /></a>";
-	$('#button'+did).html(newbutton);	
-}
+    mod.save = function(did)
+    {
+        var name = $('#in'+did).val();
+        var margin = $('#im'+did).val();
+        var pos = $('#ip'+did).val();
+        var vid = $('#vendorID').val();
 
-function save(did){
-	var name = $('#in'+did).val();
-	var margin = $('#im'+did).val();
-	var path = $('#urlpath').val();
-	var vid = $('#vendorID').val();
+        $('#nametd'+did).html(name);
+        $('#margintd'+did).html(margin);
+        $('#posdepttd'+did).html(pos);
 
-	$('#nametd'+did).html(name);
-	$('#margintd'+did).html(margin);
+        $('#button'+did+' .edit-link').show();
+        $('#button'+did+' .save-link').hide();
 
-	var newbutton = "<a href=\"\" onclick=\"edit("+did+"); return false;\">";
-	newbutton += "<img src=\""+path+"src/img/buttons/b_edit.png\" ";
-	newbutton += "alt=\"Edit\" border=0 /></a>";
-	$('#button'+did).html(newbutton);	
-	
-	name = encodeURIComponent(name);
-	$.ajax({
-		url: 'VendorDepartmentEditor.php',
-		type: 'POST',
-		timeout: 5000,
-		data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&action=updateCat',
-		error: function(){
-		alert('Error loading XML document');
-		},
-		success: function(resp){
-			// do nothing
-		}
-	});
-}
+        name = encodeURIComponent(name);
+        $.ajax({
+            url: 'VendorDepartmentEditor.php',
+            type: 'POST',
+            dataType: 'json',
+            timeout: 5000,
+            data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&pos='+pos+'&action=updateCat'
+        }).fail(function(){
+            showError('Network error saving #' + did);
+        }).done(function(resp){
+            if (resp.error) {
+                showError(resp.error);
+            } else {
+                showBootstrapAlert('#alert-area', 'success', 'Saved #' + did);
+            }
+        });
+    };
+
+    var inputTag = function(did, prefix, value) {
+        var ret = '<input id="' + prefix + did + '" type="text" '
+            + 'class="form-control save-' + did + '" '
+            + 'value="' + value + '" />';
+
+        return ret;
+    };
+
+    mod.edit = function(did)
+    {
+        var name = $('#nametd'+did).html();
+        var margin = $('#margintd'+did).html();
+        var pos = $('#posdepttd'+did).html();
+
+        $('#nametd'+did).html(inputTag(did, 'in', name));
+        $('#margintd'+did).html(inputTag(did, 'im', margin));
+        $('#posdepttd'+did).html(inputTag(did, 'ip', pos));
+
+        $('#button'+did+' .edit-link').hide();
+        $('#button'+did+' .save-link').show();
+        $('#im'+did).focus();
+        $('.save-'+did).keydown(function(event) {
+            if (event.which === 13) {
+                mod.save(did);
+            }
+        });
+    };
+
+    return mod;
+
+}(jQuery));

@@ -9,9 +9,8 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 $sql = $dbc;
 
 if (!function_exists('add_second_server')){
-	function add_second_server(){
-		return;
-	}
+    function add_second_server(){
+        return;
+    }
 }
 
-?>

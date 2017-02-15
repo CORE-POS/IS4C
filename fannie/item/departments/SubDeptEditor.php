@@ -3,14 +3,14 @@
 
     Copyright 2009,2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -26,95 +26,113 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SubDeptEditor extends FanniePage {
+class SubDeptEditor extends FanniePage 
+{
     protected $title = "Fannie : Manage Subdepartments";
     protected $header = "Manage Subdepartments";
 
-    public $description = '[Subdepartment Editor] manges POS sub departments.';
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
 
-    function preprocess(){
+    public $description = '[Subdepartment Editor] manges POS sub departments.';
+    public $themed = true;
+
+    public function preprocess()
+    {
         /* allow ajax calls */
-        if(FormLib::get_form_value('action') !== ''){
+        if (FormLib::get_form_value('action') !== '') {
             $this->ajax_response(FormLib::get_form_value('action'));
-            return False;
+            return false;
         }
     
-        return True;
+        return true;
     }
 
-    function ajax_response($action){
-        switch($action){
-        case 'addSub':
-            $this->add_sub_dept(FormLib::get_form_value('name'),FormLib::get_form_value('did'));
-            echo $this->get_subs_as_options(FormLib::get_form_value('did'));
-            break;
-        case 'deleteSub':
-            $this->delete_sub_depts(FormLib::get_form_value('sid',array()));
-            echo $this->get_subs_as_options(FormLib::get_form_value('did'));
-            break;
-        case 'showSubsForDept':
-            echo $this->get_subs_as_options(FormLib::get_form_value('did'));
-            break;
-        default:
-            echo 'Bad request';
-            break;
+    private function ajax_response($action)
+    {
+        switch ($action) {
+            case 'addSub':
+                $this->add_sub_dept(FormLib::get('name'),FormLib::get('did'));
+                echo $this->get_subs_as_options(FormLib::get('did'));
+                break;
+            case 'deleteSub':
+                $this->delete_sub_depts(FormLib::get('sid',array()));
+                echo $this->get_subs_as_options(FormLib::get('did'));
+                break;
+            case 'showSubsForDept':
+                echo $this->get_subs_as_options(FormLib::get('did'));
+                break;
+            default:
+                echo 'Bad request';
+                break;
         }
     }
 
-    private function add_sub_dept($name, $deptID){
+    private function add_sub_dept($name, $deptID)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $p = $dbc->prepare_statement("SELECT max(subdept_no) FROM subdepts");
-        $res = $dbc->exec_statement($p);
+        $p = $dbc->prepare("SELECT max(subdept_no) FROM subdepts");
+        $res = $dbc->execute($p);
         $sid = 1;
-        if ($dbc->num_rows($res) > 0){
-            $tmp = array_pop($dbc->fetch_row($res));
-            if (is_numeric($tmp)) $sid = $tmp+1;
+        if ($dbc->num_rows($res) > 0) {
+            $row = $dbc->fetch_row($res);
+            $tmp = $row[0];
+            if (is_numeric($tmp)) {
+                $sid = $tmp+1;
+            }
         }
 
-        $ins = $dbc->prepare_statement('INSERT INTO subdepts VALUES (?,?,?)');  
-        $dbc->exec_statement($ins,array($sid, $name, $deptID));
+        $ins = $dbc->prepare('INSERT INTO subdepts VALUES (?,?,?)');  
+        $dbc->execute($ins,array($sid, $name, $deptID));
     }
 
-    private function delete_sub_depts($ids){
+    private function delete_sub_depts($ids)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        if (!is_array($ids)) $ids = array();
-        $delP = $dbc->prepare_statement('DELETE FROM subdepts WHERE subdept_no=?');
-        foreach($ids as $id)
-            $dbc->exec_statement($delP, array($id));
+        if (!is_array($ids)) {
+            $ids = array();
+        }
+        $delP = $dbc->prepare('DELETE FROM subdepts WHERE subdept_no=?');
+        foreach ($ids as $id) {
+            $dbc->execute($delP, array($id));
+        }
     }
 
-    private function get_subs_as_options($deptID){
+    private function get_subs_as_options($deptID)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $p = $dbc->prepare_statement("SELECT subdept_no,subdept_name FROM subdepts
+        $p = $dbc->prepare("SELECT subdept_no,subdept_name FROM subdepts
                 WHERE dept_ID=? ORDER BY subdept_name");
-        $r = $dbc->exec_statement($p,array($deptID));
+        $r = $dbc->execute($p,array($deptID));
         
         $ret = '';
-        while($w = $dbc->fetch_row($r)){
+        while ($w = $dbc->fetch_row($r)) {
             $ret .= sprintf('<option value="%d">%s</option>',
                     $w['subdept_no'],$w['subdept_name']);
         }
+
         return $ret;
     }
 
-    function body_content(){
+    public function body_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $superQ = $dbc->prepare_statement("SELECT d.dept_no,dept_name FROM departments as d
+        $superQ = $dbc->prepare("SELECT d.dept_no,dept_name FROM departments as d
             ORDER BY d.dept_no");
-        $superR = $dbc->exec_statement($superQ);
+        $superR = $dbc->execute($superQ);
         $opts = "";
         $firstID = False;
         $firstName = "";
-        while($superW = $dbc->fetch_row($superR)){
+        while ($superW = $dbc->fetch_row($superR)) {
             $opts .= "<option value=$superW[0]>$superW[0] $superW[1]</option>";
-            if ($firstID === False){
+            if ($firstID === false) {
                 $firstID = $superW[0];
                 $firstName = $superW[1];
             }
@@ -122,22 +140,29 @@ class SubDeptEditor extends FanniePage {
 
         ob_start();
         ?>
-        Choose a department: <select id=deptselect onchange="showSubsForDept(this.value);">
+        <div id="alertarea"></div>
+        <label class="control-label">Choose a department</label>
+        <select class="form-control" id=deptselect onchange="subDept.show(this.value);">
         <?php echo $opts ?>
         </select>
         <hr />
-        <div>
-        <div style="float:left; display:none; padding-right:10px; border-right:solid 1px #999999;" id="subdiv">
-        <span id=subname></span><br />
-        <select id=subselect size=12 style="min-width:100px;" multiple></select>
+        <div class="col-sm-3">
+            <p id="subdiv">
+                <label class="control-label" id=subname></label>
+                <select class="form-control" id=subselect size=12 multiple></select>
+            </p>
         </div>
-        <div style="float:left; margin-left:10px; display:none;" id="formdiv">
-        <span>Add/Remove</span><br />
-        <input type=text size=7 id=newname /> 
-        <input type=submit value=Add onclick="addSub(); return false;" />
-        <p />
-        <input type=submit value="Delete Selected" onclick="deleteSub(); return false;" />
-        </div>
+        <div id="formdiv" class="col-sm-3">
+            <label class="control-label">Add Sub Department</label>
+            <input type=text class="form-control" id=newname placeholder="New Sub Department Name" /> 
+            <p>
+                <button type=submit value=Add onclick="subDept.add(); return false;"
+                    class="btn btn-default">Add</button>
+            </p>
+            <p>
+                <button type=submit value="Delete Selected" onclick="subDept.del(); return false;"
+                    class="btn btn-default">Delete Selected</button>
+            </p>
         </div>
         <?php
 
@@ -146,8 +171,21 @@ class SubDeptEditor extends FanniePage {
         
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>A department may contain multiple sub departments.
+            This layer of categorization is strictly for reporting and
+            organization.</p>
+            <p>This field is not supported much in the current release
+            although local customizations or plugins may differ.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

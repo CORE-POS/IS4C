@@ -2,10 +2,14 @@
 include('../../../../config.php');
 include_once($FANNIE_ROOT.'src/SQLManager.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!function_exists('wfc_am_get_names')) {
+    include(dirname(__FILE__) . '/lib.php');
+}
 
-if (isset($_REQUEST['excel'])){
+if (FormLib::get('excel') !== '') {
+    $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
     header('Content-Type: application/ms-excel');
-    header('Content-Disposition: attachment; filename="AnnualMtg2011.xls"');
+    header('Content-Disposition: attachment; filename="AnnualMtg2011.' . $ext . '"');
     ob_start();
 }
 else {
@@ -18,11 +22,12 @@ $fannieDB = FannieDB::get($FANNIE_OP_DB);
 $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
     $fannieDB->concat('c.FirstName',"' '",'c.LastName','')." as name,
     m.phone, m.email_1 as email,
-    SUM(CASE WHEN charflag IN ('M','V','S') THEN quantity ELSE 0 END)-1 as guest_count,
+    SUM(CASE WHEN charflag IN ('M','V','N','W') THEN quantity ELSE 0 END)-1 as guest_count,
     SUM(CASE WHEN charflag IN ('K') THEN quantity ELSE 0 END) as child_count,
     SUM(CASE WHEN charflag = 'M' THEN quantity ELSE 0 END) as chicken,
     SUM(CASE WHEN charflag = 'V' THEN quantity ELSE 0 END) as veg,
-    SUM(CASE WHEN charflag = 'S' THEN quantity ELSE 0 END) as vegan,
+    SUM(CASE WHEN charflag = 'N' THEN quantity ELSE 0 END) as mgf,
+    SUM(CASE WHEN charflag = 'W' THEN quantity ELSE 0 END) as vgf,
     'pos' AS source
     FROM ".$FANNIE_TRANS_DB.$fannieDB->sep()."dlog AS d
     LEFT JOIN custdata AS c ON c.CardNo=d.card_no AND c.personNum=1
@@ -43,13 +48,14 @@ while($hereW = $fannieDB->fetch_row($hereR)){
     $records[] = $hereW;
 }
 
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
 // online registrations
-$q = "SELECT tdate,r.card_no,name,email,
+$query = "SELECT tdate,r.card_no,name,email,
     phone,guest_count,child_count,
     SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as chicken,
     SUM(CASE WHEN m.subtype=2 THEN 1 ELSE 0 END) as veg,
-    SUM(CASE WHEN m.subtype=3 THEN 1 ELSE 0 END) as vegan,
+    SUM(CASE WHEN m.subtype=3 THEN 1 ELSE 0 END) as mgf,
+    SUM(CASE WHEN m.subtype=4 THEN 1 ELSE 0 END) as vgf,
     'website' AS source
     FROM registrations AS r LEFT JOIN
     regMeals AS m ON r.card_no=m.card_no
@@ -57,73 +63,58 @@ $q = "SELECT tdate,r.card_no,name,email,
     GROUP BY tdate,r.card_no,name,email,
     phone,guest_count,child_count
     ORDER BY tdate";
-$r = $dbc->query($q);
-while($w = $dbc->fetch_row($r)){
-    $records[] = $w;
+$res = $dbc->query($query);
+while($row = $dbc->fetch_row($res)){
+    $records[] = $row;
 }
 echo '<table cellspacing="0" cellpadding="4" border="1">
     <tr>
     <th>Reg. Date</th><th>Owner#</th><th>Last Name</th><th>First Name</th>
-    <th>Email</th><th>Ph.</th><th>Adults</th><th>Steak</th><th>Risotto</th><th>Squash</th>
+    <th>Email</th><th>Ph.</th><th>Adults</th><th>Pork</th><th>Veg</th><th>Pork G/F</th><th>Veg G/F</th>
     <th>Kids</th><th>Source</th>
     </tr>';
 $sum = 0;
 $ksum = 0;
 $xsum = 0;
 $vsum = 0;
-$gsum = 0;
+$mgsum = 0;
+$vgsum = 0;
 foreach($records as $w){
-    if (!strstr($w['email'],'@') && !preg_match('/\d+/',$w['email']) &&
-        $w['email'] != 'no email'){
-        $w['name'] .= ' '.$w['email'];  
-        $w['email'] = '';
-    }
-    $ln = ""; $fn="";
-    if (strstr($w['name'],' ')){
-        $w['name'] = trim($w['name']);
-        $parts = explode(' ',$w['name']);
-        if (count($parts) > 1){
-            $ln = $parts[count($parts)-1];
-            for($i=0;$i<count($parts)-1;$i++)
-                $fn .= ' '.$parts[$i];
-        }
-        else if (count($parts) > 0)
-            $ln = $parts[0];
-    }
-    else
-        $ln = $w['name'];
+    list($w['email'], $w['name']) = wfc_am_check_email($w['email'], $w['name']);
+    list($fname, $lname) = wfc_am_get_names($w['name']);
     printf('<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
         <td>%s</td><td>%s</td><td>%d</td><td>%d</td>
-        <td>%d</td><td>%d</td><td>%d</td><td>%s</td></tr>',
-        $w['tdate'],$w['card_no'],$ln,$fn,$w['email'],
-        $w['phone'],$w['guest_count']+1,$w['chicken'],$w['veg'],$w['vegan'],$w['child_count'],
+        <td>%d</td><td>%d</td>
+        <td>%d</td><td>%d</td><td>%s</td></tr>',
+        $w['tdate'],$w['card_no'],$lname,$fname,$w['email'],
+        $w['phone'],$w['guest_count']+1,$w['chicken'],$w['veg'],
+        $w['mgf'], $w['vgf'], $w['child_count'],
         $w['source']
     );
     $sum += ($w['guest_count']+1);
     $ksum += $w['child_count'];
     $xsum += $w['chicken'];
     $vsum += $w['veg'];
-    $gsum += $w['vegan'];
+    $mgsum += $w['mgf'];
+    $vgsum += $w['vgf'];
 }
 echo '<tr><th colspan="6" align="right">Totals</th>';
 echo '<td>'.$sum.'</td>';
 echo '<td>'.$xsum.'</td>';
 echo '<td>'.$vsum.'</td>';
-echo '<td>'.$gsum.'</td>';
+echo '<td>'.$mgsum.'</td>';
+echo '<td>'.$vgsum.'</td>';
 echo '<td>'.$ksum.'</td>';
 echo '<td>&nbsp;</td>';
 echo '</table>';
 
-if (isset($_REQUEST['excel'])){
+if (FormLib::get('excel') !== '') {
     $output = ob_get_contents();
     ob_end_clean();
 
-    include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-    include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
-    $array = HtmlToArray($output);
-    $xls = ArrayToXls($array);
+    $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($output);
+    $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($array);
     
     echo $xls;
 }
 
-?>

@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -49,8 +49,8 @@ if($buyer == -1){
     echo "All";
 } else {
     $sdQ = "SELECT super_name FROM superDeptNames WHERE superID = ?";
-    $sdP = $dbc->prepare_statement($sdQ);
-    $sdR = $dbc->exec_statement($sdP,array($buyer));
+    $sdP = $dbc->prepare($sdQ);
+    $sdR = $dbc->execute($sdP,array($buyer));
     $superDept = "";
     while($row = $dbc->fetch_row($sdR)){
         $superDept = $row['super_name'];
@@ -131,8 +131,8 @@ else {
     echo " <a href='javascript:history.back();'>Back</a>";
 }
 $sum = 0;
-$prep = $dbc->prepare_statement($hourlySalesQ);
-$result = $dbc->exec_statement($prep,$args);
+$prep = $dbc->prepare($hourlySalesQ);
+$result = $dbc->execute($prep,$args);
 echo "<table cellspacing=0 cellpadding=4 border=1>";
 $minhour = 24;
 $maxhour = 0;
@@ -224,4 +224,4 @@ if (isset($_REQUEST['excel']))
     echo "<p />Total: $sum";
 else
     echo "<p />Total: " . number_format($sum,2);
-?>
+

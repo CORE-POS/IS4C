@@ -21,9 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+
 class EveryoneSales extends FooterBox 
 {
-
     public $header_css_class = 'coloredText';
     public $display_css = "font-weight:bold;font-size:110%;";
     public $display_css_class = 'lightestColorText';
@@ -35,8 +36,7 @@ class EveryoneSales extends FooterBox
 
     public function display_content()
     {
-        global $CORE_LOCAL;
-        $saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
+        $saleTTL = (is_numeric($this->session->get("discounttotal"))) ? number_format($this->session->get("discounttotal"),2) : "0.00";
         return $saleTTL;
     }
 }

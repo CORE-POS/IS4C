@@ -21,11 +21,19 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
+use \CoreLocal;
+
 /**
   @class DisplayLib
   Functions for drawing display elements
 */
-class DisplayLib extends LibraryClass {
+class DisplayLib 
+{
 
 /**
   Get the standard footer with total and
@@ -37,120 +45,89 @@ class DisplayLib extends LibraryClass {
 */
 static public function printfooter($readOnly=False) 
 {
-	global $CORE_LOCAL;
+    $FOOTER_MODULES = CoreLocal::get("FooterModules");
+    // use defaults if modules haven't been configured
+    // properly
+    if (!is_array($FOOTER_MODULES) || count($FOOTER_MODULES) != 5) {
+        $FOOTER_MODULES = array(
+        'SavedOrCouldHave',
+        'TransPercentDiscount',
+        'MemSales',
+        'EveryoneSales',
+        'MultiTotal'
+        );
+    }
+    
+    $modchain = array_map(function($class){ return FooterBox::factory($class); }, $FOOTER_MODULES);
 
-	$FOOTER_MODULES = $CORE_LOCAL->get("FooterModules");
-	// use defaults if modules haven't been configured
-	// properly
-	if (!is_array($FOOTER_MODULES) || count($FOOTER_MODULES) != 5) {
-		$FOOTER_MODULES = array(
-		'SavedOrCouldHave',
-		'TransPercentDiscount',
-		'MemSales',
-		'EveryoneSales',
-		'MultiTotal'
-		);
-	}
-	
-	$modchain = array();
-	foreach($FOOTER_MODULES as $MOD) {
-		$modchain[] = new $MOD();
-	}
-
-	if (!$readOnly) {
-		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-	}
-
-	if ($CORE_LOCAL->get("End") == 1 && !$readOnly) {
-		$CORE_LOCAL->set("runningTotal",-1 * $CORE_LOCAL->get("change"));
-	}
-	
-	if ($CORE_LOCAL->get("scale") == 1) {
-		$weight = number_format($CORE_LOCAL->get("weight"), 2)."lb.";
-	} else {
-		$weight = "_ _ _ _";
-	}
-
-	$ret = "<table>";
-	$ret .= "<tr class=\"heading\">";
-	$label = $modchain[0]->header_content();
-	$ret .= sprintf('<td class="first %s" style="%s">%s</td>',
-			$modchain[0]->header_css_class, $modchain[0]->header_css,$label);
-	$label = $modchain[1]->header_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[1]->header_css_class, $modchain[1]->header_css,$label);
-	$label = $modchain[2]->header_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[2]->header_css_class, $modchain[2]->header_css,$label);
-	$label = $modchain[3]->header_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[3]->header_css_class, $modchain[3]->header_css,$label);
-	$label = $modchain[4]->header_content();
-	$ret .= sprintf('<td class="total %s" style="%s">%s</td>',
-			$modchain[4]->header_css_class, $modchain[4]->header_css,$label);
-	$ret .= "</tr>";
-
-	$special = $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("staffSpecial");
-	$dbldiscounttotal = 0.00;
-	if (is_numeric($CORE_LOCAL->get('discounttotal'))) {
-		$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
+    if (!$readOnly) {
+        CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));
+    }
+    if (CoreLocal::get("End") == 1 && !$readOnly) {
+        CoreLocal::set("runningTotal",-1 * CoreLocal::get("change"));
+    }
+    $weight = "_ _ _ _";
+    if (CoreLocal::get("scale") == 1) {
+        $weight = number_format(CoreLocal::get("weight"), 2)."lb.";
     }
 
-	if ($CORE_LOCAL->get("isMember") == 1) {
-		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special, 2);
-		if (!$readOnly) {
-			$CORE_LOCAL->set("yousaved",$dblyousaved);
-			$CORE_LOCAL->set("couldhavesaved",0);
-			$CORE_LOCAL->set("specials",number_format($dbldiscounttotal + $special, 2));
-		}
-	} else {
-		$dblyousaved = 0.00;
-		if (is_numeric($CORE_LOCAL->get('memSpecial'))) {
-			$dblyousaved = number_format($CORE_LOCAL->get("memSpecial"), 2);
+    $ret = "<table>";
+    $ret .= "<tr class=\"heading\">";
+    $classes = array('first', 'reg', 'reg', 'reg', 'total');
+    for ($i=0; $i<count($modchain); $i++) {
+        $label = $modchain[$i]->header_content();
+        $ret .= sprintf('<td class="%s %s" style="%s">%s</td>',
+                $classes[$i], $modchain[$i]->header_css_class, $modchain[$i]->header_css,$label);
+    }
+    $ret .= "</tr>";
+
+    $special = CoreLocal::get("memSpecial") + CoreLocal::get("staffSpecial");
+    $dbldiscounttotal = 0.00;
+    if (is_numeric(CoreLocal::get('discounttotal'))) {
+        $dbldiscounttotal = number_format(CoreLocal::get("discounttotal"), 2);
+    }
+
+    if (CoreLocal::get("isMember") == 1) {
+        $dblyousaved = number_format( CoreLocal::get("transDiscount") + $dbldiscounttotal + $special, 2);
+        if (!$readOnly) {
+            CoreLocal::set("yousaved",$dblyousaved);
+            CoreLocal::set("couldhavesaved",0);
+            CoreLocal::set("specials",number_format($dbldiscounttotal + $special, 2));
         }
-		if (!$readOnly) {
-			$CORE_LOCAL->set("yousaved",$dbldiscounttotal + $CORE_LOCAL->get("staffSpecial"));
-			$CORE_LOCAL->set("couldhavesaved",$dblyousaved);
-			$CORE_LOCAL->set("specials",$dbldiscounttotal + $CORE_LOCAL->get("staffSpecial"));
-		}
-	}
+    } else {
+        $dblyousaved = 0.00;
+        if (is_numeric(CoreLocal::get('memSpecial'))) {
+            $dblyousaved = number_format(CoreLocal::get("memSpecial"), 2);
+        }
+        if (!$readOnly) {
+            CoreLocal::set("yousaved",$dbldiscounttotal + CoreLocal::get("staffSpecial"));
+            CoreLocal::set("couldhavesaved",$dblyousaved);
+            CoreLocal::set("specials",$dbldiscounttotal + CoreLocal::get("staffSpecial"));
+        }
+    }
 
-	if (!$readOnly) {
-		if ($CORE_LOCAL->get("End") == 1) {
-			MiscLib::rePoll();
-		}
-		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") != 0) {
-			MiscLib::rePoll();
-		}
-	}
+    if (!$readOnly) {
+        if (CoreLocal::get("End") == 1) {
+            MiscLib::rePoll();
+        }
+        if (CoreLocal::get("scale") == 0 && CoreLocal::get("SNR") != 0) {
+            MiscLib::rePoll();
+        }
+    }
 
-	$ret .= "<tr class=\"values\">";
-	$box = $modchain[0]->display_content();
-	$ret .= sprintf('<td class="first %s" style="%s">%s</td>',
-			$modchain[0]->display_css_class,$modchain[0]->display_css,$box);
-	$box = $modchain[1]->display_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[1]->display_css_class,$modchain[1]->display_css,$box);
-	$box = $modchain[2]->display_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[2]->display_css_class,$modchain[2]->display_css,$box);
-	$box = $modchain[3]->display_content();
-	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-			$modchain[3]->display_css_class,$modchain[3]->display_css,$box);
-	$box = $modchain[4]->display_content();
-	$ret .= sprintf('<td class="total %s" style="%s">%s</td>',
-			$modchain[4]->display_css_class,$modchain[4]->display_css,$box);
-	$ret .= "</tr>";
-	$ret .= "</table>";
+    $ret .= "<tr class=\"values\">";
+    for ($i=0; $i<count($modchain); $i++) {
+        $box = $modchain[$i]->display_content();
+        $ret .= sprintf('<td class="%s %s" style="%s">%s</td>',
+                $classes[$i],$modchain[$i]->display_css_class,$modchain[$i]->display_css,$box);
+    }
+    $ret .= "</tr>";
+    $ret .= "</table>";
+    if (CoreLocal::get('Debug_JS')) {
+        $ret .= '<div id="jsErrorLog"></div>';
+    }
 
-	if (!$readOnly) {
-		$ret .= "<form name='hidden'>\n";
-		$ret .= "<input type='hidden' id='ccTermOut' name='ccTermOut' value=\"".$CORE_LOCAL->get("ccTermOut")."\">\n";
-		$ret .= "</form>";
-		$CORE_LOCAL->set("ccTermOut","idle");
-	}
-
-	return $ret;
+    return $ret;
 }
 
 //--------------------------------------------------------------------//
@@ -162,7 +139,7 @@ static public function printfooter($readOnly=False)
 */
 static public function plainmsg($strmsg) 
 {
-	return "<div id=\"plainmsg\" class=\"coloredText\">$strmsg</div>";
+    return "<div id=\"plainmsg\" class=\"coloredText\">$strmsg</div>";
 }
 
 
@@ -173,26 +150,45 @@ static public function plainmsg($strmsg)
   @param $strmsg the message
   @param $icon graphic icon file
   @param $noBeep don't send a scale beep
+  @param $buttons keyed array of touchable/clickable buttons
+    - key is the text shown on the button
+    - value is javascript executed onclick
   @return An HTML string
 
   This function will include the header
   printheaderb(). 
 */
-static public function msgbox($strmsg, $icon,$noBeep=False) 
+    // @hintable
+static public function msgbox($strmsg, $icon, $noBeep=false, $buttons=array()) 
 {
-	global $CORE_LOCAL;
-
-	$ret = self::printheaderb();
-	$ret .= "<div id=\"boxMsg\" class=\"centeredDisplay\">";
-	$ret .= "<div class=\"boxMsgAlert coloredArea\">";
-	$ret .= $CORE_LOCAL->get("alertBar");
-	$ret .= "</div>";
-	$ret .= "<div class=\"boxMsgBody\">";
-	$ret .= "<div class=\"msgicon\"><img src=\"$icon\" /></div>";
-	$ret .= "<div class=\"msgtext\">";
-	$ret .= $strmsg;
-	$ret .= "</div><div class=\"clear\"></div></div>";
-	$ret .= "</div>";
+    $ret = self::printheaderb();
+    $ret .= "<div id=\"boxMsg\" class=\"centeredDisplay\">";
+    $ret .= "<div class=\"boxMsgAlert coloredArea\">";
+    $ret .= CoreLocal::get("alertBar");
+    if (CoreLocal::get('alertBar') == '') {
+        $ret .= 'Alert';
+    }
+    $ret .= "</div>";
+    $ret .= "
+        <div class=\"boxMsgBody\">
+            <div class=\"msgicon\"><img src=\"$icon\" /></div>
+            <div class=\"msgtext\">"
+                . $strmsg . "
+            </div>
+            <div class=\"clear\"></div>
+        </div>";
+    if (!empty($buttons) && is_array($buttons)) {
+        $ret .= '<div class="boxMsgBody boxMsgButtons">';
+        foreach ($buttons as $label => $action) {
+            $label = preg_replace('/(\[.+?\])/', '<span class="smaller">\1</span>', $label);
+            $color = preg_match('/\[clear\]/i', $label) ? 'errorColoredArea' : 'coloredArea';
+            $ret .= sprintf('<button type="button" class="pos-button %s" 
+                        onclick="%s">%s</button>',
+                        $color, $action, $label);
+        }
+        $ret .= '</div>';
+    }
+    $ret .= "</div>"; // close #boxMsg
 
     // input has probably already been marked up for display. 
     // no need to re-wrap in various <div>s
@@ -200,41 +196,52 @@ static public function msgbox($strmsg, $icon,$noBeep=False)
         $ret = $strmsg;
     }
 
-	if (!$noBeep) {
-		MiscLib::errorBeep();
+    if (!$noBeep) {
+        MiscLib::errorBeep();
     }
 
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-	$CORE_LOCAL->set("msgrepeat",1);
+    CoreLocal::set("strRemembered",CoreLocal::get("strEntered"));
+    CoreLocal::set("msgrepeat",1);
 
-	return $ret;
+    return $ret;
 }
 //--------------------------------------------------------------------//
 
 /**
   Get a centered message box with "crossD" graphic
   @param $strmsg the message
+  @param $buttons see msgbox()
   @return An HTML string
 
   An alias for msgbox().
 */
-static public function xboxMsg($strmsg) 
+    // @hintable
+static public function xboxMsg($strmsg, $buttons=array()) 
 {
-	return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif");
+    return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif", false, $buttons);
 }
 
 /**
   Get a centered message box with "exclaimC" graphic
   @param $strmsg the message
-  @param $header does nothing...
+  @param $header title for the box
   @param $noBeep don't beep scale
+  @param $buttons see msgbox()
   @return An HTML string
 
   An alias for msgbox().
 */
-static public function boxMsg($strmsg,$header="",$noBeep=False) 
+    // @hintable
+static public function boxMsg($strmsg, $header="", $noBeep=false, $buttons=array()) 
 {
-	return self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif",$noBeep);
+    $default = CoreLocal::get('alertBar');
+    if (!empty($header)) {
+        CoreLocal::set('alertBar', $header);
+    }
+    $ret = self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif", $noBeep, $buttons);
+    CoreLocal::set('alertBar', $default);
+
+    return $ret;
 }
 
 /**
@@ -245,8 +252,17 @@ static public function boxMsg($strmsg,$header="",$noBeep=False)
 */
 static public function inputUnknown() 
 {
-	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif",True);
+    return self::msgbox(
+        "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . _("input unknown") . "</b>", 
+        MiscLib::base_url()."graphics/exclaimC.gif", 
+        true,
+        self::standardClearButton()
+    );
+}
+
+static public function standardClearButton()
+{
+    return array(_('[Clear]') => 'parseWrapper(\'CL\');');
 }
 
 //--------------------------------------------------------------------//
@@ -258,92 +274,81 @@ static public function inputUnknown()
 */
 static public function printheaderb() 
 {
-	global $CORE_LOCAL;
 
-	$strmemberID = "";
-	if ($CORE_LOCAL->get("memberID") == "0") {
-		$strmemberID = "";
-	} else {
-		$strmemberID = $CORE_LOCAL->get("memMsg");
-		if ($CORE_LOCAL->get("isMember") == 0) {
-			$strmemberID = str_replace("(0)", "(n/a)", $strmemberID);
-		}
-	}
+    $strmemberID = "";
+    if (CoreLocal::get("memberID") != "0") {
+        $strmemberID = CoreLocal::get("memMsg");
+        if (CoreLocal::get("isMember") == 0) {
+            $strmemberID = str_replace("(0)", "(n/a)", $strmemberID);
+        }
+    }
 
-	$ret = '
-	<div id="headerb">
-		<div class="left">
-			<span class="bigger">'._("M E M B E R").' &nbsp;&nbsp;</span>
-			<span class="smaller">
-			'.$strmemberID.'
-			</span>
-		</div>
-		<div class="right">
-			<span class="bigger">'._("C A S H I E R").' &nbsp;&nbsp;</span>
-			<span class="smaller">
-			'.$CORE_LOCAL->get("cashier").'
-			</span>
-		</div>
-		<div class="clear"></div>
-	</div>
-	';
-	return $ret;
+    $ret = '
+    <div id="headerb">
+        <div class="left">
+            <span class="bigger">'._("M E M B E R").' &nbsp;&nbsp;</span>
+            <span class="smaller">
+            '.$strmemberID.'
+            </span>
+        </div>
+        <div class="right">
+            <span class="bigger">'._("C A S H I E R").' &nbsp;&nbsp;</span>
+            <span class="smaller">
+            '.CoreLocal::get("cashier").'
+            </span>
+        </div>
+        <div class="clear"></div>
+    </div>
+    ';
+    return $ret;
+}
+
+static private function itemOnClick($transID)
+{
+    $onclick = "";
+    if ($transID != -1) {
+        $curID = CoreLocal::get("currentid");
+        $diff = $transID - $curID;
+        if ($diff > 0) {
+            $onclick="onclick=\"parseWrapper('D$diff');\"";
+        } elseif ($diff < 0){
+            $diff *= -1;
+            $onclick="onclick=\"parseWrapper('U$diff');\"";
+        }
+    } 
+
+    return $onclick;
 }
 
 //-------------------------------------------------------------------//
 
 /**
   Get a transaction line item
-  @param $field2 typically description
-  @param $field3 comment section. Used for things
-   like "0.59@1.99" on weight items.
-  @param $total the right-hand number
-  @param $field5 flags after the number
-  @param $trans_id value from localtemptrans. Including
-   the trans_id makes the lines selectable via mouseclick
+  @param $fields [array] of entries (left-to-right)
+  @param $transID value from localtemptrans. Including
+   the transID makes the lines selectable via mouseclick
    (or touchscreen).
   @return An HTML string
 */
-static public function printItem($field2, $field3, $total, $field5, $trans_id=-1) 
+    // @hintable
+static public function printItem($fields, $transID=-1) 
 {
-	global $CORE_LOCAL;
-	
-	$onclick = "";
-	if ($trans_id != -1) {
-		$curID = $CORE_LOCAL->get("currentid");
-		$diff = $trans_id - $curID;
-		if ($diff > 0) {
-			$onclick="onclick=\"parseWrapper('D$diff');\"";
-		} else if ($diff < 0) {
-			$diff *= -1;
-			$onclick="onclick=\"parseWrapper('U$diff');\"";
-		}
-	}	
+    $onclick = self::itemOnClick($transID);
 
-	if (strlen($total) > 0) {
-		$total = number_format($total, 2);
-	} else {
-		$total = "&nbsp;";
-	}
-	if ($field2 == "") {
-        $field2 = "&nbsp;";
-    }
-	if (trim($field3) == "") {
-        $field3 = "&nbsp;";
-    }
-	if ($field5 == "") {
-        $field5 = "&nbsp;";
-    }
+    $total = self::displayableText($fields[2], false, true);
+    $description = self::displayableText($fields[0], false, false);
+    $comments = self::displayableText($fields[1], false, false);
+    $suffix = self::displayableText($fields[3], false, false);
 
-	$ret = "<div class=\"item\">";
-	$ret .= "<div $onclick class=\"desc coloredText\">$field2</div>";
-	$ret .= "<div $onclick class=\"comments lightestColorText\">$field3</div>";
-	$ret .= "<div $onclick class=\"total lightestColorText\">$total</div>";
-	$ret .= "<div $onclick class=\"suffix lightestColorText\">$field5</div>";
-	$ret .= "</div>";
-	$ret .= "<div style=\"clear:left;\"></div>\n";
+    $ret = "<div class=\"item\">";
+    $ret .= "<div $onclick class=\"desc coloredText\">$description</div>";
+    $ret .= "<div $onclick class=\"comments lightestColorText\">$comments</div>";
+    $ret .= "<div $onclick class=\"total lightestColorText\">$total</div>";
+    $ret .= "<div $onclick class=\"suffix lightestColorText\">$suffix</div>";
+    $ret .= "</div>";
+    $ret .= "<div style=\"clear:left;\"></div>\n";
 
-	return $ret;
+    return $ret;
 }
 
 //------------------------------------------------------------------//
@@ -351,14 +356,10 @@ static public function printItem($field2, $field3, $total, $field5, $trans_id=-1
 /**
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
-	(see CSS notes)
-  @param $description typically description
-  @param $comments comment section. Used for things
-   like "0.59@1.99" on weight items.
-  @param $total the right-hand number
-  @param $suffix flags after the number
-  @param $trans_id value from localtemptrans. Including
-   the trans_id makes the lines selectable via mouseclick
+    (see CSS notes)
+  @param $fields [array] of entries (left-to-right)
+  @param $transID value from localtemptrans. Including
+   the transID makes the lines selectable via mouseclick
    (or touchscreen).
   @return An HTML string
 
@@ -371,63 +372,43 @@ static public function printItem($field2, $field3, $total, $field5, $trans_id=-1
   - 000000 => totalLine
   - 800080 => fsLine
 */
-static public function printItemColor($color, $description, $comments, $total, $suffix,$trans_id=-1) 
+    // @hintable
+static public function printItemColor($color, $fields, $transID=-1) 
 {
-	global $CORE_LOCAL;
-	
-	$onclick = "";
-	if ($trans_id != -1) {
-		$curID = $CORE_LOCAL->get("currentid");
-		$diff = $trans_id - $curID;
-		if ($diff > 0) {
-			$onclick="onclick=\"parseWrapper('D$diff');\"";
-		} else if ($diff < 0){
-			$diff *= -1;
-			$onclick="onclick=\"parseWrapper('U$diff');\"";
-		}
-	}	
+    $onclick = self::itemOnClick($transID);
 
-	if (strlen($total) > 0) {
-		$total = number_format($total, 2);
-	} else {
-		$total = "&nbsp;";
-	}
-	if ($total == 0 && $color == "408080") {
-        $total = "&nbsp;";
-    }
-	if ($description == "") {
-        $description = "&nbsp;";
-    }
-	if (trim($comments) == "") {
-        $comments = "&nbsp;";
-    }
-	if ($suffix == "") {
-        $suffix = "&nbsp;";
-    }
+    $total = self::displayableText($fields[2], true, true);
+    $description = self::displayableText($fields[0], true, false);
+    $comments = self::displayableText($fields[1], true, false);
+    $suffix = self::displayableText($fields[3], true, false);
 
-	$style = '';
-	$class = '';
-	if ($color == '004080') {
-		$class = 'coloredText';
-	} else if ($color == '000000') {
-		$class = 'totalLine';
-	} else if ($color == '800080') {
-		$class = 'fsLine';
-	} else if ($color == '408080') {
-		$class = 'lightColorText';
-	} else {
-		$style = "style=\"color:#$color;\"";
+    list($class, $style) = self::colorToCSS($color, true);
+
+    $ret = "<div class=\"item\">";
+    $ret .= "<div $onclick class=\"desc $class\" $style>$description</div>";
+    $ret .= "<div $onclick class=\"comments $class\" $style>$comments</div>";
+    $ret .= "<div $onclick class=\"total $class\" $style>$total</div>";
+    $ret .= "<div $onclick class=\"suffix $class\" $style>$suffix</div>";
+    $ret .= "</div>";
+    $ret .= "<div style=\"clear:left;\"></div>\n";
+
+    return $ret;
+}
+
+private static function colorToCSS($color, $text=true)
+{
+    if ($color == '004080') {
+        return array($text ? 'coloredText' : 'coloredArea', '');
+    } elseif ($color == '00000') {
+        return array($text ? 'totalLine' : 'totalArea', '');
+    } elseif ($color == '800080') {
+        return array($text ? 'fsLine' : 'fsArea', '');
+    } elseif ($color == '408080') {
+        return array($text ? 'lightColorText' : 'lightColorArea', '');
+    } elseif ($text) {
+        return array('', "style=\"color:#$color;\"");
     }
-
-	$ret = "<div class=\"item\">";
-	$ret .= "<div $onclick class=\"desc $class\" $style>$description</div>";
-	$ret .= "<div $onclick class=\"comments $class\" $style>$comments</div>";
-	$ret .= "<div $onclick class=\"total $class\" $style>$total</div>";
-	$ret .= "<div $onclick class=\"suffix $class\" $style>$suffix</div>";
-	$ret .= "</div>";
-	$ret .= "<div style=\"clear:left;\"></div>\n";
-
-	return $ret;
+    return array('', "style=\"background:#$color;color:#ffffff;\"");
 }
 
 //----------------------------------------------------------------//
@@ -435,12 +416,8 @@ static public function printItemColor($color, $description, $comments, $total, $
 /**
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
-	(see CSS notes)
-  @param $description typically description
-  @param $comments comment section. Used for things
-   like "0.59@1.99" on weight items.
-  @param $total the right-hand number
-  @param $suffix flags after the number
+    (see CSS notes)
+  @param $fields [array] of entries (left-to-right)
   @return An HTML string
 
   CSS Notes:
@@ -452,49 +429,37 @@ static public function printItemColor($color, $description, $comments, $total, $
   - 000000 => totalArea
   - 800080 => fsArea
 */
-static public function printItemColorHilite($color, $description, $comments, $total, $suffix) 
+    // @hintable
+static public function printItemColorHilite($color, $fields)
 {
-	if (strlen($total) > 0) {
-		$total = number_format($total, 2);
-	} else {
-		$total = "&nbsp;";
-	}
-	if ($total == 0 && $color == "408080") {
-        $total = "&nbsp;";
-    }
-	if ($description == "") {
-        $description="&nbsp;";
-    }
-	if (trim($comments) == "") {
-        $comments="&nbsp;";
-    }
-	if ($suffix == "") {
-        $suffix="&nbsp;";
-    }
+    $total = self::displayableText($fields[2], true, true);
+    $description = self::displayableText($fields[0], true, false);
+    $comments = self::displayableText($fields[1], true, false);
+    $suffix = self::displayableText($fields[3], true, false);
 
-	$style = '';
-	$class = '';
-	if ($color == '004080') {
-		$class = 'coloredArea';
-	} else if ($color == '000000') {
-		$class = 'totalArea';
-	} else if ($color == '800080') {
-		$class = 'fsArea';
-	} else if ($color == '408080') {
-		$class = 'lightColorArea';
-	} else {
-		$style = "style=\"background:#$color;color:#ffffff;\"";
+    list($class, $style) = self::colorToCSS($color, false);
+
+    $ret = "<div class=\"item\">";
+    $ret .= "<div class=\"desc $class\" $style>$description</div>";
+    $ret .= "<div class=\"comments $class\" $style>$comments</div>";
+    $ret .= "<div class=\"total $class\" $style>$total</div>";
+    $ret .= "<div class=\"suffix $class\" $style>$suffix</div>";
+    $ret .= "</div>";
+    $ret .= "<div style=\"clear:left;\"></div>\n";
+
+    return $ret;
+}
+
+private static function displayableText($field, $color=true, $total=true)
+{
+    if ($total === false) {
+        return trim($field) == '' ? '&nbsp;' : $field;
+    } elseif ($field == 0 && $color == "408080") {
+        return "&nbsp;";
+    } elseif (is_numeric($field) && strlen($field) > 0) {
+        return number_format($field, 2);
     }
-
-	$ret = "<div class=\"item\">";
-	$ret .= "<div class=\"desc $class\" $style>$description</div>";
-	$ret .= "<div class=\"comments $class\" $style>$comments</div>";
-	$ret .= "<div class=\"total $class\" $style>$total</div>";
-	$ret .= "<div class=\"suffix $class\" $style>$suffix</div>";
-	$ret .= "</div>";
-	$ret .= "<div style=\"clear:left;\"></div>\n";
-
-	return $ret;
+    return $field;
 }
 
 //----------------------------------------------------------------//
@@ -518,101 +483,61 @@ static public function printItemColorHilite($color, $description, $comments, $to
 */
 static public function scaledisplaymsg($input="")
 {
-	global $CORE_LOCAL;
-	$reginput = trim(strtoupper($input));
+    $reginput = trim(strtoupper($input));
 
-	$scans = '';
+    $scans = '';
 
-	// return early; all other cases simplified
-	// by resetting session "weight"
-	if (strlen($reginput) == 0) {
-		if (is_numeric($CORE_LOCAL->get("weight"))) {
-			return number_format($CORE_LOCAL->get("weight"), 2)." lb";
-		} else {
-			return $CORE_LOCAL->get("weight")." lb";
+    // return early; all other cases simplified
+    // by resetting session "weight"
+    if (strlen($reginput) == 0) {
+        if (is_numeric(CoreLocal::get("weight"))) {
+            return number_format(CoreLocal::get("weight"), 2)." lb";
         }
-	}
+        return CoreLocal::get("weight")." lb";
+    }
 
-	$display_weight = "";
-	$weight = 0;
-	$CORE_LOCAL->set("scale",0);
-	$CORE_LOCAL->set("weight",0);
+    $display_weight = "? ? ? ?";
+    $weight = 0;
+    CoreLocal::set("scale",0);
+    CoreLocal::set("weight",0);
 
-	$prefix = "NonsenseThatWillNotEverHappen";
-	if (substr($reginput, 0, 3) == "S11")
-		$prefix = "S11";
-	else if (substr($reginput,0,4)=="S144")	
-		$prefix = "S144";
+    $prefix = "NonsenseThatWillNotEverHappen";
+    if (substr($reginput, 0, 3) == "S11")
+        $prefix = "S11";
+    elseif (substr($reginput,0,4)=="S144")    
+        $prefix = "S144";
 
-	if (strpos($reginput, $prefix) === 0) {
-		$len = strlen($prefix);
-		if (!substr($reginput, $len) || 
-		    !is_numeric(substr($reginput, $len))) {
-			$display_weight = "_ _ _ _";
-		} else {
-			$weight = number_format(substr($reginput, $len)/100, 2);
-			$CORE_LOCAL->set("weight",$weight);
-			$display_weight = $weight." lb";
-			$CORE_LOCAL->set("scale",1);
-			if ($CORE_LOCAL->get('SNR') != 0 && $weight != 0) {
-				$scans = $CORE_LOCAL->get('SNR');
-			}
-		}
-	} elseif (substr($reginput, 0, 4) == "S143") {
-		$display_weight = "0.00 lb";
-		$CORE_LOCAL->set("scale",1);
-	} elseif (substr($reginput, 0, 4) == "S141") {
-		$display_weight = "_ _ _ _";
-	} elseif (substr($reginput, 0, 4) == "S145") {
-		$display_weight = "err -0";
-	} elseif (substr($reginput, 0, 4) == "S142") {
-		$display_weight = "error";
-	} else {
-		$display_weight = "? ? ? ?";
-	}
+    if (strpos($reginput, $prefix) === 0) {
+        $len = strlen($prefix);
+        if (!substr($reginput, $len) || 
+            !is_numeric(substr($reginput, $len))) {
+            $display_weight = "_ _ _ _";
+        } else {
+            $weight = number_format(substr($reginput, $len)/100, 2);
+            CoreLocal::set("weight",$weight);
+            $display_weight = $weight." lb";
+            CoreLocal::set("scale",1);
+            if (CoreLocal::get('SNR') != 0 && $weight != 0) {
+                $scans = CoreLocal::get('SNR');
+            }
+        }
+    } elseif (substr($reginput, 0, 4) == "S143") {
+        $display_weight = "0.00 lb";
+        CoreLocal::set("scale",1);
+    } elseif (substr($reginput, 0, 4) == "S141") {
+        $display_weight = "_ _ _ _";
+    } elseif (substr($reginput, 0, 4) == "S145") {
+        $display_weight = _("err -0");
+    } elseif (substr($reginput, 0, 4) == "S142") {
+        $display_weight = _("error");
+    }
 
-	$ret = array('display'=>$display_weight);
-	if (!empty($scans)) {
+    $ret = array('display'=>$display_weight);
+    if (!empty($scans)) {
         $ret['upc'] = $scans;
     }
 
-	return $ret;
-}
-
-/**
-  Display CC terminal state
-  @return HTML string
-*/
-static public function termdisplaymsg()
-{
-	global $CORE_LOCAL;
-	if (!in_array("Paycards",$CORE_LOCAL->get("PluginList"))) {
-		return '';
-	} elseif($CORE_LOCAL->get("PaycardsCashierFacing")=="1") {
-		return '';
-    }
-	// style box to look like a little screen
-	$ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-	$rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-	switch($CORE_LOCAL->get('ccTermState')) {
-        case 'swipe':
-            return $ret.'Slide<br />Card</div>';
-            break;
-        case 'ready':
-            return $rdy.'Ready</div>';
-            break;
-        case 'pin':
-            return $ret.'Enter<br />PIN</div>';
-            break;
-        case 'type':
-            return $ret.'Card<br />Type</div>';
-            break;
-        case 'cashback':
-            return $ret.'Cash<br />Back</div>';
-            break;
-	}
-
-	return '';
+    return $ret;
 }
 
 /**
@@ -621,13 +546,12 @@ static public function termdisplaymsg()
 */
 static public function drawNotifications()
 {
-    global $CORE_LOCAL;
-    if (!is_array($CORE_LOCAL->get('Notifiers'))) {
-        $CORE_LOCAL->set('Notifiers', array());
+    if (!is_array(CoreLocal::get('Notifiers'))) {
+        CoreLocal::set('Notifiers', array());
     }
 
     $ret = '';
-    foreach($CORE_LOCAL->get('Notifiers') as $class) {
+    foreach(CoreLocal::get('Notifiers') as $class) {
         if (!class_exists($class)) continue;
 
         $obj = new $class();
@@ -639,7 +563,7 @@ static public function drawNotifications()
 
 /**
   Get the items currently on screen
-  @param $top_item is trans_id (localtemptrans)
+  @param $topItem is trans_id (localtemptrans)
    of the first item to display
   @param $highlight is the trans_id (localtemptrans)
    of the currently selected item
@@ -648,45 +572,40 @@ static public function drawNotifications()
   If you just want to show the most recently
   scanned items, use lastpage().
 */
-static public function listItems($top_item, $highlight) 
+static public function listItems($topItem, $highlight) 
 {
-	global $CORE_LOCAL;
+    $lines = self::screenLines();
 
-    $lines = $CORE_LOCAL->get('screenLines');
-    if (!$lines === '' || !is_numeric($lines)) {
-        $lines = 11;
-    }
-
-	Database::getsubtotals();
-	$LastID = $CORE_LOCAL->get("LastID");
+    Database::getsubtotals();
+    $LastID = CoreLocal::get("LastID");
 
 //----------------Boundary Top ------------------
 
-	if ($highlight < 1) {
-		$highlight = 1;
-		$top_item = 1;
-	}
-	
-	if ($highlight > $LastID) {
-		$highlight = $LastID;
-	}
+    if ($highlight < 1) {
+        $highlight = 1;
+        $topItem = 1;
+    }
+    
+    if ($highlight > $LastID) {
+        $highlight = $LastID;
+    }
 
-	if ($highlight < $top_item) {
-		$top_item = $highlight;
-	}
+    if ($highlight < $topItem) {
+        $topItem = $highlight;
+    }
 
-	if ($highlight > ($top_item + $lines)) {
-		$top_item = ($highlight - $lines);
-	}
+    if ($highlight > ($topItem + $lines)) {
+        $topItem = ($highlight - $lines);
+    }
 
-	$CORE_LOCAL->set("currenttopid",$top_item);
-	$CORE_LOCAL->set("currentid",$highlight);
+    CoreLocal::set("currenttopid",$topItem);
+    CoreLocal::set("currentid",$highlight);
 
 //------------------Boundary Bottom----------------
 
-	$CORE_LOCAL->set("currentid",$highlight);
+    CoreLocal::set("currentid",$highlight);
 
-	return self::drawItems($top_item, $lines, $highlight);
+    return self::drawItems($topItem, $lines, $highlight);
 }
 
 
@@ -703,41 +622,38 @@ static public function listItems($top_item, $highlight)
 */
 static public function printReceiptfooter($readOnly=False) 
 {
-	global $CORE_LOCAL;
-
-	if (!$readOnly) {
-		Database::getsubtotals();
+    if (!$readOnly) {
+        Database::getsubtotals();
     }
-	$last_id = $CORE_LOCAL->get("LastID");
+    $lastID = CoreLocal::get("LastID");
 
-	if (($last_id - 7) < 0) {
-		$top_id = 1;
-	} else {
-		$top_id = $last_id - 7;
-	}
+    $topID = $lastID - 7;
+    if (($lastID - 7) < 0) {
+        $topID = 1;
+    }
 
-	$ret = self::drawitems($top_id, 7, 0);
+    $ret = self::drawitems($topID, 7, 0);
 
-	$ret .= "<div class=\"farewellMsg coloredText\">";
-	for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++) {
-		$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
-	}
+    $ret .= "<div class=\"farewellMsg coloredText\">";
+    for($i=0;$i<=CoreLocal::get("farewellMsgCount");$i++) {
+        $ret .= CoreLocal::get("farewellMsg".$i)."<br />";
+    }
 
-	$email = CoreState::getCustomerPref('email_receipt');
-	$doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
-	if($doEmail) {
+    $email = CoreState::getCustomerPref('email_receipt');
+    $doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
+    if($doEmail) {
         $ret .= 'receipt emailed';
     }
 
-	$ret .= "</div>";
+    $ret .= "</div>";
 
-	return $ret;
+    return $ret;
 }
 
 
 /**
   Get the currently displayed items
-  @param $top_item is the trans_id of the first item to display
+  @param $topItem is the trans_id of the first item to display
   @param $rows is the number of items to display
   @param $highlight is the trans_id of the selected item
   @return An HTML string
@@ -745,103 +661,79 @@ static public function printReceiptfooter($readOnly=False)
   This function probably shouldn't be used directly.
   Call listitems() or lastpage() instead.
 */
-static public function drawItems($top_item, $rows, $highlight) 
+static public function drawItems($topItem, $rows, $highlight) 
 {
-	global $CORE_LOCAL;
+    $ret = self::printheaderb();
 
-	$ret = self::printheaderb();
+    $query = "select count(*) as count from localtemptrans";
+    $dbc = Database::tDataConnect();
+    $result = $dbc->query($query);
+    $row = $dbc->fetchRow($result);
+    $rowCount = $row["count"];
 
-	$query = "select count(*) as count from localtemptrans";
-	$db = Database::tDataConnect();
-	$result = $db->query($query);
-	$row = $db->fetch_array($result);
-	$rowCount = $row["count"];
+    if ($rowCount == 0) {
+        $ret .= "<div class=\"centerOffset\">";
+        $msg_text = "";
+        $type = CoreLocal::get('training') != 1 ? 'welcomeMsg' : 'trainingMsg';
+        for($i=1; $i<=CoreLocal::get($type . "Count");$i++) {
+            $msg_text .= CoreLocal::get($type.$i)."<br />";
+        }    
+        $ret .= self::plainmsg($msg_text);
+        $ret .= "</div>";
+    } else {
 
-	$last_item = array();
-
-	if ($rowCount == 0) {
-		$ret .= "<div class=\"centerOffset\">";
-		$msg_text = "";
-		if ($CORE_LOCAL->get("training") != 1) {
-			for($i=1; $i<=$CORE_LOCAL->get("welcomeMsgCount");$i++) {
-				$msg_text .= $CORE_LOCAL->get("welcomeMsg".$i)."<br />";
-			}	
-		} else {
-			for($i=1; $i<=$CORE_LOCAL->get("trainingMsgCount");$i++) {
-				$msg_text .= $CORE_LOCAL->get("trainingMsg".$i)."<br />";
-			}	
-		}
-		$ret .= self::plainmsg($msg_text);
-		$ret .= "</div>";
-	} else {
-
-		$query_range = "select trans_id,description,total,comment,status,lineColor
-		       		from screendisplay where trans_id >= ".$top_item." and trans_id <= "
-				.($top_item + $rows)." order by trans_id";
-		$db_range = Database::tDataConnect();
-		$result_range = $db_range->query($query_range);
-		$num_rows = $db_range->num_rows($result_range);
-
-		for ($i = 0; $i < $num_rows; $i++) {
-			$row = $db_range->fetch_array($result_range);
-
-			$trans_id = $row["trans_id"];
-			$description = $row["description"];
-			$total = $row["total"];
-			$comment = $row["comment"];
-			$tf = $row["status"];
-			$color = $row["lineColor"];
-
-			
-			if ($trans_id == $highlight) {
-				$ret .= self::printItemColorHilite($color, $description, $comment, $total, $tf);
-			} else {
-				if ($color == "004080") {
-					$ret .= self::printItem($description, $comment, $total, $tf,$trans_id);
-				} else {
-					$ret .= self::printItemColor($color, $description, $comment, $total, $tf,$trans_id);
-				}				
-			}
-
-			if (!strstr($description,'Subtotal')) {
-				$fixed_desc = str_replace(":"," ",$description);
-				if (strlen($fixed_desc) > 24) {
-					$fixed_desc = substr($fixed_desc,0,24);
-				}
-				$fixed_price = empty($total)?'':sprintf('%.2f',$total);
-				$spaces = str_pad('',30-strlen($fixed_desc)-strlen($fixed_price),' ');
-				$last_item[] = $fixed_desc.$spaces.$fixed_price;
-			}
-		}
-	}
-
-    /** 11Mar14 Andy
-        Ancient idea about displaying transaction line-items
-        on credit card terminal screen. Current terminal
-        does not even support this functionality.
-
-        I'm leaving the "get last relevant line" implementation
-        for reference.
-	if (is_object($td) && !empty($last_item)) {
-		$due = sprintf('%.2f',$CORE_LOCAL->get("amtdue"));
-		$dueline = 'Subtotal'
-			.str_pad('',22-strlen($due),' ')
-			.$due;
-		$items = "";
-		$count = 0;
-		for($i=count($last_item)-1;$i>=0;$i--) {
-			$items = ":".$last_item[$i].$items;
-			$count++;
-			if ($count >= 3) break;
-		}
-		for($i=$count;$i<3;$i++) {
-			$items = ": ".$items;
+        $query_range = "select trans_id,description,total,comment,status,lineColor
+                       from screendisplay where trans_id >= ".$topItem." and trans_id <= "
+                .($topItem + $rows)." order by trans_id";
+        $db_range = Database::tDataConnect();
+        $result_range = $db_range->query($query_range);
+        $screenRecords = array();
+        while ($row = $db_range->fetchRow($result_range)) {
+            $screenRecords[] = $row;
         }
-		$td->WriteToScale("display:".$last_item.":".$dueline);
-	}
-    */
+        /**
+          30Oct2014 Andy
+          Idea here is to look up the currently displayed items and
+          perform any necessary transformations of the text in PHP instead
+          of tucking that logic inside the screendisplay view. I'm
+          leaving the query above for reference in case I screwed something
+          up and the old method of drawing the screen needs to be
+          quickly re-enabled.
 
-	return $ret;
+          14Nov2014 Andy
+          Disabled for the sake of putting together a release.
+          Will go into testing following the release and be included in
+          the next one
+
+          03Dec2014 Andy
+          Axing screen display isn't a super high priority right now
+          With better unit testing in place, I want to write more tests
+          to verify this method behaves the same as the screendisplay via.
+          No ETA at this point.
+        */
+        //$screenRecords = self::screenDisplay($topItem, $topItem + $rows);
+
+        foreach ($screenRecords as $row) {
+
+            $transID = $row["trans_id"];
+            $description = $row["description"];
+            $total = $row["total"];
+            $comment = $row["comment"];
+            $tfStatus = $row["status"];
+            $color = $row["lineColor"];
+
+            
+            if ($transID == $highlight) {
+                $ret .= self::printItemColorHilite($color, array($description, $comment, $total, $tfStatus));
+            } elseif ($color == "004080") {
+                $ret .= self::printItem(array($description, $comment, $total, $tfStatus),$transID);
+            } else {
+                $ret .= self::printItemColor($color, array($description, $comment, $total, $tfStatus),$transID);
+            }                
+        }
+    }
+
+    return $ret;
 }
 
 
@@ -856,29 +748,208 @@ static public function drawItems($top_item, $rows, $highlight)
 */
 static public function lastpage($readOnly=False) 
 {
-	global $CORE_LOCAL;
+    $lines = self::screenLines();
 
-    $lines = $CORE_LOCAL->get('screenLines');
-    if (!$lines === '' || !is_numeric($lines)) {
-        $lines = 11;
+    if (!$readOnly) {
+        Database::getsubtotals();
+    }
+    $lastID = CoreLocal::get("LastID");
+
+    $topID = $lastID - $lines;
+    if (($lastID - $lines) < 0) {
+        $topID = 1;
+    }
+    
+    if (!$readOnly) {
+        CoreLocal::set("currentid",$lastID);
+        CoreLocal::set("currenttopid",$topID);
+    }
+    return self::drawItems($topID, $lines, $lastID);
+}
+
+/**
+  Select items from the transaction with formatting for on screen display
+  @param $min [int] minimum localtemptrans.trans_id
+  @param $max [int] maximum localtemtprans.trans_id
+  @return array of records
+
+  Each record contains the following keys:
+  - description
+  - comment
+  - total
+  - status
+  - discounttype
+  - trans_status
+  - trans_type
+  - voided
+  - trans_id
+
+  Note: the outer array is indexed by localtemptrans.trans_id
+  instead of zero through array.length.
+*/
+static public function screenDisplay($min, $max)
+{
+    $dbc = Database::tDataConnect();
+    $query = "SELECT l.*, t.description AS tax_description
+              FROM localtemptrans AS l
+                LEFT JOIN taxrates AS t ON l.tax=t.id
+              WHERE l.trans_type <> 'L'
+                AND l.trans_id BETWEEN ? AND ?
+              ORDER BY l.trans_id";
+    $prep = $dbc->prepare($query);
+    $result = $dbc->execute($prep, array($min, $max));
+    $ret = array();
+    while ($row = $dbc->fetch_row($result)) {
+        $record = array();
+
+        $record['description'] = self::screenDisplayDescription($row);
+        $record['comment'] = self::screenDisplayComment($row);
+        $record['total'] = self::screenDisplayTotal($row);
+        $record['status'] = self::screenDisplayStatus($row);
+        $record['lineColor'] = self::screenDisplayColor($row);
+
+        $record['discounttype'] = $row['discounttype'];
+        $record['trans_type'] = $row['trans_type'];
+        $record['trans_status'] = $row['trans_status'];
+        $record['voided'] = $row['voided'];
+        $record['trans_id'] = $row['trans_id'];
+        
+        $ret[$row['trans_id']] = $record;
     }
 
-	if (!$readOnly) {
-		Database::getsubtotals();
-	}
-	$last_id = $CORE_LOCAL->get("LastID");
+    return $ret;
+}
 
-	if (($last_id - $lines) < 0) {
-		$top_id = 1;
-	} else {
-		$top_id = $last_id - $lines;
-	}
-	
-	if (!$readOnly) {
-		$CORE_LOCAL->set("currentid",$last_id);
-		$CORE_LOCAL->set("currenttopid",$top_id);
-	}
-	return self::drawItems($top_id, $lines, $last_id);
+    // @hintable
+static private function screenDisplayColor($row)
+{
+    if ($row['trans_status'] == 'V' || $row['trans_type'] == 'T' || $row['trans_status'] == 'R' || $row['trans_status'] == 'M' || $row['voided'] == 17 || $row['trans_status'] == 'J') {
+        return '800000';
+    } elseif (($row['discounttype'] != 0 && ($row['matched'] > 0 || $row['volDiscType'] == 0)) 
+        || $row['voided'] == 2 || $row['voided'] == 6 || $row['voided'] == 4 || $row['voided'] == 5 || $row['voided'] == 10 || $row['voided'] == 22) {
+        return '408080';
+    } elseif ($row['voided'] == 3 || $row['voided'] == 11) {
+        return '000000';
+    } elseif ($row['voided'] == 7) {
+        return '800080';
+    }
+    return '004080';
+}
+
+    // @hintable
+static private function screenDisplayDescription($row)
+{
+    if ($row['voided'] == 5 || $row['voided'] == 11 || $row['voided'] == 17 || $row['trans_type'] == 'T') {
+        return '';
+    }
+    return $row['description'];
+}
+
+    // @hintable
+static private function screenDisplayComment($row)
+{
+    if ($row['discounttype'] == 3 && $row['trans_status'] == 'V') {
+        return $row['ItemQtty'] . ' /' . $row['unitPrice'];
+    } elseif ($row['voided'] == 5) {
+        return 'Discount';
+    } elseif ($row['trans_status'] == 'M') {
+        return 'Mbr special';
+    } elseif ($row['trans_status'] == 'S') {
+        return 'Staff special';
+    } elseif ($row['scale'] != 0 && $row['quantity'] != 0 && $row['unitPrice'] != 0.01) {
+        return $row['quantity'] . ' @ ' . $row['unitPrice'];
+    } elseif (substr($row['upc'], 0, 2) == '002') {
+        return $row['ItemQtty'] . ' @ ' . $row['regPrice'];
+    } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] == 1) {
+        return $row['volume'] . ' for ' . $row['unitPrice'];
+    } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] != 1) {
+        return $row['quantity'] . ' @ ' . $row['volume'] . ' for ' . $row['unitPrice'];
+    } elseif (abs($row['ItemQtty']) > 1 && $row['discounttype'] == 3) {
+        return $row['ItemQtty'] . ' / ' . $row['unitPrice'];
+    } elseif (abs($row['ItemQtty']) > 1) {
+        return $row['ItemQtty'] . ' @ ' . $row['unitPrice'];
+    } elseif ($row['voided'] == 3) {
+        return _('Total ');
+    } elseif ($row['voided'] == 5) {
+        return _('Discount');
+    } elseif ($row['voided'] == 7) {
+        return '';
+    } elseif ($row['voided'] == 11 || $row['voided'] == 17) {
+        return $row['upc'];
+    } elseif ($row['matched'] > 0) {
+        return _('1 w/ vol adj');
+    } elseif ($row['trans_type'] == 'T') {
+        return $row['description'];
+    }
+    return '';
+}
+
+    // @hintable
+static private function screenDisplayTotal($row)
+{
+    if ($row['voided'] == 3 || $row['voided'] == 5 || $row['voided'] == 7 || $row['voided'] == 11 || $row['voided'] == 17) {
+        return $row['unitPrice'];
+    } elseif ($row['trans_status'] == 'D') {
+        return '';
+    }
+    return $row['total'];
+}
+
+    // @hintable
+static private function screenDisplayStatus($row)
+{
+    if ($row['trans_status'] == 'V') {
+        return 'VD';
+    } elseif ($row['trans_status'] == 'R') {
+        return 'RF';
+    } elseif ($row['trans_status'] == 'C') {
+        return 'MC';
+    } elseif ($row['trans_type'] == 'T' && $row['charflag'] == 'PT') {
+        return 'PC';
+    } elseif ($row['tax'] == 1 && $row['foodstamp'] != 0) {
+        return 'TF';
+    } elseif ($row['tax'] == 1 && $row['foodstamp'] == 0) {
+        return 'T';
+    } elseif ($row['tax'] > 1 && $row['foodstamp'] != 0) {
+        return substr($row['tax_description'], 0 , 1) . 'F';
+    } elseif ($row['tax'] > 1 && $row['foodstamp'] == 0) {
+        return substr($row['tax_description'], 0 , 1);
+    } elseif ($row['tax'] == 0 && $row['foodstamp'] != 0) {
+        return 'F';
+    }
+    return '';
+}
+
+static public function touchScreenScrollButtons($selector='#search')
+{
+    $stem = MiscLib::baseURL() . 'graphics/';
+    return '
+        <button type="button" class="pos-button coloredArea"
+            onclick="pageUp(\''. $selector . '\');">
+            <img src="' . $stem . 'pageup.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollUp(\''. $selector . '\');">
+            <img src="' . $stem . 'up.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollDown(\''. $selector . '\');">
+            <img src="' . $stem . 'down.png" width="16" height="16" />
+        </button>
+        <br /><br />
+        <button type="button" class="pos-button coloredArea"
+            onclick="pageDown(\''. $selector . '\');">
+            <img src="' . $stem . 'pagedown.png" width="16" height="16" />
+        </button>';
+}
+
+static public function screenLines()
+{
+    $valid = function($var) { return ($var !== '' && is_numeric($var)); };
+
+    return $valid(CoreLocal::get('screenLines')) ? CoreLocal::get('screenLines') : 11;
 }
 
 } // end class DisplayLib

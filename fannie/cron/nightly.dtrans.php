@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -51,17 +51,20 @@
    just the current day's data. 
 */
 
-include('../config.php');
-include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
-include('../src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$cols = $sql->table_definition('dtransactions');
+$cols = $sql->tableDefinition('dtransactions');
 if (isset($cols['date_id'])){
     $sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
 }
@@ -77,7 +80,7 @@ while($datesW = $sql->fetch_row($datesR)) {
 }
 
 $UPDATED_DLOG_SCHEMA = false;
-$table_def = $sql->table_definition('dlog');
+$table_def = $sql->tableDefinition('dlog');
 if (isset($table_def['description'])) {
     // most likely
     $UPDATED_DLOG_SCHEMA = true;
@@ -128,7 +131,7 @@ foreach($dates as $date) {
                 createViews($dstr,$sql);
             }
         }
-        $sql->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+        $sql->addConnection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
             $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
         $sql->transfer($FANNIE_TRANS_DB,
             "select * from dtransactions WHERE ".$sql->datediff('datetime',"'$date'")."= 0",
@@ -198,93 +201,6 @@ foreach($dates as $date) {
             } else {
                 echo cron_msg("Success archiving dtransactions");
             }
-        }
-
-        /* summary table stuff */
-
-        if ($sql->table_exists("sumUpcSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-            $sql->query("INSERT INTO sumUpcSalesByDay
-                SELECT DATE(MAX(tdate)) AS tdate, upc,
-                CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-                FROM $FANNIE_TRANS_DB.dlog WHERE
-                trans_type IN ('I') AND upc <> '0'
-                AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY upc");
-        }
-        if ($sql->table_exists("sumRingSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){    
-            $sql->query("INSERT INTO sumRingSalesByDay
-                SELECT DATE(MAX(tdate)) AS tdate, upc, department,
-                CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-                FROM $FANNIE_TRANS_DB.dlog WHERE
-                trans_type IN ('I','D') AND upc <> '0'
-                AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY upc, department");
-        }
-        if ($sql->table_exists("sumDeptSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-            $sql->query("INSERT INTO sumDeptSalesByDay
-                SELECT DATE(MAX(tdate)) AS tdate, department,
-                CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-                FROM $FANNIE_TRANS_DB.dlog WHERE
-                trans_type IN ('I','D') 
-                AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY department");
-        }
-        if ($sql->table_exists("sumMemSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){ 
-            $sql->query("INSERT INTO sumMemSalesByDay
-                SELECT DATE(MAX(tdate)) AS tdate, card_no,
-                CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
-                COUNT(DISTINCT trans_num) AS transCount
-                FROM $FANNIE_TRANS_DB.dlog WHERE
-                trans_type IN ('I','D')
-                AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY card_no");
-        }
-        if ($sql->table_exists("sumMemTypeSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){ 
-            $sql->query("INSERT INTO sumMemTypeSalesByDay
-                SELECT DATE(MAX(tdate)) AS tdate, c.memType,
-                CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
-                COUNT(DISTINCT trans_num) AS transCount
-                FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
-                $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-                AND c.personNum=1 WHERE
-                trans_type IN ('I','D')
-                AND upc <> 'RRR' AND card_no <> 0
-                AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY c.memType");
-        }
-        if ($sql->table_exists("sumTendersByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){  
-            $sql->query("INSERT INTO sumTendersByDay
-                SELECT DATE(MAX(tdate)) AS tdate, trans_subtype,
-                CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                COUNT(*) AS quantity
-                FROM $FANNIE_TRANS_DB.dlog WHERE
-                trans_type IN ('T')
-                AND total <> 0
-                AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY trans_subtype");
-        }
-        if ($sql->table_exists("sumDiscountsByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){    
-            $sql->query("INSERT INTO sumDiscountsByDay
-                SELECT DATE(MAX(tdate)) AS tdate, c.memType,
-                CONVERT(SUM(total),DECIMAL(10,2)) as total,
-                COUNT(DISTINCT trans_num) AS transCount
-                FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
-                $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-                AND c.personNum=1 WHERE
-                trans_type IN ('S') AND total <> 0
-                AND upc = 'DISCOUNT' AND card_no <> 0
-                AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY c.memType");
         }
     }
 } // for loop on dates in dtransactions
@@ -395,18 +311,18 @@ function createViews($dstr,$db){
         $FANNIE_ARCHIVE_PW; 
 
     if ($FANNIE_ARCHIVE_REMOTE){
-        $db->add_connection($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
+        $db->addConnection($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
             $FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,
             $FANNIE_ARCHIVE_PW);
     }
     else {
-        $db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+        $db->addConnection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
             $FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
     }
 
     $dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
 
-    $table_def = $db->table_definition('transArchive' . $str);
+    $table_def = $db->tableDefinition('transArchive' . $str);
 
     $dlogQ = "CREATE  view dlog$dstr as
         select 
@@ -518,4 +434,3 @@ function createViews($dstr,$db){
         echo cron_msg("Error creating dlog view for new archive table");
 }
 
-?>

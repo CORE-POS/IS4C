@@ -21,6 +21,14 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
   @class HouseCoupon
   WFC style custom store coupons
@@ -37,13 +45,12 @@ class HouseCoupon extends SpecialUPC
 
     public function isSpecial($upc)
     {
-        global $CORE_LOCAL;
-        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        $prefix = $this->session->get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
 
-		if (substr($upc,0,strlen($prefix)) == $prefix) {
+        if (substr($upc,0,strlen($prefix)) == $prefix) {
             return true;
         }
 
@@ -52,10 +59,7 @@ class HouseCoupon extends SpecialUPC
 
     public function handle($upc, $json)
     {
-        global $CORE_LOCAL;
-
         $coupID = ltrim(substr($upc, -5), "0");
-        $leadDigits = substr($upc, 3, 5);
 
         $qualified = $this->checkQualifications($coupID);
         if ($qualified !== true) {
@@ -70,9 +74,8 @@ class HouseCoupon extends SpecialUPC
         }
 
         $add = $this->getValue($coupID);
-        if ($add['value'] != 0) {
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
-        }
+        TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description'], $add['discountable']);
+
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
         $json['redraw_footer'] = true;
@@ -83,12 +86,11 @@ class HouseCoupon extends SpecialUPC
     /**
       helper - lookup coupon record
     */
-    private function lookupCoupon($id)
+    private function lookupCoupon($coupID)
     {
-        $db = Database::pDataConnect();
-        $hctable = $db->table_definition('houseCoupons');
+        $dbc = Database::pDataConnect();
         $infoQ = "SELECT endDate," 
-                    . $db->identifier_escape('limit') . ",
+                    . $dbc->identifierEscape('limit') . ",
                     discountType, 
                     department,
                     discountValue, 
@@ -97,181 +99,218 @@ class HouseCoupon extends SpecialUPC
                     memberOnly, 
                     CASE 
                         WHEN endDate IS NULL THEN 0 
-                        ELSE ". $db->datediff('endDate', $db->now()) . " 
+                        ELSE ". $dbc->datediff('endDate', $dbc->now()) . " 
                     END AS expired";
-        // new(ish) columns 16apr14
-        if (isset($hctable['description'])) {
-            $infoQ .= ', description';
-        } else {
-            $infoQ .= ', \'\' AS description';
-        }
-        if (isset($hctable['startDate'])) {
-            $infoQ .= ", CASE 
+        if ($this->session->get('NoCompat') == 1) {
+            $infoQ .= ", description, 
+                        CASE 
                           WHEN startDate IS NULL THEN 0 
-                          ELSE ". $db->datediff('startDate', $db->now()) . " 
+                          ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
                         END as preStart";
         } else {
-            $infoQ .= ', 0 AS preStart';
+            // new(ish) columns 16apr14
+            $hctable = $dbc->tableDefinition('houseCoupons');
+            if (isset($hctable['description'])) {
+                $infoQ .= ', description';
+            } else {
+                $infoQ .= ', \'\' AS description';
+            }
+            if (isset($hctable['startDate'])) {
+                $infoQ .= ", CASE 
+                              WHEN startDate IS NULL THEN 0 
+                              ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
+                            END as preStart";
+            } else {
+                $infoQ .= ', 0 AS preStart';
+            }
         }
         $infoQ .= " FROM  houseCoupons 
-                    WHERE coupID=" . ((int)$id);
-        $infoR = $db->query($infoQ);
-        if ($db->num_rows($infoR) == 0) {
+                    WHERE coupID=" . ((int)$coupID);
+        $infoR = $dbc->query($infoQ);
+        if ($dbc->num_rows($infoR) == 0) {
             return false;
         }
 
-        return $db->fetch_row($infoR);
+        return $dbc->fetch_row($infoR);
+    }
+
+    private function errorOrQuiet($msg, $quiet)
+    {
+            if ($quiet) {
+                return false;
+            }
+            return DisplayLib::boxMsg(
+                $msg,
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+    }
+
+    private function isMember()
+    {
+        $isMem = false;
+        if ($this->session->get('isMember') == 1) {
+            $isMem = true;
+        } elseif ($this->session->get('memberID') == $this->session->get('visitingMem')) {
+            $isMem = true;
+        } elseif ($this->session->get('memberID') == '0') {
+            $isMem = false;
+        }
+
+        return $isMem;
     }
 
     /**
       Validate coupon exists, is not expired, and
       transaction meets required qualifications
-      @param $id [int] coupon ID
+      @param $coupID [int] coupon ID
+      @param $quiet [boolean] just return false rather than
+        an error message on failure
       @return [boolean] true or [string] error message
     */
-    public function checkQualifications($id)
+    public function checkQualifications($coupID, $quiet=false)
     {
-        global $CORE_LOCAL;
-        $infoW = $this->lookupCoupon($id);
+        $infoW = $this->lookupCoupon($coupID);
         if ($infoW === false) {
-            return DisplayLib::boxMsg(_("coupon not found"));
+            return $this->errorOrQuiet(_("coupon not found"), $quiet);
         }
 
         if ($infoW["expired"] < 0) {
             $expired = substr($infoW["endDate"], 0, strrpos($infoW["endDate"], " "));
-            return DisplayLib::boxMsg(_("coupon expired") . " " . $expired);
-        } else if ($infoW['preStart'] > 0) {
-            return DisplayLib::boxMsg(_("coupon not available yet"));
+            return $this->errorOrQuiet(_("coupon expired "). $expired, $quiet);
+        } elseif ($infoW['preStart'] > 0) {
+            return $this->errorOrQuiet(_("coupon not available yet "), $quiet);
         }
 
         /* check for member-only, longer use tracking
            available with member coupons */
-        $is_mem = false;
-        if ($CORE_LOCAL->get('isMember') == 1) {
-            $is_mem = true;
-        } else if ($CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('visitingMem')) {
-            $is_mem = true;
-        } else if ($CORE_LOCAL->get('memberID') == '0') {
-            $is_mem = false;
-        }
-        if ($infoW["memberOnly"] == 1 && !$is_mem) {
-            return DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
-                        _("Apply member number first"));
+        if ($infoW["memberOnly"] == 1 && !$this->isMember()) {
+            if ($quiet) {
+                return false;
+            }
+            return DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('Member only coupon'),
+                false,
+                array_merge(array(_('Member Search [ID]') => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
         }
 
         /* verify the minimum purchase has been made */
         $transDB = Database::tDataConnect();
-        $coupID = $id;
-        switch($infoW["minType"]) {
+        switch ($infoW["minType"]) {
             case "Q": // must purchase at least X
-                $minQ = "select case when sum(ItemQtty) is null
-                    then 0 else sum(ItemQtty) end
-                        from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems 
-                    as h on l.upc = h.upc
-                    where h.coupID = " . $coupID ;
-                $minR = $transDB->query($minQ);
-                $minW = $transDB->fetch_row($minR);
-                $validQtty = $minW[0];
-                if ($validQtty < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
-                }
-                break;
             case "Q+": // must purchase more than X
                 $minQ = "select case when sum(ItemQtty) is null
                     then 0 else sum(ItemQtty) end
-                        from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems 
-                    as h on l.upc = h.upc
-                    where h.coupID = " . $coupID ;
+                    " . $this->baseSQL($transDB, $coupID, 'upc');
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
-                if ($validQtty <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                if ($infoW['minType'] == 'Q+' && $validQtty <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'Q' && $validQtty < $infoW['minValue']) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
-            case 'D': // must at least purchase from department
+            case 'D': // must purchase at least amount in $ from department
+            case 'D+': // must purchase more than amount in $ from department
                 $minQ = "select case when sum(total) is null
                     then 0 else sum(total) end
-                    from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.department = h.upc
-                    where h.coupID = " . $coupID ;
+                    " . $this->baseSQL($transDB, $coupID, 'department');
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
-                if ($validQtty < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                if ($infoW['minType'] == 'D+' && $validQtty <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'D' && $validQtty < $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
-            case 'D+': // must more than purchase from department 
-                $minQ = "select case when sum(total) is null
-                    then 0 else sum(total) end
-                    from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.department = h.upc
-                    where h.coupID = " . $coupID ;
+            case 'C': // must purchase at least amount in qty (count) from department
+            case 'C+': // must purchase more than amount in qty (count) from department
+            case 'C!':
+            case 'C^':
+                $minQ = "select case when sum(ItemQtty) is null
+                    then 0 else sum(ItemQtty) end
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
+                    AND l.trans_type IN ('I','D')";
+                if ($infoW['minType'] == 'C!' || $infoW['minType'] == 'C^') {
+                    $minQ .= ' AND l.discounttype=0 ';
+                }
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
-                if ($validQtty <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                if ($infoW['minType'] == 'C+' && $validQtty <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'C^' && $validQtty <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'C' && $validQtty < $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'C!' && $validQtty < $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
             case 'M': // must purchase at least X qualifying items
                   // and some quantity corresponding discount items
                 $minQ = "select case when sum(ItemQtty) is null then 0 else
                     sum(ItemQtty) end
-                    from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.upc = h.upc
-                    where h.coupID = $coupID
-                    and h.type = 'QUALIFIER'" ;
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type = ";
+                $minR = $transDB->query($minQ . "'QUALIFIER'");
+                $minW = $transDB->fetch_row($minR);
+                $validQtty = $minW[0];
+
+                $min2R = $transDB->query($minQ . "'DISCOUNT'");
+                $min2W = $transDB->fetch_row($min2R);
+                $validQtty2 = $min2W[0];
+
+                if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                }
+                break;
+            case 'MX': // must purchase at least $ from qualifying departments
+                       // and some quantity discount items
+                       // (mix "cross")
+                $minQ = "select case when sum(total) is null
+                    then 0 else sum(total) end
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
+                        AND h.type='QUALIFIER'";
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
 
                 $min2Q = "select case when sum(ItemQtty) is null then 0 else
                     sum(ItemQtty) end
-                    from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.upc = h.upc
-                    where h.coupID = $coupID
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type = 'DISCOUNT'";
                 $min2R = $transDB->query($min2Q);
-                $min2W = $transDB->fetch_row($minR);
+                $min2W = $transDB->fetch_row($min2R);
                 $validQtty2 = $min2W[0];
 
                 if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
             case '$': // must purchase at least $ total items
-                $minQ = "SELECT sum(total) FROM localtemptrans
-                    WHERE trans_type IN ('I', 'D', 'M')";
-                $minR = $transDB->query($minQ);
-                $minW = $transDB->fetch_row($minR);
-                $validAmt = $minW[0];
-                if ($validAmt < $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
-                }
-                break;
             case '$+': // must purchase more than $ total items
                 $minQ = "SELECT sum(total) FROM localtemptrans
                     WHERE trans_type IN ('I', 'D', 'M')";
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validAmt = $minW[0];
-                if ($validAmt <= $infoW["minValue"]) {
-                    return DisplayLib::boxMsg(_("coupon requirements not met"));
+                if ($infoW['minType'] == '$+' && $validAmt <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == '$' && $validAmt < $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
             case '': // no minimum
             case ' ':
                 break;
             default:
-                return DisplayLib::boxMsg(_("unknown minimum type") . " " . $infoW["minType"]);
+                return $this->errorOrQuiet(_('unknown minimum type ') . $infoW['minType']);
         }
 
         return true;
@@ -283,22 +322,21 @@ class HouseCoupon extends SpecialUPC
       one per member, etc. This is a separate method from
       checkQualifications() so that calling code has the option
       of working around limits via voids or amount adjustments
-      @param $id [int] coupon ID
+      @param $coupID [int] coupon ID
       @return [boolean] true or [string] error message
     */
-    public function checkLimits($id)
+    public function checkLimits($coupID)
     {
-        global $CORE_LOCAL;
-        $infoW = $this->lookupCoupon($id);
+        $infoW = $this->lookupCoupon($coupID);
         if ($infoW === false) {
-            return DisplayLib::boxMsg(_("coupon not found"));
+            return $this->errorOrQuiet(_('coupon not found'), false);
         }
 
-        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        $prefix = $this->session->get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
-        $upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
+        $upc = $prefix . str_pad($coupID, 5, '0', STR_PAD_LEFT);
 
         /* check the number of times this coupon
          * has been used in this transaction
@@ -309,23 +347,26 @@ class HouseCoupon extends SpecialUPC
             from localtemptrans where
             upc = '" . $upc . "'" ;
         $limitR = $transDB->query($limitQ);
-        $times_used = array_pop($transDB->fetch_row($limitR));
-        if ($times_used >= $infoW["limit"]) {
-            return DisplayLib::boxMsg(_("coupon already applied"));
+        $limitW = $transDB->fetch_row($limitR);
+        $timesUsed = $limitW[0];
+        if ($timesUsed >= $infoW["limit"]) {
+            return $this->errorOrQuiet(_('coupon already applied'), false);
         }
 
         /**
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 
-            && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
+        if ($infoW["memberOnly"] == 1 && $this->session->get("standalone")==0 
+            && $this->session->get('memberID') != $this->session->get('visitingMem')) {
             $mDB = Database::mDataConnect();
+            $mAlt = Database::mAltName();
 
-            // Lookup usage of this coupon by this member
+            // Future idea: lookup usage of this coupon by this member
             // Subquery is to combine today (dlog)
             // with previous days (dlog_90_view)
             // Potential replacement for houseCouponThisMonth
+            /*
             $monthStart = date('Y-m-01 00:00:00');
             $altQ = "SELECT SUM(s.quantity) AS quantity,
                         MAX(tdate) AS lastUse
@@ -336,7 +377,7 @@ class HouseCoupon extends SpecialUPC
                             trans_type='T'
                             AND trans_subtype='IC'
                             AND upc='$upc'
-                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+                            AND card_no=" . ((int)$this->session->get('memberID')) . "
     
                         UNION ALL
 
@@ -346,22 +387,21 @@ class HouseCoupon extends SpecialUPC
                             trans_type='T'
                             AND trans_subtype='IC'
                             AND upc='$upc'
-                            AND card_no=" . ((int)$CORE_LOCAL->get('memberID')) . "
+                            AND card_no=" . ((int)$this->session->get('memberID')) . "
                             AND tdate >= '$monthStart'
                      ) AS s
                      GROUP BY s.upc, s.card_no";
+            */
 
-            $mR = $mDB->query("SELECT quantity 
-                               FROM houseCouponThisMonth
-                               WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
+            $mRes = $mDB->query("SELECT quantity 
+                               FROM {$mAlt}houseCouponThisMonth
+                               WHERE card_no=" . $this->session->get("memberID") . " and
                                upc='$upc'");
-            if ($mDB->num_rows($mR) > 0) {
-                $mW = $mDB->fetch_row($mR);
-                $uses = $mW['quantity'];
+            if ($mDB->num_rows($mRes) > 0) {
+                $mRow = $mDB->fetch_row($mRes);
+                $uses = $mRow['quantity'];
                 if ($uses >= $infoW["limit"]) {
-                    return DisplayLib::boxMsg(_("Coupon already used")
-                                ."<br />"
-                                ._("on this membership"));
+                    return $this->errorOrQuiet(_('coupon already used<br />on this membership'), false);
                 }
             }
         }
@@ -372,16 +412,15 @@ class HouseCoupon extends SpecialUPC
     
     /**
       Get information about how much the coupon is worth
-      @param $id [int] coupon ID
+      @param $coupID [int] coupon ID
       @return array with keys:
         value => [float] coupon value
         department => [int] department number for the coupon
         description => [string] description for coupon
     */
-    public function getValue($id)
+    public function getValue($coupID)
     {
-        global $CORE_LOCAL;
-        $infoW = $this->lookupCoupon($id);
+        $infoW = $this->lookupCoupon($coupID);
         if ($infoW === false) {
             return array('value' => 0, 'department' => 0, 'description' => '');
         }
@@ -391,16 +430,14 @@ class HouseCoupon extends SpecialUPC
          * should be valid
          */
         $value = 0;
-        $coupID = $id;
         $description = isset($infoW['description']) ? $infoW['description'] : '';
-        switch($infoW["discountType"]) {
+        $discountable = 1;
+        switch ($infoW["discountType"]) {
             case "Q": // quantity discount
                 // discount = coupon's discountValue
                 // times the cheapeast coupon item
-                $valQ = "select unitPrice, department from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.upc = h.upc
-                    where h.coupID=" . $coupID . " 
+                $valQ = "select unitPrice, department 
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
                     order by unitPrice asc ";
@@ -408,15 +445,29 @@ class HouseCoupon extends SpecialUPC
                 $valW = $transDB->fetch_row($valR);
                 $value = $valW[0] * $infoW["discountValue"];
                 break;
+            case 'BG': // BOGO
+                $valQ = 'SELECT SUM(l.total), SUM(l.quantity) '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')";
+                $valP = $transDB->prepare($valQ);
+                $valW = $transDB->getRow($valP);
+                $value = $valW[0];
+                $qty = $valW[1];
+                if ($qty % 2 != 0) {
+                    $value -= ($value/$qty);
+                }
+                $value = MiscLib::truncate2($value/2);
+                if ($value > 0 && $value > $infoW['discountValue']) {
+                    $value = $infoW['discountValue'];
+                }
+                break;
             case "P": // discount price
                 // query to get the item's department and current value
                 // current value minus the discount price is how much to
                 // take off
                 $value = $infoW["discountValue"];
-                $deptQ = "select department, (total/quantity) as value from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.upc = h.upc
-                    where h.coupID=" . $coupID . "
+                $deptQ = "select department, (total/quantity) as value 
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
                     order by unitPrice asc ";
@@ -428,10 +479,8 @@ class HouseCoupon extends SpecialUPC
                 // simply take off the requested amount
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
-                $valQ = "select department, quantity from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.department = h.upc
-                    where h.coupID = " . $coupID . "
+                $valQ = "select department, quantity 
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
                     order by unitPrice asc ";
@@ -443,10 +492,8 @@ class HouseCoupon extends SpecialUPC
                 // take off item value or discount value
                 // whichever is less
                 $value = $infoW["discountValue"];
-                $valQ = "select department, l.total from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.department = h.upc
-                    where h.coupID = " . $coupID . "
+                $valQ = "select department, l.total 
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
                     order by l.total desc ";
@@ -458,10 +505,8 @@ class HouseCoupon extends SpecialUPC
                 // apply discount across all items
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
-                $valQ = "select sum(quantity) from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.department = h.upc
-                    where h.coupID = " . $coupID . "
+                $valQ = "select sum(quantity) 
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
                     order by unitPrice asc ";
@@ -473,10 +518,8 @@ class HouseCoupon extends SpecialUPC
                 // simply take off the requested amount
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
-                $valQ = "select l.upc, quantity from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.upc = h.upc
-                    where h.coupID = " . $coupID . "
+                $valQ = "select l.upc, quantity 
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
                     order by unitPrice asc";
@@ -484,85 +527,115 @@ class HouseCoupon extends SpecialUPC
                 $row = $transDB->fetch_row($valR);
                 $value = $row[1] * $value;
                 break;
+            case 'PI': // per-item discount
+                    // take of the request amount times the
+                    // number of matching items.
+                $value = $infoW["discountValue"];
+                $valQ = "
+                    SELECT 
+                       SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type in ('BOTH', 'DISCOUNT')";
+                $valR = $transDB->query($valQ);
+                $row = $transDB->fetch_row($valR);
+                $value = $row['qty'] * $value;
+                break;
+            case 'PS': // per set of items
+                $value = $infoW["discountValue"];
+
+                $qualQ = "
+                    SELECT 
+                       SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type in ('BOTH', 'QUALIFIER')";
+                $qualR = $transDB->query($qualQ);
+                $qualW = $transDB->fetch_row($qualR);
+
+                $discQ = "
+                    SELECT 
+                       SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type in ('BOTH', 'DISCOUNT')";
+                $discR = $transDB->query($discQ);
+                $discW = $transDB->fetch_row($discR);
+
+                $sets = ($qualW['qty'] > $discW['qty']) ? $discW['qty'] : $qualW['qty'];
+                $value = $sets * $value;
+                break;
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
-                break;
-            case "%C": // capped percent discount
-                /**
-                  This is a little messy to cram two different values
-                  into one number. The decimal portion is the discount
-                  percentage; the integer portion is the maximum 
-                  discountable total. The latter is the discount cap
-                  expressed in a way that will be an integer more often.
-
-                  Example:
-                  A 5 percent discount capped at $2.50 => 50.05
-                */
-                Database::getsubtotals();
-                $max = floor($infoW['discountValue']);
-                $percentage = $infoW['discountValue'] - $max;
-                // because the overall value is capped, I'm using
-                // the actual transaction total rather than discountableTotal
-                $total = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
-                $amount = $total > $max ? $max : $total;
-                $value = $percentage * $amount;
+                $discountable = 0;
                 break;
             case "%": // percent discount on all items
                 Database::getsubtotals();
-                $value = $infoW["discountValue"] * $CORE_LOCAL->get("discountableTotal");
+                $value = $infoW["discountValue"] * $this->session->get("discountableTotal");
+                break;
+            case "%B": // better percent discount applies
+                Database::getsubtotals();
+                $couponDiscount = (int)($infoW['discountValue']*100);
+                $value = 0;
+                if ($couponDiscount > $this->session->get('percentDiscount')) {
+                    // coupon discount is better than customer's discount
+                    // apply coupon & zero out customer's discount
+                    $value = $infoW["discountValue"] * $this->session->get("discountableTotal");
+                    $this->session->set('percentDiscount', 0);
+                    $transDB->query('UPDATE localtemptrans SET percentDiscount=0');
+                }
                 break;
             case "%D": // percent discount on all items in give department(s)
-                $valQ = "select sum(total) from localtemptrans
-                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
-                    as h on l.department = h.upc
-                    where h.coupID = " . $coupID . "
+                $valQ = "select sum(total) 
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT')";
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
                 $value = $row[0] * $infoW["discountValue"];
                 break;
+            case "%S": // percent discount on all items in give department(s)
+                        // excluding sale items
+                $valQ = "select sum(total) 
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
+                    and h.type in ('BOTH', 'DISCOUNT') AND l.discounttype = 0";
+                $valR = $transDB->query($valQ);
+                $row = $transDB->fetch_row($valR);
+                $value = $row[0] * $infoW["discountValue"];
+                break;
+            case "%E": // better percent discount applies to specified department only
+                Database::getsubtotals();
+                $couponDiscount = (int)($infoW['discountValue']*100);
+                $value = 0;
+                if ($couponDiscount > $this->session->get('percentDiscount')) {
+                    // coupon discount is better than customer's discount
+                    // apply coupon & exclude those items from customer's discount
+                    $valQ = "select sum(total) 
+                        " . $this->baseSQL($transDB, $coupID, 'department') . "
+                        and h.type in ('BOTH', 'DISCOUNT')";
+                    $valR = $transDB->query($valQ);
+                    $row = $transDB->fetch_row($valR);
+                    $value = $row[0] * $infoW["discountValue"];                 
+
+                    $clearQ = "
+                        UPDATE localtemptrans AS l 
+                            INNER JOIN " . $this->session->get('pDatabase') . $transDB->sep() . "houseCouponItems AS h ON l.department = h.upc
+                        SET l.discountable=0
+                        WHERE h.coupID = " . $coupID . "
+                            AND h.type IN ('BOTH', 'DISCOUNT')";
+                    $clearR = $transDB->query($clearQ);
+                }
+                break;
             case 'PD': // modify customer percent discount
                    // rather than add line-item
                 $couponPD = $infoW['discountValue'] * 100;
-                $ttlPD = 0;
-                Database::getsubtotals();
-                $opDB = Database::pDataConnect();
-                $custQ = 'SELECT Discount FROM custdata WHERE CardNo='.$CORE_LOCAL->get('memberID');    
-                $custR = $opDB->query($custQ);
-                // get member's normal discount
-                $cust_discount = 0;
-                if ($opDB->num_rows($custR) > 0) {
-                    $custW = $opDB->fetch_row($custR);
-                    $cust_discount = $custW['Discount'];
-                }
-                // apply discount module
-                $handler_class = $CORE_LOCAL->get('DiscountModule');
-                if ($handler_class === '') $handler_class = 'DiscountModule';
-                elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-                if (class_exists($handler_class)) {
-                    $module = new $handler_class();
-                    $ttlPD = $module->percentage($cust_discount);
-                }
-                // add coupon's discount
-                $ttlPD += $couponPD;
-                // apply new discount to session & transaction
-                $CORE_LOCAL->set('percentDiscount', $ttlPD);
-                $transDB = Database::tDataConnect();
-                $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f',$ttlPD));
-
+                DiscountModule::updateDiscount(new DiscountModule($couponPD, 'HouseCoupon'));
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;
-                $description = $ttlPD . ' % Discount Coupon';
+                $description = $couponPD . ' % Discount Coupon';
                 break;
             case 'OD': // override customer percent discount
                    // rather than add line-item
                 $couponPD = $infoW['discountValue'] * 100;
-                // apply new discount to session & transaction
-                $CORE_LOCAL->set('percentDiscount', $couponPD);
-                $transDB = Database::tDataConnect();
-                $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f', $couponPD));
-
+                DiscountModule::updateDiscount(new DiscountModule(0, 'custdata'));
+                DiscountModule::updateDiscount(new DiscountModule($couponPD, 'HouseCoupon'));
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;
@@ -570,7 +643,20 @@ class HouseCoupon extends SpecialUPC
                 break;
         }
 
-        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description);
+        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description, 'discountable'=>$discountable);
+    }
+
+    /**
+      This FROM/WHERE is super repetitive
+    */
+    private function baseSQL($dbc, $coupID, $mode='upc')
+    {
+        $ret = '
+            FROM localtemptrans AS l
+                INNER JOIN ' . $this->session->get('pDatabase') . $dbc->sep() . 'houseCouponItems AS h 
+                ON h.upc=' . ($mode=='upc' ? 'l.upc' : 'l.department') . '
+            WHERE h.coupID=' . ((int)$coupID);
+        return $ret;
     }
 }
 

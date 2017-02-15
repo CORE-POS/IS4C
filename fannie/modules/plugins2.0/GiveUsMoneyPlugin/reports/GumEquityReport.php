@@ -40,6 +40,7 @@ class GumEquityReport extends FannieReportPage
     protected $report_headers = array('Type', '# of Shares', 'Value');
 
     protected $sort_direction = 1;
+    protected $multi_report_mode = true;
 
     public function preprocess()
     {
@@ -64,6 +65,7 @@ class GumEquityReport extends FannieReportPage
                   ORDER BY CASE WHEN shares > 0 THEN \'PURCHASE\' ELSE \'PAYOFF\' END DESC';
         $result = $dbc->query($query);
 
+        $reports = array();
         $data = array();
         while($row = $dbc->fetch_row($result)) {
             $record = array(
@@ -73,19 +75,60 @@ class GumEquityReport extends FannieReportPage
             );
             $data[] = $record;
         }
+        $reports[] = $data;
 
-        return $data;
+        $data = array();
+        $model = new GumEquitySharesModel($dbc);
+        foreach ($model->find('tdate') as $obj) {
+            $record = array(
+                date('Y-m-d', strtotime($obj->tdate())),
+                $obj->trans_num(),
+                $obj->card_no(),
+                $obj->shares(),
+                sprintf('%.2f', $obj->value()),
+            );
+            $data[] = $record;
+        }
+        $reports[] = $data;
+
+        return $reports;
+    }
+
+    private $first = true;
+    public function assign_headers()
+    {
+        if ($this->first) {
+            $this->first = false;
+        } else {
+            $this->report_headers = array('Date', 'Receipt', 'Owner', '# of Shares', 'Value');
+        }
     }
     
     public function calculate_footers($data) {
-        $sumS = 0;
-        $sumV = 0;
-        foreach($data as $row) {
-            $sumS += $row[1];
-            $sumV += $row[2];
-        }
+        if (count($data[0]) == 3) {
+            $sumS = 0;
+            $sumV = 0;
+            foreach($data as $row) {
+                $sumS += $row[1];
+                $sumV += $row[2];
+            }
 
-        return array('Balance', $sumS, sprintf('%.2f', $sumV));
+            return array('Balance', $sumS, sprintf('%.2f', $sumV));
+        } else {
+            $sumS = 0;
+            $sumV = 0;
+            foreach($data as $row) {
+                $sumS += $row[3];
+                $sumV += $row[4];
+            }
+
+            return array('Total', '', '', $sumS, sprintf('%.2f', $sumV));
+        }
+    }
+
+    public function form_content()
+    {
+        return '<!-- no need -->';
     }
 }
 

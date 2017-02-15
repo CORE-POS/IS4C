@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class CustomReceiptModel
 */
@@ -34,54 +37,28 @@ class CustomReceiptModel extends BasicModel
     'text' => array('type'=>'VARCHAR(80)'),
     'seq' => array('type'=>'INT', 'primary_key'=>true),
     'type' => array('type'=>'VARCHAR(20)', 'primary_key'=>true),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function text()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["text"])) {
-                return $this->instance["text"];
-            } elseif(isset($this->columns["text"]["default"])) {
-                return $this->columns["text"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["text"] = func_get_arg(0);
-        }
-    }
+        return '
+Use:
+This table contains strings of text
+that originally lived in the lane\'s 
+ini.php. At first it was only used
+for receipt headers and footers, hence
+the name. Submit a patch if you want
+a saner name.
 
-    public function seq()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["seq"])) {
-                return $this->instance["seq"];
-            } elseif(isset($this->columns["seq"]["default"])) {
-                return $this->columns["seq"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["seq"] = func_get_arg(0);
-        }
+Current valid types are:
+* receiptHeader
+* receiptFooter
+* ckEndorse
+* welcomeMsg
+* farewellMsg
+* trainingMsg
+* chargeSlip
+        ';
     }
-
-    public function type()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["type"])) {
-                return $this->instance["type"];
-            } elseif(isset($this->columns["type"]["default"])) {
-                return $this->columns["type"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["type"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

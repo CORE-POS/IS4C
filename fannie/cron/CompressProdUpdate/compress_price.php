@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -31,13 +31,15 @@
    ends up having a ton of entries.
 */
 
-if (!chdir("CompressProdUpdate")){
+if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (prod update compress price)";
-    exit;
+    return;
 }
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 
 set_time_limit(0);
 ini_set('memory_limit','256M');
@@ -86,5 +88,3 @@ while($w = $sql->fetch_row($r)){
     $prevDate = $w['modified']; 
 }
 
-
-?>

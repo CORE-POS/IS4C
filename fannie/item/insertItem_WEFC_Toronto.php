@@ -3,14 +3,14 @@
 
     Copyright 2005,2009 Whole Foods Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -64,16 +64,37 @@ include('../src/header.html');
 
 $upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);
 
-// Array where keys match products fieldnames, for insertion to products.
+/* Array where keys match products fieldnames, for insertion to products. */
 $ins_array = array();
-$ins_array['upc'] = $dbc->escape($upc);
-//$ins_array['upc'] = $dbc->escape($_REQUEST['upc']);
+
+/* Set tax and FS to department defaults
+ * 22Nov2014 EL Before today this was being done after the assignment
+ *  of values from the form.
+ *  (There was also an apparent bug that the WHERE clause was missing
+ *   so the assignment was almost always from the wrong department.)
+ */
+$ins_array['department'] = $_REQUEST['department'];
+$deptSub = 0;
+$taxfsQ = "SELECT dept_tax,dept_fs, dept_discount, superID
+    FROM departments AS d
+    LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
+    WHERE d.dept_no = {$ins_array['department']}";
+$taxfsR = $dbc->query($taxfsQ);
+if ($dbc->num_rows($taxfsR) > 0){
+    $taxfsW = $dbc->fetchRow($taxfsR);
+    $ins_array['tax'] = $taxfsW['dept_tax'];
+    $ins_array['foodstamp'] = $taxfsW['dept_fs'];
+    $ins_array['discount'] = $taxfsW['dept_discount'];
+    $deptSub = $taxfsW['superID'];
+}
 $ins_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
 $ins_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;
+$ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
+
+$ins_array['upc'] = $dbc->escape($upc);
 $ins_array['scale'] = isset($_REQUEST['Scale'])?1:0;
 $ins_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
 $ins_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
-$ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
 $ins_array['normal_price'] = saveAsMoney($_REQUEST,'price');
 $ins_array['description'] = $dbc->escape($_REQUEST['descript']);
 // Package
@@ -83,24 +104,8 @@ $ins_array['size'] = $dbc->escape($string_size);
 $unitofmeasure = substr(trim($_REQUEST['unitofmeasure']),0,15);
 $ins_array['unitofmeasure'] = $dbc->escape($unitofmeasure);
 
-/* set tax and FS to department defaults */
-/* But these fields can be edited on the form. Good to override? */
-$deptSub = 0;
-$taxfsQ = "select dept_tax,dept_fs,
-    dept_discount,
-    superID FROM
-    departments as d left join MasterSuperDepts as s on d.dept_no=s.dept_ID";
-$taxfsR = $dbc->query($taxfsQ);
-if ($dbc->num_rows($taxfsR) > 0){
-    $taxfsW = $dbc->fetch_array($taxfsR);
-    $ins_array['tax'] = $taxfsW['dept_tax'];
-    $ins_array['foodstamp'] = $taxfsW['dept_fs'];
-    $ins_array['discount'] = $taxfsW['dept_discount'];
-    $deptSub = $taxfsW['superID'];
-}
-
-// Authenticate now that deptSub can be reported.
-/* AUTHENTICATION CLASS: pricechange OR audited_pricechange
+/* Authenticate now that deptSub can be reported.
+ * AUTHENTICATION CLASS: pricechange OR audited_pricechange
  * Check which uid is trying to add an item. Users w/ pricechange
  * permission may have access to all items or only a range of
  * subdepartments.
@@ -116,13 +121,10 @@ if ($validatedUser){
   $uid = $validatedUID;
 }
 elseif ($auditedUser){
-  $auditedUID = getUID($auditedUser);
-  $uid = $auditedUID;
-  require('audit.php');
   if (!empty($likeCode))
-    audit($deptSub,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc,$likeCode);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc, $likeCode);
   else
-    audit($deptSub,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc);
 }
 if (!$validatedUser && !$auditedUser){
     echo "Please ";
@@ -143,7 +145,7 @@ if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == "WEFC_Toronto" ) {
         $coop_array = array("description" => $dbc->escape(substr($_REQUEST['descript'],0,255)),
         "search_description" => isset($_REQUEST['puser_description'])?$dbc->escape(substr($_REQUEST['puser_description'],0,255)):'');
         $coop_array['upc'] = $dbc->escape($upc);
-        $dbc->smart_insert("$table_name",$coop_array);
+        $dbc->smartInsert("$table_name",$coop_array);
     }
 }
 
@@ -179,7 +181,9 @@ if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRO
 $del99Q = "DELETE FROM products WHERE upc = '$upc'";
 $delISR = $dbc->query($del99Q);
 
+/* 22Nov2014 EL Moved above to where it is first needed.
 $ins_array['department'] = $_REQUEST['department'];
+*/
 $ins_array['subdept'] = $_REQUEST['subdepartment'];
 
 $ins_array['cost'] = saveAsMoney($_REQUEST,'cost');
@@ -238,11 +242,11 @@ $ins_array['idEnforced'] = 0;
 $ins_array['numflag'] = 0;
 
 /* since the item doesn't exist at all, just insert a master record */
-$resultI = $dbc->smart_insert('products',$ins_array);
+$resultI = $dbc->smartInsert('products',$ins_array);
 /* if we do persistent per-store records
 if ($FANNIE_STORE_ID != 0){
     $ins_array['store_id'] = $FANNIE_STORE_ID;
-    $resultI = $dbc->smart_insert('products',$ins_array);
+    $resultI = $dbc->smartInsert('products',$ins_array);
 }
 */
 
@@ -264,7 +268,7 @@ if ($dbc->table_exists('productUser')){
     // Some productUser fields are not edited in itemMaint.php
     $puser_array['enableOnline'] = 0;
     $dbc->query("DELETE FROM productUser WHERE upc='$upc'");
-    $dbc->smart_insert('productUser',$puser_array);
+    $dbc->smartInsert('productUser',$puser_array);
 }
 
 /* 4. Insert or update vendorItems */
@@ -295,10 +299,10 @@ if ($dbc->table_exists('vendorItems')){
         else {
             $vi_array['vendorID'] = 0;
         }
-        $dbc->smart_insert('vendorItems',$vi_array);
+        $dbc->smartInsert('vendorItems',$vi_array);
     }
     else {
-        $dbc->smart_update('vendorItems',$vi_array,"upc='$upc'");
+        $dbc->smartUpdate('vendorItems',$vi_array,"upc='$upc'");
     }
 // vendorItems
 }
@@ -331,7 +335,7 @@ if ($dbc->table_exists('prodExtra')){
         $px_array['margin'] = 0.00;
     }
     $dbc->query("DELETE FROM prodExtra WHERE upc='$upc'");
-    $dbc->smart_insert('prodExtra',$px_array);
+    $dbc->smartInsert('prodExtra',$px_array);
 }
 
 /* 6. Insert to prodUpdate, an audit table. */
@@ -351,7 +355,7 @@ if ($dbc->table_exists("prodUpdate")){
     'noDisc' => $ins_array['discount'],
     'inUse' => $ins_array['inUse']
     );
-    $dbc->smart_insert('prodUpdate',$pu_array);
+    $dbc->smartInsert('prodUpdate',$pu_array);
 }
 
 /* 7. Insert to scaleItem */
@@ -386,7 +390,7 @@ if (isset($_REQUEST['s_plu'])){
     $scale_array['class'] = "''";
 
     $dbc->query("DELETE FROM scaleItems WHERE plu='$upc'");
-    $dbc->smart_insert("scaleItems",$scale_array);
+    $dbc->smartInsert("scaleItems",$scale_array);
 
     $action = "WriteOneItem";
     include('hobartcsv/parse.php');
@@ -409,16 +413,23 @@ updateAllLanes($upc, array("products", "productUser"));
 // $dbc may be looking at lane db now, so be sure it is looking at Fannie.
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+
+$deptQ = "SELECT dept_no, dept_name FROM departments ORDER BY dept_no";
+$deptR = $dbc->query($deptQ);
+$row = $dbc->fetchRow($deptR);
+$firstDeptNo = $row['dept_no'];
+$firstDeptName = $row['dept_name'];
+
 $prodQ = "SELECT * FROM products WHERE upc = ".$upc;
 $prodR = $dbc->query($prodQ);
-$row = $dbc->fetch_array($prodR);
+$row = $dbc->fetchRow($prodR);
 
         echo "<table border=0>";
         echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$upc."</font><input type=hidden value='".$upc."' name=upc></td>";
         echo "</tr><tr><td><b>Description</b></td><td>".$row['description']."</td>";
         echo "<td><b>Price</b></td><td>\$ ".$row['normal_price']."</td></tr></table>";
         echo "<table border=0><tr>";
-        echo "<th>Dept<th>subDept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
+        echo "<th>Dept<th>Sub-Dept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
         echo "</tr>";
         echo "<tr>";
  
@@ -426,7 +437,7 @@ $row = $dbc->fetch_array($prodR);
         if (is_numeric($dept)) {
             $query2 = "SELECT * FROM departments where dept_no = ".$row["department"];
             $result2 = $dbc->query($query2);
-            $row2 = $dbc->fetch_array($result2);
+            $row2 = $dbc->fetchRow($result2);
         } else {
             $row2 = array('dept_name' => "");
         }
@@ -435,7 +446,7 @@ $row = $dbc->fetch_array($prodR);
         if (is_numeric($subdept)) {
             $query2a = "SELECT * FROM subdepts WHERE subdept_no = ".$subdept;
             $result2a = $dbc->query($query2a);
-            $row2a = $dbc->fetch_array($result2a);
+            $row2a = $dbc->fetchRow($result2a);
         } else {
             $row2a = array('subdept_name' => "");
         }
@@ -444,7 +455,7 @@ $row = $dbc->fetch_array($prodR);
         echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>"; 
 
-        echo "<td>";
+        echo "<td style='text-align:center;'>";
         echo $subdept . ' ' .  $row2a['subdept_name'];
         echo " </td>";
 
@@ -472,6 +483,11 @@ $row = $dbc->fetch_array($prodR);
         echo $row["deposit"]. " name='deposit' size='5'";
         echo "></td></tr>";
  
+        if ($dept == $firstDeptNo) {
+            echo "<tr><td colspan=99 style='color:red;'>This item is coded for the default " .
+                "department: {$firstDeptName}. Did you intend that?</td></tr>";
+        }
+
         echo "</table>";
         echo "<hr>";
         echo "<form action='itemMaint_WEFC_Toronto.php' method=post>";

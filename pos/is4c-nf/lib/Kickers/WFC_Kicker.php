@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
+use \CoreLocal;
+
 /**
   @class WFC_Kicker
   Opens drawer for cash, credit card over $25,
@@ -31,8 +35,7 @@ class WFC_Kicker extends Kicker
 
     public function doKick($trans_num)
     {
-        global $CORE_LOCAL;
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         $query = "SELECT trans_id 
                   FROM localtranstoday 
@@ -41,16 +44,16 @@ class WFC_Kicker extends Kicker
                     OR upc='0000000001065'
                   ) AND " . $this->refToWhere($trans_num);
 
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $numRows = $dbc->numRows($result);
 
-        $ret = ($num_rows > 0) ? true : false;
+        $ret = ($numRows > 0) ? true : false;
 
         // use session to override default behavior
         // based on specific cashier actions rather
         // than transaction state
-        $override = $CORE_LOCAL->get('kickOverride');
-        $CORE_LOCAL->set('kickOverride',false);
+        $override = CoreLocal::get('kickOverride');
+        CoreLocal::set('kickOverride',false);
         if ($override === true) $ret = true;
 
         return $ret;

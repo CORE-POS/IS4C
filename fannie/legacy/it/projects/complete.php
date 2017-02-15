@@ -20,7 +20,7 @@ $q = $sql->prepare("select email from project_parties where projID = ?");
 $r = $sql->execute($q, array($projID));
 $to_string = 'it@wholefoods.coop';
 if ($sql->num_rows($r) > 0){
-  while($row = $sql->fetch_array($r)){
+  while($row = $sql->fetchRow($r)){
     $to_string .= ", ".$row[0]."@wholefoods.coop";
   }
 }
@@ -28,7 +28,7 @@ if ($sql->num_rows($r) > 0){
 
 $descQ = $sql->prepare("select projDesc from projects where projID=?");
 $descR = $sql->execute($descQ, array($projID));
-$descW = $sql->fetch_array($descR);
+$descW = $sql->fetchRow($descR);
 $projDesc = $descW[0];
 
 // mail notification
@@ -39,4 +39,3 @@ mail($to_string,$subject,$message,$headers);
 
 header("Location: index.php");
 
-?>

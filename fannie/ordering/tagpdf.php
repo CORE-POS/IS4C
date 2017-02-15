@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -20,8 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('checkLogin')) {
+    include($FANNIE_ROOT.'auth/login.php');
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $TRANS = $FANNIE_TRANS_DB.$dbc->sep();
 
@@ -36,7 +44,7 @@ if (isset($_REQUEST['toids'])){
     $x = 0;
     $y = 0;
     $date = date("m/d/Y");
-    $infoP = $dbc->prepare_statement("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
+    $infoP = $dbc->prepare("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
         CASE WHEN p.card_no=0 THEN o.lastName ELSE c.LastName END as name,
         CASE WHEN p.card_no=0 THEN o.firstName ELSE c.FirstName END as fname,
         CASE WHEN o.phone is NULL THEN m.phone ELSE o.phone END as phone,
@@ -47,10 +55,11 @@ if (isset($_REQUEST['toids'])){
         LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
         LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id
         WHERE trans_id=? AND p.order_id=?");
-    $flagP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
+    $flagP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
         WHERE trans_id=? AND order_id=?");
-    $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
+    $idP = $dbc->prepare("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
         trans_id > 0 AND order_id=? ORDER BY trans_id");
+    $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
     foreach($_REQUEST['toids'] as $toid){
         if ($count % 4 == 0){ 
             $pdf->AddPage();
@@ -67,13 +76,13 @@ if (isset($_REQUEST['toids'])){
         $tid = $tmp[0];
         $oid = $tmp[1];
 
-        $r = $dbc->exec_statement($infoP, array($tid, $oid));
+        $r = $dbc->execute($infoP, array($tid, $oid));
         $w = $dbc->fetch_row($r);
 
         // flag item as "printed"
-        $r2 = $dbc->exec_statement($flagP, array($tid, $oid));
+        $r2 = $dbc->execute($flagP, array($tid, $oid));
 
-        $r3 = $dbc->exec_statement($idP, array($oid));
+        $r3 = $dbc->execute($idP, array($oid));
         $o_count = 0;
         $rel_id = 1;
         while($w3 = $dbc->fetch_row($r3)){
@@ -131,13 +140,13 @@ if (isset($_REQUEST['toids'])){
         
         $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 
-        $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
+        $pdf = $signage->drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
 
         $count++;
     }
 
     $pdf->Output();
-    exit;
+    return;
 }
 
 $page_title = "Fannie :: Special Orders";
@@ -161,7 +170,6 @@ else {
     echo '<input type="checkbox" id="sa" onclick="toggleChecked(this.checked);" />';
     echo '<label for="sa"><b>Select All</b></label>';
     echo '<table cellspacing="0" cellpadding="4" border="1">';
-    include($FANNIE_ROOT.'auth/login.php');
     $username = checkLogin();
     $cachepath = sys_get_temp_dir()."/ordercache/";
     if (file_exists("{$cachepath}{$username}.prints")){
@@ -171,23 +179,23 @@ else {
                 $_REQUEST['oids'][] = $oid;
         }
     }
-    $infoP = $dbc->prepare_statement("SELECT min(datetime) as orderDate,sum(total) as value,
+    $infoP = $dbc->prepare("SELECT min(datetime) as orderDate,sum(total) as value,
         count(*)-1 as items,
         CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name
         FROM {$TRANS}PendingSpecialOrder AS p
         LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
         LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id 
         WHERE p.order_id=?");
-    $itemP = $dbc->prepare_statement("SELECT description,department,quantity,ItemQtty,total,trans_id
+    $itemP = $dbc->prepare("SELECT description,department,quantity,ItemQtty,total,trans_id
         FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
     foreach($_REQUEST['oids'] as $oid){
-        $r = $dbc->exec_statement($infoP, array($oid));
+        $r = $dbc->execute($infoP, array($oid));
         $w = $dbc->fetch_row($r);
         printf('<tr><td colspan="2">Order #%d (%s, %s)</td><td>Amt: $%.2f</td>
             <td>Items: %d</td><td>&nbsp;</td></tr>',
             $oid,$w['orderDate'],$w['name'],$w['value'],$w['items']);
 
-        $r = $dbc->exec_statement($itemP, array($oid));
+        $r = $dbc->execute($itemP, array($oid));
         while($w = $dbc->fetch_row($r)){
             if ($w['department']==0){
                 echo '<tr><td>&nbsp;</td>';
@@ -212,4 +220,4 @@ else {
 }
 
 include($FANNIE_ROOT.'src/footer.html');
-?>
+

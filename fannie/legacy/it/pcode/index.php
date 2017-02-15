@@ -1,7 +1,7 @@
 <?php
 
 if (!isset($_GET['excel'])){
-	echo "<a href=index.php?excel=yes>Save to Excel</a><br />";
+    echo "<a href=index.php?excel=yes>Save to Excel</a><br />";
 }
 else {
 header('Content-Type: application/ms-excel');
@@ -20,23 +20,22 @@ echo "<tr><th>Dept#</th><th>Desc</th><th>Tax</th><th>FS</th><th>pCode</th></tr>"
 $cur_dept = "-1";
 
 $deptQ = "select dept_no,superID,dept_name,dept_tax,dept_fs,salesCode from departments 
-	as d LEFT JOIN MasterSuperDepts AS m on d.dept_no=m.dept_ID
-	order by superID,dept_no";
+    as d LEFT JOIN MasterSuperDepts AS m on d.dept_no=m.dept_ID
+    order by superID,dept_no";
 $deptR = $sql->query($deptQ);
 
 while ($row = $sql->fetch_row($deptR)){
-	if ($cur_dept != $row[1]){
-		echo "<tr><th colspan=5 align=center>".$sub_depts[$row[1]]."</th></tr>";
-		$cur_dept = $row[1];
-	}
-	echo "<tr>";
-	echo "<td>".$row[0]."</td>";
-	echo "<td>".$row[2]."</td>";
-	echo "<td>".$row[3]."</td>";
-	echo "<td>".$row[4]."</td>";
-	echo "<td>".$row[5]."</td>";
-	echo "</tr>";
+    if ($cur_dept != $row[1]){
+        echo "<tr><th colspan=5 align=center>".$sub_depts[$row[1]]."</th></tr>";
+        $cur_dept = $row[1];
+    }
+    echo "<tr>";
+    echo "<td>".$row[0]."</td>";
+    echo "<td>".$row[2]."</td>";
+    echo "<td>".$row[3]."</td>";
+    echo "<td>".$row[4]."</td>";
+    echo "<td>".$row[5]."</td>";
+    echo "</tr>";
 }
 echo "</table>";
 
-?>

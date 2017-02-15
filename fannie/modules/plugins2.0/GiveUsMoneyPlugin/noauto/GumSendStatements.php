@@ -25,12 +25,11 @@ $loans = new GumLoanAccountsModel($dbc);
 // GumLoanAccounts.loanDate < end of fiscal year
 $loans->loanDate(date('Y-m-d 00:00:00', $endFY), '<');
 foreach ($loans->find('loanDate') as $loan) {
-    if ($loan->card_no() == '4300') { // temp testing; send to others, then drop conditional
-        echo 'Sending account# ' .$loan->accountNumber() . ' ' .$loan->loanDate() . "\n";
+    if ($loan->card_no() == 652 || $loan->card_no() == 6780) continue;
+    echo 'Sending account# ' .$loan->accountNumber() . ' ' .$loan->loanDate() . "\n";
     $qs = '?id=' . $loan->accountNumber() . '&loanstatement=1';
     $ch = curl_init($url . $qs);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $result = curl_exec($ch);
     curl_close($ch);
-    }
 }

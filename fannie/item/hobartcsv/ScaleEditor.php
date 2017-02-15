@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,6 +32,7 @@ class ScaleEditor extends FannieRESTfulPage
     protected $title = 'Manage Service Scales';
 
     public $description = '[Scale Editor] defines available service scales (Hobart).';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -70,6 +71,9 @@ class ScaleEditor extends FannieRESTfulPage
         $types = FormLib::get('type', array());
         $dept = FormLib::get('scaleDept', array());
         $super = FormLib::get('super', array());
+        $ep_st = FormLib::get('store-no', array());
+        $ep_dept = FormLib::get('dept-no', array());
+        $ep_addr = FormLib::get('address-no', array());
 
         for ($i=0; $i<count($this->id); $i++) {
             $scale->reset();
@@ -92,6 +96,15 @@ class ScaleEditor extends FannieRESTfulPage
                 }
                 $scale->superID($super[$i]);
             }
+            if (isset($ep_st[$i])) {
+                $scale->epStoreNo($ep_st[$i]);
+            }
+            if (isset($ep_dept[$i])) {
+                $scale->epDeptNo($ep_dept[$i]);
+            }
+            if (isset($ep_addr[$i])) {
+                $scale->epScaleAddress($ep_addr[$i]);
+            }
             $scale->save();
         }
 
@@ -112,40 +125,75 @@ class ScaleEditor extends FannieRESTfulPage
             $supers[$row['superID']] = $row['super_name'];
         }
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">
-            <tr><th>Description</th><th>Host</th><th>Type</th><th>Scale Dept.</th><th>POS Super Dept</th></tr>';
+        $ret .= '<table class="table">
+            <tr><th>Description</th><th>Host</th><th>Type</th><th>Scale Dept.</th><th>POS Super Dept</th>
+            <th>Store # (EP)</th><th>Dept # (EP)</th><th>Address # (EP)</th>
+            </tr>';
         foreach ($scales->find('description') as $scale) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="id[]" value="%d" />
-                            <td><input type="text" name="description[]" value="%s" /></td>
-                            <td><input type="text" name="host[]" size="10" value="%s" /></td>
-                            <td><input type="text" name="type[]" size="10" value="%s" /></td>
-                            <td><input type="text" name="scaleDept[]" size="10" value="%s" /></td>',
+                            <td><input type="text" name="description[]" 
+                                class="form-control" value="%s" /></td>
+                            <td><input type="text" name="host[]" 
+                                class="form-control" value="%s" /></td>
+                            <td><input type="text" name="type[]" 
+                                class="form-control" value="%s" /></td>
+                            <td><input type="text" name="scaleDept[]" 
+                                class="form-control" value="%s" /></td>
+                                ',
                             $scale->serviceScaleID(),
                             $scale->description(),
                             $scale->host(),
                             $scale->scaleType(),
                             $scale->scaleDeptName()
             );
-            $ret .= '<td><select name="super[]"><option value="">None</option>';
+            $ret .= '<td><select name="super[]" class="form-control">
+                        <option value="">None</option>';
             foreach ($supers as $id => $name) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                         ($scale->superID() !== null && $scale->superID() == $id ? 'selected' : ''),
                         $id, $name);
             }
-            $ret .= '</select></td></tr>';
+            $ret .= '</select></td>';
+            $ret .= sprintf('
+                        <td><input type="text" name="store-no[]"
+                            class="form-control" value="%d" /></td>
+                        <td><input type="text" name="dept-no[]"
+                            class="form-control" value="%d" /></td>
+                        <td><input type="text" name="address-no[]"
+                            class="form-control" value="%d" /></td>',
+                        $scale->epStoreNo(),
+                        $scale->epDeptNo(),
+                        $scale->epScaleAddress()
+            );
+            $ret .= '</tr>';
         }
 
         $ret .= '</table>';
-        $ret .= '<br /><input type="submit" value="Save Changes" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save Changes</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" value="Add Scale"
-                    onclick="location=\'ScaleEditor.php?new=true\';return false;" />';
+        $ret .= '<button type="button" class="btn btn-default"
+                    onclick="location=\'ScaleEditor.php?new=true\';return false;">Add Scale</button>
+                 </p>';
         $ret .= '</form>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Define the name, type, and network location of service scales.
+            Currently only Hobart Quantums are supported. Data Gate Weigh
+            still has to be configured separately with similar information.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 

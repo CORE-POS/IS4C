@@ -47,14 +47,8 @@ class SpinsSubmitTask extends FannieTask
     {
         global $argv, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dateObj = new SpinsDate($FANNIE_PLUGIN_SETTINGS['SpinsOffset']);
 
-        $iso_week = date('W');
-        $iso_week--;
-        $year = date('Y');
-        if ($iso_week <= 0) {
-            $iso_week = 52;
-            $year--;
-        }
         $upload = true;
 
         /**
@@ -63,34 +57,27 @@ class SpinsSubmitTask extends FannieTask
         if (isset($argv) && is_array($argv)) {
             foreach($argv as $arg) {
                 if (is_numeric($arg)) {
-                    $iso_week = $arg;
-                } else if ($arg == '--file') {
+                    $dateObj = new SpinsDate($FANNIE_PLUGIN_SETTINGS['SpinsOffset'], $arg);
+                } elseif ($arg == '--file') {
                     $upload = false;
                 }
             }
         }
 
-        if (isset($FANNIE_PLUGIN_SETTINGS['SpinsOffset'])) {
-            $iso_week += $FANNIE_PLUGIN_SETTINGS['SpinsOffset'];
+        $spins_week = $dateObj->spinsWeek();
+        $dlog = DTransactionsModel::selectDlog($dateObj->startDate(), $dateObj->endDate());
+        $lastDay = date("M d, Y", $dateObj->endTimeStamp()) . ' 11:59PM'; 
+
+        $this->cronMsg('SPINS data for week #' . $spins_week . '(' . $dateObj->startDate() . ' to ' . $dateObj->endDate() . ')', FannieLogger::INFO);
+
+        $filename = $FANNIE_PLUGIN_SETTINGS['SpinsPrefix'];
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $filename .= sprintf('%02d', $this->config->get('STORE_ID'));
         }
-
-        // First day of ISO week is a Monday
-        $start = strtotime($year . 'W' . str_pad($iso_week, 2, '0', STR_PAD_LEFT));
-        // Backtrack to Sunday
-        while(date('w', $start) != 0) {
-            $start = mktime(0,0,0,date('n',$start),date('j',$start)+1,date('Y',$start));
+        if (!empty($filename)) {
+            $filename .= '_';
         }
-        // walk forward to Saturday
-        $end = $start;
-        while(date('w', $end) != 6) {
-            $end = mktime(0,0,0,date('n',$end),date('j',$end)+1,date('Y',$end));
-        }
-
-        $dlog = DTransactionsModel::selectDlog(date('Y-m-d', $start), date('Y-m-d',$end));
-
-        $lastDay = date("M d, Y", $end-86400) . ' 11:59PM'; 
-
-        echo $this->cronMsg('SPINS data for week #' . $iso_week . '(' . date('Y-m-d', $start) . ' to ' . date('Y-m-d', $end) . ')');
+        $filename .= date('mdY', $dateObj->endTimeStamp()) . '.csv';
 
         // Odd "CASE" statement is to deal with special order
         // line items the have case size & number of cases
@@ -99,18 +86,21 @@ class SpinsSubmitTask extends FannieTask
                     SUM(d.total) AS dollars,
                     '$lastDay' AS lastDay
                   FROM $dlog AS d
-                    INNER JOIN products AS p ON d.upc=p.upc
+                    " . DTrans::joinProducts('d', 'p', 'INNER') . "
                   WHERE p.Scale = 0
                     AND d.upc > '0000000999999' 
                     AND tdate BETWEEN ? AND ?
+                    " . ($this->config->get('STORE_MODE') == 'HQ' ? ' AND d.store_id=? ' : '') . "
                   GROUP BY d.upc, p.description";
 
-        $filename = date('mdY', $end) . '.csv';
         $outfile = sys_get_temp_dir()."/".$filename;
         $fp = fopen($outfile,"w");
 
         $dataP = $dbc->prepare($dataQ);
-        $args = array(date('Y-m-d 00:00:00', $start), date('Y-m-d 23:59:59', $end));
+        $args = array($dateObj->startDate() . ' 00:00:00', $dateObj->endDate() . ' 23:59:59');
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $args[] = $this->config->get('STORE_ID');
+        }
         $dataR = $dbc->execute($dataP, $args);
         while($row = $dbc->fetch_row($dataR)){
             for($i=0;$i<4; $i++){
@@ -127,22 +117,22 @@ class SpinsSubmitTask extends FannieTask
             $conn_id = ftp_connect('ftp.spins.com');
             $login_id = ftp_login($conn_id, $FANNIE_PLUGIN_SETTINGS['SpinsFtpUser'], $FANNIE_PLUGIN_SETTINGS['SpinsFtpPw']);
             if (!$conn_id || !$login_id) {
-                echo $this->cronMsg('FTP Connection failed');
+                $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
             } else {
                 ftp_chdir($conn_id, "data");
                 ftp_pasv($conn_id, true);
                 $uploaded = ftp_put($conn_id, $filename, $outfile, FTP_ASCII);
                 if (!$uploaded) {
-                    echo $this->cronMsg('FTP upload failed');
+                    $this->cronMsg('FTP upload failed', FannieLogger::ERROR);
                 } else {
-                    echo $this->cronMsg('FTP upload successful');
+                    $this->cronMsg('FTP upload successful', FannieLogger::INFO);
                 }
                 ftp_close($conn_id);
             }
             unlink($outfile);
         } else {
             rename($outfile, './' . $filename);    
-            echo $this->cronMsg('Generated file: ' . $filename);
+            $this->cronMsg('Generated file: ' . $filename, FannieLogger::INFO);
         }
     }
 }

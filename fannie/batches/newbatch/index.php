@@ -1,3 +1,3 @@
 <?php
-header('Location: BatchManagementTool.php');
-?>
+header('Location: BatchListPage.php');
+

@@ -15,4 +15,3 @@ $r = $sql->execute($q, array($projID));
 
 header("Location: index.php");
 
-?>

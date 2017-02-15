@@ -26,6 +26,7 @@ include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 $receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
+header('Location: ../ajax/AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
 
 /**
   Use requested receipt type to determine whether transaction
@@ -40,7 +41,6 @@ $receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
   Note: none is currently only used by the RRR parser which
   could probably be refactored into a plugin providing its
   own receipt type implementation via a ReceiptMessage
-*/
 $transFinished = false;
 if ($receiptType == 'full' || $receiptType == 'cancelled' ||
     $receiptType == 'suspended' || $receiptType == 'none' ||
@@ -53,17 +53,6 @@ if (!preg_match('/^\d+-\d+-\d+$/', $receiptNum)) {
     $receiptNum = ReceiptLib::mostRecentReceipt();
 }
 
-/**
-if ($receiptType == 'full') {
-    TransRecord::addtransDiscount();
-    TransRecord::addTax();
-    $taxes = Database::LineItemTaxes();
-    foreach($taxes as $tax) {
-        TransRecord::addQueued('TAXLINEITEM',$tax['description'],$tax['rate_id'],'',$tax['amount']);
-    }
-}
-*/
-
 $yesSync = JsonLib::array_to_json(array('sync'=>true));
 $noSync = JsonLib::array_to_json(array('sync'=>false));
 $output = $noSync;
@@ -72,12 +61,10 @@ ob_start();
 
 if (strlen($receiptType) > 0) {
 
-    register_shutdown_function(array('ReceiptLib', 'shutdownFunction'));
-
     $receiptContent = array();
 
     if ($transFinished) {
-        $kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+        $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
         $kicker_object = new $kicker_class();
         if (!is_object($kicker_object)) {
             $kicker_object = new Kicker();
@@ -85,13 +72,13 @@ if (strlen($receiptType) > 0) {
         $dokick = $kicker_object->doKick($receiptNum);
     }
 
-    $print_class = $CORE_LOCAL->get('ReceiptDriver');
+    $print_class = CoreLocal::get('ReceiptDriver');
     if ($print_class === '' || !class_exists($print_class)) {
         $print_class = 'ESCPOSPrintHandler';
     }
     $PRINT_OBJ = new $print_class();
 
-    $email = CoreState::getCustomerPref('email_receipt');
+    $email = trim(CoreState::getCustomerPref('email_receipt'));
     $customerEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
     $doEmail = ($customerEmail !== false) ? true : false;
     
@@ -99,26 +86,26 @@ if (strlen($receiptType) > 0) {
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, false, $doEmail);
     }
 
-    if ($CORE_LOCAL->get("ccCustCopy") == 1) {
-        $CORE_LOCAL->set("ccCustCopy",0);
-        $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum);
-    } elseif ($receiptType == "ccSlip" || $receiptType == 'gcSlip') {
+    if ($receiptType == "ccSlip" || $receiptType == 'gcSlip') {
         // don't mess with reprints
-    } elseif ($CORE_LOCAL->get("autoReprint") == 1) {
-        $CORE_LOCAL->set("autoReprint",0);
+    } elseif (CoreLocal::get("autoReprint") == 1) {
+        CoreLocal::set("autoReprint",0);
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, true);
     }
+    // use same email class for sending the receipt
+    // as was used to generate the receipt
+    $email_class = ReceiptLib::emailReceiptMod();
 
     if ($transFinished) {
-        $CORE_LOCAL->set("End",0);
         $output = $yesSync;
         UdpComm::udpSend("termReset");
         $sd = MiscLib::scaleObject();
         if (is_object($sd)) {
-            $sd->ReadReset();
+            //$sd->readReset();
         }
-        $CORE_LOCAL->set('ccTermState','swipe');
+        CoreLocal::set('ccTermState','swipe');
         uploadAndReset($receiptType);
+        CoreLocal::set("End",0);
     }
 
     // close session so if printer hangs
@@ -131,7 +118,17 @@ if (strlen($receiptType) > 0) {
         ReceiptLib::drawerKick();
     }
 
-    $EMAIL_OBJ = new EmailPrintHandler();
+    // Disable receipt for cancelled and/or suspended
+    // transactions if configured to do so
+    if ($receiptType == 'cancelled' && CoreLocal::get('CancelReceipt') == 0 && CoreLocal::get('CancelReceipt') !== '') {
+        $receiptContent = array();
+    } elseif ($receiptType == 'suspended' && CoreLocal::get('SuspendReceipt') == 0 && CoreLocal::get('SuspendReceipt') !== '') {
+        $receiptContent = array();
+    } elseif ($receiptType == 'ddd' && CoreLocal::get('ShrinkReceipt') == 0 && CoreLocal::get('ShrinkReceipt') !== '') {
+        $receiptContent = array();
+    }
+
+    $EMAIL_OBJ = new $email_class();
     foreach($receiptContent as $receipt) {
         if(is_array($receipt)) {
             if (!empty($receipt['print'])) {
@@ -146,45 +143,17 @@ if (strlen($receiptType) > 0) {
     }
 }
 
-$td = SigCapture::term_object();
-if (is_object($td)) {
-    $td->WriteToScale("reset");
-}
-
 echo $output;
 ob_end_flush();
 
 function uploadAndReset($type) 
 {
-    global $CORE_LOCAL;
-
-    /** @deprecated 3Jun14
-      Handled by TransRecord::finalizeTransaction()
-    Database::loadglobalvalues();    
-    $CORE_LOCAL->set("transno",$CORE_LOCAL->get("transno") + 1);
-    Database::setglobalvalue("TransNo", $CORE_LOCAL->get("transno"));
-    */
-
-    /** @deprecated 3Jun14
-      Handled by mgrlogin.php
-    if($type == "cancelled") {
-        $db->query("update localtemptrans set trans_status = 'X'");
-    }
-    */
-
-    /** @deprecated 3Jun14
-      Handled by TransRecord::finalizeTransaction()
-    if (Database::rotateTempData()) {
-        Database::clearTempTables();
-    }
-    */
-
-    if ($CORE_LOCAL->get("testremote")==0) {
+    if (CoreLocal::get("testremote")==0) {
         Database::testremote(); 
     }
 
-    if ($CORE_LOCAL->get("TaxExempt") != 0) {
-        $CORE_LOCAL->set("TaxExempt",0);
+    if (CoreLocal::get("TaxExempt") != 0) {
+        CoreLocal::set("TaxExempt",0);
         Database::setglobalvalue("TaxExempt", 0);
     }
 
@@ -197,50 +166,5 @@ function uploadAndReset($type)
     return 1;
 }
 
-
-/**
-  @deprecated 25Feb14
-  See Database::clearTempTables()
-
-  Replacement method has proper return value
-  and can be called from other scripts if
-  needed
 */
-function truncateTempTables() 
-{
-    $connection = Database::tDataConnect();
-    $query1 = "truncate table localtemptrans";
-    $query3 = "truncate table couponApplied";
-
-    $connection->query($query1);
-    $connection->query($query3);
-}
-
-/**
-  @deprecated 25Feb14
-  See Database::rotateTempData()
-
-  Replacement method has proper return value
-  and can be called from other scripts if
-  needed
-*/
-function moveTempData() 
-{
-    $connection = Database::tDataConnect();
-
-    $connection->query("update localtemptrans set trans_type = 'T' where trans_subtype IN ('CP','IC')");
-    $connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0, trans_type='S' where trans_status = 'S'");
-
-    $connection->query("insert into localtrans select * from localtemptrans");
-    // localtranstoday converted from view to table
-    if (!$connection->isView('localtranstoday')) {
-        $connection->query("insert into localtranstoday select * from localtemptrans");
-    }
-    // legacy table when localtranstoday is still a view
-    if ($connection->table_exists('localtrans_today')) {
-        $connection->query("insert into localtrans_today select * from localtemptrans");
-    }
-    $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
-    $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
-}
 

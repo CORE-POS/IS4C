@@ -8,12 +8,12 @@ include('../../db.php');
 $cards = "(";
 $args = array();
 if (isset($_POST["cardno"])){
-	foreach($_POST["cardno"] as $c){
-		$cards .= "?,";
+    foreach($_POST["cardno"] as $c){
+        $cards .= "?,";
         $args[] = $c;
-	}
-	$cards = rtrim($cards,",");
-	$cards .= ")";
+    }
+    $cards = rtrim($cards,",");
+    $cards .= ")";
 }
 
 $cardsClause = " AND m.card_no IN $cards ";
@@ -21,15 +21,15 @@ if ($cards == "(") $cardsClause = "";
 
 $selAddQ = $sql->prepare("SELECT m.card_no, a.memName,m.street, '',
            m.City, m.State, m.zip,
-	   a.TwoMonthBalance,a.LastMonthCharges,
-	   a.LastMonthPayments,a.LastMonthBalance
+       a.TwoMonthBalance,a.LastMonthCharges,
+       a.LastMonthPayments,a.LastMonthBalance
            FROM is4c_trans.AR_EOM_Summary a LEFT JOIN
            meminfo m ON a.cardno = m.card_no
-	   LEFT JOIN custdata as c on c.cardno=a.cardno and c.personnum=1
-	   WHERE c.type not in ('TERM') and
-	   c.memtype = 2
-	   $cardsClause 
-	   and (a.LastMonthBalance <> 0 or a.lastMonthCharges <> 0 or a.lastMonthPayments <> 0)
+       LEFT JOIN custdata as c on c.cardno=a.cardno and c.personnum=1
+       WHERE c.type not in ('TERM') and
+       c.memtype = 2
+       $cardsClause 
+       and (a.LastMonthBalance <> 0 or a.lastMonthCharges <> 0 or a.lastMonthPayments <> 0)
            ORDER BY a.cardno");
 $selAddR = $sql->execute($selAddQ, $args);
 
@@ -44,9 +44,9 @@ $transP = $sql->prepare('SELECT tdate, upc, description
                             AND trans_type IN (\'I\', \'D\')');
 /*
 $selTransQ = $sql->prepare("SELECT card_no, charges, payments, 
-	date_format(date,'%Y-%m-%d'), trans_num,description,dept_name  
-	FROM is4c_trans.AR_statementHistory as m WHERE 1=1 $cardsClause
-	order by card_no,date desc,trans_num,description,dept_name");
+    date_format(date,'%Y-%m-%d'), trans_num,description,dept_name  
+    FROM is4c_trans.AR_statementHistory as m WHERE 1=1 $cardsClause
+    order by card_no,date desc,trans_num,description,dept_name");
 $selTransR = $sql->execute($selTransQ, $args);
 $selTransN = $sql->num_rows($selTransR);
 */
@@ -66,8 +66,8 @@ $prevYear = $year;
 $prevPrevMonth = $prevMonth - 1;
 $prevPrevYear = $year;
 if ($prevPrevMonth == 0){
-	$prevPrevMonth = 12;
-	$prevPrevYear = $year - 1;
+    $prevPrevMonth = 12;
+    $prevPrevYear = $year - 1;
 }
 
 $stateDate = date("d F, Y",mktime(0,0,0,$month,0,$year));
@@ -95,15 +95,15 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Ln(5);
 
    if (strstr($selAddW[2],"\n") === False){
-	   $pdf->Cell(80,10,$selAddW[2],0);
-	   $pdf->Ln(5);
+       $pdf->Cell(80,10,$selAddW[2],0);
+       $pdf->Ln(5);
    }
    else {
-	$pts = explode("\n",$selAddW[2]);
-	$pdf->Cell(80,10,$pts[0],0);
-	$pdf->Ln(5);
-	$pdf->Cell(80,10,$pts[1],0);
-	$pdf->Ln(5);
+    $pts = explode("\n",$selAddW[2]);
+    $pdf->Cell(80,10,$pts[0],0);
+    $pdf->Ln(5);
+    $pdf->Cell(80,10,$pts[1],0);
+    $pdf->Ln(5);
    }
    $pdf->Cell(90,10,$selAddW[4] . ', ' . $selAddW[5] . '   ' . $selAddW[6],0);
    $pdf->Ln(25);
@@ -184,17 +184,17 @@ while($selAddW = $sql->fetch_row($selAddR)){
          //list($year, $month, $day) = split("-", $date);
          //$date = date('M-d-Y', mktime(0, 0, 0, $month, $day, $year));
 
-	      $pdf->Cell(20,8,'',0,0,'L');
-	      $pdf->Cell(60,8,$date,0,0,'L');
-	      //$pdf->Cell(40,8,date('M-d-Y',$date),0,0,'L');
-	      $pdf->Cell(20,8,$trans,0,0,'L');
-	      $pdf->Cell(25,8,'$ ' . sprintf('%.2f',$charges),0,0,'L');
-	      $pdf->Cell(25,8,'$ ' . sprintf('%.2f',$payment),0,0,'L');
-		if ($pdf->GetY() > 265){
-			addBackPage($pdf);
-			$pdf->AddPage();
-		} else {
-		      $pdf->Ln(3.5);
+          $pdf->Cell(20,8,'',0,0,'L');
+          $pdf->Cell(60,8,$date,0,0,'L');
+          //$pdf->Cell(40,8,date('M-d-Y',$date),0,0,'L');
+          $pdf->Cell(20,8,$trans,0,0,'L');
+          $pdf->Cell(25,8,'$ ' . sprintf('%.2f',$charges),0,0,'L');
+          $pdf->Cell(25,8,'$ ' . sprintf('%.2f',$payment),0,0,'L');
+        if ($pdf->GetY() > 265){
+            addBackPage($pdf);
+            $pdf->AddPage();
+        } else {
+              $pdf->Ln(3.5);
         }
 
         $lineitem = '';
@@ -243,88 +243,87 @@ while($selAdd1W = $sql->fetch_row($selAddR)){
 $pdf->Output('makeStatement.pdf','D');
 
 function addBackPage($pdf){
-	$pdf->AddPage();
-	$pdf->SetFont('Arial','B',16);
-	$pdf->SetTextColor(105);
-	//$pdf->Cell(0,10,'',0,1,'C');
-	$pdf->Cell(0,10,'IOU POLICY',0,1,'C');
-	//$pdf->Ln(5);
-	$pdf->SetFont('Arial','',12);
-	$pdf->Cell(0,10,'OF WHOLE FOODS COMMUNITY CO-OP, INC.',0,1,'C');
-	$pdf->SetFont('Arial','',10);
-	$txt = "WFC members may charge purchases to a maximum of $20.00 payable within two (2) weeks from the date incurred. IOU's must be signed by the maker. IOU's may not, under any circumstances, be paid with Food Stamps or EBT card. WFC asks that its members only use  the charge system for emergencies." ;
+    $pdf->AddPage();
+    $pdf->SetFont('Arial','B',16);
+    $pdf->SetTextColor(105);
+    //$pdf->Cell(0,10,'',0,1,'C');
+    $pdf->Cell(0,10,'IOU POLICY',0,1,'C');
+    //$pdf->Ln(5);
+    $pdf->SetFont('Arial','',12);
+    $pdf->Cell(0,10,'OF WHOLE FOODS COMMUNITY CO-OP, INC.',0,1,'C');
+    $pdf->SetFont('Arial','',10);
+    $txt = "WFC members may charge purchases to a maximum of $20.00 payable within two (2) weeks from the date incurred. IOU's must be signed by the maker. IOU's may not, under any circumstances, be paid with Food Stamps or EBT card. WFC asks that its members only use  the charge system for emergencies." ;
 
-	$pdf->MultiCell(0,5,$txt);
-	$pdf->Ln(5);
+    $pdf->MultiCell(0,5,$txt);
+    $pdf->Ln(5);
 
-	$txt = "-Members with an IOU account credit balance will receive a 
-		 reminder of that balance on each purchase receipt.
-	 -Members with an IOU debit balance will receive a reminder
-	  of that balance on each purchase receipt.
+    $txt = "-Members with an IOU account credit balance will receive a 
+         reminder of that balance on each purchase receipt.
+     -Members with an IOU debit balance will receive a reminder
+      of that balance on each purchase receipt.
 
-	If WFC is not reimbursed by a member within sixty (60) days from the date of an overdue IOU for the amount of that person's membership may be terminated by the Board and any remaining stock, after reimbursement for all indebtedness owed to WFC, will be converted to non-voting Class B stock.
+    If WFC is not reimbursed by a member within sixty (60) days from the date of an overdue IOU for the amount of that person's membership may be terminated by the Board and any remaining stock, after reimbursement for all indebtedness owed to WFC, will be converted to non-voting Class B stock.
 
-	If WFC is not reimbursed by a member within sixty (60) days from the date of a bounced check for the amount of that check plus the amount of any administrative fee, that person's membership may be terminated by the Board and any remaining stock, after reimbursement for all indebtedness owed to WFC, will converted to non-voting Class B stock.  
+    If WFC is not reimbursed by a member within sixty (60) days from the date of a bounced check for the amount of that check plus the amount of any administrative fee, that person's membership may be terminated by the Board and any remaining stock, after reimbursement for all indebtedness owed to WFC, will converted to non-voting Class B stock.  
 
-	IOU credit balances over sixty (60) days will be credited to the Member's non-voting Class B stock and the IOU account will be adjusted to zero.   Members may request the return of Class B stock in excess of the amount required by the By-Laws by submitting to the Board a Request to Terminate that excess stock.
+    IOU credit balances over sixty (60) days will be credited to the Member's non-voting Class B stock and the IOU account will be adjusted to zero.   Members may request the return of Class B stock in excess of the amount required by the By-Laws by submitting to the Board a Request to Terminate that excess stock.
 
-	At the discretion of the General Manager, member business and non-profit agency accounts may have higher IOU limits and/or extended payment terms.
-	";
-	$pdf->MultiCell(0,5,$txt);
-	$pdf->Ln(1);
+    At the discretion of the General Manager, member business and non-profit agency accounts may have higher IOU limits and/or extended payment terms.
+    ";
+    $pdf->MultiCell(0,5,$txt);
+    $pdf->Ln(1);
 
-	$txt="Special Orders";
+    $txt="Special Orders";
 
-	$pdf->SetFont('Arial','B',12);
-	$pdf->Cell(70,5,$txt,0,0);
-	$pdf->Ln(5);
-	$pdf->SetFont('Arial','',10);
-	$pdf->Cell(15,20,'',0,0);
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(70,5,$txt,0,0);
+    $pdf->Ln(5);
+    $pdf->SetFont('Arial','',10);
+    $pdf->Cell(15,20,'',0,0);
 
-	$txt = "Special orders not picked up or paid for within thirty (30) days of the time items are received at WFC will be put out for sale or disposed of at management discretion.  Future special orders from members or from non-members who have not previously promptly paid for and/or picked up special orders, at management discretion, may require prepayment.";
-	$pdf->MultiCell(0,5,$txt);
-	$pdf->Ln(2);
+    $txt = "Special orders not picked up or paid for within thirty (30) days of the time items are received at WFC will be put out for sale or disposed of at management discretion.  Future special orders from members or from non-members who have not previously promptly paid for and/or picked up special orders, at management discretion, may require prepayment.";
+    $pdf->MultiCell(0,5,$txt);
+    $pdf->Ln(2);
 
-	$txt="Newsletter Ads";
+    $txt="Newsletter Ads";
 
-	$pdf->SetFont('Arial','B',12);
-	$pdf->Cell(70,5,$txt,0,0);
-	$pdf->Ln(5);
-	$pdf->SetFont('Arial','',10);
-	$pdf->Cell(15,20,'',0,0);
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(70,5,$txt,0,0);
+    $pdf->Ln(5);
+    $pdf->SetFont('Arial','',10);
+    $pdf->Cell(15,20,'',0,0);
 
-	$txt = "Members may charge the cost of advertising their business in WFC's newsletter under the same IOU payment terms as noted above but on an IOU account separate from the member's IOU account for inventory purchases.   
+    $txt = "Members may charge the cost of advertising their business in WFC's newsletter under the same IOU payment terms as noted above but on an IOU account separate from the member's IOU account for inventory purchases.   
 
-	Members will be mailed an invoice within ten (10) days of the date of publication for the amount of the advertising charge.  Failure to pay the amount due is then subject to the provisions of this IOU policy.
-	";
+    Members will be mailed an invoice within ten (10) days of the date of publication for the amount of the advertising charge.  Failure to pay the amount due is then subject to the provisions of this IOU policy.
+    ";
 
-	$pdf->MultiCell(0,5,$txt);
-	$pdf->Ln(0);
+    $pdf->MultiCell(0,5,$txt);
+    $pdf->Ln(0);
 
-	$txt="NOTE";
+    $txt="NOTE";
 
-	$pdf->SetFont('Arial','B',12);
-	$pdf->Cell(70,5,$txt,0,0);
-	$pdf->Ln(5);
-	$pdf->SetFont('Arial','',10);
-	$pdf->Cell(15,15,'',0,0);
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(70,5,$txt,0,0);
+    $pdf->Ln(5);
+    $pdf->SetFont('Arial','',10);
+    $pdf->Cell(15,15,'',0,0);
 
-	$txt = 
-	"Memberships with IOUs and/or other credit problems in excess of sixty (60) days may be placed on inactive status by management pending Board action.  Purchases by inactive members will not be recorded and will not count toward eligibility for a patronage rebate.   Purchases by inactive members are not eligible for member discounts or member specials.
-	Memberships inactivated or terminated due to credit problems will be eligible for reactivation subject to Board discretion with respect to access to member credit benefits.
-	";
+    $txt = 
+    "Memberships with IOUs and/or other credit problems in excess of sixty (60) days may be placed on inactive status by management pending Board action.  Purchases by inactive members will not be recorded and will not count toward eligibility for a patronage rebate.   Purchases by inactive members are not eligible for member discounts or member specials.
+    Memberships inactivated or terminated due to credit problems will be eligible for reactivation subject to Board discretion with respect to access to member credit benefits.
+    ";
 
-	$pdf->MultiCell(0,4,$txt);
+    $pdf->MultiCell(0,4,$txt);
 
-	$pdf->SetFont('Arial','B',10);
-	$txt = "
-	Memberships inactivated or terminated due to credit problems will be eligible for reactivation subject to Board discretion with respect to access to member credit benefits.";
-	$pdf->Cell(15,20,'',0,0);
-	$pdf->MultiCell(0,5,$txt);
+    $pdf->SetFont('Arial','B',10);
+    $txt = "
+    Memberships inactivated or terminated due to credit problems will be eligible for reactivation subject to Board discretion with respect to access to member credit benefits.";
+    $pdf->Cell(15,20,'',0,0);
+    $pdf->MultiCell(0,5,$txt);
 
-	$pdf->Ln(5);
-	$pdf->SetTextColor(0);
-	$pdf->SetFont('Arial','',10);
+    $pdf->Ln(5);
+    $pdf->SetTextColor(0);
+    $pdf->SetFont('Arial','',10);
 }
 
-?>

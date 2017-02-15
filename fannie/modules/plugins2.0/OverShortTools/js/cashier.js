@@ -1,7 +1,6 @@
 function loadCashier(){
 	var data = 'action=loadCashier';
-	data += '&empno='+$('#empno').val();
-	data += '&date='+$('#date').val();
+    data += '&' + $('#osForm').serialize();
 
 	$.ajax({
 		url: 'OverShortCashierPage.php',
@@ -68,8 +67,9 @@ function save(){
 	var notes = escape($('#notes').val());
 	var empno = $('#current_empno').val();
 	var tdate = $('#current_date').val();
+    var store = $('#current_store').val();
 
-	var args = 'action=save&empno='+empno+'&date='+tdate+'&tenders='+tenders+'&checks='+checks+'&notes='+notes;
+	var args = 'action=save&empno='+empno+'&date='+tdate+'&tenders='+tenders+'&checks='+checks+'&notes='+notes+'&store='+store;
 	$.ajax({
 		url: 'OverShortCashierPage.php',
 		type: 'post',
@@ -107,4 +107,18 @@ function saveChecks(){
 
 	ret = ret.substring(0,ret.length - 1);
 	return ret;
+}
+
+function sumCashCounter()
+{
+    var entry = $('#cash-counter').val();
+    var regexp = /[0-9\.]+/g;
+    var numbers = entry.match(regexp);
+    var sum = 0.0;
+    for (var i=0; i<numbers.length; i++) {
+        sum += Number(numbers[i]);
+    }
+    if (sum > 0) {
+        $('#countCA').val(sum);
+    }
 }

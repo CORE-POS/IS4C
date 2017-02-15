@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemImportIndex extends FanniePage {
+class MemImportIndex extends FanniePage 
+{
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Information";
 
@@ -42,9 +43,22 @@ class MemImportIndex extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>
+            These data import tools can load different kinds
+            of data from spreadsheets (generally CSVs). The tools
+            are intended for initializing the system as opposed to
+            for ongoing maintenance.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
-
-?>
+FannieDispatch::conditionalExec();
 

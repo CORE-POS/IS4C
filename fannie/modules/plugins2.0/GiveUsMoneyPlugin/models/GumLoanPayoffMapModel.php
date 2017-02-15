@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,82 +36,5 @@ class GumLoanPayoffMapModel extends BasicModel
     'gumLoanAccountID' => array('type'=>'INT', 'primary_key'=>true),
     'gumPayoffID' => array('type'=>'INT', 'primary_key'=>true),
     );
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function gumLoanAccountID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["gumLoanAccountID"])) {
-                return $this->instance["gumLoanAccountID"];
-            } else if (isset($this->columns["gumLoanAccountID"]["default"])) {
-                return $this->columns["gumLoanAccountID"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'gumLoanAccountID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["gumLoanAccountID"]) || $this->instance["gumLoanAccountID"] != func_get_args(0)) {
-                if (!isset($this->columns["gumLoanAccountID"]["ignore_updates"]) || $this->columns["gumLoanAccountID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["gumLoanAccountID"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function gumPayoffID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["gumPayoffID"])) {
-                return $this->instance["gumPayoffID"];
-            } else if (isset($this->columns["gumPayoffID"]["default"])) {
-                return $this->columns["gumPayoffID"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'gumPayoffID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["gumPayoffID"]) || $this->instance["gumPayoffID"] != func_get_args(0)) {
-                if (!isset($this->columns["gumPayoffID"]["ignore_updates"]) || $this->columns["gumPayoffID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["gumPayoffID"] = func_get_arg(0);
-        }
-        return $this;
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

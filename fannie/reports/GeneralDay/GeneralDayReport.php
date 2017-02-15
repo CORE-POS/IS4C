@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,6 +32,8 @@ class GeneralDayReport extends FannieReportPage
         (should net to zero). Also listed are transaction count &amp; size information by member type and
         equity sales for the day.'; 
     public $report_set = 'Sales Reports';
+    public $themed = true;
+    protected $new_tablesorter = true;
 
     protected $title = "Fannie : General Day Report";
     protected $header = "General Day Report";
@@ -42,14 +44,15 @@ class GeneralDayReport extends FannieReportPage
     protected $no_sort_but_style = true;
 
     protected $report_headers = array('Desc','Qty','Amount');
-    protected $required_fields = array('date1');
+    protected $required_fields = array('date');
 
     function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,
             $FANNIE_COOP_ID;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $d1 = $this->form->date;
         $dates = array($d1.' 00:00:00',$d1.' 23:59:59');
         $data = array();
 
@@ -66,7 +69,7 @@ class GeneralDayReport extends FannieReportPage
         );
 
         $dlog = DTransactionsModel::selectDlog($d1);
-        $tenderQ = $dbc->prepare_statement("SELECT 
+        $tenderQ = $dbc->prepare("SELECT 
             TenderName,count(d.total),sum(d.total) as total
             FROM $dlog as d,
                 {$FANNIE_OP_DB}.tenders as t 
@@ -74,7 +77,7 @@ class GeneralDayReport extends FannieReportPage
                 AND d.trans_subtype = t.TenderCode
                 AND d.total <> 0{$shrinkageUsers}
             GROUP BY t.TenderName ORDER BY TenderName");
-        $tenderR = $dbc->exec_statement($tenderQ,$dates);
+        $tenderR = $dbc->execute($tenderQ,$dates);
         $report = array();
         while($tenderW = $dbc->fetch_row($tenderR)){
             $record = array($tenderW['TenderName'],$tenderW[1],
@@ -84,17 +87,54 @@ class GeneralDayReport extends FannieReportPage
         }
         $data[] = $report;
 
-        $salesQ = $dbc->prepare_statement("SELECT m.super_name,sum(d.quantity) as qty,
-                sum(d.total) as total
-                FROM $dlog AS d LEFT JOIN
-                {$FANNIE_OP_DB}.MasterSuperDepts AS m ON d.department=m.dept_ID
-                WHERE d.tdate BETWEEN ? AND ?
-                    AND d.department <> 0 AND d.trans_type <> 'T'{$shrinkageUsers}
-                GROUP BY m.super_name ORDER BY m.super_name");
-        $salesR = $dbc->exec_statement($salesQ,$dates);
+        $salesQ = '';
+        switch (FormLib::get('sales-by')) {
+            case 'Department':
+                $salesQ = '
+                    SELECT t.dept_name AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN departments AS t ON d.department=t.dept_no
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY t.dept_name
+                    ORDER BY t.dept_name'; 
+                break;
+            case 'Sales Code':
+                $salesQ = '
+                    SELECT t.salesCode AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN departments AS t ON d.department=t.dept_no
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY t.salesCode
+                    ORDER BY t.salesCode'; 
+                break;
+            case 'Super Department':
+            default:
+                $salesQ = '
+                    SELECT m.super_name AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY m.super_name
+                    ORDER BY m.super_name';
+                break;
+        }
+        $salesP = $dbc->prepare($salesQ);
+        $salesR = $dbc->execute($salesP,$dates);
         $report = array();
         while($salesW = $dbc->fetch_row($salesR)){
-            $record = array($salesW['super_name'],
+            $record = array($salesW['category'],
                     sprintf('%.2f',$salesW['qty']),
                     sprintf('%.2f',$salesW['total']));
             $report[] = $record;
@@ -102,14 +142,14 @@ class GeneralDayReport extends FannieReportPage
         }
         $data[] = $report;
 
-        $discQ = $dbc->prepare_statement("SELECT m.memDesc, SUM(d.total) AS Discount,count(*)
+        $discQ = $dbc->prepare("SELECT m.memDesc, SUM(d.total) AS Discount,count(*)
                 FROM $dlog d 
                     INNER JOIN memtype m ON d.memType = m.memtype
                 WHERE d.tdate BETWEEN ? AND ?
                    AND d.upc = 'DISCOUNT'{$shrinkageUsers}
                 AND total <> 0
                 GROUP BY m.memDesc ORDER BY m.memDesc");
-        $discR = $dbc->exec_statement($discQ,$dates);
+        $discR = $dbc->execute($discQ,$dates);
         $report = array();
         while($discW = $dbc->fetch_row($discR)){
             $record = array($discW['memDesc'],$discW[2],$discW[1]);
@@ -135,12 +175,12 @@ class GeneralDayReport extends FannieReportPage
             $report[] = $record;
         }
 
-        $taxSumQ = $dbc->prepare_statement("SELECT  sum(total) as tax_collected
+        $taxSumQ = $dbc->prepare("SELECT  sum(total) as tax_collected
             FROM $dlog as d 
             WHERE d.tdate BETWEEN ? AND ?
                 AND (d.upc = 'tax'){$shrinkageUsers}
             GROUP BY d.upc");
-        $taxR = $dbc->exec_statement($taxSumQ,$dates);
+        $taxR = $dbc->execute($taxSumQ,$dates);
         while($taxW = $dbc->fetch_row($taxR)){
             $record = array('Total Tax Collected',round($taxW['tax_collected'],2));
             $report[] = $record;
@@ -157,7 +197,7 @@ class GeneralDayReport extends FannieReportPage
         }
         $data[] = $report;
 
-        $transQ = $dbc->prepare_statement("select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
+        $transQ = $dbc->prepare("select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
             (
             select trans_num,card_no,quantity,total,
             m.memDesc as transaction_type
@@ -168,9 +208,9 @@ class GeneralDayReport extends FannieReportPage
                 AND upc <> 'RRR'{$shrinkageUsers}
             ) as q 
             group by q.trans_num,q.transaction_type");
-        $transR = $dbc->exec_statement($transQ,$dates);
-        $trans_info = array();
-        while($row = $dbc->fetch_array($transR)){
+        $transR = $dbc->execute($transQ,$dates);
+        $transinfo = array();
+        while($row = $dbc->fetchRow($transR)){
             if (!isset($transinfo[$row[2]]))
                 $transinfo[$row[2]] = array(0,0.0,0.0,0.0,0.0);
             $transinfo[$row[2]][0] += 1;
@@ -180,7 +220,7 @@ class GeneralDayReport extends FannieReportPage
         $tSum = 0;
         $tItems = 0;
         $tDollars = 0;
-        foreach(array_keys($transinfo) as $k){
+        foreach (array_keys($transinfo) as $k) {
             $transinfo[$k][2] = round($transinfo[$k][1]/$transinfo[$k][0],2);
             $transinfo[$k][4] = round($transinfo[$k][3]/$transinfo[$k][0],2);
             $tSum += $transinfo[$k][0];
@@ -205,13 +245,13 @@ class GeneralDayReport extends FannieReportPage
             }
             $dlist = substr($dlist,0,strlen($dlist)-1).")";
 
-            $equityQ = $dbc->prepare_statement("SELECT d.card_no,t.dept_name, sum(total) as total 
+            $equityQ = $dbc->prepare("SELECT d.card_no,t.dept_name, sum(total) as total 
                 FROM $dlog as d
                 LEFT JOIN {$FANNIE_OP_DB}.departments as t ON d.department = t.dept_no
                 WHERE d.tdate BETWEEN ? AND ?
                     AND d.department IN $dlist{$shrinkageUsers}
                 GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name");
-            $equityR = $dbc->exec_statement($equityQ,$dates);
+            $equityR = $dbc->execute($equityQ,$dates);
             $report = array();
             while($equityW = $dbc->fetch_row($equityR)){
                 $record = array($equityW['card_no'],$equityW['dept_name'],
@@ -283,25 +323,60 @@ class GeneralDayReport extends FannieReportPage
 
     function form_content()
     {
-        $start = date('Y-m-d',strtotime('yesterday'));
+        ob_start();
         ?>
         <form action=GeneralDayReport.php method=get>
-        <table cellspacing=4 cellpadding=4>
-        <tr>
-        <th>Date</th>
-        <td><input type=text id=date1 name=date1 /></td>
-        </tr><tr>
-        <td>Excel <input type=checkbox name=excel /></td>
-        <td><input type=submit name=submit value="Submit" /></td>
-        </tr>
-        </table>
+        <div class="form-group">
+            <label>
+                Date
+                (<a href="../GeneralRange/">Range of Dates</a>)
+            </label>
+            <input type=text id=date name=date 
+                class="form-control date-field" required />
+        </div>
+        <div class="form-group">
+            <label>List Sales By</label>
+            <select name="sales-by" class="form-control">
+                <option>Super Department</option>
+                <option>Department</option>
+                <option>Sales Code</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Excel <input type=checkbox name=excel /></label>
+        </div>
+        <p>
+        <button type=submit name=submit value="Submit"
+            class="btn btn-default">Submit</button>
+        </p>
         </form>
         <?php
-        $this->add_onload_command("\$('#date1').datepicker();\n");
+        return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            This report lists the four major categories of transaction
+            information for a given day: tenders, sales, discounts, and
+            taxes.
+            </p>
+            <p>
+            Tenders are payments given by customers such as cash or
+            credit cards. Sales are items sold to customers. Discounts
+            are percentage discounts associated with an entire
+            transaction instead of individual items. Taxes are sales
+            tax collected.
+            </p>
+            <p>
+            Tenders should equal sales minus discounts plus taxes.
+            </p>
+            <p>
+            Equity and transaction statistics are provided as generally
+            useful information.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);
 
-?>

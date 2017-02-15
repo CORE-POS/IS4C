@@ -187,4 +187,3 @@ function abs_min($a){
   return $min;
 }
 
-?>

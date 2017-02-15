@@ -20,6 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class AgeApproveAdminLogin
   adminlogin callback for permitting underage age
@@ -34,15 +39,13 @@ class AgeApproveAdminLogin
 
     public static function adminLoginCallback($success)
     {
-        global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('refundComment', $CORE_LOCAL->get('strEntered'));    
-            $CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));    
-            $CORE_LOCAL->set('msgrepeat', 1);
-            $CORE_LOCAL->set('cashierAgeOverride', 1);
-            return true;
+            CoreLocal::set('refundComment', CoreLocal::get('strEntered'));    
+            CoreLocal::set('cashierAgeOverride', 1);
+            $inp = urlencode(CoreLocal::get('strEntered'));
+            return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
         } else {
-            $CORE_LOCAL->set('cashierAgeOverride', 0);
+            CoreLocal::set('cashierAgeOverride', 0);
             return false;
         }
     }

@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -33,15 +33,10 @@ class ReportsIndexPage extends FanniePage {
 
     public $description = '[Reports Menu] lists all known reports.';
 
-    public function body_content()
-    {
-        global $FANNIE_ROOT, $FANNIE_URL;
-
-        ob_start();
-        $terminology = '
+    private $terminology = '
 <ul>
-<li><span style="font-weight:bold;">Terminology (<a href="" onclick="$(\'#terminologyList\').toggle(); return false;">Show/Hide</a>)</span>
-<ul style="display:none;" id="terminologyList">
+<li><strong>Terminology (<a href="" onclick="$(\'#terminologyList\').toggle(); return false;">Show/Hide</a>)</strong>
+<ul class="collapse" id="terminologyList">
 <li>"Buyer" and "Super Department" usually refer to the same kind of thing:
 a grouping of Departments. 
 Some coops organize their Super Departments by Buyer, the person buying, but others do not.
@@ -87,84 +82,72 @@ All member-related things in IS4C are on the member number.
     </li>
     </ul>
 </li>
-<li><span style="font-weight:bold;">Note</span>
+<li><strong>Note</strong>
 <br />While making these reports it can be useful to have the 
 <a href="../item/ItemEditorPage.php" target="_itemEdit">Item Maintenance</a> application
 open in a separate tab or window as a reference for Manufacturers and Vendors (Distributors).
 </li>
 </ul>';
-        echo $terminology;
+
+    public function body_content()
+    {
+        ob_start();
+        echo $this->terminology;
 
         $report_sets = array();
-        $other_reports = array();
-
+        $other_sets = array();
         $reports = FannieAPI::listModules('FannieReportPage');
-        foreach($reports as $class) {
-            $obj = new $class();
-            if (!$obj->discoverable) {
-                continue;
-            }
-            $reflect = new ReflectionClass($obj);
-            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $reflect->getFileName());
-            if ($obj->report_set != '') {
-                if (!isset($report_sets[$obj->report_set])) {
-                    $report_sets[$obj->report_set] = array();
-                }
-                $report_sets[$obj->report_set][] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            } else {
-                $other_reports[] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            }
-        }
-        $tools = FannieAPI::listModules('FannieReportTool');
-        foreach($tools as $class) {
-            $obj = new $class();
-            if (!$obj->discoverable) {
-                continue;
-            }
-            $reflect = new ReflectionClass($obj);
-            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $reflect->getFileName());
-            if ($obj->report_set != '') {
-                if (!isset($report_sets[$obj->report_set])) {
-                    $report_sets[$obj->report_set] = array();
-                }
-                $report_sets[$obj->report_set][] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            } else {
-                $other_reports[] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            }
-        }
+        list($report_sets, $other_sets) = $this->classesToSets($reports, $report_sets, $other_sets);
+        $tools = FannieAPI::listModules('\COREPOS\Fannie\API\FannieReportTool');
+        list($report_sets, $other_sets) = $this->classesToSets($tools, $report_sets, $other_sets);
+
         echo '<ul>';
         $keys = array_keys($report_sets);
         sort($keys);
         foreach($keys as $set_name) {
             echo '<li>' . $set_name;
             echo '<ul>';
-            $reports = $report_sets[$set_name];
-            usort($reports, array('ReportsIndexPage', 'reportAlphabetize'));
-            foreach($reports as $report) {
-                $description = $report['info'];
-                $url = $report['url'];
-                $linked = preg_replace('/\[(.+)\]/', '<a href="' . $url . '">\1</a>', $description);
-                if ($linked === $description) {
-                    $linked .= ' (<a href="' . $url . '">Link</a>)';
-                }
-                echo '<li>' . $linked . '</li>';
-            }
+            $this->reportSetToLinks($report_sets[$set_name]);
             echo '</ul></li>';
         }
-        usort($other_reports, array('ReportsIndexPage', 'reportAlphabetize'));
-        foreach($other_reports as $report) {
+        $this->reportSetToLinks($other_sets);
+        echo '</ul>';
+
+        return ob_get_clean();
+    }
+
+    private function classesToSets($reports, $report_sets, $other_sets)
+    {
+        foreach($reports as $class) {
+            $obj = new $class();
+            if (!$obj->discoverable) {
+                continue;
+            }
+            $reflect = new ReflectionClass($obj);
+            $url = $this->config->get('URL') . str_replace($this->config->get('ROOT'), '', $reflect->getFileName());
+            if ($obj->report_set != '') {
+                if (!isset($report_sets[$obj->report_set])) {
+                    $report_sets[$obj->report_set] = array();
+                }
+                $report_sets[$obj->report_set][] = array(
+                    'url' => $url,
+                    'info' => $obj->description,
+                );
+            } else {
+                $other_sets[] = array(
+                    'url' => $url,
+                    'info' => $obj->description,
+                );
+            }
+        }
+
+        return array($report_sets, $other_sets);
+    }
+
+    private function reportSetToLinks($report_set)
+    {
+        usort($report_set, array('ReportsIndexPage', 'reportAlphabetize'));
+        foreach($report_set as $report) {
             $description = $report['info'];
             $url = $report['url'];
             $linked = preg_replace('/\[(.+)\]/', '<a href="' . $url . '">\1</a>', $description);
@@ -173,9 +156,6 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
             }
             echo '<li>' . $linked . '</li>';
         }
-        echo '</ul>';
-
-        return ob_get_clean();
     }
 
     static private function reportAlphabetize($a, $b)
@@ -189,6 +169,23 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
         }
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            <em>This page is generated automatically</em>.
+            </p>
+            <p>
+            These are almost all the reports currently available in the
+            system. Reports can be marked as not automatically
+            discoverable but that is fairly uncommon and mostly in
+            plugins.
+            </p>';
+    }
+    
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

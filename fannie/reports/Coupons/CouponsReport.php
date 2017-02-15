@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -29,10 +29,11 @@ if (!class_exists('FannieAPI')) {
 class CouponsReport extends FannieReportPage {
 
     public $description = '[Manufacturer Coupons] lists coupons totals by UPC for a given date range.';
+    public $report_set = 'Tenders';
 
     protected $title = "Fannie : Coupons Report";
     protected $header = "Coupons Report";
-    protected $report_headers = array('UPC', 'Qty', '$ Total');
+    protected $report_headers = array('UPC', 'Brand', 'Qty', '$ Total');
     protected $required_fields = array('date1', 'date2');
 
     public function calculate_footers($data)
@@ -44,20 +45,20 @@ class CouponsReport extends FannieReportPage {
             $sum2 += $row[2];
         }
 
-        return array('Total', sprintf('%.2f', $sum), sprintf('%.2f',$sum2));
+        return array('Total', null, sprintf('%.2f', $sum), sprintf('%.2f',$sum2));
     }
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $d1 = FormLib::get('date1', date('Y-m-d'));
-        $d2 = FormLib::get('date2', date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
-        $query = $dbc->prepare_statement("SELECT 
+        $query = $dbc->prepare("SELECT 
             CASE WHEN upc='0' THEN 'NOT SCANNED' ELSE upc END as upc, 
             sum(CASE WHEN upc='0' THEN 1 ELSE quantity END) as qty,
             sum(-total) as ttl FROM $dlog
@@ -65,63 +66,86 @@ class CouponsReport extends FannieReportPage {
             AND tdate BETWEEN ? AND ?
             GROUP BY upc
             ORDER BY upc");
-        $result = $dbc->exec_statement($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
+        $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
+
+        $brandP = $dbc->prepare('
+            SELECT p.brand
+            FROM products AS p
+            WHERE upc LIKE ?
+            GROUP BY p.brand
+            ORDER BY COUNT(*) DESC');
 
         $data = array();
-        while($row = $dbc->fetch_row($result)){
-            $data[] = array(
-                        $row['upc'],
-                        sprintf('%.2f', $row['qty']),
-                        sprintf('%.2f', $row['ttl'])
-                        );
+        while ($row = $dbc->fetchRow($result)) {
+            $prefix = substr($row['upc'], 3, 5);
+            $row['brand'] = $dbc->getValue($brandP, array('%' . $prefix . '%'));
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
     }
 
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['upc'],
+            $row['brand'],
+            sprintf('%.2f', $row['qty']),
+            sprintf('%.2f', $row['ttl'])
+        );
+    }
+
     public function form_content()
     {
-        $lastMonday = "";
-        $lastSunday = "";
-
-        $ts = mktime(0,0,0,date("n"),date("j")-1,date("Y"));
-        while($lastMonday == "" || $lastSunday == "") {
-            if (date("w",$ts) == 1 && $lastSunday != "") {
-                $lastMonday = date("Y-m-d",$ts);
-            } elseif(date("w",$ts) == 0) {
-                $lastSunday = date("Y-m-d",$ts);
-            }
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
-        }
+        list($lastMonday, $lastSunday) = \COREPOS\Fannie\API\lib\Dates::lastWeek();
 
         ob_start();
         ?>
 <form action=CouponsReport.php method=get>
-<table cellspacing=4 cellpadding=4>
-<tr>
-<th>Start Date</th>
-<td><input type=text id="date1" name=date1 value="<?php echo $lastMonday; ?>" /></td>
-<td rowspan="3">
+<div class="col-sm-4">
+<div class="form-group">
+    <label>Start Date</label>
+    <input type=text id="date1" name=date1 
+        class="form-control date-field" value="<?php echo $lastMonday; ?>" />
+</div>
+<div class="form-group">
+    <label>End Date</label>
+    <input type=text id="date2" name=date2 
+        class="form-control date-field" value="<?php echo $lastSunday; ?>" />
+</div>
+<div class="form-group">
+    <label>
+        Excel <input type=checkbox name=excel value="xls" />
+    </label>
+    <button type=submit name=submit value="Submit" 
+        class="btn btn-default">Submit</button>
+</div>
+</div>
+<div class="col-sm-4">
 <?php echo FormLib::date_range_picker(); ?>
-</td>
-</tr><tr>
-<th>End Date</th>
-<td><input type=text id="date2" name=date2 value="<?php echo $lastSunday; ?>" /></td>
-</tr><tr>
-<td>Excel <input type=checkbox name=excel value="xls" /></td>
-<td><input type=submit name=submit value="Submit" /></td>
-</tr>
-</table>
+</div>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            List usage of manufacturer coupons by UPC for
+            a given date range. Can be faster than counting
+            paper coupons if redemption agency accepts counts
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'qty'=>1, 'ttl'=>1, 'brand'=>'n/a');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

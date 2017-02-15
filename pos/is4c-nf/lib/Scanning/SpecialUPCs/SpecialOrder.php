@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
    @class SpecialOrder
    WFC Electronic Special Orders
@@ -52,32 +58,41 @@ class SpecialOrder extends SpecialUPC
 
     public function handle($upc,$json)
     {
-        global $CORE_LOCAL;
-
         $orderID = substr($upc,5,6);
         $transID = substr($upc,11,2);
 
         if ((int)$transID === 0) {
-            $json['output'] = DisplayLib::boxMsg(_("Not a valid order"));
+            $json['output'] = DisplayLib::boxMsg(
+                _("Not a valid order"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
             return $json;
         }
 
-        $db = Database::mDataConnect();
+        $dbc = Database::mDataConnect();
+        $mAlt = Database::mAltName();
         $query = sprintf("SELECT upc,description,department,
                 quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,
                 ItemQtty,p.discountable
-                FROM PendingSpecialOrder as p LEFT JOIN
+                FROM {$mAlt}PendingSpecialOrder as p LEFT JOIN
                 is4c_op.departments AS d ON p.department=d.dept_no
                 WHERE order_id=%d AND trans_id=%d",
                 $orderID,$transID);
-        $result = $db->query($query);
+        $result = $dbc->query($query);
 
-        if ($db->num_rows($result) != 1) {
-            $json['output'] = DisplayLib::boxMsg(_("Order not found"));
+        if ($dbc->numRows($result) != 1) {
+            $json['output'] = DisplayLib::boxMsg(
+                _("Order not found"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
             return $json;
         }
 
-        $row = $db->fetch_array($result);
+        $row = $dbc->fetchRow($result);
         TransRecord::addRecord(array(
             'upc' => $row['upc'],
             'description' => $row['description'],

@@ -22,10 +22,14 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-if(!class_exists("FannieAPI")) include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
+if(!class_exists("FannieAPI")) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if(!class_exists("CalendarPluginDB")) {
+    include(dirname(__FILE__).'/CalendarPluginDB.php');
+}
 
-class CalendarAjax extends FannieWebService {
+class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
 
     public $type = 'backtick';
 
@@ -46,6 +50,9 @@ class CalendarAjax extends FannieWebService {
             case 'save_or_add_event':
                 $calID = FormLib::get('id', 0);
                 $text = FormLib::get('text');
+                $text = str_replace('<br>', "\n", $text);
+                $text = htmlspecialchars($text);
+                $text = str_replace("\n", '<br>', $text);
 
                 $db = CalendarPluginDB::get();
                 $event = new MonthviewEventsModel($db);
@@ -67,9 +74,16 @@ class CalendarAjax extends FannieWebService {
                     $event->uid($uid);
                     $event->eventText($text);
                     if (!empty($text)) {
-                        $event->save();
+                        $eventID = $event->save();
+                        $data = array();
+                        echo $eventID;
                     }
                 }
+
+                $calendar = new CalendarsModel($db);
+                $calendar->calendarID($calID);
+                $calendar->modified(1);
+                $calendar->save();
                 break;
             case 'monthview_save':
                 $date = FormLib::get_form_value('date');
@@ -78,43 +92,67 @@ class CalendarAjax extends FannieWebService {
                 $uid = FormLib::get_form_value('uid',0);
 
                 $db = CalendarPluginDB::get();
-                $chkP = $db->prepare_statement("SELECT calendarID FROM monthview_events 
+                $chkP = $db->prepare("SELECT calendarID FROM monthview_events 
                         WHERE eventDate=? and uid=? and calendarID=?");
-                $rowCheck = $db->exec_statement($chkP,array($date,$uid,$id));
+                $rowCheck = $db->execute($chkP,array($date,$uid,$id));
                 if ($db->num_rows($rowCheck) <= 0 && $text != ""){
-                    $insP = $db->prepare_statement("INSERT INTO monthview_events 
+                    $insP = $db->prepare("INSERT INTO monthview_events 
                                                     (calendarID, eventDate, eventText, uid) VALUES (?,?,?,?)");
-                    $db->exec_statement($insP,array($id,$date,$text,$uid));
+                    $db->execute($insP,array($id,$date,$text,$uid));
                 }
                 else if ($text == ""){
-                    $delP = $db->prepare_statement("DELETE FROM monthview_events WHERE
+                    $delP = $db->prepare("DELETE FROM monthview_events WHERE
                             calendarID=? AND eventDate=?
                             AND uid=?");
-                    $db->exec_statement($delP,array($id,$date,$uid));
+                    $db->execute($delP,array($id,$date,$uid));
                 }
                 else {
-                    $upP = $db->prepare_statement("UPDATE monthview_events SET
+                    $upP = $db->prepare("UPDATE monthview_events SET
                             eventText=?
                             WHERE calendarID=? AND eventDate=?
                             AND uid=?");
-                    $db->exec_statement($upP,array($text,$id,$date,$uid));
+                    $db->execute($upP,array($text,$id,$date,$uid));
                 }
+
+                $calendar = new CalendarsModel($db);
+                $calendar->calendarID($id);
+                $calendar->modified(1);
+                $calendar->save();
                 break;
             case 'createCalendar':
                 $name = FormLib::get_form_value('name');
                 $uid = FormLib::get_form_value('uid',0);
 
                 $db = CalendarPluginDB::get();
-                $p = $db->prepare_statement("INSERT INTO calendars (name) VALUES (?)");
-                $db->exec_statement($p,array($name));
+                $p = $db->prepare("INSERT INTO calendars (name) VALUES (?)");
+                $db->execute($p,array($name));
 
-                $id = $db->insert_id();
+                $id = $db->insertID();
 
-                $p = $db->prepare_statement("INSERT INTO permissions (calendarID,uid,classID)
+                $p = $db->prepare("INSERT INTO permissions (calendarID,uid,classID)
                                 VALUES (?,?,4)");
-                $db->exec_statement($p,array($id,$uid));
+                $db->execute($p,array($id,$uid));
 
                 $data[] = "<p class=\"index\"><a href=\"?calID=$id&view=month\">$name</a></p>";
+                break;
+            case 'createSubscription':
+                $db = CalendarPluginDB::get();
+                $name = FormLib::get('name');
+                $url = FormLib::get('url');
+                $uid = FormLib::get_form_value('uid',0);
+                $subscription = new CalendarSubscriptionsModel($db);
+                $subscription->url($url);
+                $subscriptionID = $subscription->save();
+                $calendar = new CalendarsModel($db);
+                $calendar->name($name);
+                $calendar->calendarSubscriptionID($subscriptionID);
+                $calendarID = $calendar->save();
+                $permissions = new PermissionsModel($db);
+                $permissions->calendarID($calendarID);
+                $permissions->uid($uid);
+                $permissions->classID(4);
+                $permissions->save();
+                $data[] = 'Subscribed';
                 break;
             case 'savePrefs':
                 $calID = FormLib::get_form_value('calID');
@@ -124,21 +162,31 @@ class CalendarAjax extends FannieWebService {
                 $writers = FormLib::get_form_value('writers',array());
 
                 $db = CalendarPluginDB::get();
-                $p = $db->prepare_statement("UPDATE calendars SET name=? WHERE calendarID=?");
-                $db->exec_statement($p,array($name,$calID));
+                $calendar = new CalendarsModel($db);
+                $calendar->calendarID($calID);
+                $calendar->load();
+                $calendar->name($name);
+                $calendar->save();
 
-                $p = $db->prepare_statement("DELETE FROM permissions WHERE calendarID=? and classID < 4");
-                $db->exec_statement($p,array($calID));
-                $insP = $db->prepare_statement("INSERT INTO permissions (calendarID,uid,classID) VALUES (?,?,?)");
+                $p = $db->prepare("DELETE FROM permissions WHERE calendarID=? and classID < 4");
+                $db->execute($p,array($calID));
+                $insP = $db->prepare("INSERT INTO permissions (calendarID,uid,classID) VALUES (?,?,?)");
                 if ($viewers != ""){
                     foreach(explode(",",$viewers) as $v){
-                        $db->exec_statement($insP,array($calID,$v,1));
+                        $db->execute($insP,array($calID,$v,1));
                     }
                 }
                 if ($writers != ""){
                     foreach(explode(",",$writers) as $w){
-                        $db->exec_statement($insP,array($calID,$w,2));
+                        $db->execute($insP,array($calID,$w,2));
                     }
+                }
+                if (FormLib::get('url')) {
+                    $url = FormLib::get('url');
+                    $sub = new CalendarSubscriptionsModel($db);
+                    $sub->calendarSubscriptionID($calendar->calendarSubscriptionID());
+                    $sub->url($url);
+                    $sub->save();
                 }
                 break;
             case 'weekview_save':
@@ -181,6 +229,7 @@ class CalendarAjax extends FannieWebService {
 
 }
 
-new CalendarAjax();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
+    $obj = new CalendarAjax();
+}
 
-?>

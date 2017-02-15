@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -60,25 +60,7 @@ class ChefTecExport
         );
 
         foreach ($items->find() as $obj) {
-            $units = 1.0;
-            $unit_of_measure = $obj->unitSize();
-            if (strstr($obj->unitSize(), ' ')) {
-                list($units, $unit_of_measure) = explode(' ', $obj->unitSize(), 2);
-            }
-            if ($unit_of_measure == '#') {
-                $unit_of_measure = 'lb';
-            } else if ($unit_of_measure == 'FZ') {
-                $unit_of_measure = 'fl oz';
-            }
-            if (strstr($units, '/')) { // 6/12 oz on six pack of soda
-                list($a, $b) = explode('/', $units, 2);
-                $units = $a * $b;
-            }
-            if (strstr($unit_of_measure, '/')) { // space probably omitted
-                preg_match('/([0-9.]+)\/([0-9.]+)(.+)/', $unit_of_measure, $matches);
-                $units = $matches[1] * $matches[2];
-                $unit_of_measure = $matches[3];
-            }
+            list($units, $unit_of_measure) = $this->getUnits($obj);
             echo $obj->sku().',';
             echo '"'.$obj->description().'",';
             echo $order->vendorInvoiceID() . ',';
@@ -91,6 +73,31 @@ class ChefTecExport
             echo '"",'; // alt. unit
             echo "\r\n";
         }
+    }
+
+    private function getUnits($obj)
+    {
+        $units = 1.0;
+        $unit_of_measure = $obj->unitSize();
+        if (strstr($obj->unitSize(), ' ')) {
+            list($units, $unit_of_measure) = explode(' ', $obj->unitSize(), 2);
+        }
+        if ($unit_of_measure == '#') {
+            $unit_of_measure = 'lb';
+        } else if ($unit_of_measure == 'FZ') {
+            $unit_of_measure = 'fl oz';
+        }
+        if (strstr($units, '/')) { // 6/12 oz on six pack of soda
+            list($a, $b) = explode('/', $units, 2);
+            $units = $a * $b;
+        }
+        if (strstr($unit_of_measure, '/')) { // space probably omitted
+            preg_match('/([0-9.]+)\/([0-9.]+)(.+)/', $unit_of_measure, $matches);
+            $units = $matches[1] * $matches[2];
+            $unit_of_measure = $matches[3];
+        }
+
+        return array($units, $unit_of_measure);
     }
 }
 

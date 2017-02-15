@@ -21,25 +21,39 @@
 
 *********************************************************************************/
 
-if (!class_exists('DTransactionsModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+/*
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/DTransactionsModel.php');
 }
+*/
 
 /**
   @class LocalTransModel
 */
-class LocalTransModel extends DTransactionsModel
+class LocalTransModel extends \COREPOS\pos\lib\models\trans\DTransactionsModel
 {
 
     protected $name = "localtrans";
 
-    public function __construct()
+    public function __construct($con)
     {
         // other tables do not need auto_inc column
         unset($this->columns['pos_row_id']);
+        unset($this->columns['store_id']);
+        parent::__construct($con);
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+    public function doc()
+    {
+        return '
+Use:
+Lane-side record of historical transactions.
+See dtransactions for details on what the columns
+are used for.
+        ';
+    }
 }
 

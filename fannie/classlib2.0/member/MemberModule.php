@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,16 @@
 
 *********************************************************************************/
 
-class MemberModule 
+namespace COREPOS\Fannie\API\member;
+use \FannieDB;
+use \FannieConfig;
+
+class MemberModule
 {
+
+    const META_WIDTH_FULL = 100;
+    const META_WIDTH_HALF = 50;
+    const META_WIDTH_THIRD = 33;
 
     /**
       Get connection to member database
@@ -30,12 +38,16 @@ class MemberModule
     */
     public function db()
     {
-        global $FANNIE_OP_DB;
         if (!class_exists('FannieDB')) {
             include_once(dirname(__FILE__) . '/../data/FannieDB.php');
         }
 
-        return FannieDB::get($FANNIE_OP_DB);
+        return FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+    }
+
+    public function width()
+    {
+        return self::META_WIDTH_FULL;
     }
 
     /**
@@ -53,11 +65,12 @@ class MemberModule
       Extract data from GET/POST and save
       member information
       @param $memNum [int] member number
-      @return [boolean] success/failure
+      @param $json [array] current member information
+      @return [string] message. empty string indicates success
     */
-    public function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
-        return true;
+        return $json;
     }
 
     /**
@@ -126,6 +139,18 @@ class MemberModule
     public function getEditLoadCommands()
     {
         return array();
+    }
+
+    public static function getAccount()
+    {
+        return self::$account;
+    }
+
+    private static $account;
+
+    public static function setAccount($a)
+    {
+        self::$account = $a;
     }
 }
 

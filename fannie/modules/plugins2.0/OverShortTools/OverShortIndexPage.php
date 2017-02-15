@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class OverShortIndexPage extends FanniePage {
 
@@ -31,6 +33,7 @@ class OverShortIndexPage extends FanniePage {
     protected $auth_classes = array('overshorts');
     public $page_set = 'Plugin :: Over/Shorts';
     public $description = '[Menu] lists over/short pages.';
+    public $themed = true;
 
     function body_content(){
         ob_start();
@@ -38,7 +41,7 @@ class OverShortIndexPage extends FanniePage {
         <ul>
         <li><a href="OverShortDayPage.php" target="_WholeByCashier">Whole Day O/S</a>
             <?php
-            echo FannieHelp::ToolTip('<ul><li>View POS tender totals for all cashiers
+            echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<ul><li>View POS tender totals for all cashiers
                         on a given day and enter actual counted totals.
                         <li>The tool will calculate how much an individual
                         cashier is over or short for each tender
@@ -50,7 +53,7 @@ class OverShortIndexPage extends FanniePage {
         </li> 
         <li><a href="OverShortCashierPage.php" target="_SingleCashier">Single Cashier O/S</a>
             <?php
-            echo FannieHelp::ToolTip('<ul><li>View POS tender totals for cashiers
+            echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<ul><li>View POS tender totals for cashiers
                         and enter actual counted totals.
                         <li>The difference
                         between this and the "Whole Day O/S" tool is this
@@ -63,7 +66,7 @@ class OverShortIndexPage extends FanniePage {
         </li>
         <li><a href="OverShortSafecountPage.php" target="_SafeCount">Safe Count</a>
             <?php
-            echo FannieHelp::ToolTip('<br />Enter information about cash on hand to calculate
+            echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<br />Enter information about cash on hand to calculate
                         <ul><li>what should be sent to the bank,
                         <li>how much change to order
                         in various denominations, and
@@ -74,7 +77,7 @@ class OverShortIndexPage extends FanniePage {
         </li> 
         <li><a href="OverShortDepositSlips.php" target="_DepositSlips">Deposit Slips</a>
             <?php
-            echo FannieHelp::ToolTip('<br />Uses information from the Safe Count tool to generate
+            echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<br />Uses information from the Safe Count tool to generate
                         paperwork that goes with the bank deposit.
                         <br /><b>Very WFC specific</b>');
             ?>
@@ -82,7 +85,7 @@ class OverShortIndexPage extends FanniePage {
         <!--
         <li><a href="OverShortDayTillPage.php" target="_WholeByTill">Whole Day O/S by Till</a>
             <?php
-            echo FannieHelp::ToolTip('<ul><li>View POS tender totals for all tills
+            echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<ul><li>View POS tender totals for all tills
                         on a given day and enter actual counted totals.
                         <li>The tool will calculate how much an individual
                         tills is over or short for each tender

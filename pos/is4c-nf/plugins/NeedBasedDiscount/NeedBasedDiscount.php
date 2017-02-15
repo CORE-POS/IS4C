@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class NeedBasedDiscount extends Plugin {
 
     public $plugin_settings = array(
@@ -40,10 +42,9 @@ class NeedBasedDiscount extends Plugin {
                         in your Need-Based discount program.  Sometimes called Food For All or FLOWER.<br>
                         Trigger with "FF"';
 
-	function plugin_transaction_reset(){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('NeedDiscountFlag', 0);
-	}
+    function plugin_transaction_reset()
+    {
+        CoreLocal::set('NeedDiscountFlag', 0);
+    }
 }
 
-?>

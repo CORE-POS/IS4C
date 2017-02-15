@@ -3,7 +3,7 @@
 
     Copyright 2010,2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,10 @@ class MemArEquitySwapTool extends FanniePage {
     protected $header='Swap Member Equity/AR';
 
     public $description = '[Swap Equity/AR] turns an Equity payment into an AR payment or vice versa.';
+    public $themed = true;
+
+    protected $must_authenticate = true;
+    protected $auth_classes =  array('editmembers');
 
     private $errors = '';
     private $mode = 'init';
@@ -67,25 +71,25 @@ class MemArEquitySwapTool extends FanniePage {
         }
 
         if (empty($FANNIE_AR_DEPARTMENTS)){
-            $this->errors .= "<em>Error: no AR departments found</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: no AR departments found</div>';
             return True;
         }
 
         if (empty($FANNIE_EQUITY_DEPARTMENTS)){
-            $this->errors .= "<em>Error: no Equity departments found</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: no Equity departments found</div>';
             return True;
         }
 
         $ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
         if ($ret == 0){
-            $this->errors .= "<em>Error: can't read AR department definition</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: can\'t read AR department definitions</div>';
             return True;
         }
         $temp_depts = array_pop($depts);
 
         $ret = preg_match_all("/[0-9]+/",$FANNIE_EQUITY_DEPARTMENTS,$depts);
         if ($ret == 0){
-            $this->errors .= "<em>Error: can't read Equity department definition</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: can\'t read Equity department definitions</div>';
             return True;
         }
         $temp_depts2 = array_pop($depts);
@@ -101,10 +105,11 @@ class MemArEquitySwapTool extends FanniePage {
         $dlist = substr($dlist,0,strlen($dlist)-1).")";
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
-        $r = $dbc->exec_statement($q,$dArgs);
+        $q = $dbc->prepare("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
+        $r = $dbc->execute($q,$dArgs);
         if ($dbc->num_rows($r) == 0){
-            return "<em>Error: department(s) don't exist</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: department(s) don\'t exist.</div>';
+            return true;
         }
 
         $this->depts = array();
@@ -126,40 +131,43 @@ class MemArEquitySwapTool extends FanniePage {
             $this->cn = FormLib::get_form_value('card_no');
 
             if (!isset($this->depts[$this->dept1]) || !isset($this->depts[$this->dept2])){
-                $this->errors .= "<em>Error: AR department doesn't exist</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: AR department doesn't exist</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->amount)){
-                $this->errors .= "<em>Error: amount given (".$this->amount.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->cn)){
-                $this->errors .= "<em>Error: member given (".$this->cn1.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn1.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if ($this->dept1 == $this->dept2){
-                $this->errors .= "<em>Error: departments are the same; nothing to convert</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: departments are the same; nothing to convert</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
 
-            $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
-            $r = $dbc->exec_statement($q,array($this->cn));
-            if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: no such member: ".$this->cn."</em>"
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cn);
+            if ($account == false) {
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
-            $row = $dbc->fetch_row($r);
-            $this->name1 = $row[0].' '.$row[1];
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $this->name1 = $c['firstName'] . ' ' . $c['lastName'];
+                    break;
+                }
+            }
         }
 
         return True;
@@ -180,18 +188,24 @@ class MemArEquitySwapTool extends FanniePage {
 
         $ret = "<form action=\"MemArEquitySwapTool.php\" method=\"post\">";
         $ret .= "<b>Confirm transactions</b>";
-        $ret .= "<p style=\"font-size:120%\">";
+        $ret .= "<div class=\"alert alert-info\">";
         $ret .= sprintf("\$%.2f will be moved from %s to %s for Member #%d (%s)",
             $this->amount,$this->depts[$this->dept1],
             $this->depts[$this->dept2],$this->cn,$this->name1);
-        $ret .= "</p><p>";
+        $ret .= "</div><p>";
+        $ret .= sprintf('<div class="form-group">
+            <label>Comment</label>
+            <input type="text" class="form-control" 
+                name="correction-comment" value="AR EQUITY SWAP" />
+            </div>');
         $ret .= "<input type=\"hidden\" name=\"deptFrom\" value=\"{$this->dept1}\" />";
         $ret .= "<input type=\"hidden\" name=\"deptTo\" value=\"{$this->dept2}\" />";
         $ret .= "<input type=\"hidden\" name=\"amount\" value=\"{$this->amount}\" />";
         $ret .= "<input type=\"hidden\" name=\"card_no\" value=\"{$this->cn}\" />";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
+        $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
+                    class=\"btn btn-default\">Confirm</button>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" value=\"Back\" onclick=\"back(); return false;\" />";
+        $ret .= "<button type=\"buton\" class=\"btn btn-default\" onclick=\"back(); return false;\">Back</button>";
         $ret .= "</form>";
         
         return $ret;
@@ -202,16 +216,30 @@ class MemArEquitySwapTool extends FanniePage {
         if (!empty($this->errors)) return $this->errors;
 
         $ret = '';
+
+        $trans_no = DTrans::getTransNo($this->connection, $this->CORRECTION_CASHIER, $this->CORRECTION_LANE);
+        $params = array(
+            'card_no' => $this->cn,
+            'register_no' => $this->CORRECTION_LANE,
+            'emp_no' => $this->CORRECTION_CASHIER,
+        );
+        DTrans::addOpenRing($this->connection, $this->dept1, -1*$this->amount, $trans_no, $params);
+        DTrans::addOpenRing($this->connection, $this->dept2, $this->amount, $trans_no, $params);
         
-        $dtrans = array();
-        $dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
-        $dtrans['trans_id'] = 1;
-        $this->doInsert($dtrans,-1*$this->amount,$this->dept1,$this->cn);
+        $comment = FormLib::get('correction-comment');
+        if (!empty($comment)) {
+            $params = array(
+                'description' => $comment,
+                'trans_type' => 'C',
+                'trans_subtype' => 'CM',
+                'card_no' => $this->cn,
+                'register_no' => $this->CORRECTION_LANE,
+                'emp_no' => $this->CORRECTION_CASHIER,
+            );
+            DTrans::addItem($this->connection, $trans_no, $params);
+        }
 
-        $dtrans['trans_id']++;
-        $this->doInsert($dtrans,$this->amount,$this->dept2,$this->cn);
-
-        $ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
+        $ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$trans_no);
 
         return $ret;
     }
@@ -220,125 +248,79 @@ class MemArEquitySwapTool extends FanniePage {
 
         if (!empty($this->errors)) return $this->errors;
 
-        $ret = "<form action=\"MemArEquitySwapTool.php\" method=\"post\">";
-        $ret .= "<p style=\"font-size:120%\">";
-        $ret .= "Convert $<input type=\"text\" name=\"amount\" size=\"5\" /> ";
-        $ret .= "<select name=\"deptFrom\">";
-        foreach($this->depts as $k=>$v)
-            $ret .= "<option value=\"$k\">$v</option>";
-        $ret .= "</select>";
-        $ret .= " to ";
-        $ret .= "<select name=\"deptTo\">";
-        foreach($this->depts as $k=>$v)
-            $ret .= "<option value=\"$k\">$v</option>";
-        $ret .= "</select>";
-        $ret .= "</p><p style=\"font-size:120%;\">";
-        $memNum = FormLib::get_form_value('memIN');
-        $ret .= "Member #<input type=\"text\" name=\"card_no\" size=\"5\" value=\"$memNum\" /> ";
-        $ret .= "</p><p>";
-        $ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
-        $ret .= "</p>";
-        $ret .= "</form>";
+        ob_start();
+        ?>
 
-        return $ret;
+        <form action="MemArEquitySwapTool.php" method="post">
+        <div class="container">
+        <div class="row form-group form-inline">
+            <label>Remove</label>
+            <div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input type="text" name="amount" class="form-control"
+                    required />
+            </div>
+            <label>From</label>
+            <select name="deptFrom" class="form-control">
+            <?php
+                foreach($this->depts as $k=>$v)
+                    echo "<option value=\"$k\">$v</option>";
+            ?>
+            </select>
+            <label>To</label>
+            <select name="deptTo" class="form-control">
+            <?php
+                foreach($this->depts as $k=>$v)
+                    echo "<option value=\"$k\">$v</option>";
+            ?>
+            </select>
+        </div>
+        <div class="row form-group form-inline">
+            <label>Member #</label>
+            <input type="number" name="card_no" class="form-control" required />
+        </div>
+        <p>
+            <button type="submit" name="submit1" value="Submit"
+                class="btn btn-default">Submit</button>
+        </p>
+        </div>
+        </form>
+        <?php
+
+        return ob_get_clean();
     }
 
-    function getTransNo($emp,$register){
-        global $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $q = $dbc->prepare_statement("SELECT max(trans_no) FROM dtransactions WHERE register_no=? AND emp_no=?");
-        $r = $dbc->exec_statement($q,array($register,$emp));
-        $n = array_pop($dbc->fetch_row($r));
-        return (empty($n)?1:$n+1);  
+    public function helpContent()
+    {
+        return '<p>
+            Convert an AR payment into an equity payment or
+            vice versa for a given member. This is used for 
+            fixing simple miskeys. It may also be used to
+            "pay off" an outstanding AR balance using the
+            member\'s equity (if by-laws permit).
+            </p>';
     }
 
-    function doInsert($dtrans,$amount,$department,$cardno){
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $OP = $FANNIE_OP_DB.$dbc->sep();
-
-        $defaults = array(
-            'register_no'=>$this->CORRECTION_LANE,
-            'emp_no'=>$this->CORRECTION_CASHIER,
-            'trans_no'=>$dtrans['trans_no'],
-            'upc'=>'',
-            'description'=>'',
-            'trans_type'=>'D',
-            'trans_subtype'=>'',
-            'trans_status'=>'',
-            'department'=>'',
-            'quantity'=>1,
-            'scale'=>0,
-            'cost'=>0,
-            'unitPrice'=>'',
-            'total'=>'',
-            'regPrice'=>'',
-            'tax'=>0,
-            'foodstamp'=>0,
-            'discount'=>0,
-            'memDiscount'=>0,
-            'discountable'=>0,
-            'discounttype'=>0,
-            'voided'=>0,
-            'percentDiscount'=>0,
-            'ItemQtty'=>1,
-            'volDiscType'=>0,
-            'volume'=>0,
-            'volSpecial'=>0,
-            'mixMatch'=>'',
-            'matched'=>0,
-            'memType'=>'',
-            'staff'=>'',
-            'numflag'=>0,
-            'charflag'=>'',
-            'card_no'=>'',
-            'trans_id'=>$dtrans['trans_id']
-        );
-
-        $defaults['department'] = $department;
-        $defaults['card_no'] = $cardno;
-        $defaults['unitPrice'] = $amount;
-        $defaults['regPrice'] = $amount;
-        $defaults['total'] = $amount;
-        if ($amount < 0){
-            $defaults['trans_status'] = 'R';
-            $defaults['quantity'] = -1;
-        }
-        $defaults['upc'] = abs($amount).'DP'.$department;
-
-        if (isset($this->depts[$department]))
-            $defaults['description'] = $this->depts[$department];
-        else {
-            $nameP = $dbc->prepare_statement("SELECT dept_name FROM {$OP}departments WHERE dept_no=?");
-            $nameR = $dbc->exec_statement($nameP,$department);
-            if ($dbc->num_rows($nameR) == 0) {
-                $defaults['description'] = 'CORRECTIONS';
-            } else {
-                $nameW = $dbc->fetch_row($nameR);
-                $defaults['description'] = $nameW['dept_name'];
-            }
-        }
-
-        $q = $dbc->prepare_statement("SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=?");
-        $r = $dbc->exec_statement($q,array($cardno));
-        $w = $dbc->fetch_row($r);
-        $defaults['memType'] = $w[0];
-        $defaults['staff'] = $w[1];
-
-        $columns = 'datetime,';
-        $values = $dbc->now().',';
-        $args = array();
-        foreach($defaults as $k=>$v){
-            $columns .= $k.',';
-            $values .= '?,';
-            $args[] = $v;
-        }
-        $columns = substr($columns,0,strlen($columns)-1);
-        $values = substr($values,0,strlen($values)-1);
-        $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
-        $dbc->exec_statement($prep, $args);
+    public function unitTest($phpunit)
+    {
+        $this->errors = 'foo';
+        $this->mode = 'init';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
+        $this->depts = array(1 => 'Dept', 2 => 'Other Dept');
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->errors = 'foo';
+        $this->mode = 'confirm';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
+        $this->amount = 1;
+        $this->dept1 = 1;
+        $this->dept2 = 2;
+        $this->cn = 1;
+        $this->name = 'JoeyJoeJoe';
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

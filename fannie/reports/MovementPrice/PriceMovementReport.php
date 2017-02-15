@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -28,11 +28,10 @@ if (!class_exists('FannieAPI')) {
 
 class PriceMovementReport extends FannieReportPage 
 {
-
     protected $title = "Fannie : Price Movement Report";
     protected $header = "Price Movement Report";
 
-    protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Price', 'Qty', 'Sales');
+    protected $report_headers = array('UPC', 'Brand', 'Desc', 'Dept#', 'Dept', 'Price', 'Qty', 'Sales');
     protected $required_fields = array('date1', 'date2');
 
     public $description = '[Movement by Price] lists item sales with a separate line for each price point. If an item was sold at more than one price in the given date range, sales from each price are listed separately.';
@@ -42,6 +41,7 @@ class PriceMovementReport extends FannieReportPage
     {
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
         $buyer = FormLib::get('buyer', '');
     
         $ret = array();
@@ -58,38 +58,52 @@ class PriceMovementReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
+        $subs = FormLib::get('subdepts', array());
     
         $buyer = FormLib::get('buyer', '');
+        $store = FormLib::get('store', 0);
 
         // args/parameters differ with super
         // vs regular department
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
-                $where = ' s.superID=? ';
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
             }
-        } else {
-            $where = ' t.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+        }
+        if ($buyer != -1) {
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            $where .= $conditional;
+        }
+        if (count($subs) > 0) {
+            list($inStr, $args) = $dbc->safeInClause($subs, $args);
+            $where .= " AND p.subdept IN ($inStr) ";
         }
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
         $query = "
             SELECT d.upc,
+                p.brand,
                 p.description,"
                 . DTrans::sumQuantity('d') . " AS qty,
-                CASE WHEN memDiscount <> 0 AND memType <> 0 THEN unitPrice - memDiscount ELSE unitPrice END as price,
+                CASE 
+                    WHEN unitPrice=0.01 THEN total 
+                    WHEN memDiscount <> 0 AND memType <> 0 THEN unitPrice - memDiscount 
+                    ELSE unitPrice 
+                END as price,
                 d.department, 
                 t.dept_name, 
                 SUM(total) AS total
@@ -99,29 +113,23 @@ class PriceMovementReport extends FannieReportPage
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "
             WHERE tdate BETWEEN ? AND ?
                 AND $where
+                AND " . DTrans::isStoreID($store, 'd') . "
             GROUP BY d.upc,p.description,price,d.department,t.dept_name
             ORDER BY d.upc";
+        $args[] = $store;
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query, $args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['upc'],
-                $row['description'],
-                $row['department'],
-                $row['dept_name'],
-                sprintf('%.2f', $row['price']),
-                sprintf('%.2f', $row['qty']),
-                sprintf('%.2f', $row['total']),
-            );
-
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         // bold items that sold at multiple prices
@@ -139,6 +147,20 @@ class PriceMovementReport extends FannieReportPage
         return $data;
     }
 
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['upc'],
+            $row['brand'],
+            $row['description'],
+            $row['department'],
+            $row['dept_name'],
+            sprintf('%.2f', $row['price']),
+            sprintf('%.2f', $row['qty']),
+            sprintf('%.2f', $row['total']),
+        );
+    }
+
     public function calculate_footers($data)
     {
         if (count($data) == 0) {
@@ -148,111 +170,77 @@ class PriceMovementReport extends FannieReportPage
         $sum_qty = 0.0;
         $sum_ttl = 0.0;
         foreach($data as $row) {
-            $sum_qty += $row[5];
-            $sum_ttl += $row[6];
+            $sum_qty += $row[6];
+            $sum_ttl += $row[7];
         }
 
-        return array('Totals', null, null, null, null, sprintf('%.2f',$sum_qty), sprintf('%.2f',$sum_ttl));
+        return array('Totals', null, null, null, null, null, sprintf('%.2f',$sum_qty), sprintf('%.2f',$sum_ttl));
     }
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
-
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
-
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-
         ob_start();
         ?>
-<script type="text/javascript">
-function swap(src,dst){
-    var val = document.getElementById(src).value;
-    document.getElementById(dst).value = val;
-}
-</script>
-<div id=main>   
-<form method = "get" action="PriceMovementReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr>
-            <td><b>Select Buyer/Dept</b></td>
-            <td><select id=buyer name=buyer>
-               <option value=""></option>
-               <?php echo $deptSubList; ?>
-               <option value=-1 >All</option>
-               </select>
-            </td>
-            <td><b>Send to Excel</b></td>
-            <td><input type=checkbox name=excel id=excel value=1></td>
-        </tr>
-        <tr>
-            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-        </tr>
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-             <td colspan="2"> </td>
-            <td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
+<form method="get" action="PriceMovementReport.php" class="form-horizontal">
+<div class="row">
+    <div class="col-sm-5">
+        <?php echo FormLib::standardDepartmentFields('buyer'); ?>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Save to Excel
+                <input type=checkbox name=excel id=excel value=1>
+            </label>
+            <label class="col-sm-4 control-label">Store</label>
+            <div class="col-sm-4">
+                <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
+</div>
+    <p>
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset"
+            onclick="$('#super-id').val('').trigger('change');">Start Over</button>
+    </p>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report lists a row for each price point
+            each item was sold for in the given date range. Sales
+            totals are for all sales at a particular price during
+            the date range.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
+            'department'=>1, 'dept_name'=>'test', 'price'=>1.99,
+            'qty'=>1, 'total'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

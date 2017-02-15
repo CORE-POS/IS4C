@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\DisplayLib;
+use \CoreLocal;
+
 /**
   @class GiftCardTender
   Tender module for credit cards
@@ -34,10 +38,11 @@ class GiftCardTender extends TenderModule
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-    
-        if (($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){  
-            return DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
+        if (($this->amount > (CoreLocal::get("amtdue") + 0.005)) && CoreLocal::get("amtdue") >= 0){  
+            return DisplayLib::xboxMsg(
+                _("tender cannot exceed purchase amount"),
+                DisplayLib::standardClearButton()
+            );
         }
 
         return true;
@@ -49,8 +54,8 @@ class GiftCardTender extends TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-        $CORE_LOCAL->set("autoReprint",1);
+        CoreLocal::set("autoReprint",1);
+
         return true;
     }
 }

@@ -4,4 +4,4 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 // make old bookmarks work
 header('Location: ProductListPage.php');
-?>
+

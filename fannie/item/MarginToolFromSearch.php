@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+use COREPOS\Fannie\API\lib\Store;
 
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
@@ -33,8 +35,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
 
     public $description = '[Margin Preview] takes a set of advanced search results and shows the effect on
     margin of various price changes. Must be accessed via Advanced Search.';
-
-    protected $window_dressing = false;
+    public $themed = true;
 
     protected $upcs = array();
     private $save_results = array();
@@ -90,7 +91,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
             echo "0";
         } else {
             $row = $dbc->fetch_row($result);
-            echo sprintf('%.4f', ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
+            echo sprintf('%.4f', $row['totalPrice']==0 ? 0 : ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
         }
 
         return false;
@@ -110,6 +111,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
             echo '0';
             return false;
         }
+        $store = Store::getIdByIp();
 
         $priceCalc = "SUM(CASE";
         $args = array();
@@ -142,10 +144,12 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $query = "SELECT SUM(q.percentageDeptSales * ($marginSQL)) 
                     / SUM(q.percentageDeptSales) as weightedMargin
                   FROM products AS p
-                  LEFT JOIN $summary AS q ON p.upc=q.upc
+                      LEFT JOIN $summary AS q ON p.upc=q.upc AND p.store_id=q.storeID
                   WHERE department=?
+                    AND p.store_id=?
                     AND cost <> 0";
         $m_args[] = $this->deptID;
+        $m_args[] = $store;
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $m_args);
         if ($dbc->num_rows($result) == 0) {
@@ -181,11 +185,13 @@ class MarginToolFromSearch extends FannieRESTfulPage
                        / SUM(q.percentageSuperDeptSales) as weightedMargin
                   FROM products AS p
                   INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                  LEFT JOIN $summary AS q ON p.upc=q.upc
+                      LEFT JOIN $summary AS q ON p.upc=q.upc AND p.store_id=q.storeID
                   WHERE m.superID=?
+                    AND p.store_id=?
                     AND cost <> 0";
+        $store = Store::getIdByIp();
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, array($this->upc, $this->newprice, $this->upc, $this->newprice, $this->newprice, $this->newprice, $this->superID));
+        $result = $dbc->execute($prep, array($this->upc, $this->newprice, $this->upc, $this->newprice, $this->newprice, $this->newprice, $this->superID, $store));
         if ($dbc->num_rows($result) == 0) {
             echo "0";
         } else {
@@ -234,10 +240,12 @@ class MarginToolFromSearch extends FannieRESTfulPage
                    / SUM(q.percentageSuperDeptSales) as weightedMargin
                   FROM products AS p
                   LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                  LEFT JOIN $summary AS q ON p.upc=q.upc
+                      LEFT JOIN $summary AS q ON p.upc=q.upc AND p.store_id=q.storeID
                   WHERE m.superID=?
+                    AND p.store_id=?
                     AND cost <> 0";
         $m_args[] = $this->superID;
+        $m_args[] = Store::getIdByIp();
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $m_args);
         if ($dbc->num_rows($result) == 0) {
@@ -284,15 +292,15 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $b->startDate(date('Y-m-d', strtotime('yesterday')));
         $b->endDate(date('Y-m-d', strtotime('yesterday')));
         $b->batchType($btype);
-        $b->discounttype(0);
+        $b->discountType(0);
         $b->priority(0);
         $b->owner($owner);
         $id = $b->save();
 
         // maintain @deprecated table if present
         if ($dbc->tableExists('batchowner')) {
-            $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-            $insR = $dbc->exec_statement($insQ,array($id,$owner));
+            $insQ = $dbc->prepare("insert batchowner values (?,?)");
+            $insR = $dbc->execute($insQ,array($id,$owner));
         }
 
         // add items to batch
@@ -319,7 +327,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                                 FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
                                 WHERE p.upc=? ORDER BY v.vendorID');
-            $tag = new ShelfTagModel($dbc);
+            $tag = new ShelftagsModel($dbc);
             for($i=0; $i<count($this->upcs);$i++) {
                 $upc = $this->upcs[$i];
                 if (!isset($this->newprices[$i])) {
@@ -332,7 +340,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                 if ($dbc->num_rows($lookupR) > 0) {
                     $info = $dbc->fetch_row($lookupR);
                 }
-                $ppo = ($info['size'] !== '') ? PriceLib::pricePerUnit($price, $info['size']) : '';
+                $ppo = ($info['size'] !== '') ? \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($price, $info['size']) : '';
 
                 $tag->id($this->tags);
                 $tag->upc($upc);
@@ -348,7 +356,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
             }
         }
 
-        echo $FANNIE_URL . 'newbatch/BatchManagementTool.php?startAt=' . $id;
+        echo $FANNIE_URL . 'batches/newbatch/BatchManagementTool.php?startAt=' . $id;
 
         return false;
     }
@@ -367,13 +375,13 @@ class MarginToolFromSearch extends FannieRESTfulPage
         }
 
         // get applicable department(s)
-        $info = $this->arrayToParams($this->upcs);
+        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $deptQ = "SELECT department
                   FROM products 
-                  WHERE upc in ({$info['in']})
+                  WHERE upc in ({$in_sql})
                   GROUP BY department";
         $deptP = $dbc->prepare($deptQ);
-        $deptR = $dbc->execute($deptP, $info['args']);
+        $deptR = $dbc->execute($deptP, $args);
         while($deptW = $dbc->fetch_row($deptR)) {
             $this->depts[] = $deptW['department'];
         }
@@ -390,29 +398,30 @@ class MarginToolFromSearch extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $this->add_script($FANNIE_URL.'/src/javascript/jquery.js');
         $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
-        $this->add_css_file($FANNIE_URL.'/src/style.css');
         $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
         $ret = '';
+        $store = Store::getIdByIp(1);
 
         // list super depts & starting margins
-        $info = $this->arrayToParams($this->depts);
+        list($in_sql, $args) = $dbc->safeInClause($this->depts);
         $superQ = "SELECT m.superID, super_name,
                     SUM(cost) AS totalCost,
                     SUM(CASE WHEN p.cost = 0 THEN 0 ELSE p.normal_price END) as totalPrice
                    FROM MasterSuperDepts AS m
                    LEFT JOIN products AS p ON m.dept_ID=p.department
-                   WHERE m.dept_ID IN ({$info['in']})
+                   WHERE m.dept_ID IN ({$in_sql})
+                    AND p.store_id=?
                    GROUP BY m.superID, super_name";
+        $args[] = $store;
         $superP = $dbc->prepare($superQ);
-        $superR = $dbc->execute($superP, $info['args']);
-        $ret .= '<div style="position: fixed; top: 1em; right: 1em;">';
-        $ret .= '<fieldset><legend>Overall Margins</legend>';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $superR = $dbc->execute($superP, $args);
+        $ret .= '<div class="col-sm-2 pull-right">';
+        $ret .= '<div class="fluid-container form-group"><strong>Overall Margins</strong>';
+        $ret .= '<table class="table table-bordered small">';
         $first_superID = 0;
         $batchName = 'priceChange '.date('Y-m-d');
-        while($superW = $dbc->fetch_row($superR)) {
+        while ($superW = $dbc->fetch_row($superR)) {
             $this->upc = 'n/a';
             $this->newprice = 0;
             $this->superID = $superW['superID'];
@@ -437,35 +446,44 @@ class MarginToolFromSearch extends FannieRESTfulPage
                        / SUM(q.percentageDeptSales) as weightedMargin
                     FROM products AS p
                     LEFT JOIN departments AS d ON p.department=d.dept_no
-                    LEFT JOIN $summary AS q ON p.upc=q.upc
-                    WHERE department IN ({$info['in']})
+                        LEFT JOIN $summary AS q ON p.upc=q.upc AND p.store_id=q.storeID
+                    WHERE department IN ({$in_sql})
                         AND cost <> 0
+                        AND p.store_id=?
                     GROUP BY department, dept_name";
         $marginP = $dbc->prepare($marginQ);
-        $marginR = $dbc->execute($marginP, $info['args']);
+        $marginR = $dbc->execute($marginP, $args);
         while($marginW = $dbc->fetch_row($marginR)) {
             $ret .= sprintf('<tr><td>%d %s</td><td id="dmargin%d">%.4f%%</td></tr>',
                             $marginW['department'], $marginW['dept_name'], $marginW['department'],
                             $marginW['weightedMargin']*100
             );
         }
-        $ret .= '</table></fieldset>';
-        $ret .= '<fieldset><legend>Create Batch</legend><table>'; 
-        $ret .= '<tr><th>Name</th><td><input type="text" id="batchName" size="15" value="' . $batchName . '" /></td></tr>';
-        $ret .= '<tr><th>Tags</th><td><select id="shelftagSet"><option value="-1">None</option>';
+        $ret .= '</table></div>';
+        $ret .= '<div class="fluid-contaienr">
+                <strong>Create Batch</strong>'; 
+        $ret .= '<div class="form-group">
+            <label>Name</label>
+            <input type="text" id="batchName" class="form-control input-sm" 
+                value="' . $batchName . '" />
+            </div>';
+        $ret .= '<div class="form-group">
+            <label>Tags</label>
+            <select id="shelftagSet" class="form-control input-sm"><option value="-1">None</option>';
         $tagR = $dbc->query('SELECT superID, super_name FROM MasterSuperDepts GROUP BY superID, super_name ORDER BY superID');
         while($tagW = $dbc->fetch_row($tagR)) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
                             $first_superID == $tagW['superID'] ? 'selected' : '',
                             $tagW['superID'], $tagW['super_name']);
         }
-        $ret .= '</select></td></tr>';
-        $ret .= '<tr><td colspan="2"><input type="submit" onclick="createBatch(); return false;" value="Create Batch" /></td></tr>';
-        $ret .= '</table></fieldset></div>';
+        $ret .= '</select></div>';
+        $ret .= '<p><button type="submit" onclick="marginTool.createBatch(); return false;" class="btn btn-default">Create Batch</button></p>';
+        $ret .= '</div></div>';
 
         // list the actual items
+        $ret .= '<div class="col-sm-10">';
         $ret .= '<form onsubmit="return false;" method="post">';
-        $ret .= '<table id="maintable" class="tablesorter" style="width:80%;"><thead>';
+        $ret .= '<table id="maintable" class="table tablesorter"><thead>';
         $ret .= '<tr>
                 <th>UPC</th>
                 <th>Description</th>
@@ -478,18 +496,20 @@ class MarginToolFromSearch extends FannieRESTfulPage
                 <th>New Price</th>
                 </tr></thead><tbody>';
 
-        $info = $this->arrayToParams($this->upcs);
+        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, p.cost,
                     p.normal_price, m.superID, q.percentageStoreSales,
                     q.percentageSuperDeptSales, q.percentageDeptSales
                   FROM products AS p
-                  LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                  LEFT JOIN ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'productSummaryLastQuarter AS q
-                    ON p.upc=q.upc
-                  WHERE p.upc IN (' . $info['in'] . ')
+                      LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                      LEFT JOIN ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'productSummaryLastQuarter AS q
+                        ON p.upc=q.upc AND p.store_id=q.storeID
+                  WHERE p.upc IN (' . $in_sql . ')
+                    AND p.store_id=?
                   ORDER BY p.upc';
+        $args[] = $store;
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $info['args']);
+        $result = $dbc->execute($prep, $args);
         while($row = $dbc->fetch_row($result)) {
             $ret .= sprintf('<tr class="itemrow" id="row%s">
                             <td>%s</td>
@@ -501,8 +521,8 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             <td class="currentprice">%.2f</td>
                             <td id="margin%s">%.4f%%</td>
                             <td class="dept%d super%d">
-                                <input type="text" size="5" name="price[]" class="newprice"
-                                value="%.2f" onchange="reCalc(\'%s\', this.value, %f, %d, %d);" />
+                                <input type="text" size="5" name="price[]" class="newprice form-control input-sm"
+                                value="%.2f" onchange="marginTool.reCalc(\'%s\', this.value, %f, %d, %d);" />
                                 <input type="hidden" name="upc[]" class="itemupc" value="%s" />
                             </td>
                             </tr>',
@@ -523,131 +543,60 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $ret .= '</tbody></table>';
 
         $ret .= '</form>';
+        $ret .= '</div>';
 
         $this->add_onload_command("\$('#maintable').tablesorter({sortList: [[0,0]], widgets: ['zebra']});");
+        $this->addScript('marginTool.js');
 
         return $ret;
     }
 
-    function javascript_content()
+    public function helpContent()
     {
+        return '<p>
+            This tool lists the selected item\'s cost,
+            price, and margins as well as each item\'s
+            percentage of overall store, super department,
+            and department sales. Entering a new price
+            will calculate the new item margin. The percentages
+            are used for a weighted, contribution to margin
+            calculation to predict how changes to an individual
+            item will impact overal margin at a department
+            or super department level.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->u = 'foo';
+        $phpunit->assertEquals(false, $this->post_u_handler());
+        $this->u = '4011';
+        $phpunit->assertEquals(true, $this->post_u_handler());
+        $phpunit->assertNotEquals(0, strlen($this->post_u_view()));
+
+        $this->upc = '0000000004011';
+        $this->deptID = 1;
+        $this->newprice = 1;
         ob_start();
-        ?>
-function createBatch() {
-    var cArray = Array();
-    var pArray = Array();
-    var uArray = Array();
-    $('.itemrow').each(function(){
-        cArray.push($(this).find('.currentprice').html());
-        pArray.push($(this).find('.newprice').val());
-        uArray.push($(this).find('.itemupc').val());
-    });
+        $phpunit->assertEquals(false, $this->get_upc_deptID_newprice_handler());
+        ob_get_clean();
 
-    var changeUPC = Array();
-    var changePrice = Array();
-    for(var i=0; i<pArray.length; i++) {
-        if (pArray[i] != cArray[i]) {
-            changePrice.push(pArray[i]);
-            changeUPC.push(uArray[i]);
-        }
-    }
+        $this->upcs = '["' . $this->upc . '"]';
+        $this->newprices = '["' . $this->newprice . '"]';
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_upcs_deptID_newprices_handler());
+        ob_get_clean();
 
-    if (changePrice.length == 0) {
-        alert('No prices have been changed!');
-        return;
-    }
+        $this->superID = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_upc_superID_newprice_handler());
+        ob_get_clean();
 
-    var prices = JSON.stringify(changePrice);
-    var upcs = JSON.stringify(changeUPC);
-    var tags = $('#shelftagSet').val();
-    var batchName = $('#batchName').val();
-    var dstr = 'newbatch='+batchName+'&tags='+tags+'&upcs='+upcs+'&newprices='+prices;
-    $.ajax({
-        url: 'MarginToolFromSearch.php',
-        type: 'post',
-        data: dstr,
-        success: function(resp) {
-            location = resp;
-        }
-    });
-}
-function reCalc(upc, price, cost, deptID, superID) {
-    var newprice = Number(price);
-    if (cost == 0 || isNaN(newprice)) {
-        return false;
-    }
-
-    var curprice = Number($('#row'+upc).find('.currentprice').html());
-    if (curprice == newprice) {
-        $('#row'+upc).css('font-weight', 'normal');
-        $('#row'+upc+' td').each(function() {
-            $(this).css('background-color', '');
-        });
-    } else {
-        $('#row'+upc).css('font-weight', 'bold');
-        $('#row'+upc+' td').each(function() {
-            $(this).css('background-color', '#ffc');
-        });
-    }
-
-    var itemMargin = (price - cost) / price * 100;
-    itemMargin = Math.round(itemMargin * 10000) / 10000;
-    $('#margin'+upc).html(itemMargin+"%");
-
-    // get all prices for items in the department
-    // currently being displayed (and editable)
-    var pArray = Array();
-    var uArray = Array();
-    $('.dept'+deptID).each(function(){
-        pArray.push($(this).find('.newprice').val());
-        uArray.push($(this).find('.itemupc').val());
-    });
-    var prices = JSON.stringify(pArray);
-    var upcs = JSON.stringify(uArray);
-
-    $.ajax({
-        url: 'MarginToolFromSearch.php',
-        type: 'post',
-        data: 'upcs='+upcs+'&deptID='+deptID+'&newprices='+prices,
-        success: function(resp) {
-            $('#dmargin'+deptID).html(resp+"%");
-        }
-    });
-
-    // get all prices for items in the superdepartment
-    // currently being displayed (and editable)
-    var pArray = Array();
-    var uArray = Array();
-    $('.super'+superID).each(function(){
-        pArray.push($(this).find('.newprice').val());
-        uArray.push($(this).find('.itemupc').val());
-    });
-    var prices = JSON.stringify(pArray);
-    var upcs = JSON.stringify(uArray);
-
-    $.ajax({
-        url: 'MarginToolFromSearch.php',
-        type: 'post',
-        data: 'upcs='+upcs+'&superID='+superID+'&newprices='+prices,
-        success: function(resp) {
-            $('#smargin'+superID).html(resp+"%");
-        }
-    });
-}
-        <?php
-        return ob_get_clean();
-    }
-
-    private function arrayToParams($arr) {
-        $str = '';
-        $args = array();
-        foreach($arr as $entry) {
-            $str .= '?,';
-            $args[] = $entry;
-        }
-        $str = substr($str, 0, strlen($str)-1);
-
-        return array('in'=>$str, 'args'=>$args);
+        $this->upcs = '["' . $this->upc . '"]';
+        $this->newprices = '["' . $this->newprice . '"]';
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_upcs_superID_newprices_handler());
+        ob_get_clean();
     }
 }
 

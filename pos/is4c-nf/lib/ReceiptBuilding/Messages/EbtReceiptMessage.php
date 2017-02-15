@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
+
 /**
   @class EbtReceiptMessage
 */
@@ -34,67 +39,39 @@ class EbtReceiptMessage extends ReceiptMessage
 
     public function message($val, $ref, $reprint=false)
     {
-        global $CORE_LOCAL;
-
-        $date = ReceiptLib::build_time(time());
-        list($emp, $reg, $trans) = explode('-',$ref);
+        list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
         $slip = '';
 
         // query database for receipt info 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         if ($reprint) {
-            $db = Database::mDataConnect();
+            $dbc = Database::mDataConnect();
         }
 
-        $query = "SELECT q.amount, q.name, q.PAN, q.refNum,
-                    CASE 
-                        WHEN q.mode = 'EBTFOOD_Sale' THEN 'Ebt FS Sale'
-                        WHEN q.mode = 'EBTFOOD_Return' THEN 'Ebt FS Refund'
-                        WHEN q.mode = 'EBTCASH_Sale' THEN 'Ebt Cash Sale'
-                        WHEN q.mode = 'EBTCASH_Return' THEN 'Ebt Cash Refund'
-                        ELSE q.mode
-                    END as ebtMode,
-                    r.xResultMessage, r.xTransactionID
-                  FROM efsnetRequest AS q
-                    LEFT JOIN efsnetResponse AS r ON
-                        q.date = r.date AND
-                        q.laneNo = r.laneNo AND
-                        q.transNo = r.transNo AND
-                        q.transID = r.transID AND
-                        q.cashierNo = r.cashierNo
-                  WHERE r.xResultMessage LIKE '%Approve%'
-                        AND q.mode LIKE 'EBT%'
-                        AND r.validResponse=1
-                        AND q.date=" . date('Ymd') . "
-                        AND q.transNo=" . ((int)$trans) . "
-                  ORDER BY q.refNum, q.datetime";;
+        $transType = $dbc->concat('p.cardType', "' '", 'p.transType', '');
 
-        if ($db->table_exists('PaycardTransactions')) {
-            $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
+        $query = "SELECT p.amount,
+                    p.name,
+                    p.PAN,
+                    p.refNum,
+                    $transType AS ebtMode,
+                    p.xResultMessage,
+                    p.xTransactionID,
+                    p.xBalance,
+                    p.requestDatetime AS datetime
+                  FROM PaycardTransactions AS p
+                  WHERE dateID=" . date('Ymd') . "
+                    AND empNo=" . $emp . "
+                    AND registerNo=" . $reg . "
+                    AND transNo=" . $trans . "
+                    AND p.validResponse=1
+                    AND p.xResultMessage LIKE '%APPROVE%'
+                    AND p.cardType LIKE 'EBT%'
+                  ORDER BY p.requestDatetime";
 
-            $query = "SELECT p.amount,
-                        p.name,
-                        p.PAN,
-                        p.refNum,
-                        $trans_type AS ebtMode,
-                        p.xResultMessage,
-                        p.xTransactionID,
-                        p.xBalance,
-                        p.requestDatetime AS datetime
-                      FROM PaycardTransactions AS p
-                      WHERE dateID=" . date('Ymd') . "
-                        AND empNo=" . $emp . "
-                        AND registerNo=" . $reg . "
-                        AND transNo=" . $trans . "
-                        AND p.validResponse=1
-                        AND p.xResultMessage LIKE '%APPROVE%'
-                        AND p.cardType LIKE 'EBT%'
-                      ORDER BY p.requestDatetime";
-        }
-
-        $result = $db->query($query);
+        $result = $dbc->query($query);
         $prevRefNum = false;
-        while ($row = $db->fetch_row($result)) {
+        while ($row = $dbc->fetchRow($result)) {
 
             // failover to mercury's backup server can
             // result in duplicate refnums. this is
@@ -105,11 +82,10 @@ class EbtReceiptMessage extends ReceiptMessage
 
             $slip .= ReceiptLib::centerString("................................................")."\n";
             // store header
-            $slip .= ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip2"))."\n"  // "wedge copy"
-                    . ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip1"))."\n"  // store name 
-                    . ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
-                    . ReceiptLib::centerString($CORE_LOCAL->get("receiptHeader2"))."\n"  // phone
-                    . "\n";
+            for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
+                $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
+            }
+            $slip .= "\n";
             $col1 = array();
             $col2 = array();
             $col1[] = $row['ebtMode'];
@@ -119,14 +95,14 @@ class EbtReceiptMessage extends ReceiptMessage
             $col1[] = "Authorization: " . $row['xResultMessage'];
             $col2[] = ReceiptLib::boldFont() . "Amount: " . $row['amount'] . ReceiptLib::normalFont();
             $balance = 'unknown';
-            $ebt_type = substr(strtoupper($row['ebtMode']), 0, 5);
-            if ($ebt_type == 'EBT F' || $ebt_type == 'EBTFO') {
-                if (is_numeric($CORE_LOCAL->get('EbtFsBalance'))) {
-                    $balance = sprintf('%.2f', $CORE_LOCAL->get('EbtFsBalance'));
+            $ebtType = substr(strtoupper($row['ebtMode']), 0, 5);
+            if ($ebtType == 'EBT F' || $ebtType == 'EBTFO') {
+                if (is_numeric(CoreLocal::get('EbtFsBalance'))) {
+                    $balance = sprintf('%.2f', CoreLocal::get('EbtFsBalance'));
                 }
-            } else if ($ebt_type == 'EBT C' || $ebt_type == 'EBTCA') {
-                if (is_numeric($CORE_LOCAL->get('EbtCaBalance'))) {
-                    $balance = sprintf('%.2f', $CORE_LOCAL->get('EbtCaBalance'));
+            } elseif ($ebtType == 'EBT C' || $ebtType == 'EBTCA') {
+                if (is_numeric(CoreLocal::get('EbtCaBalance'))) {
+                    $balance = sprintf('%.2f', CoreLocal::get('EbtCaBalance'));
                 }
             }
             $col1[] = "New Balance: " . $balance;

@@ -21,13 +21,11 @@
 
 *********************************************************************************/
 
-global $FANNIE_ROOT;
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+namespace COREPOS\Fannie\Plugin\HouseCoupon;
 
 /**
 */
-class HouseCoupon extends FanniePlugin 
+class HouseCoupon extends \COREPOS\Fannie\API\FanniePlugin 
 {
 
     /**

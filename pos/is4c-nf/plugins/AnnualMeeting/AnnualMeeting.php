@@ -21,9 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class AnnualMeeting extends Plugin {
 
-	public $plugin_description = 'Support for WFC Annual Meeting signup at POS';
+    public $plugin_description = 'Support for WFC Annual Meeting signup at POS';
 
-	public $plugin_settings = array();
+    public $plugin_settings = array();
 }

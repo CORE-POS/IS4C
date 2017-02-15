@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -33,36 +33,48 @@ class RestrictCouponPage extends FannieRESTfulPage {
 
     public $description = '[Coupon Restrictions] bans or limits use of broken manufacturer coupons.
     Typically this means the manufacturer put the wrong UPC code on the coupon.';
+    public $themed = true;
 
     function get_view(){
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $ret = '<form onsubmit="save();return false;">
-            <table><tr><td>
-            <b>UPC</b></td><td><input type="text" id="upc" />
-            </td></tr><tr><td>
-            <b>Limit</b></td><td><input type="text" size="3" value="0" id="limit" />
-            (max uses per transaction)
-            </td></tr><tr><td>
-            Reason</td><td><input type="text" id="reason" />
-            </td></tr></table>
-            <input type="submit" value="Save" />
+        $ret = '<form onsubmit="restrictCoupon.save();return false;">
+            <div class="form-group">
+                <label>UPC</label>
+                <input type="text" id="upc" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Limit</label> (max uses per transaction)
+                <input type="number" id="limit" class="form-control" 
+                    value="0" required />
+            </div>
+            <div class="form-group">
+                <label>Reason</label>
+                <input type="text" id="reason" class="form-control" required />
+            </div>
+            <p>
+            <button type="submit" class="btn btn-default">Save</button>
+            </p>
             </form>
             <hr/>';
 
         $model = new DisableCouponModel($dbc);
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table class="table">
+            <tr><th>UPC</th><th>Limit</th><th>Reason</th><th></th></tr>';
         foreach($model->find('upc') as $obj){
-            $ret .= sprintf('<tr><td><a href="" onclick="loadcoupon(\'%s\');return false;">%s</a></td>
+            $ret .= sprintf('<tr><td><a href="" onclick="restrictCoupon.load(\'%s\');return false;">%s</a></td>
                     <td>%d</td><td>%s</td>
-                    <td><a href="" onclick="deletecoupon(\'%s\');return false;"><img 
-                    src="%ssrc/img/buttons/trash.png" /></a></td></tr>',
+                    <td><a href="" onclick="restrictCoupon.remove(\'%s\');return false;">%s</a></td>
+                    </tr>',
                     $obj->upc(), $obj->upc(), $obj->threshold(),
-                    $obj->reason(), $obj->upc(), $FANNIE_URL
+                    $obj->reason(), $obj->upc(), \COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
         }
         $ret .= '</table>';
+        $this->add_onload_command("\$('#upc').focus();\n");
+        $this->addScript('restrictCoupon.js');
+
         return $ret;
     }
 
@@ -114,52 +126,26 @@ class RestrictCouponPage extends FannieRESTfulPage {
         return False;
     }
 
-    function javascript_content(){
+    public function helpContent()
+    {
+        return '<p>
+            Place restrictions on how often a manufacturer coupon
+            can be used. Often this is set to zero to "ban" poorly
+            formatted coupon UPCs that apply to incorrect items.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
         ob_start();
-        ?>
-function loadcoupon(upc){
-    $.ajax({
-    url: 'RestrictCouponPage.php?id='+upc,
-    type: 'get',
-    dataType: 'json',
-    success: function(data){
-        $('#upc').val(upc);
-        if (data.limit)
-            $('#limit').val(data.limit);
-        if (data.reason)
-            $('#reason').val(data.reason);
-    }
-    });
-}
-function save(){
-    var dstr = 'id='+$('#upc').val();
-    dstr += '&limit='+$('#limit').val();
-    dstr += '&reason='+$('#reason').val();
-    $.ajax({
-    url: 'RestrictCouponPage.php',
-    type: 'post',
-    data: dstr,
-    success: function(){
-        location='RestrictCouponPage.php';
-    }
-    });
-}
-function deletecoupon(upc){
-    if (confirm('Remove restrictions for '+upc+'?')){
-        $.ajax({
-        url: 'RestrictCouponPage.php?id='+upc,
-        type: 'delete',
-        success: function(){
-            location='RestrictCouponPage.php';
-        }
-        });
-    }
-}
-        <?php
-        return ob_get_clean();
+        $phpunit->assertEquals(false, $this->post_id_handler());
+        $phpunit->assertEquals(false, $this->get_id_handler());
+        $phpunit->assertEquals(false, $this->delete_id_handler());
+        ob_get_clean();
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

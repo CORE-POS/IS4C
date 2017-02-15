@@ -21,71 +21,70 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\parser\Parser;
+
 class AnnualMeetingParser extends Parser {
 
-	var $plus = array('1042','1041');
-	var $descriptions = array(
-		'1042' => 'OWNER MEAL',
-		'1041' => 'GUEST MEAL'
-	);
+    private $plus = array('1042','1041');
+    private $descriptions = array(
+        '1042' => 'OWNER MEAL',
+        '1041' => 'GUEST MEAL'
+    );
 
-	function check($str){
-		if (strlen($str) < 4) return False;
-		$plu = substr($str,0,4);
-		if (in_array($plu, $this->plus)){
-			if (strlen($str)==4)
-				return True;
-			elseif(strtoupper($str[4])=='M')
-				return True;
-			elseif(strtoupper($str[4])=='V')
-				return True;
-			elseif(strtoupper($str[4])=='S')
-				return True;
-			elseif(strtoupper($str[4])=='K')
-				return True;
-		}
-		return False;
-	}
+    function check($str)
+    {
+        if (strlen($str) < 4) return false;
+        $plu = substr($str,0,4);
+        if (in_array($plu, $this->plus)){
+            if (strlen($str)==4) {
+                return true;
+            } elseif(in_array(strtoupper($str[4]), array('M','V','K','N','W'))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
-		if (strlen($str)==4){
-			$CORE_LOCAL->set('qmInput',$str);
-			$desc = $this->descriptions[$str];
-			$opts = array(
-				$desc.' (Steak)' => 'M',
-				$desc.' (Risotto)' => 'V',
-				$desc.' (Squash V)' => 'S'
-			);
-			if ($str == 1041){
-				$opts[$desc.' (Kids)'] = 'K';
-			}
-			$CORE_LOCAL->set('qmNumber', $opts);
-			$plugin_info = new QuickMenus();
-			$ret['main_frame'] = $plugin_info->plugin_url().'/QMDisplay.php';
-			return $ret;
-		}
-		else {
-			$flag = strtoupper($str[4]);
-			$plu = substr($str,0,4);
-			$price = ($flag == 'K') ? 5.00 : 20.00;
-			TransRecord::addRecord(array(
-				'upc' => str_pad($plu,13,'0',STR_PAD_LEFT),
-				'description' => $this->descriptions[$plu].' ('.$flag.')',
-				'trans_type' => 'I',
-				'department' => 235, 
+    function parse($str)
+    {
+        $ret = $this->default_json();
+        if (strlen($str)==4){
+            CoreLocal::set('qmInput',$str);
+            $desc = $this->descriptions[$str];
+            $opts = array(
+                $desc.' (Pork)' => 'M',
+                $desc.' (Ratatouille)' => 'V',
+                $desc.' (Pork, G/F)' => 'N',
+                $desc.' (Ratatouille, G/F)' => 'W',
+            );
+            if ($str == 1041){
+                $opts[$desc.' (Kids)'] = 'K';
+            }
+            CoreLocal::set('qmNumber', $opts);
+            $plugin_info = new QuickMenus();
+            $ret['main_frame'] = $plugin_info->pluginUrl().'/QMDisplay.php';
+            return $ret;
+        } else {
+            $flag = strtoupper($str[4]);
+            $plu = substr($str,0,4);
+            $price = ($flag == 'K') ? 5.00 : 20.00;
+            TransRecord::addRecord(array(
+                'upc' => str_pad($plu,13,'0',STR_PAD_LEFT),
+                'description' => $this->descriptions[$plu].' ('.$flag.')',
+                'trans_type' => 'I',
+                'department' => 235, 
                 'quantity' => 1.0, 
                 'ItemQtty' => 1.0, 
                 'unitPrice' => $price,
                 'total' => $price,
                 'regPrice' => $price,
-				'charflag' => $flag
-			));
-			$ret['output'] = DisplayLib::lastpage();
-			$ret['redraw_footer'] = True;
-			return $ret;
-		}
-	}
+                'charflag' => $flag
+            ));
+            $ret['output'] = DisplayLib::lastpage();
+            $ret['redraw_footer'] = True;
+            return $ret;
+        }
+    }
 
 }

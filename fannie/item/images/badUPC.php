@@ -8,8 +8,8 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-$p1 = $dbc->prepare_statement("SELECT upc FROM productUser where upc=?");
-$p2 = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
+$p1 = $dbc->prepare("SELECT upc FROM productUser where upc=?");
+$p2 = $dbc->prepare("SELECT upc FROM products WHERE upc=?");
 $dh = opendir('new');
 while( ($file = readdir($dh)) !== False){
 
@@ -23,11 +23,11 @@ while( ($file = readdir($dh)) !== False){
 
     $upc = str_pad($u,13,'0',STR_PAD_LEFT);
 
-    $r1 = $dbc->exec_statement($p1,array($upc));
+    $r1 = $dbc->execute($p1,array($upc));
     if ($dbc->num_rows($r1) > 0)
         continue;
 
-    $r2 = $dbc->exec_statement($p2,array($upc));
+    $r2 = $dbc->execute($p2,array($upc));
     if ($dbc->num_rows($r2) > 0)
         continue;
 
@@ -35,4 +35,4 @@ while( ($file = readdir($dh)) !== False){
     echo "<a href=new/$file><img src=new/$u.thumb.$e /></a>";
     echo "<hr />";
 }
-?>
+

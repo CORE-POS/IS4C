@@ -76,9 +76,6 @@ bool <b>logout</b> ( )<br />
 Logs out the currently logged in user and returns true.  Note this function sets a cookie, so no 
 output can be sent to the browser prior to calling it.
 <p />
-void <b>showUsers</b> ( )<br />
-Prints out a table of information about current users.  Requires 'admin' authorization.
-<p />
 mixed <b>validateUser</b> ( string authorization [, string subclass ] )<br />
 Determines who, if anyone, is logged in, and checks to see whether that user has the given
 authorization.  Returns the logged in user's name on success, or <i>prints error messages</i> AND 
@@ -134,10 +131,6 @@ Deletes the given user from the given group.  Returns true on success, false on 
 <p />
 void <b>detailGroup</b> ( string groupname )<br />
 Prints tabled information about the given group including users and authorizations.
-<p />
-bool <b>showGroups</b> ( )<br />
-Prints a table of group information.  Returns true.
-<p />
 <hr />
 <b>auth/utilities.php</b> - useful functions that don't belong anywhere else
 <p />

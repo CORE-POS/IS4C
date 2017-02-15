@@ -13,10 +13,10 @@ function parseitem($dowrite,$plu,$itemdesc,$tare,$shelflife,$price,$bycount,
   
   for ($i = 0; $i < $num_scales; $i++){
     writeitem("{$CSV_dir}/{$session_key}_wi_scale_{$i}.csv",$scale_types[$i],
-	      $scale_ips[$i],$department,$dowrite,$plu,$itemdesc,$tare,
-	      $shelflife,$price,$bycount,$type,$exception,$label,$graphics);
+          $scale_ips[$i],$department,$dowrite,$plu,$itemdesc,$tare,
+          $shelflife,$price,$bycount,$type,$exception,$label,$graphics);
     writetext("{$CSV_dir}/{$session_key}_et_scale_{$i}.csv",$scale_types[$i],
-	      $scale_ips[$i],$department,$plu,$text);
+          $scale_ips[$i],$department,$plu,$text);
   }
   
   for ($i = 0; $i < $num_scales; $i++){
@@ -38,18 +38,17 @@ function deleteitem($plu,$scalenum){
   }
 
   for ($i = 0; $i < $num_scales; $i++){
-	  delete_item("{$CSV_dir}/{$session_key}_di_scale_{$i}.csv",$scale_types[$i],
-			$scale_ips[$i],$department,$plu);
-	  delete_text("{$CSV_dir}/{$session_key}_dt_scale_{$i}.csv",$scale_types[$i],
-			$scale_ips[$i],$department,$plu);
+      delete_item("{$CSV_dir}/{$session_key}_di_scale_{$i}.csv",$scale_types[$i],
+            $scale_ips[$i],$department,$plu);
+      delete_text("{$CSV_dir}/{$session_key}_dt_scale_{$i}.csv",$scale_types[$i],
+            $scale_ips[$i],$department,$plu);
   }
 
   for ($i = 0; $i < $num_scales; $i++){
-	  exec("cp {$CSV_dir}/{$session_key}_di_scale_{$i}.csv $DGW_dir");
-	  exec("rm -f {$CSV_dir}/{$session_key}_di_scale_{$i}.csv");
-	  exec("cp {$CSV_dir}/{$session_key}_dt_scale_{$i}.csv $DGW_dir");
-	  exec("rm -f {$CSV_dir}/{$session_key}_dt_scale_{$i}.csv");
+      exec("cp {$CSV_dir}/{$session_key}_di_scale_{$i}.csv $DGW_dir");
+      exec("rm -f {$CSV_dir}/{$session_key}_di_scale_{$i}.csv");
+      exec("cp {$CSV_dir}/{$session_key}_dt_scale_{$i}.csv $DGW_dir");
+      exec("rm -f {$CSV_dir}/{$session_key}_dt_scale_{$i}.csv");
   }
 }
 
-?>

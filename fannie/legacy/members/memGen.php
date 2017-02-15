@@ -6,9 +6,9 @@ include('../db.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc') && !validateUserQuiet('viewmembers')){
-	$url = $FANNIE_URL.'auth/ui/loginform.php?redirect='.$_SERVER['PHP_SELF'];
-	header('Location: '.$url);
-	exit;
+    $url = $FANNIE_URL.'auth/ui/loginform.php?redirect='.$_SERVER['PHP_SELF'];
+    header('Location: '.$url);
+    return;
 }
 
 include('memAddress.php');
@@ -16,11 +16,11 @@ include('header.html');
 
 $memID = -1; // better failure
 if(isset($_REQUEST['memNum'])){
-	$memID = $_REQUEST['memNum'];
+    $memID = $_REQUEST['memNum'];
 }
 
 if(isset($_REQUEST['memID'])){
-	$memID = $_REQUEST['memID'];
+    $memID = $_REQUEST['memID'];
 }
 
 if(isset($_REQUEST['submit2'])){
@@ -30,10 +30,10 @@ if(isset($_REQUEST['submit2'])){
 }
 $lName = "";
 if (isset($_REQUEST['lastName']))
-	$lName = $_REQUEST['lastName'];
+    $lName = $_REQUEST['lastName'];
 $fName = "";
 if (isset($_REQUEST['firstName']))
-	$fName = $_REQUEST['firstName'];
+    $fName = $_REQUEST['firstName'];
 
 /********************************************************************
  * prefetch result: 
@@ -48,15 +48,15 @@ $row = "";
 $query_drop = "";
 $result = prefetch_result($memID,$lName,$fName,$query_drop);
 if ($sql->num_rows($result) > 0){
-  $row = $sql->fetch_array($result);
+  $row = $sql->fetchRow($result);
   $memID = $row[0];
 }
 
 ?>
 <body 
-	bgcolor="#66CC99" 
-	leftmargin="0" topmargin="0" 
-	marginwidth="0" marginheight="0" 
+    bgcolor="#66CC99" 
+    leftmargin="0" topmargin="0" 
+    marginwidth="0" marginheight="0" 
 >
 <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
   <tr>
@@ -65,41 +65,41 @@ if ($sql->num_rows($result) > 0){
   --> </tr>
   <tr>
     <td colspan="11" bgcolor="#006633"><!--<a href="memGen.php">-->
-	<img src="../images/general.gif" width="72" height="16" border="0" />
+    <img src="../images/general.gif" width="72" height="16" border="0" />
         <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIEquityPage.php?id=<? echo $memID; ?>">
-	<img src="../images/equity.gif" width="72" height="16" border="0" /></a>
+    <img src="../images/equity.gif" width="72" height="16" border="0" /></a>
         <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIArPage.php?id=<? echo $memID; ?>">
-	<img src="../images/AR.gif" width="72" height="16" border="0" /></a>
-		<a href="memControl.php?memID=<?php echo $memID ?>">
-	<img src="../images/control.gif" width="72" height="16" border="0" /></a>
+    <img src="../images/AR.gif" width="72" height="16" border="0" /></a>
+        <a href="memControl.php?memID=<?php echo $memID ?>">
+    <img src="../images/control.gif" width="72" height="16" border="0" /></a>
         <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPurchasesPage.php?id=<? echo $memID; ?>">
-	<img src="../images/detail.gif" width="72" height="16" border="0" /></a>
+    <img src="../images/detail.gif" width="72" height="16" border="0" /></a>
         <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPatronagePage.php?id=<? echo $memID; ?>">
-	<img src="../images/patronage.gif" /></a>
+    <img src="../images/patronage.gif" /></a>
     </td>
   </tr>
   <tr>
     <td colspan="9">
-	<a href="mainMenu.php" target="_top" 
-		onclick="MM_nbGroup('down','group1','Members','../images/memDown.gif',1)" 
-		onmouseover="MM_nbGroup('over','Members','../images/memOver.gif','../images/memUp.gif',1)" 
-		onmouseout="MM_nbGroup('out')"><img src="../images/memDown.gif" alt="" name="Members" border="0" id="Members" 
-		onload="MM_nbGroup('init','group1','Members','../images/memUp.gif',1)" /></a>
-	<a href="javascript:;" target="_top" 
-		onclick="MM_nbGroup('down','group1','Reports','../images/repDown.gif',1)" 
-		onmouseover="MM_nbGroup('over','Reports','../images/repOver.gif','../images/repUp.gif',1)" 
-		onmouseout="MM_nbGroup('out')"><img src="../images/repUp.gif" alt="" name="Reports" width="81" height="62" border="0" id="Reports" 
-		onload="" /></a>
-	<a href="javascript:;" target="_top" 
-		onClick="MM_nbGroup('down','group1','Items','../images/itemsDown.gif',1)" 
-		onMouseOver="MM_nbGroup('over','Items','../images/itemsOver.gif','../images/itemsUp.gif',1)" 
-		onMouseOut="MM_nbGroup('out')"><img name="Items" src="../images/itemsUp.gif" border="0" alt="Items" 
-		onLoad="" /></a>
-	<a href="memDocs.php?memID=<?php echo $memID; ?>" target="_top" 
-		onClick="MM_nbGroup('down','group1','Reference','../images/refDown.gif',1)" 
-		onMouseOver="MM_nbGroup('over','Reference','../images/refOver.gif','../images/refUp.gif',1)" 
-		onMouseOut="MM_nbGroup('out')"><img name="Reference" src="../images/refUp.gif" border="0" alt="Reference" 
-		onLoad="" /></a>
+    <a href="mainMenu.php" target="_top" 
+        onclick="MM_nbGroup('down','group1','Members','../images/memDown.gif',1)" 
+        onmouseover="MM_nbGroup('over','Members','../images/memOver.gif','../images/memUp.gif',1)" 
+        onmouseout="MM_nbGroup('out')"><img src="../images/memDown.gif" alt="" name="Members" border="0" id="Members" 
+        onload="MM_nbGroup('init','group1','Members','../images/memUp.gif',1)" /></a>
+    <a href="javascript:;" target="_top" 
+        onclick="MM_nbGroup('down','group1','Reports','../images/repDown.gif',1)" 
+        onmouseover="MM_nbGroup('over','Reports','../images/repOver.gif','../images/repUp.gif',1)" 
+        onmouseout="MM_nbGroup('out')"><img src="../images/repUp.gif" alt="" name="Reports" width="81" height="62" border="0" id="Reports" 
+        onload="" /></a>
+    <a href="javascript:;" target="_top" 
+        onClick="MM_nbGroup('down','group1','Items','../images/itemsDown.gif',1)" 
+        onMouseOver="MM_nbGroup('over','Items','../images/itemsOver.gif','../images/itemsUp.gif',1)" 
+        onMouseOut="MM_nbGroup('out')"><img name="Items" src="../images/itemsUp.gif" border="0" alt="Items" 
+        onLoad="" /></a>
+    <a href="memDocs.php?memID=<?php echo $memID; ?>" target="_top" 
+        onClick="MM_nbGroup('down','group1','Reference','../images/refDown.gif',1)" 
+        onMouseOver="MM_nbGroup('over','Reference','../images/refOver.gif','../images/refUp.gif',1)" 
+        onMouseOut="MM_nbGroup('out')"><img name="Reference" src="../images/refUp.gif" border="0" alt="Reference" 
+        onLoad="" /></a>
     </td>
 </tr>
 </table>
@@ -132,10 +132,10 @@ else{
 
   if($numMemRows < 1){
     echo "No member found <br>";
-			
+            
   }
   elseif($numMemRows == 1){
-    addressList($row[0]);						
+    addressList($row[0]);                        
   }
   // show multiple results
   else{
@@ -173,9 +173,9 @@ if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc')){
 }
 else {
   if (validateUserQuiet('editmembers'))
-	  echo "<td><a href=testEdit.php?memnum=$memID>[ Logged in ] Edit Info</a> | <a href=\"{$FANNIE_URL}auth/ui\">Logout</a></td>";
+      echo "<td><a href=testEdit.php?memnum=$memID>[ Logged in ] Edit Info</a> | <a href=\"{$FANNIE_URL}auth/ui\">Logout</a></td>";
   else
-	  echo "<td><a href=limitedEdit.php?memnum=$memID>[ Logged in ] Edit Info</a> | <a href=\"{$FANNIE_URL}auth/ui\">Logout</a></td>";
+      echo "<td><a href=limitedEdit.php?memnum=$memID>[ Logged in ] Edit Info</a> | <a href=\"{$FANNIE_URL}auth/ui\">Logout</a></td>";
 }
 ?>
 <td>
@@ -310,3 +310,4 @@ function prefetch_result($memID,$lName,$fName,&$qd){
     return $result;
   }
 }
+

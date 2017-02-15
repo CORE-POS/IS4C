@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning;
+
 /**
   @class SpecialUPC
   Handler module for non-product UPCs
@@ -34,6 +36,31 @@
 
 class SpecialUPC 
 {
+    private static $builtin = array(
+        'CouponCode',
+        'DatabaseCoupon',
+        'HouseCoupon',
+        'SpecialOrder',
+    );
+
+    protected $session;
+
+    public static function factory($class, $session)
+    {
+        if ($class != '' && in_array($class, self::$builtin)) {
+            $class = 'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\' . $class;
+            return new $class($session);
+        } elseif ($class != '' && class_exists($class)) {
+            return new $class($session);
+        }
+
+        return new self($session);
+    }
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
 
     /**
       Check function
@@ -45,11 +72,6 @@ class SpecialUPC
     public function isSpecial($upc)
     {
         return false;
-    }
-
-    public function is_special($upc)
-    {
-        return $this->isSpecial($upc);
     }
 
     /**

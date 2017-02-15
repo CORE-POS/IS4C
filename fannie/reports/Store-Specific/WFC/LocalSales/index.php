@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,7 +32,8 @@ if (isset($_REQUEST['submit'])){
     $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
     if (isset($_REQUEST['excel'])){
-        header("Content-Disposition: inline; filename=local_{$d1}_{$d2}.xls");
+        $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
+        header("Content-Disposition: inline; filename=local_{$d1}_{$d2}.{$ext}");
         header("Content-type: application/vnd.ms-excel; name='excel'");
         ob_start();
     }
@@ -41,7 +42,7 @@ if (isset($_REQUEST['submit'])){
             $d1,$d2);
     }
 
-    $sales = $dbc->prepare_statement("SELECT t.department,d.dept_name,s.superID,n.super_name,
+    $sales = $dbc->prepare("SELECT t.department,d.dept_name,s.superID,n.super_name,
             sum(case when numflag = 2 then total else 0 end) as localSales,
             sum(case when numflag = 1 then total else 0 end) as scSales,
             sum(total) as allSales
@@ -56,7 +57,7 @@ if (isset($_REQUEST['submit'])){
             AND upc Not IN ('RRR','DISCOUNT')
             group by t.department,d.dept_name,s.superID,n.super_name
             order by s.superID,t.department");
-    $result = $dbc->exec_statement($sales,array($d1.' 00:00:00',$d2.' 23:59:59'));
+    $result = $dbc->execute($sales,array($d1.' 00:00:00',$d2.' 23:59:59'));
     $sID = -1;
     $sname = "";
     $sttl = 0;
@@ -120,12 +121,10 @@ if (isset($_REQUEST['submit'])){
     echo '</table>';
 
     if (isset($_REQUEST['excel'])){
-        include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-        include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
         $output = ob_get_contents();
         ob_end_clean();
-        $array = HtmlToArray($output);
-        $xls = ArrayToXls($array);
+        $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($output);
+        $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($array);
         echo $xls;
     }
             
@@ -170,4 +169,4 @@ $(document).ready(function(){
 <?php
 include($FANNIE_ROOT.'src/footer.html');
 }
-?>
+

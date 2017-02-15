@@ -21,21 +21,24 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class SigCapturePage extends BasicPage 
+class SigCapturePage extends BasicCorePage 
 {
+    private $bmpPath;
 
-    private $bmp_path;
-
-	function head_content()
+    function head_content()
     {
         ?>
         <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
         <script type="text/javascript">
         function parseWrapper(str) {
             if (str.substring(0, 7) == 'TERMBMP') {
-                var fn = '<?php echo $this->bmp_path; ?>' + str.substring(7);
+                var fn = '<?php echo $this->bmpPath; ?>' + str.substring(7);
                 $('<input>').attr({
                     type: 'hidden',
                     name: 'bmpfile',
@@ -47,8 +50,8 @@ class SigCapturePage extends BasicPage
                     width: 250 
                 });
                 $('#imgArea').append(img);
-                $('.boxMsgAlert').html('Approve Signature');
-                $('#sigInstructions').html('[enter] to approve, [clear] to cancel');
+                $('.boxMsgAlert').html('<?php echo _('Approve Signature'); ?>');
+                $('#sigInstructions').html('<?php echo _('[enter] to approve, [clear] to cancel'); ?>');
             } 
         }
         function addToForm(n, v) {
@@ -63,157 +66,150 @@ class SigCapturePage extends BasicPage
         #imgArea img { border: solid 1px; black; margin:5px; }
         </style>
         <?php
-	}
+    }
 
-	function preprocess()
+    function preprocess()
     {
-		global $CORE_LOCAL;
+        $this->bmpPath = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
 
-        $this->bmp_path = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
-
-        $terminal_msg = 'termSig';
-        if (isset($_REQUEST['amt']) && isset($_REQUEST['type'])) {
-            $terminal_msg .= $_REQUEST['type'] . sprintf(': $%.2f', $_REQUEST['amt']);
-        } else if (isset($_REQUEST['amt'])) {
-            $terminal_msg .= sprintf('Amount: $.%2f', $_REQUEST['amt']);
+        $terminalMsg = 'termSig';
+        $amt = $this->form->tryGet('amt');
+        if ($amt !== '') {
+            $type = $this->form->tryGet('type');
+            $terminalMsg .= $type !== '' ? sprintf('%s: $.%2f', $type, $amt) : sprintf('Amount: $.%2f', $amt);
         }
 
-        if (isset($_REQUEST['reginput'])) {
-            if (strtoupper($_REQUEST['reginput']) == 'CL') {
-                if (isset($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
-                    unlink($_REQUEST['bmpfile']);
+        try {
+            $input = $this->form->reginput;
+            $bmpfile = $this->form->tryGet('bmpfile');
+            if (strtoupper($input) === 'CL') {
+                if ($bmpfile !== '' && file_exists($bmpfile)) {
+                    unlink($bmpfile);
                 }
                 $this->change_page($this->page_url.'gui-modules/pos2.php');
                 UdpComm::udpSend('termReset');
 
                 return false;
-            } else if ($_REQUEST['reginput'] == '') {
-                if (isset($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
+            } elseif ($input === '') {
+                if ($bmpfile !== '' && file_exists($bmpfile)) {
 
                     // this should have been set already, but if we have sufficient info
                     // we can make sure it's correct.
-                    if (isset($_REQUEST['amt']) && !empty($_REQUEST['amt']) && isset($_REQUEST['code']) && !empty($_REQUEST['code'])) {
-                        $CORE_LOCAL->set('strRemembered', (100*$_REQUEST['amt']) . $_REQUEST['code']);
+                    $qstr = '';
+                    if ($this->form->tryGet('code') !== '') {
+                        $qstr = '?reginput=' . urlencode((100*$amt) . $this->form->code)
+                            . '&repeat=1';
                     }
-                    $CORE_LOCAL->set('msgrepeat', 1);
 
-                    $bmp = file_get_contents($_REQUEST['bmpfile']);
-                    $format = 'BMP';
-                    $img_content = $bmp;
+                    $bmp = file_get_contents($bmpfile);
+                    $this->saveImage('BMP', $bmp);
+                    unlink($bmpfile);
 
-                    /**
-                      Idea: convert image to PNG if GD functions
-                      are available. It would reduce storage size
-                      but also make printing the image more complicated
-                      since it would need to be converted *back* to
-                      a bitmap. Undecided whether to use this.
-                      Maybe reformatting happens server-side for
-                      long term storage.
-
-                      Update: does not work with GD. That extension
-                      does not understand bitmaps. Same idea may
-                      work with a different library like ImageMagick.
-                    if (function_exists('imagecreatefromstring')) {
-                        $image = imagecreatefromstring($bmp);
-                        if ($image !== false) {
-                            ob_start();
-                            $success = imagepng($image);
-                            $png_content = ob_get_clean();
-                            if ($success) {
-                                $format = 'PNG';
-                                $img_content = $png_content;
-                            }
-                        }
-                    }
-                    */
-
-                    $dbc = Database::tDataConnect();
-                    $capQ = 'INSERT INTO CapturedSignature
-                                (tdate, emp_no, register_no, trans_no,
-                                 trans_id, filetype, filecontents)
-                             VALUES
-                                (?, ?, ?, ?,
-                                 ?, ?, ?)';
-                    $capP = $dbc->prepare_statement($capQ);
-                    Database::getsubtotals();
-                    $args = array(
-                        date('Y-m-d H:i:s'),
-                        $CORE_LOCAL->get('CashierNo'),
-                        $CORE_LOCAL->get('laneno'),
-                        $CORE_LOCAL->get('transno'),
-                        $CORE_LOCAL->get('LastID') + 1,
-                        $format,
-                        $img_content,
-                    );
-                    $capR = $dbc->exec_statement($capP, $args);
-
-                    unlink($_REQUEST['bmpfile']);
-
-                    $this->change_page($this->page_url.'gui-modules/pos2.php');
+                    $this->change_page($this->page_url.'gui-modules/pos2.php' . $qstr);
 
                     return false;
-
-                } else {
-                    UdpComm::udpSend($terminal_msg);
                 }
+                UdpComm::udpSend($terminalMsg);
             }
-        } else {
-            UdpComm::udpSend($terminal_msg);
+        } catch (Exception $ex) {
+            UdpComm::udpSend($terminalMsg);
         }
 
-		return true;
-	}
+        return true;
+    }
 
-	function body_content(){
-		global $CORE_LOCAL;
-		$this->input_header();
-		echo DisplayLib::printheaderb();
-		?>
-		<div class="baseHeight">
-		<?php
+    private function saveImage($format, $imgContent)
+    {
+        $dbc = Database::tDataConnect();
+        $capQ = 'INSERT INTO CapturedSignature
+                    (tdate, emp_no, register_no, trans_no,
+                     trans_id, filetype, filecontents)
+                 VALUES
+                    (?, ?, ?, ?,
+                     ?, ?, ?)';
+        $capP = $dbc->prepare($capQ);
+        Database::getsubtotals();
+        $args = array(
+            date('Y-m-d H:i:s'),
+            $this->session->get('CashierNo'),
+            $this->session->get('laneno'),
+            $this->session->get('transno'),
+            $this->session->get('LastID') + 1,
+            $format,
+            $imgContent,
+        );
+        $capR = $dbc->execute($capP, $args);
+
+        return $capR ? true : false;
+    }
+
+    function body_content()
+    {
+        $this->input_header();
+        echo DisplayLib::printheaderb();
+        ?>
+        <div class="baseHeight">
+        <?php
         echo "<div id=\"boxMsg\" class=\"centeredDisplay\">";
 
         echo "<div class=\"boxMsgAlert coloredArea\">";
-        echo "Waiting for signature";
+        echo _("Waiting for signature");
         echo "</div>";
 
-	    echo "<div class=\"\">";
+        echo "<div class=\"\">";
 
         echo "<div id=\"imgArea\"></div>";
         echo '<div class="textArea">';
-        if (!isset($_REQUEST['amt'])) {
-            $_REQUEST['amt'] = 0.00;
-        }
-        if (!isset($_REQUEST['type'])) {
-            $_REQUEST['type'] = 'Unknown';
-        }
-        if (!isset($_REQUEST['code'])) {
-            $_REQUEST['code'] = '??';
-        }
-        echo '$' . sprintf('%.2f', $_REQUEST['amt']) . ' as ' . $_REQUEST['type'];
+        $amt = $this->form->tryGet('amt', 0.00);
+        $type = $this->form->tryGet('type', 'Unknown');
+        $code = $this->form->tryGet('code', '??');
+        echo '$' . sprintf('%.2f', $amt) . ' as ' . $type;
         echo '<br />';
         echo '<span id="sigInstructions" style="font-size:90%;">';
-        echo '[enter] to get re-request signature, [clear] to cancel';
+        echo _('[enter] to get re-request signature, [clear] to cancel');
         echo '</span>';
-		echo "</div>";
+        echo "</div>";
 
-		echo "</div>"; // empty class
-		echo "</div>"; // #boxMsg
-		echo "</div>"; // .baseHeight
-		echo "<div id=\"footer\">";
-		echo DisplayLib::printfooter();
-		echo "</div>";
+        echo "</div>"; // empty class
+        echo "</div>"; // #boxMsg
+        echo "</div>"; // .baseHeight
+        echo "<div id=\"footer\">";
+        echo DisplayLib::printfooter();
+        echo "</div>";
 
-        $this->add_onload_command("addToForm('amt', '{$_REQUEST['amt']}');\n");
-        $this->add_onload_command("addToForm('type', '{$_REQUEST['type']}');\n");
-        $this->add_onload_command("addToForm('code', '{$_REQUEST['code']}');\n");
-		
-		$CORE_LOCAL->set("boxMsg",'');
-		$CORE_LOCAL->set("msgrepeat",2);
-	} // END body_content() FUNCTION
+        $this->add_onload_command("addToForm('amt', '{$amt}');\n");
+        $this->add_onload_command("addToForm('type', '{$type}');\n");
+        $this->add_onload_command("addToForm('code', '{$code}');\n");
+        
+        $this->session->set("boxMsg",'');
+    } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new SigCapturePage();
+AutoLoader::dispatch();
 
-?>
+/**
+  Idea: convert image to PNG if GD functions
+  are available. It would reduce storage size
+  but also make printing the image more complicated
+  since it would need to be converted *back* to
+  a bitmap. Undecided whether to use this.
+  Maybe reformatting happens server-side for
+  long term storage.
+
+  Update: does not work with GD. That extension
+  does not understand bitmaps. Same idea may
+  work with a different library like ImageMagick.
+if (function_exists('imagecreatefromstring')) {
+    $image = imagecreatefromstring($bmp);
+    if ($image !== false) {
+        ob_start();
+        $success = imagepng($image);
+        $pngContent = ob_get_clean();
+        if ($success) {
+            $format = 'PNG';
+            $imgContent = $pngContent;
+        }
+    }
+}
+*/
+

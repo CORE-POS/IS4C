@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptBuilding\TenderReports\TenderReport;
+use \CoreLocal;
+
 /**
   @class AnyTenderReportRequest
   requestInfo callback for printing
@@ -36,7 +41,6 @@ class AnyTenderReportRequest
 
     static public function requestInfoCallback($info)
     {
-        global $CORE_LOCAL;
         if ($info === '' || strtoupper($info) == 'CL') {
             // clear/blank => go back to adminlist
             return MiscLib::base_url.'gui-modules/adminlist.php';
@@ -46,10 +50,10 @@ class AnyTenderReportRequest
         } else {
             // change employee setting to desired,
             // print report, change back
-            $my_emp_no = $CORE_LOCAL->get('CashierNo');
-            $CORE_LOCAL->set('CashierNo', $info);    
+            $my_emp_no = CoreLocal::get('CashierNo');
+            CoreLocal::set('CashierNo', $info);    
             TenderReport::printReport();
-            $CORE_LOCAL->set('CashierNo', $my_emp_no);
+            CoreLocal::set('CashierNo', $my_emp_no);
             return true;
         }
     }

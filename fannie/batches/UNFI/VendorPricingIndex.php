@@ -3,14 +3,14 @@
 
     Copyright 2009,2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -33,11 +33,16 @@ class VendorPricingIndex extends FanniePage {
 
     public $description = '[Vendor Pricing Menu] lists tools for managing vendor
     cost information and making price changes when costs change.';
+    public $themed = true;
 
     function body_content(){
         ob_start();
         ?>
-        <table cellspacing=0 cellpadding=3 border=1>
+        <table class="table">
+        <tr>
+            <td><a href="../../item/vendors/">Manage Vendors<a></td>
+            <td>Tools to create and edit vendors</td>
+        </tr>
         <tr>
             <td><a href=RecalculateVendorSRPs.php>Recalculate SRPs</a></td>
             <td>Re-compute SRPs for the vendor price change page based on
@@ -55,9 +60,49 @@ class VendorPricingIndex extends FanniePage {
         <?php
         return ob_get_clean();
     }
+    
+    public function helpContent()
+    {
+        return '
+            <p>These tools are for managing prices based on vendor item costs 
+            and store margin targets
+            </p>
+            <p>
+            To create price change batches, the following pre-requites must be
+            fulfilled:
+            <ul>
+                <li>Products the store sells must be assigned to a vendor</li>
+                <li>The vendor\'s catalog must be in the system with unit costs
+                    and SRPs</li>
+                <li>Margin tagets must be entered for POS departments and/or
+                    the vendor\'s subcategories</li>
+            </ul>
+            </p>
+            <p>
+            SRPs (standard retail prices) are critical to this tool set as it
+            chiefly compares current prices to SRPs. These SRPs come from one of
+            two places:
+            <ul>
+                <li>If you specify a column of SRPs when importing a vendor catalog,
+                    those values will be used.</li>
+                <li>If you did not specify a column or SRPs <strong>or</strong> you
+                    wish to replace those SRPs with values based on margin targets, use
+                    the <em>Recalculate SRPs</em> tool. Read the Help text on that tool
+                    for details on the exact calculations.</li>
+            </ul>
+            </p>
+            <p>
+            When all prerequisites are fulfilled, use <em>Create Price Change Batch</em>
+            to compare pricing and create price change batches.
+            </p>
+            ';
+    }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

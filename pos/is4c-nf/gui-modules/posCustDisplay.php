@@ -20,44 +20,57 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- 
+
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class posCustDisplay extends BasicPage 
+class posCustDisplay extends BasicCorePage
 {
+    protected $title = "COREPOS Customer Display";
+    protected $hardware_polling = false;
 
-	public function body_content()
+    public function body_content()
     {
-		global $CORE_LOCAL;
         echo $this->noinput_header();
-		?>
-		<div class="baseHeight">
-		<?php
+        ?>
+        <div class="baseHeight">
+        <?php
 
-		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
-			echo DisplayLib::printheaderb();
-			echo "<div class=\"centerOffset\">";
-			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
-			echo "</div>";
-		} else {	
-			// No input and no messages, so
-			// list the items
-			if ($CORE_LOCAL->get("End") == 1) {
-				echo DisplayLib::printReceiptfooter(true);
-			} else {
-				echo DisplayLib::lastpage(true);
-            }
-		}
-		echo "</div>"; // end base height
+        if ($this->session->get("plainmsg") && strlen($this->session->get("plainmsg")) > 0) {
+            echo DisplayLib::printheaderb();
+            echo "<div class=\"centerOffset\">";
+            echo DisplayLib::plainmsg($this->session->get("plainmsg"));
+            echo "</div>";
+        } else {
+            // No input and no messages, so
+            // list the items
+            echo ($this->session->get("End") == 1) ? DisplayLib::printReceiptfooter(true) : DisplayLib::lastpage(true);
+        }
+        echo "</div>"; // end base height
 
-		echo "<div id=\"footer\">";
-		echo DisplayLib::printfooter(true);
+        echo "<div id=\"footer\">";
+        echo DisplayLib::printfooter(true);
         echo '</div>';
 
-	} // END body_content() FUNCTION
+    } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->session->set('plainmsg', 'foo');
+        $this->body_content();
+        $body = ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($body));
+        ob_start();
+        $this->session->set('plainmsg', '');
+        $this->session->set('End', 1);
+        $this->body_content();
+        $body = ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($body));
+        $this->session->set('End', 0);
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	new posCustDisplay();
-}
+AutoLoader::dispatch();
 

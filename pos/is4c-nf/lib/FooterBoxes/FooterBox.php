@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+
 /**
   @class FooterBox
   Base class for displaying footer
@@ -31,7 +34,6 @@
 */
 class FooterBox 
 {
-
     /**
       CSS here will be applied (in-line) to the
       header content. If you define a different
@@ -46,6 +48,13 @@ class FooterBox
     */
     public $display_css = '';
     public $display_css_class = '';
+
+    protected $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
 
     /**
       Define the header for this box
@@ -63,6 +72,29 @@ class FooterBox
     public function display_content()
     {
         return "";
+    }
+
+    private static $builtin = array(
+        'EveryoneSales',
+        'FooterBox',
+        'MemSales',
+        'MultiTotal',
+        'PatronagePts',
+        'SavedOrCouldHave',
+        'TotalSavingFooter',
+        'TransPercentDiscount',
+    );
+
+    public static function factory($class)
+    {
+        if ($class != '' && in_array($class, self::$builtin)) {
+            $class = 'COREPOS\\pos\\lib\FooterBoxes\\' . $class;
+            return new $class(new WrappedStorage());
+        } elseif ($class != '' && class_exists($class)) {
+            return new $class(new WrappedStorage());
+        }
+
+        return new COREPOS\pos\lib\FooterBoxes\FooterBox(new WrappedStorage());
     }
 }
 

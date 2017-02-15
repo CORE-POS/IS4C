@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -29,6 +29,8 @@ if (!class_exists('FannieAPI')) {
 class HourlyCustomersReport extends FannieReportPage 
 {
     public $description = '[Hourly Customers] lists number of customers per hour for a given day.';
+    public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $header = "Customers per Hour";
     protected $title = "Fannie : Customers per Hour";
@@ -41,51 +43,77 @@ class HourlyCustomersReport extends FannieReportPage
     {
         ob_start();
         ?>
-<form method=get action=<?php echo $_SERVER["PHP_SELF"]; ?> >
-Get transactions per hour for what date (YYYY-MM-DD)?<br />
-<input type=text name=date id="date" />&nbsp;
-<input type=submit value=Generate />
+<form method=get action="<?php echo $_SERVER["PHP_SELF"]; ?>" >
+<div class="well">Get transactions per hour for what date (YYYY-MM-DD)?</div>
+<input type=text name=date id="date" required
+    class="form-control date-field" placeholder="Date" />
+<p>
+<button type=submit class="btn btn-default">Generate</button>
+</p>
 </form>
-<script type="text/javascript">
-$(document).ready(function() { $('#date').datepicker(); });
-</script>
         <?php
+
         return ob_get_clean();
     }
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date = FormLib::get_form_value('date', date('Y-m-d'));
+        $date = $this->form->date;
         $dlog = DTransactionsModel::selectDlog($date);
 
         $hour = $dbc->hour('tdate');
-        $q = $dbc->prepare_statement("select $hour as hour,
+        $query = $dbc->prepare("select $hour as hour,
             count(distinct trans_num)
             from $dlog where
             tdate BETWEEN ? AND ?
             group by $hour
             order by $hour");
-        $r = $dbc->exec_statement($q,array($date.' 00:00:00',$date.' 23:59:59'));
+        $res = $dbc->execute($query,array($date.' 00:00:00',$date.' 23:59:59'));
 
         $data = array();
-        while($row = $dbc->fetch_array($r)){
-            $hour = $row[0];
-            if ($hour > 12) {
-                $hour -= 12;
-            }
-            $record = array();
-            $record[] = $hour . ($row[0] < 12 ? ':00 am' : ':00 pm');
-            $record[] = $row[1];
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $hour = $row[0];
+        if ($hour > 12) {
+            $hour -= 12;
+        }
+        $record = array();
+        $record[] = $hour . ($row[0] < 12 ? ':00 am' : ':00 pm');
+        $record[] = $row[1];
+
+        return $record;
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report shows hourly transactions over a range of dates.
+            The rows are always hours. The columns are either calendar
+            dates or named weekdays (e.g., Monday, Tuesday) if grouping
+            by week day.</p>
+            <p>If a <em>Buyer/Dept</em> option is used, the result will
+            be transactions from that super department. Otherwise, the result
+            will be transactions from the specified department range. Note there
+            are a couple special options in the <em>Buyer/Dept</em> list:
+            <em>All</em> is simply all sales and <em>All Retail</em> is
+            everything except for super department #0 (zero).</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(13, 1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

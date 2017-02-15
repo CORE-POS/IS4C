@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,38 +68,65 @@ class NewMemberTool extends FanniePage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         // inner join so that only types
         // with defaults set up are shown
-        $q = $dbc->prepare_statement("SELECT m.memtype,m.memDesc 
+        $q = $dbc->prepare("SELECT m.memtype,m.memDesc 
             FROM memtype AS m ORDER BY m.memtype");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         $opts = "";
         while($w = $dbc->fetch_row($r)) {
-            $opts .= sprintf("<option value=%d>%s</option>",
+            $opts .= sprintf("<option %s value=%d>%s</option>",
+                ($w['memtype'] == 1 ? 'selected' : ''),
                 $w['memtype'],$w['memDesc']);
         }
 
         $ret = '';
         if (!empty($this->errors)) {
-            $ret .= '<blockquote style="border: solid 1px red; padding: 5px;
-                    margin: 5px;">';
+            $ret .= '<div class="alert alert-danger well">';
             $ret .= $this->errors;
-            $ret .= '</blockquote><br />';
+            $ret .= '</div><br />';
         }
 
-        $ret .= "<b>Create New Members</b><br />";
-        $ret .= '<form action="NewMemberTool.php" method="get">';
-        $ret .= '<b>Type</b>: <select name="memtype">'.$opts.'</select>';
-        $ret .= '<br /><br />';
-        $ret .= '<b>How Many</b>: <input size="4" type="text" name="num" value="40" />';
-        $ret .= '<br /><br />';
-        $ret .= '<b>Name</b>: <input type="text" name="name" value="NEW MEMBER" />';
-        $ret .= '<br /><br />';
-        $ret .= '<input type="checkbox" onclick="$(\'#sdiv\').toggle();$(\'#start\').val(\'\');" /> Specify first number';
-        $ret .= '<div id="sdiv" style="display:none;">';
-        $ret .= '<b>Start</b>: <input type="text" size="5" name="start" id="start" />';
-        $ret .= '</div>';
-        $ret .= '<br /><br />';
-        $ret .= '<input type="submit" name="createMems" value="Create Members" />';
-        $ret .= '</form>';
+        ob_start();
+        ?>
+        <form action="NewMemberTool.php" method="get" class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-2">Type</label>
+            <div class="col-sm-4">
+                <select name="memtype" class="form-control">
+                <?php echo $opts; ?>
+                </select>
+            </div> 
+        </div> 
+        <div class="form-group">
+            <label class="col-sm-2">How Many</label>
+            <div class="col-sm-4">
+                <input type="number" name="num" value="40" class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2">Name</label>
+            <div class="col-sm-4">
+                <input type="text" name="name" value="NEW MEMBER" class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-5">
+                <input type="checkbox" onclick="$('#sdiv').toggle();$('#start').val('')" />
+                Specify First Number
+            </label>
+        </div>
+        <div id="sdiv" class="collapse row">
+            <label class="col-sm-2">First Number</label>
+            <div class="col-sm-4">
+                <input type="number" name="start" id="start" class="form-control" value="" />
+            </div>
+        </div>
+        <p>
+            <button type="submit" name="createMems" value="Create Members"
+                class="btn btn-default">Create Members</button>
+        </p>
+        </form>
+        <?php
+        $ret .= ob_get_clean();
     
         return $ret;
     }
@@ -116,6 +143,61 @@ class NewMemberTool extends FanniePage
         if (!is_numeric($manual_start)) {
             $manual_start = false;
         }
+
+        $mt = $dbc->tableDefinition('memtype');
+        $defaultsQ = $dbc->prepare("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
+        if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
+            $defaultsQ = $dbc->prepare("SELECT cd_type as custdataType,discount,staff,SSI as ssi
+                    FROM memdefaults WHERE memtype=?");
+        }
+        $defaultsR = $dbc->execute($defaultsQ,array($mtype));
+        $defaults = $dbc->fetch_row($defaultsR);
+
+        /**
+          1Jul2015
+          Use FannieREST API calls to create new members
+          Not tested yet.
+        $json = array(
+            'customerTypeID' => $mtype,
+            'memberStatus' => $mt['custdataType'],
+            'addressFirstLine' => '',
+            'addressSecondLine' => '',
+            'city' => '',
+            'state' => '',
+            'zip' => '',
+            'contactAllowed' => 1,
+            'contactMethod' => 'mail',
+            'customers' => array(
+                array(
+                    'firstName' => '',
+                    'lastName' => $name,
+                    'phone' => '',
+                    'altPhone' => '',
+                    'email' => 1,
+                    'discount' => $mt['discount'],
+                    'staff' => $mt['staff'],
+                    'lowIncomeBenefits' => $mt['ssi'],
+                ),
+            ),
+        );
+
+        $start = PHP_INT_MAX;
+        $end = 0;
+        for ($i=0; $i<$num; $i++) {
+            if ($manual_start) {
+                $resp = \COREPOS\Fannie\API\member\MemberREST::post($manual_start+$i, $json);
+            } else {
+                $resp = \COREPOS\Fannie\API\member\MemberREST::post(0, $json);
+            }
+
+            if (isset($resp['account']) && $resp['account']['cardNo'] > $end) {
+                $end = $resp['account']['cardNo'];
+            }
+            if (isset($resp['account']) && $resp['account']['cardNo'] < $start) {
+                $start = $resp['account']['cardNo'];
+            }
+        }
+        */
 
         /* going to create memberships
            part of the insert arrays can
@@ -135,21 +217,12 @@ class NewMemberTool extends FanniePage
             'ads_OK'=>1
         );
 
-        $mt = $dbc->tableDefinition('memtype');
-        $defaultsQ = $dbc->prepare_statement("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
-        if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
-            $defaultsQ = $dbc->prepare_statement("SELECT cd_type as custdataType,discount,staff,SSI as ssi
-                    FROM memdefaults WHERE memtype=?");
-        }
-        $defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));
-        $defaults = $dbc->fetch_row($defaultsR);
-
         /* everything's set but the actual member #s */
-        $numQ = $dbc->prepare_statement("SELECT MAX(CardNo) FROM custdata");
+        $numQ = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
         if ($FANNIE_SERVER_DBMS == 'MSSQL') {
-            $numQ = $dbc->prepare_statement("SELECT MAX(CAST(CardNo AS int)) FROM custdata");
+            $numQ = $dbc->prepare("SELECT MAX(CAST(CardNo AS int)) FROM custdata");
         }
-        $numR = $dbc->exec_statement($numQ);
+        $numR = $dbc->execute($numQ);
         $start = 1;
         if ($dbc->num_rows($numR) > 0) {
             $numW = $dbc->fetch_row($numR);
@@ -179,13 +252,14 @@ class NewMemberTool extends FanniePage
         $model->staff($defaults['staff']);
         $model->SSI($defaults['ssi']);
         $model->memType($mtype);
+        $meminfo = new MeminfoModel($dbc);
 
-        $chkP = $dbc->prepare_statement('SELECT CardNo FROM custdata WHERE CardNo=?');
-        $mdP = $dbc->prepare_statement("INSERT INTO memDates VALUES (?,NULL,NULL)");
-        $mcP = $dbc->prepare_statement("INSERT INTO memContact (card_no,pref) VALUES (?,1)");
+        $chkP = $dbc->prepare('SELECT CardNo FROM custdata WHERE CardNo=?');
+        $mdP = $dbc->prepare("INSERT INTO memDates VALUES (?,NULL,NULL)");
+        $mcP = $dbc->prepare("INSERT INTO memContact (card_no,pref) VALUES (?,1)");
         for($i=$start; $i<=$end; $i++) {
             // skip if record already exists
-            $chkR = $dbc->exec_statement($chkP,array($i));
+            $chkR = $dbc->execute($chkP,array($i));
             if ($dbc->num_rows($chkR) > 0) {
                 continue;
             }
@@ -193,14 +267,32 @@ class NewMemberTool extends FanniePage
             $model->CardNo($i);
             $model->blueLine($i.' '.$name);
             $model->save();
-            MeminfoModel::update($i, array());
-            $dbc->exec_statement($mdP, array($i));
-            $dbc->exec_statement($mcP, array($i));
+            $meminfo->card_no($i);
+            $meminfo->save();
+
+            $dbc->execute($mdP, array($i));
+            $dbc->execute($mcP, array($i));
         }
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Create a set of new member accounts. Typically
+            accounts are created ahead of time so there are always
+            several available, un-assigned accounts. When a person
+            signs up for a membership, they are given one of the 
+            available account numbers. This approach ensures that 
+            first transaction is assigned to the correct membership.</p>
+            ';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

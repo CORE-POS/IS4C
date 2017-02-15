@@ -22,8 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'/classlib2.0/FannieAPI.php');
+}
 if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
 }
@@ -44,15 +45,17 @@ class PIDocumentsPage extends PIKillerPage {
         echo '<tr><td>';
 
         echo '<iframe width="90%" height="300"
-            src="/cgi-bin/docfile/index.cgi?memID='.$this->id.'"
+            src="http://key:8888/cgi-bin/docfile/index.cgi?memID='.$this->id.'"
             style="border: 0px;">
         </iframe>';
 
         echo '</td></tr>';
+        echo '<tr><td style="padding-left: 20px;">
+            <button type="button" onclick="window.location=\'PISignaturePage.php?id=' . $this->id . '\';">Sign</button>
+            </td></tr>';
         return ob_get_clean();
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

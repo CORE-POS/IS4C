@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,29 +21,107 @@
 
 *********************************************************************************/
 
-class Signage16UpP extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage 
 {
-    protected $BIG_FONT = 18;
+    protected $BIG_FONT = 30;
     protected $MED_FONT = 14;
     protected $SMALL_FONT = 10;
+    protected $SMALLER_FONT = 8;
+    protected $SMALLEST_FONT = 5;
+
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
+    protected $width = 53.975;
+    protected $height = 69.35;
+    protected $top = 15;
+    protected $left = 5.175;
+
+    protected function createPDF()
+    {
+        $pdf = new \FPDF('P', 'mm', 'Letter');
+        $pdf->SetMargins(0, 3.175, 0);
+        $pdf->SetAutoPageBreak(false);
+        $pdf = $this->loadPluginFonts($pdf);
+        $pdf->SetFont($this->font, '', 16);
+
+        return $pdf;
+    }
+
+    protected function drawItem($pdf, $item, $row, $column)
+    {
+        $effective_width = $this->width - (2*$this->left);
+
+        $price = $this->printablePrice($item);
+
+        $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height)+6);
+        $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
+        $pdf = $this->fitText($pdf, $this->SMALL_FONT, 
+            strtoupper($item['brand']), array($column, 6, 1));
+
+        $pdf->SetFont($this->font, '', $this->MED_FONT);
+        $pdf = $this->fitText($pdf, $this->MED_FONT, 
+            $item['description'], array($column, 6, 2));
+
+        $pdf->SetX($this->left + ($this->width*$column));
+        $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
+        $item['size'] = $this->formatSize($item['size'], $item);
+        $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
+
+        $pdf->Ln(4);
+        $pdf->SetFont($this->font, '', $this->BIG_FONT);
+        $font_shrink = 0;
+        while (true) {
+            $pdf->SetX($this->left + ($this->width*$column));
+            $y = $pdf->GetY();
+            $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
+            if ($pdf->GetY() - $y > 8) {
+                $pdf->SetFillColor(0xff, 0xff, 0xff);
+                $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
+                $font_shrink++;
+                if ($font_shrink >= $this->BIG_FONT) {
+                    break;
+                }
+                $pdf->SetFontSize($this->BIG_FONT - $font_shrink);
+                $pdf->SetXY($this->left + ($this->width*$column), $y);
+            } else {
+                break;
+            }
+        }
+
+        if ($item['startDate'] != '' && $item['endDate'] != '') {
+            // intl would be nice
+            $datestr = $this->getDateString($item['startDate'], $item['endDate']);
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 10));
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');
+        }
+
+        if ($item['originShortName'] != '' || isset($item['nonSalePrice'])) {
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 10));
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+            $pdf->Cell($effective_width, 6, $text, 0, 1, 'L');
+        }
+
+        return $pdf;
+    }
 
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
-        $pdf->SetMargins(0, 3.175, 0);
-        $pdf->SetAutoPageBreak(false);
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->SetFont('Gill', '', 16);
+        $pdf = $this->createPDF();
 
         $data = $this->loadItems();
         $count = 0;
         $sign = 0;
-        $width = 53.975;
-        $height = 66.68;
-        $top = 15;
-        $left = 5.175;
-        $effective_width = $width - (2*$left);
+        $this->height = 69.35;
+        $this->top = 15;
+        $this->left = 5.175;
+        $effective_width = $this->width - (2*$this->left);
         foreach ($data as $item) {
+            $item = $this->decodeItem($item);
             if ($count % 16 == 0) {
                 $pdf->AddPage();
                 $sign = 0;
@@ -52,34 +130,7 @@ class Signage16UpP extends FannieSignage
             $row = floor($sign / 4);
             $column = $sign % 4;
 
-            $price = sprintf('$%.2f', $item['normal_price']);
-            if ($item['scale']) {
-                $price .= ' / lb';
-            }
-
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
-            $pdf->SetFontSize($this->SMALL_FONT);
-            $pdf->MultiCell($effective_width, 6, $item['brand'], 0, 'C');
-            $pdf->SetX($left + ($width*$column));
-            $pdf->SetFontSize($this->MED_FONT);
-            $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
-            $pdf->SetX($left + ($width*$column));
-            $pdf->SetFontSize($this->BIG_FONT);
-            $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
-
-            if ($item['startDate'] != '' && $item['endDate'] != '') {
-                // intl would be nice
-                $datestr = _('Thru') . ' ' . date('n/j/y', strtotime($item['endDate'])) . '  '; // margin padding
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
-                $pdf->SetFontSize($this->SMALL_FONT);
-                $pdf->Cell($effective_width, 6, $datestr, 0, 1, 'R');
-            }
-
-            if ($item['originShortName'] != '') {
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
-                $pdf->SetFontSize($this->SMALL_FONT);
-                $pdf->Cell($effective_width, 6, $item['originShortName'], 0, 1, 'L');
-            }
+            $pdf = $this->drawItem($pdf, $item, $row, $column);
 
             $count++;
             $sign++;
@@ -87,5 +138,7 @@ class Signage16UpP extends FannieSignage
 
         $pdf->Output('Signage16UpP.pdf', 'I');
     }
+}
+
 }
 

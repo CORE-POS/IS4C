@@ -33,14 +33,19 @@ class MemPurchasesPage extends FannieRESTfulPage
     protected $header = 'Member Purchase History';
 
     public $description = '[Member Purchases] lists all of a given member\'s transactions.';
+    public $themed = true;
 
     protected function get_id_handler()
     {
         $this->card_no = $this->id;
 
-        $my = FormLib::get_form_value('my',date('Ym'));
-        $start = date("Y-m-d",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
-        $end = date("Y-m-t",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
+        try {
+            $monthYear = $this->form->my;
+        } catch (Exception $ex) {
+            $monthYear = date('Ym');
+        }
+        $start = date("Y-m-d",mktime(0,0,0,substr($monthYear,4),1,substr($monthYear,0,4)));
+        $end = date("Y-m-t",mktime(0,0,0,substr($monthYear,4),1,substr($monthYear,0,4)));
 
         $this->__models['start'] = $start;
         $this->__models['end'] = $end;
@@ -50,11 +55,12 @@ class MemPurchasesPage extends FannieRESTfulPage
 
     protected function get_id_view()
     {
-        global $FANNIE_TRANS_DB,$FANNIE_URL;
+        $URL = $this->config->get('URL');
         $table = DTransactionsModel::selectDlog($this->__models['start'],$this->__models['end']);
-        $my = date('Ym',strtotime($this->__models['start']));
+        $monthYear = date('Ym',strtotime($this->__models['start']));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
 
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
         $query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
             sum(case when trans_type='T' then -total else 0 end) as tenderTotal
             FROM $table as t
@@ -63,24 +69,25 @@ class MemPurchasesPage extends FannieRESTfulPage
             GROUP BY year(tdate),month(tdate),day(tdate),trans_num
             ORDER BY year(tdate) DESC, month(tdate) DESC,
             day(tdate) DESC";
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, 
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, 
             array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59'));
 
         ob_start();
 
         echo "<form action=\"MemPurchasesPage.php\" id=myform method=get>";
         echo "<input type=hidden name=id value=\"".$this->id."\" />";
-        $ts = time();
-        echo "<select name=my onchange=\"\$('#myform').submit();\">";
+        $tstamp = time();
+        echo '<div class="form-group">';
+        echo "<select class=\"form-control\" name=my onchange=\"\$('#myform').submit();\">";
         $count = 0;
         while(true) {
-            $val = date("Ym",$ts);
+            $val = date("Ym",$tstamp);
             printf("<option value=\"%d\" %s>%s %d</option>",
-                $val,($val==$my?"selected":""),
-                date("F",$ts),date("Y",$ts));
+                $val,($val==$monthYear?"selected":""),
+                date("F",$tstamp),date("Y",$tstamp));
 
-            $ts = mktime(0,0,0,date("n",$ts)-1,1,date("Y",$ts));
+            $tstamp = mktime(0,0,0,date("n",$tstamp)-1,1,date("Y",$tstamp));
 
             // cuts off at 5 years
             if ($count++ > 60) {
@@ -88,14 +95,15 @@ class MemPurchasesPage extends FannieRESTfulPage
             }
         }
         echo "</select>";
+        echo '</div>';
 
         $visits = 0;
         $spending = 0.0;
-        echo "<table cellspacing=0 cellpadding=4 border=1 style=\"font-weight:bold;\">";
+        echo "<table class=\"table table-bordered\">";
         while($row = $dbc->fetch_row($result)) {
             echo "<tr>";
             printf("<td>%d/%d/%d</td>",$row[0],$row[1],$row[2]);
-            printf("<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
+            printf("<td><a href=\"{$URL}admin/LookupReceipt/RenderReceiptPage.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
                 $row[3],$row[0],$row[1],$row[2],$row[3]);
             printf("<td>\$%.2f</td>",$row[4]);
             echo "</tr>";
@@ -103,12 +111,40 @@ class MemPurchasesPage extends FannieRESTfulPage
             $visits += 1;
         }
         echo "</table>";
+        echo '<p>';
         printf("<b>Visits</b>: %d<br /><b>Spending</b>: \$%.2f
             <br /><b>Avg</b>: \$%.2f",
             $visits,$spending,
             ($visits > 0 ? $spending/$visits : 0));
+        echo '</p>';
 
         return ob_get_clean();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->_method = 'get';
+        $form->id = 1;
+        $this->setForm($form);
+        $this->readRoutes();
+
+        $phpunit->assertEquals(true, $this->get_id_handler());
+        $page = $this->get_id_view();
+        $phpunit->assertNotEquals(0, strlen($page));
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report displays purchases for the given member
+            in a given month. The default is the current month.
+            Use the drop down menu to select other months.
+            </p>
+            <p>
+            Click receipt number links to see detail from
+            individual transactions.
+            </p>';
     }
 
 }

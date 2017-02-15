@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,7 @@ class EquityAllReport extends FannieReportPage
 {
     public $description = '[Equity Balances] lists current or near-current equity totals for all members';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $report_headers = array('Mem #', 'Last Name', 'First Name', 'Equity', 'Due Date');
     protected $title = "Fannie : All Equity Report";
@@ -38,14 +39,13 @@ class EquityAllReport extends FannieReportPage
 
     public function readinessCheck()
     {
-        global $FANNIE_TRANS_DB;
-        return $this->tableExistsReadinessCheck($FANNIE_TRANS_DB, 'equity_live_balance');
+        return $this->tableExistsReadinessCheck($this->config->get('TRANS_DB'), 'equity_live_balance');
     }
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $type_restrict = "c.Type IN ('PC')";
         if (FormLib::get('memtypes', 1) == 2) {
@@ -65,33 +65,39 @@ class EquityAllReport extends FannieReportPage
             $num = 'n.memnum';
         }
 
-        $q = "SELECT $num as memnum,c.LastName,c.FirstName,n.payments,m.end_date
+        $query = "SELECT $num as memnum,c.LastName,c.FirstName,n.payments,m.end_date
             FROM custdata AS c LEFT JOIN "
-            . $FANNIE_TRANS_DB . $dbc->sep() . $table . " as n ON
+            . $this->config->get('TRANS_DB') . $dbc->sep() . $table . " as n ON
             $num=c.CardNo AND c.personNum=1
             LEFT JOIN memDates as m ON $num=m.card_no
             WHERE $type_restrict AND $equity_restrict
             ORDER BY $num";
 
-        $p = $dbc->prepare_statement($q);
+        $prep = $dbc->prepare($query);
 
-        $r = $dbc->exec_statement($p);
+        $res = $dbc->execute($prep);
         $data = array();
-        while($w = $dbc->fetch_row($r)) {
-            $record = array();
-            if (FormLib::get('excel') === '') {
-                $record[] = sprintf('<a href="%s%d">%d</a>',$FANNIE_URL."reports/Equity/index.php?memNum=",$w['memnum'],$w['memnum']);
-            } else {
-                $record[] = $w['memnum'];
-            }
-            $record[] = $w['LastName'];
-            $record[] = $w['FirstName'];
-            $record[] = sprintf('%.2f',$w['payments']);
-            $record[] = $w['end_date'];
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array();
+        if (FormLib::get('excel') === '') {
+            $record[] = sprintf('<a href="%s%d">%d</a>',$this->config->get('URL')."reports/Equity/index.php?memNum=",$row['memnum'],$row['memnum']);
+        } else {
+            $record[] = $row['memnum'];
+        }
+        $record[] = $row['LastName'];
+        $record[] = $row['FirstName'];
+        $record[] = sprintf('%.2f',$row['payments']);
+        $record[] = $row['end_date'];
+
+        return $record;
     }
 
     public function form_content()
@@ -99,34 +105,53 @@ class EquityAllReport extends FannieReportPage
         ob_start();
         ?>
 <form action="EquityAllReport.php" method="get">
-<b>Active status</b>:
-<select name="memtypes">
-    <option value=1><?php echo _('Active Owners'); ?></option>
-    <option value=2><?php echo _('Non-termed Owners'); ?></option>
-    <option value=3><?php echo _('All Owners'); ?></option>
-</select>
-<br /><br />
-<b>Equity balance</b>:
-<select name="owed">
-    <option value=1>Any balance</option>
-    <option value=2>less than $100</option>
-</select>
-<br /><br />
-<b>As of</b>:
-<select name="grain">
-    <option value=1>Yesterday</option>
-    <option value=2>Right this Second (slower)</option>
-</select>
-<br /><br />
-<input type="submit" name="submit" value="Get Report" />
+<div class="form-group">
+    <label>Active status</label>
+    <select name="memtypes" class="form-control">
+        <option value=1><?php echo _('Active Owners'); ?></option>
+        <option value=2><?php echo _('Non-termed Owners'); ?></option>
+        <option value=3><?php echo _('All Owners'); ?></option>
+    </select>
+</div>
+<div class="form-group">
+    <label>Equity balance</label>
+    <select name="owed" class="form-control">
+        <option value=1>Any balance</option>
+        <option value=2>less than $100</option>
+    </select>
+</div>
+<div class="form-group">
+    <label>As of</label>
+    <select name="grain" class="form-control">
+        <option value=1>Yesterday</option>
+        <option value=2>Right this Second (slower)</option>
+    </select>
+</div>
+<p>
+    <button type="submit" name="submit" value="1" 
+        class="btn btn-default">Submit</button>
+</p>
 </form>
         <?php
         return ob_get_clean();
 
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            List equity balances for members or a subset of members.
+            Pulling live data is a bit slower than pulling
+            as-of-yesterday data.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('memnum'=>1, 'LastName'=>'test', 'FirstName'=>'test', 'payments'=>100, 'end_date'=>'2000-01-01');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

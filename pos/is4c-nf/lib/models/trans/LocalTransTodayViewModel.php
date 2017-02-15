@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
-if (!class_exists('LocalTransModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+/*
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
+*/
 
 /**
   @class LocalTransTodayViewModel
 */
-class LocalTransTodayViewModel extends LocalTransModel
+class LocalTransTodayViewModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
 {
 
     protected $name = "localtranstoday";
@@ -39,7 +44,10 @@ class LocalTransTodayViewModel extends LocalTransModel
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+    public function doc()
+    {
+        return '';
+    }
+
 }
 

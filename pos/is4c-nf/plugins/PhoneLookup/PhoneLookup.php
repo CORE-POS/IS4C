@@ -21,19 +21,13 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class PhoneLookup extends Plugin {
 
-	public $plugin_settings = "";
+    public $plugin_settings = "";
 
-	public $plugin_description = 'Use phone numbers to lookup members.  Extends current 
-		options of member number and last name.';
-
-	public function plugin_enable(){
-
-	}
-
-	public function plugin_disable(){
-
-	}
-
+    public $plugin_description = 'Use phone numbers to lookup members.  Extends current 
+        options of member number and last name.';
 }
+

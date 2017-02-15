@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class HouseCouponItemsModel
 */
@@ -34,54 +37,16 @@ class HouseCouponItemsModel extends BasicModel
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'type' => array('type'=>'VARCHAR(15)'),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function coupID()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["coupID"])) {
-                return $this->instance["coupID"];
-            } elseif(isset($this->columns["coupID"]["default"])) {
-                return $this->columns["coupID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["coupID"] = func_get_arg(0);
-        }
+        return '
+Use:
+WFC runs custom barcoded coupons with
+upc prefix 499999. See houseCoupons for
+more detail. Type here should be \'QUALIFIER\',
+\'DISCOUNT\', or \'BOTH\'.
+        ';
     }
-
-    public function upc()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["upc"])) {
-                return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
-                return $this->columns["upc"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["upc"] = func_get_arg(0);
-        }
-    }
-
-    public function type()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["type"])) {
-                return $this->instance["type"];
-            } elseif(isset($this->columns["type"]["default"])) {
-                return $this->columns["type"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["type"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
-

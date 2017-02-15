@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class HouseVirtualCouponsModel
 */
@@ -36,84 +39,16 @@ class HouseVirtualCouponsModel extends BasicModel
     'description' => array('type'=>'VARCHAR(100)'),
     'start_date' => array('type'=>'DATETIME'),
     'end_date' => array('type'=>'DATETIME'),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function card_no()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["card_no"] = func_get_arg(0);
-        }
+        return '
+Use:
+Assign house coupons to members so
+they can be applied without scanning
+a barcode
+        ';
     }
-
-    public function coupID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["coupID"])) {
-                return $this->instance["coupID"];
-            } elseif(isset($this->columns["coupID"]["default"])) {
-                return $this->columns["coupID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["coupID"] = func_get_arg(0);
-        }
-    }
-
-    public function description()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["description"])) {
-                return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
-                return $this->columns["description"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["description"] = func_get_arg(0);
-        }
-    }
-
-    public function start_date()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["start_date"])) {
-                return $this->instance["start_date"];
-            } elseif(isset($this->columns["start_date"]["default"])) {
-                return $this->columns["start_date"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["start_date"] = func_get_arg(0);
-        }
-    }
-
-    public function end_date()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["end_date"])) {
-                return $this->instance["end_date"];
-            } elseif(isset($this->columns["end_date"]["default"])) {
-                return $this->columns["end_date"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["end_date"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

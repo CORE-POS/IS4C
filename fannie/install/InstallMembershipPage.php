@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -22,16 +22,22 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
-include('../config.php'); 
-include('util.php');
-include('db.php');
-include_once('../classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php'); 
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
+if (!function_exists('confset')) {
+    include(dirname(__FILE__) . '/util.php');
+}
+if (!function_exists('dropDeprecatedStructure')) {
+    include(dirname(__FILE__) . '/db.php');
+}
 
 /**
     @class InstallMembershipPage
     Class for the Membership install and config options
 */
-class InstallMembershipPage extends InstallPage {
+class InstallMembershipPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Membership Settings';
     protected $header = 'Fannie: Membership Settings';
@@ -40,100 +46,32 @@ class InstallMembershipPage extends InstallPage {
     Class for the Membership install and config options page.
     ";
 
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
-
-    // If chunks of CSS are going to be added the function has to be
-    //  redefined to return them.
-    // If this is to override x.css draw_page() needs to load it after the add_css_file
-    /**
-      Define any CSS needed
-      @return A CSS string
-    function css_content(){
-        $css ="";
-        return $css;
-    //css_content()
-    }
-    */
-
-    // If chunks of JS are going to be added the function has to be
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-    }
-    */
-
-    function body_content(){
-        global $FANNIE_URL,
-            $FANNIE_EQUITY_DEPARTMENTS,
-            $FANNIE_AR_DEPARTMENTS,
-            $FANNIE_NAMES_PER_MEM,
-            $FANNIE_MEMBER_MODULES,
-            $FANNIE_MEMBER_UPC_PREFIX,
-            $FANNIE_SERVER,$FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB,$FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
-
+    function body_content()
+    {
+        include(dirname(__FILE__) . '/../config.php');
         ob_start();
 
         echo showInstallTabs("Members");
 ?>
 
 <form action=InstallMembershipPage.php method=post>
-<h1 class="install"><?php echo $this->header; ?></h1>
 <?php
-if (is_writable('../config.php')){
-    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
-}
-else {
-    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-}
+echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 ?>
 <hr />
 
 <p class="ichunk2"><b>Names per membership: </b>
-<?php
-if (!isset($FANNIE_NAMES_PER_MEM)) $FANNIE_NAMES_PER_MEM = 1;
-if (isset($_REQUEST['FANNIE_NAMES_PER_MEM'])) $FANNIE_NAMES_PER_MEM = $_REQUEST['FANNIE_NAMES_PER_MEM'];
-confset('FANNIE_NAMES_PER_MEM',$FANNIE_NAMES_PER_MEM);
-echo "<input type=text size=3 name=FANNIE_NAMES_PER_MEM value=\"$FANNIE_NAMES_PER_MEM\" />";
-?>
+<?php echo installTextField('FANNIE_NAMES_PER_MEM', $FANNIE_NAMES_PER_MEM, 1); ?>
 </p>
 
 <hr />
 <h4 class="install">Equity/Store Charge</h4>
 <p class="ichunk2"><b>Equity Department(s): </b>
-<?php
-if (!isset($FANNIE_EQUITY_DEPARTMENTS)) $FANNIE_EQUITY_DEPARTMENTS = '';
-if (isset($_REQUEST['FANNIE_EQUITY_DEPARTMENTS'])) $FANNIE_EQUITY_DEPARTMENTS=$_REQUEST['FANNIE_EQUITY_DEPARTMENTS'];
-confset('FANNIE_EQUITY_DEPARTMENTS',"'$FANNIE_EQUITY_DEPARTMENTS'");
-printf("<input type=\"text\" name=\"FANNIE_EQUITY_DEPARTMENTS\" value=\"%s\" />",$FANNIE_EQUITY_DEPARTMENTS);
-?>
+<?php echo installTextField('FANNIE_EQUITY_DEPARTMENTS', $FANNIE_EQUITY_DEPARTMENTS, ''); ?>
 </p>
 
 <p class="ichunk2"><b>Store Charge Department(s): </b>
-<?php
-if (!isset($FANNIE_AR_DEPARTMENTS)) $FANNIE_AR_DEPARTMENTS = '';
-if (isset($_REQUEST['FANNIE_AR_DEPARTMENTS'])) $FANNIE_AR_DEPARTMENTS=$_REQUEST['FANNIE_AR_DEPARTMENTS'];
-confset('FANNIE_AR_DEPARTMENTS',"'$FANNIE_AR_DEPARTMENTS'");
-printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FANNIE_AR_DEPARTMENTS);
-?>
+<?php echo installTextField('FANNIE_AR_DEPARTMENTS', $FANNIE_AR_DEPARTMENTS, ''); ?>
 </p>
 
 <hr />
@@ -157,16 +95,11 @@ foreach($FANNIE_MEMBER_MODULES as $m)
 $saveStr = rtrim($saveStr,",").")";
 confset('FANNIE_MEMBER_MODULES',$saveStr);
 ?>
-<select multiple name="FANNIE_MEMBER_MODULES[]" size="10">
+<select multiple name="FANNIE_MEMBER_MODULES[]" size="10" class="form-control">
 <?php
-$dh = opendir("../mem/modules");
-$tmp = array();
-while(($file = readdir($dh)) !== False){
-    if (substr($file,-4) == ".php")
-        $tmp[] = substr($file,0,strlen($file)-4);   
-}
-sort($tmp);
-foreach($tmp as $module){
+$modules = FannieAPI::listModules('\COREPOS\Fannie\API\member\MemberModule');
+sort($modules);
+foreach($modules as $module){
     printf("<option %s>%s</option>",(in_array($module,$FANNIE_MEMBER_MODULES)?'selected':''),$module);
 }
 ?>
@@ -178,73 +111,108 @@ Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
 <hr />
 <h4 class="install">Member Cards</h4>
 Member Card UPC Prefix: 
-<?php
-if (!isset($FANNIE_MEMBER_UPC_PREFIX)) $FANNIE_MEMBER_UPC_PREFIX = '';
-if (isset($_REQUEST['FANNIE_MEMBER_UPC_PREFIX'])) $FANNIE_MEMBER_UPC_PREFIX=$_REQUEST['FANNIE_MEMBER_UPC_PREFIX'];
-confset('FANNIE_MEMBER_UPC_PREFIX',"'$FANNIE_MEMBER_UPC_PREFIX'");
-printf("<input type=\"text\" name=\"FANNIE_MEMBER_UPC_PREFIX\" value=\"%s\" />",$FANNIE_MEMBER_UPC_PREFIX);
-?>
-
+<?php echo installTextField('FANNIE_MEMBER_UPC_PREFIX', $FANNIE_MEMBER_UPC_PREFIX, ''); ?>
 <hr />
-<input type=submit value="Re-run" />
+<h4 class="install">Lane On-Screen Display</h4>
+<div id="blueline-input-div">
+This controls what is displayed on the upper left of the cashier's screen after a member
+is selected.
+<?php echo installTextField('FANNIE_BLUELINE_TEMPLATE', $FANNIE_BLUELINE_TEMPLATE, ''); ?>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{ACCOUNTNO}}'); return false;">
+    Account#
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{ACCOUNTTYPE}}'); return false;">
+    Account Type
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{FIRSTNAME}}'); return false;">
+    First Name
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{LASTNAME}}'); return false;">
+    Last Name
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{FIRSTINITIAL}}'); return false;">
+    First Initial
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{LASTINITIAL}}'); return false;">
+    Last Initial
+</a>
+</div>
+<hr />
+<h4 class="install">Data Mode</h4>
+<div>
+Choose how customer data is stored in the database. Using "classic" is highly
+recommended in production environments. The "new" mode should not be without
+a developer and/or database administrator on hand to help with potential bugs.
+<?php
+$modes = array(
+    1 => 'New',
+    0 => 'Classic',
+);
+echo installSelectField('FANNIE_CUST_SCHEMA', $FANNIE_CUST_SCHEMA, $modes, 0);
+?>
+<hr />
+<p>
+    <button type="submit" class="btn btn-default">Save Configuration</button>
+</p>
 </form>
 <?php
 $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
         $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
         $FANNIE_SERVER_PW);
 if (!$sql) {
-    echo "<span style='color:red; font-size:1.5em;'>Cannot connect to database to refresh views.</span>";
-}
-else {
+    echo "<div class='alert alert-danger'>Cannot connect to database to refresh views.</div>";
+} else {
     echo "Refreshing database views ... ";
     $this->recreate_views($sql);
     echo "done.";
 }
 
         return ob_get_clean();
-
     // body_content
     }
 
     // rebuild views that depend on ar & equity
     // department definitions
-    function recreate_views($con){
-        global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
+    function recreate_views($con)
+    {
+        $db_name = $this->config->get('TRANS_DB');
 
-        $con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_today_sum','trans');
+        $con->query("DROP VIEW ar_history_today",$db_name);
+        $model = new ArHistoryTodayModel($con);
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_live_balance','trans');
+        $con->query("DROP VIEW ar_history_today_sum",$db_name);
+        $model = new ArHistoryTodaySumModel($con);
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'stockSumToday','trans');
+        $con->query("DROP VIEW ar_live_balance",$db_name);
+        $model = new ArLiveBalanceModel($con);
+        $model->addExtraDB($this->config->get('OP_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW equity_live_balance",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'equity_live_balance','trans');
+        $con->query("DROP VIEW stockSumToday",$db_name);
+        $model = new StockSumTodayModel($con);
+        $model->createIfNeeded($db_name);
 
-        if ($con->tableExists('newBalanceStockToday_test')) {
-            $con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
-            create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                    'newBalanceStockToday_test','trans');
-        }
+        $con->query("DROP VIEW equity_live_balance",$db_name);
+        $model = new EquityLiveBalanceModel($con);
+        $model->addExtraDB($this->config->get('OP_DB'));
+        $model->createIfNeeded($db_name);
+    }
 
-        $con->query("DROP VIEW dheader",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dheader','trans');
-
-        $con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_today','trans');
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 
 // InstallMembershipPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

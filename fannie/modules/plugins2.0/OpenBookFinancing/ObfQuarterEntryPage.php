@@ -30,19 +30,21 @@ if (!class_exists('FannieAPI')) {
 */
 class ObfQuarterEntryPage extends FannieRESTfulPage 
 {
+    public function preprocess()
+    {
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfQuarterEntryPageV2.php');
+        }
+        return false;
+    }
+
     protected $title = 'OBF: Quarters';
     protected $header = 'OBF: Quarters';
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Quarter Entry] sets sales and labor goals by quarter.';
-
-    public function javascript_content()
-    {
-        ob_start();
-        ?>
-        <?php
-        return ob_get_clean();
-    }
+    public $themed = true;
+    protected $lib_class = 'ObfLib';
 
     public function post_handler()
     {
@@ -52,10 +54,10 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $model = new ObfQuartersModel($dbc);
+        $model = $lib_class::getQuarter($dbc);
         if ($this->id !== '') {
             $model->obfWeekID($this->id);
         }
@@ -78,10 +80,10 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS;
         if ($this->id != 0) {
-            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-            $this->currentModel = new ObfQuartersModel($dbc);
+            $lib_class = $this->lib_class;
+            $dbc = $lib_class::getDB();
+            $this->currentModel = $lib_class::getQuarter($dbc);
             $this->currentModel->obfQuarterID($this->id);
             $this->currentModel->load();
         }
@@ -93,14 +95,15 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
     
     public function get_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $model = new ObfQuartersModel($dbc);
+        $model = $lib_class::getQuarter($dbc);
         if (!is_object($this->currentModel)) {
-            $this->currentModel = new ObfQuartersModel($dbc);
+            $this->currentModel = $lib_class::getQuarter($dbc);
         }
-        $select = '<select name="id" onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
+        $select = '<select name="id" class="form-control" 
+                    onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
         $select .= '<option value="">New Entry</option>';
         $first = true;
         foreach($model->find('obfWeekID', true) as $obj) {
@@ -110,34 +113,40 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
         }
         $select .= '</select>';
 
-        $ret = '<b>Quarter</b>: ' . $select 
+        $ret = '<div class="form-group form-inline">
+                <label>Quarter</label>: ' . $select 
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-                . '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
-                . '<br /><br />';
+                . '<button type="button" class="btn btn-default"
+                    onclick="location=\'index.php\';return false;">Home</button>'
+                . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th><th>Year</th>
                 <th># of Weeks</th><th>Sales Goal ($)</th>
                 <th>Labor Goal ($)</th></tr>';
 
         $ret .= '<tr>';
-        $ret .= '<td><input type="text" size="12" name="name" id="name"
+        $ret .= '<td><input type="text" class="form-control" required name="name" id="name"
                         value="' . $this->currentModel->name() . '"
                         onchange="getPrevYear(this.value);" /></td>';
-        $ret .= '<td><input type="text" size="4" name="year" id="year"
+        $ret .= '<td><input type="number" class="form-control" required name="year" id="year"
                         value="' . $this->currentModel->year() . '" /></td>';
-        $ret .= sprintf('<td><input type="text" size="3" name="weeks"
+        $ret .= sprintf('<td><input type="number" required class="form-control" name="weeks"
                             value="%d" /></td>', $this->currentModel->weeks());
-        $ret .= sprintf('<td><input type="text" size="10" name="sales"
-                            value="%.2f" /></td>', $this->currentModel->salesTarget());
-        $ret .= sprintf('<td><input type="text" size="10" name="labor"
-                            value="%.2f" /></td>', $this->currentModel->laborTarget());
+        $ret .= sprintf('<td><div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="number" required class="form-control" name="sales" value="%.2f" />
+            </div></td>', $this->currentModel->salesTarget());
+        $ret .= sprintf('<td><div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="number" class="form-control" required name="labor" value="%.2f" />
+            </div></td>', $this->currentModel->laborTarget());
         $ret .= '</tr>';
         
         $ret .= '</table>';
 
-        $ret .= '<input type="submit" value="Save" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
         return $ret;

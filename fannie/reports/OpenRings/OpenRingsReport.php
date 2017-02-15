@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class OpenRingsReport extends FannieReportPage 
 {
     public $description = '[Open Rings] shows UPC-less sales for a department or group of departments over a given date range.';
+    public $report_set = 'Transaction Reports';
 
     protected $title = "Fannie : Open Rings Report";
     protected $header = "Open Rings Report";
@@ -45,8 +46,10 @@ class OpenRingsReport extends FannieReportPage
         $ret = array();
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
-        } else if ($buyer == -1) {
+        } elseif ($buyer == -1) {
             $ret[] = 'All Super Departments';
+        } elseif ($buyer == -2) {
+            $ret[] = 'All Retail Departments';
         } else {
             $ret[] = 'Super Department '.$buyer;
         }
@@ -56,13 +59,14 @@ class OpenRingsReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
     
         $buyer = FormLib::get('buyer', '');
 
@@ -71,17 +75,28 @@ class OpenRingsReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
-                $where = ' s.superID=? ';
+            if ($buyer > -1) {
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
+            } elseif ($buyer == -2) {
+                $where .= ' AND s.superID <> 0 ';
             }
-        } else {
-            $where = ' t.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+        }
+        if ($buyer != -1) {
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            $where .= $conditional;
         }
 
-        $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        $tempTables = array(
+            'connection' => $dbc,
+            'clauses' => array(
+                array(
+                    'sql' => 'trans_type IN (?, ?)',
+                    'params' => array('I', 'D'),
+                ),
+            ),
+        );
+        $dlog = DTransactionsModel::selectDlog($date1, $date2, $tempTables);
 
         $query = "SELECT year(tdate),month(tdate),day(tdate),
           SUM(CASE WHEN trans_type='D' THEN total ELSE 0 END) as total,
@@ -92,6 +107,8 @@ class OpenRingsReport extends FannieReportPage
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE trans_type IN ('I','D')
             AND tdate BETWEEN ? AND ?
@@ -99,22 +116,25 @@ class OpenRingsReport extends FannieReportPage
             GROUP BY year(tdate),month(tdate),day(tdate)
             ORDER BY year(tdate),month(tdate),day(tdate)";
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query, $args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                sprintf('%d/%d/%d', $row[1], $row[2], $row[0]),
-                sprintf('%.2f', $row['total']),
-                sprintf('%.2f', $row['qty']),
-                sprintf('%.2f%%', $row['percentage']*100),
-            );
-
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+    
+    private function rowToRecord($row)
+    {
+        return array(
+            sprintf('%d/%d/%d', $row[1], $row[2], $row[0]),
+            sprintf('%.2f', $row['total']),
+            sprintf('%.2f', $row['qty']),
+            sprintf('%.2f%%', $row['percentage']*100),
+        );
     }
 
     public function calculate_footers($data)
@@ -139,102 +159,67 @@ class OpenRingsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
-
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
-
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-
         ob_start();
         ?>
-<script type="text/javascript">
-function swap(src,dst){
-    var val = document.getElementById(src).value;
-    document.getElementById(dst).value = val;
-}
-</script>
-<div id=main>   
-<form method = "get" action="OpenRingsReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr>
-            <td><b>Select Buyer/Dept</b></td>
-            <td><select id=buyer name=buyer>
-               <option value=""></option>
-               <?php echo $deptSubList; ?>
-               <option value=-1 >All</option>
-               </select>
-            </td>
-            <td><b>Send to Excel</b></td>
-            <td><input type=checkbox name=excel id=excel value=1></td>
-        </tr>
-        <tr>
-            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-        </tr>
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-             <td colspan="2"> </td>
-            <td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
+<form method="get" class="form-horizontal">
+<div class="row">
+    <div class="col-sm-6">
+        <?php echo FormLib::standardDepartmentFields('buyer'); ?>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Save to Excel
+                <input type=checkbox name=excel id=excel value=1>
+            </label>
+            <label class="col-sm-4 control-label">Store</label>
+            <div class="col-sm-4">
+                <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
+</div>
+<p>
+    <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+    <button type=reset name=reset class="btn btn-default btn-reset"
+        onclick="$('#super-id').val('').trigger('change');">Start Over</button>
+</p>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Open Rings are dollar amounts simply tied to a department as
+            opposed to an item with a proper UPC. The report shows the number
+            of open rings and value of those rings for each day in the date range.
+            The percentage is relative to all items sold in that set of departments
+            that day.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(0=>2000, 1=>1, 2=>2, 'total'=>1, 'qty'=>1, 'percentage'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

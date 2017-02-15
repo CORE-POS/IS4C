@@ -21,6 +21,14 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\ajax\AjaxEnd;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+use COREPOS\common\mvc\ValueContainer;
+
 ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -35,23 +43,29 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
  */
 
 $shrinkReason = 0;
-if ($CORE_LOCAL->get('shrinkReason') > 0) {
-    $shrinkReason = $CORE_LOCAL->get('shrinkReason');
+if (CoreLocal::get('shrinkReason') > 0) {
+    $shrinkReason = CoreLocal::get('shrinkReason');
 }
 
 $db = Database::tDataConnect();
 $query = "UPDATE localtemptrans SET trans_status='Z', numflag=" . ((int)$shrinkReason);
 $db->query($query);
 
-$CORE_LOCAL->set("plainmsg","items marked as shrink/unsellable");
-$CORE_LOCAL->set("End",2);
-$CORE_LOCAL->set('shrinkReason', 0);
+CoreLocal::set("plainmsg","items marked as shrink/unsellable");
+CoreLocal::set("End",2);
+CoreLocal::set('shrinkReason', 0);
 
-$_REQUEST['receiptType'] = 'ddd';
-$_REQUEST['ref'] = ReceiptLib::receiptNumber();
+$vals = new ValueContainer();
+$vals->receiptType = 'ddd';
+$vals->ref = ReceiptLib::receiptNumber();
 TransRecord::finalizeTransaction(true);
-ob_start();
-include(realpath(dirname(__FILE__).'/ajax-end.php'));
-header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
-ob_end_clean();
+
+if (!class_exists('AjaxEnd')) {
+    include(__DIR__ . '/../AjaxEnd.php');
+}
+$ajax = new AjaxEnd(new WrappedStorage(), $vals);
+$ajax->ajax();
+if (!headers_sent()) {
+    header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
+}
 

@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -49,33 +49,39 @@ class DiscountsReport extends FannieReportPage {
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $d1 = FormLib::get('date1', date('Y-m-d'));
         $d2 = FormLib::get('date2', date('Y-m-d'));
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
-        $query = $dbc->prepare_statement("SELECT m.memDesc,sum(total) as total FROM $dlog AS d
-            LEFT JOIN custdata AS c ON d.card_no=c.CardNo
-            AND c.personNum=1 LEFT JOIN memtype AS m ON
-            c.memType=m.memtype
+        $query = $dbc->prepare("
+            SELECT m.memDesc,
+                SUM(total) AS total 
+            FROM $dlog AS d
+                LEFT JOIN memtype AS m ON d.memType=m.memtype
             WHERE d.upc='DISCOUNT'
-            AND tdate BETWEEN ? AND ?
+                AND tdate BETWEEN ? AND ?
             GROUP BY m.memDesc
             ORDER BY m.memDesc");
-        $result = $dbc->exec_statement($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
+        $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 
         $data = array();
-        while($row = $dbc->fetch_row($result)){
-            $data[] = array(
-                        $row['memDesc'],
-                        sprintf('%.2f', $row['total'])
-                        );
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['memDesc'],
+            sprintf('%.2f', $row['total']),
+        );
     }
 
     public function form_content()
@@ -96,31 +102,49 @@ class DiscountsReport extends FannieReportPage {
         ob_start();
         ?>
 <form action=DiscountsReport.php method=get>
-<table cellspacing=4 cellpadding=4>
-<tr>
-<th>Start Date</th>
-<td><input type=text id="date1" name=date1 value="<?php echo $lastMonday; ?>" /></td>
-<td rowspan="3">
-<?php echo FormLib::date_range_picker(); ?>
-</td>
-</tr><tr>
-<th>End Date</th>
-<td><input type=text id="date2" name=date2 value="<?php echo $lastSunday; ?>" /></td>
-</tr><tr>
-<td>Excel <input type=checkbox name=excel value="xls" /></td>
-<td><input type=submit name=submit value="Submit" /></td>
-</tr>
-</table>
+<div class="col-sm-4">
+    <div class="form-group">
+    <label>Date Start</label>
+    <input type=text id=date1 name=date1 class="form-control date-field" />
+    </div>
+    <div class="form-group">
+    <label>Date End</label>
+    <input type=text id=date2 name=date2 class="form-control date-field" />
+    </div>
+    <p>
+    <label>Excel <input type=checkbox name=excel value="xls" /></label>
+    </p>
+    <p>
+    <button type=submit name=submit class="btn btn-default btn-core">Submit</button>
+    <button type=reset name=reset class="btn btn-default btn-reset">Start Over</button>
+    </p>
+</div>
+<div class="col-sm-4">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List member discounts for a given range. These discounts are 
+            transaction-wide, percentage discounts associated with a
+            member (or customer) account.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('memDesc'=>'test', 'total'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 
 }
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -52,12 +52,12 @@ class TableSnapshotTask extends FannieTask
             @severity: most likely just means first ever run
             and the backup table does not exist yet
             */
-            echo $this->cronMsg("Could not drop productBackup. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_TRIVIAL_ERROR);
+            $this->cronMsg("Could not drop productBackup. Details: " . $ex->getMessage(),
+                    FannieLogger::NOTICE);
         }
 
         try {
-            if ($sql->dbms_name() == "mssql") {
+            if ($sql->dbmsName() == "mssql") {
                 $sql->query("SELECT * INTO productBackup FROM products");
             } else {
                 $sql->query("CREATE TABLE productBackup LIKE products");
@@ -68,8 +68,8 @@ class TableSnapshotTask extends FannieTask
             @severity: backup did not happen. that's the primary
             purpose of this task.
             */
-            echo $this->cronMsg("Failed to back up products. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_LARGE_ERROR);
+            $this->cronMsg("Failed to back up products. Details: " . $ex->getMessage(),
+                    FannieLogger::ERROR);
         }
 
         try {
@@ -79,12 +79,12 @@ class TableSnapshotTask extends FannieTask
             @severity: most likely just means first ever run
             and the backup table does not exist yet
             */
-            echo $this->cronMsg("Could not drop custdataBackup. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_TRIVIAL_ERROR);
+            $this->cronMsg("Could not drop custdataBackup. Details: " . $ex->getMessage(),
+                    FannieLogger::NOTICE);
         }
 
         try {
-            if ($sql->dbms_name() == "mssql") {
+            if ($sql->dbmsName() == "mssql") {
                 $sql->query("SELECT * INTO custdataBackup FROM custdata");
             } else {
                 $sql->query("CREATE TABLE custdataBackup LIKE custdata");
@@ -95,8 +95,8 @@ class TableSnapshotTask extends FannieTask
             @severity: backup did not happen. that's the primary
             purpose of this task.
             */
-            echo $this->cronMsg("Failed to back up custdata. Details: " . $ex->getMessage(),
-                    FannieTask::TASK_LARGE_ERROR);
+            $this->cronMsg("Failed to back up custdata. Details: " . $ex->getMessage(),
+                    FannieLogger::ERROR);
         }
     }
 }

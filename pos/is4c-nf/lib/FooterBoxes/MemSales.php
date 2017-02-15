@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+
 class MemSales extends FooterBox 
 {
 
@@ -35,12 +37,11 @@ class MemSales extends FooterBox
 
     public function display_content()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get("isMember") == 1) {
-            return number_format($CORE_LOCAL->get("memSpecial"), 2);
-        } else {
-            return "n/a";
+        if ($this->session->get("isMember") == 1) {
+            return number_format($this->session->get("memSpecial"), 2);
         }
+
+        return "n/a";
     }
 }
 

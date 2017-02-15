@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class CouponAppliedModel
 */
@@ -36,69 +39,17 @@ class CouponAppliedModel extends BasicModel
     'trans_no' => array('type'=>'INT', 'primary_key'=>true),
     'quantity' => array('type'=>'FLOAT'),
     'trans_id' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function emp_no()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["emp_no"])) {
-                return $this->instance["emp_no"];
-            } elseif(isset($this->columns["emp_no"]["default"])) {
-                return $this->columns["emp_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["emp_no"] = func_get_arg(0);
-        }
+        return '
+Use:
+Track which items have had coupons applied
+to them. This is primarily to deal with
+"free" coupons that can apply to multiple,
+differently-priced items ina single transaction.
+        ';
     }
-
-    public function trans_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["trans_no"])) {
-                return $this->instance["trans_no"];
-            } elseif(isset($this->columns["trans_no"]["default"])) {
-                return $this->columns["trans_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["trans_no"] = func_get_arg(0);
-        }
-    }
-
-    public function quantity()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["quantity"])) {
-                return $this->instance["quantity"];
-            } elseif(isset($this->columns["quantity"]["default"])) {
-                return $this->columns["quantity"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["quantity"] = func_get_arg(0);
-        }
-    }
-
-    public function trans_id()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["trans_id"])) {
-                return $this->instance["trans_id"];
-            } elseif(isset($this->columns["trans_id"]["default"])) {
-                return $this->columns["trans_id"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["trans_id"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

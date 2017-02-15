@@ -1,0 +1,36 @@
+tr.vTop {
+        vertical-align:top;
+}
+tr.vBottom {
+        vertical-align:bottom;
+}
+td.iCenter {
+    text-align:center;
+}
+th.headLeft {
+    text-align:left;
+}
+/* All the headings within the edtable */ 
+#edtable th {
+    background-color:#EBEBE0;
+    border:0px solid white;
+    text-align:center;
+    padding:2px;
+}
+/* All the cells within the edtable */ 
+#edtable td {
+    padding:3px;
+    border-left:thin gray solid;
+    border-bottom:thin gray solid;
+    border-right:thin gray solid;
+    text-align:center;
+}
+fieldset.helpbit {
+    display:none;
+    /* width may be overridden inline */
+    width:50em;
+    margin-bottom:0.5em;
+    border:thin gray solid;
+    padding:0.5em;
+}
+

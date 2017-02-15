@@ -41,6 +41,7 @@ class WfcHtUploadPage extends FanniePage
     
     public $page_set = 'Plugin :: WFC Hours Tracking';
     public $description = '[Hours Upload] imports data for hourly employees.';
+    public $themed = true;
 
     private $mode = 'form';
 
@@ -97,12 +98,12 @@ class WfcHtUploadPage extends FanniePage
         $ret .= "<b>Pay Period</b>: $start - $end<br />";
         $ret .= "<input type=hidden name=start value=\"$start\" />";
         $ret .= "<input type=hidden name=end value=\"$end\" />";
-        $ret .= "<table cellpadding=4 cellspacing=0 border=1>";
+        $ret .= "<table class=\"table\">";
         $ret .= "<tr class=one><th>ADP ID</th><th>Reg. Hours</th><th>OT Hours</th>";
         $ret .= "<th>PTO</th><th>UTO</th><th>Alt. Rate</th><th>Holiday</th></tr>";
 
         $rows = array();
-        $checkQ = $db->prepare_statement("select empID from employees where adpID=?");
+        $checkQ = $db->prepare("select empID from employees where adpID=?");
         while (!feof($fp)){
             $fields = fgetcsv($fp);
             if ($HEADERS){
@@ -128,7 +129,7 @@ class WfcHtUploadPage extends FanniePage
                 );
             }
 
-            $checkR = $db->exec_statement($checkQ, array($adpID));
+            $checkR = $db->execute($checkQ, array($adpID));
             if ($db->num_rows($checkR) < 1){
                 $ret .= "Notice: ADP ID #$adpID doesn't match any current employee.";
                 $ret .= "Data for this ID is being omitted.<br />";
@@ -189,7 +190,7 @@ class WfcHtUploadPage extends FanniePage
             $c = ($c+1)%2;
         }
         $ret .= "</table>";
-        $ret .= "<input type=submit value=\"Import Data\">";
+        $ret .= "<p><button type=submit class=\"btn btn-default\">Import Data</button></p>";
     
         fclose($fp);
         unlink("$tmp/$filename");
@@ -213,38 +214,38 @@ class WfcHtUploadPage extends FanniePage
         $ppIDW = $db->fetch_row($ppIDR);
         $ppID = $ppIDW[0];
 
-        $ppQ = $db->prepare_statement("INSERT INTO PayPeriods (periodID, dateStr, year, startDate, endDate) 
+        $ppQ = $db->prepare("INSERT INTO PayPeriods (periodID, dateStr, year, startDate, endDate) 
                                     VALUES (?,?,?,?,?)");
-        $ppR = $db->exec_statement($ppQ, array($ppID, $dateStr, $year, $start, $end));
+        $ppR = $db->execute($ppQ, array($ppID, $dateStr, $year, $start, $end));
 
-        $eIDQ = $db->prepare_statement("select empID from employees where adpID=?");
-        $insQ = $db->prepare_statement("INSERT INTO ImportedHoursData 
+        $eIDQ = $db->prepare("select empID from employees where adpID=?");
+        $insQ = $db->prepare("INSERT INTO ImportedHoursData 
                     VALUES (?,?,?,?,?,?,0,?,?,?)");
         foreach ($datalines as $line) {
             $fields = explode(",",$line);
-            $eIDR = $db->exec_statement($eIDQ, array($fields[0]));
+            $eIDR = $db->execute($eIDQ, array($fields[0]));
             if ($db->num_rows($eIDR) < 1) {
                 continue;
             }
             $eIDW = $db->fetch_row($eIDR);
             $empID = $eIDW['empID'];
 
-            $insR = $db->exec_statement($insQ, array($empID, $ppID, $year, $fields[1],
+            $insR = $db->execute($insQ, array($empID, $ppID, $year, $fields[1],
                                 $fields[2], $fields[3],
                                 $fields[5], $fields[6],
                                 $fields[4]));
         }
 
-        $cuspQ = $db->prepare_statement("UPDATE cusping as c 
+        $cuspQ = $db->prepare("UPDATE cusping as c 
             left join employees as e
             on c.empID = e.empID
             SET e.PTOLevel=e.PTOLevel+1, e.PTOCutoff=?
             where c.cusp = '!!!'");
-        $cuspR = $db->exec_statement($cuspQ, array($ppID));
+        $cuspR = $db->execute($cuspQ, array($ppID));
 
-        $ret = "ADP data import complete!<br />";
+        $ret = "<p>ADP data import complete!<br />";
         $ret .= "<a href=WfcHtListPage.php>View Employees</a><br />";
-        $ret .= "<a href=WfcHtPayPeriodsPage.php>View Pay Periods</a>";
+        $ret .= "<a href=WfcHtPayPeriodsPage.php>View Pay Periods</a></p>";
     
         return $ret;
     }
@@ -255,16 +256,22 @@ class WfcHtUploadPage extends FanniePage
         echo '
 <form enctype="multipart/form-data" action="'.$_SERVER['PHP_SELF'].'" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-Pay Period: <input type=text name=start id="start" />
-<input type=text name=end id="end" /><p />
-Holiday Hours: <select name=asHoliday><option value=1>As Holiday</option><option value=0>As Hours Worked</option>
-</select><p />
+<div class="form-group">
+<label>Pay Period</label>: 
+<input type=text placeholder="Start Date" name=start id="start" class="form-control date-field" required />
+<input type=text name=end id="end" placeholder="End Date" class="form-control date-field" required />
+</div>
+<div class="form-group">
+<label>Holiday Hours</label>:
+<select class="form-control" name=asHoliday><option value=1>As Holiday</option><option value=0>As Hours Worked</option>
+</select>
+</div>
+<div class="form-group">
 Filename: <input type="file" id="file" name="upload" />
-<input type="submit" value="Upload File" />
+<button type="submit" class="btn btn-default">Upload File</button>
+</div>
 </form>
         ';
-        $this->add_onload_command("\$('#start').datepicker();\n");
-        $this->add_onload_command("\$('#end').datepicker();\n");
     }
 
     public function body_content()

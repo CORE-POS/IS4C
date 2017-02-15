@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,13 @@
 
 *********************************************************************************/
 
-class AR extends MemberModule 
+class AR extends \COREPOS\Fannie\API\member\MemberModule 
 {
+
+    public function width()
+    {
+        return parent::META_WIDTH_THIRD;
+    }
 
     function showEditForm($memNum,$country="US")
     {
@@ -31,67 +36,54 @@ class AR extends MemberModule
         $dbc = $this->db();
         $trans = $FANNIE_TRANS_DB.$dbc->sep();
         
-        $infoQ = $dbc->prepare_statement("SELECT n.balance
+        $infoQ = $dbc->prepare("SELECT n.balance
                 FROM {$trans}ar_live_balance AS n 
                 WHERE n.card_no=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoR = $dbc->execute($infoQ,array($memNum));
         $infoW = $dbc->fetch_row($infoR);
 
-        if (!class_exists("CustdataModel")) {
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
-        }
-        $model = new CustdataModel($dbc);
-        $model->CardNo($memNum);
-        $model->personNum(1);
-        $model->load();
-        $limit = $model->ChargeLimit();
-        if ($limit == 0) {
-            $limit = $model->MemDiscountLimit();
-        }
+        $account = self::getAccount();
 
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">A/R</div>
+            <div class=\"panel-body\">";
 
-        $ret = "<fieldset><legend>A/R</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<span class="label primaryBackground">Limit</span> ';
+        $ret .= '<div class="input-group"><span class="input-group-addon">$</span>';
+        $ret .= sprintf('<input name="AR_limit" value="%d" class="form-control" />
+                ',$account['chargeLimit']);
+        $ret .= '</div>';
+        $ret .= '</div>';
 
-        $ret .= "<tr><th>Limit</th>";
-        $ret .= sprintf('<td><input name="AR_limit" size="4" value="%d" />
-                </td>',$limit);
-        $ret .= "<th>Current Balance</th>";
-        $ret .= sprintf('<td>%.2f</td>',$infoW['balance']); 
+        $ret .= '<div class="form-group">';
+        $ret .= '<span class="label primaryBackground">Current Balance</span> ';
+        $ret .= sprintf('%.2f',$infoW['balance']); 
+        $ret .= ' ';
+        $ret .= "<a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a>";
+        $ret .= '</div>';
 
-        $ret .= "<td><a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a></td></tr>";
-        $ret .= "<tr><td colspan=\"2\"><a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a></td>";
-        $ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a></td></tr>";
+        $ret .= '<div class="form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a>";
+        $ret .= ' | ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a>";
+        $ret .= '</div>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= '</div>';
+        $ret .= '</div>';
+
         return $ret;
     }
 
-    function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
-        global $FANNIE_ROOT;
-        $dbc = $this->db();
-        if (!class_exists("CustdataModel")) {
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
+        $limit = FormLib::get_form_value('AR_limit',0);
+        $json['chargeLimit'] = $limit;
+        foreach (array_keys($json['customers']) as $c) {
+            $json['customers'][$c]['chargeAllowed'] = $limit > 0 ? 1 : 0;
         }
 
-        $limit = FormLib::get_form_value('AR_limit',0);
-        $model = new CustdataModel($dbc);
-        $model->CardNo($memNum);
-        $test = false;
-        foreach($model->find() as $obj) {
-            $obj->MemDiscountLimit($limit);
-            $obj->ChargeLimit($limit);
-            $obj->ChargeOk( $limit == 0 ? 0 : 1 );
-            $test = $obj->save();
-        }
-        
-        if ($test === false) {
-            return 'Error: Problme saving A/R limit<br />';
-        } else {
-            return '';
-        }
+        return $json;
     }
 }
 

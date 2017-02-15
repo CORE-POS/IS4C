@@ -1,0 +1,54 @@
+<?php
+/*******************************************************************************
+
+    Copyright 2015 Whole Foods Co-op
+
+    This file is part of CORE-POS.
+
+    CORE-POS is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    CORE-POS is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IT CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+
+namespace COREPOS\common\sql;
+
+class Lib
+{
+    static public function getDrivers()
+    {
+        $ret = array();
+        if (extension_loaded('mysqli')) {
+            $ret['MYSQLI'] = 'MySQLi';
+        }
+        if (extension_loaded('pdo')) {
+            if (extension_loaded('pdo_mysql')) {
+                $ret['PDO_MYSQL'] = 'PDO MySQL';
+            }
+            if (extension_loaded('pdo_sqlite')) {
+                $ret['PDOLITE'] = 'PDO SQLite';
+            }
+        }
+        if (extension_loaded('pgsql')) {
+            $ret['POSTGRES9'] = 'PostgreSQL';
+        }
+        if (extension_loaded('mssql')) {
+            $ret['MSSQL'] = 'SQL Server';
+        }
+        if (extension_loaded('mysql')) {
+            $ret['MYSQL'] = 'MySQL (deprecated)';
+        }
+
+        return $ret;
+    }
+}

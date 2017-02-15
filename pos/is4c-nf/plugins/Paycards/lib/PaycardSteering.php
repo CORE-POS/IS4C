@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\parser\Parser;
+
 class PaycardSteering extends Parser {
 
     function check($str)
@@ -32,18 +34,18 @@ class PaycardSteering extends Parser {
         return false;
     }
 
-    function parse($str) {
-        global $CORE_LOCAL;
+    function parse($str) 
+    {
         $ret = $this->default_json();
 
         if ($str == 'PCLOOKUP') {
             $info = new Paycards();
-            $ret['main_frame'] = $info->plugin_url() . '/gui/PaycardTransListPage.php';
-            $CORE_LOCAL->set('strEntered', '');
+            $ret['main_frame'] = $info->pluginUrl() . '/gui/PaycardTransListPage.php';
+            $pconf = new PaycardConf();
+            $pconf->set('strEntered', '');
         }
 
         return $ret;
     }
 }
 
-?>

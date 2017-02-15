@@ -28,10 +28,9 @@ $row2 = $sql->fetch_row($result2,'is4c_op');
 echo "<center><h1>Today's Sales!</h1>";
 echo "<table>";
 echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";
-while($row1 = $sql->fetch_row($result1,'is4c_op')){	
-	echo "<tr><td>".$row1[0]."</td><td>".$row1[1]."</td></tr>";
+while($row1 = $sql->fetch_row($result1,'is4c_op')){    
+    echo "<tr><td>".$row1[0]."</td><td>".$row1[1]."</td></tr>";
 }
 echo "<tr><td>$row2[0]</td></tr>";
 echo "</table>";
 
-?>

@@ -22,8 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FannieAPI'))
+if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CwLoadDataPage extends FanniePage {
 
@@ -33,6 +34,7 @@ class CwLoadDataPage extends FanniePage {
     public $page_set = 'Plugin :: Core Warehouse';
     public $description = '[Core Warehouse Load Data] pull historical transaction data into
     the warehouse storage tables.';
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_ARCHIVE_DB;
@@ -52,15 +54,16 @@ class CwLoadDataPage extends FanniePage {
     }
 
     public function getModels(){
-        $dh = opendir(dirname(__FILE__).'/models');
+        $dir = opendir(dirname(__FILE__).'/models');
         $ret = array();
-        while(($file=readdir($dh)) !== False){
+        while(($file=readdir($dir)) !== False){
             if ($file[0] == '.') continue;
             if (substr($file,-9) != 'Model.php') continue;
             if ($file == 'CoreWarehouseModel.php') continue;
             $ret[] = substr($file,0,strlen($file)-4);
         }
-        sort($ret);
+        rsort($ret);
+
         return $ret;
     }
 
@@ -68,8 +71,9 @@ class CwLoadDataPage extends FanniePage {
         ob_start();
         ?>
         <form action="CwLoadDataPage.php" method="post">
-        <p>
-        <b>Table</b>: <select name="model">
+        <div class="form-group form-inline">
+        <label>Table</label>
+        <select name="model" class="form-control">
         <?php 
         foreach($this->getModels() as $file){
             printf('<option>%s</option>',
@@ -77,21 +81,27 @@ class CwLoadDataPage extends FanniePage {
         }
         ?>
         </select>
-        </p>
-        <p>
-        <select name="month">
+        </div>
+        <div class="form-group form-inline">
+            <label>Month</label>
+        <select name="month" class="form-control">
         <?php for ($i=1;$i<=12;$i++){
             printf('<option value="%d">%s</option>',
                 $i,date('F',mktime(0,0,0,$i,1)));
         } ?>
         </select>
-        <input type="text" size=5" name="year" value="<?php echo date('Y'); ?>" />
+        <input type="number" class="form-control" name="year" 
+            required min="1900" max="2999" step="1"
+            value="<?php echo date('Y'); ?>" />
+        </div>
+        <p>
+            <button type="submit" class="btn btn-default">Reoad Data</button>
         </p>
-        <input type="submit" value="Reload Data" />
         </form>
-        <hr />
+        <div class="well">
         You can use this page as a command line tool, too. It's a better option if
         there's <b>lots</b> of data to deal with.
+        </div>
         <?php
         return ob_get_clean();
     }
@@ -108,6 +118,22 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
             echo "\t[ -d <year-month-day] || [-s <start month> <start year> [-e <end month> <end year>]]\n";
             echo "Specify a single date or a range of months.\n";
         }
+        function check_date($argv, $i, $type)
+        {
+            if (!isset($argv[$i+1])){
+                throw new Excepion("Missing $type month\n");
+            } elseif (!isset($argv[$i+2])) {
+                throw new Exception("Missing $type year\n");
+            }
+            $start = array($argv[$i+1],$argv[$i+2]);
+            if ($start[0] < 1 || $start[0] > 12){
+                throw new Exception("Invalid $type month\n");
+            } elseif ($start[1] < 1950 || $start[1] > date('Y')){
+                throw new Exception("Invalid $type year\n");
+            }
+
+            return $start;
+        }
         $start = array();
         $end = array();
         $day = array();
@@ -118,52 +144,24 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
             switch($argv[$i]){
             case '-s':
             case '--start':
-                if (!isset($argv[$i+1])){
+                try {
+                    $start = check_date($argv, $i, 'start');
+                    $i += 2;
+                } catch (Exception $ex) {
                     print_cli_help();
-                    echo "Missing start month\n";
-                    exit;   
-                }
-                elseif(!isset($argv[$i+2])){
-                    print_cli_help();
-                    echo "Missing start year\n";
-                    exit;   
-                }
-                $start = array($argv[$i+1],$argv[$i+2]);
-                $i+=2;
-                if ($start[0] < 1 || $start[0] > 12){
-                    print_cli_help();
-                    echo "Invalid start month\n";
-                    exit;   
-                }
-                elseif ($start[1] < 1950 || $start[1] > date('Y')){
-                    print_cli_help();
-                    echo "Invalid start year\n";
-                    exit;   
+                    echo $ex->getMessage();
+                    return 1;
                 }
                 break;
             case '-e':
             case '--end':
-                if (!isset($argv[$i+1])){
+                try {
+                    $end = check_date($argv, $i, 'end');
+                    $i += 2;
+                } catch (Exception $ex) {
                     print_cli_help();
-                    echo "Missing end month\n";
-                    exit;   
-                }
-                elseif(!isset($argv[$i+2])){
-                    print_cli_help();
-                    echo "Missing end year\n";
-                    exit;   
-                }
-                $end = array($argv[$i+1],$argv[$i+2]);
-                $i+=2;
-                if ($end[0] < 1 || $end[0] > 12){
-                    print_cli_help();
-                    echo "Invalid start month\n";
-                    exit;   
-                }
-                elseif ($end[1] < 1950 || $end[1] > date('Y')){
-                    print_cli_help();
-                    echo "Invalid start year\n";
-                    exit;   
+                    echo $ex->getMessage();
+                    return 1;
                 }
                 break;
             case '-m':
@@ -171,14 +169,14 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (!isset($argv[$i+1])){
                     print_cli_help();
                     echo "No file given\n";
-                    exit;
+                    return 1;   
                 }
                 $file = $argv[$i+1];
                 $i+=1;
                 if (!file_exists($file)){
                     print_cli_help();
                     echo "File does not exist: $file\n";
-                    exit;
+                    return 1;   
                 }
                 $file = basename($file);
                 break;
@@ -187,7 +185,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (!isset($argv[$i+1])){
                     print_cli_help();
                     echo "No date provided\n";
-                    exit;
+                    return 1;   
                 }
                 $date = $argv[$i+1];
                 $i+=1;
@@ -195,7 +193,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (count($tmp) != 3){
                     print_cli_help();
                     echo "Date format is YYYY-MM-DD\n";
-                    exit;
+                    return 1;   
                 }
                 $date = array($tmp[0],$tmp[1],$tmp[2]);
                 break;
@@ -208,7 +206,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
             case '--help':
             default:
                 print_cli_help();
-                exit;
+                return 0;   
                 break;
             }
         }
@@ -216,12 +214,12 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
         if (!$all && !$file){
             print_cli_help();
             echo "Must specify model file or use option -a for 'all'\n";
-            exit;
+            return 1;   
         }
         if (empty($start) && empty($date)){
             print_cli_help();
             echo "Either date or Start & end month is required\n";
-            exit;
+            return 1;   
         }
         if (empty($end)){
             $end = array(date('n'),date('Y'));
@@ -233,6 +231,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
         if ($file){
             $models = array(substr($file,0,strlen($file)-4));
         }
+        rsort($models);
 
         $con = FannieDB::get($FANNIE_PLUGIN_SETTINGS['WarehouseDatabase']);
         foreach($models as $class){

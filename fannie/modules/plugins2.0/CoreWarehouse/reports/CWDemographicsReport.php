@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,22 +22,27 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class CWDemographicsReport extends FannieReportPage {
 
     public $description = '[Demographics Report] lists information about customer participation.
         Requires CoreWarehouse plugin.';
+    public $themed = true;
+    public $report_set = 'Membership';
 
     protected $multi_report_mode = True;
 
-    protected $sortable = False;
+    protected $sortable = true;
 
     protected $content_function = 'report_content';
 
     protected $window_dressing = False;
 
     protected $title = 'Demographics Report';
+    protected $header = 'Demographics Report';
     protected $report_cache = 'day';
 
     function fetch_report_data(){
@@ -58,8 +63,8 @@ class CWDemographicsReport extends FannieReportPage {
             CASE WHEN c.Type='PC' THEN 1 ELSE 0 END
             ORDER BY 
             CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN '1991 or earlier' ELSE YEAR(m.start_date) END";
-        $totalP = $dbc->prepare_statement($totalQ);
-        $totalR = $dbc->exec_statement($totalP);
+        $totalP = $dbc->prepare($totalQ);
+        $totalR = $dbc->execute($totalP);
 
         $report1 = array();
         $totalActiveMem = 0;
@@ -111,27 +116,27 @@ class CWDemographicsReport extends FannieReportPage {
                 ON w.card_no=m.card_no
                 WHERE w.date_id >= ? AND (c.Type='PC' OR s.memtype2 = 'PC')
                 GROUP BY w.card_no";
-        $participationP = $dbc->prepare_statement($participationQ);
-        $participationR = $dbc->exec_statement($participationP, array($lastyear));
+        $participationP = $dbc->prepare($participationQ);
+        $participationR = $dbc->execute($participationP, array($lastyear));
         $report2 = array(
-            array('Last Month', 0, 0),  
-            array('Last 3 Months', 0, 0),   
-            array('Last 12 Months', 0, 0)
+            array('1) Last Month', 0, 0),  
+            array('2) Last 3 Months', 0, 0),   
+            array('3) Last 12 Months', 0, 0)
         );
         $report3 = array(
-            array('More than 4', 0, 0),
-            array('3-4', 0, 0),
-            array('2-3', 0, 0),
-            array('1-2', 0, 0),
-            array('Less than 1', 0, 0),
+            array('1) More than 4', 0, 0),
+            array('2) 3-4', 0, 0),
+            array('3) 2-3', 0, 0),
+            array('4) 1-2', 0, 0),
+            array('5) Less than 1', 0, 0),
         );
         $report4 = array(
-            array('Over $5,000', 0, 0),
-            array('$4,000.01 - $5,000', 0, 0),
-            array('$3,000.01 - $4,000', 0, 0),
-            array('$2,000.01 - $3,000', 0, 0),
-            array('$1,000.01 - $2,000', 0, 0),
-            array('$1,000 or less', 0, 0)
+            array('1) Over $5,000', 0, 0),
+            array('2) $4,000.01 - $5,000', 0, 0),
+            array('3) $3,000.01 - $4,000', 0, 0),
+            array('4) $2,000.01 - $3,000', 0, 0),
+            array('5) $1,000.01 - $2,000', 0, 0),
+            array('6) $1,000 or less', 0, 0)
         );
         while($w = $dbc->fetch_row($participationR)){
             if ($w['id'] >= $lastmonth)
@@ -199,7 +204,7 @@ class CWDemographicsReport extends FannieReportPage {
                 $ttl[1] += $row[2];
             }
             $ret = array('Total', $ttl[0], $ttl[1],
-                sprintf('%.2f%%',100*$ttl[0]/($ttl[0]+$ttl[1]))
+                sprintf('%.2f%%',100*$ttl[1]/($ttl[0]))
             );
             $this->report_headers = array('Activated', '', 'Still Active', '');
             break;
@@ -216,8 +221,12 @@ class CWDemographicsReport extends FannieReportPage {
         $this->footer_count++;
         return $ret;
     }
+
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -31,66 +31,68 @@
 */
 
 class quickkey {
-	/**
-	  The button text. 
-	*/
-	var $title;
-	/**
-	  An image name.
-	*/
-	var $img;
-	/**
-	  What the button does
-	*/
-	var $output_text;
+    /**
+      The button text. 
+    */
+    var $title;
+    /**
+      An image name.
+    */
+    var $img;
+    /**
+      What the button does
+    */
+    var $output_text;
 
-	/**
-	  Constructor
-	  @param $t is the button text. There's no
-	   automatic wrapping to include newline(s)
-	   if needed
-	  @param $o is what the button does. When the
-	   button is selected, this string is fed 
-	   back into POS as input.
-	  @param $i an image filename. Support for
-	   images on buttons instead of text is
-	   theoretical and not yet tested.
-	*/
-	function quickkey($t,$o,$i=""){
-		$this->title = $t;
-		$this->output_text = $o;
-		$this->img = $i;
-	}
+    /**
+      Constructor
+      @param $t is the button text. There's no
+       automatic wrapping to include newline(s)
+       if needed
+      @param $o is what the button does. When the
+       button is selected, this string is fed 
+       back into POS as input.
+      @param $i an image filename. Support for
+       images on buttons instead of text is
+       theoretical and not yet tested.
+    */
+    function __construct($t,$o,$i=""){
+        $this->title = $t;
+        $this->output_text = $o;
+        $this->img = $i;
+    }
 
-	function display($id=""){
-		$ret = sprintf("<form action=\"%s\" method=\"post\"
-			style=\"display:inline;\">",
-			$_SERVER["PHP_SELF"]);
-		$ret = "";
-		if ($this->img == ""){
-			$ret .= sprintf("<input type=\"submit\"
-				name=\"quickkey_submit\" id=\"%s\"
-				value=\"%s\" class=\"quick_button\" />
-				<input type=\"hidden\" name=\"%s\"
-				value=\"%s\" />",$id,$this->title,
-				md5($this->title),
-				$this->output_text);
-		}
-		else {
-			$ret .= sprintf("<input type=\"submit\"
-				name=\"quickkey_submit\" id=\"%s\"
-				value=\"%s\" class=\"quick_button\" 
-				src=\"%s\" />
-				<input type=\"hidden\" name=\"%s\"
-				value=\"%s\" />",$id,$this->title,
-				MiscLib::base_url().
-				"quickkeys/imgs/".$this->img,
-				md5($this->title),
-				$this->output_text);
-		}
-		//$ret .= "</form>";
-		return $ret;
-	}
+    function display($id=""){
+        $ret = "";
+        if ($this->img == ""){
+            $ret .= sprintf('
+                <button type="submit"
+                    name="quickkey_submit" id="%s"
+                    value="%s"
+                    class="quick_button pos-button coloredBorder">
+                    %s
+                </button>
+                <input type="hidden" name="%s"
+                    value="%s" />',
+                $id,
+                $this->title,
+                $this->title,
+                md5($this->title),
+                $this->output_text);
+        } else {
+            $ret .= sprintf("<input type=\"submit\"
+                name=\"quickkey_submit\" id=\"%s\"
+                value=\"%s\" class=\"quick_button\" 
+                src=\"%s\" />
+                <input type=\"hidden\" name=\"%s\"
+                value=\"%s\" />",$id,$this->title,
+                MiscLib::base_url().
+                "quickkeys/imgs/".$this->img,
+                md5($this->title),
+                $this->output_text);
+        }
+
+        return $ret;
+    }
 }
 
-?>

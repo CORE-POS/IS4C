@@ -21,21 +21,24 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning;
+use COREPOS\pos\lib\Scanning\DiscountTypes\NormalPricing;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class DiscountType
   Base module for computing sale prices
 */
 class DiscountType 
 {
-
     static public $MAP = array(
-        0   => 'NormalPricing',
-        1   => 'EveryoneSale',
-        2   => 'MemberSale',
-        3   => 'PercentMemSale',
-        4   => 'StaffSale',
-        5   => 'SlidingMemSale',
-        6   => 'CasePriceDiscount',
+        0   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\NormalPricing',
+        1   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale',
+        2   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\MemberSale',
+        3   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\PercentMemSale',
+        4   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\StaffSale',
+        5   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\SlidingMemSale',
     );
 
     /**
@@ -49,6 +52,13 @@ class DiscountType
     */
     protected $savedInfo;
 
+    protected $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
+
     /**
       Calculate pricing
       @param $row A record from the products table
@@ -61,7 +71,7 @@ class DiscountType
        - discount The discount amount for everyone
        - memDiscount The discount amount for members
     */
-    public function priceInfo($row,$quantity=1)
+    public function priceInfo(array $row,$quantity=1)
     {
         return array(
             "regPrice"=>0,
@@ -128,6 +138,34 @@ class DiscountType
     public function isStaffSale()
     {
         return $this->isStaffOnly();
+    }
+
+    /* get discount object 
+
+       CORE reserves values 0 through 63 in 
+       DiscountType::$MAP for default options.
+
+       Additional discounts provided by plugins
+       can use values 64 through 127. Because
+       the DiscountTypeClasses array is zero-indexed,
+       subtract 64 as an offset  
+    */
+    public static function getObject($discounttype, $session)
+    {
+        $discounttype = MiscLib::nullwrap($discounttype);
+        $dtClasses = CoreLocal::get("DiscountTypeClasses");
+        if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
+            $class = DiscountType::$MAP[$discounttype];
+            return new $class($session);
+        } elseif ($discounttype >= 64 && isset($dtClasses[($discounttype-64)])) {
+            $class = $dtClasses[($discounttype)-64];
+            return new $class($session);
+        }
+
+        // If the requested discounttype isn't available,
+        // fallback to normal pricing. Debatable whether
+        // this should be a hard error.
+        return new NormalPricing($session);
     }
 
 }

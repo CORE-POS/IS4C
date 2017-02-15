@@ -82,7 +82,7 @@ StaffArPayrollDeduction plugin.';
         $ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
         $depts = array_pop($depts);
         if (!is_array($depts) || count($depts) == 0) {
-            echo $this->cronMsg('Could not locate any AR departments in Fannie configuration');
+            $this->cronMsg('Could not locate any AR departments in Fannie configuration', FannieLogger::NOTICE);
             return false;
         } else {
             $ar_dept = $depts[0];
@@ -118,7 +118,7 @@ StaffArPayrollDeduction plugin.';
                 continue;
             }
 
-            $record = DTrans::$DEFAULTS;
+            $record = DTrans::defaults();
             $record['emp_no'] = $emp;
             $record['register_no'] = $reg;
             $record['trans_no'] = $trans_no;
@@ -137,7 +137,7 @@ StaffArPayrollDeduction plugin.';
             $prep = $dbc->prepare($query);
             $write = $dbc->execute($prep, $p['arguments']);
             if ($write === false) {
-                echo $this->cronMsg('Error making staff AR deduction for #' . $obj->card_no());
+                $this->cronMsg('Error making staff AR deduction for #' . $obj->card_no(), FannieLogger::ERROR);
             }
 
             $trans_no++;

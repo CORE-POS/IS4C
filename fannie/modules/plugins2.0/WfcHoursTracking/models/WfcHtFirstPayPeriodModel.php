@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,82 +48,5 @@ class WfcHtFirstPayPeriodModel extends BasicModel
             return false;
         }
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function empID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["empID"])) {
-                return $this->instance["empID"];
-            } else if (isset($this->columns["empID"]["default"])) {
-                return $this->columns["empID"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'empID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["empID"]) || $this->instance["empID"] != func_get_args(0)) {
-                if (!isset($this->columns["empID"]["ignore_updates"]) || $this->columns["empID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["empID"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function periodID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["periodID"])) {
-                return $this->instance["periodID"];
-            } else if (isset($this->columns["periodID"]["default"])) {
-                return $this->columns["periodID"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'periodID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["periodID"]) || $this->instance["periodID"] != func_get_args(0)) {
-                if (!isset($this->columns["periodID"]["ignore_updates"]) || $this->columns["periodID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["periodID"] = func_get_arg(0);
-        }
-        return $this;
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

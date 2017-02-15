@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ScaleItemUploadPage extends FannieUploadPage 
+class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Scale Items";
@@ -86,26 +86,18 @@ class ScaleItemUploadPage extends FannieUploadPage
 
     protected $use_splits = true;
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upc_index = $this->get_column_index('upc');
-        $desc_index = $this->get_column_index('desc');
-        $price_index = $this->get_column_index('price');
-        $type_index = $this->get_column_index('type');
-        $tare_index = $this->get_column_index('tare');
-        $shelf_index = $this->get_column_index('shelf');
-        $net_index = $this->get_column_index('net');
-        $text_index = $this->get_column_index('text');
-
         $model = new ScaleItemsModel($dbc);
         $ret = true;
+        $this->stats = array('done' => 0, 'errors' => array());
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $upc = $line[$upc_index];
+            $upc = $line[$indexes['upc']];
 
             // upc cleanup
             $upc = str_replace(" ","",$upc);
@@ -118,45 +110,43 @@ class ScaleItemUploadPage extends FannieUploadPage
             $model->plu($upc);
             $model->load();
 
-            if ($type_index !== false && isset($line[$type_index])) {
-                if (strtoupper($line[$type_index]) == 'FIXED' || strtoupper($line[$type_index]) == 'EA') {
+            if ($this->checkIndex($indexes['type'], $line)) {
+                if (strtoupper($line[$indexes['type']]) == 'FIXED' || strtoupper($line[$indexes['type']]) == 'EA') {
                     $model->weight(1);
                     $model->bycount(1);
-                } else if (strtoupper($line[$type_index]) == 'RANDOM' || strtoupper($line[$type_index]) == 'RAND') {
+                } else if (strtoupper($line[$indexes['type']]) == 'RANDOM' || strtoupper($line[$indexes['type']]) == 'RAND') {
                     $model->weight(0);
                     $model->bycount(0);
                 }
             }
-            if ($desc_index !== false && isset($line[$desc_index]) && !empty($line[$desc_index])) {
-                $desc = $line[$desc_index];
-                $desc = str_replace("'","",$desc);
+            if ($this->checkIndex($indexes['desc'], $line) && !empty($line[$indexes['desc']])) {
+                $desc = str_replace("'","",$line[$indexes['desc']]);
                 $desc = str_replace("\"","",$desc);
                 $model->itemdesc($desc);
             }
-            if ($price_index !== false && isset($line[$price_index])) {
-                $model->price($line[$price_index]);
+            if ($this->checkIndex($indexes['price'], $line)) {
+                $model->price($line[$indexes['price']]);
             }
-            if ($tare_index !== false && isset($line[$tare_index])) {
-                $model->tare($line[$tare_index]);
+            if ($this->checkIndex($indexes['tare'], $line)) {
+                $model->tare($line[$indexes['tare']]);
             }
-            if ($shelf_index !== false && isset($line[$shelf_index])) {
-                $model->shelflife($line[$shelf_index]);
+            if ($this->checkIndex($indexes['shelf'], $line)) {
+                $model->shelflife($line[$indexes['shelf']]);
             }
-            if ($net_index !== false && isset($line[$net_index])) {
-                $model->netWeight($line[$net_index]);
+            if ($this->checkIndex($indexes['net'], $line)) {
+                $model->netWeight($line[$indexes['net']]);
             }
-            if ($text_index !== false && isset($line[$text_index]) && !empty($line[$text_index])) {
-                $text = $line[$text_index];
-                $text = str_replace("'","",$text);
-                $text = str_replace("\"","",$text);
-                $model->text($line[$text_index]);
+            if ($this->checkIndex($indexes['text'], $line) && !empty($line[$indexes['text']])) {
+                $model->text($line[$indexes['text']]);
             }
 
             $try = $model->save();
 
             if ($try === false) {
                 $ret = false;
-                $this->error_details = 'There was an error importing UPC ' . $upc;
+                $this->stats['errors'][] = 'There was an error importing UPC ' . $upc;
+            } else {
+                $this->stats['done']++;
             }
         }
 
@@ -165,19 +155,19 @@ class ScaleItemUploadPage extends FannieUploadPage
 
     function form_content()
     {
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing product UPCs plus descriptions, prices,
         tare weights, net weights, shelf lives, and/or ingredients/text.
         <br />A preview helps you to choose and map columns to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
     function results_content()
     {
-        return 'Import completed successfully';
+        return $this->simpleStats($this->stats, 'done');
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

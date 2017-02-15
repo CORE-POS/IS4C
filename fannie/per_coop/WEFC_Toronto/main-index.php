@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	* 10Oct12 Eric Lee New.
+    * 10Oct12 Eric Lee New.
 */
 
 include('../../config.php');
@@ -34,12 +34,11 @@ include($FANNIE_ROOT.'src/header.html');
 echo "<ul>";
 ?>
       <li><a href="<?php echo $path; ?>item/import/uploadAnyFile.php">Upload Any File</a></li>
-			<li><a href="<?php echo $path; ?>item/departments/loadWEFCTorontoDepts.php">Load Departments</a></li>
-			<li><a href="<?php echo $path; ?>item/import/loadWEFCTorontoProducts.php">Load Products</a></li>
-			<li><a href="<?php echo $path; ?>reports/Store-Specific/WEFC_Toronto/ProductsExport/">Product Export</a></li>
+            <li><a href="<?php echo $path; ?>item/departments/loadWEFCTorontoDepts.php">Load Departments</a></li>
+            <li><a href="<?php echo $path; ?>item/import/loadWEFCTorontoProducts.php">Load Products</a></li>
+            <li><a href="<?php echo $path; ?>reports/Store-Specific/WEFC_Toronto/ProductsExport/">Product Export</a></li>
 <?php
 echo "</ul>";
-									 
+                                     
 include($FANNIE_ROOT.'src/footer.html');
 
-?>

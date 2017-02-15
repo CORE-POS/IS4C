@@ -24,8 +24,8 @@ if (isset($_GET['plu'])){
         $plu = substr($plu,3,4);
     }
 
-    $query = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
-    $result = $dbc->exec_statement($query,array('002'.$plu.'000000'));
+    $query = $dbc->prepare("DELETE FROM scaleItems WHERE plu=?");
+    $result = $dbc->execute($query,array('002'.$plu.'000000'));
 
     deleteitem($plu);
     echo "Item delete requested<br />";
@@ -45,4 +45,3 @@ else {
 
 include($FANNIE_ROOT."src/footer.html");
 
-?>

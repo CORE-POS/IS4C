@@ -3,7 +3,7 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,13 +25,16 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class BatchIndexPage extends FanniePage {
+class BatchIndexPage extends FanniePage 
+{
     protected $title = 'Fannie - Batch Module';
     protected $header = 'Sales Batches';
 
     public $description = '[Batch Menu] lists various batch related pages.';
+    public $has_unit_tests = true;
 
-    function body_content(){
+    function bodyContent()
+    {
         ob_start();
         ?>
         <ul>
@@ -52,8 +55,24 @@ class BatchIndexPage extends FanniePage {
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>These tools deal with creating and managing
+            batches. Batches are used for temporary promotional prices
+            - often referred to as "Sales Batches" as well as for
+            scheduling updates to regular retail pricing and applying
+            changes simultaneously to multiple products. The latter
+            are called "Price Change Batches".
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $body = $this->bodyContent();
+        $phpunit->assertNotEquals(0, strlen($body));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
    @class BasicPM
    
@@ -33,15 +39,17 @@
 class BasicPM extends PriceMethod 
 {
 
-    private $error_msg = '';
+    private $errorMsg = '';
 
-    function addItem($row,$quantity,$priceObj)
+    public function addItem(array $row, $quantity, $priceObj)
     {
-        global $CORE_LOCAL;
-        if ($quantity == 0) return False;
+        if ($quantity == 0) {
+            $this->errorMsg = _('Quantity cannot be zero');
+            return false;
+        }
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = $this->session->get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
@@ -51,14 +59,14 @@ class BasicPM extends PriceMethod
           limit. This is analogous to a similar feature with sale items.
         */
         if (!$priceObj->isSale() && $row['quantity'] > 0){
-            $db = Database::tDataConnect();
+            $dbc = Database::tDataConnect();
             $query = "SELECT SUM(quantity) as qty FROM localtemptrans
                 WHERE upc='{$row['upc']}'";
-            $result = $db->query($query);
-            if ($db->num_rows($result) > 0){
-                $chkRow = $db->fetch_row($result);
+            $result = $dbc->query($query);
+            if ($dbc->numRows($result) > 0){
+                $chkRow = $dbc->fetchRow($result);
                 if (($chkRow['qty']+$quantity) > $row['quantity']){
-                    $this->error_msg = _("item only allows ")
+                    $this->errorMsg = _("item only allows ")
                             .$row['quantity']
                             ._(" per transaction");
                     return False;
@@ -72,6 +80,7 @@ class BasicPM extends PriceMethod
             'upc' => $row['upc'],
             'description' => $row['description'],
             'trans_type' => 'I',
+            'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
             'department' => $row['department'],
             'quantity' => $quantity,
             'unitPrice' => $pricing['unitPrice'],
@@ -99,7 +108,7 @@ class BasicPM extends PriceMethod
 
     function errorInfo()
     {
-        return $this->error_msg;
+        return $this->errorMsg;
     }
 }
 

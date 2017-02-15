@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class MemChargeBalanceModel
 */
@@ -34,60 +37,24 @@ class MemChargeBalanceModel extends BasicModel
     'CardNo' => array('type'=>'INT'),
     'availBal' => array('type'=>'MONEY'),
     'balance' => array('type'=>'MONEY'),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+DEPRECATED 4Jan14 no longer used
+
+View showing member charge balance. Authoritative,
+up-to-the-second data is on the server but a local
+lookup is faster if slightly stale data is acceptable.
+        ';
+    }
 
     /* disabled because it's a view */
     public function create(){ return false; }
     public function delete(){ return false; }
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function CardNo()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["CardNo"])) {
-                return $this->instance["CardNo"];
-            } elseif(isset($this->columns["CardNo"]["default"])) {
-                return $this->columns["CardNo"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["CardNo"] = func_get_arg(0);
-        }
-    }
-
-    public function availBal()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["availBal"])) {
-                return $this->instance["availBal"];
-            } elseif(isset($this->columns["availBal"]["default"])) {
-                return $this->columns["availBal"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["availBal"] = func_get_arg(0);
-        }
-    }
-
-    public function Balance()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Balance"])) {
-                return $this->instance["Balance"];
-            } elseif(isset($this->columns["Balance"]["default"])) {
-                return $this->columns["Balance"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Balance"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

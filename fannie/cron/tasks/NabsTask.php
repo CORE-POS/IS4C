@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -42,23 +42,35 @@ monthly.nabs.php.';
 
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_AR_DEPARTMENTS, $FANNIE_SERVER_DBMS;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
 
-        $date = date('Y-m-t 23:59:59', mktime(0,0,0,date('n')-1));
-
-        $cn = 'SELECT CardNo FROM ' . $FANNIE_OP_DB.$dbc->sep() . 'custdata
+        $nabQ = 'SELECT CardNo FROM ' . $this->config->get('OP_DB').$dbc->sep() . 'custdata
             WHERE memType=4 and personNum=1';
-        $r = $dbc->query($cn);
+        $nabR = $dbc->query($nabQ);
+
+        /**
+          ar_history_today* views filter on tdate=current_date
+          This means ar_live_balance is off from midnight until
+          ArHistoryTask runs. Since this task runs in that window
+          it needs to manually account for the current day's 
+          activity.
+        */
+        $todayP = $dbc->prepare("
+            SELECT SUM(CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END)
+                - SUM(CASE WHEN department=990 THEN total ELSE 0 END) AS today
+            FROM dlog WHERE (trans_subtype='MI' OR department=990)
+                AND card_no=?");
 
         $balQ = 'SELECT balance FROM ar_live_balance where card_no=?';
         $balP = $dbc->prepare($balQ);
-        $tn = 1;
-        while($w = $dbc->fetch_row($r)) {
-            $balR = $dbc->execute($balP, array($w['CardNo']));
+        $trans_no = 1;
+        while ($nabW = $dbc->fetch_row($nabR)) {
+            $balR = $dbc->execute($balP, array($nabW['CardNo']));
             if ($balW = $dbc->fetch_row($balR)) {
                 if ($balW[0] > 0) {
-                    $record = DTrans::$DEFAULTS;
+                    $today = $dbc->getValue($todayP, array($nabW['CardNo']));
+                    $balW[0] += $today;
+                    $record = DTrans::defaults();
                     $datetime = date('\'Y-m-t 00:00:00\'', mktime(0,0,0,date('n')-1));
                     $record['emp_no'] = 1001;
                     $record['register_no'] = 20;
@@ -67,11 +79,11 @@ monthly.nabs.php.';
                     $record['department'] = 990;
                     $record['quantity'] = 1;
                     $record['ItemQtty'] = 1;
-                    $record['card_no'] = $w['CardNo'];
+                    $record['card_no'] = $nabW['CardNo'];
                     $record['regPrice'] = $balW[0];
                     $record['total'] = $balW[0];
                     $record['unitPrice'] = $balW[0];
-                    $record['trans_no'] = $tn;
+                    $record['trans_no'] = $trans_no;
                     $record['trans_id'] = 1;
 
                     $info = DTrans::parameterize($record, 'datetime', $datetime);
@@ -79,7 +91,7 @@ monthly.nabs.php.';
                     $prep = $dbc->prepare($query);
                     $result = $dbc->execute($prep, $info['arguments']);
 
-                    $tn++;
+                    $trans_no++;
                 }
             }
         }

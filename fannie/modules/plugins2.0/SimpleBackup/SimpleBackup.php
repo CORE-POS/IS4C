@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class SimpleBackup extends FanniePlugin 
+class SimpleBackup extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'SimpleBackupDir' => array('default'=>'/tmp/', 'label'=>'Backup Save Directory',

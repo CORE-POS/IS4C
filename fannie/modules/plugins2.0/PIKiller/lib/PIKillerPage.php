@@ -21,11 +21,13 @@
 
 *********************************************************************************/
 
-global $FANNIE_ROOT;
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/../../../../classlib2.0/FannieAPI.php');
+}
 
 class PIKillerPage extends FannieRESTfulPage {
+
+    public $page_set = 'Plugin :: PIKiller';
 
     protected $card_no = False;
 
@@ -65,6 +67,8 @@ class PIKillerPage extends FannieRESTfulPage {
                 href="'.($this->card_no?'PIPurchasesPage.php?id='.$this->card_no:'').'">Detail</a>
             <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
                 href="'.($this->card_no?'PIPatronagePage.php?id='.$this->card_no:'').'">Patronage</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="'.($this->card_no?'PIAccessPage.php?id='.$this->card_no:'').'">Access</a>
             </div>
             </td>
             </tr>

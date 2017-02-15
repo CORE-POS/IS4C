@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,143 +26,178 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class UploadPluMapPage extends FannieUploadPage {
-
+class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     public $title = "Fannie - Load Vendor SKU/PLU mapping";
     public $header = "Upload Vendor SKU/PLU file";
+
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
 
     public $description = '[Vendor PLU Map] loads a list of vendor SKUs and the corresponding
     POS UPC used to sell the item. Typically these are things like bulk PLUs but any UPC is
     permitted.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'SKU',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'plu' => array(
-            'name' => 'plu',
             'display_name' => 'PLU',
             'default' => 1,
-            'required' => True
+            'required' => true
         )
     );
 
-    protected $use_splits = False;
+    protected $use_splits = false;
 
-    function process_file($linedata){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    private function prepStatements($dbc)
+    {
+        $this->insP = $dbc->prepare('INSERT INTO vendorSKUtoPLU (vendorID, sku, upc) VALUES (?,?,?)');
+        $this->upP  = $dbc->prepare('UPDATE vendorSKUtoPLU SET upc=? WHERE sku=? AND vendorID=?');
+        $this->chkP = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND upc=? AND vendorID=?');
+        $this->pluP = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND vendorID=?');
+    }
 
+    private function sessionVendorID($dbc)
+    {
         if (!isset($_SESSION['vid'])){
             $this->error_details = 'Missing vendor setting';
-            return False;
+            return false;
         }
         $VENDOR_ID = $_SESSION['vid'];
 
-        $p = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorID=?");
-        $idR = $dbc->exec_statement($p,array($VENDOR_ID));
+        $idP = $dbc->prepare("SELECT vendorID FROM vendors WHERE vendorID=?");
+        $idR = $dbc->execute($idP,array($VENDOR_ID));
         if ($dbc->num_rows($idR) == 0){
             $this->error_details = 'Cannot find vendor';
-            return False;
+            return false;
         }
 
-        $SKU = $this->get_column_index('sku');
-        $PLU = $this->get_column_index('plu');
+        return $VENDOR_ID;
+    }
+
+    private function getSkuPlu($data, $SKU, $PLU)
+    {
+        $sku = false;
+        $plu = false;
+        if (is_array($data) && isset($data[$SKU]) && isset($data[$PLU])) {
+            // grab data from appropriate columns
+            $sku = str_pad($data[$SKU], 7, "0", STR_PAD_LEFT);
+            $plu = substr($data[$PLU],0,13);
+            $plu = BarcodeLib::padUPC($plu);
+            if (!is_numeric($plu)) { 
+                $plu = false;
+            }
+        }
+
+        return array($sku, $plu);
+    }
+
+    public function process_file($linedata, $indexes)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $VENDOR_ID = $this->sessionVendorID($dbc);
+        if ($VENDOR_ID === false) {
+            return false;
+        }
+
+        $this->prepStatements($dbc);
+
         $mode = FormLib::get_form_value('map_mode',0);
         $REPLACE = ($mode === '1') ? True : False;
 
         if ($REPLACE){
-            $delP = $dbc->prepare_statement('DELETE FROM vendorSKUtoPLU WHERE vendorID=?');
-            $dbc->exec_statement($delP, array($VENDOR_ID));
+            $delP = $dbc->prepare('DELETE FROM vendorSKUtoPLU WHERE vendorID=?');
+            $dbc->execute($delP, array($VENDOR_ID));
         }
 
-        $insP = $dbc->prepare_statement('INSERT INTO vendorSKUtoPLU (vendorID, sku, upc) VALUES (?,?,?)');
-        $upP  = $dbc->prepare_statement('UPDATE vendorSKUtoPLU SET upc=? WHERE sku=? AND vendorID=?');
-        $chkP = $dbc->prepare_statement('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND upc=? AND vendorID=?');
-        $pluP = $dbc->prepare_statement('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND vendorID=?');
+        $this->stats = array('done' => 0, 'error' => array());
+        foreach ($linedata as $data) {
+            list($sku, $plu) = $this->getSkuPlu($data, $indexes['sku'], $indexes['plu']);
+            if ($sku !== false && $plu !== false) {
+                $chkR = $dbc->execute($this->chkP, array($sku,$plu,$VENDOR_ID));
+                if ($dbc->num_rows($chkR) > 0) continue; // entry exists
 
-        foreach($linedata as $data){
-            if (!is_array($data)) continue;
+                $pluR = $dbc->execute($this->pluP, array($sku,$VENDOR_ID));
+                $success = false;
+                if ($dbc->num_rows($pluR) == 0){
+                    $success = $dbc->execute($this->insP, array($VENDOR_ID, $sku, $plu));
+                } else {
+                    $success = $dbc->execute($this->upP, array($plu, $sku, $VENDOR_ID));
+                }
 
-            if (!isset($data[$PLU])) continue;
-            if (!isset($data[$SKU])) continue;
-
-            // grab data from appropriate columns
-            $sku = $data[$SKU];
-            $plu = substr($data[$PLU],0,13);
-            $plu = BarcodeLib::padUPC($plu);
-            if (!is_numeric($plu)) continue;
-    
-            $chkR = $dbc->exec_statement($chkP, array($sku,$plu,$VENDOR_ID));
-            if ($dbc->num_rows($chkR) > 0) continue; // entry exists
-
-            $pluR = $dbc->exec_statement($chkP, array($sku,$plu,$VENDOR_ID));
-            if ($dbc->num_rows($pluR) == 0){
-                $dbc->exec_statement($insP, array($VENDOR_ID, $sku, $plu));
-            }
-            else {
-                $dbc->exec_statement($upP, array($plu, $sku, $VENDOR_ID));
+                if ($success) {
+                    $this->stats['done']++;
+                } else {
+                    $this->stats['error'][] = 'Error updating SKU #' . $sku;
+                }
             }
         }
 
         // update vendorItems to use the new PLU mapping
-        $resetP = $dbc->prepare_statement('UPDATE vendorItems AS i
+        $resetP = $dbc->prepare('UPDATE vendorItems AS i
                 INNER JOIN vendorSKUtoPLU as s
                 ON s.sku=i.sku AND s.vendorID=i.vendorID
                 SET i.upc=s.upc
                 WHERE i.vendorID=?');
-        $dbc->exec_statement($resetP, array($VENDOR_ID));
+        $dbc->execute($resetP, array($VENDOR_ID));
 
-        return True;
+        return true;
     }
 
+    /**
+      This option is rather unsafe. Removing the existing map
+      is probably a bad idea in most cases.
     function preview_content(){
         return 'Mode <select name="map_mode"><option value="0">Update</option>
                 <option value="1">Replace</option></select>';
     }
+    */
 
-    function results_content(){
-        $ret = "Mapping updated<p />";
-        $ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
+    function results_content()
+    {
         unset($_SESSION['vid']);
-        return $ret;
+        return $this->simpleStats($this->stats, 'done');
     }
 
-    function form_content(){
+    function form_content()
+    {
         global $FANNIE_OP_DB;
         $vid = FormLib::get_form_value('vid');
         if ($vid === ''){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Selected</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Selected</div>';
         }
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $vp = $dbc->prepare_statement('SELECT vendorName FROM vendors WHERE vendorID=?');
-        $vr = $dbc->exec_statement($vp,array($vid));
-        if ($dbc->num_rows($vr)==0){
+        $vendP = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
+        $vname = $dbc->getValue($vendP,array($vid));
+        if (!$vname) {
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
-            return '<span style="color:red;">Error: No Vendor Found</span>';
+            return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
-        $vrow = $dbc->fetch_row($vr);
         $_SESSION['vid'] = $vid;
-        return '<fieldset><legend>Instructions</legend>
-            Upload a PLU and SKU file for <i>'.$vrow['vendorName'].'</i> ('.$vid.'). File
-            can be CSV, XLS, or XLSX.</fieldset><br />';
+        return '<div class="well"><legend>Instructions</legend>
+            Upload a PLU and SKU file for <i>'.$vname.'</i> ('.$vid.'). File
+            can be CSV, XLS, or XLSX.</div><br />';
     }
 
     public function preprocess()
     {
-        if (php_sapi_name() !== 'cli') {
+        if (php_sapi_name() !== 'cli' && !headers_sent() && session_id() === '') {
             /* this page requires a session to pass some extra
                state information through multiple requests */
-            @session_start();
+            session_start();
         }
 
         return parent::preprocess();
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

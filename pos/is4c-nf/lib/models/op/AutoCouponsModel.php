@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class AutoCouponsModel
 */
@@ -32,41 +35,15 @@ class AutoCouponsModel extends BasicModel
     protected $columns = array(
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
-	);
+    );
 
     protected $preferred_db = 'op';
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function coupID()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["coupID"])) {
-                return $this->instance["coupID"];
-            } elseif(isset($this->columns["coupID"]["default"])) {
-                return $this->columns["coupID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["coupID"] = func_get_arg(0);
-        }
+        return '
+Apply coupons to transactions automatically
+        ';
     }
-
-    public function description()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["description"])) {
-                return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
-                return $this->columns["description"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["description"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

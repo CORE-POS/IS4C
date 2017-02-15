@@ -22,8 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'/classlib2.0/FannieAPI.php');
+}
 if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
 }
@@ -46,10 +47,31 @@ class PIPurchasesPage extends PIKillerPage {
         return True;
     }
 
+    protected function getFilter($filter)
+    {
+        $sql = '';
+        $args = array();
+        switch ($filter) {
+            case 'R':
+                $sql = ' AND trans_status=\'R\' ';
+                break;
+            case '1':
+                $sql .= ' AND store_id=1 ';
+                break;
+            case '2':
+                $sql .= ' AND store_id=2 ';
+                break;
+        }
+
+        return array($sql, $args);
+    }
+
     protected function get_id_view(){
         global $FANNIE_TRANS_DB,$FANNIE_URL;
         $table = DTransactionsModel::selectDlog($this->__models['start'],$this->__models['end']);
         $my = date('Ym',strtotime($this->__models['start']));
+
+        list($fwhere, $fargs) = $this->getFilter(FormLib::get('filter'));
 
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
         $query = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
@@ -62,12 +84,14 @@ class PIPurchasesPage extends PIKillerPage {
             sum(case when upc like '00499999%' then total else 0 end) as wfcoupon
             FROM $table as t
             WHERE card_no=?
-            AND tdate BETWEEN ? AND ?
+                AND tdate BETWEEN ? AND ?
+                $fwhere
             GROUP BY year(tdate),month(tdate),day(tdate),trans_num
             ORDER BY yt DESC, mt DESC,
             dt DESC";
         $args = array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59');
-        if ($my == date('Ym') && substr($table, -5) != '.dlog') {
+        $args = array_merge($args, $fargs);
+        if ($my == date('Ym') && substr($table, -5) != '.dlog' && substr($table, -8) != '.dlog_15') {
             // current month. tack on today's transactions
             $today = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
                 sum(case when trans_type='T' then -total else 0 end) as tenderTotal,
@@ -83,8 +107,8 @@ class PIPurchasesPage extends PIKillerPage {
             $query = $today . ' UNION ALL ' . $query;
             array_unshift($args, $this->id);
         }
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
 
         ob_start();
         echo '<tr><td>';
@@ -104,6 +128,19 @@ class PIPurchasesPage extends PIKillerPage {
             if (date("Y",$ts) == 2004 && date("n",$ts) == 9)
                 break;  
         }
+        echo "</select>";
+        echo '&nbsp;|&nbsp;';
+        echo "<select name=filter onchange=\"\$('#myform').submit();\">";
+        $filters = array(
+            'No filter' => '',
+            'Returns' => 'R',
+            'Hillside' => 1,
+            'Denfeld' => 2,
+        );
+        foreach ($filters as $label => $val) {
+            printf('<option %s value="%s">%s</option>',
+                ($val == FormLib::get('filter') ? 'selected' : ''), $val, $label);
+        }    
         echo "</select>";
 
         $visits = 0;
@@ -141,4 +178,3 @@ class PIPurchasesPage extends PIKillerPage {
 
 FannieDispatch::conditionalExec();
 
-?>

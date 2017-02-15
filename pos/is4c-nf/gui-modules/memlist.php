@@ -23,263 +23,379 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 24Oct2013 Eric Lee Defeated:
-	*                    + A WEFC_Toronto-only textbox for collecting Member Card#
-	*  5Oct2012 Eric Lee Added:
-	*                    + A WEFC_Toronto-only chunk for collecting Member Card#
-	*                    + A general facility for displaying an error encountered in preprocess()
-	*                       in body_content() using temp_message.
+    * 24Oct2013 Eric Lee Defeated:
+    *                    + A WEFC_Toronto-only textbox for collecting Member Card#
+    *  5Oct2012 Eric Lee Added:
+    *                    + A WEFC_Toronto-only chunk for collecting Member Card#
+    *                    + A general facility for displaying an error encountered in preprocess()
+    *                       in body_content() using tempMessage.
 
 */
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class memlist extends NoInputPage 
+class memlist extends NoInputCorePage 
 {
+    private $tempMessage = '';
 
-	private $temp_result;
-	private $temp_num_rows;
-	private $entered;
-	private $db;
-	private $temp_message;
+    private $results = array();
+    private $submitted = false;
 
-	private $results = array();
-	private $submitted = false;
+    private $noticeCache = array();
+    private $noticeStatement = null;
 
-	function preprocess()
+    private function getInput()
     {
-		global $CORE_LOCAL;
-
-		// set variable ahead of time
-		// so we know if lookup found no one
-		// vs. lookup didn't happen
-		$this->submitted = false;
-
-		$entered = "";
-		if (isset($_REQUEST['idSearch']) && strlen($_REQUEST['idSearch']) > 0) {
-			$entered = $_REQUEST['idSearch'];
-		} else if (isset($_REQUEST['search'])) {
-			$entered = strtoupper(trim($_REQUEST["search"]));
-			$entered = str_replace("'", "''", $entered);
-		} else {
-            return true;
+        $entered = false;
+        if ($this->form->tryGet('idSearch', false) !== false) {
+            $entered = $this->form->idSearch;
+        } elseif ($this->form->tryGet('search', false) !== false) {
+            $entered = $this->form->search;
+        }
+        if ($entered === false) {
+            return false;
         }
 
-		if (substr($entered, -2) == "ID") {
+        if (substr($entered, -2) == "ID") {
             $entered = substr($entered, 0, strlen($entered) - 2);
         }
 
-		$personNum = false;
-		$memberID = false;
-		if (strstr($entered,"::") !== false) {
-			// Values of memlist items are "CardNo::personNum"
-			list($memberID,$personNum) = explode("::",$entered);
-			$this->submitted = true;
-		}
+        return strtoupper(str_replace("'", '', $entered));
+    }
 
-		// No input available, stop
-		if (!$entered || strlen($entered) < 1 || $entered == "CL") {
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return false;
-		}
-		else if ($memberID === false && $personNum === false){
-			// find the member
-			$lookups = AutoLoader::ListModules('MemberLookup', True);
-			foreach ($lookups as $class) {
-				if (!class_exists($class)) continue;
-				$obj = new $class();
+    private function runSearch($entered)
+    {
+        $lookups = AutoLoader::ListModules('COREPOS\\pos\\lib\\MemberLookup', True);
+        $results = array();
+        foreach ($lookups as $class) {
+            if (!class_exists($class)) continue;
+            $obj = new $class();
 
-				if (is_numeric($entered) && !$obj->handle_numbers()) {
-					continue;
-				} else if (!is_numeric($entered) && !$obj->handle_text()) {
-					continue;
-				} else if (is_numeric($entered)) {
-					$chk = $obj->lookup_by_number($entered);
-					if ($chk['url'] !== false) {
-						$this->change_page($chk['url']);
-
-						return false;		
-					}
-					foreach($chk['results'] as $key=>$val) {
-						$this->results[$key] = $val;
-                    }
-				} else if(!is_numeric($entered)) {
-					$chk = $obj->lookup_by_text($entered);
-					if ($chk['url'] !== false) {
-						$this->change_page($chk['url']);
-
-						return false;		
-					}
-					foreach ($chk['results'] as $key=>$val) {
-						$this->results[$key] = $val;
-                    }
-				}
-			}
-			$this->submitted = true;
-		}
-
-		// if theres only 1 match don't show the memlist
-		// when it's the default non-member account OR
-		// when name verification is disabled
-		if (count($this->results) == 1 && 
-		    ($CORE_LOCAL->get("verifyName")==0 || $entered == $CORE_LOCAL->get('defaultNonMem'))) {
-			$key = array_pop(array_keys($this->results));
-			list($memberID, $personNum) = explode('::',$key);
-		}
-
-		// we have exactly one row and 
-		// don't need to confirm any further
-		if ($memberID !== false && $personNum !== false){
-			if ($memberID == $CORE_LOCAL->get('defaultNonMem')) {
-				$personNum = 1;
+            if (is_numeric($entered) && !$obj->handle_numbers()) {
+                continue;
+            } elseif (!is_numeric($entered) && !$obj->handle_text()) {
+                continue;
+            } elseif (is_numeric($entered)) {
+                $chk = $obj->lookup_by_number($entered);
+                $results = $this->checkResults($chk, $results);
+            } elseif (!is_numeric($entered)) {
+                $chk = $obj->lookup_by_text($entered);
+                $results = $this->checkResults($chk, $results);
             }
-			$db_a = Database::pDataConnect();
-			$query = $db_a->prepare_statement('SELECT CardNo, personNum,
-				LastName, FirstName,CashBack,Balance,Discount,
-				ChargeOk,WriteChecks,StoreCoupons,Type,
-				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,
-				blueLine,Shown,id FROM custdata WHERE CardNo=?
-				AND personNum=?');
-			$result = $db_a->exec_statement($query,array($memberID, $personNum));
-			$row = $db_a->fetch_row($result);
-			PrehLib::setMember($row["CardNo"], $personNum, $row);
+        }
 
-			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
-			// add the memberCards record.
-			if ($CORE_LOCAL->get('store') == "WEFC_Toronto") {
-				$mmsg = "";
-				if (isset($_REQUEST['memberCard']) && $_REQUEST['memberCard'] != "") {
-					$memberCard = $_REQUEST['memberCard'];
-					if (!is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0) {
-						$mmsg = "Bad Member Card# format >{$memberCard}<";
-					} else {
-						$upc = sprintf("00401229%05d", $memberCard);
-						// Check that it isn't already there, perhaps for someone else.
-						$mQ = "SELECT card_no FROM memberCards where card_no = {$row['CardNo']}";
-						$mResult = $db_a->query($mQ);
-						$mNumRows = $db_a->num_rows($mResult);
-						if ($mNumRows > 0) {
-							$mmsg = "{$row['CardNo']} is already associated with another Member Card";
-						} else {
-							$mQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$row['CardNo']}, '$upc')";
-							$mResult = $db_a->query($mQ);
-							if ( !$mResult ) {
-								$mmsg = "Linking membership to Member Card failed.";
-							}
-						}
-					}
-				}
-				if ($mmsg != "") {
-					// Prepare to display the error.
-					$this->temp_message = $mmsg;
+        return $results;
+    }
 
-					return true;
-				}
-			// /WEFC_Toronto bit.
-			}
+    private function checkResults($chk, $results)
+    {
+        if ($chk['url'] !== false) {
+            $this->change_page($chk['url']);
+            throw new Exception('page change requested');
+        }
+        foreach ($chk['results'] as $key=>$val) {
+            $results[$key] = $val;
+        }
 
-			// don't bother with unpaid balance check if there is no balance
-			if ($entered != $CORE_LOCAL->get("defaultNonMem") && $CORE_LOCAL->get('balance') > 0) {
-				$unpaid = PrehLib::check_unpaid_ar($row["CardNo"]);
-				if ($unpaid) {
-					$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
-				} else {
-					$this->change_page($this->page_url."gui-modules/pos2.php");
+        return $results;
+    }
+
+    function preprocess()
+    {
+        $entered = $this->getInput();
+        if ($entered === false) {
+            return true;
+        } elseif (!$entered || strlen($entered) < 1 || $entered == "CL") {
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+
+            return false;
+        }
+
+        $personNum = false;
+        $memberID = false;
+        $this->submitted = true;
+        if (strstr($entered, "::") !== false) {
+            // User selected a :: delimited item from the list interface
+            list($memberID, $personNum) = explode("::", $entered, 2);
+        } else {
+            // search for the member
+            try {
+                $this->results = $this->runSearch($entered);
+            } catch (Exception $ex) {
+                return false;
+            }
+
+            if (count($this->results) == 1 && ($this->session->get('verifyName') == 0 || $entered == $this->session->get('defaultNonMem'))) {
+                $members = array_keys($this->results);
+                $match = $members[0];
+                list($memberID, $personNum) = explode('::', $match, 2);
+            }
+        }
+
+
+        // we have exactly one row and 
+        // don't need to confirm any further
+        if ($memberID !== false && $personNum !== false) {
+            $callback = $this->getCallbackAction($memberID);
+            if ($callback != false) {
+                $callback->apply();
+            }
+            if ($memberID == $this->session->get('defaultNonMem')) {
+                $personNum = 1;
+            }
+            COREPOS\pos\lib\MemberLib::setMember($memberID, $personNum);
+
+            if ($this->session->get('store') == "WEFC_Toronto") {
+                $errorMsg = $this->wefcCardCheck($memberID);
+                if ($errorMsg !== true) {
+                    $this->tempMessage = $errorMsg;
+
+                    return true;
                 }
-			} else {
-				$this->change_page($this->page_url."gui-modules/pos2.php");
             }
 
-			return false;
-		}
+            // don't bother with unpaid balance check if there is no balance
+            $url = $this->page_url."gui-modules/pos2.php";
+            if ($memberID != $this->session->get("defaultNonMem") && $this->session->get('balance') > 0) {
+                $unpaid = COREPOS\pos\lib\MemberLib::checkUnpaidAR($memberID);
+                if ($unpaid) {
+                    $url = $this->page_url."gui-modules/UnpaidAR.php";
+                }
+            }
+            $this->change_page($url);
 
-		// Prepare to display the memlist (list to choose from).
-		$this->temp_message = "";
+            return false;
+        }
 
-		return true;
+        return true;
 
-	} // END preprocess() FUNCTION
+    } // END preprocess() FUNCTION
 
-	function head_content()
+    /**
+      Check for a registered callback that runs when
+      a given member number is applied
+    */
+    private function getCallbackAction($cardNo)
     {
-		global $CORE_LOCAL;
-		if (count($this->results) > 0) {
-			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
-			$this->add_onload_command("\$('#search').focus();\n");
-		} else {
-			$this->default_parsewrapper_js('reginput','selectform');
-			$this->add_onload_command("\$('#reginput').focus();\n");
-		}
-		?>
+        $dbc = Database::pDataConnect();
+        if ($this->session->get('NoCompat') != 1 && !$dbc->tableExists('CustomerNotifications')) {
+            echo 'no notifications';
+            return false;
+        }
+        $prep = $dbc->prepare("
+            SELECT message,
+                modifierModule
+            FROM CustomerNotifications
+            WHERE type='callback'
+                AND cardNo=?"
+        );
+        $res = $dbc->getRow($prep, array($cardNo));
+        if ($res === false || !class_exists($res['modifierModule']) || !is_subclass_of($res['modifierModule'], 'MemTotalAction')) {
+            return false;
+        }
+
+        $class = $res['modifierModule'];
+        $obj = new $class();
+        $obj->setMember($cardNo);
+        $obj->setMessage($res['message']);
+
+        return $obj;
+    }
+
+    // WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
+    // add the memberCards record.
+    private function wefcCardCheck($cardNo)
+    {
+        $dba = Database::pDataConnect();
+        if ($this->form->tryGet('memberCard') !== '') {
+            $memberCard = $this->form->memberCard;
+            if (!is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0) {
+                return "Bad Member Card# format >{$memberCard}<";
+            }
+            $upc = sprintf("00401229%05d", $memberCard);
+            // Check that it isn't already there, perhaps for someone else.
+            $memQ = "SELECT card_no FROM memberCards where card_no = {$cardNo}";
+            $mResult = $dba->query($memQ);
+            $mNumRows = $dba->num_rows($mResult);
+            if ($mNumRows > 0) {
+                return "{$cardNo} is already associated with another Member Card";
+            }
+            $memQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$cardNo}, '$upc')";
+            $mResult = $dba->query($memQ);
+            if ( !$mResult ) {
+                return "Linking membership to Member Card failed.";
+            }
+        }
+
+        return true;
+    }
+
+    function head_content()
+    {
+        if (count($this->results) > 0) {
+            $this->add_onload_command("selectSubmit('#reginput', '#selectform', '#filter-div')\n");
+        } else {
+            $this->default_parsewrapper_js('reginput','selectform');
+        }
+        $this->add_onload_command("\$('#reginput').focus();\n");
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
-	} // END head() FUNCTION
+        <?php
+    } // END head() FUNCTION
 
-	function body_content()
+    private function searchDialog($message)
     {
-		global $CORE_LOCAL;
-		$message = $this->temp_message;
+        ob_start();
+        echo "
+        <div class=\"colored centeredDisplay rounded\">
+            <span class=\"larger\">";
+        if ($message !== '') {
+            echo $message . '<br />';
+        } elseif (!$this->submitted) {
+            echo _("member search")."<br />"._("enter member number or name");
+        } else {
+            echo _("no match found")."<br />"._("next search or member number");
+        }
+        echo "</span>
+            <p>
+            <input type=\"text\" name=\"search\" size=\"15\"
+                   onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
+            </p>
+            <button class=\"pos-button\" type=\"button\"
+                onclick=\"\$('#reginput').val('');\$('#selectform').submit();\">
+                " . _('Cancel [enter]') . "
+            </button>
+        </div>";
 
-		echo "<div class=\"baseHeight\">"
-			."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
+        return ob_get_clean();
+    }
 
-		// First check for a problem found in preprocess.
-		if ($message != "") {
-			echo "
-			<div class=\"colored centeredDisplay\">
-				<span class=\"larger\">
-			{$message}<br />".
-			_("enter member number or name").
-			"</span>
-				<input type=\"text\" name=\"search\" size=\"15\"
-			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
-				<br />press [enter] to cancel
-			</div>";
-		} else if (count($this->results) < 1) {
-            /* for no results, just throw up a re-do
-             * otherwise, put results in a select box
-             */
-			echo "
-			<div class=\"colored centeredDisplay\">
-				<span class=\"larger\">";
-			if (!$this->submitted) {
-				echo _("member search")."<br />"._("enter member number or name");
-			} else {
-				echo _("no match found")."<br />"._("next search or member number");
+    private function noticeStatement($dbc)
+    {
+        if ($this->noticeStatement !== null) {
+            return $this->noticeStatement;
+        }
+
+        $this->noticeStatement = false;
+        if ($this->session->get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
+            $this->noticeStatement = $dbc->prepare('
+                SELECT message
+                FROM CustomerNotifications
+                WHERE cardNo=?
+                    AND type=\'memlist\'
+                ORDER BY message');
+        }
+
+        return $this->noticeStatement;
+    }
+
+    private function getNotification($cardNo)
+    {
+        if (isset($this->noticeCache[$cardNo])) {
+            return $this->noticeCache[$cardNo];
+        }
+
+        $dbc = Database::pDataConnect();
+        $noticeP = $this->noticeStatement($dbc);
+        if ($noticeP === false) {
+            return '';
+        }
+        $noticeR = $dbc->execute($noticeP, array($cardNo)); 
+        $notice = '';
+        while ($row = $dbc->fetchRow($noticeR)) {
+            $notice .= ' ' . $row['message'];
+        }
+        $this->noticeCache[$cardNo] = $notice;
+
+        return $notice;
+    }
+
+    private function listDisplay()
+    {
+        ob_start();
+        echo "<div class=\"listbox\">"
+            ."<select name=\"search\" size=\"15\" "
+            .' style="min-height: 200px; min-width: 220px; max-width: 390px;" '
+            ."onblur=\"\$('#reginput').focus();\" ondblclick=\"document.forms['selectform'].submit();\" 
+            id=\"reginput\">";
+
+        $selectFlag = 0;
+        foreach ($this->results as $optval => $label) {
+            echo '<option value="'.$optval.'"';
+            if ($selectFlag == 0) {
+                echo ' selected';
+                $selectFlag = 1;
             }
-			echo "</span>
-				<input type=\"text\" name=\"search\" size=\"15\"
-			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
-				<br />
-				press [enter] to cancel
-			</div>";
-		} else {
-			echo "<div class=\"listbox\">"
-				."<select name=\"search\" size=\"15\" "
-				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
+            /**
+              If available, look up notifications designated
+              for this screen. Cache results in case the
+              same account appears more than once in the list.
+            */
+            list($id, $pn) = explode('::', $optval, 2);
+            $label .= $this->getNotification($id);
+            echo '>'.$label.'</option>';
+        }
+        echo "</select>"
+            . '<div id="filter-div"></div>'
+            . "</div><!-- /.listbox -->";
+        if ($this->session->get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons()
+                . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">"
+            . _("use arrow keys to navigate")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">'
+            . _('OK') . ' <span class="smaller">' . _('[enter]') . '</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#search\').append($(\'<option>\').val(\'\'));$(\'#search\').val(\'\');">'
+            . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            ."<div class=\"clear\"></div>";
 
-			$selectFlag = 0;
-			foreach ($this->results as $optval => $label) {
-				echo '<option value="'.$optval.'"';
-				if ($selectFlag == 0) {
-					echo ' selected';
-					$selectFlag = 1;
-				}
-				echo '>'.$label.'</option>';
-            }
-			echo "</select></div><!-- /.listbox -->"
-				."<div class=\"listboxText coloredText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText coloredText .centerOffset -->"
-				."<div class=\"clear\"></div>";
-		}
-		echo "</form></div>";
-	} // END body_content() FUNCTION
+        return ob_get_clean();
+    }
+
+    function body_content()
+    {
+        echo "<div class=\"baseHeight\">"
+            ."<form id=\"selectform\" method=\"post\" action=\""
+            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">";
+
+        /* for no results or a problem found in preprocess, just throw up a re-do
+         * otherwise, put results in a select box
+         */
+        if ($this->tempMessage !== '' || count($this->results) < 1) {
+            echo $this->searchDialog($this->tempMessage);
+        } else {
+            echo $this->listDisplay();
+        }
+        echo "</form></div>";
+    } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->head_content();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $phpunit->assertNotEquals(0, strlen($this->listDisplay()));
+        $nt1 = $this->getNotification(1);
+        $nt2 = $this->getNotification(1);
+        $phpunit->assertEquals($nt1, $nt2);
+        $phpunit->assertInternalType('array', $this->runSearch(1));
+        $phpunit->assertInternalType('array', $this->runSearch('joe'));
+
+        $this->getCallbackAction(1);
+    }
 
 // /class memlist
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	new memlist();
-}
+AutoLoader::dispatch();
 
-?>

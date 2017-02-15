@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -38,132 +38,228 @@ require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
-    return;
-}
-$dbc = FannieDB::get($FANNIE_OP_DB);
 
-$upc = BarcodeLib::padUPC(FormLib::get('upc'));
+class addShelfTag extends FannieRESTfulPage
+{
+    public $discoverable = false;
 
-// EL 16Mar13 Get vendorItem and vendor data for the item being edited or that was just created.
-// This favours UNFI which traditionally has vendorID 1.
-//was: $unfiQ = "SELECT DISTINCT * FROM vendorItems WHERE upc = '$upc' ORDER BY vendorID";
-$vendiQ = $dbc->prepare_statement("SELECT DISTINCT i.*,v.vendorName FROM vendorItems AS i
-            LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-            where upc = ? ORDER BY i.vendorID");
-
-$vendiR = $dbc->exec_statement($vendiQ,array($upc));
-$vendiN = $dbc->num_rows($vendiR);
-
-$prodQ = $dbc->prepare_statement("SELECT p.*,s.superID FROM products AS p
-    LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
-    where upc=?");
-//echo $prodQ;
-$prodR = $dbc->exec_statement($prodQ,array($upc));
-
-$prodW = $dbc->fetch_array($prodR);
-$price = $prodW['normal_price'];
-$desc = $prodW['description'];
-$brand = '';
-$size = '';
-$units = '';
-$sku = '';
-$vendor = '';
-$ppo = '';
-$superID = $prodW['superID'];
-
-if($vendiN > 0){
- // Use only the first hit.
- $vendiW = $dbc->fetch_array($vendiR);
- // Composed: "200 g"
- $size = $vendiW['size'];
- $brand = $vendiW['brand'];
- $units = $vendiW['units'];
- $sku = $vendiW['sku'];
- if ( $vendiW['vendorName'] != "" ) {
-     $vendor = $vendiW['vendorName'];
- } else if ($dbc->table_exists('prodExtra')) {
-    $prodExtraQ = $dbc->prepare_statement("select distributor from prodExtra where upc=?");
-    $prodExtraR = $dbc->exec_statement($prodExtraQ, array($upc));
-    $prodExtraN = $dbc->num_rows($prodExtraR);
-    if ($prodExtraN > 0){
-        $prodExtraW = $dbc->fetch_array($prodExtraR);
-        $vendor = $prodExtraW['distributor'];
+    public function preprocess()
+    {
+        $this->addRoute('get<upc>','post<upc>');
+        return parent::preprocess();
     }
- }
- $ppo = PriceLib::pricePerUnit($price,$size);
-}
-else if ($dbc->table_exists('prodExtra')) {
-$prodExtraQ = $dbc->prepare_statement("select manufacturer,distributor from prodExtra where upc=?");
-$prodExtraR = $dbc->exec_statement($prodExtraQ,array($upc));
-$prodExtraN = $dbc->num_rows($prodExtraR);
-    if ($prodExtraN == 1){
-        $prodExtraW = $dbc->fetch_array($prodExtraR);
-        $brand = $prodExtraW['manufacturer'];
-        $vendor = $prodExtraW['distributor'];
+
+    public function getHeader()
+    {
+        return <<<HTML
+<!doctype html>
+<html>
+    <head>
+        <title>Add Shelf Tag</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap-theme.min.css">
+        <script type="text/javascript" src="../src/javascript/jquery.js"></script>
+        <script type="text/javascript" src="../src/javascript/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+        $(document).ready(function(){
+            $('input.focus').focus();
+        });
+        </script>
+    </head>
+<body>
+HTML;
+    }
+
+    public function getFooter()
+    {
+        return '</body></html>';
+    }
+
+    private function print_tag() {
+      $offset = FormLib::get('offset', 0);
+
+      $data = array(array(
+        'normal_price' => FormLib::get('price'),
+        'description' => FormLib::get('description'),
+        'brand' => FormLib::get('brand'),
+        'units' => FormLib::get('units'),
+        'size' => FormLib::get('size'),
+        'sku' => FormLib::get('sku'),
+        'pricePerUnit' => FormLib::get('ppo'),
+        'upc' => FormLib::get('upc'),
+        'vendor' => FormLib::get('vendor'),
+        'scale' => FormLib::get('scale'),
+        'numflag' => FormLib::get('numflag'),
+        'count' => FormLib::get('count', 0)
+      ));
+
+      if (!defined('FPDF_FONTPATH')) {
+        define('FPDF_FONTPATH','font/');
+      }
+      if (!class_exists('FPDF', false)) {
+          require(dirname(__FILE__) . '/../src/fpdf/fpdf.php');
+      }
+      if (!class_exists('FpdfWithBarcode', false)) {
+          include(dirname(__FILE__) . '/../admin/labels/FpdfWithBarcode.php');
+      }
+
+      $layout_file = dirname(__FILE__) . '/../admin/labels/pdf_layouts/' . $this->config->get('SINGLE_LABEL_LAYOUT') . '.php';
+      if (count($data) > 0 && file_exists($layout_file) && !function_exists($this->config->get('SINGLE_LABEL_LAYOUT'))) {
+          include($layout_file);
+      }
+      if (function_exists($this->config->get('SINGLE_LABEL_LAYOUT'))) {
+          $filename = "/tmp/".uniqid().".pdf";
+          $layout = $this->config->get('SINGLE_LABEL_LAYOUT');
+          $layout($data, $offset, $filename);
+          echo "<pre>";
+          $printer = "";
+          if($this->config->get('SINGLE_LABEL_PRINTER') != "") {
+            $printer = "-d ".$this->config->get('SINGLE_LABEL_PRINTER')." ";
+          }
+          passthru("/usr/bin/lp ".$printer.$filename);
+          echo "</pre>";
+          unlink($filename);
+          return '<div class="alert alert-success">Printing '.$filename.'</div>';
+      } else {
+          echo 'Invalid data and/or layout';
+      }
+
+      return false;
+
+    }
+
+    protected function post_upc_view()
+    {
+        if(FormLib::get('print') == "now") {
+          return $this->print_tag();
+        } else {
+          $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+          $shelftag = new ShelftagsModel($dbc);
+          $shelftag->id(FormLib::get('subID', 0));
+          $shelftag->upc(FormLib::get('upc'));
+          $shelftag->normal_price(FormLib::get('price'));
+          $shelftag->pricePerUnit(FormLib::get('ppo'));
+          $shelftag->description(FormLib::get('description'));
+          $shelftag->brand(FormLib::get('brand'));
+          $shelftag->sku(FormLib::get('sku'));
+          $shelftag->size(FormLib::get('size'));
+          $shelftag->units(FormLib::get('units'));
+          $shelftag->vendor(FormLib::get('vendor'));
+          $shelftag->count(FormLib::get('count', 1));
+          $insR = $shelftag->save();
+
+          if ($insR === false) {
+            return '<div class="alert alert-danger">Error creating tag</div>';
+          } else {
+            return '<div class="alert alert-success">Created Tag</div>';
+          }
+        }
+    }
+
+    protected function get_upc_view()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+        $upc = BarcodeLib::padUPC($this->upc);
+        $product = new ProductsModel($dbc);
+        $product->upc($upc);
+        $tagData = $product->getTagData();
+
+        $prodQ = $dbc->prepare("SELECT p.*,s.superID FROM products AS p
+            LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+            where upc=?");
+        $prodR = $dbc->execute($prodQ,array($upc));
+        $prodW = $dbc->fetchRow($prodR);
+        $superID = $prodW['superID'];
+
+        $price = $tagData['normal_price'];
+        $desc = $tagData['description'];
+        $brand = $tagData['brand'];
+        $size = $tagData['size'];
+        $units = $tagData['units'];
+        $sku = $tagData['sku'];
+        $vendor = $tagData['vendor'];
+        $ppo = $tagData['pricePerUnit'];
+
+        ob_start();
+        ?>
+        <div class="container-fluid">
+        <form method='post'>
+        <input type='hidden' name=upc value="<?php echo $upc; ?>">
+        <div class="form-group form-inline">
+            <label>Description</label>
+            <input type='text' name='description' maxlength=30
+                class="form-control focus" value="<?php echo strtoupper($desc); ?>" />
+        <label>Brand</label>
+            <input type='text' name='brand' maxlength=15 
+                class="form-control" value="<?php echo strtoupper($brand); ?>" />
+        </div>
+        <div class="form-group form-inline">
+        <label>Units</label>
+            <input type='text' name='units' size=10
+                class="form-control" value="<?php echo $units; ?>" />
+        <label>Size</label>
+        <input type='text' name='size' size=10
+            class="form-control" value="<?php echo $size; ?>" />
+        </div>
+        <div class="form-group form-inline">
+        <label>PricePer</label>
+        <input type=text name=ppo
+            class="form-control" value="<?php echo $ppo; ?>" />
+        <label>Vendor</label>
+        <input type='text' name='vendor'
+            class="form-control" value="<?php echo $vendor; ?>" />
+        </div>
+        <div class="form-group form-inline">
+        <label># Tags</label>
+        <input type="text" name="count" size="3" value="1" 
+            class="form-control" />
+        <label>SKU</label>
+        <input type='text' name='sku' size=8
+            class="form-control" value="<?php echo $sku; ?>" />
+        </div>
+        <p>
+        <label>Price</label>
+        <span class="alert-success h3">
+            <strong><?php printf("%.2f",$price); ?></strong>
+        </span>
+        <input type='hidden' name='price' size=8 value=<?php echo $price; ?> />
+        <span class="btn-group">
+          <button type="submit" class="btn btn-default"
+              name="submit" value="New">Create Tag</button>
+          <?php
+          $instant_tag_disabled = "disabled";
+          if($this->config->get('SINGLE_LABEL_LAYOUT') != "" &&
+             $this->config->get('SINGLE_LABEL_PRINTER') != "") {
+                 $instant_tag_disabled = "";
+           } ?>
+          <button type="submit" class="btn btn-default" <?php echo $instant_tag_disabled; ?>
+              name="print" value="now">Instant Tag</button>
+        </p>
+        <div class="form-group form-inline">
+        <label>Barcode page</label>
+        <select name=subID class="form-control">
+        <?php
+        $qmodel = new ShelfTagQueuesModel($dbc);
+        echo $qmodel->toOptions($superID);
+        ?>
+        </select>
+        </div>
+        </form>
+        </div>
+        <?php
+
+        return ob_get_clean();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->upc = '4011';
+        $phpunit->assertNotEquals(0, strlen($this->get_upc_view()));
     }
 }
 
-echo "<body bgcolor='ffffcc'>";
-echo "New Shelf Tag:<!-- br / --> " . $upc;
-?>
-<form method='post' action='addShelfTag1.php'>
-<input type='hidden' name=upc value='<?php echo $upc; ?>'>
-<font color='blue'>Description</font>
-<input type='text' name='description' size=30 maxlength=30
-<?php
-echo "value='".strtoupper($desc)."'";
-?>
-><br>
-Brand: <input type='text' name='brand' size=15 maxlength=15 
-<?php 
-echo "value='".strtoupper($brand)."'"; 
-?>
-><br>
-Units: <input type='text' name='units' size=10
-<?php
-echo "value='".$units."'";
-?>
->
-Size: <input type='text' name='size' size=10
-<?php
-echo "value='".$size."'";
-?>
-><br>
-PricePer: <input type=text name=ppo size=15
-<?php echo "value=\"$ppo\"" ?> /><br />
-Vendor: <input type='text' name='vendor' size=12
-<?php
-echo "value='$vendor'";
-?>
->
-# Tags: <input type="text" name="count" size="3" value="1" />
-<br>
-SKU: <input type='text' name='sku' size=8
-<?php
-echo "value='".$sku."'";
-?>
->
-Price: <font color='green' size=+1><b><?php printf("%.2f",$price); ?>
-<input type='hidden' name='price' size=8 value=<?php echo $price; ?> ></b></font>
-<?php 
-
-echo "<input type='submit' value='New' name='submit'>";
-
-?>
-<br />Barcode page: <select name=subID>
-<?php
-$subsQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames");
-$subsR = $dbc->exec_statement($subsQ);
-while($subsW = $dbc->fetch_row($subsR)){
-    if ($subsW[0] == 0) $subsW[1] = 'All';
-    $checked = ($subsW[0]==$superID)?'selected':'';
-    echo "<option value=\"$subsW[0]\" $checked>$subsW[1]</option>";
-}
-?>
-</select><br />
-</form>
-</body>
-<?php
-
-?>
+FannieDispatch::conditionalExec();

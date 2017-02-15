@@ -1700,4 +1700,4 @@ class Spreadsheet_Excel_Writer_Parser extends PEAR
         return $polish;
     }
 }
-?>
+

@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +41,75 @@ class FannieAPI
         if (!isset($_SESSION['FannieClassMap']['SQLManager'])) {
             $_SESSION['FannieClassMap']['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
         }
+        if (!isset($_SESSION['FannieClassMap']['FPDF'])) {
+            $_SESSION['FannieClassMap']['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
+        }
+    }
+
+    /**
+      Idea: use one shared file w/ map of class
+      names to definition files. Manage file locking
+      more granularly than with sessions.
+    */
+    static private function mapFile()
+    {
+        return sys_get_temp_dir() . '/fannie.class.map';
+    }
+
+    /**
+      Get the map from cache.
+      Acquires a shared lock to read the file.
+    */
+    static private function getCachedMap()
+    {
+        $fn = self::mapFile();
+        $fp = fopen($fn, 'r');
+        if (flock($fp, LOCK_SH)) {
+            $map = file_get_contents($fn);
+            flock($fp, LOCK_UN);
+            fclose($fp);
+            $map = json_decode($map, true);
+            if (is_array($map)) {
+                return $map;
+            } else {
+                return self::initMap();
+            }
+        } else {
+            fclose($fp);
+            return self::initMap();
+        }
+    }
+
+    /**
+      Initialize shared map if it does not exist
+    */
+    static private function initMap()
+    {
+        $map = array('FannieClassMap' => array());
+        $map['FannieClassMap']['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
+        $map['FannieClassMap']['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
+        return self::writeCachedMap($map);
+    }
+
+    /**
+      Write updated map to cache.
+      Acquires an exclusive lock to write the file.
+    */
+    static private function writeCachedMap($map)
+    {
+        $fn = self::mapFile();
+        $fp = fopen($fn, 'a');
+        if (flock($fp, LOCK_EX)) {
+            ftruncate($fp, 0);
+            fwrite($fp, json_encode($map));
+            fflush($fp);
+            flock($fp, LOCK_UN);
+            fclose($fp);
+            return true;
+        }  else {
+            fclose($fp);
+            return false;
+        }
     }
 
     /**
@@ -49,13 +118,15 @@ class FannieAPI
     */
     static public function loadClass($name)
     {
-        $map = $_SESSION['FannieClassMap'];
+        $map = isset($_SESSION['FannieClassMap']) ? $_SESSION['FannieClassMap'] : array();
 
         // class map should be array
         // of class_name => file_name
         if (!is_array($map)) { 
             $map = array();
-            $_SESSION['FannieClassMap'] = array();
+            $map['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
+            $map['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
+            $_SESSION['FannieClassMap'] = $map;
         }
 
         // if class is known in the map, include its file
@@ -65,6 +136,25 @@ class FannieAPI
 
             include_once($map[$name]);
         } else {
+            /**
+              There's a namespace involved
+              If the prefix is COREPOS\Fannie\API, look for class
+              in classlib2.0 directory path. 
+              If the prefix is COREPOS\Fannie\Plugin, look for class
+              in modules/plugins2.0 directory path
+              Otherwise, just strip off the namespace and search
+              both plugins and API class library
+            */
+            $real_name = $name;
+            if (strstr($name, '\\')) {
+                $found = self::loadFromNamespace($name);
+                if ($found) {
+                    include_once($found);
+                    $_SESSION['FannieClassMap'][$name] = $found;
+                } 
+                return;
+            }
+
             // search class lib for definition
             $file = self::findClass($name, dirname(__FILE__));
             if ($file !== false) {
@@ -74,12 +164,34 @@ class FannieAPI
             $file = self::findClass($name, dirname(__FILE__).'/../modules/plugins2.0');
             if ($file !== false) {
                 // only use if enabled
-                $owner = FanniePlugin::memberOf($file);
-                if (FanniePlugin::isEnabled($owner)) {
+                $owner = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
+                if (\COREPOS\Fannie\API\FanniePlugin::isEnabled($owner)) {
                     include_once($file);
                 }
             }
         }
+    }
+
+    static private function loadFromNamespace($class)
+    {
+        $namespaces = array(
+            'COREPOS\\common\\' => dirname(__FILE__) . '/../../common/',
+            'COREPOS\\Fannie\\API\\' => dirname(__FILE__) . '/',
+            'COREPOS\\Fannie\\Plugin\\' => dirname(__FILE__) . '/../modules/plugins2.0/',
+        );
+        $class = ltrim($class, '\\');
+        foreach ($namespaces as $namespace => $path) {
+            if (substr($class, 0, strlen($namespace)) == $namespace) {
+                $file = $path . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($namespace))) . '.php';
+                if (file_exists($file)) {
+                    return $file;
+                } else {
+                    throw new Exception('Invalid class in COREPOS namespace: ' . $class);
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -96,16 +208,16 @@ class FannieAPI
             return false;
         }
 
-        $dh = opendir($path);
-        while($dh && ($file=readdir($dh)) !== false) {
-            if ($file[0] == ".") continue;
-            if ($file == 'noauto') continue;
+        $dir = opendir($path);
+        $ret = false;
+        while ($dir && ($file=readdir($dir)) !== false) {
             $fullname = realpath($path.'/'.$file);
-            if (is_dir($fullname)) {
+            if ($file[0] != '.' && $file != 'noauto' && $file != 'node_modules' && is_dir($fullname)) {
                 // recurse looking for file
                 $file = self::findClass($name, $fullname);
                 if ($file !== false) { 
-                    return $file;
+                    $ret = $file;
+                    break;
                 }
             } elseif (substr($file,-4) == '.php') {
                 // map all PHP files as long as we're searching
@@ -113,12 +225,13 @@ class FannieAPI
                 $class = substr($file,0,strlen($file)-4);
                 $_SESSION['FannieClassMap'][$class] = $fullname;
                 if ($class == $name) {
-                    return $fullname;
+                    $ret = $fullname;
+                    break;
                 }
             }
         }
 
-        return false;
+        return $ret;
     }
 
     static public function listFiles($path)
@@ -126,18 +239,75 @@ class FannieAPI
         if (is_file($path) && substr($path,-4)=='.php') {
             return array($path);
         } elseif (is_dir($path)) {
-            $dh = opendir($path);
+            $dir = opendir($path);
             $ret = array();
-            while( ($file=readdir($dh)) !== false) {
-                if ($file == '.' || $file == '..') continue;
-                if ($file == 'noauto') continue;
-                if ($file == 'index.php') continue;
-                if ($file == 'Store-Specific') continue;
-                $ret = array_merge($ret, self::listFiles($path.'/'.$file));
+            $exclude = array('noauto', 'index.php', 'Store-Specific');
+            while (($file=readdir($dir)) !== false) {
+                if ($file[0] != '.' && !in_array($file, $exclude)) {
+                    $ret = array_merge($ret, self::listFiles($path.'/'.$file));
+                }
             }
             return $ret;
         }
         return array();
+    }
+
+    static private function searchDirectories($base_class)
+    {
+        $directories = array();
+        $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
+        // leading backslash is ignored
+        if ($base_class[0] == '\\') {
+            $base_class = substr($base_class, 1);
+        }
+
+        switch($base_class) {
+            case 'COREPOS\Fannie\API\item\ItemModule':
+                $directories[] = dirname(__FILE__).'/../item/modules/';
+                break;
+            case 'COREPOS\Fannie\API\member\MemberModule':
+                $directories[] = dirname(__FILE__).'/../mem/modules/';
+                break;
+            case 'FannieTask':
+                $directories[] = dirname(__FILE__).'/../cron/tasks/';
+                break;
+            case 'BasicModel':
+                $directories[] = dirname(__FILE__).'/data/models/';
+                break;
+            case 'BasicModelHook':
+            case 'COREPOS\Fannie\API\data\hooks\BasicModelHook':
+                $directories[] = dirname(__FILE__).'/data/hooks/';
+                break;
+            case 'FannieReportPage':
+                $directories[] = dirname(__FILE__).'/../reports/';
+                $directories[] = dirname(__FILE__).'/../purchasing/reports/';
+                break;
+            case 'COREPOS\Fannie\API\FannieReportTool':
+                $directories[] = dirname(__FILE__).'/../reports/';
+                break;
+            case 'COREPOS\Fannie\API\item\FannieSignage':
+                $directories[] = dirname(__FILE__) . '/item/signage/';
+                break;
+            case 'COREPOS\Fannie\API\monitor\Monitor':
+                $directories[] = dirname(__FILE__) . '/monitor/';
+                break;
+            case 'FanniePage':
+                $directories[] = dirname(__FILE__).'/../admin/';
+                $directories[] = dirname(__FILE__).'/../batches/';
+                $directories[] = dirname(__FILE__).'/../cron/management/';
+                $directories[] = dirname(__FILE__).'/../item/';
+                $directories[] = dirname(__FILE__).'/../logs/';
+                $directories[] = dirname(__FILE__).'/../reports/';
+                $directories[] = dirname(__FILE__).'/../mem/';
+                $directories[] = dirname(__FILE__).'/../ordering/';
+                $directories[] = dirname(__FILE__).'/../purchasing/';
+                /*
+                $directories[] = dirname(__FILE__).'/../install/';
+                */
+                break;
+        }
+
+        return $directories;
     }
 
     /**
@@ -148,57 +318,15 @@ class FannieAPI
         [optional, default false]
       @return [array] of [string] class names
     */
-    static public function listModules($base_class, $include_base=false)
+    static public function listModules($base_class, $include_base=false, $debug=false)
     {
-        $directories = array();
-        $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
-
-        switch($base_class) {
-            case 'ItemModule':
-                $directories[] = dirname(__FILE__).'/../item/modules/';
-                break;
-            case 'MemberModule':
-                $directories[] = dirname(__FILE__).'/../mem/modules/';
-                break;
-            case 'FannieTask':
-                $directories[] = dirname(__FILE__).'/../cron/tasks/';
-                break;
-            case 'BasicModel':
-                $directories[] = dirname(__FILE__).'/data/models/';
-                break;
-            case 'BasicModelHook':
-                $directories[] = dirname(__FILE__).'/data/hooks/';
-                break;
-            case 'FannieReportPage':
-                $directories[] = dirname(__FILE__).'/../reports/';
-                break;
-            case 'FannieReportTool':
-                $directories[] = dirname(__FILE__).'/../reports/';
-                break;
-            case 'FannieSignage':
-                $directories[] = dirname(__FILE__) . '/item/signage/';
-                break;
-            case 'FanniePage':
-                $directories[] = dirname(__FILE__).'/../admin/';
-                $directories[] = dirname(__FILE__).'/../batches/';
-                $directories[] = dirname(__FILE__).'/../cron/management/';
-                $directories[] = dirname(__FILE__).'/../item/';
-                $directories[] = dirname(__FILE__).'/../logs/';
-                $directories[] = dirname(__FILE__).'/../reports/';
-                $directories[] = dirname(__FILE__).'/../mem/';
-                $directories[] = dirname(__FILE__).'/../purchasing/';
-                /*
-                $directories[] = dirname(__FILE__).'/../install/';
-                $directories[] = dirname(__FILE__).'/../ordering/';
-                */
-                break;
-        }
+        $directories = self::searchDirectories($base_class);
 
         // recursive search
-        $search = function($path) use (&$search) {
+        $search = function($path, $depth) use (&$search) {
             if (is_file($path) && substr($path,-4)=='.php') {
                 return array($path);
-            } elseif (is_dir($path)) {
+            } elseif (is_dir($path) && $depth < 10) {
                 $dh = opendir($path);
                 $ret = array();
                 while( ($file=readdir($dh)) !== false) {
@@ -206,16 +334,20 @@ class FannieAPI
                     if ($file == 'noauto') continue;
                     if ($file == 'index.php') continue;
                     if ($file == 'Store-Specific') continue;
-                    $ret = array_merge($ret, $search($path.'/'.$file));
+                    $ret = array_merge($ret, $search($path.'/'.$file, $depth+1));
                 }
                 return $ret;
             }
             return array();
         };
 
-        $files = array();
-        foreach($directories as $dir) {
-            $files = array_merge($files, $search($dir));
+        $files = array_reduce($directories,
+            function ($carry, $dir) use ($search) { return array_merge($carry, $search($dir, 0)); },
+            array()
+        );
+
+        if ($debug) {
+            return $files;
         }
 
         $ret = array();
@@ -237,9 +369,9 @@ class FannieAPI
             // if the file is part of a plugin, make sure
             // the plugin is enabled. The exception is when requesting
             // a list of plugin classes
-            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin') {
-                $parent = FanniePlugin::memberOf($file);
-                if ($parent === false || !FanniePlugin::isEnabled($parent)) {
+            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin' && $base_class != '\COREPOS\Fannie\API\FanniePlugin') {
+                $parent = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
+                if ($parent === false || !\COREPOS\Fannie\API\FanniePlugin::isEnabled($parent)) {
                     continue;
                 }
             }
@@ -249,26 +381,65 @@ class FannieAPI
             include_once($file);
             ob_end_clean();
 
-            if (!class_exists($class)) {
+            $namespaced_class = self::pathToClass($file);
+
+            if (!class_exists($class, false) && !class_exists($namespaced_class, false)) {
                 continue;
             }
 
-            if (is_subclass_of($class, $base_class)) {
+            if (class_exists($class, false) && is_subclass_of($class, $base_class)) {
                 $ret[] = $class;
+            } elseif (class_exists($namespaced_class, false) && is_subclass_of($namespaced_class, $base_class)) {
+                $ret[] = $namespaced_class;
+            } elseif (class_exists($namespaced_class, false) && $namespaced_class == $base_class && $include_base) {
+                $ret[] = $namespaced_class;
             }
         }
 
         return $ret;
     }
+
+    /**
+      Determine fully namespaced class name
+      based on filesystem path
+      @param $path [string] file system path
+      @return [string] class name with namespace if applicable
+    */
+    public static function pathToClass($path)
+    {
+        $name = false;
+        $basedir = 'unknown';
+        $path = realpath($path);
+        $path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
+        if (strstr($path, '/modules/plugins2.0/')) {
+            $name = 'COREPOS\\Fannie\\Plugin';
+            $basedir = 'plugins2.0';
+        } elseif (strstr($path, '/classlib2.0/')) {
+            $name = 'COREPOS\\Fannie\\API';
+            $basedir = 'classlib2.0';
+        }
+
+        if ($name) {
+            $parts = explode('/', $path);
+            $start = false;
+            for ($i=0; $i<count($parts); $i++) {
+                if (!$start && $parts[$i] == $basedir) {
+                    $start = true;
+                } elseif ($start) {
+                    $name .= '\\' . $parts[$i];
+                }
+            }
+        } else {
+            $name = basename($path);
+        }
+
+        return substr($name, 0, strlen($name)-4);
+    }
 }
 
 FannieAPI::init();
-if (function_exists('spl_autoload_register')) {
-    spl_autoload_register(array('FannieAPI','loadClass'));
-} else {
-    function __autoload($name)
-    {
-        FannieAPI::loadClass($name);
-    }
+spl_autoload_register(array('FannieAPI','loadClass'), true, true);
+if (file_exists(dirname(__FILE__) . '/../../vendor/autoload.php')) {
+    include_once(dirname(__FILE__) . '/../../vendor/autoload.php');
 }
 

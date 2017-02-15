@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,18 +30,24 @@
    Delete all entries from localtrans_today except today's.
     Not pruning localtrans_today will eventually slow logins.
    Delete entries from localtransover 30 days old.
-   Delete entries from efsnetTokens that do not expire today.
 
    Can run either before or after midnight with somewhat different results.
    After midnight probably better.
 
 */
 
-include('../config.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
+if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
+    $FANNIE_LANES = array();
+}
 
-set_time_limit(0);
+set_time_limit(60);
 
 foreach($FANNIE_LANES as $ln){
 
@@ -52,10 +58,12 @@ foreach($FANNIE_LANES as $ln){
     }
 
     $table = 'localtrans_today';
-    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
-    $cleanR = $sql->query($cleanQ,$ln['trans']);
-    if ($cleanR === False){
-        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    if ($sql->table_exists($table)) {
+        $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
+        $cleanR = $sql->query($cleanQ,$ln['trans']);
+        if ($cleanR === False){
+            echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+        }
     }
 
     $table = 'localtrans';
@@ -64,15 +72,6 @@ foreach($FANNIE_LANES as $ln){
     if ($cleanR === False){
         echo cron_msg("Could not clean $table on lane: ".$ln['host']);
     }
-
-    $table = 'efsnetTokens';
-    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'expireDay')." <> 0 ";
-    $cleanR = $sql->query($cleanQ,$ln['trans']);
-    if ($cleanR === False){
-        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
-    }
-
 }
 
 
-?>

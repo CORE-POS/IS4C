@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class DateRestrictModel
 */
@@ -37,99 +40,19 @@ class DateRestrictModel extends BasicModel
     'restrict_dow' => array('type'=>'SMALLINT'),
     'restrict_start' => array('type'=>'TIME'),
     'restrict_end' => array('type'=>'TIME'),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function upc()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["upc"])) {
-                return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
-                return $this->columns["upc"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["upc"] = func_get_arg(0);
-        }
+        return '
+Use:
+Store restrictions for selling products at
+certain dates & times. Restrictions can be specified
+by UPC or department number as well as by 
+exact date or day of week. If start and end
+times are entered, restriction will only apply
+during that span
+        ';
     }
-
-    public function dept_ID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["dept_ID"])) {
-                return $this->instance["dept_ID"];
-            } elseif(isset($this->columns["dept_ID"]["default"])) {
-                return $this->columns["dept_ID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["dept_ID"] = func_get_arg(0);
-        }
-    }
-
-    public function restrict_date()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["restrict_date"])) {
-                return $this->instance["restrict_date"];
-            } elseif(isset($this->columns["restrict_date"]["default"])) {
-                return $this->columns["restrict_date"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["restrict_date"] = func_get_arg(0);
-        }
-    }
-
-    public function restrict_dow()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["restrict_dow"])) {
-                return $this->instance["restrict_dow"];
-            } elseif(isset($this->columns["restrict_dow"]["default"])) {
-                return $this->columns["restrict_dow"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["restrict_dow"] = func_get_arg(0);
-        }
-    }
-
-    public function restrict_start()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["restrict_start"])) {
-                return $this->instance["restrict_start"];
-            } elseif(isset($this->columns["restrict_start"]["default"])) {
-                return $this->columns["restrict_start"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["restrict_start"] = func_get_arg(0);
-        }
-    }
-
-    public function restrict_END()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["restrict_END"])) {
-                return $this->instance["restrict_END"];
-            } elseif(isset($this->columns["restrict_END"]["default"])) {
-                return $this->columns["restrict_END"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["restrict_END"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

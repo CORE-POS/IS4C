@@ -21,19 +21,32 @@
 
 *********************************************************************************/
 
-if (!class_exists('LocalTransModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+/*
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
+*/
 
 /**
   @class LocalTransArchiveModel
 */
-class LocalTransArchiveModel extends LocalTransModel
+class LocalTransArchiveModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
 {
 
     protected $name = "localtransarchive";
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+    public function doc()
+    {
+        return '
+Use:
+Lane side storage of transactions older than what\'s
+in localtrans. This could probably go away entirely.
+By the data is removed from localtrans it should be
+safely archived on the server side anyway.
+        ';
+    }
 }
 

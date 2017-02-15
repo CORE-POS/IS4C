@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,119 +41,5 @@ class GumSettingsModel extends BasicModel
     );
 
     protected $unique = array('key');
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function gumSettingID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["gumSettingID"])) {
-                return $this->instance["gumSettingID"];
-            } else if (isset($this->columns["gumSettingID"]["default"])) {
-                return $this->columns["gumSettingID"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'gumSettingID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["gumSettingID"]) || $this->instance["gumSettingID"] != func_get_args(0)) {
-                if (!isset($this->columns["gumSettingID"]["ignore_updates"]) || $this->columns["gumSettingID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["gumSettingID"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function key()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["key"])) {
-                return $this->instance["key"];
-            } else if (isset($this->columns["key"]["default"])) {
-                return $this->columns["key"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'key',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["key"]) || $this->instance["key"] != func_get_args(0)) {
-                if (!isset($this->columns["key"]["ignore_updates"]) || $this->columns["key"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["key"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function value()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["value"])) {
-                return $this->instance["value"];
-            } else if (isset($this->columns["value"]["default"])) {
-                return $this->columns["value"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'value',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["value"]) || $this->instance["value"] != func_get_args(0)) {
-                if (!isset($this->columns["value"]["ignore_updates"]) || $this->columns["value"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["value"] = func_get_arg(0);
-        }
-        return $this;
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

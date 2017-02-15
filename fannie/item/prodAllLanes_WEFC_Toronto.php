@@ -30,12 +30,12 @@ function allLanes($upc){
     }
     else if ($num > 1){
       $ret .= "Item <span style=\"color:red;\">$upc</span> found multiple times on Lane ".($i+1)."<br />";
-      while ($rowItem = $sql->fetch_array($resultItem)){
+      while ($rowItem = $sql->fetchRow($resultItem)){
     $ret .= "{$rowItem['upc']} {$rowItem['description']}<br />";
       }
     }
     else {
-      $rowItem = $sql->fetch_array($resultItem);
+      $rowItem = $sql->fetchRow($resultItem);
       $ret .= "Item <span style=\"color:red;\">$upc</span> on Lane ".($i+1)."<br />";
       $ret .= "Price: {$rowItem['normal_price']}";
       if ($rowItem['special_price'] <> 0){
@@ -49,4 +49,4 @@ function allLanes($upc){
   }
   return $ret;
 }
-?>
+

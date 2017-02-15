@@ -3,14 +3,14 @@
 
     Copyright 2012 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,6 +32,9 @@ class ManufacturerMovementReport extends FannieReportPage
 
     public $description = '[Brand Movement] lists sales for products from a specific brand over a given date range. Brand is given either by name or as a UPC prefix.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
+
+    protected $new_tablesorter = true;
 
     public function preprocess()
     {
@@ -41,18 +44,86 @@ class ManufacturerMovementReport extends FannieReportPage
         return parent::preprocess();
     }
 
+    private function upcQuery($dlog, $type_condition, $store)
+    {
+        return "
+            SELECT t.upc,
+                p.brand,
+                p.description, "
+                . DTrans::sumQuantity('t') . " AS qty,
+                SUM(t.total) AS ttl,
+                d.dept_no,
+                d.dept_name,
+                s.superID
+            FROM $dlog AS t " 
+                . DTrans::joinProducts('t', 'p', 'INNER')
+                . DTrans::joinDepartments('t', 'd') . "
+                LEFT JOIN MasterSuperDepts AS s ON d.dept_no = s.dept_ID
+            WHERE $type_condition
+                AND t.tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 't') . "
+            GROUP BY t.upc,
+                p.description,
+                d.dept_no,
+                d.dept_name,
+                s.superID
+            ORDER BY SUM(t.total) DESC";
+    }
+
+    private function dateQuery($dlog, $type_condition, $store)
+    {
+        return "
+            SELECT YEAR(t.tdate) AS year,
+                MONTH(t.tdate) AS month,
+                DAY(t.tdate) AS day, "
+                . DTrans::sumQuantity('t') . " AS qty,
+                SUM(t.total) AS ttl
+            FROM $dlog AS t "
+                . DTrans::joinProducts('t', 'p', 'INNER') . "
+            WHERE $type_condition
+                AND t.tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 't') . "
+            GROUP BY YEAR(t.tdate),
+                MONTH(t.tdate),
+                DAY(t.tdate)
+            ORDER BY YEAR(t.tdate),
+                MONTH(t.tdate),
+                DAY(t.tdate)";
+    }
+
+    private function deptQuery($dlog, $type_condition, $store)
+    {
+        return "
+            SELECT d.dept_no,
+                d.dept_name, "
+                . DTrans::sumQuantity('t') . " AS qty,
+                SUM(t.total) AS ttl,
+                s.superID
+            FROM $dlog AS t "
+                . DTrans::joinProducts('t', 'p', 'INNER')
+                . DTrans::joinDepartments('t', 'd') . "
+                LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
+            WHERE $type_condition
+                AND t.tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 't') . "
+            GROUP BY d.dept_no,
+                d.dept_name,
+                s.superID
+            ORDER BY SUM(t.total) DESC";
+    }
+
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-        $manu = FormLib::get_form_value('manu','');
-        $type = FormLib::get_form_value('type','');
-        $groupby = FormLib::get_form_value('groupby','upc');
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
+        $manu = FormLib::get('manu','');
+        $type = FormLib::get('type','');
+        $groupby = FormLib::get('groupby','upc');
+        $store = FormLib::get('store', 0);
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $type_condition = "p.brand LIKE ?";
         $args = array('%'.$manu.'%');
@@ -62,79 +133,31 @@ class ManufacturerMovementReport extends FannieReportPage
         $query = "";
         $args[] = $date1.' 00:00:00';
         $args[] = $date2.' 23:59:59';
+        $args[] = $store;
         switch ($groupby) {
-        case 'upc':
-            $query = "
-                SELECT t.upc,
-                    p.description, "
-                    . DTrans::sumQuantity('t') . " AS qty,
-                    SUM(t.total) AS ttl,
-                    d.dept_no,
-                    d.dept_name,
-                    s.superID
-                FROM $dlog AS t " 
-                    . DTrans::joinProducts('t', 'p')
-                    . DTrans::joinDepartments('t', 'd') . "
-                    LEFT JOIN MasterSuperDepts AS s ON d.dept_no = s.dept_ID
-                WHERE $type_condition
-                    AND t.tdate BETWEEN ? AND ?
-                GROUP BY t.upc,
-                    p.description,
-                    d.dept_no,
-                    d.dept_name,
-                    s.superID
-                ORDER BY SUM(t.total) DESC";
-            break;
-        case 'date':
-            $query = "
-                SELECT YEAR(t.tdate) AS year,
-                    MONTH(t.tdate) AS month,
-                    DAY(t.tdate) AS day, "
-                    . DTrans::sumQuantity('t') . " AS qty,
-                    SUM(t.total) AS ttl
-                FROM $dlog AS t "
-                    . DTrans::joinProducts('t', 'p') . "
-                WHERE $type_condition
-                    AND t.tdate BETWEEN ? AND ?
-                GROUP BY YEAR(t.tdate),
-                    MONTH(t.tdate),
-                    DAY(t.tdate)
-                ORDER BY YEAR(t.tdate),
-                    MONTH(t.tdate),
-                    DAY(t.tdate)";
-            break;
-        case 'dept':
-            $query = "
-                SELECT d.dept_no,
-                    d.dept_name, "
-                    . DTrans::sumQuantity('t') . " AS qty,
-                    SUM(t.total) AS ttl,
-                    s.superID
-                FROM $dlog AS t "
-                    . DTrans::joinProducts('t', 'p')
-                    . DTrans::joinDepartments('t', 'd') . "
-                    LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
-                WHERE $type_condition
-                    AND t.tdate BETWEEN ? AND ?
-                GROUP BY d.dept_no,
-                    d.dept_name,
-                    s.superID
-                ORDER BY SUM(t.total) DESC";
-            break;
+            case 'upc':
+                $query = $this->upcQuery($dlog, $type_condition, $store);
+                break;
+            case 'date':
+                $query = $this->dateQuery($dlog, $type_condition, $store);
+                break;
+            case 'dept':
+                $query = $this->deptQuery($dlog, $type_condition, $store);
+                break;
         }
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
         $ret = array();
-        while ($row = $dbc->fetch_array($result)) {
+        while ($row = $dbc->fetchRow($result)) {
             $record = array();
             if ($groupby == "date") {
                 $record[] = $row['month'] . '/' . $row['day'] . '/' . $row['year'];
                 $record[] = number_format($row['qty'], 2);
                 $record[] = number_format($row['ttl'], 2);
             } else {
-                for ($i=0;$i<$dbc->num_fields($result);$i++) {
-                    if ($dbc->field_name($result, $i) == 'qty' || $dbc->field_name($result, $i) == 'ttl') {
+                for ($i=0;$i<$dbc->numFields($result);$i++) {
+                    if ($dbc->fieldName($result, $i) == 'qty' || $dbc->fieldName($result, $i) == 'ttl') {
                         $row[$i] = sprintf('%.2f', $row[$i]);
                     }
                     $record[] .= $row[$i];
@@ -153,17 +176,17 @@ class ManufacturerMovementReport extends FannieReportPage
         }
 
         switch (count($data[0])) {
-            case 7:
-                $this->report_headers = array('UPC','Description','Qty','$',
+            case 8:
+                $this->report_headers = array('UPC','Brand','Description','Qty','$',
                     'Dept#','Department','Subdept');
                 $sumQty = 0.0;
                 $sumSales = 0.0;
                 foreach ($data as $row) {
-                    $sumQty += $row[2];
-                    $sumSales += $row[3];
+                    $sumQty += $row[3];
+                    $sumSales += $row[4];
                 }
 
-                return array('Total',null,$sumQty,$sumSales,'',null,null);
+                return array('Total',null,null,$sumQty,$sumSales,'',null,null);
 
             case 5:
                 $this->report_headers = array('Dept#','Department','Qty','$','Subdept');
@@ -191,59 +214,98 @@ class ManufacturerMovementReport extends FannieReportPage
 
     public function form_content()
     {
+        global $FANNIE_URL;
+        ob_start();
 ?>
-<div id=main>   
-<form method = "get" action="ManufacturerMovementReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th><?php echo _("Manufacturer"); ?></th>
-            <td>
-            <input type=text name=manu id=manu  />
-            </td>
-            <th>Date Start</th>
-            <td>
-            <input type=text size=14 id=date1 name=date1 />
-            </td>
-        </tr>
-        <tr>
-            <th>Type</th>
-            <td>
-            <input type=radio name=type value=name id="rdoName" checked /><label for="rdoName">Name</label> 
-            <input type=radio name=type value=prefix id="rdoPre" /><label for="rdoPre">UPC Prefix</label>
-            </td>
-            <th>End</th>
-            <td>
-                <input type=text size=14 id=date2 name=date2 />
-            </td>
-        </tr>
-        <tr>
-        <td><b>Sum report by</b></td>
-        <td><select name=groupby>
-        <option value="upc">UPC</option>
-        <option value="date">Date</option>
-        <option value="dept">Department</option>
-        </select></td>
-        <td rowspan="2" colspan="2">
-        <?php echo FormLib::date_range_picker(); ?>
-        </td>
-        </tr>
-        <tr>
-        <td><input type=checkbox name=excel value=xls id="excel" /> 
-        <label for="excel">Excel</label></td>
-        </tr>
-        <tr>
-        <td> <input type=submit name=submit value="Submit"> </td>
-        <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
+<form method="get" action="ManufacturerMovementReport.php" class="form-horizontal">
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label"><?php echo _("Manufacturer"); ?></label>
+            <div class="col-sm-8">
+                <input type=text name=manu id=manu class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Type</label>
+            <div class="col-sm-8">
+                <label class="control-label">
+                    <input type=radio name=type value=name id="rdoName" checked class="radio-inline" /> Name
+                </label>
+                <label class="control-label">
+                    <input type=radio name=type value=prefix id="rdoPre" class="radio-inline" /> Prefix
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Sum report by</label>
+            <div class="col-sm-8">
+                <select name=groupby class="form-control">
+                    <option value="upc">UPC</option>
+                    <option value="date">Date</option>
+                    <option value="dept">Department</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Store(s)</label>
+            <div class="col-sm-8">
+                <?php $stores = FormLib::storePicker(); echo $stores['html']; ?>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">
+                <input type=checkbox name=excel value=xls id="excel" /> Excel
+            </label>
+        </div>
+        <div class="form-group">
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset">Start Over</button>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
 </form>
-</div>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
+        $this->add_onload_command('$(\'#manu\').focus();');
+
+        return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Show sales for items from a given brand over a
+            date range. <em>Brand</em> can be specified as either
+            a name or a numeric UPC prefix. <em>Sum report by</em>
+            gives different report formats.
+            <ul>
+                <li><em>UPC</em> shows a row for each item. Sales totals
+                are for the entire date range.</li>
+                <li><em>Date</em> show a row for each days. Sales totals
+                are all sales in the brand that day.</li>
+                <li><em>Department</em> shows a row for each POS department.
+                Sales totals are all sales in that particular department
+                for the entire date range.</li>
+            </ul>';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -32,7 +32,8 @@ class GumTaxFormTemplate
     private $account_number;
 
     private $my_federal_id = 'xx-xxxxxxx';
-    
+    private $my_state_id = 'xxxxxx';
+
     public function __construct($custdata, $meminfo, $tax_id, $tax_year, $fields, $account_number='')
     {
         global $FANNIE_PLUGIN_SETTINGS;
@@ -51,6 +52,11 @@ class GumTaxFormTemplate
         $settings->key('storeFederalID');
         if ($settings->load()) {
             $this->my_federal_id = $settings->value();
+        }
+
+        $settings->key('storeStateID');
+        if ($settings->load()) {
+            $this->my_state_id = $settings->value();
         }
 
         $this->my_address[0] = 'Name of Co-op';
@@ -88,7 +94,7 @@ class GumTaxFormTemplate
             $this->my_address[3] = $settings->value();
         }
     }
-
+    
     public function renderAsHTML()
     {
         $ret = '<table style="border: 1px solid black; border-collapse: collapse;">';

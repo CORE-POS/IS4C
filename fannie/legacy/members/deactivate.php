@@ -8,9 +8,9 @@ include('memAddress.php');
 include('header.html');
 
 if(isset($_GET['memNum'])){
-	$memID = $_GET['memNum'];
+    $memID = $_GET['memNum'];
 }else{
-	$memID = $_POST['memNum'];
+    $memID = $_POST['memNum'];
 }
 $memNum = $memID;
 
@@ -19,22 +19,22 @@ $memNum = $memID;
 <head>
 </head>
 <body 
-	bgcolor="#66CC99" 
-	leftmargin="0" topmargin="0" 
-	marginwidth="0" marginheight="0" 
-	onload="MM_preloadImages(
-		'images/memOver.gif',
-		'images/memUp.gif',
-		'images/repUp.gif',
-		'images/itemsDown.gif',
-		'images/itemsOver.gif',
-		'images/itemsUp.gif',
-		'images/refUp.gif',
-		'images/refDown.gif',
-		'images/refOver.gif',
-		'images/repDown.gif',
-		'images/repOver.gif'
-	)"
+    bgcolor="#66CC99" 
+    leftmargin="0" topmargin="0" 
+    marginwidth="0" marginheight="0" 
+    onload="MM_preloadImages(
+        'images/memOver.gif',
+        'images/memUp.gif',
+        'images/repUp.gif',
+        'images/itemsDown.gif',
+        'images/itemsOver.gif',
+        'images/itemsUp.gif',
+        'images/refUp.gif',
+        'images/refDown.gif',
+        'images/refOver.gif',
+        'images/repDown.gif',
+        'images/repOver.gif'
+    )"
 >
 
 <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
@@ -76,7 +76,7 @@ if (!isset($_POST['termType'])){
   echo "<table>";
   $i = 1;
   while($row = $sql->fetch_row($result)) {
-	  echo "<tr><td><input id=\"checkbox$i\" type=checkbox name=reasoncodes[] value=$row[1] /></td>
+      echo "<tr><td><input id=\"checkbox$i\" type=checkbox name=reasoncodes[] value=$row[1] /></td>
             <td><label for=\"checkbox$i\">$row[0]</label></td></tr>";
       $i++;
   }
@@ -91,15 +91,15 @@ else {
  
   $reasonCode = 0;
   foreach($codes as $c)
-	$reasonCode = $reasonCode | ((int)$c);
+    $reasonCode = $reasonCode | ((int)$c);
 
   deactivate($memNum,$termType,'',$reasonCode);
   
   addressList($memNum);
 
-	// FIRE ALL UPDATE
-	include('custUpdates.php');
-	updateCustomerAllLanes($memNum);
+    // FIRE ALL UPDATE
+    include('custUpdates.php');
+    updateCustomerAllLanes($memNum);
 }
 
 ?>

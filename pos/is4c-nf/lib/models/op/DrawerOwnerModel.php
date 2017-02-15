@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class DrawerOwnerModel
 */
@@ -33,39 +36,15 @@ class DrawerOwnerModel extends BasicModel
     protected $columns = array(
     'drawer_no' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'emp_no' => array('type'=>'SMALLINT'),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function drawer_no()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["drawer_no"])) {
-                return $this->instance["drawer_no"];
-            } elseif(isset($this->columns["drawer_no"]["default"])) {
-                return $this->columns["drawer_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["drawer_no"] = func_get_arg(0);
-        }
+        return '
+Use:
+Manage assignments when more than one
+cash drawer is present.
+        ';
     }
-
-    public function emp_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["emp_no"])) {
-                return $this->instance["emp_no"];
-            } elseif(isset($this->columns["emp_no"]["default"])) {
-                return $this->columns["emp_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["emp_no"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

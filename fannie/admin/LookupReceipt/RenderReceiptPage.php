@@ -4,68 +4,163 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class RenderReceiptPage extends FanniePage {
-
-    protected $window_dressing = False;
+class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage 
+{
+    protected $window_dressing = true;
 
     public $description = '[Reprint Receipt] show a POS transaction receipt.';
+    public $themed = true;
 
-    function body_content(){
+    /**
+      Uses parent method to setup all javascript and css includes
+      but returns an ultra simple header. Receipt page needs
+      to be printable on paper
+    */
+    public function getHeader()
+    {
+        parent::getHeader();
+        return '
+            <!doctype html>
+            <html>
+            <head>
+                <title>Reprint Receipt</title>
+            </head>
+            <body>
+            <div class="container-fluid">';
+    }
+
+    /**
+      Simple footer matches simple header
+    */
+    public function getFooter()
+    {
+        return '</div></body></html>';
+    }
+
+    private function getReceiptDate($form)
+    {
+        // see if date was passed in
+        try {
+            $stamp = strtotime($form->date);
+            if ($stamp === false) {
+                return false;
+            } else {
+                return date('Y-m-d', $stamp);
+            }
+        } catch (Exception $ex) {}
+
+        // see if year, month, and day were passed in
+        try {
+            $stamp = mktime(0, 0, 0, $form->month, $form->day, $form->year);
+            return date('Y-m-d', $stamp);
+        } catch (Exception $ex) {
+            return false;
+        }
+    }
+
+    function get_view()
+    {
         ob_start();
         ?>
-        <form action=RenderReceiptPage.php method=post>
-        Date: <input type=text name=date><br>
-        Receipt Num: <input type=text name=receipt><br>
-        <input type=submit name=submit>
+        <form action=RenderReceiptPage.php method=get
+            class="hidden-print">
+        <p>
+        <div class="form-group form-inline">
+            <label>Date</label>:
+            <input type=text name=date id="date-field"
+                class="form-control" />
+            <label>Receipt Num</label>:
+            <input type=text name=receipt id="trans-field"
+                class="form-control" />
+            <button type=submit class="btn btn-default">Find Receipt</button>
+        </div>
+        </p>
+        </form>
+        <hr class="hidden-print" />
         <?php
         $ret = ob_get_clean();
-        $transNum = FormLib::get_form_value('receipt');
-        $month = FormLib::get_form_value('month');
-        $day = FormLib::get_form_value('day');
-        $year = FormLib::get_form_value('year');
-        $date = FormLib::get_form_value('date');
-        $date1 = "";
-        if ($year !== '' && $month !== '' && $day !== ''){
-            $date1 = $year."-".str_pad($month,2,'0',STR_PAD_LEFT)
-                ."-".str_pad($day,2,'0',STR_PAD_LEFT);
-        }
-        else if ($date !== ''){
-            $tmp = explode("-",$date);
-            if (is_array($tmp) && count($tmp)==3){
-                $year = strlen($tmp[0]==2)?'20'.$tmp[0]:$tmp[0];
-                $month = str_pad($tmp[1],2,'0',STR_PAD_LEFT);
-                $day = str_pad($tmp[2],2,'0',STR_PAD_LEFT);
-                $date1 = $year."-".$month."-".$day;
-            }
-            else {
-                $tmp = explode("/",$date);
-                if (is_array($tmp) && count($tmp)==3){
-                    $year = strlen($tmp[2]==2)?'20'.$tmp[2]:$tmp[2];
-                    $month = str_pad($tmp[0],2,'0',STR_PAD_LEFT);
-                    $day = str_pad($tmp[1],2,'0',STR_PAD_LEFT);
-                    $date1 = $year."-".$month."-".$day;
-                }
-                else $date1 = $date;
-            }
+        $date1 = $this->getReceiptDate($this->form);
+        try {
+            $transNum = $this->form->receipt;
+        } catch (Exception $ex) {
+            $transNum = '';
         }
 
-        if ($date1 !== '' && $transNum !== ''){
+        if ($date1 !== false && $transNum !== '') {
+            $ret .= '<p>';
             $ret .= $this->receiptHeader($date1,$transNum);
+            $voided = $this->wasVoided($date1, $transNum);
+            if ($voided !== false) {
+                $ret .= sprintf('<hr>This transaction was
+                    voided by <a href="?date=%s&receipt=%s">%s</a>',
+                    $date1, $voided, $voided);
+            }
+            $is_void = $this->isVoid($date1, $transNum);
+            if ($is_void !== false) {
+                $is_void = substr($is_void, 20);
+                $ret .= sprintf('<hr>This transaction voided
+                    the previous <a href="?date=%s&receipt=%s">%s</a>',
+                    $date1, $is_void, $is_void);
+            }
             $ret .= $this->ccInfo($date1, $transNum);
             $ret .= $this->signatures($date1, $transNum);
+            $ret .= '</p>';
+            $this->add_onload_command("\$('#date-field').val('$date1');\n");
+            $this->add_onload_command("\$('#trans-field').val('$transNum');\n");
+
+            $ret .= '<p class="hidden-print">';
+            $ret .= '<a href="RawReceipt.php?date=' . $date1 . '&trans=' . $transNum . '">Database Details</a>';
+            $ret .= '</p>';
         }
+        $this->add_onload_command("\$('#date-field').datepicker({dateFormat:'yy-mm-dd'});\n");
+
         return $ret;
     }
 
-    function receiptHeader($date,$trans) {
-        global $FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_METHOD;
-        $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
+    private function wasVoided($date, $trans_num)
+    {
+        $prep = $this->connection->prepare("
+            SELECT trans_num
+            FROM " . $this->config->get('TRANS_DB') . $this->connection->sep() . "voidTransHistory
+            WHERE description = ?
+                AND tdate BETWEEN ? AND ?
+        ");
+        $args = array(
+            'VOIDING TRANSACTION ' . $trans_num,
+            $date . ' 00:00:00',
+            $date . ' 23:59:59',
+        );
 
+        return $this->connection->getValue($prep, $args);
+    }
+
+    private function isVoid($date, $trans_num)
+    {
+        $prep = $this->connection->prepare("
+            SELECT description
+            FROM " . $this->config->get('TRANS_DB') . $this->connection->sep() . "voidTransHistory
+            WHERE trans_num = ?
+                AND tdate BETWEEN ? AND ?
+        ");
+        $args = array(
+            $trans_num,
+            $date . ' 00:00:00',
+            $date . ' 23:59:59',
+        );
+
+        return $this->connection->getValue($prep, $args);
+    }
+
+    function receiptHeader($date,$trans) 
+    {
         $totime = strtotime($date);
         $month = date('m',$totime);
         $year = date('Y',$totime);
         $day = date('j',$totime);
         $transact = explode('-',$trans);
+        if (count($transact) != 3) {
+            return '';
+        }
         $emp_no = $transact[0];
         $trans_no = $transact[2];
         $reg_no = $transact[1];
@@ -110,46 +205,24 @@ class RenderReceiptPage extends FanniePage {
                     then '' 
             end
             as Status,
-            datetime, register_no, emp_no, trans_no, card_no as memberID
+            datetime, register_no, emp_no, trans_no, card_no as memberID,
+            upc
             FROM $table 
             WHERE datetime BETWEEN ? AND ? 
-            AND register_no=? AND emp_no=? and trans_no=?
-            AND voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+                AND register_no=? AND emp_no=? and trans_no=?
+                AND voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+                AND trans_type <> 'L'
             ORDER BY trans_id";
         $args = array("$year-$month-$day 00:00:00", "$year-$month-$day 23:59:59", 
                 $reg_no, $emp_no, $trans_no);
         return $this->receipt_to_table($query1,$args,0,'FFFFFF');
     }
 
-    function receipt_to_table($query,$args,$border,$bgcolor){
-        global $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
-
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $prep = $dbc->prepare_statement($query); 
-        $results = $dbc->exec_statement($prep,$args);
-        $number_cols = $dbc->num_fields($results);
-        $rows = array();
-        while($row = $dbc->fetch_row($results))
-            $rows[] = $row;
-        $row2 = $rows[0];
-        $emp_no = $row2['emp_no'];  
-        $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
-
-        /* 20Jan13 EL The way I would like to do this.
-         * Or perhaps get from core_trans.lane_config
-        if ( $CORE_LOCAL->get("receiptHeaderCount") > 0 ) {
-            $receiptHeader = "";
-            $c = $CORE_LOCAL->get("receiptHeaderCount");
-            for ( $i=1; $i <= $c; $i++ ) {
-                $h = "receiptHeader$i";
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . $CORE_LOCAL->get("$h") . "</td></tr>\n");
-            }
-        }
-        */
-
+    private function receiptHeaderLines()
+    {
         $receiptHeader = "";
-        if ( isset($FANNIE_COOP_ID) ) {
-            switch ($FANNIE_COOP_ID) {
+        if ($this->config->get('COOP_ID')) { 
+            switch ($this->config->get('COOP_ID')) {
 
             case "WEFC_Toronto":
                 $receiptHeader .= ("<tr><td align=center colspan=4>" . "W E S T &nbsp; E N D &nbsp; F O O D &nbsp; C O - O P" . "</td></tr>\n");
@@ -165,9 +238,32 @@ class RenderReceiptPage extends FanniePage {
 
             default:
                 $receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
-
+                break;
             }
         }
+        return $receiptHeader;
+    }
+
+    function receipt_to_table($query,$args,$border,$bgcolor)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $prep = $dbc->prepare($query); 
+        $results = $dbc->execute($prep,$args);
+        $number_cols = $dbc->numFields($results);
+        $rows = array();
+        while ($row = $dbc->fetch_row($results)) {
+            $rows[] = $row;
+        } 
+        if (isset($rows[0])) {
+            $row2 = $rows[0];
+        } else {
+            $row2 = array('emp_no'=>'','register_no'=>'','trans_no'=>'','datetime'=>'','memberID'=>'');
+        }
+        $emp_no = $row2['emp_no'];  
+        $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
+
+        $receiptHeader = $this->receiptHeaderLines();
 
         $ret = "<table border = $border bgcolor=$bgcolor>\n";
         $ret .= "{$receiptHeader}\n";
@@ -175,8 +271,11 @@ class RenderReceiptPage extends FanniePage {
         $ret .= "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
         $ret .= "<tr><td colspan=4>&nbsp;</td></tr>";
         $ret .= "<tr align left>\n";
-        foreach($rows as $row){
+        foreach ($rows as $row) {
             $ret .= "<tr><td align=left>";
+            if ($row['description'] == 'BADSCAN') {
+                $row['description'] .= ' (' . $row['upc'] . ')';
+            }
             $ret .= $row["description"]; 
             $ret .= "</td>";
             $ret .= "<td align=right>";
@@ -192,54 +291,34 @@ class RenderReceiptPage extends FanniePage {
         $ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
         $ret .= "<tr><td colspan=4 align=center>Reprinted Transaction</td></tr>";
         $ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
-        $ret .= "<tr><td colspan=4 align=center>" . _('Owner') . "#: {$row2['memberID']}</td</tr>";
+        $ret .= "<tr><td colspan=4 align=center>" . _('Owner') . "#: {$row2['memberID']}</td></tr>";
         $ret .= "</table>\n";
 
         return $ret;
     }
 
-    function ccInfo($date1, $transNum){
+    function ccInfo($date1, $transNum)
+    {
         global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB;
         $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
 
         $dateInt = str_replace("-","",$date1);
         list($emp,$reg,$trans) = explode("-",$transNum);
 
-        $query = $dbc->prepare_statement("SELECT mode, amount, PAN, 
+        $query = $dbc->prepare("SELECT transType AS mode, amount, PAN, 
             CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
-            q.refNum
-            FROM {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest AS q LEFT JOIN 
-            {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  WHERE q.date=? AND
-            q.cashierNo=? AND q.laneNo=? AND q.transNo=?
-            and commErr=0
-            UNION ALL 
-            SELECT m.mode, amount, PAN, 
-            CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
-            issuer, r.xResultMessage, r.xApprovalNumber, r.xTransactionID, name,
-            q.refNum
-            from {$FANNIE_TRANS_DB}{$dbconn}efsnetRequestMod m
-            join {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest q
-              on q.date=m.date
-              and q.cashierNo=m.cashierNo
-              and q.laneNo=m.laneNo
-              and q.transNo=m.transNo
-              and q.transID=m.transID
-            join {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  WHERE q.date=? AND
-            q.cashierNo=? AND q.laneNo=? AND q.transNo=?
-            and m.validResponse=1 and 
-            (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
-            and m.commErr=0 AND r.commErr=0");
-        $result = $dbc->exec_statement($query,array(
-                        $dateInt,$emp,$reg,$trans,
-                        $dateInt,$emp,$reg,$trans
-                        ));
+            refNum
+            FROM {$FANNIE_TRANS_DB}{$dbconn}PaycardTransactions
+            WHERE dateID=? AND
+                empNo=? AND registerNo=? AND transNo=?
+                AND commErr=0");
+        $result = $dbc->execute($query,array($dateInt,$emp,$reg,$trans));
         $ret = '';
         $pRef = '';
-        while ($row = $dbc->fetch_row($result)){
+        while ($row = $dbc->fetchRow($result)) {
             if ($pRef == $row['refNum'] && $row['mode'] != 'VOID') continue;
             $ret .= "<hr />";
             $ret .= 'Mode: '.$row['mode'].'<br />';
@@ -261,13 +340,13 @@ class RenderReceiptPage extends FanniePage {
 
     private function signatures($tdate, $transNum)
     {
-        global $FANNIE_TRANS_DB;
         if (strstr($tdate, ' ')) {
             list($tdate, $time) = explode(' ', $tdate, 2);
         }
         list($emp,$reg,$trans) = explode('-', $transNum);
 
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
         $lookupQ = 'SELECT capturedSignatureID 
                     FROM CapturedSignature
                     WHERE tdate BETWEEN ? AND ?
@@ -295,7 +374,23 @@ class RenderReceiptPage extends FanniePage {
         return $ret;
     }
 
+    public function unitTest($phpunit)
+    {
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->receipt = '1-1-1';
+        $form->year = date('Y');
+        $form->month = date('n');
+        $form->day = date('j');
+        $this->setForm($form);
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $form->date = date('Y-m-d');
+        $this->setForm($form);
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->getHeader()));
+        $phpunit->assertNotEquals(0, strlen($this->getFooter()));
+    }
+
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

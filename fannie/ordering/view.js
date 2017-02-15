@@ -7,9 +7,9 @@ $(document).ready(function(){
 	data: 'action=loadCustomer&orderID='+initoid,
 	cache: false,
 	error: function(e1,e2,e3){
-		alert(e1);
-		alert(e2);
-		alert(e3);
+		window.alert(e1);
+		window.alert(e2);
+		window.alert(e3);
 	},
 	success: function(resp){
 		var tmp = resp.split("`");
@@ -38,20 +38,20 @@ $(window).unload(function() {
 
 
 function confirmC(oid,tid){
-	var t = new Array();
+	var t = [];
 	t[7] = "Completed";
 	t[8] = "Canceled";
 	t[9] = "Inquiry";
 
-	if (confirm("Are you sure you want to close this order as "+t[tid]+"?")){
+	if (window.confirm("Are you sure you want to close this order as "+t[tid]+"?")){
 		$.ajax({
-		url: 'ajax-calls.php',
+		url: 'OrderAjax.php',
 		type: 'post',
-		data: 'action=closeOrder&orderID='+oid+'&status='+tid,
+		data: 'id='+oid+'&close='+tid,
 		cache: false,
 		success: function(resp){
 			//location = 'review.php?orderID='+oid;
-			location = $('#redirectURL').val();
+			window.location = $('#redirectURL').val();
 		}
 		});
 	}
@@ -89,8 +89,9 @@ function addUPC(){
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
-		if ($('#newqty').length)
+		if ($('#newqty').length) {
 			$('#newqty').focus();	
+        }
 	}
 	});
 }
@@ -105,27 +106,9 @@ function deleteID(orderID,transID){
 	}
 	});
 }
-function deleteUPC(orderID,upc){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=deleteUPC&orderID='+orderID+'&upc='+upc,
-	cache: false,
-	success: function(resp){
-		$('#itemDiv').html(resp);
-	}
-	});
-}
-function saveDesc(new_desc,tid){
-	var oid = $('#orderID').val();
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveDesc&orderID='+oid+'&transID='+tid+'&desc='+new_desc,
-	cache: false,
-	success: function(resp){
-	}
-	});
+function saveDesc(new_desc,tid)
+{
+    saveByTransID(tid, 'saveDesc', 'desc', new_desc);
 }
 function savePrice(new_price,tid){
 	var oid = $('#orderID').val();
@@ -135,8 +118,9 @@ function savePrice(new_price,tid){
 	data: 'action=savePrice&orderID='+oid+'&transID='+tid+'&price='+new_price,
 	cache: false,
 	success: function(resp){
-		if ($('#discPercent'+upc).html() != 'Sale')
-			$('#discPercent'+upc).html(resp+"%");
+		if ($('#discPercent'+tid).html() !== 'Sale') {
+			$('#discPercent'+tid).html(resp+"%");
+        }
 	}
 	});
 }
@@ -148,23 +132,21 @@ function saveSRP(new_price,tid){
 	data: 'action=saveSRP&orderID='+oid+'&transID='+tid+'&srp='+new_price,
 	cache: false,
 	success: function(resp){
-		var fields = resp.split('`')
-		$('#srp'+tid).val(fields[1])	
-		$('#act'+tid).val(fields[2])	
-		if ($('#discPercent'+tid).html() != 'Sale')
+		var fields = resp.split('`');
+		$('#srp'+tid).val(fields[1]);
+		$('#act'+tid).val(fields[2]);
+		if ($('#discPercent'+tid).html() !== 'Sale') {
 			$('#discPercent'+tid).html(fields[0]+"%");
+        }
 	}
 	});
 }
 function saveCtC(val,oid){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveCtC&orderID='+oid+'&val='+val,
-	cache: false,
-	success: function(resp){
-	}
-	});
+    $.ajax({
+        url: 'OrderAjax.php',
+        type: 'post',
+        data: 'id='+oid+'&ctc='+val
+    });
 }
 function saveQty(new_qty,tid){
 	var oid = $('#orderID').val();
@@ -218,145 +200,89 @@ function newDept(oid,tid){
 	}
 	});
 }
-function saveDept(new_dept,tid){
-	var oid = $('#orderID').val();
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveDept&orderID='+oid+'&transID='+tid+'&dept='+new_dept,
-	cache: false,
-	success: function(resp){
-	}
-	});
+function saveByOrderID(oid, action, field_name, field_value)
+{
+    var dstr = 'action=' + action
+        + '&orderID=' + oid
+        + '&' + field_name + '=' + field_value;
+    silentSave(dstr);
 }
-function saveVendor(new_vendor,tid){
+function saveByTransID(tid, action, field_name, field_value)
+{
 	var oid = $('#orderID').val();
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveVendor&orderID='+oid+'&transID='+tid+'&vendor='+new_vendor,
-	cache: false,
-	success: function(resp){
-	}
-	});
+    var dstr = 'action=' + action
+        + '&orderID=' + oid
+        + '&transID=' + tid
+        + '&' + field_name + '=' + field_value;
+    silentSave(dstr);
+}
+function silentSave(dstr)
+{
+    $.ajax({
+        url: 'ajax-calls.php',
+        type: 'post',
+        data: dstr,
+        success: function(resp){}
+    });
+}
+function saveDept(new_dept,tid)
+{
+    saveByTransID(tid, 'saveDept', 'dept', new_dept);
+}
+function saveVendor(new_vendor,tid)
+{
+    saveByTransID(tid, 'saveVendor', 'vendor', new_vendor);
 }
 function saveFN(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveFN&orderID='+oid+'&fn='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveFN', 'fn', val);
 }
 function saveLN(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveLN&orderID='+oid+'&ln='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveLN', 'ln', val);
 }
 function saveCity(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveCity&orderID='+oid+'&city='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveCity', 'city', val);
 }
 function saveState(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveState&orderID='+oid+'&state='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveState', 'state', val);
 }
 function saveZip(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveZip&orderID='+oid+'&zip='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveZip', 'zip', val);
 }
 function savePh(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=savePh&orderID='+oid+'&ph='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'savePh', 'ph', val);
 }
 function savePh2(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=savePh2&orderID='+oid+'&ph2='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'savePh2', 'ph2', val);
 }
 function saveEmail(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveEmail&orderID='+oid+'&email='+val,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveEmail', 'email', val);
 }
 function saveAddr(oid){
 	var addr1 = $('#t_addr1').val();
 	var addr2 = $('#t_addr2').val();
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveAddr&addr1='+addr1+'&addr2='+addr2+'&orderID='+oid,
-	cache: false,
-	success: function(resp){}
-	});
+	var dstr = 'action=saveAddr&addr1='+addr1+'&addr2='+addr2+'&orderID='+oid;
+    silentSave(dstr);
 }
 function saveNoteDept(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveNoteDept&val='+val+'&orderID='+oid,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveNoteDept', 'val', val);
 }
 function saveText(oid,val){
 	val = escape(val);
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=saveText&val='+val+'&orderID='+oid,
-	cache: false,
-	success: function(resp){}
-	});
+    saveByOrderID(oid, 'saveText', 'val', val);
 }
 function savePN(oid,val){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=savePN&val='+val+'&orderID='+oid,
-	cache: false,
-	success: function(resp){}
-	});
+    $.ajax({
+        url: 'OrderAjax.php',
+        type: 'post',
+        data: 'pn='+val+'&id='+oid
+    });
 }
 function saveConfirmDate(val,oid){
 	if (val){
 		$.ajax({
-		url: 'ajax-calls.php',
+		url: 'OrderAjax.php',
 		type: 'post',
-		data: 'action=confirmOrder&orderID='+oid,
+        data: 'id='+oid+'&confirm=1',
 		cache: false,
 		success: function(resp){
 			$('#confDateSpan').html('Confirmed '+resp);
@@ -365,9 +291,9 @@ function saveConfirmDate(val,oid){
 	}
 	else {
 		$.ajax({
-		url: 'ajax-calls.php',
+		url: 'OrderAjax.php',
 		type: 'post',
-		data: 'action=unconfirmOrder&orderID='+oid,
+        data: 'id='+oid+'&confirm=0',
 		cache: false,
 		success: function(resp){
 			$('#confDateSpan').html('Not confirmed');
@@ -376,42 +302,36 @@ function saveConfirmDate(val,oid){
 	}
 }
 function togglePrint(username,oid){
-	$.ajax({
-	url: 'ajax-calls.php',
-	dataType: 'post',
-	data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
-	cache: false,
-	success: function(resp){}
-	});
+    $.ajax({
+        url: 'OrderViewPage.php',
+        type: 'post',
+        data: 'togglePrint=1&orderID='+oid
+    });
 }
 function toggleO(oid,tid){
-	$.ajax({
-	url: 'ajax-calls.php',
-	dataType: 'post',
-	data: 'action=UpdateItemO&orderID='+oid+'&transID='+tid,
-	cache: false,
-	success: function(resp){}
-	});
+    $.ajax({
+        url: 'OrderViewPage.php',
+        type: 'post',
+        data: 'toggleMemType=1&orderID='+oid+'&transID='+tid
+    });
 }
 function toggleA(oid,tid){
-	$.ajax({
-	url: 'ajax-calls.php',
-	dataType: 'post',
-	data: 'action=UpdateItemA&orderID='+oid+'&transID='+tid,
-	cache: false,
-	success: function(resp){}
-	});
+    $.ajax({
+        url: 'OrderViewPage.php',
+        type: 'post',
+        data: 'toggleStaff=1&orderID='+oid+'&transID='+tid
+    });
 }
 function doSplit(oid,tid){
 	var dcheck=false;
 	$('select.editDept').each(function(){
-		if ($(this).val() == 0){
+		if ($(this).val() === '0'){
 			dcheck=true;
 		}
 	});
 
 	if (dcheck){
-		alert("Item(s) don't have a department set");
+		window.alert("Item(s) don't have a department set");
 		return false;
 	}
 
@@ -429,39 +349,53 @@ function doSplit(oid,tid){
 function validateAndHome(){
 	var dcheck=false;
 	$('select.editDept').each(function(){
-		if ($(this).val() == 0){
+		if ($(this).val() === '0'){
 			dcheck=true;
 		}
 	});
 
 	if (dcheck){
-		alert("Item(s) don't have a department");
+		window.alert("Item(s) don't have a department");
 		return false;
 	}
 
 	var CtC = $('#ctcselect').val();
-	if (CtC == 2){
-		alert("Choose Call to Confirm option");
+	if (CtC === '2'){
+		window.alert("Choose Call to Confirm option");
 		return false;
 	}
 
 	var nD = $('#nDept').val();
 	var nT = $('#nText').val();
-	if (nT != "" && nD == 0)
-		alert("Assign your notes to a department");
-	else
-		location = $('#redirectURL').val();
+	if (nT !== "" && nD === '0') {
+		window.alert("Assign your notes to a department");
+		return false;
+    }
+
+    if ($('#oStoreID').val() == 0) {
+        window.alert('Choose a store');
+	} else {
+		window.location = $('#redirectURL').val();
+    }
 
 	return false;
 }
 function updateStatus(oid,val){
 	$.ajax({
-	url: 'ajax-calls.php',
+	url: 'OrderAjax.php',
 	type: 'post',
-	data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
+    data: 'id='+oid+'&status='+val,
+    dataType: 'json',
 	cache: false,
 	success: function(resp){
-		$('#statusdate'+oid).html(resp);	
+		$('#statusdate'+oid).html(resp.tdate);
 	}
 	});
+}
+function updateStore(oid,val){
+    $.ajax({
+        url: 'OrderAjax.php',
+        type: 'post',
+        data: 'id='+oid+'&store='+val
+    });
 }

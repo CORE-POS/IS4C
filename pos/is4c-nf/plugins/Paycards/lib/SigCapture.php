@@ -1,51 +1,67 @@
 <?php
-/*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+class SigCapture
+{
+    public function __construct($conf)
+    {
+        $this->conf = $conf;
+    }
 
-    This file is part of IT CORE.
+    public function save($file, $dbc)
+    {
+        $bmp = file_get_contents($file);
+        $format = 'BMP';
+        $imgContent = $bmp;
 
-    IT CORE is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+        $capQ = 'INSERT INTO CapturedSignature
+                    (tdate, emp_no, register_no, trans_no,
+                     trans_id, filetype, filecontents)
+                 VALUES
+                    (?, ?, ?, ?,
+                     ?, ?, ?)';
+        $capP = $dbc->prepare($capQ);
+        $args = array(
+            date('Y-m-d H:i:s'),
+            $this->conf->get('CashierNo'),
+            $this->conf->get('laneno'),
+            $this->conf->get('transno'),
+            $this->conf->get('paycard_id'),
+            $format,
+            $imgContent,
+        );
+        $dbc->execute($capP, $args);
 
-    IT CORE is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+        unlink($file);
+    } 
 
-    You should have received a copy of the GNU General Public License
-    in the file license.txt along with IT CORE; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    private function isCredit()
+    {
+        $ret = ($this->conf->get('CacheCardType') == 'CREDIT' || $this->conf->get('CacheCardType') == '') ? true : false;
+        if ($this->conf->get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
+            $ret = false;
+        } elseif ($this->conf->get('EmvSignature') === true) {
+            $ret = true;
+        }
 
-*********************************************************************************/
+        return $ret;
+    }
 
-/**
-  @deprecated 11Mar14 Andy
+    public function required()
+    {
+        // Signature Capture support
+        // If:
+        //   a) enabled
+        //   b) a Credit transaction
+        //   c) Over limit threshold OR a return OR a recurring charge
+        $isCredit = $this->isCredit();
+        $needSig = (
+            $this->conf->get('paycard_amount') > $this->conf->get('CCSigLimit') 
+            || $this->conf->get('paycard_amount') < 0
+            || $this->conf->get('paycard_recurring')
+            ) ? true : false;
+        $isVoid = ($this->conf->get('paycard_mode') == PaycardLib::PAYCARD_MODE_VOID) ? true : false;
 
-  Related to Ingenico i6550 driver. Never finished.
-  No references to this class should remain elsewhere
-  in the codebase.
-*/
-class SigCapture {
-
-static public function term_object(){
-    return false;
-    /**
-	global $CORE_LOCAL;
-	$termDriver = $CORE_LOCAL->get("SigCapture");
-	$td = 0;
-	if ($termDriver != "" && !class_exists($termDriver)){
-		include(realpath(dirname(__FILE__).
-			'/../scale-drivers/php-wrappers/'.$termDriver.'.php'));
-		$td = new $termDriver();
-	}
-	if (is_object($td)) return $td;
-	return False;
-    */
+        return ($this->conf->get("PaycardsSigCapture") == 1 && $isCredit && $needSig && !$isVoid); 
+    }
 }
 
-}
-
-?>

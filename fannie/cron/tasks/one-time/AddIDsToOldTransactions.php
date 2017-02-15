@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -26,17 +26,13 @@ class AddIDsToOldTransactions extends FannieTask
 
     public $name = 'One-time: Fix store_row_id';
 
-    public $description = 'Goes through archived
-transactions and assigns values where store_row_id
-is NULL';
+    public $description =
+'Goes through archived transactions and assigns
+values where store_row_id is NULL.
+You may want to change the date-based range of
+tables checked before running this.';
 
-    public $default_schedule = array(
-        'min' => 0,
-        'hour' => 1,
-        'day' => '*',
-        'month' => '*',
-        'weekday' => '*',
-    );
+    public $schedulable = false;
 
     public function run()
     {
@@ -65,12 +61,24 @@ is NULL';
                 $currentMax = $maxW[0];
             }
         }
+        /* If for some reason you are not running this in the normal way,
+         * where currentMax is in dtransactions or yesterday's trans_archive,
+         * assign currentMax here.
+         * It may be in the possibly empty dtransactions in
+         * PhpMyAdmin > Operations > Table Options
+         * where AUTO_INCREMENT is the next value to be assigned,
+         *  i.e. $currentMax + 1
+         * or in the last table effectively updated.
+        $currentMax = 9999;
+         */
 
         echo $this->cronMsg("Current maximum is ".$currentMax);
 
-        // oldest known transaction data
+        /* oldest known transaction data
+         * Adjust $year and $month for your database.
+         */
         $year = 2004;
-        $month = 9; 
+        $month = 9;
         $new_id = $currentMax + 1;
         // work in one month chunks
         while($year <= date('Y')) {
@@ -86,40 +94,45 @@ is NULL';
                 $table .= 'transArchive' . $year . str_pad($month, 2, '0', STR_PAD_LEFT);
             }
 
-            $lowerBound = date('Y-m-01 00:00:00', mktime(0,0,0,$month,1,$year));
-            $upperBound = date('Y-m-t 23:59:59', mktime(0,0,0,$month,1,$year));
-            $prep = $dbc->prepare('UPDATE ' . $table . ' SET store_row_id = ?
-                                WHERE datetime = ?
-                                AND emp_no = ?
-                                AND register_no = ?
-                                AND trans_no = ?
-                                AND trans_id = ?');
-            $lookupQ = "SELECT datetime, emp_no, register_no, trans_no, trans_id
-                        FROM $table 
-                        WHERE datetime BETWEEN '$lowerBound' AND '$upperBound'
-                        AND store_row_id IS NULL
-                        ORDER BY datetime";
-            $lookupR = $dbc->query($lookupQ);
-            $num_records = $dbc->num_rows($lookupR);
-            $count = 1;
-            // update records one at a time with incrementing IDs
-            while($row = $dbc->fetch_row($lookupR)) {
-                if ($count == 1 || $count % 100 == 0) {
-                    echo $this->cronMsg(date('F Y', mktime(0,0,0,$month,1,$year)) . ' ' . $count . '/' . $num_records);
+            if ($dbc->table_exists("$table")) {
+                $lowerBound = date('Y-m-01 00:00:00', mktime(0,0,0,$month,1,$year));
+                $upperBound = date('Y-m-t 23:59:59', mktime(0,0,0,$month,1,$year));
+                $prep = $dbc->prepare('UPDATE ' . $table . ' SET store_row_id = ?
+                                    WHERE datetime = ?
+                                    AND emp_no = ?
+                                    AND register_no = ?
+                                    AND trans_no = ?
+                                    AND trans_id = ?');
+                $lookupQ = "SELECT datetime, emp_no, register_no, trans_no, trans_id
+                            FROM $table 
+                            WHERE datetime BETWEEN '$lowerBound' AND '$upperBound'
+                            AND store_row_id IS NULL
+                            ORDER BY datetime";
+                $lookupR = $dbc->query($lookupQ);
+                $num_records = $dbc->num_rows($lookupR);
+                $count = 1;
+                // update records one at a time with incrementing IDs
+                while($row = $dbc->fetch_row($lookupR)) {
+                    // Original monitor interval: 100
+                    if ($count == 1 || $count % 1000 == 0) {
+                        echo $this->cronMsg(date('F Y', mktime(0,0,0,$month,1,$year)) . ' ' . $count . '/' . $num_records);
+                    }
+
+                    $args = array(
+                        $new_id,
+                        $row['datetime'],
+                        $row['emp_no'],
+                        $row['register_no'],
+                        $row['trans_no'],
+                        $row['trans_id'],
+                    );
+                    $dbc->execute($prep, $args);
+
+                    $count++;
+                    $new_id++;
                 }
-
-                $args = array(
-                    $new_id,
-                    $row['datetime'],
-                    $row['emp_no'],
-                    $row['register_no'],
-                    $row['trans_no'],
-                    $row['trans_id'],
-                );
-                //$dbc->execute($prep, $args);
-
-                $count++;
-                $new_id++;
+            } else {
+                echo $this->cronMsg("$table doesn't exist.");
             }
 
             $month++;
@@ -133,7 +146,14 @@ is NULL';
         // advance dtransaction's increment counter so it will resume
         // beyond all the IDs that were just used on archives 
         $alterQ = 'ALTER TABLE dtransactions AUTO_INCREMENT = ' . $new_id;
-        //$dbc->query($alterQ);
+        $rslt = $dbc->query($alterQ);
+        if ($rslt === False) {
+            echo $this->cronMsg("***Error: Attempt to: $alterQ failed.");
+        } else {
+            echo $this->cronMsg("Next dtransactions.store_row_id will be $new_id");
+        }
+
+        echo $this->cronMsg("Done.");
     }
 }
 

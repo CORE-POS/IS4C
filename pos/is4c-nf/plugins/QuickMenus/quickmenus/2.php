@@ -8,4 +8,3 @@ $my_menu = array(
 	"Parsley Pesto - $6.99" => "2019"
 );
 
-?>

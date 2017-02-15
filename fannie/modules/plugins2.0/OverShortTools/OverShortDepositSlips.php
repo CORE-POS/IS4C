@@ -22,16 +22,22 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/fpdf/fpdf.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!class_exists('FPDF')) {
+    include_once($FANNIE_ROOT.'src/fpdf/fpdf.php');
+}
 
-class OverShortDepositSlips extends FanniePage {
+class OverShortDepositSlips extends FanniePage 
+{
 
     protected $header = 'Print Deposit Slips';
     protected $title = 'Print Deposit Slips';
 
     public $page_set = 'Plugin :: Over/Shorts';
     public $description = '[Deposit Slips] generates PDF of bank-required deposit info.';
+    public $themed = true;
 
     function preprocess(){
         if (FormLib::get_form_value('startDate') !== ''){
@@ -46,11 +52,12 @@ class OverShortDepositSlips extends FanniePage {
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
         $start = FormLib::get_form_value('startDate');
         $end = FormLib::get_form_value('endDate');
+        $store = FormLib::get('store');
 
-        $fs = 12;
+        $font_size = 12;
 
         $pdf = new FPDF("P","mm","A4"); 
-        $pdf->SetFont('Arial','',$fs);
+        $pdf->SetFont('Arial','',$font_size);
         $pdf->SetMargins(5,5,5);
         $pdf->SetAutoPageBreak(True,5);
         $pdf->AddPage();
@@ -65,12 +72,13 @@ class OverShortDepositSlips extends FanniePage {
         */
         $query = "select checks from dailyChecks where
             date BETWEEN ? AND ?
+                AND storeID=?
             order by 
               case when id >= 68 then id+1
               when id = 43 then 68
               else id end";
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, array($start, $end));
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, array($start, $end, $store));
         $acc = array();
         $counts = array();
         $ckSum = 0;
@@ -96,10 +104,10 @@ class OverShortDepositSlips extends FanniePage {
                 if (is_numeric($v)) $vcount++;
             }
 
-            // accumulate up to 57 checks
+            // accumulate up to 56 checks
             // that's max column size
             // put any leftovers in $extra
-            if ($vcount + count($acc) <= 57){
+            if ($vcount + count($acc) <= 56){
                 foreach($vals as $v){
                     if (is_numeric($v)) array_push($acc,$v);
                 }
@@ -116,7 +124,7 @@ class OverShortDepositSlips extends FanniePage {
                 $str1 = "WFC #$num\n";
                 $sum = 0;
                 $str = "";
-                for($j=0;$j<57;$j++){
+                for($j=0;$j<56;$j++){
                     if ($j < count($acc)){
                         $str .= sprintf("%.2f",$acc[$j]);
                         $sum += $acc[$j];
@@ -135,12 +143,12 @@ class OverShortDepositSlips extends FanniePage {
                 $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
                 $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-                $pdf->SetFontSize($fs-1);
+                $pdf->SetFontSize($font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
                 $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-                $pdf->SetFont('Arial','B',$fs-1);
+                $pdf->SetFont('Arial','B',$font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
-                $pdf->SetFont('Arial','',$fs-1);
+                $pdf->SetFont('Arial','',$font_size-1);
                 $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
                 
@@ -163,7 +171,7 @@ class OverShortDepositSlips extends FanniePage {
         if (count($acc) > 0){
             $sum = 0;
             $str = "";
-            for($j=0;$j<57;$j++){
+            for($j=0;$j<56;$j++){
                 if ($j < count($acc)){
                     $str .= sprintf("%.2f",$acc[$j]);
                     $sum += $acc[$j];
@@ -182,12 +190,12 @@ class OverShortDepositSlips extends FanniePage {
             $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
             $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-            $pdf->SetFontSize($fs-1);
+            $pdf->SetFontSize($font_size-1);
             $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
             $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-            $pdf->SetFont('Arial','B',$fs);
+            $pdf->SetFont('Arial','B',$font_size);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
-            $pdf->SetFont('Arial','',$fs);
+            $pdf->SetFont('Arial','',$font_size);
             $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
         }
@@ -225,9 +233,9 @@ class OverShortDepositSlips extends FanniePage {
         $dbstack = array('buyAmount'=>array(),
                  'depositAmount'=>array());
         $dbQ = "SELECT rowName,denomination,amt FROM dailyDeposit WHERE
-            dateStr = ? AND rowName IN ('buyAmount','depositAmount')";
-        $dbP = $dbc->prepare_statement($dbQ);
-        $dbR = $dbc->exec_statement($dbP,array($dateClause));
+            dateStr = ? AND storeID=? AND rowName IN ('buyAmount','depositAmount')";
+        $dbP = $dbc->prepare($dbQ);
+        $dbR = $dbc->execute($dbP,array($dateClause,$store));
         while($dbW = $dbc->fetch_row($dbR)){
             $dbstack[$dbW[0]][$dbW[1]] = $dbW[2];
         }
@@ -296,37 +304,67 @@ class OverShortDepositSlips extends FanniePage {
         ob_start();
         ?>
         <form action=OverShortDepositSlips.php method=get>
-        <table>
-        <tr>
-            <th>Start</th><td><input type=text id=startDate name=startDate />
-            <td >
-            Recent Counts: <select onchange="existingDates(this.value);">
-            <option value=''>Select one...</option>
-            <?php
-            $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
-            $count = 0;
-            while($row = $dbc->fetch_row($res)) {
-                if ($count++ > 50) {
-                    break;
-                }
-                echo '<option>'.$row['dateStr'].'</option>';
-            }
-            ?>
-            </select>
-            </td>
-        </tr>
-        <tr><th>End</th><td><input type=text id=endDate name=endDate />
-        </table>
-        <input type=submit value="Generate slips" />
+        <div class="row">
+        <div class="col-sm-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Date Range</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="text" class="form-control date-field" id="startDate"
+                        name="startDate" required />
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="text" class="form-control date-field" id="endDate"
+                        name="endDate" required />
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="col-sm-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Recent Counts</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <select class="form-control" onchange="existingDates(this.value);">
+                    <option value=''>Select one...</option>
+                    <?php
+                    $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
+                    $count = 0;
+                    while($row = $dbc->fetch_row($res)) {
+                        if ($count++ > 50) {
+                            break;
+                        }
+                        echo '<option>'.$row['dateStr'].'</option>';
+                    }
+                    ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">Store</div>
+            <div class="panel-body">
+                <div class="form-group">
+                <?php
+                $stores = FormLib::storePicker('store', false);
+                echo $stores['html'];
+                ?>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div> <!-- end row -->
+        <p>
+            <button type=submit class="btn btn-default">Generate slips</button>
+        </p>
         </form>
         <?php
-        $this->add_onload_command("\$('#startDate').datepicker();\n");
-        $this->add_onload_command("\$('#endDate').datepicker();\n");
 
         return ob_get_clean();
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

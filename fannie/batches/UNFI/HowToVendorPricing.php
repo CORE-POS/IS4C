@@ -5,12 +5,14 @@ if (!class_exists('FannieAPI')) {
 }
 
 class HowToVendorPricing extends FanniePage {
-    protected $window_dressing = False;
 
     public $description = '[Vendor Pricing Documentation] describes uploading vendor catalog price files.';
+    public $themed = true;
+    protected $title = 'Vendor Pricing Documentation';
+    protected $header = 'Vendor Pricing Documentation';
 
     function css_content(){
-        return 'img {
+        return '.container img {
             border: solid 1px black;
         }';
     }
@@ -50,8 +52,20 @@ Step 5 (optional): track down a dedicated professional to help<br />
         <?php
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>This information may be a bit out of date.
+            Except the cat. Enjoy the cat!
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

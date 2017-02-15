@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -27,12 +27,12 @@ function confset($key, $value)
     $FILEPATH = realpath(dirname(__FILE__).'/../');
     $lines = array();
     $found = false;
-    $fp = fopen($FILEPATH.'/config.php','r');
-    while($line = fgets($fp)) {
+    $fptr = fopen($FILEPATH.'/config.php','r');
+    while($line = fgets($fptr)) {
         if (strpos($line,"\$$key ") === 0) {
             $lines[] = "\$$key = $value;\n";
             $found = true;
-        } else if (strpos($line,"?>") === 0 && $found == false) {
+        } elseif (strpos($line,"?>") === 0 && $found === false) {
             $lines[] = "\$$key = $value;\n";
             $lines[] = "?>\n";
             $found = true;
@@ -41,11 +41,11 @@ function confset($key, $value)
             $lines[] = $line;
         }
     }
-    fclose($fp);
+    fclose($fptr);
 
     // implies no closing tag was found so new settings
     // still needs to be added
-    if ($found == false) {
+    if ($found === false) {
         $lines[] = "\$$key = $value;\n";
     }
 
@@ -68,21 +68,24 @@ function confset($key, $value)
         }
     }
 
-    $fp = fopen($FILEPATH.'/config.php','w');
+    $fptr = fopen($FILEPATH.'/config.php','w');
     foreach($lines as $line) {
-        fwrite($fp,$line);
+        fwrite($fptr,$line);
     }
-    fclose($fp);
+    fclose($fptr);
 }
 
 function check_db_host($host,$dbms)
 {
-	if (!function_exists("socket_create")) {
-		return true; // test not possible
+    if (!function_exists("socket_create")) {
+        return true; // test not possible
+    }
+    if (empty($host)) {
+        return false;
     }
 
-	$port = 0;
-	switch (strtoupper($dbms)) {
+    $port = 0;
+    switch (strtoupper($dbms)) {
         case 'MYSQL':
         case 'MYSQLI':
         case 'PDO_MYSQL':
@@ -90,26 +93,29 @@ function check_db_host($host,$dbms)
             break;
         case 'MSSQL':
             $port = 1433;
-            break;	
+            break;    
         case 'PGSQL':
+        case 'POSTGRES9':
             $port = 5432;
             break;
-	}
-
-	if (strstr($host,":")) {
-		list($host,$port) = explode(":",$host,2);
+        default:
+            return false;
     }
 
-	$test = false;
-	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-	socket_set_block($sock);
-	try {
-		$test = @socket_connect($sock,$host,$port);
-	} catch(Exception $ex) {}
-	socket_close($sock);
+    if (strstr($host,":")) {
+        list($host,$port) = explode(":",$host,2);
+    }
 
-	return ($test ? true : false);	
+    $test = false;
+    $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+    socket_set_block($sock);
+    try {
+        $test = @socket_connect($sock,$host,$port);
+    } catch(Exception $ex) {}
+    socket_close($sock);
+
+    return ($test ? true : false);    
 }
 
 function db_test_connect($host,$type,$db,$user,$pw){
@@ -169,13 +175,14 @@ function showInstallTabsLane($current,$path='') {
     $ret = "";
 
     $ret .= "<ul class='installTabList2'>";
+    $url = FannieConfig::config('URL');
 
     $installTabs = array(
         'Lane Necessities'=>'LaneNecessitiesPage.php',
         'Additional Configuration' => 'LaneAdditionalConfigPage.php',
         'Scanning Options' => 'LaneScanningPage.php',
         'Security' => 'LaneSecurityPage.php',
-        'Text Strings' => 'LaneTextStringPage.php'
+        'Text Strings' => $url . '/admin/ReceiptText/LaneTextStringPage.php'
         );
 
     /* Original
@@ -261,16 +268,16 @@ function check_writeable($filename, $optional=False, $template=False){
     $status = ($optional) ? 'Optional' : 'Warning';
 
     if (!file_exists($filename) && !$optional && is_writable($filename)){
-        $fp = fopen($filename,'w');
+        $fptr = fopen($filename,'w');
         if ($template !== False){
             switch($template){
             case 'PHP':
-                fwrite($fp,"<?php\n");
-                fwrite($fp,"\n");
+                fwrite($fptr,"<?php\n");
+                fwrite($fptr,"\n");
                 break;
             }
         }
-        fclose($fp);
+        fclose($fptr);
     }
 
     if (!file_exists($filename)){
@@ -289,6 +296,22 @@ function check_writeable($filename, $optional=False, $template=False){
             chown ".whoami()." \"".realpath(dirname($filename))."/".basename($filename)."\"<br />
             chmod 600 \"".realpath(dirname($filename))."/".basename($filename)."\"</div>";
     }
+}
+
+function sanitizeFieldQuoting($current_value)
+{
+    // quoted must not contain single quotes
+    $current_value = str_replace("'", '', $current_value);
+    // must not start with backslash
+    while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
+        $current_value = substr($current_value, 1);
+    }
+    // must not end with backslash
+    while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
+        $current_value = substr($current_value, 0, strlen($current_value)-1);
+    }
+
+    return $current_value;
 }
 
 /**
@@ -318,17 +341,8 @@ function installTextField($name, &$current_value, $default_value='', $quoted=tru
         if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== false) {
             $current_value = (int)$current_value;
         }
-    } else if ($quoted) {
-        // quoted must not contain single quotes
-        $current_value = str_replace("'", '', $current_value);
-        // must not start with backslash
-        while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
-            $current_value = substr($current_value, 1);
-        }
-        // must not end with backslash
-        while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
-            $current_value = substr($current_value, 0, strlen($current_value)-1);
-        }
+    } elseif ($quoted) {
+        $current_value = sanitizeFieldQuoting($current_value);
     }
 
     confset($name, ($quoted ? "'" . $current_value . "'" : $current_value));
@@ -338,6 +352,11 @@ function installTextField($name, &$current_value, $default_value='', $quoted=tru
         $name, $quote_char, $current_value, $quote_char);
     if (!isset($attributes['type'])) {
         $attributes['type'] = 'text';
+    }
+    if (isset($attributes['class'])) {
+        $attributes['class'] .= ' form-control';
+    } else {
+        $attributes['class'] = 'form-control';
     }
     foreach ($attributes as $name => $value) {
         if ($name == 'name' || $name == 'value') {
@@ -371,30 +390,40 @@ function installSelectField($name, &$current_value, $options, $default_value='',
 {
     if (FormLib::get($name, false) !== false) {
         $current_value = FormLib::get($name);
+    } else if ($current_value === null) {
+        $current_value = $default_value;
     }
 
     // sanitize values:
     if (!$quoted) {
         // unquoted must be a number or boolean
+        // convert booleans to strings for writing to config.php
+        if (count($options) == 2 && is_bool($default_value)) {
+            if ($current_value) {
+                $current_value = 'true';
+            } else {
+                $current_value = 'false';
+            }
+        }
         if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== 'false') {
             $current_value = (int)$current_value;
         }
-    } else if ($quoted) {
-        // quoted must not contain single quotes
-        $current_value = str_replace("'", '', $current_value);
-        // must not start with backslash
-        while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
-            $current_value = substr($current_value, 1);
-        }
-        // must not end with backslash
-        while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
-            $current_value = substr($current_value, 0, strlen($current_value)-1);
-        }
+    } elseif ($quoted) {
+        $current_value = sanitizeFieldQuoting($current_value);
     }
 
     confset($name, ($quoted ? "'" . $current_value . "'" : $current_value));
 
-    $ret = '<select name="' . $name . '">' . "\n";
+    // convert boolean back from strings after writing config.php
+    if (!$quoted && count($options) == 2 && is_bool($default_value)) {
+        if (strtolower($current_value) == 'true') {
+            $current_value = true;
+        } elseif (strtolower($current_value) == 'false') {
+            $current_value = false;
+        }
+    }
+
+    $ret = '<select name="' . $name . '" class="form-control">' . "\n";
     // array has non-numeric keys
     // if the array has meaningful keys, use the key value
     // combination to build <option>s with labels
@@ -417,4 +446,3 @@ function installSelectField($name, &$current_value, $options, $default_value='',
     return $ret;
 }
 
-?>

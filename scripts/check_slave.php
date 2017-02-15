@@ -140,4 +140,4 @@ function reset_slave($host_ip) {
     exec($reset, $output, $result);
     $ret = ($result > 0) ? true : false;
 }
-?>
+

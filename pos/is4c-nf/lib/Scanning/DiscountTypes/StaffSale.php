@@ -21,12 +21,15 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\DiscountTypes;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use COREPOS\pos\lib\TransRecord;
+
 class StaffSale extends DiscountType 
 {
 
-    public function priceInfo($row,$quantity=1)
+    public function priceInfo(array $row, $quantity=1)
     {
-        global $CORE_LOCAL;
         if (is_array($this->savedInfo)) {
             return $this->savedInfo;
         }
@@ -39,7 +42,7 @@ class StaffSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = ($ret['regPrice'] - $row['special_price']) * $quantity;
 
-        if ($CORE_LOCAL->get("isStaff") == 1) {
+        if ($this->session->get("isStaff") == 1) {
             $ret["unitPrice"] = $row['special_price'];
         }
 
@@ -51,8 +54,7 @@ class StaffSale extends DiscountType
 
     public function addDiscountLine()
     {
-        global $CORE_LOCAL;    
-        if ($CORE_LOCAL->get("isStaff") == 1) {
+        if ($this->session->get("isStaff") == 1) {
             TransRecord::adddiscount($this->savedInfo['memDiscount'],
                 $this->savedRow['department']);
         }

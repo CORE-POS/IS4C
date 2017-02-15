@@ -21,10 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\plugins\QuickMenus;
+
 /**
   @class QuickLookupsModel
 */
-class QuickLookupsModel extends BasicModel
+class QuickLookupsModel extends \COREPOS\pos\lib\models\BasicModel
 {
 
     protected $name = "QuickLookups";
@@ -37,84 +39,6 @@ class QuickLookupsModel extends BasicModel
     'label' => array('type'=>'VARCHAR(100)'),
     'action' => array('type'=>'VARCHAR(25)'),
     'sequence' => array('type'=>'SMALLINT', 'default'=>0),
-	);
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function quickLookupID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["quickLookupID"])) {
-                return $this->instance["quickLookupID"];
-            } elseif(isset($this->columns["quickLookupID"]["default"])) {
-                return $this->columns["quickLookupID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["quickLookupID"] = func_get_arg(0);
-        }
-    }
-
-    public function lookupSet()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["lookupSet"])) {
-                return $this->instance["lookupSet"];
-            } elseif(isset($this->columns["lookupSet"]["default"])) {
-                return $this->columns["lookupSet"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["lookupSet"] = func_get_arg(0);
-        }
-    }
-
-    public function label()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["label"])) {
-                return $this->instance["label"];
-            } elseif(isset($this->columns["label"]["default"])) {
-                return $this->columns["label"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["label"] = func_get_arg(0);
-        }
-    }
-
-    public function action()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["action"])) {
-                return $this->instance["action"];
-            } elseif(isset($this->columns["action"]["default"])) {
-                return $this->columns["action"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["action"] = func_get_arg(0);
-        }
-    }
-
-    public function sequence()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["sequence"])) {
-                return $this->instance["sequence"];
-            } elseif(isset($this->columns["sequence"]["default"])) {
-                return $this->columns["sequence"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["sequence"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
+    );
 }
 

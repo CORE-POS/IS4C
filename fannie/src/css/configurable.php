@@ -1,39 +1,41 @@
 <?php
-header('Content-type: text/css');
+if (!headers_sent()) {
+    header('Content-type: text/css');
+}
 if (!isset($FANNIE_CSS_BG_COLOR)) {
     include(dirname(__FILE__) . '/../../config.php');
 }
 
-$bg = isset($FANNIE_CSS_BG_COLOR) ? $FANNIE_CSS_BG_COLOR : '#FFFFFF';
-$bg = str_replace(';', '', $bg);
-if (empty($bg)) {
-    $bg = '#FFFFFF';
-} else if (is_numeric($bg)) {
-    $bg = '#' . $bg;
+$conf_background = isset($FANNIE_CSS_BG_COLOR) ? $FANNIE_CSS_BG_COLOR : '#FFFFFF';
+$conf_background = str_replace(';', '', $conf_background);
+if (empty($conf_background)) {
+    $conf_background = '#FFFFFF';
+} else if (is_numeric($conf_background)) {
+    $conf_background = '#' . $conf_background;
 }
 
-$fg = isset($FANNIE_CSS_FG_COLOR) ? $FANNIE_CSS_FG_COLOR : '#222222';
-$fg = str_replace(';', '', $fg);
-if (empty($fg)) {
-    $fg = '#222222';
-} else if (is_numeric($fg)) {
-    $fg = '#' . $fg;
+$conf_foreground = isset($FANNIE_CSS_FG_COLOR) ? $FANNIE_CSS_FG_COLOR : '#222222';
+$conf_foreground = str_replace(';', '', $conf_foreground);
+if (empty($conf_foreground)) {
+    $conf_foreground = '#222222';
+} else if (is_numeric($conf_foreground)) {
+    $conf_foreground = '#' . $conf_foreground;
 }
 
-$pc = isset($FANNIE_CSS_PRIMARY_COLOR) ? $FANNIE_CSS_PRIMARY_COLOR : '#330066';
-$pc = str_replace(';', '', $pc);
-if (empty($pc)) {
-    $pc = '#330066';
-} else if (is_numeric($pc)) {
-    $pc = '#' . $pc;
+$conf_primary_color = isset($FANNIE_CSS_PRIMARY_COLOR) ? $FANNIE_CSS_PRIMARY_COLOR : '#330066';
+$conf_primary_color = str_replace(';', '', $conf_primary_color);
+if (empty($conf_primary_color)) {
+    $conf_primary_color = '#330066';
+} else if (is_numeric($conf_primary_color)) {
+    $conf_primary_color = '#' . $conf_primary_color;
 }
 
-$sc = isset($FANNIE_CSS_SECONDARY_COLOR) ? $FANNIE_CSS_SECONDARY_COLOR : '#444444';
-$sc = str_replace(';', '', $sc);
-if (empty($sc)) {
-    $sc = '#444444';
-} else if (is_numeric($sc)) {
-    $sc = '#' . $sc;
+$conf_secondary_color = isset($FANNIE_CSS_SECONDARY_COLOR) ? $FANNIE_CSS_SECONDARY_COLOR : '#444444';
+$conf_secondary_color = str_replace(';', '', $conf_secondary_color);
+if (empty($conf_secondary_color)) {
+    $conf_secondary_color = '#444444';
+} else if (is_numeric($conf_secondary_color)) {
+    $conf_secondary_color = '#' . $conf_secondary_color;
 }
 
 $font = isset($FANNIE_CSS_FONT) ? $FANNIE_CSS_FONT : '';
@@ -46,34 +48,38 @@ $font .= 'arial, sans-serif';
 
 echo '
 .primaryColor, a, a:hover {
-    color: ' . $pc . ';
+    color: ' . $conf_primary_color . ';
 }
 .primaryBorder {
-    border-color: ' . $pc . ';
+    border-color: ' . $conf_primary_color . ';
 }
 .primaryBackground, .MemFormTable th {
-    background-color: ' . $pc . ';
+    background-color: ' . $conf_primary_color . ' !important;
     /*background-color: #FF5800;*/
+}
+.btn-core {
+    border-color: ' . $conf_primary_color . ';
+    border-width: 3px;
 }
 
 .secondaryColor, #css_menu_root {
-    color: ' . $sc . ';
+    color: ' . $conf_secondary_color . ';
     /*color: #673F17;*/
 }
 .secondaryBackground {
-    background-color: ' . $sc . ';
+    background-color: ' . $conf_secondary_color . ';
 }
 .secondaryBorder, #css_menu_root div.sub {
-    border-color: ' . $sc . ';
+    border-color: ' . $conf_secondary_color . ';
     /*border-color: #7AB800;*/
 }
 
 .bgColor, body {
-    background-color: ' . $bg . ';
+    background-color: ' . $conf_background . ';
 }
 
 .textColor, body {
-    color: ' . $fg . ';
+    color: ' . $conf_foreground . ';
 }
 
 .fannieFont, body {

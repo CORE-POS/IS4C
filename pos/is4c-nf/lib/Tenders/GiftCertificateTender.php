@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use \CoreLocal;
+
 /**
   @class GiftCertificateTender
   Tender module for gift certificates
@@ -42,14 +45,11 @@ class GiftCertificateTender extends TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-        $CORE_LOCAL->set("autoReprint",1);
-
-        if ($CORE_LOCAL->get("enableFranking") != 1) {
+        if (CoreLocal::get("enableFranking") != 1) {
             return true;
         }
 
-        if ($CORE_LOCAL->get("msgrepeat") == 0) {
+        if (CoreLocal::get("msgrepeat") == 0) {
             return $this->defaultPrompt();
         }
 
@@ -58,34 +58,16 @@ class GiftCertificateTender extends TenderModule
 
     public function defaultPrompt()
     {
-        global $CORE_LOCAL;
+        return parent::frankingPrompt();
+    }
 
-        if ($CORE_LOCAL->get("enableFranking") != 1) {
-            return parent::defaultPrompt();
+    public function add()
+    {
+        // rewrite WIC as checks
+        if (CoreLocal::get("store")=="wfc" && $this->tender_code='WT'){
+            $this->tender_code = "CK";
         }
-
-        $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-            .trim($CORE_LOCAL->get("laneno"))."-"
-            .trim($CORE_LOCAL->get("transno"));
-
-        if ($this->amount === false) {
-            $this->amount = $this->defaultTotal();
-        }
-
-        $msg = "<br />"._("insert")." ".$this->name_string.
-            ' for $'.sprintf('%.2f',$this->amount).
-            "<br />"._("press enter to endorse");
-        if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-            $msg .= "<div style=\"background:#993300;color:#ffffff;
-                margin:3px;padding: 3px;\">
-                There was an equity sale on this transaction. Did it get
-                endorsed yet?</div>";
-        }
-
-        $CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
-        $CORE_LOCAL->set("boxMsg",$msg);
-
-        return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
+        parent::add();
     }
 }
 

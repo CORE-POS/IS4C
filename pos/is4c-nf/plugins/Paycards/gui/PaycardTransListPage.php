@@ -21,80 +21,76 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\gui\NoInputCorePage;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class PaycardTransListPage extends NoInputPage 
+class PaycardTransListPage extends NoInputCorePage 
 {
 
-	function preprocess(){
-		global $CORE_LOCAL;
-		// check for posts before drawing anything, so we can redirect
-        if (isset($_REQUEST['selectlist'])) {
-            $id = $_REQUEST['selectlist'];
+    function preprocess()
+    {
+        $this->conf = new PaycardConf();
+        // check for posts before drawing anything, so we can redirect
+        if (FormLib::get('selectlist', false) !== false) {
+            $ptid = FormLib::get('selectlist');
 
-            if ($id == 'CL' || $id == '') {
+            if ($ptid == 'CL' || $ptid == '') {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
-
-                return false;
-            } else {
-                $this->change_page('PaycardTransLookupPage.php?id=' . $id . '&mode=lookup');
-
                 return false;
             }
-		} // post?
-		return True;
-	}
 
-	function body_content(){
-		global $CORE_LOCAL;
+            $this->change_page('PaycardTransLookupPage.php?id=' . $ptid . '&mode=lookup');
+            return false;
+
+        } // post?
+        return True;
+    }
+
+    function body_content()
+    {
         $local = array();
         $other = array();
-        $db = Database::tDataConnect();
-        $localQ = 'SELECT amount, PAN, refNum FROM efsnetRequest GROUP BY amount, PAN, refNum';
-        $localR = $db->query($localQ);
-        while($w = $db->fetch_row($localR)) {
-            $local['_l' . $w['refNum']] = '(CURRENT)' . $w['PAN'] . ' : ' . sprintf('%.2f', $w['amount']);
+        $dbc = Database::tDataConnect();
+        $localQ = 'SELECT amount, PAN, refNum FROM PaycardTransactions GROUP BY amount, PAN, refNum';
+        $localR = $dbc->query($localQ);
+        while($row = $dbc->fetchRow($localR)) {
+            $local['_l' . $row['refNum']] = '(CURRENT)' . $row['PAN'] . ' : ' . sprintf('%.2f', $row['amount']);
         }
-        if ($CORE_LOCAL->get('standalone') == 0) {
+        if ($this->conf->get('standalone') == 0) {
 
-            $emp = $CORE_LOCAL->get('CashierNo');
-            $db = Database::pDataConnect();
-            $empQ = 'SELECT frontendsecurity FROM employees WHERE emp_no=' . ((int)$emp);
-            $empR = $db->query($empQ);
-            $supervisor = false;
-            if ($db->num_rows($empR) > 0) {
-                $empW = $db->fetch_row($empR);
-                if ($empW['frontendsecurity'] >= 30) {
-                    $supervisor = true;
-                }
-            }
+            $emp = $this->conf->get('CashierNo');
+            $sec = Authenticate::getPermission($emp);
+            $supervisor = $sec >= 30 ? true : false;
 
-            $db = Database::mDataConnect();
-            $otherQ = 'SELECT MIN(datetime) as dt, amount, PAN, refNum,
-                        cashierNo, laneNo, transNo
-                        FROM efsnetRequest 
-                        WHERE date=' . date('Ymd');
+            $dbc = Database::mDataConnect();
+            $otherQ = 'SELECT MIN(requestDatetime) as dt, amount, PAN, refNum,
+                        empNo AS cashierNo, registerNo AS laneNo, transNo
+                        FROM PaycardTransactions 
+                        WHERE dateID=' . date('Ymd');
             if (!$supervisor) {
-                $otherQ .= ' AND laneNo=' . ((int)$CORE_LOCAL->get('laneno')) . '
-                           AND cashierNo=' . ((int)$CORE_LOCAL->get('CashierNo'));
+                $otherQ .= ' AND registerNo=' . ((int)$this->conf->get('laneno')) . '
+                           AND empNo=' . ((int)$this->conf->get('CashierNo'));
             }
             $otherQ .= ' GROUP BY amount, PAN, refNum
-                        ORDER BY datetime DESC';
-            $otherR = $db->query($otherQ);
-            while($w = $db->fetch_row($otherR)) {
-                $other[$w['refNum']] = $w['dt'] . ' : ' 
-                                        . $w['cashierNo'] . '-' . $w['laneNo'] . '-' . $w['transNo'] . ' : ' 
-                                        . sprintf('%.2f', $w['amount']);
+                        ORDER BY requestDatetime DESC';
+            $otherR = $dbc->query($otherQ);
+            while($row = $dbc->fetchRow($otherR)) {
+                $other[$row['refNum']] = $row['dt'] . ' : ' 
+                                        . $row['cashierNo'] . '-' . $row['laneNo'] . '-' . $row['transNo'] . ' : ' 
+                                        . sprintf('%.2f', $row['amount']);
             }
         }
-		?>
-		<div class="baseHeight">
+        ?>
+        <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
             action="<?php echo $_SERVER['PHP_SELF']; ?>" >
         <select name="selectlist" size="10" id="selectlist"
             onblur="$('#selectlist').focus()" >
-		<?php
+        <?php
         $selected = 'selected';
         foreach($local as $id => $label) {
             printf('<option %s value="%s">%s</option>',
@@ -109,7 +105,7 @@ class PaycardTransListPage extends NoInputPage
         if (count($local) == 0 && count($other) == 0) {
             echo '<option value="" selected>No transactions found</option>';
         }
-		?>
+        ?>
         </select>
         </form>
         </div>
@@ -119,11 +115,11 @@ class PaycardTransListPage extends NoInputPage
         <?php echo _("clear to cancel"); ?>
         </div>
         <div class="clear"></div>
-		</div>
-		<?php
-        $this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
-        $this->add_onload_command("\$('#selectlist').focus();\n");
-	}
+        </div>
+        <?php
+        $this->addOnloadCommand("\$('#selectlist').keypress(processkeypress);\n");
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
+    }
 
     function head_content()
     {
@@ -152,7 +148,5 @@ class PaycardTransListPage extends NoInputPage
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-	new PaycardTransListPage();
-}
+AutoLoader::dispatch();
 

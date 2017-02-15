@@ -21,27 +21,30 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
+use COREPOS\pos\lib\ReceiptLib;
+
 /**
   @class ReceiptMessage
 */
 class BarcodeTransIdentifierMessage extends ReceiptMessage 
 {
 
-	public function select_condition()
+    public function select_condition()
     {
-		return '1';
-	}
+        return '1';
+    }
 
-	/**
-	  Generate the message
-	  @param $val the value returned by the object's select_condition()
-	  @param $ref a transaction reference (emp-lane-trans)
-	  @param $reprint boolean
-	  @return [string] message to print on receipt
-	*/
-	public function message($val, $ref, $reprint=false)
+    /**
+      Generate the message
+      @param $val the value returned by the object's select_condition()
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print on receipt
+    */
+    public function message($val, $ref, $reprint=false)
     {
-		list($emp,$reg,$trans) = explode('-', $ref, 3);
+        list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
 
         // full identier:
         // YYYY-MM-DD emp_no-register_no-trans_no
@@ -51,13 +54,13 @@ class BarcodeTransIdentifierMessage extends ReceiptMessage
                 . $trans;
         
 
-		return "\n" . ReceiptLib::code39($identifier) . "\n";
-	}
+        return "\n" . ReceiptLib::code39($identifier) . "\n";
+    }
 
-	/**
-	  This message has to be printed on paper
-	*/
-	public $paper_only = true;
+    /**
+      This message has to be printed on paper
+    */
+    public $paper_only = true;
 
 }
 

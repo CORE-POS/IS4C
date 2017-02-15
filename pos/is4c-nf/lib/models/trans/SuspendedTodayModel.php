@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
-if (!class_exists('LocalTransModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+/*
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
+*/
 
 /**
   @class SuspendedTodayModel
 */
-class SuspendedTodayModel extends LocalTransModel
+class SuspendedTodayModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
 {
 
     protected $name = "suspendedtoday";
@@ -39,7 +44,18 @@ class SuspendedTodayModel extends LocalTransModel
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+    public function doc()
+    {
+        return '
+Use:
+This view omits all entries in suspended
+that aren\'t from the current day. Resuming
+a transaction from a previous day wouldn\'t
+necessarily cause problems, but "stale"
+suspended transactions that never get resumed
+could eventually make the list of available
+transactions unwieldy.
+        ';
+    }
 }
 

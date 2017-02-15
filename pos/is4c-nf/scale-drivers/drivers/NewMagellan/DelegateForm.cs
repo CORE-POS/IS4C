@@ -22,7 +22,7 @@
 
 /*************************************************************
  * DelegateForm
- * 	A form with delegate to call from separate threads
+ *     A form with delegate to call from separate threads
  *
  *
 *************************************************************/
@@ -31,10 +31,11 @@ using System.Threading;
 
 namespace CustomForms {
 
-public abstract class DelegateForm {
+public interface DelegateForm 
+{
 
-	public abstract void MsgRecv(string msg);
-	public abstract void MsgSend(string msg);
+    void MsgRecv(string msg);
+    void MsgSend(string msg);
 }
 
 }

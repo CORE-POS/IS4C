@@ -21,38 +21,49 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+use COREPOS\pos\lib\ReceiptLib;
+
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class rplist extends NoInputPage 
+class rplist extends NoInputCorePage 
 {
+    private function printReceipt($trans)
+    {
+        $PRINT = PrintHandler::factory($this->session->get('ReceiptDriver'));
+        $saved = $this->session->get('receiptToggle');
+        $this->session->set('receiptToggle', 1);
+        $receipt = ReceiptLib::printReceipt('reprint', $trans);
+        $this->session->set('receiptToggle', $saved);
+        if (session_id() != '') {
+            session_write_close();
+        }
+        if(is_array($receipt)) {
+            if (!empty($receipt['any'])) {
+                $PRINT->writeLine($receipt['any']);
+            }
+            if (!empty($receipt['print'])) {
+                $PRINT->writeLine($receipt['print']);
+            }
+        } elseif(!empty($receipt)) {
+            $PRINT->writeLine($receipt);
+        }
+    }
 
     function preprocess()
     {
-        global $CORE_LOCAL;
-        if (isset($_REQUEST['selectlist'])) {
-            if (!empty($_REQUEST['selectlist'])) {
-                $print_class = $CORE_LOCAL->get('ReceiptDriver');
-                if ($print_class === '' || !class_exists($print_class)) {
-                    $print_class = 'ESCPOSPrintHandler';
-                }
-                $PRINT_OBJ = new $print_class();
-                $receipt = ReceiptLib::printReceipt('reprint', $_REQUEST['selectlist']);
-                if (session_id() != '') {
-                    session_write_close();
-                }
-                if(is_array($receipt)) {
-                    if (!empty($receipt['any'])) {
-                        $EMAIL_OBJ->writeLine($receipt['any']);
-                    }
-                    if (!empty($receipt['print'])) {
-                        $PRINT_OBJ->writeLine($receipt['print']);
-                    }
-                } elseif(!empty($receipt)) {
-                    $PRINT_OBJ->writeLine($receipt);
-                }
+        if ($this->form->tryGet('selectlist') !== '') {
+            if (!empty($this->form->selectlist)) {
+                $this->printReceipt($this->form->selectlist);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
+            return false;
+        } elseif ($this->form->tryGet('preview') !== '') {
+            echo $this->previewTrans($this->form->preview);
             return false;
         }
 
@@ -63,62 +74,138 @@ class rplist extends NoInputPage
     {
         ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
+        <script type="text/javascript">
+        function updatePreview(trans) {
+            $.ajax({
+                data: 'preview='+trans
+            }).done(function(resp) {
+                $('#receipt-preview').html(resp);
+            });
+        }
+        </script>
         <?php
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-        $this->add_onload_command("\$('#selectlist').focus();\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
+    }
+
+    private function getTransactions()
+    {
+        $dbc = Database::tDataConnect();
+        $query = "
+            SELECT register_no, 
+                emp_no, 
+                trans_no, 
+                SUM(CASE 
+                    WHEN trans_type='T' AND department=0 THEN -1 * total 
+                    ELSE 0 
+                END) AS total 
+            FROM localtranstoday 
+            WHERE register_no = ?
+                AND emp_no = ?
+                AND datetime >= " . $dbc->curdate() . "
+            GROUP BY register_no, 
+                emp_no, 
+                trans_no 
+            ORDER BY trans_no DESC";
+        $args = array($this->session->get('laneno'), $this->session->get('CashierNo')); 
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
+        $ret = array();
+        while ($row = $dbc->fetchRow($result)) {
+            $ret[] = $row;
+        }
+
+        return $ret;
+    }
+
+    private function previewTrans($trans)
+    {
+        list($reg, $emp, $tID) = explode('::', $trans);
+        $dbc = Database::tDataConnect();
+        $previewP = $dbc->prepare("
+            SELECT description
+            FROM localtranstoday
+            WHERE emp_no=?
+                AND register_no=?
+                AND trans_no=?
+                AND trans_type <> 'L'
+            ORDER BY trans_id");
+        $previewR = $dbc->execute($previewP, array($emp, $reg, $tID));
+        $ret = '';
+        $count = 0;
+        while ($row = $dbc->fetchRow($previewR)) {
+            $ret .= $row['description'] . '<br />';
+            $count++;
+            if ($count > 10) {
+                break;
+            }
+        }
+
+        return $ret;
     }
     
     function body_content()
     {
-        global $CORE_LOCAL;
-        $db = Database::tDataConnect();
-        $query = "select register_no, emp_no, trans_no, "
-            ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."FROM localtranstoday WHERE register_no = " . $CORE_LOCAL->get("laneno")
-            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
-            ." AND datetime >= " . $db->curdate()
-            ." GROUP BY register_no, emp_no, trans_no ORDER BY trans_no DESC";
-    
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
         ?>
-
         <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
-            action="<?php echo $_SERVER['PHP_SELF']; ?>" >
-        <select name="selectlist" size="10" id="selectlist"
-            onblur="$('#selectlist').focus()" >
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" >
+        <select name="selectlist" size="15" id="selectlist"
+            onblur="$('#selectlist').focus()" onchange="updatePreview(this.value);" >
 
         <?php
         $selected = "selected";
-        for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db->fetch_array($result);
+        $first = false;
+        foreach ($this->getTransactions() as $row) {
             echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."'";
             echo $selected;
             echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
                 ." #".$row["trans_no"]." -- $".
                 sprintf('%.2f',$row["total"]);
             $selected = "";
+            if (!$first) {
+                $first = $row['register_no'] . '::' . $row['emp_no'] . '::' . $row['trans_no'];
+            }
         }
         ?>
-
         </select>
-        </form>
         </div>
+        <div class="listbox" id="receipt-preview" style="height: 15; font-size: 85%;">
+            <?php echo ($first) ? $this->previewTrans($first) : ''; ?>
+        </div>
+        <?php
+        if ($this->session->get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        ?>
         <div class="listboxText coloredText centerOffset">
         <?php echo _("use arrow keys to navigate"); ?><br />
-        <?php echo _("enter to reprint receipt"); ?><br />
-        <?php echo _("clear to cancel"); ?>
+        <p>
+            <button type="submit" class="pos-button wide-button coloredArea">
+            <?php echo _('Reprint'); ?> <span class="smaller"><?php echo _('[enter]'); ?></span>
+            </button>
+        </p>
+        <p>
+            <button type="submit" class="pos-button wide-button errorColoredArea"
+            onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+            <?php echo _('Cancel'); ?> <span class="smaller"><?php echo _('[clear]'); ?></span>
+        </button></p>
         </div>
+        </form>
         <div class="clear"></div>
         </div>
 
         <?php
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        $this->printReceipt('1-1-1'); // just coverage
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new rplist();
+AutoLoader::dispatch();
 
-?>

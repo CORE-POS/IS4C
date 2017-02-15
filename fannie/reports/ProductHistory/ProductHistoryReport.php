@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -29,28 +29,28 @@ if (!class_exists('FannieAPI')) {
 class ProductHistoryReport extends FannieReportPage 
 {
     public $description = '[Product History] lists changes made to a given item over time.';
+    public $themed = true;
+    public $report_set = 'Operational Data';
 
     protected $title = "Fannie : Product History";
     protected $header = "Product History Report";
-    protected $report_headers = array('Date','Description', 'Price', 'Dept#', 'Tax', 'FS', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID');
+    protected $report_headers = array('Date','Description', 'Price', 'Cost', 'Sale Price', 'Dept#', 'Tax', 'FS', 'WIC', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID', 'Update Type');
     protected $required_fields = array('upc');
+
+    protected $sort_direction = 1;
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = FormLib::get_form_value('date1');
         $date2 = FormLib::get_form_value('date2');
-        $upc = FormLib::get_form_value('upc');
+        $upc = $this->form->upc;
         if (is_numeric($upc)) {
             $upc = BarcodeLib::padUPC($upc);
         }
 
         $table = 'prodUpdate';
-        $def = $dbc->tableDefinition('prodUpdate');
-        if (!isset($def['prodUpdateID'])) { // older schema
-            $table = 'prodUpdateArchive';
-        }
         $query = 'SELECT
                     upc,
                     description,
@@ -60,13 +60,16 @@ class ProductHistoryReport extends FannieReportPage
                     dept,
                     tax,
                     fs,
+                    wic,
                     scale,
                     likeCode,
                     modified,
                     user,
                     forceQty,
                     noDisc,
-                    inUse
+                    inUse,
+                    salePrice,
+                    updateType
                   FROM ' . $table . '
                   WHERE upc = ?';
         $args = array($upc);
@@ -78,55 +81,79 @@ class ProductHistoryReport extends FannieReportPage
         }
         $query .= ' ORDER BY modified DESC';
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['modified'],
-                $row['description'],
-                $row['price'],
-                $row['dept'],
-                $row['tax'],
-                $row['fs'],
-                $row['scale'],
-                $row['forceQty'],
-                $row['noDisc'],
-                $row['user'],
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
     }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['modified'],
+            $row['description'],
+            $row['price'],
+            $row['cost'],
+            $row['salePrice'],
+            $row['dept'],
+            $row['tax'],
+            $row['fs'],
+            $row['wic'] === null ? 'n/a' : $row['wic'],
+            $row['scale'],
+            $row['forceQty'],
+            $row['noDisc'],
+            $row['user'],
+            $row['updateType'],
+        );
+    }
     
     public function form_content()
     {
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
         return '
             <form method="get" action="ProductHistoryReport.php">
-            <table>
-            <tr>
-                <th>UPC</th>
-                <td><input type="text" name="upc" /></td>
-                <td><i>Dates are optional; omit for full history</i></td>
-            </tr>
-            <tr>
-                <th>Start Date</th>
-                <td><input type="text" id="date1" name="date1" /></td>
-                <td rowspan="2">' . FormLib::dateRangePicker() . '</td>
-            </tr>
-            <tr>
-                <th>End Date</th>
-                <td><input type="text" id="date2" name="date2" /></td>
-            </tr>
-            <tr>
-                <td><input type="submit" value="Get Report" /></td>
-            </tr>
+            <div class="well">Dates are optional; omit for full history</div>
+            <div class="col-sm-4">
+            <div class="form-group">
+                <label>UPC</label>
+                <input type="text" name="upc" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type="text" id="date1" name="date1" class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type="text" id="date2" name="date2" class="form-control date-field" />
+            </div>
+            <p>
+                <button type="submit" class="btn btn-default">Get Report</button>
+            </p>
+            </div>
+            <div class="col-sm-4">
+                ' . FormLib::dateRangePicker() . '
+            </div>
             </table>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List audit log of changes to a given item.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('modified'=>'2000-01-01', 'description'=>'test', 'price'=>1,
+            'cost'=>1, 'dept'=>1, 'tax'=>0, 'fs'=>1, 'scale'=>0, 'forceQty'=>0,
+            'noDisc'=>0, 'user'=>1234, 'wic'=>1, 'salePrice'=>0, 'updateType'=>'TEST');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

@@ -21,13 +21,13 @@ if (!validateUserQuiet('barcodes')){
 <link href="../../styles.css" rel="stylesheet" type="text/css">
 <script type="text/javascript">
 function goToPage(the_url){
-	var offset = document.getElementById('offset').value;
-	var str = "0";
-	if (!isNaN(parseInt(offset)))
-		str = parseInt(offset);
+    var offset = document.getElementById('offset').value;
+    var str = "0";
+    if (!isNaN(parseInt(offset)))
+        str = parseInt(offset);
 
-	var final_url = the_url+"&offset="+str;
-	window.top.location = final_url;
+    var final_url = the_url+"&offset="+str;
+    window.top.location = final_url;
 }
 </script>
 </head>
@@ -80,4 +80,4 @@ Offset: <input type=text id=offset value=0 size=2 />
 </body>
 <?php
 }
-?>
+

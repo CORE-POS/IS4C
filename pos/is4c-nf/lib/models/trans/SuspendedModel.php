@@ -21,19 +21,30 @@
 
 *********************************************************************************/
 
-if (!class_exists('LocalTransModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+/*
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
+*/
 
 /**
   @class SuspendedModel
 */
-class SuspendedModel extends LocalTransModel
+class SuspendedModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
 {
 
     protected $name = "suspended";
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+    public function doc()
+    {
+        return '
+Use:
+Local table for suspending transactions if
+server connection is temporarily unavailable
+        ';
+    }
 }
 

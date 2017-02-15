@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,62 +21,61 @@
 
 *********************************************************************************/
 
-class WfcProduceSingle extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage 
 {
 
     protected $BIG_FONT = 64;
     protected $MED_FONT = 24;
     protected $SMALL_FONT = 14;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
+    protected $width = 136.52;
+    protected $height = 105;
+    protected $top = 90;
+    protected $left = 15;
+
     public function drawPDF()
     {
-        $pdf = new FPDF('L', 'mm', 'Letter');
+        $pdf = new \FPDF('L', 'mm', 'Letter');
         $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->SetFont('Gill', '', 16);
+        $pdf = $this->loadPluginFonts($pdf);
+        $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
-        $width = 136.52;
-        $height = 105;
-        $top = 90;
-        $left = 15;
-        $effective_width = $width - (2*$left);
+        $effective_width = $this->width - (2*$this->left);
         foreach ($data as $item) {
             $pdf->AddPage();
 
             $column = 1; // right aligned
 
-            $price = sprintf('$%.2f', $item['normal_price']);
-            if ($item['scale']) {
-                $price .= ' / lb';
-            } else {
-                $price .= ' / ea';
-            }
+            $price = $this->printablePrice($item);
 
-            $pdf->SetXY($left + ($width*$column), $top);
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top);
             $pdf->SetFontSize($this->SMALL_FONT);
             $pdf->Cell($effective_width, 10, $item['brand'], 0, 1, 'C');
-            $pdf->SetX($left + ($width*$column));
+            $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFontSize($this->MED_FONT);
             $pdf->MultiCell($effective_width, 12, $item['description'], 0, 'C');
-            $pdf->SetX($left + ($width*$column));
+            $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFontSize($this->BIG_FONT);
             $pdf->Cell($effective_width, 25, $price, 0, 1, 'C');
-            $y = $pdf->GetY();
+            $y_pos = $pdf->GetY();
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                $datestr = date('m/d/Y', strtotime($item['startDate']))
-                        . ' - ' 
-                        . date('m/d/Y', strtotime($item['endDate']));
-                $pdf->SetXY($left + ($width*$column), $top + ($height - 40));
+                $datestr = $this->getDateString($item['startDate'], $item['endDate']);
+                $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height - 40));
                 $pdf->SetFontSize($this->SMALL_FONT);
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
 
             if ($item['originName'] != '') {
-                $pdf->SetXY($left + ($width*$column), $y);
+                $pdf->SetXY($this->left + ($this->width*$column), $y_pos);
                 $pdf->SetFontSize($this->SMALL_FONT);
                 if (strlen($item['originName']) < 50) {
                     $pdf->Cell($effective_width, 20, $item['originName'], 0, 1, 'L');
@@ -88,5 +87,7 @@ class WfcProduceSingle extends FannieSignage
 
         $pdf->Output('WfcProdSingle.pdf', 'I');
     }
+}
+
 }
 

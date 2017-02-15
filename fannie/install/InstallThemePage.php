@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -21,52 +21,32 @@
 
 *********************************************************************************/
 
-include('../config.php'); 
-include_once('../classlib2.0/FannieAPI.php');
-include('util.php');
+include(dirname(__FILE__) . '/../config.php'); 
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
+if (!function_exists('confset')) {
+    include(dirname(__FILE__) . '/util.php');
+}
 
-class InstallThemePage extends InstallPage
+class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
 {
     protected $title = 'Fannie: Theme Settings';
     protected $header = 'Fannie: Theme Settings';
 
-    public function __construct()
-    {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/css/configurable.php");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-        // __construct()
-    }
-
     function body_content()
     {
-        include('../config.php');
+        include(dirname(__FILE__) . '/../config.php');
         ob_start();
         echo showInstallTabs('Theming');
         ?>
 
         <form action="InstallThemePage.php" method="post">
-        <h1 class="install"><?php echo $this->header; ?></h1>
         <?php
-        if (is_writable('../config.php')) {
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
-        } else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-        }
+        echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 
         echo '<h4 class="install">Colors</h4>';
-        echo '<table id="colorsConfTable">'; 
+        echo '<table class="table" id="colorsConfTable">'; 
 
         echo '<tr><td>Background Color</td>'
             . '<td>' . installTextField('FANNIE_CSS_BG_COLOR', $FANNIE_CSS_BG_COLOR, '#FFFFFF') . '</td>'
@@ -96,7 +76,10 @@ class InstallThemePage extends InstallPage
 
         echo '<h4 class="install">Other</h4>';
 
-        echo '<table id="otherConfTable">'; 
+        echo '<table id="otherConfTable" class="table">'; 
+
+        echo '<tr><td>Backend Name</td>'
+            . '<td>' . installTextField('FANNIE_BACKEND_NAME', $FANNIE_BACKEND_NAME, 'Fannie') . '</td>';
 
         echo '<tr><td>Custom Title</td>'
             . '<td>' . installTextField('FANNIE_CUSTOM_TITLE', $FANNIE_CUSTOM_TITLE, '') . '</td>';
@@ -122,12 +105,19 @@ class InstallThemePage extends InstallPage
 
         echo '</table>';
         echo '<hr />
-            <input type=submit value="Update" />
+            <p>
+                <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>
+            </p>
             </form>';
 
         return ob_get_clean();
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

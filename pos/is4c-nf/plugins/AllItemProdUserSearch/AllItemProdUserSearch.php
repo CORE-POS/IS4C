@@ -21,22 +21,16 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class AllItemProdUserSearch extends Plugin {
 
-	public $plugin_settings = array(
-	);
+    public $plugin_settings = array(
+    );
 
-	public $plugin_description = 'Include all items in product searches instead of
+    public $plugin_description = 'Include all items in product searches instead of
         just PLU items
         and use table ProductUser.description when it is available.
         This plugin has priority over standard modules that do similar things.';
-
-	public function plugin_enable(){
-
-	}
-
-	public function plugin_disable(){
-
-	}
-
 }
+

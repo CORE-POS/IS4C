@@ -21,11 +21,16 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
   @class SuspendLib
   Functions related to suspend and resume transaction
 */
-class SuspendLib extends LibraryClass 
+class SuspendLib 
 {
 
 /**
@@ -34,44 +39,36 @@ class SuspendLib extends LibraryClass
   there. Otherwise it is suspended locally.
   @return [string] transaction identifier
 */
-static public function suspendorder() 
+static public function suspendorder($session) 
 {
-	global $CORE_LOCAL;
+    $dba = Database::tDataConnect();
+    $transNum = ReceiptLib::receiptNumber();
 
-	$query_a = "select emp_no, trans_no from localtemptrans";
-	$db_a = Database::tDataConnect();
-	$result_a = $db_a->query($query_a);
-	$row_a = $db_a->fetch_array($result_a);
-	$cashier_no = substr("000".$row_a["emp_no"], -2);
-	$trans_no = substr("0000".$row_a["trans_no"], -4);
-    $trans_num = ReceiptLib::receiptNumber();
+    if ($session->get("standalone") == 0) {
+        $dba->addConnection($session->get("mServer"),$session->get("mDBMS"),
+            $session->get("mDatabase"),$session->get("mUser"),$session->get("mPass"),false,true);
+        $cols = Database::getMatchingColumns($dba,"localtemptrans","suspended");
+        $dba->transfer($session->get("tDatabase"),"select {$cols} from localtemptrans",
+            $session->get("mDatabase"),"insert into suspended ($cols)");
+        $dba->close($session->get("mDatabase"),True);
+    } else { 
+        $query = "insert into suspended select * from localtemptrans";
+        $dba->query($query);
+    }
 
-	if ($CORE_LOCAL->get("standalone") == 0) {
-		$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
-			$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
-		$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspended");
-		$db_a->transfer($CORE_LOCAL->get("tDatabase"),"select {$cols} from localtemptrans",
-			$CORE_LOCAL->get("mDatabase"),"insert into suspended ($cols)");
-		$db_a->close($CORE_LOCAL->get("mDatabase"),True);
-	} else { 
-		$query = "insert into suspended select * from localtemptrans";
-		$result = $db_a->query($query);
-	}
-
-	/* ensure the cancel happens */
-	$cancelR = $db_a->query("UPDATE localtemptrans SET trans_status='X',charflag='S'");
+    /* ensure the cancel happens */
+    $dba->query("UPDATE localtemptrans SET trans_status='X',charflag='S'");
     TransRecord::finalizeTransaction(true);
 
-	$CORE_LOCAL->set("plainmsg",_("transaction suspended"));
-	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
+    $session->set("plainmsg",_("transaction suspended"));
     /**
       If the transaction is marked as complete but somehow did not
       actually finish, this will prevent the suspended receipt from
       adding tax/discount lines to the transaction
     */
-    $CORE_LOCAL->set('End', 0);
+    $session->set('End', 0);
 
-    return $trans_num;
+    return $transNum;
 }
 
 /**
@@ -83,30 +80,21 @@ static public function suspendorder()
   This function ignores any transactions that
   are not from the current day.
 */
-static public function checksuspended() 
+static public function checksuspended($session) 
 {
-	global $CORE_LOCAL;
-
-	$db_a = Database::tDataConnect();
-	$query_local = "SELECT upc 
+    $queryLocal = "SELECT upc 
                     FROM suspended
                     WHERE datetime >= " . date("'Y-m-d 00:00:00'");
-		
-	$result = "";
-	if ($CORE_LOCAL->get("standalone") == 1) {
-		$result = $db_a->query($query_local);
-	} else {
-		$db_a = Database::mDataConnect();
-		$result = $db_a->query($query_local);
-	}
+        
+    $dba = $session->get('standalone') == 1 ? Database::tDataConnect() : Database::mDataConnect();
+    $result = $dba->query($queryLocal);
+    $numRows = $dba->numRows($result);
 
-	$num_rows = $db_a->num_rows($result);
-
-	if ($num_rows == 0) {
+    if ($numRows == 0) {
         return 0;
-	} else {
-        return 1;
     }
+
+    return 1;
 }
 
 }

@@ -21,181 +21,196 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class suspendedlist extends NoInputPage {
+class suspendedlist extends NoInputCorePage 
+{
+    private $tempResult = array();
 
-	private $temp_result;
-	private $temp_num_rows;
-	private $temp_db;
-
-	function head_content()
+    function head_content()
     {
-		?>
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
-	} // END head() FUNCTION
+        <?php
+    } // END head() FUNCTION
 
-	function preprocess()
+    function preprocess()
     {
-		global $CORE_LOCAL;
-
-		/* form submitted */
-		if (isset($_REQUEST['selectlist'])){
-            if (!empty($_REQUEST['selectlist'])){ // selected a transaction
-				$tmp = explode("::",$_REQUEST['selectlist']);
-				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
+        /* form submitted */
+        try {
+            if (!empty($this->form->selectlist)) { // selected a transaction
+                $tmp = explode("::",$this->form->selectlist);
+                $this->doResume($tmp[0],$tmp[1],$tmp[2]);
                 // if it is a member transaction, verify correct name
-                if ($CORE_LOCAL->get('memberID') != '0' && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('defaultNonMem')) {
-                    $this->change_page($this->page_url.'gui-modules/memlist.php?idSearch='.$CORE_LOCAL->get('memberID'));
-                } else {
-                    $this->change_page($this->page_url."gui-modules/pos2.php");
+                $url = $this->page_url."gui-modules/pos2.php";
+                if ($this->session->get('memberID') != '0' && $this->session->get('memberID') != $this->session->get('defaultNonMem')) {
+                    $url = $this->page_url.'gui-modules/memlist.php?idSearch='.$this->session->get('memberID');
                 }
-			} else { // pressed clear
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page($url);
             }
+            // pressed clear
+            $this->change_page($this->page_url."gui-modules/pos2.php");
 
-			return false;
-		}
+            return false;
+        } catch (Exception $ex) {
+        }
 
-		$query_local = "SELECT register_no, emp_no, trans_no, SUM(total) AS total "
+
+        $this->tempResult = $this->getTransactions();
+        
+        /* if there are suspended transactions available, 
+         * store the result and row count as class variables
+         * so they can be retrieved in body_content()
+         *
+         * otherwise notify that there are no suspended
+         * transactions
+         */
+        if (count($this->tempResult) > 0) {
+            return true;
+        }
+        $this->session->set("boxMsg",_("no suspended transaction"));
+        $this->change_page($this->page_url."gui-modules/pos2.php");    
+
+        return false;
+    } // END preprocess() FUNCTION
+
+    private function getTransactions()
+    {
+        $queryLocal = "SELECT register_no, emp_no, trans_no, SUM(total) AS total "
             ." FROM suspended "
             ." WHERE datetime >= " . date("'Y-m-d 00:00:00'")
-			." GROUP BY register_no, emp_no, trans_no";
+            ." GROUP BY register_no, emp_no, trans_no";
 
-		$db_a = Database::tDataConnect();
-		$result = "";
-		if ($CORE_LOCAL->get("standalone") == 1) {
-            $result = $db_a->query($query_local);
-		} else {
-			$db_a = Database::mDataConnect();
-			$result = $db_a->query($query_local);
-		}
+        $dbc = Database::tDataConnect();
+        $result = "";
+        if ($this->session->get("standalone") == 1) {
+            $result = $dbc->query($queryLocal);
+        } else {
+            $dbc = Database::mDataConnect();
+            $result = $dbc->query($queryLocal);
+        }
 
-		$num_rows = $db_a->num_rows($result);
-		
-		/* if there are suspended transactions available, 
-		 * store the result and row count as class variables
-		 * so they can be retrieved in body_content()
-		 *
-		 * otherwise notify that there are no suspended
-		 * transactions
-		 */
-		if ($num_rows > 0){
-			$this->temp_result = $result;
-			$this->temp_num_rows = $num_rows;
-			$this->temp_db = $db_a;
+        $ret = array();
+        while ($row = $dbc->fetchRow($result)) {
+            $ret[] = $row;
+        }
 
-			return true;
-		} else {
-			$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
-			$this->change_page($this->page_url."gui-modules/pos2.php");	
+        return $ret;
+    }
 
-			return false;
-		}
-
-		return true;
-	} // END preprocess() FUNCTION
-
-	function body_content()
+    function body_content()
     {
-		global $CORE_LOCAL;
-		$num_rows = $this->temp_num_rows;
-		$result = $this->temp_result;
-		$db = $this->temp_db;
+        echo "<div class=\"baseHeight\">"
+            ."<div class=\"listbox\">"
+            ."<form id=\"selectform\" method=\"post\" action=\""
+            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">\n"
+            ."<select name=\"selectlist\" size=\"15\" onblur=\"\$('#selectlist').focus();\"
+                id=\"selectlist\">";
 
-		echo "<div class=\"baseHeight\">"
-			."<div class=\"listbox\">"
-			."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">\n"
-			."<select name=\"selectlist\" size=\"10\" onblur=\"\$('#selectlist').focus();\"
-				id=\"selectlist\">";
+        $selected = "selected";
+        foreach ($this->tempResult as $row) {
+            echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."' ".$selected
+                ."> lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
+                ." #".$row["trans_no"]." -- $".$row["total"]."\n";
+            $selected = "";
+        }
 
-		$selected = "selected";
-		for ($i = 0; $i < $num_rows; $i++) {
-			$row = $db->fetch_array($result);
-			echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."' ".$selected
-				."> lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
-				." #".$row["trans_no"]." -- $".$row["total"]."\n";
-			$selected = "";
-		}
-
-		echo "</select>\n</form>\n</div>\n"
-			."<div class=\"listboxText coloredText centerOffset\">"
-			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
-			."<div class=\"clear\"></div>";
-		echo "</div>";
-		$this->add_onload_command("\$('#selectlist').focus();");
+        echo "</select>\n</div>\n";
+        if ($this->session->get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        echo "<div class=\"listboxText coloredText centerOffset\">"
+            . _("use arrow keys to navigate")
+            . '<p><button type="submit" class="pos-button wide-button coloredArea">'
+            . _('OK') . ' <span class="smaller">' . _('[enter]') . '</span>
+                </button></p>'
+            . '<p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$(\'#selectlist\').append($(\'<option>\').val(\'\'));$(\'#selectlist\').val(\'\');">'
+            . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
+                </button></p>'
+            ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            ."</form>"
+            ."<div class=\"clear\"></div>";
+        echo "</div>";
+        $this->add_onload_command("\$('#selectlist').focus();");
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-	} // END body_content() FUNCTION
+    } // END body_content() FUNCTION
 
-	private function doResume($reg,$emp,$trans)
+    private function safeCols($arr)
     {
-		global $CORE_LOCAL;
+        $cols = '';
+        foreach ($arr as $name) {
+            if ($name == 'trans_id') continue;
+            $cols .= $name.',';
+        }
 
-		$query_del = "DELETE FROM suspended WHERE register_no = ".$reg." AND emp_no = "
-			.$emp." AND trans_no = ".$trans;
+        return substr($cols,0,strlen($cols)-1);
+    }
 
-		$db_a = Database::tDataConnect();
+    private function suspendedQuery($cols, $emp, $reg, $trans)
+    {
+        return sprintf("SELECT {$cols} 
+                    FROM suspended 
+                    WHERE 
+                        register_no = %d
+                        AND emp_no = %d
+                        AND trans_no = %d
+                        AND datetime >= " . date("'Y-m-d 00:00:00'") . "
+                    ORDER BY trans_id",
+                    $reg, $emp, $trans);
+    }
+
+    private function doResume($reg,$emp,$trans)
+    {
+        $queryDel = "DELETE FROM suspended WHERE register_no = ".$reg." AND emp_no = "
+            .$emp." AND trans_no = ".$trans;
+
+        $dbc = Database::tDataConnect();
         $success = false;
 
-		// use SQLManager's transfer method when not in stand alone mode
-		// to eliminate the cross server query - andy 8/31/07
-		if ($CORE_LOCAL->get("standalone") == 0){
-			$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
-				$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
+        // use SQLManager's transfer method when not in stand alone mode
+        // to eliminate the cross server query - andy 8/31/07
+        if ($this->session->get("standalone") == 0){
+            $dbc->addConnection($this->session->get("mServer"),$this->session->get("mDBMS"),
+                $this->session->get("mDatabase"),$this->session->get("mUser"),$this->session->get("mPass"));
 
-			$cols = Database::getMatchingColumns($db_a, "localtemptrans", "suspended");
-			// localtemptrans might not actually be empty; let trans_id
-			// populate via autoincrement rather than copying it from
-			// the suspended table
-			if(substr($cols,-9) == ',trans_id') {
-				$cols = substr($cols, 0, strlen($cols)-9);
+            $cols = Database::getMatchingColumns($dbc, "localtemptrans", "suspended");
+            // localtemptrans might not actually be empty; let trans_id
+            // populate via autoincrement rather than copying it from
+            // the suspended table
+            $cols = $this->safeCols(explode(',', $cols));
+
+            $remoteQ = $this->suspendedQuery($cols, $emp, $reg, $trans);
+            $success = $dbc->transfer($this->session->get("mDatabase"),$remoteQ,
+                $this->session->get("tDatabase"),"insert into localtemptrans ({$cols})");
+            if ($success) {
+                $dbc->query($queryDel,$this->session->get("mDatabase"));
             }
+            $dbc->close($this->session->get("mDatabase"), true);
+        } else {    
+            // localtemptrans might not actually be empty; let trans_id
+            // populate via autoincrement rather than copying it from
+            // the suspended table
+            $def = $dbc->tableDefinition('localtemptrans');
+            $cols = $this->safeCols(array_keys($def));
 
-			$remoteQ = "SELECT {$cols} 
-                        FROM suspended 
-                        WHERE 
-                            register_no = $reg 
-                            AND emp_no = $emp
-                            AND trans_no = $trans
-                            AND datetime >= " . date("'Y-m-d 00:00:00'") . "
-                        ORDER BY trans_id";
-			$success = $db_a->transfer($CORE_LOCAL->get("mDatabase"),$remoteQ,
-				$CORE_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
-			if ($success) {
-				$db_a->query($query_del,$CORE_LOCAL->get("mDatabase"));
+            $localQ = $this->suspendedQuery($cols, $emp, $reg, $trans);
+            $success = $dbc->query("insert into localtemptrans ({$cols}) ".$localQ);
+            if ($success) {
+                $dbc->query($queryDel);
             }
-			$db_a->close($CORE_LOCAL->get("mDatabase"), true);
-		} else {	
-			// localtemptrans might not actually be empty; let trans_id
-			// populate via autoincrement rather than copying it from
-			// the suspended table
-			$def = $db_a->table_definition('localtemptrans');
-			$cols = '';
-			foreach($def as $name=>$info){
-				if ($name == 'trans_id') continue;
-				$cols .= $name.',';
-			}
-			$cols = substr($cols,0,strlen($cols)-1);
+        }
 
-			$localQ = "SELECT {$cols} 
-                        FROM suspended 
-                        WHERE 
-                            register_no = $reg 
-                            AND emp_no = $emp
-                            AND trans_no = $trans
-                            AND datetime >= " . date("'Y-m-d 00:00:00'") . "
-                        ORDER BY trans_id";
-			$success = $db_a->query("insert into localtemptrans ({$cols}) ".$localQ);
-			if ($success) {
-				$db_a->query($query_del);
-            }
-		}
+        $queryUpdate = "update localtemptrans set register_no = ".$this->session->get("laneno").", emp_no = ".$this->session->get("CashierNo")
+            .", trans_no = ".$this->session->get("transno");
 
-		$query_update = "update localtemptrans set register_no = ".$CORE_LOCAL->get("laneno").", emp_no = ".$CORE_LOCAL->get("CashierNo")
-			.", trans_no = ".$CORE_LOCAL->get("transno");
-
-		$db_a->query($query_update);
+        $dbc->query($queryUpdate);
 
         /**
           Add a log record after succesfully
@@ -214,12 +229,23 @@ class suspendedlist extends NoInputPage {
             ));
         }
 
-		Database::getsubtotals();
-	}
+        Database::getsubtotals();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $trans = $this->getTransactions();
+        $phpunit->assertInternalType('array', $trans);
+        $this->tempResult = $trans;
+        ob_start();
+        $this->head_content();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $cols = $this->safeCols(array('trans_no','trans_id'));
+        $phpunit->assertEquals('trans_no', $cols);
+        $phpunit->assertNotEquals(0, strlen($this->suspendedQuery($cols, 1, 1, 1)));
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	new suspendedlist();
-}
+AutoLoader::dispatch();
 
-?>

@@ -3,14 +3,14 @@
 
     Copyright 2012 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -53,7 +53,7 @@ class PayrollARReport extends FannieReportPage {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $query = $dbc->prepare_statement("SELECT c.CardNo,c.FirstName,c.LastName,c.ChargeLimit,
+        $query = $dbc->prepare("SELECT c.CardNo,c.FirstName,c.LastName,c.ChargeLimit,
             CASE WHEN s.cardNo IS NULL THEN 'no' ELSE 'yes' END as autodeduct,
             x.FirstName,x.LastName,
             y.FirstName,y.LastName,
@@ -72,11 +72,11 @@ class PayrollARReport extends FannieReportPage {
         
           Issue a query, build array of results
         */
-        $result = $dbc->exec_statement($query);
+        $result = $dbc->execute($query);
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             $record = array();
-            for($i=0;$i<$dbc->num_fields($result);$i++)
+            for($i=0;$i<$dbc->numFields($result);$i++)
                 $record[] = $row[$i];
             $ret[] = $record;
         }
@@ -95,4 +95,3 @@ class PayrollARReport extends FannieReportPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

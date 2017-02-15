@@ -3,7 +3,7 @@
 
     Copyright 2010,2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,284 +25,419 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemberTypeEditor extends FanniePage {
-
+class MemberTypeEditor extends FannieRESTfulPage 
+{
     protected $title = "Fannie :: Member Types";
     protected $header = "Member Types";
     public $description = '[Member Types] creates, updates, and deletes account types.';
+    public $themed = true;
     protected $must_authenticate = True;
     protected $auth_classes = array('editmembers');
 
-    function preprocess(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    public function preprocess()
+    {
+        $this->__routes[] = 'get<new>';
+        $this->__routes[] = 'post<new>';
+        $this->__routes[] = 'post<id><type>';
+        $this->__routes[] = 'post<id><staff>';
+        $this->__routes[] = 'post<id><ssi>';
+        $this->__routes[] = 'post<id><discount>';
+        $this->__routes[] = 'post<id><description>';
+        $this->__routes[] = 'post<id><salesCode>';
+
+        return parent::preprocess();
+    }
+
+    /**
+      Create a new member type 
+    */
+    public function post_new_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $this->errors = '';
+
+        /* do some extra sanity checks
+           on a new member type
+        */
+        $id = $this->new;
+        if (!is_numeric($id)){
+            $this->errors .= 'ID '.$id.' is not a number';
+            return true;
+        } else {
+            $mtModel = new MemtypeModel($dbc);
+            $mtModel->reset();
+            $mtModel->memtype($id);
+            if ($mtModel->load()) {
+                $this->errors .= $id . ' ID is already in use';
+                return true;
+            } else {
+                $mtModel->memDesc('');
+                $mtModel->custdataType('REG');
+                $mtModel->discount(0);
+                $mtModel->staff(0);
+                $mtModel->ssi(0);
+                $mtModel->save();
+
+                return $_SERVER['PHP_SELF'];
+            }
+        }
+    }
+
+    /**
+      AJAX callbacks for auto-saving fields
+    */
+
+    public function post_id_type_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $json = array('msg'=>'');
 
         $mtModel = new MemtypeModel($dbc);
-        /* ajax callbacks to save changes */
-        if (FormLib::get('saveMem', false) !== false) {
-            $type = FormLib::get('saveMem', 'REG');
-            $id = FormLib::get('t_id', 0);
-            $mtModel->memtype($id);
-            $mtModel->custdataType($type);
-            $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET cd_type=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($type, $id));
-            }
-
-            return false;
-        } else if (FormLib::get('saveStaff', false) !== false){
-            $staff = FormLib::get('saveStaff', 0);
-            $id = FormLib::get('t_id', 0);
-            $mtModel->memtype($id);
-            $mtModel->staff($staff);
-            $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET staff=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($staff, $id));
-            }
-
-            return false;
-        } else if (FormLib::get('saveSSI', false) !== false) {
-            $ssi = FormLib::get('saveSSI', 0);
-            $id = FormLib::get('t_id', 0);
-            $mtModel->memtype($id);
-            $mtModel->ssi($ssi);
-            $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET SSI=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($ssi, $id));
-            }
-
-            return false;
-        } else if (FormLib::get('saveDisc', false) !== false) {
-            $disc = FormLib::get('saveDisc', 0);
-            $id = FormLib::get('t_id', 0);
-            $mtModel->memtype($id);
-            $mtModel->discount($disc);
-            $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET discount=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($disc, $id));
-            }
-
-            return false;
-        } else if (FormLib::get('saveType', false) !== false) {
-            $name = FormLib::get('saveType', 0);
-            $id = FormLib::get('t_id', 0);
-            $mtModel->memtype($id);
-            $mtModel->memDesc($name);
-            $mtModel->save();
-
-            return false;
-        } else if (FormLib::get('newMemForm', false) !== false) {
-            $q = $dbc->prepare_statement("SELECT MAX(memtype) FROM memtype");
-            $r = $dbc->exec_statement($q);
-            $sug = 0;
-            if($dbc->num_rows($r)>0){
-                $w = $dbc->fetch_row($r);
-                if(!empty($w)) $sug = $w[0]+1;
-            }
-            echo "Give the new memtype an ID number. The one
-                provided is only a suggestion. ID numbers
-                must be unique.";
-            printf('<br /><br /><b>New ID</b>: <input size="4" value="%d"
-                id="newTypeID" />',$sug);
-            echo ' <input type="submit" value="Create New Type"
-                onclick="finishMemType();return false;" />';
-            echo ' <input type="submit" value="Cancel"
-                onclick="cancelMemType();return false;" />';
-            return False;
-        } else if (FormLib::get('new_t_id', false) !== false) {
-            /* do some extra sanity checks
-               on a new member type
-            */
-            $id = FormLib::get('new_t_id');
-            if (!is_numeric($id)){
-                echo 'ID '.$id.' is not a number';
-                echo '<br /><br />';
-                echo '<a href="" onclick="newMemType();return false;">Try Again</a>';
-            } else {
-                $mtModel->reset();
-                $mtModel->memtype($id);
-                if ($mtModel->load()) {
-                    echo 'ID is already in use';
-                    echo '<br /><br />';
-                    echo '<a href="" onclick="newMemType();return false;">Try Again</a>';
-                } else {
-                    $mtModel->memDesc('');
-                    $mtModel->custdataType('REG');
-                    $mtModel->discount(0);
-                    $mtModel->staff(0);
-                    $mtModel->ssi(0);
-                    $mtModel->save();
-                    if ($dbc->tableExists('memdefaults')) {
-                        $mdP = $dbc->prepare_statement("INSERT INTO memdefaults (memtype,cd_type,
-                                discount,staff,SSI) VALUES (?, 'REG', 0, 0, 0)");
-                        $dbc->exec_statement($mdP, array($id));
-                    }
-
-                    echo $this->getTypeTable();
-                }
-            }
-            exit;
-
-        } else if (FormLib::get('goHome', false) !== false) {
-            echo $this->getTypeTable();
-            exit;
+        $mtModel->memtype($this->id);
+        $mtModel->custdataType($this->type);
+        $saved = $mtModel->save();
+        if (!$saved) {
+            $json['msg'] = 'Error saving membership status';
         }
-        /* end ajax callbacks */
+        echo json_encode($json);
 
-        return true;
+        return false;
     }
 
-    private function getTypeTable(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    public function post_id_description_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $json = array('msg'=>'');
 
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">
-            <tr><th>ID#</th><th>Description</th>
-            <th>Member</th><th>Discount</th>
-            <th>Staff</th><th>SSI</th>
-            </tr>';
-
-        $q = $dbc->prepare_statement("SELECT m.memtype,m.memDesc,d.cd_type,d.discount,d.staff,d.SSI
-            FROM memtype AS m LEFT JOIN memdefaults AS d
-            ON m.memtype=d.memtype
-            ORDER BY m.memtype");
-        $r = $dbc->exec_statement($q);
-        while($w = $dbc->fetch_row($r)){
-            $ret .= sprintf('<tr><td>%d</td>
-                    <td><input value="%s" onchange="saveType(this.value,%d);" /></td>
-                    <td><input type="checkbox" %s onclick="saveMem(this.checked,%d);" /></td>
-                    <td><input value="%d" size="4" onchange="saveDisc(this.value,%d);" /></td>
-                    <td><input type="checkbox" %s onclick="saveStaff(this.checked,%d);" /></td>
-                    <td><input type="checkbox" %s onclick="saveSSI(this.checked,%d);" /></td>
-                    </tr>',$w['memtype'],
-                    $w['memDesc'],$w['memtype'],
-                    ($w['cd_type']=='PC'?'checked':''),$w['memtype'],
-                    $w['discount'],$w['memtype'],
-                    ($w['staff']=='1'?'checked':''),$w['memtype'],
-                    ($w['SSI']=='1'?'checked':''),$w['memtype']
-                );
+        $mtModel = new MemtypeModel($dbc);
+        $mtModel->memtype($this->id);
+        $mtModel->memDesc($this->description);
+        $saved = $mtModel->save();
+        if (!$saved) {
+            $json['msg'] = 'Error saving membership status';
         }
-        $ret .= "</table>";
-        $ret .= '<br /><a href="" onclick="newMemType();return false;">New Member Type</a>';
-        return $ret;
+        echo json_encode($json);
+
+        return false;
     }
 
-    function javascript_content(){
+    public function post_id_staff_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $json = array('msg'=>'');
+
+        $mtModel = new MemtypeModel($dbc);
+        $mtModel->memtype($this->id);
+        $mtModel->staff($this->staff);
+        $saved = $mtModel->save();
+        if (!$saved) {
+            $json['msg'] = 'Error saving staff status';
+        }
+        echo json_encode($json);
+
+        return false;
+    }
+
+    public function post_id_ssi_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $json = array('msg'=>'');
+
+        $mtModel = new MemtypeModel($dbc);
+        $mtModel->memtype($this->id);
+        $mtModel->ssi($this->ssi);
+        $saved = $mtModel->save();
+        if (!$saved) {
+            $json['msg'] = 'Error saving SSI status';
+        }
+        echo json_encode($json);
+
+        return false;
+    }
+
+    public function post_id_discount_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $json = array('msg'=>'');
+
+        $mtModel = new MemtypeModel($dbc);
+        $mtModel->memtype($this->id);
+        $mtModel->discount($this->discount);
+        $saved = $mtModel->save();
+        if (!$saved) {
+            $json['msg'] = 'Error saving discount';
+        }
+        echo json_encode($json);
+
+        return false;
+    }
+
+    public function post_id_salesCode_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $json = array('msg'=>'');
+
+        $mtModel = new MemtypeModel($dbc);
+        $mtModel->memtype($this->id);
+        $mtModel->salesCode($this->salesCode);
+        $saved = $mtModel->save();
+        if (!$saved) {
+            $json['msg'] = 'Error saving account number';
+        }
+        echo json_encode($json);
+
+        return false;
+    }
+
+    function javascript_content()
+    {
         ob_start();
         ?>
-        function newMemType(){
-            $.ajax({url:'MemberTypeEditor.php',
-                cache: false,
-                type: 'post',
-                data: 'newMemForm=yes',
-                success: function(data){
-                    $('#mainDisplay').html(data);
-                }
-            });
-        }
-
-        function finishMemType(){
-            var t_id = $('#newTypeID').val();
-            $.ajax({url:'MemberTypeEditor.php',
-                cache: false,
-                type: 'post',
-                data: 'new_t_id='+t_id,
-                success: function(data){
-                    $('#mainDisplay').html(data);
-                }
-            });
-        }
-
-        function cancelMemType(){
-            $.ajax({url:'MemberTypeEditor.php',
-                cache: false,
-                type: 'post',
-                data: 'goHome=yes',
-                success: function(data){
-                    $('#mainDisplay').html(data);
-                }
-            });
-        }
-
         function saveMem(st,t_id){
             var cd_type = 'REG';
             if (st == true) cd_type='PC';
+            var elem = $(this);
+            var orig = this.defaultValue;
             $.ajax({url:'MemberTypeEditor.php',
                 cache: false,
                 type: 'post',
-                data: 't_id='+t_id+'&saveMem='+cd_type,
-                success: function(data){
-
-                }
+                data: 'id='+t_id+'&type='+cd_type,
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
         function saveStaff(st,t_id){
+            var elem = $(this);
+            var orig = this.defaultValue;
             var staff = 0;
             if (st == true) staff=1;
             $.ajax({url:'MemberTypeEditor.php',
                 cache: false,
                 type: 'post',
-                data: 't_id='+t_id+'&saveStaff='+staff,
-                success: function(data){
-
-                }
+                data: 'id='+t_id+'&staff='+staff,
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
         function saveSSI(st,t_id){
+            var elem = $(this);
+            var orig = this.defaultValue;
             var ssi = 0;
             if (st == true) ssi=1;
             $.ajax({url:'MemberTypeEditor.php',
                 cache: false,
                 type: 'post',
                 data: 't_id='+t_id+'&saveSSI='+ssi,
-                success: function(data){
-
-                }
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
         function saveDisc(disc,t_id){
+            var elem = $(this);
+            var orig = this.defaultValue;
             $.ajax({url:'MemberTypeEditor.php',
                 cache: false,
                 type: 'post',
-                data: 't_id='+t_id+'&saveDisc='+disc,
-                success: function(data){
-
-                }
+                data: 'id='+t_id+'&discount='+disc,
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
         function saveType(typedesc,t_id){
+            var elem = $(this);
+            var orig = this.defaultValue;
             $.ajax({url:'MemberTypeEditor.php',
                 cache: false,
                 type: 'post',
-                data: 't_id='+t_id+'&saveType='+typedesc,
-                success: function(data){
+                dataType: 'json',
+                data: 'id='+t_id+'&description='+typedesc
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
+            });
+        }
 
-                }
+        function saveAccount(account,t_id){
+            var elem = $(this);
+            var orig = this.defaultValue;
+            $.ajax({url:'MemberTypeEditor.php',
+                cache: false,
+                type: 'post',
+                dataType: 'json',
+                data: 'id='+t_id+'&salesCode='+account
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
         <?php
         return ob_get_clean();
     }
 
-    function body_content(){
-        return '<div id="mainDisplay">'
-            .$this->getTypeTable()
-            .'</div>';
+    /**
+      Only gets to here if an error occurs creating a new
+      type. Display error and re-display the new
+      member type form.
+    */
+    public function post_new_view()
+    {
+        $ret = '';
+        if ($this->errors) {
+            $ret .= '<div class="alert alert-danger">' . $this->errors . '</div>';
+        }
+
+        return $ret . $this->get_new_view();
+    }
+
+    /**
+      New member type form
+    */
+    public function get_new_view()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $q = $dbc->prepare("SELECT MAX(memtype) FROM memtype");
+        $r = $dbc->execute($q);
+        $sug = 0;
+        if($dbc->num_rows($r)>0){
+            $w = $dbc->fetch_row($r);
+            if(!empty($w)) $sug = $w[0]+1;
+        }
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
+        $ret .='<div class="well">Give the new memtype an ID number. The one
+            provided is only a suggestion. ID numbers
+            must be unique.</div>';
+        $ret .='<div class="form-inline"><p>';
+        $ret .= sprintf('<label>New ID</label>: <input class="form-control" value="%d"
+            name="new" id="new-mem-id" />',$sug);
+        $ret .= ' <button type="submit" class="btn btn-default">
+            Create New Type</button>';
+        $ret .= ' <a href="' . $_SERVER['PHP_SELF'] . '" class="btn btn-default">Cancel</a>';
+        $ret .= '</p></div>
+            </form>';
+        
+        return $ret;
+    }
+
+    /**
+      List types, edit + autosave
+    */
+    public function get_view()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+
+        $ret = '<table class="table">
+            <tr><th>ID#</th><th>Description</th>
+            <th>Member</th><th>Discount</th>
+            <th>Staff</th><th>SSI</th>
+            <th>Account #</th>
+            </tr>';
+
+        $model = new MemtypeModel($dbc);
+        foreach ($model->find('memtype') as $mem) {
+            $ret .= sprintf('<tr><td>%d</td>
+                    <td><input type="text" class="form-control" value="%s" 
+                        onchange="saveType.call(this, this.value, %d);" /></td>
+                    <td><input type="checkbox" %s onclick="saveMem.call(this, this.checked, %d);" /></td>
+                    <td class="col-sm-1"><div class="input-group"><input type="number" value="%d" class="form-control price-field" 
+                        onchange="saveDisc.call(this, this.value,%d);" /><span class="input-group-addon">%%</span>
+                    </div></td>
+                    <td><input type="checkbox" %s onclick="saveStaff.call(this, this.checked,%d);" /></td>
+                    <td><input type="checkbox" %s onclick="saveSSI.call(this, this.checked,%d);" /></td>
+                    <td><input type="text" class="form-control" value="%s"
+                        onchange="saveAccount.call(this, this.value, %d);" /></td>
+                    </tr>',
+                    $mem->memtype(),
+                    $mem->memDesc(), $mem->memtype(),
+                    ($mem->custdataType() == 'PC' ? 'checked' : ''), $mem->memtype(),
+                    $mem->discount(), $mem->memtype(),
+                    ($mem->staff() == '1' ? 'checked' : ''), $mem->memtype(),
+                    ($mem->ssi() == '1' ? 'checked' : ''), $mem->memtype(),
+                    $mem->salesCode(), $mem->memtype()
+                );
+        }
+        $ret .= "</table>";
+        $ret .= '<p><a href="?new=1" class="btn btn-default">New Member Type</a></p>';
+
+        return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Some co-ops have more than one type of member.
+            Furthermore, since CORE requires every transaction be 
+            associated with a customer account it is often useful to
+            have an account or accounts set aside for customers
+            who are not members.</p>
+            <p>When creating a new type, provide a unique numeric ID.</p>
+            <ul>
+                <li><em>Description</em> will show up in member editing 
+                and reporting.</li>
+                <li><em>Member</em> indicates whether or not customers of
+                this type are members of the co-op. Checking the box means
+                they are members.</li>
+                <li><em>Discount</em> is a percent discount on transactions.
+                For example, entering 5 will give customers of that type
+                a 5% discount on each transaction.</li>
+                <li><em>Staff</em> is purely for record keeping at this time.
+                It does not control any POS behavior.</li>
+                <li><em>SSI</em> is a flag for low-income customers who
+                receive some kind of benefit.</li>
+                <li><em>Account #</em> associates a chart of accounts number
+                with discount given to a particular member type. The setting
+                is irrelevant on member types with a 0% discount.</li>
+            </ul>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $values = new \COREPOS\common\mvc\ValueContainer();
+        $values->_method = 'get';
+        $this->setForm($values);
+        $this->readRoutes();
+
+        $page = $this->get_view();
+
+        $testID = 127;
+        $values->_method = 'post';
+        $values->new = $testID;
+        $this->setForm($values);
+        $this->readRoutes();
+
+        $create = $this->post_new_handler();
+
+        unset($values->new);
+
+        $values->_method = 'get';
+        $this->setForm($values);
+        $this->readRoutes();
+
+        $newpage = $this->get_view();
+
+        $phpunit->assertNotEquals($page, $newpage);
+        $phpunit->assertNotEquals(false, strpos($newpage, "$testID"));
+
+        $this->connection->query('DELETE FROM memtype WHERE memtype=' . $testID);
+
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $this->errors = 'an error';
+        $phpunit->assertNotEquals(0, strlen($this->post_new_view()));
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

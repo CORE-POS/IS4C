@@ -3,7 +3,7 @@
 
     Copyright 2011 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,9 +29,13 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DepartmentImportPage extends FannieUploadPage {
+class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Departments";
+
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
 
     public $description = '[Department Import] load POS departments from a spreadsheet.';
 
@@ -68,33 +72,27 @@ class DepartmentImportPage extends FannieUploadPage {
         )
     );
 
+    private $stats = array('imported'=>0, 'errors'=>array());
     
-    function process_file($linedata){
+    public function process_file($linedata, $indexes)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $dn_index = $this->get_column_index('dept_no');
-        $desc_index = $this->get_column_index('desc');
-        $margin_index = $this->get_column_index('margin');
-        $tax_index = $this->get_column_index('tax');
-        $fs_index = $this->get_column_index('fs');
-
         // prepare statements
-        $marP = $dbc->prepare_statement("INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)");
-
-        $scP = $dbc->prepare_statement("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)");
-
+        $marP = $dbc->prepare("INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)");
+        $scP = $dbc->prepare("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)");
         $model = new DepartmentsModel($dbc);
 
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $dept_no = $line[$dn_index];
-            $desc = $line[$desc_index];
-            $margin = ($margin_index !== False) ? $line[$margin_index] : 0;
+            $dept_no = $line[$indexes['dept_no']];
+            $desc = $line[$indexes['desc']];
+            $margin = ($indexes['margin'] !== False) ? $line[$indexes['margin']] : 0;
             if ($margin > 1) $margin /= 100.00;
-            $tax = ($tax_index !== False) ? $line[$tax_index] : 0;
-            $fs = ($fs_index !== False) ? $line[$fs_index] : 0;
+            $tax = ($indexes['tax'] !== False) ? $line[$indexes['tax']] : 0;
+            $fs = ($indexes['fs'] !== False) ? $line[$indexes['fs']] : 0;
 
             if (!is_numeric($dept_no)) continue; // skip header/blank rows
 
@@ -113,35 +111,62 @@ class DepartmentImportPage extends FannieUploadPage {
             $model->modifiedby(1);
             $model->margin($margin);
             $model->salesCode($dept_no);
-            $model->save();
+            $imported = $model->save();
 
-            $insR = $dbc->exec_statement($insP,array($dept_no,$desc,$tax,$fs));
+            if ($imported) {
+                $this->stats['imported']++;
+            } else {
+                $this->stats['errors'][] = 'Error imported department #' . $dept_no;
+            }
 
             if ($dbc->tableExists('deptMargin')) {
-                $insR = $dbc->exec_statement($marP,array($dept_no, $margin));
+                $insR = $dbc->execute($marP,array($dept_no, $margin));
             }
 
             if ($dbc->tableExists('deptSalesCodes')) {
-                $insR = $dbc->exec_statement($scP,array($dept_no, $dept_no));
+                $insR = $dbc->execute($scP,array($dept_no, $dept_no));
             }
         }
-        return True;
+
+        return true;
     }
     
-    function form_content(){
-        return '<fieldset><legend>Instructions</legend>
+    function form_content()
+    {
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing departments numbers, descriptions, margins,
         and optional tax/foodstamp settings. Unless you know better, use zero and
         one for tax and foodstamp columns.
         <br />A preview helps you to choose and map spreadsheet fields to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
-    function results_content(){
-        return 'Import completed successfully';
+    function results_content()
+    {
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $this->stats['imported'] . ' departments imported</div>';
+        if ($this->stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($this->stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->stats = array('imported'=>0, 'errors'=>array('foo'));
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array(1000, 'test dept', '0.5', 0, 1);
+        $indexes = array('dept_no'=>0, 'desc'=>1, 'margin'=>2, 'tax'=>3, 'fs'=>4);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

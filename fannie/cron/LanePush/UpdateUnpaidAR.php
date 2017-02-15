@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,16 +30,24 @@
 
 */
 
-include('../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
-
-if (!chdir("LanePush")){
-    echo "Error: Can't find directory (lane push)";
-    exit;
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
 }
 
-set_time_limit(0);
+if (!chdir(dirname(__FILE__))){
+    echo "Error: Can't find directory (lane push)";
+    return;
+}
+
+if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
+    $FANNIE_LANES = array();
+}
+
+set_time_limit(60);
 ini_set('memory_limit','256M');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -51,7 +59,7 @@ $fetchQ = "SELECT card_no,recent_payments FROM unpaid_ar_today WHERE mark=1";
 $fetchR = $sql->query($fetchQ);
 if ($fetchR === False) {
     echo cron_msg("Failed: $fetchQ");
-    exit;
+    return;
 }
 while($fetchW = $sql->fetch_row($fetchR))
     $data[$fetchW['card_no']] = $fetchW['recent_payments'];
@@ -87,4 +95,3 @@ else {
     $a=0;
 }
 
-?>

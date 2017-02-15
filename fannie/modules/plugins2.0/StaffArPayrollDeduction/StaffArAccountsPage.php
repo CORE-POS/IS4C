@@ -34,6 +34,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
     public $page_set = 'Plugin :: Payroll Deductions';
     public $description = '[Accounts] sets which accounts will have deductions for AR
     payments as well as the amounts.';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -42,8 +43,37 @@ class StaffArAccountsPage extends FannieRESTfulPage
         $this->__routes[] = 'get<add><payid>';
         $this->__routes[] = 'get<delete>';
         $this->__routes[] = 'post<saveIds><saveAmounts>';
+        $this->__routes[] = 'get<excel>';
 
         return parent::preprocess();
+    }
+
+    public function get_excel_handler()
+    {
+        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
+
+        header('Content-Type: application/ms-excel');
+        header('Content-Disposition: attachment; filename="epiU8U16.csv"');
+        $res = $dbc->query("
+            SELECT s.adpID,
+                a.lastName,
+                a.firstName,
+                a.adjust
+            FROM staffAR AS a
+                LEFT JOIN staffID AS s ON a.cardNo=s.cardno
+            ORDER BY a.lastName");
+        echo "Co Code,Batch ID,File #,adjust ded code ,adjust ded amount\r\n";
+        while ($row = $dbc->fetchRow($res)) {
+            printf('"%s","%s","%s","%s",%.2f' . "\r\n",
+                'U8U',
+                '160815',
+                $row['adpID'],
+                'I',
+                $row['adjust']
+            );
+        }
+
+        return false;
     }
 
     public function get_add_payid_handler()
@@ -159,17 +189,19 @@ class StaffArAccountsPage extends FannieRESTfulPage
             $row = $dbc->fetch_row($result);
             $next = $row['tdate'];
         }
-        $ret .= '<p style="font-size:120%;">Next deduction is scheduled for: ' . $next;
-        $ret .= ' (<a href="StaffArDatesPage.php">View Schedule</a>)</p>';
+        $ret .= '<h4>Next deduction is scheduled for: ' . $next;
+        $ret .= ' (<a href="StaffArDatesPage.php">View Schedule</a>)</h4>';
         $ret .= '<form onsubmit="return false;">'; // for reset function
         $ret .= '<p>';
-        $ret .= '<input type="submit" onclick="useCurrent(); return false;" value="Set New to Current Balance" />';
+        $ret .= '<button type="button" onclick="useCurrent(); return false;" class="btn btn-default">
+            Set New to Current Balance</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="reset" value="Reset" />';
+        $ret .= '<button type="reset" class="btn btn-default">Reset</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" onclick="saveForm(); return false;" value="Save New as Next Deduction" />';
+        $ret .= '<button type="submit" onclick="saveForm(); return false;" class="btn btn-default">
+            Save New as Next Deduction</button>';
         $ret .= '</p>';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1" id="accountTable">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Mem#</th><th>PayrollID</th><th>Name</th><th>Current</th>
                 <th>Next Deduction</th><th>New Deduction</th><th>&nbsp;</td></tr>';
         foreach($info as $card_no => $data) {
@@ -179,7 +211,10 @@ class StaffArAccountsPage extends FannieRESTfulPage
                             <td class="nametext">%s</td>
                             <td class="currentbalance">%.2f</td>
                             <td>%.2f</td>
-                            <td><input type="text" size="7" class="nextdeduct" value="%.2f" /></td>
+                            <td><div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="nextdeduct form-control" value="%.2f" />
+                            </div></td>
                             <td><a href="" onclick="removeAccount(%d); return false;">Remove from List</a></td>
                             </tr>',
                             $card_no,
@@ -194,22 +229,50 @@ class StaffArAccountsPage extends FannieRESTfulPage
         }
         $ret .= '</table>';
         $ret .= '<p>';
-        $ret .= '<input type="submit" onclick="useCurrent(); return false;" value="Set New to Current Balance" />';
+        $ret .= '<button type="button" onclick="useCurrent(); return false;" class="btn btn-default">
+            Set New to Current Balance</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="reset" value="Reset" />';
+        $ret .= '<button type="reset" class="btn btn-default">Reset</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" onclick="saveForm(); return false;" value="Save New as Next Deduction" />';
+        $ret .= '<button type="submit" onclick="saveForm(); return false;" class="btn btn-default">
+            Save New as Next Deduction</button>';
         $ret .= '</form>';
         $ret .= '</div>';
         $ret .= '<hr />';
-        $ret .= '<b>Add User To List</b><br />';
-        $ret .= '<b>Mem#</b>: <input type="text" id="newMem" size="6" />';
+        $ret .= '<h4>Add User To List</h4>';
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<label>Mem#</label>: <input type="text" id="newMem" class="form-control" />';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Payroll#</b>: <input type="text" id="newPayID" size="6" />';
+        $ret .= '<label>Payroll#</label>: <input type="text" id="newPayID" class="form-control" />';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" onclick="addNew(); return false;" value="Add" />';
+        $ret .= '<button type="submit" onclick="addNew(); return false;" 
+            class="btn btn-default">Add</button>';
+        $ret .= '</div>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>This tool schedules automatic payments to
+            accounts\' store charge balance. Its primary purpose is to
+            address the gap in time between entering deduction information
+            into the payroll system software and actual pay day.</p>
+            <p>The <em>Current</em> column shows each account\'s current
+            store charge balance. The <em>Next Deduction</em> column
+            shows the balance payment that will occur on the next 
+            scheduled pay day. In a typical payroll cycle, the user will
+            first click <em>Set New to Current Balances</em> and then
+            <em>Save New as Next Deduction</em> to lock in the current
+            balance as the next scheduled payment. The <em>Next Deduction</em>
+            amounts should then be entered into the payroll system software.
+            On payday the accounts\' balances will be reduced by the
+            specified amounts</p>
+            <p>It is important not to alter the <em>Next Deduction</em>
+            amounts in the time between entering the deduction information
+            in the payroll system and pay day. If accounts continue to
+            make charges during this time period, their balance will not
+            be reduced all the way to zero.</p>';
     }
 }
 

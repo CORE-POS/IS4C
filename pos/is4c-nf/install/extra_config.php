@@ -1,451 +1,511 @@
-<!DOCTYPE html>
-<html>
 <?php
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\install\conf\Conf;
+use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('../ini.php');
 CoreState::loadParams();
-include('InstallUtilities.php');
+$form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
+<!DOCTYPE html>
+<html>
 <head>
 <title>IT CORE Lane Installation: Additional Configuration</title>
 <link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
-<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/<?php echo MiscLib::jqueryFile(); ?>"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>
-<div id="wrapper">	
-<h2>IT CORE Lane Installation: Additional Configuration (Extras)</h2>
+<div id="wrapper">    
+<h2><?php echo _('IT CORE Lane Installation: Additional Configuration (Extras)'); ?></h2>
 
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.json', False, 'JSON'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
 
 <form action=extra_config.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <tr>
-    <td colspan=2 class="tblHeader"><h3>General Settings</h3></td>
+    <td colspan=2 class="tblHeader"><h3><?php echo _('General Settings'); ?></h3></td>
 </tr>
 <tr>
-    <td style="width: 30%;"><b>Organization</b>:</td>
+    <td style="width: 30%;"><b><?php echo _('Organization'); ?></b>:</td>
     <td>
-    <?php echo InstallUtilities::installTextField('store', ''); ?>
-    <span class='noteTxt'>In theory, any hard-coded, organization specific sequences should be blocked
-    off based on the organization setting. Adherence to this principle is less than ideal.</span>
+    <?php echo $form->textField('store', ''); ?>
+    <span class='noteTxt'><?php echo _('In theory, any hard-coded, organization specific sequences should be blocked
+    off based on the organization setting. Adherence to this principle is less than ideal.'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td>
-    <?php echo InstallUtilities::installCheckBoxField('discountEnforced', 'Discounts Enabled', 0); ?>
-    <span class='noteTxt'>If yes, members get a percentage discount as specified in custdata.</span>
-    </td>
-</tr>
-<tr>
-    <td><label><b>Discount Module</b></label></td>
-    <td> 
-    <?php
-    $mods = AutoLoader::listModules('DiscountModule',True);
-    echo InstallUtilities::installSelectField('DiscountModule', $mods, 'DiscountModule');
-    ?>
-    <span class='noteTxt'>Calculates actual discount amount</span>
+    <?php echo $form->checkboxField('discountEnforced', _('Discounts Enabled'), 0); ?>
+    <span class='noteTxt'><?php echo _('If yes, members get a percentage discount as specified in custdata.'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td> 
-    <?php echo InstallUtilities::installCheckBoxField('refundDiscountable', 'Discounts on refunds', 0); ?>
-    <span class='noteTxt'>If yes, percent discount is applied to refunds</span>
+    <?php echo $form->checkboxField('NonStackingDiscounts', _('Only One Discount Applies'), 0); ?>
+    <span class='noteTxt'><?php echo _('If a customer is eligible for a 5% discount and a 10% discount and
+    only one applies, then the customer will get a 10% discount. Otherwise they stack and
+    the total discount is 15%.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Line Item Discount (member)</b>: </td>
+    <td></td>
+    <td> 
+    <?php echo $form->checkboxField('refundDiscountable', _('Discounts on refunds'), 0); ?>
+    <span class='noteTxt'><?php echo _('If yes, percent discount is applied to refunds'); ?></span>
+    </td>
+</tr>
+<tr>
+    <td><b><?php echo _('Line Item Discount (member)'); ?></b>: </td>
     <td>
-    <?php echo InstallUtilities::installTextField('LineItemDiscountMem', 0); ?>
-    <span class='noteTxt'>(percentage; 0.05 =&gt; 5%)</span>
+    <?php echo $form->textField('LineItemDiscountMem', 0); ?>
+    <span class='noteTxt'><?php echo _('(percentage; 0.05 => 5%)'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Line Item Discount (non-member)</b>: </td>
+    <td><b><?php echo _('Line Item Discount (non-member)'); ?></b>: </td>
     <td>
-    <?php echo InstallUtilities::installTextField('LineItemDiscountNonMem', 0); ?>
-    <span class='noteTxt'>(percentage; 0.05 =&gt; 5%)</span>
+    <?php echo $form->textField('LineItemDiscountNonMem', 0); ?>
+    <span class='noteTxt'><?php echo _('(percentage; 0.05 => 5%)'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Default Non-member #</b>: </td>
+    <td><b><?php echo _('Default Non-member #'); ?></b>: </td>
     <td>
-    <?php echo InstallUtilities::installTextField('defaultNonMem', 99999); ?>
-    <span class='noteTxt'>Normally a single account number is used for most if not all non-member
-    transactions. Specify that account number here.</span>
+    <?php echo $form->textField('defaultNonMem', 99999); ?>
+    <span class='noteTxt'><?php echo _('Normally a single account number is used for most if not all non-member
+    transactions. Specify that account number here.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Default Non-member behavior</b>: </td><td>
+    <td><b><?php echo _('Default Non-member behavior'); ?></b>: </td><td>
     <?php
-    $behavior = array('1' => 'Cannot override other accounts', '0' => 'No different than other accounts');
-    echo InstallUtilities::installSelectField('RestrictDefaultNonMem', $behavior, 0);
+    $behavior = array('1' => _('Cannot override other accounts'), '0' => _('No different than other accounts'));
+    echo $form->selectField('RestrictDefaultNonMem', $behavior, 0);
     ?>
     </td>
 </tr>
 <tr>
-    <td><b>Visiting Member #</b>: </td>
-    <td><?php echo InstallUtilities::installTextField('visitingMem', ''); ?>
-    <span class='noteTxt'>This account provides members of other co-ops with member pricing
-    but no other benefits. Leave blank to disable.</span>
+    <td><b><?php echo _('Visiting Member #'); ?></b>: </td>
+    <td><?php echo $form->textField('visitingMem', ''); ?>
+    <span class='noteTxt'><?php echo _('This account provides members of other co-ops with member pricing
+    but no other benefits. Leave blank to disable.'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td>
-    <?php echo InstallUtilities::installCheckBoxField('memlistNonMember', 'Show non-member', 0); ?>
-    <span class='noteTxt'>Display non-member acct. in member searches?</span>
+    <?php echo $form->checkboxField('memlistNonMember', _('Show non-member'), 0); ?>
+    <span class='noteTxt'><?php echo _('Display non-member acct. in member searches?'); ?></span>
     </td>
 </tr>
 <tr>
     <td></td>
     <td>
-    <?php echo InstallUtilities::installCheckBoxField('useMemTypeTable', 'Use memtype table', 0); ?>
-    <span class='noteTxt'>Use memtype table when applicable. This forces all memberships of a given
-    type to have the same discount, among other things.</span>
+    <?php echo $form->checkboxField('useMemTypeTable', _('Use memtype table'), 0); ?>
+    <span class='noteTxt'><?php echo _('Use memtype table when applicable. This forces all memberships of a given
+    type to have the same discount, among other things.'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Bottle Return Department number</b>: </td>
-    <td><?php echo InstallUtilities::installTextField('BottleReturnDept', ''); ?>
-    <span class='noteTxt'>Add a BOTTLE RETURN item to your products table with a normal_price of 0, 
-    CORE will prompt for Bottle Return amt. and then make it a negative value.</span>
+    <td></td>
+    <td>
+    <?php echo $form->checkboxField('InvertAR', 'Invert Display A/R', 0); ?>
+    <span class='noteTxt'><?php echo _('Normally a positive A/R balance indicates the amount the customer
+    owes to the store (i.e., a debt). Inverting this means a positive A/R balance indicates
+    the amount the store owes to the customer (i.e., a credit)'); ?></span>
+    </td>
+</tr>
+<tr>
+    <td><b><?php echo _('Bottle Return Department number'); ?></b>: </td>
+    <td><?php echo $form->textField('BottleReturnDept', ''); ?>
+    <span class='noteTxt'><?php echo _('Add a BOTTLE RETURN item to your products table with a normal_price of 0, 
+    CORE will prompt for Bottle Return amt. and then make it a negative value.'); ?></span>
     </td>
 </tr>
 <tr>
     <td colspan=2 class="tblHeader">
-    <h3>Hardware Settings</h3>
+    <h3><?php echo _('Hardware Settings'); ?></h3>
     </td>
 </tr>
 <?php
 // 28Jan14 EL There's an inch or so of whitespace at the bottom of this row.
 // I don't know what causes it.
 ?>
-<tr><td><b>Printer port</b>:
+<tr><td><b><?php echo _('Printer port'); ?></b>:
 </td><td><?php
-// If values entered on the form are being saved, set CORE_LOCAL
+// If values entered on the form are being saved, set session variable
 //  and flag type of port choice: "other" or not.
-if (isset($_REQUEST['PPORT'])) {
-    if ($_REQUEST['PPORT'] == 'other' &&
-        isset($_REQUEST['otherpport']) &&
-        $_REQUEST['otherpport'] != '') {
-        $CORE_LOCAL->set('printerPort',trim($_REQUEST['otherpport']));
-        $otherpport = True;
-        $otherpportValue = trim($_REQUEST['otherpport']);
+if (FormLib::get('PPORT',false) !== false) {
+    $PPORT = FormLib::get('PPORT');
+    $otherPortText = FormLib::get('otherpport', false);
+    if ($PPORT === 'other' && $otherPortText !== false) {
+        CoreLocal::set('printerPort',trim($otherPortText), true);
+        $otherPortChecked = True;
+        $otherPortText = trim($otherPortText);
     } else {
-        $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT']);
-        $otherpport = False;
-        $otherpportValue = "";
+        CoreLocal::set('printerPort',$PPORT, true);
+        $otherPortChecked = False;
+        $otherPortText = "";
     }
 } else {
-    $pport = $CORE_LOCAL->get('printerPort');
+    $pport = CoreLocal::get('printerPort');
     if (isset($pport) && $pport !== False && $pport != "") {
         $pports = array("/dev/lp0","/dev/usb/lp0","LPT1:","fakereceipt.txt");
         if (in_array($pport,$pports)) {
-            $otherpport = False;
-            $otherpportValue = "";
+            $otherPortChecked = False;
+            $otherPortText = "";
         } else {
-            $otherpport = True;
-            $otherpportValue = "$pport";
+            $otherPortChecked = True;
+            $otherPortText = "$pport";
         }
     } else {
-        $otherpport = False;
-        $otherpportValue = "";
+        $otherPortChecked = False;
+        $otherPortText = "";
     }
 }
 ?>
 <input type="radio" name=PPORT value="/dev/lp0" id="div-lp0"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/lp0")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="/dev/lp0")
             echo "checked";
     ?> /><label for="div-lp0">/dev/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="/dev/usb/lp0" id="div-usb-lp0"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/usb/lp0")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="/dev/usb/lp0")
             echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="LPT1:" id="lpt1-"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT1:")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="LPT1:")
                 echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
 <input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="fakereceipt.txt")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="fakereceipt.txt")
                 echo "checked";
     ?> /><label for="fakercpt">fakereceipt.txt</label><br />
 <input type="radio" name=PPORT value="other"
-    <?php if ($otherpport)
+    <?php if ($otherPortChecked)
                 echo "checked";
 ?> /> <input type=text name="otherpport"
-    value="<?php echo "$otherpportValue"; ?>"><br />
-<span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",$CORE_LOCAL->get('printerPort')); ?>
-Path to the printer. Select from common values, or enter a custom path.
-Some ubuntu distros might put your USB printer at /dev/usblp0</span>
+    value="<?php echo "$otherPortText"; ?>"><br />
+<span class='noteTxt' style="top:-110px;"> <?php printf("<p>" . _('Current value') . ": <span class='pre'>%s</span></p>",CoreLocal::get('printerPort')); ?>
+<?php echo _('Path to the printer. Select from common values, or enter a custom path.
+Some ubuntu distros might put your USB printer at /dev/usblp0'); ?></span>
 </td></tr>
 <?php
 // Write to database.
-InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
+InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
 ?>
 
 <tr>
     <td></td>
     <td>
-    <?php echo InstallUtilities::installCheckBoxField('enableFranking', 'Enable Check Franking', 0); ?>
+    <?php echo $form->checkboxField('enableFranking', _('Enable Check Franking'), 0); ?>
     </td>
 </tr>
 <tr>
-    <td><b>Drawer Behavior Module</b>:</td>
+    <td><b><?php echo _('Drawer Behavior Module'); ?></b>:</td>
     <td>
     <?php
-    $kmods = AutoLoader::listModules('Kicker',True);
-    echo InstallUtilities::installSelectField('kickerModule', $kmods, 'Kicker');
+    $kmods = AutoLoader::listModules('COREPOS\pos\lib\Kickers\Kicker',True);
+    $kmods = array_map(function($i){ return str_replace('\\', '-', $i); }, $kmods);
+    echo $form->selectField('kickerModule', $kmods, 'Kicker');
+    $rewrite = str_replace('-', '\\', CoreLocal::get('kickerModule')); 
+    InstallUtilities::paramSave('kickerModule', $rewrite);
     ?>
     </td>
 </tr>
 <tr>
     <td></td>
     <td>
-    <?php echo InstallUtilities::installCheckBoxField('dualDrawerMode', 'Dual Drawer Mode', 0); ?>
+    <?php echo $form->checkboxField('dualDrawerMode', _('Dual Drawer Mode'), 0); ?>
     </td>
 </tr>
 <tr>
-    <td><b>Scanner/scale port</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('scalePort', ''); ?></td>
+    <td><b><?php echo _('Scanner/scale driver'); ?></b>:</td>
+    <td><?php echo $form->selectField('scaleDriver', array('NewMagellan', 'ssd'), 'NewMagellan'); ?></td>
 </tr>
 <tr>
     <td colspan=2>
-    <p>Path to the scanner scale. Common values are COM1 (windows) and /dev/ttyS0 (linux).</p>
-    </td>
-</tr>
-<tr>
-    <td><b>Scanner/scale driver</b>:</td>
-    <td><?php echo InstallUtilities::installSelectField('scaleDriver', array('NewMagellan', 'ssd'), 'NewMagellan'); ?></td>
-</tr>
-<tr>
-    <td colspan=2>
-    <p>The name of your scale driver. Known good values include "ssd" and "NewMagellan".</p>
-    <?php
-    // try to initialize scale driver
-    if ($CORE_LOCAL->get("scaleDriver") != ""){
-        $classname = $CORE_LOCAL->get("scaleDriver");
-        if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
-            echo "<br /><i>Warning: PHP driver file not found</i>";
-        else {
-            if (!class_exists($classname))
-                include('../scale-drivers/php-wrappers/'.$classname.'.php');
-            $instance = new $classname();
-            @$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
-            @$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
-                    strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php')-1);
-            @$instance->SaveDirectoryConfiguration($abs_path);
-        }
-    }
-    ?>
+    <p><?php echo _('The name of your scale driver. Known good values include "ssd" and "NewMagellan".'); ?></p>
     </td>
 </tr>
 <tr>
     <td colspan=2 class="tblHeader">
-    <h3>Display Settings</h3>
+    <h3><?php echo _('Display Settings'); ?></h3>
     </td>
 </tr>
 <tr>
-    <td><b>Screen Height</b>:</td>
-    <td><?php echo InstallUtilities::installSelectField('screenLines', range(9, 19), 11); ?>
-    <span class='noteTxt'>Number of items to display at once</span>
+    <td><b><?php echo _('Screen Height'); ?></b>:</td>
+    <td><?php echo $form->selectField('screenLines', range(9, 19), 11); ?>
+    <span class='noteTxt'><?php echo _('Number of items to display at once'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Alert Bar</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('alertBar', ''); ?></td>
+    <td><b><?php echo _('Alert Bar'); ?></b>:</td>
+    <td><?php echo $form->textField('alertBar', ''); ?></td>
 </tr>
 <tr>
     <td></td>
-    <td><?php echo InstallUtilities::installCheckBoxField('lockScreen', 'Lock screen on idle', 0); ?></td>
+    <td><?php echo $form->checkboxField('lockScreen', _('Lock screen on idle'), 0); ?></td>
 </tr>
 <tr>
-    <td><b>Lock Screen Timeout</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('timeout', 180000); ?>
-    <span class='noteTxt'>Enter timeout in milliseconds. Default: 180000 (3 minutes)</span>
+    <td><b><?php echo _('Lock Screen Timeout'); ?></b>:</td>
+    <td><?php echo $form->textField('timeout', 180000); ?>
+    <span class='noteTxt'><?php echo _('Enter timeout in milliseconds. Default: 180000 (3 minutes)'); ?></span>
     </td>
 </tr>
 <tr><td>
-<b>Footer Modules</b> (left to right):</td><td>
+<b><?php echo _('Footer Modules'); ?></b> <?php echo _('(left to right)'); ?>:</td><td>
 <?php
 $footer_mods = array();
 // get current settings
-$current_mods = $CORE_LOCAL->get("FooterModules");
+$current_mods = CoreLocal::get("FooterModules");
 // replace w/ form post if needed
 // fill in defaults if missing
-if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
+if (is_array(FormLib::get('FOOTER_MODS'))) $current_mods = FormLib::get('FOOTER_MODS');
 elseif(!is_array($current_mods) || count($current_mods) != 5){
-	$current_mods = array(
-	'SavedOrCouldHave',
-	'TransPercentDiscount',
-	'MemSales',
-	'EveryoneSales',
-	'MultiTotal'
-	);
+    $current_mods = array(
+    'COREPOS-pos-lib-FooterBoxes-SavedOrCouldHave',
+    'COREPOS-pos-lib-FooterBoxes-TransPercentDiscount',
+    'COREPOS-pos-lib-FooterBoxes-MemSales',
+    'COREPOS-pos-lib-FooterBoxes-EveryoneSales',
+    'COREPOS-pos-lib-FooterBoxes-MultiTotal'
+    );
 }
-$footer_mods = AutoLoader::listModules('FooterBox');
+$footer_mods = AutoLoader::listModules('COREPOS\\pos\\lib\\FooterBoxes\\FooterBox');
+$footer_mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $footer_mods);
+$current_mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $current_mods);
 for($i=0;$i<5;$i++){
-	echo '<select name="FOOTER_MODS[]">';
-	foreach($footer_mods as $fm){
-		printf('<option %s>%s</option>',
-			($current_mods[$i]==$fm?'selected':''),$fm);
-	}
-	echo '</select><br />';
+    echo '<select name="FOOTER_MODS[]">';
+    foreach($footer_mods as $fm){
+        $match = false;
+        if ($current_mods[$i] == $fm) {
+            $match = true;
+        } elseif (substr($fm, -1*(strlen($current_mods[$i])+1)) == '-' . $current_mods[$i]) {
+            $match = true;
+        }
+        printf('<option %s>%s</option>',
+            ($match?'selected':''),$fm);
+    }
+    echo '</select><br />';
 }
-$saveStr = "array(";
-foreach($current_mods as $m)
-	$saveStr .= "'".$m."',";
-$saveStr = rtrim($saveStr,",").")";
+$current_mods = array_map(function($i){ return str_replace('-', '\\', $i); }, $current_mods);
 InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
 </td></tr>
 <tr>
-    <td><b>Notifier Modules</b>:</td>
+    <td><b><?php echo _('Notifier Modules'); ?></b>:</td>
     <td>
     <?php
     // get current settings
-    $notifiers = AutoLoader::listModules('Notifier');
-    echo InstallUtilities::installSelectField('Notifiers', 
+    $notifiers = AutoLoader::listModules('COREPOS\\pos\\lib\\Notifier');
+    echo $form->selectField('Notifiers', 
         $notifiers, 
         array(), 
-        InstallUtilities::EITHER_SETTING, 
+        Conf::EITHER_SETTING, 
         true, 
         array('size'=>5,'multiple'=>'multiple')
     );
     ?>
-    <span class='noteTxt'>Notifiers are displayed on the right below the scale weight</span>
+    <span class='noteTxt'><?php echo _('Notifiers are displayed on the right below the scale weight'); ?></span>
     </td>
 </tr>
 <tr>
-    <td><b>Enable onscreen keys</b>:</td>
-    <td><?php echo InstallUtilities::installSelectField('touchscreen', array(true=>'Yes', false=>'No'), false); ?></td>
+    <td><b><?php echo _('Enable onscreen keys'); ?></b>:</td>
+    <td><?php echo $form->selectField('touchscreen', array(true=>_('Yes'), false=>_('No')), false); ?></td>
 </tr>
 <tr>
-    <td><b>Separate customer display</b>:</td>
-    <td><?php echo InstallUtilities::installSelectField('CustomerDisplay', array(1=>'Yes', 0=>'No'), 0); ?></td>
+    <td><b><?php echo _('Separate customer display'); ?></b>:</td>
+    <td><?php echo $form->selectField('CustomerDisplay', array(1=>_('Yes'), 0=>_('No')), 0); ?></td>
 </tr>
 <tr>
     <td colspan=2>
-    <p>Touchscreen keys and menus really don't need to appear on
+    <p><?php echo _('Touchscreen keys and menus really don\'t need to appear on
     the customer-facing display. Experimental feature where one
-    window always shows the item listing. Very alpha.</p>
+    window always shows the item listing. Very alpha.'); ?></p>
     </td>
 </tr>
 <tr>
-    <td colspan=2 class="tblHeader"><h3>Subtotal Settings</h3></td>
+    <td colspan=2 class="tblHeader"><h3><?php echo _('Subtotal Settings'); ?></h3></td>
 </tr>
 <!-- Normal/default Yes/True -->
 <tr>
-    <td><b>Member ID trigger subtotal</b>:</td>
-    <td><?php echo InstallUtilities::installSelectField('member_subtotal', array(true=>'Yes', false=>'No'), true); ?></td>
+    <td><b><?php echo _('Member ID trigger subtotal'); ?></b>:</td>
+    <td><?php echo $form->selectField('member_subtotal', array(true=>_('Yes'), false=>_('No')), true); ?></td>
 </tr>
 <tr>
-    <td><b>Subtotal Actions</b></td>
+    <td><b><?php echo _('Subtotal Actions'); ?></b></td>
     <td rowspan="2">
     <?php
-    $mods = AutoLoader::listModules('TotalAction');
-    echo InstallUtilities::installSelectField('TotalActions',
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\TotalActions\\TotalAction');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
+    echo $form->selectField('TotalActions',
         $mods,
         array(),
-        InstallUtilities::EITHER_SETTING,
+        Conf::EITHER_SETTING,
         true,
         array('multiple'=>'multiple', 'size'=>5)
     );
+    CoreLocal::set('TotalActions', array_map(function($i){ return str_replace('-', '\\', $i); }, CoreLocal::get('TotalActions')));
+    InstallUtilities::paramSave('TotalActions', CoreLocal::get('TotalActions'));
     ?>
     </td>
 </tr>
 <tr>
-    <td>These are additional bits of functionality that
-    will occur whenever a transaction is subtotalled.</td>
+    <td><?php echo _('These are additional bits of functionality that
+    will occur whenever a transaction is subtotalled.'); ?></td>
 </tr>
 <tr>
-    <td colspan=2 class="tblHeader"><h3>Tender Settings</h3></td>
+    <td colspan=2 class="tblHeader"><h3><?php echo _('Tender Settings'); ?></h3></td>
 </tr>
 <tr>
-    <td><b>Allow members to write checks over purchase amount</b>: </td>
-    <td><?php echo InstallUtilities::installSelectField('cashOverLimit', array(1=>'Yes',0=>'No'), 0); ?></td>
+    <td><b><?php echo _('Tender min/max limits'); ?></b>: </td>
+    <td><?php echo $form->selectField('TenderHardMinMax', array(1=>_('Absolute Limit'),0=>_('Warning Only')), 0); ?></td>
 </tr>
 <tr>
-    <td><b>Check over limit</b>:</td>
-    <td>$<?php echo InstallUtilities::installTextField('dollarOver', 0); ?></td>
+    <td><b><?php echo _('Allow members to write checks over purchase amount'); ?></b>: </td>
+    <td><?php echo $form->selectField('cashOverLimit', array(1=>_('Yes'),0=>_('No')), 0); ?></td>
 </tr>
 <tr>
-    <td><b>EBT Total Default</b>: </td>
+    <td><b><?php echo _('Check over limit'); ?></b>:</td>
+    <td>$<?php echo $form->textField('dollarOver', 0); ?></td>
+</tr>
+<tr>
+    <td><b><?php echo _('EBT Total Default'); ?></b>: </td>
     <td>
     <?php 
-    $ebtOpts = array(1 => 'Cash Side', 0 => 'Food Side');
-    echo InstallUtilities::installselectField('fntlDefault', $ebtOpts, 1);
+    $ebtOpts = array(1 => _('Cash Side'), 0 => _('Food Side'));
+    echo $form->selectField('fntlDefault', $ebtOpts, 1);
     ?>
     </td>
 </tr>
 <tr>
-    <td><b>Tender Report</b>:</td>
+    <td><b><?php echo _('Tender Report'); ?></b>:</td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('TenderReport');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     sort($mods);
-    echo InstallUtilities::installSelectField('TenderReportMod', $mods, 'DefaultTenderReport');
+    echo $form->selectField('TenderReportMod', $mods, 'COREPOS-pos-lib-ReceiptBuilding-DefaultTenderReport');
+    CoreLocal::set('TenderReportMod', str_replace('-', '\\', CoreLocal::get('TenderReportMod')));
+    InstallUtilities::paramSave('TenderReportMod', CoreLocal::get('TenderReportMod'));
     ?>
     </td>
 </tr>
 <tr><td>
-<b>Tender Mapping</b>:<br />
-<p>Map custom tenders to IS4Cs expected tenders Tender Rpt. column: Include the checked tenders 
-	in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
+<b><?php echo _('Tender Mapping'); ?></b>:<br />
+<p><?php echo _('Map custom tenders to CORE\'s expected tenders Tender Rpt. column: Include the checked tenders 
+    in the Tender Report (available via Mgrs. Menu [MG])'); ?></p></td><td>
 <?php
-$settings = $CORE_LOCAL->get("TenderMap");
-if (!is_array($settings)) $settings = array();
-if (isset($_REQUEST['TenderMapping'])){
-	$saveStr = "array(";
-	$settings = array();
-	foreach($_REQUEST['TenderMapping'] as $tm){
-		if($tm=="") continue;
-		list($code,$mod) = explode(":",$tm);
-		$settings[$code] = $mod;
-		$saveStr .= "'".$code."'=>'".$mod."',";
-	}
-	$saveStr = rtrim($saveStr,",").")";
-	InstallUtilities::paramSave('TenderMap',$settings);
+$settings = CoreLocal::get("TenderMap");
+$db = Database::pDataConnect();
+$tender_table = $db->tableDefinition('tenders');
+/**
+  Load tender map from database if
+  the schema supports it
+*/
+if (isset($tender_table['TenderModule'])) {
+    $model = new \COREPOS\pos\lib\models\op\TendersModel($db);
+    $settings = $model->getMap();
 }
-$mods = AutoLoader::listModules('TenderModule');
+if (!is_array($settings)) $settings = array();
+if (is_array(FormLib::get('TenderMapping'))) {
+    $settings = array();
+    foreach (FormLib::get('TenderMapping') as $tm) {
+        if ($tm=="") {
+            continue;
+        }
+        list($code, $mod) = explode(":", $tm);
+        $settings[$code] = str_replace('-', '\\', $mod);
+    }
+    if (!isset($tender_table['TenderModule'])) {
+        InstallUtilities::paramSave('TenderMap',$settings);
+    } else {
+        /**
+          Save posted mapping to database
+          First update the records where a non-default
+          module is specified, then set everything
+          else to default
+        */
+        $not_default_sql = '';
+        $not_default_args = array();
+        $saveP = $db->prepare('
+            UPDATE tenders
+            SET TenderModule=?
+            WHERE TenderCode=?');
+        foreach ($settings as $code => $module) {
+            $db->execute($saveP, array($module, $code));
+            $not_default_sql .= '?,';
+            $not_default_args[] = $code;
+        }
+        if (count($not_default_args) > 0) {
+            $not_default_sql = substr($not_default_sql, 0, strlen($not_default_sql)-1);
+            $defaultP = $db->prepare('
+                UPDATE tenders
+                SET TenderModule=\'TenderModule\'
+                WHERE TenderCode NOT IN (' . $not_default_sql . ')');
+            $db->execute($defaultP, $not_default_args);
+        } else {
+            $db->query("UPDATE tenders SET TenderModule='TenderModule'");
+        }
+        CoreLocal::set('TenderMap', $settings);
+    }
+}
+$mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Tenders\\TenderModule');
+$mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
 //  Tender Report: Desired tenders column
-$settings2 = $CORE_LOCAL->get("TRDesiredTenders");
+$settings2 = CoreLocal::get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();
-if (isset($_REQUEST['TR_LIST'])){
-	$saveStr2 = "array(";
-	$settings2 = array();
-	foreach($_REQUEST['TR_LIST'] as $dt){
-		if($dt=="") continue;
-		list($code2,$name2) = explode(":",$dt);
-		$settings2[$code2] = $name2;
-		$saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
-	}
-	$saveStr2 = rtrim($saveStr2,",").")";
-	InstallUtilities::paramSave('TRDesiredTenders',$settings2);
+if (is_array(FormLib::get('TR_LIST'))) {
+    $saveStr2 = "array(";
+    $settings2 = array();
+    foreach(FormLib::get('TR_LIST') as $dt){
+        if($dt=="") continue;
+        list($code2,$name2) = explode(":",$dt);
+        $settings2[$code2] = $name2;
+        $saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
+    }
+    $saveStr2 = rtrim($saveStr2,",").")";
+    InstallUtilities::paramSave('TRDesiredTenders',$settings2);
 } //end TR desired tenders
 $db = Database::pDataConnect();
 $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
 ?>
 <table cellspacing="0" cellpadding="4" border="1">
 <?php
-echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
+echo "<thead><tr><th>" . _('Tender Name') . "</th><th>" . _('Map To') . "</th><th>" . _('Tender Rpt') . "</th></tr></thead><tbody>\n";
 while($row = $db->fetch_row($res)){
-	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
-	echo '<td><select name="TenderMapping[]">';
-	echo '<option value="">default</option>';
-	foreach($mods as $m){
-		printf('<option value="%s:%s" %s>%s</option>',
-			$row['TenderCode'],$m,
-			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
-			$m);	
-	}
-	echo '</select></td>';
-	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
-	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
-	if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
-	echo "></td></tr></tbody>";
+    printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
+    echo '<td><select name="TenderMapping[]">';
+    echo '<option value="">' . _('default') . '</option>';
+    foreach($mods as $m){
+        /**
+          Map unnamespaced values to namespaced values
+          so the configuration doesn't break
+        */
+        $selected = false;
+        if (isset($settings[$row['TenderCode']])) {
+            $current = str_replace('\\', '-', $settings[$row['TenderCode']]);
+            if ($current == $m) {
+                $selected = true; // direct match
+            } elseif (substr($m, -1*(strlen($current)+1)) == '-' . $current) {
+                $selected = true; // namespace match
+            }
+        }
+        printf('<option value="%s:%s" %s>%s</option>',
+            $row['TenderCode'],$m,
+            ($selected ? 'selected' : ''),
+            $m);    
+    }
+    echo '</select></td>';
+    echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
+    echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
+    if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
+    echo "></td></tr></tbody>";
 }
 ?>
 </table>
@@ -459,10 +519,10 @@ while($row = $db->fetch_row($res)){
 -->
 
 <tr><td colspan=2 class="submitBtn">
-<input type=submit name=esubmit value="Save Changes" />
+<input type=submit name=esubmit value="<?php echo _('Save Changes'); ?>" />
 </td></tr>
 </table>
 </form>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

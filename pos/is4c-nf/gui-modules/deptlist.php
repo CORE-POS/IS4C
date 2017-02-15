@@ -21,97 +21,144 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class deptlist extends NoInputPage {
-
-	/**
-	  Input processing function
-	*/
-	function preprocess(){
-		global $CORE_LOCAL;
-
-		// a selection was made
-		if (isset($_REQUEST['search'])){
-			$entered = strtoupper($_REQUEST['search']);
-
-			if ($entered == "" || $entered == "CL"){
-				// should be empty string
-				// javascript causes this input if the
-				// user presses CL{enter}
-				// Redirect to main screen
-				$CORE_LOCAL->set("departmentAmount","0");	
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-
-			if (is_numeric($entered)){ 
-				// built department input string and set it
-				// to be the next POS entry
-				// Redirect to main screen
-				$input = $CORE_LOCAL->get("departmentAmount")."DP".$entered."0";
-				$qty = $CORE_LOCAL->get("quantity");
-				if ($qty != "" & $qty != 1 & $qty != 0)
-					$input = $qty."*".$input;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$input);
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-		}
-		return True;
-	} // END preprocess() FUNCTION
-
-	/**
-	  Pretty standard javascript for
-	  catching CL typed in a select box
-	*/
-	function head_content()
+class deptlist extends NoInputCorePage 
+{
+    private function handleInput($entered)
     {
-		?>
+        $entered = strtoupper($entered);
+
+        if ($entered == "" || $entered == "CL"){
+            // should be empty string
+            // javascript causes this input if the
+            // user presses CL{enter}
+            // Redirect to main screen
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return false;
+        }
+
+        if (is_numeric($entered)){ 
+            // built department input string and set it
+            // to be the next POS entry
+            // Redirect to main screen
+            $input = $this->form->in . "DP" . $entered . "0";
+            $qty = CoreLocal::get("quantity");
+            if ($qty != "" & $qty != 1 & $qty != 0) {
+                $input = $qty."*".$input;
+            }
+            $this->change_page(
+                $this->page_url
+                . "gui-modules/pos2.php"
+                . '?reginput=' . $input
+                . '&repeat=1');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+      Input processing function
+    */
+    function preprocess()
+    {
+        try {
+            // a selection was made
+            return $this->handleInput($this->form->search);
+        } catch (Exception $ex) {}
+
+        return true;
+    } // END preprocess() FUNCTION
+
+    /**
+      Pretty standard javascript for
+      catching CL typed in a select box
+    */
+    function head_content()
+    {
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
-	} // END head() FUNCTION
+        <?php
+    } // END head() FUNCTION
 
-	/**
-	  Build a <select> form that submits
-	  back to this script
-	*/
-	function body_content(){
-		global $CORE_LOCAL;
-		$db = Database::pDataConnect();
-		$q = "SELECT dept_no,dept_name FROM departments ORDER BY dept_name";
-		$r = $db->query($q);
+    /**
+      Build a <select> form that submits
+      back to this script
+    */
+    function body_content()
+    {
+        $input = $this->form->tryGet('in');
+        $dbc = Database::pDataConnect();
+        $res = $dbc->query("SELECT dept_no,dept_name FROM departments ORDER BY dept_name");
+        $action = filter_input(INPUT_SERVER, 'PHP_SELF');
 
-		echo "<div class=\"baseHeight\">"
-			."<div class=\"listbox\">"
-			."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
-			." id=\"selectform\">"
-			."<select name=\"search\" id=\"search\" "
-			."size=\"15\" onblur=\"\$('#search').focus();\">";
+        $selected = "selected";
+        $options = '';
+        while ($row = $dbc->fetchRow($res)) {
+            $options .= "<option value='".$row["dept_no"]."' ".$selected.">";
+            // &shy; prevents the cursor from moving out of
+            // step with filter-as-you-type
+            $options .= '&shy; ' . $row['dept_name'];
+            $options .= '</option>';
+            $selected = "";
+        }
+        $touch = CoreLocal::get('touchscreen') ? '<div class="listbox listboxText">' . DisplayLib::touchScreenScrollButtons() . '</div>' : '';
 
-		$selected = "selected";
-		while($row = $db->fetch_row($r)){
-			echo "<option value='".$row["dept_no"]."' ".$selected.">";
-			echo $row['dept_name'];
-			echo '</option>';
-			$selected = "";
-		}
-		echo "</select>"
-			."</form>"
-			."</div>"
-			."<div class=\"listboxText coloredText centerOffset\">"
-			._("clear to cancel")."</div>"
-			."<div class=\"clear\"></div>";
-		echo "</div>";
+        $text = array(
+            'arrows' => _("use arrow keys to navigate"),
+            'ok' => _('OK'),
+            'cancel' => _('Cancel'),
+            'enter' => _('[enter]'),
+            'clear' => _('[clear]'),
+        );
 
-        $this->add_onload_command("selectSubmit('#search', '#selectform')\n");
-		$this->add_onload_command("\$('#search').focus();\n");
-	} // END body_content() FUNCTION
+        echo <<<HTML
+<div class="baseHeight">
+    <form name="selectform" method="post" action="{$action}" id="selectform">
+    <div class="listbox">
+            <select name="search" id="search"
+              style="min-height: 200px; min-width: 220px;"
+              size="15" onblur="$('#search').focus();">";
+                {$options}
+            </select>
+            <div id="filter-div"></div>
+    </div>
+    {$touch}
+    <div class="listboxText coloredText centerOffset">
+            {$text['arrows']}
+            <p><button type="submit" class="pos-button wide-button coloredArea">
+            {$text['ok']} <span class="smaller">{$text['enter']}</span>
+            </button></p>
+            <p><button type="submit" class="pos-button wide-button errorColoredArea"
+                onclick="$('#search').append($('<option>').val(''));$('#search').val('');">
+            {$text['cancel']} <span class="smaller">{$text['clear']}</span>
+            </button></p>
+    </div><!-- /.listboxText coloredText .centerOffset -->
+    <input type="hidden" name="in" value="{$input}" />
+    </form>
+    <div class="clear"></div>
+</div>
+HTML;
 
+        $this->addOnloadCommand("selectSubmit('#search', '#selectform', '#filter-div')\n");
+        $this->addOnloadCommand("\$('#search').focus();\n");
+    } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $phpunit->assertEquals(false, $this->handleInput(''));
+        $phpunit->assertEquals(false, $this->handleInput('CL'));
+        $this->form->in = '';
+        $phpunit->assertEquals(false, $this->handleInput('7'));
+        $phpunit->assertEquals(true, $this->handleInput('z'));
+        ob_get_clean();
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new deptlist();
+AutoLoader::dispatch();
 
-?>

@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -20,19 +20,37 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+use COREPOS\Fannie\API\lib\Store;
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
+
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+$edit = FannieAuth::validateUserQuiet('ordering_edit');
+if (Store::getIdByIp() == 2 || $edit || FannieConfig::config('SO_UI') === 'bootstrap') {
+    $url = 'NewSpecialOrdersPage.php';
+    if (isset($_REQUEST['card_no'])) {
+        $url .= sprintf('?card_no=%d', $_REQUEST['card_no']);
+    }
+    header('Location: ' . $url);
+    return;
+}
+if (!function_exists('checkLogin')) {
+    include($FANNIE_ROOT.'auth/login.php');
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
 
-include($FANNIE_ROOT.'auth/login.php');
 $username = checkLogin();
 if (!$username){
     $url = $FANNIE_URL."auth/ui/loginform.php";
     $rd = $FANNIE_URL."ordering/clearinghouse.php";
     header("Location: $url?redirect=$rd");
-    exit;
+    return;
 }
 
 
@@ -86,6 +104,13 @@ $status = array(
     5 => "Arrived"
 );
 
+$stores = array(
+    0 => 'All',
+    1 => 'Hillside',
+    2 => 'Denfeld',
+);
+$myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
+
 $assignments = array();
 $q = "SELECT superID,super_name FROM MasterSuperDepts
     GROUP BY superID,super_name ORDER BY superID";
@@ -105,10 +130,18 @@ while($w = $dbc->fetch_row($r)){
 $f1 = (isset($_REQUEST['f1']) && $_REQUEST['f1'] !== '')?(int)$_REQUEST['f1']:'';
 $f2 = (isset($_REQUEST['f2']) && $_REQUEST['f2'] !== '')?$_REQUEST['f2']:'';
 $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
+$f4 = (isset($_REQUEST['f4']) && $_REQUEST['f4'] !== '')?$_REQUEST['f4']:$myStore;
 
 $filterstring = "";
 if ($f1 !== ''){
     $filterstring = sprintf("WHERE statusFlag=%d",$f1);
+}
+if ($f4) {
+    if (empty($filterstring)) {
+        $filterstring .= sprintf(' WHERE o.storeID=%d ', $f4);
+    } else {
+        $filterstring .= sprintf(' AND o.storeID=%d ', $f4);
+    }
 }
 
 echo '<a href="index.php">Main Menu</a>';
@@ -139,6 +172,7 @@ foreach($assignments as $k=>$v){
     printf("<option %s value=\"%d\">%s</option>",
         ($k==$f2?'selected':''),$k,$v);
 }
+printf('<option %s value="20">Spices</option>',($f2=="20"?'selected':''));
 printf('<option %s value="2%%2C8">Meat+Cool</option>',($f2=="2,8"?'selected':''));
 echo '</select>';
 echo '&nbsp;';
@@ -146,6 +180,13 @@ echo '<b>Supplier</b>: <select id="f_3" onchange="refilter();">';
 foreach($suppliers as $v){
     printf("<option %s>%s</option>",
         ($v===$f3?'selected':''),$v);
+}
+echo '</select>';
+echo '&nbsp;';
+echo '<b>Store</b>: <select id="f_4" onchange="refilter();">';
+foreach($stores as $k => $v){
+    printf("<option %s value=\"%s\">%s</option>",
+        ($k==$f4?'selected':''),$k, $v);
 }
 echo '</select>';
 echo '<hr />';
@@ -168,10 +209,12 @@ $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
     o.subStatus AS sub_status,
     CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
     MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
-    MAX(p.card_no) AS card_no
+    MAX(p.card_no) AS card_no,
+    MAX(s.description) AS storeName
     FROM {$TRANS}PendingSpecialOrder as p
         LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
         LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
+        LEFT JOIN Stores AS s ON o.storeID=s.storeID
     $filterstring
     GROUP BY p.order_id,statusFlag,subStatus
     HAVING 
@@ -189,9 +232,10 @@ while($w = $dbc->fetch_row($r)){
 
 if ($f2 !== '' || $f3 !== ''){
     $filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR o.noteSuperID IN (%s))",$f2,$f2):'');
+    $supers = ($f2 !== '' ? 'superdepts' : 'MasterSuperDepts');
     $filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
     $q = "SELECT p.order_id FROM {$TRANS}PendingSpecialOrder AS p
-        LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+        LEFT JOIN {$supers} AS m ON p.department=m.dept_ID
         LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
         WHERE 1=1 $filter2 $filter3
         GROUP BY p.order_id";
@@ -264,6 +308,7 @@ $ret = '<form id="pdfform" action="tagpdf.php" method="get">';
 $ret .= sprintf('<table cellspacing="0" cellpadding="4" border="1">
     <tr>
     <th><a href="" onclick="resort(\'%s\');return false;">Order Date</a></th>
+    <th><a href="" onclick="resort(\'%s\');return false;">Store</a></th>
     <th><a href="" onclick="resort(\'%s\');return false;">Name</a></th>
     <th>Desc</th>
     <th>Supplier</th>
@@ -272,6 +317,7 @@ $ret .= sprintf('<table cellspacing="0" cellpadding="4" border="1">
     <th><a href="" onclick="resort(\'%s\');return false;">Status</a></th>
     <th>Printed</th>',
     base64_encode("min(datetime)"),
+    base64_encode("MAX(s.description)"),
     base64_encode("CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END"),
     base64_encode("sum(total)"),
     base64_encode("count(*)-1"),
@@ -286,6 +332,7 @@ foreach($orders as $w){
     if (!isset($valid_ids[$w['order_id']])) continue;
 
     $ret .= sprintf('<tr class="%s"><td><a href="view.php?orderID=%d&k=%s">%s</a></td>
+        <td>%s</td>
         <td><a href="" onclick="applyMemNum(%d);return false;">%s</a></td>
         <td style="font-size:75%%;">%s</td>
         <td style="font-size:75%%;">%s</td>
@@ -293,6 +340,7 @@ foreach($orders as $w){
         ($w['charflag']=='P'?'arrived':'notarrived'),
         $w['order_id'],$key,
         array_shift(explode(' ',$w['orderDate'])),
+        $w['storeName'],
         $w['card_no'],$w['name'],
         (isset($items[$w['order_id']])?$items[$w['order_id']]:'&nbsp;'),
         (isset($suppliers[$w['order_id']])?$suppliers[$w['order_id']]:'&nbsp;'),
@@ -321,8 +369,9 @@ function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
     var f3 = $('#f_3').val();
+    var f4 = $('#f_4').val();
 
-    var loc = 'clearinghouse.php?f1='+f1+'&f2='+f2+'&f3='+f3;
+    var loc = 'clearinghouse.php?f1='+f1+'&f2='+f2+'&f3='+f3+'&f4='+f4;
     if ($('#cardno').length!=0)
         loc += '&card_no='+$('#cardno').val();
     if ($('#orderSetting').length!=0)
@@ -342,25 +391,24 @@ function applyMemNum(n){
 }
 function updateStatus(oid,val){
     $.ajax({
-    url: 'ajax-calls.php',
+    url: 'OrderAjax.php',
     type: 'post',
-    data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
+    data: 'id='+oid+'&status='+val,
+    dataType: 'json',
     cache: false,
     success: function(resp){
-        $('#statusdate'+oid).html(resp);    
+        $('#statusdate'+oid).html(resp.tdate);
     }
     });
 }
 function togglePrint(username,oid){
     $.ajax({
-    url: 'ajax-calls.php',
-    type: 'post',
-    data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
-    cache: false,
-    success: function(resp){}
+        url: 'OrderViewPage.php',
+        type: 'post',
+        data: 'orderID='+oid+'&togglePrint=1',
+        cache: false
     });
 }
 </script>
 <?php
 //include($FANNIE_ROOT.'src/footer.html');
-?>

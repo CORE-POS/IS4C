@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning;
+use \ReflectionClass;
+
 /**
   @class SpecialDept
 
@@ -36,12 +39,19 @@ class SpecialDept
     */
     public $help_summary = 'Documentation Needed!';
 
+    protected $session;
+
+    public function __construct($session)
+    {
+        $this->session = $session;
+    }
+
     /**
       More extensive help text, if needed
     */
     public function help_text()
     {
-        return $help_summary;
+        return $this->help_summary;
     }
     
     /**
@@ -51,7 +61,7 @@ class SpecialDept
       @param $arr a handler map (array)
       @return handler map (array)
     */
-    public function register($deptID,$arr)
+    public function register($deptID, array $arr)
     {
         if (!is_array($arr)) {
             $arr = array();
@@ -82,6 +92,27 @@ class SpecialDept
     public function handle($deptID,$amount,$json)
     {
         return $json;
+    }
+
+    private static $builtin = array(
+        'ArWarnDept',
+        'AutoReprintDept',
+        'BottleReturnDept',
+        'EquityEndorseDept',
+        'EquityWarnDept',
+        'PaidOutDept',
+    );
+
+    public static function factory($class)
+    {
+        if ($class != '' && in_array($class, self::$builtin)) {
+            $class = 'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\' . $class;
+            return new $class();
+        } elseif ($class != '' && class_exists($class)) {
+            return new $class();
+        }
+
+        return new self();
     }
 }
 

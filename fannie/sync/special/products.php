@@ -1,1 +1,1 @@
-generic.mysql.php
+products.multi.php

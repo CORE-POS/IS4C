@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -22,18 +22,22 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
-include('../config.php');
+include(dirname(__FILE__) . '/../config.php'); 
 if (!class_exists('FannieAPI')) {
-         include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-include('util.php');
-include('db.php');
+if (!function_exists('confset')) {
+    include(dirname(__FILE__) . '/util.php');
+}
+if (!function_exists('dropDeprecatedStructure')) {
+    include(dirname(__FILE__) . '/db.php');
+}
 
 /**
     @class InstallMemModDisplayPage
     Class for the MemModDisplay install and config options
 */
-class InstallMemModDisplayPage extends InstallPage {
+class InstallMemModDisplayPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Member Editor Module Display Order';
     protected $header = 'Fannie: Member Editor Module Display Order';
@@ -42,31 +46,12 @@ class InstallMemModDisplayPage extends InstallPage {
     Class for the Member Editor Module Display Order configuration page.
     ";
 
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
-
     function body_content(){
         global $FANNIE_MEMBER_MODULES;
         ob_start();
 
         $parent = 'InstallMembershipPage.php';
         echo showLinkUp('Back to Membership',"$parent",'');
-
-        echo "<h1 class='install'>{$this->header}</h1>";
 
         // Re-order the modules and report.
         if (isset($_REQUEST['ordering'])){
@@ -87,12 +72,7 @@ class InstallMemModDisplayPage extends InstallPage {
 
         echo "<form action='$self' method='post'>";
 
-        if (is_writable('../config.php')){
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
-        }
-        else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-        }
+        echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
         echo "<hr />";
 
         $num = count($FANNIE_MEMBER_MODULES);
@@ -124,9 +104,13 @@ class InstallMemModDisplayPage extends InstallPage {
     // body_content
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 // InstallMemModDisplayPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

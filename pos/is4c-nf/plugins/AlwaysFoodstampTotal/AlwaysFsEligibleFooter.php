@@ -21,30 +21,35 @@
 
 *********************************************************************************/
 
-class AlwaysFsEligibleFooter extends FooterBox {
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
 
-	public $header_css_class = 'fsLine';
-	public $display_css_class = 'fsLine';
+class AlwaysFsEligibleFooter extends FooterBox 
+{
 
-	function AlwaysFsEligibleFooter() {
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('fntlflag') == 0 && $CORE_LOCAL->get('End') != 1){
-			$CORE_LOCAL->set("fntlflag",1);
-			Database::setglobalvalue("FntlFlag", 1);
-		}
-	}
+    public $header_css_class = 'fsLine';
+    public $display_css_class = 'fsLine';
 
-	function header_content(){
-		global $CORE_LOCAL;
-		return _("FS Eligible");
-	}
+    function __construct() 
+    {
+        if (CoreLocal::get('fntlflag') == 0 && CoreLocal::get('End') != 1){
+            CoreLocal::set("fntlflag",1);
+            Database::setglobalvalue("FntlFlag", 1);
+        }
+    }
 
-	function display_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('End') != 1)
-			return number_format((double)$CORE_LOCAL->get("fsEligible"),2);
-		else
-			return '0.00';
-	}
-		
+    function header_content()
+    {
+        return _("FS Eligible");
+    }
+
+    function display_content()
+    {
+        if (CoreLocal::get('End') != 1)
+            return number_format((double)CoreLocal::get("fsEligible"),2);
+        else
+            return '0.00';
+    }
+        
 }
+

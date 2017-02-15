@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
   @class BigGroupPM
    
@@ -40,25 +46,27 @@
 class BigGroupPM extends PriceMethod 
 {
 
-    function addItem($row,$quantity,$priceObj)
+    public function addItem(array $row, $quantity, $priceObj)
     {
-        global $CORE_LOCAL;
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = $this->session->get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
 
-        $stem = substr($mixMatch,0,10);    
         $sets = 99;
+        $volume = $priceObj->isSale() ? $row['specialquantity'] : $row['quantity'];
+        $mixMatch = $row['mixmatchcode'];
+        $stem = substr($mixMatch,0,10);    
+        $dbt = Database::tDataConnect();
         // count up total sets
-        for($i=0; $i<=$volume; $i++){
+        for($i=0; $i<=($volume-1); $i++){
             $tmp = $stem."_q".$i;
-            if ($volume == $i) $tmp = $stem.'_d';
+            if ($volume-1 == $i) $tmp = $stem.'_d';
 
             $chkQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END) 
                 FROM localtemptrans WHERE mixmatch='$tmp' 
@@ -66,7 +74,8 @@ class BigGroupPM extends PriceMethod
             $chkR = $dbt->query($chkQ);
             $tsets = 0;
             if ($dbt->num_rows($chkR) > 0){
-                $tsets = array_pop($dbt->fetch_row($chkR));
+                $chkW = $dbt->fetchRow($chkR);
+                $tsets = $chkW[0];
             }
             if ($tmp == $mixMatch){
                 $tsets += is_int($quantity)?$quantity:1;
@@ -81,11 +90,13 @@ class BigGroupPM extends PriceMethod
 
         // count existing sets
         $matches = 0;
-        $mQ = "SELECT sum(matched) FROM localtemptrans WHERE
+        $matchQ = "SELECT sum(matched) FROM localtemptrans WHERE
             left(mixmatch,11)='{$stem}_'";
-        $mR = $dbt->query($mQ);
-        if ($dbt->num_rows($mR) > 0)
-            $matches = array_pop($dbt->fetch_row($mR));
+        $matchR = $dbt->query($matchQ);
+        if ($dbt->num_rows($matchR) > 0) {
+            $matchW = $dbt->fetchRow($matchR);
+            $matches = $matchW[0];
+        }
         $sets -= $matches;
 
         // this means the current item
@@ -97,14 +108,12 @@ class BigGroupPM extends PriceMethod
                 else
                     $pricing['discount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
             }
-            else {
-                $pricing['unitPrice'] = $pricing['unitPrice'] - $row['specialgroupprice'];
-            }
 
             TransRecord::addRecord(array(
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],
@@ -121,12 +130,16 @@ class BigGroupPM extends PriceMethod
                 'volDiscType' => ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
                 'volume' => ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
                 'VolSpecial' => ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
-                'mixmatch' => $row['mixmatchcode'],
+                'mixMatch' => $row['mixmatchcode'],
                 'matched' => $sets,
                 'cost' => (isset($row['cost'])?$row['cost']*$quantity:0.00),
                 'numflag' => (isset($row['numflag'])?$row['numflag']:0),
                 'charflag' => (isset($row['charflag'])?$row['charflag']:'')
             ));
+
+            if (!$priceObj->isSale()){
+                TransRecord::addhousecoupon('0', 0, MiscLib::truncate2(-1*$sets*$row['groupprice']), 'SET DISCOUNT');
+            }
         }
         else {
             // not a new set, treat as a regular item
@@ -134,6 +147,7 @@ class BigGroupPM extends PriceMethod
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],
@@ -161,4 +175,3 @@ class BigGroupPM extends PriceMethod
     }
 }
 
-?>

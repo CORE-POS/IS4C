@@ -9,29 +9,29 @@ include('../../db.php');
 
 $id = 0;
 if (isset($_REQUEST["id"])){
-	$id = $_REQUEST["id"];
+    $id = $_REQUEST["id"];
 }
 
 if (isset($_POST["submit"])){
     $tag = new ShelftagsModel($sql);
-	for ($i = 0; $i < count($_POST["upc"]); $i++){
-		$upc = $_POST["upc"][$i];
-		$desc = "";
-		if (isset($_POST["desc"][$i])) $desc = $_POST["desc"][$i];
-		$price = 0;
-		if (isset($_POST["price"][$i])) $price = $_POST["price"][$i];
-		$brand = '';
-		if (isset($_POST["brand"][$i])) $brand = $_POST["brand"][$i];
-		$sku = '';
-		if (isset($_POST["sku"][$i])) $sku = $_POST["sku"][$i];
-		$size = '';
-		if (isset($_POST["size"][$i])) $size = $_POST["size"][$i];
-		$units = '';
-		if (isset($_POST["units"][$i])) $units = $_POST["units"][$i];
-		$vendor = '';
-		if (isset($_POST["vendor"][$i])) $vendor = $_POST["vendor"][$i];
-		$ppo = '';
-		if (isset($_POST["ppo"][$i])) $ppo = $_POST["ppo"][$i];
+    for ($i = 0; $i < count($_POST["upc"]); $i++){
+        $upc = $_POST["upc"][$i];
+        $desc = "";
+        if (isset($_POST["desc"][$i])) $desc = $_POST["desc"][$i];
+        $price = 0;
+        if (isset($_POST["price"][$i])) $price = $_POST["price"][$i];
+        $brand = '';
+        if (isset($_POST["brand"][$i])) $brand = $_POST["brand"][$i];
+        $sku = '';
+        if (isset($_POST["sku"][$i])) $sku = $_POST["sku"][$i];
+        $size = '';
+        if (isset($_POST["size"][$i])) $size = $_POST["size"][$i];
+        $units = '';
+        if (isset($_POST["units"][$i])) $units = $_POST["units"][$i];
+        $vendor = '';
+        if (isset($_POST["vendor"][$i])) $vendor = $_POST["vendor"][$i];
+        $ppo = '';
+        if (isset($_POST["ppo"][$i])) $ppo = $_POST["ppo"][$i];
 
         $tag->id($id);
         $tag->upc($upc);
@@ -44,19 +44,19 @@ if (isset($_POST["submit"])){
         $tag->vendor($vendor);
         $tag->pricePerUnit($ppo);
         $tag->save();
-	}
-	header("Location: index.php");
-	return;
+    }
+    header("Location: index.php");
+    return;
 }
 
 
 echo "<html><head><title>Edit shelftags</title>
 <style type=text/css>
 .one {
-	background: #ffffff;
+    background: #ffffff;
 }
 .two {
-	background: #ffffcc;
+    background: #ffffcc;
 }
 </style></head>";
 
@@ -70,7 +70,7 @@ $c = 1;
 $tags = new ShelftagsModel($sql);
 $tags->id($id);
 foreach($tags->find() as $tag) {
-	echo "<tr class=$class[$c]>";
+    echo "<tr class=$class[$c]>";
     echo "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
     echo "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" size=25 /></td>";
     echo "<td><input type=text name=price[] value=\"" . $tag->normal_price() . "\" size=5 /></td>";
@@ -80,8 +80,8 @@ foreach($tags->find() as $tag) {
     echo "<td><input type=text name=units[] value=\"" . $tag->units() . "\" size=4 /></td>";
     echo "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" size=7 /></td>";
     echo "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" size=10 /></td>";
-	echo "</tr>";
-	$c = ($c+1)%2;
+    echo "</tr>";
+    $c = ($c+1)%2;
 }
 echo "</table>";
 echo "<input type=hidden name=id value=\"$id\" />";
@@ -89,4 +89,3 @@ echo "<input type=submit name=submit value=\"Update Shelftags\" />";
 echo "</form>";
 echo "</html>";
 
-?>

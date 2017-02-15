@@ -21,85 +21,102 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class RefundComment extends NoInputPage {
+class RefundComment extends NoInputCorePage 
+{
+    function preprocess()
+    {
+        try {
+            $input = $this->form->selectlist;
+            $qstr = '';
+            if ($input == "CL" || $input == ''){
+                $this->session->set("refundComment","");
+                $this->session->set("refund",0);
+            } elseif ($input == "Other"){
+                return True;
+            } else {
+                $input = str_replace("'","",$input);
+                $output = $this->session->get("refundComment");
+                $qstr = '?reginput=' . urlencode($output) . '&repeat=1';
 
-	function preprocess(){
-		global $CORE_LOCAL;
-		if (isset($_REQUEST["selectlist"])){
-			$input = $_REQUEST["selectlist"];
-			if ($input == "CL"){
-				$CORE_LOCAL->set("msgrepeat",0);
-				$CORE_LOCAL->set("strRemembered","");
-				$CORE_LOCAL->set("refundComment","");
-			}
-			else if ($input == "Other"){
-				return True;
-			}
-			else {
-				$input = str_replace("'","",$input);
-				$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("refundComment"));
-				// add comment calls additem(), which wipes
-				// out refundComment; save it
-				TransRecord::addcomment("RF: ".$input);
-				$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strRemembered"));
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("refund",1);
-			}
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		return True;
-	}
-	
-	function head_content(){
-		?>
+                // add comment calls additem(), which wipes
+                // out refundComment; save it
+                TransRecord::addcomment("RF: ".$input);
+                $this->session->set("refundComment", $output);
+                $this->session->set("refund",1);
+            }
+            $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
+            return false;
+        } catch (Exception $ex) {}
+
+        return true;
+    }
+    
+    function head_content(){
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
-	} // END head() FUNCTION
+        <?php
+    } // END head() FUNCTION
 
-	function body_content() {
-		global $CORE_LOCAL;
-		?>
-		<div class="baseHeight">
-		<div class="centeredDisplay colored">
-		<span class="larger">reason for refund</span>
-		<form name="selectform" method="post" 
-			id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-		<?php
-		if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') {
-		?>
-			<input type="text" id="selectlist" name="selectlist" 
-				onblur="$('#selectlist').focus();" />
-		<?php
-		}
-		else {
-		?>
-			<select name="selectlist" id="selectlist"
-				onblur="$('#selectlist').focus();">
-			<option>Overcharge</option>
-			<option>Spoiled</option>
-			<option>Did not Need</option>
-			<option>Did not Like</option>
-			<option>Other</option>
-			</select>
-		<?php
-            $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-		}
-		?>
-		</form>
-		<p>
-		<span class="smaller">[clear] to cancel</span>
-		</p>
-		</div>
-		</div>	
-		<?php
-		$this->add_onload_command("\$('#selectlist').focus();\n");
-		//if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
-	} // END body_content() FUNCTION
+    function body_content() 
+    {
+        ?>
+        <div class="baseHeight">
+        <div class="centeredDisplay colored rounded">
+        <span class="larger"><?php echo _('reason for refund'); ?></span>
+        <form name="selectform" method="post" 
+            id="selectform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+        <?php
+        if ($this->form->tryGet('selectlist') == 'Other') {
+        ?>
+            <input type="text" id="selectlist" name="selectlist" 
+                onblur="$('#selectlist').focus();" />
+        <?php
+        } else {
+            $stem = MiscLib::baseURL() . 'graphics/';
+        ?>
+            <?php if ($this->session->get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollDown('#selectlist');">
+                <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+            </button>
+            <?php } ?>
+            <select name="selectlist" id="selectlist"
+                onblur="$('#selectlist').focus();">
+            <option><?php echo _('Overcharge'); ?></option>
+            <option><?php echo _('Spoiled'); ?></option>
+            <option><?php echo _('Did not Need'); ?></option>
+            <option><?php echo _('Did not Like'); ?></option>
+            <option><?php echo _('Other'); ?></option>
+            </select>
+            <?php if ($this->session->get('touchscreen')) { ?>
+            <button type="button" class="pos-button coloredArea"
+                onclick="scrollUp('#selectlist');">
+                <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+            </button>
+            <?php } ?>
+        <?php
+            $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
+        }
+        ?>
+        <p>
+            <button class="pos-button" type="submit"><?php echo _('Select [enter]'); ?></button>
+            <button class="pos-button" type="submit" 
+                onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+                <?php echo _('Cancel [clear]'); ?>
+            </button>
+        </p>
+        </div>
+        </form>
+        </div>    
+        <?php
+        $this->addOnloadCommand("\$('#selectlist').focus();\n");
+    } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new RefundComment();
-?>
+AutoLoader::dispatch();
+

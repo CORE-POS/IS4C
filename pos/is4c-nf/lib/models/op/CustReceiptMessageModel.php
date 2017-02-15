@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class CustReceiptMessageModel
 */
@@ -34,54 +37,25 @@ class CustReceiptMessageModel extends BasicModel
     'card_no' => array('type' => 'INT', 'index'=>true),
     'msg_text' => array('type'=>'VARCHAR(255)'),
     'modifier_module' => array('type'=>'VARCHAR(50)'),
-	);
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function card_no()
+    );
+    
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["card_no"] = func_get_arg(0);
-        }
-    }
+        return '
+Use:
+Create member-specific messages for
+receipts.
 
-    public function msg_text()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["msg_text"])) {
-                return $this->instance["msg_text"];
-            } elseif(isset($this->columns["msg_text"]["default"])) {
-                return $this->columns["msg_text"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["msg_text"] = func_get_arg(0);
-        }
+- card_no is the member number
+- msg_text is the message itself
+- modifier_module is [optionally] the name
+  of a class that should be invoked
+  to potentially modify the message.
+  An equity message, for example, might
+  use a modifier module to check and see
+  if payment was made in the current 
+  transaction
+        ';
     }
-
-    public function modifier_module()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["modifier_module"])) {
-                return $this->instance["modifier_module"];
-            } elseif(isset($this->columns["modifier_module"]["default"])) {
-                return $this->columns["modifier_module"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["modifier_module"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

@@ -14,3 +14,6 @@ in the top level pointing at a particular version
 of a library. When these symlinks are provided, pages
 should use the symlink URLs to avoid rewrites if
 the underlying javascript libraries are upgraded.
+
+Files in the composer-components directory are installed
+via PHP's package management tool, composer.

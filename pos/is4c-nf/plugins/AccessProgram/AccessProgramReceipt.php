@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
+
 class AccessProgramReceipt extends ReceiptMessage 
 {
 
@@ -36,7 +40,7 @@ class AccessProgramReceipt extends ReceiptMessage
         if ($val == 0) {
             return '';
         }
-        $msg = _('WFC is offering to its Owners an Access Discount for a once a month 10% discount on one total purchase when an Owner chooses to apply that discount.  The Access Discount is a use it or lose it once a month benefit only for Owners who register annually at Customer Service by presenting proof of participation (e.g., a current card or current award letter) in an applicable program.');
+        $msg = _('WFC is offering to its Owners an Access Discount for a 10% discount on all eligible items.  The Access Discount is available only for Owners who register annually at Customer Service by presenting proof of participation (e.g., a current card or current award letter) in an applicable program.');
         $msg = wordwrap($msg, 50, "\n");
         $only = ReceiptLib::bold() . 'only' . ReceiptLib::unbold();
         $annually = ReceiptLib::bold() . 'annually' . ReceiptLib::unbold();
@@ -48,33 +52,19 @@ class AccessProgramReceipt extends ReceiptMessage
 
     public function standalone_receipt($ref, $reprint=false)
     {
-        global $CORE_LOCAL;
-
         list($emp, $reg, $trans) = explode('-', $ref, 3);
 
         $ret = 'Date of Application: ' . date('M d, Y') . "\n";
-        $ret .= 'Owner Name: ' . $CORE_LOCAL->get('fname')
-                . ' ' . $CORE_LOCAL->get('lname')
-                . ', Owner No.: ' . $CORE_LOCAL->get('memberID') . "\n";
+        $ret .= 'Owner Name: ' . CoreLocal::get('fname')
+                . ' ' . CoreLocal::get('lname')
+                . ', Owner No.: ' . CoreLocal::get('memberID') . "\n";
 
         $ret .= "\n";
         $ret .= ReceiptLib::centerString(str_repeat('_', 30)) . "\n";
         $ret .= ReceiptLib::centerString('Owner Signature') . "\n";
 
-        if ($CORE_LOCAL->get('standalone') == 0) {
-            $db_name = $CORE_LOCAL->get('ServerOpDB');
-            $db = Database::mDataConnect();
-            $query = 'SELECT street, zip, phone, email_1, email_2
-                      FROM ' . $db_name . $db->sep() . 'meminfo
-                      WHERE card_no = ' . ((int)$CORE_LOCAL->get('memberID'));
-            $result = $db->query($query);
-            if ($db->num_rows($result) > 0) {
-                $row = $db->fetch_row($result);
-                $ret .= _('Owner Address: ') . str_replace("\n", ", ", $row['street']) . "\n";
-                $ret .= _('Zip Code: ') . $row['zip'] . "\n";
-                $ret .= _('Owner Phone(s): ') . $row['phone'] . ' ' . $row['email_2'] . "\n";
-                $ret .= _('Owner Email: ') . $row['email_1'] . "\n";
-            }
+        if (CoreLocal::get('standalone') == 0) {
+            $ret .= $this->memAddress();
         }
 
         $ret .= "\n";
@@ -85,7 +75,7 @@ class AccessProgramReceipt extends ReceiptMessage
         $ret .= ReceiptLib::centerString(str_repeat('_', 30)) . "\n";
         $ret .= ReceiptLib::centerString('Manager Signature') . "\n";
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         $query = sprintf('SELECT MAX(numflag) FROM localtemptrans
                         WHERE upc=\'ACCESS\'
                             AND emp_no=%d
@@ -95,12 +85,32 @@ class AccessProgramReceipt extends ReceiptMessage
         if ($reprint) {
             $query = str_replace('localtemptrans', 'localtranstoday', $query);
         }
-        $result = $db->query($query);
-        if ($db->num_rows($result) > 0) {
-            $row = $db->fetch_row($result);
+        $result = $dbc->query($query);
+        if ($dbc->num_rows($result) > 0) {
+            $row = $dbc->fetch_row($result);
             if ($row[0] != 0) {
                 $ret .= 'Program No: ' . $row[0] . "\n";
             }
+        }
+
+        return $ret;
+    }
+
+    private function memAddress()
+    {
+        $db_name = CoreLocal::get('ServerOpDB');
+        $ret = '';
+        $dbc = Database::mDataConnect();
+        $query = 'SELECT street, zip, phone, email_1, email_2
+                  FROM ' . $db_name . $dbc->sep() . 'meminfo
+                  WHERE card_no = ' . ((int)CoreLocal::get('memberID'));
+        $result = $dbc->query($query);
+        if ($dbc->num_rows($result) > 0) {
+            $row = $dbc->fetch_row($result);
+            $ret .= _('Owner Address: ') . str_replace("\n", ", ", $row['street']) . "\n";
+            $ret .= _('Zip Code: ') . $row['zip'] . "\n";
+            $ret .= _('Owner Phone(s): ') . $row['phone'] . ' ' . $row['email_2'] . "\n";
+            $ret .= _('Owner Email: ') . $row['email_1'] . "\n";
         }
 
         return $ret;

@@ -3,7 +3,7 @@
 
     Copyright 2011 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,74 +30,88 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SubdeptImportPage extends FannieUploadPage {
-
+class SubdeptImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Sub-Departments";
+
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
 
     public $description = '[Subdepartment Import] loads subdept data from a spreadsheet.';
 
     protected $preview_opts = array(
         'sn' => array(
-            'name' => 'sn',
             'display_name' => 'SubDept #',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Name',
             'default' => 1,
-            'required' => True
+            'required' => true
         ),
         'dn' => array(
-            'name' => 'dn',
             'display_name' => 'Dept #',
             'default' => 2,
-            'required' => True
+            'required' => true
         )
     );
 
-    function process_file($linedata){
+    private $stats = array('imported'=>0, 'errors'=>array());
+
+    public function process_file($linedata, $indexes)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $sn_index = $this->get_column_index('sn');
-        $desc_index = $this->get_column_index('desc');
-        $dn_index = $this->get_column_index('dn');
-
-        $insP = $dbc->prepare_statement("INSERT INTO subdepts (subdept_no,subdept_name,dept_ID)
+        $insP = $dbc->prepare("INSERT INTO subdepts (subdept_no,subdept_name,dept_ID)
                     VALUES (?,?,?)");
 
-        foreach($linedata as $line){
+        foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $dept_no = $line[$dn_index];
-            $desc = $line[$desc_index];
-            $subdept_no = $line[$sn_index];
+            $dept_no = $line[$indexes['dn']];
+            $desc = $line[$indexes['desc']];
+            $subdept_no = $line[$indexes['sn']];
 
             if (!is_numeric($subdept_no)) continue; // skip header/blank rows
 
             if (strlen($desc) > 30) $desc = substr($desc,0,30);
 
-            $insR = $dbc->exec_statement($insP,array($subdept_no,$desc,$dept_no));
+            $insR = $dbc->execute($insP,array($subdept_no,$desc,$dept_no));
+            if ($insR) {
+                $this->stats['imported']++;
+            } else {
+                $this->stats['errors'][] = 'Error importing sub department #' . $subdept_no;
+            }
         }
-        return True;
+
+        return true;
     }
     
     function form_content(){
-        return '<fieldset><legend>Instructions</legend>
+        return '<div class="well"><legend>Instructions</legend>
         Upload a CSV or XLS file containing subdept numbers, names, and what department
         number they belong to.
         <br />A preview helps you to choose and map spreadsheet fields to the database.
         <br />The uploaded file will be deleted after the load.
-        </fieldset><br />';
+        </div><br />';
     }
 
-    function results_content(){
-        return 'Import completed successfully';
+    function results_content()
+    {
+        return $this->simpleStats($this->stats);
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array(999, 'test subdept', 1);
+        $indexes = array('sn'=>0, 'desc'=>1, 'dn'=>2);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

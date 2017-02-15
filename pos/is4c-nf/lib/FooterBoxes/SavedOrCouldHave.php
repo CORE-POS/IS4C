@@ -21,34 +21,33 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+
 class SavedOrCouldHave extends FooterBox 
 {
-
     public $display_css = "font-weight:bold;font-size:150%;";
     public $display_css_class = 'coloredText';
 
     public function header_content()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get("isMember") == 1) {
+        if ($this->session->get("isMember") == 1) {
             return _("You Saved");
-        } else {
-            return _("Could Have Saved");
         }
+
+        return _("Could Have Saved");
     }
 
     public function display_content()
     {
-        global $CORE_LOCAL;
-        $saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
-        $memSaleTTL = is_numeric($CORE_LOCAL->get("memSpecial")) ? number_format($CORE_LOCAL->get("memSpecial"),2) : "0.00";
+        $saleTTL = (is_numeric($this->session->get("discounttotal"))) ? number_format($this->session->get("discounttotal"),2) : "0.00";
+        $memSaleTTL = is_numeric($this->session->get("memSpecial")) ? number_format($this->session->get("memSpecial"),2) : "0.00";
 
-        if ($CORE_LOCAL->get("isMember") == 1) {
-            return number_format($CORE_LOCAL->get("transDiscount") +
+        if ($this->session->get("isMember") == 1) {
+            return number_format($this->session->get("transDiscount") +
                 $saleTTL + $memSaleTTL, 2);    
-        } else {
-            return $memSaleTTL;
         }
+
+        return $memSaleTTL;
     }
 }
 

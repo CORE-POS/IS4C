@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,61 +21,46 @@
 
 *********************************************************************************/
 
-class MemDates extends MemberModule {
+class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
 
-    function showEditForm($memNum, $country="US"){
-        global $FANNIE_URL;
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
 
-        $dbc = $this->db();
-        
-        $infoQ = $dbc->prepare_statement("SELECT start_date,end_date
-                FROM memDates
-                WHERE card_no=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-        $infoW = $dbc->fetch_row($infoR);
+    function showEditForm($memNum, $country="US")
+    {
+        $account = self::getAccount();
 
-        $ret = "<fieldset class='memOneRow'><legend>Membership Dates</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Dates</div>
+            <div class=\"panel-body\">";
 
-        $ret .= "<tr><th>Start Date</th>";
-        $ret .= sprintf('<td><input name="MemDates_start" size="10"
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<span class="label primaryBackground">Start</span>';
+        $ret .= sprintf(' <input name="MemDates_start"
                 maxlength="10" value="%s" id="MemDates_start"
-                /></td>',$infoW['start_date']); 
-        $ret .= "<th>End Date</th>";
-        $ret .= sprintf('<td><input name="MemDates_end" size="10"
+                class="form-control date-field" /> ',
+                \COREPOS\Fannie\API\lib\FannieUI::formatDate($account['startDate'])); 
+        $ret .= '<span class="label primaryBackground">End</span>';
+        $ret .= sprintf(' <input name="MemDates_end" 
                 maxlength="10" value="%s" id="MemDates_end"
-                /></td></tr>',$infoW['end_date']);  
+                class="form-control date-field" />',
+                \COREPOS\Fannie\API\lib\FannieUI::formatDate($account['endDate'])); 
+        $ret .= '</div>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
 
         return $ret;
     }
 
-    public function getEditLoadCommands()
+    public function saveFormData($memNum, $json=array())
     {
-        return array(
-            "\$('#MemDates_start').datepicker();\n",
-            "\$('#MemDates_end').datepicker();\n",
-        );
-    }
+        $json['startDate'] = FormLib::get('MemDates_start');
+        $json['endDate'] = FormLib::get('MemDates_end');
 
-    function saveFormData($memNum){
-        global $FANNIE_ROOT;
-        $dbc = $this->db();
-        if (!class_exists("MemDatesModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/MemDatesModel.php');
-        
-        $test = MemDatesModel::update($memNum,
-                FormLib::get_form_value('MemDates_start'),
-                FormLib::get_form_value('MemDates_end')
-        );
-
-        if ($test === False)
-            return "Error: problem saving start/end dates<br />";
-        else
-            return "";
+        return $json;
     }
 }
 
-?>

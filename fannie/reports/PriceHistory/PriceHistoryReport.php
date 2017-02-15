@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -36,6 +36,11 @@ class PriceHistoryReport extends FannieReportPage
     protected $required_fields = array();
 
     public $description = '[Price History] shows what prices an item as been assigned over a given time period.';
+    public $themed = true;
+    public $report_set = 'Operational Data';
+
+    protected $sort_column = 3;
+    protected $sort_direction = 1;
 
     /**
       Report has variable inputs so change
@@ -60,9 +65,20 @@ class PriceHistoryReport extends FannieReportPage
         return parent::preprocess();
     }
 
+    public function report_description_content()
+    {
+        if ($this->report_format == 'html') {
+            return array(
+                '',
+                '<a href="../ProductHistory/ProductHistoryReport.php?upc=' . FormLib::get('upc') . '">Full History of this Item</a>',
+            );
+        } else {
+            return array();
+        }
+    }
+
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
         /* provide a department range and date range to
            get history for all products in those departments
            for that time period AND current price
@@ -82,54 +98,96 @@ class PriceHistoryReport extends FannieReportPage
 
         $q = "";
         $args = array();
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
         $type = FormLib::get('type');
         if ($type === '') { // not set
-            $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
-            as h left join products as p on h.upc=p.upc
-              where h.upc = ?
-              order by h.upc,h.modified desc";
+            $q = "
+                SELECT h.upc,
+                    p.description,
+                    price,
+                    h.modified,
+                    p.normal_price 
+                FROM prodPriceHistory AS h 
+                    " . DTrans::joinProducts('h') . "
+                WHERE h.upc = ?
+                ORDER BY h.upc,
+                    h.modified DESC";
             $args = array($upc);
         } else if ($type == 'upc') {
-            $q = "select h.upc,p.description,price,h.modified from prodPriceHistory
-            as h left join products as p on h.upc=p.upc
-              where h.upc = ? and h.modified between ? AND ?
-              order by h.upc,h.modified";
+            $q = "
+                SELECT h.upc,
+                    p.description,
+                    price,
+                    h.modified,
+                    p.normal_price 
+                FROM prodPriceHistory AS h 
+                    " . DTrans::joinProducts('h') . "
+                WHERE h.upc = ?
+                    AND h.modified BETWEEN ? AND ?
+                ORDER BY h.upc,
+                    h.modified DESC";
             $args = array($upc,$start_date.' 00:00:00',$end_date.' 23:59:59');
         } else if ($type == 'department') {
-            $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
-            as h left join products as p on h.upc=p.upc
-              where department between ? and ? and h.modified BETWEEN ? AND ?
-              order by h.upc, h.modified";
+            $q = "
+                SELECT h.upc,
+                    p.description,
+                    price,
+                    h.modified,
+                    p.normal_price 
+                FROM prodPriceHistory AS h 
+                    " . DTrans::joinProducts('h') . "
+                WHERE department BETWEEN ? AND ?
+                    AND h.modified BETWEEN ? AND ?
+                ORDER BY h.upc,
+                    h.modified DESC";
             $args = array($dept1,$dept2,$start_date.' 00:00:00',$end_date.' 23:59:59');
             $upc = ''; // if UPC and dept submitted, unset UPC
         } else {
             if ($mtype == 'upc') {
-                $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
-                    as h left join products as p on h.upc=p.upc
-                    where h.upc like ? and h.modified BETWEEN ? AND ?
-                    order by h.upc,h.modified";
+                $q = "
+                    SELECT h.upc,
+                        p.description,
+                        price,
+                        h.modified,
+                        p.normal_price 
+                    FROM prodPriceHistory AS h 
+                        " . DTrans::joinProducts('h') . "
+                    WHERE h.upc LIKE ?
+                        AND h.modified BETWEEN ? AND ?
+                    ORDER BY h.upc,
+                        h.modified DESC";
                 $args = array('%'.$manu.'%',$start_date.' 00:00:00',$end_date.' 23:59:59');
             } else {
-                $q = "select p.upc,b.description,p.price,p.modified,b.normal_price
-                    from prodPriceHistory as p left join products as x
-                    on p.upc = x.upc left join products as b on
-                    p.upc=b.upc where x.brand ? and
-                    p.modified between ? AND ?
-                    order by p.upc,p.modified";
+                $q = "
+                    SELECT h.upc,
+                        p.description,
+                        price,
+                        h.modified,
+                        p.normal_price 
+                    FROM prodPriceHistory AS h 
+                        " . DTrans::joinProducts('h') . "
+                    WHERE x.brand LIKE ?
+                        AND h.modified BETWEEN ? AND ?
+                    ORDER BY h.upc,
+                        h.modified DESC";
                     $args = array($manu,$start_date.' 00:00:00',$end_date.' 23:59:59');
             }
             $upc = ''; // if UPC and manu submitted, unset UPC
         }
-        $p = $sql->prepare_statement($q);
-        $r = $sql->exec_statement($p,$args);
+        $def = $sql->tableDefinition('prodPriceHistory');
+        if (isset($def['storeID']) && $this->config->get('STORE_ID')) {
+            $q = str_replace('h.upc=p.upc', 'h.upc=p.upc AND h.storeID=p.store_id', $q);
+        }
+        $p = $sql->prepare($q);
+        $r = $sql->execute($p,$args);
 
         if ($upc !== '') {
             $this->report_headers[] = 'Current Price';
         }
 
         $data = array();
-        while ($row = $sql->fetch_array($r)) {
+        while ($row = $sql->fetchRow($r)) {
             $record = array(
                     $row['upc'],
                     $row['description'],
@@ -147,13 +205,13 @@ class PriceHistoryReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
 
-        $deptsQ = $sql->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $sql->exec_statement($deptsQ);
+        $deptsQ = $sql->prepare("select dept_no,dept_name from departments order by dept_no");
+        $deptsR = $sql->execute($deptsQ);
         $deptsList = "";
-        while ($deptsW = $sql->fetch_array($deptsR)) {
+        while ($deptsW = $sql->fetchRow($deptsR)) {
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
         }
         
@@ -161,94 +219,83 @@ class PriceHistoryReport extends FannieReportPage
         ob_start();
         ?>
 <form method=get action="<?php echo $_SERVER['PHP_SELF']; ?>">
-Type: <input type=radio id=radioU name=type value=upc onclick=showUPC() checked /> UPC 
-<input type=radio id=radioD name=type value=department onclick=showDept() /> Department 
-<input type=radio id=radioM name=type value=manufacturer onclick=showManu() /> <?php echo _('Manufacturer'); ?>
-<br />
-
-<div id=upcfields>
-UPC: <input type=text name=upc /><br />
+<input type="hidden" name="type" id="type-field" value="upc" />
+<div class="col-sm-6">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#upc-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('upc'); return false;">UPC</a></li>
+        <li><a href="#dept-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('department'); return false;">Department</a></li>
+        <li><a href="#manu-tab" role="tab"
+            onclick="$(this).tab('show'); $('#type-field').val('manufacturer'); return false;"><?php echo _('Manufacturer'); ?></a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="upc-tab">
+            <label>UPC</label>
+            <input type=text name=upc class="form-control" />
+        </div>
+        <div class="tab-pane" id="dept-tab">
+            <p>
+                <label class="col-sm-3">Start</label>
+                <div class="col-sm-2">
+                    <input type=text id=dept1 name=dept1 class="form-control" />
+                </div>
+                <div class="col-sm-7">
+                    <select onchange="$('#dept1').val(this.value);" class="form-control">
+                    <?php echo $deptsList; ?>
+                    </select>
+                </div>
+            </p>
+            <p>
+                <label class="col-sm-3">End</label>
+                <div class="col-sm-2">
+                    <input type=text id=dept2 name=dept2 class="form-control" />
+                </div>
+                <div class="col-sm-7">
+                    <select onchange="$('#dept2').val(this.value);" class="form-control">
+                    <?php echo $deptsList; ?>
+                    </select>
+                </div>
+            </p>
+        </div>
+        <div class="tab-pane" id="manu-tab">
+            <label><?php echo _('Manufacturer'); ?></label>
+            <input type=text name=manufacturer class="form-control" />
+            <p>
+                <label><input type=radio name=mtype value=upc checked /> UPC prefix</label>
+                <label><input type=radio name=mtype value=name /> <?php echo _('Manufacturer name'); ?></label>
+            </p>
+        </div>
+    </div>
+    <br />
+    <p>
+        <button type=submit name=Submit class="btn btn-default">Submit</button>
+        <label><input type=checkbox name=excel value="xls" /> Excel</label>
+    </p>
 </div>
-
-<div id=departmentfields>
-Department Start: <input type=text id=dept1 size=4 name=dept1 />
-<select id=d1s><?php echo $deptsList; ?></select><br />
-Department End: <input type=text id=dept2 size=4 name=dept2 />
-<select id=d2s><?php echo $deptsList; ?></select><br />
+<div class="col-sm-6">
+    <p>
+        <label>Start Date</label>
+        <input type="text" id="date1" name="date1" class="form-control date-field" required />
+    </p>
+    <p>
+        <label>End Date</label>
+        <input type="text" id="date2" name="date2" class="form-control date-field" required />
+    </p>
+    <p>
+        <?php echo FormLib::dateRangePicker(); ?>
+    </p>
 </div>
-
-<div id=manufacturerfields>
-<?php echo _('Manufacturer'); ?>: <input type=text name=manufacturer /><br />
-<input type=radio name=mtype value=upc checked /> UPC prefix 
-<input type=radio name=mtype value=name /> <?php echo _('Manufacturer name'); ?><br />
-</div>
-
-<table>
-<tr>
-<th>Start Date</th><td><input type=text id=date1 name=date1 /></td>
-<td rowspan="2">
-<?php echo FormLib::dateRangePicker(); ?>
-</td>
-</tr>
-<tr>
-<th>End Date</th><td><input type=text id=date2 name=date2 /></td>
-</table>
-<input type=submit name=Submit /> <input type=checkbox name=excel value="xls" /> Excel
 </form>
         <?php
         return ob_get_clean();
     }
 
-    public function javascript_content()
+    public function helpContent()
     {
-        ob_start();
-        ?>
-function showUPC(){
-    $('#radioU').attr('checked',true);
-    document.getElementById('upcfields').style.display='block';
-    document.getElementById('departmentfields').style.display='none';
-    document.getElementById('manufacturerfields').style.display='none';
-}
-function showDept(){
-    $('#radioD').attr('checked',true);
-    document.getElementById('upcfields').style.display='none';
-    document.getElementById('departmentfields').style.display='block';
-    document.getElementById('manufacturerfields').style.display='none';
-}
-function showManu(){
-    $('#radioM').attr('checked',true);
-    document.getElementById('upcfields').style.display='none';
-    document.getElementById('departmentfields').style.display='none';
-    document.getElementById('manufacturerfields').style.display='block';
-}
-$(document).ready(function(){
-    showUPC();
-    $('#date1').datepicker();
-    $('#date2').datepicker();
-    $('#d1s').change(function(){
-        $('#dept1').val($('#d1s').val());
-    });
-    $('#d2s').change(function(){
-        $('#dept2').val($('#d2s').val());
-    });
-});
-        <?php
-        return ob_get_clean();
-    }
-
-    public function css_content()
-    {
-        ob_start();
-        ?>
-<style type=text/css>
-#departmentfields{
-    display:none;
-}
-#manufacturerfields{
-    display:none;
-}
-        <?php
-        return ob_get_clean();
+        return '<p>
+            List price changes for a given item.
+            </p>';
     }
 }
 

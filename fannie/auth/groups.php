@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -58,13 +58,13 @@ function addGroup($group,$user){
     return false;
   }
 
-  $gidQ = $sql->prepare_statement("select max(gid) from userGroups");
-  $gidR = $sql->exec_statement($gidQ);
-  $row = $sql->fetch_array($gidR);
+  $gidQ = $sql->prepare("select max(gid) from userGroups");
+  $gidR = $sql->execute($gidQ);
+  $row = $sql->fetchRow($gidR);
   $gid = $row[0] + 1;
 
-  $addQ = $sql->prepare_statement("insert into userGroups values (?,?,?)");
-  $addR = $sql->exec_statement($addQ,array($gid,$group,$user));
+  $addQ = $sql->prepare("insert into userGroups values (?,?,?)");
+  $addR = $sql->execute($addQ,array($gid,$group,$user));
   return true;
 }
 
@@ -84,11 +84,11 @@ function deleteGroup($group){
     return false;
   } 
 
-  $delQ = $sql->prepare_statement("delete from userGroupPrivs where gid=?");
-  $delR = $sql->exec_statement($delQ,array($gid));
+  $delQ = $sql->prepare("delete from userGroupPrivs where gid=?");
+  $delR = $sql->execute($delQ,array($gid));
 
-  $delQ = $sql->prepare_statement("delete from userGroups where gid=?");
-  $delR = $sql->exec_statement($delQ,array($gid));
+  $delQ = $sql->prepare("delete from userGroups where gid=?");
+  $delR = $sql->execute($delQ,array($gid));
   return true;  
 }
 
@@ -108,15 +108,15 @@ function addUserToGroup($group,$user){
     return false;
   }
 
-  $checkQ = $sql->prepare_statement("select gid from userGroups where gid=? and username=?");
-  $checkR = $sql->exec_statement($checkQ,array($gid,$user));
+  $checkQ = $sql->prepare("select gid from userGroups where gid=? and username=?");
+  $checkR = $sql->execute($checkQ,array($gid,$user));
   if ($sql->num_rows($checkR) > 0){
     echo "User $user is already a member of group $group<p />";
     return false;
   }
 
-  $addQ = $sql->prepare_statement("insert into userGroups values (?,?,?)");
-  $addR = $sql->exec_statement($addQ,array($gid,$group,$user));
+  $addQ = $sql->prepare("insert into userGroups values (?,?,?)");
+  $addR = $sql->execute($addQ,array($gid,$group,$user));
   return true;
 }
 
@@ -135,8 +135,8 @@ function deleteUserFromGroup($group,$user){
     return false;
   }
 
-  $delQ = $sql->prepare_statement("delete from userGroups where gid = ? and username=?");
-  $delR = $sql->exec_statement($delQ,array($gid,$user));
+  $delQ = $sql->prepare("delete from userGroups where gid = ? and username=?");
+  $delR = $sql->execute($delQ,array($gid,$user));
   return true;
 
 }
@@ -158,8 +158,8 @@ function addAuthToGroup($group,$auth,$start='admin',$end='admin'){
     return false;
   }
   
-  $addQ = $sql->prepare_statement("insert into userGroupPrivs values (?,?,?,?)");
-  $addR = $sql->exec_statement($addQ,array($gid,$auth,$start,$end));
+  $addQ = $sql->prepare("insert into userGroupPrivs values (?,?,?,?)");
+  $addR = $sql->execute($addQ,array($gid,$auth,$start,$end));
   return true;
 }
 
@@ -174,12 +174,12 @@ function checkGroupAuth($user,$auth,$sub='all'){
     return false;
   }
 
-  $checkQ = $sql->prepare_statement("select g.gid  from userGroups as g, userGroupPrivs as p where
+  $checkQ = $sql->prepare("select g.gid  from userGroups as g, userGroupPrivs as p where
              g.gid = p.gid and g.username=?
              and p.auth=? and
              ((? between p.sub_start and p.sub_end) or
              (p.sub_start='all' and p.sub_end='all'))");
-  $checkR = $sql->exec_statement($checkQ,array($user,$auth,$sub));
+  $checkR = $sql->execute($checkQ,array($user,$auth,$sub));
    
   if ($sql->num_rows($checkR) == 0){
     return false;
@@ -205,36 +205,17 @@ function deleteAuthFromGroup($group,$auth){
     return false;  
   }
 
-  $delQ = $sql->prepare_statement("delete from userGroupPrivs where gid=? and auth=?");
-  $delR = $sql->exec_statement($delQ,array($gid,$auth));
-  return true;
-}
-
-/* showGroups()
-   prints a table of all the groups
-*/
-function showGroups(){
-  $sql = dbconnect();
-  
-  $fetchQ = $sql->prepare_statement("select distinct gid, name from userGroups order by name");
-  $fetchR = $sql->exec_statement($fetchQ);
-
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
-  echo "<tr><th>Group ID</th><th>Group Name</th></tr>";
-  while ($row=$sql->fetch_array($fetchR)){
-    echo "<tr><td>$row[0]</td><td>$row[1]</td></tr>";
-  }
-  echo "</table>";
-  
+  $delQ = $sql->prepare("delete from userGroupPrivs where gid=? and auth=?");
+  $delR = $sql->execute($delQ,array($gid,$auth));
   return true;
 }
 
 function getGroupList(){
     $sql = dbconnect();
     $ret = array();
-    $prep = $sql->prepare_statement("SELECT name,gid FROM userGroups 
+    $prep = $sql->prepare("SELECT name,gid FROM userGroups 
             GROUP BY name,gid ORDER BY name");
-    $result = $sql->exec_statement($prep);
+    $result = $sql->execute($prep);
     while($row = $sql->fetch_row($result))
         $ret[$row['gid']] = $row['name'];
     return $ret;
@@ -250,28 +231,28 @@ function detailGroup($group){
   }
 
   $sql = dbconnect();
+  $ret = array(
+    'gid' => 0,
+    'name' => $group,
+    'users' => array(),
+    'auths' => array(),
+  );
   
-  $usersQ = $sql->prepare_statement("select gid,username from userGroups where name=? order by username");
-  $usersR = $sql->exec_statement($usersQ,array($group));
+  $usersQ = $sql->prepare("select gid,username from userGroups where name=? order by username");
+  $usersR = $sql->execute($usersQ,array($group));
   
   $gid = 0;
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
-  echo "<tr><th>Users</th></tr>";
-  while ($row = $sql->fetch_array($usersR)){
-    $gid = $row[0];
-    echo "<tr><td>$row[1]</td></tr>";
+  while ($row = $sql->fetchRow($usersR)){
+    $ret['gid'] = $row[0];
+    $ret['users'][] = $row[1];
   }
-  echo "</table>";
 
-  $authsQ = $sql->prepare_statement("select auth,sub_start,sub_end from userGroupPrivs where gid=? order by auth");
-  $authsR = $sql->exec_statement($authsQ,array($gid));
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
-  echo "<tr><th>Authorization Class</th><th>Subclass start</th><th>Subclass End</th></tr>";
-  while ($row = $sql->fetch_array($authsR)){
-    echo "<tr><td>$row[0]</td><td>$row[1]</td><td>$row[2]</td></tr>";
+  $authsQ = $sql->prepare("select auth,sub_start,sub_end from userGroupPrivs where gid=? order by auth");
+  $authsR = $sql->execute($authsQ,array($ret['gid']));
+  while ($row = $sql->fetchRow($authsR)){
+    $ret['auths'][] = array($row[0], $row[1], $row[2]);
   }
-  echo "</table>";
+
+  return $ret;
 }
 
-
-?>

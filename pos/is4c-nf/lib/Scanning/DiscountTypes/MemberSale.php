@@ -21,12 +21,16 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\DiscountTypes;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 class MemberSale extends DiscountType 
 {
 
-    public function priceInfo($row,$quantity=1)
+    public function priceInfo(array $row, $quantity=1)
     {
-        global $CORE_LOCAL;
         if (is_array($this->savedInfo)) {
             return $this->savedInfo;
         }
@@ -39,12 +43,14 @@ class MemberSale extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - $row['special_price']) * $quantity);
 
-        if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+        if ($this->session->get("isMember") == 1 || (
+            $this->session->get("memberID") == $this->session->get("visitingMem") && $this->session->get('visitingMem') !== ''
+            )) {
             $ret["unitPrice"] = $row['special_price'];
         }
 
-        if ($row['line_item_discountable'] == 1 && $CORE_LOCAL->get("itemPD") > 0) {
-            $discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemPD")/100));
+        if ($row['line_item_discountable'] == 1 && $this->session->get("itemPD") > 0) {
+            $discount = $ret['unitPrice'] * (($this->session->get("itemPD")/100));
             $ret["unitPrice"] -= $discount;
             $ret["discount"] += ($discount * $quantity);
         }
@@ -57,8 +63,7 @@ class MemberSale extends DiscountType
 
     public function addDiscountLine()
     {
-        global $CORE_LOCAL;    
-        if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+        if ($this->session->get("isMember") == 1 || $this->session->get("memberID") == $this->session->get("visitingMem")) {
             TransRecord::adddiscount($this->savedInfo['memDiscount'],
                 $this->savedRow['department']);
         }

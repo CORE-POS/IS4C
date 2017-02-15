@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,14 +22,15 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__) . '/classlib2.0/FannieAPI.php');
+}
 
 /**
   @class SaHandheldPage
 */
 class SaOrderingPage extends FanniePage 
 {
-    protected $window_dressing = False;
     private $section=0;
     private $current_item_data=array();
     private $linea_ios_mode = False;
@@ -37,6 +38,9 @@ class SaOrderingPage extends FanniePage
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Ordering] lists information about recent item sales
     and purchases to assist in ordering.';
+    public $themed = true;
+    protected $title = 'ShelfAudit Ordering Info';
+    protected $header = '';
 
     private function linea_support_available(){
         global $FANNIE_ROOT;
@@ -51,8 +55,8 @@ class SaOrderingPage extends FanniePage
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_TRANS_DB;
 
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+        //$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        //$this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
 
         if (FormLib::get('upc_in') !== '') {
             $upc = BarcodeLib::padUPC(FormLib::get('upc_in'));
@@ -127,7 +131,7 @@ class SaOrderingPage extends FanniePage
                             INNER JOIN vendors AS v ON o.vendorID=v.vendorID
                         WHERE i.internalUPC = ?
                         ORDER BY o.placedDate DESC';
-            $ordersQ = $dbc->add_select_limit($ordersQ, 10);
+            $ordersQ = $dbc->addSelectLimit($ordersQ, 10);
             $ordersP = $dbc->prepare($ordersQ);
             $ordersR = $dbc->execute($ordersP, array($upc));
             $orders = array();
@@ -158,7 +162,7 @@ class SaOrderingPage extends FanniePage
         }
         $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
         $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
-        $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+        //$this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
         
         return true;
     }
@@ -239,19 +243,15 @@ ScannerDevice.registerListener(Device);
     function body_content(){
         ob_start();
         $elem = '#upc_in';
+        $this->add_onload_command('$(\'#upc_in\').focus();');
         ?>
-<html>
-<head>
-    <title>Order Info</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
+<body onload="$('<?php echo $elem; ?>').focus();">
 <form action="SaOrderingPage.php" method="get" id="upcScanForm">
 <div style="float: left;">
 <a href="SaMenuPage.php">Menu</a><br />
 <b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
 onfocus="paint_focus('upc_in');"
-<?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
+<?php echo ($elem=='#upc_in')?'class="nfocused"':''; ?> 
 />
 </div>
 <div style="float: left;">
@@ -351,6 +351,7 @@ onfocus="paint_focus('upc_in');"
                 $this->add_onload_command('$(\'#tabs\').tabs();');
             }
         }
+
         return ob_get_clean();
     }
 }

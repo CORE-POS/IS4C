@@ -4,137 +4,139 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-$EMP_NO = 1001;
-$LANE_NO = 30;
-$OFFSET_DEPT = 703;
-
-class WfcAbandonEquityImport extends FannieUploadPage 
+class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage 
 {
+    public $page_set = 'Plugin :: WfcAbandonEquity';
+    public $description = '[Import Abandoned Equity] to debit balances and mark members inactive.';
 
     protected $preview_opts = array(
         'card_no' => array(
-            'name' => 'card_no',
             'display_name' => 'Mem#',
             'default' => 0,
             'required' => true
         ),
         'classA' => array(
-            'name' => 'classA',
             'display_name' => 'Class A',
             'default' => 1,
             'required' => true
         ),
         'classB' => array(
-            'name' => 'classB',
             'display_name' => 'Class B',
             'default' => 2,
             'required' => true
         ),
         'note' => array(
-            'name' => 'note',
             'display_name' => 'Note',
             'default' => 4,
-            'required' => false
         )
     );
 
     protected $header = 'Abandoned Equity';
     protected $title = 'Abandoned Equity';
 
-    function process_file($linedata)
+    private function getMember($dbc, $card_no)
     {
-        global $OFFSET_DEPT, $FANNIE_OP_DB, $FANNIE_TRANS_DB, $EMP_NO, $LANE_NO;
-        $card_no = $this->get_column_index('card_no');
-        $classA = $this->get_column_index('classA');
-        $classB = $this->get_column_index('classB');
-        $note = $this->get_column_index('note');
+        $custdata = new CustdataModel($dbc);
+        $custdata->CardNo($card_no);
+        $custdata->personNum(1);
+        $custdata->load();
+
+        $meminfo = new MeminfoModel($dbc);
+        $meminfo->card_no($card_no);
+        $meminfo->load();
+
+        return array($custdata, $meminfo);
+    }
+
+    private function suspendAccount($dbc, $custdata, $meminfo)
+    {
+        $now = date('Y-m-d H:i:s');
+        $susp = new SuspensionsModel($dbc);
+        $susp->cardno($custdata->CardNo());
+        $susp->load();
+        $susp->type('T');
+        $susp->memtype1($custdata->memType());
+        $susp->memtype2($custdata->Type());
+        $susp->suspDate($now);
+        $susp->discount($custdata->Discount());
+        $susp->chargelimit($custdata->ChargeLimit());
+        $susp->mailflag($meminfo->ads_OK());
+        $susp->reasoncode(64);
+        $susp->save();
+
+        $suspHistory = new SuspensionHistoryModel($dbc);
+        $suspHistory->username('abandon-import');
+        $suspHistory->postdate($now);
+        $suspHistory->cardno($custdata->CardNo());
+        $suspHistory->reasoncode(64);
+        $suspHistory->save();
+    }
+
+    private function termAccount($dbc, $card_no, $custdata, $meminfo)
+    {
+        $meminfo->ads_OK(0);
+        $meminfo->save();
+
+        $custdata->reset();
+        $custdata->CardNo($card_no);
+        foreach ($custdata->find() as $obj) {
+            $obj->Type('TERM');
+            $obj->memType(0);
+            $obj->Discount(0);
+            $obj->ChargeLimit(0);
+            $obj->MemDiscountLimit(0);
+            $obj->save();
+        }
+    }
+
+    private function saveNote($dbc, $card_no, $note)
+    {
+        $now = date('Y-m-d H:i:s');
+        $memNote = new MemberNotesModel($dbc);
+        $memNote->cardno($card_no);
+        $memNote->note($note);
+        $memNote->stamp($now);
+        $memNote->username('abandon-import');
+        $memNote->save();
+    }
+
+    public function process_file($linedata, $indexes)
+    {
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $EMP_NO = $this->config->get('EMP_NO');
+        $LANE_NO = $this->config->get('REGISTER_NO');
+        $OFFSET_DEPT = $this->config->get('MISC_DEPT');
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $dtrans_table = $FANNIE_TRANS_DB.$dbc->sep().'dtransactions';
-        $prep = $dbc->prepare('SELECT MAX(trans_no) as tn FROM '.$dtrans_table.' 
-                            WHERE emp_no=? AND register_no=?');
-        $result = $dbc->execute($prep, array($EMP_NO, $LANE_NO));
-        $trans = 1;
-        if ($dbc->num_rows($result) > 0) {
-            $row = $dbc->fetch_row($result);
-            if ($row['tn'] != '') {
-                $trans = $row['tn'] + 1;
-            }
-        }
+        $trans = DTrans::getTransNo($dbc, $EMP_NO, $LANE_NO);
+        foreach ($linedata as $data) {
 
-        foreach($linedata as $data) {
-
-            if (!isset($data[$card_no])) {
+            if (!isset($data[$indexes['card_no']])) {
                 continue;
-            } elseif (!is_numeric($data[$card_no])) {
+            } elseif (!is_numeric($data[$indexes['card_no']])) {
                 continue;
             }
 
-            $cn = trim($data[$card_no]);
-            $a_amt = trim($data[$classA], '$ ');
-            $b_amt = trim($data[$classB], '$ ');
+            $card_no = trim($data[$indexes['card_no']]);
+            $a_amt = trim($data[$indexes['classA']], '$ ');
+            $b_amt = trim($data[$indexes['classB']], '$ ');
             $offset_amt = $a_amt + $b_amt;
             if ($offset_amt == 0) {
                 continue;
             }
 
-            $now = date('Y-m-d H:i:s');
+            list($custdata, $meminfo) = $this->getMember($dbc, $card_no);
+            $this->suspendAccount($dbc, $custdata, $meminfo);
+            $this->termAccount($dbc, $card_no, $custdata, $meminfo);
 
-            $custdata = new CustdataModel($dbc);
-            $custdata->CardNo($cn);
-            $custdata->personNum(1);
-            $custdata->load();
-
-            $meminfo = new MeminfoModel($dbc);
-            $meminfo->card_no($cn);
-            $meminfo->load();
-
-            $susp = new SuspensionsModel($dbc);
-            $susp->cardno($cn);
-            $susp->load();
-            $susp->type('T');
-            $susp->memtype1($custdata->memType());
-            $susp->memtype2($custdata->Type());
-            $susp->suspDate($now);
-            $susp->discount($custdata->Discount());
-            $susp->chargelimit($custdata->ChargeLimit());
-            $susp->mailflag($meminfo->ads_OK());
-            $susp->reasoncode(64);
-            $susp->save();
-
-            $suspHistory = new SuspensionHistoryModel($dbc);
-            $suspHistory->username('abandon-import');
-            $suspHistory->postdate($now);
-            $suspHistory->cardno($cn);
-            $suspHistory->reasoncode(64);
-            $suspHistory->save();
-
-            $meminfo->ads_OK(0);
-            $meminfo->save();
-
-            $custdata->reset();
-            $custdata->CardNo($cn);
-            foreach($custdata->find() as $obj) {
-                $obj->Type('TERM');
-                $obj->memType(0);
-                $obj->Discount(0);
-                $obj->ChargeLimit(0);
-                $obj->MemDiscountLimit(0);
-                $obj->save();
-            }
-
-            if (isset($data[$note]) && !empty($data[$note])) {
-                $memNote = new MemberNotesModel($dbc);
-                $memNote->cardno($cn);
-                $memNote->note($data[$note]);
-                $memNote->stamp($now);
-                $memNote->username('abandon-import');
-                $memNote->save();
+            if (isset($data[$indexes['note']]) && !empty($data[$indexes['note']])) {
+                $this->saveNote($dbc, $card_no, $data[$indexes['note']]);
             }
 
             $trans_id = 1;
             if ($a_amt > 0) {
-                $record = DTrans::$DEFAULTS;
+                $record = DTrans::defaults();
                 $record['register_no'] = $LANE_NO;
                 $record['emp_no'] = $EMP_NO;
                 $record['trans_no'] = $trans;
@@ -145,7 +147,7 @@ class WfcAbandonEquityImport extends FannieUploadPage
                 $record['unitPrice'] = -1*$a_amt;
                 $record['total'] = -1*$a_amt;
                 $record['regPrice'] = -1*$a_amt;
-                $record['card_no'] = $cn;
+                $record['card_no'] = $card_no;
                 $record['trans_id'] = $trans_id;
                 $trans_id++;
 
@@ -154,7 +156,7 @@ class WfcAbandonEquityImport extends FannieUploadPage
                 $dbc->execute($prep, $info['arguments']);
             }
             if ($b_amt > 0) {
-                $record = DTrans::$DEFAULTS;
+                $record = DTrans::defaults();
                 $record['register_no'] = $LANE_NO;
                 $record['emp_no'] = $EMP_NO;
                 $record['trans_no'] = $trans;
@@ -165,7 +167,7 @@ class WfcAbandonEquityImport extends FannieUploadPage
                 $record['unitPrice'] = -1*$b_amt;
                 $record['total'] = -1*$b_amt;
                 $record['regPrice'] = -1*$b_amt;
-                $record['card_no'] = $cn;
+                $record['card_no'] = $card_no;
                 $record['trans_id'] = $trans_id;
                 $trans_id++;
 
@@ -174,7 +176,7 @@ class WfcAbandonEquityImport extends FannieUploadPage
                 $dbc->execute($prep, $info['arguments']);
             }
 
-            $record = DTrans::$DEFAULTS;
+            $record = DTrans::defaults();
             $record['register_no'] = $LANE_NO;
             $record['emp_no'] = $EMP_NO;
             $record['trans_no'] = $trans;
@@ -185,7 +187,7 @@ class WfcAbandonEquityImport extends FannieUploadPage
             $record['unitPrice'] = $offset_amt;
             $record['total'] = $offset_amt;
             $record['regPrice'] = $offset_amt;
-            $record['card_no'] = $cn;
+            $record['card_no'] = $card_no;
             $record['trans_id'] = $trans_id;
             $trans_id++;
 
@@ -193,7 +195,7 @@ class WfcAbandonEquityImport extends FannieUploadPage
             $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
             $dbc->execute($prep, $info['arguments']);
 
-            $record = DTrans::$DEFAULTS;
+            $record = DTrans::defaults();
             $record['register_no'] = $LANE_NO;
             $record['emp_no'] = $EMP_NO;
             $record['trans_no'] = $trans;
@@ -201,7 +203,7 @@ class WfcAbandonEquityImport extends FannieUploadPage
             $record['description'] = '63350';
             $record['trans_type'] = 'C';
             $record['trans_subtype'] = 'CM';
-            $record['card_no'] = $cn;
+            $record['card_no'] = $card_no;
             $record['trans_id'] = $trans_id;
 
             $info = DTrans::parameterize($record, 'datetime', $dbc->now());
@@ -216,12 +218,12 @@ class WfcAbandonEquityImport extends FannieUploadPage
 
     function results_content()
     {
-        return 'Import complete';
+        return '<p>Import complete</p>';
     }
 
     function form_content()
     {
-        return 'Upload abandoned equity spreadsheet';
+        return '<p>Upload abandoned equity spreadsheet</p>';
     }
 }
 

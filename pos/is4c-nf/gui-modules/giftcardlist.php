@@ -21,53 +21,72 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class giftcardlist extends NoInputPage {
+class giftcardlist extends NoInputCorePage 
+{
 
-	function preprocess(){
-		global $CORE_LOCAL;
-		if (isset($_REQUEST["selectlist"])){
-			$CORE_LOCAL->set("prefix",$_REQUEST["selectlist"]);
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		return True;
-	}
-	
-	function head_content(){
-		?>
+    function preprocess()
+    {
+        try {
+            $this->session->set("prefix",$this->form->selectlist);
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return false;
+        } catch (Exception $ex) {}
+
+        return true;
+    }
+    
+    function head_content(){
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
+        <?php
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
-		$this->add_onload_command("\$('#selectlist').focus();\n");
-	} // END head() FUNCTION
+        $this->add_onload_command("\$('#selectlist').focus();\n");
+    } // END head() FUNCTION
 
-	function body_content() {
-		global $CORE_LOCAL;
-		?>
-		<div class="baseHeight">
-		<div class="centeredDisplay colored">
-		<span class="larger">gift card transaction</span>
-		<form name="selectform" method="post" id="selectform"
-			action="<?php echo $_SERVER['PHP_SELF']; ?>">
-		<select id="selectlist" name="selectlist" 
-			onblur="$('#selectlist').focus()">
-		<option value="">Sale
-		<option value="AC">Activate
-		<option value="AV">Add Value
-		<option value="PV">Balance
-		</select>
-		</form>
-		<p>
-		<span class="smaller">[clear] to cancel</span>
-		</p>
-		</div>
-		</div>
-		<?php
-	} // END body_content() FUNCTION
+    function body_content() 
+    {
+        $stem = MiscLib::baseURL() . 'graphics/';
+        ?>
+        <div class="baseHeight">
+        <div class="centeredDisplay colored rounded">
+        <span class="larger"><?php echo _('gift card transaction'); ?></span>
+        <form name="selectform" method="post" id="selectform"
+            action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <?php if ($this->session->get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollDown('#selectlist');">
+            <img src="<?php echo $stem; ?>down.png" width="16" height="16" />
+        </button>
+        <?php } ?>
+        <select id="selectlist" name="selectlist" 
+            onblur="$('#selectlist').focus()">
+        <option value=""><?php echo _('Sale'); ?>
+        <option value="AC"><?php echo _('Activate'); ?>
+        <option value="AV"><?php echo _('Add Value'); ?>
+        <option value="PV"><?php echo _('Balance'); ?>
+        </select>
+        <?php if ($this->session->get('touchscreen')) { ?>
+        <button type="button" class="pos-button coloredArea"
+            onclick="scrollUp('#selectlist');">
+            <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
+        </button>
+        <?php } ?>
+        <p>
+            <button class="pos-button" type="submit"><?php echo _('Select [enter]'); ?></button>
+            <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
+                <?php echo _('Cancel [clear]'); ?>
+            </button>
+        </p>
+        </div>
+        </form>
+        </div>
+        <?php
+    } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new giftcardlist();
-?>
+AutoLoader::dispatch();
+

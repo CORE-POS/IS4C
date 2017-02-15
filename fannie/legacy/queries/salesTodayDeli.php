@@ -35,9 +35,8 @@ echo "<center><h1>Today's <span style=\"color:green;\">Deli</span> Sales!</h1>";
 echo "<table>";
 echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";
 while($row1 = $sql->fetch_row($result1,'is4c_op')){
-	echo "<tr><td>".$row1[0]."</td><td>".$row1[1]." (".round($row1[1]/$row1[2]*100,2)."%)</td></tr>";
+    echo "<tr><td>".$row1[0]."</td><td>".$row1[1]." (".round($row1[1]/$row1[2]*100,2)."%)</td></tr>";
 }
 echo "<tr><th width=60px align=left>Total</th><td>$row2[0] (".round($row2[0]/$row2[1]*100,2)."%)</td></tr>";
 echo "</table>";
 
-?>

@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
-if (!class_exists('LocalTransModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+/*
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
+*/
 
 /**
   @class LocalTempTransModel
 */
-class LocalTempTransModel extends LocalTransModel
+class LocalTempTransModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
 {
 
     protected $name = "localtemptrans";
@@ -38,11 +43,21 @@ class LocalTempTransModel extends LocalTransModel
     public function __construct($con)
     {
         $this->columns['trans_id']['increment'] = true;
+        $this->columns['trans_id']['index'] = true;
 
         parent::__construct($con);
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+    public function doc()
+    {
+        return '
+Use:
+Stores current transaction data. See 
+dtransactions for detailed information on
+the columns. The only notable difference
+is this table has an automatically incremented
+trans_id column.
+        ';
+    }
 }
 

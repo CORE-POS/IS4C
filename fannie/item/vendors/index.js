@@ -20,115 +20,124 @@
 
 *********************************************************************************/
 
-function vendorchange(){
-	var vID = $('#vendorselect').val();
+var vendorEditor = (function($) {
 
-	if (vID == ''){
-		$('#contentarea').html('');	
-		return;
-	}
+    var mod = {};
 
-	if (vID == 'new'){
-		var content = "<b>New vendor name</b>: ";
-		content += "<input type=text id=\"newname\" />";
-		content += "<p />";
-		content += "<input type=submit value=\"Create vendor\" ";
-		content += "onclick=\"newvendor(); return false;\" />";
-		$('#contentarea').html(content);
-		return;
-	}
+    mod.vendorNew = function(){
+        var content = "<b>New vendor name</b>: ";
+        content += "<input class=\"form-control\" type=text id=\"newname\" />";
+        content += "<p />";
+        content += "<input type=submit value=\"Create vendor\" class=\"btn btn-default\" ";
+        content += "onclick=\"vendorEditor.newvendor(); return false;\" />";
+        $('#contentarea').html(content);
+    };
 
-	$.ajax({
-		url: 'VendorIndexPage.php',
-		type: 'POST',
-		timeout: 5000,
-		data: 'vid='+vID+'&action=vendorDisplay',
-		error: function(){
-		alert('Error loading XML document');
-		},
-		success: function(resp){
-			$('#contentarea').html(resp);
-            $('.delivery').change(saveDelivery);
-		}
-	});
-}
-
-function saveDelivery()
-{
-    var data = $('.delivery').serialize();
-	var vid = $('#vendorselect').val();
-    $.ajax({
-        url: 'VendorIndexPage.php',
-        data: 'action=saveDelivery&vID='+vid+'&'+data,
-        method: 'post',
-        dataType: 'json',
-        success: function(resp){
+    mod.saveDelivery = function() {
+        var data = $('.delivery').serialize();
+        var vid = $('#vendorselect').val();
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            data: 'delivery=1&vID='+vid+'&'+data,
+            method: 'post',
+            dataType: 'json'
+        }).done(function(resp){
             if (resp.next && resp.nextNext) {
                 $('#nextDelivery').html(resp.next);
                 $('#nextNextDelivery').html(resp.nextNext);
             }
+        });
+    };
+
+    mod.newvendor = function(){
+        var name = $('#newname').val();
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            type: 'POST',
+            timeout: 5000,
+            data: 'name='+name+'&new=1'
+        }).fail(function(){
+            window.alert('Error loading XML document');
+        }).done(function(){
+            window.top.location='VendorIndexPage.php?vid='+resp;
+        });
+    };
+
+    mod.saveVC = function(vendorID) {
+        var dataStr = $('#vcForm').serialize() + '&vendorID=' + vendorID + '&info=1';
+
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            method: 'post',
+            data: dataStr,
+            dataType: 'json'
+        }).done(function(resp){
+            var elem = $('<div></div>');
+            elem.addClass('alert');
+            elem.addClass('alert-dismissable');
+            if (resp.error) {
+                elem.addClass('alert-danger');
+            } else {
+                elem.addClass('alert-success');
+            }
+            var btn = $('<button type="button" class="close" data-dismiss="alert"></button>');
+            btn.append('<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>');
+            elem.append(btn);
+            elem.append(resp.msg);
+            $('.form-alerts').append(elem);
+        });
+    };
+
+    mod.saveShipping = function(s) {
+        var dstr = 'id='+$('#vendorselect').val()+'&shipping='+s;
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            method: 'post',
+            data: dstr,
+            dataType: 'json'
+        }).done(function(resp) {
+            var elem = $('#vc-shipping');
+            showBootstrapPopover(elem, 0, resp.error);
+        });
+    };
+
+    mod.saveDiscountRate = function(s) {
+        var dstr = 'id='+$('#vendorselect').val()+'&rate='+s;
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            method: 'post',
+            data: dstr,
+            dataType: 'json'
+        }).done(function(resp) {
+            var elem = $('#vc-discount');
+            showBootstrapPopover(elem, 0, resp.error);
+        });
+    };
+
+    mod.toggleActive = function(obj, vid) {
+        var dstr = 'id=' + vid;
+        if ($(obj).prop('checked')) {
+            dstr += '&inactive=0';
+        } else {
+            dstr += '&inactive=1';
         }
-    });
-}
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            method: 'post',
+            data: dstr
+        });
+    };
 
-function newvendor(){
-	var name = $('#newname').val();
-	$.ajax({
-		url: 'VendorIndexPage.php',
-		type: 'POST',
-		timeout: 5000,
-		data: 'name='+name+'&action=newVendor',
-		error: function(){
-		alert('Error loading XML document');
-		},
-		success: function(resp){
-			top.location='VendorIndexPage.php?vid='+resp;
-		}
-	});
-}
+    mod.saveAutoOrder = function(vid) {
+        $.ajax({
+            url: 'VendorIndexPage.php',
+            method: 'post',
+            data: 'id='+vid+'&'+$('.auto-order').serialize()
+        }).done(function(resp) {
+        });
+    };
 
-function editSaveVC(vendorID){
-	if ($('#vcPhoneEdit').length == 0)
-		editVC(vendorID);
-	else
-		saveVC(vendorID);
-}
+    return mod;
 
-function editVC(vendorID){
-	var phone = $('#vcPhone').html();
-	$('#vcPhone').html('<input type="text" id="vcPhoneEdit" value="'+phone+'" />');
+}(jQuery));
 
-	var fax = $('#vcFax').html();
-	$('#vcFax').html('<input type="text" id="vcFaxEdit" value="'+fax+'" />');
-
-	var email = $('#vcEmail').html();
-	$('#vcEmail').html('<input type="text" id="vcEmailEdit" value="'+email+'" />');
-
-	var web = $('#vcWebsite').html();
-	$('#vcWebsite').html('<input type="text" id="vcWebsiteEdit" value="'+web+'" />');
-
-	var notes = $('#vcNotes').html();
-	$('#vcNotes').html('<br /><textarea rows="5" cols="35" id="vcNotesEdit">'+notes+'</textarea>');
-
-	$('#vcEditSave').html('Save Contact Info');
-	$('#vcPhoneEdit').focus();
-}
-
-function saveVC(vendorID){
-	var dataStr = 'vendorID='+vendorID;
-	dataStr += '&phone='+$('#vcPhoneEdit').val();
-	dataStr += '&fax='+$('#vcFaxEdit').val();
-	dataStr += '&email='+$('#vcEmailEdit').val();
-	dataStr += '&website='+$('#vcWebsiteEdit').val();
-	dataStr += '&notes='+$('#vcNotesEdit').val();
-	dataStr += '&action=saveContactInfo';
-
-	$.ajax({
-		url: 'VendorIndexPage.php',
-		method: 'post',
-		data: dataStr,
-		success: function(resp){
-			$('#contentarea').html(resp);
-		}
-	});
-}

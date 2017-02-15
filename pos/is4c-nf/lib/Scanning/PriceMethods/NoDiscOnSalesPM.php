@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /** 
    @class NoDiscOnSalePM
 
@@ -32,7 +37,8 @@
 
 class NoDiscOnSalesPM extends PriceMethod {
 
-    function addItem($row,$quantity,$priceObj){
+    public function addItem(array $row, $quantity, $priceObj)
+    {
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
@@ -41,6 +47,7 @@ class NoDiscOnSalesPM extends PriceMethod {
             'upc' => $row['upc'],
             'description' => $row['description'],
             'trans_type' => 'I',
+            'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
             'department' => $row['department'],
             'quantity' => $quantity,
             'unitPrice' => $pricing['unitPrice'],
@@ -67,4 +74,3 @@ class NoDiscOnSalesPM extends PriceMethod {
     }
 }
 
-?>

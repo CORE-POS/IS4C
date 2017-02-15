@@ -29,25 +29,29 @@
   in the variable $CORE_LOCAL.
 */
 
-$elog = realpath(dirname(__FILE__).'/../../log/').'/php-errors.log';
+$elog = realpath(dirname(__FILE__).'/../../log/').'/debug_lane.log';
 ini_set('error_log',$elog);
+//ini_set('display_errors', false);
 
-$LOCAL_STORAGE_MECHANISM = 'SessionStorage';
+$LOCAL_STORAGE_MECHANISM = 'COREPOS\\pos\\lib\\LocalStorage\\SessionStorage';
 
 if (!class_exists($LOCAL_STORAGE_MECHANISM)) {
-    include(realpath(dirname(__FILE__).'/'.$LOCAL_STORAGE_MECHANISM.".php"));
+    include(__DIR__ . '/SessionStorage.php');
 }
+if (!class_exists('CoreLocal')) {
+    include(__DIR__ . '/CoreLocal.php');
+}
+if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\WrappedStorage')) {
+    include(__DIR__ . '/WrappedStorage.php');
+}
+CoreLocal::setHandler($LOCAL_STORAGE_MECHANISM);
 
-$CORE_LOCAL = new $LOCAL_STORAGE_MECHANISM();
+$CORE_LOCAL = new COREPOS\pos\lib\LocalStorage\WrappedStorage();
 global $CORE_LOCAL;
 
-/**
-  Settings in ini.php are (or should be) immutable. They're not
-  necessarily saved in the session or session replacement mechanism.
-  Include these settings every time.
-*/
-if (file_exists(dirname(__FILE__).'/../../ini.php')) {
-    include_once(realpath(dirname(__FILE__).'/../../ini.php'));
-}
+// this includes ini.php
+CoreLocal::refresh();
 
-?>
+if (!defined('CONF_LOADED')) {
+    define('CONF_LOADED', true);
+}

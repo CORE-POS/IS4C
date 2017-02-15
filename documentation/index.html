@@ -13,6 +13,9 @@
 	font-size: 1.5em;
 	font-weight: 700;
 }
+.wikified {
+    color: red;
+}
 </style>
 </head>
 <body>
@@ -36,7 +39,7 @@ Rudimentary ToC to /IS4C/documentation
 20Oct12 EL Add Fannie > End User > House Coupons section and link to explainify.
 .          In Fannie > Dev add links to Auth API, Auth README
 -->
-<br />as of: May 17, 2014
+<br />as of: November 3, 2014
 </div>
 
 <p>You are here: Documentation Top
@@ -69,8 +72,8 @@ Rudimentary ToC to /IS4C/documentation
 		<ul>
 			<li><a href="Fannie/developer/index.html" target="_Fdev">Developer Menu</a>
 				<ul>
-                    <li><a href="coding-standards.html" target="_Fd_coding">Coding Standards &amp; Style Guide</a></li>
-					<li><a href="Fannie/developer/installation.html" target="_Fd_installation">Installation</a>
+                    <li><a href="coding-standards.html" class="wikified" target="_Fd_coding">Coding Standards &amp; Style Guide</a></li>
+					<li><a href="Fannie/developer/installation.html" class="wikified" target="_Fd_installation">Installation</a>
 						<ul id="" class="detail">
 							<li>Pre-requisites</li>
 							<li>Installing Fannie
@@ -90,25 +93,25 @@ Rudimentary ToC to /IS4C/documentation
 							</b></li>
 						</ul>
 					</li>
-					<li><a href="Fannie/developer/plugins/index.html" target="_Fplugindev">Plugin Developer</a>
+					<li><a href="Fannie/developer/plugins/index.html" class="wikified" target="_Fplugindev">Plugin Developer</a>
 						<ul id="" class="detail">
 							<li>Defining a Plugin</li>
 							<li>Creating a Page</li>
 							<li>Database Best Practices</li>
 						</ul>
 					</li>
-					<li><a href="Fannie/developer/porting.html" target="_Fplugindev">Porting from other versions of Fannie</a>
+					<li><a href="Fannie/developer/porting.html" class="wikified" target="_Fplugindev">Porting from other versions of Fannie</a>
 					</li>
 					<li><a href="Fannie/developer/index-core.html" target="_Fcpdev">CORE Project Developer</a>
 						<ul>	
-						<li><a href="Fannie/developer/framework.html" target="_Fd_framework">Framework Requirements/Theory</a>
+						<li><a href="Fannie/developer/framework.html" class="wikified" target="_Fd_framework">Framework Requirements/Theory</a>
 							<ul id="" class="detail">
 								<li>[On rules]</li>
 								<li>One configuration file</li>
 								<li>Database Best Practices</li>
 							</ul>
 						</li>
-						<li><a href="Fannie/developer/auth.html" target="_Fd_auth">Authentication System</a>
+						<li><a href="Fannie/developer/auth.html" class="wikified" target="_Fd_auth">Authentication System</a>
 							<ul id="" class="detail">
 								<li>[The current situation]</li>
 								<li>Authenticating users</li>
@@ -129,7 +132,7 @@ Rudimentary ToC to /IS4C/documentation
 										<li>Usage</li>
 									</ul>
 							</li>
-								<li><a href="../fannie/auth/README.php" target="_Fd_auth_readme">Andy's Fannie Authentication Module README</a>
+								<li><a href="../fannie/auth/README" target="_Fd_auth_readme">Andy's Fannie Authentication Module README</a>
 									<ul id="" class="detail">
 										<li>Disabling Authentication</li>
 										<li>Installation / Setup</li>
@@ -137,18 +140,25 @@ Rudimentary ToC to /IS4C/documentation
 								</li>
 							</ul>
 						</li>
-						<li><a href="Fannie/developer/cron.html" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
+						<li><a href="Fannie/developer/bootstrap-ui.html" class="wikified" target="_Fd_cron">Using Bootstrap with Fannie</a></li>
+							<ul id="" class="detail">
+								<li>Forms</li>
+								<li>Tables</li>
+								<li>Alerts</li>
+							</ul>
+						</li>
+						<li><a href="Fannie/developer/cron.html" class="wikified" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
 							<ul id="" class="detail">
 								<li>[Overview]</li>
 								<li>Example</li>
 							</ul>
 						</li>
-						<li><a href="Fannie/developer/db-creation.html" target="_Fd_dbc">Creating Tables and Views</a>
+						<li><a href="Fannie/developer/db-creation.html" class="wikified" target="_Fd_dbc">Creating Tables and Views</a>
 							<ul id="" class="detail">
 								<li>[It is done in install/index.php]</li>
 							</ul>
 						</li>
-						<li><a href="Fannie/developer/db-alteration.html" target="_Fd_dba">Altering Tables and Views</a>
+						<li><a href="Fannie/developer/db-alteration.html" class="wikified" target="_Fd_dba">Altering Tables and Views</a>
 							<ul id="" class="detail">
 								<li>[Using the install/updates directory</li>
 							</ul>
@@ -169,7 +179,7 @@ Rudimentary ToC to /IS4C/documentation
 			<li><a href="Fannie/end-user/index.html" target="_Fend-user">Fannie End-user (Administrator) Menu</a>
 				<ul>
 
-					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">Data Loading</a>
+					<li><a href="Fannie/end-user/data-loading.html" class="wikified" target="_Fe_dl">Data Loading</a>
 						<ul id="" class="detail">
 							<li>Members</li>
 							<li>Employees</li>
@@ -177,7 +187,7 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Tax Rates</li>
 						</ul>
 					</li>
-					<li><a href="Fannie/end-user/departments.html" target="_Fe_departments">Departments</a>
+					<li><a href="Fannie/end-user/departments.html" class="wikified" target="_Fe_departments">Departments</a>
 						<ul id="" class="detail">
 							<li>Departments</li>
 							<li>Super Departments</li>
@@ -186,18 +196,26 @@ Rudimentary ToC to /IS4C/documentation
 					</li>
 					<li>House Coupons
 						<ul id="">
+							<li><a href="../fannie/modules/plugins2.0/HouseCoupon/explainify_2.html"
+										target="_Fe_hc_explain2">Introduction</a>
+								<ul id="" class="detail">
+									<li>Introduction</li>
+									<li>Setup</li>
+									<li>Terms and options</li>
+								</ul>
+							</li>
 							<li><a href="../fannie/modules/plugins2.0/HouseCoupon/explainify.html"
 										target="_Fe_hc_explain">Explanation of terms and options</a>
 								<ul id="" class="detail">
 									<li>Simple ones</li>
 									<li>Required Purchases</li>
-									<li>Disount Types</li>
+									<li>Discount Types</li>
 								</ul>
 							</li>
 						</ul>
 					</li>
 
-					<li><a href="Fannie/end-user/members.html" target="_Fe_members">Members</a>
+					<li><a href="Fannie/end-user/members.html" class="wikified" target="_Fe_members">Members</a>
 						<ul id="" class="detail">
 							<li>Membership Types</li>
 							<li>Membership-related Settings</li>
@@ -206,7 +224,7 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Back to Importing Data</li>
 						</ul>
 					</li>
-					<li><a href="Fannie/end-user/pricing.html" target="_Fe_pricing">Product and Price Management</a>
+					<li><a href="Fannie/end-user/pricing.html" class="wikified" target="_Fe_pricing">Product and Price Management</a>
 						<ul id="" class="detail">
 							<li>How do I add an item to POS?</li>
 							<li>That's tedious. How do I import a bunch of items?</li>
@@ -233,7 +251,7 @@ Rudimentary ToC to /IS4C/documentation
                             <li>Complex pricing options not available through the user interface</li>
                         </ul>
                     </li>
-					<li><a href="Fannie/end-user/batches.html" target="_Fe_batches">Sale Batches</a>
+					<li><a href="Fannie/end-user/batches.html" class="wikified" target="_Fe_batches">Sale Batches</a>
 						<ul id="" class="detail">
 							<li>Batch Types</li>
 							<li>Creating Sales Batches (Batches for Sales)</li>
@@ -241,7 +259,7 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Likecodes</li>
 							<li>Add limit</li>
 							<li>The <i>Cut</i> option</li>
-							<li><a href="Fannie/end-user/speciality-batches.html" target="_Fe_sb">Specialty Batch Tools</a>
+							<li><a href="Fannie/end-user/speciality-batches.html" class="wikified" target="_Fe_sb">Specialty Batch Tools</a>
 								<ul id="" class="detail">
 									<li>Co+op Deals, i.e. Flyer Prices</li>
 									<li>Vendor Pricing</li>
@@ -250,9 +268,9 @@ Rudimentary ToC to /IS4C/documentation
 						</ul>
 					</li>
 
-					<li><a href="Fannie/end-user/speciality-batches.html" target="_Fe_sb">Specialty Batch Tools</a>
+					<li><a href="Fannie/end-user/speciality-batches.html" class="wikified" target="_Fe_sb">Specialty Batch Tools</a>
 
-					<li><a href="Fannie/end-user/vendors.html" target="_Fe_vendors">Vendors</a>
+					<li><a href="Fannie/end-user/vendors.html" class="wikified" target="_Fe_vendors">Vendors</a>
 						<ul id="" class="detail">
 							<li>Importing vendor catalogs</li>
 							<li>Associating vendor items with internal products</li>
@@ -261,7 +279,7 @@ Rudimentary ToC to /IS4C/documentation
 						</ul>
 					</li>
 
-					<li><a href="Fannie/end-user/auth-classes.html" target="_Fe_auth">User Authentication</a></li>
+					<li><a href="Fannie/end-user/auth-classes.html" class="wikified" target="_Fe_auth">User Authentication</a></li>
 						<ul id="" class="detail">
 							<li>[Overview]</li>
 							<li>Permissions</li>
@@ -279,8 +297,8 @@ Rudimentary ToC to /IS4C/documentation
 		<ul>
 			<li><a href="IS4C/developer/index.html" target="_ISdev">Developer Menu</a>
 				<ul>
-                    <li><a href="coding-standards.html" target="_IS_coding">Coding Standards &amp; Style Guide</a></li>
-					<li><a href="IS4C/developer/installation.html" target="_ISd_installation">Installation</a></li>
+                    <li><a href="coding-standards.html" class="wikified" target="_IS_coding">Coding Standards &amp; Style Guide</a></li>
+					<li><a href="IS4C/developer/installation.html" class="wikified" target="_ISd_installation">Installation</a></li>
 					<li><a href="IS4C/developer/api/index.html" target="_ISd_api">Module API</a></li>
 					<li><a href="IS4C/developer/framework.html" target="_ISd_framework">Framework</a>
 						<ul id="" class="detail">
@@ -303,13 +321,13 @@ Rudimentary ToC to /IS4C/documentation
 							<li>What's Going to Go Wrong?</li>
 						</ul>
 					</li>
-					<li><a href="IS4C/developer/howto-gui.html" target="_ISd_gui">How Pages are Generated; HowTo New Page</a>
+					<li><a href="IS4C/developer/howto-gui.html" class="wikified" target="_ISd_gui">How Pages are Generated; HowTo New Page</a>
 						<ul id="" class="detail">
 							<li>How a page is generated: class BasicPage</li>
 							<li>Variant (child) classes: InputPage, NoInputPage, PaycardProcessPage</li>
 						</ul>
 					</li>
-					<li><a href="IS4C/developer/howto-parse.html" target="_ISd_parse">How PoS Input is Processed (Parsed); HowTo New Input</a>
+					<li><a href="IS4C/developer/howto-parse.html" class="wikified" target="_ISd_parse">How PoS Input is Processed (Parsed); HowTo New Input</a>
 					</li>
 						<ul id="" class="detail">
 							<li>Quick Parsing Primer</li>
@@ -333,20 +351,20 @@ Rudimentary ToC to /IS4C/documentation
 							<li>How it works</li>
 						</ul -->
 					</li>
-					<li><a href="IS4C/developer/howto-gs1.html" target="_ISd_gs1">GS1 Barcodes</a>
+					<li><a href="IS4C/developer/howto-gs1.html" class="wikified" target="_ISd_gs1">GS1 Barcodes</a>
 						<ul id="" class="detail">
 							<li>Scale Drivers</li>
 							<li>Data Storage</li>
 						</ul>
 					</li>
-					<li><a href="IS4C/developer/howto-scanning.html" target="_ISd_scan">Modular Handling of UPC's</a>
+					<li><a href="IS4C/developer/howto-scanning.html" class="wikified" target="_ISd_scan">Modular Handling of UPC's</a>
 						<ul id="" class="detail">
 							<li>Special UPC's: membership cards, coupons, etc.</li>
 							<li>Discount Types: e.g. for all, members, staff</li>
 							<li>Price Methods: group sales</li>
 						</ul>
 					</li>
-					<li><a href="IS4C/developer/i18n.html" target="_ISd_i18n">Internationalization with gettext</a>
+					<li><a href="IS4C/developer/i18n.html" class="wikified" target="_ISd_i18n">Internationalization with gettext</a>
 						<ul id="" class="detail">
 							<li>In PHP</li>
 							<li>Creating and managing language files</li>
@@ -401,7 +419,7 @@ Rudimentary ToC to /IS4C/documentation
 					</li>
 					<li><a href="IT/Database_Administrator/core_op_ERD_PDF.pdf" target="_ITd_op_pdf">Diagram of core_op database (PDF)</a></li>
 					<li><a href="IT/Database_Administrator/core_trans_ERD_PDF.pdf" target="_ITd_trans_pdf">Diagram of core_trans database (PDF)</a></li>
-					<li><a href="IT/Database_Administrator/flow.html" target="_ITd_flow">Data flow between lane and fannie/backend</a>
+					<li><a href="IT/Database_Administrator/flow.html" class="wikified" target="_ITd_flow">Data flow between lane and fannie/backend</a>
 						<ul id="" class="detail">
 							<li>Lane to Server Data: dtransactions and alog</li>
 							<li>Server to Lane Data: products, custdata, etc.</li>
@@ -410,7 +428,7 @@ Rudimentary ToC to /IS4C/documentation
 					</li>
 					<li><a href="IT/Database_Administrator/newreports.html" target="_ITd_newreports">Creating New Reports (ad hoc reporting)</a></li>
 					<li><a href="IT/Database_Administrator/Server_is4c_op_database_layout.pdf" target="_ITd_op_2010_pdf">Diagram of core_op database, April 2010 (PDF)</a></li>
-					<li><a href="IT/Database_Administrator/nightly.html" target="_ITd_nightly">Automated Maintenance Jobs (cron)</a>
+					<li><a href="IT/Database_Administrator/nightly.html" class="wikified" target="_ITd_nightly">Automated Maintenance Jobs (cron)</a>
 						<ul id="" class="detail">
 							<li>Generally see the Maintenance and Reporting System: <a href="/IS4C/fannie/cron/management/" target="_mrst">Scheduled Tasks</a></li>
 							<li>The Transaction Shuffle - Transfer of transaction data</li>
@@ -423,7 +441,7 @@ Rudimentary ToC to /IS4C/documentation
 				</ul>
 			</li>
 
-			<li><a href="IT/Hardware/index.html" target="_ITend-user">Hardware</a>
+			<li><a href="IT/Hardware/index.html" class="wikified" target="_ITend-user">Hardware</a>
 				<ul id="" class="detail">
 					<li>Lane machine (computer)</li>
 					<li>Backend server machine(s)</li>
@@ -432,7 +450,7 @@ Rudimentary ToC to /IS4C/documentation
 				</ul>
 			</li>
 
-			<li><a href="IT/Security/index.html" target="_ITend-user">Security</a>
+			<li><a href="IT/Security/index.html" class="wikified" target="_ITend-user">Security</a>
 				<ul id="" class="detail">
 					<li>Firewall(s)</li>
 					<li>Front End Authentication</li>

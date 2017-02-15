@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 
 class OriginEditor extends FannieRESTfulPage 
 {
-
     protected $header = 'Product Origins';
     protected $title = 'Product Origins';
 
@@ -80,9 +79,7 @@ class OriginEditor extends FannieRESTfulPage
 
         $this->normalizeOriginNames();
 
-        header('Location: OriginEditor.php');
-
-        return false;
+        return 'OriginEditor.php';
     }
 
     public function post_newCustom_newState_newCountry_handler()
@@ -102,9 +99,7 @@ class OriginEditor extends FannieRESTfulPage
             $this->normalizeOriginNames();
         }
 
-        header('Location: OriginEditor.php');
-
-        return false;
+        return 'OriginEditor.php';
     }
 
     public function get_new_country_handler()
@@ -115,9 +110,7 @@ class OriginEditor extends FannieRESTfulPage
         $model->name('0 New Country Entry');
         $model->save();
 
-        header('Location: OriginEditor.php?country=1');
-
-        return false;
+        return 'OriginEditor.php?country=1';
     }
 
     public function get_new_state_handler()
@@ -128,9 +121,7 @@ class OriginEditor extends FannieRESTfulPage
         $model->name('0 New State/Prov Entry');
         $model->save();
 
-        header('Location: OriginEditor.php?state=1');
-
-        return false;
+        return 'OriginEditor.php?state=1';
     }
 
     public function get_new_custom_handler()
@@ -141,9 +132,7 @@ class OriginEditor extends FannieRESTfulPage
         $model->name('0 New Custom Region Entry');
         $model->save();
 
-        header('Location: OriginEditor.php?custom=1');
-
-        return false;
+        return 'OriginEditor.php?custom=1';
     }
 
     public function post_countryID_name_abbr_handler()
@@ -152,29 +141,15 @@ class OriginEditor extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $model = new OriginCountryModel($dbc);
 
-        $delete = FormLib::get('delete', array());
-
         for($i=0; $i<count($this->countryID); $i++) {
-            if (!isset($this->name[$i]) || !isset($this->abbr[$i])) {
-                continue;
-            } else if (empty($this->name[$i]) && empty($this->abbr[$i])) {
-                continue;
-            }
+            if ($this->hasEntry($this->name, $i) && $this->hasEntry($this->abbr, $i)) {
 
-            $model->countryID($this->countryID[$i]);
-
-            if (in_array($this->countryID[$i], $delete)) {
-                $model->delete();
-            } else {
-                $model->name($this->name[$i]);
-                $model->abbr($this->abbr[$i]);
-                $model->save();
+                $model->countryID($this->countryID[$i]);
+                $this->saveOrDelete($model, $model->countryID(), $i);
             }
         }
 
-        header('Location: OriginEditor.php?country=1');
-
-        return false;
+        return 'OriginEditor.php?country=1';
     }
 
     public function post_stateID_name_abbr_handler()
@@ -183,29 +158,15 @@ class OriginEditor extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $model = new OriginStateProvModel($dbc);
 
-        $delete = FormLib::get('delete', array());
-
         for($i=0; $i<count($this->stateID); $i++) {
-            if (!isset($this->name[$i]) || !isset($this->abbr[$i])) {
-                continue;
-            } else if (empty($this->name[$i]) && empty($this->abbr[$i])) {
-                continue;
-            }
+            if ($this->hasEntry($this->name, $i) && $this->hasEntry($this->abbr, $i)) {
 
-            $model->stateProvID($this->stateID[$i]);
-
-            if (in_array($this->stateID[$i], $delete)) {
-                $model->delete();
-            } else {
-                $model->name($this->name[$i]);
-                $model->abbr($this->abbr[$i]);
-                $model->save();
+                $model->stateProvID($this->stateID[$i]);
+                $this->saveOrDelete($model, $model->stateProvID(), $i);
             }
         }
 
-        header('Location: OriginEditor.php?state=1');
-
-        return false;
+        return 'OriginEditor.php?state=1';
     }
 
     public function post_customID_name_handler()
@@ -233,9 +194,7 @@ class OriginEditor extends FannieRESTfulPage
             }
         }
 
-        header('Location: OriginEditor.php?custom=1');
-
-        return false;
+        return 'OriginEditor.php?custom=1';
     }
 
     public function get_country_view()
@@ -244,22 +203,24 @@ class OriginEditor extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $countries = new OriginCountryModel($dbc);
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= '<h3>Edit Countries</h3>';
-        $ret .= '<input type="submit" value="Save Countries" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Create New Entry" onclick="location=\'OriginEditor.php?new_country\';return false;" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Countries</button>';
+        $ret .= $this->spacer()
+            . $this->newButton('new_country')
+            . $this->spacer()
+            . $this->homeButton();
+        $ret .= '</p>';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th><th>Abbreviation</th>
                 <th><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png' . '" /></th>
                 </tr>';
         foreach ($countries->find('name') as $c) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="countryID[]" value="%d" />
-                            <td><input type="text" name="name[]" value="%s" /></td>
-                            <td><input type="text" name="abbr[]" value="%s" /></td>
+                            <td><input type="text" name="name[]" class="form-control" value="%s" /></td>
+                            <td><input type="text" name="abbr[]" class="form-control" value="%s" /></td>
                             <td><input type="checkbox" name="delete[]" value="%d" /></td>
                             </tr>',
                             $c->countryID(),
@@ -269,9 +230,11 @@ class OriginEditor extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save Countries" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Countries</button>';
+        $ret .= $this->spacer()
+            . $this->homeButton();
+        $ret .= '</p>';
         $ret .= '</form>';
 
         return $ret;
@@ -283,22 +246,24 @@ class OriginEditor extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $states = new OriginStateProvModel($dbc);
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= '<h3>Edit States &amp; Provinces</h3>';
-        $ret .= '<input type="submit" value="Save" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Create New Entry" onclick="location=\'OriginEditor.php?new_state\';return false;" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save</button>';
+        $ret .= $this->spacer()
+            . $this->newButton('new_state')
+            . $this->spacer()
+            . $this->homeButton();
+        $ret .= '</p>';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th><th>Abbreviation</th>
                 <th><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png' . '" /></th>
                 </tr>';
         foreach ($states->find('name') as $s) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="stateID[]" value="%d" />
-                            <td><input type="text" name="name[]" value="%s" /></td>
-                            <td><input type="text" name="abbr[]" value="%s" /></td>
+                            <td><input type="text" name="name[]" class="form-control" value="%s" /></td>
+                            <td><input type="text" name="abbr[]" class="form-control" value="%s" /></td>
                             <td><input type="checkbox" name="delete[]" value="%d" /></td>
                             </tr>',
                             $s->stateProvID(),
@@ -308,9 +273,11 @@ class OriginEditor extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save</button>';
+        $ret .= $this->spacer()
+            . $this->homeButton();
+        $ret .= '</p>';
         $ret .= '</form>';
 
         return $ret;
@@ -322,21 +289,23 @@ class OriginEditor extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $customs = new OriginCustomRegionModel($dbc);
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= '<h3>Edit Custom Regions</h3>';
-        $ret .= '<input type="submit" value="Save Regions" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Create New Entry" onclick="location=\'OriginEditor.php?new_custom\';return false;" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Regions</button>';
+        $ret .= $this->spacer()
+            . $this->newButton('new_custom')
+            . $this->spacer()
+            . $this->homeButton();
+        $ret .= '</p>';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>Name</th>
                 <th><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png' . '" /></th>
                 </tr>';
         foreach ($customs->find('name') as $c) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="customID[]" value="%d" />
-                            <td><input type="text" name="name[]" value="%s" /></td>
+                            <td><input type="text" name="name[]" class="form-control" value="%s" /></td>
                             <td><input type="checkbox" name="delete[]" value="%d" /></td>
                             </tr>',
                             $c->customID(),
@@ -345,9 +314,11 @@ class OriginEditor extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save Regions" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="button" value="Home" onclick="location=\'OriginEditor.php\';return false;" />';
+        $ret .= '<p>';
+        $ret .= '<button type="submit" class="btn btn-default">Save Regions</button>';
+        $ret .= $this->spacer()
+            . $this->homeButton();
+        $ret .= '</p>';
         $ret .= '</form>';
 
         return $ret;
@@ -376,17 +347,20 @@ class OriginEditor extends FannieRESTfulPage
         }
 
         $origins = new OriginsModel($dbc);
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<h3>Edit Origins</h3>';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
-        $ret .= '<tr>
-                <th>Short Name</th>
-                <th>Full Name</th>
-                <th><a href="' . $_SERVER['PHP_SELF'] . '?custom=1">Region</a></th>
-                <th><a href="' . $_SERVER['PHP_SELF'] . '?state=1">State/Prov</a></th>
-                <th><a href="' . $_SERVER['PHP_SELF'] . '?country=1">Country</a></th>
-                <th>Local</th>
-                </tr>';
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $ret = <<<HTML
+<form action="{$self}" method="post">
+    <h3>Edit Origins</h3>
+    <table class="table">
+        <tr>
+            <th>Short Name</th>
+            <th>Full Name</th>
+            <th><a href="{$self}?custom=1">Region</a></th>
+            <th><a href="{$self}?state=1">State/Prov</a></th>
+            <th><a href="{$self}?country=1">Country</a></th>
+            <th>Local</th>
+        </tr>
+HTML;
         foreach ($origins->find('name') as $o) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="originID[]" value="%d" />
@@ -397,7 +371,7 @@ class OriginEditor extends FannieRESTfulPage
                             $o->name()
             );
 
-            $ret .= '<td><select name="custom[]"><option value="">n/a</option>';
+            $ret .= '<td><select name="custom[]" class="form-control"><option value="">n/a</option>';
             foreach ($customs as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $o->customID() ? 'selected' : ''),
@@ -405,7 +379,7 @@ class OriginEditor extends FannieRESTfulPage
             }
             $ret .= '</select></td>';
 
-            $ret .= '<td><select name="state[]"><option value="">n/a</option>';
+            $ret .= '<td><select name="state[]" class="form-control"><option value="">n/a</option>';
             foreach ($states as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $o->stateProvID() ? 'selected' : ''),
@@ -413,7 +387,7 @@ class OriginEditor extends FannieRESTfulPage
             }
             $ret .= '</select></td>';
 
-            $ret .= '<td><select name="country[]"><option value="">n/a</option>';
+            $ret .= '<td><select name="country[]" class="form-control"><option value="">n/a</option>';
             foreach ($countries as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $o->countryID() ? 'selected' : ''),
@@ -427,44 +401,48 @@ class OriginEditor extends FannieRESTfulPage
             $ret .= '</tr>';
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save Origins" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save Origins</button></p>';
         $ret .= '</form>';
 
-        $ret .= '<hr />';
+        $customOpts = $this->arrayToSelect($customs);
+        $stateOpts = $this->arrayToSelect($states);
+        $countryOpts = $this->arrayToSelect($countries);
+        $ret .= <<<HTML
+<hr />
+<form action="{$self}" method="post">
+    <h3>Create New Origin</h3>
+    <table class="table">
+        <tr>
+            <th><a href="{$self}?custom=1">Region</a></th>
+            <th><a href="{$self}'?state=1">State/Prov</a></th>
+            <th><a href="{$self}?country=1">Country</a></th>
+        </tr>
+        <tr>
+            <td><select name="newCustom" class="form-control"><option value="">n/a</option>
+                {$customOpts}
+            </select></td>
+            <td><select name="newState" class="form-control"><option value="">n/a</option>
+                {$stateOpts}
+            </select></td>
+            <td><select name="newCountry" class="form-control"><option value="">n/a</option>
+                {$countryOpts}
+            </select></td>
+        </tr>
+    </table>
+    <p><button type="submit" class="btn btn-default">Create</button></p>
+</form>
+HTML;
 
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<h3>Create New Origin</h3>';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
-        $ret .= '<tr>
-                <th><a href="' . $_SERVER['PHP_SELF'] . '?custom=1">Region</a></th>
-                <th><a href="' . $_SERVER['PHP_SELF'] . '?state=1">State/Prov</a></th>
-                <th><a href="' . $_SERVER['PHP_SELF'] . '?country=1">Country</a></th>
-                </tr>';
-        $ret .= '<tr>';
-        $ret .= '<td><select name="newCustom"><option value="">n/a</option>';
-        foreach ($customs as $id => $label) {
+        return $ret;
+    }
+
+    private function arrayToSelect($arr)
+    {
+        $ret = '';
+        foreach ($arr as $id => $label) {
             $ret .= sprintf('<option value="%d">%s</option>',
                         $id, $label);
         }
-        $ret .= '</select></td>';
-
-        $ret .= '<td><select name="newState"><option value="">n/a</option>';
-        foreach ($states as $id => $label) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                        $id, $label);
-        }
-        $ret .= '</select></td>';
-
-        $ret .= '<td><select name="newCountry"><option value="">n/a</option>';
-        foreach ($countries as $id => $label) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                        $id, $label);
-        }
-        $ret .= '</select></td>';
-        $ret .= '</tr>';
-        $ret .= '</table>';
-        $ret .= '<input type="submit" value="Create" />';
-        $ret .= '</form>';
 
         return $ret;
     }
@@ -509,65 +487,140 @@ class OriginEditor extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         $origins = new OriginsModel($dbc);
-        $custom = new OriginCustomRegionModel($dbc);
-        $state = new OriginStateProvModel($dbc);
-        $country = new OriginCountryModel($dbc);
 
         foreach ($origins->find() as $origin) {
             $name = '';
             $shortName = '';
+            list($origin, $custom, $state, $country) = $this->getChildren($origin);
 
             if ($origin->customID()) {
-                $custom->customID($origin->customID());
-                if ($custom->load()) {
-                    $name = $custom->name();
-                    $shortName = $custom->name();
-                } else {
-                    // remove invalid FK
-                    $origin->customID(null);
-                }
+                $name = $custom->name();
+                $shortName = $custom->name();
             }
 
             if ($origin->stateProvID()) {
-                $state->stateProvID($origin->stateProvID());
-                if ($state->load()) {
-                    if (empty($name)) {
-                        $name = $state->name();
-                    } else if ($state->abbr() != '') {
-                        $name .= ', ' . $state->abbr();
-                    } else {
-                        $name .= ', ' . $state->name();
-                    }
-                    if (empty($shortName)) {
-                        $shortName = $state->name();
-                    }
-                } else {
-                    $origin->stateProvID(null);
-                }
+                list($name, $shortName) = $this->objToNames($state, $name, $shortName);
             }
 
             if ($origin->countryID()) {
-                $country->countryID($origin->countryID());
-                if ($country->load()) {
-                    if (empty($name)) {
-                        $name = $country->name();
-                    } else if ($country->abbr() != '') {
-                        $name .= ', ' . $country->abbr();
-                    } else {
-                        $name .= ', ' . $country->name();
-                    }
-                    if (empty($shortName)) {
-                        $shortName = $country->name();
-                    }
-                } else {
-                    $origin->countryID(null);
-                }
+                list($name, $shortName) = $this->objToNames($country, $name, $shortName);
             }
 
             $origin->name($name);
             $origin->shortName($shortName);
             $origin->save();
         }
+    }
+
+    private function getChildren($origin)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $ret = array(
+            'customID' => new OriginCustomRegionModel($dbc),
+            'stateProvID' => new OriginStateProvModel($dbc),
+            'countryID' => new OriginCountryModel($dbc),
+        );
+
+        foreach ($ret as $id => $obj)
+        {
+            $obj->$id($origin->$id());
+            if (!$obj->load()) {
+                $origin->$id(null);
+            }
+        }
+
+        return array(
+            $origin,
+            $ret['customID'],
+            $ret['stateProvID'],
+            $ret['countryID'],
+        );
+    }
+
+    private function objToNames($obj, $name, $shortName)
+    {
+        if (empty($name)) {
+            $name = $obj->name();
+        } else if ($obj->abbr() != '') {
+            $name .= ', ' . $obj->abbr();
+        } else {
+            $name .= ', ' . $obj->name();
+        }
+        if (empty($shortName)) {
+            $shortName = $obj->name();
+        }
+
+        return array($name, $shortName);
+    }
+
+    private function hasEntry($arr, $i)
+    {
+        if (isset($arr[$i]) && !empty($arr[$i])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function saveOrDelete($model, $id, $index)
+    {
+        $delete = FormLib::get('delete', array());
+        if (in_array($id, $delete)) {
+            $model->delete();
+        } else {
+            $model->name($this->name[$index]);
+            $model->abbr($this->abbr[$index]);
+            $model->save();
+        }
+    }
+
+    private function spacer()
+    {
+        return '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    }
+
+    private function homeButton()
+    {
+        return '<button type="button" value="Home" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php\';return false;">Home</button>';
+    }
+
+    private function newButton($type)
+    {
+        return '<button type="button" value="Create New Entry" class="btn btn-default"
+                    onclick="location=\'OriginEditor.php?' . $type . '\';return false;">Create New Entry</button>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Origins are where products come from. In many situations
+            this may be overkill from a labor/maintenance standpoint,
+            but origins can be defined in three tiers: countries,
+            states/provinces, and custom regions. Custom regions may
+            be smaller or larger than countries and/or states depending
+            what is being tracked and measured.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_country_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_state_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_custom_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->get_new_country_handler();
+        $this->get_new_state_handler();
+        $this->get_new_custom_handler();
+        $this->countryID = array(1);
+        $this->name = array('TEST');
+        $this->abbr = array('TEST');
+        $this->post_countryID_name_abbr_handler();
+        $this->stateID = array(1);
+        $this->post_stateID_name_abbr_handler();
+        $this->customID = array(1);
+        $this->post_customID_name_handler();
     }
 }
 

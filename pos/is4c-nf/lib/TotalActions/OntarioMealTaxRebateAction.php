@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\TotalActions;
+use \CoreLocal;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TransRecord;
+
 /**
   @class OntarioMealTaxRebateAction
   Update tax codes and add comment records
@@ -39,21 +44,20 @@ class OntarioMealTaxRebateAction extends TotalAction
     */
     public function apply()
     {
-        global $CORE_LOCAL;
-		// Is the before-tax total within range?
-		if ($CORE_LOCAL->get("runningTotal") <= 4.00 ) {
-			$totalBefore = $CORE_LOCAL->get("amtdue");
-			$ret = Database::changeLttTaxCode("HST","GST");
-			if ( $ret !== true ) {
-				TransRecord::addcomment("$ret");
-			} else {
-				Database::getsubtotals();
-				$saved = ($totalBefore - $CORE_LOCAL->get("amtdue"));
-				$comment = sprintf("OMTR OK. You saved: $%.2f", $saved);
-				TransRecord::addcomment("$comment");
-			}
-		} else {
-			TransRecord::addcomment("Does NOT qualify for OMTR");
+        // Is the before-tax total within range?
+        if (CoreLocal::get("runningTotal") <= 4.00 ) {
+            $totalBefore = CoreLocal::get("amtdue");
+            $ret = Database::changeLttTaxCode("HST","GST");
+            if ( $ret !== true ) {
+                TransRecord::addcomment("$ret");
+            } else {
+                Database::getsubtotals();
+                $saved = ($totalBefore - CoreLocal::get("amtdue"));
+                $comment = sprintf("OMTR OK. You saved: $%.2f", $saved);
+                TransRecord::addcomment("$comment");
+            }
+        } else {
+            TransRecord::addcomment("Does NOT qualify for OMTR");
         }
 
         return true;

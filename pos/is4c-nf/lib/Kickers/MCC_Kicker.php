@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
+use \CoreLocal;
+
 /**
   @class Kicker
   Base class for opening cash drawer
@@ -35,11 +39,10 @@ class MCC_Kicker extends Kicker
     */
     public function doKick($trans_num)
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
+        if(CoreLocal::get('training') == 1) {
             return false;
         }
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         $query = "SELECT trans_id   
                   FROM localtranstoday 
@@ -47,10 +50,10 @@ class MCC_Kicker extends Kicker
                     total <> 0
                     AND " . $this->refToWhere($trans_num);
 
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $numRows = $dbc->numRows($result);
 
-        return ($num_rows > 0) ? true : false;
+        return ($numRows > 0) ? true : false;
     }
 
     /**
@@ -60,11 +63,6 @@ class MCC_Kicker extends Kicker
     */
     public function kickOnSignIn()
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
-            return false;
-        }
-
         return false;
     }
 
@@ -75,11 +73,6 @@ class MCC_Kicker extends Kicker
     */
     public function kickOnSignOut()
     {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
-            return false;
-        }
-
         return false;
     }
 }

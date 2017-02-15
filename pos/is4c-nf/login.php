@@ -21,29 +21,39 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\LocalStorage\LaneConfig;
+
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
-$CORE_LOCAL->set("parse_chain",'');
-$CORE_LOCAL->set("preparse_chain",'');
-$CORE_LOCAL->set("postparse_chain",'');
+COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 
 AutoLoader::loadMap();
 
-CoreState::initiate_session();
+CoreState::initiateSession();
 
-if ($CORE_LOCAL->get("SessionFirstRun") == "") {
-	$CORE_LOCAL->set("SessionFirstRun",1);
+CoreLocal::set('ValidJson', false);
+CoreLocal::refresh();
+CoreLocal::migrateSettings();
+LaneConfig::refresh();
+
+if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
+    CoreLocal::set('MQ', true);
+} else {
+    CoreLocal::set('MQ', false);
 }
-
 
 /**
   Go to login screen if no one is signed in
   Go to lock screen if someone is signed in
 */
-$my_url = MiscLib::base_url();
-if ($CORE_LOCAL->get('LoggedIn') == 0) {
-    header("Location: {$my_url}gui-modules/login2.php");
-} else {
-    header("Location: {$my_url}gui-modules/login3.php");
+if (!headers_sent()) {
+    $my_url = MiscLib::base_url();
+    if (CoreLocal::get('LoggedIn') == 0) {
+        header("Location: {$my_url}gui-modules/login2.php");
+    } else {
+        header("Location: {$my_url}gui-modules/login3.php");
+    }
 }
 

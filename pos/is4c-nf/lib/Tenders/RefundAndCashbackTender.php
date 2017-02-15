@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+
 /**
   @class RefundAndCashBackTender
   Module for tenders where change records
@@ -38,11 +40,7 @@ class RefundAndCashBackTender extends TenderModule
     */
     public function changeType()
     {
-        if ($this->amount == 0) {
-            return $this->tender_code;    
-        } else {
-            return $this->change_type;
-        }
+        return ($this->amount == 0 ? $this->tender_code : $this->change_type);
     }
 
 }

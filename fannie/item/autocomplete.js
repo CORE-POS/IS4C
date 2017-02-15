@@ -2,7 +2,7 @@ function genericAutoComplete(ws_url, field_name, search_term, callback)
 {
     var req = {
         jsonrpc: '2.0',
-        method: 'FannieAutoComplete',
+        method: '\\COREPOS\\Fannie\\API\\webservices\\FannieAutoComplete',
         id: new Date().getTime(),
         params: { field: field_name, search: search_term }
     };
@@ -12,15 +12,13 @@ function genericAutoComplete(ws_url, field_name, search_term, callback)
         type: 'post',
         data: JSON.stringify(req),
         dataType: 'json',
-        contentType: 'application/json',
-        success: function(data) {
-            if (data.result) {
-                callback(data.result);
-            }
-        },
-        error: function() {
-            callback([]);
+        contentType: 'application/json'
+    }).done(function(data) {
+        if (data.result) {
+            callback(data.result);
         }
+    }).fail(function() {
+        callback([]);
     });
 }
 

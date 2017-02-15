@@ -24,3 +24,8 @@ img {
 .newBatchBlack {
 	color: #000000;
 }
+
+.tablesorter thead th {
+    cursor: pointer;
+    cursor: hand;
+}

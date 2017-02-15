@@ -21,46 +21,44 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\InputCorePage;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class CashDropWarningPage extends InputPage {
+class CashDropWarningPage extends InputCorePage 
+{
 
-	function preprocess(){
-		global $CORE_LOCAL;
-		if (isset($_REQUEST['reginput'])){
-			$in = strtoupper($_REQUEST['reginput']);
-			if ($in != '' && $in != 'CL') return True;
+    function preprocess()
+    {
+        if (isset($_REQUEST['reginput'])){
+            $in = strtoupper($_REQUEST['reginput']);
+            if ($in != '' && $in != 'CL') return True;
 
-			$CORE_LOCAL->set("msgrepeat",1);
-			$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get('cashDropSaveInput'));
-			$CORE_LOCAL->set('cashDropSaveInput','');
-
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		return True;
-	}
-	
-	function body_content(){
-		global $CORE_LOCAL;
-		echo '<div class="baseHeight">';
-		$ret = "<div id=\"boxMsg\" style=\"background:red;\" 
-			class=\"centeredDisplay\">";
-		$ret .= "<div class=\"boxMsgAlert coloredArea\">";
-		$ret .= $CORE_LOCAL->get("alertBar");
-		$ret .= "</div>";
-		$ret .= "<div class=\"boxMsgBody\">";
-		$ret .= "<div class=\"msgicon\"></div>";
-		$ret .= "<div class=\"msgtext\">";
-		$ret .= '1.83 jigawatts';
-		$ret .= "</div><div class=\"clear\"></div></div>";
-		$ret .= "</div>";
-		echo $ret;
-		echo "</div>";
-	} // END body_content() FUNCTION
+            CoreLocal::set('cashDropSaveInput','');
+            $qstr = '?reginput=' . urlencode(CoreLocal::get('cashDropSaveInput')) . '&repeat=1';
+            $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
+            return false;
+        }
+        return True;
+    }
+    
+    function body_content()
+    {
+        echo '<div class="baseHeight">';
+        $ret = "<div id=\"boxMsg\" style=\"background:red;\" 
+            class=\"centeredDisplay\">";
+        $ret .= "<div class=\"boxMsgAlert coloredArea\">";
+        $ret .= CoreLocal::get("alertBar");
+        $ret .= "</div>";
+        $ret .= "<div class=\"boxMsgBody\">";
+        $ret .= "<div class=\"msgicon\"></div>";
+        $ret .= "<div class=\"msgtext\">";
+        $ret .= '1.83 jigawatts';
+        $ret .= "</div><div class=\"clear\"></div></div>";
+        $ret .= "</div>";
+        echo $ret;
+        echo "</div>";
+    } // END body_content() FUNCTION
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-	new CashDropWarningPage();
+AutoLoader::dispatch();
 
-?>

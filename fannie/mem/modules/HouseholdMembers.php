@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,91 +21,100 @@
 
 *********************************************************************************/
 
-class HouseholdMembers extends MemberModule {
+class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
 
-    function showEditForm($memNum, $country="US"){
-        global $FANNIE_URL;
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
 
-        $dbc = $this->db();
-        
-        $infoQ = $dbc->prepare_statement("SELECT c.FirstName,c.LastName
-                FROM custdata AS c 
-                WHERE c.CardNo=? AND c.personNum > 1
-                ORDER BY c.personNum");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+    function showEditForm($memNum, $country="US")
+    {
+        $account = self::getAccount();
 
-        $ret = "<fieldset><legend>Household Members</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Household Members</div>
+            <div class=\"panel-body\">";
         
         $count = 0; 
-        while($infoW = $dbc->fetch_row($infoR)){
-            $ret .= sprintf('<tr><th>First Name</th>
-                <td><input name="HouseholdMembers_fn[]"
-                maxlength="30" value="%s" /></td>
-                <th>Last Name</th>
-                <td><input name="HouseholdMembers_ln[]"
-                maxlength="30" value="%s" /></td></tr>',
-                $infoW['FirstName'],$infoW['LastName']);
+        foreach ($account['customers'] as $infoW) {
+            if ($infoW['accountHolder']) {
+                continue;
+            }
+            $ret .= sprintf('
+                <div class="form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="%s" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="%s" class="form-control" />
+                <input name="HouseholdMembers_ID[]" type="hidden" value="%d" />
+                </div>',
+                $infoW['firstName'],$infoW['lastName'],$infoW['customerID']);
             $count++;
         }
 
-        while($count < 3){
-            $ret .= sprintf('<tr><th>First Name</th>
-                <td><input name="HouseholdMembers_fn[]"
-                maxlength="30" value="" /></td>
-                <th>Last Name</th>
-                <td><input name="HouseholdMembers_ln[]"
-                maxlength="30" value="" /></td></tr>');
+        while ($count < 3) {
+            $ret .= sprintf('
+                <div class="form-inline form-group">
+                <span class="label primaryBackground">Name</span>
+                <input name="HouseholdMembers_fn[]" placeholder="First"
+                    maxlength="30" value="" class="form-control" />
+                <input name="HouseholdMembers_ln[]" placeholder="Last"
+                    maxlength="30" value="" class="form-control" />
+                <input name="HouseholdMembers_ID[]" type="hidden" value="0" />
+                </div>');
             $count++;
         }
 
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
+
         return $ret;
     }
 
-    function saveFormData($memNum){
-        global $FANNIE_ROOT;
-        $dbc = $this->db();
-        if (!class_exists("CustdataModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
-
-        $CUST_FIELDS = array('personNum'=>array(),'FirstName'=>array(),'LastName'=>array());
-
-        /**
-          Model needs all names, so lookup primary member
-        */
-        $lookupP = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE
-                personNum=1 AND CardNo=?");
-        $lookupR = $dbc->exec_statement($lookupP, array($memNum));
-        if ($dbc->num_rows($lookupR) == 0){
-            return "Error: Problem saving household members<br />"; 
-        }
-        $lookupW = $dbc->fetch_row($lookupR);
-        $CUST_FIELDS['personNum'][] = 1;
-        $CUST_FIELDS['FirstName'][] = $lookupW['FirstName'];
-        $CUST_FIELDS['LastName'][] = $lookupW['LastName'];
-
-        $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
-        $lns = FormLib::get_form_value('HouseholdMembers_ln',array());
-        $pn = 2;
-        for($i=0; $i<count($lns); $i++){
-            if (empty($fns[$i]) && empty($lns[$i])) continue;
-
-            $CUST_FIELDS['personNum'][] = $pn;
-            $CUST_FIELDS['FirstName'][] = $fns[$i];
-            $CUST_FIELDS['LastName'][] = $lns[$i];
-
-            $pn++;
+    public function saveFormData($memNum, $json=array())
+    {
+        $primary = array('discount'=>0, 'staff'=>0, 'lowIncomeBenefits'=>0, 'chargeAllowed'=>0, 'checksAllowed'=>0);
+        foreach ($json['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $primary = $c;
+                break;
+            }
         }
 
-        $test = CustdataModel::update($memNum, $CUST_FIELDS);
+        $fns = FormLib::get('HouseholdMembers_fn',array());
+        $lns = FormLib::get('HouseholdMembers_ln',array());
+        $ids = FormLib::get('HouseholdMembers_ID', array());
+        for ($i=0; $i<count($lns); $i++) {
+            if ($ids[$i] == 0) { // add new name
+                $json['customers'][] = array(
+                    'customerID' => $ids[$i],
+                    'firstName' => $fns[$i],
+                    'lastName' => $lns[$i],
+                    'accountHolder' => 0,
+                    'discount' => $primary['discount'],
+                    'staff' => $primary['staff'],
+                    'lowIncomeBenefits' => $primary['lowIncomeBenefits'],
+                    'chargeAllowed' => $primary['chargeAllowed'],
+                    'checksAllowed' => $primary['checksAllowed'],
+                );
+            } else { // update or remove existing name
+                for ($j=0; $j<count($json['customers']); $j++) {
+                    if ($json['customers'][$j]['customerID'] == $ids[$i]) {
+                        if ($fns[$i] == '' && $lns[$i] == '') {
+                            unset($json['customers'][$j]);
+                        } else {
+                            $json['customers'][$j]['firstName'] = $fns[$i];
+                            $json['customers'][$j]['lastName'] = $lns[$i];
+                            $json['customers'][$j]['accountHolder'] = 0;
+                        }
+                    }
+                }
+            }
+        }
 
-        if ($test === False)
-            return "Error: Problem saving household members<br />"; 
-
-        return '';
+        return $json;
     }
 }
 
-?>

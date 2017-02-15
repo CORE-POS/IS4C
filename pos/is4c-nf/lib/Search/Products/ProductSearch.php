@@ -21,38 +21,39 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Search\Products;
+
 /**
   @class ProductSearch
   Base class for providing product search results
 */
 class ProductSearch {
 
-	/**
-	  Set how big the result box is (in rows)
-	*/	
-	public $result_size = 15;
+    /**
+      Set how big the result box is (in rows)
+    */    
+    public $result_size = 15;
 
-	/**
-	  Do the actual search
-	  @param $str a search string
-	  @return array
+    /**
+      Do the actual search
+      @param $str a search string
+      @return array
 
-	  The return value is an array of product records.
-	  Each record should have the following keys:
-	    upc
-	    description
-	    normal_price
-	    scale
-	  The records can simply be query results or
-	  you can use some custom construction
+      The return value is an array of product records.
+      Each record should have the following keys:
+        upc
+        description
+        normal_price
+        scale
+      The records can simply be query results or
+      you can use some custom construction
 
-	  The outer array should be of the form
-	  upc => record so returns from multiple searches
-	  can be merged together easily.
-	*/
-	public function search($str){
-		return array();
-	}
+      The outer array should be of the form
+      upc => record so returns from multiple searches
+      can be merged together easily.
+    */
+    public function search($str){
+        return array();
+    }
 }
 
-?>

@@ -74,7 +74,11 @@ class GumPeopleReport extends FannieReportPage
                             FROM GumEquityShares
                             GROUP BY card_no
                         ) AS e ON c.cardNo=e.card_no AND c.personNum=1
-                  WHERE l.card_no IS NOT NULL OR e.card_no IS NOT NULL
+                  WHERE 
+                    (l.card_no IS NOT NULL AND l.gumLoanAccountID NOT IN (
+                        SELECT gumLoanAccountID FROM GumLoanPayoffMap AS m INNER JOIN GumPayoffs AS p ON m.gumPayoffID=p.gumPayoffID WHERE checkIssued=1
+                    ) AND l.principal > 0)
+                    OR e.card_no IS NOT NULL
                   ORDER BY l.card_no, l.loanDate';
         $result = $dbc->query($query);
 
@@ -112,6 +116,10 @@ class GumPeopleReport extends FannieReportPage
         return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', '', sprintf('%.2f', $mat), sprintf('%.2f', $c));
     }
 
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 
 }
 

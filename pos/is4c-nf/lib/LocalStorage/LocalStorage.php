@@ -1,5 +1,8 @@
 <?php
 
+namespace COREPOS\pos\lib\LocalStorage;
+use \Iterator;
+
 /**
   @class LocalStorage
 
@@ -11,17 +14,17 @@
   to do anything.
 */
 
-class LocalStorage 
+class LocalStorage implements Iterator
 {
 
-    protected $immutables = array();
+    protected $iterator_position = 0;
+    protected $iterator_keys = array();
 
     /**
       Constructor
     */
-    public function LocalStorage()
+    public function __construct()
     {
-
     }
 
     /**
@@ -44,40 +47,13 @@ class LocalStorage
       Save the value with the given key
       @param $key A unique key string
       @param $val The value (mixed)
-      @param $immutable the value is a constant
 
       The value can be any PHP type that the
       underlying mechanism can store.
     */
-    public function set($key,$val,$immutable=false)
+    public function set($key,$val)
     {
         debug($key);
-    }
-
-    /**
-      Store an immutable value by key
-      @param $key A unique key string
-      @param $val The value (mixed)
-
-      Values are saved in LocalStorage::immutables
-    */
-    protected function immutableSet($key,$val)
-    {
-        $this->immutables[$key] = $val;
-    }
-    
-    /**
-      Check if a key is present in immutables
-      @param $key A unique key string
-      @return bool
-    */
-    public function isImmutable($key)
-    {
-        if (isset($this->immutables[$key])) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -109,6 +85,40 @@ class LocalStorage
                 fclose($fp);
             }
         }
+    }
+
+    /**
+      Iterator interface methods
+    */
+    public function current()
+    {
+        return $this->get($this->iterator_keys[$this->iterator_position]);
+    }
+
+    public function key()
+    {
+        return $this->iterator_keys[$this->iterator_position];
+    }
+
+    public function next()
+    {
+        $this->iterator_position++;
+    }
+
+    public function valid()
+    {
+        return isset($this->iterator_keys[$this->iterator_position]);
+    }
+
+    public function rewind()
+    {
+        $this->iterator_position = 0;
+        $this->iterator_keys = $this->iteratorKeys();
+    }
+
+    public function iteratorKeys()
+    {
+        return array();
     }
 }
 

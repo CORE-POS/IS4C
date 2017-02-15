@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,11 +30,8 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
-include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
-$query = $dbc->prepare_statement("SELECT CardNo, 
+$query = $dbc->prepare("SELECT CardNo, 
           LastName, 
           FirstName, 
           street,
@@ -50,8 +47,7 @@ $query = $dbc->prepare_statement("SELECT CardNo,
       LEFT JOIN memDates AS d
       ON c.CardNo=d.card_no
           WHERE 
-          memType IN (1,3)
-      AND c.Type='PC'
+      c.Type='PC'
           AND (end_date > ".$dbc->now()." 
         or end_date = '' 
         or end_date is null
@@ -62,7 +58,7 @@ $query = $dbc->prepare_statement("SELECT CardNo,
       AND LastName <> 'NEW MEMBER'
           order by m.card_no");
 
-$result = $dbc->exec_statement($query);
+$result = $dbc->execute($query);
 
 $ret = array();
 while($row = $dbc->fetch_row($result)){
@@ -84,7 +80,6 @@ while($row = $dbc->fetch_row($result)){
    $ret[] = $new;
 }
 
-//$xls = ArrayToXls($ret);
-$xls = ArrayToCsv($ret);
+$xls = \COREPOS\Fannie\API\data\DataConvert::arrayToCsv($ret);
 echo $xls;
-?>
+

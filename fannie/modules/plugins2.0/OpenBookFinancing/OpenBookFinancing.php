@@ -28,16 +28,16 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class OpenBookFinancing extends FanniePlugin 
+class OpenBookFinancing extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'ObfDatabase' => array('default'=>'OpenBookFinancing','label'=>'Database',
             'description'=>'Database for storing OBF info'),
     );
 
-    public $plugin_description = 'WFC Plugin for weekly Open Book Financing';
+    public $plugin_description = 'WFC Plugin for weekly Open Book Financing. Deprecated. See OpenBookFinancingV2.';
 
-    public function setting_change()
+    public function settingChange()
     {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 

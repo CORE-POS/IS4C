@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class StoreChargeTender
   Tender module for charge accounts
@@ -34,15 +38,14 @@ class SignedStoreChargeTender extends StoreChargeTender
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get('msgrepeat') == 0) {
-            $CORE_LOCAL->set('strRemembered', ($this->amount*100) . $this->tender_code);
-            $CORE_LOCAL->set('lastRepeat', 'signStoreCharge');
+        if (CoreLocal::get('msgrepeat') == 0) {
+            CoreLocal::set('strRemembered', ($this->amount*100) . $this->tender_code);
+            CoreLocal::set('lastRepeat', 'signStoreCharge');
 
             return MiscLib::base_url().'gui-modules/SigCapturePage.php?type='.$this->name_string.'&amt='.$this->amount.'&code='.$this->tender_code;
-        } else if ($CORE_LOCAL->get('msgrepeat') == 1 && $CORE_LOCAL->get('lastRepeat') == 'signStoreCharge') {
-            $CORE_LOCAL->set('msgrepeat', 0);
-            $CORE_LOCAL->set('lastRepeat', '');
+        } else if (CoreLocal::get('msgrepeat') == 1 && CoreLocal::get('lastRepeat') == 'signStoreCharge') {
+            CoreLocal::set('msgrepeat', 0);
+            CoreLocal::set('lastRepeat', '');
         }
 
         return true;

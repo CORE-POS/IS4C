@@ -59,7 +59,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
     
     $fp = fopen("$tmp/$filename","r");
     $emps = array();
-    $checkQ = $db->prepare_statement("select empID from employees where adpID=?");
+    $checkQ = $db->prepare("select empID from employees where adpID=?");
     while (!feof($fp)){
         $line = fgets($fp);
         $fields = csv_parser($line);
@@ -83,7 +83,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
         $adpID = $fields[$ADP_COL];
         $adpID = ltrim($adpID,"U8Uu8u");
 
-        $checkR = $db->exec_statement($checkQ, array($adpID));
+        $checkR = $db->execute($checkQ, array($adpID));
         if ($db->num_rows($checkR) < 1){
             echo "Notice: ADP ID #$adpID doesn't match any current employee.";
             echo "Data for this ID is being omitted.<br />";
@@ -140,25 +140,25 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 elseif (isset($_POST["data"])){
     $start = $_POST["startDay"];
     $end = $_POST["endDay"];
-    $prep = $db->prepare_statement("SELECT * FROM fullTimeStatus WHERE empID=?");
-    $ins = $db->prepare_statement("INSERT INTO fullTimeStatus VALUES (?, ?)");
-    $up = $db->prepare_statement("UPDATE fullTimeStatus SET status=? WHERE empID=?");
-    $add = $db->prepare_statement("INSERT INTO weeklyHours VALUES (?,?,?,?)");
+    $prep = $db->prepare("SELECT * FROM fullTimeStatus WHERE empID=?");
+    $ins = $db->prepare("INSERT INTO fullTimeStatus VALUES (?, ?)");
+    $up = $db->prepare("UPDATE fullTimeStatus SET status=? WHERE empID=?");
+    $add = $db->prepare("INSERT INTO weeklyHours VALUES (?,?,?,?)");
     foreach($_POST["data"] as $d){
         $fields = explode(",",$d);
         $empID = $fields[0];
         $hours = $fields[1];
         $status = $fields[2];
 
-        $res = $db->exec_statement($prep, array($empID));
+        $res = $db->execute($prep, array($empID));
         if ($db->num_rows($res) == 0){
-            $db->exec_statement($ins, array($empID, $status));
+            $db->execute($ins, array($empID, $status));
         }
         else {
-            $db->exec_statement($up, array($status, $empID));
+            $db->execute($up, array($status, $empID));
         }
 
-        $db->exec_statement($add, array($start, $end, $empID, $hours));
+        $db->execute($add, array($start, $end, $empID, $hours));
     }
 
     echo "ADP data import complete!<br />";

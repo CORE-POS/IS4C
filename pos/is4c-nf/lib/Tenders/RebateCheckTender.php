@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TransRecord;
+use \CoreLocal;
+
 /**
   @class RebateCheckTender
   Tender module for checks
@@ -43,15 +48,13 @@ class RebateCheckTender extends TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("enableFranking") != 1) {
+        if (CoreLocal::get("enableFranking") != 1) {
             return true;
         }
 
         // check endorsing
-        if ($CORE_LOCAL->get("msgrepeat") == 0) {
-            return $this->DefaultPrompt();
+        if (CoreLocal::get("msgrepeat") == 0) {
+            return $this->defaultPrompt();
         }
 
         return true;
@@ -59,8 +62,8 @@ class RebateCheckTender extends TenderModule
 
     public function add()
     {
-        global $CORE_LOCAL;
         /* Discount disabled Jan01
+        */
         $db = Database::tDataConnect();
         $query = 'SELECT SUM(total) as ttl FROM localtemptrans
                 WHERE department IN (992, 991, 902)';
@@ -70,12 +73,10 @@ class RebateCheckTender extends TenderModule
             $row = $db->fetch_row($result);
             $ignore = (float)$row['ttl'];
         }
-        if ( ($CORE_LOCAL->get('runningTotal') - $ignore) >= 50) {
-            TransRecord::addhousecoupon('PATREBDISC', 703, -5.00);
+        if ( (CoreLocal::get('runningTotal') - $ignore) >= 150) {
+            TransRecord::addhousecoupon('PATREBDISC', 703, -25.00);
         }
-        */
 
-        $this->tender_code = "CK";
         parent::add();
     }
 
@@ -86,35 +87,7 @@ class RebateCheckTender extends TenderModule
 
     public function defaultPrompt()
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("enableFranking") != 1) {
-            return parent::defaultPrompt();
-        }
-
-        if ($this->amount === False) {
-            return parent::disabledPrompt();
-        }
-
-        $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-            .trim($CORE_LOCAL->get("laneno"))."-"
-            .trim($CORE_LOCAL->get("transno"));
-
-        $msg = "<br />"._("insert")." ".$this->name_string.
-            ' for $'.sprintf('%.2f',$this->amount).
-            "<br />"._("press enter to endorse");
-        $msg .= "<p><font size='-1'>"._("clear to cancel")."</font></p>";
-        if ($CORE_LOCAL->get("LastEquityReference") == $ref) {
-            $msg .= "<div style=\"background:#993300;color:#ffffff;
-                margin:3px;padding: 3px;\">
-                There was an equity sale on this transaction. Did it get
-                endorsed yet?</div>";
-        }
-
-        $CORE_LOCAL->set("boxMsg",$msg);
-        $CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
-
-        return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
+        return parent::frankingPrompt();
     }
 
 }

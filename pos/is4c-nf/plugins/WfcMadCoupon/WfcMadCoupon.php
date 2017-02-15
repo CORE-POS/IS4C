@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class WfcMadCoupon extends Plugin {
 
-	public $plugin_description = "WFC's quarterly member appreciation discount. Very
-			co-op specific and shouldn't be in the main code.";
+    public $plugin_description = "WFC's quarterly member appreciation discount. Very
+            co-op specific and shouldn't be in the main code.";
 }

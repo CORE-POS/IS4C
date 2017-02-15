@@ -26,7 +26,7 @@ refreshSession();
 //  End -->
 </script>
 <script type="text/javascript"
-	src="/git/fannie/src/javascript/jquery.js">
+    src="/git/fannie/src/javascript/jquery.js">
 </script>
 <?php
 echo "<script language=JavaScript>";
@@ -87,4 +87,4 @@ echo "<a href=/git/fannie/item/handheld.php>Small-screen</a>";
 echo "</div>";
 echo "</body>";
 echo "</html>";
-?>
+

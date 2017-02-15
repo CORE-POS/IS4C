@@ -66,13 +66,17 @@ class GumLoanReport extends FannieReportPage
 
         $data = array();
         while($row = $dbc->fetch_row($result)) {
+            $nearest = strtotime($row['nearest']);
+            $nearest = mktime(0, 0, 0, date('n',$nearest)+$row['termInMonths'], date('j',$nearest), date('Y',$nearest));
+            $farthest = strtotime($row['farthest']);
+            $farthest = mktime(0, 0, 0, date('n',$farthest)+$row['termInMonths'], date('j',$farthest), date('Y',$farthest));
             $record = array(
                $row['termInMonths'],
                sprintf('%.2f', $row['totalP']), 
                sprintf('%.2f', $row['avgR'] * 100), 
                sprintf('%.2f', $row['totalM']), 
-               date('Y-m-d', strtotime($row['nearest'])),
-               date('Y-m-d', strtotime($row['farthest'])),
+               date('Y-m-d', $nearest),
+               date('Y-m-d', $farthest),
             );
             $data[] = $record;
         }
@@ -92,7 +96,10 @@ class GumLoanReport extends FannieReportPage
         return array('Total', sprintf('%.2f', $sum), '', sprintf('%.2f', $due), '', '');
     }
 
-
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 }
 
 FannieDispatch::conditionalExec();

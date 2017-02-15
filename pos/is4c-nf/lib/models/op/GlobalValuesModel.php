@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class GlobalValuesModel
 */
@@ -38,114 +41,17 @@ class GlobalValuesModel extends BasicModel
     'TTLFlag' => array('type'=>'TINYINT'),
     'FntlFlag' => array('type'=>'TINYINT'),
     'TaxExempt' => array('type'=>'TINYINT'),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function CashierNo()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["CashierNo"])) {
-                return $this->instance["CashierNo"];
-            } elseif(isset($this->columns["CashierNo"]["default"])) {
-                return $this->columns["CashierNo"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["CashierNo"] = func_get_arg(0);
-        }
+        return '
+Use:
+A small subset of session values. Storing this
+in SQL ensures it will survive a browser crash
+or reboot to pick up more-or-less when the transaction
+left off.
+        ';
     }
-
-    public function Cashier()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Cashier"])) {
-                return $this->instance["Cashier"];
-            } elseif(isset($this->columns["Cashier"]["default"])) {
-                return $this->columns["Cashier"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Cashier"] = func_get_arg(0);
-        }
-    }
-
-    public function LoggedIn()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["LoggedIn"])) {
-                return $this->instance["LoggedIn"];
-            } elseif(isset($this->columns["LoggedIn"]["default"])) {
-                return $this->columns["LoggedIn"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["LoggedIn"] = func_get_arg(0);
-        }
-    }
-
-    public function TransNo()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["TransNo"])) {
-                return $this->instance["TransNo"];
-            } elseif(isset($this->columns["TransNo"]["default"])) {
-                return $this->columns["TransNo"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["TransNo"] = func_get_arg(0);
-        }
-    }
-
-    public function TTLFlag()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["TTLFlag"])) {
-                return $this->instance["TTLFlag"];
-            } elseif(isset($this->columns["TTLFlag"]["default"])) {
-                return $this->columns["TTLFlag"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["TTLFlag"] = func_get_arg(0);
-        }
-    }
-
-    public function FntlFlag()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["FntlFlag"])) {
-                return $this->instance["FntlFlag"];
-            } elseif(isset($this->columns["FntlFlag"]["default"])) {
-                return $this->columns["FntlFlag"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["FntlFlag"] = func_get_arg(0);
-        }
-    }
-
-    public function TaxExempt()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["TaxExempt"])) {
-                return $this->instance["TaxExempt"];
-            } elseif(isset($this->columns["TaxExempt"]["default"])) {
-                return $this->columns["TaxExempt"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["TaxExempt"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

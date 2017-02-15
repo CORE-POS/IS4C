@@ -21,15 +21,17 @@
 
 *********************************************************************************/
 
-global $FANNIE_ROOT;
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!class_exists('FannieAuth'))
-    include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) .'/classlib2.0/FannieAPI.php');
+}
+if (!class_exists('FannieAuth')) {
+    include(dirname(__FILE__) .'/classlib2.0/auth/FannieAuth.php');
+}
 
 /**
 */
-class TimesheetPlugin extends FanniePlugin {
+class TimesheetPlugin extends \COREPOS\Fannie\API\FanniePlugin {
+    public $page_set = 'Plugin :: TimesheetPlugin';
 
     /**
       Desired settings. These are automatically exposed
@@ -46,7 +48,7 @@ class TimesheetPlugin extends FanniePlugin {
     public $plugin_description = 'Plugin for timeclock operations';
 
 
-    public function setting_change()
+    public function settingChange()
     {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
@@ -69,7 +71,7 @@ class TimesheetPlugin extends FanniePlugin {
         }
     }
 
-    public function plugin_enable(){
+    public function pluginEnable(){
         ob_start();
         $try = FannieAuth::createClass('timesheet_access',
             'Grants user permission to use the
@@ -85,4 +87,3 @@ class TimesheetPlugin extends FanniePlugin {
     }
 }
 
-?>

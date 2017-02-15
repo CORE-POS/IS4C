@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,20 +24,25 @@
 /* 17Aug12 flathat Add titles to un-coded "History" and "Change Status" links.
 */
 
-class Suspension extends MemberModule {
+class Suspension extends \COREPOS\Fannie\API\member\MemberModule {
+
+    public function width()
+    {
+        return parent::META_WIDTH_THIRD;
+    }
 
     function showEditForm($memNum,$country="US"){
         global $FANNIE_URL;
 
         $dbc = $this->db();
         
-        $infoQ = $dbc->prepare_statement("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
+        $infoQ = $dbc->prepare("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
                 s.suspDate,
                 CASE WHEN s.reasoncode = 0 THEN s.reason ELSE r.textStr END as reason
                 FROM suspensions AS s LEFT JOIN reasoncodes AS r
                 ON s.reasoncode & r.mask <> 0
                 WHERE s.cardno=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoR = $dbc->execute($infoQ,array($memNum));
 
         $status = "Active";
         $date = "";
@@ -51,22 +56,32 @@ class Suspension extends MemberModule {
             $reason = rtrim($reason,", ");
         }
 
-        $ret = "<fieldset><legend>Active Status</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Active Status</div>
+            <div class=\"panel-body\">";
 
-        $ret .= "<tr><th>Current Status</th>";
-        $ret .= "<td>$status</td>";
-        if (!empty($reason)){
-            $ret .= "<th>Reason</th>";
-            $ret .= "<td>$reason</td></tr>";
+        $ret .= '<div class="form-group">
+            <span class="label primaryBackground">Current Status</span>';
+        $ret .= ' <strong>' . $status . '</strong>';
+        $ret .= '</div>';
+
+        if (!empty($reason)) {
+            $ret .= '<div class="form-group">
+                <span class="label primaryBackground">Reason</span>';
+            $ret .= ' <strong>' . $reason . '</strong>';
+            $ret .= '</div>';
         }
-        $ret .= "<tr><td><a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a></td>";
-        $ret .= "<td><a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a></td></tr>";
+        
+        $ret .= '<div class="form-group">';
+        $ret .= "<a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a>";
+        $ret .= ' | ';
+        $ret .= "<a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a>";
+        $ret .= '</div>';
 
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
+
         return $ret;
     }
 }
 
-?>

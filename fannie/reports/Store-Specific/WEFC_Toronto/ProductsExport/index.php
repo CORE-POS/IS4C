@@ -4,14 +4,14 @@
     Copyright 2009 Whole Foods Co-op
     Copyright 2013 West End Food Co-op, Toronto, Ontario, Canada
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -88,7 +88,7 @@ if (isset($_REQUEST['submit'])){
     $taxRates = array(0 => 0);
     $tQ = "SELECT id, description,rate FROM core_op.taxrates WHERE id > 0 ORDER BY id";
     $tR = $dbc->query($tQ);
-    while ( $trow = $dbc->fetch_array($tR) ) {
+    while ( $trow = $dbc->fetchRow($tR) ) {
         $taxNames[$trow['id']] = $trow['description'];
         $taxRates[$trow['id']] = $trow['rate'];
     }
@@ -320,4 +320,4 @@ input[type="checkbox"] {
 <?php
 include($FANNIE_ROOT.'src/footer.html');
 }
-?>
+

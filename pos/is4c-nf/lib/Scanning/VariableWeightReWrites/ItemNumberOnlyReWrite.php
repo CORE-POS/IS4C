@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\VariableWeightReWrites;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrite;
+
 /**
   @class ItemNumberOnlyReWrite
 
@@ -32,11 +35,9 @@ class ItemNumberOnlyReWrite extends VariableWeightReWrite
 {
     public function translate($upc, $includes_check_digit=false)
     {
-        $item_number = '';
+        $item_number = substr($upc, 3, 5);
         if ($includes_check_digit) {
             $item_number = substr($upc, 2, 5);
-        } else {
-            $item_number = substr($upc, 3, 5);
         }
 
         return str_pad($item_number, 13, '0', STR_PAD_LEFT);

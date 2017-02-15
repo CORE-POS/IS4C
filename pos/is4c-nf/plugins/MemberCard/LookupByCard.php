@@ -21,49 +21,45 @@
 
 *********************************************************************************/
 
-class LookupByCard {
+use COREPOS\pos\lib\Database;
 
-	/**
-	  This module handle numeric inputs
-	  @return boolean default True
-	*/
-	public function handle_numbers(){
-		return True;
-	}
+class LookupByCard 
+{
 
-	/**
-	  This module handle text inputs
-	  @return boolean default True
-	*/
-	public function handle_text(){
-		return False;
-	}
+    /**
+      This module handle numeric inputs
+      @return boolean default True
+    */
+    public function handle_numbers(){
+        return True;
+    }
 
-	/**
-	  Find member by membercards.upc
-	  @param $num the upc
-	  @return array. See default_value().
-	*/
-	public function lookup_by_number($num){
-		$dbc = Database::pDataConnect();
-		$upc = str_pad($num,13,'0',STR_PAD_LEFT);
-		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
-			LastName, FirstName FROM custdata
-			AS c LEFT JOIN memberCards AS m
-			ON c.CardNo=m.card_no
-			WHERE m.upc=?
-			AND Type IN (\'PC\',\'REG\')
-			ORDER BY personNum');
-		$result = $dbc->exec_statement($query, array($upc));
+    /**
+      This module handle text inputs
+      @return boolean default True
+    */
+    public function handle_text(){
+        return False;
+    }
 
-		$ret = $this->default_value();
-		while($w = $dbc->fetch_row($result)){
-			$key = $w['CardNo'].'::'.$w['personNum'];
-			$val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
-			$ret['results'][$key] = $val;
-		}
-		return $ret;
-	}
+    /**
+      Find member by membercards.upc
+      @param $num the upc
+      @return array. See default_value().
+    */
+    public function lookup_by_number($num){
+        $dbc = Database::pDataConnect();
+        $upc = str_pad($num,13,'0',STR_PAD_LEFT);
+        $query = $dbc->prepare('SELECT CardNo, personNum,
+            LastName, FirstName FROM custdata
+            AS c LEFT JOIN memberCards AS m
+            ON c.CardNo=m.card_no
+            WHERE m.upc=?
+            AND Type IN (\'PC\',\'REG\')
+            ORDER BY personNum');
+        $result = $dbc->execute($query, array($upc));
+
+        return $this->listToArray($dbc, $result);
+    }
 }
 
-?>

@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -40,7 +40,7 @@ class PullRemoteTransactionsTask extends FannieTask
 
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER, $FANNIE_TRANS_DB;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $local_dtrans = $FANNIE_TRANS_DB . $dbc->sep() . 'dtransactions';
 
@@ -58,7 +58,7 @@ class PullRemoteTransactionsTask extends FannieTask
 
         $stores = new StoresModel($dbc);
         foreach($stores->find() as $store) {
-            if ($store->dbHost() == $FANNIE_SERVER) {
+            if ($store->dbHost() == $this->config->get('SERVER')) {
                 // that's me! just continue.
                 continue;
             } else if ($store->pull() == 0) {
@@ -68,27 +68,19 @@ class PullRemoteTransactionsTask extends FannieTask
 
             $remoteID = $store->storeID();
 
-            $lowerBound = 0;
-            $dtransMax = $dbc->execute($max1, array($remoteID));
-            if ($dtransMax === false) {
-                echo $this->cronMsg('Polling problem: cannot lookup info in dtransactions');
+            $lowerBound = $dbc->getValue($max1, array($remoteID));
+            if ($lowerBound === false) {
+                $this->cronMsg('Polling problem: cannot lookup info in dtransactions', FannieLogger::WARNING);
                 continue;
-            } else if ($dbc->num_rows($dtransMax) > 0) {
-                $row = $dbc->fetch_row($dtransMax);
-                $lowerBound = $row['done'];
-            } 
-            if ($lowerBound == 0) {
-                $transarchiveMax = $dbc->execute($max2, array($remoteID));
-                if ($transarchiveMax === false) {
-                    echo $this->cronMsg('Polling problem: cannot lookup info in transarchive');
+            } elseif ($lowerBound == 0) {
+                $lowerBound = $dbc->getValue($max2, array($remoteID));
+                if ($lowerBound === false) {
+                    $this->cronMsg('Polling problem: cannot lookup info in transarchive', FannieLogger::WARNING);
                     continue;
-                } else if ($dbc->num_rows($transarchiveMax) > 0) {
-                    $row = $dbc->fetch_row($transarchiveMax);
-                    $lowerBound = $row['done'];
                 }
             }
 
-            $connect = $dbc->add_connection($store->dbHost(), $store->dbDriver(),
+            $connect = $dbc->addConnection($store->dbHost(), $store->dbDriver(),
                                          $store->transDB(), $store->dbUser(),
                                          $store->dbPassword());
             $columns = $dbc->getMatchingColumns($local_dtrans, $FANNIE_OP_DB,

@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,24 +21,17 @@
 
 *********************************************************************************/
 
-if (!class_exists('FanniePage')) {
-    include_once(dirname(__FILE__).'/FanniePage.php');
-}
-if (!class_exists('FormLib')) {
-    include_once(dirname(__FILE__).'/lib/FormLib.php');
-}
-if (!class_exists('Spreadsheet_Excel_Reader')) {
-    include_once(dirname(__FILE__).'/../src/Excel/xls_read/reader.php');
-}
-if (!class_exists('PHPExcel_IOFactory')) {
-    include_once(dirname(__FILE__).'/../src/Excel/xlsx_read/Classes/PHPExcel.php');
+namespace COREPOS\Fannie\API;
+
+if (!class_exists('\FannieAPI')) {
+    include_once(dirname(__FILE__).'/FannieAPI.php');
 }
 
 /**
   @class FanniePage
   Class for drawing screens
 */
-class FannieUploadPage extends FanniePage 
+class FannieUploadPage extends \FanniePage 
 {
 
     public $required = true;
@@ -68,8 +61,8 @@ class FannieUploadPage extends FanniePage
         'example' => array(
             'name' => 'upc',
             'display_name' => 'UPC',
-            'default' => 7,
-            'required' => true,
+            'default' => 0,
+            'required' => false,
         ),
     );
 
@@ -102,6 +95,24 @@ class FannieUploadPage extends FanniePage
     */
     protected $use_js = false;
 
+    private function finishPreviewOpts()
+    {
+        foreach ($this->preview_opts as $k=>$v) {
+            if (!isset($this->preview_opts[$k]['name'])) {
+                $this->preview_opts[$k]['name'] = $k;
+            }
+            if (!isset($this->preview_opts[$k]['display_name'])) {
+                $this->preview_opts[$k]['display_name'] = $this->preview_opts[$k]['name'];
+            }
+            if (!isset($this->preview_opts[$k]['required'])) {
+                $this->preview_opts[$k]['required'] = false;
+            }
+            if (!isset($this->preview_opts[$k]['default'])) {
+                $this->preview_opts[$k]['default'] = -1;
+            }
+        }
+    }
+
     /**
       Handle pre-display tasks such as input processing
       @return
@@ -110,22 +121,28 @@ class FannieUploadPage extends FanniePage
     */
     public function preprocess()
     {
-        global $FANNIE_URL, $FANNIE_OP_DB;
-
-        $col_select = FormLib::get_form_value('cs','');
+        $col_select = \FormLib::get_form_value('cs','');
+        $this->finishPreviewOpts();
 
         if (isset($_FILES[$this->upload_field_name])) {
             /* file upload submitted */
             $try = $this->processUpload();
             if ($try) {
                 $this->content_function = 'basicPreview';
-                $this->window_dressing = False;
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                if (!$this->themed) {
+                    $this->window_dressing = false;
+                }
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    // windows has trouble with symlinks
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
+                } else {
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
+                }
             } else {
                 $this->content_function = 'uploadError';
             }
         } else if (is_array($col_select)) {
-            $this->upload_file_name = FormLib::get_form_value('upload_file_name','');
+            $this->upload_file_name = \FormLib::get_form_value('upload_file_name','');
             
             /* column selections submitted */
             for($i=0;$i<count($col_select);$i++) {
@@ -150,10 +167,10 @@ class FannieUploadPage extends FanniePage
                       Create temporary database table
                       and load all records into the table
                     */
-                    if (FormLib::get('ajaxOp', '') == 'upload') {
+                    if (\FormLib::get('ajaxOp', '') == 'upload') {
                         $ret = array('error'=>0);
                         $fileData = $this->fileToArray();
-                        $offset = FormLib::get('offset', 0);
+                        $offset = \FormLib::get('offset', 0);
                         $chunk_size = 200;
 
                         if (count($fileData) == 0) {
@@ -165,7 +182,7 @@ class FannieUploadPage extends FanniePage
 
                         $num_columns = count($fileData[0]);
 
-                        /** first pass; create table **/
+                        /** first pass **/
                         if ($offset == 0) {
                             $this->split_start();
                         }
@@ -173,20 +190,17 @@ class FannieUploadPage extends FanniePage
                         // Extract lines & process
                         $lines = array();
                         for ($i=$offset; $i<count($fileData); $i++) {
-                            if (count($fileData[$i]) != $num_columns) {
-                                continue;
-                            }
                             $lines[] = $fileData[$i];
                             if (count($lines) > $chunk_size) {
                                 break;
                             }
                         }
-                        $try = $this->process_file($lines);
+                        $try = $this->process_file($lines, $this->getIndexes());
 
                         $done = ($offset + $chunk_size) > count($fileData) ? true : false;
 
                         if (count($lines) == 0 && !$done) {
-                            $ret['error'] = 'Upload into database failed';
+                            $ret['error'] .= 'Upload into database failed';
                             unlink($this->upload_file_name);
                             echo json_encode($ret);
                             return false;
@@ -214,7 +228,7 @@ class FannieUploadPage extends FanniePage
                     }
                 } elseif ($this->use_splits) {
                     /* break file into pieces */
-                    $files = FormLib::get_form_value('f');
+                    $files = \FormLib::get_form_value('f');
                     if ($files === '') {
                         $tempdir = dirname($this->upload_file_name);
                         if (!is_dir($tempdir.'/splits')) {
@@ -241,17 +255,13 @@ class FannieUploadPage extends FanniePage
                     } else {
                         /* process one file */
                         $this->upload_file_name = sys_get_temp_dir().'/fannie/splits/'.array_pop($files);                                    
-                        $try = $this->process_file($this->fileToArray());
+                        $try = $this->process_file($this->fileToArray(), $this->getIndexes());
                         unlink($this->upload_file_name);
                         if ($try && count($files) > 0) {
                             /* if more remain, redirect back to self */
-                            $url = $_SERVER['PHP_SELF'].'?';
-                            foreach($files as $f) {
-                                $url .= 'f[]='.$f.'&';
-                            }
-                            foreach($col_select as $c) {
-                                $url .= 'cs[]='.$c.'&';
-                            }
+                            $url = filter_input(INPUT_SERVER, 'PHP_SELF').'?';
+                            $url .= array_reduce($files, function($carry, $item){ return $carry . 'f[]=' . $item . '&'; }, '');
+                            $url .= array_reduce($col_select, function($carry, $item){ return $carry . 'cs[]=' . $item . '&'; }, '');
                             $url = rtrim($url,'&');
                             header('Location: '.$url);
 
@@ -262,7 +272,7 @@ class FannieUploadPage extends FanniePage
                         }
                     }
                 } else { // not using splits
-                    $try = $this->process_file($this->fileToArray());
+                    $try = $this->process_file($this->fileToArray(), $this->getIndexes());
                 }
 
                 if ($try) {
@@ -277,7 +287,12 @@ class FannieUploadPage extends FanniePage
             } else { // selected columns were invalid; redisplay preview screen
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    // windows has trouble with symlinks
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
+                } else {
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
+                }
             }
         }
 
@@ -343,7 +358,7 @@ class FannieUploadPage extends FanniePage
                 $this->error_details = 'No ZIP support';
                 return false;
             }
-            $za = new ZipArchive();
+            $za = new \ZipArchive();
             if ($za->open($tmpfile) !== true) {
                 unlink($tmpfile);
                 $this->error_details = 'Bad ZIP file';
@@ -418,9 +433,10 @@ class FannieUploadPage extends FanniePage
       Do something with the uploaded data
       @param $linedata an array of arrays
        (each inner area is one line of data)
+      @param $indexes an array of column names and indexes
       @return True on success, False on error
     */
-    public function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         return true;
     }
@@ -453,9 +469,10 @@ class FannieUploadPage extends FanniePage
     */
     protected function uploadError()
     {
-        return sprintf('Something went wrong uploading the file. 
+        return sprintf('<div class="alert alert-danger">
+            Something went wrong uploading the file. 
             Details: <em>%s</em>. 
-            <a href="%s">Try again</a>?',
+            <a href="%s">Try again</a>?</div>',
             $this->error_details,
             $_SERVER['PHP_SELF']);
     }
@@ -466,9 +483,10 @@ class FannieUploadPage extends FanniePage
     */
     protected function processingError()
     {
-        return sprintf('Something went wrong processing the file. 
+        return sprintf('<div class="alert alert-danger">
+            Something went wrong processing the file. 
             Details: <em>%s</em>. 
-            <a href="%s">Try again</a>?',
+            <a href="%s">Try again</a>?</div>',
             $this->error_details,
             $_SERVER['PHP_SELF']);
     }
@@ -513,9 +531,11 @@ class FannieUploadPage extends FanniePage
         return sprintf('
         <form id="FannieUploadForm" enctype="multipart/form-data" 
             action="%s" method="post">
+        <p>
         <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
         Filename: <input type="file" id="%s" name="%s" />
-        <input type="submit" value="Upload File" />
+        <button type="submit" class="btn btn-default">Upload File</button>
+        </p>
         </form>', $_SERVER['PHP_SELF'],
         $this->upload_field_name,
         $this->upload_field_name);
@@ -539,13 +559,17 @@ class FannieUploadPage extends FanniePage
         $ret = '<h3>Select columns</h3>';
         /* show any errors */
         if ($this->error_details != 'n/a' && $this->error_details != '') {
-            $ret .= '<ul style="border: solid 1px red;">';
+            $ret .= '<ul class="alert alert-danger">';
             $ret .= $this->error_details;
             $ret .= '</ul>';
         }
         $ret .= sprintf('<form action="%s" method="post">',$_SERVER['PHP_SELF']);
         $ret .= $this->preview_content();
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        if ($this->themed) {
+            $ret .= '<table class="table">';
+        } else {
+            $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        }
 
         /* Read the first five rows from the file
            for a preview. Determine row width at
@@ -582,7 +606,7 @@ class FannieUploadPage extends FanniePage
         $ret .= $table . '</table>';
         $ret .= sprintf('<input type="hidden" name="upload_file_name" value="%s" />',
                 $this->upload_file_name);
-        $ret .= '<input type="submit" value="Continue" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Continue</button></p>';
         $ret .= '</form>';
 
         return $ret;
@@ -622,8 +646,6 @@ class FannieUploadPage extends FanniePage
                             $('#uploadingSpan').html('Uploading '+resp.cur_record);
                             doUpload(file_name, resp.cur_record);
                         } else {
-                            $('#progressSpan').html('Processing 0');
-                            $('#numRecords').html('/'+resp.num_records+' records');
                             $('#resultsSpan').html('Upload complete');
                         }
                     } else {
@@ -653,12 +675,35 @@ class FannieUploadPage extends FanniePage
             <span id="resultsSpan"></span>
             </div>';
         $ret .= '<div id="fieldInfo" style="display:none;">';
-        foreach (FormLib::get('cs', array()) as $column) {
-            $ret .= sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
+        $ret .= array_reduce(\FormLib::get('cs', array()),
+            function ($carry, $column) {
+                return $carry . sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
+            }, '');
+        foreach ($_POST as $key => $val) {
+            if ($key != 'cs') {
+                if (is_array($val)) {
+                    $ret .= array_reduce($val, function($carry, $item) use ($key) {
+                        return $carry . sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $item);
+                    }, '');
+                } else {
+                    $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $val);
+                }
+            }
         }
         $ret .= '</div>';
 
         $this->add_onload_command("doUpload('" . $this->upload_file_name . "', 0);");
+
+        return $ret;
+    }
+
+    protected function getIndexes()
+    {
+        $ret = array();
+        foreach ($this->preview_opts as $key => $info) {
+            $name = isset($info['name']) ? $info['name'] : $key;
+            $ret[$name] = $this->getColumnIndex($name);
+        }
 
         return $ret;
     }
@@ -669,13 +714,18 @@ class FannieUploadPage extends FanniePage
       @param $name the name (as defined in $this->preview_opts)
       @return Integer index if available otherwise False
     */
-    protected function get_column_index($name)
+    protected function getColumnIndex($name)
     {
         if (isset($this->preview_selections[$name])) {
             return $this->preview_selections[$name];
         } else {
             return false;
         }
+    }
+
+    protected function get_column_index($name)
+    {
+        return $this->getColumnIndex($name);
     }
 
     /**
@@ -703,20 +753,7 @@ class FannieUploadPage extends FanniePage
     */
     protected function csvToArray($limit=0)
     {
-        $fp = fopen($this->upload_file_name,'r');
-        if (!$fp) {
-            return array();
-        }
-        $ret = array();
-        while(!feof($fp)) {
-            $ret[] = fgetcsv($fp);
-            if ($limit != 0 && count($ret) >= $limit) {
-                break;
-            }
-        }
-        fclose($fp);
-
-        return $ret;
+        return \COREPOS\Fannie\API\data\FileData::csvToArray($this->upload_file_name, $limit);
     }
 
     /**
@@ -724,58 +761,70 @@ class FannieUploadPage extends FanniePage
     */
     protected function xlsToArray($limit)
     {
-        if (!class_exists('Spreadsheet_Excel_Reader')) {
-            return array();
-        }
+        return \COREPOS\Fannie\API\data\FileData::xlsToArray($this->upload_file_name, $limit);
+    }
 
-        $data = new Spreadsheet_Excel_Reader();
-        $data->read($this->upload_file_name);
+    protected function xlsxToArray($limit)
+    {
+        return \COREPOS\Fannie\API\data\FileData::xlsxToArray($this->upload_file_name, $limit);
+    }
 
-        $sheet = $data->sheets[0];
-        $rows = $sheet['numRows'];
-        $cols = $sheet['numCols'];
-        $ret = array();
-        for($i=1; $i<=$rows; $i++) {
-            $line = array();
-            for ($j=1; $j<=$cols; $j++) {
-                if (isset($sheet['cells'][$i]) && isset($sheet['cells'][$i][$j])) {
-                    $line[] = $sheet['cells'][$i][$j];
-                } else {
-                    $line[] = '';
-                }
+    protected function simpleStats($stats, $key='imported')
+    {
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $stats[$key] . ' records imported</div>';
+        if ($stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
             }
-            $ret[] = $line;
-            if ($limit != 0 && count($ret) >= $limit) {
-                break;
-            }
+            $ret .= '</ul></div>';
         }
 
         return $ret;
     }
 
-    protected function xlsxToArray($limit)
+    protected function checkIndex($index, $line)
     {
-        if (!class_exists('PHPExcel_IOFactory')) {
-            return array();
+        if ($index !== false && isset($line[$index])) {
+            return true;
+        } else {
+            return false;
         }
+    }
 
-        $objPHPExcel = PHPExcel_IOFactory::load($this->upload_file_name);
-        $sheet = $objPHPExcel->getActiveSheet();
-        $rows = $sheet->getHighestRow();
-        $cols = PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
-        $ret = array();
-        for ($i=1; $i<=$rows; $i++) {
-            $new = array();
-            for($j=0; $j<=$cols; $j++) {
-                $new[] = $sheet->getCellByColumnAndRow($j,$i)->getValue();
-            }
-            $ret[] = $new;
-            if ($limit != 0 && count($ret) >= $limit) {
-                break;
-            }
-        }
+    public function helpContent()
+    {
+        return '
+        <p><strong>General Import Tool Tips</strong>
+            <ul>
+                <li>CSV, XLS, and XLSX are all supported. However, CSV is most reliable.</li>
+                <li>Maximum file size is usually 2MB. CSV files may be zipped to reduce
+                    file size.</li>
+                <li>The purpose of the preview screen is to specify the format of your
+                    file. It shows the first five rows of data with dropdowns above each
+                    column. Use the dropdowns to specify what (if any) data is present in 
+                    each column. For example, if UPCs are in the 3rd column, set the dropdown
+                    for the third column to UPC.</li>
+                <li>Large files may take awhile to process. Give it 5 or 10 minutes before
+                    deciding it didn\'t work.</li>
+            </ul>
+        </p>';
+    }
 
-        return $ret;
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->bodyContent());
+        $phpunit->assertInternalType('string', $this->preview_content());
+        $this->error_details = 'Test error';
+        $phpunit->assertInternalType('string', $this->uploadError());
+        $phpunit->assertInternalType('string', $this->processingError());
+        $stats = array(
+            'errors' => array('one', 'two'),
+            'imported' => 0,
+        );
+        $phpunit->assertInternalType('string', $this->simpleStats($stats));
     }
 }
 

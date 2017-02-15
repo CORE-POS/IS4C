@@ -21,30 +21,35 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialDepts;
+use COREPOS\pos\lib\Scanning\SpecialDept;
+use COREPOS\pos\lib\MiscLib;
+
 class EquityEndorseDept extends SpecialDept 
 {
     public $help_summary = 'Prompt to print receipt number on equity paperwork via endorser';
 
     public function handle($deptID,$amount,$json)
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("defaultNonMem")) {
-            $CORE_LOCAL->set('strEntered','');
-            $CORE_LOCAL->set('boxMsg','Equity requires member.<br />Apply member number first');
+        if ($this->session->get("memberID") == "0" || $this->session->get("memberID") == $this->session->get("defaultNonMem")) {
+            $this->session->set('strEntered','');
+            $this->session->set('boxMsg',_('Equity requires member.<br />Apply member number first'));
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 
             return $json;
         }
 
-        if ($CORE_LOCAL->get('msgrepeat') == 0) {
-            $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-                .trim($CORE_LOCAL->get("laneno"))."-"
-                .trim($CORE_LOCAL->get("transno"));
-            if ($CORE_LOCAL->get("LastEquityReference") != $ref) {
-                $CORE_LOCAL->set("equityAmt",$amount);
-                $CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br>
-                        <font size=-1>[enter] to continue, [clear] to cancel</font>");
+        if ($this->session->get('msgrepeat') == 0) {
+            $ref = trim($this->session->get("CashierNo"))."-"
+                .trim($this->session->get("laneno"))."-"
+                .trim($this->session->get("transno"));
+            if ($this->session->get("LastEquityReference") != $ref) {
+                $this->session->set("equityAmt",$amount);
+                $this->session->set("boxMsg",_("<b>Equity Sale</b><br>Insert paperwork"));
+                $this->session->set('boxMsgButtons', array(
+                    _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1&endorse=stock&endorseAmt='.$amount;
             }
         }

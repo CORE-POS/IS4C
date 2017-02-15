@@ -9,104 +9,104 @@ $sql = hours_dbconnect();
 require($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
 if (!$name){
-	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/viewEmployee.php?id=".$_GET["id"]);
-	return;
+    header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/viewEmployee.php?id=".$_GET["id"]);
+    return;
 }
 if (!isset($empID) || empty($empID)) $empID = getUID($name);
 
 if (!validateUserQuiet('view_all_hours')){
-	/* see if logged in user has access to any
-	   department. if so, see if the selected employee
-	   is in that department
-	*/
+    /* see if logged in user has access to any
+       department. if so, see if the selected employee
+       is in that department
+    */
     $sql = hours_dbconnect();
-	$validated = false;
-	$depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
-    $checkQ = $sql->prepare_statement("select department from employees where empID=?");
-    $checkR = $sql->exec_statement($checkQ, array($empID));
-	$checkW = $sql->fetch_row($checkR);
-	if (validateUserQuiet('view_all_hours',$checkW['department'])){
-		$validated = true;
-	}
+    $validated = false;
+    $depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
+    $checkQ = $sql->prepare("select department from employees where empID=?");
+    $checkR = $sql->execute($checkQ, array($empID));
+    $checkW = $sql->fetch_row($checkR);
+    if (validateUserQuiet('view_all_hours',$checkW['department'])){
+        $validated = true;
+    }
 
-	/* no access permissions found, so only allow the
-	   logged in user to see themself
-	*/
-	if (!$validated)
-		$empID = getUID($name);
+    /* no access permissions found, so only allow the
+       logged in user to see themself
+    */
+    if (!$validated)
+        $empID = getUID($name);
 }
 
 $sql = hours_dbconnect();
-$deptQ = $sql->prepare_statement("select department from employees where empID=?");
-$deptR = $sql->exec_statement($deptQ, array($empID));
+$deptQ = $sql->prepare("select department from employees where empID=?");
+$deptR = $sql->execute($deptQ, array($empID));
 $deptW = $sql->fetch_row($deptR);
 if ($deptW['department'] >= 998){
-	header("Location: {$FANNIE_URL}legacy/it/hours/viewEmployeeSalary.php?id=$empID");
-	exit;
+    header("Location: {$FANNIE_URL}legacy/it/hours/viewEmployeeSalary.php?id=$empID");
+    return;
 }
 
 echo "<html><head><title>View</title>";
 echo "<style type=text/css>
 #payperiods {
-	margin-top: 50px;
+    margin-top: 50px;
 }
 
 #payperiods td {
-	text-align: right;
+    text-align: right;
 }
 
 #payperiods th {
-	text-align: center;
+    text-align: center;
 }
 
 #payperiods td.left {
-	text-align: left;
+    text-align: left;
 }
 
 #payperiods th.left {
-	text-align: left;
+    text-align: left;
 }
 
 #payperiods th.right {
-	text-align: right;
+    text-align: right;
 }
 
 tr.one td {
-	background: #ffffcc;
+    background: #ffffcc;
 }
 tr.one th {
-	background: #ffffcc;
-	text-align: right;
+    background: #ffffcc;
+    text-align: right;
 }
 
 tr.two td {
-	background: #ffffff;
+    background: #ffffff;
 }
 tr.two th {
-	background: #ffffff;
-	text-align: right;
+    background: #ffffff;
+    text-align: right;
 }
 a {
-	color: blue;
+    color: blue;
 }
 
 #temptable th {
-	text-align: left;
+    text-align: left;
 }
 #temptable td {
-	text-align: right;
-	padding-left: 2em;
+    text-align: right;
+    padding-left: 2em;
 }
 
 #temptable {
-	font-size: 125%;
+    font-size: 125%;
 }
 
 #newtable th{
-	text-align: left;
+    text-align: left;
 }
 #newtable td{
-	text-align: right;
+    text-align: right;
 }
 
 </style>";
@@ -114,7 +114,7 @@ echo "</head><body>";
 
 echo "<h3>Employee Total Hours Worked and PTO Status</h3>";
 
-$infoQ = $sql->prepare_statement("select e.name,e.PTOLevel,p.dateStr,
+$infoQ = $sql->prepare("select e.name,e.PTOLevel,p.dateStr,
     l.HoursWorked - h.totalHours as remaining,
     o.PTOremaining,o.totalPTO,h.totalHours,u.hours
     from employees as e left join PayPeriods as p on e.PTOCutoff = p.periodID
@@ -123,20 +123,20 @@ $infoQ = $sql->prepare_statement("select e.name,e.PTOLevel,p.dateStr,
     left join pto as o on e.empID=o.empID
     left join uto as u on e.empID=u.empID
     where e.empID=?");
-$infoR = $sql->exec_statement($infoQ, array($empID));
+$infoR = $sql->execute($infoQ, array($empID));
 $infoW = $sql->fetch_row($infoR);
 
 $startdate = $infoW[2];
 if (preg_match("/(\d+?.\d+?.\d+)$/",$startdate,$matches) > 0) 
-	$startdate = $matches[1];
-	if (preg_match("/(\d\d?).(\d\d?).(\d\d\d?\d?)/",$startdate,$matches) > 0){
-		$month = $matches[1];
-		$day = $matches[2];
-		$year = $matches[3];
+    $startdate = $matches[1];
+    if (preg_match("/(\d\d?).(\d\d?).(\d\d\d?\d?)/",$startdate,$matches) > 0){
+        $month = $matches[1];
+        $day = $matches[2];
+        $year = $matches[3];
 
-		$timestamp = mktime(0,0,0,$month,$day,$year);
-		$startdate = strftime("%D",$timestamp+(24*60*60));
-	}
+        $timestamp = mktime(0,0,0,$month,$day,$year);
+        $startdate = strftime("%D",$timestamp+(24*60*60));
+    }
 
 echo "<h2>$infoW[0] [ <a href={$FANNIE_URL}auth/ui/loginform.php?logout=yes>Logout</a> ]</h2>";
 echo "<table cellspacing=0 cellpadding=4 border=1 id=newtable>";
@@ -149,11 +149,11 @@ printf("<tr class=two><th>Hours to Next Level</th><td>%.2f</td></tr>",$infoW[3])
 echo "<tr class=one><th>UTO Hours Remaining</th><td>$infoW[7]</td></tr>";
 echo "</tr></table>";
 
-$periodsQ = $sql->prepare_statement("select min(p.dateStr),sum(i.hours),sum(i.OTHours),sum(i.PTOHours),
+$periodsQ = $sql->prepare("select min(p.dateStr),sum(i.hours),sum(i.OTHours),sum(i.PTOHours),
     sum(i.UTOHours),sum(i.SecondRateHours),i.periodID
     from ImportedHoursData as i left join PayPeriods as p on i.periodID=p.periodID
     where i.empID=? group by i.periodID order by i.periodID desc");
-$periodsR = $sql->exec_statement($periodsQ, array($empID));
+$periodsR = $sql->execute($periodsQ, array($empID));
 $sums = array(0,0,0,0,0,0);
 $class = array("one","two");
 $prev_hours = 0;
@@ -162,23 +162,23 @@ echo "<table id=payperiods cellspacing=0 cellpadding=4 border=1>";
 echo "<tr><th>Pay Period</th><th>Reg. Hours</th><th>OT Hours</th><th>PTO Taken</th>";
 echo "<th>UTO Taken</th><th>Alt. Position Hours</th><th>Total Hours*</th></tr>";
 while ($row = $sql->fetch_row($periodsR)){
-	if ($row[6] < 5){
-		$prev_hours += $row[1];
-		$sums[0] += $row[1];
-		$sums[5] += $row[1];
-		continue;
-	}
-	
-	echo "<tr class=$class[$c]>";
-	$total = $row[1]+$row[2]+$row[5];
-	echo "<td class=left>$row[0]</td>";
-	for ($i=1; $i<6;$i++) echo "<td>$row[$i]</td>";
-	echo "<td>$total</td>";
-	echo "</tr>";
-	for ($i=1; $i<6;$i++)
-		$sums[$i-1]+=$row[$i];
-	$sums[5]+=$total;
-	$c = ($c+1)%2;
+    if ($row[6] < 5){
+        $prev_hours += $row[1];
+        $sums[0] += $row[1];
+        $sums[5] += $row[1];
+        continue;
+    }
+    
+    echo "<tr class=$class[$c]>";
+    $total = $row[1]+$row[2]+$row[5];
+    echo "<td class=left>$row[0]</td>";
+    for ($i=1; $i<6;$i++) echo "<td>$row[$i]</td>";
+    echo "<td>$total</td>";
+    echo "</tr>";
+    for ($i=1; $i<6;$i++)
+        $sums[$i-1]+=$row[$i];
+    $sums[5]+=$total;
+    $c = ($c+1)%2;
 }
 
 echo "<tr class=$class[$c]><td class=left>Previous hours</td>";
@@ -204,4 +204,3 @@ please contact Colleen or Andy.
 
 echo "</body></html>";
 
-?>

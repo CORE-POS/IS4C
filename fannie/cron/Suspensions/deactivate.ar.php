@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -21,13 +21,15 @@
 
 *********************************************************************************/
 
-if (!chdir("Suspensions")){
+if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (suspensions)";
-    exit;
+    return;
 }
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 
 /* HELP
 
@@ -55,7 +57,7 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 
 $TRANS = $FANNIE_TRANS_DB . ($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
-$custdata = $sql->table_definition('custdata');
+$custdata = $sql->tableDefinition('custdata');
 
 $susQ = "INSERT INTO suspensions
     select m.card_no,'I',c.memType,c.Type,'',
@@ -106,4 +108,3 @@ $memQ = "UPDATE meminfo AS m
     WHERE s.cardno is not null";
 $sql->query($memQ);
 
-?>

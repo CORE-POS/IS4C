@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -20,14 +20,27 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('checkLogin')) {
+    include($FANNIE_ROOT.'auth/login.php');
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 ?>
 <style type="text/css">
 a { color:blue; }
 </style>
+<link rel="stylesheet" type="text/css" href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css">
 <script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
+</script>
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js">
+</script>
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>item/autocomplete.js">
 </script>
 <script type="text/javascript">
 function setItem(upc){
@@ -40,8 +53,10 @@ function setOwner(cardno){
     window.close();
 }
 $(document).ready(function(){
-    if ($('#q').length != 0)
+    if ($('#q').length != 0) {
+        bindAutoComplete('#q', '../ws/', 'item');
         $('#q').focus();
+    }
 });
 </script>
 <?php
@@ -58,9 +73,15 @@ if (isset($_REQUEST['q'])){
     echo '<input type="submit" onclick="window.close();" value="Close" />';
 
     echo '<div id="one" style="display:block;">';
-    $itemP = $dbc->prepare_statement("SELECT upc,description FROM products WHERE description LIKE ?
+    $itemP = $dbc->prepare("
+        SELECT upc,
+            description 
+        FROM products 
+        WHERE description LIKE ? OR upc=?
+        GROUP BY upc,
+            description
         ORDER BY description");
-    $itemR = $dbc->exec_statement($itemP,array('%'.$_REQUEST['q'].'%'));
+    $itemR = $dbc->execute($itemP,array('%'.$_REQUEST['q'].'%', $_REQUEST['q']));
     if ($dbc->num_rows($itemR) == 0)
         echo 'No matching items';
     else {
@@ -74,9 +95,9 @@ if (isset($_REQUEST['q'])){
     echo '</div>';
 
     echo '<div id="two" style="display:none;">';
-    $memP = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM custdata WHERE LastName LIKE ?
+    $memP = $dbc->prepare("SELECT CardNo,FirstName,LastName FROM custdata WHERE LastName LIKE ?
         ORDER BY LastName,FirstName");
-    $memR = $dbc->exec_statement($memP,array('%'.$_REQUEST['q'].'%'));
+    $memR = $dbc->execute($memP,array('%'.$_REQUEST['q'].'%'));
     if ($dbc->num_rows($memR) == 0)
         echo 'No matching owners';
     else {
@@ -90,28 +111,35 @@ if (isset($_REQUEST['q'])){
     echo '</div>';
 
     echo '<div id="three" style="display:none;">';
-    $brandP = $dbc->prepare_statement("SELECT x.manufacturer FROM prodExtra AS x INNER JOIN products AS p ON
-        x.upc=p.upc WHERE x.manufacturer LIKE ? GROUP BY x.manufacturer
-        ORDER BY x.manufacturer");
-    $brandR = $dbc->exec_statement($brandP,array('%'.$_REQUEST['q'].'%'));
+    $brandP = $dbc->prepare("
+        SELECT p.brand 
+        FROM products AS p 
+        WHERE p.brand LIKE ? 
+        GROUP BY p.brand
+        ORDER BY p.brand");
+    $brandR = $dbc->execute($brandP,array('%'.$_REQUEST['q'].'%'));
     if ($dbc->num_rows($brandR) == 0)
         echo 'No matching brands';
     else {
         echo '<ul>';
         while($brandW = $dbc->fetch_row($brandR)){
             printf('<li><a href="search.php?brand=%s">%s</a></li>',
-                base64_encode($brandW['manufacturer']),
-                $brandW['manufacturer']);
+                base64_encode($brandW['brand']),
+                $brandW['brand']);
         }
         echo '</ul>';
     }
     echo '</div>';
-}
-else if (isset($_REQUEST['brand'])){
-    $q = $dbc->prepare_statement("SELECT p.upc,p.description FROM products AS p
-        INNER JOIN prodExtra AS x ON p.upc=x.upc WHERE
-        x.manufacturer=? ORDER by p.description");
-    $r = $dbc->exec_statement($q, array(base64_decode($_REQUEST['brand'])));
+} elseif (isset($_REQUEST['brand'])){
+    $q = $dbc->prepare("
+        SELECT p.upc,
+            p.description 
+        FROM products AS p
+        WHERE p.brand=? 
+        GROUP BY p.upc,
+            p.description
+        ORDER by p.description");
+    $r = $dbc->execute($q, array(base64_decode($_REQUEST['brand'])));
     printf("<b>%s items</b>",base64_decode($_REQUEST['brand']));
     echo '<ul>';
     while($itemW = $dbc->fetch_row($r)){
@@ -119,8 +147,7 @@ else if (isset($_REQUEST['brand'])){
             $itemW['upc'],$itemW['description']);
     }
     echo '</ul>';
-}
-else {
+} else {
     echo '<form action="search.php" method="get">
         <input type="text" name="q" id="q" />
         <input type="submit" value="Search" /> 
@@ -129,4 +156,3 @@ else {
         </form>';
 }
 
-?>

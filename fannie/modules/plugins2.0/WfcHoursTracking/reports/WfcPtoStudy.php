@@ -61,7 +61,9 @@ class WfcPtoStudy extends FannieReportPage
         // get level info
         $cutoffs = array();
         $awards = array();
-        include('../models/WfcHtPTOLevelsModel.php');
+        if (!class_exists('WfcHtPTOLevelsModel')) {
+            include(dirname(__FILE__) . '/../models/WfcHtPTOLevelsModel.php');
+        }
         $model = new WfcHtPTOLevelsModel($dbc);
         foreach($model->find('LevelID') as $obj) {
             $cutoffs[$obj->LevelID()] = $obj->HoursWorked();
@@ -134,6 +136,11 @@ class WfcPtoStudy extends FannieReportPage
         }
 
         return $report;
+    }
+
+    public function form_content()
+    {
+        return '<!-- no need -->';
     }
 }
 

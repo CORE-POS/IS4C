@@ -3,14 +3,14 @@
 
     Copyright 2012 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,9 +30,13 @@
 
 */
 
-include('../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
 set_time_limit(0);
 
@@ -57,6 +61,17 @@ having max(department)=0 and max(noteSuperID)=0
 and max(trans_id) > 0
 )
 and trans_id > 0
+
+UNION ALL
+
+select s.order_id,description,datetime,
+case when c.lastName ='' then b.LastName else c.lastName END as name
+from PendingSpecialOrder
+as s left join SpecialOrders as c on s.order_id=c.specialOrderID
+left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
+WHERE c.storeID NOT IN (1, 2)
+and trans_id > 0
+
 order by datetime
 ";
 
@@ -70,9 +85,8 @@ if ($sql->num_rows($r) > 0){
     $msg_body .= "These messages will be sent daily until orders get departments\n";
     $msg_body .= "or orders are closed\n";
 
-    $to = "buyers, michael";
+    $to = "buyers, dbuyers";
     $subject = "Incomplete SO(s)";
     mail($to,$subject,$msg_body);
 }
 
-?>

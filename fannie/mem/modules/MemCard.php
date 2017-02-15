@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,45 +21,107 @@
 
 *********************************************************************************/
 
-class MemCard extends MemberModule {
+class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
+
+    public function width()
+    {
+        return parent::META_WIDTH_HALF;
+    }
+
+    function HasSearch(){
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
+        if (isset($FANNIE_MEMBER_UPC_PREFIX) &&
+            $FANNIE_MEMBER_UPC_PREFIX != "") {
+            return True;
+        } else {
+            return False;
+        }
+    }
+
+    function showSearchForm($country='US') {
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
+        $ret = '';
+        $ret .= '<div class="row form-group form-inline" ' .
+            'title="Type or scan, with or without the prefix ' .
+            $FANNIE_MEMBER_UPC_PREFIX . '"' .
+            '>' .
+            '<label>Membership Card</label>' .
+            ' <input type="text" name="MemCard_mc"' .
+            'size="13" maxlength="13" ' .
+            'id="s_mc" class="form-control" />' .
+        '</div>';
+
+        return $ret;
+    }
+
+    /* What should replace 'mFirstName'?  mMemberCard
+    public function getSearchLoadCommands()
+    {
+        $FANNIE_URL = FannieConfig::config('URL');
+        return array(
+            "bindAutoComplete('#s_mc', '" . $FANNIE_URL . "ws/', 'mFirstName');\n",
+        );
+    }
+    */
+
+    function GetSearchResults()
+    {
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
+        $dbc = $this->db();
+
+        $ret = array();
+
+        $mc = "";
+        $mc = FormLib::get_form_value('MemCard_mc');
+        if (!preg_match("/^\d+$/",$mc)) {
+            return $ret;
+        }
+        $mcc = "";
+        if (strlen($mc) == 13) {
+            $mcc = $mc;
+        } else if (strlen($mc) == 11) {
+            $mcc = sprintf("00%s", $mc);
+        } else {
+            $mcc = sprintf("%s%05d",$FANNIE_MEMBER_UPC_PREFIX, (int)$mc);
+        }
+
+        $json = array(
+            'idCardUPC' => $mcc,
+        );
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0);
+
+        return $accounts;
+    }
+
 
     // Return a form segment for display or edit the Member Card#
-    function showEditForm($memNum, $country="US"){
-        global $FANNIE_URL;
-        global $FANNIE_MEMBER_UPC_PREFIX;
+    function showEditForm($memNum, $country="US")
+    {
+        $FANNIE_URL = FannieConfig::config('URL');
+        $FANNIE_MEMBER_UPC_PREFIX = FannieConfig::config('FANNIE_MEMBER_UPC_PREFIX');
 
-        $dbc = $this->db();
+        $account = self::getAccount();
 
         $prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
         $plen = strlen($prefix);
 
-        $infoQ = $dbc->prepare_statement("SELECT upc
-                FROM memberCards
-                WHERE card_no=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-        if ( $infoR === false ) {
-            return "Error: problem checking for Member Card<br />";
+        $ret = "<div class=\"panel panel-default\">
+            <div class=\"panel-heading\">Membership Card</div>
+            <div class=\"panel-body\">";
+        $upc = $account['idCardUPC'];
+        if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
+            $upc = substr($upc,$plen);
+            $upc = ltrim($upc,"0");
         }
 
-        $ret = "<fieldset><legend>Membership Card</legend>";
-        $ret .= "<table class=\"MemFormTable\" 
-            border=\"0\">";
+        $ret .= '<div class="form-group form-inline">
+            <span class="label primaryBackground">Card#</span>
+            <input type="text" name="memberCard" class="form-control"
+                value="' . $upc . '" />
+            </div>';
 
-        if ( $dbc->num_rows($infoR) > 0 ) {
-            $infoW = $dbc->fetch_row($infoR);
-            $upc = $infoW['upc'];
-            if ( $prefix && strpos("$upc", "$prefix") === 0 ) {
-                $upc = substr($upc,$plen);
-                $upc = ltrim($upc,"0");
-            }
-        } else {
-            $upc = "";
-        }
-        $ret .= "<tr><th>Card#</th>";
-        $ret .= "<td><input name='memberCard' size='15' value='{$upc}'></td>";
-        $ret .= '</tr>';
-
-        $ret .= "</table></fieldset>";
+        $ret .= "</div>";
+        $ret .= "</div>";
 
         return $ret;
 
@@ -68,7 +130,8 @@ class MemCard extends MemberModule {
 
     // Update, insert or delete the Member Card#.
     // Return "" on success or an error message.
-    function saveFormData($memNum){
+    public function saveFormData($memNum, $json=array())
+    {
 
         global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
         $dbc = $this->db();
@@ -103,4 +166,3 @@ class MemCard extends MemberModule {
 // MemCard
 }
 
-?>

@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class CustPreferencesModel
 */
@@ -32,57 +35,21 @@ class CustPreferencesModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
+    'custPreferenceID' => array('type'=>'INT', 'increment'=>true),
     'card_no' => array('type' => 'INT', 'primary_key'=>true),
+    'custAvailablePrefID' => array('type'=>'INT'),
     'pref_key' => array('type' => 'VARCHAR(50)', 'primary_key'=>true),
     'pref_value' => array('type'=>'VARCHAR(100)'),
-	);
+    );
 
-    /* START ACCESSOR FUNCTIONS */
-
-    public function card_no()
+    public function doc()
     {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["card_no"] = func_get_arg(0);
-        }
+        return '
+Use:
+Store customer-specific preferences
+This table supplements custdata and is
+available at the lanes.
+        ';
     }
-
-    public function pref_key()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["pref_key"])) {
-                return $this->instance["pref_key"];
-            } elseif(isset($this->columns["pref_key"]["default"])) {
-                return $this->columns["pref_key"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["pref_key"] = func_get_arg(0);
-        }
-    }
-
-    public function pref_value()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["pref_value"])) {
-                return $this->instance["pref_value"];
-            } elseif(isset($this->columns["pref_value"]["default"])) {
-                return $this->columns["pref_value"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["pref_value"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

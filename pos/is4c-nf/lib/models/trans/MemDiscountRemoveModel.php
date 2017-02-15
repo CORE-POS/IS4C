@@ -21,14 +21,20 @@
 
 *********************************************************************************/
 
-if (!class_exists('LocalTransModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+use COREPOS\pos\lib\Database;
+
+/*
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
+*/
 
 /**
   @class MemDiscountRemoveModel
 */
-class MemDiscountRemoveModel extends LocalTransModel
+class MemDiscountRemoveModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
 {
 
     protected $name = "memdiscountremove";
@@ -45,6 +51,9 @@ class MemDiscountRemoveModel extends LocalTransModel
     /* disabled because it's a view */
     public function create()
     { 
+        if ($this->connection->isView($this->name)) {
+            return true;
+        }
         $viewSQL = "CREATE view memdiscountremove as
             Select 
             max(datetime) as datetime, 
@@ -97,15 +106,26 @@ class MemDiscountRemoveModel extends LocalTransModel
         return ($try === false) ? false : true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+This view is the opposite of memdiscountadd.
+It calculates the reverse of all currently
+applied member discounts on items. These records
+are inserted into localtemptrans to remove
+member discounts if needed.
+        ';
+    }
+
     public function delete(){ return false; }
     public function save(){ return false; }
 
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $CORE_LOCAL;
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == \CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == \CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";
@@ -121,7 +141,7 @@ class MemDiscountRemoveModel extends LocalTransModel
         );
         echo "==========================================\n";
 
-        if (strstr($viewSQL, '0 AS memType') || strstr($viewSQL, '0 AS ' . $this->connection->identifier_escape('memType'))) {
+        if (strstr($viewSQL, '0 AS memType') || strstr($viewSQL, '0 AS ' . $this->connection->identifierEscape('memType'))) {
             /**
               Structure-check 27Dec2013
               Make sure memType is calcluated instead of hardcoded to zero
@@ -131,7 +151,7 @@ class MemDiscountRemoveModel extends LocalTransModel
                 echo "View needs to be rebuild to calculate memType correctly\n";    
             } else {
                 echo "Rebuilding view to calculate memType correctly... ";
-                $this->connection->query('DROP VIEW ' . $this->connection->identifier_escape($this->name));
+                $this->connection->query('DROP VIEW ' . $this->connection->identifierEscape($this->name));
                 $success = $this->create();
                 echo ($success ? 'succeeded' : 'failed') . "\n";
             }
@@ -140,7 +160,5 @@ class MemDiscountRemoveModel extends LocalTransModel
         return 0;
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

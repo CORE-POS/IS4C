@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -41,33 +41,33 @@ Replaces nightly.tablecache.php';
 
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
+        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $sql = FannieDB::get($FANNIE_OP_DB);
 
-        $chk = $sql->query("TRUNCATE TABLE batchMergeTable");
-        if ($chk === false) {
-            echo $this->cronMsg("Could not truncate batchMergeTable");
-        }
-        $chk = $sql->query("INSERT INTO batchMergeTable
-                        SELECT b.startDate,b.endDate,p.upc,p.description,b.batchID
-                        FROM batches AS b LEFT JOIN batchList AS l
-                        ON b.batchID=l.batchID INNER JOIN products AS p
-                        ON p.upc = l.upc");
-        if ($chk === false) {
-            echo $this->cronMsg("Could not load batch reporting data for UPCs");
-        }
-        $chk = $sql->query("INSERT INTO batchMergeTable 
-                        SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
-                        FROM batchList AS l LEFT JOIN batches AS b
-                        ON b.batchID=l.batchID INNER JOIN upcLike AS u
-                        ON l.upc = " . $sql->concat("'LC'", $sql->convert('u.likeCode', 'CHAR'), '')
-                        . " INNER JOIN products AS p ON u.upc=p.upc
-                        WHERE p.upc IS NOT NULL");
-        if ($chk === false) {
-            echo $this->cronMsg("Could not load batch reporting data for likecodes");
+        $chk = $sql->query('DELETE FROM shelftags WHERE id < 0');
+
+        $this->recacheCashierPerformance();
+
+        $sql = FannieDB::get($FANNIE_ARCHIVE_DB);
+
+        if ($sql->table_exists("reportDataCache")){
+            $sql->query("DELETE FROM reportDataCache WHERE expires < ".$sql->now());
         }
 
-        $sql = FannieDB::get($FANNIE_TRANS_DB);
+        $daily = \COREPOS\Fannie\API\data\DataCache::fileCacheDir('daily');
+        if ($daily) {
+            $this->clearFileCache($daily);
+        }
+
+        $monthly = \COREPOS\Fannie\API\data\DataCache::fileCacheDir('monthly');
+        if ($monthly && date('j') == 1) {
+            $this->clearFileCache($monthly);
+        }
+    }
+
+    private function recacheCashierPerformance()
+    {
+        $sql = FannieDB::get(FannieConfig::config('TRANS_DB'));
 
         $cashierPerformanceSQL = "
             SELECT
@@ -91,51 +91,34 @@ Replaces nightly.tablecache.php';
         if (!$sql->isView('CashPerformDay')) {
             $chk = $sql->query("TRUNCATE TABLE CashPerformDay");
             if ($chk === false) {
-                echo $this->cronMsg("Could not truncate CashPerformDay");
+                $this->cronMsg("Could not truncate CashPerformDay", FannieLogger::WARNING);
             }
             $chk = $sql->query("INSERT INTO CashPerformDay " . $cashierPerformanceSQL);
             if ($chk === false) {
-                echo $this->cronMsg("Could not load data for CashPerformDay");
+                $this->cronMsg("Could not load data for CashPerformDay", FannieLogger::WARNING);
             }
         }
         if ($sql->tableExists('CashPerformDay_cache')) {
             $chk = $sql->query("TRUNCATE TABLE CashPerformDay_cache");
             if ($chk === false) {
-                echo $this->cronMsg("Could not truncate CashPerformDay_cache");
+                $this->cronMsg("Could not truncate CashPerformDay_cache", FannieLogger::WARNING);
             }
             $chk = $sql->query("INSERT INTO CashPerformDay_cache " . $cashierPerformanceSQL);
             if ($chk === false) {
-                echo $this->cronMsg("Could not load data for CashPerformDay_cache");
+                $this->cronMsg("Could not load data for CashPerformDay_cache", FannieLogger::WARNING);
             }
         }
+    }
 
-        $sql = FannieDB::get($FANNIE_ARCHIVE_DB);
-
-        if ($sql->table_exists("reportDataCache")){
-            $sql->query("DELETE FROM reportDataCache WHERE expires < ".$sql->now());
-        }
-
-        $daily = DataCache::fileCacheDir('daily');
-        if ($daily) {
-            $dh = opendir($daily);
-            while ( ($file = readdir($dh)) !== false) {
-                if (is_file($daily . '/' . $file)) {
-                    unlink($daily . '/' . $file);
-                }
+    private function clearFileCache($path)
+    {
+        $dir = opendir($path);
+        while ( ($file = readdir($dir)) !== false) {
+            if (is_file($path . '/' . $file)) {
+                unlink($path . '/' . $file);
             }
-            closedir($dh);
         }
-
-        $monthly = DataCache::fileCacheDir('monthly');
-        if ($monthly && date('j') == 1) {
-            $dh = opendir($monthly);
-            while ( ($file = readdir($dh)) !== false) {
-                if (is_file($monthly . '/' . $file)) {
-                    unlink($monthly . '/' . $file);
-                }
-            }
-            closedir($dh);
-        }
+        closedir($dir);
     }
 }
 

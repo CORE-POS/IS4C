@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,36 +21,41 @@
 
 *********************************************************************************/
 
-class Tags4x8P extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 18;
     protected $MED_FONT = 14;
     protected $SMALL_FONT = 10;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
+    protected $width = 52; // tag width in mm
+    protected $height = 31; // tag height in mm
+    protected $left = 5.5; // left margin
+    protected $top = 15; // top margin
+
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        $pdf = new \FPDF('P', 'mm', 'Letter');
 
-        $width = 52; // tag width in mm
-        $height = 31; // tag height in mm
-        $left = 5; // left margin
-        $top = 15; // top margin
-        $pdf->SetTopMargin($top);  //Set top margin of the page
-        $pdf->SetLeftMargin($left);  //Set left margin of the page
-        $pdf->SetRightMargin($left);  //Set the right margin of the page
+        $pdf->SetTopMargin($this->top);  //Set top margin of the page
+        $pdf->SetLeftMargin($this->left);  //Set left margin of the page
+        $pdf->SetRightMargin($this->left);  //Set the right margin of the page
         $pdf->SetAutoPageBreak(False); // manage page breaks yourself
 
         $data = $this->loadItems();
         $num = 0; // count tags 
-        $x = $left;
-        $y = $top;
+        $x = $this->left;
+        $y = $this->top;
         foreach ($data as $item) {
 
             // extract & format data
             $price = $item['normal_price'];
             $desc = strtoupper(substr($item['posDescription'],0,27));
-            $brand = ucwords(strtolower(substr($item['brand'],0,13)));
+            $brand = strtoupper(substr($item['brand'],0,13));
             $pak = $item['units'];
             $size = $item['units'] . "-" . $item['size'];
             $sku = $item['sku'];
@@ -60,11 +65,11 @@ class Tags4x8P extends FannieSignage
 
             if ($num % 32 == 0) {
                 $pdf->AddPage();
-                $x = $left;
-                $y = $top;
+                $x = $this->left;
+                $y = $this->top;
             } else if ($num % 4 == 0) {
-                $x = $left;
-                $y += $height;
+                $x = $this->left;
+                $y += $this->height;
             }
 
             $args = array(
@@ -73,39 +78,42 @@ class Tags4x8P extends FannieSignage
                 'align' => 'L',
                 'suffix' => date('  n/j/y'),
                 'fontsize' => 8,
+                'font' => $this->font,
             );
             $pdf = $this->drawBarcode($upc, $pdf, $x + 7, $y + 4, $args);
 
-            $pdf->SetFont('Gill', '', 8);
+            $pdf->SetFont($this->font, '', 8);
 
             $pdf->SetXY($x,$y+12);
-            $pdf->Cell($width,4,$desc,0,1,'L');
+            $pdf->Cell($this->width,4,$desc,0,1,'L');
 
             $pdf->SetX($x);
-            $pdf->Cell($width,4,$brand,0,1,'L');
+            $pdf->Cell($this->width,4,$brand,0,1,'L');
 
             $pdf->SetX($x);
-            $pdf->Cell($width,4,$size,0,1,'L');
+            $pdf->Cell($this->width,4,$size,0,1,'L');
 
             $pdf->SetX($x);
-            $pdf->Cell($width,4,$sku.' '.$vendor,0,0,'L');
+            $pdf->Cell($this->width,4,$sku.' '.$vendor,0,0,'L');
 
             if (strstr($ppu, '/') && $ppu[strlen($ppu)-1] != '/') {
                 $pdf->SetX($x);
-                $pdf->Cell($width-5,4,$ppu,0,0,'R');
+                $pdf->Cell($this->width-5,4,$ppu,0,0,'R');
             }
 
             $pdf->SetXY($x, $y+16);
-            $pdf->SetFont('Arial','B',24);  //change font size
-            $pdf->Cell($width-5,8,$price,0,0,'R');
+            $pdf->SetFont($this->font,'B',24);  //change font size
+            $pdf->Cell($this->width-5,8,$price,0,0,'R');
 
             // move right by tag width
-            $x += $width;
+            $x += $this->width;
 
             $num++;
         }
 
         $pdf->Output('Tags4x8P.pdf', 'I');
     }
+}
+
 }
 

@@ -1,17 +1,17 @@
 <?php
 if (!isset($FANNIE_LANES))
-	include('/var/www/html/git/fannie/config.php');
+    include('/var/www/html/git/fannie/config.php');
 $lanes = array();
 $dbs = array();
 $types = array();
 $users = array();
 $pws = array();
 foreach($FANNIE_LANES as $LANE){
-	$lanes[] = $LANE['host'];
-	$dbs[] = $LANE['op'];
-	$types[] = $LANE['type'];
-	$users[] = $LANE['user'];
-	$pws[] = $LANE['pw'];
+    $lanes[] = $LANE['host'];
+    $dbs[] = $LANE['op'];
+    $types[] = $LANE['type'];
+    $users[] = $LANE['user'];
+    $pws[] = $LANE['pw'];
 }
 $numlanes = count($lanes);
 /*
@@ -22,4 +22,4 @@ $types = array("MYSQL","MYSQL","MYSQL","MYSQL","MYSQL","MYSQL");
 $users = array("root","root","root","root","root","root");
 $pws = array("is4c","is4c","is4c","is4c","is4c","is4c");
 */
-?>
+

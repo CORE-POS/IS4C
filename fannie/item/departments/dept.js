@@ -20,52 +20,56 @@
 
 *********************************************************************************/
 
-function deptchange(){
-	var dID = $('#deptselect').val();
-	if (dID == 0){ 
-		$('#infodiv').html("");
-		return;
-	}
+var deptEdit = (function($) {
 
-	$.ajax({
-		url: 'DepartmentEditor.php',
-		type: 'POST',
-		timeout: 5000,
-		data: 'did='+dID+'&action=deptDisplay',
-		error: function(){
-		alert('Error loading XML document');
-		},
-		success: function(resp){
-			$('#infodiv').html(resp);
-		}
-	});
-}
+    var mod = {};
 
-function deptSave(){
-	var qs = "action=deptSave";
-	var fields = $('.deptFields :input').serialize();
-	if (!$('#deptdisc').is(':checked')) {
-		fields += '&disc=0';
-	}
-	qs += '&'+fields;
+    mod.deptSave = function() {
+        var fields = $('.deptFields :input').serialize();
 
-	$.ajax({
-		url: 'DepartmentEditor.php',
-		type: 'POST',
-		timeout: 5000,
-		data: qs,
-        dataType: 'json',
-		error: function(){
-		alert('Error loading XML document');
-		},
-		success: function(resp){
+        $.ajax({
+            url: 'DepartmentEditor.php',
+            type: 'post',
+            timeout: 5000,
+            data: fields,
+            dataType: 'json'
+        }).fail(function(){
+            showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
+        }).done(function(resp){
             if (resp.did && resp.msg) {
-                alert(resp.msg);
-                location = 'DepartmentEditor.php?did='+resp.did;
+                showBootstrapAlert('#deptdiv', 'success', resp.msg);
             } else {
-                alert('Error saving department');
-                console.log(resp);
+                showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
             }
-		}
-	});
-}
+        });
+    };
+
+    mod.deptchange = function() {
+        var dID = $('#deptselect').val();
+        if (dID == 0){ 
+            $('#infodiv').html("");
+            return;
+        }
+
+        $.ajax({
+            url: 'DepartmentEditor.php',
+            type: 'get',
+            timeout: 5000,
+            data: 'id='+dID
+        }).fail(function(){
+            showBootstrapAlert('#deptdiv', 'danger', 'Error loading department');
+        }).done(function(resp){
+            $('#infodiv').html(resp);
+            $('#infodiv input[type=text]').keyup(function (e){
+                if (e.which == 13) {
+                    mod.deptSave();
+                }
+            });
+            $('#infodiv input[type=text]:first').focus();
+        });
+    };
+
+    return mod;
+
+}(jQuery)); 
+

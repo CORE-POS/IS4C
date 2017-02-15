@@ -30,11 +30,20 @@ if (!class_exists('FannieAPI')) {
 */
 class ObfIndexPage extends FannieRESTfulPage 
 {
+    public function preprocess()
+    {
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfIndexPageV2.php');
+        }
+        return false;
+    }
+
     protected $title = 'OBF: Menu';
     protected $header = 'OBF: Menu';
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Menu] lists all the OBF pages.';
+    public $themed = true;
 
     public function get_view()
     {

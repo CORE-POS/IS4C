@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class CustdataModel
 
@@ -56,8 +59,70 @@ class CustdataModel extends BasicModel
     'blueLine' => array('type'=>'VARCHAR(50)'),
     'Shown' => array('type'=>'TINYINT','default'=>1),
     'LastChange' => array('type'=>'TIMESTAMP'),
-    'id' => array('type'=>'INT','primary_key'=>True,'default'=>0,'increment'=>True)
+    'id' => array('type'=>'INT','primary_key'=>True,'increment'=>True)
     );
+
+    public function doc()
+    {
+        return '
+Use:
+This is one of two "primary" tables dealing with membership
+(the other is meminfo). Of the two, only custdata is present
+at the checkout. Column meaning may not be quite identical 
+across stores.
+
+[Probably] The Same Everywhere:
+- CardNo is the member\'s number. This identifies them.
+- personNum is for stores that allow more than one person per membership.
+  personNum starts at 1.
+    The combination (CardNo, personNum) should be unique for each record.
+- FirstName what it sounds like.
+- LastName what it sounds like.
+- Discount gives the member a percentage discount on purchases.
+- Type identifies whether the record is for an actual member.
+  If Type is \'PC\', the person is considered a member at the register.
+    This is a little confusing, but not everyone in the table has to be
+   a member.
+- blueLine is displayed on the checkout screen when the member\'s number is entered.
+- id just provides a guaranteed-unique row identifier.
+
+[Probably] Just For Organizing:
+The register is mostly unaware of these settings,
+but they can be used on the backend for consistency checks
+e.g., make sure all staff members have the appropriate percent discount
+- staff identifies someone as an employee. Value: 1?
+- memType allows a little more nuance than just member yes/no.
+  FK to memtype.memtype
+- SSI probably because of a historic senior citizen discount.
+  (Sounds like it is obsolete or at least not used.)
+
+WFC Specific:
+- ChargeOk=1 if member may run a store charge balance; =0 may not.
+- MemDiscountLimit is their store charge account limit.
+- ChargeLimit is their store charge account limit.
+- Balance is a store charge balance as of the start of the day,
+   if the person has one.
+     Some records are for organizations, esp vendors,
+     that have charge accounts.
+     Is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
+- memCoupons indicates how many virtual coupons (tender MA) are available.
+
+[Probably] Ignored:
+To the best of my (Andy\'s) knowledge, these have no meaning on the front or back end.
+- CashBack
+- WriteChecks
+- StoreCoupons
+- Purchases
+- NumberOfChecks
+- Shown
+
+Maintenance:
+- Single edit: fannie/mem/search.php
+- Single add: fannie/mem/new.php
+- Batch import: fannie/mem/import/*.php
+- custdata.Balance is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
+        ';
+    }
 
     /**
       Use this instead of primary key for identifying
@@ -66,369 +131,5 @@ class CustdataModel extends BasicModel
     protected $unique = array('CardNo','personNum');
 
     protected $normalize_lanes = true;
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function CardNo()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["CardNo"])) {
-                return $this->instance["CardNo"];
-            } elseif(isset($this->columns["CardNo"]["default"])) {
-                return $this->columns["CardNo"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["CardNo"] = func_get_arg(0);
-        }
-    }
-
-    public function personNum()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["personNum"])) {
-                return $this->instance["personNum"];
-            } elseif(isset($this->columns["personNum"]["default"])) {
-                return $this->columns["personNum"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["personNum"] = func_get_arg(0);
-        }
-    }
-
-    public function LastName()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["LastName"])) {
-                return $this->instance["LastName"];
-            } elseif(isset($this->columns["LastName"]["default"])) {
-                return $this->columns["LastName"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["LastName"] = func_get_arg(0);
-        }
-    }
-
-    public function FirstName()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["FirstName"])) {
-                return $this->instance["FirstName"];
-            } elseif(isset($this->columns["FirstName"]["default"])) {
-                return $this->columns["FirstName"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["FirstName"] = func_get_arg(0);
-        }
-    }
-
-    public function CashBack()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["CashBack"])) {
-                return $this->instance["CashBack"];
-            } elseif(isset($this->columns["CashBack"]["default"])) {
-                return $this->columns["CashBack"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["CashBack"] = func_get_arg(0);
-        }
-    }
-
-    public function Balance()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Balance"])) {
-                return $this->instance["Balance"];
-            } elseif(isset($this->columns["Balance"]["default"])) {
-                return $this->columns["Balance"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Balance"] = func_get_arg(0);
-        }
-    }
-
-    public function Discount()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Discount"])) {
-                return $this->instance["Discount"];
-            } elseif(isset($this->columns["Discount"]["default"])) {
-                return $this->columns["Discount"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Discount"] = func_get_arg(0);
-        }
-    }
-
-    public function MemDiscountLimit()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["MemDiscountLimit"])) {
-                return $this->instance["MemDiscountLimit"];
-            } elseif(isset($this->columns["MemDiscountLimit"]["default"])) {
-                return $this->columns["MemDiscountLimit"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["MemDiscountLimit"] = func_get_arg(0);
-        }
-    }
-
-    public function ChargeLimit()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["ChargeLimit"])) {
-                return $this->instance["ChargeLimit"];
-            } elseif(isset($this->columns["ChargeLimit"]["default"])) {
-                return $this->columns["ChargeLimit"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["ChargeLimit"] = func_get_arg(0);
-        }
-    }
-
-    public function ChargeOk()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["ChargeOk"])) {
-                return $this->instance["ChargeOk"];
-            } elseif(isset($this->columns["ChargeOk"]["default"])) {
-                return $this->columns["ChargeOk"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["ChargeOk"] = func_get_arg(0);
-        }
-    }
-
-    public function WriteChecks()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["WriteChecks"])) {
-                return $this->instance["WriteChecks"];
-            } elseif(isset($this->columns["WriteChecks"]["default"])) {
-                return $this->columns["WriteChecks"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["WriteChecks"] = func_get_arg(0);
-        }
-    }
-
-    public function StoreCoupons()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["StoreCoupons"])) {
-                return $this->instance["StoreCoupons"];
-            } elseif(isset($this->columns["StoreCoupons"]["default"])) {
-                return $this->columns["StoreCoupons"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["StoreCoupons"] = func_get_arg(0);
-        }
-    }
-
-    public function Type()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Type"])) {
-                return $this->instance["Type"];
-            } elseif(isset($this->columns["Type"]["default"])) {
-                return $this->columns["Type"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Type"] = func_get_arg(0);
-        }
-    }
-
-    public function memType()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["memType"])) {
-                return $this->instance["memType"];
-            } elseif(isset($this->columns["memType"]["default"])) {
-                return $this->columns["memType"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["memType"] = func_get_arg(0);
-        }
-    }
-
-    public function staff()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["staff"])) {
-                return $this->instance["staff"];
-            } elseif(isset($this->columns["staff"]["default"])) {
-                return $this->columns["staff"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["staff"] = func_get_arg(0);
-        }
-    }
-
-    public function SSI()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["SSI"])) {
-                return $this->instance["SSI"];
-            } elseif(isset($this->columns["SSI"]["default"])) {
-                return $this->columns["SSI"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["SSI"] = func_get_arg(0);
-        }
-    }
-
-    public function Purchases()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Purchases"])) {
-                return $this->instance["Purchases"];
-            } elseif(isset($this->columns["Purchases"]["default"])) {
-                return $this->columns["Purchases"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Purchases"] = func_get_arg(0);
-        }
-    }
-
-    public function NumberOfChecks()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["NumberOfChecks"])) {
-                return $this->instance["NumberOfChecks"];
-            } elseif(isset($this->columns["NumberOfChecks"]["default"])) {
-                return $this->columns["NumberOfChecks"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["NumberOfChecks"] = func_get_arg(0);
-        }
-    }
-
-    public function memCoupons()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["memCoupons"])) {
-                return $this->instance["memCoupons"];
-            } elseif(isset($this->columns["memCoupons"]["default"])) {
-                return $this->columns["memCoupons"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["memCoupons"] = func_get_arg(0);
-        }
-    }
-
-    public function blueLine()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["blueLine"])) {
-                return $this->instance["blueLine"];
-            } elseif(isset($this->columns["blueLine"]["default"])) {
-                return $this->columns["blueLine"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["blueLine"] = func_get_arg(0);
-        }
-    }
-
-    public function Shown()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Shown"])) {
-                return $this->instance["Shown"];
-            } elseif(isset($this->columns["Shown"]["default"])) {
-                return $this->columns["Shown"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Shown"] = func_get_arg(0);
-        }
-    }
-
-    public function LastChange()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["LastChange"])) {
-                return $this->instance["LastChange"];
-            } elseif(isset($this->columns["LastChange"]["default"])) {
-                return $this->columns["LastChange"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["LastChange"] = func_get_arg(0);
-        }
-    }
-
-    public function id()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["id"])) {
-                return $this->instance["id"];
-            } elseif(isset($this->columns["id"]["default"])) {
-                return $this->columns["id"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["id"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
-
-    protected function hookAddColumnChargeLimit()
-    {
-        $sql = 'UPDATE '.$this->connection->identifier_escape($this->name).' SET ChargeLimit=MemDiscountLimit';
-        $this->connection->query($sql);
-
-        $viewSQL = 'CREATE VIEW memchargebalance AS
-            SELECT 
-            c.CardNo AS CardNo,
-            c.ChargeLimit - c.Balance AS availBal,	
-            c.Balance AS balance
-            FROM custdata AS c WHERE personNum = 1';
-
-        $this->connection->query('DROP VIEW memchargebalance');
-        $this->connection->query($viewSQL);
-    }
 }
 

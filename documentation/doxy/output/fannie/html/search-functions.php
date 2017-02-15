@@ -17,14 +17,6 @@ function end_form($value)
 
 function end_page()
 {
-  global $config;
-  global $translator;
-  if ($config['GENERATE_TREEVIEW'])
-  {
-    echo "</div>\n<div id=\"nav-path\" class=\"navpath\">\n  <ul>\n    <li class=\"footer\">";
-    echo $translator['logo'];
-    echo "</li>\n  </ul>\n</div>";
-  }
   echo "</body></html>";
 }
 
@@ -366,7 +358,7 @@ function main()
   $sorted = run_query($query);
   // Now output the HTML stuff...
   // End the HTML form
-  end_form(preg_replace("/[^a-zA-Z0-9\-\_\.]/i", " ", $query ));
+  end_form(preg_replace("/[^a-zA-Z0-9\-\_\.\x80-\xFF]/i", " ", $query ));
   // report results to the user
   report_results($sorted);
   end_page();

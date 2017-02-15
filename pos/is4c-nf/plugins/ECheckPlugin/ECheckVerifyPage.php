@@ -21,96 +21,99 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class ECheckVerifyPage extends NoInputPage 
+class ECheckVerifyPage extends NoInputCorePage 
 {
 
-	function preprocess()
+    function preprocess()
     {
-		global $CORE_LOCAL;
         $amount = $_REQUEST['amount'];
         if (isset($_REQUEST['selectlist'])) {
             $opt = $_REQUEST['selectlist'];
-            if ($opt == '' || $opt == 'CL') {
-                $CORE_LOCAL->set('lastRepeat', '');
-				$this->change_page($this->page_url."gui-modules/pos2.php");
+            if ($opt == '' || strtoupper($opt) == 'CL') {
+                CoreLocal::set('lastRepeat', '');
+                $this->change_page($this->page_url."gui-modules/pos2.php");
 
                 return false;
             } else {
-                $CORE_LOCAL->set('strRemembered', ($amount*100) . $opt);
-                $CORE_LOCAL->set('msgrepeat', 1);
-				$this->change_page($this->page_url."gui-modules/pos2.php");
+                $inp = ($amount*100) . $opt;
+                $this->change_page(
+                    $this->page_url
+                        ."gui-modules/pos2.php?reginput="
+                        . urlencode($inp)
+                        . '&repeat=1'
+                );
 
                 return false;
             }
         }
 
-		return true;
-	}
-	
-	function head_content()
+        return true;
+    }
+    
+    function head_content()
     {
-		?>
-		<script type="text/javascript" >
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		function processkeypress(e) {
-			var jsKey;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			if (jsKey==13) {
-				if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
-					$('#selectlist :selected').val('');
-				}
-				$('#selectform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-		</script> 
-		<?php
-	} // END head() FUNCTION
+        ?>
+        <script type="text/javascript" src="../../js/singleSubmit.js"></script>
+        <script type="text/javascript" >
+        var prevKey = -1;
+        var prevPrevKey = -1;
+        function processkeypress(e) {
+            var jsKey;
+            if (e.keyCode) // IE
+                jsKey = e.keyCode;
+            else if(e.which) // Netscape/Firefox/Opera
+                jsKey = e.which;
+            if (jsKey==13) {
+                if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
+                (prevKey == 108 || prevKey == 76) ){ //CL<enter>
+                    $('#selectlist :selected').val('');
+                }
+                $('#selectform').submit();
+            }
+            prevPrevKey = prevKey;
+            prevKey = jsKey;
+        }
+        </script> 
+        <?php
+    } // END head() FUNCTION
 
-	function body_content() 
+    function body_content() 
     {
-		global $CORE_LOCAL;
-        $paper = $CORE_LOCAL->get('EcpPaperTender');
+        $paper = CoreLocal::get('EcpPaperTender');
         if ($paper === '') {
             $paper = 'CK';
         }
-        $echeck = $CORE_LOCAL->get('EcpElectronicTender');
+        $echeck = CoreLocal::get('EcpElectronicTender');
         if ($echeck === '') {
             $echeck = 'TK';
         }
-		?>
-		<div class="baseHeight">
-		<div class="centeredDisplay colored">
-		<span class="larger">Check Type ($<?php echo sprintf('%.2f', $_REQUEST['amount']); ?>)</span>
-		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-			<select size="2" name="selectlist" 
-				id="selectlist" onblur="$('#selectlist').focus();">
-			<option selected value="<?php echo $echeck; ?>">Electronic</option>
-			<option value="<?php echo $paper; ?>">Paper</option>
-			</select>
+        ?>
+        <div class="baseHeight">
+        <div class="centeredDisplay colored">
+        <span class="larger">Check Type ($<?php echo sprintf('%.2f', $_REQUEST['amount']); ?>)</span>
+        <form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            <select size="3" name="selectlist"
+                id="selectlist" onblur="$('#selectlist').focus();">
+            <option selected value="<?php echo $echeck; ?>">Electronic</option>
+            <option value="<?php echo $paper; ?>">Paper</option>
+            <option value="TC">Gift Certificate</option>
+            </select>
             <input type="hidden" name="amount" value="<?php echo $_REQUEST['amount']; ?>" />
-		</form>
-		<p>
-		<span class="smaller">[clear] to cancel</span>
-		</p>
-		</div>
-		</div>
-		<?php
+        </form>
+        <p>
+        <span class="smaller">[clear] to cancel</span>
+        </p>
+        </div>
+        </div>
+        <?php
         $this->add_onload_command("\$('#selectlist').focus();\n");
+        $this->add_onload_command("singleSubmit.restrict('#selectform');\n");
         $this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
-	} // END body_content() FUNCTION
+    } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	new ECheckVerifyPage();
-}
+AutoLoader::dispatch();
 
-?>

@@ -22,8 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'/classlib2.0/FannieAPI.php');
+}
 if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
 }
@@ -45,6 +46,7 @@ class PIEquityPage extends PIKillerPage {
 
     protected function get_id_view(){
         global $FANNIE_URL;
+        ob_start();
         echo '<table border="1" style="background-color: #ffff99;">';
         echo '<tr align="left"></tr>';
         foreach($this->__models['equity'] as $transaction){
@@ -66,4 +68,3 @@ class PIEquityPage extends PIKillerPage {
 
 FannieDispatch::conditionalExec();
 
-?>

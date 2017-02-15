@@ -1,0 +1,13 @@
+{
+    "name": "corepos/recipe-sync",
+    "require": {
+        "phpoffice/phpword": "^0.13.0"
+    },
+    "license": "GPLv2",
+    "authors": [
+        {
+            "name": "Andy Theuninck",
+            "email": "andy@gohanman.com"
+        }
+    ]
+}

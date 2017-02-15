@@ -4,7 +4,7 @@
     Copyright 2013 Whole Foods Co-op
     Based on example code from Wedge Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 /**
   @class SaScanningPage
@@ -35,6 +37,9 @@ class SaScanningPage extends FanniePage {
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Alt. Scanning] is an older interface for entering quantities
     on hand';
+    public $themed = true;
+    protected $header = '';
+    protected $title = 'ShelfAudit Old Scanning Page';
 
     private $status='';
     private $section=0;
@@ -46,7 +51,7 @@ class SaScanningPage extends FanniePage {
         /**
           Store session in browser section.
         */
-        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
             @session_start();
         }
         if (!isset($_SESSION['SaPluginSection']))
@@ -60,8 +65,8 @@ class SaScanningPage extends FanniePage {
         }
 
         if (FormLib::get_form_value('sflag') == 1){
-            $query = $dbc->prepare_statement('SELECT MAX(section) AS new_section FROM sa_inventory');
-            $result = $dbc->exec_statement($query);
+            $query = $dbc->prepare('SELECT MAX(section) AS new_section FROM sa_inventory');
+            $result = $dbc->execute($query);
             $section = 0;
             if ($dbc->num_rows($result) > 0)
                 $section = array_pop($dbc->fetch_row($result));
@@ -108,9 +113,9 @@ class SaScanningPage extends FanniePage {
             $qty = FormLib::get_form_value('qinput');
             $qty = rtrim($qty,'z');
             $args = array($upc);
-            $stmt = $dbc->prepare_statement('INSERT INTO sa_inventory 
-                    (id,datetime,upc,clear,quantity,section)
-                    VALUES (NULL,'.$dbc->now().',?,0,?,?)');
+            $stmt = $dbc->prepare('INSERT INTO sa_inventory 
+                    (id,datetime,upc,clear,quantity,section,storeID)
+                    VALUES (NULL,'.$dbc->now().',?,0,?,?,0)');
                     
             if ($qty != '' && ctype_digit($qty)){
                 $args[] = $qty;
@@ -126,7 +131,7 @@ class SaScanningPage extends FanniePage {
                 $args[] = $this->section;
             }
 
-            $result = $dbc->exec_statement($stmt, $args);
+            $result = $dbc->execute($stmt, $args);
             if ($result) { $this->status = 'good - scan entered:'.$upc.'';  
             }   else { $this->status = 'bad - strange scan:'.$query; }
         }
