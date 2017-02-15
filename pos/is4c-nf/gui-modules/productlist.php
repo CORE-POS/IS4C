@@ -155,7 +155,7 @@ class productlist extends NoInputCorePage
         $this->addOnloadCommand("selectSubmit('#search', '#selectform', '#filter-span')\n");
 
         // originally 390
-        $maxSelectWiddth = $this->session->get('touchscreen') ? 470 : 530;
+        $maxSelectWidth = $this->session->get('touchscreen') ? 470 : 530;
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
             ."<form name=\"selectform\" method=\"post\" action=\""
