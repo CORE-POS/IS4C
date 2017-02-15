@@ -1171,5 +1171,25 @@ static public function emailReceiptMod()
     return self::$EMAIL;
 }
 
+// taken from upstream MiscLib
+// can be deleted when MiscLib::getNumbers exists
+static private function _getNumbers($string)
+{
+    if (empty($string)) {
+        return array(-999999);
+    } elseif (is_array($string)) {
+        $ret = array();
+        foreach ($string as $s) {
+            $ret[] = (int)$s;
+        }
+        return $ret;
+    }
+    $pieces = preg_split('/[^\d]+/', $string, 0, PREG_SPLIT_NO_EMPTY);
+    for ($i=0; $i<count($pieces); $i++) {
+        $pieces[$i] = (int)$pieces[$i];
+    }
+    return $pieces;
+}
+
 }
 
