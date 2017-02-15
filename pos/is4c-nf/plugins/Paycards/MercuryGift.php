@@ -194,7 +194,7 @@ class MercuryGift extends BasicCCModule
                 );
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
-                $void = new COREPOS\pos\parser\parse\Void();
+                $void = new COREPOS\pos\parser\parse\Void($this->conf);
                 $void->voidid($this->conf->get("paycard_id"), array());
                 $resp = $this->conf->get("paycard_response");
                 $this->conf->set("boxMsg","<b>Voided</b><font size=-1>
