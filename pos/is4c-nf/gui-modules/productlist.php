@@ -63,7 +63,7 @@ class productlist extends NoInputCorePage
         if (strstr($entered, '*')) {
             list($qty,) = explode('*', $entered, 2);
             $qty = is_numeric($qty) ? $qty : 1;
-        } elseif ($this->tryGet('qty') !== '') {
+        } elseif ($this->form->tryGet('qty') !== '') {
             $qty = is_numeric($this->form->qty) ? $this->form->qty : 0;
         }
 
