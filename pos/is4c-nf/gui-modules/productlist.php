@@ -227,6 +227,7 @@ class productlist extends NoInputCorePage
             </div>
         </div>
         <?php
+        $this->addOnloadCommand("\$('#search').focus();\n");
     }
 
     public function unitTest($phpunit)
