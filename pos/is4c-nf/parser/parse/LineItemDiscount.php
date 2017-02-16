@@ -49,32 +49,32 @@ class LineItemDiscount extends Parser
 
         if ($row === false) {
             // this shouldn't happen unless there's some weird session problem
-            return $ret['output'] = DisplayLib::boxMsg(
+            return $ret->output(DisplayLib::boxMsg(
                 _("Item not found"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            );
+            ));
         } 
         if ($row['trans_type'] != 'I' && $row['trans_type'] != 'D') {
             // only items & open rings are discountable
-            return $ret['output'] = DisplayLib::boxMsg(
+            return $ret->output(DisplayLib::boxMsg(
                 _("Line is not discountable"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            );
+            ));
         } 
         if ($row['discounttype'] != 0) {
             // for simplicity, sale items cannot be discounted
             // this also prevents using this function more than
             // once on a single item
-            return $ret['output'] = DisplayLib::boxMsg(
+            return $ret->output(DisplayLib::boxMsg(
                 _("Item already discounted"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            );
+            ));
         } 
         // discount is simply the total times the 
         //   non-member discount percentage
