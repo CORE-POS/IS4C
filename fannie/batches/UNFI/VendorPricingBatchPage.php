@@ -55,7 +55,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         tr.white td.sub {
             background:#ffffff;
         }
-        tr.yellow td.sub{
+        th.thead, td.thead {
+            background: #fff4d6;
+        }
+        tr.yellow td.sub {
             background:#ffff96;
         }
         tr.selection td.sub {
@@ -69,6 +72,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
+        $this->addScript('jquery.floatThead.min.js');
         $this->addScript('pricing-batch.js');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
@@ -216,17 +220,17 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
 
-        $ret .= "<table class=\"table table-bordered small\">";
-        $ret .= "<thead><tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
-            <th colspan=3>Vendor</th></tr>";
-        $ret .= "<tr><th>UPC</th><th>Our Description</th>
-            <th>Base Cost</th>
-            <th>Shipping</th>
-            <th>Discount%</th>
-            <th>Adj. Cost</th>
-            <th>Price</th><th>Margin</th><th>Raw</th><th>SRP</th>
-            <th>Margin</th><th>Cat</th><th>Var</th>
-            <th>Batch</th></tr></thead><tbody>";
+        $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
+        $ret .= "<thead><tr><td colspan=6 class=\"thead\">&nbsp;</td><th colspan=2  class=\"thead\">Current</th>
+            <th colspan=3  class=\"thead\">Vendor</th><td colspan=3 class=\"thead\"></td></tr>";
+        $ret .= "<tr><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
+            <th class=\"thead\">Base Cost</th>
+            <th class=\"thead\">Shipping</th>
+            <th class=\"thead\">Discount%</th>
+            <th class=\"thead\">Adj. Cost</th>
+            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Raw</th><th class=\"thead\">SRP</th>
+            <th class=\"thead\">Margin</th><th class=\"thead\">Cat</th><th class=\"thead\">Var</th>
+            <th class=\"thead\">Batch</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $background = "white";
             if (isset($batchUPCs[$row['upc']])) {
@@ -370,6 +374,16 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         </form>
         <?php
 
+        return ob_get_clean();
+    }
+    
+    public function javascript_content()
+    {
+        ob_start();
+        ?>
+        var $table = $('#mytable');
+        $table.floatThead();
+        <?php
         return ob_get_clean();
     }
 
