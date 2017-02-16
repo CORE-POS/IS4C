@@ -35,7 +35,7 @@ class ProdCostHistoryModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
     'storeID' => array('type'=>'INT', 'default'=>0),
     'modified' => array('type'=>'DATETIME'),
-    'cost' => array('type'=>'MONEY'),
+    'cost' => array('type'=>'DECIMAL(10,3)'),
     'uid' => array('type'=>'INT'),
     'prodUpdateID' => array('type'=>'BIGINT UNSIGNED','index'=>true),
     );

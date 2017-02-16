@@ -377,7 +377,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         return parent::preprocess();
     }
 
-    private function pricefix($str)
+    private function priceFix($str)
     {
         $str = str_replace('$', '', $str);
         $str = str_replace(',', '', $str);

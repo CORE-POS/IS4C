@@ -268,10 +268,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
                 <td class=\"sub\">%s</td>
-                <td class=\"sub cost\">%.2f</td>
+                <td class=\"sub cost\">%.3f</td>
                 <td class=\"sub shipping\">%.2f%%</td>
                 <td class=\"sub discount\">%.2f%%</td>
-                <td class=\"sub adj-cost\">%.2f</td>
+                <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
                 <td class=\"sub raw-srp\">%.2f</td>

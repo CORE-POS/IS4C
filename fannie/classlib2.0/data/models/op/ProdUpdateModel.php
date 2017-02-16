@@ -42,7 +42,7 @@ class ProdUpdateModel extends BasicModel
     'description' => array('type'=>'VARCHAR(50)'),
     'price' => array('type'=>'MONEY'),
     'salePrice' => array('type'=>'MONEY'),
-    'cost' => array('type'=>'MONEY'),
+    'cost' => array('type'=>'DECIMAL(10,3)'),
     'dept' => array('type'=>'INT'),
     'tax' => array('type'=>'TINYINT'),
     'fs' => array('type'=>'TINYINT'),
