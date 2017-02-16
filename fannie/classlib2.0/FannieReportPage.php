@@ -800,6 +800,7 @@ class FannieReportPage extends FanniePage
                     $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
                     $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
                 }
+                $this->addScript($url . 'src/javascript/jquery.floatThead.min.js');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
                     if (!$this->new_tablesorter) {
@@ -810,6 +811,7 @@ class FannieReportPage extends FanniePage
                         $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
                         $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                     }
+                    $this->addOnloadCommand("\$('.mySortableTable').floatThead();\n");
                 } elseif ($this->new_tablesorter) {
                     /**
                       New bootstrap-themed tablesorter requires more setup to style correctly
@@ -1020,6 +1022,9 @@ class FannieReportPage extends FanniePage
                 ) {
                     $class .= ' d3Data ';
                 }
+            }
+            if ($header) {
+                $class .= ' thead ';
             }
             $class .= '"';
 

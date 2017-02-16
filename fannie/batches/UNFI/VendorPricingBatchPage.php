@@ -72,7 +72,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
-        $this->addScript('jquery.floatThead.min.js');
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addScript('pricing-batch.js');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
