@@ -661,7 +661,7 @@ class FannieSignage
     {
         // preserve values from re-posting form
         $overrides = array();
-        $upc = FormLib::get('update_upc');
+        $upc = FormLib::get('update_upc', array());
         $brand = FormLib::get('update_brand', array());
         $desc = FormLib::get('update_desc', array());
         $ignore = FormLib::get('ignore_desc', array());
