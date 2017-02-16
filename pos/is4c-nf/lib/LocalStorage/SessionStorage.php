@@ -40,7 +40,7 @@ if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
 class SessionStorage extends LocalStorage 
 {
     public function __construct(){
-        if(php_sapi_name() !== 'cli' && ini_get('session.auto_start')==0 && !headers_sent()) {
+        if (php_sapi_name() !== 'cli' && session_id() === '') {
             @session_start();
         }
     }
