@@ -53,7 +53,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private string xml_log = null;
     private bool enable_xml_log = false;
     private ManualResetEvent emv_active;
-    private ManualResetEvent pdc_active;
+    private bool pdc_active;
+    private Object pdcLock = new Object();
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -64,15 +65,11 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             com_port = parts[1];
         }
 
-        if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
-            rba = new RBA_Stub("COM"+com_port);
-        }
-
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
         char sep = Path.DirectorySeparatorChar;
         xml_log = my_location + sep + "xml.log";
         emv_active = new ManualResetEvent(false);
-        pdc_active = new ManualResetEvent(false);
+        pdc_active = false;
     }
 
     /**
@@ -87,22 +84,28 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             pdc_ax_control.SetResponseTimeout(CONNECT_TIMEOUT);
             InitPDCX();
         }
-        if (emv_active.WaitOne(0) == false) {
-            Console.WriteLine("Reset PDC");
-            pdc_ax_control.CancelRequest();
+        lock (pdcLock) {
+            if (pdc_active) {
+                Console.WriteLine("Reset PDC");
+                pdc_ax_control.CancelRequest();
+            }
         }
 
         if (emv_ax_control == null) {
             emv_ax_control = new DsiEMVX();
-        }
-        if (pdc_active.WaitOne(0) == false) {
             Console.WriteLine("Reset EMV");
             PadReset();
         }
 
+        if (rba == null) {
+            if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
+                rba = new RBA_Stub("COM"+com_port);
+                rba.SetParent(this.parent);
+                rba.SetVerbose(this.verbose_mode);
+            }
+        }
+
         if (rba != null) {
-            rba.SetParent(this.parent);
-            rba.SetVerbose(this.verbose_mode);
             try {
                 rba.stubStart();
             } catch (Exception) {}
@@ -273,7 +276,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
         xml = xml.Replace("{{ComPort}}", com_port);
         if (this.verbose_mode > 0) {
-            Console.WriteLine(xml);
+            Console.WriteLine("Sending: " + xml);
         }
 
         try {
@@ -291,8 +294,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
                 if (autoReset) {
                     PadReset();
-                } else {
-                    Console.WriteLine(request.OuterXml);
                 }
                 result = emv_ax_control.ProcessTransaction(request.OuterXml);
                 if (!autoReset) {
@@ -329,9 +330,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     break;
                 }
             }
-            if (autoReset) {
-                PadReset();
-            }
             emv_active.Reset();
 
             return result;
@@ -352,7 +350,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     */
     protected string ProcessPDC(string xml)
     {
-        pdc_active.Set();
+        lock (pdcLock) {
+            pdc_active = true;
+        }
         xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
         xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
@@ -369,7 +369,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 sw.WriteLine(DateTime.Now.ToString() + " (recv pdc): " + ret);
             }
         }
-        pdc_active.Reset();
+        lock (pdcLock) {
+            pdc_active = false;
+        }
 
         return ret;
     }
