@@ -491,8 +491,16 @@ class FannieSignage
                     n.vendorName AS vendor,
                     p.scale,
                     p.numflag,
-                    p.start_date AS startDate,
-                    p.end_date AS endDate,
+                    CASE
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE p.start_date 
+                    END AS startDate,
+                    CASE
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE p.end_date 
+                    END AS endDate,
                     p.unitofmeasure,
                     o.originID,
                     o.name AS originName,
@@ -504,6 +512,8 @@ class FannieSignage
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                     LEFT JOIN batchList AS l ON p.batchID=l.batchID AND p.upc=l.upc
+                    LEFT JOIN batches AS b ON l.batchID=b.batchID
+                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
                  WHERE p.upc IN (' . $ids . ') ';
         if (FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
@@ -536,8 +546,16 @@ class FannieSignage
                     n.vendorName AS vendor,
                     p.scale,
                     p.numflag,
-                    b.startDate,
-                    b.endDate,
+                    CASE
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE b.startDate 
+                    END AS startDate,
+                    CASE
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE b.endDate 
+                    END AS endDate,
                     p.unitofmeasure,
                     o.originID,
                     o.name AS originName,
@@ -549,6 +567,7 @@ class FannieSignage
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                     LEFT JOIN batchList AS l ON p.upc=l.upc
                     LEFT JOIN batches AS b ON l.batchID=b.batchID
+                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
                  WHERE p.upc IN (' . $ids . ')
                     AND b.discounttype <> 0
                     AND b.startDate > ' . $dbc->now() . ' ';
