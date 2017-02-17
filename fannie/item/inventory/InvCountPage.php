@@ -199,6 +199,8 @@ class InvCountPage extends FannieRESTfulPage
         } catch (Exception $ex) {
             return '<div class="alert alert-danger">No store selected</div>';
         }
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
+        $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         $query = '
             SELECT p.upc,
@@ -224,19 +226,20 @@ class InvCountPage extends FannieRESTfulPage
         $ret = '<form method="post">
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
             <input type="hidden" name="store" value="' . $store . '" />
-            <table class="table table-bordered table-striped small">
+            <table class="table table-bordered table-striped small table-float">
+            <thead style="background: #fff;">
             <tr>
-                <th>UPC</th>
-                <th>SKU</th>
-                <th>Brand</th>
-                <th>Description</th>
-                <th>Last Counted</th>
-                <th>Last Count</th>
-                <th>Current Par</th>
-                <th>Avg. Daily Sales</th>
-                <th>New Count</th>
-                <th>New Par</th>
-            </tr>';
+                <th class="thead">UPC</th>
+                <th class="thead">SKU</th>
+                <th class="thead">Brand</th>
+                <th class="thead">Description</th>
+                <th class="thead">Last Counted</th>
+                <th class="thead">Last Count</th>
+                <th class="thead">Current Par</th>
+                <th class="thead">Avg. Daily Sales</th>
+                <th class="thead">New Count</th>
+                <th class="thead">New Par</th>
+            </tr></thead><tbody>';
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
             // omit items that have a breakdown. only the breakdown
@@ -271,7 +274,7 @@ class InvCountPage extends FannieRESTfulPage
                 ($info ? $info['par'] : '0')
             );
         }
-        $ret .= '</table>
+        $ret .= '</tbody></table>
             <p>
                 <button type="submit" class="btn btn-default">Save</button>
                 <a href="DateCountPage.php?vendor=' . $this->vendor . '&store=' . $store . '"
@@ -309,6 +312,8 @@ class InvCountPage extends FannieRESTfulPage
         } catch (Exception $ex) {
             return '<div class="alert alert-danger">No store selected</div>';
         }
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
+        $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         $prep = $this->connection->prepare('
             SELECT p.upc,
@@ -341,17 +346,17 @@ class InvCountPage extends FannieRESTfulPage
                 AND register_no <> 99
                 AND emp_no <> 9999');
         $res = $this->connection->execute($prep, array($store, $this->live));
-        $ret = '<table class="table table-bordered table-striped">';
-        $ret .= '<tr>
-            <th>UPC</th>
-            <th>Brand</th>
-            <th>Description</th>
-            <th colspan=2">Last Physical Count</th>
-            <th>Ordered</th>
-            <th>Sold</th>
-            <th>Shrunk</th>
-            <th>Total Inventory</th>
-            </tr>';
+        $ret = '<table class="table table-bordered table-striped table-float">';
+        $ret .= '<thead style="background:#fff;"><tr>
+            <th class="thead">UPC</th>
+            <th class="thead">Brand</th>
+            <th class="thead">Description</th>
+            <th colspan=2" class="thead">Last Physical Count</th>
+            <th class="thead">Ordered</th>
+            <th class="thead">Sold</th>
+            <th class="thead">Shrunk</th>
+            <th class="thead">Total Inventory</th>
+            </tr></thead><tbody>';
         while ($row = $this->connection->fetchRow($res)) {
             if ($this->isBreakable($row['upc'], $this->live)) {
                 continue;
@@ -389,7 +394,7 @@ class InvCountPage extends FannieRESTfulPage
                 $row['onHand']
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
         $ret .= '<p>
             <a href="?recalc=' . $this->live . '&store=' . $store . '"
                 class="btn btn-default">Recalculate Totals</a>
