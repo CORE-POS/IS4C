@@ -41,8 +41,8 @@ class suspendedlist extends NoInputCorePage
     function preprocess()
     {
         /* form submitted */
-        try {
-            if (!empty($this->form->selectlist)) { // selected a transaction
+        if ($this->form->tryGet('selectlist', false) !== false) {
+            if ($this->form->selectlist !== '') { // selected a transaction
                 $tmp = explode("::",$this->form->selectlist);
                 $this->doResume($tmp[0],$tmp[1],$tmp[2]);
                 // if it is a member transaction, verify correct name
@@ -56,7 +56,6 @@ class suspendedlist extends NoInputCorePage
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
             return false;
-        } catch (Exception $ex) {
         }
 
 
