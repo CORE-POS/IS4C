@@ -240,6 +240,14 @@ class productlist extends NoInputCorePage
         ob_start();
         $this->body_content();
         $phpunit->assertNotEquals(0, ob_get_clean());
+        list($qty, $entered) = $this->getQuantity('5*1234');
+        $phpunit->assertEquals(5, $qty);
+        $phpunit->assertEquals('1234', $entered);
+        $this->form = new COREPOS\common\mvc\ValueContainer();
+        $this->form->qty = 2;
+        list($qty, $entered) = $this->getQuantity('1234');
+        $phpunit->assertEquals(2, $qty);
+        $phpunit->assertEquals('1234', $entered);
     }
 
 }
