@@ -237,9 +237,11 @@ class productlist extends NoInputCorePage
         $phpunit->assertNotEquals(0, count($res));
         $one = array_pop($res);
         $this->searchResults = array($one); // no need to loop whole list
+        $this->onload_commands = array();
         ob_start();
         $this->body_content();
-        $phpunit->assertNotEquals(0, ob_get_clean());
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $phpunit->assertNotEquals(false, strstr(implode('', $this->onload_commands), "\$('#search').focus();"));
         list($qty, $entered) = $this->getQuantity('5*1234');
         $phpunit->assertEquals(5, $qty);
         $phpunit->assertEquals('1234', $entered);
@@ -248,6 +250,12 @@ class productlist extends NoInputCorePage
         list($qty, $entered) = $this->getQuantity('1234');
         $phpunit->assertEquals(2, $qty);
         $phpunit->assertEquals('1234', $entered);
+        $this->searchResults = array();
+        $this->onload_commands = array();
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $phpunit->assertNotEquals(false, strstr(implode('', $this->onload_commands), "\$('#search').focus();"));
     }
 
 }
