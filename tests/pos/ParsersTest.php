@@ -700,6 +700,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $d->parse('100DP10');
         $this->assertEquals('/refundComment.php', substr($out['main_frame'], -18));
         CoreLocal::set('refund', 0);
+        CoreLocal::set('SpecialDeptMap', array(1 => array('AutoReprintDept')));
+        $out = $d->parse('100DP10');
+        $this->assertEquals(1, CoreLocal::get('autoReprint'));
+        CoreLocal::set('SpecialDeptMap', false);
+        CoreLocal::set('autoReprint', 0);
     }
 
     function testBalanceCheck()
