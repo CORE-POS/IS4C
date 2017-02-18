@@ -73,7 +73,7 @@ class suspendedlist extends NoInputCorePage
             return true;
         }
         $this->session->set("boxMsg",_("no suspended transaction"));
-        $this->change_page($this->page_url."gui-modules/pos2.php");    
+        $this->change_page($this->page_url."gui-modules/boxMsg2.php");
 
         return false;
     } // END preprocess() FUNCTION
