@@ -55,7 +55,7 @@ class rplist extends NoInputCorePage
 
     function preprocess()
     {
-        if ($this->form->tryGet('selectlist') !== '') {
+        if ($this->form->tryGet('selectlist', false) !== false) {
             if (!empty($this->form->selectlist)) {
                 $this->printReceipt($this->form->selectlist);
             }
