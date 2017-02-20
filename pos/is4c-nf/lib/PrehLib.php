@@ -31,6 +31,7 @@ use COREPOS\pos\lib\TotalActions\TotalAction;
 use \CoreLocal;
 use \DateTime;
 use \DateInterval;
+use \Exception;
 
 /**
   @class PrehLib
@@ -557,7 +558,7 @@ public static function ageCheck($requiredAge, $ret)
         $ofAgeOnDay = new DateTime(CoreLocal::get('memAge'));
         $ofAgeOnDay->add(new DateInterval("P{$requiredAge}Y"));
     } catch (Exception $ex) {
-        $ofAgeOnDay = new DateTime(date('Y-m-d'));
+        $ofAgeOnDay = new DateTime(date('Y-m-d', strtotime('tomorrow')));
     }
     $today = new DateTime(date('Y-m-d'));
     if ($ofAgeOnDay > $today) {
