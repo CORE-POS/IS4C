@@ -47,6 +47,33 @@ class ObfSummaryReport extends ObfWeeklyReport
 
     protected $class_lib = 'ObfLibV2';
 
+    protected $PLAN_SALES = array(
+        '1,6' => 48125.67,      // Hillside Produce
+        '2,10' => 11037.90,     // Hillside Deli
+        '2,11' => 30002.96,
+        '2,16' => 12231.91,
+        '3,1' => 24806.33,      // Hillside Grocery
+        '3,4' => 61459.93,
+        '3,5' => 23038.55,
+        '3,7' => 98.48,
+        '3,8' => 17579.95,
+        '3,9' => 3313.16,
+        '3,13' => 14085.38,
+        '3,17' => 25413.22,
+        '7,6' => 16406.47,      // Denfeld Produce
+        '8,10' => 4049.92,      // Denfeld Deli
+        '8,11' => 12211.43,
+        '8,16' => 4768.70,
+        '9,1' => 8281.40,       // Denfeld Grocery
+        '9,4' => 24726.33,
+        '9,5' => 9070.20,
+        '9,7' => 45.52,
+        '9,8' => 5975.21,
+        '9,9' => 1310.53,
+        '9,13' => 4589.22,
+        '9,17' => 8823.08,
+    );
+
     private $laborPercent = array(
         1 => 8.31,
         2 => 22.41,
@@ -162,7 +189,8 @@ class ObfSummaryReport extends ObfWeeklyReport
                   Go through sales records for the category
                 */
                 while ($row = $dbc->fetch_row($salesR)) {
-                    $proj = ($row['lastYearSales'] * $row['growthTarget']) + $row['lastYearSales'];
+                    $projID = $category->obfCategoryID() . ',' . $row['superID'];
+                    $proj = $this->PLAN_SALES[$projID];
                     $trend1 = $this->calculateTrend($dbc, $category->obfCategoryID(), $row['superID']);
                     $dept_trend += $trend1;
                     $total_sales->trend += $trend1;
@@ -406,8 +434,8 @@ class ObfSummaryReport extends ObfWeeklyReport
             $org['projSales'] += $total_sales->projected;
             $org['lastYear'] += $total_sales->lastYear;
             $org['trendSales'] += $total_sales->trend;
-            $org['hours'] = $total_hours->actual;
-            $org['projHours'] = $total_hours->projected;
+            $org['hours'] += $total_hours->actual;
+            $org['projHours'] += $total_hours->projected;
             $org['wages'] += $total_wages->actual;
 
             if (count($this->colors) > 1) {
@@ -446,8 +474,8 @@ class ObfSummaryReport extends ObfWeeklyReport
             $data[] = array(
                 'Admin SPLH',
                 '',
-                sprintf('%.2f', $org['projSales'] / $org['projHours']),
-                sprintf('%.2f', $org['trendSales'] / $org['projHours']),
+                sprintf('%.2f', $org['projSales'] / $proj_hours),
+                sprintf('%.2f', $org['trendSales'] / $proj_hours),
                 number_format($labor->hours() == 0 ? 0 : ($org['sales']) / $labor->hours(), 2),
                 '',
                 number_format(($labor->hours() == 0 ? 0 : ($org['sales']/$labor->hours()) - ($org['projSales'] / $proj_hours)), 2),
@@ -503,7 +531,7 @@ class ObfSummaryReport extends ObfWeeklyReport
         $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
         $quarter_proj_sph = $total_hours->quarterProjected == 0 ? 0 : ($total_sales->quarterProjected)/($total_hours->quarterProjected);
         $data[] = array(
-            'Sales per Hour',
+            'SLPH per Hour',
             '',
             sprintf('%.2f', ($org['projSales']) / ($org['projHours'])),
             '',

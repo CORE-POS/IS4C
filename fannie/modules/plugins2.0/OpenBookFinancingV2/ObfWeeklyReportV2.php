@@ -750,7 +750,11 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['lastYear'] += $row['lastYear'];
             $info['trans'] = $row['trans'];
             $info['lyTrans'] = $row['lyTrans'];
-            $info['plan'] += $row['plan'];
+            foreach ($this->PLAN_SALES as $planID => $plan) {
+                if (strpos($planID, $row['catID'] . ',') === 0) {
+                    $info['plan'] += $plan;
+                }
+            }
             $cat->obfCategoryID($row['catID']);
             $cat->load();
             $plan[$row['catID']] = $this->projectHours($cat->salesPerLaborHourTarget(), $row['plan'], $row['plan']);
