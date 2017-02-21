@@ -46,7 +46,9 @@ class EndSalesBatchAlertTask extends FannieTask
     {
 
         $superDepts = array('GROCERY','REFRIGERATED','FROZEN','GEN MERCH','BULK','WELLNESS');
-        $contacts = array('csather@wholefoods.coop','lisa@wholefoods.coop','eosterman@wholefoods.coop');
+        $grocEmail = $this->config->get('GROCERY_EMAIL');
+        $scanEmail = $this->config->get('SCANCOORD_EMAIL');
+        $contacts = array($grocEmail,$scanEmail);
         $this->getBathchesBySuperDept($superDepts,$contacts);
        
         return false;
@@ -65,9 +67,10 @@ class EndSalesBatchAlertTask extends FannieTask
         
         list($inClause,$args) = $dbc->safeInClause($superDepts);
         $query = "SELECT batchName, batchID, startDate, endDate, owner 
-			FROM batches 
-			WHERE endDate BETWEEN CURDATE() and DATE_ADD(NOW(), INTERVAL 7 DAY) 
-            AND owner IN (".$inClause.")
+            FROM batches 
+            WHERE endDate BETWEEN CURDATE() AND DATE_ADD(NOW(), INTERVAL 7 DAY) 
+                AND owner IN (".$inClause.") 
+                AND batchName not like '%Co-op Deals%';
         ";
 		$prep = $dbc->prepare($query);
 		$result = $dbc->execute($prep,$args);
@@ -90,7 +93,7 @@ class EndSalesBatchAlertTask extends FannieTask
                 	background-color: #71c98a;
 				}
 				td.grocery, td.refrigerated, td.frozen,
-					td.bulk {
+					td.bulk, td.gen_merch {
 					background-color: #ffa72b;
 				}
 				td.wellness {
