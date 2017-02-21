@@ -258,8 +258,22 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<option value="#arSet1">Business (EOM)</option>';
         $ret .= '</select>';
 
-        $ret .= '<button type="button" onclick="$(\'#arAccounts option\').each(function(){$(this).attr(\'selected\', \'selected\');});
+        $ret .= '<button type="button" onclick="$(\'#arAccounts option\').each(function(){$(this).prop(\'selected\', true);});
                     return false;">Select All</button>';
+        $ret .= '<button type="button" onclick="$(\'#arAccounts option\').each(function(){
+                    if (/\u2709/.test($(this).html())) {
+                        $(this).prop(\'selected\', true);
+                    } else {
+                        $(this).prop(\'selected\', false);
+                    }
+                    }); return false;">Select Email</button>';
+        $ret .= '<button type="button" onclick="$(\'#arAccounts option\').each(function(){
+                    if (/\u2709/.test($(this).html()) == false) {
+                        $(this).prop(\'selected\', true);
+                    } else {
+                        $(this).prop(\'selected\', false);
+                    } 
+                    }); return false;">Select Paper</button>';
         $ret .= '<button onclick="$(\'#arForm\').attr(\'action\', \'StatementsPluginBusiness.php\');" type="submit">Print</button>';
         $ret .= '<button onclick="$(\'#arForm\').attr(\'action\', \'StatementsPluginEmail.php\');" disabled type="submit">Email</button>';
         $ret .= '<button type="button" onclick="exportCSV(\'ar_statements\', \'#arAccounts\');">Export List</button>';
