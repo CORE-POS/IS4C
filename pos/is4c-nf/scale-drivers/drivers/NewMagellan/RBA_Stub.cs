@@ -68,9 +68,16 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 {
     new private SerialPort sp = null;
 
+    private bool emv_buttons = false;
+
     public RBA_Stub(string p)
     {
         this.port = p;
+    }
+
+    public void SetEMV(bool emv)
+    {
+        this.emv_buttons = emv;
     }
 
     private void initPort()
@@ -193,7 +200,15 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             char fs = (char)0x1c;
-            string buttons = "TPROMPT6,Whole Foods Co-op"+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            string store_name = "Whole Foods Co-op";
+
+            // standard credit/debit/ebt/gift
+            string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            if (this.emv_buttons) {
+                // CHIP+PIN button in place of credit & debit
+                buttons = "TPROMPT6,"+store_name+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            }
+
             WriteMessageToDevice(UpdateScreenMessage(buttons));
         } catch (Exception) {
         }

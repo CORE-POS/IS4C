@@ -102,6 +102,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 rba = new RBA_Stub("COM"+com_port);
                 rba.SetParent(this.parent);
                 rba.SetVerbose(this.verbose_mode);
+                rba.SetEMV(true);
             }
         }
 
