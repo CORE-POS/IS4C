@@ -54,7 +54,7 @@ class InUseTask extends FannieTask
     public function run()
     {
 
-		$start = time();
+        $start = time();
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $p_def = $dbc->tableDefinition('products');
@@ -159,7 +159,7 @@ class InUseTask extends FannieTask
             $inUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
             $updateUpcs[] = $row['upc'];
         }
-		$inUseData .= '</tbody></table>';
+        $inUseData .= '</tbody></table>';
         
         while ($row = $dbc->fetch_row($resultB)) {
             if ($row['store_id'] == 1) {
@@ -171,24 +171,24 @@ class InUseTask extends FannieTask
                 if (!in_array($row['upc'],$exempts2)) $unUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
             }            
         }
-		$unUseData .= '</tbody></table>';
+        $unUseData .= '</tbody></table>';
 
         $prodUpdate = new ProdUpdateModel($dbc);
         $prodUpdate->logManyUpdates($updateUpcs);
 
-		$headers = array(
-			'MIME-Version: 1.0',
-			'Content-type: text/html; charset=iso-8859-1',
-			'from: automail@wholefoods.coop'			
-		);
+        $headers = array(
+            'MIME-Version: 1.0',
+            'Content-type: text/html; charset=iso-8859-1',
+            'from: automail@wholefoods.coop'            
+        );
 
-		$end = time();
-		$runtime = ($end - $start);
-		$runtime = $this->convert_unix_time($runtime);
+        $end = time();
+        $runtime = ($end - $start);
+        $runtime = $this->convert_unix_time($runtime);
 
-		$to = $this->config->get('SCANCOORD_EMAIL');
+        $to = $this->config->get('SCANCOORD_EMAIL');
         $msg = '<html>';
-		$msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; }</style><body>';
+        $msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; }</style><body>';
         $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
         $msg .= ' [ Runtime: '.$runtime.' ]<br />';
         $msg .= '<br />';
@@ -199,13 +199,13 @@ class InUseTask extends FannieTask
         $msg .= $inUseData;
         $msg .= '<br />';
         $msg .= '<br />';
-		$msg .= '</body></html>';
+        $msg .= '</body></html>';
         
         mail($to,'Report: In Use Task',$msg,implode("\r\n",$headers));
         
     }
 
-	public function convert_unix_time($secs) {
+    public function convert_unix_time($secs) {
         $bit = array(
             'y' => $secs / 31556926 % 12,
             'w' => $secs / 604800 % 52,
