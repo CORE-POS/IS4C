@@ -836,6 +836,9 @@ HTML;
             }
             $ret .= '<br />';
         }
+        if ($model->discountType() == 0) {
+            $ret .= '<div class="alert alert-danger">This is a price change batch</div>';
+        }
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
         $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discountType());
         /**
