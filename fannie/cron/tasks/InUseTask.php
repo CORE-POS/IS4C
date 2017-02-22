@@ -54,6 +54,7 @@ class InUseTask extends FannieTask
     public function run()
     {
 
+		$start = time();
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $p_def = $dbc->tableDefinition('products');
@@ -151,57 +152,78 @@ class InUseTask extends FannieTask
         $dbc->execute($updateUse,2);
         
         $data = '';
-        $inUseData = '';
-        $unUseData = '';
+        $inUseData = '<table><thead></thead><tbody><tr>';
+        $unUseData = '<table><thead></thead><tbody><tr>';
         $updateUpcs = array();
         while ($row = $dbc->fetch_row($resultA)) {
-            $inUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+            $inUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
             $updateUpcs[] = $row['upc'];
         }
+		$inUseData .= '</tbody></table>';
         
         while ($row = $dbc->fetch_row($resultB)) {
             if ($row['store_id'] == 1) {
                 if (!in_array($row['upc'],$exempts1)) {
-                    $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
+                    $unUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
                     $updateUpcs[] = $row['upc'];
                 }
             } elseif ($row['store_id'] == 2) {
-                if (!in_array($row['upc'],$exempts2)) $unUseData .= $row['upc'] . "\t" . $row['last_sold'] . "\t" . $row['store_id'] . "\r\n";
-            }
-            
+                if (!in_array($row['upc'],$exempts2)) $unUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
+            }            
         }
+		$unUseData .= '</tbody></table>';
 
         $prodUpdate = new ProdUpdateModel($dbc);
         $prodUpdate->logManyUpdates($updateUpcs);
 
-        $date = date('Y-m-d h:i:s');
-        $h = date('h');                
-        $m = date('i');                
-        $s = date('s');          
-        //  Task is scheduled to run at 12:15AM        
-        $n = $m - 15;
-        if ($n < 0) {
-            $runtime = ($h - 1) .':'. (60 + $n) .':'. $s;
-        } else {
-            $runtime = $h .':'. ($m - 15) .':'. $s;
-        }
+		$headers = array(
+			'MIME-Version: 1.0',
+			'Content-type: text/html; charset=iso-8859-1',
+			'from: automail@wholefoods.coop'			
+		);
 
-        $to = 'csather@wholefoods.coop';
-        $headers = "from: automail@wholefoods.coop";
-        $msg = '';
-        $msg .= 'In Use Task (Product In-Use Management) completed at '.$date."\r\n";
-        $msg .= 'Runtime: '.$runtime."\r\n";
-        $msg .= "\r\n";
-        $msg .= 'Items removed from use' . "\r\n";
+		$end = time();
+		$runtime = ($end - $start);
+		$runtime = $this->convert_unix_time($runtime);
+
+		$to = $this->config->get('SCANCOORD_EMAIL');
+        $msg = '<html>';
+		$msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; }</style><body>';
+        $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
+        $msg .= ' [ Runtime: '.$runtime.' ]<br />';
+        $msg .= '<br />';
+        $msg .= 'Items removed from use' . '<br />';
         $msg .= $unUseData;
-        $msg .= "\r\n";
-        $msg .= 'Items added to use' . "\r\n";
+        $msg .= '<br />';
+        $msg .= 'Items added to use' . '<br />';
         $msg .= $inUseData;
-        $msg .= "\r\n";
-        $msg .= "\r\n";
+        $msg .= '<br />';
+        $msg .= '<br />';
+		$msg .= '</body></html>';
         
-        mail($to,'Report: In Use Task',$msg,$headers);
+        mail($to,'Report: In Use Task',$msg,implode("\r\n",$headers));
         
+    }
+
+	public function convert_unix_time($secs) {
+        $bit = array(
+            'y' => $secs / 31556926 % 12,
+            'w' => $secs / 604800 % 52,
+            'd' => $secs / 86400 % 7,
+            'h' => $secs / 3600 % 24,
+            'm' => $secs / 60 % 60,
+            's' => $secs % 60
+            );
+           
+        foreach($bit as $k => $v)
+            if($k == 's') {
+                $ret[] = $v;
+            } else {
+                $ret[] = $v . ':';
+            }
+            if ($v == 0) $ret[] = '0';
+               
+        return join('', $ret);
     }
     
 }
