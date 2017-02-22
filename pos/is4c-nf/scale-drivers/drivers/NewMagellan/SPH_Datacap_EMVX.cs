@@ -294,11 +294,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 // try request with an IP
                 request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
                 result = emv_ax_control.ProcessTransaction(request.OuterXml);
-                if (autoReset) {
-                    PadReset();
-                }
                 if (!autoReset) {
                     Console.WriteLine(result);
+                } else {
+                    PadReset();
                 }
                 if (enable_xml_log) {
                     using (StreamWriter sw = new StreamWriter(xml_log, true)) {
