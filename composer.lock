@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "006be86704f689e79848ee9a6df2909b",
-    "content-hash": "97ba6e409502572509f8607e59ad8b48",
+    "hash": "e30c90f7fa57529ea6270ff6779c00d7",
+    "content-hash": "032735f24e124243ec6344e8a37cb407",
     "packages": [
         {
             "name": "automattic/woocommerce",
@@ -498,6 +498,56 @@
                 "password"
             ],
             "time": "2014-11-20 16:49:30"
+        },
+        {
+            "name": "itgalaxy/bmp2image",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/itgalaxy/bmp2image.git",
+                "reference": "3e4265da72e10ef227ba7071c6317d8dd0d192c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/itgalaxy/bmp2image/zipball/3e4265da72e10ef227ba7071c6317d8dd0d192c5",
+                "reference": "3e4265da72e10ef227ba7071c6317d8dd0d192c5",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.6 || ^7.0"
+            },
+            "require-dev": {
+                "mikey179/vfsstream": "~1.6.0",
+                "phpunit/php-code-coverage": "~4.0.0",
+                "phpunit/phpunit": "~5.5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Itgalaxy\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Itgalaxy",
+                    "email": "info@itgalaxy.company"
+                }
+            ],
+            "description": "Creates an image from a Bitmap",
+            "keywords": [
+                "BMP",
+                "bmp2gif",
+                "bmp2jpg",
+                "bmp2png",
+                "gif",
+                "jpg",
+                "png"
+            ],
+            "time": "2016-12-15 19:26:41"
         },
         {
             "name": "kriswallsmith/assetic",
