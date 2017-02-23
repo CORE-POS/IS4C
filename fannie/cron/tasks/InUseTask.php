@@ -152,8 +152,8 @@ class InUseTask extends FannieTask
         $dbc->execute($updateUse,2);
         
         $data = '';
-        $inUseData = '<table><thead></thead><tbody><tr>';
-        $unUseData = '<table><thead></thead><tbody><tr>';
+        $inUseData = '<table><thead><th>UPC</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
+        $unUseData = '<table><thead><th>UPC</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
         $updateUpcs = array();
         while ($row = $dbc->fetch_row($resultA)) {
             $inUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
@@ -188,7 +188,8 @@ class InUseTask extends FannieTask
 
         $to = $this->config->get('SCANCOORD_EMAIL');
         $msg = '<html>';
-        $msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; }</style><body>';
+        $msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
+			padding: 5px; }</style><body>';
         $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
         $msg .= ' [ Runtime: '.$runtime.' ]<br />';
         $msg .= '<br />';
@@ -206,7 +207,8 @@ class InUseTask extends FannieTask
     }
 
     public function convert_unix_time($secs) {
-        $bit = array(
+        /*
+		$bit = array(
             'y' => $secs / 31556926 % 12,
             'w' => $secs / 604800 % 52,
             'd' => $secs / 86400 % 7,
@@ -214,6 +216,12 @@ class InUseTask extends FannieTask
             'm' => $secs / 60 % 60,
             's' => $secs % 60
             );
+		*/
+		$bit = array(
+            'h' => $secs / 3600 % 24,
+            'm' => $secs / 60 % 60,
+            's' => $secs % 60
+        );
            
         foreach($bit as $k => $v)
             if($k == 's') {
