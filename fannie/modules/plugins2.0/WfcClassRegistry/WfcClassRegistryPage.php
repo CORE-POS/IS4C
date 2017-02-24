@@ -26,9 +26,6 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-/**
-  @class HouseCouponEditor
-*/
 class WfcClassRegistryPage extends FanniePage 
 {
     public $description = "[Module] for managing WFC-U Class Sign-In";
@@ -45,15 +42,149 @@ class WfcClassRegistryPage extends FanniePage
 
     public function preprocess()
     {
+        if (FormLib::get('process', false) !== false) {
+            $this->credits_save_handler();
+        }
+        
         $this->display_function = 'listClasses';
         
         if (FormLib::get('cancel', false) !== false) {
             $this->display_function = 'cancel_vew';
         } elseif (FormLib::get('sign_pay', false) !== false) {
             $this->display_function = 'sign_pay_view';
+        } elseif (FormLib::get('credits', false) !== false) {
+            $this->display_function = 'credits_view';
         }
         
         return true;
+    }
+    
+    private function credits_save_handler()
+    {
+        $credits = array();
+        $credits = FormLib::get('processCredit');
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $items = new wfcuRegistryModel($dbc);
+        
+        foreach ($credits as $id) {
+            $items->id($id);
+            $items->seatType(99);
+            $items->save();
+        }
+        
+        //return header('location: http://localhost/IS4C/fannie/modules/plugins2.0/WfcClassRegistry/WfcClassRegistryPage.php?credits=1');
+        return false;
+    }
+    
+    private function credits_view()
+    {
+        
+        $ret = '';
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $ret .= '<div align="center"><h2>WFC-U Credits</h2></div>';
+        $items = new wfcuRegistryModel($dbc);
+        
+        //  Create a new empty credit pending row if there is no empty row. 
+        $prep = $dbc->prepare("SELECT id, first_name FROM wfcuRegistry WHERE seatType=4 AND upc='99999999';");
+        $resp = $dbc->execute($prep);
+        while ($row = $dbc->fetch_row($resp)) {
+            $name = $row['first_name'];
+            $id = $row['id'];
+        }
+        if ($dbc->error()) {
+            $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
+        }
+        $prep = $dbc->prepare("SELECT max(id) as id FROM wfcuRegistry;");
+        $resp = $dbc->execute($prep);
+        while ($row = $dbc->fetch_row($resp)) {
+            $maxID = $row['id'];
+        }
+        if ($dbc->error()) {
+            $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
+        }
+        $nextId = ($maxID + 1);
+        if (isset($name)) { 
+            $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ('99999999', ?, 4);");
+            $dbc->execute($prep,$nextId);
+            if ($dbc->error()) {
+                $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
+            }
+        }
+        
+        // Create the first row if there are no rows
+        $prepA = $dbc->prepare("SELECT count(*) AS count FROM wfcuRegistry WHERE seatType=4;");
+        $resA = $dbc->execute($prepA);
+        while ($row = $dbc->fetchRow($resA)) {
+            $rows = $row['count'];
+        }
+        if ($rows < 1) {
+            $prepB = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ('99999999', ?, 4);");
+            $dbc->execute($prepB,$nextId);
+            if ($dbc->error()) {
+                $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
+            }
+        }
+        
+        
+        $items->seatType(4);
+        $ret .= '<div id="alert-area"></div><table class="table tablesorter">';
+        $ret .= '<thead><label>Pending Credits</label></tr>
+            <tr>
+            <th style="width: 10px;"></th>
+            <th style="width: 200px;">First</th>
+            <th style="width: 200px;">Last</th>
+            <th style="width: 100px;">Member #</th>
+            <th style="width: 130px;">Phone Number</th>
+            <th style="width: 80px;">Amount</th>
+            <th>Notes</th>
+            <th style="width: 20px;"></th>
+            </thead>';
+        $ret .= '<tbody>';        
+        $ret .= '<form method="post"><input type="hidden" class="upc" id="upc" name="upc" value="99999999" /></form>';
+        $ret .= $this->printCredits($items);
+        $ret .= '</tbody></table>';
+        
+        $items->reset();
+        $items->upc(99999999);
+        $items->seatType(99);
+        
+        //  Processed Credits
+        $ret .= '<br /><br />';
+        $ret .= '<div id="alert-area"></div><table class="table tablesorter table-condensed table-stripped small">';
+        $ret .= '<thead><label>Processed Credits</label></tr>
+            <tr>
+            <th style="width: 10px;"></th>
+            <th style="width: 200px;">First</th>
+            <th style="width: 200px;">Last</th>
+            <th style="width: 100px;">Member #</th>
+            <th style="width: 130px;">Phone Number</th>
+            <th style="width: 80px;">Amount</th>
+            <th>Notes</th>
+            <th style="width: 200px;">Processed On</th>
+            </thead>';
+        $ret .= '<tbody>';      
+        foreach ($items->find('modified') as $data) {
+            $ret .= sprintf(
+                '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+                '',
+                $data->first_name(),
+                $data->last_name(),
+                $data->card_no(),
+                $data->phone(),
+                $data->amount(),
+                $data->details(),
+                $data->modified()
+            );
+        }
+        $ret .= '</tbody></table>';
+        
+        $this->add_onload_command('itemEditing(' . $classSize . ');');
+        //$this->add_onload_command('withdraw();');
+        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
+        $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
+        
+        return $ret; 
     }
     
     public function css_content()
@@ -65,7 +196,7 @@ class WfcClassRegistryPage extends FanniePage
        ';
     }
 
-    public  function body_content()
+    public function body_content()
     {
         $func = $this->display_function;
 
@@ -121,8 +252,18 @@ class WfcClassRegistryPage extends FanniePage
             }
         }
         $ret .= '</select>';
-        $ret .= '<input class=\'btn btn-default\' type=\'submit\' value=\'Open Class Registry\'>';
-        $ret .= '<input type="checkbox" class="checkbox" name="expired" value="1" ';
+        $ret .= '
+            <div>
+                <div style="float: left">
+                    <input class=\'btn btn-default\' type=\'submit\' value=\'Open Class Registry\'>
+                </div>
+                <div style="float: right">
+                    <a class=\'btn btn-default \' href="?credits=1">View Credits</a>
+                </div>
+                
+            </div>
+        ';
+        $ret .= '<br /><br /><input type="checkbox" class="checkbox" name="expired" value="1" ';
             if (FormLib::get('expired')) {
                 $ret .= 'checked="checked" ';
             }
@@ -198,6 +339,8 @@ class WfcClassRegistryPage extends FanniePage
                 $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ({$plu}, 1, 0);");
                 $resp = $dbc->execute($prep);
             }
+            
+            //  Create a new (blank) 'Waiting List' row if the previous row no longer NULL. 
             $prep = $dbc->prepare("SELECT id, first_name FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
             $resp = $dbc->execute($prep);
             while ($row = $dbc->fetch_row($resp)) {
@@ -274,7 +417,7 @@ class WfcClassRegistryPage extends FanniePage
             
             $ret .= '<div id="alert-area"></div>
             <table class="table tablesorter">';
-            $ret .= '<thead><tr><th>Class Registry  <th>
+            $ret .= '<thead><tr><th>Class Registry  </th></tr>
                 <tr><th>Seat</th>
                 <th>First</th>
                 <th>Last</th>
@@ -540,6 +683,63 @@ function withdraw()
                 );
             }
         }
+
+        return $ret;
+    }
+    
+    private function printCredits($items)
+    {
+        $ret = '';
+        $ret .= '<form method="post" name="processCredits">';
+        $i = 0;
+        foreach ($items->find() as $item) {
+            $i+=1;
+            $ret .= sprintf('<tr>
+                <td class="id collapse">%s</td>
+                <td class="seat">%d</td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editFirst" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editCard_no" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editAmount" value="%s" /></td>
+                    ',
+                $item->id(),
+                $i,
+                $item->first_name(),
+                $item->first_name(),
+                $item->last_name(),
+                $item->last_name(),
+                $item->card_no(),
+                $item->card_no(),
+                $item->phone(),
+                $item->phone(),
+                $item->amount(),
+                $item->amount()
+                
+            );
+            
+            $ret .= sprintf('
+                <td><span class="collapse">%s</span>
+                    <textarea class="form-control editable" name="editNotes" value="%s" rows="1" cols="30" style="height: 30px; "/>%s</textarea></td>
+                <td><span class="collapse">%s</span>
+                    <input type="checkbox" class="form-control" name="processCredit[]" value="%s" /></td>
+                    ',
+                htmlspecialchars($item->payment()),
+                $item->details(),
+                $item->details(),
+                $item->id(),
+                $item->id()
+                
+            );  
+            
+        }
+        $ret .= '</tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><button type="submit" class="btn btn-warning btn-xs" href="?credits=1&process=1">Completed</button></td></tr>';
+        $ret .= '</form>';
 
         return $ret;
     }
