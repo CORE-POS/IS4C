@@ -72,6 +72,9 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
     } elseif ($_POST['field'] === 'editRefund') {
         $item->refund($_POST['value']);
         $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editAmount') {
+        $item->amount($_POST['value']);
+        $item->modified($timeStamp);
     } else {
         $ret['error'] = 1;
         $ret['error_msg'] = 'Unknown field';
