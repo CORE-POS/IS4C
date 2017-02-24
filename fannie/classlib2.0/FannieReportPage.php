@@ -654,23 +654,42 @@ class FannieReportPage extends FanniePage
                             </script>';
                     }
                     $ret .= '<div id="pre-report-content">';
-                    $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
-                    $ret .= '<div class="hidden-print">';
-                    if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
-                        $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
-                            &nbsp;&nbsp;&nbsp;&nbsp;',
+                    if (empty($_POST)) {
+                        $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
+                        $ret .= '<div class="hidden-print">';
+                        if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
+                            $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
+                                &nbsp;&nbsp;&nbsp;&nbsp;',
+                                $uri,
+                                (strstr($uri, '?') === false ? '?' : '&')
+                            );
+                        }
+                        $json = FormLib::queryStringtoJSON(filter_input(INPUT_SERVER, 'QUERY_STRING'));
+                        $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="?json=%s">Back</a></div>',
                             $uri,
-                            (strstr($uri, '?') === false ? '?' : '&')
+                            (strstr($uri, '?') === false ? '?' : '&'),
+                            base64_encode($json)
                         );
+                    } else {
+                        $ret .= '<form id="downloadForm" method="post">';
+                        foreach ($_POST as $key => $val) {
+                            if (is_array($val)) {
+                                foreach ($val as $v) {
+                                    $ret .= "<input type=\"hidden\" name=\"{$key}[]\" value=\"{$v}\" />";
+                                }
+                            } else {
+                                $ret .= "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />";
+                            }
+                        }
+                        $ret .= '<input type="hidden" name="excel" id="excelType" /></form>';
+                        if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
+                            $ret .= '<a href="" onclick="$(\'#excelType\').val(\'xls\');$(\'#downloadForm\').submit(); return false;">Download Excel</a>
+                                &nbsp;&nbsp;&nbsp;&nbsp;';
+                        }
+                        $ret .= '<a href="" onclick="$(\'#excelType\').val(\'csv\');$(\'#downloadForm\').submit(); return false;">Download CSV</a>';
                     }
-                    $json = FormLib::queryStringtoJSON(filter_input(INPUT_SERVER, 'QUERY_STRING'));
-                    $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="?json=%s">Back</a></div>',
-                        $uri,
-                        (strstr($uri, '?') === false ? '?' : '&'),
-                        base64_encode($json)
-                    );
                     $ret = array_reduce($this->defaultDescriptionContent(count($data)),
                         function ($carry, $line) {
                             return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
