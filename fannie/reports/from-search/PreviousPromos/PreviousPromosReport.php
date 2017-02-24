@@ -35,7 +35,7 @@ class PreviousPromosReport extends FannieReportPage
     protected $title = "Fannie : Previous Promos";
     protected $header = "Previous Promos";
 
-    protected $report_headers = array('UPC', 'Brand', 'Description', 'Auto Par', 'Case Size', 'Promo 1', 'ADM', 'Promo 2', 'ADM', 'Promo 3', 'ADM');
+    protected $report_headers = array('UPC', 'SKU', 'Brand', 'Description', 'Auto Par', 'Case Size', 'Promo 1', 'ADM', 'Promo 2', 'ADM', 'Promo 3', 'ADM');
     protected $required_fields = array('u');
 
     public function fetch_report_data()
@@ -61,7 +61,7 @@ class PreviousPromosReport extends FannieReportPage
         $args[] = Store::getIdByIp();
 
         $itemP = $dbc->prepare("
-            SELECT p.upc, p.brand, p.description, auto_par, v.units
+            SELECT p.upc, p.brand, p.description, auto_par, v.units, v.sku
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
             WHERE p.upc IN ({$inStr})
@@ -70,7 +70,14 @@ class PreviousPromosReport extends FannieReportPage
         $itemR = $dbc->execute($itemP, $args);
         $data = array();
         while ($itemW = $dbc->fetchRow($itemR)) {
-            $record = array($itemW['upc'], $itemW['brand'], $itemW['description'], sprintf('%.2f', $itemW['auto_par']), $itemW['units']);
+            $record = array(
+                $itemW['upc'],
+                ($itemW['sku'] ? $itemW['sku'] : 'n/a'),
+                $itemW['brand'],
+                $itemW['description'],
+                sprintf('%.2f', $itemW['auto_par']),
+                $itemW['units'],
+            );
             $batchR = $dbc->execute($batchP, array($itemW['upc']));
             for ($i=0; $i<3; $i++) {
                 $batchW = $dbc->fetchRow($batchR);
