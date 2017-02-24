@@ -23,8 +23,8 @@ class LinkedCoupon extends Parser
     public function parse($str)
     {
         $matched = preg_match('/^(\d+)=>(\d+)$/', $str, $matches);
-        $card_no = $matches[0][1];
-        $coupID = $matches[0][2];
+        $card_no = $matches[1];
+        $coupID = $matches[2];
         $upc = '00499999' . str_pad($coupID, 5, '0', STR_PAD_LEFT);
 
         $ret = $this->default_json();
