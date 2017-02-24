@@ -324,7 +324,7 @@ function mainDisplay($date,$checkForSave=True){
 
     $discountQ = "select m.memDesc, sum(d.total)*-1 as discount from
         $dlog as d inner join custdata as c on c.cardno = d.card_no
-        inner join memtypeID as m on c.memType = m.memTypeID
+        inner join memtype as m on c.memType = m.memtype
         where datediff(dd,?,d.tdate) = 0
         and d.upc = 'DISCOUNT' and c.personnum = 1
         group by m.memDesc,d.upc";

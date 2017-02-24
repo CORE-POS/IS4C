@@ -3,7 +3,7 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
-$memTypesQ = "select memTypeID,memDesc from memTypeID order by memTypeID";
+$memTypesQ = "select memtype,memDesc from memtype order by memtype";
 $memTypesR = $sql->query($memTypesQ);
 
 $selected = 0;

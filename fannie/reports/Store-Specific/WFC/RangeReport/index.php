@@ -156,7 +156,7 @@ echo WfcLib::tablify($others,array(1,0,2,3),array("Account","Dept","Description"
 $discQ = $dbc->prepare("SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
 FROM $dlog d INNER JOIN
        custdata c ON d.card_no = c.CardNo INNER JOIN
-      memTypeID m ON c.memType = m.memTypeID
+      memtype m ON c.memType = m.memtype
 WHERE     (d.tdate BETWEEN ? AND ? ) 
     AND (d.upc = 'DISCOUNT') AND c.personnum= 1
 and total <> 0
@@ -185,7 +185,7 @@ echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
 $transQ = $dbc->prepare("SELECT SUM(d.total),SUM(d.quantity),SUM(d.transCount),m.memdesc
     FROM {$WAREHOUSE}sumMemTypeSalesByDay as d LEFT JOIN
-    memTypeID as m ON m.memTypeID=d.memType
+    memtype as m ON m.memtype=d.memType
     WHERE d.date_id BETWEEN ? AND ?
     GROUP BY d.memType, m.memdesc");
 $transR = $dbc->execute($transQ,$date_ids);

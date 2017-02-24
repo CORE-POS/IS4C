@@ -816,7 +816,7 @@ function fetch_data($date1,$date2){
 
     $discountP = $sql->prepare("select YEAR(tdate),MONTH(tdate),DAY(tdate),
         memDesc,-sum(total)
-        from $dlog as d left join is4c_op.memTypeID as m on d.memtype=m.memtypeID
+        from $dlog as d left join is4c_op.memtype as m on d.memtype=m.memtype
         where upc='DISCOUNT' and tdate between ? AND ?
         group by YEAR(tdate),MONTH(tdate),DAY(tdate),
         memDesc");

@@ -210,7 +210,7 @@ echo WfcLib::tablify($ar_rows,array(1,2,3,4,5),array("Account","MemNum","Descrip
 
 $discQ = $dbc->prepare("SELECT m.memDesc, -1*SUM(d.total) AS Discount,SUM(transCount)
 FROM {$WAREHOUSE}sumDiscountsByDay AS d INNER JOIN
-      memTypeID m ON d.memType = m.memTypeID
+      memtype m ON d.memType = m.memtype
 WHERE d.date_id=?
 GROUP BY m.memDesc");
 $discR = $dbc->execute($discQ,array($date_id));
@@ -262,7 +262,7 @@ echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
 $transQ = $dbc->prepare("SELECT d.total,d.quantity,d.transCount,m.memdesc
     FROM {$WAREHOUSE}sumMemTypeSalesByDay as d LEFT JOIN
-    memTypeID as m ON m.memTypeID=d.memType
+    memtype as m ON m.memtype=d.memType
     WHERE d.date_id=?");
 $transR = $dbc->execute($transQ,array($date_id));
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
