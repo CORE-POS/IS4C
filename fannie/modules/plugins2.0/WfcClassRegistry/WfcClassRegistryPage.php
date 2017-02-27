@@ -69,11 +69,14 @@ class WfcClassRegistryPage extends FanniePage
         foreach ($credits as $id) {
             $items->id($id);
             $items->seatType(99);
-            $items->save();
+            if ($save = $items->save()) {
+                $resp = '<span class="text-success">saved!</span>';
+            } else {
+                $resp = '<span class="text-danger">There was an error saving.</span>';
+            }
         }
         
-        //return header('location: http://localhost/IS4C/fannie/modules/plugins2.0/WfcClassRegistry/WfcClassRegistryPage.php?credits=1');
-        return false;
+        return $resp;
     }
     
     private function credits_view()
@@ -738,7 +741,8 @@ function withdraw()
             );  
             
         }
-        $ret .= '</tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><button type="submit" class="btn btn-warning btn-xs" href="?credits=1&process=1">Completed</button></td></tr>';
+        $ret .= '</tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><button type="submit" class="btn btn-warning btn-xs" name="process" value="1">Completed</button></td></tr>';
+        $ret .= '<input type="hidden" name="credit" value="1">';
         $ret .= '</form>';
 
         return $ret;
