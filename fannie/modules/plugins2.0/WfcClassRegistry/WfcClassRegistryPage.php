@@ -84,7 +84,7 @@ class WfcClassRegistryPage extends FanniePage
         
         $ret = '';
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $ret .= '<div align="center"><h2>WFC-U Credits</h2></div>';
+        $ret .= '<div align="center"><h2>WFC-U Credits</h2><a href="?class_plu=0">Return to Registry</a></div>';
         $items = new wfcuRegistryModel($dbc);
         
         //  Create a new empty credit pending row if there is no empty row. 
