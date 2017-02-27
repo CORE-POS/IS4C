@@ -1,10 +1,9 @@
 {
     "name": "core-pos/core-pos",
     "description": "A Point of Sale System for Co-ops",
-    "license": "GPL2",
+    "license": "GPL-2.0",
     "type": "package",
     "homepage": "https://github.com/CORE-POS/IS4C",
-    "version": "2.3.0-dev",
     "authors": [
         {
             "name": "Andy Theuninck",
@@ -45,5 +44,13 @@
     },
     "config": {
         "component-dir": "fannie/src/javascript/composer-components/"
+    },
+    "autoload": {
+        "psr-4": {
+            "COREPOS\\common\\": "common/",
+            "COREPOS\\pos\\": "pos/is4c-nf/",
+            "COREPOS\\Fannie\\API\\": "fannie/classlib2.0/",
+            "COREPOS\\Fannie\\Plugin\\": "fannie/modules/plugins2.0/"
+        }
     }
 }
