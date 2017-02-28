@@ -64,6 +64,20 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         pdc_active = false;
     }
 
+    public override void SetConfig(string k, string v)
+    {
+        if (k == "disableRBA" && v == "true") {
+            try {
+                if (this.rba != null) {
+                    rba.stubStop();
+                }
+            } catch (Exception) {}
+            this.rba = null;
+        } else if (k == "disableButtons" && v == "true") {
+            this.rba.SetEMV(RbaButtons.None);
+        }
+    }
+
     /**
       Initialize PDCX control with servers
       and response timeout

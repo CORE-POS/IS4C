@@ -50,6 +50,8 @@ using BitmapBPP;
 
 namespace SPH {
 
+public enum RbaButtons { None, Credit, EMV };
+
 /**
   This class contains all the functionality for building
   and dealing with RBA protocl messages. Subclasses that
@@ -68,14 +70,14 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 {
     new private SerialPort sp = null;
 
-    private bool emv_buttons = false;
+    private RbaButtons emv_buttons = RbaButtons.Credit;
 
     public RBA_Stub(string p)
     {
         this.port = p;
     }
 
-    public void SetEMV(bool emv)
+    public void SetEMV(RbaButtons emv)
     {
         this.emv_buttons = emv;
     }
@@ -204,9 +206,11 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
             // standard credit/debit/ebt/gift
             string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
-            if (this.emv_buttons) {
+            if (this.emv_buttons == RbaButtons.EMV) {
                 // CHIP+PIN button in place of credit & debit
                 buttons = "TPROMPT6,"+store_name+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            } else if (this.emv_buttons == RbaButtons.None) {
+                buttons = "TPROMPT6,"+store_name;
             }
 
             WriteMessageToDevice(UpdateScreenMessage(buttons));
