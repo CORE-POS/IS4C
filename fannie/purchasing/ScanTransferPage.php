@@ -75,13 +75,14 @@ class ScanTransferPage extends FannieRESTfulPage
                 $item->brand($data['brand']);
                 $item->description = $data['desc'];
                 $item->unitCost($data['cost']);  
-                $item->salesCode($data['code']);
+                $item->salesCode($data['codeTo']);
                 $item->caseSize(1);
                 
                 $item->quantity($data['qty']);
                 $item->orderID($inID);
                 $item->save();
 
+                $item->salesCode($data['codeFrom']);
                 $item->quantity(-1*$data['qty']);
                 $item->orderID($outID);
                 $item->save();
@@ -116,7 +117,8 @@ HTML;
                     'cost' => $this->form->cost,
                     'brand' => $this->form->brand,
                     'desc' => $this->form->desc,
-                    'code' => $this->form->coding,
+                    'codeFrom' => $this->form->coding,
+                    'codeTo' => $this->form->coding2,
                 );
             }
         } catch (Exception $ex) {
@@ -148,8 +150,12 @@ HTML;
         <input type="number" min="-999" max="999" step="0.01" name="cost" class="form-control input-sm" value="{$info['cost']}" />
     </div>
     <div class="form-group">
-        <label>Coding</label>
+        <label>Coding (From)</label>
         <input type="number" min="0" max="99999" step="1" name="coding" class="form-control input-sm" value="{$info['salesCode']}" />
+    </div>
+    <div class="form-group">
+        <label>Coding (To)</label>
+        <input type="number" min="0" max="99999" step="1" name="coding2" class="form-control input-sm" value="{$info['salesCode']}" />
     </div>
     <div class="form-group">
         <label>Brand</label>
@@ -190,9 +196,9 @@ HTML;
                 <th>&nbsp;</th>
             </tr></thead><tbody>';
         foreach ($_SESSION['items'] as $upc => $data) {
-            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td>
+            $ret .= sprintf('<tr><td>%s to %s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td>
                     <td><a class="btn btn-xs btn-danger" href="?_method=delete&id=%s">%s</a></td></tr>',
-                    $data['code'], $data['brand'], $data['desc'], $data['cost'], $data['qty'],
+                    $data['codeFrom'], $data['codeTo'], $data['brand'], $data['desc'], $data['cost'], $data['qty'],
                     $upc, COREPOS\Fannie\API\lib\FannieUI::deleteIcon() 
             );
         }
