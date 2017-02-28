@@ -140,7 +140,7 @@ static public function tender($right, $strl)
     Database::getsubtotals();
 
     // see if transaction has ended
-    if (CoreLocal::get("amtdue") <= 0.005) {
+    if (CoreLocal::get("amtdue") <= 0.005 && $tenderObject->endsTransaction()) {
         $ret = self::tenderEndsTransaction($tenderObject, $ret);
     } else {
         $ret = self::tenderContinuesTransaction($ret);

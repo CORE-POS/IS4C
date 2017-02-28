@@ -43,6 +43,7 @@ class TenderModule
     protected $change_string = 'Change';
     protected $min_limit = 0;
     protected $max_limit = 0;
+    protected $ends_trans = true;
 
     /**
       Constructor
@@ -58,18 +59,25 @@ class TenderModule
         $this->amount = $amt;
 
         $dbc = Database::pDataConnect();
-        $query = "select TenderID,TenderCode,TenderName,TenderType,
-            ChangeMessage,MinAmount,MaxAmount,MaxRefund from 
-            tenders where tendercode = '".$this->tender_code."'";
-        $result = $dbc->query($query);
+        $query = "SELECT TenderID,TenderCode,TenderName,TenderType,
+            ChangeMessage,MinAmount,MaxAmount,MaxRefund,";
+        if (CoreLocal::get('NoCompat') != 1) {
+            $tenderTable = $dbc->tableDefinition('tenders');
+            $query .= isset($tenderTable['EndsTransaction']) ? '' : '1 AS ';
+        }
+        $query .= " EndsTransaction FROM
+            tenders WHERE tendercode = ?";
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, array($this->tender_code));
 
-        if ($dbc->num_rows($result) > 0) {
+        if ($dbc->numRows($result) > 0) {
             $row = $dbc->fetchRow($result);
             $this->name_string = $row['TenderName'];
             $this->change_type = $row['TenderType'];
             $this->change_string = $row['ChangeMessage'];
             $this->min_limit = $row['MinAmount'];
             $this->max_limit = $row['MaxAmount'];
+            $this->ends_trans = $row['EndsTransaction'] ? true : false;
         }
     }
 
@@ -216,6 +224,11 @@ class TenderModule
     public function allowDefault()
     {
         return true;
+    }
+
+    public function endsTransaction()
+    {
+        return $this->ends_trans;
     }
 
     /**
