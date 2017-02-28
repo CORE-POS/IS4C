@@ -97,7 +97,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 INNER JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
                 LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS n ON s.cardno=n.memnum
             WHERE c.Type=\'INACT2\'
-                AND s.suspDate >= ?
+                AND (s.suspDate >= ?)
             ORDER BY s.suspDate
         ');
 
@@ -323,7 +323,11 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
             'meta_background'=>'#ccc','meta_foreground'=>'#000');
 
-        $termR = $dbc->execute($termP, $ytdArgs[0]);
+        $termArgs = array($ytdArgs[0]);
+        if ($this->config->COOP_ID == 'WFC_Duluth') {
+            $termArgs = array('2016-02-23');
+        }
+        $termR = $dbc->execute($termP, $termArgs);
         while ($row = $dbc->fetch_row($termR)) {
             $record = array(
                 $row['card_no'],
