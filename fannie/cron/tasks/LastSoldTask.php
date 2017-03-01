@@ -69,6 +69,7 @@ class LastSoldTask extends FannieTask
             FROM ' . $dlog . '
             WHERE trans_type=\'I\'
                 AND tdate > \'' . date('Y-m-d', strtotime('1 week ago')) . '\'
+                AND charflag <> \'SO\'
             GROUP BY YEAR(tdate),
                 MONTH(tdate),
                 DAY(tdate),
