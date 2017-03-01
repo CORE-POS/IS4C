@@ -46,6 +46,15 @@ class TagsNoPrice extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetRightMargin($this->left);  //Set the right margin of the page
         $pdf->SetAutoPageBreak(False); // manage page breaks yourself
 
+        $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
+        $mapP = $dbc->prepare("
+            SELECT i.units,i.size,s.sku
+            FROM vendorSKUtoPLU AS s
+                INNER JOIN vendorItems AS i ON s.sku=i.sku AND s.vendorID=i.vendorID
+                INNER JOIN vendors AS v ON s.vendorID=v.vendorID
+            WHERE s.upc=?
+                AND (v.vendorName=? OR 1=1)");
+
         $data = $this->loadItems();
         $num = 0; // count tags 
         $x = $this->left;
@@ -54,7 +63,7 @@ class TagsNoPrice extends \COREPOS\Fannie\API\item\FannieSignage
 
             // extract & format data
             $price = $item['normal_price'];
-            $desc = isset($item['description']) && !empty($item['description']) ? $item['description'] : $item['posDescription'];
+            $desc = isset($item['posDescription']) && !empty($item['posDescription']) ? $item['posDescription'] : $item['description'];
             $brand = strtoupper(substr($item['brand'],0,13));
             $pak = $item['units'];
             $size = $item['units'] . "-" . $item['size'];
@@ -72,8 +81,14 @@ class TagsNoPrice extends \COREPOS\Fannie\API\item\FannieSignage
                 $y += $this->height;
             }
 
+            $mapped = $dbc->getRow($mapP, array($upc, $item['vendor']));
+            if ($mapped) {
+                $sku = $mapped['sku'];
+                $size = $mapped['units'] . '-' . $mapped['size'];
+            }
+
             $args = array(
-                'height' => 7,
+                'height' => 5,
                 'valign' => 'T',
                 'align' => 'L',
                 'suffix' => date('  n/j/y'),
@@ -82,13 +97,27 @@ class TagsNoPrice extends \COREPOS\Fannie\API\item\FannieSignage
             );
             $pdf = $this->drawBarcode($upc, $pdf, $x + 7, $y + 4, $args);
 
-            $pdf->SetFont($this->font, '', 11);
+            $pdf->SetFont($this->font, '', 8);
 
-            $pdf->SetXY($x,$y+12);
-            $pdf->MultiCell($this->width, 4, $desc, 0, 'L');
+            $pdf->SetXY($x,$y+9);
+            $pdf->MultiCell($this->width, 4, substr($desc, 0, 25), 0, 'L');
 
             $pdf->SetX($x);
-            $pdf->Cell($this->width,4,$brand,0,1,'L');
+            $pdf->Cell($this->width,4,$vendor . ' - ' . $brand,0,1,'L');
+
+            $pdf->SetX($x);
+            $pdf->Cell($this->width,4,$size,0,0,'L');
+            if ($sku != $upc && trim($sku) != '') {
+                $pdf->SetX($x);
+                $pdf->Cell($this->width-10,4,$sku,0,0,'R');
+                if (class_exists('\\Image_Barcode2')) {
+                    $img = \Image_Barcode2::draw($sku, 'code128', 'png', false, 5, 1, false);
+                    $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+                    imagepng($img, $file);
+                    $pdf->Image($file, $x, $y+21);
+                    unlink($file);
+                }
+            }
 
             // move right by tag width
             $x += $this->width;
