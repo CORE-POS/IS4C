@@ -143,7 +143,7 @@ class PatronageChecks extends FannieRESTfulPage
                 $patronage = new PatronageModel($dbc);
                 $patronage->cardno($row['cardno']);
                 $patronage->FY($fiscal_year);
-                $number = GumLib::allocateCheck($patronage, false);
+                $number = GumLib::allocateCheck($patronage, false, 'PATRONAGE', "PAT-{$fiscal_year}-{$row['card_no']}");
                 $dbc = FannieDB::get($FANNIE_OP_DB);
                 $patronage->check_number($number);
                 $patronage->save();
