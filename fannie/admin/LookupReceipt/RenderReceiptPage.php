@@ -170,7 +170,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             description,
             case 
                 when voided = 5 
-                    then 'Discount'
+                    then unitPrice
                 when trans_status = 'M'
                     then 'Mbr special'
                 when scale <> 0 and quantity <> 0 
@@ -189,7 +189,11 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     
             end
             as comment,
-            total,
+            CASE
+                WHEN voided in (3) THEN unitPrice
+                WHEN voided IN (5) THEN NULL 
+                ELSE total
+            END AS total,
             case 
                 when trans_status = 'V' 
                     then 'VD'
@@ -210,7 +214,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             FROM $table 
             WHERE datetime BETWEEN ? AND ? 
                 AND register_no=? AND emp_no=? and trans_no=?
-                AND voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+                AND voided <> 4 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
                 AND trans_type <> 'L'
             ORDER BY trans_id";
         $args = array("$year-$month-$day 00:00:00", "$year-$month-$day 23:59:59", 
