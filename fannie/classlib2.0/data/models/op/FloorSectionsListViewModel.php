@@ -45,10 +45,12 @@ class FloorSectionsListViewModel extends ViewModel
         }
         return '
             SELECT m.upc,
+                f.storeID,
                 ' . $concat . ' AS sections
             FROM FloorSectionProductMap AS m
                 INNER JOIN FloorSections AS f ON m.floorSectionID=f.floorSectionID
-            GROUP BY m.upc
+            GROUP BY m.upc,
+                f.storeID
         ';
     }
 
