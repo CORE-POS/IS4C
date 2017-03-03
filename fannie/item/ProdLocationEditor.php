@@ -1,4 +1,4 @@
-<?php
+\<?php
 /*******************************************************************************
 
     Copyright 2013 Whole Foods Community Co-op
@@ -179,8 +179,11 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         foreach ($item as $upc => $section) {
-            $prepZ = ("DELETE from FloorSectionProductMap where upc = ?");
-            $dbc->execute($prepZ,$upc);
+			$store_location = $this->config->get('STORE_ID');
+			//updat to reflect floorSectionID range based on store_location
+			$args = array($upc,29);
+			$prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID > ?");
+            $dbc->execute($prepZ,$args);
             
             $args = array($upc,$section);
             $prep = $dbc->prepare('
@@ -204,7 +207,8 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        
+		$store_location = $this->config->get('STORE_ID');        
+
         $start = FormLib::get('start');
         $end = FormLib::get('end');
         $store_id = FormLib::get('store_id');
@@ -253,17 +257,21 @@ class ProdLocationEditor extends FannieRESTfulPage
                 echo mysql_errno() . ": " . mysql_error(). "<br>";
             } 
             
-            //  Find suggestions for each item's location based on department.
+            /*  Find suggestions for each item's location based on department.
+			 *	This needs to be updated now that there are multiple STORE_IDs being used
+			*/
             foreach ($item as $key => $row) {
                 $item[$key]['sugDept'] = self::getLocation($item[$key]['dept']);
             }
 
+			$args = array($store_location);
             $query = $dbc->prepare('SELECT
                     floorSectionID,
                     name
                 FROM FloorSections
+				WHERE storeID = ?
                 ORDER BY name;');
-            $result = $dbc->execute($query);
+            $result = $dbc->execute($query,$args);
             $floor_section = array();
             while($row = $dbc->fetch_row($result)) {
                 $floor_section[$row['floorSectionID']] = $row['name'];
@@ -324,7 +332,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        
+		$store_location = $this->config->get('STORE_ID');
+
         $ret = "";
         $ret .= '
             <form method="get" class="form-inline">
@@ -375,17 +384,22 @@ class ProdLocationEditor extends FannieRESTfulPage
             echo '<div class="alert alert-danger">' . $dbc->error() . '</div>'; 
         } 
         
-        //  Find suggestions for each item's location based on department.
+        /*  Find suggestions for each item's location based on department.
+		 *	This needs to be updated now that there are multiple STORE_IDs being used
+		*/
+
         foreach ($item as $key => $row) {
             $item[$key]['sugDept'] = self::getLocation($item[$key]['dept']);
         }
 
+		$args = array($store_location);
         $query = $dbc->prepare('SELECT
                 floorSectionID,
                 name
             FROM FloorSections
+			WHERE storeID = ?
             ORDER BY name;');
-        $result = $dbc->execute($query);
+        $result = $dbc->execute($query,$args);
         $floor_section = array();
         while($row = $dbc->fetch_row($result)) {
             $floor_section[$row['floorSectionID']] = $row['name'];
@@ -485,13 +499,16 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        
+		$store_location = $this->config->get('STORE_ID');        
+
+		$args = array($store_location);
         $query = $dbc->prepare('SELECT
                     floorSectionID,
                     name
                 FROM FloorSections
+				WHERE storeID = ?
                 ORDER BY name;');
-            $result = $dbc->execute($query);
+            $result = $dbc->execute($query,$args);
             $floor_section = array();
             while($row = $dbc->fetch_row($result)) {
                 $floor_section[$row['floorSectionID']] = $row['name'];
