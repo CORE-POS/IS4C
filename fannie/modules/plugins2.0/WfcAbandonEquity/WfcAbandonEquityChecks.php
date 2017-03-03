@@ -90,10 +90,11 @@ class WfcAbandonEquityChecks extends \COREPOS\Fannie\API\FannieUploadPage
             if ($checkCount % 3 == 0) {
                 $pdf->AddPage();
             }
-            $check = new GumCheckTemplate($custdata, $meminfo, $row['cash_pat'], 'Equity Refund', $number);
+            $check = new GumCheckTemplate($custdata, $meminfo, $offset_amt, 'Equity Refund', $number);
             $pos = ($checkCount % 3) + 2;
             $check->setPosition($pos);
             $check->renderAsPDF($pdf);
+            $checkCount++;
         }
 
         $pdf->Output('Equity Refunds.pdf', 'I');
