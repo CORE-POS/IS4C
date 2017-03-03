@@ -228,7 +228,9 @@ class GumCheckTemplate
 
         $pdf->SetXY($check_left_x, $check_top_y);
         $pdf->Cell(0, $line_height, $this->memo, 0, 1);
-        $pdf->Ln($line_height);
+        if ($this->position == SELF::POSITION_BOTTOM) {
+            $pdf->Ln($line_height);
+        }
         $pdf->SetFont('Arial', '', 10);
         $envelope_window_tab = 15;
         foreach($this->my_address as $line) {
@@ -266,6 +268,9 @@ class GumCheckTemplate
         $pdf->Cell(0, $line_height, $this->amount_as_words.'   ', 0, 1, 'R');
 
         $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (8.5*$line_height));
+        if ($this->position != self::POSITION_BOTTOM) {
+            $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (10.0*$line_height));
+        }
         foreach($this->their_address as $line) {
             $pdf->SetX($check_left_x + $envelope_window_tab);
             $pdf->Cell(0, $line_height, $line, 0, 1);
