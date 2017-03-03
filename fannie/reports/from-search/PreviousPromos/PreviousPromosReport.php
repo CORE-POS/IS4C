@@ -35,7 +35,7 @@ class PreviousPromosReport extends FannieReportPage
     protected $title = "Fannie : Previous Promos";
     protected $header = "Previous Promos";
 
-    protected $report_headers = array('UPC', 'SKU', 'Brand', 'Description', 'Auto Par', 'Case Size', 'Promo 1', 'ADM', 'Promo 2', 'ADM', 'Promo 3', 'ADM');
+    protected $report_headers = array('UPC', 'SKU', 'Brand', 'Description', 'Auto Par', 'Case Size', 'Promo 1', 'ADM', 'Promo 2', 'ADM', 'Promo 3', 'ADM', 'Avg All');
     protected $required_fields = array('u');
 
     public function fetch_report_data()
@@ -58,7 +58,11 @@ class PreviousPromosReport extends FannieReportPage
 
         $upcs = FormLib::get('u', array());
         list($inStr, $args) = $dbc->safeInClause($upcs);
-        $args[] = Store::getIdByIp();
+        $store = FormLib::get('store', false);
+        if ($store === false) {
+            $store = Store::getIdByIp();
+        }
+        $args[] = $store > 0 ? $store : 1;
 
         $itemP = $dbc->prepare("
             SELECT p.upc, p.brand, p.description, auto_par, v.units, v.sku
@@ -79,6 +83,7 @@ class PreviousPromosReport extends FannieReportPage
                 $itemW['units'],
             );
             $batchR = $dbc->execute($batchP, array($itemW['upc']));
+            $averages = array();
             for ($i=0; $i<3; $i++) {
                 $batchW = $dbc->fetchRow($batchR);
                 if (!$batchW) {
@@ -92,14 +97,21 @@ class PreviousPromosReport extends FannieReportPage
                     SELECT " . DTrans::sumQuantity() . " AS qty
                     FROM {$dlog}
                     WHERE upc=?
+                        AND " . DTrans::isStoreID($store) . "
                         AND tdate BETWEEN ? AND ?");
                 list($realStart,) = explode(' ', $batchW['startDate']);
                 list($realEnd,) = explode(' ', $batchW['endDate']);
-                $qty = $dbc->getValue($qtyP, array($itemW['upc'], $realStart . ' 00:00:00', $realEnd . ' 23:59:59'));
+                $qty = $dbc->getValue($qtyP, array($itemW['upc'], $store, $realStart . ' 00:00:00', $realEnd . ' 23:59:59'));
                 $end = new DateTime($batchW['endDate']);
                 $diff = $end->diff(new DateTime($batchW['startDate']));
-                $record[] = sprintf('%.2f', $qty / ($diff->days + 1));
+                $avg = sprintf('%.2f', $qty / ($diff->days + 1));
+                if ($avg > 0) {
+                    $averages[] = $avg;
+                }
+                $record[] = $avg;
             }
+            $all_avg = count($averages) == 0 ? 0 : array_sum($averages) / count($averages);
+            $record[] = sprintf('%.2f', $all_avg);
             $data[] = $record;
         }
 
@@ -111,6 +123,37 @@ class PreviousPromosReport extends FannieReportPage
         global $FANNIE_URL;
         return "Use <a href=\"{$FANNIE_URL}item/AdvancedItemSearch.php\">Search</a> to
             select items for this report";;
+    }
+
+    public function report_description_content()
+    {
+        if ($this->report_format != 'html') {
+            return array();
+        }
+
+        $url = $this->config->get('URL');
+        $this->add_script($url . 'src/javascript/jquery.js');
+        $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+        foreach ($_POST as $key => $value) {
+            if ($key != 'store') {
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        $dates_form .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
+                    }
+                } else {
+                    $dates_form .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $value);
+                }
+            }
+        }
+        $stores = FormLib::storePicker();
+        $dates_form .= '
+            <input type="hidden" name="excel" value="" id="excel" />
+            ' . $stores['html'] . '
+            <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Change Store</button>
+            <button type="submit" onclick="$(\'#excel\').val(\'csv\');return true;">Download</button>
+            </form>';
+
+        return array($dates_form);
     }
 }
 
