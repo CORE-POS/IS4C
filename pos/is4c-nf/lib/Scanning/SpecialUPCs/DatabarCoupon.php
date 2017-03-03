@@ -73,7 +73,7 @@ class DatabarCoupon extends SpecialUPC
         $pos += 1;
 
         // read value
-        $value = (int)substr($upc,$pos,$valLength);
+        $redeemValue = (int)substr($upc,$pos,$valLength);
         $pos += $valLength;
 
         // read primary requirement length
@@ -335,7 +335,7 @@ class DatabarCoupon extends SpecialUPC
         switch($misc['value_code']) {
             case '0': // value in cents
             case '6':
-                $value = MiscLib::truncate2($valArr['value'] / 100.00);
+                $value = MiscLib::truncate2($redeemValue / 100.00);
                 break;
             case '1': // free item
                 $value = $valArr['price'];
@@ -347,7 +347,7 @@ class DatabarCoupon extends SpecialUPC
                 $value = MiscLib::truncate2($valArr['price'] * ($valArr['value']/100.00));
                 break;
             default:
-                $json['output'] = DisplayLib::boxMsg(_("Error: bad coupon"));
+                $json['output'] = DisplayLib::boxMsg(_("Error: bad coupon " . $misc['value_code']));
                 return $json;
         }
 
@@ -401,6 +401,10 @@ class DatabarCoupon extends SpecialUPC
     */
     private function validateRequirement(&$req, &$json)
     {
+        // non-existant requirement is treated as valid
+        if (count($req) == 0) {
+            return true;
+        }
         $dbc = Database::tDataConnect();
 
         /* simple case first; just wants total transaction value 
