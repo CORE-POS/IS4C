@@ -1,4 +1,4 @@
-\<?php
+<?php
 /*******************************************************************************
 
     Copyright 2013 Whole Foods Community Co-op
@@ -179,7 +179,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         foreach ($item as $upc => $section) {
-			$store_location = $this->config->get('STORE_ID');
+			$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 			//updat to reflect floorSectionID range based on store_location
 			$args = array($upc,29);
 			$prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID > ?");
@@ -207,7 +207,7 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$store_location = $this->config->get('STORE_ID');        
+		$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $start = FormLib::get('start');
         $end = FormLib::get('end');
@@ -332,7 +332,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$store_location = $this->config->get('STORE_ID');
+		$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $ret = "";
         $ret .= '
@@ -499,7 +499,7 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$store_location = $this->config->get('STORE_ID');        
+		$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
 		$args = array($store_location);
         $query = $dbc->prepare('SELECT
