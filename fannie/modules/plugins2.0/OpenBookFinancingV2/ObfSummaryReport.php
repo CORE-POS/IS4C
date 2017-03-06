@@ -47,6 +47,8 @@ class ObfSummaryReport extends ObfWeeklyReport
 
     protected $class_lib = 'ObfLibV2';
 
+    protected $OU_START = 110;
+
     protected $PLAN_SALES = array(
         '1,6' => 48125.67,      // Hillside Produce
         '2,10' => 11037.90,     // Hillside Deli
@@ -201,7 +203,8 @@ class ObfSummaryReport extends ObfWeeklyReport
                     if ($quarter === false) {
                         $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                     }
-                    $qtd_dept_plan += $quarter['plan'];
+                    $ou_weeks = ($week->obfWeekID() - $this->OU_START) + 1;
+                    $qtd_dept_plan += ($proj * $ou_weeks);
                     $qtd_dept_sales += $quarter['actual'];
                     $total_trans->quarterThisYear = $quarter['trans'];
                     $total_trans->quarterLastYear = $quarter['ly_trans'];
@@ -218,10 +221,10 @@ class ObfSummaryReport extends ObfWeeklyReport
                     }
                     $total_sales->projected += $proj;
                     $dept_proj += $proj;
-                    $total_sales->quarterProjected += $quarter['plan'];
+                    $total_sales->quarterProjected += ($proj * $ou_weeks);
                     $total_sales->quarterActual += $quarter['actual'];
-                    $qtd_sales_ou += ($quarter['actual'] - $quarter['plan']);
-                    $qtd_dept_ou += ($quarter['actual'] - $quarter['plan']);
+                    $qtd_sales_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                    $qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
                 }
 
                 /** total sales for the category **/
@@ -277,7 +280,6 @@ class ObfSummaryReport extends ObfWeeklyReport
                 $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
                 $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($qtd_dept_sales)/($quarter['hours']);
-                $quarter_proj_sph = ($qt_proj_hours == 0) ? 0 : ($qtd_dept_plan)/($qt_proj_hours);
                 $data[] = array(
                     $category->name() . ' SPLH',
                     '',
@@ -286,7 +288,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     number_format($labor->hours() == 0 ? 0 : $sum[0] / $labor->hours(), 2),
                     sprintf('%.2f%%', $this->percentGrowth(($labor->hours() == 0 ? 0 : $sum[0]/$labor->hours()), $dept_proj/$proj_hours)),
                     number_format(($labor->hours() == 0 ? 0 : $sum[0]/$labor->hours()) - ($dept_proj / $proj_hours), 2),
-                    number_format($quarter_actual_sph - $quarter_proj_sph, 2),
+                    '',//number_format($quarter_actual_sph - $category->salesPerLaborHourTarget(), 2),
                     'meta' => FannieReportPage::META_COLOR,
                     'meta_background' => $this->colors[0],
                     'meta_foreground' => 'black',
@@ -344,7 +346,6 @@ class ObfSummaryReport extends ObfWeeklyReport
                 $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
                 $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
-                $quarter_proj_sph = $qt_proj_hours == 0 ? 0 : ($total_sales->quarterProjected)/($qt_proj_hours);
                 $data[] = array(
                     $c->name() . ' SPLH',
                     '',
@@ -353,7 +354,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     number_format($labor->hours() == 0 ? 0 : $total_sales->thisYear / $labor->hours(), 2),
                     '',
                     number_format(($labor->hours() == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
-                    number_format($quarter_actual_sph - $quarter_proj_sph, 2),
+                    '',//number_format($quarter_actual_sph - $c->salesPerLaborHourTarget(), 2),
                     'meta' => FannieReportPage::META_COLOR,
                     'meta_background' => $this->colors[0],
                     'meta_foreground' => 'black',
@@ -410,7 +411,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 number_format($total_hours->actual == 0 ? 0 : $total_sales->thisYear / $total_hours->actual, 2),
                 '',
                 number_format(($total_hours->actual == 0 ? 0 : $total_sales->thisYear/$total_hours->actual) - ($total_sales->projected/$total_hours->projected), 2),
-                number_format($quarter_actual_sph - $quarter_proj_sph, 2),
+                '',//number_format($quarter_actual_sph - $quarter_proj_sph, 2),
                 'meta' => FannieReportPage::META_COLOR,
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',

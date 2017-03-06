@@ -40,7 +40,8 @@ class ObfIndexPageV2 extends FannieRESTfulPage
     public function get_view()
     {
         return '<ul>
-            <li><a href="ObfWeeklyReportV2.php">View Weekly Reports</a></li>
+            <li><a href="ObfSummaryReport.php">View Summary Weekly Reports</a></li>
+            <li><a href="ObfWeeklyReportV2.php">View Detailed Weekly Reports</a></li>
             <li><a href="ObfQuarterEntryPageV2.php">Enter Quarterly Sales and Labor Plan</a></li>
             <li><a href="ObfWeekEntryPageV2.php">Enter Weekly Labor and Forecast Data</a></li>
             <li><a href="ObfCategoriesPageV2.php">Manage OBF Categories</a></li>

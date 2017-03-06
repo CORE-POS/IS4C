@@ -45,6 +45,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected $class_lib = 'ObfLibV2';
 
+    protected $OU_START = 110;
+
     protected $PLAN_SALES = array(
         '1,6' => 48125.67,      // Hillside Produce
         '2,10' => 11037.90,     // Hillside Deli
@@ -176,7 +178,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 if ($quarter === false) {
                     $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                 }
-                $qtd_dept_plan += $quarter['plan'];
+                $ou_weeks = ($week->obfWeekID() - $this->OU_START) + 1;
+                $qtd_dept_plan += ($proj * $ou_weeks);
                 $qtd_dept_sales += $quarter['actual'];
                 $total_trans->quarterThisYear = $quarter['trans'];
                 $total_trans->quarterLastYear = $quarter['ly_trans'];
@@ -208,10 +211,10 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 }
                 $total_sales->projected += $proj;
                 $dept_proj += $proj;
-                $total_sales->quarterProjected += $quarter['plan'];
+                $total_sales->quarterProjected += ($proj * $ou_weeks);
                 $total_sales->quarterActual += $quarter['actual'];
-                $qtd_sales_ou += ($quarter['actual'] - $quarter['plan']);
-                $qtd_dept_ou += ($quarter['actual'] - $quarter['plan']);
+                $qtd_sales_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                $qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
                 $data[] = $record;
             }
 
