@@ -180,9 +180,17 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         foreach ($item as $upc => $section) {
 			$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+			$floorSectionRange = array();
+			if ($store_location == 1) {
+				$floorSectionRange[] = 1;
+				$floorSectionRange[] = 19; 
+			} elseif ($store_location == 2) {
+				$floorSectionRange[] = 30;
+				$floorSectionRange[] = 47;
+			}
 			//updat to reflect floorSectionID range based on store_location
-			$args = array($upc,29);
-			$prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID > ?");
+			$args = array($upc,$floorSectionRange[0],$floorSectionRange[1]);
+			$prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID BETWEEN ? AND ?");
             $dbc->execute($prepZ,$args);
             
             $args = array($upc,$section);
@@ -694,9 +702,12 @@ function updateAll(val, selector) {
             of products found in batches that fall within a 
             specified range of batch IDs.
             <lu>
-                <li><b>Update Locations by UPC</b> Update or add locations for an individual item.</li>
-                <li><b>Update Locations by BATCH</b> Generate a list of items included in a desired range of 
-                    batch IDs to update multiple locations at once.</li>
+                <li><b>Update by UPC</b> View and update location(s) for individual items.</li>
+				<li><b>Update by a List of UPCs</b> Paste a list of UPCs to view/update. Updating by
+					List will DELETE all current locations and replace them with the selected 
+					location.</li>
+                <li><b>Update by BATCH I.D.</b> Update products within a batch range. Update by Batch I.D.
+					will only check products that do not currently have a location assigned.</li>
             </lu>
             </p>
             ';
