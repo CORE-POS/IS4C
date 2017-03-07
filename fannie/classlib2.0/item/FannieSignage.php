@@ -227,6 +227,7 @@ class FannieSignage
                     p.numflag,
                     \'\' AS startDate,
                     \'\' AS endDate,
+                    \'\' AS batchName,
                     \'\' AS unitofmeasure,
                     o.originID,
                     o.name AS originName,
@@ -265,6 +266,7 @@ class FannieSignage
                     p.scale,
                     p.numflag,
                     b.startDate,
+                    b.batchName,
                     b.endDate,
                     o.originID,
                     o.name AS originName,
@@ -334,6 +336,7 @@ class FannieSignage
                     o.originID,
                     o.shortName AS originShortName,
                     p.unitofmeasure,
+                    b.batchName,
                     b.batchType
                  FROM batchList AS l
                     ' . DTrans::joinProducts('l', 'p', 'LEFT') . '
@@ -404,6 +407,7 @@ class FannieSignage
                     p.numflag,
                     \'\' AS startDate,
                     \'\' AS endDate,
+                    \'\' AS batchName,
                     p.unitofmeasure,
                     o.originID,
                     o.name AS originName,
@@ -446,6 +450,7 @@ class FannieSignage
                     p.numflag,
                     \'\' AS startDate,
                     \'\' AS endDate,
+                    \'\' AS batchName,
                     p.unitofmeasure,
                     o.originID,
                     o.name AS originName,
@@ -503,6 +508,7 @@ class FannieSignage
                     END AS endDate,
                     p.unitofmeasure,
                     o.originID,
+                    b.batchName,
                     o.name AS originName,
                     o.shortName AS originShortName,
                     CASE WHEN l.signMultiplier IS NULL THEN 1 ELSE l.signMultiplier END AS signMultiplier
@@ -557,6 +563,7 @@ class FannieSignage
                         ELSE b.endDate 
                     END AS endDate,
                     p.unitofmeasure,
+                    b.batchName,
                     o.originID,
                     o.name AS originName,
                     o.shortName AS originShortName
