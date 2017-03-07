@@ -207,6 +207,21 @@ class FanniePage extends \COREPOS\common\ui\CorePage
     {
         ob_start();
         ?>
+function lineaBarcode(upc, selector, callback) {
+    upc = upc.substring(0,upc.length-1);
+    if ($(selector).length > 0){
+        $(selector).val(upc);
+        if (typeof callback === 'function') {
+            callback();
+        } else {
+            $(selector).closest('form').submit();
+        }
+    }
+}
+var IPC_PARAMS = { selector: false, callback: false };
+function ipcWrapper(upc, typeID, typeStr) {
+    lineaBarcode(upc, IPC_PARAMS.selector, IPC_PARAMS.callback);
+}
 /**
   Enable linea scanner on page
   @param selector - jQuery selector for the element where
@@ -247,22 +262,13 @@ function enableLinea(selector, callback)
     if (typeof WebBarcode == 'object') {
         WebBarcode.onBarcodeScan(function(ev) {
             var data = ev.value;
-            var upc = data.substring(0,data.length-1);
-            if ($(selector).length > 0){
-                $(selector).val(upc);
-                if (typeof callback === 'function') {
-                    callback();
-                } else {
-                    $(selector).closest('form').submit();
-                }
-            }
+            lineaBarcode(data, selector, callback);
         });
     }
 
     // for webhub
     WebHub.Settings.set({
         barcodeFunction: function (upc, typeID, typeStr) {
-            alert('upc');
             upc = upc.substring(0,upc.length-1);
             if ($(selector).length > 0){
                 $(selector).val(upc);
@@ -287,7 +293,6 @@ function enableLinea(selector, callback)
     }
     lineaSilent();
 }
-
         <?php
 
         return ob_get_clean();
@@ -404,8 +409,7 @@ function enableLinea(selector, callback)
     public function postFlight()
     {
         if ($this->enable_linea) {
-            echo '<script type="text/javascript">';
-            echo $this->lineaJS();
+            echo '<script type="text/javascript" src="' . $this->config->get('URL') . 'src/javascript/linea/core.js">';
             echo '</script>';
         }
     }
