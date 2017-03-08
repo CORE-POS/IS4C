@@ -72,7 +72,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width/2, 12, 'FREE', 0, 1, 'L');
         }
 
-        if ($item['startDate'] != '' && $item['endDate'] != '') {
+        if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
             // intl would be nice
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 33));
@@ -80,7 +80,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 20, strtoupper($datestr), 0, 1, 'R');
         }
 
-        if ($item['originShortName'] != '' || isset($item['nonSalePrice'])) {
+        if ($item['originShortName'] != '' || (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price'])) {
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 33));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);

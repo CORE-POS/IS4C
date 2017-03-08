@@ -1091,5 +1091,16 @@ class FannieSignage
 
         return $pdf;
     }
+
+    protected function validDate($date)
+    {
+        if ($date == '') {
+            return false;
+        } elseif (substr($date,0,10) == '0000-00-00') {
+            return false;
+        }
+
+        return true;
+    }
 }
 
