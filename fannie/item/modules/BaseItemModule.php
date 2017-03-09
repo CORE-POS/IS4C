@@ -430,7 +430,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $ret .= '<input type="hidden" class="store-id" name="store_id[]" value="' . $store_id . '" />';
             $ret .= '<table class="table table-bordered">';
 
-            $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
+            $jsVendorID = $rowItem['default_vendor_id'] != 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
             $vFieldsDisabled = $jsVendorID == 'no-vendor' || !$active_tab ? 'disabled' : '';
             $limit = 30 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
             $cost = sprintf('%.3f', $rowItem['cost']);
