@@ -70,6 +70,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $extra = new ProdExtraModel($dbc);
         for ($i=0; $i<count($upcs); $i++) {
             $upc = BarcodeLib::padUPC($upcs[$i]);
+            $model->reset();
             $model->upc($upc);
             
             $model = $this->setArrayValue($model, 'department', $dept, $i);
