@@ -22,6 +22,9 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\item\signage {
+use \FannieDB;
+use \FannieConfig;
+use COREPOS\Fannie\API\lib\Store;
 
 class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage 
 {
@@ -40,6 +43,10 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
+
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $storeID = Store::getIdByIp();
+        $parP = $dbc->prepare("SELECT auto_par*7 AS weekly FROM products WHERE upc=? AND store_id=?");
 
         $pdf->SetTopMargin($this->top);  //Set top margin of the page
         $pdf->SetLeftMargin($this->left);  //Set left margin of the page
@@ -62,6 +69,7 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
             $ppu = $item['pricePerUnit'];
             $vendor = substr($item['vendor'],0,7);
             $upc = $item['upc'];
+            $weeklySales = $dbc->getValue($parP, array($item['upc'], $storeID));
 
             if ($num % 32 == 0) {
                 $pdf->AddPage();
@@ -80,9 +88,14 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
                 'fontsize' => 8,
                 'font' => $this->font,
             );
-            $pdf = $this->drawBarcode($upc, $pdf, $x + 7, $y + 4, $args);
+            $pdf = $this->drawBarcode($upc, $pdf, $x + 3, $y + 4, $args);
 
             $pdf->SetFont($this->font, '', 8);
+
+            /*
+            $pdf->SetXY($x+38, $y+4);
+            $pdf->Cell(9, 4, sprintf('%.1f', $weeklySales), 1, 1, 'C');
+            */
 
             $pdf->SetXY($x,$y+12);
             $pdf->Cell($this->width,4,$desc,0,1,'L');
