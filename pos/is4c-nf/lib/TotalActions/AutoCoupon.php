@@ -46,7 +46,12 @@ class AutoCoupon extends TotalAction
             }
         }
         if (isset($hc_table['description']) && isset($hc_table['auto'])) {
-            $autoR = $dbc->query('SELECT coupID, description FROM houseCoupons WHERE auto=1');
+            $today = date('Y-m-d');
+            $autoR = $dbc->query("
+                SELECT coupID, description 
+                FROM houseCoupons 
+                WHERE auto=1
+                    AND '$today' BETWEEN startDate AND endDate");
             while($autoW = $dbc->fetch_row($autoR)) {
                 $coupons[$autoW['coupID']] = $autoW['description'];
             }
