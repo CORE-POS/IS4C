@@ -179,18 +179,18 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         foreach ($item as $upc => $section) {
-			$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
-			$floorSectionRange = array();
-			if ($store_location == 1) {
-				$floorSectionRange[] = 1;
-				$floorSectionRange[] = 19; 
-			} elseif ($store_location == 2) {
-				$floorSectionRange[] = 30;
-				$floorSectionRange[] = 47;
-			}
-			//updat to reflect floorSectionID range based on store_location
-			$args = array($upc,$floorSectionRange[0],$floorSectionRange[1]);
-			$prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID BETWEEN ? AND ?");
+            $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            $floorSectionRange = array();
+            if ($store_location == 1) {
+                $floorSectionRange[] = 1;
+                $floorSectionRange[] = 19; 
+            } elseif ($store_location == 2) {
+                $floorSectionRange[] = 30;
+                $floorSectionRange[] = 47;
+            }
+            //updat to reflect floorSectionID range based on store_location
+            $args = array($upc,$floorSectionRange[0],$floorSectionRange[1]);
+            $prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID BETWEEN ? AND ?");
             $dbc->execute($prepZ,$args);
             
             $args = array($upc,$section);
@@ -215,7 +215,7 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $start = FormLib::get('start');
         $end = FormLib::get('end');
@@ -266,18 +266,18 @@ class ProdLocationEditor extends FannieRESTfulPage
             } 
             
             /*  Find suggestions for each item's location based on department.
-			 *	This needs to be updated now that there are multiple STORE_IDs being used
-			*/
+             *    This needs to be updated now that there are multiple STORE_IDs being used
+            */
             foreach ($item as $key => $row) {
                 $item[$key]['sugDept'] = self::getLocation($item[$key]['dept']);
             }
 
-			$args = array($store_location);
+            $args = array($store_location);
             $query = $dbc->prepare('SELECT
                     floorSectionID,
                     name
                 FROM FloorSections
-				WHERE storeID = ?
+                WHERE storeID = ?
                 ORDER BY name;');
             $result = $dbc->execute($query,$args);
             $floor_section = array();
@@ -340,7 +340,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $ret = "";
         $ret .= '
@@ -393,19 +393,19 @@ class ProdLocationEditor extends FannieRESTfulPage
         } 
         
         /*  Find suggestions for each item's location based on department.
-		 *	This needs to be updated now that there are multiple STORE_IDs being used
-		*/
+         *    This needs to be updated now that there are multiple STORE_IDs being used
+        */
 
         foreach ($item as $key => $row) {
             $item[$key]['sugDept'] = self::getLocation($item[$key]['dept']);
         }
 
-		$args = array($store_location);
+        $args = array($store_location);
         $query = $dbc->prepare('SELECT
                 floorSectionID,
                 name
             FROM FloorSections
-			WHERE storeID = ?
+            WHERE storeID = ?
             ORDER BY name;');
         $result = $dbc->execute($query,$args);
         $floor_section = array();
@@ -507,14 +507,14 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-		$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
-		$args = array($store_location);
+        $args = array($store_location);
         $query = $dbc->prepare('SELECT
                     floorSectionID,
                     name
                 FROM FloorSections
-				WHERE storeID = ?
+                WHERE storeID = ?
                 ORDER BY name;');
             $result = $dbc->execute($query,$args);
             $floor_section = array();
@@ -703,11 +703,11 @@ function updateAll(val, selector) {
             specified range of batch IDs.
             <lu>
                 <li><b>Update by UPC</b> View and update location(s) for individual items.</li>
-				<li><b>Update by a List of UPCs</b> Paste a list of UPCs to view/update. Updating by
-					List will DELETE all current locations and replace them with the selected 
-					location.</li>
+                <li><b>Update by a List of UPCs</b> Paste a list of UPCs to view/update. Updating by
+                    List will DELETE all current locations and replace them with the selected 
+                    location.</li>
                 <li><b>Update by BATCH I.D.</b> Update products within a batch range. Update by Batch I.D.
-					will only check products that do not currently have a location assigned.</li>
+                    will only check products that do not currently have a location assigned.</li>
             </lu>
             </p>
             ';
