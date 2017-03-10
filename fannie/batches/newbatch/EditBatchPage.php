@@ -757,7 +757,7 @@ HTML;
         }
 
         $fetchArgs = array();
-		$store_location = $this->config->get('STORE_ID');
+		$store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         // logically string "LC" followed by like code number
         $joinColumn = $dbc->concat("'LC'", $dbc->convert('l.likeCode', 'CHAR'), '');
@@ -780,17 +780,19 @@ HTML;
                 LEFT JOIN likeCodes AS l ON b.upc = {$joinColumn}
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
-                LEFT JOIN FloorSections AS s ON y.section=s.floorSectionID
+                LEFT JOIN FloorSections AS s ON y.section=s.floorSectionID AND s.storeID=?
                 LEFT JOIN FloorSectionsListView as f on b.upc=f.upc and f.storeID=?
             WHERE b.batchID = ? 
             $orderby";
 		$fetchArgs[] = $store_location;
+		$fetchArgs[] = $store_location;
         $fetchArgs[] = $id;
         if ($dbc->tableExists('FloorSectionsListView')) {
             $fetchQ = str_replace('NULL AS locationName', 'f.sections AS locationName', $fetchQ);
-        } elseif ($dbc->tableExists('FloorSections')) {
+        } 
+		/*elseif ($dbc->tableExists('FloorSections')) {
             $fetchQ = str_replace('NULL AS locationName', 's.name AS locationName', $fetchQ);
-        }
+        }*/
 
         $fetchP = $dbc->prepare($fetchQ);
         $fetchR = $dbc->execute($fetchP, $fetchArgs);
