@@ -34,6 +34,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
     public $description = '[Edit Search Results] takes a set of advanced search items and allows
     editing some fields on all items simultaneously. Must be accessed via Advanced Search.';
     public $themed = true;
+    protected $must_authenticate = true;
+    protected $auth_classes = array('pricechange');
 
     private $upcs = array();
     private $save_results = array();
