@@ -461,6 +461,35 @@ class HouseCoupon extends SpecialUPC
                     $value = $infoW['discountValue'];
                 }
                 break;
+            case 'BQ': // Quantity-capped BOGO
+                // get total number of coupon items
+                $valQ = 'SELECT SUM(l.quantity) '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')";
+                $valP = $transDB->prepare($valQ);
+                $qty = $transDB->getValue($valP);
+
+                // add cheapest items to total value until
+                // the allowed number of free items is reached
+                $priceQ = 'SELECT unitPrice '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')
+                        ORDER BY unitPrice";
+                $priceR = $transDB->query($priceQ);
+                $value = 0;
+                $freeItems = 1;
+                while ($priceW = $transDB->fetchRow($priceR)) {
+                    if ($freeItems*2 > $qty) {
+                        // not enough purchases to add a free item
+                        break;
+                    } elseif ($freeItems > $infoW['discountValue']) {
+                        // exceeds max number of free items
+                        break;
+                    }
+                    $value += $priceW['unitPrice'];
+                    $freeItems++;
+                }
+                break;
             case "P": // discount price
                 // query to get the item's department and current value
                 // current value minus the discount price is how much to
