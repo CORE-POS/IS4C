@@ -156,6 +156,8 @@ class ObfSummaryReport extends ObfWeeklyReport
             'projHours' => 0,
             'trendSales' => 0,
             'wages' => 0,
+            'trans' => 0,
+            'lyTrans' => 0,
         );
 
         $this->prepareStatements($dbc);
@@ -431,6 +433,34 @@ class ObfSummaryReport extends ObfWeeklyReport
                 'meta_foreground' => 'black',
             );
 
+            $data[] = array(
+                'Transactions',
+                $total_trans->lastYear,
+                '',
+                '',
+                $total_trans->thisYear,
+                '',
+                '',
+                '',
+                'meta' => FannieReportPage::META_COLOR,
+                'meta_background' => $this->colors[0],
+                'meta_foreground' => 'black',
+            );
+
+            $data[] = array(
+                'Basket Size',
+                sprintf('%.2f', $total_sales->lastYear / $total_trans->lastYear),
+                '',
+                '',
+                sprintf('%.2f', $total_sales->thisYear / $total_trans->thisYear),
+                '',
+                '',
+                '',
+                'meta' => FannieReportPage::META_COLOR,
+                'meta_background' => $this->colors[0],
+                'meta_foreground' => 'black',
+            );
+
             $org['sales'] += $total_sales->thisYear;
             $org['projSales'] += $total_sales->projected;
             $org['lastYear'] += $total_sales->lastYear;
@@ -438,6 +468,8 @@ class ObfSummaryReport extends ObfWeeklyReport
             $org['hours'] += $total_hours->actual;
             $org['projHours'] += $total_hours->projected;
             $org['wages'] += $total_wages->actual;
+            $org['trans'] += $total_trans->thisYear;
+            $org['lyTrans'] += $total_trans->lastYear;
 
             if (count($this->colors) > 1) {
                 array_shift($this->colors);
@@ -551,6 +583,34 @@ class ObfSummaryReport extends ObfWeeklyReport
             '16.00%',
             '',
             sprintf('%.2f%%', $org['wages'] / $org['sales'] * 100),
+            '',
+            '',
+            '',
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $this->colors[0],
+            'meta_foreground' => 'black',
+        );
+
+        $data[] = array(
+            'Transactions',
+            $org['lyTrans'],
+            '',
+            '',
+            $org['trans'],
+            '',
+            '',
+            '',
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $this->colors[0],
+            'meta_foreground' => 'black',
+        );
+
+        $data[] = array(
+            'Basket Size',
+            sprintf('%.2f', $org['lastYear'] / $org['lyTrans']),
+            '',
+            '',
+            sprintf('%.2f', $org['sales'] / $org['trans']),
             '',
             '',
             '',
