@@ -596,17 +596,16 @@ class OrderViewPage extends FannieRESTfulPage
 
         $ret .= sprintf('
             <tr>
-                <th>E-mail</th>
-                <td>
-                    <input type="text" id="t_email" value="%s" 
-                        class="form-control input-sm contact-field"
-                        name="email" />
-                </td>
                 <th>Phone</th>
                 <td>
                     <input type="text" id="t_ph1" name="ph1"
                         class="form-control input-sm contact-field"
                         value="%s" />
+                </td>
+                <th>Alt. Phone</th>
+                <td>
+                    <input type="text" id="t_ph2" value="%s" name="ph2"
+                        class="form-control input-sm contact-field" />
                 </td>
                 <td rowspan="2" colspan="4">
                     <textarea id="nText" rows="5" cols="25" 
@@ -615,10 +614,11 @@ class OrderViewPage extends FannieRESTfulPage
                 </td>
             </tr>
             <tr>
-                <th>Alt. Phone</th>
+                <th>E-mail</th>
                 <td>
-                    <input type="text" id="t_ph2" value="%s" name="ph2"
-                        class="form-control input-sm contact-field" />
+                    <input type="text" id="t_email" value="%s" 
+                        class="form-control input-sm contact-field"
+                        name="email" />
                 </td>
                 <th>Prefer</th>
                 <td class="form-inline">
@@ -644,10 +644,10 @@ class OrderViewPage extends FannieRESTfulPage
                     name="zip" value="%s" />
                 </td>
             </tr>',
-            $orderModel->email(),
             $orderModel->phone(), 
-            $orderModel->notes(),
             $orderModel->altPhone(),
+            $orderModel->notes(),
+            $orderModel->email(),
             $contactHtml,
             $orderModel->street(),
             $orderModel->city(),
