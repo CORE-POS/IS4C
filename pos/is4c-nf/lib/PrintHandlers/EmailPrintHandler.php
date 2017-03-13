@@ -75,5 +75,10 @@ class EmailPrintHandler extends PrintHandler {
     {
         return '';
     }
+
+    function barcodeUPC($data, $upcE=false) 
+    {
+        return '<img src="http://store.wholefoods.coop/upc/' . $data . '" />';
+    }
 } 
 
