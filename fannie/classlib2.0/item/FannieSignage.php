@@ -732,7 +732,7 @@ class FannieSignage
             }
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
-                            <input type="hidden" name="update_upc[]" value="%d" />
+                            <input type="hidden" name="update_upc[]" value="%s" />
                             <td>
                                 <span class="collapse">%s</span>
                                 <input class="FannieSignageField form-control" type="text" 
