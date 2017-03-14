@@ -207,7 +207,7 @@ class UPC extends Parser
         }
         if (is_array($deptmods) && isset($deptmods[$row['department']])){
             foreach($deptmods[$row['department']] as $mod){
-                $obj = SpecialDept::factory($mod);
+                $obj = SpecialDept::factory($mod, $this->session);
                 $ret = $obj->handle($row['department'],$row['normal_price'],$ret);
                 if ($ret['main_frame'])
                     return $ret;
