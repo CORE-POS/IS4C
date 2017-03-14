@@ -84,7 +84,9 @@ static private function getLocalConnection($database1, $database2)
             CoreLocal::get("localUser"),
             CoreLocal::get("localPass"),
             false);
-        self::$SQL_CONNECTION->connections[$database2] = self::$SQL_CONNECTION->connections[$database1];
+        if (isset(self::$SQL_CONNECTION->connections[$database1])) {
+            self::$SQL_CONNECTION->connections[$database2] = self::$SQL_CONNECTION->connections[$database1];
+        }
     } else {
         /**
           Switch connection object to the requested database
