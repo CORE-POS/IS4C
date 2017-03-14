@@ -141,9 +141,9 @@ class FannieTask
     {
         $info = new ReflectionClass($this);
         $msg = date('r').': '.$info->getName().': '.$str."\n";
-        $severity = $this->psrSeverity($severity);
+        $log_level = $this->psrSeverity($severity);
 
-        $this->logger->log($severity, $info->getName() . ': ' . $str); 
+        $this->logger->log($log_level, $info->getName() . ': ' . $str); 
 
         // raise message into stderr
         if ($severity <= $this->error_threshold) {
