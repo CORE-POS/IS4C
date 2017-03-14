@@ -72,9 +72,9 @@ class SQLManager
     public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
         $this->connections=array();
-        $this->default_db = $database;
         $this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
         if ($this->isConnected($database)) {
+            $this->default_db = $database;
             $adapter = $this->getAdapter(strtolower($type));
             $this->query($adapter->useNamedDB($database));
         }
@@ -344,6 +344,12 @@ class SQLManager
         return $this->setDefaultDB($db_name);
     }
 
+    private function getNamedConnection($which_connection)
+    {
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
+        return isset($this->connections[$which_connection]) ? $this->connections[$which_connection] : null;
+    }
+
     /**
       Execute a query
       @param $query_text The query
@@ -352,8 +358,7 @@ class SQLManager
     */
     public function query($query_text,$which_connection='',$params=false)
     {
-        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
-        $con = $this->connections[$which_connection];
+        $con = $this->getNamedConnection($which_connection);
 
         $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
         if (!$result) {
@@ -1074,10 +1079,6 @@ class SQLManager
     */
     public function tableExists($table_name,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-
         /**
           Check whether the definition is in cache
         */
@@ -1085,7 +1086,7 @@ class SQLManager
             return true;
         }
 
-        $conn = $this->connections[$which_connection];
+        $conn = $this->getNamedConnection($which_connection);
         if (!is_object($conn)) {
             return false;
         }
@@ -1360,17 +1361,14 @@ class SQLManager
     */
     public function error($which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        $con = $this->connections[$which_connection];
+        $con = $this->getNamedConnection($which_connection);
 
         if (!is_object($con)) {
             if ($this->last_connect_error) {
                 return $this->last_connect_error;
-            } else {
-                return 'No database connection';
             }
+
+            return 'No database connection';
         }
 
         return $con->ErrorMsg();
@@ -1777,7 +1775,7 @@ class SQLManager
             $this->adapters[$type] = new $class();
         }
 
-        return $this->adapters[$type];
+        return $this->getAdapter('mysqli');
     }
 
     /**
