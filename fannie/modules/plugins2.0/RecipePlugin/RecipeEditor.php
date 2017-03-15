@@ -10,11 +10,89 @@ if (!class_exists('RecipesModel')) {
 if (!class_exists('RecipeIngredientsModel')) {
     include(__DIR__ . '/RecipeIngredientsModel.php');
 }
+if (!class_exists('RecipeCategoriesModel')) {
+    include(__DIR__ . '/RecipeCategoriesModel.php');
+}
 
 class RecipeEditor extends FannieRESTfulPage
 {
     protected $header = 'Recipes';
     protected $title = 'Recipes';
+
+    function preprocess()
+    {
+        $this->addRoute('get<newCat>', 'post<newCat>');
+        $this->addRoute('get<newRecipe>', 'post<newRecipe>');
+
+        return parent::preprocess();
+    }
+
+    protected function post_newRecipe_handler()
+    {
+        $model = new RecipesModel($this->connection);
+        if ($this->newRecipe) {
+            $model->name($this->newRecipe);
+            $matches = $model->find();
+            if (count($matches) == 0) {
+                $model->recipeCategoryID(FormLib::get('newRecipeCat'));
+                $model->save();
+            }
+        }
+
+        return 'RecipeEditor.php';
+    }
+
+    protected function get_newRecipe_view()
+    {
+        $model = new RecipeCategoriesModel($this->connection);
+        $opts = $model->toOptions();
+        return <<<HTML
+<form method="post" action="RecipeEditor.php">
+    <div class="form-group">
+        <label>New Recipe Name</label>
+        <input type="text" name="newRecipe" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Category</label>
+        <select name="newRecipeCat" class="form-control">
+            {$opts}
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default btn-core">Create Recipe</button>
+    </div>
+</form>
+HTML;
+    }
+
+    protected function post_newCat_handler()
+    {
+        if ($this->newCat) {
+            $model = new RecipeCategoriesModel($this->connection);
+            $model->name($this->newCat);
+            $matches = $model->find();
+            if (count($matches) == 0) {
+                $model->save();
+            }
+        }
+
+        return 'RecipeEditor.php';
+    }
+
+    protected function get_newCat_view()
+    {
+        return <<<HTML
+<form method="post" action="RecipeEditor.php">
+    <div class="form-group">
+        <label>New Category</label>
+        <input type="text" name="newCat" class="form-control" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default btn-core">Create Category</button>
+    </div>
+</form>
+HTML;
+    }
 
     private function extractAllergens($lines)
     {
@@ -161,6 +239,9 @@ class RecipeEditor extends FannieRESTfulPage
     {
         $model = new RecipesModel($this->connection);
         $model->recipeID($this->id);
+        if (FormLib::get('recipeName', false) !== false) {
+            $model->name(FormLib::get('recipeName'));
+        }
         if (FormLib::get('instructions', false) !== false) {
             $model->instructions(FormLib::get('instructions'));
         }
@@ -261,12 +342,18 @@ class RecipeEditor extends FannieRESTfulPage
         $ingList = '';
         $ingP = $this->connection->prepare('SELECT * FROM RecipeIngredients WHERE recipeID=? ORDER BY position');
         $ingR = $this->connection->execute($ingP, array($this->id));
+        $subP = $this->connection->prepare('SELECT recipeID, allergens FROM Recipes WHERE name=? OR name=?');
+        $subAllers = array();
         while ($ingW = $this->connection->fetchRow($ingR)) {
+            $isSub = $this->connection->getRow($subP, array($ingW['name'], $ingW['name'] . '*'));
+            if ($isSub) {
+                $subAllers[] = $isSub['allergens'];
+            }
             $ing .= sprintf('<tr>
                     <td><input type="hidden" class="edit-field" name="ingID[]" value="%d" />
                     <input type="text" class="form-control input-sm edit-field" name="amount[]" value="%s" /></td>
                     <td><input type="text" class="form-control input-sm edit-field" name="unit[]" value="%s" /></td>
-                    <td><input type="text" class="form-control input-sm edit-field" name="name[]" value="%s" /></td>
+                    <td class="%s"><input type="text" class="form-control input-sm edit-field" name="name[]" value="%s" /></td>
                     <td><input type="text" class="form-control input-sm edit-field" name="notes[]" value="%s" /></td>
                     <td><a class="btn btn-success btn-xs" href="" onclick="recipe.addRow(this); return false;"><span
                         class="glyphicon glyphicon-plus"></span></a>
@@ -277,6 +364,7 @@ class RecipeEditor extends FannieRESTfulPage
                     $ingW['recipeIngredientID'],
                     $ingW['amount'],
                     $ingW['unit'],
+                    $isSub ? 'info' : '',
                     $ingW['name'],
                     $ingW['notes']
             );
@@ -285,8 +373,16 @@ class RecipeEditor extends FannieRESTfulPage
         $ing .= '</table>';
 
         $autoAller = $this->extractAllergens($get['ingredientList'] . "\n" . $get['instructions']);
+        foreach ($subAllers as $s) {
+            if (!in_array($s, $autoAller)) {
+                $autoAller[] = $s;
+            }
+        }
 
         echo "<h3>{$get['name']}</h3>
+            <p><label>Name</label>
+            <input name=\"recipeName\" class=\"form-control edit-field\" value=\"" . $get['name'] . "\" />
+            </p>
             <p><label>Scale PLU</label>
             <input name=\"plu\" class=\"form-control edit-field\" value=\"" . $get['scalePLU'] . "\" />
             </p>
@@ -338,6 +434,12 @@ class RecipeEditor extends FannieRESTfulPage
         }
 
         $ret .= '</div>
+            <p>
+                <a class="btn btn-default" href="RecipeEditor.php?newCat=1">New Category</a>
+            </p>
+            <p>
+                <a class="btn btn-default" href="RecipeEditor.php?newRecipe=1">New Recipe</a>
+            </p>
             <p>
                 <a class="btn btn-default" href="RecipeViewer.php">Back to Viewer</a>
             </p>
