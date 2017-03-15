@@ -46,15 +46,36 @@ class WfcVcTask extends FannieTask
             WHERE card_no=?
                 AND msg_text like 'Access%'"
         );
+        $chkNotP = $dbc->prepare("
+            SELECT cardNo
+            FROM CustomerNotifications
+            WHERE cardNo=?
+                AND message like 'Access%'
+                AND type='receipt'
+                AND source='WfcVcTask'
+        ");
         $upMsgP = $dbc->prepare("
             UPDATE custReceiptMessage
             SET msg_text=?
             WHERE card_no=?
                 AND msg_text LIKE 'Access%'");
+        $upNotP = $dbc->prepare("
+            UPDATE CustomerNotifications
+            SET message=?
+            WHERE cardNo=?
+                AND message LIKE 'Access%'
+                AND type='receipt'
+                AND source='WfcVcTask'
+        ");
         $insMsgP = $dbc->prepare("
             INSERT INTO custReceiptMessage
                 (card_no, msg_text)
                 VALUES (?, ?)");
+        $insNotP = $dbc->prepare("
+            INSERT INTO CustomerNotifications
+                (cardNo, source, type, message)
+            VALUES
+                (?, 'WfcVcTask', 'receipt', ?)");
 
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
@@ -63,6 +84,7 @@ class WfcVcTask extends FannieTask
                     WHERE trans_type=\'I\'
                         AND upc=\'ACCESS\'
                         AND tdate >= ?
+                        AND card_no NOT IN (9, 11)
                     GROUP BY card_no
                     HAVING SUM(quantity) > 0';
         $accessP = $dbc->prepare($accessQ);
@@ -80,6 +102,12 @@ class WfcVcTask extends FannieTask
                 $dbc->execute($upMsgP, array($text, $accessW['card_no']));
             } else {
                 $dbc->execute($insMsgP, array($accessW['card_no'], $text));
+            }
+            $msg = $dbc->getValue($chkNotP, $accessW['card_no']);
+            if ($msg) {
+                $dbc->execute($upNotP, array($text, $accessW['card_no']));
+            } else {
+                $res = $dbc->execute($insNotP, array($accessW['card_no'], $text));
             }
         }
         $in = substr($in, 0, strlen($in)-1);
@@ -152,7 +180,6 @@ class WfcVcTask extends FannieTask
                 break;
             }
         }
-        echo "$currentUPC\n";
 
         if ($currentUPC) {
             $dbc->query("UPDATE CustomerNotifications SET message='OAM' WHERE source='WFC.OAM'");
