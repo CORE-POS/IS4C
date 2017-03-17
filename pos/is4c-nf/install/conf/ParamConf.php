@@ -49,6 +49,11 @@ class ParamConf
             $tmp = '';
             foreach($value as $k => $v) {
                 $tmp .= $k.'=>'.$v.','; 
+                if (is_array($k) || is_array($v)) {
+                    $fp = fopen(__DIR__ . '/../../log/debug_core.log', 'a');
+                    fwrite($fp, 'Unexpected array in parameters, key: ' . print_r($k, true) . ', val: ' . print_r($v) . "\n");
+                    fclose($fp);
+                }
             }
             $value = substr($tmp, 0, strlen($tmp)-1);
             $save_as_array = 1;
