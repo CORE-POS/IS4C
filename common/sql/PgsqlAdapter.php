@@ -148,5 +148,10 @@ class PgsqlAdapter implements DialectAdapter
     {
         return sprintf('SET LOCAL lock_timeout = \'%ds\'', $seconds);
     }
+
+    public function setCharSet($charset)
+    {
+        return "SET NAMES '$charset'";
+    }
 }
 

@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\common;
+use COREPOS\common\sql\CharSets;
 
 if (!function_exists("ADONewConnection")) {
     if (file_exists(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php')) {
@@ -1795,6 +1796,27 @@ class SQLManager
         $inStr = substr($inStr, 0, strlen($inStr)-1);
 
         return array($inStr, $args);
+    }
+
+    public function setCharSet($charset, $which_connection='')
+    {
+        // validate connection
+        $con = $this->getNamedConnection($which_connection);
+        $type = $this->connectionType($which_connection);
+        if ($type == 'unknown' || !is_object($con)) {
+            return false;
+        }
+
+        // validate character set
+        $db_charset = CharSets::get($type, $charset);
+        if ($db_charset === false) {
+            return false;
+        }
+
+        $adapter = $this->getAdapter($type);
+        $query = $adapter->setCharSet($db_charset);
+
+        return $con->query($query);
     }
 }
 
