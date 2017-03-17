@@ -86,6 +86,9 @@ static private function getLocalConnection($database1, $database2)
             false);
         if (isset(self::$SQL_CONNECTION->connections[$database1])) {
             self::$SQL_CONNECTION->connections[$database2] = self::$SQL_CONNECTION->connections[$database1];
+            if (CoreLocal::get('CoreCharSet') != '') {
+                self::$SQL_CONNECTION->setCharSet(CoreLocal::get('CoreCharSet'), $database1);
+            }
         }
     } else {
         /**
@@ -105,6 +108,9 @@ static public function mDataConnect()
 {
     $sql = new \COREPOS\pos\lib\SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
                   CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
+    if ($sql->isConnected(CoreLocal::get('mDatabase')) && CoreLocal::get('CoreCharSet') != '') {
+        $sql->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
+    }
 
     return $sql;
 }
@@ -439,6 +445,8 @@ static private function uploadtoServer()
         $connect->connections[CoreLocal::get("mDatabase")] === False){
         CoreLocal::set("standalone",1);
         return 0;    
+    } elseif (CoreLocal::get('CoreCharSet') != '') {
+        $connect->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
     }
 
     $dtMatches = self::getMatchingColumns($connect,"dtransactions");
@@ -586,6 +594,9 @@ static private function uploadCCdata()
                 CoreLocal::get("mUser"),
                 CoreLocal::get("mPass"),
                 False);
+    if (CoreLocal::get('CoreCharSet') != '') {
+        $connect->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
+    }
 
     // test for success
     $ret = true;
