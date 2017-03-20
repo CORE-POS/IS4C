@@ -89,8 +89,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
     );
 
-    protected $use_splits = false;
-    protected $use_js = true;
+    protected $use_splits = true;
+    protected $use_js = false;
     protected $vendor_name = 'UNFI';
 
     protected function getVendorID()
@@ -132,7 +132,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 s.plu');
         $linkR = $dbc->execute($linkP, array($VENDOR_ID));
         while ($linkW = $dbc->fetchRow($linkR)) {
-            $LINKED_MAP[$row['upc']] = $row['plu'];
+            $LINKED_MAP[$linkW['upc']] = $linkW['plu'];
         }
 
         $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
@@ -172,7 +172,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 ?
             )");
         $srpP = false;
-        if ($dbc->tableExists('vendorSRPs')) {
+        if (false && $dbc->tableExists('vendorSRPs')) {
             $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $updated_upcs = array();
