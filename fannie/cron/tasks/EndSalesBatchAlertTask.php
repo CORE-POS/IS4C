@@ -31,7 +31,7 @@ class EndSalesBatchAlertTask extends FannieTask
 {
     public $name = 'Sale Batch End Alert';
 
-    public $description = 'Sends an email to grocery department management with 
+    public $description = 'Sends an email to grocery department management with
         information regarding close-end-date batches.';
 
     public $default_schedule = array(
@@ -41,19 +41,19 @@ class EndSalesBatchAlertTask extends FannieTask
         'month' => '*',
         'weekday' => '*',
     );
-    
+
     public function run()
     {
 
-        $superDepts = array('GROCERY','REFRIGERATED','FROZEN','GEN MERCH','BULK','WELLNESS');
+        $superDepts = array('GROCERY','REFRIGERATED','FROZEN','GEN MERCH','BULK','WELLNESS','MEAT');
         $grocEmail = $this->config->get('GROCERY_EMAIL');
         $scanEmail = $this->config->get('SCANCOORD_EMAIL');
         $contacts = array($grocEmail,$scanEmail);
         $this->getBathchesBySuperDept($superDepts,$contacts);
-       
+
         return false;
     }
-    
+
     private function getBathchesBySuperDept($superDepts,$contacts)
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -61,15 +61,15 @@ class EndSalesBatchAlertTask extends FannieTask
         $d = date('d');
         $m = date('m');
         $y = date('Y');
-        
+
         $model = new BatchesModel($dbc);
         $model->endDate($date);
-        
+
         list($inClause,$args) = $dbc->safeInClause($superDepts);
-        $query = "SELECT batchName, batchID, startDate, endDate, owner 
-            FROM batches 
-            WHERE endDate BETWEEN CURDATE() AND DATE_ADD(NOW(), INTERVAL 7 DAY) 
-                AND owner IN (".$inClause.") 
+        $query = "SELECT batchName, batchID, startDate, endDate, owner
+            FROM batches
+            WHERE endDate BETWEEN CURDATE() AND DATE_ADD(NOW(), INTERVAL 7 DAY)
+                AND owner IN (".$inClause.")
                 AND batchName not like '%Co-op Deals%';
         ";
         $prep = $dbc->prepare($query);
@@ -93,13 +93,13 @@ class EndSalesBatchAlertTask extends FannieTask
                     background-color: #71c98a;
                 }
                 td.grocery, td.refrigerated, td.frozen,
-                    td.bulk, td.gen_merch {
+                    td.bulk, td.gen_merch, td.meat {
                     background-color: #ffa72b;
                 }
                 td.wellness {
                     background-color: cyan;
                 }
-                td.deli { 
+                td.deli {
                     background-color: #c674cc;
                 }
                 td.it {
@@ -146,11 +146,11 @@ class EndSalesBatchAlertTask extends FannieTask
             $msg .= "<br />";
             $msg .= "<br />";
             $mdg .= '</body></html>';
-        
+
             mail($to,'Report: Sales Batches End Alerts',$msg,implode("\r\n", $headers));
-            
+
             return false;
         }
     }
-    
+
 }
