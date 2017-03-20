@@ -161,6 +161,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $pmodel = new ProductsModel($dbc);
         $existsP = $dbc->prepare("SELECT 1 FROM vendorItems WHERE upc=? AND vendorID=?");
 
+        $dbc->startTransaction();
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
 
@@ -294,6 +295,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $this->updateCost($pmodel, $upc, $VENDOR_ID, $reg_unit);
             }
         }
+        $dbc->commitTransaction();
 
         return true;
     }

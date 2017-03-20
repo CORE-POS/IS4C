@@ -114,6 +114,7 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             WHERE upc=?
                 AND vendorID=?");
 
+        $dbc->startTransaction();
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
 
@@ -199,6 +200,7 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $updateModel = new ProdUpdateModel($dbc);
         $updateModel->logManyUpdates($updated_upcs, ProdUpdateModel::UPDATE_EDIT);
+        $dbc->commitTransaction();
 
         return true;
     }

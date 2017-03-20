@@ -169,6 +169,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         }
         $pmodel = new ProductsModel($dbc);
 
+        $dbc->startTransaction();
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
 
@@ -271,6 +272,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $this->updateCost($pmodel, $upc, $VENDOR_ID, $reg_unit);
             }
         }
+        $dbc->commitTransaction();
 
         return true;
     }

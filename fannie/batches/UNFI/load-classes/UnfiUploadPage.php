@@ -178,6 +178,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $updated_upcs = array();
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
 
+        $dbc->startTransaction();
+
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
 
@@ -286,6 +288,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $updateModel = new ProdUpdateModel($dbc);
         $updateModel->logManyUpdates($updated_upcs, ProdUpdateModel::UPDATE_EDIT);
+
+        $dbc->commitTransaction();
 
         return true;
     }
