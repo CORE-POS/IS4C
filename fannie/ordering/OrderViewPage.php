@@ -284,13 +284,13 @@ class OrderViewPage extends FannieRESTfulPage
             $soModel->street(FormLib::get('street'));
         }
         if (FormLib::get('city', false) !== false) {
-            $soModel->street(FormLib::get('city'));
+            $soModel->city(FormLib::get('city'));
         }
         if (FormLib::get('state', false) !== false) {
-            $soModel->street(FormLib::get('state'));
+            $soModel->state(FormLib::get('state'));
         }
         if (FormLib::get('zip', false) !== false) {
-            $soModel->street(FormLib::get('zip'));
+            $soModel->zip(FormLib::get('zip'));
         }
         $json = array();
         $json['saved'] = $soModel->save() ? true : false;
