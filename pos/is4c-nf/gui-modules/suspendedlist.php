@@ -51,6 +51,7 @@ class suspendedlist extends NoInputCorePage
                     $url = $this->page_url.'gui-modules/memlist.php?idSearch='.$this->session->get('memberID');
                 }
                 $this->change_page($url);
+                return false;
             }
             // pressed clear
             $this->change_page($this->page_url."gui-modules/pos2.php");
