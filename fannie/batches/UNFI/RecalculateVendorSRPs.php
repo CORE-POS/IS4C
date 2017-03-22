@@ -83,6 +83,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
             $insP = $dbc->prepare('INSERT INTO vendorSRPs VALUES (?,?,?)');
         }
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
+        $dbc->startTransaction();
         while ($fetchW = $dbc->fetchRow($fetchR)) {
             // calculate a SRP from unit cost and desired margin
             $adj = \COREPOS\Fannie\API\item\Margin::adjustedCost($fetchW['cost'], $fetchW['discount'], $fetchW['shipping']);
@@ -95,6 +96,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
                 $insR = $dbc->execute($insP,array($id,$fetchW['upc'],$srp));
             }
         }
+        $dbc->commitTransaction();
 
         $ret = "<b>SRPs have been updated</b><br />";
         $ret .= sprintf('<p>
