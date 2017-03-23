@@ -212,12 +212,12 @@ class OverShortDepositSlips extends FanniePage
 
         $pdf->SetXY(($width+2)*4 + 5,10);
         $pdf->SetFillColor(0,0,0);
-        $pdf->SetTextColor(255,255,255);
+        $pdf->SetTextColor(0,0,0);
         $pdf->SetFontSize(12);
         $str = "Whole Foods Community\nCO-OP Deposit Slip\n";
         $str .= trim(file_get_contents("acct"),"\r\n")."\n\n";
         $str .= "Date\t".date("m/d/y")."\n";
-        $pdf->MultiCell(55,5,$str,0,'C',1);
+        $pdf->MultiCell(55,5,$str,1,'C');
         
         $pdf->SetTextColor(0,0,0);
         $str = "";
