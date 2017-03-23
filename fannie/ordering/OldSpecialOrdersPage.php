@@ -97,7 +97,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
           may not overlap perfectly with the actual
           vendors table
         */
-        $suppliers = $this->getOrderSuppliers($dbc);
+        $suppliers = $this->getOrderSuppliers($dbc, false);
 
         /**
           Filter the inital query by

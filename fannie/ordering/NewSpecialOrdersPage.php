@@ -98,13 +98,14 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         return $assignments;
     }
 
-    protected function getOrderSuppliers($dbc)
+    protected function getOrderSuppliers($dbc, $new=true)
     {
         $suppliers = array('');
+        $table = $new ? 'PendingSpecialOrder' : 'CompleteSpecialOrder';
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
         $prep = $dbc->prepare("
             SELECT mixMatch 
-            FROM {$TRANS}PendingSpecialOrder 
+            FROM {$TRANS}{$table}
             WHERE trans_type='I'
             GROUP BY mixMatch 
             ORDER BY mixMatch");
