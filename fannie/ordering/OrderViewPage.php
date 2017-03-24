@@ -694,7 +694,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $ins_array['upc'] = $item['upc'];
         $ins_array['quantity'] = $item['caseSize'];
-        $ins_array['mixMatch'] = substr($item['vendorName'], 0, 26);
+        $ins_array['mixMatch'] = $item['vendorName'];
         $ins_array['description'] = substr($item['description'], 0, 32) . ' SO';
         $ins_array['department'] = $item['department'];
         $ins_array['discountable'] = $item['discountable'];
@@ -904,6 +904,11 @@ HTML;
         $bridge = new SoPoBridge($dbc, $this->config);
         $store = $dbc->prepare("SELECT storeID FROM {$TRANS}SpecialOrders WHERE specialOrderID=?");
         $storeID = $dbc->getValue($store, array($orderID));
+        $vendorsR = $dbc->query("SELECT vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName");
+        $vendors = array();
+        while ($row = $dbc->fetchRow($vendorsR)) {
+            $vendors[] = $row['vendorName'];
+        }
         while ($row = $dbc->fetch_row($res)) {
             if ($row['trans_id'] == $prev_id) continue;
             $ret .= sprintf('
@@ -948,10 +953,40 @@ HTML;
                 <input type="text" size="4" value="%.2f" id="unitp%d" name="unitPrice"
                 class="form-control input-sm price-field item-field" /></td>',
                 $row['unitPrice'],$row['trans_id']);
+
+            /**
+              If the current supplier entry matches a known vendor,
+              display supplier options as a <select> from known vendors.
+              Since entries may have been truncated in the database,
+              matching the first 13 characters is sufficent.
+
+              If the current entry does not match any known vendor,
+              revert to showing supplier as a text box.
+            */
+            $supplierInput = '<select name="vendor" class="form-control input-sm item-field input-vendor">';
+            $supplierInput .= '<option value=""></option>';
+            $found = false;
+            foreach ($vendors as $v) {
+                if ($v == $row['mixMatch'] || substr($v, 0, 13) == $row['mixMatch']) {
+                    $supplierInput .= "<option selected>{$v}</option>";
+                    $found = true;
+                } else {
+                    $supplierInput .= "<option>{$v}</option>";
+                }
+            }
+            if (!$found && $row['mixMatch'] != '') {
+                $supplierInput = sprintf('<input type="text" value="%s" size="12"
+                    class="form-control input-sm item-field input-vendor" name="vendor" maxlength="13" />',
+                    $row['mixMatch']);
+            } else {
+                $supplier .= '</select>';
+            }
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
                     class="form-control input-sm item-field input-vendor" name="vendor"
                     maxlength="26" 
                     /></td>',$row['mixMatch']);
+            //$ret .= sprintf('<td class="form-inline">Supplier: %s</td>', $supplierInput);
+
             $ret .= '<td>Discount</td>';
             if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
                 $ret .= '<td class="disc-percent" id="discPercent'.$row['trans_id'].'">Sale</td>';
