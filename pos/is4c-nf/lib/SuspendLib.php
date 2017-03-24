@@ -47,8 +47,8 @@ static public function suspendorder($session)
     if ($session->get("standalone") == 0) {
         $dba->addConnection($session->get("mServer"),$session->get("mDBMS"),
             $session->get("mDatabase"),$session->get("mUser"),$session->get("mPass"),false,true);
-        if (CoreLocal::get('CoreCharSet') != '') {
-            $dba->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
+        if ($this->session->get('CoreCharSet') != '') {
+            $dba->setCharSet($this->session->get('CoreCharSet'), $this->session->get('mDatabase'));
         }
         $cols = Database::getMatchingColumns($dba,"localtemptrans","suspended");
         $dba->transfer($session->get("tDatabase"),"select {$cols} from localtemptrans",
