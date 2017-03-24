@@ -20,6 +20,7 @@ class MovementTagCheck extends FannieRESTfulPage
                 <th>UPC</th>
                 <th>Brand</th>
                 <th>Description</th>
+                <th>Tag Date</th>
                 <th>Tag Par</th>
                 <th>Current Par</th>
                 <th>% Change</th>
@@ -27,13 +28,15 @@ class MovementTagCheck extends FannieRESTfulPage
             </tr>';
         $query = $this->connection->prepare('
             SELECT p.upc, p.brand, p.description,
-                p.auto_par, m.lastPar, i.units, i.units, i.units, i.units
+                p.auto_par, m.lastPar, i.units, i.units, i.units, i.units,
+                m.modified
             FROM MovementTags AS m
                 INNER JOIN products AS p ON p.upc=m.upc AND p.store_id=m.storeID
                 LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID
             WHERE ABS(m.lastPar - p.auto_par) / m.lastPar > ?
         ');
-        $res = $this->connection->execute($query, array($this->id/100));
+        $arg = $standard ? 0 : $this->id/100;
+        $res = $this->connection->execute($query, array($arg));
         while ($row = $this->connection->fetchRow($res)) {
             $caseSize = $row['units'] ? $row['units'] : 1;
             $change = abs((7*$row['lastPar']) - (7*$row['auto_par']));
@@ -44,6 +47,7 @@ class MovementTagCheck extends FannieRESTfulPage
                     <td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
+                    <td>%s</td>
                     <td>%.2f</td>
                     <td>%.2f</td>
                     <td>%.2f%%</td>
@@ -52,6 +56,7 @@ class MovementTagCheck extends FannieRESTfulPage
                     $row['upc'], $row['upc'],
                     $row['brand'], 
                     $row['description'], 
+                    $row['modified'], 
                     7*$row['lastPar'], 
                     7*$row['auto_par'], 
                     (abs($row['lastPar'] - $row['auto_par']) / $row['lastPar']) * 100,
