@@ -44,6 +44,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'get<placed>',
             'post<id><setPlaced>',
             'get<id><export>',
+            'get<id><sendAs>',
             'get<id><receive>',
             'get<id><receiveAll>',
             'get<id><sku>',
@@ -105,6 +106,65 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $exportObj->send_headers();
         $exportObj->export_order($this->id);
         return false;
+    }
+
+    protected function get_id_sendAs_handler()
+    {
+        if (!file_exists('exporters/'.$this->sendAs.'.php')) {
+            return $this->unknownRequestHandler();
+        }
+        include_once('exporters/'.$this->sendAs.'.php');    
+        if (!class_exists($this->sendAs)) {
+            return $this->unknownRequestHandler();
+        }
+
+        ob_start();
+        $exportObj = new $this->sendAs();
+        $exportObj->export_order($this->id);
+        $exported = ob_get_clean();
+
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $place = $dbc->prepare("UPDATE PurchaseOrder SET placed=1, placedDate=? WHERE orderID=?");
+
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($this->id);
+        $order->load();
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorID($order->vendorID());
+        $vendor->load();
+        if (!filter_var($vendor->email(), FILTER_VALIDATE_EMAIL)) {
+            return $this->unknownRequestHandler();
+        }
+
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->Host = '127.0.0.1';
+        $mail->Port = 25;
+        $mail->SMTPAuth = false;
+        $mail->SMTPAutoTLS = false;
+        $mail->From = $this->config->get('PO_EMAIL');
+        $mail->FromName = $this->config->get('PO_EMAIL_NAME');
+        $mail->isHTML = true;
+        $mail->SMTPDebug = true;
+        $mail->addAddress($vendor->email());
+        $mail->Subject = 'Purchase Order ' . date('Y-m-d');
+        $mail->Body = 'Please see attached purchase order';
+        $mail->AltBody = 'Please see attached purchase order';
+        $mail->addStringAttachment(
+            $exported,
+            'Order ' . date('Y-m-d') . '.csv',
+            'base64',
+            'text/csv'
+        );
+        $sent = $mail->send();
+        if ($send) {
+            $dbc->execute($place, array(date('Y-m-d H:i:s'), $this->id));
+        } else {
+            var_dump($sent);
+            exit;
+        }
+    
+        return 'ViewPurchaseOrders.php?id=' . $this->id;
     }
 
     protected function post_id_setPlaced_handler()
@@ -395,6 +455,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             $selected = $class === $this->config->get('DEFAULT_PO_EXPORT') ? 'selected' : '';
             $exportOpts .= '<option ' . $selected . ' value="'.$class.'">'.$name.'</option>';
         }
+        $exportEmail = '';
+        if (!$orderObj->placed && filter_var($vendor['email'], FILTER_VALIDATE_EMAIL)) {
+            $exportEmail = '<button type="submit" class="btn btn-default btn-sm" onclick="doSend(' . $this->id . ');
+                return false;" title="Email order to ' . $vendor['email'] . '" disabled>Send via Email</button>';
+        }
         $uname = FannieAuth::getName($order->userID());
         if (!$uname) {
             $uname = 'n/a';
@@ -417,6 +482,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             {$exportOpts}
         </select> 
         <button type="submit" class="btn btn-default btn-sm" onclick="doExport({$this->id});return false;">Export</button>
+        {$exportEmail}
         &nbsp;&nbsp;&nbsp;
         <a type="button" class="btn btn-default btn-sm" 
             href="ViewPurchaseOrders.php?{$init}">All Orders</a>

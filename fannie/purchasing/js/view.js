@@ -53,6 +53,10 @@ function doExport(orderID){
 	window.location = 'ViewPurchaseOrders.php?id='+orderID+'&export='+$('#exporterSelect').val();
 }
 
+function doSend(orderID){
+	window.location = 'ViewPurchaseOrders.php?id='+orderID+'&sendAs='+$('#exporterSelect').val();
+}
+
 function deleteOrder(orderID)
 {
     if (confirm('Delete this order?')) {
