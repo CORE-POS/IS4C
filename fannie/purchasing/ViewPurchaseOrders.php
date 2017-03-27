@@ -136,6 +136,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             return $this->unknownRequestHandler();
         }
 
+        $userP = $dbc->prepare("SELECT email FROM Users WHERE name=?");
+        $userEmail = $dbc->getValue($userP, array($this->current_user));
+
         $mail = new PHPMailer();
         $mail->isSMTP();
         $mail->Host = '127.0.0.1';
@@ -147,6 +150,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mail->isHTML = true;
         $mail->SMTPDebug = true;
         $mail->addAddress($vendor->email());
+        if ($userEmail && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+            $mail->addCC($userEmail);
+            $mail->ReplyTo = $userEmail;
+        }
         $mail->Subject = 'Purchase Order ' . date('Y-m-d');
         $mail->Body = 'Please see attached purchase order';
         $mail->AltBody = 'Please see attached purchase order';
