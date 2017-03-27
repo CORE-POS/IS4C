@@ -378,6 +378,18 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
+        $batchP = $dbc->prepare("
+            SELECT b.batchName
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+                INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
+            WHERE l.upc=?
+                AND m.storeID=?
+                AND b.startDate <= " . $dbc->curdate() . "
+                AND b.endDate >= " . $dbc->curdate() . "
+                AND b.discounttype > 0
+        ");
+
         $exportOpts = '';
         foreach (COREPOS\Fannie\API\item\InventoryLib::orderExporters() as $class => $name) {
             $selected = $class === $this->config->get('DEFAULT_PO_EXPORT') ? 'selected' : '';
@@ -488,6 +500,12 @@ HTML;
             <th>Rec. Qty</th><th>Rec. Cost</th><th>SO</th></tr></thead><tbody>';
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
+            if (!$order->placed()) {
+                $batchR = $dbc->getValue($batchP, array($obj->internalUPC(), $orderObj->storeID));
+                if ($batchR) {
+                    $css = 'class="info" title="' . $batchR . '"';
+                }
+            }
             if ($obj->salesCode() == '') {
                 $code = $obj->guessCode();
                 $obj->salesCode($code);

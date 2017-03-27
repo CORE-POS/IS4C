@@ -315,6 +315,22 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $poi->orderID($orderID);
         $poi->load();
 
+        $order = new PurchaseOrderModel($this->connection);
+        $order->orderID($orderID);
+        $order->load();
+
+        $batchP = $this->connection->prepare("
+            SELECT b.batchName
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+                INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
+            WHERE l.upc=?
+                AND m.storeID=?
+                AND b.startDate <= " . $this->connection->curdate() . "
+                AND b.endDate >= " . $this->connection->curdate() . "
+                AND b.discounttype > 0
+        ");
+
         $ret = '
             <table class="table table-bordered table-striped">
             <tr>
@@ -328,7 +344,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
                 <th>Est. Cost</th>
             </tr>';
         foreach ($poi->find() as $item) {
-            $ret .= sprintf('<tr>
+            $batch = $this->connection->getValue($batchP, array($item->internalUPC(), $order->storeID()));
+            $ret .= sprintf('<tr %s>
                 <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
                 <td>%s</td>
                 <td>%s</td>
@@ -338,6 +355,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
                 <td><input type="text" class="form-control" name="qty[]" value="%s" /></td>
                 <td>%.2f</td>
                 </tr>',
+                $batch ? 'class="info" title="' . $batch . '"' : '',
                 $item->sku(), $item->sku(),
                 \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($item->internalUPC()),
                 $item->brand(),
