@@ -159,9 +159,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mail->AltBody = 'Please see attached purchase order';
         $mail->addStringAttachment(
             $exported,
-            'Order ' . date('Y-m-d') . '.csv',
+            'Order ' . date('Y-m-d') . '.' . $exportObj->extension,
             'base64',
-            'text/csv'
+            $exportObj->mime_type
         );
         $sent = $mail->send();
         if ($send) {

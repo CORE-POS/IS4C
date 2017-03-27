@@ -28,6 +28,8 @@ if (!class_exists('DefaultCsvPoExport')) {
 class WfcPoExport extends DefaultCsvPoExport 
 {
     public $nice_name = 'WFC';
+    public $extension = 'csv';
+    public $mime_type = 'text/csv';
 
     public function export_order($id)
     {

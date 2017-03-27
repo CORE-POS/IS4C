@@ -24,6 +24,8 @@
 class DefaultCsvPoExport 
 {
     public $nice_name = 'CSV (Default)';
+    public $extension = 'csv';
+    public $mime_type = 'test/csv';
 
     public function send_headers()
     {
