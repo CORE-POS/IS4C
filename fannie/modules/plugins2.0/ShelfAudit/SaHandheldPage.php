@@ -73,7 +73,7 @@ class SaHandheldPage extends FannieRESTfulPage
                 // look up special order
                 $orderID = (int)substr($upc, 5, 6);
                 $transID = (int)substr($upc, -2); 
-                $q = "SELECT o.description, '' AS brand, s.quantity, o.ItemQtty AS units
+                $q = "SELECT o.description, '' AS brand, s.quantity, o.quantity AS units
                     FROM " . $this->config->get('TRANS_DB') . $dbc->sep() . "PendingSpecialOrder AS o
                     LEFT JOIN ".$settings['ShelfAuditDB'].$dbc->sep().
                     "sa_inventory AS s ON s.upc=? AND s.clear=0 AND s.storeID=?
@@ -82,7 +82,6 @@ class SaHandheldPage extends FannieRESTfulPage
                 $args = array($upc, $store, $this->section, $orderID, $transID);
                 $p = $dbc->prepare($q);
                 $r = $dbc->execute($p, $args);
-                    
             } elseif ($dbc->numRows($r)==0) {
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
@@ -286,7 +285,7 @@ if (typeof WebBarcode == 'object') {
     {
         $used = array(1=>true);
         $cases = '';
-        foreach($ret['case_sizes'] as $s){
+        foreach($data['case_sizes'] as $s){
             if (isset($used[$s])) continue;
             $cases.= sprintf('<button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-success btn-lg">+%d</button>
                 <button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-danger btn-lg">-%d</button>',
