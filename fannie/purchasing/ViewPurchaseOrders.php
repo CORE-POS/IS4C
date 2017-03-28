@@ -153,6 +153,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         if ($userEmail && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
             $mail->addCC($userEmail);
             $mail->ReplyTo = $userEmail;
+            $mail->From = $userEmail;
         }
         $mail->Subject = 'Purchase Order ' . date('Y-m-d');
         $mail->Body = 'Please see attached purchase order';
