@@ -316,6 +316,7 @@ class FannieAuth
         }
 
         $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
+        $uid = str_pad($uid, 4, '0', STR_PAD_LEFT);
         $fetchQ = $sql->prepare("select name from Users where uid=?");
         return $sql->getValue($fetchQ, array($uid));
     }
