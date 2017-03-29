@@ -196,6 +196,30 @@ class WfcVcTask extends FannieTask
             }
         }
 
+        if ($today >= new DateTime('2017-04-01')) {
+            $dbc->query("UPDATE CustomerNotifications SET message='' WHERE source='WFC.OAM'");
+            $assignP = $dbc->prepare("UPDATE CustomerNotifications
+                SET message='&#x1F49A;' WHERE source='WFC.OAM' AND cardNo=?");
+            $usageP = $dbc->prepare("SELECT card_no 
+                                    FROM is4c_trans.dlog_90_view
+                                    WHERE upc = '0049999900176'
+                                        AND card_no=?
+                                    GROUP BY card_no
+                                    HAVING SUM(total) <> 0");
+
+            $earnR = $dbc->query('SELECT numflag
+                FROM is4c_trans.dlog_90_view
+                WHERE upc=\'0049999900173\'
+                GROUP BY numflag
+                HAVING SUM(total) <> 0');
+            while ($row = $dbc->fetchRow($earnR)) {
+                $used = $dbc->getValue($usageP, array($row['numflag']));
+                if (!$used) {
+                    $dbc->execute($assignP, array($row['numflag']));
+                }
+            }
+        }
+
         // grant coupon to all members
         /*
         $dbc->query("UPDATE custdata AS c SET memCoupons=1 WHERE Type='PC'");
