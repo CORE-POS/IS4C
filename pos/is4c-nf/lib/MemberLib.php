@@ -372,7 +372,7 @@ class MemberLib
           Log the member entry
         */
         \CoreLocal::set("memberID",$member);
-        $opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
+        $opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member, 'charflag'=>$personNumber);
         TransRecord::addLogRecord($opts);
 
         /**
