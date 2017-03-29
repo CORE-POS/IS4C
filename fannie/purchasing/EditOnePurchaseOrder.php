@@ -35,6 +35,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
     for a specific vendor. When scanning, only items available from that vendor are shown.';
 
     protected $must_authenticate = true;
+    protected $enable_linea = true;
     
     public function preprocess()
     {
@@ -60,6 +61,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $ret = array(); 
+        $orderID = FormLib::get('orderID');
 
         // search by vendor SKU
         $skuQ = 'SELECT v.brand, v.description, v.size, v.units, v.cost, v.sku
@@ -80,7 +82,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            $this->mergeSearchResult($ret);
+            $this->mergeSearchResult($ret, $orderID, $dbc);
             return false;
         }
 
@@ -102,7 +104,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            $this->mergeSearchResult($ret);
+            $this->mergeSearchResult($ret, $orderID, $dbc);
             return False;
         }
 
@@ -110,8 +112,51 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         return False;
     }
 
-    private function mergeSearchResult($ret)
+    /**
+      Finalize a search result
+
+      This adds an item's order history and quantity present in the
+      current order. If the item is not in the current order it's
+      automatically added with quantity one. Otherwise it's incremented
+      by one. The logic here is oriented around using a handheld scanner
+      where scanning something three times results in quantity three.
+    */
+    private function mergeSearchResult($ret, $orderID, $dbc)
     {
+        $storeP = $dbc->prepare('SELECT storeID FROM PurchaseOrder WHERE orderID=?');
+        $storeID = $dbc->getValue($storeP, array($orderID));
+
+        $historyQ = 'SELECT placedDate, quantity
+            FROM PurchaseOrder AS o
+                INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
+            WHERE o.storeID=?
+                AND i.sku=?
+                AND placed=1
+                AND (receivedQty > 0 OR receivedQty IS NULL)
+            ORDER BY placedDate DESC';
+        $historyQ = $dbc->addSelectLimit($historyQ, 3);
+        $historyP = $dbc->prepare($historyQ);
+
+        $currentP = $dbc->prepare('SELECT quantity FROM PurchaseOrderItems WHERE orderID=? AND sku=?');
+        for ($i=0; $i<count($ret); $i++) {
+            $sku = $ret[$i]['sku'];
+            $cases = $dbc->getValue($currentP, array($orderID, $sku));
+            $ret[$i]['cases'] = ($cases) ? $cases+1 : 1;
+            $this->sku = $ret[$i]['sku'];
+            $this->qty = $ret[$i]['cases']; 
+            $this->id = $orderID;
+            ob_start();
+            $this->get_id_sku_qty_handler();
+            $result = ob_get_clean();
+            $ret[$i]['history'] = array();
+            $historyR = $dbc->execute($historyP, array($storeID, $sku));
+            while ($historyW = $dbc->fetchRow($historyR)) {
+                $ret[$i]['history'][] = array(
+                    'date' => date('m/d/y', strtotime($historyW['placedDate'])),
+                    'cases' => $historyW['quantity'],
+                );
+            }
+        }
         echo json_encode($ret);
     }
 
@@ -203,7 +248,11 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             if (isset($this->qty[$i])) {
                 $poi->quantity($this->qty[$i]);
             }
-            $poi->save();
+            if ($poi->quantity() == 0) {
+                $poi->delete();
+            } else {
+                $poi->save();
+            }
         }
 
         $ret = array();
@@ -284,7 +333,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $ret .= sprintf('<input type="hidden" id="order-id" value="%d" />',$orderID);
 
         $this->add_onload_command("\$('#searchField').focus();\n");
-        $this->add_script('js/editone.js');
+        $this->addOnloadCommand("enableLinea('#searchField', function(){ itemSearch(); });\n");
+        $this->add_script('js/editone.js?id=1');
 
         return $ret;
     }

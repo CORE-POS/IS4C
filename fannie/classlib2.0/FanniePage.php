@@ -120,6 +120,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
             $this->addScript($url . 'src/javascript/linea/cordova-2.2.0.js');
             $this->addScript($url . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
             $this->addScript($url . 'src/javascript/linea/WebHub.js');
+            $this->addScript($url . 'src/javascript/linea/core.js');
         }
 
         return ob_get_clean();
@@ -406,14 +407,6 @@ function enableLinea(selector, callback)
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
             exit;
-        }
-    }
-
-    public function postFlight()
-    {
-        if ($this->enable_linea) {
-            echo '<script type="text/javascript" src="' . $this->config->get('URL') . 'src/javascript/linea/core.js">';
-            echo '</script>';
         }
     }
 
