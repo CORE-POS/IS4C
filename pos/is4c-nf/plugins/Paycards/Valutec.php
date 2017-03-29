@@ -141,6 +141,8 @@ class Valutec extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_ACTIVATE:
                 $this->conf->set("autoReprint",1);
                 $ttl = $this->conf->get("paycard_amount");
+                $deptObj = new COREPOS\pos\lib\DeptLib($this->conf);
+                $deptObj->deptkey($ttl*100, $dept . '0');
                 COREPOS\pos\lib\DeptLib::deptkey($ttl*100,9020);
                 $resp = $this->conf->get("paycard_response");    
                 $this->conf->set("boxMsg","<b>Success</b><font size=-1>
