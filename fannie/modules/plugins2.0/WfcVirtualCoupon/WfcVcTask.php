@@ -51,7 +51,7 @@ class WfcVcTask extends FannieTask
             FROM CustomerNotifications
             WHERE cardNo=?
                 AND message like 'Access%'
-                AND type='receipt'
+                AND type=?
                 AND source='WfcVcTask'
         ");
         $upMsgP = $dbc->prepare("
@@ -64,7 +64,7 @@ class WfcVcTask extends FannieTask
             SET message=?
             WHERE cardNo=?
                 AND message LIKE 'Access%'
-                AND type='receipt'
+                AND type=?
                 AND source='WfcVcTask'
         ");
         $insMsgP = $dbc->prepare("
@@ -75,7 +75,7 @@ class WfcVcTask extends FannieTask
             INSERT INTO CustomerNotifications
                 (cardNo, source, type, message)
             VALUES
-                (?, 'WfcVcTask', 'receipt', ?)");
+                (?, 'WfcVcTask', ?, ?)");
 
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
@@ -91,7 +91,13 @@ class WfcVcTask extends FannieTask
         $accessR = $dbc->execute($accessP, array($last_year));
         $mems = array();
         $in = '';
+        $notification = new CustomerNotificationsModel($dbc);
         while ($accessW = $dbc->fetch_row($accessR)) {
+            /**
+              Setup receipt notifications. This uses both old-style custReceiptMessage
+              and new-style CustomerNotifications. This notification is always
+              present.
+            */
             $mems[] = $accessW['card_no'];
             $in .= '?,';
             $expires = new DateTime($accessW['tdate']);
@@ -103,11 +109,31 @@ class WfcVcTask extends FannieTask
             } else {
                 $dbc->execute($insMsgP, array($accessW['card_no'], $text));
             }
-            $msg = $dbc->getValue($chkNotP, $accessW['card_no']);
+            $msg = $dbc->getValue($chkNotP, array($accessW['card_no'], 'receipt'));
             if ($msg) {
-                $dbc->execute($upNotP, array($text, $accessW['card_no']));
+                $dbc->execute($upNotP, array($text, $accessW['card_no'], 'receipt'));
             } else {
-                $res = $dbc->execute($insNotP, array($accessW['card_no'], $text));
+                $res = $dbc->execute($insNotP, array($accessW['card_no'], 'receipt', $text));
+            }
+
+            /**
+              Set a blueline notification is things are expiring soon
+            */
+            $now = new DateTime(date('Y-m-d'));
+            $expires->sub(new DateInterval('P1M'));
+            $notification->reset();
+            $notification->cardNo($accessW['card_no']);
+            $notification->source('WfcVcTaskABL');
+            $notification->type('blueline');
+            $exists = $notification->find();
+            $notice = $now >= $expires ? '&#x1f6aa;' : '';
+            if (count($exists) > 0) {
+                $obj = $exists[0];
+                $obj->message($notice);
+                $obj->save();
+            } else {
+                $notification->message($notice);
+                $notification->save();
             }
         }
         $in = substr($in, 0, strlen($in)-1);
@@ -122,6 +148,21 @@ class WfcVcTask extends FannieTask
             WHERE msg_text LIKE 'Access%'
                 AND card_no NOT IN ({$in})");
         $dbc->execute($delMsgP, $mems);
+
+        $upP = $dbc->prepare("
+            UPDATE CustomerNotifications
+            SET message=''
+            WHERE source='WfcVcTaskABL'
+                AND cardNo NOT IN ({$in})");
+        $dbc->execute($upP, $mems);
+        $upP = $dbc->prepare("
+            UPDATE CustomerNotifications
+            SET message=''
+            WHERE source='WfcVcTask'
+                AND message LIKE 'Access%'
+                AND type='receipt'
+                AND cardNo NOT IN ({$in})");
+        $dbc->execute($upP, $mems);
 
         $redo = $dbc->prepare('UPDATE custdata 
                                SET memType=5,
