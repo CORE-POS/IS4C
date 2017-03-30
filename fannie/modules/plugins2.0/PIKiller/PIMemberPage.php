@@ -94,6 +94,14 @@ class PIMemberPage extends PIKillerPage {
             $this->__models['note'] = $tmp['note'];
         }
 
+        $comP = $dbc->prepare("SELECT empNo FROM Commissions WHERE cardNo=? AND type='OWNERSHIP'");
+        $this->commissioned = $dbc->getValue($comP, array($this->id));
+        $empR = $dbc->query('SELECT emp_no, FirstName FROM employees WHERE EmpActive=1 AND emp_no > 0 ORDER BY FirstName');
+        $this->emps = array();
+        while ($empW = $dbc->fetchRow($empR)) {
+            $this->emps[] = $empW;
+        }
+
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
         $this->__models['equity'] = $this->get_model($dbc, 'EquityLiveBalanceModel',
@@ -209,6 +217,16 @@ class PIMemberPage extends PIKillerPage {
         }
         $resp = \COREPOS\Fannie\API\member\MemberREST::post($this->card_no, $json);
 
+        $comm = new CommissionsModel($dbc);
+        $comm->cardNo($this->id);
+        $comm->type('OWNERSHIP');
+        $exists = $comm->find();
+        if (count($exists) > 0) {
+            $comm = $exists[0];
+        }
+        $comm->empNo(FormLib::get('commissioned'));
+        $comm->save();
+
         $custdata = new CustdataModel($dbc);
         $custdata->CardNo($this->card_no);
         foreach ($custdata->find() as $c) {
@@ -219,6 +237,7 @@ class PIMemberPage extends PIKillerPage {
         $cards->card_no($this->card_no);
         $cards->load();
         $cards->pushToLanes();
+
 
         $prep = $dbc->prepare('
             SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
@@ -381,6 +400,14 @@ class PIMemberPage extends PIKillerPage {
                 array(),$limitedEdit).'</td>';
         echo "<td class=\"yellowbg\">Current Balance: </td>";
         echo '<td>'.sprintf('%.2f',$this->__models['ar']->balance()).'</td>';
+        echo "<td class=\"yellowbg\">Referral:</td>";
+        $opts = array(0);
+        $labels = array('n/a');
+        foreach ($this->emps as $e) {
+            $opts[] = $e['emp_no'];
+            $labels[] = $e['emp_no'] . ' ' . $e['FirstName'];
+        }
+        echo '<td>' . $this->text_or_select('commissioned', $this->commissioned, $opts, $labels) . '</td>';
         echo "</tr>";
 
         echo "<tr class=\"yellowbg\"><td colspan=6></td></tr>";
