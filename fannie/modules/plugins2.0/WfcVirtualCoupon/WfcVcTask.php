@@ -44,13 +44,13 @@ class WfcVcTask extends FannieTask
             SELECT card_no
             FROM custReceiptMessage
             WHERE card_no=?
-                AND msg_text like 'Access%'"
+                AND msg_text like '%Access Discount%'"
         );
         $chkNotP = $dbc->prepare("
             SELECT cardNo
             FROM CustomerNotifications
             WHERE cardNo=?
-                AND message like 'Access%'
+                AND message like '%Access Discount%'
                 AND type=?
                 AND source='WfcVcTask'
         ");
@@ -58,12 +58,12 @@ class WfcVcTask extends FannieTask
             UPDATE custReceiptMessage
             SET msg_text=?
             WHERE card_no=?
-                AND msg_text LIKE 'Access%'");
+                AND msg_text LIKE '%Access Discount%'");
         $upNotP = $dbc->prepare("
             UPDATE CustomerNotifications
             SET message=?
             WHERE cardNo=?
-                AND message LIKE 'Access%'
+                AND message LIKE '%Access Discount%'
                 AND type=?
                 AND source='WfcVcTask'
         ");
@@ -103,6 +103,7 @@ class WfcVcTask extends FannieTask
             $expires = new DateTime($accessW['tdate']);
             $expires->add(new DateInterval('P1Y'));
             $text = 'Access Discount valid until ' . $expires->format('Y-m-d');
+            $text = "\n" . str_repeat('-', 40) . "\n" . $text . "\n" . str_repeat('-', 40) . "\n";
             $msg = $dbc->getValue($chkMsgP, $accessW['card_no']);
             if ($msg) {
                 $dbc->execute($upMsgP, array($text, $accessW['card_no']));
@@ -145,7 +146,7 @@ class WfcVcTask extends FannieTask
 
         $delMsgP = $dbc->prepare("
             DELETE FROM custReceiptMessage
-            WHERE msg_text LIKE 'Access%'
+            WHERE msg_text LIKE '%Access Discount%'
                 AND card_no NOT IN ({$in})");
         $dbc->execute($delMsgP, $mems);
 
@@ -159,7 +160,7 @@ class WfcVcTask extends FannieTask
             UPDATE CustomerNotifications
             SET message=''
             WHERE source='WfcVcTask'
-                AND message LIKE 'Access%'
+                AND message LIKE '%Access Discount%'
                 AND type='receipt'
                 AND cardNo NOT IN ({$in})");
         $dbc->execute($upP, $mems);
