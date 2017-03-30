@@ -98,6 +98,21 @@ class TableSnapshotTask extends FannieTask
             $this->cronMsg("Failed to back up custdata. Details: " . $ex->getMessage(),
                     FannieLogger::ERROR);
         }
+
+        try {
+            $map = $this->config->get('ARCHIVE_DB') . $sql->sep() . 'ProductAttributeMap';        
+            $attr = $this->config->get('OP_DB') . $sql->sep() . 'ProductAttributes';
+            $query = "
+                INSERT INTO {$map}
+                SELECT " . $sql->dateymd($sql->curdate()) . ",
+                    upc,
+                    MAX(productAttributeID)
+                FROM ProductAttributes
+                GROUP BY upc";
+        } catch (Exception $ex) {
+            $this->cronMsg("Could not drop snapshot attributes. Details: " . $ex->getMessage(),
+                    FannieLogger::NOTICE);
+        }
     }
 }
 

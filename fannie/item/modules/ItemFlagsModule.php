@@ -113,19 +113,37 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
         if (!is_array($flags)) {
             return false;
         }
+
+        $dbc = $this->connection;
+
+        /**
+          Collect known flags and initialize
+          JSON object with all flags false
+        */
+        $res = $this->getFlags($upc);
+        $json = array();
+        $flagMap = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $json[$row['description']] = false;
+            $flagMap[$row['bit_number']] = $row['description'];
+        }
+
         $numflag = 0;   
         foreach ($flags as $f) {
             if ($f != (int)$f) {
                 continue;
             }
             $numflag = $numflag | (1 << ($f-1));
+
+            // set flag in JSON representation
+            $attr = $flagMap[$f];
+            $json[$attr] = true;
         }
-        $dbc = $this->connection;
+
         $model = new ProductsModel($dbc);
         $model->upc($upc);
         $model->numflag($numflag);
         $model->enableLogging(false);
-
         if (FannieConfig::config('STORE_MODE') === 'HQ') {
             $stores = FormLib::get('store_id');
             foreach ($stores as $s) {
@@ -134,6 +152,22 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
             }
         } else {
             $saved = $model->save();
+        }
+
+        /**
+          Only add attributes entry if it changed
+        */
+        $curQ = 'SELECT attributes FROM ProductAttributes WHERE upc=? ORDER BY modified DESC';
+        $curQ = $dbc->addSelectLimit($curQ, 1);
+        $curP = $dbc->prepare($curQ);
+        $current = $dbc->getValue($curP, array($upc));
+        $curJSON = json_decode($current, true);
+        if ($current === false || $curJSON != $json) {
+            $model = new ProductAttributesModel($dbc);
+            $model->upc($upc);
+            $model->modified(date('Y-m-d H:i:s'));
+            $model->attributes(json_encode($json));
+            $model->save();
         }
 
         return $saved ? true : false;
