@@ -47,6 +47,7 @@ class InitProductAttributes extends FannieTask
 
         $itemR = $dbc->query('SELECT upc, MAX(numflag) AS numflag FROM products GROUP BY upc HAVING MAX(numflag) > 0');
         $setP = $dbc->prepare("INSERT INTO ProductAttributes (upc, modified, attributes) VALUES (?, ?, ?)");
+        $dbc->startTransaction();
         while ($itemW = $dbc->fetchRow($itemR)) {
             $upc = $itemW['upc'];
             $numflag = $itemW['numflag'];
@@ -54,11 +55,12 @@ class InitProductAttributes extends FannieTask
             foreach ($flags as $flag) {
                 $attr = $flag->description();
                 $bit = $flag->bit_number();
-                $set = $numflag & (1 << ($f-1));
+                $set = $numflag & (1 << ($bit-1));
                 $json[$attr] = $set ? true : false;
             }
             $dbc->execute($setP, array($upc, date('Y-m-d H:i:s'), json_encode($json)));
         }
+        $dbc->commitTransaction();
     }
 }
 
