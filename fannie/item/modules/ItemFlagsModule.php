@@ -92,6 +92,10 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
                 $i,
                 $row['description']
             );
+            // embed flag info to avoid re-querying it on save
+            $ret .= sprintf('<input type="hidden" name="pf_attrs[]" value="%s" />
+                            <input type="hidden" name="pf_bits[]" value="%d" />',
+                            $row['description'], $row['bit_number']);
             $i++;
         }
         $ret .= '</tr></table>';
@@ -120,12 +124,13 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
           Collect known flags and initialize
           JSON object with all flags false
         */
-        $res = $this->getFlags($upc);
         $json = array();
         $flagMap = array();
-        while ($row = $dbc->fetchRow($res)) {
-            $json[$row['description']] = false;
-            $flagMap[$row['bit_number']] = $row['description'];
+        $attrs = FormLib::get('pf_attrs', array());
+        $bits = FormLib::get('pf_bits', array());
+        for ($i=0; $i<count($attrs); $i++) {
+            $json[$attrs[$i]] = false;
+            $flagMap[$bits[$i]] = $attrs[$i];
         }
 
         $numflag = 0;   
