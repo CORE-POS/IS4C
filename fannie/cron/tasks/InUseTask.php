@@ -94,7 +94,7 @@ class InUseTask extends FannieTask
         }
 
         $reportInUse = $dbc->prepare("                                            
-            SELECT upc, last_sold, store_id                                       
+            SELECT upc, brand, description, last_sold, store_id                                       
                 FROM products AS p                                                
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department      
                 INNER JOIN inUseTask AS i ON s.superID = i.superID                
@@ -102,7 +102,7 @@ class InUseTask extends FannieTask
             AND p.inUse = 0;                                                      
         ");                                                                                                                                                 
         $reportUnUse = $dbc->prepare("                                            
-            SELECT upc, last_sold, store_id                                       
+            SELECT upc, brand, description, last_sold, store_id                                       
                 FROM products AS p                                                
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department      
                 INNER JOIN inUseTask AS i ON s.superID = i.superID                
@@ -152,11 +152,12 @@ class InUseTask extends FannieTask
         $dbc->execute($updateUse,2);
         
         $data = '';
-        $inUseData = '<table><thead><th>UPC</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
-        $unUseData = '<table><thead><th>UPC</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
+        $inUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
+        $unUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
         $updateUpcs = array();
         while ($row = $dbc->fetch_row($resultA)) {
-            $inUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
+            $inUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['brand'] . '</td><td>' . $row['description'] . '</td><td>' 
+                . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
             $updateUpcs[] = $row['upc'];
         }
         $inUseData .= '</tbody></table>';
@@ -164,11 +165,13 @@ class InUseTask extends FannieTask
         while ($row = $dbc->fetch_row($resultB)) {
             if ($row['store_id'] == 1) {
                 if (!in_array($row['upc'],$exempts1)) {
-                    $unUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
+                    $unUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['brand'] . '</td><td>' . $row['description'] 
+                        . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
                     $updateUpcs[] = $row['upc'];
                 }
             } elseif ($row['store_id'] == 2) {
-                if (!in_array($row['upc'],$exempts2)) $unUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
+                if (!in_array($row['upc'],$exempts2)) $unUseData .= '<td>' . $row['upc'] . $row['brand'] . '</td><td>' 
+                    . $row['description'] . '</td><td>' . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
             }            
         }
         $unUseData .= '</tbody></table>';
