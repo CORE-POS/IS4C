@@ -717,7 +717,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
                       FROM $dlog AS t
                       WHERE tdate BETWEEN ? AND ?
                         AND t.upc IN ($upc_in)
-                      GROUP BY t.upc";
+                        AND t.charflag <> 'SO'
+                      GROUP BY t.upc
+                      HAVING SUM(total) <> 0";
             $prep = $this->connection->prepare($query);
             $result = $this->connection->execute($prep, $args);
             $valid = array();
