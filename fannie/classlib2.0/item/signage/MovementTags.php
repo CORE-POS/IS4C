@@ -62,6 +62,7 @@ class MovementTags extends \COREPOS\Fannie\API\item\FannieSignage
         $num = 0; // count tags 
         $x = $this->left;
         $y = $this->top;
+        $dbc->startTransaction();
         foreach ($data as $item) {
 
             // extract & format data
@@ -132,6 +133,7 @@ class MovementTags extends \COREPOS\Fannie\API\item\FannieSignage
 
             $num++;
         }
+        $dbc->commitTransaction();
 
         $pdf->Output('Tags4x8P.pdf', 'I');
     }
