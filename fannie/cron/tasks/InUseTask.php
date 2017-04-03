@@ -193,6 +193,7 @@ class InUseTask extends FannieTask
                         $unUseData = '<td>' . $row[$column] . '</td>';
                     }             
                     $unUseData .= '</tr>';   
+                    $updateUpcs[] = $row['upc'];
                 }
             }            
         }
