@@ -127,12 +127,6 @@ HTML;
             range, subdivided by cashier.
             </p>';
     }
-
-    public function unitTest($phpunit)
-    {
-        $data = array('emp_no'=>1, 1=>100, 2=>5, 3=>2000, 4=>1, 5=>1);
-        $phpunit->assertInternalType('array', $this->rowToRecord($data));
-    }
 }
 
 FannieDispatch::conditionalExec();
