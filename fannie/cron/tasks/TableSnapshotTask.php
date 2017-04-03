@@ -103,14 +103,16 @@ class TableSnapshotTask extends FannieTask
             $map = $this->config->get('ARCHIVE_DB') . $sql->sep() . 'ProductAttributeMap';        
             $attr = $this->config->get('OP_DB') . $sql->sep() . 'ProductAttributes';
             $query = "
-                INSERT INTO {$map}
+                INSERT INTO {$map} (dateID, upc, productAttributeID)
                 SELECT " . $sql->dateymd($sql->curdate()) . ",
                     upc,
                     MAX(productAttributeID)
-                FROM ProductAttributes
-                GROUP BY upc";
+                FROM {$attr}
+                GROUP BY upc
+                ORDER BY upc";
+            $sql->query($query);
         } catch (Exception $ex) {
-            $this->cronMsg("Could not drop snapshot attributes. Details: " . $ex->getMessage(),
+            $this->cronMsg("Could not get snapshot attributes. Details: " . $ex->getMessage(),
                     FannieLogger::NOTICE);
         }
     }
