@@ -152,12 +152,20 @@ class InUseTask extends FannieTask
         $dbc->execute($updateUse,2);
         
         $data = '';
-        $inUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
-        $unUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody><tr>';
+        $inUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody>';
+        $unUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody>';
         $updateUpcs = array();
+
+        $fields = array('upc','brand','description','last_sold','store_id');
         while ($row = $dbc->fetch_row($resultA)) {
-            $inUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['brand'] . '</td><td>' . $row['description'] . '</td><td>' 
-                . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
+            $inUseData .= '<tr>';
+            foreach ($fields as $column) {
+                if ($column == '' || empty($column)) {
+                    $column = '<i>data missing</i>';
+                }
+                $inUseData .= '<td>' . $row[$column] . '</td>';
+            }
+            $inUseData .= '</tr>';
             $updateUpcs[] = $row['upc'];
         }
         $inUseData .= '</tbody></table>';
@@ -165,13 +173,27 @@ class InUseTask extends FannieTask
         while ($row = $dbc->fetch_row($resultB)) {
             if ($row['store_id'] == 1) {
                 if (!in_array($row['upc'],$exempts1)) {
-                    $unUseData .= '<td>' . $row['upc'] . '</td><td>' . $row['brand'] . '</td><td>' . $row['description'] 
-                        . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
+                    $unUseData .= '<tr>';
+                    foreach ($fields as $column) {
+                        if ($column == '' || empty($column)) {
+                            $column = '<i>no data</i>';
+                        }
+                        $unUseData = '<td>' . $row[$column] . '</td>';
+                    }
+                    $unUseData .= '</tr>';
                     $updateUpcs[] = $row['upc'];
                 }
             } elseif ($row['store_id'] == 2) {
-                if (!in_array($row['upc'],$exempts2)) $unUseData .= '<td>' . $row['upc'] . $row['brand'] . '</td><td>' 
-                    . $row['description'] . '</td><td>' . '</td><td>' . $row['last_sold'] . '</td><td>' . $row['store_id'] . '</td></tr>';
+                if (!in_array($row['upc'],$exempts2)) {
+                    $unUseData .= '<tr>';
+                    foreach ($fields as $column) {
+                        if ($column == '' || empty($column)) {
+                            $column = '<i>no data</i>';
+                        }
+                        $unUseData = '<td>' . $row[$column] . '</td>';
+                    }             
+                    $unUseData .= '</tr>';   
+                }
             }            
         }
         $unUseData .= '</tbody></table>';
