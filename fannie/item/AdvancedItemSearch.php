@@ -127,9 +127,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($form->upcs !== '') {
             $upcs = explode("\n", $form->upcs);
             $upcs = array_map(function($i) {
+                $i = str_replace(' ', '-', $i);
                 if (preg_match('/\d-\d+-\d+-\d/', $i)) {
                     $ret = trim(str_replace('-', '', $i));
                     return substr($ret, 0, strlen($ret)-1);
+                } else {
+                    $i = str_replace('-', '', $i);
                 }
                 return $i;
             }, $upcs);
