@@ -30,6 +30,7 @@ class ItemBatchesReport extends FannieReportPage
 {
     public $description = '[Item Batch History] shows all the sale batches an item has been in.';
     public $themed = true;
+    public $report_set = 'Batches';
 
     protected $title = "Fannie : Item Batch History";
     protected $header = "Item Batch History";

@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class TrackChange extends FannieReportPage 
 {
     public $description = '[Track Product Change] Tracks Changes Made to Products';
-    public $report_set = 'Reports';
+    public $report_set = 'Operational Data';
     public $themed = true;
 
     protected $report_headers = array('Description', 'Price', 'Sale Price', 'Cost', 'Dept', 'Tax', 'FS', 'Scale', 'Modified', 'Modified By');

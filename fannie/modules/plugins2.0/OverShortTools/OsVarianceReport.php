@@ -34,6 +34,7 @@ class OsVarianceReport extends FannieReportPage
     protected $auth_classes = array('overshorts');
     public $page_set = 'Plugin :: Over/Shorts';
     public $description = '[Variance Report] shows over/short variance info over time';
+    public $report_set = 'Finance';
     protected $report_headers = array('Date', 'Lane', 'POS Total', 'Count Total', 'Variance', 'Emp#', 'Name', 'Share');
     protected $report_cache = 'day';
     protected $required_fields = array('date1', 'date2');

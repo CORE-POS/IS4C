@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class MemberAccess extends FannieReportPage 
 {
     public $description = '[Member Access Discount Report] Shows owners who have used EBT, WIC, and/or ACCESS';
-    public $report_set = 'Reports';
+    public $report_set = 'Membership';
     public $themed = true;
 
     protected $report_headers = array('Owner #', 'Tender Used', 'Has Access');

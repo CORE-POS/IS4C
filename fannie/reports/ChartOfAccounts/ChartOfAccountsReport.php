@@ -30,7 +30,7 @@ class ChartOfAccountsReport extends FannieReportPage
 {
     public $description = '[Chart of Accounts report] lists tenders, sales, discounts, and taxes for a given 
                     range of dates with their chart of account numbers.';
-    public $report_set = 'Sales Reports';
+    public $report_set = 'Finance';
     public $themed = true;
 
     protected $title = "Fannie : Chart of Accounts Report";

@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class VariableItems extends FannieReportPage 
 {
     public $description = '[Variably Priced Items Report] lists all active variably priced items';
-    public $report_set = 'Reports';
+    public $report_set = 'Price Reports';
     public $themed = true;
 
     protected $report_headers = array('Upc', 'Brand', 'Description', 'Dept. No.', 'Dept. Name', 'Cost', 'Price', 'Desired Marg.', 'Actual Marg.', 'Marg. +/-');

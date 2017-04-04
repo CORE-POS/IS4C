@@ -30,6 +30,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 {
     protected $sortable = false;
     protected $no_sort_but_style = true;
+    public $discoverable = false;
 
     protected $report_headers = array(
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),

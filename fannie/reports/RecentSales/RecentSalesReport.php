@@ -36,6 +36,7 @@ if (!class_exists('FannieAPI')) {
 class RecentSalesReport extends FannieReportPage
 {
     public $description = '[Recent Sales] lists sales for an item in recent days/weeks/months.';
+    public $report_set = 'Movement Reports';
 
     protected $header = 'Recent Sales';
     protected $title = 'Fannie : Recent Sales';

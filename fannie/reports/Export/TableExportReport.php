@@ -33,6 +33,7 @@ class TableExportReport extends FannieReportPage
     protected $required_fields = array('id');
     public $description = '[View/Export Table] shows the entire contents of a given database table. 
         For very large tables, it instead shows the first ten thousand records.';
+    public $report_set = 'System';
 
     private $hard_limit = 10000;
 

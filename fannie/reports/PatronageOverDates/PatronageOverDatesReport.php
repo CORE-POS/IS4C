@@ -34,7 +34,7 @@ if (!class_exists('FannieAPI')) {
 class PatronageOverDatesReport extends FannieReportPage
 {
     public $description = '[Patronage Over Date Range] lists top, or all, customers by purchases/avg basket over a range of dates';
-    public $report_set = 'Membership';
+    public $report_set = 'Membership :: Patronage';
     public $themed = true;
 
     protected $report_headers = array();

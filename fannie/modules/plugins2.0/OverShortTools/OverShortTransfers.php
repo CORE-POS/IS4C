@@ -11,6 +11,7 @@ class OverShortTransfers extends FannieReportPage
     protected $header = 'Transfers Report';
     protected $report_headers = array('Code', 'Total');
     public $description = '[Transfers Report] exports data about cross-store transfers.';
+    public $report_set = 'Finance';
     protected $required_fields = array('date1', 'date2');
 
     function fetch_report_data()

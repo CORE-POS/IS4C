@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class SaleItemsByDate extends FannieReportPage 
 {
     public $description = '[Sale Items/Batch Start Date] lists all sales items with a given start date';
-    public $report_set = 'Reports';
+    public $report_set = 'Batches';
     public $themed = true;
 
     protected $report_headers = array('Brand', 'Description', 'Size', 'Sale Price', 'UPC');

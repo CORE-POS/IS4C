@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class DDDReport extends FannieReportPage 
 {
     public $description = '[Shrink Reports] lists items marked as DDD/shrink at the registers.';
+    public $report_set = 'Shrink';
     public $themed = true;
 
     protected $title = "Fannie : DDD Report";

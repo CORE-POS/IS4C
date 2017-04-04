@@ -11,6 +11,7 @@ class CashierTransactionsReport extends FannieReportPage
     protected $title = 'Cashier Transactions Report';
     protected $header = 'Cashier Transactions Report';
     public $description = '[Cashier Transactions Report] lists the number of transactions by each cashier in a given time period';
+    public $report_set = 'Cashiering';
     protected $report_headers = array('Emp#', 'Name', 'Transaction Count');
 
     function fetch_report_data()

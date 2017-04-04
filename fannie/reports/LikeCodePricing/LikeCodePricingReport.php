@@ -34,6 +34,7 @@ class LikeCodePricingReport extends FannieReportPage
     protected $required_fields = array();
 
     public $description = '[Like Code Pricing] lists current pricing for likecodes';
+    public $report_set = 'Price Reports';
     protected $report_headers = array('LC#', 'Price', 'Like Code');
     protected $new_tablesorter = true;
 

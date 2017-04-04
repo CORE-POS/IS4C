@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class SaleEffectReport extends FannieReportPage 
 {
     public $description = '[Sale Effect] shows movement discrepancies when an item is on sale vs. not on sale.';
+    public $report_set = 'Batches';
 
     protected $title = "Fannie : Sale Effect Report";
     protected $header = "Sale Effect Report";

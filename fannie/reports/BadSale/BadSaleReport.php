@@ -30,6 +30,7 @@ class BadSaleReport extends FannieReportPage
 {
     public $description = '[Bad Sale] lists items in current or future sale batches that
     are on sale for more than their normal retail price.';
+    public $report_set = 'Batches';
 
     protected $report_headers = array('Batch', 'Item', 'Current', 'Retail', 'Sale');
     protected $title = "Fannie : Bad Sale Report";

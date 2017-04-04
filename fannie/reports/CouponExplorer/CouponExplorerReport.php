@@ -35,6 +35,7 @@ class CouponExplorerReport extends FannieReportPage
     protected $required_fields = array('date1', 'date2', 'upc');
 
     public $description = '[Coupon Explorer] shows which items a coupon was used for';
+    public $report_set = 'Tenders';
 
     protected $new_tablesorter = true;
 

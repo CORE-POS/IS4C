@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class PatronageByOwner extends FannieReportPage 
 {
     public $description = '[Patronage] lists top patrons by purchases/avg basket';
-    public $report_set = 'Reports';
+    public $report_set = 'Membership :: Patronage';
     public $themed = true;
 
     protected $report_headers = array('Owner', 'Total Purchased', 'Avg Bskt', 'Transactions');

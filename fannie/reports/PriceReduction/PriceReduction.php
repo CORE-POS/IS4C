@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class PriceReduction extends FannieReportPage 
 {
     public $description = '[Price Reduction Report] lists items above desired margin';
-    public $report_set = 'Reports';
+    public $report_set = 'Price Reports';
     public $themed = true;
 
     protected $report_headers = array('UPC', 'Description', 'Movement (Daily)', 'Cost', 'Price', 'Margin Goal', 'actMarg', '+/- Marg', 'SRP', 'RoundSRP', '+/-:Price');

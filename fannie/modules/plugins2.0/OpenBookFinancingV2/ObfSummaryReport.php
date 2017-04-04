@@ -32,6 +32,7 @@ class ObfSummaryReport extends ObfWeeklyReport
     protected $no_sort_but_style = true;
     protected $header = 'OBF Summary';
     protected $title = 'OBF Summary';
+    public $discoverable = false;
 
     protected $report_headers = array(
         array('', 'Last Year', 'Plan Goal', 'Trend', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),

@@ -31,6 +31,7 @@ class RecallReport extends FannieReportPage
     public $description = '[Recall Report] lists names and contact information for everyone who
         purchased a given product during a date range. Hopefully rarely used.';
     public $themed = true;
+    public $report_set = 'Membership';
 
     protected $report_headers = array('Mem#', 'Name', 'Address', 'City', 'State', 'Zip', 'Phone', 'Alt. Phone', 'Email', 'Qty', 'Amt');
     protected $title = "Fannie : Recall Report";
