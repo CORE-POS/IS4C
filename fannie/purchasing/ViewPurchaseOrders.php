@@ -166,8 +166,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             return $this->unknownRequestHandler();
         }
 
-        $userP = $dbc->prepare("SELECT email FROM Users WHERE name=?");
-        $userEmail = $dbc->getValue($userP, array($this->current_user));
+        $userP = $dbc->prepare("SELECT email, real_name FROM Users WHERE name=?");
+        $userInfo = $dbc->getRow($userP, array($this->current_user));
+        $userEmail = $userInfo['email'];
+        $userRealName = $userInfo['real_name'];
 
         $mail = new PHPMailer();
         $mail->isSMTP();
@@ -183,6 +185,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             $mail->addCC($userEmail);
             $mail->addReplyTo($userEmail);
             $mail->From = $userEmail;
+            if (!empty($userRealName)) {
+                $mail->FromName = $userRealName;
+            }
         }
         $mail->Subject = 'Purchase Order ' . date('Y-m-d');
         $mail->Body = 'The same order information is also attached. Reply to this email to reach the person who sent it.';
