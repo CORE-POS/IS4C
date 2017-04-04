@@ -93,6 +93,9 @@ class ObfSummaryReport extends ObfWeeklyReport
 
     public function preprocess()
     {
+        $this->addScript('../../../src/javascript/Chart.min.js');
+        $this->addScript('summary.js');
+
         return FannieReportPage::preprocess();
     }
 
@@ -633,7 +636,61 @@ class ObfSummaryReport extends ObfWeeklyReport
         unset($owners[9]);
         $data[] = $owners;
 
+        $json = $this->chartData($dbc, $this->form->weekID);
+        $this->addOnloadCommand("obfSummary.drawChart('" . json_encode($json) . "')");
+
         return $data;
+    }
+
+    private function chartData($dbc, $weekID)
+    {
+        $begin = $weekID - 12;
+        $json = array(
+            'labels' => array(),
+            'all' => array(),
+            'hillside' => array(),
+            'denfeld' => array(),
+            'hdeli' => array(),
+            'ddeli' => array(),
+            'hmerch' => array(),
+            'dmerch' => array(),
+            'hproduce' => array(),
+            'dproduce' => array(),
+        );
+
+        $infoP = $dbc->prepare("
+            SELECT o.obfCategoryID,
+                SUM(o.actualSales) AS sales,
+                MAX(w.endDate) AS endDate
+            FROM ObfSalesCache AS o
+                LEFT JOIN ObfWeeks AS w ON o.obfWeekID=w.obfWeekID
+            WHERE o.obfWeekID BETWEEN ? AND ?
+            GROUP BY o.obfCategoryID,
+                o.obfWeekID        
+            ORDER BY o.obfWeekID");
+        $infoR = $dbc->execute($infoP, array($begin, $weekID));
+        while ($infoW = $dbc->fetchRow($infoR)) {
+            if (!in_array($infoW['endDate'], $json['labels'])) {
+                $json['labels'][] = $infoW['endDate'];
+            }
+            switch ($infoW['obfCategoryID']) {
+                case 1: $json['hproduce'][] = $infoW['sales']; break;
+                case 2: $json['hdeli'][] = $infoW['sales']; break;
+                case 3: $json['hmerch'][] = $infoW['sales']; break;
+                case 7: $json['dproduce'][] = $infoW['sales']; break;
+                case 8: $json['ddeli'][] = $infoW['sales']; break;
+                case 9: $json['dmerch'][] = $infoW['sales']; break;
+            }
+        }
+        for ($i=0; $i<count($json['hdeli']);$i++) {
+            $hillside = $json['hdeli'][$i] + $json['hmerch'][$i] + $json['hproduce'][$i];
+            $denfeld = $json['ddeli'][$i] + $json['dmerch'][$i] + $json['dproduce'][$i];
+            $json['hillside'][] = $hillside;
+            $json['denfeld'][] = $denfeld;
+            $json['all'][] = $hillside + $denfeld;
+        }
+
+        return $json;
     }
 
     private function discountsThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly)
