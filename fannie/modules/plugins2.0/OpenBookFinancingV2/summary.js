@@ -92,6 +92,7 @@ var obfSummary = (function () {
     mod.drawChart = function(jsonStr) {
         inp = JSON.parse(jsonStr);
 
+        /* behavior on remembering hidden-ness is a little flakey
         var para = document.createElement("div");
         para.align = 'center';
         para.style.marginBottom = '10px';
@@ -100,6 +101,7 @@ var obfSummary = (function () {
         links += '<a href="" onclick="obfSummary.renderChart(false); return false;">Show All</a>';
         para.innerHTML = links;
         document.body.append(para);
+        */
 
         var canvas = document.createElement("canvas");
         canvas.id = "obfCanvas";
