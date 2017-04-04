@@ -10,3 +10,4 @@ Currently installed versions of javascript libraries:
 * ScannerLib-Linea   2.0.0       20Oct2014
 * cordova (linea)    2.2.0       20Oct2014
 * signature_pad      1.5.0       28Sep2015
+* Chart.js           2.5.0       04Apr2017
