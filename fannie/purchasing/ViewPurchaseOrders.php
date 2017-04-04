@@ -108,6 +108,33 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return false;
     }
 
+    private function csvToHtml($csv)
+    {
+        $lines = explode("\r\n", $csv);
+        $ret = "<table border=\"1\">\n";
+        $para = '';
+        foreach ($lines as $line) {
+            $row = str_getcsv($line);
+            if (count($row) == 1) {
+                $para .= $row[0] . '<br />';
+            } elseif (count($row) > 1) {
+                $ret .= "<tr>\n";
+                foreach ($row as $entry) {
+                    if (trim($entry) !== '') {
+                        $ret .= "<td>{$entry}</td>";
+                    }
+                }
+                $ret .= "</tr>\n";
+            }
+        }
+        $ret .= "</table>\n";
+        if (strlen($para) > 0) {
+            $ret .= '<p>' . $para . '</p>';
+        }
+
+        return $ret;
+    }
+
     protected function get_id_sendAs_handler()
     {
         if (!file_exists('exporters/'.$this->sendAs.'.php')) {
@@ -122,6 +149,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $exportObj = new $this->sendAs();
         $exportObj->export_order($this->id);
         $exported = ob_get_clean();
+
+        $html = $this->csvToHtml($exported);
+        $nonHtml = str_replace("\r", "", $exported);
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $place = $dbc->prepare("UPDATE PurchaseOrder SET placed=1, placedDate=? WHERE orderID=?");
@@ -148,16 +178,17 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mail->From = $this->config->get('PO_EMAIL');
         $mail->FromName = $this->config->get('PO_EMAIL_NAME');
         $mail->isHTML = true;
-        $mail->SMTPDebug = true;
         $mail->addAddress($vendor->email());
         if ($userEmail && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
             $mail->addCC($userEmail);
-            $mail->ReplyTo = $userEmail;
+            $mail->addReplyTo($userEmail);
             $mail->From = $userEmail;
         }
         $mail->Subject = 'Purchase Order ' . date('Y-m-d');
-        $mail->Body = 'Please see attached purchase order';
-        $mail->AltBody = 'Please see attached purchase order';
+        $mail->Body = 'The same order information is also attached. Reply to this email to reach the person who sent it.';
+        $mail->AltBody = $mail->Body;
+        $mail->Body = '<p>' . $mail->Body . '</p>' . $html;
+        $mail->AltBody .= $nonHtml;
         $mail->addStringAttachment(
             $exported,
             'Order ' . date('Y-m-d') . '.' . $exportObj->extension,
@@ -165,10 +196,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             $exportObj->mime_type
         );
         $sent = $mail->send();
-        if ($send) {
+        if ($sent) {
             $dbc->execute($place, array(date('Y-m-d H:i:s'), $this->id));
+            $order->placed(1);
+            $order->placedDate(date('Y-m-d H:i:s'));
+            $order->save();
         } else {
-            var_dump($sent);
+            echo "Failed to send email! Do not assume the order was placed.";
             exit;
         }
     
