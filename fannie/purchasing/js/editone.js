@@ -102,7 +102,6 @@ function saveItem(resultNum){
 	var dstr = 'id='+$('#order-id').val();
 	dstr += '&sku='+$('#srSKU'+resultNum).val();
 	dstr += '&qty='+$('#srQty'+resultNum).val();
-    alert(dstr);
     saveQty = $('#srQty'+resultNum).val();
 	$.ajax({
 		url: 'EditOnePurchaseOrder.php?'+dstr,
