@@ -178,7 +178,7 @@ class InUseTask extends FannieTask
                         if ($column == '' || empty($column)) {
                             $column = '<i>no data</i>';
                         }
-                        $unUseData = '<td>' . $row[$column] . '</td>';
+                        $unUseData .= '<td>' . $row[$column] . '</td>';
                     }
                     $unUseData .= '</tr>';
                     $updateUpcs[] = $row['upc'];
@@ -190,7 +190,7 @@ class InUseTask extends FannieTask
                         if ($column == '' || empty($column)) {
                             $column = '<i>no data</i>';
                         }
-                        $unUseData = '<td>' . $row[$column] . '</td>';
+                        $unUseData .= '<td>' . $row[$column] . '</td>';
                     }             
                     $unUseData .= '</tr>';   
                     $updateUpcs[] = $row['upc'];
