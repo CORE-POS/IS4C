@@ -182,6 +182,7 @@ class BatchReport extends FannieReportPage
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
                 AND " . DTrans::isStoreID($store, 'd') . "
+                AND d.charflag <> 'SO'
             GROUP BY d.upc, 
                 p.description
             ORDER BY d.upc";
