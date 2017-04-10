@@ -177,8 +177,8 @@ class BatchReport extends FannieReportPage
                 SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
-            LEFT JOIN FloorSectionsListView as lv on d.upc=lv.upc
-            LEFT JOIN vendorItems AS vi ON (p.upc = vi.upc AND p.default_vendor_id = vi.vendorID)
+                LEFT JOIN FloorSectionsListView as lv on d.upc=lv.upc AND lv.storeID=d.store_id
+                LEFT JOIN vendorItems AS vi ON (p.upc = vi.upc AND p.default_vendor_id = vi.vendorID)
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
                 AND " . DTrans::isStoreID($store, 'd') . "
