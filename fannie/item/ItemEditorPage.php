@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
 }
@@ -301,7 +303,7 @@ HTML;
         $upc = trim(FormLib::get_form_value('searchupc'));
         $numType = FormLib::get_form_value('ntype','UPC');
         $inUseFlag = FormLib::get('inUse', false);
-        $store_id = $this->config->get('STORE_ID');
+        $store_id = Store::getIdByIp();
 
         $query = "";
         $args = array();
