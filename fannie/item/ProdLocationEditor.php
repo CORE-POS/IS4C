@@ -134,9 +134,11 @@ class ProdLocationEditor extends FannieRESTfulPage
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $store_id = $_POST['store_id'];
-        $start = $_GET['start'];
-        $end = $_GET['end'];
+        
+        $store_id = FormLib::get('store_id');
+        $start = FormLib::get('start');
+        $end = FormLib::get('end');
+        
         $ret = '';
         $item = array();
         foreach ($_POST as $upc => $section) {
@@ -168,9 +170,9 @@ class ProdLocationEditor extends FannieRESTfulPage
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $store_id = $_POST['store_id'];
-        $start = $_GET['start'];
-        $end = $_GET['end'];
+        $store_id = FormLib::get('store_id');
+        $start = FormLib::get('start');
+        $end = FormLib::get('end');
         $ret = '';
         $item = array();
         foreach ($_POST as $upc => $section) {
@@ -545,7 +547,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         if ($upc = FormLib::get('upc')) {
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
             $store_id = FormLib::get('store_id');
-            $args = array($upc);
+            $args = array($upc,$store_location);
             $prep = $dbc->prepare('
                 SELECT 
                     p.upc,
@@ -554,12 +556,14 @@ class ProdLocationEditor extends FannieRESTfulPage
                     p.department,
                     d.dept_name,
                     p.brand,
-                    f.floorsectionproductmapid
+                    f.floorSectionProductMapID
                 FROM products AS p
                     left join FloorSectionProductMap as f on f.upc=p.upc 
+                    left join FloorSections AS fs ON fs.floorSectionID=f.floorSectionID
                     left join departments as d on d.dept_no=p.department
                 WHERE p.upc = ?
-                GROUP BY floorsectionproductmapid
+                    AND fs.storeID = ?
+                GROUP BY floorSectionProductMapID
             ');
             $result = $dbc->execute($prep, $args);
             $curLocation = array();
@@ -571,7 +575,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $description = $row['description'];
                 if(isset($row['floorSectionID'])) $curLocation[] = $row['floorSectionID'];
                 $sugLocation = self::getLocation($row['department']);
-                $primaryKey[] = $row['floorsectionproductmapid'];
+                $primaryKey[] = $row['floorSectionProductMapID'];
             }
             
             $ret .= '<div class="panel panel-default" style="width: 435px; border: none;">';
