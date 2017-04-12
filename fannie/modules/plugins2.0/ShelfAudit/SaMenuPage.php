@@ -79,10 +79,7 @@ a[type="submit"] {
     href="../../../item/handheld/ItemStatusPage.php" />Price Check</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
-    href="SaOrderingPage.php" />Ordering Info</a>
-<hr />
-<a class="btn btn-default btn-lg" type="submit"
-    href="../../../item/mapping/index.php" />Shelf Location</a>
+    href="../../../purchasing/EditOnePurchaseOrder.php" />Create Order</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="http://192.168.1.2/scancoord/item/SalesChange/SalesChangeIndex.php" />Batch Check</a>
