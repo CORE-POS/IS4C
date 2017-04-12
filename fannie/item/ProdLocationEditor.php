@@ -567,15 +567,27 @@ class ProdLocationEditor extends FannieRESTfulPage
             ');
             $result = $dbc->execute($prep, $args);
             $curLocation = array();
-            while ($row = $dbc->fetch_row($result)) {
-                $floorID = $row['floorSectionID'];
-                $brand = $row['brand'];
-                $department = $row['department'];
-                $dept_name = $row['dept_name'];
-                $description = $row['description'];
-                if(isset($row['floorSectionID'])) $curLocation[] = $row['floorSectionID'];
-                $sugLocation = self::getLocation($row['department']);
-                $primaryKey[] = $row['floorSectionProductMapID'];
+            $numRows = $dbc->numRows($result);
+            if ($numRows < 1) {
+                $model = new ProductsModel($dbc);
+                $model->upc($upc);
+                $model->store_id($store_location);
+                foreach ($model->find() as $data) {
+                    $brand = $data->brand();
+                    $description = $data->description();
+                    $sugLocation = self::getLocation($data->department());
+                }
+            } else {
+                while ($row = $dbc->fetch_row($result)) {
+                    $floorID = $row['floorSectionID'];
+                    $brand = $row['brand'];
+                    $department = $row['department'];
+                    $dept_name = $row['dept_name'];
+                    $description = $row['description'];
+                    if(isset($row['floorSectionID'])) $curLocation[] = $row['floorSectionID'];
+                    $sugLocation = self::getLocation($row['department']);
+                    $primaryKey[] = $row['floorSectionProductMapID'];
+                }
             }
             
             $ret .= '<div class="panel panel-default" style="width: 435px; border: none;">';
