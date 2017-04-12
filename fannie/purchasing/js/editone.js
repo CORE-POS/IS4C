@@ -11,16 +11,17 @@ function itemSearch(){
 		method: 'get',
 		dataType: 'json'
     }).done(function(data){
-        console.log(data);
-        if (data.length == 0){
+        if (data.items.length == 0){
             $('#SearchResults').html('No item found');
             $('#searchField').focus();
+        } else if (data.items.length == 1){
+            $('#SearchResults').html(oneResultForm(data.items[0], 0));
+        } else {
+            $('#SearchResults').html(manyResultForm(data.items));
         }
-        else if (data.length == 1){
-            $('#SearchResults').html(oneResultForm(data[0], 0));
-        }
-        else {
-            $('#SearchResults').html(manyResultForm(data));
+
+        if (data.table) {
+            $('#list-wrapper').html(data.table);
         }
 	});
 }
@@ -110,6 +111,9 @@ function saveItem(resultNum){
     }).done(function(data){
         if (data.error){
             $('#SearchResults').html(data.error);
+        }
+        if (data.table) {
+            $('#list-wrapper').html(data.table);
         }
         $('#searchField').focus();
 	});

@@ -55,6 +55,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
     /**
       AJAX call: ?id=<vendor ID>&search=<search string>
       Find vendor items based on search string
+      Called by: editone.js: itemSearch()
     */
     protected function get_id_search_handler()
     {
@@ -157,32 +158,35 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
                 );
             }
         }
+        $json = array('items' => $ret, 'table' => $this->itemListTab($orderID));
         echo json_encode($ret);
     }
 
     /**
       AJAX call: ?id=<order ID>&sku=<vendor SKU>&qty=<# of cases>
       Add the given SKU & qty to the order
+
+      Called by: editone.js: saveItem()
     */
     protected function get_id_sku_qty_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $orderID = $this->id;
-        $order = new PurchaseOrderModel($dbc);
-        $order->orderID($orderID);
-        $order->load();
+        $vendorP = $dbc->prepare('SELECT vendorID FROM PurchaseOrder WHERE orderID=?');
+        $vendorID = $dbc->getValue($vendorP, array($orderID));
 
         $vitem = new VendorItemsModel($dbc);
-        $vitem->vendorID($order->vendorID());
+        $vitem->vendorID($vendorID);
         $vitem->sku($this->sku);
         $vitem->load();
 
         $pitem = new PurchaseOrderItemsModel($dbc);
         $pitem->orderID($orderID);
         $pitem->sku($this->sku);
+        $saved = false;
         if ($this->qty == 0) {
-            $pitem->delete();
+            $saved = $pitem->delete();
         } else {
             $pitem->quantity($this->qty);
             $pitem->unitCost($vitem->cost());
@@ -192,29 +196,23 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             $pitem->description($vitem->description());
             $pitem->internalUPC($vitem->upc());
     
-            $pitem->save();
+            $saved = $pitem->save();
         }
 
         $ret = array();
-        $pitem->reset();
-        $pitem->orderID($orderID);
-        $pitem->sku($this->sku);
-        if (count($pitem->find()) == 0 && $this->qty != 0) {
+        if ($saved === false) {
             $ret['error'] = 'Error saving entry';
         } else {
-            $q = 'SELECT count(*) as rows,
-                SUM(unitCost*caseSize*quantity) as estimatedCost
-                FROM PurchaseOrderItems WHERE orderID=?';
-            $p = $dbc->prepare($q);
-            $r = $dbc->execute($p, array($orderID));
-            $w = $dbc->fetch_row($r);
-            $ret['count'] = $w['rows'];
-            $ret['cost'] = sprintf('%.2f',$w['estimatedCost']);
+            $ret['table'] = $this->itemListTab($orderID);
         }
         echo json_encode($ret);
-        return False;
+
+        return false;
     }
 
+    /**
+      Called by: editone.js: markInCurrentOrder()
+    */
     protected function get_id_sku_index_handler()
     {
         global $FANNIE_OP_DB;
@@ -236,6 +234,9 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         return false;
     }
 
+    /**
+      Called by: editone.js: updateList()
+    */
     protected function post_id_sku_case_qty_handler()
     {
         $poi = new PurchaseOrderItemsModel($this->connection);
@@ -248,11 +249,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             if (isset($this->qty[$i])) {
                 $poi->quantity($this->qty[$i]);
             }
-            if ($poi->quantity() == 0) {
-                $poi->delete();
-            } else {
-                $poi->save();
-            }
+            $saved = $poi->quantity() == 0 ? $poi->delete() : $poi->save();
         }
 
         $ret = array();
@@ -270,7 +267,6 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $vendorID = $this->id;
         $userID = FannieAuth::getUID($this->current_user);
         $orderID = $this->id;
         $order = new PurchaseOrderModel($dbc);
@@ -288,60 +284,67 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             ON p.orderID=i.orderID
             WHERE p.orderID=?';
         $p = $dbc->prepare($q);
-        $r = $dbc->execute($p, array($orderID)); 
-        $w = $dbc->fetch_row($r);
+        $row = $dbc->getRow($p, array($orderID)); 
+        $cost = sprintf('%.2f', $row['estimatedCost']);
 
-        $ret = '<div id="orderInfo">
-            <span id="orderInfoVendor">'.$w['vendorName'].'</span>';
-        $ret .= ' '.$w['date'];
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= ' # of Items: <span id="orderInfoCount">'.$w['rows'].'</span>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= ' Est. cost: $<span id="orderInfoCost">'.sprintf('%.2f',$w['estimatedCost']).'</span>';
-        $ret .= '</div><hr />';
+        $search = $this->itemSearchTab($orderID);
+        $list = $this->itemListTab($orderID);
 
-        $ret .= '<ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active">
-                <a href="#item-wrapper" aria-controls="item-wrapper" role="tab" data-toggle="tab">
-                    Item Search
-                </a>
-            </li> 
-            <li role="presentation">
-                <a href="#list-wrapper" aria-controls="list-wrapper" role="tab" data-toggle="tab">
-                    Item List
-                </a>
-            </li> 
-            <li>
-                <a href="PurchasingIndexPage.php">Home</a>
-            </li>
-            <li>
-                <a href="ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a>
-            </li>
-        </ul>
-        <p>
-        <div class="tab-content">';
+        $ret = <<<HTML
+<div id="orderInfo">
+    <span id="orderInfoVendor">{$row['vendorName']}</span>
+    {$w['date']}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    # of Items: <span id="orderInfoCount">{$row['rows']}</span>
+    &nbsp;&nbsp;&nbsp;&nbsp;';
+    Est. cost: $<span id="orderInfoCost">{$cost}</span>
+</div>
+<hr />
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active">
+        <a href="#item-wrapper" aria-controls="item-wrapper" role="tab" data-toggle="tab">
+            Item Search
+        </a>
+    </li> 
+    <li role="presentation">
+        <a href="#list-wrapper" aria-controls="list-wrapper" role="tab" data-toggle="tab">
+            Item List
+        </a>
+    </li> 
+    <li>
+        <a href="PurchasingIndexPage.php">Home</a>
+    </li>
+    <li>
+        <a href="ViewPurchaseOrders.php?id={$orderID}">View Order</a>
+    </li>
+</ul>
+<p>
+    <div class="tab-content">
+        <div id="item-wrapper" role="tabpanel" class="tab-pane active">
+            {$search}
+        </div>
+        <div id="list-wrapper" role="tabpanel" class="tab-pane">
+            {$list}
+        </div>
+    </div>
+</p>
+<input type="hidden" id="vendor-id" value="{$vendorID}" />
+<input type="hidden" id="order-id" value="{$orderID}" />
+HTML;
 
-        $ret .= '<div id="item-wrapper" role="tabpanel" class="tab-pane active">';
-        $ret .= $this->itemSearchTab($orderID);
-        $ret .= '</div>';
-        $ret .= '<div id="list-wrapper" role="tabpanel" class="tab-pane">';
-        $ret .= $this->itemListTab($orderID);
-        $ret .= '</div>';
-        $ret .= '</div></p>';
-
-        $ret .= sprintf('<input type="hidden" id="vendor-id" value="%d" />',$vendorID);
-        $ret .= sprintf('<input type="hidden" id="order-id" value="%d" />',$orderID);
-
-        $this->add_onload_command("\$('#searchField').focus();\n");
+        $this->addOnloadCommand("\$('#searchField').focus();\n");
         $this->addOnloadCommand("enableLinea('#searchField', function(){ itemSearch(); });\n");
-        $this->add_script('js/editone.js?id=1');
+        $this->addScript('js/editone.js?id=1');
 
         return $ret;
     }
 
+    /**
+      Search for & display single item
+    */
     private function itemSearchTab($orderID)
     {
-        return '
+        return <<<HTML
             <div id="ItemSearch">
                 <form class="form-inline" action="" onsubmit="itemSearch();return false;">
                     <div class="form-group">
@@ -356,9 +359,14 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             </div>
             <p>
                 <div id="SearchResults"></div>
-            </p>';
+            </p>
+HTML;
     }
 
+    /**
+      Display all items in the order
+      as an editable table
+    */
     private function itemListTab($orderID)
     {
         $poi = new PurchaseOrderItemsModel($this->connection);
