@@ -572,11 +572,10 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $model = new ProductsModel($dbc);
                 $model->upc($upc);
                 $model->store_id($store_location);
-                foreach ($model->find() as $data) {
-                    $brand = $data->brand();
-                    $description = $data->description();
-                    $sugLocation = self::getLocation($data->department());
-                }
+                $model->load();
+                $brand = $model->brand();
+                $description = $model->description();
+                $sugLocation = self::getLocation($model->department());
             } else {
                 while ($row = $dbc->fetch_row($result)) {
                     $floorID = $row['floorSectionID'];
