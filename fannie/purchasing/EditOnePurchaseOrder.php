@@ -159,7 +159,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             }
         }
         $json = array('items' => $ret, 'table' => $this->itemListTab($orderID));
-        echo json_encode($ret);
+        echo json_encode($json);
     }
 
     /**
@@ -296,7 +296,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
     {$w['date']}
     &nbsp;&nbsp;&nbsp;&nbsp;
     # of Items: <span id="orderInfoCount">{$row['rows']}</span>
-    &nbsp;&nbsp;&nbsp;&nbsp;';
+    &nbsp;&nbsp;&nbsp;&nbsp;
     Est. cost: $<span id="orderInfoCost">{$cost}</span>
 </div>
 <hr />
