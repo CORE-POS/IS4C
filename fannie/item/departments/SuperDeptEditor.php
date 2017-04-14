@@ -231,7 +231,7 @@ class SuperDeptEditor extends FanniePage {
             <label class="control-label">Name</label>
             <input type="text" id="newname" class="form-control" value="<?php echo $firstName; ?>" />
             </div>
-            <div class="form-group <?php echo ($firstEmail === '') ? 'hidden' : 'shown' ?>">
+            <div class="form-group">
             <label class="control-label">Email Address(es)</label>
             <input class="form-control" type="text" id="sd_email" value="<?php echo $firstEmail; ?>" />
             </div>
