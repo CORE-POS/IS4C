@@ -351,6 +351,12 @@ HTML;
         $phpunit->assertEquals(1, $this->numericVal('1'));
         $phpunit->assertEquals(1, $this->numericVal('1 g'));
     }
+
+    public function helpContent()
+    {
+        return '<p>Enter as many values as necessary to generate an image of a
+nutrition facts box. Consider this fairly alpha</p>'; 
+    }
 }
 
 FannieDispatch::conditionalExec();

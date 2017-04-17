@@ -271,7 +271,13 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         ';
 
     }
-    
+
+    public function helpContent()
+    {
+        return '<p>Check whether a given item is present in a Co+op Deals cycle. First, enter
+a month. Then enter a UPC to search for that item in the chosen month\'s sale cycle. If the
+item is present, you can add it to an existing batch.</p>';
+    }
 }
     
 FannieDispatch::conditionalExec();

@@ -260,6 +260,18 @@ HTML;
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Scan transfer creates a pair of purchase orders. One represents the product that\'s leaving
+a store (or department) and the other represents the product that\'s arriving at a store (or department). The two
+purchase orders will net to zero.</p>
+<p>First scan or enter one or more UPCs. Values will be automatically populated wherever possible but can be
+overriden as needed. When all the items to be transferred have been entered, use the <em>Finalize</em> section
+to create the purchase orders. Specify which store is sending the items as <em>From</em> and which store is
+receiving the items as <em>To</em>. Both purchase orders will be marked as placed but neither will be marked
+as received.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

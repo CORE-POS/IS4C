@@ -178,6 +178,24 @@ class BatchSignStylesPage extends FannieRESTfulPage
         $this->id = 1;
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
     }
+
+    public function helpContent()
+    {
+        return '<p>There are a variety of ways to format prices when generating
+sale signage via Office. A sales batch can optionally specify how prices should
+be formatted.</p>
+        <p>In the default case, <em>Normal</em>, the system tries to guess whether
+or not the price should be displayed with a multiplier (e.g., 3/$1) based on what
+potential multipliers match the price. If no matches are found the price itself
+is displayed.</p>
+        <p>The <em>2/X</em> through <em>10/X</em> are used to set a specific multiplier.
+If for example an item is on sale for $1, it could be advertised as 3/$3 or 5/$5.</p>
+        <p>The <em>$X off</em> option will display the amount saved, in dollars, rather
+than the sale prices. The <em>%X off</em> option does the same as a percentage.</p>
+        <p><em>BOGO</em> will actually write "Buy one get one" on the sign. The
+<em>Exact</em> option disables the default multiplier guessing. An item set to exact
+will always display the exact sale price.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -239,6 +239,12 @@ class TransferPurchaseOrder extends FannieRESTfulPage
         
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>Create a pair of purchase orders representing a transfer. Specify which store is sending the items,
+which is receiving them, and a vendor then fill in as many rows as necessary to represent all the items.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

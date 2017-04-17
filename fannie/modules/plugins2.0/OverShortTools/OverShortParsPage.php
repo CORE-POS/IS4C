@@ -14,6 +14,7 @@ class OverShortParsPage extends FannieRESTfulPage
 {
     protected $header = 'Safe Pars';
     protected $title = 'Safe Pars';
+    public $discoverable = false;
 
     protected function post_handler()
     {

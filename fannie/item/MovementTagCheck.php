@@ -9,6 +9,7 @@ class MovementTagCheck extends FannieRESTfulPage
 {
     protected $header = 'Movement Tag Checks';
     protected $title = 'Movement Tag Checks';
+    public $description = '[Movement Tag Checks] lists information about when movement tags were printed and how movement has changed.';
 
     protected function get_id_view()
     {
@@ -86,6 +87,13 @@ class MovementTagCheck extends FannieRESTfulPage
     </div>
 </form>
 HTML;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Movement Tags are a special kind of shelftag layout that includes average
+item movement. Since movement inevitably changes over time, this tool provides a list
+of items that have changed more than a chosen threshold.</p>';
     }
 }
 

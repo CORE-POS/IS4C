@@ -521,6 +521,23 @@ class InvCountPage extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_live_view()));
     }
 
+    public function helpContent()
+    {
+        return '<h3>Entering Counts and Pars</h3>
+<p>Counts and pars can be entered per-item or per-vendor. To enter information for a single item,
+enter its UPC in the first set of fields. To enter information for several items, choose a vendor
+from the second set of fields. The optional super department will filter the list to a more manageable
+size in the case of larger vendors.</p>
+<p>In either case, enter a new count & par then save to update an item or set of items\' counts and pars.
+Ehter count date & time is automatically updated, too. If that\'s incorrect, go to the vendor count and par
+entry. Click on the last counted value for an item to adjust that item or <em>Adjust Dates</em> at the bottom
+to assign a new last counted date & time to all the vendor\'s items.</p>
+<h3>Viewing Current Data</h3>
+The third set of fields also has a vendor selection and optional super department but this shows the current
+current onhand counts and activity since the last count. This view also has a button labeled <em>Recalculate
+Totals</em>. Click this to clear any cached inventory information for the vendor and refresh all orders,
+sales, and shrink.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

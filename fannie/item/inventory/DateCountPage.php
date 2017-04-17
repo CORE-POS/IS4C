@@ -159,6 +159,14 @@ class DateCountPage extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_vendor_view()));
         $phpunit->assertNotEquals(0, strlen($this->post_vendor_handler()));
     }
+
+    public function helpContent()
+    {
+        return '<p>On-hand inventory is based on activity since the most recent count.
+            Enter a new date and time to adjust <em>when</em> the count occurred. If for
+            example counts were collected yesterday on paper but entered into the computer
+            today those counts should likely be backdated to yesterday.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();
