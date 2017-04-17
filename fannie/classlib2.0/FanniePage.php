@@ -374,7 +374,33 @@ function enableLinea(selector, callback)
                             </h4>
                         </div>
                         <div class="modal-body">' . $help . '</div>
+                        <div id="help-feedback" class="container col-sm-6 collapse">
+                            <input type="hidden" name="page" class="help-feedback" value="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" />
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" class="help-feedback form-control" 
+                                    placeholder="Optional; if blank you won\'t get a response" />
+                            </div>
+                            <div class="form-group">
+                                <label>How could "Help" on this page be improved</label>
+                                <textarea name="comments" class="form-control help-feedback" rows="10"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-default" onclick="
+                                    $.ajax({ method: \'post\', url: \'' . $this->config->URL . 'admin/HelpPopup.php\',
+                                        data: $(\'.help-feedback\').serialize() })
+                                    .always(function() { $(\'#help-feedback\').hide(); $(\'#help-feedback-done\').show(); });
+                                ">
+                                    Send Feedback
+                                </button>
+                            </div>
+                        </div>
+                        <div id="help-feedback-done" class="collapse">
+                            <div class="alert alert-success">Feedback submitted</div>
+                        </div>
                         <div class="modal-footer">
+                            <button type="button" id="feedback-btn" class="btn btn-default" 
+                                onclick="$(\'#help-feedback\').show();$(this).hide();">Feedback</button>
                             <button type="button" class="btn btn-default" data-dismiss="modal"
                                 onclick="var helpWindow=window.open(\''. $this->config->URL . 'admin/HelpPopup.php\',
                                 \'CORE Help\', \'height=500,width=300,scrollbars=1,resizable=1\');"
