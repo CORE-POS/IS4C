@@ -57,7 +57,7 @@ class ScanTransferPage extends FannieRESTfulPage
             $orderIn->userID($uid);
             $orderIn->placed(1);
             $orderIn->creationDate(date('Y-m-d H:i:s'));
-            $orderOut->placedDate(date('Y-m-d H:i:s'));
+            $orderIn->placedDate(date('Y-m-d H:i:s'));
             $inID = $orderIn->save();
 
             $orderOut->orderID($outID);
