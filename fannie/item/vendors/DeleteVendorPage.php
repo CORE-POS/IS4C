@@ -31,6 +31,7 @@ class DeleteVendorPage extends FannieRESTfulPage
 {
     protected $title = "Fannie : Delete Vendor";
     protected $header = "Delete Vendors";
+    public $discoverable = false;
 
     protected $must_authenticate = true;
     protected $auth_classes = array('pricechange');
@@ -108,7 +109,7 @@ class DeleteVendorPage extends FannieRESTfulPage
         return 'VendorIndexPage.php';
     }
 
-    public function helpText()
+    public function helpContent()
     {
         return '<p>When deleting a vendor, all existing items from that vendor
             must be re-assigned to a new vendor. This is best suited for merging

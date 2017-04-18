@@ -181,6 +181,13 @@ HTML;
         $this->id = 1;
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
     }
+
+    public function helpContent()
+    {
+        return '<p>The advanced batch editor provides rawer access to the underlying database.
+            This tool is only necessary when fine-tuning the price, method, and quantity fields
+            for use in more complex types of sales</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

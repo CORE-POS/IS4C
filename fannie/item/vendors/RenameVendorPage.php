@@ -31,6 +31,7 @@ class RenameVendorPage extends FannieRESTfulPage
 {
     protected $title = "Fannie : Rename Vendor";
     protected $header = "Rename Vendors";
+    public $description = '[Rename Vendor] is a tool to rename a vendor';
 
     protected $must_authenticate = true;
     protected $auth_classes = array('pricechange');
@@ -117,6 +118,11 @@ class RenameVendorPage extends FannieRESTfulPage
         $form->name = 'Not a real vendor';
         $this->setForm($form);
         $phpunit->assertNotEquals(true, $this->post_id_handler());
+    }
+
+    public function helpContent()
+    {
+        return '<p>Enter a new name for the vendor. Duplicates are not allowed.</p>';
     }
 }
 

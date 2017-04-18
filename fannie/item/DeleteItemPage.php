@@ -139,6 +139,14 @@ HTML;
         $res = $this->connection->query('SELECT * FROM products WHERE upc=\'' . $this->id . '\'');
         $phpunit->assertEquals(0, $this->connection->numRows($res));
     }
+
+    public function helpContent()
+    {
+        return '<p>Enter a UPC to permanently delete an item. There is a confirmation screen
+before it\'s really deleted. This generally is not recommended unless the entry was a mistake
+and has no associated sales. Deleting an item won\'t delete those sales but some context of
+the item\'s various attributes is lost.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

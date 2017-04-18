@@ -153,6 +153,14 @@ class LaneParametersEditor extends FannieRESTfulPage
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return '<p>This is a very low-level tool to directly edit lane parameters (or "settings") 
+stored in the database. Some understanding of what these names mean is required. Store overrides
+are settings that apply instead of the global parameter for a given store. Lane overrides are
+settings that apply instead of the global or store parameter for a given lane.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

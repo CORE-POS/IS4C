@@ -30,9 +30,28 @@ class HelpPopup extends FanniePage
 {
     public $discoverable = false;
 
+    public function preprocess()
+    {
+        if (trim(FormLib::get('comments')) !== '') {
+
+            $info = FormLib::get('comments');
+            $email = FormLib::get('email');
+            $page = FormLib::get('page');
+            $msg = "Email: {$email}\nPage: {$page}\n\n$info\n";
+            mail('feedback@techsupport.coop', 'CORE Help Feedback', $msg);
+
+            return false;
+        }
+
+        return true;
+    }
+
     public function drawPage()
     {
         $url = $this->config->URL;
+        if ($this->preprocess() === false) {
+            return;
+        }
         ?>
         <!doctype html>
         <html>

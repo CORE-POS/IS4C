@@ -91,6 +91,14 @@ class VendorMarginsPage extends FannieRESTfulPage
         $this->id = 1;
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
     }
+
+    public function helpContent()
+    {
+        return '<p>Set margin targets that are specific to both a vendor and a POS department. 
+A value of zero means there is no target for this vendor & POS department combination.</p>
+<p>These are the highest priority margin targets ahead of both general margin targets for
+POS departments and margin targets for vendor-specific subcategories.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

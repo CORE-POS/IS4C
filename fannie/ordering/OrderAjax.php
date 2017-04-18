@@ -31,6 +31,7 @@ if (!class_exists('OrderNotifications')) {
 class OrderAjax extends FannieRESTfulPage
 {
     protected $must_authenticate = true;
+    public $discoverable = false;
 
     public function preprocess()
     {
