@@ -214,6 +214,7 @@ JAVASCRIPT;
     {
         $myUrl = $this->page_url;
         $this->add_onload_command("betterDate();\n\$('#reginput').focus();");
+        $this->add_onload_command("setInterval(function(){\$('#reginput').focus();}, 500);\n");
 
         // this needs to be configurable; just fixing
         // a giant PHP warning for the moment
