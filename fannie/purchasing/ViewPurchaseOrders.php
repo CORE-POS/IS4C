@@ -505,7 +505,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $exportEmail = '';
         if (!$orderObj->placed && filter_var($vendor['email'], FILTER_VALIDATE_EMAIL)) {
             $exportEmail = '<button type="submit" class="btn btn-default btn-sm" onclick="doSend(' . $this->id . ');
-                return false;" title="Email order to ' . $vendor['email'] . '" disabled>Send via Email</button>';
+                return false;" title="Email order to ' . $vendor['email'] . '" >Send via Email</button>';
         }
         $uname = FannieAuth::getName($order->userID());
         if (!$uname) {
