@@ -363,6 +363,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         list($inClause,$args) = $dbc->safeInClause($plus);
+        $args[] = $store_location;
         $qString = 'select
                 p.upc,
                 p.description as pdesc,
@@ -377,6 +378,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 left join productUser as pu on pu.upc=p.upc
                 left join departments as d on d.dept_no=p.department
             WHERE p.upc IN ('.$inClause.')
+                AND fslv.storeID = ?
             order by p.department;';
 
         $query = $dbc->prepare($qString);
