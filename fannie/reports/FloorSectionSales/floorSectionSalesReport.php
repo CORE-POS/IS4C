@@ -67,10 +67,8 @@ class floorSectionSalesReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        //$store = FormLib::get('store');
        
         $ret = '';
-        //$prepArgs = array($store);
         $prepQ = $dbc->prepare("SELECT * FROM FloorSections");
         $prepR = $dbc->execute($prepQ);
         $ret .= '<select name="floorsection" class="form-control">';
@@ -115,18 +113,7 @@ class floorSectionSalesReport extends FannieReportPage
         }
         
         list($inClause,$onSaleA) = $dbc->safeInClause($upcs);
-        /*
-        $onSaleQ = "SELECT 
-                p.upc,p.brand,p.description,p.auto_par,
-                b.batchID,
-                l.salePrice
-            FROM batches AS b 
-                INNER JOIN batchList AS l ON b.batchID=l.batchID
-                INNER JOIN products AS p ON l.upc=p.upc
-            WHERE l.upc IN (".$inClause.")";
-          */
-          
-          
+
         $onSaleQ = "
             SELECT 
                 p.upc,p.brand,p.description,p.auto_par,
@@ -141,8 +128,6 @@ class floorSectionSalesReport extends FannieReportPage
                 AND p.store_id = 1
                 
         ";
-        
-        //$onSaleQ = "select upc, brand, description from products limit 25;";
             
         $onSaleP = $dbc->prepare($onSaleQ);
         $onSaleR = $dbc->execute($onSaleP);
@@ -153,9 +138,9 @@ class floorSectionSalesReport extends FannieReportPage
             $data[$i][1] = $row['brand'];
             $data[$i][2] = $row['description'];
             $data[$i][3] = round($row['auto_par'],2);
-            $data[$i][4] = 'Yes'; // add after - is this on sale now
+            $data[$i][4] = 'Yes'; 
             $data[$i][5] = $row['salePrice'];
-            $data[$i][6] = $last_sale; // add after - last time this was on sale
+            $data[$i][6] = 'currently on sale';
             $i++;
         }
         if ($err = $dbc->error()) {
@@ -202,7 +187,7 @@ class floorSectionSalesReport extends FannieReportPage
                     if (substr($row['startDate'],0,4) < 2000) {
                         $data[$i][6] = 'n/a';
                     } else {
-                        $data[$i][6] = substr($row['startDate'],0,10); //. ' - ' . substr($row['endDate'],0,10);
+                        $data[$i][6] = substr($row['startDate'],0,10);
                     }
                 }
                 
