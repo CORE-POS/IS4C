@@ -46,6 +46,7 @@ class HouseCouponsModel extends BasicModel
     'minValue' => array('type'=>'MONEY'),
     'department' => array('type'=>'INT'),
     'auto' => array('type'=>'TINYINT', 'default'=>0),
+    'virtualOnly' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()
@@ -67,6 +68,10 @@ used in one transaction
 
 memberOnly means the coupon can only be used
 by a member (custdata.Type=\'PC\')
+
+virtualOnly means that the coupon can only be
+used if a corresponding record exists in the
+houseVirtualCoupons table
 
 minType and minValue specify how one
 qualifies for the coupon - certain item(s),

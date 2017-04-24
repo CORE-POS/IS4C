@@ -106,7 +106,8 @@ class HouseCoupon extends SpecialUPC
                         CASE 
                           WHEN startDate IS NULL THEN 0 
                           ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
-                        END as preStart";
+                        END as preStart,
+                        virtualOnly";
         } else {
             // new(ish) columns 16apr14
             $hctable = $dbc->tableDefinition('houseCoupons');
@@ -123,6 +124,7 @@ class HouseCoupon extends SpecialUPC
             } else {
                 $infoQ .= ', 0 AS preStart';
             }
+            $infoQ .= isset($hctable['virtualOnly']) ? ', virtualOnly ' : ', 0 AS virtualOnly ';
         }
         $infoQ .= " FROM  houseCoupons 
                     WHERE coupID=" . ((int)$coupID);
@@ -359,6 +361,22 @@ class HouseCoupon extends SpecialUPC
         */
         if ($infoW["memberOnly"] == 1 && $this->session->get("standalone")==0 
             && $this->session->get('memberID') != $this->session->get('visitingMem')) {
+
+            /**
+              A virtual-only coupon MUST exist in the houseVirtualCoupons table for the 
+              current member. If a record is present the coupon is allowed.
+            */
+            if ($infoW['virtualOnly']) {
+                $opDB = Database::pDataConnect();
+                $chkP = $opDB->prepare("SELECT coupID FROM houseVirtualCoupons WHERE coupID=? AND card_no=?");
+                $chkR = $opDB->execute($chkP, array($coupID, $this->session->get('memberID')));
+                if ($opDB->numRows($chkR) === 0) {
+                    return $this->errorOrQuiet(_('coupon not available<br />on this account'), false);
+                }
+
+                return true;
+            }
+
             $mDB = Database::mDataConnect();
             $mAlt = Database::mAltName();
 
