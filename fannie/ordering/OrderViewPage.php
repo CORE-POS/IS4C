@@ -559,7 +559,7 @@ class OrderViewPage extends FannieRESTfulPage
                     $n[0],$n[1]);
             }
             $ret .= '</select></td>';
-            $ret .= '<td>&nbsp;</td>';
+            $ret .= '<td><a href="NewSpecialOrdersPage.php?card_no=' . $memNum . '">All Orders for this Account</a></td>';
         }
         $ret .= '<td colspan="4" class="form-inline">Notes For Department:
             <select id="nDept" class="form-control input-sm contact-field" 
