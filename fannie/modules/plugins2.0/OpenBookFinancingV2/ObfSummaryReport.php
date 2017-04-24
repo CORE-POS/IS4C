@@ -173,6 +173,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             $total_trans = $this->initTotalTrans();
             $total_hours = $this->initTotalHours();
             $total_wages = $this->initTotalWages();
+            $plan_wages = 0;
             $qtd_sales_ou = 0;
             $qtd_hours_ou = 0;
 
@@ -303,7 +304,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 $data[] = array(
                     'Labor % of Sales',
                     '',
-                    sprintF('%.2f%%', $this->laborPercent[$category->obfCategoryID()]),
+                    sprintf('%.2f%%', $this->laborPercent[$category->obfCategoryID()]),
                     '',
                     sprintf('%.2f%%', $labor->wages() / $sum[0] * 100),
                     '',
@@ -313,6 +314,8 @@ class ObfSummaryReport extends ObfWeeklyReport
                     'meta_background' => $this->colors[0],
                     'meta_foreground' => 'black',
                 );
+
+                $plan_wages += ($dept_proj * ($this->laborPercent[$category->obfCategoryID()]/100));
 
                 $total_wages->actual += $labor->wages();
 
@@ -388,6 +391,8 @@ class ObfSummaryReport extends ObfWeeklyReport
                 if (count($this->colors) > 1) {
                     array_shift($this->colors);
                 }
+
+                $plan_wages += ($dept_proj * ($this->laborPercent[$category->obfCategoryID()]/100));
             }
 
             /**
@@ -426,7 +431,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             $data[] = array(
                 'Labor % of Sales',
                 '',
-                '',
+                sprintf('%.2f%%', $plan_wages / $total_sales->projected * 100),
                 '',
                 sprintf('%.2f%%', ($total_wages->actual / $total_sales->thisYear) * 100),
                 '',
