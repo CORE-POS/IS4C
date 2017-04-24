@@ -136,3 +136,18 @@ function updateList()
     });
 }
 
+function addManualRow() {
+    var newID = 'inp' + Date.now();
+    var newRow = '<tr>';
+    newRow += '<td><input type="text" name="sku[]" class="form-control" id="' + newID + '" /></td>';
+    newRow += '<td><input type="text" name="upc[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="brand[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="description[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="unitSize[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="case[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="qty[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="totalCost[]" class="form-control" /></td>';
+    $('#list-wrapper table').append(newRow);
+    $('#'+newID).focus();
+}
+
