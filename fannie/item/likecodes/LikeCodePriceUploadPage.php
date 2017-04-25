@@ -65,7 +65,7 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             'display_name' => 'WIC',
             'default' => 6,
         ),
-        'organic' => array(
+        'numflag' => array(
             'display_name' => 'Organic',
             'default' => 7,
         ),
@@ -253,7 +253,7 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         $data = array(1, 1.99, 0.99, 'foo', 1, 1, 0, 1, 0);
         $indexes = array('likecode'=>0, 'price'=>1, 'cost'=>2, 'description'=>3, 
-            'scale'=>4, 'department'=>5, 'wicable'=>6, 'organic'=>7, 'local'=>8);
+            'scale'=>4, 'department'=>5, 'wicable'=>6, 'numflag'=>7, 'local'=>8);
         $this->process_file(array($data), $indexes);
     }
 }
