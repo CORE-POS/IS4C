@@ -18,8 +18,8 @@ class ScanTransferPage extends FannieRESTfulPage
     {
         if (php_sapi_name() !== 'cli') {
             @session_start();
-            if (!isset($_SESSION['items'])) {
-                $_SESSION['items'] = array();
+            if (!isset($this->session->items)) {
+                $this->session->items = array();
             }
         }
 
@@ -69,7 +69,7 @@ class ScanTransferPage extends FannieRESTfulPage
             $orderIn->save();
 
             $item = new PurchaseOrderItemsModel($this->connection);
-            foreach ($_SESSION['items'] as $upc => $data) {
+            foreach ($this->session->items as $upc => $data) {
                 $item->internalUPC($upc);
                 $item->sku($upc);
                 $item->brand($data['brand']);
@@ -88,7 +88,7 @@ class ScanTransferPage extends FannieRESTfulPage
                 $item->save();
             }
 
-            unset($_SESSION['items']);
+            unset($this->session->items);
 
             return <<<HTML
 <div class="alert alert-success">Transfer orders created</div>
@@ -109,10 +109,11 @@ HTML;
     {
         try {
             $upc = BarcodeLib::padUPC($this->id);
-            if (isset($_SESSION['items'][$upc])) {
-                $_SESSION['items'][$upc]['qty'] += $this->form->qty;
+            $items = $this->session->items;
+            if (isset($items[$upc])) {
+                $items[$upc]['qty'] += $this->form->qty;
             } else {
-                $_SESSION['items'][$upc] = array(
+                $items[$upc] = array(
                     'qty' => $this->form->qty,
                     'cost' => $this->form->cost,
                     'brand' => $this->form->brand,
@@ -121,6 +122,7 @@ HTML;
                     'codeTo' => $this->form->coding2,
                 );
             }
+            $this->session->items = $items;
         } catch (Exception $ex) {
         }
 
@@ -179,7 +181,9 @@ HTML;
 
     protected function delete_id_handler()
     {
-        unset($_SESSION['items'][BarcodeLib::padUPC($this->id)]);
+        $items = $this->session->items;
+        unset($items[BarcodeLib::padUPC($this->id)]);
+        $this->session->items = $items;
 
         return 'ScanTransferPage.php';
     }
@@ -195,7 +199,7 @@ HTML;
                 <th>Qty</th>
                 <th>&nbsp;</th>
             </tr></thead><tbody>';
-        foreach ($_SESSION['items'] as $upc => $data) {
+        foreach ($this->session->items as $upc => $data) {
             $ret .= sprintf('<tr><td>%s to %s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td>
                     <td><a class="btn btn-xs btn-danger" href="?_method=delete&id=%s">%s</a></td></tr>',
                     $data['codeFrom'], $data['codeTo'], $data['brand'], $data['desc'], $data['cost'], $data['qty'],

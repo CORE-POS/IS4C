@@ -1237,9 +1237,9 @@ HTML;
         $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
         $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {
-            $_SESSION['specialOrderRedirect'] = $return_path;
-        } elseif (isset($_SESSION['specialOrderRedirect'])) {
-            $return_path = $_SESSION['specialOrderRedirect'];
+            $this->session->specialOrderRedirect = $return_path;
+        } elseif (isset($this->session->specialOrderRedirect)) {
+            $return_path = $this->session->specialOrderRedirect;
         } else {
             $return_path = $this->config->get('URL') . "ordering/";
         }
