@@ -105,6 +105,8 @@ class ItemsTest extends PHPUnit_Framework_TestCase
 
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->flags = 'not_an_array';
+        $form->pf_attrs = array('a', 'b', 'c', 'd', 'e');
+        $form->pf_bits = array(1, 2, 3, 4, 5);
         $module->setForm($form);
         $saved = $module->saveFormData($upc);
         $this->assertEquals(false, $saved, 'Accepted invalid input');
