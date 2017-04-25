@@ -88,6 +88,8 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         */
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->flags = array(1, 3); // 0b101 == 5
+        $form->pf_attrs = array('a', 'b', 'c', 'd', 'e');
+        $form->pf_bits = array(1, 2, 3, 4, 5);
         $module->setForm($form);
         $saved = $module->saveFormData($upc);
         $this->assertEquals(true, $saved, 'Saving item flags failed');
