@@ -313,7 +313,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $ret = <<<HTML
 <div id="orderInfo">
     <span id="orderInfoVendor">{$row['vendorName']}</span>
-    {$w['date']}
+    {$row['date']}
     &nbsp;&nbsp;&nbsp;&nbsp;
     # of Items: <span id="orderInfoCount">{$row['rows']}</span>
     &nbsp;&nbsp;&nbsp;&nbsp;
