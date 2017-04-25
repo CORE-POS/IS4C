@@ -979,7 +979,7 @@ HTML;
                     class="form-control input-sm item-field input-vendor" name="vendor" maxlength="13" />',
                     $row['mixMatch']);
             } else {
-                $supplier .= '</select>';
+                $supplierInput .= '</select>';
             }
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
                     class="form-control input-sm item-field input-vendor" name="vendor"
