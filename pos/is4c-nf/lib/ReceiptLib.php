@@ -26,6 +26,7 @@ use COREPOS\pos\lib\Bitmap;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\StoreChargeMessage;
 use \CoreLocal;
 
 /**
@@ -988,10 +989,16 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     // skip signature slips if using electronic signature capture (unless it's a reprint)
     if ((is_array($tmap) && isset($tmap['MI']) && $tmap['MI'] != 'SignedStoreChargeTender') || $reprint) {
         if (CoreLocal::get("chargeTotal") != 0 && ((CoreLocal::get("End") == 1 && !$second) || $reprint)) {
+            /** PLACEHOLDER: deal with charge stuff via StoreChargeMessage
+            $msg = new StoreChargeMessage();
+            $msg->setPrintHandler(self::$PRINT);
+            */
             if (is_array($receipt)) {
                 $receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref, $chargeProgram);
+                // $receipt['print'] .= $msg->standalone_receipt($ref);
             } else {
                 $receipt .= self::printChargeFooterStore($dateTimeStamp, $ref, $chargeProgram);
+                // $receipt .= $msg->standalone_receipt($ref);
             }
         }
     }
