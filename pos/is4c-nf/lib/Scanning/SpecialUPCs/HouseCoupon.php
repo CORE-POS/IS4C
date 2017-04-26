@@ -583,7 +583,7 @@ class HouseCoupon extends SpecialUPC
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
                 if ($row['qty'] > $infoW['minValue'] && $infoW['minType'] == 'Q-') {
-                    $value = $row['qty'] * $infoW['minValue'];
+                    $value *= $infoW['minValue'];
                 } else {
                     $value = $row['qty'] * $value;
                 }
