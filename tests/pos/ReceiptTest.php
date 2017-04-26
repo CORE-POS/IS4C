@@ -14,6 +14,7 @@ use COREPOS\pos\lib\ReceiptBuilding\Format\TenderReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\Format\OtherReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\Format\DefaultReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\Format\ItemReceiptFormat;
+use COREPOS\pos\lib\ReceiptBuilding\Format\TwoLineReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\WfcEquityMessage;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
 use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DefaultHtmlEmail;
@@ -173,6 +174,9 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $item['ItemQtty'] = 0;
         $item['matched'] = 1;
         $this->assertEquals('ITEM' . str_repeat(' ', 26) . 'w/ vol adj' .str_repeat(' ', 4) . '    1.00  TF', $f->format($item));
+
+        $two = new TwoLineReceiptFormat();
+        $this->assertEquals(true, strstr($two->format($item), "\n")); 
     }
 
     public function testCustMessages()
@@ -267,7 +271,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testSort()
     {
-        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DefaultReceiptSort');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort');
 
         if (empty($this->record_sets)) {
             $this->record_sets[] = $this->test_records;
@@ -297,7 +301,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testTag()
     {
-        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DefaultReceiptTag');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\DefaultReceiptTag');
 
         if (empty($this->record_sets)) {
             $this->record_sets[] = $this->test_records;
