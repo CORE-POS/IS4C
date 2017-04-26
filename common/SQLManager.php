@@ -138,6 +138,8 @@ class SQLManager
             // value here is really schema. Database name must match user name.
             $savedDB = $database;
             $database = $username;
+        } elseif (strtolower($type) == 'mysql' && version_compare(PHP_VERSION, '7.0.0') >= 0) {
+            $type = function_exists('mysqli_connect') ? 'mysqli' : 'pdo_mysql';
         }
 
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
