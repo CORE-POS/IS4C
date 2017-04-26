@@ -211,6 +211,11 @@ class InUseTask extends FannieTask
         $end = time();
         $runtime = ($end - $start);
         $runtime = $this->convert_unix_time($runtime);
+        
+        $inUseData = str_replace("</th>","</th>"."\r\n", $inUseData);
+        $inUseData = str_replace("</td>","</td>"."\r\n", $inUseData);
+        $unUseData = str_replace("</th>","</th>"."\r\n", $unUseData);
+        $unUseData = str_replace("</td>","</td>"."\r\n", $unUseData);
 
         $to = $this->config->get('SCANCOORD_EMAIL');
         $msg = '<html>';
