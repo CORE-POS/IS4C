@@ -176,7 +176,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('ITEM' . str_repeat(' ', 26) . 'w/ vol adj' .str_repeat(' ', 4) . '    1.00  TF', $f->format($item));
 
         $two = new TwoLineItemReceiptFormat();
-        $this->assertEquals(true, strstr($two->format($item), "\n")); 
+        $this->assertNotEquals(false, strstr($two->format($item), "\n")); 
     }
 
     public function testCustMessages()
@@ -316,7 +316,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
                 $tagged = $obj->tag($set);
                 $this->assertInternalType('array', $set);
 
-                foreach($set as $result) {
+                foreach($tagged as $result) {
                     $this->assertInternalType('array', $result);
                     $this->assertArrayHasKey('upc', $result);
                     $this->assertArrayHasKey('trans_type', $result);
