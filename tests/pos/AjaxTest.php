@@ -93,5 +93,11 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $ajax = new COREPOS\pos\ajax\AjaxScale(new WrappedStorage(), new ValueContainer());
         $this->assertInternalType('string', $ajax->ajax());
     }
+
+    public function testPoll()
+    {
+        $ajax = new COREPOS\pos\ajax\AjaxPollScale(new WrappedStorage(), new ValueContainer());
+        $this->assertEquals('{}', $ajax->ajax());
+    }
 }
 
