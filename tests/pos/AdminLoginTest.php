@@ -36,10 +36,10 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
 
     public function testVoidAdminLogin()
     {
-        $this->assertEquals(true, COREPOS\pos\parser\parse\Void::adminLoginCallback(true));
+        $this->assertEquals(true, COREPOS\pos\parser\parse\VoidCmd::adminLoginCallback(true));
         $this->assertEquals(1, CoreLocal::get('voidOverride'));
         $this->assertEquals(1, CoreLocal::get('msgrepeat'));
-        $this->assertEquals(false, COREPOS\pos\parser\parse\Void::adminLoginCallback(false));
+        $this->assertEquals(false, COREPOS\pos\parser\parse\VoidCmd::adminLoginCallback(false));
         $this->assertEquals(0, CoreLocal::get('voidOverride'));
         CoreLocal::set('msgrepeat', 0);
     }
