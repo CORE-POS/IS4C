@@ -567,7 +567,11 @@ class HouseCoupon extends SpecialUPC
                     and h.type in ('BOTH', 'DISCOUNT')";
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
-                $value = $row['qty'] * $value;
+                if ($row['qty'] > $infoW['minType']) {
+                    $value = $infoW['minType'];
+                } else {
+                    $value = $row['qty'] * $value;
+                }
                 break;
             case 'PS': // per set of items
                 $value = $infoW["discountValue"];
