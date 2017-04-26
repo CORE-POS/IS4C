@@ -212,28 +212,36 @@ class InUseTask extends FannieTask
         $runtime = ($end - $start);
         $runtime = $this->convert_unix_time($runtime);
         
-        $inUseData = str_replace("</th>","</th>"."\r\n", $inUseData);
-        $inUseData = str_replace("</td>","</td>"."\r\n", $inUseData);
-        $unUseData = str_replace("</th>","</th>"."\r\n", $unUseData);
-        $unUseData = str_replace("</td>","</td>"."\r\n", $unUseData);
-
         $to = $this->config->get('SCANCOORD_EMAIL');
-        $msg = '<html>';
-        $msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
-            padding: 5px; }</style><body>';
-        $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
-        $msg .= ' [ Runtime: '.$runtime.' ]<br />';
-        $msg .= '<br />';
-        $msg .= 'Items removed from use' . '<br />';
-        $msg .= $unUseData;
-        $msg .= '<br />';
-        $msg .= 'Items added to use' . '<br />';
-        $msg .= $inUseData;
-        $msg .= '<br />';
-        $msg .= '<br />';
-        $msg .= '</body></html>';
         
-        mail($to,'Report: In Use Task',$msg,implode("\r\n",$headers));
+        if (class_exists('PHPMailer')) {
+            $msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
+                padding: 5px; }</style>';
+            $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
+            $msg .= ' [ Runtime: '.$runtime.' ]<br />';
+            $msg .= '<br />';
+            $msg .= 'Items removed from use' . '<br />';
+            $msg .= $unUseData;
+            $msg .= '<br />';
+            $msg .= 'Items added to use' . '<br />';
+            $msg .= $inUseData;
+            $msg .= '<br />';
+            $msg .= '<br />';
+                
+            $mail = new PHPMailer();
+            $mail->isHTML();
+            $mail->addAddress($to);
+            $mail->from('automail@wholefoods.coop');
+            $mail->FromName = 'CORE POS Monitoring';
+            $mail->subject('Report: In Use Task');
+            $mail->body($msg);
+            if (!$mail->send()) {
+                $this->logger->error('Error emailing monitoring notification');
+            }
+        } else {
+            $msg = 'The In Use Task $message could not be formatted. [Error] : class PHPMailer could not found.';
+            mail($to,'Report: In Use Task',$msg,implode("\r\n",$headers));
+        }
         
     }
 
