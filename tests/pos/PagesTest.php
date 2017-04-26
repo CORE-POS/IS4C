@@ -40,6 +40,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
         while( ($file=readdir($dh)) !== False){
             if ($file[0] == '.') continue;
             if (substr($file,-4) != '.php') continue;
+            if ($file == 'ddd.php') continue;
             $class = substr($file,0,strlen($file)-4);
             $pages[$class] = $file;
         }
