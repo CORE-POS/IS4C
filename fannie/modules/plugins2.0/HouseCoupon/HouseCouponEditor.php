@@ -390,6 +390,7 @@ class HouseCouponEditor extends FanniePage
         $mts = array(
             'Q'=>'Quantity (at least)',
             'Q+'=>'Quantity (more than)',
+            'Q-'=>'Quantity (Per-Item Max)',
             'C'=>'Department (at least qty)',
             'C+'=>'Department (more than qty)',
             'C!'=>'Dept w/o sales (at least qty)',
