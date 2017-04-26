@@ -167,7 +167,7 @@ class Valutec extends BasicCCModule
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
                 $this->conf->set("autoReprint",1);
-                $void = new COREPOS\pos\parser\parse\Void($this->conf);
+                $void = new COREPOS\pos\parser\parse\VoidCmd($this->conf);
                 $void->voidid($this->conf->get("paycard_id"), array());
                 $resp = $this->conf->get("paycard_response");
                 $this->conf->set("boxMsg","<b>Voided</b><font size=-1>
