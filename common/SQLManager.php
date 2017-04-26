@@ -1525,7 +1525,7 @@ class SQLManager
         }
         $con = $this->connections[$which_connection];
 
-        return $con->Prepare($sql);
+        return is_object($con) ? $con->Prepare($sql) : false;
     }
 
    /**
