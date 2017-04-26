@@ -39,7 +39,7 @@ class DDDAdminLogin
     public static function adminLoginCallback($success)
     {
         if ($success) {
-            return MiscLib::baseURL().'ajax-callbacks/ddd.php';
+            return MiscLib::baseURL().'gui-modules/ddd.php';
         } else {
             return false;
         }
