@@ -105,30 +105,30 @@ $(document).ready(function() {
 </script>
 <div class="numpad">
     <div class="numpad-row">
-        <button class="numpad-btn" onclick="numpad.write('7');">7</button>
-        <button class="numpad-btn" onclick="numpad.write('8');">8</button>
-        <button class="numpad-btn" onclick="numpad.write('9');">9</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('7');">7</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('8');">8</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('9');">9</button>
     </div>
     <div class="numpad-row">
-        <button class="numpad-btn" onclick="numpad.write('4');">4</button>
-        <button class="numpad-btn" onclick="numpad.write('5');">5</button>
-        <button class="numpad-btn" onclick="numpad.write('6');">6</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('4');">4</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('5');">5</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('6');">6</button>
     </div>
     <div class="numpad-row">
-        <button class="numpad-btn" onclick="numpad.write('1');">1</button>
-        <button class="numpad-btn" onclick="numpad.write('2');">2</button>
-        <button class="numpad-btn" onclick="numpad.write('3');">3</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('1');">1</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('2');">2</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('3');">3</button>
     </div>
     <div class="numpad-row">
-        <button class="numpad-btn" onclick="numpad.write('0');">0</button>
-        <button class="numpad-btn" onclick="numpad.write('00');">00</button>
-        <button class="numpad-btn" onclick="numpad.write('.');">.</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('0');">0</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('00');">00</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('.');">.</button>
     </div>
     <div class="numpad-row">
-        <button class="numpad-wide" onclick="numpad.enter();">Enter</button>
+        <button class="pos-button numpad-wide" onclick="numpad.enter();">Enter</button>
     </div>
     <div class="numpad-row">
-        <button class="numpad-wide" onclick="numpad.clear();">Clear</button>
+        <button class="pos-button numpad-wide" onclick="numpad.clear();">Clear</button>
     </div>
 </div>
 HTML;

@@ -42,6 +42,9 @@ class FanniePage extends \COREPOS\common\ui\CorePage
     protected $title = 'Page window title';
     protected $header = 'Page displayed header';
 
+    /** wrapper around $_SESSION superglobal **/
+    protected $session;
+
     /**
       Include javascript necessary to integrate linea
       scanner device
@@ -60,6 +63,9 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         if (isset($coop_id) && $coop_id == 'WEFC_Toronto') {
             $this->auth_classes[] = 'admin';
         }
+
+        $path = realpath(__DIR__ . '/../');
+        $this->session = new COREPOS\common\NamedSession($path);
     }
 
     public function preprocess()

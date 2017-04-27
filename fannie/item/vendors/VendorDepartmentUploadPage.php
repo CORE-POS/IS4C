@@ -59,11 +59,11 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        if (!isset($_SESSION['vid'])) {
+        if (!isset($this->session->vid)) {
             $this->error_details = 'Missing vendor setting';
             return False;
         }
-        $VENDOR_ID = $_SESSION['vid'];
+        $VENDOR_ID = $this->session->vid;
 
         $p = $dbc->prepare("SELECT vendorID,vendorName FROM vendors WHERE vendorID=?");
         $idR = $dbc->execute($p,array($VENDOR_ID));
@@ -97,8 +97,8 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         $ret = '<p>Import Complete</p>';
         $ret .= sprintf('<p><a class="btn btn-default" 
-            href="VendorIndexPage.php?vid=%d">Back to Vendor</a></p>', $_SESSION['vid']);
-        unset($_SESSION['vid']);
+            href="VendorIndexPage.php?vid=%d">Back to Vendor</a></p>', $this->session->vid);
+        unset($this->session->vid);
 
         return $ret;
     }
@@ -119,7 +119,7 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
         $vrow = $dbc->fetch_row($vr);
-        $_SESSION['vid'] = $vid;
+        $this->session->vid = $vid;
         return '<div class="well"><legend>Instructions</legend>
             Upload a price file for <i>'.$vrow['vendorName'].'</i> ('.$vid.'). File must be
             CSV. Files &gt; 2MB may be zipped.</div>';

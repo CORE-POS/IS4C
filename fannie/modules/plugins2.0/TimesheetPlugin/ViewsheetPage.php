@@ -275,7 +275,7 @@ class ViewsheetPage extends FanniePage {
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
 
         echo '<div class="form-group">';
-        if ($_SESSION['logged_in'] == True) {
+        if ($this->session->logged_in == True) {
             echo '<label>Name</label><select name="emp_no" class="form-control">
                 <option>Select staff member</option>';
             $model = new TimesheetEmployeesModel($ts_db);

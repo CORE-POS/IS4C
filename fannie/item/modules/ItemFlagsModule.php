@@ -111,8 +111,12 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         try {
             $flags = $this->form->flags;
+            $attrs = $this->form->pf_attrs;
+            $bits = $this->form->pf_bits;
         } catch (Exception $ex) {
             $flags = array();
+            $attrs = array();
+            $bits = array();
         }
         if (!is_array($flags)) {
             return false;
@@ -126,8 +130,6 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
         */
         $json = array();
         $flagMap = array();
-        $attrs = FormLib::get('pf_attrs', array());
-        $bits = FormLib::get('pf_bits', array());
         for ($i=0; $i<count($attrs); $i++) {
             $json[$attrs[$i]] = false;
             $flagMap[$bits[$i]] = $attrs[$i];

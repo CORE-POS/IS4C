@@ -275,7 +275,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
                     } 
                     }); return false;">Select Paper</button>';
         $ret .= '<button onclick="$(\'#arForm\').attr(\'action\', \'StatementsPluginBusiness.php\');" type="submit">Print</button>';
-        $ret .= '<button onclick="$(\'#arForm\').attr(\'action\', \'StatementsPluginEmail.php\');" disabled type="submit">Email</button>';
+        $ret .= '<button onclick="$(\'#arForm\').attr(\'action\', \'StatementsPluginEmail.php\');" type="submit">Email</button>';
         $ret .= '<button type="button" onclick="exportCSV(\'ar_statements\', \'#arAccounts\');">Export List</button>';
 
         $ret .= '<br />';

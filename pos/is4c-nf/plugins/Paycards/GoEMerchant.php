@@ -285,7 +285,7 @@ class GoEMerchant extends BasicCCModule
                 }
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
-                $void = new COREPOS\pos\parser\parse\Void($this->conf);
+                $void = new COREPOS\pos\parser\parse\VoidCmd($this->conf);
                 $void->voidid($this->conf->get("paycard_id"), array());
                 $this->conf->set("boxMsg","<b>Voided</b>
                                            <p><font size=-1>[enter] to continue

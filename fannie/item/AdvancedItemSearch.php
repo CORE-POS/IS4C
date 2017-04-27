@@ -79,6 +79,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         $this->__routes[] = 'get<search>';
         $this->__routes[] = 'post<search>';
+        $this->__routes[] = 'post<extern>';
         $this->__routes[] = 'post<upc>';
         $this->__routes[] = 'get<init>';
         return parent::preprocess();
@@ -1007,6 +1008,18 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $btOpts = $model->toOptions();
 
         return include(__DIR__ . '/search.template.html');
+    }
+
+    protected function post_extern_view()
+    {
+        $body = $this->get_view();
+        ob_start();
+        $this->get_search_handler();
+        $results = ob_get_clean();
+        $body .= '<div class="collapse" id="externResults">' . $results . '</div>';
+        $this->addOnloadCommand("\$('#resultArea').html(\$('#externResults').html());\n");
+
+        return $body;
     }
 
     public function helpContent()

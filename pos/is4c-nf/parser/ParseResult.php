@@ -26,6 +26,7 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
             'receipt'=>false,
             'trans_num'=>ReceiptLib::receiptNumber(),
             'scale'=>false,
+            'term'=>false,
             'udpmsg'=>false,
             'retry'=>false,
         );

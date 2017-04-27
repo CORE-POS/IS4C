@@ -149,8 +149,9 @@ class floorSectionSalesReport extends FannieReportPage
             echo '<div class="alert alert-danger">'.$err.'</div>';
         }
         
-        $model = new ProductsModel();
-        foreach ($upcs as $upc) {  
+        $model = new ProductsModel($dbc);
+        foreach ($upcs as $upc) {
+            //$data[$i][0] = $upc;
             $args = array($upc,'1');
             $prep = $dbc->prepare("
                 SELECT 

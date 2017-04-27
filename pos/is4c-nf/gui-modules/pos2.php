@@ -108,7 +108,7 @@ class pos2 extends BasicCorePage
         <Script type="text/javascript" src="js/pos2.js"></script>
         <script type="text/javascript">
         function parseWrapper(str){
-            $('#reginput').val(str);
+            $('#reginput').val($('#reginput').val() + '' + str);
             pos2.submitWrapper();
         }
         </script>

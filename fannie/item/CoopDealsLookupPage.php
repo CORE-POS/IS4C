@@ -81,9 +81,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             return '<div class="alert alert-success">Item Added to Batch</div>'
                 . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
         }
-
-        //  Add product to Batch Check Queue if Batch Check in session.
-        if ($session = $_SESSION['session'] && $store_id = $_SESSION['store_id']) {
+        
+        //  Add product to Batch Check Queue if Batch Check in session 
+        if ($session = $this->session->session && $store_id = $this->session->store_id) {
             $dbc = FannieDB::get('woodshed_no_replicate');
             $argsB = array($upc, $store_id, $session);
             $prepB = $dbc->prepare('
@@ -99,7 +99,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
     {
 
         $ret = '';
-        echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
+        echo 'Month: ' . strtoupper($this->session->month) . '<br>';
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
@@ -116,7 +116,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         echo 'UPC: ' . $upc;
 
-        $month = 'CoopDeals' . $_SESSION['month'];
+        $month = 'CoopDeals' . $this->session->month;
         $args = array($month, $upc);
         $prep = $dbc->prepare('
             SELECT
@@ -158,8 +158,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $months = array('Jan'=>1,'Feb'=>2,'Mar'=>3,'Apr'=>4,'May'=>5,'June'=>6,
             'July'=>7,'Aug'=>8,'Sep'=>9,'Oct'=>10,'Nov'=>11,'Dec'=>12);
         $year = date('Y');
-        $checkMoStart = $year . '-' .$months[$_SESSION['month']] . '01';
-        $checkMoEnd = $year . '-' .$months[$_SESSION['month']] . '31';
+        $checkMoStart = $year . '-' .$months[$this->session->month] . '-01 00:00:00';
+        $checkMoEnd = $year . '-' .$months[$this->session->month] . '-31 00:00:00';
 
         if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
@@ -188,7 +188,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             ');
 
             $curMonth = date('M');
-            if ($curMonth == $_SESSION['month']) {
+            if ($curMonth == $this->session->month) {
                 $result = $dbc->execute($curMonthQ);
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
@@ -196,7 +196,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
             $ret .=  '
                 <form method="get" class="form-inline">
-                    Current Sales Batches<br>
+                    Sales Batches<br>
                     <select class="form-control" name="batches">
             ';
             while ($row = $dbc->fetchRow($result)) {
@@ -220,7 +220,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
     function get_month_view()
     {
-        $_SESSION['month'] = FormLib::get('month');
+        $this->session->month = FormLib::get('month');
         //$this->add_script('../autocomplete.js');
         //$this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
         if (FormLib::get('linea') != 1) {
@@ -228,8 +228,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
 
-        $ret = '';
-        echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
+        $ret = '';  
+        echo 'Month: ' . strtoupper($this->session->month) . '<br>';
+
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="form-inline">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
