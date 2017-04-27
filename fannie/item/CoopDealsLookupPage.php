@@ -1,43 +1,43 @@
-<?php                                                                                            
-/*******************************************************************************                 
-                                                                                                 
-    Copyright 2013 Whole Foods Community Co-op                                                   
-                                                                                                 
-    This file is part of CORE-POS.                                                               
-                                                                                                 
-    CORE-POS is free software; you can redistribute it and/or modify                             
-    it under the terms of the GNU General Public License as published by                         
-    the Free Software Foundation; either version 2 of the License, or                            
-    (at your option) any later version.                                                          
-                                                                                                 
-    CORE-POS is distributed in the hope that it will be useful,                                  
-    but WITHOUT ANY WARRANTY; without even the implied warranty of                               
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                                
-    GNU General Public License for more details.                                                 
-                                                                                                 
-    You should have received a copy of the GNU General Public License                            
-    in the file license.txt along with IT CORE; if not, write to the Free Software               
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                    
-                                                                                                 
-*********************************************************************************/               
-                                                                                                 
-require(dirname(__FILE__) . '/../config.php');                                                   
-if (!class_exists('FannieAPI')) {                                                                
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');                                           
-}                                                                                                
-                                                                                                 
-class CoopDealsLookupPage extends FannieRESTfulPage                                              
-{                                                                                                
-    protected $header = 'Coop Deals Item Lookup';                                                   
-    protected $title = 'Coop Deals Item Lookup';                                                    
+<?php
+/*******************************************************************************
+
+    Copyright 2013 Whole Foods Community Co-op
+
+    This file is part of CORE-POS.
+
+    CORE-POS is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    CORE-POS is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IT CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+
+require(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+
+class CoopDealsLookupPage extends FannieRESTfulPage
+{
+    protected $header = 'Coop Deals Item Lookup';
+    protected $title = 'Coop Deals Item Lookup';
     protected $enable_linea = true;
     public $themed = true;
     public $description = '[Coop Deals Item Lookup] Scans Co-op Deals
         commitment file for sales informatino on item scanned, allows
-        for one-click access to add item to batch at the price given in 
-        the price file.';     
-        
-    
+        for one-click access to add item to batch at the price given in
+        the price file.';
+
+
     function preprocess()
     {
         if (php_sapi_name() !== 'cli') {
@@ -52,15 +52,15 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
        return parent::preprocess();
     }
-    
+
     function get_insert_view()
     {
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        
+
         $batchID = FormLib::get('batches');
         $upc = FormLib::get('upc');
         $salePrice = FormLib::get('salePrice');
-        
+
         $prep = $dbc->prepare('
             SELECT * FROM batches WHERE batchID = ?
         ');
@@ -69,7 +69,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $batchID = $row['batchID'];
         $batchName = $row['batchName'];
         $args = array($upc, $batchID, $salePrice, $salePrice);
-        
+
         $prep = $dbc->prepare('
             INSERT INTO batchList
             (upc, batchID, salePrice, groupSalePrice, active)
@@ -89,11 +89,11 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             return '<div class="alert alert-success">Item Added to Batch</div>'
                 . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
         }
-        
-        //  Update 'Missing Sign' queue in SaleChangeQueues. 
+
+        //  Update 'Missing Sign' queue in SaleChangeQueues.
         if (isset($_SESSION['session'])) $session = $_SESSION['session'];
         if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
-        
+
         if (isset($session) && isset($store_id)) {
             $dbc = FannieDB::get('woodshed_no_replicate');
             $argsB = array($upc, $store_id, $session);
@@ -107,20 +107,20 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     ?
                 )
             ');
-            $dbc->execute($prepB, $argsB);    
-        }        
+            $dbc->execute($prepB, $argsB);
+        }
     }
-    
+
     function get_upc_view()
     {
-        
+
         $ret = '';
         echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-        
+
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
@@ -135,12 +135,12 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $month = 'CoopDeals' . $_SESSION['month'];
         $args = array($month, $upc);
         $prep = $dbc->prepare('
-            SELECT 
-                upc, 
+            SELECT
+                upc,
                 flyerPeriod,
                 brand,
                 sku,
-                description, 
+                description,
                 srp
             FROM ' . $month . '
             WHERE upc = ?;
@@ -154,7 +154,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $brand = $row['brand'];
             $flyerPeriod = $row['flyerPeriod'];
             $sku = $row['sku'];
-            $srp = $row['srp'];            
+            $srp = $row['srp'];
 
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
@@ -171,21 +171,55 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         if ($dbc->error()) {
             $ret .= '<div class="alert alert-warning">' . $dbc->error() . '</div>';
         }
-
+        
+        $months = array('Jan'=>1,'Feb'=>2,'Mar'=>3,'Apr'=>4,'May'=>5,'June'=>6,'July'=>7,'Aug'=>8,'Sep'=>9,'Oct'=>10,'Nov'=>11,'Dec'=>12);
+        $year = date('Y');
+        $checkMoStart = $year . '-' .$months[$_SESSION['month']] . '01';
+        $checkMoEnd = $year . '-' .$months[$_SESSION['month']] . '31';
+        
         if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
         } else {
-            $query = '
-                select 
-                    batchID, 
-                    batchName, 
+            $curMonthQ = $dbc->prepare('
+                select
+                    batchID,
+                    batchName,
                     owner,
                     batchType
-                from is4c_op.batches 
+                from is4c_op.batches
                 where CURDATE() between startDate and endDate
                     and batchType = 1;
-            ';
-            $result = $dbc->query($query);
+            ');
+            
+            $months = array(1=>'Jan',2=>'Feb', 3=>'Mar', 4=>'Apr', 5=>'May', 
+                6=>'June', 7=>'July', 8=>'Aug', 9=>'Sep', 10=>'Oct', 11=>'Nov', 12=>'Dec');
+            $month = array_keys($months,$_SESSION['month']);
+            
+            $selMonthA = array($checkMoStart,$checkMoEnd);
+            $selMonthQ = $dbc->prepare('
+                select
+                    batchID,
+                    batchName,
+                    owner,
+                    batchType
+                from is4c_op.batches
+                where startDate between ? and ?
+                    and batchType = 1;
+            ');
+            
+            $curMonth = date('M');
+            if($curMonth == 'Jul') {
+                $curMonth = 'July';
+            } elseif ($curMonth == 'Jun') {
+                $curMonth = 'June';
+            }
+            
+            if ($curMonth == $_SESSION['month']) {
+                $result = $dbc->execute($curMonthQ);
+            } else {
+                $result = $dbc->execute($selMonthQ,$selMonthA);
+            }
+            
             $ret .=  '
                 <form method="get" class="form-inline">
                     Current Sales Batches<br>
@@ -201,17 +235,16 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     <input type="hidden" name="upc" value="' . $upc . '">
                     <input type="hidden" name="salePrice" value="' . $srp . '">
                 </form>
-            ';   
+            ';
         }
-       
-        $ret .= '<br><a class="btn btn-default" href="../../../scancoord/item/SalesChange/SCScanner.php">
-            Back to Sign info<br>Scanner</a><br><br>';
-        
+
+        $ret .= $this->navBtns();
+
         return $ret;
-        
+
     }
-    
-    function get_month_view() 
+
+    function get_month_view()
     {
         $_SESSION['month'] = FormLib::get('month');
         //$this->add_script('../autocomplete.js');
@@ -220,39 +253,38 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-        
-        $ret = '';  
+
+        $ret = '';
         echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="form-inline">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
                 <input type="submit" class="btn btn-default" value="go">
             </form>
-            <a class="btn btn-default" href="../../../scancoord/item/SalesChange/SCScanner.php">
-            Back to Sign info<br>Scanner</a><br><br>
+            '.$this->navBtns().'
         ';
 
         return $ret;
     }
 
-    function get_view() 
+    function get_view()
     {
         $curMonth = date('M');
         if($curMonth == 'Jul') {
             $curMonth = 'July';
         } elseif($curMonth == 'Jun') {
             $curMonth = 'June';
-        } 
-        
+        }
+
         return '
             <form method="get" name="useCurMo" class="form-inline">
                 <input type="hidden" name="month" value="' . $curMonth . '">
-                <input type="submit" class="btn btn-default" value="Use Current Month">
+                <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
             </form><br>
 
             <form method="get" name="id-form" class="form-inline">
                 or <label>Select a Month</label><br>
-                <select name="month" class="form-control">
+                <select name="month" class="form-control" style="text-align: center;">
                     <option value="Jan">January</option>
                     <option value="Feb">February</option>
                     <option value="Mar">March</option>
@@ -266,18 +298,33 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     <option value="Nov">November</option>
                     <option value="Dec">December</option>
                 </select>&nbsp;
-                <input type="submit" class="form-control"><br>
+                <button type="submit" class="form-control btn btn-default">Submit</button><br>
             </form>
+            '.$this->navBtns().'
         ';
 
+    }
+    
+    private function navBtns()
+    {
+        $ret .= '';
+        $ret .= '
+            <br />
+            <ul>
+                <li><a class="" href="CoopDealsLookupPage.php">Select Month</a></li>
+                <li><a class="" href="../../../scancoord/item/SalesChange/SCScanner.php">Batch Check</a></li>
+                <li><a class="" href="..">Exit</a></li>
+            </ul>
+        ';
+        return $ret;
     }
 
     public function helpContent()
     {
         return '<p>Check whether a given item is present in a Co+op Deals cycle. First, enter
-a month. Then enter a UPC to search for that item in the chosen month\'s sale cycle. If the
-item is present, you can add it to an existing batch.</p>';
+            a month. Then enter a UPC to search for that item in the chosen month\'s sale cycle. If the
+            item is present, you can add it to an existing batch.</p>';
     }
 }
-    
+
 FannieDispatch::conditionalExec();
