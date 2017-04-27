@@ -173,7 +173,7 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
         $ph->printBarcode(PrintHandler::BARCODE_CODEABAR, '1234567890123');
         $ph->printBarcode(PrintHandler::BARCODE_CODE39, '1234567890123');
         $ph->printBarcode(PrintHandler::BARCODE_CODE93, '1234567890123');
-        $ph->printBarcode(PrintHandler::BARCODE_CODE128'1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_CODE128, '1234567890123');
         $ph->RasterBitmap('123456', 1, 1);
         $fn = dirname(__FILE__) . '/../../pos/is4c-nf/graphics/WfcLogo2014';
         $ph->RenderBitmapFromFile($fn);
