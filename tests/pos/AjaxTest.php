@@ -56,7 +56,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $vals->reginput = 'RF1234567890123';
         $ajax = new COREPOS\pos\ajax\AjaxParser(new WrappedStorage(), $vals);
         $json = $ajax->ajax();
-        $this->assertInternalType('array', $json);
+        $this->assertEquals('gui-modules/refundComment.php', $json['main_frame']);
 
         CoreLocal::set('CashierNo', '');
     }
