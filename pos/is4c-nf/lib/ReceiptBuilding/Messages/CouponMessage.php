@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 
 class CouponMessage extends ReceiptMessage 
 {
@@ -57,7 +58,7 @@ class CouponMessage extends ReceiptMessage
             "\n\n" .
             $this->printHandler->BarcodeHeight(81) .
             $this->printHandler->LeftMargin(100) .
-            $this->printHandler->BarcodeUPC($upc) . "\n" .
+            $this->printHandler->printBarcode(PrintHandler::BARCODE_UPCA, $upc) . "\n" .
             $this->printHandler->LeftMargin(0) .
             wordwrap($msg, 55);
     }
