@@ -25,6 +25,7 @@ namespace COREPOS\pos\lib\Tenders;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\adminlogin\AdminLoginInterface;
 use \CoreLocal;
 
 /**
@@ -32,7 +33,7 @@ use \CoreLocal;
   Tender module for inter-departmental transfers
   Requires Mgr. password
 */
-class StoreTransferTender extends TenderModule 
+class StoreTransferTender extends TenderModule implements AdminLoginInterface
 {
     /**
       Check for errors
@@ -81,7 +82,6 @@ class StoreTransferTender extends TenderModule
       adminlogin callback to approve store transfers
     */
     public static $adminLoginMsg = 'Login for store transfer';
-
     public static $adminLoginLevel = 30;
 
     static public function adminLoginCallback($success)

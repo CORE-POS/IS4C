@@ -53,17 +53,12 @@ class adminlogin extends NoInputCorePage
     {
         $class = $this->form->tryGet('class');
         $class = str_replace('-', '\\', $class);
-        // make sure calling class implements required
-        // method and properties
-        $method = new ReflectionMethod($class, 'adminLoginCallback');
-        if (!$method->isStatic() || !$method->isPublic())
-            throw new Exception('bad method adminLoginCallback');
-        $property = new ReflectionProperty($class, 'adminLoginMsg');
-        if (!$property->isStatic() || !$property->isPublic())
-            throw new Exception('bad property adminLoginMsg');
-        $property = new ReflectionProperty($class, 'adminLoginLevel');
-        if (!$property->isStatic() || !$property->isPublic())
-            throw new Exception('bad property adminLoginLevel');
+        $refl = new ReflectionClass($class); 
+        if (!$refl->implementsInterface('COREPOS\\pos\\lib\\adminlogin\\AdminLoginInterface')) {
+            // make sure calling class implements required
+            // method and properties
+            return false;
+        }
 
         return $class;
     }
@@ -75,12 +70,8 @@ class adminlogin extends NoInputCorePage
 
         $posHome = MiscLib::base_url().'gui-modules/pos2.php';
         // get calling class (required)
-        try {
-            $class = $this->getClass();
-        } catch (Exception $ex) {
-            $class = '';
-        }
-        if ($class === '' || !class_exists($class)){
+        $class = $this->getClass();
+        if ($class === false || !class_exists($class)){
             $this->change_page($posHome);
             return False;
         }
@@ -175,8 +166,20 @@ class adminlogin extends NoInputCorePage
         </div>
         </div>
         <?php
-        $this->add_onload_command("\$('#userPassword').focus();");
+        $this->addOnloadCommand("\$('#userPassword').focus();");
     } // END true_body() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->form->class = 'COREPOS-pos-lib-adminlogin-UndoAdminLogin';
+        $phpunit->assertEquals(true, $this->preprocess());
+        ob_get_clean();
+        $this->head_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 AutoLoader::dispatch();

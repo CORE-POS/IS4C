@@ -22,27 +22,15 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\adminlogin;
-use COREPOS\pos\lib\MiscLib;
-use \CoreLocal;
 
 /**
-  @class RefundAdminLogin
-  adminlogin callback for approving refunds
+  @interface AdminLoginInterface
+  Proper interface so these things aren't duck-typed
 */
-class RefundAdminLogin implements AdminLoginInterface
+interface AdminLoginInterface 
 {
-    public static $adminLoginMsg = 'Login to issue refund';
-    public static $adminLoginLevel = 30;
-
-    public static function adminLoginCallback($success)
-    {
-        if ($success) {
-            CoreLocal::set('refundComment', CoreLocal::get('strEntered'));    
-            return MiscLib::baseURL().'gui-modules/refundComment.php';
-        }
-        CoreLocal::set('refundComment', '');
-        return false;
-    }
-
+    public static $adminLoginMsg;
+    public static $adminLoginLevel;
+    public static function adminLoginCallback($success);
 }
 

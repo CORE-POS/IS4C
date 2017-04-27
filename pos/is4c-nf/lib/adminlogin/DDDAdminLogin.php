@@ -29,20 +29,18 @@ use COREPOS\pos\lib\MiscLib;
   adminlogin callback for marking current
   items as shrink (DDD in WFC parlance [dropped, dented, damaged])
 */
-class DDDAdminLogin 
+class DDDAdminLogin implements AdminLoginInterface
 {
-
     public static $adminLoginMsg = 'Mark these items as shrink/unsellable?';
-    
     public static $adminLoginLevel = 10;
 
     public static function adminLoginCallback($success)
     {
         if ($success) {
             return MiscLib::baseURL().'gui-modules/ddd.php';
-        } else {
-            return false;
         }
+
+        return false;
     }
 
 }

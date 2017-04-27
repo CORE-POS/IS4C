@@ -29,20 +29,18 @@ use COREPOS\pos\lib\MiscLib;
   adminlogin callback for adjusting
   the price of an already-rung item
 */
-class PriceOverrideAdminLogin 
+class PriceOverrideAdminLogin implements AdminLoginInterface
 {
-
     static public $adminLoginMsg = 'Login to alter price';
-
     static public $adminLoginLevel = 30;
 
     static public function adminLoginCallback($success)
     {
         if ($success) {
             return MiscLib::baseURL().'gui-modules/priceOverride.php';
-        } else {
-            return false;
         }
+
+        return false;
     }
 }
 

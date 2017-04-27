@@ -97,6 +97,16 @@ class UnpaidAR extends BasicCorePage
         echo DisplayLib::printfooter();
         echo "</div>";
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->form->reginput = 'CL';
+        $phpunit->assertEquals(false, $this->preprocess());
+        $this->form->reginput = 'BQ';
+        $phpunit->assertEquals(false, $this->preprocess());
+        ob_end_clean();
+    }
 }
 
 AutoLoader::dispatch();

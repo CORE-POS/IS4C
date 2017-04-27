@@ -30,11 +30,9 @@ use \CoreLocal;
   adminlogin callback for approving
   line item discounts.
 */
-class LineItemDiscountAdminLogin 
+class LineItemDiscountAdminLogin implements AdminLoginInterface
 {
-
     static public $adminLoginMsg = 'Login to give discount';
-
     static public $adminLoginLevel = 30;
 
     static public function adminLoginCallback($success)
@@ -42,9 +40,8 @@ class LineItemDiscountAdminLogin
         if ($success) {
             $inp = urlencode(CoreLocal::get('strEntered'));
             return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
-        } else {
-            return false;
         }
+        return false;
     }
 }
 

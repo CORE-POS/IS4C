@@ -30,9 +30,8 @@ use \CoreLocal;
   adminlogin callback for permitting underage age
   cashiers to sell age-restricted items
 */
-class AgeApproveAdminLogin 
+class AgeApproveAdminLogin implements AdminLoginInterface
 {
-
     public static $adminLoginMsg = 'Login to approve sale';
     
     public static $adminLoginLevel = 30;
@@ -44,10 +43,9 @@ class AgeApproveAdminLogin
             CoreLocal::set('cashierAgeOverride', 1);
             $inp = urlencode(CoreLocal::get('strEntered'));
             return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
-        } else {
-            CoreLocal::set('cashierAgeOverride', 0);
-            return false;
         }
+        CoreLocal::set('cashierAgeOverride', 0);
+        return false;
     }
 }
 

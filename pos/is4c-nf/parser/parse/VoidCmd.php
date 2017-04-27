@@ -27,11 +27,12 @@ use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\adminlogin\AdminLoginInterface;
 use COREPOS\pos\parser\Parser;
 use \CoreLocal;
 use \Exception;
 
-class VoidCmd extends Parser 
+class VoidCmd extends Parser implements AdminLoginInterface
 {
     private $scaleprice = 0;
 
@@ -642,7 +643,6 @@ class VoidCmd extends Parser
     }
 
     public static $adminLoginMsg = 'Void Limit Exceeded. Login to continue.';
-    
     public static $adminLoginLevel = 30;
 
     public static function adminLoginCallback($success)
