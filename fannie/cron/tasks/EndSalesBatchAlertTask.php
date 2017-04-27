@@ -136,14 +136,14 @@ class EndSalesBatchAlertTask extends FannieTask
                     $mail->addAddress($contact);
                 }
                 $mail->isHTML();
-                $mail->from('automail@wholefoods.coop');
+                $mail->From = 'automail@wholefoods.coop';
                 $mail->FromName = 'CORE POS Monitoring';
-                $mail->subject('Report: Sales Batches End Alerts');
+                $mail->Subject ='Report: Sales Batches End Alerts';
                 $msg .= $style;
                 $msg .= date('m-d-y').' Sales batches ending <span class="danger">today</span> 
                     through the next 7 days. <br /><br />';
                 $msg .= $ret;
-                $mail->body($msg);
+                $mail->Body = $msg;
                 if (!$mail->send()) {
                     $this->logger->error('Error emailing monitoring notification');
                 }
