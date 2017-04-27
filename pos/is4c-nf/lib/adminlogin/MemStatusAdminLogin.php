@@ -31,8 +31,10 @@ use \CoreLocal;
 */
 class MemStatusAdminLogin implements AdminLoginInterface
 {
-    public static $adminLoginMsg = 'Login to toggle member status';
-    public static $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login to toggle member status'), 30);
+    }
 
     public static function adminLoginCallback($success)
     {

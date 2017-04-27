@@ -29,8 +29,7 @@ namespace COREPOS\pos\lib\adminlogin;
 */
 interface AdminLoginInterface 
 {
-    public static $adminLoginMsg;
-    public static $adminLoginLevel;
+    public static function messageAndLevel();
     public static function adminLoginCallback($success);
 }
 

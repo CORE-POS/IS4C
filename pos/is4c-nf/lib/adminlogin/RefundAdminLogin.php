@@ -31,8 +31,10 @@ use \CoreLocal;
 */
 class RefundAdminLogin implements AdminLoginInterface
 {
-    public static $adminLoginMsg = 'Login to issue refund';
-    public static $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login to issue refund'), 30);
+    }
 
     public static function adminLoginCallback($success)
     {

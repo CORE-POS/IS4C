@@ -32,9 +32,10 @@ use \CoreLocal;
 */
 class AgeApproveAdminLogin implements AdminLoginInterface
 {
-    public static $adminLoginMsg = 'Login to approve sale';
-    
-    public static $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login to approve sale'), 30);
+    }
 
     public static function adminLoginCallback($success)
     {

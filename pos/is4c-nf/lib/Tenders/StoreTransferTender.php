@@ -81,8 +81,10 @@ class StoreTransferTender extends TenderModule implements AdminLoginInterface
     /**
       adminlogin callback to approve store transfers
     */
-    public static $adminLoginMsg = 'Login for store transfer';
-    public static $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login for store transfer'), 30);
+    }
 
     static public function adminLoginCallback($success)
     {

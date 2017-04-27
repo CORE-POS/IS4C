@@ -28,12 +28,7 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 
 /* this module is intended for re-use. 
- * Pass the name of a class with the
- * static properties: 
- *  - adminLoginMsg (message to display)
- *  - adminLoginLevel (employees.frontendsecurity requirement)
- * and static method:
- *  - adminLoginCallback(boolean $success)
+ * Pass the name of a class with the interface AdminLoginInterface
  *
  * The callback should return a URL or True (for pos2.php)
  * when $success is True. When $success is False, the return
@@ -76,7 +71,7 @@ class adminlogin extends NoInputCorePage
             return False;
         }
 
-        $this->heading = $class::$adminLoginMsg;
+        list($this->heading, $loginLevel) = $class::messageAndLevel();
 
         if ($this->form->tryGet('reginput') !== '' || $this->form->tryGet('userPassword') !== '') {
             $passwd = $this->form->tryGet('reginput');
@@ -93,7 +88,7 @@ class adminlogin extends NoInputCorePage
                 $this->msg = _("re-enter admin password");
             } else {
                 $dbc = Database::pDataConnect();
-                if (Authenticate::checkPermission($passwd, $class::$adminLoginLevel)) {
+                if (Authenticate::checkPermission($passwd, $loginLevel)) {
                     $this->approvedAction($class, $passwd);
 
                     return false;
@@ -103,7 +98,7 @@ class adminlogin extends NoInputCorePage
 
                 TransRecord::addLogRecord(array(
                     'upc' => $passwd,
-                    'description' => substr($class::$adminLoginMsg,0,30),
+                    'description' => substr($this->heading,0,30),
                     'charflag' => 'PW'
                 ));
                 $this->beep();
@@ -128,7 +123,7 @@ class adminlogin extends NoInputCorePage
         $row = Authenticate::getEmployeeByPassword($passwd);
         TransRecord::addLogRecord(array(
             'upc' => $row['emp_no'],
-            'description' => substr($class::$adminLoginMsg . ' ' . $row['FirstName'],0,30),
+            'description' => substr($this->heading . ' ' . $row['FirstName'],0,30),
             'charflag' => 'PW',
             'num_flag' => $row['emp_no']
         ));

@@ -31,8 +31,10 @@ use COREPOS\pos\lib\MiscLib;
 */
 class PriceOverrideAdminLogin implements AdminLoginInterface
 {
-    static public $adminLoginMsg = 'Login to alter price';
-    static public $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login to alter price'), 30);
+    }
 
     static public function adminLoginCallback($success)
     {

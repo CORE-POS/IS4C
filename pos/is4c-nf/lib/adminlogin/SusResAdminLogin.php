@@ -31,8 +31,10 @@ use COREPOS\pos\lib\MiscLib;
 */
 class SusResAdminLogin implements AdminLoginInterface
 {
-    static public $adminLoginMsg = 'Login to suspend/resume transactions';
-    static public $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login to suspend/resume transaction'), 30);
+    }
 
     static public function adminLoginCallback($success)
     {

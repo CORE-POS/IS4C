@@ -32,8 +32,10 @@ use \CoreLocal;
 */
 class LineItemDiscountAdminLogin implements AdminLoginInterface
 {
-    static public $adminLoginMsg = 'Login to give discount';
-    static public $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login to give discount'), 30);
+    }
 
     static public function adminLoginCallback($success)
     {

@@ -642,8 +642,10 @@ class VoidCmd extends Parser implements AdminLoginInterface
         return false;
     }
 
-    public static $adminLoginMsg = 'Void Limit Exceeded. Login to continue.';
-    public static $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Void Limit Exceeded. Login to Continue'), 30);
+    }
 
     public static function adminLoginCallback($success)
     {

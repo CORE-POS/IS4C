@@ -31,8 +31,10 @@ use COREPOS\pos\lib\MiscLib;
 */
 class UndoAdminLogin  implements AdminLoginInterface
 {
-    static public $adminLoginMsg = 'Login to void transactions';
-    static public $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return(_('Login to void transaction'), 30);
+    }
 
     static public function adminLoginCallback($success)
     {

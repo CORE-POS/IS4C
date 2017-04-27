@@ -31,8 +31,10 @@ use COREPOS\pos\lib\MiscLib;
 */
 class DDDAdminLogin implements AdminLoginInterface
 {
-    public static $adminLoginMsg = 'Mark these items as shrink/unsellable?';
-    public static $adminLoginLevel = 10;
+    public static function messageAndLevel()
+    {
+        return(_('Mark these items as shrink/unsellable?'), 10);
+    }
 
     public static function adminLoginCallback($success)
     {
