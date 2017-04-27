@@ -163,7 +163,9 @@ class PIMemberPage extends PIKillerPage {
             $default = new MemtypeModel($dbc);
             $default->memtype($json['customerTypeID']);
             $default->load();
-            $json['memberStatus'] = $default->custdataType();
+            if (FormLib::get('suspended') == 0) {
+                $json['memberStatus'] = $default->custdataType();
+            }
             $account_holder['discount'] = $default->discount();
             $account_holder['staff'] = $default->staff();
             $account_holder['chargeAllowed'] = $json['chargeLimit'] == 0 ? 0 : 1;
@@ -301,9 +303,11 @@ class PIMemberPage extends PIKillerPage {
                     }
                 }
             }
+            echo '<input type="hidden" name="suspended" value="1" />';
             echo '</td>';
         }
         else {
+            echo '<input type="hidden" name="suspended" value="0" />';
             echo "<td>$status</td>";
         }
         echo "<td colspan=2><a href=PISuspensionPage.php?id=".$this->card_no.">History</a>";

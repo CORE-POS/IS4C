@@ -142,12 +142,29 @@ div#scaleBottom { width: 118px; color: #000000; background: #eeeeee; font-weight
 *********************************************/
 div.qkRow { width: 100%; clear: left; text-align: center; }
 div.qkBox { width: 23%; float: left;  padding: 10px; text-align: center; }
-div.qkBox div { width: 75px; padding: 5px 0 5px 0; margin-left:auto; margin-right:auto;}
-.quick_button { width: 65px; height: 55px; }
+div.qkBox div { width: 100px; padding: 5px 0 5px 0; margin-left:auto; margin-right:auto;}
+.quick_button { width: 95px; height: 75px; }
 div.qkArrowBox { width: 20px; float: left; padding-top: 25px;}
 button.qkArrow { width: 50px; height: 30px; border: outset 3px #004080;
 	color: #004080; background-color: #ffffff; }
 
+/*********************************************
+ * NumPad Notifier
+*********************************************/
+button.numpad-btn {
+    text-align: center;
+    width: 45px;
+    height: 35px;
+    margin: 8px 0px 0px 8px;
+    border: solid 1px #000;
+}
+button.numpad-wide {
+    text-align: center;
+    height: 35px;
+    width: 160px;
+    margin: 8px 0px 0px 8px;
+    border: solid 1px #000;
+}
 /*********************************************
  * Number Box 
 *********************************************/

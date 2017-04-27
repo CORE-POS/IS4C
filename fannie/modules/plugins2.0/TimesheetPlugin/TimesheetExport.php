@@ -74,7 +74,7 @@ class TimesheetExport extends FannieReportPage {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
         $periodID = FormLib::get_form_value('period',0);
-        $_SESSION['periodID'] = $periodID;
+        $this->session->periodID = $periodID;
         $perDatesQ = $ts_db->prepare("SELECT * FROM ".
             $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = ?");
         $perDatesR = $ts_db->execute($perDatesQ,array($periodID));

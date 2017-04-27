@@ -79,7 +79,7 @@ class EpScaleLib
 
     static private function expandedText($text, $item_info, $scale_model)
     {
-        if ($scale_model->epDeptNo() <= 3 && $item_info['MOSA']) {
+        if ($item_info['MOSA']) {
             $text = str_replace('{mosa}', 'Certified Organic By MOSA', $text);
         } else {
             $text = str_replace('{mosa}', '', $text);
@@ -219,7 +219,7 @@ class EpScaleLib
     {
         $desc = wordwrap($desc, $length, "\n", true); 
         $lines = explode("\n", $desc);
-        $keys = array_filter(array_keys($lines), function($i) use ($limit) { return strlen($i)<$limit; });
+        $keys = array_filter(array_keys($lines), function($i) use ($limit) { return $i<$limit; });
         return array_reduce($keys, function($carry, $key) use ($lines) {
             return $carry . 'DN' . ($key+1) . trim($lines[$key]) . chr(253)
                 . 'DS' . ($key+1) . '0' . chr(253);

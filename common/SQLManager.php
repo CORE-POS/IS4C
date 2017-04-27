@@ -44,7 +44,16 @@ if (!function_exists("ADONewConnection")) {
 */
 class SQLManager 
 {
+    /**
+     Logging object (PSR-3)
+    */
     private $QUERY_LOG; 
+
+    /**
+     In debug mode all queries are logged
+     even if they succeed
+    */
+    private $debug_mode = false;
 
     /** Array of connections **/
     public $connections;
@@ -129,6 +138,8 @@ class SQLManager
             // value here is really schema. Database name must match user name.
             $savedDB = $database;
             $database = $username;
+        } elseif (strtolower($type) == 'mysql' && version_compare(PHP_VERSION, '7.0.0') >= 0) {
+            $type = function_exists('mysqli_connect') ? 'mysqli' : 'pdo_mysql';
         }
 
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
@@ -369,6 +380,11 @@ class SQLManager
             if ($this->throw_on_fail) {
                 throw new \Exception($errorMsg);
             }
+        } elseif ($this->debug_mode) {
+            $logMsg = 'Successful query on ' . filter_input(INPUT_SERVER, 'PHP_SELF') . "\n"
+                . $query_text . "\n"
+                . (is_array($params) ? 'Parameters: ' . implode("\n", $params) : '');
+            $this->logger($logMsg);
         }
 
         return $result;
@@ -1511,7 +1527,7 @@ class SQLManager
         }
         $con = $this->connections[$which_connection];
 
-        return $con->Prepare($sql);
+        return is_object($con) ? $con->Prepare($sql) : false;
     }
 
    /**
@@ -1619,6 +1635,15 @@ class SQLManager
     public function setQueryLog($log)
     {
         $this->QUERY_LOG = $log;
+    }
+
+    /**
+      Enable or disable debug mode
+      @param [boolean] true means enabled, false means disabled
+    */
+    public function setDebugMode($debug)
+    {
+        $this->debug_mode = $debug;
     }
 
     /**

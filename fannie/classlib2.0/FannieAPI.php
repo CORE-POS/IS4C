@@ -30,20 +30,34 @@ class FannieAPI
     */
     static public function init()
     {
-        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
-            @session_start();
+        $session = self::session();
+        if (!isset($session->FannieClassMap)) {
+            $session->FannieClassMap = array();
+        } elseif (!is_array($session->FannieClassMap)) {
+            $session->FannieClassMap = array();
         }
-        if (!isset($_SESSION['FannieClassMap'])) {
-            $_SESSION['FannieClassMap'] = array();
-        } elseif(!is_array($_SESSION['FannieClassMap'])) {
-            $_SESSION['FannieClassMap'] = array();
+        $map = $session->FannieClassMap;
+        if (!isset($map['SQLManager'])) {
+            $map['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
         }
-        if (!isset($_SESSION['FannieClassMap']['SQLManager'])) {
-            $_SESSION['FannieClassMap']['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
+        if (!isset($map['FPDF'])) {
+            $map['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
         }
-        if (!isset($_SESSION['FannieClassMap']['FPDF'])) {
-            $_SESSION['FannieClassMap']['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
+        $session->FannieClassMap = $map;
+    }
+
+    static private $namedSession = null;
+    static private function session()
+    {
+        if (self::$namedSession === null) {
+            if (!class_exists('COREPOS\\common\\NamedSession', false)) {
+                include(__DIR__ . '/../../common/NamedSession.php');
+            }
+            $path = realpath(__DIR__ . '/../');
+            self::$namedSession = new COREPOS\common\NamedSession($path);
         }
+
+        return self::$namedSession;
     }
 
     /**
@@ -118,7 +132,8 @@ class FannieAPI
     */
     static public function loadClass($name)
     {
-        $map = isset($_SESSION['FannieClassMap']) ? $_SESSION['FannieClassMap'] : array();
+        $session = self::session();
+        $map = isset($session->FannieClassMap) ? $session->FannieClassMap : array();
 
         // class map should be array
         // of class_name => file_name
@@ -126,7 +141,7 @@ class FannieAPI
             $map = array();
             $map['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
             $map['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
-            $_SESSION['FannieClassMap'] = $map;
+            $session->FannieClassMap = $map;
         }
 
         // if class is known in the map, include its file
@@ -150,7 +165,8 @@ class FannieAPI
                 $found = self::loadFromNamespace($name);
                 if ($found) {
                     include_once($found);
-                    $_SESSION['FannieClassMap'][$name] = $found;
+                    $map[$name] = $found;
+                    $session->FannieClassMap = $map;
                 } 
                 return;
             }
@@ -208,6 +224,8 @@ class FannieAPI
             return false;
         }
 
+        $session = self::session();
+        $map = $session->FannieClassMap;
         $dir = opendir($path);
         $ret = false;
         while ($dir && ($file=readdir($dir)) !== false) {
@@ -215,6 +233,7 @@ class FannieAPI
             if ($file[0] != '.' && $file != 'noauto' && $file != 'node_modules' && is_dir($fullname)) {
                 // recurse looking for file
                 $file = self::findClass($name, $fullname);
+                $map = array_merge($map, $session->FannieClassMap);
                 if ($file !== false) { 
                     $ret = $file;
                     break;
@@ -223,13 +242,14 @@ class FannieAPI
                 // map all PHP files as long as we're searching
                 // but only return if the correct file is found
                 $class = substr($file,0,strlen($file)-4);
-                $_SESSION['FannieClassMap'][$class] = $fullname;
+                $map[$class] = $fullname;
                 if ($class == $name) {
                     $ret = $fullname;
                     break;
                 }
             }
         }
+        $session->FannieClassMap = $map;
 
         return $ret;
     }

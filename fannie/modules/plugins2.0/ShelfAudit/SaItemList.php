@@ -222,7 +222,7 @@ class SaItemList extends SaHandheldPage
                     <th>Size</th>
                     <th>Qty</th>
                 </tr>';
-            $upcs = '';
+            $upcs = array();
             while ($row = $this->connection->fetchRow($res)) {
                 $ret .= sprintf('<tr>
                     <td>%s</td>
@@ -241,10 +241,14 @@ class SaItemList extends SaHandheldPage
                     $row['size'],
                     $row['qty']
                 ); 
-                $upcs .= $row['upc'] . "\n";
+                $upcs[] = $row['upc'];
             }
             $ret .= '</table>';
-            $ret .= '<textarea>' . $upcs . '</textarea>';
+            $ret .= '<p><form method="post" action="../../../item/AdvancedItemSearch.php">';
+            $ret .= '<textarea name="upcs">' . implode("\n", $upcs) . '</textarea>';
+            $ret .= '<input type="hidden" name="extern" value="1" />';
+            $ret .= '<button type="submit" class="btn btn-default">Search These</button>';
+            $ret .= '</form></p>';
             $ret .= '</div>';
         }
         $ret .= '</div>';

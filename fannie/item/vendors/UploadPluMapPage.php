@@ -64,11 +64,11 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     private function sessionVendorID($dbc)
     {
-        if (!isset($_SESSION['vid'])){
+        if (!isset($this->session->vid)){
             $this->error_details = 'Missing vendor setting';
             return false;
         }
-        $VENDOR_ID = $_SESSION['vid'];
+        $VENDOR_ID = $this->session->vid;
 
         $idP = $dbc->prepare("SELECT vendorID FROM vendors WHERE vendorID=?");
         $idR = $dbc->execute($idP,array($VENDOR_ID));
@@ -162,7 +162,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     function results_content()
     {
-        unset($_SESSION['vid']);
+        unset($this->session->vid);
         return $this->simpleStats($this->stats, 'done');
     }
 
@@ -181,7 +181,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
-        $_SESSION['vid'] = $vid;
+        $this->session->vid = $vid;
         return '<div class="well"><legend>Instructions</legend>
             Upload a PLU and SKU file for <i>'.$vname.'</i> ('.$vid.'). File
             can be CSV, XLS, or XLSX.</div><br />';

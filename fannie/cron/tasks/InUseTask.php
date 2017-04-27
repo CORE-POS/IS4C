@@ -231,10 +231,10 @@ class InUseTask extends FannieTask
             $mail = new PHPMailer();
             $mail->isHTML();
             $mail->addAddress($to);
-            $mail->from('automail@wholefoods.coop');
+            $mail->From = 'automail@wholefoods.coop';
             $mail->FromName = 'CORE POS Monitoring';
-            $mail->subject('Report: In Use Task');
-            $mail->body($msg);
+            $mail->Subject = 'Report: In Use Task';
+            $mail->Body = $msg;
             if (!$mail->send()) {
                 $this->logger->error('Error emailing monitoring notification');
             }

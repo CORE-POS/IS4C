@@ -36,3 +36,4 @@ vendor
 !pos/is4c-nf/scale-drivers/drivers/NewMagellan/.paket/paket.bootstrapper.exe
 TestPage
 saveTestInfo.php
+node_modules

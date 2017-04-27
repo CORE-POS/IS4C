@@ -863,7 +863,10 @@ class FannieSignage
     public function formatPrice($price, $multiplier=1, $regPrice=0)
     {
         if ($multiplier > 1) {
-            $ttl = round($multiplier*$price);
+            // if the multiplier results in a nearly round number, just use the round number
+            // otherwise use two decimal places.
+            // the 2.5 cent threshold corresponds to existing advertisements
+            $ttl = abs(($multiplier*$price) - round($multiplier*$price)) < 0.025 ? round($multiplier*$price) : sprintf('%.2f', $multiplier*$price);
             return $multiplier . '/$' . $ttl;
         } elseif ($multiplier < 0) {
             return self::formatOffString($price, $multiplier, $regPrice);

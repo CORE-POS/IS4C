@@ -171,7 +171,7 @@ class DisplayTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('quantity', 0);
         CoreLocal::set('multiple', 0);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $v->check('VD');
         $v->parse('VD');
         $void = array(

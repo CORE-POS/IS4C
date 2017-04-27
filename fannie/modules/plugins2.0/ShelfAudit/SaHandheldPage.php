@@ -156,14 +156,14 @@ class SaHandheldPage extends FannieRESTfulPage
 
     protected function setSection()
     {
-        if (!isset($_SESSION['SaPluginSection'])) {
-            $_SESSION['SaPluginSection'] = 0;
+        if (!isset($this->session->SaPluginSection)) {
+            $this->session->SaPluginSection = 0;
         }
         $section = FormLib::get('section', false);
         if ($section !== false) {
-            $_SESSION['SaPluginSection'] = $section;
+            $this->session->SaPluginSection = $section;
         } else {
-            $section = $_SESSION['SaPluginSection'];
+            $section = $this->session->SaPluginSection;
         }
 
         return $section;
@@ -261,10 +261,10 @@ if (typeof WebBarcode == 'object') {
  - Store # <?php echo $store; ?>
 <input type="hidden" name="store" id="store" value="<?php echo ((int)$store); ?>" />
 <label>
-    <input tabindex="-1" type="radio" name="section" value=0 <?php echo $_SESSION['SaPluginSection']==0 ? 'checked' : ''; ?>/> Backstock
+    <input tabindex="-1" type="radio" name="section" value=0 <?php echo $this->session->SaPluginSection==0 ? 'checked' : ''; ?>/> Backstock
 </label>
 <label>
-    <input tabindex="-1" type="radio" name="section" value=1 <?php echo $_SESSION['SaPluginSection']==1 ? 'checked' : ''; ?>/> Floor
+    <input tabindex="-1" type="radio" name="section" value=1 <?php echo $this->session->SaPluginSection==1 ? 'checked' : ''; ?>/> Floor
 </label>
 <br />
 <div class="form-group form-inline">

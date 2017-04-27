@@ -159,7 +159,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             }
         }
         $json = array('items' => $ret, 'table' => $this->itemListTab($orderID));
-        echo json_encode($ret);
+        echo json_encode($json);
     }
 
     /**
@@ -241,6 +241,12 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
     {
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($this->id);
+        $offset = FormLib::get('listOffset', 0);
+        $upcs = FormLib::get('upc', array());
+        $brands = FormLib::get('brand', array());
+        $descriptions = FormLib::get('description', array());
+        $sizes = FormLib::get('unitSize', array());
+        $costs = FormLib::get('totalCost', array());
         for ($i=0; $i<count($this->sku); $i++) {
             $poi->sku($this->sku[$i]);
             if (isset($this->case[$i])) {
@@ -248,6 +254,20 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             }
             if (isset($this->qty[$i])) {
                 $poi->quantity($this->qty[$i]);
+            }
+            if ($i >= $offset) {
+                // this is a manual entry
+                $index = $i - $offset;
+                if (trim($this->sku[$i]) === '') {
+                    // cannot save w/o a SKU
+                    continue;
+                }
+                $poi->internalUPC(BarcodeLib::padUPC($upcs[$index]));
+                $poi->brand(trim($brands[$index]));
+                $poi->description(trim($descriptions[$index]));
+                $poi->unitSize(trim($sizes[$index]));
+                $poi->unitSize(trim($sizes[$index]));
+                $poi->unitCost($costs[$index]);
             }
             $saved = $poi->quantity() == 0 ? $poi->delete() : $poi->save();
         }
@@ -293,10 +313,10 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $ret = <<<HTML
 <div id="orderInfo">
     <span id="orderInfoVendor">{$row['vendorName']}</span>
-    {$w['date']}
+    {$row['date']}
     &nbsp;&nbsp;&nbsp;&nbsp;
     # of Items: <span id="orderInfoCount">{$row['rows']}</span>
-    &nbsp;&nbsp;&nbsp;&nbsp;';
+    &nbsp;&nbsp;&nbsp;&nbsp;
     Est. cost: $<span id="orderInfoCost">{$cost}</span>
 </div>
 <hr />
@@ -401,6 +421,7 @@ HTML;
                 <th>Cases</th>
                 <th>Est. Cost</th>
             </tr>';
+        $offset = 0;
         foreach ($poi->find() as $item) {
             $batch = $this->connection->getValue($batchP, array($item->internalUPC(), $order->storeID()));
             $ret .= sprintf('<tr %s>
@@ -423,11 +444,16 @@ HTML;
                 $item->quantity(),
                 $item->unitCost() * $item->caseSize() * $item->quantity()
             );
+            $offset++;
         }
         $ret .= '</table>
             <p>
+                <input type="hidden" name="listOffset" value="' . $offset . '" />
                 <a href="" onclick="updateList(); return false;"
                     class="btn btn-default">Save</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="" onclick="addManualRow(); return false;"
+                    class="btn btn-default">Add Manual Entry</a>
             </p>';
 
         return $ret;

@@ -40,7 +40,7 @@ class TsStaffMemReport extends FanniePage {
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method=GET class="form-horizontal">';
         $stored = ($_COOKIE['timesheet']) ? $_COOKIE['timesheet'] : '';
         echo '<div class="row form-group">';
-        if ($_SESSION['logged_in'] == True) {
+        if ($this->session->logged_in == True) {
             echo '<label class="col-sm-2">Name</label>
                 <div class="col-sm-5"><select name="emp_no" class="form-control">
             <option value="error">Select staff member</option>' . "\n";

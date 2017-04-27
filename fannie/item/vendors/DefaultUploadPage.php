@@ -118,10 +118,10 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     private function validateVendorID($dbc)
     {
-        if (!isset($_SESSION['vid'])){
+        if (!isset($this->session->vid)){
             throw new Exception('Missing vendor setting');
         }
-        $VENDOR_ID = $_SESSION['vid'];
+        $VENDOR_ID = $this->session->vid;
 
         $prep = $dbc->prepare("SELECT vendorID,vendorName FROM vendors WHERE vendorID=?");
         $row = $dbc->getRow($prep,array($VENDOR_ID));
@@ -199,7 +199,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
-            if ($_SESSION['vUploadCheckDigits'])
+            if ($this->session->vUploadCheckDigits)
                 $upc = '0'.substr($upc,0,12);
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $upc = $SKU_TO_PLU_MAP[$sku];
@@ -268,7 +268,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $dbc->execute($srpP,array($VENDOR_ID,$upc,$srp));
             }
 
-            if ($_SESSION['vUploadChangeCosts']) {
+            if ($this->session->vUploadChangeCosts) {
                 $this->updateCost($pmodel, $upc, $VENDOR_ID, $reg_unit);
             }
         }
@@ -306,8 +306,8 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $delP = $dbc->prepare("DELETE FROM vendorSRPs WHERE vendorID=?");
         $dbc->execute($delP,array($VENDOR_ID));
 
-        $_SESSION['vUploadCheckDigits'] = FormLib::get('rm_cds') !== '' ? true : false;
-        $_SESSION['vUploadChangeCosts'] = FormLib::get('up_costs') !== '' ? true : false;
+        $this->session->vUploadCheckDigits = FormLib::get('rm_cds') !== '' ? true : false;
+        $this->session->vUploadChangeCosts = FormLib::get('up_costs') !== '' ? true : false;
     }
 
     function preview_content()
@@ -321,11 +321,11 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $ret = "<p>Price data import complete</p>";
         $ret .= sprintf('<p><a class="btn btn-default" 
             href="%sbatches/UNFI/RecalculateVendorSRPs.php?id=%d">Update SRPs</a></p>',
-            $this->config->get('URL'), $_SESSION['vid']);
+            $this->config->get('URL'), $this->session->vid);
 
-        unset($_SESSION['vid']);
-        unset($_SESSION['vUploadCheckDigits']);
-        unset($_SESSION['vUploadChangeCosts']);
+        unset($this->session->vid);
+        unset($this->session->vUploadCheckDigits);
+        unset($this->session->vUploadChangeCosts);
 
         return $ret;
     }
@@ -344,7 +344,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
-        $_SESSION['vid'] = $vid;
+        $this->session->vid = $vid;
         return '<div class="well"><legend>Instructions</legend>
             Upload a price file for <i>'.$vName.'</i> ('.$vid.'). File must be
             CSV. Files &gt; 2MB may be zipped.</div>';

@@ -48,6 +48,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected $OU_START = 110;
 
+    /** previous numbers
     protected $PLAN_SALES = array(
         '1,6' => 48125.67,      // Hillside Produce
         '2,10' => 11037.90,     // Hillside Deli
@@ -73,6 +74,34 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         '9,9' => 1310.53,
         '9,13' => 4589.22,
         '9,17' => 8823.08,
+    );
+    */
+
+    protected $PLAN_SALES = array(
+        '1,6' => 51193.05,      // Hillside Produce
+        '2,10' => 11416.48,     // Hillside Deli
+        '2,11' => 31032.00,
+        '2,16' => 12651.44,
+        '3,1' => 24391.70,      // Hillside Grocery
+        '3,4' => 59349.56,
+        '3,5' => 22467.52,
+        '3,7' => 187.91,
+        '3,8' => 16600.59,
+        '3,9' => 2591.48,
+        '3,13' => 14267.70,
+        '3,17' => 25043.57,
+        '7,6' => 18247.03,      // Denfeld Produce
+        '8,10' => 4173.27,      // Denfeld Deli
+        '8,11' => 12583.37,
+        '8,16' => 4913.95,
+        '9,1' => 8065.54,       // Denfeld Grocery
+        '9,4' => 24245.34,
+        '9,5' => 8415.72,
+        '9,7' => 81.00,
+        '9,8' => 5655.49,
+        '9,9' => 990.29,
+        '9,13' => 4578.06,
+        '9,17' => 8308.91,
     );
 
     public function preprocess()

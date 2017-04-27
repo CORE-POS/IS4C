@@ -143,7 +143,6 @@ class Valutec extends BasicCCModule
                 $ttl = $this->conf->get("paycard_amount");
                 $deptObj = new COREPOS\pos\lib\DeptLib($this->conf);
                 $deptObj->deptkey($ttl*100, $dept . '0');
-                COREPOS\pos\lib\DeptLib::deptkey($ttl*100,9020);
                 $resp = $this->conf->get("paycard_response");    
                 $this->conf->set("boxMsg","<b>Success</b><font size=-1>
                                            <p>New card balance: $" . $resp["Balance"] . "
@@ -168,7 +167,7 @@ class Valutec extends BasicCCModule
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
                 $this->conf->set("autoReprint",1);
-                $void = new COREPOS\pos\parser\parse\Void($this->conf);
+                $void = new COREPOS\pos\parser\parse\VoidCmd($this->conf);
                 $void->voidid($this->conf->get("paycard_id"), array());
                 $resp = $this->conf->get("paycard_response");
                 $this->conf->set("boxMsg","<b>Voided</b><font size=-1>

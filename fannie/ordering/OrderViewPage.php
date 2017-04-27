@@ -559,7 +559,7 @@ class OrderViewPage extends FannieRESTfulPage
                     $n[0],$n[1]);
             }
             $ret .= '</select></td>';
-            $ret .= '<td>&nbsp;</td>';
+            $ret .= '<td><a href="NewSpecialOrdersPage.php?card_no=' . $memNum . '">All Orders for this Account</a></td>';
         }
         $ret .= '<td colspan="4" class="form-inline">Notes For Department:
             <select id="nDept" class="form-control input-sm contact-field" 
@@ -979,7 +979,7 @@ HTML;
                     class="form-control input-sm item-field input-vendor" name="vendor" maxlength="13" />',
                     $row['mixMatch']);
             } else {
-                $supplier .= '</select>';
+                $supplierInput .= '</select>';
             }
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
                     class="form-control input-sm item-field input-vendor" name="vendor"
@@ -1237,9 +1237,9 @@ HTML;
         $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
         $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {
-            $_SESSION['specialOrderRedirect'] = $return_path;
-        } elseif (isset($_SESSION['specialOrderRedirect'])) {
-            $return_path = $_SESSION['specialOrderRedirect'];
+            $this->session->specialOrderRedirect = $return_path;
+        } elseif (isset($this->session->specialOrderRedirect)) {
+            $return_path = $this->session->specialOrderRedirect;
         } else {
             $return_path = $this->config->get('URL') . "ordering/";
         }
