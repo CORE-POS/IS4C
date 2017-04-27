@@ -53,23 +53,23 @@ class adminlist extends NoInputCorePage
     private function handleInput($choice)
     {
         switch ($choice) {
-            'SUSPEND':
+            case 'SUSPEND':
                 return $this->suspendTransaction();
-            'RESUME':
+            case 'RESUME':
                 $url = $this->resumeTransaction();
                 $this->change_page($url);
                 return false;
-            'TR':
+            case 'TR':
                 TenderReport::printReport();
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
-            'OTR':
+            case 'OTR':
                 if ($this->security >= 30) {
                     $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=COREPOS-pos-lib-adminlogin-AnyTenderReportRequest');
                     return false;
                 }
                 return true;
-            'UNDO':
+            case 'UNDO':
                 if ($this->security >= 30) {
                     $this->change_page($this->page_url . 'gui-modules/undo.php');
                     return false;
