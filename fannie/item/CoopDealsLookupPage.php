@@ -283,7 +283,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             <ul>
                 <li><a class="" href="CoopDealsLookupPage.php">Select Month</a></li>
                 <li><a class="" href="../../../scancoord/item/SalesChange/SCScanner.php">Batch Check</a></li>
-                <li><a class="" href="..">Exit</a></li>
+                <li><a class="" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Exit</a></li>
             </ul>
         ';
         return $ret;
