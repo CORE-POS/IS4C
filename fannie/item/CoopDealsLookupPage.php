@@ -61,9 +61,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $upc = FormLib::get('upc');
         $salePrice = FormLib::get('salePrice');
 
-        $prep = $dbc->prepare('
-            SELECT * FROM batches WHERE batchID = ?
-        ');
+        $prep = $dbc->prepare('SELECT * FROM batches WHERE batchID = ?');
         $res = $dbc->execute($prep, $batchID);
         $row = $dbc->fetch_row($res);
         $batchID = $row['batchID'];
@@ -73,42 +71,28 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $prep = $dbc->prepare('
             INSERT INTO batchList
             (upc, batchID, salePrice, groupSalePrice, active)
-            VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                "1"
-            )
+            VALUES (?,?,?,?,"1")
         ');
-        $dbc->execute($prep, $args);
-        if ($dbc->error()) {
-            return '<div class="alert alert-danger">' . $dbc->error(). "</div>"
-                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+        $dbc->execute($prep,$args);
+        if ($er = $dbc->error()) {
+            return '<div class="alert alert-danger">' . $er . "</div>"
+                . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
         } else {
             return '<div class="alert alert-success">Item Added to Batch</div>'
-                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+                . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
         }
 
-        //  Update 'Missing Sign' queue in SaleChangeQueues.
-        if (isset($_SESSION['session'])) $session = $_SESSION['session'];
-        if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
-
-        if (isset($session) && isset($store_id)) {
+        //  Add product to Batch Check Queue if Batch Check in session.
+        if ($session = $_SESSION['session'] && $store_id = $_SESSION['store_id']) {
             $dbc = FannieDB::get('woodshed_no_replicate');
             $argsB = array($upc, $store_id, $session);
             $prepB = $dbc->prepare('
-                INSERT INTO woodshed_no_replicate.SaleChangeQueues
-                (queue, upc, store_id, session)
-                VALUES (
-                    8,
-                    ?,
-                    ?,
-                    ?
-                )
+                INSERT INTO SaleChangeQueues (queue, upc, store_id, session)
+                VALUES (8,?,?,?)
             ');
-            $dbc->execute($prepB, $argsB);
+            $dbc->execute($prepB,$argsB);
         }
+
     }
 
     function get_upc_view()
@@ -155,7 +139,6 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $flyerPeriod = $row['flyerPeriod'];
             $sku = $row['sku'];
             $srp = $row['srp'];
-
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
             $ret .=  '<td><b>Brand</b></td><td>' . $row['brand'] . '</tr>';
@@ -171,12 +154,13 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         if ($dbc->error()) {
             $ret .= '<div class="alert alert-warning">' . $dbc->error() . '</div>';
         }
-        
-        $months = array('Jan'=>1,'Feb'=>2,'Mar'=>3,'Apr'=>4,'May'=>5,'June'=>6,'July'=>7,'Aug'=>8,'Sep'=>9,'Oct'=>10,'Nov'=>11,'Dec'=>12);
+
+        $months = array('Jan'=>1,'Feb'=>2,'Mar'=>3,'Apr'=>4,'May'=>5,'June'=>6,
+            'July'=>7,'Aug'=>8,'Sep'=>9,'Oct'=>10,'Nov'=>11,'Dec'=>12);
         $year = date('Y');
         $checkMoStart = $year . '-' .$months[$_SESSION['month']] . '01';
         $checkMoEnd = $year . '-' .$months[$_SESSION['month']] . '31';
-        
+
         if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
         } else {
@@ -190,11 +174,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 where CURDATE() between startDate and endDate
                     and batchType = 1;
             ');
-            
-            $months = array(1=>'Jan',2=>'Feb', 3=>'Mar', 4=>'Apr', 5=>'May', 
-                6=>'June', 7=>'July', 8=>'Aug', 9=>'Sep', 10=>'Oct', 11=>'Nov', 12=>'Dec');
-            $month = array_keys($months,$_SESSION['month']);
-            
+
             $selMonthA = array($checkMoStart,$checkMoEnd);
             $selMonthQ = $dbc->prepare('
                 select
@@ -206,20 +186,14 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 where startDate between ? and ?
                     and batchType = 1;
             ');
-            
+
             $curMonth = date('M');
-            if($curMonth == 'Jul') {
-                $curMonth = 'July';
-            } elseif ($curMonth == 'Jun') {
-                $curMonth = 'June';
-            }
-            
             if ($curMonth == $_SESSION['month']) {
                 $result = $dbc->execute($curMonthQ);
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
             }
-            
+
             $ret .=  '
                 <form method="get" class="form-inline">
                     Current Sales Batches<br>
@@ -270,11 +244,6 @@ class CoopDealsLookupPage extends FannieRESTfulPage
     function get_view()
     {
         $curMonth = date('M');
-        if($curMonth == 'Jul') {
-            $curMonth = 'July';
-        } elseif($curMonth == 'Jun') {
-            $curMonth = 'June';
-        }
 
         return '
             <form method="get" name="useCurMo" class="form-inline">
@@ -290,8 +259,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     <option value="Mar">March</option>
                     <option value="Apr">April</option>
                     <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
+                    <option value="Jun">June</option>
+                    <option value="Jul">July</option>
                     <option value="Aug">August</option>
                     <option value="Sep">September</option>
                     <option value="Oct">October</option>
@@ -304,7 +273,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         ';
 
     }
-    
+
     private function navBtns()
     {
         $ret .= '';
@@ -319,12 +288,6 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         return $ret;
     }
 
-    public function helpContent()
-    {
-        return '<p>Check whether a given item is present in a Co+op Deals cycle. First, enter
-            a month. Then enter a UPC to search for that item in the chosen month\'s sale cycle. If the
-            item is present, you can add it to an existing batch.</p>';
-    }
 }
 
 FannieDispatch::conditionalExec();
