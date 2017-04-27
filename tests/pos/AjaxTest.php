@@ -130,7 +130,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $vals = new ValueContainer();
         $vals->amount = 1.00;
         foreach (array('check', 'giftcert', 'stock', 'classreg', 'unknown') as $type) {
-            $vals->endorseType = $type;
+            $vals->type = $type;
             $ajax = new COREPOS\pos\ajax\AjaxEndorse(new WrappedStorage(), $vals);
             $this->assertEquals('Done', $ajax->ajax());
         }
