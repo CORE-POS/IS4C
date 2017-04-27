@@ -56,83 +56,15 @@ static public function writeLine($text)
     if (CoreLocal::get("print") != 0) {
 
         $printerPort = CoreLocal::get('printerPort');
-        if (substr($printerPort, 0, 6) == "tcp://") {
-            self::printToServer(substr($printerPort, 6), $text);
-        } else {
-            /* check fails on LTP1: in PHP4
-               suppress open errors and check result
-               instead 
-            */
-            //if (is_writable(CoreLocal::get("printerPort"))){
-            $fptr = fopen(CoreLocal::get("printerPort"), "w");
-            fwrite($fptr, $text);
-            fclose($fptr);
-        }
+        /* check fails on LTP1: in PHP4
+           suppress open errors and check result
+           instead
+        */
+        $fptr = fopen(CoreLocal::get("printerPort"), "w");
+        fwrite($fptr, $text);
+        fclose($fptr);
     }
 }
-
-/**
-  Write text to server via TCP socket
-  @param $printServer [string] host or host:port
-  @param $text [string] text to print
-  @return
-   - [int]  1 => success
-   - [int]  0 => problem sending text
-   - [int] -1 => sent but no response. printer might be stuck/blocked
-*/
-static private function printToServer($printerServer, $text)
-{
-    $port = 9450;
-    if (strstr($printerServer, ':')) {
-        list($printerServer, $port) = explode(':', $printerServer, 2);
-    }
-    if (!function_exists('socket_create')) {
-        return 0;
-    }
-
-    $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-    if ($socket === false) {
-        return 0;
-    }
-
-    socket_set_block($socket);
-    socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-    socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 2, 'usec' => 0)); 
-    if (!socket_connect($socket, $printerServer, $port)) {
-        return false;
-    }
-
-    $sendFailed = false;
-    while(true) {
-        $numWritten = socket_write($socket, $text);
-        if ($numWritten === false) {
-            // error occurred
-            $sendFailed = true;
-            break; 
-        }
-
-        if ($numWritten >= strlen($text)) {
-            // whole message has been sent
-            // send ETX to signal message complete
-            socket_write($socket, chr(0x3));
-            break;
-        }
-
-        $text = substr($text, $numWritten);
-    }
-
-    $ack = socket_read($socket, 3);
-    socket_close($socket);
-
-    if ($sendFailed) {
-        return 0;
-    } elseif ($ack === false) {
-        return -1;
-    }
-
-    return 1;
-}
-// --------------------------------------------------------------
 
 static public function center($text, $linewidth) {
     $blank = str_repeat(" ", 59);
@@ -163,7 +95,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
           text centered.
         */
         $headerLine = CoreLocal::get("receiptHeader".$i);
-        $graphicsPath = MiscLib::base_url().'graphics';
+        $graphicsPath = __DIR__ . '/../graphics';
         if (!ctype_print($headerLine)) {
             $receipt .= self::$PRINT->rawEscCommand($headerLine) . "\n";
         } elseif (preg_match('/nv(\d{1,3})/i', $headerLine, $match)) {
@@ -568,77 +500,81 @@ static public function receiptDetail($reprint=false, $transNum='')
             $row = $dbc->fetchRow($result);
             $detail .= $row[0]."\n";
         }
-    } else { 
-        $dbc = Database::tDataConnect();
-        /**
-          The newReceipt=1 option should not be shown in the configuration
-          UI if the view doesn't exist, but if the configuration gets
-          messed up try to do something useful rather than printing
-          nothing.
-        */
-        if (!$dbc->tableExists('rp_receipt_reorder_unions_g')) {
-            return self::receiptFromBuilders($transNum);
-        }
 
-        // otherwise use new format 
-        $query = "select linetoprint,sequence,dept_name,ordered, 0 as ".
-                $dbc->identifierEscape('local')
-            ." from rp_receipt_reorder_unions_g where emp_no=$empNo and "
-            ." register_no=$laneNo and trans_no=$transNo "
-            ." order by ordered,dept_name, " 
-            ." case when ordered=4 then '' else upc end, "
-                .$dbc->identifierEscape('sequence');
-
-        $result = $dbc->query($query);
-        $numRows = $dbc->numRows($result);
-            
-        // loop through the results to generate the items listing.
-        $lastDept="";
-        while ($row = $dbc->fetchRow($result)) {
-            if ($row[2]!=$lastDept){  // department header
-                
-                if ($row['2']==''){
-                    $detail .= "\n";
-                } else{
-                    $detail .= self::$PRINT->TextStyle(True,True);
-                    $detail .= $row[2];
-                    $detail .= self::$PRINT->TextStyle(True,False);
-                    $detail .= "\n";
-                }
-            }
-            /***** jqh 12/14/05 fix tax exempt on receipt *****/
-            if ($row[1]==2 and CoreLocal::get("TaxExempt")==1){
-                $detail .= "                                         TAX    0.00\n";
-            } elseif ($row[1]==1 and CoreLocal::get("TaxExempt")==1){
-                $queryExempt="select ".$dbc->concat(
-                "right(".$dbc->concat('space(44)',"'SUBTOTAL'",'').", 44)",
-                "right(".$dbc->concat('space(8)',$dbc->convert('runningTotal-tenderTotal','char'),'').", 8)", 
-                "space(4)",'')." as linetoprint,
-                1 as sequence,null as dept_name,3 as ordered,'' as upc
-                from lttsummary";
-                $resultExempt = $dbc->query($queryExempt);
-                $rowExempt = $dbc->fetchRow($resultExempt);
-                $detail .= $rowExempt[0]."\n";
-            } else {
-                if (CoreLocal::get("promoMsg") == 1 && $row[4] == 1 ){ 
-                    // '*' added to local items 8/15/2007 apbw for eat local challenge 
-                    $detail .= '*'.$row[0]."\n";
-                } else {
-                    if ( strpos($row[0]," TOTAL") ) {         
-                        // if it's the grand total line . . .
-                        $detail .= self::$PRINT->TextStyle(True,True);
-                        $detail .= $row[0]."\n";
-                        $detail .= self::$PRINT->TextStyle(True,False);
-                    } else {
-                        $detail .= $row[0]."\n";
-                    }
-                }
-            }
-            /***** jqh end change *****/
-            
-            $lastDept=$row[2];
-        } // end for loop
+        return $detail;
     }
+
+    // the rest of this is deprecated
+
+    $dbc = Database::tDataConnect();
+    /**
+      The newReceipt=1 option should not be shown in the configuration
+      UI if the view doesn't exist, but if the configuration gets
+      messed up try to do something useful rather than printing
+      nothing.
+    */
+    if (!$dbc->tableExists('rp_receipt_reorder_unions_g')) {
+        return self::receiptFromBuilders($transNum);
+    }
+
+    // otherwise use new format
+    $query = "select linetoprint,sequence,dept_name,ordered, 0 as ".
+            $dbc->identifierEscape('local')
+        ." from rp_receipt_reorder_unions_g where emp_no=$empNo and "
+        ." register_no=$laneNo and trans_no=$transNo "
+        ." order by ordered,dept_name, "
+        ." case when ordered=4 then '' else upc end, "
+            .$dbc->identifierEscape('sequence');
+
+    $result = $dbc->query($query);
+    $numRows = $dbc->numRows($result);
+
+    // loop through the results to generate the items listing.
+    $lastDept="";
+    while ($row = $dbc->fetchRow($result)) {
+        if ($row[2]!=$lastDept){  // department header
+            
+            if ($row['2']==''){
+                $detail .= "\n";
+            } else{
+                $detail .= self::$PRINT->TextStyle(True,True);
+                $detail .= $row[2];
+                $detail .= self::$PRINT->TextStyle(True,False);
+                $detail .= "\n";
+            }
+        }
+        /***** jqh 12/14/05 fix tax exempt on receipt *****/
+        if ($row[1]==2 and CoreLocal::get("TaxExempt")==1){
+            $detail .= "                                         TAX    0.00\n";
+        } elseif ($row[1]==1 and CoreLocal::get("TaxExempt")==1){
+            $queryExempt="select ".$dbc->concat(
+            "right(".$dbc->concat('space(44)',"'SUBTOTAL'",'').", 44)",
+            "right(".$dbc->concat('space(8)',$dbc->convert('runningTotal-tenderTotal','char'),'').", 8)",
+            "space(4)",'')." as linetoprint,
+            1 as sequence,null as dept_name,3 as ordered,'' as upc
+            from lttsummary";
+            $resultExempt = $dbc->query($queryExempt);
+            $rowExempt = $dbc->fetchRow($resultExempt);
+            $detail .= $rowExempt[0]."\n";
+        } else {
+            if (CoreLocal::get("promoMsg") == 1 && $row[4] == 1 ){
+                // '*' added to local items 8/15/2007 apbw for eat local challenge
+                $detail .= '*'.$row[0]."\n";
+            } else {
+                if ( strpos($row[0]," TOTAL") ) {
+                    // if it's the grand total line . . .
+                    $detail .= self::$PRINT->TextStyle(True,True);
+                    $detail .= $row[0]."\n";
+                    $detail .= self::$PRINT->TextStyle(True,False);
+                } else {
+                    $detail .= $row[0]."\n";
+                }
+            }
+        }
+        /***** jqh end change *****/
+
+        $lastDept=$row[2];
+    } // end for loop
 
     return $detail;
 }
@@ -689,15 +625,11 @@ static public function twoColumns($col1, $col2) {
 static public function parseRef($ref)
 {
     $emp=$reg=$trans=0;
-    if (strstr($ref, '-')) {
-        list($emp, $reg, $trans) = explode('-', $ref, 3);
-    } elseif (strstr($ref, '::')) {
-        // values in different order; rebuild correct $ref
-        list($reg, $emp, $trans) = explode('::', $ref, 3);
-        $ref = sprintf('%d-%d-%d',$emp,$reg,$trans);
-    } else {
-        list($emp, $reg, $trans) = explode('-', self::mostRecentReceipt(), 3);
+    if (!strstr($ref, '-') && !strstr($ref, '::')) {
+        $ref = self::mostRecentReceipt();
     }
+    $separator = strstr($ref, '::') ? '::' : '-';
+    list($emp, $reg, $trans) = explode($separator, $ref, 3);
 
     return array($emp, $reg, $trans);
 }
@@ -1059,16 +991,13 @@ static private function simpleReceipt($receipt, $arg1, $where)
 
     if ($arg1 == "partial") {
         $receipt .= $dashes.self::centerString(_("*    P A R T I A L  T R A N S A C T I O N    *")).$dashes;
-    }
-    elseif ($arg1 == "cancelled") {
+    } elseif ($arg1 == "cancelled") {
         $receipt .= $dashes.self::centerString(_("*  T R A N S A C T I O N  C A N C E L L E D  *")).$dashes;
-    }
-    elseif ($arg1 == "resume") {
+    } elseif ($arg1 == "resume") {
         $receipt .= $dashes.self::centerString(_("*    T R A N S A C T I O N  R E S U M E D    *")).$dashes
              .self::centerString("A complete receipt will be printed\n")
              .self::centerString("at the end of the transaction");
-    }
-    elseif ($arg1 == "suspended") {
+    } elseif ($arg1 == "suspended") {
         $receipt .= $dashes.self::centerString(_("*  T R A N S A C T I O N  S U S P E N D E D  *")).$dashes
                  .self::mostRecentReceipt();
     }
@@ -1166,7 +1095,7 @@ static public function code39($barcode)
         self::$PRINT= PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
 
-    return self::$PRINT->BarcodeCODE39($barcode);
+    return self::$PRINT->printBarcode(PrintHandler::BARCODE_CODE39, $barcode);
 }
 
 static public function emailReceiptMod()
