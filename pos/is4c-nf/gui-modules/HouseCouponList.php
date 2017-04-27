@@ -122,7 +122,7 @@ class HouseCouponList extends NoInputCorePage
         <?php
     } // END body_content() FUNCTION
 
-    public function unitTest()
+    public function unitTest($phpunit)
     {
         $debug = $this->session->Debug_Redirects;
         $this->session->Debug_Redirects = 1;
