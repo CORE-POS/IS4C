@@ -86,7 +86,7 @@ class DDDReason extends NoInputCorePage
         <div class="centeredDisplay colored">
                 <span class="larger"><?php echo _('Why are these items being marked as shrink/unsellable?'); ?></span>
         <form name="selectform" method="post" 
-            id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            id="selectform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
             <select name="selectlist" id="selectlist"
                 onblur="$('#selectlist').focus();">
             <?php
@@ -105,6 +105,17 @@ class DDDReason extends NoInputCorePage
         $this->addOnloadCommand("\$('#selectlist').focus();\n");
         $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->head_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $this->reasons = array(1 => 'test');
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 AutoLoader::dispatch();

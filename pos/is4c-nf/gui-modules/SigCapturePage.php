@@ -183,6 +183,11 @@ class SigCapturePage extends BasicCorePage
         
         $this->session->set("boxMsg",'');
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertEquals(true, $this->saveImage('bmp', 'fakeContent'));
+    }
 }
 
 AutoLoader::dispatch();

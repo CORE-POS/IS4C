@@ -43,27 +43,42 @@ class adminlist extends NoInputCorePage
             if (!FormLib::validateToken()) {
                 return false;
             }
-            if (empty($choice)) {
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
-            } elseif ($choice == 'SUSPEND') {
-                return $this->suspendTransaction();
-            } elseif ($choice == 'RESUME') {
-                return $this->resumeTransaction();
-            } elseif ($choice == 'TR') {
-                TenderReport::printReport();
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
-            } elseif ($choice == 'OTR' && $this->security >= 30){
-                $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=COREPOS-pos-lib-adminlogin-AnyTenderReportRequest');
-                return False;
-            } elseif ($choice == 'UNDO' && $this->security >= 30){
-                $this->change_page($this->page_url . 'gui-modules/undo.php');
-                return false;
-            }
+            return $this->handleInput($choice);
+
         } catch (Exception $ex) {}
 
         return true;
+    }
+
+    private function handleInput($choice)
+    {
+        switch ($choice) {
+            'SUSPEND':
+                return $this->suspendTransaction();
+            'RESUME':
+                $url = $this->resumeTransaction();
+                $this->change_page($url);
+                return false;
+            'TR':
+                TenderReport::printReport();
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return false;
+            'OTR':
+                if ($this->security >= 30) {
+                    $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=COREPOS-pos-lib-adminlogin-AnyTenderReportRequest');
+                    return false;
+                }
+                return true;
+            'UNDO':
+                if ($this->security >= 30) {
+                    $this->change_page($this->page_url . 'gui-modules/undo.php');
+                    return false;
+                }
+                return true;
+            default:
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return false;
+        }
     }
 
     private function suspendTransaction()
@@ -94,19 +109,17 @@ class adminlist extends NoInputCorePage
             $this->session->set('boxMsgButtons', array(
                 _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
-            $this->change_page($this->page_url."gui-modules/boxMsg2.php");
+            return $this->page_url . 'gui-modules/boxMsg2.php';
         } elseif (SuspendLib::checksuspended($this->session) == 0) {
             $this->session->set("boxMsg",_("no suspended transaction"));
             $this->session->set('boxMsgButtons', array(
                 _('Dismiss [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $this->session->set("strRemembered","");
-            $this->change_page($this->page_url."gui-modules/boxMsg2.php");
-        } else {
-            $this->change_page($this->page_url."gui-modules/suspendedlist.php");
+            return $this->page_url . 'gui-modules/boxMsg2.php';
         }
 
-        return false;
+        return $this->page_url . 'gui-modules/suspendedlist.php';
     }
 
     function head_content(){
@@ -169,6 +182,20 @@ class adminlist extends NoInputCorePage
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
     } // END body_content() FUNCTION
 
+    public function unitTest($phpunit)
+    {
+        $this->security = 0;
+        $phpunit->assertEquals(false, $this->handleInput('CL'));
+        $phpunit->assertEquals(true, $this->handleInput('OTR'));
+        $phpunit->assertEquals(true, $this->handleInput('UNDO'));
+        $this->security = 30;
+        $phpunit->assertEquals(false, $this->handleInput('OTR'));
+        $phpunit->assertEquals(false, $this->handleInput('UNDO'));
+        $phpunit->assertEquals(false, $this->handleInput('TR'));
+        $phpunit->assertEquals(false, $this->handleInput('RESUME'));
+        $this->session->LastID = 0;
+        $phpunit->assertEquals(false, $this->handleInput('SUSPEND'));
+    }
 }
 
 AutoLoader::dispatch();

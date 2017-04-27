@@ -70,20 +70,20 @@ class HouseCouponList extends NoInputCorePage
                 ORDER BY h.description";
     
         $result = $dbc->query($query);
-        $num_rows = $dbc->num_rows($result);
+        $numRows = $dbc->numRows($result);
         ?>
 
         <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
-            action="<?php echo $_SERVER['PHP_SELF']; ?>" >
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" >
         <select name="selectlist" size="15" id="selectlist"
             style="min-width: 200px;"
             onblur="$('#selectlist').focus()" >
 
         <?php
         $selected = "selected";
-        for ($i = 0; $i < $num_rows; $i++) {
+        for ($i = 0; $i < $numRows; $i++) {
             $row = $dbc->fetchRow($result);
             printf('<option value="%s" %s>%d. %s</option>',
                     ($prefix . str_pad($row['coupID'], 5, '0', STR_PAD_LEFT)),
@@ -121,6 +121,18 @@ class HouseCouponList extends NoInputCorePage
 
         <?php
     } // END body_content() FUNCTION
+
+    public function unitTest()
+    {
+        $debug = $this->session->Debug_Redirects;
+        $this->session->Debug_Redirects = 1;
+        $this->form = new COREPOS\common\mvc\ValueContainer();
+        $this->form->selectlist = '9999';
+        ob_start();
+        $phpunit->assertEquals(false, $this->preprocess());
+        ob_end_clean();
+        $this->session->Debug_Redirects = $debug;
+    }
 }
 
 AutoLoader::dispatch();

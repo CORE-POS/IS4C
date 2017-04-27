@@ -219,6 +219,7 @@ class QuantityEntryPage extends BasicCorePage
         $phpunit->assertEquals(true, $this->validateQty(self::MODE_PRECISE, 10));
         $phpunit->assertEquals(true, $this->validateQty(self::MODE_PRECISE, 1000));
         $phpunit->assertEquals(0.100, $this->validateQty(self::MODE_PRECISE, 100));
+        $phpunit->assertEquals(array('1234', 'RF'), $this->getPrefixes('RF1234'));
     }
 }
 
