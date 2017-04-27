@@ -24,7 +24,7 @@
 namespace COREPOS\pos\lib\Tenders;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
-use COREPOS\pos\admin\adminlogin\AdminLoginInterface;
+use COREPOS\pos\lib\adminlogin\AdminLoginInterface;
 use \CoreLocal;
 
 /**
