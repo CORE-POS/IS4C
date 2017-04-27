@@ -269,7 +269,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $year = FormLib::get('year');
         $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
         $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
-        $args = array($placed, $start, $end);
+        $args = array($start, $end);
         
         $query = 'SELECT p.orderID, p.vendorID, MIN(creationDate) as creationDate,
                 MIN(placedDate) as placedDate, COUNT(i.orderID) as records,
@@ -277,13 +277,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 SUM(i.receivedTotalCost) as receivedCost, v.vendorName,
                 MAX(i.receivedDate) as receivedDate,
                 MAX(p.vendorInvoiceID) AS vendorInvoiceID,
-                MAX(s.description) AS storeName
+                MAX(s.description) AS storeName,
+                MAX(p.placed) AS placed
             FROM PurchaseOrder as p
                 LEFT JOIN PurchaseOrderItems AS i ON p.orderID = i.orderID
                 LEFT JOIN vendors AS v ON p.vendorID=v.vendorID
                 LEFT JOIN Stores AS s ON p.storeID=s.storeID
-            WHERE placed=? 
-                AND creationDate BETWEEN ? AND ? ';
+            WHERE creationDate BETWEEN ? AND ? ';
         if (!$this->show_all) {
             $query .= 'AND userID=? ';
         }
@@ -298,15 +298,35 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
-        $ret = '<div class="table-responsive">
+        $ret = '<ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="' . ($placed ? '' : 'active') . '">
+                    <a href="#pending-pane" aria-controls="pending-pane" role="tab" data-toggle="tab">Pending</a>
+                </li>
+                <li role="presentation" class="' . ($placed ? 'active' : '') . '">
+                    <a href="#placed-pane" aria-controls="placed-pane" role="tab" data-toggle="tab">Placed</a>
+                </li>
+                </ul>
+                <div class="tab-content">';
+
+        $tPending = '<div id="pending-pane" class="tab-pane table-responsive ' . ($placed ? '' : 'active') . '">
             <table class="table table-striped table-bordered tablesorter">';
-        $ret .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
+        $tPlaced = '<div id="placed-pane" class="tab-pane table-responsive ' . ($placed ? 'active' : '') . '">
+            <table class="table table-striped table-bordered tablesorter">';
+        $tPending .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
-        $count = 1;
+        $tPlaced .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
+            <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         while ($row = $dbc->fetchRow($result)) {
-            $ret .= $this->orderRowToTable($row, $placed);
+            if ($row['placed']) {
+                $tPlaced .= $this->orderRowToTable($row, $placed);
+            } else {
+                $tPending .= $this->orderRowToTable($row, $placed);
+            }
         }
-        $ret .= '</tbody></table></div>';
+        $tPending .= '</tbody></table></div>';
+        $tPlaced .= '</tbody></table></div>';
+
+        $ret .= $tPending . $tPlaced . '</div>';
 
         return $ret;
     }
@@ -939,13 +959,6 @@ HTML;
                         $i, $label);
         }
 
-        $statusOpts = '';
-        foreach (array('pending', 'placed') as $s) {
-            $statusOpts .= sprintf('<option %s value="%s">%s</option>',
-                        ($init == $s ? 'selected' : ''),
-                        $s, ucwords($s));
-        }
-
         $stores = FormLib::storePicker();
         $storeSelect = str_replace('<select ', '<select id="storeID" onchange="fetchOrders();" ', $stores['html']);
 
@@ -963,11 +976,7 @@ HTML;
 
         return <<<HTML
 <div class="form-group form-inline">
-    <label>Status</label> 
-    <select id="orderStatus" onchange="fetchOrders();" class="form-control">
-        {$statusOpts}
-    </select>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="hidden" id="orderStatus" value="{$init}" />
     <label>Showing</label> 
     <select id="orderShow" onchange="fetchOrders();" class="form-control">
         <option {$mySelected} value="0">My Orders</option><option {$allSelected} value="1">All Orders</option>

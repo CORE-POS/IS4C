@@ -15,20 +15,6 @@ function fetchOrders(){
 	});
 }
 
-function fetchPage(pager) {
-	var dataStr = $('#orderStatus').val()+"=1";
-	if ($('#orderShow').val() == '1')
-		dataStr += '&all=1';	
-    dataStr += '&pager='+pager;
-	$.ajax({
-		url: 'ViewPurchaseOrders.php?'+dataStr,
-		type: 'get'
-    }).done(function(data){
-        $('#ordersDiv').html(data);
-        window.scrollTo(0,0);
-    });
-}
-
 function togglePlaced(orderID){
 	var dataStr = 'id='+orderID+'&setPlaced=';
     console.log($('#receiveBtn').length);
