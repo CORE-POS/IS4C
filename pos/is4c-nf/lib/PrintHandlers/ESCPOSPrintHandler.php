@@ -526,17 +526,43 @@ class ESCPOSPrintHandler extends PrintHandler {
         // GS "h" height
         return "\x1D\x68".chr( max(1, min(255, $dots)) );
     }
+
+    public function printBarcode($type, $data)
+    {
+        switch ($type) {
+            case PrintHandler::BARCODE_UPCA:
+                return $this->barcodeUPC($data, 65);
+            case PrintHandler::BARCODE_UPCE:
+                return $this->barcodeUPC($data, 66);
+            case PrintHandler::BARCODE_EAN13:
+                return $this->barcodeEAN($data, false);
+            case PrintHandler::BARCODE_EAN8:
+                return $this->barcodeEAN($data, true);
+            case PrintHandler::BARCODE_CODE39:
+                return $this->barcodeCODE39($data);
+            case PrintHandler::BARCODE_ITF:
+                return $this->barcodeITF($data);
+            case PrintHandler::BARCODE_CODEABAR
+                return $this->barcodeCODEABAR($data);
+            case PrintHandler::BARCODE_CODE93:
+                return $this->barcodeCODE93($data);
+            case PrintHandler::BARCODE_CODE128:
+                return $this->barcodeCODE128($data);
+        }
+
+        return '';
+    }
     
-    function barcodeUPC($data, $upcE=false) {
+    private function barcodeUPC($data, $subtype) {
         $bytes = max(11, min(12, strlen($data)));
         return ("\x1D\x6B"
-            .chr( $upcE ? 66 : 65 )
+            .chr( $subtype )
             .chr( $bytes )
             .str_pad(preg_replace('|[^0-9]|', '0', substr($data, 0, $bytes)), $bytes, '0', STR_PAD_LEFT)
         );
     }
     
-    function barcodeEAN($data, $ean8=false) {
+    private function barcodeEAN($data, $ean8=false) {
         $bytes = $ean8 ? max(7, min(8, strlen($data))) : max(12, min(13, strlen($data)));
         return ("\x1D\x6B"
             .chr( $ean8 ? 68 : 67 )
@@ -545,7 +571,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function barcodeCODE39($data) {
+    private function barcodeCODE39($data) {
         $bytes = max(1, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(69)
@@ -554,7 +580,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function barcodeITF($data) {
+    private function barcodeITF($data) {
         $bytes = max(2, min(254, (int)(strlen($data) / 2) * 2));
         return ("\x1D\x6B"
             .chr(70)
@@ -563,7 +589,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function barcodeCODEABAR($data) {
+    private function barcodeCODEABAR($data) {
         $bytes = max(1, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(71)
@@ -572,7 +598,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function barcodeCODE93($data) {
+    private function barcodeCODE93($data) {
         $bytes = max(1, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(72)
@@ -581,7 +607,7 @@ class ESCPOSPrintHandler extends PrintHandler {
         );
     }
     
-    function barcodeCODE128($data) {
+    private function barcodeCODE128($data) {
         $bytes = max(2, min(255, strlen($data)));
         return ("\x1D\x6B"
             .chr(73)

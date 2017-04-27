@@ -1,4 +1,7 @@
 <?php
+
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+
 /**
  * @backupGlobals disabled
  */
@@ -162,12 +165,15 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
         $ph->DotPitch();
         $ph->CutPaper();
         $ph->MoveY(-1);
-        $ph->BarcodeUPC('123456789012');
-        $ph->BarcodeEAN('1234567890123');
-        $ph->BarcodeITF('1234567890123');
-        $ph->BarcodeCODEABAR('1234567890123');
-        $ph->BarcodeCODE93('1234567890123');
-        $ph->BarcodeCODE128('1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_UPCA, '123456789012');
+        $ph->printBarcode(PrintHandler::BARCODE_UPCE, '123456789012');
+        $ph->printBarcode(PrintHandler::BARCODE_EAN13, '1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_EAN8, '1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_ITF, '1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_CODEABAR, '1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_CODE39, '1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_CODE93, '1234567890123');
+        $ph->printBarcode(PrintHandler::BARCODE_CODE128'1234567890123');
         $ph->RasterBitmap('123456', 1, 1);
         $fn = dirname(__FILE__) . '/../../pos/is4c-nf/graphics/WfcLogo2014';
         $ph->RenderBitmapFromFile($fn);
