@@ -48,14 +48,18 @@ class adminlogin extends NoInputCorePage
     {
         $class = $this->form->tryGet('class');
         $class = str_replace('-', '\\', $class);
-        $refl = new ReflectionClass($class); 
-        if (!$refl->implementsInterface('COREPOS\\pos\\lib\\adminlogin\\AdminLoginInterface')) {
-            // make sure calling class implements required
-            // method and properties
-            return false;
-        }
+        var_dump($class);
+        try {
+            $refl = new ReflectionClass($class); 
+            if ($refl->implementsInterface('COREPOS\\pos\\lib\\adminlogin\\AdminLoginInterface')) {
+                // make sure calling class implements required
+                // method and properties
+                return $class;
+            }
+        } catch (Exception $ex) {}
 
-        return $class;
+        return false;
+
     }
 
     function preprocess()
