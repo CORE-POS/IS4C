@@ -542,7 +542,7 @@ class ESCPOSPrintHandler extends PrintHandler {
                 return $this->barcodeCODE39($data);
             case PrintHandler::BARCODE_ITF:
                 return $this->barcodeITF($data);
-            case PrintHandler::BARCODE_CODEABAR
+            case PrintHandler::BARCODE_CODEABAR:
                 return $this->barcodeCODEABAR($data);
             case PrintHandler::BARCODE_CODE93:
                 return $this->barcodeCODE93($data);
