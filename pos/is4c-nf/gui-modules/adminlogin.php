@@ -172,9 +172,11 @@ class adminlogin extends NoInputCorePage
         ob_start();
         $this->form->class = 'COREPOS-pos-lib-adminlogin-UndoAdminLogin';
         $phpunit->assertEquals(true, $this->preprocess());
-        ob_get_clean();
+        ob_end_clean();
+        ob_start();
         $this->head_content();
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        ob_start();
         $this->body_content();
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
