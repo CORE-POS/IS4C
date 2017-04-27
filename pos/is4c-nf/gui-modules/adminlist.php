@@ -193,8 +193,6 @@ class adminlist extends NoInputCorePage
         $phpunit->assertEquals(false, $this->handleInput('UNDO'));
         $phpunit->assertEquals(false, $this->handleInput('TR'));
         $phpunit->assertEquals(false, $this->handleInput('RESUME'));
-        $this->session->set('LastID', 0);
-        $phpunit->assertEquals(false, $this->handleInput('SUSPEND'));
     }
 }
 
