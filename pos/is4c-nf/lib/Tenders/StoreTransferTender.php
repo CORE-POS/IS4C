@@ -83,7 +83,7 @@ class StoreTransferTender extends TenderModule implements AdminLoginInterface
     */
     public static function messageAndLevel()
     {
-        return(_('Login for store transfer'), 30);
+        return array(_('Login for store transfer'), 30);
     }
 
     static public function adminLoginCallback($success)

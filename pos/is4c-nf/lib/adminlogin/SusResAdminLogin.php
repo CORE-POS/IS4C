@@ -33,7 +33,7 @@ class SusResAdminLogin implements AdminLoginInterface
 {
     public static function messageAndLevel()
     {
-        return(_('Login to suspend/resume transaction'), 30);
+        return array(_('Login to suspend/resume transaction'), 30);
     }
 
     static public function adminLoginCallback($success)

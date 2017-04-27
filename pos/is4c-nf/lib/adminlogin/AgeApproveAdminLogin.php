@@ -34,7 +34,7 @@ class AgeApproveAdminLogin implements AdminLoginInterface
 {
     public static function messageAndLevel()
     {
-        return(_('Login to approve sale'), 30);
+        return array(_('Login to approve sale'), 30);
     }
 
     public static function adminLoginCallback($success)

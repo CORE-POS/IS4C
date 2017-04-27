@@ -33,7 +33,7 @@ class DDDAdminLogin implements AdminLoginInterface
 {
     public static function messageAndLevel()
     {
-        return(_('Mark these items as shrink/unsellable?'), 10);
+        return array(_('Mark these items as shrink/unsellable?'), 10);
     }
 
     public static function adminLoginCallback($success)

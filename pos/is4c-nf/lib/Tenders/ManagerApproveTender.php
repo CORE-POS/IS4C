@@ -73,7 +73,7 @@ class ManagerApproveTender extends TenderModule implements AdminLoginInterface
     */
     public static function messageAndLevel()
     {
-        return(_('Login to approve tender'), 30);
+        return array(_('Login to approve tender'), 30);
     }
 
     static public function adminLoginCallback($success)

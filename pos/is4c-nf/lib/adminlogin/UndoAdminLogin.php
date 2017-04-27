@@ -33,7 +33,7 @@ class UndoAdminLogin  implements AdminLoginInterface
 {
     public static function messageAndLevel()
     {
-        return(_('Login to void transaction'), 30);
+        return array(_('Login to void transaction'), 30);
     }
 
     static public function adminLoginCallback($success)

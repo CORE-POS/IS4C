@@ -33,7 +33,7 @@ class RefundAdminLogin implements AdminLoginInterface
 {
     public static function messageAndLevel()
     {
-        return(_('Login to issue refund'), 30);
+        return array(_('Login to issue refund'), 30);
     }
 
     public static function adminLoginCallback($success)
