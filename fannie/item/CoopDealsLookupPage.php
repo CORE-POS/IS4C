@@ -158,8 +158,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $months = array('Jan'=>1,'Feb'=>2,'Mar'=>3,'Apr'=>4,'May'=>5,'June'=>6,
             'July'=>7,'Aug'=>8,'Sep'=>9,'Oct'=>10,'Nov'=>11,'Dec'=>12);
         $year = date('Y');
-        $checkMoStart = $year . '-' .$months[$_SESSION['month']] . '01';
-        $checkMoEnd = $year . '-' .$months[$_SESSION['month']] . '31';
+        $checkMoStart = $year . '-' .$months[$this->session->month] . '-01 00:00:00';
+        $checkMoEnd = $year . '-' .$months[$this->session->month] . '-31 00:00:00';
 
         if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
@@ -188,7 +188,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             ');
 
             $curMonth = date('M');
-            if ($curMonth == $_SESSION['month']) {
+            if ($curMonth == $this->session->month) {
                 $result = $dbc->execute($curMonthQ);
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
@@ -196,7 +196,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
             $ret .=  '
                 <form method="get" class="form-inline">
-                    Current Sales Batches<br>
+                    Sales Batches<br>
                     <select class="form-control" name="batches">
             ';
             while ($row = $dbc->fetchRow($result)) {
