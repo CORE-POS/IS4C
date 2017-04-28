@@ -138,9 +138,6 @@ if (is_array(CoreLocal::get('LaneMap'))) {
     <td><?php echo $form->textField('store_id', 1, Conf::INI_SETTING, false); ?></td>
     <?php } ?>
 </tr>
-<tr>
-    <td><?php echo _('Locale:'); ?></td>
-    <td><?php echo $form->selectField('locale', Conf::getLocales(), 'en_US'); ?></td>
 <?php if (CoreLocal::get('laneno') === '' || CoreLocal::get('laneno') != 0) { ?>
 <tr>
     <td colspan=2 class="tblheader">
@@ -367,7 +364,12 @@ else {
 }
 ?>
 </div>  <!-- noteTxt -->
-</td></tr><tr><td colspan=2 class="tblHeader">
+</td></tr>
+<tr>
+    <td><?php echo _('Locale:'); ?></td>
+    <td><?php echo $form->selectField('locale', Conf::getLocales(), 'en_US'); ?></td>
+</tr>
+<tr><td colspan=2 class="tblHeader">
 <h3><?php echo _('Tax'); ?></h3></td></tr>
 <tr><td colspan=2>
 <p><i><?php echo _('Provided tax rates are used to create database views. As such,
