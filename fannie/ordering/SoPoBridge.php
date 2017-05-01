@@ -26,7 +26,6 @@ class SoPoBridge
             FROM PurchaseOrder
             WHERE vendorID=?
                 AND storeID=?
-                AND vendorOrderID LIKE \'SO-%\'
                 AND placed=0
             ORDER BY creationDate DESC');
         return $this->dbc->getValue($prep, array($vendorID, $storeID));
@@ -43,7 +42,7 @@ class SoPoBridge
             SELECT v.sku, n.vendorID
             FROM ' . $pending . ' AS o
                 INNER JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
-                INNER JOIN vendorItems AS v on n.vendorID=v.vendorID AND o.upc=v.upc
+                LEFT JOIN vendorItems AS v on n.vendorID=v.vendorID AND o.upc=v.upc
             WHERE o.order_id=?
                 AND o.trans_id=?
         ');
@@ -87,6 +86,13 @@ class SoPoBridge
 
         $prep = $this->dbc->prepare('SELECT * FROM vendorItems WHERE sku=? AND vendorID=?');
         $item = $this->dbc->getRow($prep, array($vendorInfo['sku'], $vendorInfo['vendorID']));
+        if ($item === false) {
+            $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
+            $prep = $this->dbc->prepare("SELECT description, quantity AS units, 0 AS cost, '' AS brand
+                FROM {$pending} WHERE order_id=? AND trans_id=?");
+            $item = $this->dbc->getRow($prep, array($soID, $transID));
+            $item['sku'] = uniqid();
+        }
 
         $poitem = new PurchaseOrderItemsModel($this->dbc);
         $poitem->orderID($poID);
@@ -122,8 +128,6 @@ class SoPoBridge
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
             WHERE o.vendorID=?
                 AND o.storeID=?
-                AND o.vendorOrderID LIKE \'SO-%\'
-                AND i.sku=?
                 AND i.quantity=?
                 AND i.isSpecialOrder=1
                 AND i.internalUPC=?
@@ -131,7 +135,6 @@ class SoPoBridge
         return $this->dbc->getValue($prep, array(
             $vendorInfo['vendorID'],
             $storeID,
-            $vendorInfo['sku'],
             $cases,
             str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT),
         ));
