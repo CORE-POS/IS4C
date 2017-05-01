@@ -35,10 +35,40 @@ class SaItemList extends SaHandheldPage
     protected $must_authenticate = true;
     private $section = 1;
 
-    private function exportList()
+    private function exportList($set=1)
     {
-        $table = $this->getList();
-        $arr = COREPOS\Fannie\API\data\DataConvert::htmlToArray($table);
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $uid = FannieAuth::getUID($this->current_user);
+        $prep = $this->connection->prepare('
+            SELECT s.upc,
+                p.brand,
+                p.description,
+                p.size,
+                s.quantity as qty,
+                v.sku,
+                n.vendorName
+            FROM ' . $settings['ShelfAuditDB'] . $this->connection->sep() . 'SaList AS s
+                ' . DTrans::joinProducts('s') . '
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+            WHERE s.clear=0
+                AND s.quantity <> 0
+                AND s.uid=?
+                AND s.section=?
+            ORDER BY s.tdate DESC
+        ');
+        $res = $this->connection->execute($prep, array($uid, $set));
+        $arr = array(array('UPC', 'SKU', 'Brand', 'Description', 'Vendor'));
+        while ($row = $this->connection->fetchRow($res)) {
+            $arr[] = array(
+                $row['upc'],
+                $row['sku'],
+                $row['brand'],
+                $row['description'],
+                $row['vendorName'],
+            );
+        }
         $out = COREPOS\Fannie\API\data\DataConvert::arrayToCsv($arr);
         header('Content-Type: application/ms-excel');
         header('Content-Disposition: attachment; filename="Scan List.csv"');
@@ -62,7 +92,7 @@ class SaItemList extends SaHandheldPage
             $dbc->execute($prep, array($uid));
             return parent::preprocess();
         } elseif (FormLib::get('export') === '1') {
-            echo $this->exportList();
+            echo $this->exportList(FormLib::get('set', 1));
             $this->enable_linea=false;
             return false;
         }
@@ -165,7 +195,7 @@ class SaItemList extends SaHandheldPage
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             |
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="?export=1" class="btn btn-default btn-info">
+            <a href="?export=1&set=' . $this->section . '" id="exportLink" class="btn btn-default btn-info">
                 Export List
             </a>
             </p>';
@@ -201,9 +231,9 @@ class SaItemList extends SaHandheldPage
         for ($i=1; $i<=3; $i++) {
             $ret .= sprintf('<li role="presentation" %s>
                 <a href="#section%d" aria-controls="section%d" role="tab" data-toggle="tab"
-                onclick="$(\'#section\').val(%d); return false;">Set %d</a></li>',
+                onclick="$(\'#section\').val(%d); $(\'#exportLink\').attr(\'href\', \'?export=1&set=%d\'); return false;">Set %d</a></li>',
                 ($i == $this->section ? 'class="active"' : ''),
-                $i, $i, $i, $i);
+                $i, $i, $i, $i, $i);
         }
         $ret .= '</ul>';
         $ret .= '<div class="tab-content">';
