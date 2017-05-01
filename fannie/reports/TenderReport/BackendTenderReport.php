@@ -96,8 +96,12 @@ class BackendTenderReport extends FannieReportPage
                 AND trans_subtype=?
             ORDER BY tdate, trans_id');
 
+        $data = array();
         while ($row = $dbc->fetchRow($typeR)) {
             $data[] = $this->getSubReport($dbc, $detailP, $args, $row['trans_subtype']);
+        }
+        if (count($data) == 0) {
+            $data[] = array();
         }
 
         return $data;
