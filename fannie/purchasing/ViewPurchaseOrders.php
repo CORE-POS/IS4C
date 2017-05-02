@@ -269,6 +269,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $year = FormLib::get('year');
         $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
         $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
+        if ($month == 'Last 30 days') {
+            $start = date('Y-m-d', strtotime('30 days ago'));
+            $end = date('Y-m-d 23:59:59');
+        }
         $args = array($start, $end);
         
         $query = 'SELECT p.orderID, p.vendorID, MIN(creationDate) as creationDate,
@@ -278,7 +282,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 MAX(i.receivedDate) as receivedDate,
                 MAX(p.vendorInvoiceID) AS vendorInvoiceID,
                 MAX(s.description) AS storeName,
-                MAX(p.placed) AS placed
+                MAX(p.placed) AS placed,
+                SUM(CASE WHEN isSpecialOrder THEN i.quantity ELSE 0 END) AS soFlag
             FROM PurchaseOrder as p
                 LEFT JOIN PurchaseOrderItems AS i ON p.orderID = i.orderID
                 LEFT JOIN vendors AS v ON p.vendorID=v.vendorID
@@ -333,11 +338,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
     private function orderRowToTable($row, $placed)
     {
-        return sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
+        return sprintf('<tr %s><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td><td>%d</td><td>%.2f</td>
                 <td>%s</td><td>%s</td><td>%.2f</td></tr>',
+                ($row['soFlag'] ? 'class="success" title="Contains special order(s)" ' : ''),
                 $row['orderID'],
                 $row['creationDate'], $row['vendorInvoiceID'], $row['storeName'], $row['vendorName'], $row['records'],
                 $row['estimatedCost'],
@@ -637,6 +643,9 @@ HTML;
                 $batchR = $dbc->getValue($batchP, array($obj->internalUPC(), $orderObj->storeID));
                 if ($batchR) {
                     $css = 'class="info" title="' . $batchR . '"';
+                }
+                if ($obj->isSpecialOrder()) {
+                    $css = 'class="success" title="Special order"';
                 }
             }
             if ($obj->salesCode() == '') {
@@ -951,11 +960,10 @@ HTML;
         $init = FormLib::get('init', 'placed');
 
         $month = date('n');
-        $monthOpts = '';
+        $monthOpts = '<option>Last 30 days</option>';
         for($i=1; $i<= 12; $i++) {
             $label = date('F', mktime(0, 0, 0, $i)); 
-            $monthOpts .= sprintf('<option %s value="%d">%s</option>',
-                        ($i == $month ? 'selected' : ''),
+            $monthOpts .= sprintf('<option value="%d">%s</option>',
                         $i, $label);
         }
 
