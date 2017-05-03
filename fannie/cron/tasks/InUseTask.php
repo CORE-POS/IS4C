@@ -140,7 +140,6 @@ class InUseTask extends FannieTask
         $updateUse = $dbc->prepare('
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
-                INNER JOIN inUseTask AS i ON s.superID = i.superID 
             SET p.inUse = 1
             WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
                 AND p.store_id = ?;
