@@ -30,6 +30,7 @@ class ArHistoryModel extends BasicModel
     protected $name = "ar_history";
 
     protected $columns = array(
+    'ar_history_id' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'card_no' => array('type'=>'INT','index'=>True),
     'charges' => array('type'=>'MONEY', 'default'=>0),
     'payments' => array('type'=>'MONEY', 'default'=>0),
