@@ -101,13 +101,16 @@ var batchEdit = (function ($) {
 
     mod.unsaleNow = function(batchID)
     {
-        $.ajax({
-            type: 'post',
-            data: 'id='+batchID+'&unsale=1',
-            dataType: 'json'
-        }).done(function(resp) {
-            inputAreaAlert(colorName(resp), resp.msg);
-        });
+        var r = confirm('Stop Sale: Are you sure?');
+        if (r == true) {
+            $.ajax({
+                type: 'post',
+                data: 'id='+batchID+'&unsale=1',
+                dataType: 'json'
+            }).done(function(resp) {
+                inputAreaAlert(colorName(resp), resp.msg);
+            });
+        }
     };
 
     mod.cutItem = function(upc, batchID, userID, cutOp)
@@ -129,19 +132,22 @@ var batchEdit = (function ($) {
     
     mod.cutAll = function(batchID, userID) {
         var dataStr = 'id=' + batchID + '&uid=' + userID;
-        $.ajax({
-            type: 'post',
-            url: 'cutBatch.php',
-            data: dataStr,
-            dataType: 'json',
-        }).done(function (resp) {
-            if (resp.error) {
-                inputAreaAlert('danger', resp.error_msg);
-            } else {
-                $('.cutLink').hide();
-                $('.unCutLink').show();
-            }
-        });
+        var r = confirm('Cut all products from this batch?');
+        if (r == true) {
+            $.ajax({
+                type: 'post',
+                url: 'cutBatch.php',
+                data: dataStr,
+                dataType: 'json',
+            }).done(function (resp) {
+                if (resp.error) {
+                    inputAreaAlert('danger', resp.error_msg);
+                } else {
+                    $('.cutLink').hide();
+                    $('.unCutLink').show();
+                }
+            });
+        }
     };
 
     mod.deleteUPC = function(id, upc)
