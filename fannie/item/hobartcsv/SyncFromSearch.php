@@ -73,6 +73,7 @@ class SyncFromSearch extends FannieRESTfulPage
         // go through scales one at a time
         // check whether item is present on that
         // scale and do write or change as appropriate
+        $dbc->startTransaction();
         foreach ($scales as $scale) {
 
             foreach ($upcs as $upc) {
@@ -105,6 +106,7 @@ class SyncFromSearch extends FannieRESTfulPage
                 \COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($all_items, array($scale));
             }
         } // end loop on scales
+        $dbc->commitTransaction();
         $this->sent_status = ob_get_clean();
 
         return true;
