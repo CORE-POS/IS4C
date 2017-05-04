@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "01bb0461080af67af56c2451e8dfa1c5",
+    "hash": "075ce444085d1e895c69f3bf615c5318",
+    "content-hash": "0416057301199efd52b8ec4d03eaf706",
     "packages": [
         {
             "name": "automattic/woocommerce",
@@ -51,7 +52,7 @@
                 "api",
                 "woocommerce"
             ],
-            "time": "2016-10-26T18:15:15+00:00"
+            "time": "2016-10-26 18:15:15"
         },
         {
             "name": "components/bootstrap",
@@ -108,7 +109,7 @@
                 "bootstrap",
                 "css"
             ],
-            "time": "2014-09-03T07:11:25+00:00"
+            "time": "2014-09-03 07:11:25"
         },
         {
             "name": "components/bootstrap-default",
@@ -161,7 +162,7 @@
                 "bootstrap",
                 "css"
             ],
-            "time": "2015-06-18T12:28:13+00:00"
+            "time": "2015-06-18 12:28:13"
         },
         {
             "name": "components/jquery",
@@ -206,7 +207,7 @@
             ],
             "description": "jQuery JavaScript Library",
             "homepage": "http://jquery.com",
-            "time": "2014-10-10T05:49:59+00:00"
+            "time": "2014-10-10 05:49:59"
         },
         {
             "name": "corepos/composer-installer",
@@ -245,7 +246,7 @@
                 }
             ],
             "description": "A composer plugin to install CORE POS plugins",
-            "time": "2016-05-27T21:53:51+00:00"
+            "time": "2016-05-27 21:53:51"
         },
         {
             "name": "datto/json-rpc",
@@ -295,7 +296,7 @@
                 "php-json-rpc",
                 "rpc"
             ],
-            "time": "2015-08-17T22:34:18+00:00"
+            "time": "2015-08-17 22:34:18"
         },
         {
             "name": "datto/json-rpc-http",
@@ -346,7 +347,7 @@
                 "rpc",
                 "server"
             ],
-            "time": "2015-12-09T04:33:18+00:00"
+            "time": "2015-12-09 04:33:18"
         },
         {
             "name": "domisys/image_barcode2",
@@ -396,7 +397,7 @@
                 }
             ],
             "description": "A PHP5 revamp of the Image_Barcode package",
-            "time": "2014-03-06T09:18:40+00:00"
+            "time": "2014-03-06 09:18:40"
         },
         {
             "name": "endroid/qrcode",
@@ -454,7 +455,7 @@
                 "qr",
                 "qrcode"
             ],
-            "time": "2015-07-04T19:44:13+00:00"
+            "time": "2015-07-04 19:44:13"
         },
         {
             "name": "ircmaxell/password-compat",
@@ -496,7 +497,7 @@
                 "hashing",
                 "password"
             ],
-            "time": "2014-11-20T16:49:30+00:00"
+            "time": "2014-11-20 16:49:30"
         },
         {
             "name": "itgalaxy/bmp2image",
@@ -546,7 +547,7 @@
                 "jpg",
                 "png"
             ],
-            "time": "2016-12-15T19:26:41+00:00"
+            "time": "2016-12-15 19:26:41"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -624,7 +625,7 @@
                 "compression",
                 "minification"
             ],
-            "time": "2015-10-15T01:33:42+00:00"
+            "time": "2015-10-15 01:33:42"
         },
         {
             "name": "mailchimp/mailchimp",
@@ -670,7 +671,55 @@
                 "api",
                 "email"
             ],
-            "time": "2014-10-30T20:38:12+00:00"
+            "time": "2014-10-30 20:38:12"
+        },
+        {
+            "name": "paragonie/random_compat",
+            "version": "v2.0.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/paragonie/random_compat.git",
+                "reference": "634bae8e911eefa89c1abfbf1b66da679ac8f54d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/paragonie/random_compat/zipball/634bae8e911eefa89c1abfbf1b66da679ac8f54d",
+                "reference": "634bae8e911eefa89c1abfbf1b66da679ac8f54d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.*|5.*"
+            },
+            "suggest": {
+                "ext-libsodium": "Provides a modern crypto API that can be used to generate random bytes."
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "lib/random.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Paragon Initiative Enterprises",
+                    "email": "security@paragonie.com",
+                    "homepage": "https://paragonie.com"
+                }
+            ],
+            "description": "PHP 5.x polyfill for random_bytes() and random_int() from PHP 7",
+            "keywords": [
+                "csprng",
+                "pseudorandom",
+                "random"
+            ],
+            "time": "2017-03-13 16:27:32"
         },
         {
             "name": "phpmailer/phpmailer",
@@ -731,7 +780,7 @@
                 }
             ],
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
-            "time": "2015-11-01T10:15:28+00:00"
+            "time": "2015-11-01 10:15:28"
         },
         {
             "name": "phpoffice/phpexcel",
@@ -788,7 +837,7 @@
                 "xls",
                 "xlsx"
             ],
-            "time": "2015-05-01T07:00:55+00:00"
+            "time": "2015-05-01 07:00:55"
         },
         {
             "name": "predis/predis",
@@ -838,7 +887,7 @@
                 "predis",
                 "redis"
             ],
-            "time": "2015-07-30T18:34:15+00:00"
+            "time": "2015-07-30 18:34:15"
         },
         {
             "name": "psr/log",
@@ -876,7 +925,89 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2012-12-21T11:40:51+00:00"
+            "time": "2012-12-21 11:40:51"
+        },
+        {
+            "name": "ramsey/uuid",
+            "version": "3.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ramsey/uuid.git",
+                "reference": "4ae32dd9ab8860a4bbd750ad269cba7f06f7934e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/4ae32dd9ab8860a4bbd750ad269cba7f06f7934e",
+                "reference": "4ae32dd9ab8860a4bbd750ad269cba7f06f7934e",
+                "shasum": ""
+            },
+            "require": {
+                "paragonie/random_compat": "^1.0|^2.0",
+                "php": "^5.4 || ^7.0"
+            },
+            "replace": {
+                "rhumsaa/uuid": "self.version"
+            },
+            "require-dev": {
+                "apigen/apigen": "^4.1",
+                "codeception/aspect-mock": "^1.0 | ^2.0",
+                "doctrine/annotations": "~1.2.0",
+                "goaop/framework": "1.0.0-alpha.2 | ^1.0 | ^2.1",
+                "ircmaxell/random-lib": "^1.1",
+                "jakub-onderka/php-parallel-lint": "^0.9.0",
+                "mockery/mockery": "^0.9.4",
+                "moontoast/math": "^1.1",
+                "php-mock/php-mock-phpunit": "^0.3|^1.1",
+                "phpunit/phpunit": "^4.7|>=5.0 <5.4",
+                "satooshi/php-coveralls": "^0.6.1",
+                "squizlabs/php_codesniffer": "^2.3"
+            },
+            "suggest": {
+                "ext-libsodium": "Provides the PECL libsodium extension for use with the SodiumRandomGenerator",
+                "ext-uuid": "Provides the PECL UUID extension for use with the PeclUuidTimeGenerator and PeclUuidRandomGenerator",
+                "ircmaxell/random-lib": "Provides RandomLib for use with the RandomLibAdapter",
+                "moontoast/math": "Provides support for converting UUID to 128-bit integer (in string form).",
+                "ramsey/uuid-console": "A console application for generating UUIDs with ramsey/uuid",
+                "ramsey/uuid-doctrine": "Allows the use of Ramsey\\Uuid\\Uuid as Doctrine field type."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Ramsey\\Uuid\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Marijn Huizendveld",
+                    "email": "marijn.huizendveld@gmail.com"
+                },
+                {
+                    "name": "Thibaud Fabre",
+                    "email": "thibaud@aztech.io"
+                },
+                {
+                    "name": "Ben Ramsey",
+                    "email": "ben@benramsey.com",
+                    "homepage": "https://benramsey.com"
+                }
+            ],
+            "description": "Formerly rhumsaa/uuid. A PHP 5.4+ library for generating RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).",
+            "homepage": "https://github.com/ramsey/uuid",
+            "keywords": [
+                "guid",
+                "identifier",
+                "uuid"
+            ],
+            "time": "2017-03-26 20:37:53"
         },
         {
             "name": "robloach/component-installer",
@@ -924,7 +1055,7 @@
                 }
             ],
             "description": "Allows installation of Components via Composer.",
-            "time": "2015-08-10T12:35:38+00:00"
+            "time": "2015-08-10 12:35:38"
         },
         {
             "name": "sabre/vobject",
@@ -990,7 +1121,7 @@
                 "jCard",
                 "vCard"
             ],
-            "time": "2015-09-04T15:17:58+00:00"
+            "time": "2015-09-04 15:17:58"
         },
         {
             "name": "sebastian/git",
@@ -1035,7 +1166,7 @@
             "keywords": [
                 "git"
             ],
-            "time": "2016-02-21T15:02:23+00:00"
+            "time": "2016-02-21 15:02:23"
         },
         {
             "name": "symfony/http-foundation",
@@ -1089,7 +1220,7 @@
             ],
             "description": "Symfony HttpFoundation Component",
             "homepage": "https://symfony.com",
-            "time": "2015-07-22T10:08:40+00:00"
+            "time": "2015-07-22 10:08:40"
         },
         {
             "name": "symfony/process",
@@ -1139,7 +1270,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2015-06-30T16:10:16+00:00"
+            "time": "2015-06-30 16:10:16"
         },
         {
             "name": "twig/extensions",
@@ -1191,7 +1322,7 @@
                 "i18n",
                 "text"
             ],
-            "time": "2016-09-22T16:50:57+00:00"
+            "time": "2016-09-22 16:50:57"
         },
         {
             "name": "twig/twig",
@@ -1252,7 +1383,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2016-09-21T23:05:12+00:00"
+            "time": "2016-09-21 23:05:12"
         }
     ],
     "packages-dev": [
@@ -1297,13 +1428,13 @@
                     "homepage": "http://www.lickmychip.com/"
                 },
                 {
+                    "name": "nlegoff",
+                    "email": "legoff.n@gmail.com"
+                },
+                {
                     "name": "Phraseanet Team",
                     "email": "info@alchemy.fr",
                     "homepage": "http://www.phraseanet.com/"
-                },
-                {
-                    "name": "Nicolas Le Goff",
-                    "email": "legoff.n@gmail.com"
                 }
             ],
             "description": "A set of tools to build binary drivers",
@@ -1311,7 +1442,7 @@
                 "binary",
                 "driver"
             ],
-            "time": "2013-06-21T15:51:20+00:00"
+            "time": "2013-06-21 15:51:20"
         },
         {
             "name": "codeclimate/php-test-reporter",
@@ -1369,7 +1500,7 @@
                 "codeclimate",
                 "coverage"
             ],
-            "time": "2016-04-19T16:54:33+00:00"
+            "time": "2016-04-19 16:54:33"
         },
         {
             "name": "doctrine/instantiator",
@@ -1423,7 +1554,7 @@
                 "constructor",
                 "instantiate"
             ],
-            "time": "2015-06-14T21:17:01+00:00"
+            "time": "2015-06-14 21:17:01"
         },
         {
             "name": "evenement/evenement",
@@ -1463,7 +1594,7 @@
             "keywords": [
                 "event-dispatcher"
             ],
-            "time": "2012-05-30T15:01:08+00:00"
+            "time": "2012-05-30 15:01:08"
         },
         {
             "name": "guzzle/guzzle",
@@ -1558,8 +1689,7 @@
                 "rest",
                 "web service"
             ],
-            "abandoned": "guzzlehttp/guzzle",
-            "time": "2015-03-18T18:23:50+00:00"
+            "time": "2015-03-18 18:23:50"
         },
         {
             "name": "monolog/monolog",
@@ -1637,7 +1767,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2016-04-12T18:29:35+00:00"
+            "time": "2016-04-12 18:29:35"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -1686,7 +1816,7 @@
                     "email": "mike.vanriel@naenius.com"
                 }
             ],
-            "time": "2015-02-03T12:10:50+00:00"
+            "time": "2015-02-03 12:10:50"
         },
         {
             "name": "phpspec/prophecy",
@@ -1746,7 +1876,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2015-08-13T10:07:40+00:00"
+            "time": "2015-08-13 10:07:40"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -1808,7 +1938,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-10-06T15:47:00+00:00"
+            "time": "2015-10-06 15:47:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1853,7 +1983,7 @@
                 "filesystem",
                 "iterator"
             ],
-            "time": "2013-10-10T15:34:57+00:00"
+            "time": "2013-10-10 15:34:57"
         },
         {
             "name": "phpunit/php-text-template",
@@ -1894,7 +2024,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-06-21T13:50:34+00:00"
+            "time": "2015-06-21 13:50:34"
         },
         {
             "name": "phpunit/php-timer",
@@ -1935,7 +2065,7 @@
             "keywords": [
                 "timer"
             ],
-            "time": "2015-06-21T08:01:12+00:00"
+            "time": "2015-06-21 08:01:12"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -1984,7 +2114,7 @@
             "keywords": [
                 "tokenizer"
             ],
-            "time": "2015-09-15T10:49:45+00:00"
+            "time": "2015-09-15 10:49:45"
         },
         {
             "name": "phpunit/phpunit",
@@ -2056,7 +2186,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-03-29T09:24:05+00:00"
+            "time": "2015-03-29 09:24:05"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -2112,7 +2242,7 @@
                 "mock",
                 "xunit"
             ],
-            "time": "2015-10-02T06:51:40+00:00"
+            "time": "2015-10-02 06:51:40"
         },
         {
             "name": "satooshi/php-coveralls",
@@ -2170,7 +2300,7 @@
                 "github",
                 "test"
             ],
-            "time": "2016-01-20T17:35:46+00:00"
+            "time": "2016-01-20 17:35:46"
         },
         {
             "name": "sebastian/comparator",
@@ -2234,7 +2364,7 @@
                 "compare",
                 "equality"
             ],
-            "time": "2015-07-26T15:48:44+00:00"
+            "time": "2015-07-26 15:48:44"
         },
         {
             "name": "sebastian/diff",
@@ -2286,7 +2416,7 @@
             "keywords": [
                 "diff"
             ],
-            "time": "2015-02-22T15:13:53+00:00"
+            "time": "2015-02-22 15:13:53"
         },
         {
             "name": "sebastian/environment",
@@ -2336,7 +2466,7 @@
                 "environment",
                 "hhvm"
             ],
-            "time": "2015-08-03T06:14:51+00:00"
+            "time": "2015-08-03 06:14:51"
         },
         {
             "name": "sebastian/exporter",
@@ -2402,7 +2532,7 @@
                 "export",
                 "exporter"
             ],
-            "time": "2015-06-21T07:55:53+00:00"
+            "time": "2015-06-21 07:55:53"
         },
         {
             "name": "sebastian/global-state",
@@ -2453,7 +2583,7 @@
             "keywords": [
                 "global state"
             ],
-            "time": "2015-10-12T03:26:01+00:00"
+            "time": "2015-10-12 03:26:01"
         },
         {
             "name": "sebastian/recursion-context",
@@ -2506,7 +2636,7 @@
             ],
             "description": "Provides functionality to recursively process PHP variables",
             "homepage": "http://www.github.com/sebastianbergmann/recursion-context",
-            "time": "2015-06-21T08:04:50+00:00"
+            "time": "2015-06-21 08:04:50"
         },
         {
             "name": "sebastian/version",
@@ -2541,7 +2671,7 @@
             ],
             "description": "Library that helps with managing the version number of Git-hosted PHP projects",
             "homepage": "https://github.com/sebastianbergmann/version",
-            "time": "2015-06-21T13:59:46+00:00"
+            "time": "2015-06-21 13:59:46"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -2615,7 +2745,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2015-09-09T00:18:50+00:00"
+            "time": "2015-09-09 00:18:50"
         },
         {
             "name": "symfony/config",
@@ -2668,7 +2798,7 @@
             ],
             "description": "Symfony Config Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-25T08:27:07+00:00"
+            "time": "2016-09-25 08:27:07"
         },
         {
             "name": "symfony/console",
@@ -2729,7 +2859,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-28T00:11:12+00:00"
+            "time": "2016-09-28 00:11:12"
         },
         {
             "name": "symfony/debug",
@@ -2786,7 +2916,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2016-11-15T12:55:20+00:00"
+            "time": "2016-11-15 12:55:20"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -2846,7 +2976,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-07-28T16:56:28+00:00"
+            "time": "2016-07-28 16:56:28"
         },
         {
             "name": "symfony/filesystem",
@@ -2895,7 +3025,7 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-14T00:18:46+00:00"
+            "time": "2016-09-14 00:18:46"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -2954,7 +3084,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-11-14T01:06:16+00:00"
+            "time": "2016-11-14 01:06:16"
         },
         {
             "name": "symfony/stopwatch",
@@ -3003,7 +3133,7 @@
             ],
             "description": "Symfony Stopwatch Component",
             "homepage": "https://symfony.com",
-            "time": "2016-06-29T05:41:56+00:00"
+            "time": "2016-06-29 05:41:56"
         },
         {
             "name": "symfony/yaml",
@@ -3052,7 +3182,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-02T01:57:56+00:00"
+            "time": "2016-09-02 01:57:56"
         }
     ],
     "aliases": [],
