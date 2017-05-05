@@ -54,11 +54,30 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'post<id><sku><upc><brand><description><orderQty><orderCost><receiveQty><receiveCost>',
             'post<id><sku><qty><receiveAll>',
             'post<id><note>',
-            'post<id><sku><isSO>'
+            'post<id><sku><isSO>',
+            'post<id><sku><adjust>'
         );
         if (FormLib::get('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
+    }
+
+    protected function post_id_sku_adjust_handler()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $item = new PurchaseOrderItemsModel($this->connection);
+        $item->orderID($this->id);
+        $item->sku($this->sku);
+        $item->load();
+        $next = $item->quantity() + $this->adjust;
+        if ($next < 0) {
+            $next = 0;
+        }
+        $item->quantity($next);
+        $item->save();
+        echo json_encode(array('qty' => $next));
+
+        return false;
     }
 
     /**
@@ -632,6 +651,7 @@ HTML;
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
             <th>Est. Cost</th><th>Received</th>
             <th>Rec. Qty</th><th>Rec. Cost</th><th>SO</th></tr></thead><tbody>';
+        $count = 0;
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
             if (!$order->placed()) {
@@ -656,7 +676,14 @@ HTML;
             $codings[$coding] += $obj->receivedTotalCost();
             $ret .= sprintf('<tr %s><td>%d</td><td>%s</td>
                     <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td><td>%s</td>
-                    <td>%s</td><td>%s</td><td>%s</td><td>%.2f</td>
+                    <td>%s</td><td>%s</td>
+                    <td><span id="qty%d">%s</span> <span class="%s pull-right">
+                        <a href="" onclick="itemInc(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-up small" /></a>
+                        <br />
+                        <a href="" onclick="itemDec(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-down small" /></a>
+                        </span>
+                    </td>
+                    <td>%.2f</td>
                     <td>%s</td><td>%s</td><td>%.2f</td>
                     <td>
                         <select class="form-control input-sm" onchange="isSO(%d, \'%s\', this.value);">
@@ -670,13 +697,14 @@ HTML;
                     $obj->brand(),
                     $obj->description(),
                     $obj->unitSize(), $obj->caseSize(),
-                    $obj->quantity(),
+                    $count, $obj->quantity(), $pendingOnlyClass, $this->id, $obj->sku(), $count, $this->id, $obj->sku(), $count,
                     ($obj->quantity() * $obj->caseSize() * $obj->unitCost()),
                     strtotime($obj->receivedDate()) ? date('Y-m-d', strtotime($obj->receivedDate())) : 'n/a',
                     $obj->receivedQty(),
                     $obj->receivedTotalCost(),
                     $this->id, $obj->sku(), $this->specialOrderSelect($obj->isSpecialOrder())
             );
+            $count++;
         }
         $ret .= '</tbody></table>';
 

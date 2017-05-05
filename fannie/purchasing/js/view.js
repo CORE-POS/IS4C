@@ -106,3 +106,23 @@ function isSO(oid, sku, isSO) {
     });
 }
 
+function itemAdjust(orderID, sku, adjust, elem) {
+    $.ajax({
+        type: 'post',
+        data: 'id='+orderID+'&sku='+sku+'&adjust='+adjust,
+        dataType: 'json'
+    }).done(function (resp) {
+        if (resp.qty !== null) {
+            $('#qty' + elem).html(resp.qty);
+        }
+    });
+}
+
+function itemInc(orderID, sku, elem) {
+    itemAdjust(orderID, sku, 1, elem);
+}
+
+function itemDec(orderID, sku, elem) {
+    itemAdjust(orderID, sku, -1, elem);
+}
+
