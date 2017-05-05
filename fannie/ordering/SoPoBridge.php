@@ -39,10 +39,11 @@ class SoPoBridge
     {
         $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
         $prep = $this->dbc->prepare('
-            SELECT v.sku, n.vendorID
+            SELECT v.sku, n.vendorID, d.salesCode
             FROM ' . $pending . ' AS o
                 INNER JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems AS v on n.vendorID=v.vendorID AND o.upc=v.upc
+                LEFT JOIN departments AS d ON o.department=d.dept_no
             WHERE o.order_id=?
                 AND o.trans_id=?
         ');
@@ -97,6 +98,7 @@ class SoPoBridge
         $poitem = new PurchaseOrderItemsModel($this->dbc);
         $poitem->orderID($poID);
         $poitem->sku($vendorInfo['sku']);
+        $poitem->salesCode($vendorInfo['salesCode']);
         $poitem->isSpecialOrder(1);
         $poitem->unitCost($item['cost']);
         $poitem->quantity($cases);
