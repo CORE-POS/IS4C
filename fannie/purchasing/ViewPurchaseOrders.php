@@ -498,6 +498,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $orderObj->placedDate = $orderObj->placed ? $orderObj->placedDate : 'n/a';
         $placedCheck = $orderObj->placed ? 'checked' : '';
         $init = $orderObj->placed ? 'init=placed' : 'init=pending';
+        $pendingOnlyClass = 'pending-only' . ($orderObj->placed ? ' collapse' : '');
+        $placedOnlyClass = 'placed-only' . ($orderObj->placed ? '' : ' collapse');
+        $sentDate = new DateTime($order->creationDate());
+        $today = new DateTime();
+        // ban adjustment to placed orders after 90 days
+        if ($today->diff($sentDate)->format('%a') >= 90) {
+            $placedOnlyClass .= ' collapse';
+        }
     
         $notes = $dbc->prepare('SELECT notes FROM PurchaseOrderNotes WHERE orderID=?');
         $notes = $dbc->getValue($notes, $this->id);
@@ -584,36 +592,23 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     </div>
     <div class="col-sm-6">
     <p>
-HTML;
-        if (!$order->placed()) {
-            $ret .= <<<HTML
-<a class="btn btn-default btn-sm"
-    href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<button class="btn btn-default btn-sm" 
-    onclick="deleteOrder({$this->id}); return false;">Delete Order</button>
-HTML;
-        } else {
-            $sentDate = new DateTime($order->creationDate());
-            $today = new DateTime();
-            if ($today->diff($sentDate)->format('%a') <= 90) {
-                $ret .= <<<HTML
-<a class="btn btn-default btn-sm"
-    href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm" id="receiveBtn"
-    href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm" id="receiveBtn"
-    href="TransferPurchaseOrder.php?id={$this->id}">Transfer Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm"
-    href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
-HTML;
-            }
-        }
-        $ret .= <<<HTML
-        </p>
+        <a class="btn btn-default btn-sm {$pendingOnlyClass}"
+            href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
+        <span class="{$pendingOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <button class="btn btn-default btn-sm {$pendingOnlyClass}" 
+            onclick="deleteOrder({$this->id}); return false;">Delete Order</button>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}"
+            href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
+        <span class="{$placedOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}" id="receiveBtn"
+            href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
+        <span class="{$placedOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}" id="receiveBtn"
+            href="TransferPurchaseOrder.php?id={$this->id}">Transfer Order</a>
+        <span class="{$placedOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}"
+            href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
+    </p>
 <div class="panel panel-default"><div class="panel-body">
 Ph: {$vendor['phone']}<br />
 Fax: {$vendor['fax']}<br />

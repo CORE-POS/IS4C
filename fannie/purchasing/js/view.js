@@ -20,10 +20,12 @@ function togglePlaced(orderID){
     console.log($('#receiveBtn').length);
 	if ($('#placedCheckbox').prop('checked')) {
 		dataStr += '1';
-        $('#receiveBtn').show();
+        $('.pending-only').hide();
+        $('.placed-only').show();
 	} else {
 		dataStr += '0';
-        $('#receiveBtn').hide();
+        $('.pending-only').show();
+        $('.placed-only').hide();
     }
 
 	$.ajax({
