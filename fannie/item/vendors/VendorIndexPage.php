@@ -501,7 +501,7 @@ class VendorIndexPage extends FannieRESTfulPage
                 </tr>',
                 $store->description(),
                 $store->storeID(),
-                ($exists ? 'checked' : ''),
+                ($map->active() ? 'checked' : ''),
                 $store->storeID(),
                 $map->accountID()
             );

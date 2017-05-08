@@ -416,8 +416,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         while($row = $dbc->fetch_row($result)) {
             $floor_section[$row['floorSectionID']] = $row['name'];
         }
-        if (mysql_errno() > 0) {
-            echo mysql_errno() . ": " . mysql_error(). "<br>";
+        if ($er = $dbc->error()) {
+            echo '<div class="alert alert-danger">'.$er.'</div>';
         }
 
 
