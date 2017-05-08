@@ -630,6 +630,7 @@ class FannieSignage
         $suffix = isset($args['suffix']) ? $args['suffix'] : '';
         $font = isset($args['font']) ? $args['font'] : 'Arial';
         $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
+        $vertical = isset($args['vertical']) ? $args['vertical'] : false;
 
         $upc = ltrim($upc, '0');
         $is_ean = false;
@@ -651,14 +652,18 @@ class FannieSignage
         $full_width = 0;
         for ($i=0;$i<strlen($code);$i++) {
             if ($code{$i}=='1') {
-                $pdf->Rect($x+($i*$width), $y, $width, $height, 'F');
+                if ($vertical) {
+                    $pdf->Rect($x, $y+($i*$height), $width, $height, 'F');
+                } else {
+                    $pdf->Rect($x+($i*$width), $y, $width, $height, 'F');
+                }
             }
             $full_width += $width;
         }
 
         // Print text under barcode
         // omits first digit; should always be zero
-        if ($fontsize > 0) {
+        if ($fontsize > 0 && !$vertical) {
             $pdf->SetFont($font, '', $fontsize);
             if ($valign == 'T') {
                 $pdf->SetXY($x, $y - 5);
