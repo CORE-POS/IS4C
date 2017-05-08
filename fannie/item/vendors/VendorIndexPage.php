@@ -72,12 +72,10 @@ class VendorIndexPage extends FannieRESTfulPage
         $accounts = FormLib::get('autoAccount', array());
         for ($i=0; $i<count($this->autoID); $i++) {
             $map->storeID($this->autoID[$i]);
-            if (in_array($map->storeID(), $enables)) {
-                $map->accountID($accounts[$i]);
-                $map->save();
-            } else {
-                $map->delete();
-            }
+            $active = in_array($map->storeID(), $enables);
+            $map->active($active ? 1 : 0);
+            $map->accountID($accounts[$i]);
+            $map->save();
         }
 
         $vendor = new VendorsModel($dbc);
