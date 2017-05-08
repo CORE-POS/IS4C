@@ -478,7 +478,7 @@ class VendorIndexPage extends FannieRESTfulPage
         $map = new AutoOrderMapModel($dbc);
         $map->vendorID($id);
         $ret .= '<div class="panel panel-default">
-            <div class="panel-heading">Auto Order (No, this is not enabled yet)</div>
+            <div class="panel-heading">Auto Order</div>
             <div class="panel-body">
             <div class="form-group">
                 <label>Minimum Order</label>
@@ -578,7 +578,7 @@ class VendorIndexPage extends FannieRESTfulPage
         ?>
         <p id="vendorarea">
         <select onchange="if (this.value=='new') vendorEditor.vendorNew(); else location='?vid='+this.value;" 
-            id=vendorselect class="form-control">
+            id=vendorselect class="form-control chosen">
         <?php echo $vendors; ?>
         </select>
         </p>
@@ -594,6 +594,9 @@ class VendorIndexPage extends FannieRESTfulPage
 
         $this->add_script('index.js');
         $this->addOnloadCommand("\$('#vendorselect').focus();\n");
+        $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
 
         return ob_get_clean();
     }

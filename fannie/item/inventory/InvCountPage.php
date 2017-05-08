@@ -431,6 +431,9 @@ class InvCountPage extends FannieRESTfulPage
         $supers = new SuperDeptNamesModel($this->connection);
         $stores = FormLib::storePicker('store', false);
         $this->addOnloadCommand("enableLinea('#linea-field');\n");
+        $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
         return '<div class="panel panel-default">
             <div class="panel-heading">Enter Item Count</div>
             <div class="panel-body">
@@ -455,7 +458,7 @@ class InvCountPage extends FannieRESTfulPage
             <form method="get">
                 <div class="form-group">
                     <label>Vendor</label>
-                    <select name="vendor" class="form-control">
+                    <select name="vendor" class="form-control chosen">
                     ' . $vendors->toOptions() . '
                     </select>
                 </div>
@@ -482,7 +485,7 @@ class InvCountPage extends FannieRESTfulPage
             <form method="get">
                 <div class="form-group">
                     <label>Vendor</label>
-                    <select name="live" class="form-control">
+                    <select name="live" class="form-control chosen">
                     ' . $vendors->toOptions() . '
                     </select>
                 </div>
