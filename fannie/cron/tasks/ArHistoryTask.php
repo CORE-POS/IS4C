@@ -53,6 +53,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
             $this->cronMsg($error, FannieLogger::ERROR);
         }
 
+        // temporary; don't want to hang on details with normal overnight run
         $this->logDetails($dbc);
 
         // rebuild ar history sum table
@@ -98,7 +99,8 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
                 CASE WHEN department IN $dlist THEN total ELSE 0 END as payments,
                 tdate,trans_num
                 FROM dlog_15
-                WHERE department IN $dlist OR trans_subtype='MI'";
+                WHERE (department IN $dlist OR trans_subtype='MI')
+                    AND tdate < " . $dbc->curdate();
         $lookupP = $dbc->prepare($lookupQ);
         $args = array();
         foreach($case_args as $ca) {
@@ -150,7 +152,8 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
                 trans_num
             FROM ar_history AS a
                 LEFT JOIN ArHistoryDetails AS d ON a.ar_history_id=d.arHistoryID
-            WHERE d.arHistoryID IS NULL");
+            WHERE d.arHistoryID IS NULL
+                AND (a.charges <> 0 OR a.payments <> 0)");
         $addP = $dbc->prepare("
             INSERT INTO ArHistoryDetails
             (arHistoryID, description, amount)
@@ -203,7 +206,6 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
                 }
                 $dbc->execute($addP, array($row['ar_history_id'], $item, $detailW['total']));
             }
-            echo "Added detail for {$row['ar_history_id']}\n";
             $count++;
             if ($count > 500) {
                 $dbc->commitTransaction();
