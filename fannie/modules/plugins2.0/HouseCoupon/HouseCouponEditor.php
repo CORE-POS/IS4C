@@ -436,6 +436,11 @@ class HouseCouponEditor extends FanniePage
             'PD'=>'Percent Discount (Anytime)',
             'AD'=>'All Discount (Department)',
         );
+        if ($mType != '') {
+            unset($dts['%']);
+            unset($dts['%B']);
+            unset($dts['PD']);
+        }
         $ret .= '<div class="row">
             <label class="col-sm-1 control-label">Discount Type</label>
             <div class="col-sm-3">
