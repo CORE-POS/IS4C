@@ -112,6 +112,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
         $detailsP = $dbc->prepare($detailsQ);
         $todayP = $dbc->prepare($todayQ);
         $details = array();
+        $minDate = array();
         foreach ($arRows as $card_no => $trans) {
             $found_charge = false;
             foreach ($trans as $info) {
@@ -151,6 +152,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
                     $actual[] = $arRows[$card_no][$i];
                 }
                 $arRows[$card_no] = $actual;
+                $minDate[$card_no] = $arRows[$card_no][0]['tdate'];
             }
         }
 
@@ -166,6 +168,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'ar_live_balance
             WHERE card_no=?');
         $rowNum=0;
+        $dlogMin = date('Y-m-d', mktime(0,0,0, date('n'), date('j')-90, date('Y')));
         foreach ($this->id as $card_no) {
             $mail = new PHPMailer();
             $mail->isSMTP();
@@ -215,19 +218,22 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $priorQ = $dbc->prepare("
                 SELECT SUM(charges) - SUM(payments) AS priorBalance
                 FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "ar_history
-                WHERE ".$dbc->datediff('tdate',$dbc->now())." < -90
+                WHERE tdate < ?
                     AND card_no = ?");
-            $priorR = $dbc->execute($priorQ, array($card_no));
+            $cutoff = isset($minDate[$card_no]) ? $minDate[$card_no] : $dlogMin;
+            $priorR = $dbc->execute($priorQ, array($cutoff, $card_no));
             $priorW = $dbc->fetch_row($priorR);
             $priorBalance = is_array($priorW) ? $priorW['priorBalance'] : 0;
 
             $indent = 10;
             $columns = array(75, 35, 30, 30);
-            $body .= sprintf('Balance Forward: $%.2f', $priorBalance) . "\n\n";
-            $html .= sprintf('<p>Balance Forward: $%.2f</p>', $priorBalance);
+            if ($priorBalance != 0) {
+                $body .= sprintf('Balance Forward: $%.2f', $priorBalance) . "\n\n";
+                $html .= sprintf('<p>Balance Forward: $%.2f</p>', $priorBalance);
+            }
  
-            $body .= "90-Day Billing History\n";
-            $html .= "<p>90-Day Billing History</p>";
+            $body .= "Billing History\n";
+            $html .= "<p>Billing History</p>";
             $html .= '<table border="1" cellspacing="0" cellpadding="4">
                 <tr><td>Date</td><td>Receipt#</td><td>Amount</td></tr>';
  
@@ -286,6 +292,13 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $mail->addBCC('andy@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
+
+            $docfile = "/var/www/cgi-bin/docfile/docfile/" . $card_no;
+            if (!file_exists($docfile)) {
+                mkdir($docfile);
+            }
+            $docfile .= '/' . $invoice . '.html';
+            file_put_contents($docfile, $html);
         }
 
         return true;
