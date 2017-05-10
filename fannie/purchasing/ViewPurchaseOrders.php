@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -279,13 +281,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return false;
     }
 
-    protected function get_orders($placed)
+    protected function get_orders($placed, $store=0, $month=0, $year=0)
     {
         $dbc = $this->connection;
-        $store = FormLib::get('store', 0);
+        $store = FormLib::get('store', $store);
 
-        $month = FormLib::get('month');
-        $year = FormLib::get('year');
+        $month = FormLib::get('month', $month);
+        $year = FormLib::get('year', $year);
         $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
         $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
         if ($month == 'Last 30 days') {
@@ -982,7 +984,6 @@ HTML;
     {
         $init = FormLib::get('init', 'placed');
 
-        $month = date('n');
         $monthOpts = '<option>Last 30 days</option>';
         for($i=1; $i<= 12; $i++) {
             $label = date('F', mktime(0, 0, 0, $i)); 
@@ -1000,10 +1001,10 @@ HTML;
 
         $allSelected = $this->show_all ? 'selected' : '';
         $mySelected = !$this->show_all ? 'selected' : '';
+        $ordersTable = $this->get_orders($init == 'placed' ? 1 : 0, Store::getIdByIp(), 'Last 30 days');
 
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addScript('js/view.js');
-        $this->addOnloadCommand("fetchOrders();\n");
 
         return <<<HTML
 <div class="form-group form-inline">
@@ -1027,7 +1028,7 @@ HTML;
     <button class="btn btn-default" onclick="location='PurchasingIndexPage.php'; return false;">Home</button>
 </div>
 <hr />
-<div id="ordersDiv"></div>
+<div id="ordersDiv">{$ordersTable}</div>
 HTML;
     }
 
