@@ -57,11 +57,43 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'post<id><sku><qty><receiveAll>',
             'post<id><note>',
             'post<id><sku><isSO>',
-            'post<id><sku><adjust>'
+            'post<id><sku><adjust>',
+            'get<merge>'
         );
         if (FormLib::get('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
+    }
+
+    /**
+      Merge a set of purchase orders into one
+      The highest ID order is retained. Items and notes from
+      lower ID orders are added to the highest ID order then
+      the lower ID orders are deleted.
+    */
+    protected function get_merge_handler()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        sort($this->merge);
+        $mergeID = array_pop($this->merge);
+        $moveP = $dbc->prepare('UPDATE PurchaseOrderItems SET orderID=? WHERE orderID=?');
+        $noteP = $dbc->prepare('SELECT notes FROM PurchaseOrderNotes WHERE orderID=?');
+        $delP = $dbc->prepare('DELETE FROM PurchaseOrder WHERE orderID=?');
+        $delNoteP = $dbc->prepare('DELETE FROM PurchaseOrderNotes WHERE orderID=?');
+        $mergeNotes = $dbc->getValue($noteP, array($mergeID));
+        foreach ($this->merge as $orderID) {
+            $moved = $dbc->execute($moveP, array($mergeID, $orderID));
+            if ($moved) {
+                $note = $dbc->getValue($noteP, array($orderID));
+                $mergeNotes .= (strlen($mergeNotes) > 0 ? "\n" : "") . $note;
+                $dbc->execute($delP, array($orderID));
+                $dbc->execute($delNoteP, array($orderID));
+            }
+        }
+        $upP = $dbc->prepare('UPDATE PurchaseOrderNotes SET notes=? WHERE orderID=?');
+        $dbc->execute($upP, array($mergeNotes, $mergeID));
+
+        return 'ViewPurchaseOrders.php?init=pending';
     }
 
     protected function post_id_sku_adjust_handler()
@@ -342,15 +374,26 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         $tPlaced .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
+        $mergable = array();
         while ($row = $dbc->fetchRow($result)) {
             if ($row['placed']) {
                 $tPlaced .= $this->orderRowToTable($row, $placed);
             } else {
                 $tPending .= $this->orderRowToTable($row, $placed);
+                if (!isset($mergable[$row['vendorID']])) {
+                    $mergable[$row['vendorID']] = array('orders'=>array(), 'name'=>$row['vendorName']);
+                }
+                $mergable[$row['vendorID']]['orders'][] = $row['orderID'];
             }
         }
-        $tPending .= '</tbody></table></div>';
         $tPlaced .= '</tbody></table></div>';
+        $mergable = array_filter($mergable, function($i) { return count($i['orders']) > 1; });
+        $tPending .= '</tbody></table>';
+        foreach ($mergable as $m) {
+            $idStr = implode('&', array_map(function($i) { return 'merge[]=' . $i; }, $m['orders']));
+            $tPending .= sprintf('<a href="ViewPurchaseOrders.php?%s">Merge %s Orders</a><br />', $idStr, $m['name']);
+        }
+        $tPending .= '</div>';
 
         $ret .= $tPending . $tPlaced . '</div>';
 
