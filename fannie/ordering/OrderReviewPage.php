@@ -219,7 +219,8 @@ class OrderReviewPage extends FannieRESTfulPage
         $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th></tr>';
         $q = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
             sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch FROM {$TRANS}CompleteSpecialOrder as o
-            left join vendorItems as v on o.upc=v.upc AND o.upc <> '0000000000000'
+            left join vendors as n on o.mixMatch=n.vendorName
+            left join vendorItems as v on o.upc=v.upc AND o.upc <> '0000000000000' AND v.vendorID=n.vendorID
             WHERE order_id=? AND trans_type='I'
             ORDER BY trans_id DESC");
         $r = $dbc->execute($q, array($this->orderID));
