@@ -383,17 +383,55 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         $query = $dbc->prepare($qString);
         $result = $dbc->execute($query, $args);
-        $item = array();
-        while($row = $dbc->fetch_row($result)) {
-            $item[$row['upc']]['upc'] = $row['upc'];
-            $item[$row['upc']]['dept'] = $row['department'];
-            $item[$row['upc']]['desc'] = $row['pdesc'];
-            $item[$row['upc']]['brand'] = $row['brand'];
-            $item[$row['upc']]['dept_name'] = $row['dept_name'];
-            $item[$row['upc']]['curSections'] = $row['sections'];
+
+        //  Catch products that don't yet have prod maps.
+        $upcsWithLoc = array();
+        while ($row = $dbc->fetch_row($result)) {
+            $upcsWithLoc[] = $row['upc'];
         }
-        if ($dbc->error()) {
-            echo '<div class="alert alert-danger">' . $dbc->error() . '</div>';
+        
+        $upcsMissingLoc = array();
+        foreach ($plus as $upc) {
+            if (!in_array($upc,$upcsWithLoc)) {
+                $upcsMissingLoc[] = $upc;
+            }
+        }
+        list($inClauseB,$bArgs) = $dbc->safeInClause($upcsMissingLoc);
+        $bArgs[] = $store_location;
+        $bString = '
+         select
+            p.upc,
+            p.description as pdesc,
+            p.department,
+            pu.description as pudesc,
+            p.brand,
+            d.dept_name
+            from products as p
+                left join productUser as pu on pu.upc=p.upc
+                left join departments as d on d.dept_no=p.department
+            WHERE p.upc IN ('.$inClauseB.')
+                AND p.store_id = ?
+            order by p.department;
+        ';
+        $bQuery = $dbc->prepare($bString);
+        $bResult = $dbc->execute($bQuery,$bArgs);
+    
+        $item = array();
+        $result = $dbc->execute($query,$args);
+
+        $results = array($result,$bResults);
+        foreach ($results as $res) {
+            while($row = $dbc->fetch_row($res)) {
+                $item[$row['upc']]['upc'] = $row['upc'];
+                $item[$row['upc']]['dept'] = $row['department'];
+                $item[$row['upc']]['desc'] = $row['pdesc'];
+                $item[$row['upc']]['brand'] = $row['brand'];
+                $item[$row['upc']]['dept_name'] = $row['dept_name'];
+                $item[$row['upc']]['curSections'] = $row['sections'];
+            }
+            if ($dbc->error()) {
+                echo '<div class="alert alert-danger">' . $dbc->error() . '</div>';
+            }
         }
 
         /*  Find suggestions for each item's location based on department.
