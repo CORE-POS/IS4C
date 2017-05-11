@@ -419,7 +419,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $item = array();
         $result = $dbc->execute($query,$args);
 
-        $results = array($result,$bResults);
+        $results = array($result,$bResult);
         foreach ($results as $res) {
             while($row = $dbc->fetch_row($res)) {
                 $item[$row['upc']]['upc'] = $row['upc'];
