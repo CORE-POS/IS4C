@@ -117,7 +117,7 @@ class InvCountPage extends FannieRESTfulPage
         $task->setVendorID($this->recalc);
         $task->run();
 
-        return 'InvCountPage.php?recalc=1&live=' . $this->recalc . '&store=' . $this->store;
+        return 'InvCountPage.php?vendor=' . $this->recalc . '&store=' . $this->store;
     }
 
     protected function get_recalc_live_view()
@@ -136,7 +136,7 @@ class InvCountPage extends FannieRESTfulPage
             $this->saveEntry($upc, $storeID, $count, $par);
         } catch (Exception $ex) {}
 
-        return 'InvCountPage.php?id=' . $this->id;
+        return 'InvCountPage.php?id=' . $this->id . '&store=' . $storeID;
     }
 
     private function savePar($upc, $storeID, $par)
@@ -227,28 +227,34 @@ class InvCountPage extends FannieRESTfulPage
             $info['par'] = 0;    
         }
 
-        $ret = '<div class="alert alert-info">
+        $ret = '<form method="post">
+            <div class="form-group">
+            <input type="hidden" name="id" value="' . $this->id . '" />
+            <input type="hidden" name="storeID" value="' . $store . '" />
+            <table class="table small table-bordered">
+                <tr>
+                    <th>Update Count</th>
+                    <th>Update Par</th>
+                    <td>&nbsp;</td>
+                </tr><tr>
+                    <td>
+                        <input type="text" pattern="\\d*" class="form-control" 
+                            id="count-field" required name="count" />
+                    </td><td>
+                        <input type="text" pattern="\\d*" class="form-control" required name="par" value="' . $info['par'] . '" />
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-default btn-sm">Save</button>
+                    </td>
+                </tr>
+            </table>
+            </form>';
+        $ret .= '<div class="alert alert-info">
             ' . $upc . ' - ' . $prod->brand() . ' ' . $prod->description() . '<br />
             <strong>Last Counted</strong>: ' . $info['countDate'] . '<br />
             <strong>Last Count</strong>: ' . $info['count'] . '<br />
             <strong>Current Par</strong>: ' . $info['par'] . '<br />
             </div>';
-        $ret .= '<form method="post">
-            <div class="form-group">
-                <input type="hidden" name="id" value="' . $this->id . '" />
-                <input type="hidden" name="storeID" value="' . $store . '" />
-                <label>Update Count</label>
-                <input type="number" min="0" max="500" step="0.01" class="form-control" 
-                    id="count-field" required name="count" />
-            </div>
-            <div class="form-group">
-                <label>Update Par</label>
-                <input type="text" class="form-control" required name="par" value="' . $info['par'] . '" />
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-default">Save</button>
-            </div>
-            </form>';
         $this->addOnloadCommand("\$('#count-field').focus();\n");
 
         return $ret . '<hr />' . $this->get_view();
@@ -301,6 +307,10 @@ class InvCountPage extends FannieRESTfulPage
                 <th class="thead">Description</th>
                 <th class="thead">Last Counted</th>
                 <th class="thead">Last Count</th>
+                <th class="thead">Ordered</th>
+                <th class="thead">Sold</th>
+                <th class="thead">Shrunk</th>
+                <th class="thead">On Hand</th>
                 <th class="thead">Current Par</th>
                 <th class="thead">Avg. Daily Sales</th>
                 <th class="thead">New Count</th>
@@ -322,6 +332,10 @@ class InvCountPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td %s>%s</td>
+                <td>%s</td>
                 <td %s>%.2f</td>
                 <td><input type="text" class="form-control input-sm" value="" name="count[]" /></td>
                 <td><input type="text" class="form-control input-sm" value="%s" name="par[]" /></td>
@@ -334,8 +348,13 @@ class InvCountPage extends FannieRESTfulPage
                 ($info ? '<a href="DateCountPage.php?id=' . $row['upc'] . '&store=' . $store . '">' 
                     . $info['countDate'] . '</a>' : 'n/a'),
                 ($info ? $info['count'] : 'n/a'),
+                $info['ordered'],
+                $info['sold'],
+                $info['shrunk'],
+                ($info['onHand'] < $ifo['par'] ? 'class="danger" title="Need to order"' : ''),
+                $info['onHand'],
                 ($info ? $info['par'] : 'n/a'),
-                ($info['par'] > (7*$row['auto_par']) ? 'class="danger"' : ''),
+                ($info['par'] > (7*$row['auto_par']) ? 'class="danger" title="Par more than weekly sale"' : ''),
                 $row['auto_par'],
                 ($info ? $info['par'] : '0')
             );
@@ -345,6 +364,9 @@ class InvCountPage extends FannieRESTfulPage
                 <button type="submit" class="btn btn-default">Save</button>
                 <a href="DateCountPage.php?vendor=' . $this->vendor . '&store=' . $store . '"
                     class="btn btn-default btn-reset">Adjust Dates</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="?recalc=' . $this->vendor . '&store=' . $store . '"
+                    class="btn btn-default">Recalculate Totals</a>
             </p>
             </form>';
 
@@ -483,11 +505,12 @@ class InvCountPage extends FannieRESTfulPage
     {
         $prep = $this->connection->prepare('
             SELECT *
-            FROM InventoryCounts
-            WHERE mostRecent=1
-                AND upc=?
-                AND storeID=?
-            ORDER BY countDate DESC');
+            FROM InventoryCounts AS c
+                LEFT JOIN InventoryCache AS i ON i.upc=c.upc AND i.storeID=c.storeID
+            WHERE c.mostRecent=1
+                AND c.upc=?
+                AND c.storeID=?
+            ORDER BY c.countDate DESC');
         return $this->connection->getRow($prep, array($upc, $storeID));
     }
 
