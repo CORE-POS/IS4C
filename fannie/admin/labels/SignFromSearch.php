@@ -264,13 +264,15 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         $enabled = $this->config->get('ENABLED_SIGNAGE');
-        $mods = array_filter($mods, function ($i) use ($enabled) {
-            return in_array($i, $enabled) || in_array(str_replace('\\', '-', $i), $enabled);
-        });
+        if (count($enabled) > 0) {
+            $mods = array_filter($mods, function ($i) use ($enabled) {
+                return in_array($i, $enabled) || in_array(str_replace('\\', '-', $i), $enabled);
+            });
+        }
         sort($mods);
         $tagEnabled = $this->config->get('ENABLED_TAGS');
         foreach (COREPOS\Fannie\API\item\signage\LegacyWrapper::getLayouts() as $l) {
-            if (in_array($l, $tagEnabled)) {
+            if (in_array($l, $tagEnabled) && count($tagEnabled) > 0) {
                 $mods[] = 'Legacy:' . $l;
             }
         }

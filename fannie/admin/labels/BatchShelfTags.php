@@ -78,7 +78,7 @@ class BatchShelfTags extends FanniePage {
         $ret .= "<select name=layout class=\"form-control\">";
         $tagEnabled = $this->config->get('ENABLED_TAGS');
         foreach($this->layouts as $l){
-            if (!in_array($l, $tagEnabled)) continue;
+            if (!in_array($l, $tagEnabled) && count($tagEnabled) > 0) continue;
             if ($l == $FANNIE_DEFAULT_PDF)
                 $ret .= "<option selected>".$l."</option>";
             else
