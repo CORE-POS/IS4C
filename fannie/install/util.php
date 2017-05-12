@@ -446,3 +446,30 @@ function installSelectField($name, &$current_value, $options, $default_value='',
     return $ret;
 }
 
+function installMultiSelectField($name, &$current_value, $options, $default_value=array())
+{
+    if (FormLib::get($name, false) !== false) {
+        $current_value = FormLib::get($name);
+    } elseif ($current_value === null) {
+        $current_value = $default_value;
+    }
+
+    if (!is_array($current_value)) {
+        $current_value = array();
+    }
+    $saveStr = 'array('
+        . implode(',', array_map(function ($i) { return "'" . $i . "'"; }, $current_value))
+        . ')';
+    confset($name, $saveStr);
+
+    $ret = '<select name="' . $name . '[]" class="form-control" multiple size="5">' . "\n";
+    foreach ($options as $opt) {
+        $cleaned = str_replace('\\', '-', $opt);
+        $selected = in_array($opt, $current_value) || in_array($cleaned, $current_value);
+        $ret .= sprintf('<option %s value="%s">%s</option>', ($selected ? 'selected' : ''), $cleaned, $opt);
+    }
+    $ret .= '</select>';
+
+    return $ret;
+}
+

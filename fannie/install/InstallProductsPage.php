@@ -225,6 +225,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         echo installTextField('FANNIE_SO_TEMPLATE', $FANNIE_SO_TEMPLATE, 0);
         ?> 
         <hr />
+        <h4 class="install">Tags & Signs</h4>
         <label>Default Shelf Tag Layout</label>
         <?php
         $layouts = 'No Layouts Found!';
@@ -253,24 +254,23 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         }
         echo 'Printer for instant label: '.installSelectField('FANNIE_SINGLE_LABEL_PRINTER', $FANNIE_SINGLE_LABEL_PRINTER, $printer_options);
 
-        $layouts = array(""=>"");
-        $dh = scandir(dirname(__FILE__).'/../admin/labels/pdf_layouts/');
-        foreach($dh as $filename) {
-          if($filename != "." && $filename != "..") {
-            $file = substr($filename, 0, strlen($filename)-4);
-            $layouts[$file] =  str_replace("_", " ", $file);
-          }
-        }
-
         echo 'Layout for instant label: '.installSelectField('FANNIE_SINGLE_LABEL_LAYOUT', $FANNIE_SINGLE_LABEL_LAYOUT, $layouts, 'Zebra_Single_Label');
         ?>
-
-
+        <label>Enabled Tag Layouts</label>
+        <?php
+        echo installMultiSelectField('FANNIE_ENABLED_TAGS', $FANNIE_ENABLED_TAGS, $layouts);
+        ?>
         <label>Default Signage Layout</label>
         <?php
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         echo installSelectField('FANNIE_DEFAULT_SIGNAGE', $FANNIE_DEFAULT_SIGNAGE, $mods);
         ?>
+        <label>Enabled Sign Layouts</label>
+        <?php
+        echo installMultiSelectField('FANNIE_ENABLED_SIGNAGE', $FANNIE_ENABLED_SIGNAGE, $mods);
+        ?>
+        <hr />
+        <h4 class="install">Purchase Orders</h4>
         <label>Default Purchase Order Export</label>
         <?php
         $mods = COREPOS\Fannie\API\item\InventoryLib::orderExporters();
