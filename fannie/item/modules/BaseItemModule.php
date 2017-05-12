@@ -151,7 +151,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 p.discount,
                 p.line_item_discountable,
                 p.brand AS manufacturer,
-                x.distributor,
+                n.vendorName AS distributor,
                 u.description as ldesc,
                 p.default_vendor_id,
                 v.units AS caseSize,
@@ -162,11 +162,18 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 p.deposit,
                 p.discounttype,
                 p.wicable,
-                p.store_id
+                p.store_id,
+                CASE WHEN i.upc IS NOT NULL THEN 1 ELSE 0 END AS inventoried,
+                c.count AS lastCount,
+                c.countDate,
+                c.par AS invPar,
+                i.onHand
             FROM products AS p 
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                 LEFT JOIN productUser AS u ON p.upc=u.upc 
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
+                LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                LEFT JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
+                LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID
             WHERE p.upc=?';
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
@@ -180,9 +187,9 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 $items[$row['store_id']] = $row;
             }
             return $items;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     private function getNewItem($upc)
@@ -217,6 +224,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             'cost' => 0,
             'discounttype' => 0,
             'wicable' => 0,
+            'inventoried' => 0,
         );
 
         /**
@@ -791,9 +799,22 @@ HTML;
             </select>
         </td>
     </tr>
-</table>
-</div>
 HTML;
+            if ($rowItem['inventoried']) {
+                $ret .= sprintf('<tr>
+                    <th class="small text-right">On Hand</th><td class="small">%d</td>
+                    <th class="small text-right">Last Count</th><td colspan="2" class="small">%d on %s</td>
+                    <th class="small text-right">Par</th><td class="small">%d</td>
+                    <td colspan="3" class="small"><a href="inventory/InvCountPage.php?id=%s&store=%d">Adjust count/par</a></td>
+                    </tr>',
+                    $rowItem['onHand'],
+                    $rowItem['lastCount'], $rowItem['countDate'],
+                    $rowItem['invPar'],
+                    $upc,
+                    $store_id
+                );
+            }
+            $ret .= '</table></div>';
             if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
             }
