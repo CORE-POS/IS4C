@@ -202,6 +202,9 @@ class InvCountPage extends FannieRESTfulPage
         $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
+        $vname = $this->connection->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
+        $vname = $this->connection->getValue($vname, array($this->vendor));
+
         $query = '
             SELECT p.upc,
                 p.brand,
@@ -224,6 +227,7 @@ class InvCountPage extends FannieRESTfulPage
         $query .= ' ORDER BY p.upc';
         $prep = $this->connection->prepare($query);
         $ret = '<form method="post">
+            <a href="../vendors/VendorIndexPage.php?vid=' . $this->vendor . '">' . $vname . '</a>
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
             <input type="hidden" name="store" value="' . $store . '" />
             <table class="table table-bordered table-striped small table-float">

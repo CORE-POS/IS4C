@@ -570,7 +570,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     <div class="form-inline">
         <b>Store</b>: {$sname}
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <b>Vendor</b>: {$vendor['vendorName']}
+        <b>Vendor</b>: <a href="../item/vendors/VendorIndexPage.php?vid={$orderObj->vendorID}">{$vendor['vendorName']}</a>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <b>Created</b>: {$orderObj->creationDate}
         &nbsp;&nbsp;&nbsp;&nbsp;
