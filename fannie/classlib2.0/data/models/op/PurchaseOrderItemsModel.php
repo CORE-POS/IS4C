@@ -32,7 +32,7 @@ class PurchaseOrderItemsModel extends BasicModel
     protected $columns = array(
     'orderID' => array('type'=>'INT','primary_key'=>True),
     'sku' => array('type'=>'VARCHAR(13)','primary_key'=>True),
-    'quantity' => array('type'=>'DOUBLE'),
+    'quantity' => array('type'=>'DECIMAL(10,2)'),
     'unitCost' => array('type'=>'MONEY'),
     'caseSize' => array('type'=>'DOUBLE'),
     'receivedDate' => array('type'=>'DATETIME'),
