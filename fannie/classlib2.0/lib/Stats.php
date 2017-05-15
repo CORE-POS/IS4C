@@ -115,5 +115,16 @@ class Stats
             return 100 * ($a - $b) / ((float)$b);
         }
     }
+
+    public static function expSmoothing($points, $alpha)
+    {
+        $val = $points[0] * $alpha;
+        for ($i=1; $i<count($points); $i++) {
+            $next = $alpha * (pow(1-$alpha, $i)) * $points[$i];
+            $val += $next;
+        } 
+
+        return $val;
+    }
 }
 
