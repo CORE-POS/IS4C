@@ -95,9 +95,10 @@ class SoPoBridge
             $item['sku'] = uniqid();
         }
 
+        $poSKU = substr($vendorInfo['sku'], -12) . ' ';
         $poitem = new PurchaseOrderItemsModel($this->dbc);
         $poitem->orderID($poID);
-        $poitem->sku($vendorInfo['sku']);
+        $poitem->sku($poSKU);
         $poitem->salesCode($vendorInfo['salesCode']);
         $poitem->isSpecialOrder(1);
         $poitem->unitCost($item['cost']);
