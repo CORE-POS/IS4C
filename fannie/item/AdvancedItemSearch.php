@@ -132,15 +132,22 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 if (preg_match('/\d-\d+-\d+-\d/', $i)) {
                     $ret = trim(str_replace('-', '', $i));
                     return substr($ret, 0, strlen($ret)-1);
+                } elseif (preg_match('/\d+-\d/', $i)) {
+                    $ret = trim(str_replace('-', '', $i));
+                    return substr($ret, 0, strlen($ret)-1);
                 } else {
                     $i = str_replace('-', '', $i);
                 }
                 return $i;
             }, $upcs);
+            $skus = array_map(function($i){ return trim($i); }, $upcs);
             $upcs = array_map(function($i){ return BarcodeLib::padUPC(trim($i)); }, $upcs);
-            $search->args = array_merge($search->args, $upcs);
-            $search->where .= ' AND p.upc IN (' . str_repeat('?,', count($upcs));
-            $search->where = substr($search->where, 0, strlen($search->where)-1) . ')';
+            if (!strstr($search->from, 'vendorItems')) {
+                $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
+            }
+            list($inStr, $search->args) = $this->connection->safeInClause($upcs, $search->args);
+            list($inStr2, $search->args) = $this->connection->safeInClause($skus, $search->args);
+            $search->where .= " AND (p.upc IN ({$inStr}) OR v.sku IN ({$inStr2})) ";
         }
 
         return $search;
@@ -192,7 +199,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                         $search->from .= ' LEFT JOIN prodExtra AS x ON p.upc=x.upc ';
                     }
                     if (!strstr($search->from, 'vendorItems')) {
-                        $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
+                        $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
                     }
                 }
             }
