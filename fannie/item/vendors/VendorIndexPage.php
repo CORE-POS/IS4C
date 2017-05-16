@@ -79,8 +79,9 @@ class VendorIndexPage extends FannieRESTfulPage
         }
 
         $vendor = new VendorsModel($dbc);
-        $vendor->vendorID($id);
+        $vendor->vendorID($this->id);
         $vendor->orderMinimum(FormLib::get('minOrder', 0));
+        $vendor->halfCases(FormLib::get('halfs', false) ? 1 : 0);
         $vendor->save();
 
         return false;
@@ -488,6 +489,12 @@ class VendorIndexPage extends FannieRESTfulPage
                         value="' . $model->orderMinimum() . '" />
                 </div>
             </div>
+            <div class="form-group">
+                <label>Allow Half Cases
+                    <input type="checkbox" name="halfs" class="auto-order" value="1"
+                        ' . ($model->halfCases() ? 'checked' : '') . ' />
+                </label>
+            </div>
             <table class="table table-bordered">
             <tr><th>Store</th><th>Enabled</th><th>Account#</th></tr>';
         foreach ($stores->find() as $store) {
@@ -509,6 +516,8 @@ class VendorIndexPage extends FannieRESTfulPage
         $ret .= '</table>
                 <button type="button" class="btn btn-default" 
                     onclick="vendorEditor.saveAutoOrder(' . $id . '); return false;">Save</button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="ParsPage.php?id=' . $id . '">Pars Algorithm</a>
                 </div>
             </div>';
 
