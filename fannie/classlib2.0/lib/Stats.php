@@ -51,6 +51,9 @@ class Stats
         );
     }
 
+    /**
+     * Exponential least squares fit coefficients
+     */
     public static function exponentialFit($points)
     {
         $ret = new \stdClass();
