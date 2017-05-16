@@ -118,6 +118,7 @@ HTML;
             GROUP BY YEAR(tdate),
                 MONTH(tdate),
                 DAY(tdate)
+            HAVING SUM(total) <> 0
             ORDER BY YEAR(tdate),
                 MONTH(tdate),
                 DAY(tdate)");
