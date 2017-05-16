@@ -39,6 +39,8 @@ class PurchasingIndexPage extends FannieRESTfulPage
     {
         try {
             $vendors = $this->form->vendors;
+            $vendors = array_filter($vendors, function ($i) { return $i != ''; });
+            $vendors = array_unique($vendors);
             if (count($vendors) == 0) {
                 throw new Exception('At least one vendor required');
             }
@@ -48,6 +50,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
             $task = new OrderGenTask();
             $task->setConfig($this->config);
             $task->setLogger($this->logger);
+            $task->setMultiplier($this->form->multiplier);
             $task->setSilent(true);
             $task->setVendors($vendors);
             $task->setUser(FannieAuth::getUID($this->current_user));
@@ -70,28 +73,41 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 INNER JOIN InventoryCache AS c ON i.upc=c.upc
                 INNER JOIN products AS p ON c.upc=p.upc AND c.storeID=p.store_id
             WHERE i.vendorID=p.default_vendor_id
+                AND v.inactive=0
             GROUP BY v.vendorID, v.vendorName
             ORDER BY v.vendorName');
+        $vendorSelect = '<select class="form-control chosen" name="vendors[]">';
+        $vendorSelect .= '<option value="">Select vendor...</option>';
+        while ($row = $this->connection->fetchRow($res)) {
+            $vendorSelect .= sprintf('<option value="%d">%s</option>', $row['vendorID'], $row['vendorName']);
+        }
+        $vendorSelect .= '</select>';
         $ret = '<form>
             <input type="hidden" name="_method" value="put" />
-            <table class="table table-bordered table-striped">
-            <tr><th>Vendor</th><th>Include</th>';
-        while ($row = $this->connection->fetchRow($res)) {
-            $ret .= sprintf('<tr>
-                <td>%s</td>
-                <td><input type="checkbox" name="vendors[]" value="%d" />
-                </tr>',
-                $row['vendorName'], $row['vendorID']);
+            <label>Vendor(s)</label>';
+        for ($i=0; $i<10; $i++) {
+            $ret .= '<div class="form-group">' . $vendorSelect . '</div>'; 
         }
-        $ret .= '</table>
+        $ret .= '
             <p>
                 <label>Store</label>
                 ' . $stores['html'] . '
             </p>
+            <div class="form-group">
+                <label title="For use with produce plants">Multiplier</label>
+                <input class="form-control" type="number" value="1" min="1" max="30" name="multiplier" />
+            </div>
             <p>
-                <button type="submit" class="btn btn-default">Generate Orders</button>
+                <button type="submit" class="btn btn-default btn-core">Generate Orders</button>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <button type="reset" class="btn btn-default" 
+                    onclick="$(\'select.chosen\').val(\'\').trigger(\'chosen:updated\');">Reset</button>
             </p>
         </form>';
+
+        $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
 
         return $ret;
     }

@@ -43,64 +43,8 @@ class InvCountPage extends FannieRESTfulPage
         $this->addRoute('post<vendor>');
         $this->addRoute('get<recalc><store>');
         $this->addRoute('get<recalc><live>');
-        $this->addRoute('get<allPars><loss><smooth><days><default>');
 
         return parent::preprocess();
-    }
-
-    protected function get_allPars_loss_smooth_days_default_handler()
-    {
-        $vendorID = $this->allPars;
-        $store = FormLib::get('store');
-
-        $dlog = $this->config->get('TRANS_DB') . $this->connection->sep() . 'dlog_15';
-        $today = date('Y-m-d 00:00:00');
-
-        $salesP = $this->connection->prepare("
-            SELECT YEAR(tdate) AS year,
-                MONTH(tdate) AS month,
-                DAY(tdate) AS day,
-                SUM(quantity) AS qty
-            FROM {$dlog}
-            WHERE store_id=?
-                AND upc=?
-                AND trans_status <> 'R'
-                AND tdate < ?
-            GROUP BY YEAR(tdate),
-                MONTH(tdate),
-                DAY(tdate)
-            ORDER BY YEAR(tdate),
-                MONTH(tdate),
-                DAY(tdate)");
-        $p1d = new DateInterval('P1D');
-                
-        $itemP = $this->connection->prepare("SELECT p.upc FROM products AS p WHERE p.store_id=? AND p.default_vendor_id=? AND p.inUse=1");
-        $itemR = $this->connection->execute($itemP, array($store, $vendorID));
-        while ($itemW = $this->connection->fetchRow($itemR)) {
-            $currentDay = null;
-            $points = array();
-            $par = $this->default;
-            $salesR = $this->connection->execute($salesP, array($store, $itemW['upc'], $today));
-            while ($salesW = $this->connection->fetchRow($salesR)) {
-                $rowDay = new DateTime(date('Y-m-d', mktime(0,0,0, $salesW['month'], $salesW['day'], $salesW['year'])));
-                while ($currentDay !== null && $rowDay < $currentDay) {
-                    $points[] = 0;
-                    $rowDay = $rowDay->add($p1d);
-                }
-                $currentDay = new DateTime(date('Y-m-d', mktime(0,0,0, $salesW['month'], $salesW['day'], $salesW['year'])));
-                $points[] = $salesW['qty'];
-            }
-            if (count($points) > 0) {
-                $par = Stats::expSmoothing(array_reverse($points), $this->smooth/100.00);
-                $par *= (1 + ($this->loss/100.00));
-                $par *= $this->days; 
-            }
-            if (!$this->savePar($itemW['upc'], $store, $par)) {
-                $this->saveEntry($itemW['upc'], $store, 0, $par);
-            }
-        }
-
-        return 'InvCountPage.php?vendor=' . $vendorID . '&store=' . $store;
     }
 
     protected function get_recalc_store_handler()
@@ -588,48 +532,6 @@ class InvCountPage extends FannieRESTfulPage
                 <div class="form-group">
                     <label>Store</label>
                     ' . $stores['html'] . '
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="btn btn-default">Submit</button>
-                </div>
-            </form>
-            </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading">Assign all Pars</div>
-            <div class="panel-body">
-            <form method="get">
-                <div class="form-group">
-                    <label>Vendor</label>
-                    <select name="allPars" class="form-control chosen">
-                    ' . $vendors->toOptions() . '
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Store</label>
-                    ' . $stores['html'] . '
-                </div>
-                <div class="form-group">
-                    <label>Days</label>
-                    <input type="number" min="1" max="90" step="1" name="days" class="form-control" value="1" />
-                </div>
-                <div class="form-group">
-                    <label>Loss Factor</label>
-                    <div class="input-group">
-                        <input type="number" min="1" max="100" step="1" name="loss" class="form-control" value="0" />
-                        <span class="input-group input-group-addon">%</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Smoothing Factor</label>
-                    <div class="input-group">
-                        <input type="number" min="1" max="100" step="1" name="smooth" class="form-control" value="70" />
-                        <span class="input-group input-group-addon">%</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Default</label>
-                    <input type="number" min="1" max="20" step="1" name="default" value="1" class="form-control" />
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-default">Submit</button>

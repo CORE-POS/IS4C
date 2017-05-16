@@ -150,11 +150,11 @@ HTML;
             $salesR = $dbc->execute($salesP, array($storeID, $itemW['upc'], $today));
             while ($salesW = $dbc->fetchRow($salesR)) {
                 $rowDay = new DateTime(date('Y-m-d', mktime(0,0,0, $salesW['month'], $salesW['day'], $salesW['year'])));
-                while ($currentDay !== null && $rowDay < $currentDay) {
+                while ($currentDay !== null && $rowDay > $currentDay) {
                     $points[] = 0;
-                    $rowDay = $rowDay->add($p1d);
+                    $currentDay = $currentDay->add($p1d);
                 }
-                $currentDay = new DateTime(date('Y-m-d', mktime(0,0,0, $salesW['month'], $salesW['day'], $salesW['year'])));
+                $currentDay = $rowDay;
                 $points[] = $salesW['qty'];
             }
             // calculate par if appropriate
@@ -190,6 +190,22 @@ HTML;
             }
         }
         $dbc->commitTransaction();
+    }
+}
+
+if (basename($_SERVER['PHP_SELF']) == 'ExponentialSmoothing.php') {
+    include(__DIR__ . '/../../../config.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
+    $obj = new ExponentialSmoothing();
+    $dbc = \FannieDB::get('is4c_op');
+    $model = new \ParAlgorithmsModel($dbc);
+    $model->vendorID(242);
+    $model->deptID(0);
+    $model->storeID(1);
+    if ($model->load()) {
+        $json = json_decode($model->parameters(), true);
+        $obj->updatePars($dbc, 242, 0, 1, $json);
+        $obj->updatePars($dbc, 242, 0, 2, $json);
     }
 }
 

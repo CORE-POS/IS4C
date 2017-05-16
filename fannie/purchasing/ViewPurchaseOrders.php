@@ -99,6 +99,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     protected function post_id_sku_adjust_handler()
     {
         $this->connection->selectDB($this->config->get('OP_DB'));
+        $halfP = $this->connection->prepare('
+            SELECT halfCases FROM PurchaseOrder AS o INNER JOIN vendors AS v ON o.vendorID=v.vendorID WHERE o.orderID=?'
+        );
+        $halved = $this->connection->getValue($halfP, array($this->id));
+        if ($halved) {
+            $this->adjust / 2;
+        }
         $item = new PurchaseOrderItemsModel($this->connection);
         $item->orderID($this->id);
         $item->sku($this->sku);

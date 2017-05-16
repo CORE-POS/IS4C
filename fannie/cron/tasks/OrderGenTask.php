@@ -60,6 +60,14 @@ class OrderGenTask extends FannieTask
         $this->userID = $u;
     }
 
+    // translate daily pars into the number of days in an
+    // order cycle
+    private $multiplier = 1;
+    public function setMultiplier($m)
+    {
+        $this->multiplier = 1;
+    }
+
     private function freshenCache($dbc)
     {
         $items = $dbc->query('
@@ -89,6 +97,7 @@ class OrderGenTask extends FannieTask
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
         $prodP = $dbc->prepare('SELECT * FROM products WHERE upc=? AND store_id=?');
+        $halfP = $dbc->prepare('SELECT halfCases FROM vendors WHERE vendorID=?');
         $orderIDs = array();
         $dtP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
@@ -203,13 +212,19 @@ class OrderGenTask extends FannieTask
                     }
                 }
 
+                if ($this->multiplier) {
+                    $row['par'] *= $this->multiplier;
+                }
+
                 /**
                   Determine cases required to reach par again
                   and add to order
                 */
                 $cases = 1;
+                $halves = $dbc->getValue($halfP, $row['vid']);
+                $increment = $halves ? 0.5 : 1.0;
                 while (($cases*$itemR['units']) + $cur < $row['par']) {
-                    $cases++;
+                    $cases += $increment;
                 }
                 $poi = new PurchaseOrderItemsModel($dbc);
                 $poi->orderID($orders[$row['vid'].'-'.$row['storeID']]);

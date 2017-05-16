@@ -163,7 +163,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 p.discounttype,
                 p.wicable,
                 p.store_id,
-                CASE WHEN i.upc IS NOT NULL THEN 1 ELSE 0 END AS inventoried,
+                CASE WHEN c.upc IS NOT NULL THEN 1 ELSE 0 END AS inventoried,
                 c.count AS lastCount,
                 c.countDate,
                 c.par AS invPar,
@@ -804,7 +804,7 @@ HTML;
                 $ret .= sprintf('<tr>
                     <th class="small text-right">On Hand</th><td class="small">%d</td>
                     <th class="small text-right">Last Count</th><td colspan="2" class="small">%d on %s</td>
-                    <th class="small text-right">Par</th><td class="small">%d</td>
+                    <th class="small text-right">Par</th><td class="small">%s</td>
                     <td colspan="3" class="small"><a href="inventory/InvCountPage.php?id=%s&store=%d">Adjust count/par</a></td>
                     </tr>',
                     $rowItem['onHand'],
