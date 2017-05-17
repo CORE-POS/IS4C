@@ -46,6 +46,12 @@ class LegacyWrapper extends \COREPOS\Fannie\API\item\FannieSignage
             return 'No legacy layout selected';
         }
         $data = $this->loadItems();
+        $data = array_map(function($i) {
+            if (isset($i['posDescription'])) {
+                $i['description'] = $i['posDescription'];
+            }
+            return $i;
+        }, $data);
         $layout = str_replace(' ', '_', self::$wrapped);
         $file = __DIR__ . '/../../../admin/labels/pdf_layouts/' . $layout . '.php';
         if (file_exists($file) && !function_exists($layout)) {
