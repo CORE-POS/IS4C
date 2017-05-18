@@ -374,13 +374,21 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 <div class="tab-content">';
 
         $tPending = '<div id="pending-pane" class="tab-pane table-responsive ' . ($placed ? '' : 'active') . '">
-            <table class="table table-striped table-bordered tablesorter">';
+            <table class="table table-striped table-bordered tablesorter table-float">';
         $tPlaced = '<div id="placed-pane" class="tab-pane table-responsive ' . ($placed ? 'active' : '') . '">
-            <table class="table table-striped table-bordered tablesorter">';
-        $tPending .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
-            <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
-        $tPlaced .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
-            <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
+            <table class="table table-striped table-bordered tablesorter table-float">';
+        $headers .= '<thead style="background: #fff;"><tr>
+            <th class="thead">Created</th>
+            <th class="thead">Invoice#</th>
+            <th class="thead">Store</th>
+            <th class="thead">Vendor</th>
+            <th class="thead"># Items</th>
+            <th class="thead">Est. Cost</th>
+            <th class="thead">Placed</th>
+            <th class="thead">Received</th>
+            <th class="thead">Rec. Cost</th></tr></thead><tbody>';
+        $tPending .= $headers;
+        $tPlaced .= $headers;
         $mergable = array();
         while ($row = $dbc->fetchRow($result)) {
             if ($row['placed']) {
@@ -698,11 +706,21 @@ HTML;
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
 
-        $ret .= '<table class="table tablesorter table-bordered small"><thead>';
-        $ret .= '<tr><th>Coding</th><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
-            <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
-            <th>Est. Cost</th><th>Received</th>
-            <th>Rec. Qty</th><th>Rec. Cost</th><th>SO</th></tr></thead><tbody>';
+        $ret .= '<table class="table tablesorter table-bordered small table-float"><thead style="background:#fff;">';
+        $ret .= '<tr>
+            <th class="thead">Coding</th>
+            <th class="thead">SKU</th>
+            <th class="thead">UPC</th>
+            <th class="thead">Brand</th>
+            <th class="thead">Description</th>
+            <th class="thead">Unit Size</th>
+            <th class="thead">Units/Case</th>
+            <th class="thead">Cases</th>
+            <th class="thead">Est. Cost</th>
+            <th class="thead">Received</th>
+            <th class="thead">Rec. Qty</th>
+            <th class="thead">Rec. Cost</th>
+            <th class="thead">SO</th></tr></thead><tbody>';
         $count = 0;
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
@@ -769,7 +787,9 @@ HTML;
 
         $this->add_script('js/view.js');
         $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
+        $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         return $ret;
     }
@@ -1054,7 +1074,10 @@ HTML;
         $ordersTable = $this->get_orders($init == 'placed' ? 1 : 0, Store::getIdByIp(), 'Last 30 days');
 
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addScript('js/view.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
+        $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         return <<<HTML
 <div class="form-group form-inline">

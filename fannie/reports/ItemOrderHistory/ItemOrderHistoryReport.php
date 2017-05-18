@@ -126,6 +126,9 @@ class ItemOrderHistoryReport extends FannieReportPage
 
     private function rowToRecord($row)
     {
+        if (empty($row['vendorInvoiceID'])) {
+            $row['vendorInvoiceID'] = '(invoice)';
+        }
         return array(
             $row['placedDate'],
             $row['vendorName'],

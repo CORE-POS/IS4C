@@ -12,6 +12,7 @@ function fetchOrders(){
     }).done(function(data){
         $('#ordersDiv').html(data);
         $('.tablesorter').tablesorter([[0, 1]]);
+        $('.table-float').floatThead();
 	});
 }
 
