@@ -65,7 +65,13 @@ class OrderGenTask extends FannieTask
     private $multiplier = 1;
     public function setMultiplier($m)
     {
-        $this->multiplier = 1;
+        $this->multiplier = $m;
+    }
+
+    private $forecast = 0;
+    public function setForecast($f)
+    {
+        $this->forecast = $f;
     }
 
     private function freshenCache($dbc)
@@ -91,16 +97,47 @@ class OrderGenTask extends FannieTask
         $dbc->commitTransaction();
     }
 
+    /**
+     * Scale pars to align with a forecasted sales total
+     */
+    private function forecastFactor($dbc, $forecast, $vendors, $store)
+    {
+        if ($forecast <= 0) {
+            return 0;
+        }
+
+        list($inStr, $args) = $dbc->safeInClause($vendors);
+        $query = "
+            SELECT SUM(CASE WHEN p.discounttype=1 THEN i.par*p.special_price ELSE i.par*p.normal_price END) AS retail
+            FROM products AS p
+                INNER JOIN InventoryCounts AS i ON p.upc=i.upc AND p.store_id=i.storeID AND i.mostRecent=1
+            WHERE p.default_vendor_id IN ({$inStr}) ";
+        if ($store) {
+            $query .= " AND p.store_id=? ";
+            $args[] = $store;
+        }
+        $prep = $dbc->prepare($query);
+        $retail = $dbc->getValue($prep, $args);
+        if ($retail === false) {
+            return 0;
+        }
+
+        return $forecast / $retail;
+    }
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->freshenCache($dbc);
+        $this->forecast = $this->forecastFactor($dbc, $this->forecast/$this->multiplier, $this->vendors, $this->store);
+
         $dbc->startTransaction();
         $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount >= 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
         $prodP = $dbc->prepare('SELECT * FROM products WHERE upc=? AND store_id=?');
         $halfP = $dbc->prepare('SELECT halfCases FROM vendors WHERE vendorID=?');
+
         $orderIDs = array();
         $dtP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
@@ -217,6 +254,9 @@ class OrderGenTask extends FannieTask
 
                 if ($this->multiplier) {
                     $row['par'] *= $this->multiplier;
+                }
+                if ($this->forecast) {
+                    $row['par'] *= $this->forecast;
                 }
 
                 /**

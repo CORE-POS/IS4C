@@ -85,7 +85,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
         $ret = '<form>
             <input type="hidden" name="_method" value="put" />
             <label>Vendor(s)</label>';
-        for ($i=0; $i<10; $i++) {
+        for ($i=0; $i<7; $i++) {
             $ret .= '<div class="form-group">' . $vendorSelect . '</div>'; 
         }
         $ret .= '
@@ -93,9 +93,18 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 <label>Store</label>
                 ' . $stores['html'] . '
             </p>
-            <div class="form-group">
-                <label title="For use with produce plants">Multiplier</label>
-                <input class="form-control" type="number" value="1" min="1" max="30" name="multiplier" />
+            <div class="small panel panel-default">
+                <div class="panel panel-heading">Automated Pars</div>
+                <div class="panel panel-body">
+                    <div class="form-group">
+                        <label title="For use with produce plants">Multiplier</label>
+                        <input class="form-control" type="number" value="1" min="1" max="30" name="multiplier" />
+                    </div>
+                    <div class="form-group">
+                        <label title="For use with produce plants">Forecast</label>
+                        <input class="form-control" type="forecast" value="0" min="0" max="1000000" name="forecast" />
+                    </div>
+                </div>
             </div>
             <p>
                 <button type="submit" class="btn btn-default btn-core">Generate Orders</button>
