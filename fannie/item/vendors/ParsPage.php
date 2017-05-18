@@ -11,6 +11,7 @@ class ParsPage extends FannieRESTfulPage
 {
     private $algorithms = array(
         'COREPOS-Fannie-API-data-ordering-ExponentialSmoothing',
+        'COREPOS-Fannie-API-data-ordering-ExponentialLeastSquares',
     );
 
     protected $header = 'Par Algorithm';
@@ -61,8 +62,9 @@ class ParsPage extends FannieRESTfulPage
         $model->vendorID($this->id);
         $model->storeID($store);
         $model->deptID(0);
-        $model->algorithm($this->algorithms[0]);
+        $model->algorithm(FormLib::get('algo'));
         $algo->saveParams($this->form, $model);
+        //var_dump($_POST); exit;
 
         return 'ParsPage.php?id=' . $this->id . '&store=' . $store;
     }
@@ -75,6 +77,9 @@ class ParsPage extends FannieRESTfulPage
         $model->deptID($deptID);
         $model->load();
         $algo = ($model->algorithm() && class_exists($model->algorithm())) ? $model->algorithm() : $this->algorithms[0];
+        if (FormLib::get('algo', false) !== false) {
+            $algo = str_replace('-', '\\', FormLib::get('algo'));
+        }
         $algo = str_replace('-', '\\', $algo);
         $obj = new $algo();
         $json = json_decode($model->parameters(), true);
@@ -108,6 +113,14 @@ class ParsPage extends FannieRESTfulPage
         $vendor = $this->connection->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
         $vendor = $this->connection->getValue($vendor, array($this->id));
 
+        $algoName = str_replace('\\', '-', get_class($algo));
+        $algoSelect = '<select name="algo" class="form-control" 
+            onchange="window.location=\'ParsPage.php?id=' . $this->id . '&store=' . $store . '&algo=\'+this.value;">';
+        foreach ($this->algorithms as $a) {
+            $algoSelect .= sprintf('<option %s>%s</option>', ($algoName == $a ? 'selected' : ''), $a);
+        }
+        $algoSelect .= '</select>';
+
         return <<<HTML
 <form method="post">
     <h3>{$vendor}</h3>
@@ -115,6 +128,10 @@ class ParsPage extends FannieRESTfulPage
     <div class="form-group">
         <label>Store</label>
         {$picker['html']}
+    </div>
+    <div class="form-group">
+        <label>Algorithm</label>
+        {$algoSelect}
     </div>
     {$rendered}
     <div class="form-group">

@@ -33,6 +33,9 @@ class ExponentialSmoothing
         if (!isset($json['loss'])) {
             $json['loss'] = 0;
         }
+        if (!isset($json['carrythrough'])) {
+            $json['carrythrough'] = 1;
+        }
         if (!isset($json['default'])) {
             $json['default'] = 1;
         }
@@ -41,6 +44,7 @@ class ExponentialSmoothing
         }
         $json['alpha'] = sprintf('%.2f', 100*$json['alpha']);
         $json['loss'] = sprintf('%.2f', 100*$json['loss']);
+        $json['carrythrough'] = sprintf('%.2f', 100*$json['carrythrough']);
 
         return <<<HTML
 <div class="form-group">
@@ -60,6 +64,13 @@ class ExponentialSmoothing
 <div class="form-group">
     <label>Min. Data Points</label>
     <input type="number" min="1" max="20" step="1" name="esMin" value="{$json['minPoints']}" class="form-control" />
+</div>
+<div class="form-group">
+    <label>Carrythrough Rate for Zero Sales Days</label>
+    <div class="input-group">
+        <input type="number" min="1" max="100" step="1" name="carrythrough" class="form-control" value="{$json['carrythrough']}" />
+        <span class="input-group input-group-addon">%</span>
+    </div>
 </div>
 <div class="form-group">
     <label>Default</label>
@@ -82,6 +93,7 @@ HTML;
                 'loss' => $form->esLoss / 100.00,
                 'default' => $form->esDefault,
                 'minPoints' => $form->esMin,
+                'carrythrough' => $form->carrythrough / 100.00,
             );
             $model->parameters(json_encode($json));
             return $model->save();
@@ -144,6 +156,7 @@ HTML;
             // track days to fill in zero datapoints when
             // there are gaps in sales history
             $currentDay = null;
+            $lastQty = 0;
             $points = array();
             $default = true;
             $par = $json['default'];
@@ -151,11 +164,13 @@ HTML;
             while ($salesW = $dbc->fetchRow($salesR)) {
                 $rowDay = new DateTime(date('Y-m-d', mktime(0,0,0, $salesW['month'], $salesW['day'], $salesW['year'])));
                 while ($currentDay !== null && $rowDay > $currentDay) {
-                    $points[] = 0;
+                    $lastQty *= $json['carrythrough'];
+                    $points[] = $lastQty;
                     $currentDay = $currentDay->add($p1d);
                 }
                 $currentDay = $rowDay;
                 $points[] = $salesW['qty'];
+                $lastQty = $salesW['qty'];
             }
             // calculate par if appropriate
             if (count($points) > 0 && count($points) > $json['minPoints']) {
