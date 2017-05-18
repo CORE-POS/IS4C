@@ -145,9 +145,14 @@ class AdvancedItemSearch extends FannieRESTfulPage
             if (!strstr($search->from, 'vendorItems')) {
                 $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
             }
-            list($inStr, $search->args) = $this->connection->safeInClause($upcs, $search->args);
-            list($inStr2, $search->args) = $this->connection->safeInClause($skus, $search->args);
-            $search->where .= " AND (p.upc IN ({$inStr}) OR v.sku IN ({$inStr2})) ";
+            if ($form->tryGet('skuToo')) {
+                list($inStr, $search->args) = $this->connection->safeInClause($upcs, $search->args);
+                list($inStr2, $search->args) = $this->connection->safeInClause($skus, $search->args);
+                $search->where .= " AND (p.upc IN ({$inStr}) OR v.sku IN ({$inStr2})) ";
+            } else {
+                list($inStr, $search->args) = $this->connection->safeInClause($upcs, $search->args);
+                $search->where .= " AND (p.upc IN ({$inStr})) ";
+            }
         }
 
         return $search;
