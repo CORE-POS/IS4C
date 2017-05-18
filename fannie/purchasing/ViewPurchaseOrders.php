@@ -104,7 +104,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         );
         $halved = $this->connection->getValue($halfP, array($this->id));
         if ($halved) {
-            $this->adjust / 2;
+            $this->adjust /= 2;
         }
         $item = new PurchaseOrderItemsModel($this->connection);
         $item->orderID($this->id);
