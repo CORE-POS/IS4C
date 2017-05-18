@@ -70,6 +70,7 @@ class OrderGenTask extends FannieTask
 
     private function freshenCache($dbc)
     {
+        $dbc->startTransaction();
         $items = $dbc->query('
             SELECT i.upc,
                 i.storeID,
@@ -87,12 +88,14 @@ class OrderGenTask extends FannieTask
             $args = array($row['upc'], $row['storeID'], $row['countDate'], $row['countDate'], $row['count'], $row['count']);
             $dbc->execute($ins, $args);
         }
+        $dbc->commitTransaction();
     }
 
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->freshenCache($dbc);
+        $dbc->startTransaction();
         $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount >= 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
@@ -243,6 +246,7 @@ class OrderGenTask extends FannieTask
                 $poi->save();
             }
         }
+        $dbc->commitTransaction();
 
         if (!$this->silent) {
             $this->sendNotifications($dbc, $orders);
