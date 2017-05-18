@@ -109,6 +109,7 @@ class InventoryTask extends FannieTask
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->clearEntries($dbc, $this->store_id, $this->vendor_id);
 
+        $dbc->startTransaction();
         $insP = $dbc->prepare('
             INSERT INTO InventoryCache
                 (upc, storeID, cacheStart, cacheEnd, baseCount, ordered, sold, shrunk)
@@ -160,11 +161,40 @@ class InventoryTask extends FannieTask
             );
             $insR = $dbc->execute($insP, $args);
         }
+        $dbc->commitTransaction();
 
         $dbc->query('
             UPDATE InventoryCache
             SET onHand = baseCount + ordered - sold - shrunk
         ');
+
+        $this->trimCounts($dbc, $this->store_id, $this->vendor_id);
+    }
+
+    // trim the backlog of count data
+    // don't keep more than a 3 count history per item
+    private function trimCounts($dbc, $store_id, $vendor_id)
+    {
+        if ($store_id && $vendor_id) {
+            return true;
+        }
+
+        $dbc->startTransaction();
+        $clearR = $dbc->query("SELECT upc, storeID FROM InventoryCounts GROUP BY upc, storeID HAVING COUNT(*) > 3");
+        $getP = $dbc->prepare("SELECT inventoryCountID, mostRecent FROM InventoryCounts WHERE upc=? AND storeID=? ORDER BY countDate DESC");
+        $delP = $dbc->prepare("DELETE FROM InventoryCounts WHERE inventoryCountID=?");
+        while ($clearW = $dbc->fetchRow($clearR)) {
+            $args = array($clearW['upc'], $clearW['storeID']);
+            $counter = 1;
+            $res = $dbc->execute($getP, $args);
+            while ($row = $dbc->fetchRow($res)) {
+                if ($counter > 3 && $row['mostRecent'] != 1) {
+                    $dbc->execute($delP, array($row['inventoryCountID']));
+                }
+                $counter++;
+            }
+        }
+        $dbc->commitTransaction();
     }
 
     private function getSales($dbc, $args)
