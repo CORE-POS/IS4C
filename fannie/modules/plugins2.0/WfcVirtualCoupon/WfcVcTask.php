@@ -170,7 +170,7 @@ class WfcVcTask extends FannieTask
                                 Discount=10,
                                 SSI=1
                                WHERE Type=\'PC\' 
-                                AND memType IN (1,5)
+                                AND (memType IN (1,5) OR memType IS NULL)
                                 AND CardNo IN (' . $in . ')');
         $dbc->execute($redo, $mems);
         $undo = $dbc->prepare('UPDATE custdata 
