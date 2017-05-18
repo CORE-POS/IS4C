@@ -84,8 +84,11 @@ class PurchasingIndexPage extends FannieRESTfulPage
         $vendorSelect .= '</select>';
         $ret = '<form>
             <input type="hidden" name="_method" value="put" />
+            <div class="small panel panel-default">
+                <div class="panel panel-heading">Vendors & Stores</div>
+                <div class="panel panel-body">
             <label>Vendor(s)</label>';
-        for ($i=0; $i<7; $i++) {
+        for ($i=0; $i<5; $i++) {
             $ret .= '<div class="form-group">' . $vendorSelect . '</div>'; 
         }
         $ret .= '
@@ -93,16 +96,20 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 <label>Store</label>
                 ' . $stores['html'] . '
             </p>
+            </div></div>
             <div class="small panel panel-default">
                 <div class="panel panel-heading">Automated Pars</div>
                 <div class="panel panel-body">
                     <div class="form-group">
-                        <label title="For use with produce plants">Multiplier</label>
+                        <label title="For use with produce plants">Multiplier (optional)</label>
                         <input class="form-control" type="number" value="1" min="1" max="30" name="multiplier" />
                     </div>
                     <div class="form-group">
-                        <label title="For use with produce plants">Forecast</label>
-                        <input class="form-control" type="forecast" value="0" min="0" max="1000000" name="forecast" />
+                        <label title="For use with produce plants">Forecast (optional)</label>
+                        <div class="input-group">
+                            <span class="input-group input-group-addon">$</span>
+                            <input class="form-control" type="forecast" value="0" min="0" max="1000000" name="forecast" />
+                        </div>
                     </div>
                 </div>
             </div>

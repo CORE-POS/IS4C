@@ -55,7 +55,7 @@ class ExponentialSmoothing
     </div>
 </div>
 <div class="form-group">
-    <label>Smoothing Factor</label>
+    <label>Smoothing Factor (Alpha)</label>
     <div class="input-group">
         <input type="number" min="1" max="100" step="1" name="esAlpha" class="form-control" value="{$json['alpha']}" />
         <span class="input-group input-group-addon">%</span>
