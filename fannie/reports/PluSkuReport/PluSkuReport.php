@@ -60,7 +60,7 @@ class PluSkuReport extends FannieReportPage
                 n.vendorID
             FROM products AS p 
                 LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID
-                LEFT JOIN vendorSKUtoPLU AS m ON p.upc=m.upc AND p.default_vendor_id=m.vendorID
+                LEFT JOIN VendorAliases AS m ON p.upc=m.upc AND p.default_vendor_id=m.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID ';
         if ($super !== '' && $super > -1) {
             $query .= ' LEFT JOIN superdepts AS s ON p.department=s.dept_ID ';

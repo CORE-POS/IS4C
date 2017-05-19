@@ -29,21 +29,13 @@ class InventoryLib
     {
         $bdP = $dbc->prepare('
             SELECT i.upc,
-                v.units,
+                i.units,
                 v.sku,
                 v.vendorID
-            FROM VendorBreakdowns AS v
+            FROM VendorAliases AS v
                 INNER JOIN vendorItems AS i ON v.sku=i.sku AND v.vendorID=i.vendorID
             WHERE v.upc=?');
         $bdInfo = $dbc->getRow($bdP, array($upc));
-        if ($recurse && $bdInfo && ($bdInfo['units'] == 1 || $bdInfo['units'] == null)) {
-            $model = new \VendorBreakdownsModel($dbc);
-            $model->vendorID($bdInfo['vendorID']);
-            $model->sku($bdInfo['sku']);
-            if ($model->initUnits()) {
-                return self::isBreakdown($dbc, $upc, false); 
-            }
-        }
 
         return $bdInfo;
     }

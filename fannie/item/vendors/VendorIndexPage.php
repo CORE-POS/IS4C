@@ -258,7 +258,7 @@ class VendorIndexPage extends FannieRESTfulPage
                 AND p.upc NOT IN (
                     SELECT upc FROM vendorItems WHERE vendorID=?
                 ) AND p.upc NOT IN (
-                    SELECT upc FROM vendorSKUtoPLU WHERE vendorID=?
+                    SELECT upc FROM VendorAliases WHERE vendorID=?
                 )';
         $prep = $dbc->prepare($query);
         $args = array($vendorID, $vendorID, $vendorID);

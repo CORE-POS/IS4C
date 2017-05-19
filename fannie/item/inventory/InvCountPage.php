@@ -264,9 +264,6 @@ class InvCountPage extends FannieRESTfulPage
         while ($row = $this->connection->fetchRow($res)) {
             // omit items that have a breakdown. only the breakdown
             // should have a count & par
-            if ($this->isBreakable($row['upc'], $this->vendor)) {
-                continue;
-            }
             $info = $this->getMostRecent($row['upc'], $store);
             $ret .= sprintf('<tr %s>
                 <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
@@ -315,26 +312,6 @@ class InvCountPage extends FannieRESTfulPage
             </form>';
 
         return $ret;
-    }
-
-    private $bdP = null;
-    /**
-      Item can be broken down into several sale-able units
-    */
-    private function isBreakable($upc, $vendorID)
-    {
-        if ($this->bdP === null) {
-            $this->bdP = $this->connection->prepare('
-                SELECT v.upc
-                FROM VendorBreakdowns AS v
-                    INNER JOIN vendorItems AS i ON v.sku=i.sku AND v.vendorID=i.vendorID
-                WHERE i.upc=?
-                    AND v.vendorID=?');
-        }
-
-        $ret = $this->connection->getValue($this->bdP, array($upc, $vendorID));
-
-        return $ret === false ? false : true;
     }
 
     protected function get_live_view()
@@ -390,9 +367,6 @@ class InvCountPage extends FannieRESTfulPage
             <th class="thead">Total Inventory</th>
             </tr></thead><tbody>';
         while ($row = $this->connection->fetchRow($res)) {
-            if ($this->isBreakable($row['upc'], $this->live)) {
-                continue;
-            }
             $adj = $this->connection->getValue($today, array($row['upc'], $store));
             if ($adj) {
                 $row['sold'] += $adj;

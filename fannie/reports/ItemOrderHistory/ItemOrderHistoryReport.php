@@ -84,7 +84,7 @@ class ItemOrderHistoryReport extends FannieReportPage
             }
         }
 
-        $mapR = $dbc->prepare('SELECT sku FROM vendorSKUtoPLU WHERE upc=?');
+        $mapR = $dbc->prepare('SELECT DISTINCT sku FROM VendorAliases WHERE upc=?');
         $mapped = $dbc->getValue($mapR, array($upc));
 
         $args = array($upc);

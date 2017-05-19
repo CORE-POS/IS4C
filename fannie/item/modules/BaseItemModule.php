@@ -167,7 +167,8 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 c.count AS lastCount,
                 c.countDate,
                 c.par AS invPar,
-                i.onHand
+                i.onHand,
+                0 AS isAlias
             FROM products AS p 
                 LEFT JOIN productUser AS u ON p.upc=u.upc 
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
@@ -185,6 +186,21 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $items = array();
             while ($row = $dbc->fetchRow($res)) {
                 $items[$row['store_id']] = $row;
+            }
+            $aliasP = $dbc->prepare("SELECT i.units, i.sku, i.size 
+                FROM VendorAliases AS a 
+                    INNER JOIN vendorItems AS i ON a.sku=i.sku AND a.vendorID=i.vendorID 
+                WHERE a.upc=?");
+            $alias = $dbc->getValue($aliasP, array($upc));
+            if ($alias) {
+                foreach ($items as $storeID => $info) {
+                    $items[$storeID]['caseSize'] = $alias['units'];
+                    $items[$storeID]['sku'] = $alias['sku'];
+                    if (!$items[$storeID]['size']) {
+                        $items[$storeID]['size'] = $alias['size'];
+                    }
+                    $items[$storeID]['isAlias'] = 1;
+                }
             }
             return $items;
         }
@@ -225,6 +241,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             'discounttype' => 0,
             'wicable' => 0,
             'inventoried' => 0,
+            'isAlias' => 0,
         );
 
         /**
@@ -440,6 +457,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
 
             $jsVendorID = $rowItem['default_vendor_id'] != 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
             $vFieldsDisabled = $jsVendorID == 'no-vendor' || !$active_tab ? 'disabled' : '';
+            $aliasDisabled = $rowItem['isAlias'] ? 'disabled' : '';
             $limit = 30 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
             $cost = sprintf('%.3f', $rowItem['cost']);
             $price = sprintf('%.2f', $rowItem['normal_price']);
@@ -711,7 +729,8 @@ HTML;
         <input type="text" name="vendorSKU" class="form-control input-sm"
             value="{$rowItem['sku']}" 
             onchange="$('#vsku{$jsVendorID}').val(this.value);" 
-            {$vFieldsDisabled} id="product-sku-field" />
+            {$vFieldsDisabled} {$aliasDisabled} id="product-sku-field" />
+        <input type="hidden" name="isAlias" value="{$rowItem['isAlias']}" />
     </td>
 </tr>
 <tr>
@@ -769,7 +788,7 @@ HTML;
                 class="form-control input-sm product-case-size"
                 value="{$rowItem['caseSize']}" 
                 onchange="\$('#vunits{$jsVendorID}').val(this.value);" 
-                {$vFieldsDisabled} />
+                {$vFieldsDisabled} {$aliasDisabled} />
         </td>
         <th class="small text-right">Pack Size</th>
         <td class="col-sm-1">
@@ -1096,6 +1115,10 @@ HTML;
         try {
             $sku = $this->form->vendorSKU;
             $caseSize = $this->form->caseSize;
+            $alias = $this->form->isAlias;
+            if ($alias) {
+                return true;
+            }
             if (!empty($sku) && $sku != $upc) {
                 /**
                   If a SKU is provided, update any

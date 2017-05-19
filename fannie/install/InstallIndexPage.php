@@ -711,6 +711,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'VendorSKUtoPLUModel',
         'VendorBreakdownsModel',
         'VendorDepartmentsModel',
+        'VendorAliasesModel',
         'UpdateAccountLogModel',
         'UpdateCustomerLogModel',
         'UsersModel',
@@ -746,6 +747,16 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $stores->description('DEFAULT STORE');
             $stores->hasOwnItems(1);
             $stores->save();
+        }
+
+        $aliases = new VendorAliasesModel($con);
+        if (count($aliases->find()) == 0) {
+            $con->query("INSERT INTO VendorAliaseses 
+                (upc, vendorID, sku, multiplier, primary)
+                SELECT upc, vendorID, sku, 1 , 1FROM vendorSKUtoPLU");
+            $con->query("INSERT INTO VendorAliaseses 
+                (upc, vendorID, sku, multiplier, primary)
+                SELECT upc, vendorID, sku, 1/units, 0 FROM VendorBreakdowns");
         }
 
         $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems', true);

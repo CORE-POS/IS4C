@@ -97,11 +97,11 @@ different product, this record will still
         $order->orderID($this->orderID());
         $order->load();
 
-        // case 2: item is SKU-mapped but the order record
+        // case 2: item is aliased but the order record
         // does not reflect the internal PLU
         $deptP = $dbc->prepare('
             SELECT d.salesCode
-            FROM vendorSKUtoPLU AS v
+            FROM VendorAliases AS v
                 ' . DTrans::joinProducts('v', 'p', 'INNER') . '
                 INNER JOIN departments AS d ON p.department=d.dept_no
             WHERE v.sku=?

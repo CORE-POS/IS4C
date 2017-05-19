@@ -69,7 +69,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $skuP = $dbc->prepare('
             SELECT s.upc,
                 p.price_rule_id
-            FROM vendorSKUtoPLU AS s
+            FROM VendorAliases AS s
                 INNER JOIN vendors AS v ON s.vendorID=v.vendorID
                 ' . DTrans::joinProducts('s', 'p', 'INNER') . '
             WHERE s.sku=?

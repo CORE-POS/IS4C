@@ -171,6 +171,14 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         }
         */
 
+        $aliasP = $dbc->prepare("
+            SELECT v.srp,
+                v.vendorDept,
+                a.multiplier
+            FROM VendorAliases AS a
+                INNER JOIN vendorItems AS v ON a.sku=v.sku AND a.vendorID=v.vendorID
+            WHERE a.upc=?");
+
         $query = "SELECT p.upc,
             p.description,
             p.cost,
@@ -184,9 +192,11 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             " . $srpSQL . " AS rawSRP,
             v.vendorDept,
             x.variable_pricing,
-            " . $marginCase . " AS margin
+            " . $marginCase . " AS margin,
+            CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias
             FROM products AS p
-                INNER JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                LEFT JOIN VendorAliases AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID
                 INNER JOIN vendors as b ON v.vendorID=b.vendorID
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
@@ -244,6 +254,11 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $multipleVendors = '<span class="glyphicon glyphicon-exclamation-sign"
                     title="Multiple SKUs For This Product">
                     </span> ';
+            }
+            if ($row['alias']) {
+                $alias = $dbc->getRow($aliasP, array($row['upc']));
+                $row['vendorDept'] = $alias['vendorDept'];
+                $row['srp'] = $alias['srp'] * $alias['multiplier'];
             }
             $background = "white";
             if (isset($batchUPCs[$row['upc']])) {
