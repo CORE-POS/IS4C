@@ -139,6 +139,7 @@ class InvCountPage extends FannieRESTfulPage
             $count = $this->form->count;
             $par = $this->form->par;
             $storeID = FormLib::get('store', 1);
+            $this->connection->startTransaction();
             for ($i=0; $i<count($upc); $i++) {
                 if (!isset($count[$i]) || $count[$i] === '') {
                     if (isset($par[$i]) && is_numeric($par[$i])) {
@@ -151,6 +152,7 @@ class InvCountPage extends FannieRESTfulPage
                 }
                 $this->saveEntry($upc[$i], $storeID, $count[$i], $par[$i]);
             }
+            $this->connection->commitTransaction();
         } catch (Exception $ex) {}
 
         return 'InvCountPage.php?vendor=' . $this->vendor . '&store=' . $storeID;
@@ -492,7 +494,7 @@ class InvCountPage extends FannieRESTfulPage
             <form method="get">
                 <div class="form-group">
                     <label>Vendor</label>
-                    <select name="live" class="form-control chosen">
+                    <select name="vendor" class="form-control chosen">
                     ' . $vendors->toOptions() . '
                     </select>
                 </div>
