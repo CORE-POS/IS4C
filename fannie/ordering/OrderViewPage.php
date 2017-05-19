@@ -987,7 +987,7 @@ HTML;
                     maxlength="26" 
                     /></td>',$row['mixMatch']);
             */
-            $ret .= sprintf('<td class="form-inline"><span class="form-inline">Supplier: %s</span></td>', $supplierInput);
+            $ret .= sprintf('<td class="form-inline"><span class="form-inline">Vendor: %s</span></td>', $supplierInput);
 
             $ret .= '<td>Discount</td>';
             if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
