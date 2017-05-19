@@ -624,6 +624,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         if (!$uname) {
             $uname = 'n/a';
         }
+        $receivedP = $dbc->prepare("SELECT DISTINCT u.name FROM PurchaseOrderItems AS p INNER JOIN Users AS u ON p.receivedBy=u.uid WHERE p.orderID=?");
+        $receivers = array();
+        $receivedR = $dbc->execute($receivedP, array($this->id));
+        while ($row = $dbc->fetchRow($receivedR)) {
+            $receivers[] = $row['name'];
+        }
+        $uname .= count($receivers) > 0 ? '<br /><b>Received by</b>: ' . implode(',', $receivers) : '';
 
         $ret = <<<HTML
 <p>
@@ -729,9 +736,9 @@ HTML;
                 if ($batchR) {
                     $css = 'class="info" title="' . $batchR . '"';
                 }
-                if ($obj->isSpecialOrder()) {
-                    $css = 'class="success" title="Special order"';
-                }
+            }
+            if ($obj->isSpecialOrder()) {
+                $css = 'class="success" title="Special order"';
             }
             if ($obj->salesCode() == '') {
                 $code = $obj->guessCode();
