@@ -187,21 +187,6 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             while ($row = $dbc->fetchRow($res)) {
                 $items[$row['store_id']] = $row;
             }
-            $aliasP = $dbc->prepare("SELECT i.units, i.sku, i.size 
-                FROM VendorAliases AS a 
-                    INNER JOIN vendorItems AS i ON a.sku=i.sku AND a.vendorID=i.vendorID 
-                WHERE a.upc=?");
-            $alias = $dbc->getValue($aliasP, array($upc));
-            if ($alias) {
-                foreach ($items as $storeID => $info) {
-                    $items[$storeID]['caseSize'] = $alias['units'];
-                    $items[$storeID]['sku'] = $alias['sku'];
-                    if (!$items[$storeID]['size']) {
-                        $items[$storeID]['size'] = $alias['size'];
-                    }
-                    $items[$storeID]['isAlias'] = 1;
-                }
-            }
             return $items;
         }
 
