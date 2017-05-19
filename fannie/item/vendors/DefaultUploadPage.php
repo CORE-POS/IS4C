@@ -147,7 +147,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare('SELECT sku, upc, primary, multiplier FROM VendorAliases WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc, isPrimary, multiplier FROM VendorAliases WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
             if (!isset($SKU_TO_PLU_MAP[$skusW['sku']])) {
@@ -204,7 +204,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             if ($this->session->vUploadCheckDigits)
                 $upc = '0'.substr($upc,0,12);
-            $aliases = array('upc' => $upc, 'primary'=>1, 'multiplier'=>1);
+            $aliases = array('upc' => $upc, 'isPrimary'=>1, 'multiplier'=>1);
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $aliases = $SKU_TO_PLU_MAP[$sku];
             }
@@ -264,7 +264,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             foreach ($aliases as $alias) {
                 $args = array(
                     $brand, 
-                    $alias['primary'] ? $sku : $alias['upc'],
+                    $alias['isPrimary'] ? $sku : $alias['upc'],
                     $size, $alias['upc'],
                     $qty, $reg_unit, $description, $category,
                     $VENDOR_ID, $net_unit, date('Y-m-d H:i:s'), $srp

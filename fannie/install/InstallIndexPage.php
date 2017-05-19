@@ -751,11 +751,11 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         $aliases = new VendorAliasesModel($con);
         if (count($aliases->find()) == 0) {
-            $con->query("INSERT INTO VendorAliaseses 
-                (upc, vendorID, sku, multiplier, primary)
-                SELECT upc, vendorID, sku, 1 , 1FROM vendorSKUtoPLU");
-            $con->query("INSERT INTO VendorAliaseses 
-                (upc, vendorID, sku, multiplier, primary)
+            $con->query("INSERT INTO VendorAliases
+                (upc, vendorID, sku, multiplier, isPrimary)
+                SELECT upc, vendorID, sku, 1 , 1 FROM vendorSKUtoPLU");
+            $con->query("INSERT INTO VendorAliases
+                (upc, vendorID, sku, multiplier, isPrimary)
                 SELECT upc, vendorID, sku, 1/units, 0 FROM VendorBreakdowns");
         }
 

@@ -114,7 +114,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare('SELECT sku, upc, primary, multiplier FROM VendorAliases WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc, isPrimary, multiplier FROM VendorAliases WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
             if (!isset($SKU_TO_PLU_MAP[$skusW['sku']])) {
@@ -201,7 +201,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
-            $aliases = array('upc'=>$upc, 'multiplier'=>1, 'primary'=>1);
+            $aliases = array('upc'=>$upc, 'multiplier'=>1, 'isPrimary'=>1);
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $aliases = $SKU_TO_PLU_MAP[$sku]);
                 if (substr($size, -1) == '#' && substr($upc, 0, 3) == '002') {
@@ -259,7 +259,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
                 $args = array(
                     $brand, 
-                    $alias['primary'] ? $sku : $alias['upc'],
+                    $alias['isPrimary'] ? $sku : $alias['upc'],
                     $size === false ? '' : $size,
                     $alias['upc'],
                     $qty,

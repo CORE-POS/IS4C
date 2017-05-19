@@ -37,7 +37,7 @@ class VendorAliasesModel extends BasicModel
     'vendorID' => array('type'=>'INT', 'primary_key'=>true),
     'sku' => array('type'=>'VARCHAR(13)'),
     'multiplier' => array('type'=>'DOUBLE'),
-    'primary' => array('type'=>'TINYINT', 'default'=>0),
+    'isPrimary' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function help()
