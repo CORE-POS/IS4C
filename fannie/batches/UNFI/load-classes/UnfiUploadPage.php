@@ -203,7 +203,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             $aliases = array('upc'=>$upc, 'multiplier'=>1, 'isPrimary'=>1);
             if (isset($SKU_TO_PLU_MAP[$sku])) {
-                $aliases = $SKU_TO_PLU_MAP[$sku]);
+                $aliases = $SKU_TO_PLU_MAP[$sku];
                 if (substr($size, -1) == '#' && substr($upc, 0, 3) == '002') {
                     $qty = trim($size, '# ');
                     $size = '#';

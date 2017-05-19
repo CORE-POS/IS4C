@@ -334,6 +334,8 @@ class VendorIndexPage extends FannieRESTfulPage
             <div class="panel panel-default">
                 <div class="panel-heading">Mappings</div>
                 <div class="panel-body">';
+        $ret .= "<a href=\"VendorAliasesPage.php?id=$id\">Manage Aliases</a>";
+        $ret .= "<br />";
         $ret .= "<a href=\"UploadPluMapPage.php?vid=$id\">Upload PLU/SKU mapping</a>";
         $ret .= "<br />";
         $ret .= "<a href=\"SkuMapPage.php?id=$id\">View or Edit PLU/SKU mapping</a>";
