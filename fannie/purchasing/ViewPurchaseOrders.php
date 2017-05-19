@@ -74,6 +74,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     protected function get_merge_handler()
     {
         $this->connection->selectDB($this->config->get('OP_DB'));
+        $dbc = $this->connection;
         sort($this->merge);
         $mergeID = array_pop($this->merge);
         $moveP = $dbc->prepare('UPDATE PurchaseOrderItems SET orderID=? WHERE orderID=?');
