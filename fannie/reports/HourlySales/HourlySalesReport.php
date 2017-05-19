@@ -203,6 +203,12 @@ class HourlySalesReport extends FannieReportPage
             }
         }
 
+        if (isset($dataset['Sun'])) {
+            $sunday = $dataset['Sun'];
+            unset($dataset['Sun']);
+            $dataset['Sun'] = $sunday;
+        }
+
         /**
           # of columns is dynamic depending on the
           date range selected
