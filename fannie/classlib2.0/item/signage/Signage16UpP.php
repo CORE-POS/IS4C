@@ -77,9 +77,17 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetX($this->left + ($this->width*$column));
             $y = $pdf->GetY();
             $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
+            /* If the current vertical position of the cursor indicates
+             * that the price caused a line break
+             * - "erase" the price by writing a white rectangle over it
+             * - reduce the font size
+             * - try again
+             */
             if ($pdf->GetY() - $y > 8) {
                 $pdf->SetFillColor(0xff, 0xff, 0xff);
-                $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
+                $pdf->Rect($this->left + ($this->width*$column), ($y-2), 
+                           $this->left + ($this->width*$column) + $effective_width, 
+                           $pdf->GetY(), 'F');
                 $font_shrink++;
                 if ($font_shrink >= $this->BIG_FONT) {
                     break;
