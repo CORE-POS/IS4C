@@ -245,7 +245,7 @@ HTML;
                 case 'UPC':
                 default:
                     $upc = BarcodeLib::padUPC($upc);
-                    $query = "SELECT p.*,n.vendorName A distributor,p.brand AS manufacturer 
+                    $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
                         FROM products as p
                         left join vendors AS n ON p.default_vendor_id=n.vendorID
                         WHERE p.upc = ? ";

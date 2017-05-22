@@ -125,10 +125,10 @@ class InventoryTask extends FannieTask
             $last = array($row['upc'], $row['storeID'], $row['countDate']);
             $sales = 0;
             $sales += $this->getSales($dbc, $last);
-            $bdInfo = COREPOS\Fannie\API\item\InventoryLib::isBreakdown($dbc, $row['upc']);
-            if ($bdInfo) {
-                $bdSales = $this->getSales($dbc, array($bdInfo['upc'], $row['storeID'], $row['countDate']));
-                $sales += ($bdInfo['units'] * $bdSales);
+            $aliases = COREPOS\Fannie\API\item\InventoryLib::getAliases($dbc, $row['upc']);
+            foreach ($aliases as $alias) {
+                $aliasSales = $this->getSales($dbc, array($alias['upc'], $row['storeID'], $row['countDate']));
+                $sales += ($alias['multiplier'] * $aliasSales);
             }
 
             $orders = InventoryCacheModel::calculateOrdered($dbc, $row['upc'], $row['storeID'], $row['countDate']);

@@ -25,19 +25,27 @@ namespace COREPOS\Fannie\API\item;
 
 class InventoryLib 
 {
-    public static function isBreakdown($dbc, $upc, $recurse=true)
+    /**
+     * First check if the item is a primary alias. If it is, get non-primary
+     * aliases for the same SKU
+     */
+    public static function getAliases($dbc, $upc)
     {
-        $bdP = $dbc->prepare('
-            SELECT i.upc,
-                i.units,
-                v.sku,
-                v.vendorID
-            FROM VendorAliases AS v
-                INNER JOIN vendorItems AS i ON v.sku=i.sku AND v.vendorID=i.vendorID
-            WHERE v.upc=?');
-        $bdInfo = $dbc->getRow($bdP, array($upc));
+        $skuP = $dbc->prepare('SELECT sku, vendorID FROM VendorAliases WHERE upc=? AND isPrimary=1');
+        $row = $dbc->getRow($skuP, array($upc));
+        if ($row === false) {
+            return array();
+        }
+        $ret = array();
+        $otherP = $dbc->prepare('SELECT upc, multiplier FROM VendorAliases WHERE sku=? AND vendorID=? AND isPrimary=0');
+        $otherR = $dbc->execute($otherP, array($row['sku'], $row['vendorID']));
+        while ($otherW = $dbc->fetchRow($otherR)) {
+            if ($otherW['upc'] != $upc) {
+                $ret[] = $otherW;
+            }
+        }
 
-        return $bdInfo;
+        return $ret;
     }
 
     public static function orderExporters()

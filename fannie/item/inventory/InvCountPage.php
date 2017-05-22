@@ -224,9 +224,11 @@ class InvCountPage extends FannieRESTfulPage
                 p.brand,
                 p.description,
                 v.sku,
-                p.auto_par
+                p.auto_par,
+                CASE WHEN a.isPrimary IS NULL THEN 1 ELSE a.isPrimary END AS isPrimary
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
+                LEFT JOIN VendorAliases AS a ON p.upc=a.upc AND a.vendorID=p.default_vendor_id
             WHERE p.default_vendor_id=?
                 AND p.inUse=1
                 AND p.store_id=? ';
@@ -264,8 +266,10 @@ class InvCountPage extends FannieRESTfulPage
             </tr></thead><tbody>';
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
-            // omit items that have a breakdown. only the breakdown
-            // should have a count & par
+            // omit items that are non-primary aliases
+            if ($row['isPrimary'] == 0) {
+                continue;
+            }
             $info = $this->getMostRecent($row['upc'], $store);
             $ret .= sprintf('<tr %s>
                 <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
