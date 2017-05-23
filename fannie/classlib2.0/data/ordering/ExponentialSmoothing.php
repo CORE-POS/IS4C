@@ -112,7 +112,7 @@ HTML;
      * Examine recent sales history and set or update pars for all
      * items that are enrolled in inventory
      */
-    public function updatePars($dbc, $vendorID, $deptID, $storeID, $json)
+    public function getNewPars($dbc, $vendorID, $deptID, $storeID, $json)
     {
         $dlog = FannieConfig::config('TRANS_DB') . $dbc->sep() . 'dlog_15';
         $today = date('Y-m-d 00:00:00');
@@ -150,7 +150,7 @@ HTML;
             $args[] = $deptID;
         }
         $itemR = $dbc->execute($itemP, $args);
-        $dbc->startTransaction();
+        $ret = array();
         while ($itemW = $dbc->fetchRow($itemR)) {
             // get daily sales the item at a given store
             // track days to fill in zero datapoints when
@@ -158,7 +158,6 @@ HTML;
             $currentDay = null;
             $lastQty = 0;
             $points = array();
-            $default = true;
             $par = $json['default'];
             $salesR = $dbc->execute($salesP, array($storeID, $itemW['upc'], $today));
             while ($salesW = $dbc->fetchRow($salesR)) {
@@ -174,37 +173,39 @@ HTML;
             }
             // calculate par if appropriate
             if (count($points) > 0 && count($points) > $json['minPoints']) {
-                $default = false;
                 $par = Stats::expSmoothing($points, $json['alpha']);
                 $par *= (1 + $json['loss']);
-            }
-
-            // Save the par
-            //   If a par exists already it should only be replaced
-            //   when the new par can be calculated from sales data.
-            //   Otherwise an item with no sales at all could jump
-            //   back up to the default par.
-            $inv = new InventoryCountsModel($dbc);
-            $inv->upc($itemW['upc']);
-            $inv->storeID($storeID);
-            $inv->mostRecent(1);
-            $found = false;
-            foreach ($inv->find() as $i) {
-                if (!$default) {
-                    $i->par($par);
-                    $i->save();
-                }
-                $found = true;
-            }
-            if (!$found) {
-                $inv->mostRecent(1);
-                $inv->count(0);
-                $inv->par($par);
-                $inv->countDate(date('Y-m-d H:i:s'));
-                $inv->save();
+                $ret[] = array('upc' => $itemW['upc'], 'storeID' => $storeID, 'par' => $par);
             }
         }
-        $dbc->commitTransaction();
+
+        return $ret;
+    }
+
+    public function setPar($dbc, $upc, $storeID, $par)
+    {
+        // Save the par
+        //   If a par exists already it should only be replaced
+        //   when the new par can be calculated from sales data.
+        //   Otherwise an item with no sales at all could jump
+        //   back up to the default par.
+        $inv = new InventoryCountsModel($dbc);
+        $inv->upc($itemW['upc']);
+        $inv->storeID($storeID);
+        $inv->mostRecent(1);
+        $found = false;
+        foreach ($inv->find() as $i) {
+            $i->par($par);
+            $i->save();
+            $found = true;
+        }
+        if (!$found) {
+            $inv->mostRecent(1);
+            $inv->count(0);
+            $inv->par($par);
+            $inv->countDate(date('Y-m-d H:i:s'));
+            $inv->save();
+        }
     }
 }
 
