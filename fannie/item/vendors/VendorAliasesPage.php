@@ -52,9 +52,8 @@ class VendorAliasesPage extends FannieRESTfulPage
         $delR = $dbc->execute($delP, array($this->id, $sku, $upc));
 
         $resp = array('error'=>($delR === false ? 1 : 0));
-        echo json_encode($resp);
 
-        return false;
+        return 'VendorAliasesPage.php?id=' . $this->id;
     }
 
     protected function post_id_handler()
