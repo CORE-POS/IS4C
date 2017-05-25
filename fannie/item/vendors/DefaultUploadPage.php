@@ -204,7 +204,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             if ($this->session->vUploadCheckDigits)
                 $upc = '0'.substr($upc,0,12);
-            $aliases = array('upc' => $upc, 'isPrimary'=>1, 'multiplier'=>1);
+            $aliases = array(array('upc' => $upc, 'isPrimary'=>1, 'multiplier'=>1));
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $aliases = $SKU_TO_PLU_MAP[$sku];
             }
