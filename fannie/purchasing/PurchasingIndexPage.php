@@ -134,14 +134,6 @@ class PurchasingIndexPage extends FannieRESTfulPage
         return '<ul>
             <li><a href="ViewPurchaseOrders.php">View Orders</a>
             <li><a href="PurchasingSearchPage.php">Search Orders</a>
-            <li>Import Order
-                <ul>
-                    <li><a href="ManualPurchaseOrderPage.php">Manually</a></li>
-                    <li><a href="ImportPurchaseOrder.php">From Spreadsheet</a></li>
-                    <li><a href="importers/CpwInvoiceImport.php">Custom CPW XLS Import</a></li>
-                    <li><a href="importers/SpartanNashInvoiceImport.php">Custom Spartan Nash CSV Import</a></li>
-                </ul>
-            </li>
             <li>Create Order
                 <ul>
                 <li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
@@ -150,11 +142,10 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 <li><a href="ScanTransferPage.php">Store Transfer</a></li>
                 </ul>
             </li>
-            <li>Reports
+            <li>Import Order
                 <ul>
-                <li><a href="reports/UnfiExportForMas.php">UNFI Export for MAS90</a></li>
-                <li><a href="reports/LocalInvoicesReport.php">Local Item Purchases Report</a></li>
-                <li><a href="reports/OutOfStockReport.php">Out of Stocks Report</a></li>
+                    <li><a href="ManualPurchaseOrderPage.php">Manually</a></li>
+                    <li><a href="ImportPurchaseOrder.php">From Spreadsheet</a></li>
                 </ul>
             </li>
             </ul>';
