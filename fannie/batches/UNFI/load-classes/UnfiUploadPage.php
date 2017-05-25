@@ -201,16 +201,9 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
-            $aliases = array('upc'=>$upc, 'multiplier'=>1, 'isPrimary'=>1);
+            $aliases = array(array('upc'=>$upc, 'multiplier'=>1, 'isPrimary'=>1));
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $aliases = $SKU_TO_PLU_MAP[$sku];
-                if (substr($size, -1) == '#' && substr($upc, 0, 3) == '002') {
-                    $qty = trim($size, '# ');
-                    $size = '#';
-                } elseif (substr($size, -2) == 'LB' && substr($upc, 0, 3) == '002') {
-                    $qty = trim($size, 'LB ');
-                    $size = 'LB';
-                }
             }
             $category = $data[$indexes['cat']];
             $reg = trim($data[$indexes['cost']]);
@@ -244,8 +237,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             }
 
-            $srp = $rounder->round($srp);
-
             list($organic_flag, $gf_flag) = $this->getFlags($prodInfo);
 
             // need unit cost, not case cost
@@ -253,9 +244,24 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $net_unit = $net / $qty;
 
             foreach ($aliases as $alias) {
+
+                if (substr($size, -1) == '#' && substr($alias['upc'], 0, 3) == '002') {
+                    $qty = trim($size, '# ');
+                    $reg_unit = $reg / $qty;
+                    $net_unit = $net / $qty;
+                    $size = '#';
+                } elseif (substr($size, -2) == 'LB' && substr($alias['upc'], 0, 3) == '002') {
+                    $qty = trim($size, 'LB ');
+                    $reg_unit = $reg / $qty;
+                    $net_unit = $net / $qty;
+                    $size = 'LB';
+                }
+
                 $dbc->execute($extraP, array($reg_unit*$alias['multiplier'],$alias['upc']));
                 $dbc->execute($prodP, array($reg_unit*$alias['multiplier'],$organic_flag,$gf_flag,$alias['upc'],$VENDOR_ID));
-                $updated_upcs[] = $alias;
+                $updated_upcs[] = $alias['upc'];
+
+                $srp = $rounder->round($srp * $alias['multiplier']);
 
                 $args = array(
                     $brand, 
@@ -263,11 +269,11 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $size === false ? '' : $size,
                     $alias['upc'],
                     $qty,
-                    $reg_unit,
+                    $reg_unit*$alias['multiplier'],
                     $description,
                     $category,
                     $VENDOR_ID,
-                    $net_unit,
+                    $net_unit*$alias['multiplier'],
                     date('Y-m-d H:i:s'),
                     $srp
                 );
@@ -275,19 +281,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
                 if ($srpP) {
                     $dbc->execute($srpP,array($VENDOR_ID,$alias['upc'],$srp));
-                }
-            }
-
-            if (isset($LINKED_MAP[$upc])) {
-                $dbc->execute($extraP, array($reg_unit,$LINKED_MAP[$upc]));
-                $dbc->execute($prodP, array($reg_unit,$organic_flag,$gf_flag,$LINKED_MAP[$upc],$VENDOR_ID));
-                $updated_upcs[] = $LINKED_MAP[$upc];
-                $linkedArgs = $args;
-                $linkedArgs[1] = $LINKED_MAP[$upc]; // sku re-write
-                $linkedArgs[3] = $LINKED_MAP[$upc]; // upc re-write
-                $dbc->execute($itemP, $linkedArgs);
-                if ($srpP) {
-                    $dbc->execute($srpP,array($VENDOR_ID,$LINKED_MAP[$upc],$srp));
                 }
             }
         }
