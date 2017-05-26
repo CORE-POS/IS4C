@@ -77,7 +77,7 @@ class FannieReportPage extends FanniePage
     protected $report_headers = array();
 
     /**
-      Define report format. Valid values are: html, xls, csv
+      Define report format. Valid values are: html, xls, csv, txt
     */
     protected $report_format = 'html';
 
@@ -292,7 +292,7 @@ class FannieReportPage extends FanniePage
                             $footers,$this->report_format);
                 if ($this->report_format == 'html') {
                     $output .= '<br />';
-                } elseif ($this->report_format == 'csv') {
+                } elseif ($this->report_format == 'csv' || $this->report_format == 'txt') {
                     $output .= "\r\n";
                 }
             }
@@ -487,9 +487,13 @@ class FannieReportPage extends FanniePage
         $reflector = new ReflectionClass($this);
         $qstr = filter_input(INPUT_SERVER, 'QUERY_STRING');
         $qstr = str_replace('&excel=xls', '', $qstr);
+        $qstr = str_replace('&excel=xlsx', '', $qstr);
         $qstr = str_replace('&excel=csv', '', $qstr);
+        $qstr = str_replace('&excel=txt', '', $qstr);
         $qstr = str_replace('?excel=xls', '', $qstr);
+        $qstr = str_replace('?excel=xlsx', '', $qstr);
         $qstr = str_replace('?excel=csv', '', $qstr);
+        $qstr = str_replace('?excel=txt', '', $qstr);
 
         return $reflector->getName() . $qstr;
     }
@@ -615,7 +619,7 @@ class FannieReportPage extends FanniePage
       Format data for display
       @param $data a two dimensional array of data
       @param $headers a header row (optional)
-      @param $format output format (html | xls | csv)
+      @param $format output format (html | xls | csv | txt)
       @return formatted string
     */
     public function render_data($data,$headers=array(),$footers=array(),$format='html')
@@ -667,7 +671,11 @@ class FannieReportPage extends FanniePage
                         $json = FormLib::queryStringtoJSON(filter_input(INPUT_SERVER, 'QUERY_STRING'));
                         $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                             &nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="%s%sexcel=txt">Download TXT</a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
                             <a href="?json=%s">Back</a></div>',
+                            $uri,
+                            (strstr($uri, '?') === false ? '?' : '&'),
                             $uri,
                             (strstr($uri, '?') === false ? '?' : '&'),
                             base64_encode($json)
@@ -689,6 +697,8 @@ class FannieReportPage extends FanniePage
                                 &nbsp;&nbsp;&nbsp;&nbsp;';
                         }
                         $ret .= '<a href="" onclick="$(\'#excelType\').val(\'csv\');$(\'#downloadForm\').submit(); return false;">Download CSV</a>';
+                        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+                        $ret .= '<a href="" onclick="$(\'#excelType\').val(\'txt\');$(\'#downloadForm\').submit(); return false;">Download TXT</a>';
                     }
                     $ret = array_reduce($this->defaultDescriptionContent(count($data)),
                         function ($carry, $line) {
@@ -712,11 +722,13 @@ class FannieReportPage extends FanniePage
                 }
                 break;
             case 'csv':
+            case 'txt':
+                $sep = strtolower($format) == 'txt' ? "\t" : ',';
                 foreach ($this->defaultDescriptionContent(count($data)) as $line) {
-                    $ret .= $this->csvLine(array(strip_tags($line)));
+                    $ret .= $this->csvLine(array(strip_tags($line)), $sep);
                 }
                 foreach ($this->report_description_content() as $line) {
-                    $ret .= $this->csvLine(array(strip_tags($line)));
+                    $ret .= $this->csvLine(array(strip_tags($line)), $sep);
                 }
             case 'xls':
                 break;
@@ -736,6 +748,9 @@ class FannieReportPage extends FanniePage
                 case 'csv':
                     $ret .= $this->csvLine($headers1);
                     break;
+                case 'txt':
+                    $ret .= $this->csvLine($headers1, "\t");
+                    break;
                 case 'xls':
                     break;
             }
@@ -754,6 +769,9 @@ class FannieReportPage extends FanniePage
                     break;
                 case 'csv':
                     $ret .= $this->csvLine($data[$i]);
+                    break;
+                case 'txt':
+                    $ret .= $this->csvLine($data[$i], "\t");
                     break;
                 case 'xls':
                     break;
@@ -776,13 +794,15 @@ class FannieReportPage extends FanniePage
                     $ret .= '</tfoot>';
                     break;
                 case 'csv':
+                case 'txt':
+                    $sep = strtolower($format) == 'txt' ? "\t" : ',';
                     // A single footer row
                     if (!is_array($footers[0])) {
-                        $ret .= $this->csvLine($footers);
+                        $ret .= $this->csvLine($footers, $sep);
                     // More than one footer row
                     } else {
                         foreach ($footers as $footer) {
-                            $ret .= $this->csvLine($footer);
+                            $ret .= $this->csvLine($footer, $sep);
                         }
                     }
                     break;
@@ -850,6 +870,15 @@ class FannieReportPage extends FanniePage
                 }
                 foreach($this->report_end_content() as $line) {
                     $ret .= $this->csvLine(array(strip_tags($line)));
+                }
+                break;
+            case 'txt':
+                if (!headers_sent()) {
+                    header('Content-Type: application/ms-excel');
+                    header('Content-Disposition: attachment; filename="'.$this->header.'.txt"');
+                }
+                foreach($this->report_end_content() as $line) {
+                    $ret .= $this->csvLine(array(strip_tags($line)), "\t");
                 }
                 break;
             case 'xls':
@@ -1068,7 +1097,7 @@ class FannieReportPage extends FanniePage
       @param $row an array of data
       @return CSV string
     */
-    public function csvLine($row)
+    public function csvLine($row, $separator=',')
     {
         $meta = 0;
         if (isset($row['meta'])) {
@@ -1087,7 +1116,7 @@ class FannieReportPage extends FanniePage
         $ret = "";
         foreach($row as $item) {
             $item = $this->excelFormat($item);
-            $ret .= '"'.$item.'",';
+            $ret .= '"'.$item.'"' . $separator;
         }
         $ret = substr($ret,0,strlen($ret)-1)."\r\n";
 
@@ -1103,7 +1132,7 @@ class FannieReportPage extends FanniePage
             $style = $this->report_format;
         }
         $item = strip_tags($item);
-        if ($style == 'csv') {
+        if ($style == 'csv' || $style == 'txt') {
             $item = str_replace('"','',$item);
         }
         // '$ 12.39' -> '12.39' or '$ -12.39' -> '-12.39'
@@ -1162,6 +1191,9 @@ class FannieReportPage extends FanniePage
             }
         } elseif (FormLib::get('excel') === 'csv') {
             $this->report_format = 'csv';
+            $this->window_dressing = false;
+        } elseif (FormLib::get('excel') === 'txt') {
+            $this->report_format = 'txt';
             $this->window_dressing = false;
         }
     }
@@ -1287,7 +1319,7 @@ class FannieReportPage extends FanniePage
     public function baseUnitTest($phpunit)
     {
         $this->bodyContent();
-        foreach (array('html', 'csv') as $format) {
+        foreach (array('html', 'csv', 'txt') as $format) {
             $this->report_format = $format;
             $phpunit->assertNotEquals(0, strlen($this->report_content()));
         }
