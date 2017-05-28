@@ -217,6 +217,7 @@ class DTransactionsModel extends BasicModel
         // EL: Need to restore $this-columns to original values.
         $this->connection = FannieDB::get($FANNIE_TRANS_DB);
         unset($this->columns['tdate']);
+        unset($this->columns['date_id']);
         unset($this->columns['trans_num']);
         $datetime = array('datetime'=>array('type'=>'datetime','index'=>true));
         $this->columns = $datetime + $this->columns;
