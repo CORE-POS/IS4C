@@ -111,4 +111,3 @@ class SimpleBackupTask extends FannieTask
     }
 }
 
->>>>>>> 5283f9626e80f23f1b93e22d8537a5f5ed201fdd
