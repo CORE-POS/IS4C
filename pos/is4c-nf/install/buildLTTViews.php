@@ -25,12 +25,8 @@ function buildLTTViews($db,$type,$errors=array()){
     return buildLTTViewsGeneric($db, $type, $errors);
 }
 
-/**
-  9Nov15 Andy
-  Keep temporarily for reference if anything's wrong
-  with the generic version
-function buildLTTViewsMySQL($db, $errors=array())
-{
+function buildLTTViewsMySQL($db, $errors=array()){
+global $CORE_LOCAL;
 
 //--------------------------------------------------------------
 // CREATE lttSummary VIEW
@@ -57,9 +53,19 @@ while ($taxRatesW = $db->fetch_row($taxRatesR)){
     $createStr .= "CAST(sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable <> 0 and foodstamp=1 then total else 0 end) AS decimal(10,2)) as fsDiscTaxable_".$taxRatesW[1].",\n";
 }
 
+$ar_depts = _getNumbers($CORE_LOCAL->get('ArDepartments'));
+if (count($ar_depts) == 0) {
+    $ar_depts = array(-999);
+}
+$ar_in = '';
+foreach ($ar_depts as $a) {
+    $ar_in .= ((int)$a) . ',';
+}
+$ar_in = substr($ar_in, 0, strlen($ar_in)-1);
+
 $createStr .= "
 CAST(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX'  then total else 0 end) AS decimal(10,2)) as chargeTotal,
-CAST(sum(case when department = 990  then total else 0 end) AS decimal(10,2)) as paymentTotal,
+CAST(sum(case when department IN ({$ar_in}) then total else 0 end) AS decimal(10,2)) as paymentTotal,
 CAST(sum(case when trans_type = 'T' and department = 0 then total else 0 end) AS decimal(10,2)) as tenderTotal,\n";
 $createStr .= "CAST(sum(case when trans_subtype = 'FS' or trans_subtype = 'EF' then total else 0 end) AS decimal(10,2)) as fsTendered,
 CAST(sum(case when foodstamp = 1 and discountable = 0 then total else 0 end) AS decimal(10,2)) as fsNoDiscTTL,
@@ -179,7 +185,6 @@ $errors = \COREPOS\pos\install\db\Creator::dbStructureModify($db,'rp_subtotals',
 
 return $errors;
 }
-*/
 
 function buildLTTViewsGeneric($db, $type, $errors=array())
 {
@@ -380,4 +385,3 @@ function convertOrCast($dbms, $expr)
         return 'CAST(' . $expr . ' AS DECIMAL(10,2))';
     }
 }
-

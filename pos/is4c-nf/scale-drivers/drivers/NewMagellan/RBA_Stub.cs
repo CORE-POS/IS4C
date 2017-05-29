@@ -200,7 +200,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             char fs = (char)0x1c;
-            string store_name = "Whole Foods Co-op";
+            string store_name = "Our Table Cooperative";
 
             // standard credit/debit/ebt/gift
             string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
