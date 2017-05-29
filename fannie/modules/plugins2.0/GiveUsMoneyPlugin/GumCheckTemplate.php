@@ -40,6 +40,17 @@ class GumCheckTemplate
     private $routing_no = 'xxxxxxxxxx';
     private $checking_no = 'yyyyyyyyyyyy';
 
+    const POSITION_BOTTOM = 1;
+    const POSITION_TRI_1 = 2;
+    const POSITION_TRI_2 = 3;
+    const POSITION_TRI_3 = 4;
+    private $position = 0;
+
+    public function setPosition($p)
+    {
+        $this->position = $p;
+    }
+
     public function addBankLine($line)
     {
         $this->bank_address[] = $line;
@@ -178,6 +189,31 @@ class GumCheckTemplate
        return $ret;
     }
 
+    private function getRectangle($margins)
+    {
+        $check_left_x = ($margins['left'] > 3.175) ? $margins['right'] : 3.175 - $margins['left'];
+        $check_right_x = 203.2 - $margins['left'];
+        switch ($this->position) {
+            case self::POSITION_TRI_1:
+                $check_top_y = 3.10 - $margins['top'];
+                $check_bottom_y = $check_top_y + 71.347;
+                return array($check_left_x, $check_top_y, $check_right_x, $check_bottom_y);
+            case self::POSITION_TRI_2:
+                $check_top_y = 91.0 - $margins['top'];
+                $check_bottom_y = $check_top_y + 71.347;
+                return array($check_left_x, $check_top_y, $check_right_x, $check_bottom_y);
+            case self::POSITION_TRI_3:
+                $check_top_y = 180.675 - $margins['top'];
+                $check_bottom_y = $check_top_y + 71.347;
+                return array($check_left_x, $check_top_y, $check_right_x, $check_bottom_y);
+            case self::POSITION_BOTTOM:
+            default:
+                $check_top_y = 193.675 - $margins['top'];
+                $check_bottom_y = 265.112 - $margins['top'];
+                return array($check_left_x, $check_top_y, $check_right_x, $check_bottom_y);
+        }
+    }
+
     public function renderAsPDF($pdf)
     {
         $margins = $pdf->GetMargins();
@@ -185,17 +221,16 @@ class GumCheckTemplate
         // fpdf to correctly return the top margin
         // set to zero to mimic old, broken fpdf
         $margins['top'] = 0.0; 
-        $check_left_x = ($margins['left'] > 3.175) ? $margins['right'] : 3.175 - $margins['left'];
-        $check_top_y = 193.675 - $margins['top'];
-        $check_right_x = 203.2 - $margins['left'];
-        $check_bottom_y = 265.112 - $margins['top'];
+        list($check_left_x, $check_top_y, $check_right_x, $check_bottom_y) = $this->getRectangle($margins);
         $line_height = 5;
 
         $pdf->SetFont('Arial', 'B', 10);
 
         $pdf->SetXY($check_left_x, $check_top_y);
         $pdf->Cell(0, $line_height, $this->memo, 0, 1);
-        $pdf->Ln($line_height);
+        if ($this->position == SELF::POSITION_BOTTOM) {
+            $pdf->Ln($line_height);
+        }
         $pdf->SetFont('Arial', '', 10);
         $envelope_window_tab = 15;
         foreach($this->my_address as $line) {
@@ -233,6 +268,9 @@ class GumCheckTemplate
         $pdf->Cell(0, $line_height, $this->amount_as_words.'   ', 0, 1, 'R');
 
         $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (8.5*$line_height));
+        if ($this->position != self::POSITION_BOTTOM) {
+            $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (10.0*$line_height));
+        }
         foreach($this->their_address as $line) {
             $pdf->SetX($check_left_x + $envelope_window_tab);
             $pdf->Cell(0, $line_height, $line, 0, 1);

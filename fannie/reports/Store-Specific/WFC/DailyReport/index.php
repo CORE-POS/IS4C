@@ -263,7 +263,7 @@ echo WfcLib::tablify($ar_rows,array(1,2,3,4,5),array("Account","MemNum","Descrip
 $discQ = $dbc->prepare("SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
 FROM $dlog d INNER JOIN
        custdata c ON d.card_no = c.CardNo INNER JOIN
-      memTypeID m ON c.memType = m.memTypeID
+      memtype m ON c.memType = m.memtype
 WHERE d.tdate BETWEEN ? AND ?
     AND (d.upc = 'DISCOUNT') AND c.personnum= 1
 and total <> 0
@@ -368,7 +368,7 @@ $transQ = $dbc->prepare("select q.trans_num,sum(q.quantity) as items,transaction
         m.memdesc as transaction_type
     from $dlog as d
     left join custdata as c on d.card_no = c.cardno
-    left join memTypeID as m on c.memtype = m.memTypeID
+    left join memtype as m on c.memtype = m.memtype
     WHERE d.tdate BETWEEN ? AND ?
     AND trans_type in ('I','D')
     and upc <> 'RRR'

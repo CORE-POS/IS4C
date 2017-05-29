@@ -26,13 +26,12 @@ use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\LaneLogger;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\Kickers\Kicker;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-AutoLoader::LoadMap();
-CoreState::loadParams();
 
 class login2 extends BasicCorePage 
 {
@@ -109,6 +108,8 @@ class login2 extends BasicCorePage
         // 18Agu12 EL Add separately for readability of source.
         $this->add_onload_command("\$('#userPassword').focus();");
         $this->add_onload_command("\$('#scalebox').css('display','none');");
+        $logger = new LaneLogger();
+        $logging = $logger->isLogging() ? '' : '<div class="errorColoredArea">Default log(s) unavailable</div>';
 
         ?>
         <div id="loginTopBar">
@@ -121,7 +122,7 @@ class login2 extends BasicCorePage
             </div>
             <div class="welcome coloredArea" style="border-radius: 0px 0px 4px 4px;">
                 <?php echo _("W E L C O M E"); ?>
-            </div>
+            </div><?php echo $logging; ?>
         </div>
         <div id="loginCenter">
         <div class="box <?php echo $this->boxCSS; ?> rounded">

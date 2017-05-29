@@ -67,10 +67,10 @@ class VirtCoupDisplay extends NoInputCorePage
         $memberID = CoreLocal::get("memberID");
         $sql = Database::pDataConnect();
 
-        $query = "select coupID,description FROM houseVirtualCoupons
-            WHERE card_no=".$memberID." AND ".
-            $sql->now()." > start_date AND ".
-            $sql->now()." < end_date";
+        $query = sprintf("select coupID,description FROM houseVirtualCoupons
+            WHERE card_no=%d 
+                AND " . $sql->curdate() . " BETWEEN start_date AND end_date",
+            $memberID);
         $result = $sql->query($query);
         $num_rows = $sql->num_rows($result);
 

@@ -73,7 +73,7 @@ class SaHandheldPage extends FannieRESTfulPage
                 // look up special order
                 $orderID = (int)substr($upc, 5, 6);
                 $transID = (int)substr($upc, -2); 
-                $q = "SELECT o.description, '' AS brand, s.quantity, o.ItemQtty AS units
+                $q = "SELECT o.description, '' AS brand, s.quantity, o.quantity AS units
                     FROM " . $this->config->get('TRANS_DB') . $dbc->sep() . "PendingSpecialOrder AS o
                     LEFT JOIN ".$settings['ShelfAuditDB'].$dbc->sep().
                     "sa_inventory AS s ON s.upc=? AND s.clear=0 AND s.storeID=?
@@ -82,7 +82,6 @@ class SaHandheldPage extends FannieRESTfulPage
                 $args = array($upc, $store, $this->section, $orderID, $transID);
                 $p = $dbc->prepare($q);
                 $r = $dbc->execute($p, $args);
-                    
             } elseif ($dbc->numRows($r)==0) {
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
@@ -157,14 +156,14 @@ class SaHandheldPage extends FannieRESTfulPage
 
     protected function setSection()
     {
-        if (!isset($_SESSION['SaPluginSection'])) {
-            $_SESSION['SaPluginSection'] = 0;
+        if (!isset($this->session->SaPluginSection)) {
+            $this->session->SaPluginSection = 0;
         }
         $section = FormLib::get('section', false);
         if ($section !== false) {
-            $_SESSION['SaPluginSection'] = $section;
+            $this->session->SaPluginSection = $section;
         } else {
-            $section = $_SESSION['SaPluginSection'];
+            $section = $this->session->SaPluginSection;
         }
 
         return $section;
@@ -262,10 +261,10 @@ if (typeof WebBarcode == 'object') {
  - Store # <?php echo $store; ?>
 <input type="hidden" name="store" id="store" value="<?php echo ((int)$store); ?>" />
 <label>
-    <input tabindex="-1" type="radio" name="section" value=0 <?php echo $_SESSION['SaPluginSection']==0 ? 'checked' : ''; ?>/> Backstock
+    <input tabindex="-1" type="radio" name="section" value=0 <?php echo $this->session->SaPluginSection==0 ? 'checked' : ''; ?>/> Backstock
 </label>
 <label>
-    <input tabindex="-1" type="radio" name="section" value=1 <?php echo $_SESSION['SaPluginSection']==1 ? 'checked' : ''; ?>/> Floor
+    <input tabindex="-1" type="radio" name="section" value=1 <?php echo $this->session->SaPluginSection==1 ? 'checked' : ''; ?>/> Floor
 </label>
 <br />
 <div class="form-group form-inline">
@@ -286,7 +285,7 @@ if (typeof WebBarcode == 'object') {
     {
         $used = array(1=>true);
         $cases = '';
-        foreach($ret['case_sizes'] as $s){
+        foreach($data['case_sizes'] as $s){
             if (isset($used[$s])) continue;
             $cases.= sprintf('<button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-success btn-lg">+%d</button>
                 <button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-danger btn-lg">-%d</button>',

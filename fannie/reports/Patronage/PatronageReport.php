@@ -30,7 +30,7 @@ class PatronageReport extends FannieReportPage
 {
     public $description = '[Patronage] show per-member patronage information by fiscal year. Note this is
     calculated and entered annually, not assembled on the fly from transaction information.';
-    public $report_set = 'Membership';
+    public $report_set = 'Membership :: Patronage';
     public $themed = true;
 
     protected $header = "Patronage Report";

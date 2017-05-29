@@ -59,7 +59,7 @@ class PendingSpecialOrderModel extends BasicModel
     'volDiscType'    => array('type'=>'TINYINT'),
     'volume'    => array('type'=>'TINYINT'),
     'VolSpecial'    => array('type'=>'MONEY'),
-    'mixMatch'    => array('type'=>'VARCHAR(13)'),
+    'mixMatch'    => array('type'=>'VARCHAR(50)'),
     'matched'    => array('type'=>'SMALLINT'),
     'memType'    => array('type'=>'TINYINT'),
     'staff'        => array('type'=>'TINYINT'),

@@ -257,6 +257,7 @@ class NewMemberTool extends FanniePage
         $chkP = $dbc->prepare('SELECT CardNo FROM custdata WHERE CardNo=?');
         $mdP = $dbc->prepare("INSERT INTO memDates VALUES (?,NULL,NULL)");
         $mcP = $dbc->prepare("INSERT INTO memContact (card_no,pref) VALUES (?,1)");
+        $dbc->startTransaction();
         for($i=$start; $i<=$end; $i++) {
             // skip if record already exists
             $chkR = $dbc->execute($chkP,array($i));
@@ -273,6 +274,7 @@ class NewMemberTool extends FanniePage
             $dbc->execute($mdP, array($i));
             $dbc->execute($mcP, array($i));
         }
+        $dbc->commitTransaction();
 
         return $ret;
     }

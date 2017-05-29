@@ -212,12 +212,12 @@ class OverShortDepositSlips extends FanniePage
 
         $pdf->SetXY(($width+2)*4 + 5,10);
         $pdf->SetFillColor(0,0,0);
-        $pdf->SetTextColor(255,255,255);
+        $pdf->SetTextColor(0,0,0);
         $pdf->SetFontSize(12);
         $str = "Whole Foods Community\nCO-OP Deposit Slip\n";
         $str .= trim(file_get_contents("acct"),"\r\n")."\n\n";
         $str .= "Date\t".date("m/d/y")."\n";
-        $pdf->MultiCell(55,5,$str,0,'C',1);
+        $pdf->MultiCell(55,8,$str,1,'C');
         
         $pdf->SetTextColor(0,0,0);
         $str = "";
@@ -228,7 +228,7 @@ class OverShortDepositSlips extends FanniePage
             $str .= "\n";
         }
         $pdf->SetX(($width+2)*4 + 5);
-        $pdf->MultiCell(55,7,$str,'LR','L');
+        $pdf->MultiCell(55,8,$str,'LR','L');
 
         $dbstack = array('buyAmount'=>array(),
                  'depositAmount'=>array());
@@ -257,25 +257,25 @@ class OverShortDepositSlips extends FanniePage
 
 
         $pdf->SetX(($width+2)*4 + 5);
-        $pdf->Cell(15,7,'Checks','L',0,'L');
-        $pdf->Cell(40,7,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
+        $pdf->Cell(15,8,'Checks','L',0,'L');
+        $pdf->Cell(40,8,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
         //$pdf->Cell(40,7,"",'TBR',1);
         $pdf->SetX(($width+2)*4 + 5);
-        $pdf->Cell(15,7,'Coin','L',0,'L');
-        $pdf->Cell(40,7,"\t$".sprintf('%.2f',$coin),'TBR',1);
+        $pdf->Cell(15,8,'Coin','L',0,'L');
+        $pdf->Cell(40,8,"\t$".sprintf('%.2f',$coin),'TBR',1);
         $pdf->SetX(($width+2)*4 + 5);
-        $pdf->Cell(15,7,'Cash','L',0,'L');
-        $pdf->Cell(40,7,"\t$".sprintf('%.2f',$cash),'TBR',1);
+        $pdf->Cell(15,8,'Cash','L',0,'L');
+        $pdf->Cell(40,8,"\t$".sprintf('%.2f',$cash),'TBR',1);
         $pdf->SetX(($width+2)*4 + 5);
-        $pdf->Cell(15,7,'Other','L',0,'L');
-        $pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk),'TBR',1);
+        $pdf->Cell(15,8,'Other','L',0,'L');
+        $pdf->Cell(40,8,"\t$".sprintf('%.2f',$junk),'TBR',1);
         $pdf->SetX(($width+2)*4 + 5);
-        $pdf->Cell(15,7,'Total','L',0,'L');
-        $pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk+$cash+$coin+$ckSum),'TBR',1);
+        $pdf->Cell(15,8,'Total','L',0,'L');
+        $pdf->Cell(40,8,"\t$".sprintf('%.2f',$junk+$cash+$coin+$ckSum),'TBR',1);
 
         $pdf->SetTextColor(255,255,255);
         $pdf->SetX(($width+2)*4+5);
-        $pdf->MultiCell(55,5,"Change Request",0,'C',1);
+        $pdf->MultiCell(55,8,"Change Request",0,'C',1);
 
         $pdf->SetTextColor(0,0,0);
         $denoms = array('0.01','0.05','0.10','0.25','1.00','5.00','10.00');
@@ -285,14 +285,14 @@ class OverShortDepositSlips extends FanniePage
                 $total = $dbstack['buyAmount']['0.01'];
             foreach($denoms as $d){
                 $pdf->SetX(($width+2)*4+5);
-                $pdf->Cell(10,7,'$','L',0,'L');
-                $pdf->Cell(10,7,"$d",0,0,'R');
-                $pdf->Cell(35,7,$dbstack['buyAmount'][$d],'RB',1,'C');
+                $pdf->Cell(10,8,'$','L',0,'L');
+                $pdf->Cell(10,8,"$d",0,0,'R');
+                $pdf->Cell(35,8,$dbstack['buyAmount'][$d],'RB',1,'C');
             }
         }
         $pdf->SetX(($width+2)*4+5);
-        $pdf->Cell(20,7,"Total:",'LB',0,'R');
-        $pdf->Cell(35,7,sprintf('%.2f',$total),'RB',1,'C');
+        $pdf->Cell(20,8,"Total:",'LB',0,'R');
+        $pdf->Cell(35,8,sprintf('%.2f',$total),'RB',1,'C');
 
         $pdf->Output('deposit.pdf','I');
     }

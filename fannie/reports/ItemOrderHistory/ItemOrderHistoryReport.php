@@ -84,6 +84,10 @@ class ItemOrderHistoryReport extends FannieReportPage
             }
         }
 
+        $mapR = $dbc->prepare('SELECT sku FROM vendorSKUtoPLU WHERE upc=?');
+        $mapped = $dbc->getValue($mapR, array($upc));
+
+        $args = array($upc);
         $query = 'SELECT i.sku, i.quantity, i.unitCost, i.caseSize,
                         i.receivedTotalCost AS ttl,
                         o.vendorInvoiceID, v.vendorName, o.placedDate,
@@ -92,12 +96,16 @@ class ItemOrderHistoryReport extends FannieReportPage
                         FROM PurchaseOrderItems AS i
                             LEFT JOIN PurchaseOrder AS o ON i.orderID=o.orderID
                             LEFT JOIN vendors AS v ON o.vendorID=v.vendorID
-                        WHERE i.internalUPC = ?
-                            AND o.placedDate >= ?
+                        WHERE ';
+        if ($mapped) {
+            $query .= ' (i.internalUPC=? OR i.sku=?) ';
+            $args[] = $mapped;
+        } else {
+            $query .= ' i.internalUPC=? ';
+        }
+        $query .= ' AND o.placedDate >= ?
                             ' . ($store ? ' AND o.storeID=? ' : '') . '
                         ORDER BY o.placedDate';
-        $prep = $dbc->prepare($query);
-        $args = array($upc);
         if (FormLib::get('all')) {
             $args[] = '1900-01-01 00:00:00';
         } else {
@@ -106,6 +114,7 @@ class ItemOrderHistoryReport extends FannieReportPage
         if ($store) {
             $args[] = $store;
         }
+        $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
         $data = array();
         while ($row = $dbc->fetchRow($result)) {

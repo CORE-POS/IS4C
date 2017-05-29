@@ -74,7 +74,7 @@ class ItemStatusPage extends FannieRESTfulPage
             }
         }
 
-        $_SESSION['LastTagQueue'] = $this->tagID;
+        $this->session->LastTagQueue = $this->tagID;
         $tag->id($this->tagID);
         $tag->description($info['description']);
         $tag->brand($info['brand']);
@@ -99,7 +99,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $loc->upc(BarcodeLib::padUPC($this->upc));
         $loc->floorSectionID($this->floorID);
         $loc->save();
-        $_SESSION['LastFloorSection'] = $this->floorID;
+        $this->session->LastFloorSection = $this->floorID;
 
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
 
@@ -200,8 +200,8 @@ class ItemStatusPage extends FannieRESTfulPage
         $supersR = $dbc->execute($supersP, array($product->department()));
         $master = false;
         // preserve queue selection if user is entering several tags
-        if (isset($_SESSION['LastTagQueue']) && is_numeric($_SESSION['LastTagQueue'])) {
-            $master = $_SESSION['LastTagQueue'];
+        if (isset($this->session->LastTagQueue) && is_numeric($this->session->LastTagQueue)) {
+            $master = $this->session->LastTagQueue;
         }
         $ret .= '<p><strong>Super(s)</strong>: ';
         while ($supersW = $dbc->fetch_row($supersR)) {
@@ -297,8 +297,8 @@ class ItemStatusPage extends FannieRESTfulPage
         $selected = 0;
         if ($loc->floorSectionID()) {
             $selected = $loc->floorSectionID();
-        } elseif (isset($_SESSION['LastFloorSection'])) {
-            $selected = $_SESSION['LastFloorSection'];
+        } elseif (isset($this->session->LastFloorSection)) {
+            $selected = $this->session->LastFloorSection;
         }
         $sections = new FloorSectionsModel($dbc);
         foreach ($sections->find('name') as $s) {

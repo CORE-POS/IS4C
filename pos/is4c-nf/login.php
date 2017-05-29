@@ -23,7 +23,6 @@
 
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\MiscLib;
-use COREPOS\pos\lib\LocalStorage\LaneConfig;
 
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
@@ -33,10 +32,21 @@ AutoLoader::loadMap();
 
 CoreState::initiateSession();
 
+/**
+  Avoid infinite redirect. If a page discovers the current
+  session is invalid it redirects to here. If this script
+  can't initiate the session there's no way to continue.
+  The issue is most likely a failing DB connection
+*/
+if (CoreLocal::get('CashierNo') === '') {
+    trigger_error('Cannot initialize system', E_USER_ERROR);
+    echo "Initialization failed; check configuration" . PHP_EOL;
+    exit;
+}
+
 CoreLocal::set('ValidJson', false);
 CoreLocal::refresh();
 CoreLocal::migrateSettings();
-LaneConfig::refresh();
 
 if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
     CoreLocal::set('MQ', true);

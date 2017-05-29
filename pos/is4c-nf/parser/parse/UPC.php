@@ -59,7 +59,7 @@ class UPC extends Parser
     const HID_PREFIX = '0XC';
     const HID_STATUS = 'HI';
 
-    const GS1_PREFIX = 'GS1~';
+    const GS1_PREFIX = 'GS1~RX';
     const GS1_STATUS = 'GS';
 
     /**
@@ -207,7 +207,7 @@ class UPC extends Parser
         }
         if (is_array($deptmods) && isset($deptmods[$row['department']])){
             foreach($deptmods[$row['department']] as $mod){
-                $obj = SpecialDept::factory($mod);
+                $obj = SpecialDept::factory($mod, $this->session);
                 $ret = $obj->handle($row['department'],$row['normal_price'],$ret);
                 if ($ret['main_frame'])
                     return $ret;
@@ -510,8 +510,8 @@ class UPC extends Parser
     }
 
     function fixGS1($str){
-        // remove GS1~ prefix + two additional characters
-        $str = substr($str,6);
+        // remove GS1~ prefix
+        $str = substr($str, 6);
 
         // check application identifier
 
@@ -546,6 +546,11 @@ class UPC extends Parser
     {
         // leading/trailing whitespace creates issues
         $entered = trim($entered);
+
+        // leave GS1 barcodes alone otherwise
+        if ($this->source == self::GS1_PREFIX) {
+            return $entered;
+        }
 
         /* exapnd UPC-E */
         if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {

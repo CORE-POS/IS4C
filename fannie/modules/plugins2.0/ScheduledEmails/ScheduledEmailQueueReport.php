@@ -31,6 +31,7 @@ class ScheduledEmailQueueReport extends FannieReportPage
     protected $header = 'Scheduled Email Queue';
     protected $title = 'Scheduled Email Queue';
     public $description = '[Scheduled Email Queue] lists send and pending messages.';
+    public $report_set = 'System';
 
     protected $required_fields = array('submit');
     protected $report_headers = array('Scheduled Send Date', 'Template', 'Mem#', 'Sent', 'Sent Date', 'Sent to Email');

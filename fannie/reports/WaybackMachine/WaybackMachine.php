@@ -95,6 +95,12 @@ class WaybackMachine extends FannieRESTfulPage
             </div>
             ';
     }
+
+    public function helpContent()
+    {
+        return '<p>Search sales transaction for a given term going back to the requested <em>Stop At</em> date.
+This will do a series of smaller searches and is intended for queries that need to cover years or decades of data</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

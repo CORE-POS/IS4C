@@ -37,9 +37,6 @@ if (!class_exists('FannieAPI')) {
 // -----------------------------------------------------------------
 
 
-// $db =$dbc->connect('localhost',$_SESSION["mUser"],$_SESSION["mPass"]);
-// $dbc->select_db('is4c_op',$db);
-
 function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
 {
     global $FANNIE_OP_DB;

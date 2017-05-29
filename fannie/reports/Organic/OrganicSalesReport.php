@@ -12,6 +12,7 @@ class OrganicSalesReport extends FannieReportPage
     protected $required_fields = array('date1', 'date2');
     protected $report_headers = array('Dept#', 'Dept Name', 'Organic Sales', 'Organic %', 'All Sales');
     public $description = '[Organic Sales] lists organic sales volume and percent of total sales';
+    public $report_set = 'Operational Data';
 
     function fetch_report_data()
     {

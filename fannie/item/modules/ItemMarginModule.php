@@ -104,8 +104,9 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         $config = FannieConfig::factory();
         $dbc = FannieDB::get($config->get('OP_DB'));
-        $prodP = $dbc->prepare('SELECT auto_par FROM products WHERE upc=?');
-        $avg = $dbc->getValue($prodP, array($upc));
+        $store = Store::getIdByIp();
+        $prodP = $dbc->prepare('SELECT auto_par FROM products WHERE upc=? AND store_id=?');
+        $avg = $dbc->getValue($prodP, array($upc, $store));
         if ($avg) {
             return $avg;
         }

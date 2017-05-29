@@ -33,7 +33,7 @@ class ProdExtraModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'distributor' => array('type'=>'VARCHAR(100)'),
     'manufacturer' => array('type'=>'VARCHAR(100)'),
-    'cost' => array('type'=>'MONEY'),
+    'cost' => array('type'=>'DECIMAL(10,3)'),
     'margin' => array('type'=>'DOUBLE'),
     'variable_pricing' => array('type'=>'TINYINT'),
     'location' => array('type'=>'VARCHAR(30)'),

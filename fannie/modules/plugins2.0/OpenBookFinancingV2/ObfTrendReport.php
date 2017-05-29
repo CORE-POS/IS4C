@@ -33,6 +33,7 @@ class ObfTrendReport extends FannieReportPage
     protected $required_fields = array('from', 'to');
     protected $title = 'OBF Trends';
     protected $header = 'OBF Trends';
+    public $discoverable = false;
 
     public function fetch_report_data()
     {

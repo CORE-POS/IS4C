@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class VendorPricingBatchPage extends FannieRESTfulPage 
+class VendorPricingBatchPage extends FannieRESTfulPage
 {
     protected $title = "Fannie - Create Price Change Batch";
     protected $header = "Create Price Change Batch";
@@ -55,7 +55,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         tr.white td.sub {
             background:#ffffff;
         }
-        tr.yellow td.sub{
+        th.thead, td.thead {
+            background: #fff4d6;
+        }
+        tr.yellow td.sub {
             background:#ffff96;
         }
         tr.selection td.sub {
@@ -69,6 +72,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addScript('pricing-batch.js');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
@@ -103,10 +107,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         /* get the ID of the current batch. Create it if needed. */
         $bidQ = $dbc->prepare("
-            SELECT batchID 
-            FROM batches 
-            WHERE batchName=? 
-                AND batchType=? 
+            SELECT batchID
+            FROM batches
+            WHERE batchName=?
+                AND batchType=?
                 AND discounttype=0
             ORDER BY batchID DESC");
         $bidR = $dbc->execute($bidQ,array($batchName,$bType));
@@ -123,12 +127,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             if ($this->config->get('STORE_MODE') === 'HQ') {
                 StoreBatchMapModel::initBatch($batchID);
             }
-        } else { 
+        } else {
             $bidW = $dbc->fetchRow($bidR);
             $batchID = $bidW['batchID'];
         }
 
-        $ret = sprintf('<b>Batch</b>: 
+        $ret = sprintf('<b>Batch</b>:
                     <a href="%sbatches/newbatch/BatchManagementTool.php?startAt=%d">%s</a>',
                     $this->config->URL,
                     $batchID,
@@ -150,15 +154,15 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
         $p_def = $dbc->tableDefinition('products');
         $marginCase = '
-            CASE 
+            CASE
                 WHEN g.margin IS NOT NULL AND g.margin <> 0 THEN g.margin
                 WHEN s.margin IS NOT NULL AND s.margin <> 0 THEN s.margin
                 ELSE d.margin
-            END';   
+            END';
         $srpSQL = Margin::toPriceSQL($costSQL, $marginCase);
-        
+
         /*
-        //  Scan both stores to find a list of items that are inUse.  
+        //  Scan both stores to find a list of items that are inUse.
         $itemsInUse = array();
         $query = $dbc->prepare("SELECT upc FROM products WHERE inUse = 1");
         $result = $dbc->execute($query);
@@ -181,7 +185,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             v.vendorDept,
             x.variable_pricing,
             " . $marginCase . " AS margin
-            FROM products AS p 
+            FROM products AS p
                 INNER JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 INNER JOIN vendors as b ON v.vendorID=b.vendorID
                 LEFT JOIN departments AS d ON p.department=d.dept_no
@@ -193,7 +197,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $query .= " LEFT JOIN MasterSuperDepts AS m
                 ON p.department=m.dept_ID ";
         }
-        $query .= "WHERE v.cost > 0 
+        $query .= "WHERE v.cost > 0
                     AND v.vendorID=?";
         if ($superID == -2) {
             $query .= " AND m.superID<>0 ";
@@ -204,7 +208,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         if ($filter === false) {
             $query .= " AND p.normal_price <> v.srp ";
         }
-        
+
         $query .= ' AND p.upc IN (SELECT upc FROM products WHERE inUse = 1) ';
         $query .= ' GROUP BY p.upc ';
 
@@ -216,31 +220,44 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
 
-        $ret .= "<table class=\"table table-bordered small\">";
-        $ret .= "<thead><tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
-            <th colspan=3>Vendor</th></tr>";
-        $ret .= "<tr><th>UPC</th><th>Our Description</th>
-            <th>Base Cost</th>
-            <th>Shipping</th>
-            <th>Discount%</th>
-            <th>Adj. Cost</th>
-            <th>Price</th><th>Margin</th><th>Raw</th><th>SRP</th>
-            <th>Margin</th><th>Cat</th><th>Var</th>
-            <th>Batch</th></tr></thead><tbody>";
+        $vendorModel = new VendorItemsModel($dbc);
+
+        $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
+        $ret .= "<thead><tr><td colspan=6 class=\"thead\">&nbsp;</td><th colspan=2  class=\"thead\">Current</th>
+            <th colspan=3  class=\"thead\">Vendor</th><td colspan=3 class=\"thead\"></td></tr>";
+        $ret .= "<tr><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
+            <th class=\"thead\">Base Cost</th>
+            <th class=\"thead\">Shipping</th>
+            <th class=\"thead\">Discount%</th>
+            <th class=\"thead\">Adj. Cost</th>
+            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Raw</th><th class=\"thead\">SRP</th>
+            <th class=\"thead\">Margin</th><th class=\"thead\">Cat</th><th class=\"thead\">Var</th>
+            <th class=\"thead\">Batch</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
+            $vendorModel->reset();
+            $vendorModel->upc($row['upc']);
+            $vendorModel->vendorID($vendorID);
+            $vendorModel->load();
+            $numRows = $vendorModel->find();
+            $multipleVendors = '';
+            if (count($numRows) > 1) {
+                $multipleVendors = '<span class="glyphicon glyphicon-exclamation-sign"
+                    title="Multiple SKUs For This Product">
+                    </span> ';
+            }
             $background = "white";
             if (isset($batchUPCs[$row['upc']])) {
                 $background = 'selection';
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
-                $background = ( 
+                $background = (
                     ($row['normal_price']+0.10 < $row['rawSRP'])
                     && ($row['srp']-.14 > $row['normal_price'])
                 ) ?'red':'green';
                 if ($row['normal_price']-.10 > $row['rawSRP']) {
                     $background = (
-                        ($row['normal_price']-.10 > $row['rawSRP']) 
-                        && ($row['normal_price']-.14 > $row['srp']) 
-                        && ($row['rawSRP'] < $row['srp']+.10)  
+                        ($row['normal_price']-.10 > $row['rawSRP'])
+                        && ($row['normal_price']-.14 > $row['srp'])
+                        && ($row['rawSRP'] < $row['srp']+.10)
                     )?'yellow':'green';
                 }
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
@@ -264,10 +281,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
                 <td class=\"sub\">%s</td>
-                <td class=\"sub cost\">%.2f</td>
+                <td class=\"sub cost\">%.3f</td>
                 <td class=\"sub shipping\">%.2f%%</td>
                 <td class=\"sub discount\">%.2f%%</td>
-                <td class=\"sub adj-cost\">%.2f</td>
+                <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
                 <td class=\"sub raw-srp\">%.2f</td>
@@ -276,12 +293,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 <td class=\"sub\">%d</td>
                 <td><input class=varp type=checkbox onclick=\"toggleV('%s');\" %s /></td>
                 <td class=white>
-                    <a class=\"add-button %s\" href=\"\" 
+                    <a class=\"add-button %s\" href=\"\"
                         onclick=\"addToBatch('%s'); return false;\">
                         <span class=\"glyphicon glyphicon-plus-sign\"
                             title=\"Add item to batch\"></span>
                     </a>
-                    <a class=\"remove-button %s\" href=\"\" 
+                    <a class=\"remove-button %s\" href=\"\"
                         onclick=\"removeFromBatch('%s'); return false;\">
                         <span class=\"glyphicon glyphicon-minus-sign\"
                             title=\"Remove item from batch\"></span>
@@ -291,7 +308,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $row['upc'],
                 $background,
                 $this->config->URL, $row['upc'], $row['upc'],
-                $row['description'],
+                $row['description'] . ' ' . $multipleVendors,
                 $row['cost'],
                 $row['shippingMarkup']*100,
                 $row['discountRate']*100,
@@ -321,7 +338,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $prep = $dbc->prepare("
             SELECT superID,
-                super_name 
+                super_name
             FROM MasterSuperDepts
             WHERE superID > 0
             GROUP BY superID,
@@ -370,6 +387,16 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         </form>
         <?php
 
+        return ob_get_clean();
+    }
+
+    public function javascript_content()
+    {
+        ob_start();
+        ?>
+        var $table = $('#mytable');
+        $table.floatThead();
+        <?php
         return ob_get_clean();
     }
 

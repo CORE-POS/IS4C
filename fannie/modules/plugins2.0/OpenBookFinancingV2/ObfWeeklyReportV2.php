@@ -30,6 +30,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 {
     protected $sortable = false;
     protected $no_sort_but_style = true;
+    public $discoverable = false;
 
     protected $report_headers = array(
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
@@ -45,6 +46,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected $class_lib = 'ObfLibV2';
 
+    protected $OU_START = 110;
+
+    /** previous numbers
     protected $PLAN_SALES = array(
         '1,6' => 48125.67,      // Hillside Produce
         '2,10' => 11037.90,     // Hillside Deli
@@ -70,6 +74,34 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         '9,9' => 1310.53,
         '9,13' => 4589.22,
         '9,17' => 8823.08,
+    );
+    */
+
+    protected $PLAN_SALES = array(
+        '1,6' => 51193.05,      // Hillside Produce
+        '2,10' => 11416.48,     // Hillside Deli
+        '2,11' => 31032.00,
+        '2,16' => 12651.44,
+        '3,1' => 24391.70,      // Hillside Grocery
+        '3,4' => 59349.56,
+        '3,5' => 22467.52,
+        '3,7' => 187.91,
+        '3,8' => 16600.59,
+        '3,9' => 2591.48,
+        '3,13' => 14267.70,
+        '3,17' => 25043.57,
+        '7,6' => 18247.03,      // Denfeld Produce
+        '8,10' => 4173.27,      // Denfeld Deli
+        '8,11' => 12583.37,
+        '8,16' => 4913.95,
+        '9,1' => 8065.54,       // Denfeld Grocery
+        '9,4' => 24245.34,
+        '9,5' => 8415.72,
+        '9,7' => 81.00,
+        '9,8' => 5655.49,
+        '9,9' => 990.29,
+        '9,13' => 4578.06,
+        '9,17' => 8308.91,
     );
 
     public function preprocess()
@@ -176,7 +208,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 if ($quarter === false) {
                     $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                 }
-                $qtd_dept_plan += $quarter['plan'];
+                $ou_weeks = ($week->obfWeekID() - $this->OU_START) + 1;
+                $qtd_dept_plan += ($proj * $ou_weeks);
                 $qtd_dept_sales += $quarter['actual'];
                 $total_trans->quarterThisYear = $quarter['trans'];
                 $total_trans->quarterLastYear = $quarter['ly_trans'];
@@ -208,10 +241,10 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 }
                 $total_sales->projected += $proj;
                 $dept_proj += $proj;
-                $total_sales->quarterProjected += $quarter['plan'];
+                $total_sales->quarterProjected += ($proj * $ou_weeks);
                 $total_sales->quarterActual += $quarter['actual'];
-                $qtd_sales_ou += ($quarter['actual'] - $quarter['plan']);
-                $qtd_dept_ou += ($quarter['actual'] - $quarter['plan']);
+                $qtd_sales_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                $qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
                 $data[] = $record;
             }
 
@@ -750,7 +783,11 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['lastYear'] += $row['lastYear'];
             $info['trans'] = $row['trans'];
             $info['lyTrans'] = $row['lyTrans'];
-            $info['plan'] += $row['plan'];
+            foreach ($this->PLAN_SALES as $planID => $plan) {
+                if (strpos($planID, $row['catID'] . ',') === 0) {
+                    $info['plan'] += $plan;
+                }
+            }
             $cat->obfCategoryID($row['catID']);
             $cat->load();
             $plan[$row['catID']] = $this->projectHours($cat->salesPerLaborHourTarget(), $row['plan'], $row['plan']);

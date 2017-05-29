@@ -32,6 +32,7 @@ class WicListPage extends FannieReportPage
 
     public $description = '[WIC Item List] shows WIC-eligible items currently carried
     and available from vendors.';
+    public $report_set = 'WIC';
 
     protected $required_fields = array('type');
 

@@ -193,7 +193,7 @@ class memlist extends NoInputCorePage
                 AND cardNo=?"
         );
         $res = $dbc->getRow($prep, array($cardNo));
-        if ($res === false || !class_exists($res['modifierModule']) || !is_subclass_of($res['modifierModule'], 'MemTotalAction')) {
+        if ($res === false || !class_exists($res['modifierModule']) || !is_subclass_of($res['modifierModule'], 'COREPOS\\pos\\lib\\TotalActions\\MemTotalAction')) {
             return false;
         }
 

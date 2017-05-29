@@ -139,6 +139,7 @@ class OrderGenTask extends FannieTask
             $cur = $shrink ? $cur - $shrink : $cur;
             if ($cur < 0) { 
                 $cur = 0;
+                $this->autoZero($dbc, $row['upc'], $row['storeID']);
             }
             if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
                 $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
@@ -233,6 +234,46 @@ class OrderGenTask extends FannieTask
         }
 
         return $orderIDs;
+    }
+
+    /**
+      Adjust current count to zero. This happens if the current count
+      claims to be negative which is impossible.
+      1. Get current par
+      2. Enter new count of zero with same par
+      3. Reset cache to zeroes
+    */
+    private function autoZero($dbc, $upc, $storeID)
+    {
+        $parP = $dbc->prepare("SELECT par FROM InventoryCounts WHERE mostRecent=1 AND upc=? AND storeID=? ORDER BY countDate DESC");
+        $par = $dbc->getValue($parP, array($upc, $storeID));
+
+        $clearP = $dbc->prepare('UPDATE InventoryCounts SET mostRecent=0 WHERE upc=? AND storeID=?');
+        $dbc->execute($clearP, array($upc, $storeID));
+
+        $count = new InventoryCountsModel($dbc);
+        $count->upc($upc);
+        $count->storeID($storeID);
+        $count->count(0);
+        $now = date('Y-m-d H:i:s');
+        $count->countDate($now);
+        $count->mostRecent(1);
+        $count->uid(0);
+        $count->par($par);
+        $count->save();
+
+        $cacheP = $dbc->prepare("
+            UPDATE InventoryCache
+            SET baseCount=0,
+                ordered=0,
+                sold=0,
+                shrunk=0,
+                cacheStart=?,
+                cacheEnd=?,
+                onHand=0
+            WHERE upc=?
+                AND storeID=?");
+        $dbc->execute($cacheP, array($now, $now, $upc, $storeID));
     }
 
     private function sendNotifications($dbc, $orders)

@@ -44,6 +44,19 @@ class CashierEditor extends FanniePage {
 
         if (FormLib::get('fname') !== '') {
             $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+            // avoid duplicate passwords
+            $chkP = $dbc->prepare("
+                SELECT emp_no
+                FROM employees
+                WHERE (CashierPassword=? OR AdminPassword=?)
+                    AND emp_no <> ?");
+            $passwdInUse = $dbc->getValue($chkP, array(FormLib::get('passwd'), FormLib::get('passwd'), $emp_no));
+            if ($passwdInUse !== false) {
+                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Password already in use');\n");
+                return true;
+            }
+
             $employee = new EmployeesModel($dbc);
             $employee->emp_no($emp_no);
             $employee->FirstName(FormLib::get('fname'));

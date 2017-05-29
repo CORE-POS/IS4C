@@ -700,6 +700,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $d->parse('100DP10');
         $this->assertEquals('/refundComment.php', substr($out['main_frame'], -18));
         CoreLocal::set('refund', 0);
+        CoreLocal::set('SpecialDeptMap', array(1 => array('AutoReprintDept')));
+        $out = $d->parse('100DP10');
+        $this->assertEquals(1, CoreLocal::get('autoReprint'));
+        CoreLocal::set('SpecialDeptMap', false);
+        CoreLocal::set('autoReprint', 0);
     }
 
     function testBalanceCheck()
@@ -800,7 +805,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -833,7 +838,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 2;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -869,7 +874,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -914,7 +919,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -959,7 +964,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -997,7 +1002,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -1032,7 +1037,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);
@@ -1064,7 +1069,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new COREPOS\pos\parser\parse\Void($session);
+        $v = new COREPOS\pos\parser\parse\VoidCmd($session);
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $json);

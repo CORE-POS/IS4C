@@ -30,6 +30,7 @@ class VoidedTransactionsReport extends FannieReportPage
 {
     public $description = '[Voided Transactions] lists all transactions that were created using
     the lane UNDO command';
+    public $report_set = 'Cashiering';
     protected $header = 'Voided Transactions';
     protected $title = 'Voided Transactions';
 

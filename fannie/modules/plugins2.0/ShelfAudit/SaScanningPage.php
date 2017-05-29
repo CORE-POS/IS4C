@@ -54,9 +54,9 @@ class SaScanningPage extends FanniePage {
         if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
             @session_start();
         }
-        if (!isset($_SESSION['SaPluginSection']))
-            $_SESSION['SaPluginSection'] = 0;
-        $this->section = $_SESSION['SaPluginSection'];
+        if (!isset($this->SaPluginSection))
+            $this->SaPluginSection = 0;
+        $this->section = $this->SaPluginSection;
 
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']);
         if (!is_object($dbc) || $dbc->connections[$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']] === False){
@@ -72,7 +72,7 @@ class SaScanningPage extends FanniePage {
                 $section = array_pop($dbc->fetch_row($result));
 
             $this->section = $section + 1;
-            $_SESSION['SaPluginSection'] = $section + 1;
+            $this->session->SaPluginSection = $section + 1;
             $this->status = 'good - section changed';
         } 
         else if (FormLib::get_form_value('minput') !== ''){

@@ -644,8 +644,10 @@ static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $descr
   Add a line-item discount
   @param $intdepartment POS department
   @param $dbltotal discount amount (should be <b>positive</b>)
+  @param $tax amount is taxable (default 0)
+  @param $fs amount is foodstampable (default 0)
 */
-static public function additemdiscount($intdepartment, $dbltotal) 
+static public function additemdiscount($intdepartment, $dbltotal, $tax=0, $fs=0) 
 {
     $dbltotal *= -1;
     self::addRecord(array(
@@ -658,6 +660,8 @@ static public function additemdiscount($intdepartment, $dbltotal)
         'total' => $dbltotal,
         'regPrice' => $dbltotal,
         'ItemQtty' => 1,
+        'tax' => $tax,
+        'foodstamp' => $fs,
     ));
 }
 

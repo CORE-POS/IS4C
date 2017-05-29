@@ -68,9 +68,16 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 {
     new private SerialPort sp = null;
 
+    private bool emv_buttons = false;
+
     public RBA_Stub(string p)
     {
         this.port = p;
+    }
+
+    public void SetEMV(bool emv)
+    {
+        this.emv_buttons = emv;
     }
 
     private void initPort()
@@ -156,11 +163,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             System.Console.WriteLine("Tried to write");
         }
 
-        int count=0;
-        while (last_message != null && count++ < 5) {
-            Thread.Sleep(10);
-        }
-        last_message = b;
         ByteWrite(b);
 
         if (this.verbose_mode > 0) {
@@ -198,7 +200,15 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             char fs = (char)0x1c;
-            string buttons = "TPROMPT6,Our Table Cooperative"+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            string store_name = "Our Table Cooperative";
+
+            // standard credit/debit/ebt/gift
+            string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            if (this.emv_buttons) {
+                // CHIP+PIN button in place of credit & debit
+                buttons = "TPROMPT6,"+store_name+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            }
+
             WriteMessageToDevice(UpdateScreenMessage(buttons));
         } catch (Exception) {
         }
@@ -209,7 +219,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         showPaymentScreen();
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-        int ackCount = 0;
 
         ArrayList bytes = new ArrayList();
         while (SPH_Running) {
@@ -220,8 +229,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     if (this.verbose_mode > 0) {
                         System.Console.WriteLine("ACK!");
                     }
-                    last_message = null;
-                    ackCount++;
                 } else if (b == 0x15) {
                     // NAK
                     // Do not re-send
@@ -229,8 +236,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     if (this.verbose_mode > 0) {
                         System.Console.WriteLine("NAK!");
                     }
-                    last_message = null;
-                    WriteMessageToDevice(HardResetMessage());
+                    //WriteMessageToDevice(HardResetMessage());
                 } else {
                     // part of a message
                     // force to be byte-sized

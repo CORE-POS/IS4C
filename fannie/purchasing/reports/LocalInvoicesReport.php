@@ -33,7 +33,7 @@ class LocalInvoicesReport extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-    public $page_set = 'Purchasing';
+    public $report_set = 'Purchasing';
     public $description = '[Local Invoice Report] show local item totals for invoices.';
     protected $required_fields = array('date1', 'date2');
 

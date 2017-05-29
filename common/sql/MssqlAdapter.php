@@ -144,5 +144,10 @@ class MssqlAdapter implements DialectAdapter
     {
         return sprintf('SET LOCK_TIMEOUT %d', 1000*$seconds);
     }
+
+    public function setCharSet($charset)
+    {
+        return 'SELECT 1';
+    }
 }
 

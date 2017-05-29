@@ -105,20 +105,10 @@ class SaPriceChangePage extends FannieRESTfulPage {
         echo '<span class="o_price">'.sprintf('$%.2f',$prodW['normal_price']).'</span>';
         echo '</div>';
         
-        $pendR = 0;
-        if ($dbc->table_exists('batchListTest')){
-            $pendQ = $dbc->prepare('SELECT salePrice FROM batchListTest as l
-                            LEFT JOIN batchTest AS b ON l.batchID=b.batchID WHERE
-                            b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
-            $pendR = $dbc->execute($pendQ, array($upc));
-        }
-
-        if ($pendR === 0 || $dbc->num_rows($pendR) == 0){
-            $pendQ = $dbc->prepare('SELECT salePrice FROM batchList as l
-                            LEFT JOIN batches AS b ON l.batchID=b.batchID WHERE
-                            b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
-            $pendR = $dbc->execute($pendQ, array($upc));
-        }
+        $pendQ = $dbc->prepare('SELECT salePrice FROM batchList as l
+                        LEFT JOIN batches AS b ON l.batchID=b.batchID WHERE
+                        b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
+        $pendR = $dbc->execute($pendQ, array($upc));
 
         // no pending price change batch
         if ($dbc->num_rows($pendR) == 0)

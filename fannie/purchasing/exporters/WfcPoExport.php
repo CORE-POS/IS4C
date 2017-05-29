@@ -28,6 +28,8 @@ if (!class_exists('DefaultCsvPoExport')) {
 class WfcPoExport extends DefaultCsvPoExport 
 {
     public $nice_name = 'WFC';
+    public $extension = 'csv';
+    public $mime_type = 'text/csv';
 
     public function export_order($id)
     {
@@ -42,6 +44,11 @@ class WfcPoExport extends DefaultCsvPoExport
         $auto->vendorID($order->vendorID());
         $auto->storeID($order->storeID());
         $auto->load();
+
+        $notes = new PurchaseOrderNotesModel($dbc);
+        $notes->orderID($id);
+        $notes->load();
+        $noteContent = trim($notes->notes());
 
         echo "\r\n";
         if ($auto->accountID() != '') {
@@ -58,6 +65,11 @@ class WfcPoExport extends DefaultCsvPoExport
             echo "4426 Grand Ave\r\n";
             echo "\"Duluth, MN 55807\"\r\n";
             echo "(218) 728-0884\r\n";
+        }
+
+        if ($noteContent != '') {
+            echo "Notes:\r\n";
+            echo "\"{$noteContent}\"\r\n";
         }
     }
 }

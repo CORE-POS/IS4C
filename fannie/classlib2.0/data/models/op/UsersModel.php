@@ -36,6 +36,7 @@ class UsersModel extends BasicModel
     'uid' => array('type'=>'VARCHAR(4)'),
     'session_id' => array('type'=>'VARCHAR(50)'),
     'real_name' => array('type'=>'VARCHAR(75)'),
+    'email' => array('type'=>'VARCHAR(75)'),
     );
 }
 

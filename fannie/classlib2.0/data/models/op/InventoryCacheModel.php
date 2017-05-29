@@ -31,7 +31,7 @@ class InventoryCacheModel extends BasicModel
 
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
-    'storeID' => array('type'=>'INT'),
+    'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'cacheStart' => array('type'=>'DATETIME'),
     'cacheEnd' => array('type'=>'DATETIME'),
     'baseCount' => array('type'=>'DOUBLE', 'default'=>0),

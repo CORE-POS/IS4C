@@ -94,6 +94,13 @@ class OutdatedProductFinder extends FanniePage
     {
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
+
+    public function helpContent()
+    {
+        return '<p>Any items that have not sold in a year or more can be marked no longer in use.
+This is a very blunt instrument. The <em>Product Last-Sold Maintenance</em> task must be enabled
+for this to work.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

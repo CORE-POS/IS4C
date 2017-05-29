@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 class OwnerJoinLeaveReport extends FannieReportPage
 {
-    public $description = '[Owner Status] lists new members, inactive members, and members pending termination.';
+    public $description = '[Owner Status] lists new members, inactive members, and overall status info';
     public $report_set = 'Membership';
     public $themed = true;
 
@@ -46,8 +46,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
         array('Number', 'Date', 'Name', 'Stock', null),
         array('Inactives', null, null, null, null),
         array('Description', null, 'Current', 'Year to Date', 'Life to Date'),
-        array('Termination Pending', null, null, null, null),
-        array('Number', 'Date', 'Name', 'Stock', 'Reason'),
     );
 
     public function fetch_report_data()
@@ -85,27 +83,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
             WHERE m.start_date BETWEEN ? AND ?
                 AND c.Type=\'PC\'
             ORDER BY m.start_date
-        ');
-
-        $termP = $dbc->prepare('
-            SELECT s.cardno AS card_no,
-                c.FirstName,
-                c.LastName,
-                s.suspDate,
-                n.payments
-            FROM suspensions AS s
-                INNER JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
-                LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS n ON s.cardno=n.memnum
-            WHERE c.Type=\'INACT2\'
-                AND s.suspDate >= ?
-            ORDER BY s.suspDate
-        ');
-
-        $noteP = $dbc->prepare('
-            SELECT n.note
-            FROM memberNotes AS n
-            WHERE cardno=?
-            ORDER BY stamp DESC
         ');
 
         $data = array();
@@ -152,7 +129,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
             );
         }
         
-
         $ytdP = $dbc->prepare('
             SELECT SUM(payments) AS stock,
                 COUNT(*) AS numOwners
@@ -318,30 +294,6 @@ class OwnerJoinLeaveReport extends FannieReportPage
             $totals['all'],
         );
 
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
-            'meta_background'=>'#000','meta_foreground'=>'#fff');
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
-            'meta_background'=>'#ccc','meta_foreground'=>'#000');
-
-        $termR = $dbc->execute($termP, $ytdArgs[0]);
-        while ($row = $dbc->fetch_row($termR)) {
-            $record = array(
-                $row['card_no'],
-                date('Y-m-d', strtotime($row['suspDate'])),    
-                $row['FirstName'] . ' ' . $row['LastName'],
-                sprintf('%.2f', $row['payments']),
-            );
-            $noteR = $dbc->execute($noteP, array($row['card_no']));
-            if ($noteR && $dbc->num_rows($noteR) > 0) {
-                $noteW = $dbc->fetch_row($noteR);
-                $note_pts = explode("<br />", $noteW['note']);
-                $record[] = $note_pts[0];
-            } else {
-                $record[] = '?';
-            }
-            $data[] = $record;
-        }
-
         if ($this->config->COOP_ID == 'WFC_Duluth') {
             $this->report_headers[] = array('Fran Allocations', null, null, null, null);
             $this->report_headers[] = array('Date', 'Number', 'Name', 'Stock', 'Allocation');
@@ -420,6 +372,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
             </div>
             <div class="col-sm-5">
                 ' . FormLib::dateRangePicker() . '
+                <p>
+                    <a href="TermPendingReport.php">Separate Term Pending Report</a>
+                </p>
             </div>
             </div>
             <p><button type="submit" class="btn btn-default">Get Report</button></p>

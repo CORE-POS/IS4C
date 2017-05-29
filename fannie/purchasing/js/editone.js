@@ -3,6 +3,7 @@ function itemSearch(){
 
 	var dstr = 'id='+$('#vendor-id').val();
 	dstr += '&search='+$('#searchField').val();
+    dstr += '&orderID='+$('#order-id').val();
 	$('#searchField').val('');
 
 	$.ajax({
@@ -10,19 +11,18 @@ function itemSearch(){
 		method: 'get',
 		dataType: 'json'
     }).done(function(data){
-        if (data.length == 0){
+        if (data.items.length == 0){
             $('#SearchResults').html('No item found');
             $('#searchField').focus();
+        } else if (data.items.length == 1){
+            $('#SearchResults').html(oneResultForm(data.items[0], 0));
+        } else {
+            $('#SearchResults').html(manyResultForm(data.items));
         }
-        else if (data.length == 1){
-            $('#SearchResults').html(oneResultForm(data[0], 0));
-            $('#srQty0').focus();	
+
+        if (data.table) {
+            $('#list-wrapper').html(data.table);
         }
-        else {
-            $('#SearchResults').html(manyResultForm(data));
-            $('#srQty0').focus();
-        }
-        markInCurrentOrder(data);
 	});
 }
 
@@ -66,20 +66,33 @@ function oneResultForm(obj, resultNum){
 		output += ' style="display:none;"';
 	output += '>';
     output += '<form onsubmit="saveItem('+resultNum+');return false;">';
-	output += '<table class="table">';
-	output += '<tr><td align="right">SKU</td>';
-	output += '<td id="srSKU'+resultNum+'">'+obj.sku+'</td></tr>';
+	output += '<input type="hidden" id="srSKU'+resultNum+'" value="'+obj.sku+'" />';
+	output += '<table class="table table-bordered small">';
 	output += '<tr>';
-	output += '<td colspan="2">'+obj.title+'</td></tr>';
+	output += '<td colspan="3">'+obj.sku + " " + obj.title+'</td></tr>';
 	output += '<tr><td>Unit Size: '+obj.unitSize+'</td>';
-	output += '<td>Units/Case: '+obj.caseSize+'</td></tr>';
-	output += '<tr><td>Unit Cost: '+obj.unitCost+'</td>';
-	output += '<td>Case Cost: '+obj.caseCost+'</td></tr>';
-	output += '<tr>';
-	output += '<td id="qtyRow'+resultNum+'" colspan="2">Order <input type="number" size="3" value="1" onfocus="this.select();" id="srQty'+resultNum+'" />';
+    if (obj.history[0]) {
+        output += '<td>' + obj.history[0].date + '</td><td>' + obj.history[0].cases + '</td></tr>';
+    } else {
+        output += '<td></td><td></td>';
+    }
+	output += '</tr><tr><td>Units/Case: '+obj.caseSize+'</td>';
+    if (obj.history[1]) {
+        output += '<td>' + obj.history[1].date + '</td><td>' + obj.history[1].cases + '</td></tr>';
+    } else {
+        output += '<td></td><td></td>';
+    }
+	output += '</tr><tr><td>Case Cost: '+obj.caseCost+'</td>';
+    if (obj.history[2]) {
+        output += '<td>' + obj.history[2].date + '</td><td>' + obj.history[2].cases + '</td></tr>';
+    } else {
+        output += '<td></td><td></td>';
+    }
+	output += '</tr><tr>';
+	output += '<td id="qtyRow'+resultNum+'" colspan="3"><input type="number" size="3" value="'+obj.cases+'" ';
+    output += ' onchange="saveItem('+resultNum+')" onfocus="this.select();" id="srQty'+resultNum+'" />';
 	output += ' Cases</td></tr>';	
 	output += '</table>';
-	output += '<button type="submit" class="btn btn-default" onclick="saveItem('+resultNum+');return false;">Confirm</button>';
 	output += '</form><br />';
 
 	output += '</div>';
@@ -88,7 +101,7 @@ function oneResultForm(obj, resultNum){
 
 function saveItem(resultNum){
 	var dstr = 'id='+$('#order-id').val();
-	dstr += '&sku='+$('#srSKU'+resultNum).html();
+	dstr += '&sku='+$('#srSKU'+resultNum).val();
 	dstr += '&qty='+$('#srQty'+resultNum).val();
     saveQty = $('#srQty'+resultNum).val();
 	$.ajax({
@@ -99,14 +112,8 @@ function saveItem(resultNum){
         if (data.error){
             $('#SearchResults').html(data.error);
         }
-        else if (data.cost && data.count){
-            $('#orderInfoCount').html(data.count);
-            $('#orderInfoCost').html(data.cost);
-            if (saveQty != 0) {
-                $('#SearchResults').html('Item added to order');
-            } else {
-                $('#SearchResults').html('Item removed from order');
-            }
+        if (data.table) {
+            $('#list-wrapper').html(data.table);
         }
         $('#searchField').focus();
 	});
@@ -127,5 +134,20 @@ function updateList()
             showBootstrapAlert('#list-wrapper', 'success', 'Updated Order');
         }
     });
+}
+
+function addManualRow() {
+    var newID = 'inp' + Date.now();
+    var newRow = '<tr>';
+    newRow += '<td><input type="text" name="sku[]" class="form-control" id="' + newID + '" /></td>';
+    newRow += '<td><input type="text" name="upc[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="brand[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="description[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="unitSize[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="case[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="qty[]" class="form-control" /></td>';
+    newRow += '<td><input type="text" name="totalCost[]" class="form-control" /></td>';
+    $('#list-wrapper table').append(newRow);
+    $('#'+newID).focus();
 }
 

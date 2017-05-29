@@ -48,11 +48,29 @@ class LaneLogger extends \COREPOS\common\Logger
         // if the logs directory is not writable, try
         // failing over to /tmp
         $dir = dirname(__FILE__) . '/../log/';
-        if ((file_exists($dir . $filename) && !is_writable($dir .  $filename)) && !is_writable($dir)) {
+        if (!$this->validateLocation($dir, $filename)) {
             $dir = sys_get_temp_dir() . '/';
         }
 
         return $dir . $filename;
+    }
+
+    private function validateLocation($directory, $filename)
+    {
+        if (file_exists($directory . $filename) && is_writable($directory . $filename)) {
+            return true;
+        } elseif (!file_exists($directory . $filename) && is_writable($directory)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isLogging()
+    {
+        $dir = __DIR__ . '/../log/';
+
+        return $this->validateLocation($dir, 'lane.log') && $this->validateLocation($dir, 'debug_lane.log');
     }
 }
 

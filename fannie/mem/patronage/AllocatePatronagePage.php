@@ -45,7 +45,30 @@ class AllocatePatronagePage extends FannieRESTfulPage
             $100,000 and an individual member\'s net purchases were $1,000
             then 1% of allocated amount will be distributed to that member.
             That allocated amount is then split into paid &amp; retained
-            portions.';
+            portions.<p>
+            <p>
+            All the owners who spent money during the fiscal year may not
+            still be active owners when patronage is distributed or may
+            no longer be owners at all. There are currently three options
+            to choose from:
+                <ul>
+                    <li><i>All Currently Active Owners</i> will allocate 
+                        distributions for owner accounts that are in good
+                        standing at the time of the distribution. Owners 
+                        that spent money during the fiscal year but are 
+                        inactive at the time of the distribution are excluded.
+                    </li>
+                    <li><i>All Owners Regardless of Current Status</i> will
+                        allocate distributions for all owner accounts that
+                        spent money during the fiscal year.
+                    </li>
+                    <li><i>All Non-Termed Owners</i> will allocate distributions
+                        for all owner accounts that spent money during the fiscal
+                        year <strong>except</strong> accounts that have been
+                        formally closed.
+                    </li>
+                </ul>
+            </p>';
     }
 
     public function post_handler()
@@ -57,11 +80,26 @@ class AllocatePatronagePage extends FannieRESTfulPage
         $paid = FormLib::get('paid') / 100.00;
         $retained = FormLib::get('retained') / 100.00;
 
+        $owners = FormLib::get('owners');
+        $typeClause = '';
+        switch ($owners) {
+            case 1:
+            default:
+                $typeClause = " c.Type='PC' ";
+                break;
+            case 2:
+                $typeClause = " 1=1 ";
+                break;
+            case 3:
+                $typeClause = " c.Type <> 'TERM' ";
+                break;
+        }
+
         $netQ = '
             SELECT SUM(p.net_purch) AS ttl
             FROM patronage_workingcopy AS p
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
-            WHERE c.Type=\'PC\'';
+            WHERE ' . $typeClause;
         $netR = $dbc->query($netQ);
         $netW = $dbc->fetch_row($netR);
         $purchases = $netW['ttl'];
@@ -71,7 +109,7 @@ class AllocatePatronagePage extends FannieRESTfulPage
                 c.cardno
             FROM patronage_workingcopy AS p
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
-            WHERE c.Type=\'PC\'';
+            WHERE ' . $typeClause;
         $personR = $dbc->query($personQ);
         $this->insertRecords($dbc, $personR, $purchases, $paid, $retained, $amount);
 
@@ -82,7 +120,7 @@ class AllocatePatronagePage extends FannieRESTfulPage
                 p.cardno, purchase, discounts, rewards, net_purch, tot_pat, cash_pat, equit_pat, FY
             FROM patronage_workingcopy AS p
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
-            WHERE c.Type=\'PC\'';
+            WHERE ' . $typeClause;
         $dbc->query($finishQ);
 
         return true;
@@ -134,6 +172,14 @@ class AllocatePatronagePage extends FannieRESTfulPage
                     <input type="text" class="form-control" name="retained" />
                     <span class="input-group-addon">%</span>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Include which Owners</label>
+                <select name="owners" class="form-control">
+                    <option value="1">All Currently Active Owners</option>
+                    <option value="2">All Owners Regardless of Current Status</option>
+                    <option value="3">All Non-Termed Owners</option>
+                </select>
             </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-default">Allocate</button>

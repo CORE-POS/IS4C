@@ -38,7 +38,7 @@ class SpecialUPC
 {
     private static $builtin = array(
         'CouponCode',
-        'DatabaseCoupon',
+        'DatabarCoupon',
         'HouseCoupon',
         'SpecialOrder',
     );

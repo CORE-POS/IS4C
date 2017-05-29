@@ -53,7 +53,7 @@ public class Magellan : DelegateForm
 {
     private List<SerialPortHandler> sph;
     private UDPMsgBox u;
-    private bool asyncUDP = false;
+    private bool asyncUDP = true;
     private Object msgLock = new Object();
     private ushort msgCount = 0;
 

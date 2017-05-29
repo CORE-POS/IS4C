@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\common;
+use COREPOS\common\sql\CharSets;
 
 if (!function_exists("ADONewConnection")) {
     if (file_exists(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php')) {
@@ -43,7 +44,16 @@ if (!function_exists("ADONewConnection")) {
 */
 class SQLManager 
 {
+    /**
+     Logging object (PSR-3)
+    */
     private $QUERY_LOG; 
+
+    /**
+     In debug mode all queries are logged
+     even if they succeed
+    */
+    private $debug_mode = false;
 
     /** Array of connections **/
     public $connections;
@@ -72,9 +82,9 @@ class SQLManager
     public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
         $this->connections=array();
-        $this->default_db = $database;
         $this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
         if ($this->isConnected($database)) {
+            $this->default_db = $database;
             $adapter = $this->getAdapter(strtolower($type));
             $this->query($adapter->useNamedDB($database));
         }
@@ -128,6 +138,8 @@ class SQLManager
             // value here is really schema. Database name must match user name.
             $savedDB = $database;
             $database = $username;
+        } elseif (strtolower($type) == 'mysql' && version_compare(PHP_VERSION, '7.0.0') >= 0) {
+            $type = function_exists('mysqli_connect') ? 'mysqli' : 'pdo_mysql';
         }
 
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
@@ -344,6 +356,12 @@ class SQLManager
         return $this->setDefaultDB($db_name);
     }
 
+    private function getNamedConnection($which_connection)
+    {
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
+        return isset($this->connections[$which_connection]) ? $this->connections[$which_connection] : null;
+    }
+
     /**
       Execute a query
       @param $query_text The query
@@ -352,8 +370,7 @@ class SQLManager
     */
     public function query($query_text,$which_connection='',$params=false)
     {
-        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
-        $con = $this->connections[$which_connection];
+        $con = $this->getNamedConnection($which_connection);
 
         $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
         if (!$result) {
@@ -363,6 +380,11 @@ class SQLManager
             if ($this->throw_on_fail) {
                 throw new \Exception($errorMsg);
             }
+        } elseif ($this->debug_mode) {
+            $logMsg = 'Successful query on ' . filter_input(INPUT_SERVER, 'PHP_SELF') . "\n"
+                . $query_text . "\n"
+                . (is_array($params) ? 'Parameters: ' . implode("\n", $params) : '');
+            $this->logger($logMsg);
         }
 
         return $result;
@@ -1074,10 +1096,6 @@ class SQLManager
     */
     public function tableExists($table_name,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-
         /**
           Check whether the definition is in cache
         */
@@ -1085,7 +1103,7 @@ class SQLManager
             return true;
         }
 
-        $conn = $this->connections[$which_connection];
+        $conn = $this->getNamedConnection($which_connection);
         if (!is_object($conn)) {
             return false;
         }
@@ -1360,17 +1378,14 @@ class SQLManager
     */
     public function error($which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        $con = $this->connections[$which_connection];
+        $con = $this->getNamedConnection($which_connection);
 
         if (!is_object($con)) {
             if ($this->last_connect_error) {
                 return $this->last_connect_error;
-            } else {
-                return 'No database connection';
             }
+
+            return 'No database connection';
         }
 
         return $con->ErrorMsg();
@@ -1512,7 +1527,7 @@ class SQLManager
         }
         $con = $this->connections[$which_connection];
 
-        return $con->Prepare($sql);
+        return is_object($con) ? $con->Prepare($sql) : false;
     }
 
    /**
@@ -1620,6 +1635,15 @@ class SQLManager
     public function setQueryLog($log)
     {
         $this->QUERY_LOG = $log;
+    }
+
+    /**
+      Enable or disable debug mode
+      @param [boolean] true means enabled, false means disabled
+    */
+    public function setDebugMode($debug)
+    {
+        $this->debug_mode = $debug;
     }
 
     /**
@@ -1777,7 +1801,7 @@ class SQLManager
             $this->adapters[$type] = new $class();
         }
 
-        return $this->adapters[$type];
+        return $this->getAdapter('mysqli');
     }
 
     /**
@@ -1797,6 +1821,27 @@ class SQLManager
         $inStr = substr($inStr, 0, strlen($inStr)-1);
 
         return array($inStr, $args);
+    }
+
+    public function setCharSet($charset, $which_connection='')
+    {
+        // validate connection
+        $con = $this->getNamedConnection($which_connection);
+        $type = $this->connectionType($which_connection);
+        if ($type == 'unknown' || !is_object($con)) {
+            return false;
+        }
+
+        // validate character set
+        $db_charset = CharSets::get($type, $charset);
+        if ($db_charset === false) {
+            return false;
+        }
+
+        $adapter = $this->getAdapter($type);
+        $query = $adapter->setCharSet($db_charset);
+
+        return $con->query($query);
     }
 }
 

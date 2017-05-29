@@ -38,6 +38,86 @@ class BatchReport extends FannieReportPage
     public $report_set = 'Batches';
     protected $new_tablesorter = true;
 
+    /**
+      Ajax callback:
+      Get daily sales totals for a given item
+    */
+    private function ajaxItemSales()
+    {
+        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
+        $date1 = FormLib::get('date1');
+        $date2 = FormLib::get('date2');
+        $store = FormLib::get('store');
+        $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        $dataP = $this->connection->prepare("
+            SELECT YEAR(tdate),
+                MONTH(tdate),
+                DAY(tdate),
+                SUM(total),
+                MAX(description) AS descript
+            FROM {$dlog} AS d
+            WHERE upc=?
+                AND " . DTrans::isStoreID($store, 'd') . "
+                AND tdate BETWEEN ? AND ?
+            GROUP BY YEAR(tdate),
+                MONTH(tdate),
+                DAY(tdate)
+            ORDER BY YEAR(tdate),
+                MONTH(tdate),
+                DAY(tdate)
+        ");
+        $json = array('dates'=>array(), 'totals'=>array(), 'min'=>99999, 'max'=>0);
+        $dataR = $this->connection->execute($dataP, array($upc, $store, $date1 . ' 00:00:00', $date2 . ' 23:59:59'));
+        $points = array();
+        while ($row = $this->connection->fetchRow($dataR)) {
+            $date = date('Y-m-d', mktime(0,0,0, $row[1], $row[2], $row[0]));
+            $total = sprintf('%.2f', $row[3]);
+            $points[$date] = $total;
+            if ($total < $json['min']) {
+                $json['min'] = $total;
+            }
+            if ($total > $json['max']) {
+                $json['max'] = $total;
+            }
+            $json['description'] = $row['descript'];
+        }
+        $json['min'] = 0.95 * $json['min'];
+        $json['max'] = 1.05 * $json['max'];
+
+        // fill in zeroes for any days without sales
+        $start = new DateTime($date1);
+        $end = new DateTime($date2);
+        $p1d = new DateInterval('P1D');
+        while ($start <= $end) {
+            $str = $start->format('Y-m-d');
+            $json['dates'][] = $str;
+            $json['totals'][] = isset($points[$str]) ? $points[$str] : 0.00;
+            $start->add($p1d);
+            if (!isset($points[$str]) && $json['min'] > 0) {
+                $json['min'] = 0;
+            }
+        }
+ 
+        return $json;
+    }
+
+    function preprocess()
+    {
+        $ret = parent::preprocess();
+        // ajax callback: get daily item sales
+        if (FormLib::get('upc', false) !== false) {
+            echo json_encode($this->ajaxItemSales());
+
+            return false;
+        }
+
+        $this->addScript('../../src/javascript/Chart.min.js');
+        $this->addScript('batchReport.js');
+        $this->addOnloadCommand('batchReport.init();');
+
+        return $ret;
+    }
+
     function fetch_report_data()
     {
         $dbc = $this->connection;
@@ -97,11 +177,12 @@ class BatchReport extends FannieReportPage
                 SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
-            LEFT JOIN FloorSectionsListView as lv on d.upc=lv.upc
-            LEFT JOIN vendorItems AS vi ON (p.upc = vi.upc AND p.default_vendor_id = vi.vendorID)
+                LEFT JOIN FloorSectionsListView as lv on d.upc=lv.upc AND lv.storeID=d.store_id
+                LEFT JOIN vendorItems AS vi ON (p.upc = vi.upc AND p.default_vendor_id = vi.vendorID)
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
                 AND " . DTrans::isStoreID($store, 'd') . "
+                AND d.charflag <> 'SO'
             GROUP BY d.upc, 
                 p.description
             ORDER BY d.upc";
@@ -149,12 +230,12 @@ class BatchReport extends FannieReportPage
         $sumSales = 0.0;
         $sumRings = 0.0;
         foreach ($data as $row) {
-            $sumQty += $row[4];
-            $sumSales += $row[3];
-            $sumRings += $row[5];
+            $sumQty += $row[5];
+            $sumSales += $row[4];
+            $sumRings += $row[6];
         }
 
-        return array('Total',null,null,$sumSales,$sumQty, $sumRings, '');
+        return array('Total',null,null,null,$sumSales,$sumQty, $sumRings, '');
     }
 
     private function getBatches($dbc, $filter1, $filter2)

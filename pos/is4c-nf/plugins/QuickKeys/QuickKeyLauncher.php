@@ -66,7 +66,7 @@ class QuickKeyLauncher extends Parser
         } else {
             $tmp = explode('QO', $str);
             $num = $tmp[1]; 
-            $ret['output'] = $this->overlayKeys($num);
+            $ret['output'] = $this->overlayKeys($num, $tmp[0]);
         }
 
         return $ret;
@@ -95,7 +95,7 @@ class QuickKeyLauncher extends Parser
         return $my_keys;
     }
 
-    private function overlayKeys($number)
+    private function overlayKeys($number, $preInput)
     {
         $my_keys = $this->getKeys($number);
         if (count($my_keys) == 0) {
@@ -120,7 +120,7 @@ class QuickKeyLauncher extends Parser
                         </button>
                     </div>
                 </div>',
-                $i, $my_keys[$i]->output_text, $my_keys[$i]->title);
+                $i, $preInput . $my_keys[$i]->output_text, $my_keys[$i]->title);
         }
         if (!$clearButton) {
             $ret .= '<div class="qkBox">

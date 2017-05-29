@@ -44,17 +44,38 @@ class WfcVcTask extends FannieTask
             SELECT card_no
             FROM custReceiptMessage
             WHERE card_no=?
-                AND msg_text like 'Access%'"
+                AND msg_text like '%Access Discount%'"
         );
+        $chkNotP = $dbc->prepare("
+            SELECT cardNo
+            FROM CustomerNotifications
+            WHERE cardNo=?
+                AND message like '%Access Discount%'
+                AND type=?
+                AND source='WfcVcTask'
+        ");
         $upMsgP = $dbc->prepare("
             UPDATE custReceiptMessage
             SET msg_text=?
             WHERE card_no=?
-                AND msg_text LIKE 'Access%'");
+                AND msg_text LIKE '%Access Discount%'");
+        $upNotP = $dbc->prepare("
+            UPDATE CustomerNotifications
+            SET message=?
+            WHERE cardNo=?
+                AND message LIKE '%Access Discount%'
+                AND type=?
+                AND source='WfcVcTask'
+        ");
         $insMsgP = $dbc->prepare("
             INSERT INTO custReceiptMessage
                 (card_no, msg_text)
                 VALUES (?, ?)");
+        $insNotP = $dbc->prepare("
+            INSERT INTO CustomerNotifications
+                (cardNo, source, type, message)
+            VALUES
+                (?, 'WfcVcTask', ?, ?)");
 
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
@@ -63,23 +84,57 @@ class WfcVcTask extends FannieTask
                     WHERE trans_type=\'I\'
                         AND upc=\'ACCESS\'
                         AND tdate >= ?
+                        AND card_no NOT IN (9, 11)
                     GROUP BY card_no
                     HAVING SUM(quantity) > 0';
         $accessP = $dbc->prepare($accessQ);
         $accessR = $dbc->execute($accessP, array($last_year));
         $mems = array();
         $in = '';
+        $notification = new CustomerNotificationsModel($dbc);
         while ($accessW = $dbc->fetch_row($accessR)) {
+            /**
+              Setup receipt notifications. This uses both old-style custReceiptMessage
+              and new-style CustomerNotifications. This notification is always
+              present.
+            */
             $mems[] = $accessW['card_no'];
             $in .= '?,';
             $expires = new DateTime($accessW['tdate']);
             $expires->add(new DateInterval('P1Y'));
             $text = 'Access Discount valid until ' . $expires->format('Y-m-d');
+            $text = "\n" . str_repeat('-', 40) . "\n" . $text . "\n" . str_repeat('-', 40) . "\n";
             $msg = $dbc->getValue($chkMsgP, $accessW['card_no']);
             if ($msg) {
                 $dbc->execute($upMsgP, array($text, $accessW['card_no']));
             } else {
                 $dbc->execute($insMsgP, array($accessW['card_no'], $text));
+            }
+            $msg = $dbc->getValue($chkNotP, array($accessW['card_no'], 'receipt'));
+            if ($msg) {
+                $dbc->execute($upNotP, array($text, $accessW['card_no'], 'receipt'));
+            } else {
+                $res = $dbc->execute($insNotP, array($accessW['card_no'], 'receipt', $text));
+            }
+
+            /**
+              Set a blueline notification is things are expiring soon
+            */
+            $now = new DateTime(date('Y-m-d'));
+            $expires->sub(new DateInterval('P1M'));
+            $notification->reset();
+            $notification->cardNo($accessW['card_no']);
+            $notification->source('WfcVcTaskABL');
+            $notification->type('blueline');
+            $exists = $notification->find();
+            $notice = $now >= $expires ? '&#x1f6aa;' : '';
+            if (count($exists) > 0) {
+                $obj = $exists[0];
+                $obj->message($notice);
+                $obj->save();
+            } else {
+                $notification->message($notice);
+                $notification->save();
             }
         }
         $in = substr($in, 0, strlen($in)-1);
@@ -91,9 +146,24 @@ class WfcVcTask extends FannieTask
 
         $delMsgP = $dbc->prepare("
             DELETE FROM custReceiptMessage
-            WHERE msg_text LIKE 'Access%'
+            WHERE msg_text LIKE '%Access Discount%'
                 AND card_no NOT IN ({$in})");
         $dbc->execute($delMsgP, $mems);
+
+        $upP = $dbc->prepare("
+            UPDATE CustomerNotifications
+            SET message=''
+            WHERE source='WfcVcTaskABL'
+                AND cardNo NOT IN ({$in})");
+        $dbc->execute($upP, $mems);
+        $upP = $dbc->prepare("
+            UPDATE CustomerNotifications
+            SET message=''
+            WHERE source='WfcVcTask'
+                AND message LIKE '%Access Discount%'
+                AND type='receipt'
+                AND cardNo NOT IN ({$in})");
+        $dbc->execute($upP, $mems);
 
         $redo = $dbc->prepare('UPDATE custdata 
                                SET memType=5,
@@ -152,7 +222,6 @@ class WfcVcTask extends FannieTask
                 break;
             }
         }
-        echo "$currentUPC\n";
 
         if ($currentUPC) {
             $dbc->query("UPDATE CustomerNotifications SET message='OAM' WHERE source='WFC.OAM'");
@@ -166,6 +235,30 @@ class WfcVcTask extends FannieTask
             $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
             while ($row = $dbc->fetchRow($usageR)) {
                 $dbc->execute($upP, array($row['card_no']));
+            }
+        }
+
+        if ($today >= new DateTime('2017-04-01')) {
+            $dbc->query("UPDATE CustomerNotifications SET message='' WHERE source='WFC.OAM'");
+            $assignP = $dbc->prepare("UPDATE CustomerNotifications
+                SET message='&#x1F49A;' WHERE source='WFC.OAM' AND cardNo=?");
+            $usageP = $dbc->prepare("SELECT card_no 
+                                    FROM is4c_trans.dlog_90_view
+                                    WHERE upc = '0049999900176'
+                                        AND card_no=?
+                                    GROUP BY card_no
+                                    HAVING SUM(total) <> 0");
+
+            $earnR = $dbc->query('SELECT numflag
+                FROM is4c_trans.dlog_90_view
+                WHERE upc=\'0049999900173\'
+                GROUP BY numflag
+                HAVING SUM(total) <> 0');
+            while ($row = $dbc->fetchRow($earnR)) {
+                $used = $dbc->getValue($usageP, array($row['numflag']));
+                if (!$used) {
+                    $dbc->execute($assignP, array($row['numflag']));
+                }
             }
         }
 

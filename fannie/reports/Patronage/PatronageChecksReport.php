@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class PatronageChecksReport extends FannieReportPage 
 {
     public $description = '[Patronage Checks] reports how many checks have been cashed for a given year.';
-    public $report_set = 'Membership';
+    public $report_set = 'Membership :: Patronage';
     public $themed = true;
 
     protected $header = "Patronage Checks Report";

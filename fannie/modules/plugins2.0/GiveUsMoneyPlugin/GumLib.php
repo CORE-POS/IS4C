@@ -105,7 +105,7 @@ class GumLib
         number rather than the gumPayoffID
       @return [int] gumPayoffID or [boolean] false on failure
     */
-    public static function allocateCheck($map_model, $mapped=true)
+    public static function allocateCheck($map_model, $mapped=true, $unmap_reason='', $unmap_key='')
     {
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
@@ -141,6 +141,8 @@ class GumLib
         */
         $payoff = new GumPayoffsModel($dbc);
         $payoff->checkNumber($cn);
+        $payoff->reason($unmap_reason);
+        $payoff->alternateKey($unmap_key);
         $id = $payoff->save();
         if (!$mapped) {
             return $cn;

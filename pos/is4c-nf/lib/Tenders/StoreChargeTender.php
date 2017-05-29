@@ -67,7 +67,7 @@ class StoreChargeTender extends TenderModule
                 _("is only \$") . $memChargeCommitted,
                 $buttons
             );
-        } elseif(MiscLib::truncate2(CoreLocal::get("amtdue")) < MiscLib::truncate2($this->amount)) {
+        } elseif (abs(MiscLib::truncate2(CoreLocal::get("amtdue"))) < abs(MiscLib::truncate2($this->amount))) {
             return DisplayLib::xboxMsg(
                 _("charge tender exceeds purchase amount"),
                 $buttons

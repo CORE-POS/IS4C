@@ -79,6 +79,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         $this->__routes[] = 'get<search>';
         $this->__routes[] = 'post<search>';
+        $this->__routes[] = 'post<extern>';
         $this->__routes[] = 'post<upc>';
         $this->__routes[] = 'get<init>';
         return parent::preprocess();
@@ -127,9 +128,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($form->upcs !== '') {
             $upcs = explode("\n", $form->upcs);
             $upcs = array_map(function($i) {
+                $i = str_replace(' ', '-', $i);
                 if (preg_match('/\d-\d+-\d+-\d/', $i)) {
                     $ret = trim(str_replace('-', '', $i));
                     return substr($ret, 0, strlen($ret)-1);
+                } else {
+                    $i = str_replace('-', '', $i);
                 }
                 return $i;
             }, $upcs);
@@ -714,7 +718,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
                       FROM $dlog AS t
                       WHERE tdate BETWEEN ? AND ?
                         AND t.upc IN ($upc_in)
-                      GROUP BY t.upc";
+                        AND t.charflag <> 'SO'
+                      GROUP BY t.upc
+                      HAVING SUM(total) <> 0";
             $prep = $this->connection->prepare($query);
             $result = $this->connection->execute($prep, $args);
             $valid = array();
@@ -1002,6 +1008,18 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $btOpts = $model->toOptions();
 
         return include(__DIR__ . '/search.template.html');
+    }
+
+    protected function post_extern_view()
+    {
+        $body = $this->get_view();
+        ob_start();
+        $this->get_search_handler();
+        $results = ob_get_clean();
+        $body .= '<div class="collapse" id="externResults">' . $results . '</div>';
+        $this->addOnloadCommand("\$('#resultArea').html(\$('#externResults').html());\n");
+
+        return $body;
     }
 
     public function helpContent()

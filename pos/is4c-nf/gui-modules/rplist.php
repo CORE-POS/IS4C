@@ -55,7 +55,7 @@ class rplist extends NoInputCorePage
 
     function preprocess()
     {
-        if ($this->form->tryGet('selectlist') !== '') {
+        if ($this->form->tryGet('selectlist', false) !== false) {
             if (!empty($this->form->selectlist)) {
                 $this->printReceipt($this->form->selectlist);
             }
@@ -204,6 +204,10 @@ class rplist extends NoInputCorePage
     public function unitTest($phpunit)
     {
         $this->printReceipt('1-1-1'); // just coverage
+        $this->form = new COREPOS\common\mvc\ValueContainer();
+        $phpunit->assertEquals(true, $this->preprocess());
+        $this->form->selectlist = '';
+        $phpunit->assertEquals(false, $this->preprocess());
     }
 }
 

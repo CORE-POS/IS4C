@@ -61,9 +61,9 @@ class productlist extends NoInputCorePage
     {
         $qty = 0;
         if (strstr($entered, '*')) {
-            list($qty,) = explode('*', $entered, 2);
+            list($qty,$entered) = explode('*', $entered, 2);
             $qty = is_numeric($qty) ? $qty : 1;
-        } elseif ($this->tryGet('qty') !== '') {
+        } elseif ($this->form->tryGet('qty') !== '') {
             $qty = is_numeric($this->form->qty) ? $this->form->qty : 0;
         }
 
@@ -155,7 +155,7 @@ class productlist extends NoInputCorePage
         $this->addOnloadCommand("selectSubmit('#search', '#selectform', '#filter-span')\n");
 
         // originally 390
-        $maxSelectWiddth = $this->session->get('touchscreen') ? 470 : 530;
+        $maxSelectWidth = $this->session->get('touchscreen') ? 470 : 530;
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
             ."<form name=\"selectform\" method=\"post\" action=\""
@@ -227,6 +227,7 @@ class productlist extends NoInputCorePage
             </div>
         </div>
         <?php
+        $this->addOnloadCommand("\$('#search').focus();\n");
     }
 
     public function unitTest($phpunit)
@@ -236,9 +237,25 @@ class productlist extends NoInputCorePage
         $phpunit->assertNotEquals(0, count($res));
         $one = array_pop($res);
         $this->searchResults = array($one); // no need to loop whole list
+        $this->onload_commands = array();
         ob_start();
         $this->body_content();
-        $phpunit->assertNotEquals(0, ob_get_clean());
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $phpunit->assertNotEquals(false, strstr(implode('', $this->onload_commands), "\$('#search').focus();"));
+        list($qty, $entered) = $this->getQuantity('5*1234');
+        $phpunit->assertEquals(5, $qty);
+        $phpunit->assertEquals('1234', $entered);
+        $this->form = new COREPOS\common\mvc\ValueContainer();
+        $this->form->qty = 2;
+        list($qty, $entered) = $this->getQuantity('1234');
+        $phpunit->assertEquals(2, $qty);
+        $phpunit->assertEquals('1234', $entered);
+        $this->searchResults = array();
+        $this->onload_commands = array();
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $phpunit->assertNotEquals(false, strstr(implode('', $this->onload_commands), "\$('#search').focus();"));
     }
 
 }

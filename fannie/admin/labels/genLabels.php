@@ -28,6 +28,8 @@ if (!class_exists('FannieAPI')) {
 
 class genLabels extends FannieRESTfulPage
 {
+    public $discoverable = false;
+
     /** wrapper since param "id" already in use **/
     protected function get_id_handler()
     {

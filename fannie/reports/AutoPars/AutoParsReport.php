@@ -29,6 +29,7 @@ if (!class_exists('FannieAPI')) {
 class AutoParsReport extends FannieReportPage 
 {
     public $description = '[Auto Pars Reports] shows approximate daily movement for items when not on sale';
+    public $report_set = 'Operational Data';
 
     protected $title = "Fannie : Auto Pars Report";
     protected $header = "Auto Pars Report";

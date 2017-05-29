@@ -31,7 +31,6 @@ while( ($file = readdir($dh)) !== False){
         $row = $dbc->fetchRow($r1);
         if ($row['photo'] && file_exists('done/' . $row['photo'])) {
             echo "UPC $upc already has image\n";
-            unlink('new/' . $file);
         } else {
             echo "UPC $upc found in productUser\n";
             $upR = $dbc->execute($upP,array($file,$upc));

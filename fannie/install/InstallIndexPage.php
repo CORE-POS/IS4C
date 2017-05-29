@@ -673,6 +673,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'ProductOriginsMapModel',
         'ProdExtraModel',
         'ProdFlagsModel',
+        'ProductAttributesModel',
         'ProdPhysicalLocationModel',
         'ProdUpdateModel',
         'ProdDepartmentHistoryModel',
@@ -832,6 +833,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'WeeksLastQuarterModel',
         'ProductWeeklyLastQuarterModel',
         'ProductSummaryLastQuarterModel',
+        'ProductAttributeMapModel',
     );
 
     private function getArchiveModels($archive_method)

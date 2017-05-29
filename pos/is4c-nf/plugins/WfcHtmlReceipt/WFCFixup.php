@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-namespace COREPOS\pos\parser\preparse;
 use COREPOS\pos\parser\PreParser;
 
 class WFCFixup extends PreParser {

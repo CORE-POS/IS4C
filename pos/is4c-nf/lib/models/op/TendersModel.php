@@ -43,6 +43,7 @@ class TendersModel extends BasicModel
     'MaxRefund'    => array('type'=>'MONEY','default'=>1000.00),
     'TenderModule' => array('type'=>'VARCHAR(50)', 'default'=>"'TenderModule'"),
     'SalesCode' => array('type'=>'INT'),
+    'EndsTransaction' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     public function doc()

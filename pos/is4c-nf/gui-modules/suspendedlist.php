@@ -41,8 +41,8 @@ class suspendedlist extends NoInputCorePage
     function preprocess()
     {
         /* form submitted */
-        try {
-            if (!empty($this->form->selectlist)) { // selected a transaction
+        if ($this->form->tryGet('selectlist', false) !== false) {
+            if ($this->form->selectlist !== '') { // selected a transaction
                 $tmp = explode("::",$this->form->selectlist);
                 $this->doResume($tmp[0],$tmp[1],$tmp[2]);
                 // if it is a member transaction, verify correct name
@@ -51,12 +51,12 @@ class suspendedlist extends NoInputCorePage
                     $url = $this->page_url.'gui-modules/memlist.php?idSearch='.$this->session->get('memberID');
                 }
                 $this->change_page($url);
+                return false;
             }
             // pressed clear
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
             return false;
-        } catch (Exception $ex) {
         }
 
 
@@ -73,7 +73,7 @@ class suspendedlist extends NoInputCorePage
             return true;
         }
         $this->session->set("boxMsg",_("no suspended transaction"));
-        $this->change_page($this->page_url."gui-modules/pos2.php");    
+        $this->change_page($this->page_url."gui-modules/boxMsg2.php");
 
         return false;
     } // END preprocess() FUNCTION
@@ -179,6 +179,9 @@ class suspendedlist extends NoInputCorePage
         if ($this->session->get("standalone") == 0){
             $dbc->addConnection($this->session->get("mServer"),$this->session->get("mDBMS"),
                 $this->session->get("mDatabase"),$this->session->get("mUser"),$this->session->get("mPass"));
+            if (CoreLocal::get('CoreCharSet') != '') {
+                $dbc->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
+            }
 
             $cols = Database::getMatchingColumns($dbc, "localtemptrans", "suspended");
             // localtemptrans might not actually be empty; let trans_id

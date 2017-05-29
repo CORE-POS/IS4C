@@ -106,7 +106,8 @@ class HouseCoupon extends SpecialUPC
                         CASE 
                           WHEN startDate IS NULL THEN 0 
                           ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
-                        END as preStart";
+                        END as preStart,
+                        virtualOnly";
         } else {
             // new(ish) columns 16apr14
             $hctable = $dbc->tableDefinition('houseCoupons');
@@ -123,6 +124,7 @@ class HouseCoupon extends SpecialUPC
             } else {
                 $infoQ .= ', 0 AS preStart';
             }
+            $infoQ .= isset($hctable['virtualOnly']) ? ', virtualOnly ' : ', 0 AS virtualOnly ';
         }
         $infoQ .= " FROM  houseCoupons 
                     WHERE coupID=" . ((int)$coupID);
@@ -211,6 +213,21 @@ class HouseCoupon extends SpecialUPC
                 if ($infoW['minType'] == 'Q+' && $validQtty <= $infoW["minValue"]) {
                     return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 } elseif ($infoW['minType'] == 'Q' && $validQtty < $infoW['minValue']) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                }
+                break;
+            case "Q-": // must purchase at least one, no more than X
+                $minQ = "select case when sum(ItemQtty) is null
+                    then 0 else sum(ItemQtty) end
+                    " . $this->baseSQL($transDB, $coupID, 'upc');
+                $minR = $transDB->query($minQ);
+                $minW = $transDB->fetch_row($minR);
+                $validQtty = $minW[0];
+                if ($infoW['minType'] == 'Q+' && $validQtty <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'Q' && $validQtty < $infoW['minValue']) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'Q-' && $validQtty < 1) {
                     return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
@@ -359,6 +376,22 @@ class HouseCoupon extends SpecialUPC
         */
         if ($infoW["memberOnly"] == 1 && $this->session->get("standalone")==0 
             && $this->session->get('memberID') != $this->session->get('visitingMem')) {
+
+            /**
+              A virtual-only coupon MUST exist in the houseVirtualCoupons table for the 
+              current member. If a record is present the coupon is allowed.
+            */
+            if ($infoW['virtualOnly']) {
+                $opDB = Database::pDataConnect();
+                $chkP = $opDB->prepare("SELECT coupID FROM houseVirtualCoupons WHERE coupID=? AND card_no=?");
+                $chkR = $opDB->execute($chkP, array($coupID, $this->session->get('memberID')));
+                if ($opDB->numRows($chkR) === 0) {
+                    return $this->errorOrQuiet(_('coupon not available<br />on this account'), false);
+                }
+
+                return true;
+            }
+
             $mDB = Database::mDataConnect();
             $mAlt = Database::mAltName();
 
@@ -461,6 +494,35 @@ class HouseCoupon extends SpecialUPC
                     $value = $infoW['discountValue'];
                 }
                 break;
+            case 'BQ': // Quantity-capped BOGO
+                // get total number of coupon items
+                $valQ = 'SELECT SUM(l.quantity) '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')";
+                $valP = $transDB->prepare($valQ);
+                $qty = $transDB->getValue($valP);
+
+                // add cheapest items to total value until
+                // the allowed number of free items is reached
+                $priceQ = 'SELECT unitPrice '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')
+                        ORDER BY unitPrice";
+                $priceR = $transDB->query($priceQ);
+                $value = 0;
+                $freeItems = 1;
+                while ($priceW = $transDB->fetchRow($priceR)) {
+                    if ($freeItems*2 > $qty) {
+                        // not enough purchases to add a free item
+                        break;
+                    } elseif ($freeItems > $infoW['discountValue']) {
+                        // exceeds max number of free items
+                        break;
+                    }
+                    $value += $priceW['unitPrice'];
+                    $freeItems++;
+                }
+                break;
             case "P": // discount price
                 // query to get the item's department and current value
                 // current value minus the discount price is how much to
@@ -538,7 +600,11 @@ class HouseCoupon extends SpecialUPC
                     and h.type in ('BOTH', 'DISCOUNT')";
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
-                $value = $row['qty'] * $value;
+                if ($row['qty'] > $infoW['minValue'] && $infoW['minType'] == 'Q-') {
+                    $value *= $infoW['minValue'];
+                } else {
+                    $value = $row['qty'] * $value;
+                }
                 break;
             case 'PS': // per set of items
                 $value = $infoW["discountValue"];

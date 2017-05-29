@@ -12,6 +12,7 @@ class FairTradeSalesReport extends FannieReportPage
     protected $required_fields = array('date1', 'date2');
     protected $report_headers = array('Dept#', 'Dept Name', 'Fair Trade Sales', 'Fair Trade %', 'All Sales');
     public $description = '[Fair Trade Sales] lists fair trade sales volume and percent of total sales';
+    public $report_set = 'Operational Data';
 
     function fetch_report_data()
     {

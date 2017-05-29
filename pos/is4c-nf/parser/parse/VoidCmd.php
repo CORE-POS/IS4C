@@ -31,7 +31,7 @@ use COREPOS\pos\parser\Parser;
 use \CoreLocal;
 use \Exception;
 
-class Void extends Parser 
+class VoidCmd extends Parser 
 {
     private $scaleprice = 0;
 

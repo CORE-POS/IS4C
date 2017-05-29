@@ -11,6 +11,7 @@ class ScalePLUReport extends FannieReportPage
 {
     protected $header = 'Scale PLU List';
     protected $title = 'Scale PLU List';
+    public $report_set = 'Service Scales';
     public $description = '[Scale PLU List] produces a report of service scale PLU items';
     protected $required_fields = array('submit');
     protected $report_headers = array(array('Brand', 'Description', 'PLU'));

@@ -85,6 +85,7 @@ class AuthIndexPage extends FanniePage {
             echo "<li><a href=AuthPosePage.php>Switch User</a></li>";
         }
         // The 'limited' options
+        echo '<li><a href="AuthEmailAddress.php">Change email address</a></li>';
         if (!$this->config->get('AUTH_SHADOW', false) && !$this->config->get('AUTH_LDAP', false)) { 
             echo "<li><a href=AuthChangePassword.php>Change password</a></li>";
         }

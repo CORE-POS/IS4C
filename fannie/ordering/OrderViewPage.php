@@ -284,13 +284,13 @@ class OrderViewPage extends FannieRESTfulPage
             $soModel->street(FormLib::get('street'));
         }
         if (FormLib::get('city', false) !== false) {
-            $soModel->street(FormLib::get('city'));
+            $soModel->city(FormLib::get('city'));
         }
         if (FormLib::get('state', false) !== false) {
-            $soModel->street(FormLib::get('state'));
+            $soModel->state(FormLib::get('state'));
         }
         if (FormLib::get('zip', false) !== false) {
-            $soModel->street(FormLib::get('zip'));
+            $soModel->zip(FormLib::get('zip'));
         }
         $json = array();
         $json['saved'] = $soModel->save() ? true : false;
@@ -559,7 +559,7 @@ class OrderViewPage extends FannieRESTfulPage
                     $n[0],$n[1]);
             }
             $ret .= '</select></td>';
-            $ret .= '<td>&nbsp;</td>';
+            $ret .= '<td><a href="NewSpecialOrdersPage.php?card_no=' . $memNum . '">All Orders for this Account</a></td>';
         }
         $ret .= '<td colspan="4" class="form-inline">Notes For Department:
             <select id="nDept" class="form-control input-sm contact-field" 
@@ -596,17 +596,16 @@ class OrderViewPage extends FannieRESTfulPage
 
         $ret .= sprintf('
             <tr>
-                <th>E-mail</th>
-                <td>
-                    <input type="text" id="t_email" value="%s" 
-                        class="form-control input-sm contact-field"
-                        name="email" />
-                </td>
                 <th>Phone</th>
                 <td>
                     <input type="text" id="t_ph1" name="ph1"
                         class="form-control input-sm contact-field"
                         value="%s" />
+                </td>
+                <th>Alt. Phone</th>
+                <td>
+                    <input type="text" id="t_ph2" value="%s" name="ph2"
+                        class="form-control input-sm contact-field" />
                 </td>
                 <td rowspan="2" colspan="4">
                     <textarea id="nText" rows="5" cols="25" 
@@ -615,10 +614,11 @@ class OrderViewPage extends FannieRESTfulPage
                 </td>
             </tr>
             <tr>
-                <th>Alt. Phone</th>
+                <th>E-mail</th>
                 <td>
-                    <input type="text" id="t_ph2" value="%s" name="ph2"
-                        class="form-control input-sm contact-field" />
+                    <input type="text" id="t_email" value="%s" 
+                        class="form-control input-sm contact-field"
+                        name="email" />
                 </td>
                 <th>Prefer</th>
                 <td class="form-inline">
@@ -644,10 +644,10 @@ class OrderViewPage extends FannieRESTfulPage
                     name="zip" value="%s" />
                 </td>
             </tr>',
-            $orderModel->email(),
             $orderModel->phone(), 
-            $orderModel->notes(),
             $orderModel->altPhone(),
+            $orderModel->notes(),
+            $orderModel->email(),
             $contactHtml,
             $orderModel->street(),
             $orderModel->city(),
@@ -694,7 +694,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $ins_array['upc'] = $item['upc'];
         $ins_array['quantity'] = $item['caseSize'];
-        $ins_array['mixMatch'] = substr($item['vendorName'], 0, 26);
+        $ins_array['mixMatch'] = $item['vendorName'];
         $ins_array['description'] = substr($item['description'], 0, 32) . ' SO';
         $ins_array['department'] = $item['department'];
         $ins_array['discountable'] = $item['discountable'];
@@ -904,6 +904,11 @@ HTML;
         $bridge = new SoPoBridge($dbc, $this->config);
         $store = $dbc->prepare("SELECT storeID FROM {$TRANS}SpecialOrders WHERE specialOrderID=?");
         $storeID = $dbc->getValue($store, array($orderID));
+        $vendorsR = $dbc->query("SELECT vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName");
+        $vendors = array();
+        while ($row = $dbc->fetchRow($vendorsR)) {
+            $vendors[] = $row['vendorName'];
+        }
         while ($row = $dbc->fetch_row($res)) {
             if ($row['trans_id'] == $prev_id) continue;
             $ret .= sprintf('
@@ -948,10 +953,40 @@ HTML;
                 <input type="text" size="4" value="%.2f" id="unitp%d" name="unitPrice"
                 class="form-control input-sm price-field item-field" /></td>',
                 $row['unitPrice'],$row['trans_id']);
+
+            /**
+              If the current supplier entry matches a known vendor,
+              display supplier options as a <select> from known vendors.
+              Since entries may have been truncated in the database,
+              matching the first 13 characters is sufficent.
+
+              If the current entry does not match any known vendor,
+              revert to showing supplier as a text box.
+            */
+            $supplierInput = '<select name="vendor" class="form-control input-sm item-field input-vendor">';
+            $supplierInput .= '<option value=""></option>';
+            $found = false;
+            foreach ($vendors as $v) {
+                if ($v == $row['mixMatch'] || substr($v, 0, 13) == $row['mixMatch']) {
+                    $supplierInput .= "<option selected>{$v}</option>";
+                    $found = true;
+                } else {
+                    $supplierInput .= "<option>{$v}</option>";
+                }
+            }
+            if (!$found && $row['mixMatch'] != '') {
+                $supplierInput = sprintf('<input type="text" value="%s" size="12"
+                    class="form-control input-sm item-field input-vendor" name="vendor" maxlength="13" />',
+                    $row['mixMatch']);
+            } else {
+                $supplierInput .= '</select>';
+            }
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
                     class="form-control input-sm item-field input-vendor" name="vendor"
                     maxlength="26" 
                     /></td>',$row['mixMatch']);
+            //$ret .= sprintf('<td class="form-inline">Supplier: %s</td>', $supplierInput);
+
             $ret .= '<td>Discount</td>';
             if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
                 $ret .= '<td class="disc-percent" id="discPercent'.$row['trans_id'].'">Sale</td>';
@@ -1202,9 +1237,9 @@ HTML;
         $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
         $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {
-            $_SESSION['specialOrderRedirect'] = $return_path;
-        } elseif (isset($_SESSION['specialOrderRedirect'])) {
-            $return_path = $_SESSION['specialOrderRedirect'];
+            $this->session->specialOrderRedirect = $return_path;
+        } elseif (isset($this->session->specialOrderRedirect)) {
+            $return_path = $this->session->specialOrderRedirect;
         } else {
             $return_path = $this->config->get('URL') . "ordering/";
         }

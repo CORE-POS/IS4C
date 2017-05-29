@@ -169,7 +169,8 @@ class MercuryGift extends BasicCCModule
                 $ttl = $this->conf->get("paycard_amount");
                 $dept = $this->conf->get('PaycardDepartmentGift');
                 $dept = $dept == '' ? 902 : $dept;
-                COREPOS\pos\lib\DeptLib::deptkey($ttl*100, $dept . '0');
+                $deptObj = new COREPOS\pos\lib\DeptLib($this->conf);
+                $deptObj->deptkey($ttl*100, $dept . '0');
                 $resp = $this->conf->get("paycard_response");    
                 $this->conf->set("boxMsg","<b>Success</b><font size=-1>
                                            <p>New card balance: $" . $resp["Balance"] . "
@@ -194,7 +195,7 @@ class MercuryGift extends BasicCCModule
                 );
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
-                $void = new COREPOS\pos\parser\parse\Void();
+                $void = new COREPOS\pos\parser\parse\VoidCmd($this->conf);
                 $void->voidid($this->conf->get("paycard_id"), array());
                 $resp = $this->conf->get("paycard_response");
                 $this->conf->set("boxMsg","<b>Voided</b><font size=-1>

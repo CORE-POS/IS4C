@@ -323,7 +323,7 @@ class MemberLib
         \CoreLocal::set("Type",$row["Type"]);
         \CoreLocal::set("isStaff",$row["staff"]);
         \CoreLocal::set("SSI",$row["SSI"]);
-        \CoreLocal::set($row['Type'] == 'PC' ? 1 : 0);
+        \CoreLocal::set('isMember', $row['Type'] == 'PC' ? 1 : 0);
 
         /**
           Optinonally use memtype table to normalize attributes
@@ -372,7 +372,7 @@ class MemberLib
           Log the member entry
         */
         \CoreLocal::set("memberID",$member);
-        $opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
+        $opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member, 'charflag'=>$personNumber);
         TransRecord::addLogRecord($opts);
 
         /**

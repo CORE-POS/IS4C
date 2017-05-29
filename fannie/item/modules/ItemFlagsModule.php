@@ -92,6 +92,10 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
                 $i,
                 $row['description']
             );
+            // embed flag info to avoid re-querying it on save
+            $ret .= sprintf('<input type="hidden" name="pf_attrs[]" value="%s" />
+                            <input type="hidden" name="pf_bits[]" value="%d" />',
+                            $row['description'], $row['bit_number']);
             $i++;
         }
         $ret .= '</tr></table>';
@@ -107,25 +111,46 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         try {
             $flags = $this->form->flags;
+            $attrs = $this->form->pf_attrs;
+            $bits = $this->form->pf_bits;
         } catch (Exception $ex) {
             $flags = array();
+            $attrs = array();
+            $bits = array();
         }
         if (!is_array($flags)) {
             return false;
         }
+
+        $dbc = $this->connection;
+
+        /**
+          Collect known flags and initialize
+          JSON object with all flags false
+        */
+        $json = array();
+        $flagMap = array();
+        for ($i=0; $i<count($attrs); $i++) {
+            $json[$attrs[$i]] = false;
+            $flagMap[$bits[$i]] = $attrs[$i];
+        }
+
         $numflag = 0;   
         foreach ($flags as $f) {
             if ($f != (int)$f) {
                 continue;
             }
             $numflag = $numflag | (1 << ($f-1));
+
+            // set flag in JSON representation
+            $attr = $flagMap[$f];
+            $json[$attr] = true;
         }
-        $dbc = $this->connection;
+
         $model = new ProductsModel($dbc);
         $model->upc($upc);
         $model->numflag($numflag);
         $model->enableLogging(false);
-
         if (FannieConfig::config('STORE_MODE') === 'HQ') {
             $stores = FormLib::get('store_id');
             foreach ($stores as $s) {
@@ -134,6 +159,22 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
             }
         } else {
             $saved = $model->save();
+        }
+
+        /**
+          Only add attributes entry if it changed
+        */
+        $curQ = 'SELECT attributes FROM ProductAttributes WHERE upc=? ORDER BY modified DESC';
+        $curQ = $dbc->addSelectLimit($curQ, 1);
+        $curP = $dbc->prepare($curQ);
+        $current = $dbc->getValue($curP, array($upc));
+        $curJSON = json_decode($current, true);
+        if ($current === false || $curJSON != $json) {
+            $model = new ProductAttributesModel($dbc);
+            $model->upc($upc);
+            $model->modified(date('Y-m-d H:i:s'));
+            $model->attributes(json_encode($json));
+            $model->save();
         }
 
         return $saved ? true : false;

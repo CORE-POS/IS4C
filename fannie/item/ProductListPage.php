@@ -494,7 +494,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $ret .= "<td align=center class=\"td_desc clickable\">{$row['description']}</td>";
         $ret .= "<td align=center class=\"td_dept clickable\">{$row['department']}</td>";
         $ret .= "<td align=center class=\"td_supplier clickable\">{$row['distributor']}</td>";
-        $ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.2f',$row['cost'])."</td>";
+        $ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.3f',$row['cost'])."</td>";
         $ret .= "<td align=center class=\"td_price clickable\">{$row['normal_price']}</td>";
         $ret .= "<td align=center class=td_tax>{$row['Tax']}</td>";
         $ret .= "<td align=center class=td_fs>{$row['FS']}</td>";

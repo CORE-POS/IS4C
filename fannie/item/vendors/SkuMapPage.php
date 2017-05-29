@@ -243,7 +243,7 @@ class SkuMapPage extends FannieRESTfulPage
         $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="get">';
         $ret .= '<div class="form-group form-inline">
             <label>SKU</label>
-            <input type="text" class="form-control" name="sku" placeholder="Vendor SKU" />
+            <input type="text" class="form-control" id="sku" name="sku" placeholder="Vendor SKU" />
             <label>PLU</label>
             <input type="text" class="form-control" name="plu" placeholder="Our PLU" />
             <button type="submit" class="btn btn-default">Add Entry</button>
@@ -271,6 +271,7 @@ class SkuMapPage extends FannieRESTfulPage
             <p><a href="?print=1&id=' . $this->id . '" class="btn btn-default">Print Order Tags</a></p>';
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addOnloadCommand("\$('.table').tablesorter([[1,0]]);\n");
+        $this->addOnloadCommand("\$('#sku').focus();\n");
 
         return $ret;
     }

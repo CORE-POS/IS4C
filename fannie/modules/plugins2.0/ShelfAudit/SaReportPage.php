@@ -85,7 +85,7 @@ class SaReportPage extends FanniePage {
             SELECT s.id,
                 s.datetime,
                 s.upc,
-                s.quantity,
+                1 AS quantity,
                 CASE
                     WHEN s.section=0 THEN 'Backstock'
                     WHEN s.section=1 THEN 'Floor'
@@ -96,13 +96,14 @@ class SaReportPage extends FanniePage {
                 d.dept_name,
                 d.salesCode,
                 0 AS cost,
-                o.total / (o.quantity*o.ItemQtty) AS actual_retail,
+                o.total AS normal_retail,
+                o.total AS actual_retail,
                 '' AS retailstatus,
                 o.mixMatch AS vendor,
                 COALESCE(c.margin, d.margin, 0) AS margin
             FROM sa_inventory AS s LEFT JOIN ".
                 $this->config->get('TRANS_DB') . $dbc->sep() . "PendingSpecialOrder AS o
-                ON o.orderID=? AND o.transID=? LEFT JOIN " .
+                ON o.order_id=? AND o.trans_id=? LEFT JOIN " .
                 $FANNIE_OP_DB.$dbc->sep().'departments AS d
                 ON o.department=d.dept_no LEFT JOIN '.
                 $FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
@@ -180,12 +181,10 @@ class SaReportPage extends FanniePage {
                         $args = array($orderID, $transID, $row['upc'], $this->store);
                         $row = $dbc->getRow($soP, $args);
                     }
-                    $key = $row['upc'];
+                    $key = $row['upc'] . $row['section'];
                     if (!isset($upcs[$key])) {
                         $this->scans[$key] = $row;
                         $upcs[$key] = true;
-                    } else {
-                        $this->scans[$key]['quantity'] += $row['quantity'];
                     }
                 }
             } else {

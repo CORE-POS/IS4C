@@ -390,6 +390,7 @@ class HouseCouponEditor extends FanniePage
         $mts = array(
             'Q'=>'Quantity (at least)',
             'Q+'=>'Quantity (more than)',
+            'Q-'=>'Quantity (Per-Item Max)',
             'C'=>'Department (at least qty)',
             'C+'=>'Department (more than qty)',
             'C!'=>'Dept w/o sales (at least qty)',
@@ -427,6 +428,7 @@ class HouseCouponEditor extends FanniePage
             'PI'=>'Per-Item Discount',
             'PS'=>'Per-Set Discount',
             'BG'=>'BOGO (Buy one get one)',
+            'BQ'=>'BOGO (Qty limited)',
             '%'=>'Percent Discount (End of transaction)',
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
             '%D'=>'Percent Discount (Department)',

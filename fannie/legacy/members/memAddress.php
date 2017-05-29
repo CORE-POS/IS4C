@@ -29,7 +29,7 @@ function addressList($memNum)
 
     $type = trim($custW['memType']," ");
     //echo "<br> Here is type: " .$type;
-    $query1 = $sql->prepare("SELECT t.* FROM memTypeID as t WHERE t.memTypeID = ?");
+    $query1 = $sql->prepare("SELECT t.memDesc FROM memtype as t WHERE t.memtype = ?");
     //echo "<br>".$query1;
     $result1 = $sql->execute($query1, array($type));
     $row1 = $sql->fetch_row($result1);
@@ -160,7 +160,7 @@ function addressList($memNum)
                echo $row2['payments'];
             echo "</td>";
                         echo "<td bgcolor='FFFF33'>Mem Type: </td>";
-                        echo "<td>" . $row1[1] . "</td>";
+                        echo "<td>" . $row1['memDesc'] . "</td>";
                         echo "<td bgcolor='ffff33'>Discount:</td>";
                         echo "<td>".$custW['Discount']."</td>";
  
@@ -227,11 +227,6 @@ function addressForm($memNum)
         $cardsW = $sql->fetch_row($cardsR);
         $cardUPC = $cardsW['upc'];
     }
-
-    $query1 = $sql->prepare("SELECT t.* FROM memTypeID as t WHERE t.memTypeID = ?");
-    $result1 = $sql->execute($query1, array($type));
-    $row1 = $sql->fetch_row($result1);
-    $memIDQ = "SELECT * FROM memTypeID";
 
     $query2 = $sql->prepare("SELECT payments FROM is4c_trans.equity_live_balance WHERE memnum = ?");
     $stockResult = $sql->execute($query2, array($memNum));
@@ -346,15 +341,15 @@ function addressForm($memNum)
             echo "<input type=hidden name=curDiscLimit value={$type}>";
             ?><select id=discList onchange="setvisible();" name=discList>
             <?php
-            $selMemTypeQ = "SELECT * FROM memTypeID";
+            $selMemTypeQ = "SELECT * FROM memtype";
             $selMemTypeR = $sql->query($selMemTypeQ);
             while($selMemTypeW = $sql->fetchRow($selMemTypeR)){
-                if($selMemTypeW['memTypeID'] == $type){
-                   echo "<option value=".$selMemTypeW['memTypeID']." selected>"
-                        .$selMemTypeW['memDesc']." ".$selMemTypeW['memTypeID']."</option>";
+                if($selMemTypeW['memtype'] == $type){
+                   echo "<option value=".$selMemTypeW['memtype']." selected>"
+                        .$selMemTypeW['memDesc']." ".$selMemTypeW['memtype']."</option>";
                 }else{
-                   echo "<option value=".$selMemTypeW['memTypeID'].">".$selMemTypeW['memDesc']." "
-                       .$selMemTypeW['memTypeID']."</option>";
+                   echo "<option value=".$selMemTypeW['memtype'].">".$selMemTypeW['memDesc']." "
+                       .$selMemTypeW['memtype']."</option>";
                 }
             }
             
@@ -679,12 +674,6 @@ function addressFormLimited($memNum)
     if($status == 'PC') $status = 'ACTIVE';
     if($status == 'REG') $status = 'NONMEM';
     //echo "<br> Here is type: " .$type;
-
-    $query1 = $sql->prepare("SELECT t.* FROM memTypeID as t WHERE t.memTypeID = ?");
-    //echo "<br>".$query1;
-    $result1 = $sql->execute($query1, array($type));
-    $row1 = $sql->fetch_row($result1);
-    $memIDQ = "SELECT * FROM memTypeID";
 
     $infoQ = $sql->prepare("SELECT * FROM meminfo WHERE card_no=?");
     $infoR = $sql->execute($infoQ, array($memNum));

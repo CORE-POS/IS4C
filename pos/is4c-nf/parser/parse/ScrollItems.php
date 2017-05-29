@@ -44,9 +44,9 @@ class ScrollItems extends Parser
 
         $ret = $this->default_json();
         if ($str == "U") {
-            return $ret["output"] = DisplayLib::listItems($this->session->get("currenttopid"), $this->nextValid($this->session->get("currentid"),-1));
+            return $ret->output(DisplayLib::listItems($this->session->get("currenttopid"), $this->nextValid($this->session->get("currentid"),-1)));
         } elseif ($str == "D") {
-            return $ret["output"] = DisplayLib::listItems($this->session->get("currenttopid"), $this->nextValid($this->session->get("currentid"),1));
+            return $ret->output(DisplayLib::listItems($this->session->get("currenttopid"), $this->nextValid($this->session->get("currentid"),1)));
         }
 
         $change = (int)substr($str,1);

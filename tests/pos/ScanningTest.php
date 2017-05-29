@@ -547,6 +547,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -0.50;
         $record['total'] = -0.50;
         $record['regPrice'] = -0.50;
+        $record['tax'] = 2;
+        $record['foodstamp'] = 1;
         lttLib::verifyRecord(3, $record, $this);
     }
 

@@ -44,6 +44,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'get<placed>',
             'post<id><setPlaced>',
             'get<id><export>',
+            'get<id><sendAs>',
             'get<id><receive>',
             'get<id><receiveAll>',
             'get<id><sku>',
@@ -105,6 +106,112 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $exportObj->send_headers();
         $exportObj->export_order($this->id);
         return false;
+    }
+
+    private function csvToHtml($csv)
+    {
+        $lines = explode("\r\n", $csv);
+        $ret = "<table border=\"1\">\n";
+        $para = '';
+        foreach ($lines as $line) {
+            $row = str_getcsv($line);
+            if (count($row) == 1) {
+                $para .= $row[0] . '<br />';
+            } elseif (count($row) > 1) {
+                $ret .= "<tr>\n";
+                foreach ($row as $entry) {
+                    if (trim($entry) !== '') {
+                        $ret .= "<td>{$entry}</td>";
+                    }
+                }
+                $ret .= "</tr>\n";
+            }
+        }
+        $ret .= "</table>\n";
+        if (strlen($para) > 0) {
+            $ret .= '<p>' . $para . '</p>';
+        }
+
+        return $ret;
+    }
+
+    protected function get_id_sendAs_handler()
+    {
+        if (!file_exists('exporters/'.$this->sendAs.'.php')) {
+            return $this->unknownRequestHandler();
+        }
+        include_once('exporters/'.$this->sendAs.'.php');    
+        if (!class_exists($this->sendAs)) {
+            return $this->unknownRequestHandler();
+        }
+
+        ob_start();
+        $exportObj = new $this->sendAs();
+        $exportObj->export_order($this->id);
+        $exported = ob_get_clean();
+
+        $html = $this->csvToHtml($exported);
+        $nonHtml = str_replace("\r", "", $exported);
+
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $place = $dbc->prepare("UPDATE PurchaseOrder SET placed=1, placedDate=? WHERE orderID=?");
+
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($this->id);
+        $order->load();
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorID($order->vendorID());
+        $vendor->load();
+        if (!filter_var($vendor->email(), FILTER_VALIDATE_EMAIL)) {
+            return $this->unknownRequestHandler();
+        }
+
+        $userP = $dbc->prepare("SELECT email, real_name FROM Users WHERE name=?");
+        $userInfo = $dbc->getRow($userP, array($this->current_user));
+        $userEmail = $userInfo['email'];
+        $userRealName = $userInfo['real_name'];
+
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->Host = '127.0.0.1';
+        $mail->Port = 25;
+        $mail->SMTPAuth = false;
+        $mail->SMTPAutoTLS = false;
+        $mail->From = $this->config->get('PO_EMAIL');
+        $mail->FromName = $this->config->get('PO_EMAIL_NAME');
+        $mail->isHTML = true;
+        $mail->addAddress($vendor->email());
+        if ($userEmail && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+            $mail->addCC($userEmail);
+            $mail->addReplyTo($userEmail);
+            $mail->From = $userEmail;
+            if (!empty($userRealName)) {
+                $mail->FromName = $userRealName;
+            }
+        }
+        $mail->Subject = 'Purchase Order ' . date('Y-m-d');
+        $mail->Body = 'The same order information is also attached. Reply to this email to reach the person who sent it.';
+        $mail->AltBody = $mail->Body;
+        $mail->Body = '<p>' . $mail->Body . '</p>' . $html;
+        $mail->AltBody .= $nonHtml;
+        $mail->addStringAttachment(
+            $exported,
+            'Order ' . date('Y-m-d') . '.' . $exportObj->extension,
+            'base64',
+            $exportObj->mime_type
+        );
+        $sent = $mail->send();
+        if ($sent) {
+            $dbc->execute($place, array(date('Y-m-d H:i:s'), $this->id));
+            $order->placed(1);
+            $order->placedDate(date('Y-m-d H:i:s'));
+            $order->save();
+        } else {
+            echo "Failed to send email! Do not assume the order was placed.";
+            exit;
+        }
+    
+        return 'ViewPurchaseOrders.php?id=' . $this->id;
     }
 
     protected function post_id_setPlaced_handler()
@@ -378,10 +485,27 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
+        $batchP = $dbc->prepare("
+            SELECT b.batchName
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+                INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
+            WHERE l.upc=?
+                AND m.storeID=?
+                AND b.startDate <= " . $dbc->curdate() . "
+                AND b.endDate >= " . $dbc->curdate() . "
+                AND b.discounttype > 0
+        ");
+
         $exportOpts = '';
         foreach (COREPOS\Fannie\API\item\InventoryLib::orderExporters() as $class => $name) {
             $selected = $class === $this->config->get('DEFAULT_PO_EXPORT') ? 'selected' : '';
             $exportOpts .= '<option ' . $selected . ' value="'.$class.'">'.$name.'</option>';
+        }
+        $exportEmail = '';
+        if (!$orderObj->placed && filter_var($vendor['email'], FILTER_VALIDATE_EMAIL)) {
+            $exportEmail = '<button type="submit" class="btn btn-default btn-sm" onclick="doSend(' . $this->id . ');
+                return false;" title="Email order to ' . $vendor['email'] . '" >Send via Email</button>';
         }
         $uname = FannieAuth::getName($order->userID());
         if (!$uname) {
@@ -405,6 +529,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             {$exportOpts}
         </select> 
         <button type="submit" class="btn btn-default btn-sm" onclick="doExport({$this->id});return false;">Export</button>
+        {$exportEmail}
         &nbsp;&nbsp;&nbsp;
         <a type="button" class="btn btn-default btn-sm" 
             href="ViewPurchaseOrders.php?{$init}">All Orders</a>
@@ -488,6 +613,12 @@ HTML;
             <th>Rec. Qty</th><th>Rec. Cost</th><th>SO</th></tr></thead><tbody>';
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
+            if (!$order->placed()) {
+                $batchR = $dbc->getValue($batchP, array($obj->internalUPC(), $orderObj->storeID));
+                if ($batchR) {
+                    $css = 'class="info" title="' . $batchR . '"';
+                }
+            }
             if ($obj->salesCode() == '') {
                 $code = $obj->guessCode();
                 $obj->salesCode($code);

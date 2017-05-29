@@ -654,23 +654,42 @@ class FannieReportPage extends FanniePage
                             </script>';
                     }
                     $ret .= '<div id="pre-report-content">';
-                    $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
-                    $ret .= '<div class="hidden-print">';
-                    if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
-                        $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
-                            &nbsp;&nbsp;&nbsp;&nbsp;',
+                    if (empty($_POST)) {
+                        $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
+                        $ret .= '<div class="hidden-print">';
+                        if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
+                            $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
+                                &nbsp;&nbsp;&nbsp;&nbsp;',
+                                $uri,
+                                (strstr($uri, '?') === false ? '?' : '&')
+                            );
+                        }
+                        $json = FormLib::queryStringtoJSON(filter_input(INPUT_SERVER, 'QUERY_STRING'));
+                        $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="?json=%s">Back</a></div>',
                             $uri,
-                            (strstr($uri, '?') === false ? '?' : '&')
+                            (strstr($uri, '?') === false ? '?' : '&'),
+                            base64_encode($json)
                         );
+                    } else {
+                        $ret .= '<form id="downloadForm" method="post">';
+                        foreach ($_POST as $key => $val) {
+                            if (is_array($val)) {
+                                foreach ($val as $v) {
+                                    $ret .= "<input type=\"hidden\" name=\"{$key}[]\" value=\"{$v}\" />";
+                                }
+                            } else {
+                                $ret .= "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />";
+                            }
+                        }
+                        $ret .= '<input type="hidden" name="excel" id="excelType" /></form>';
+                        if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
+                            $ret .= '<a href="" onclick="$(\'#excelType\').val(\'xls\');$(\'#downloadForm\').submit(); return false;">Download Excel</a>
+                                &nbsp;&nbsp;&nbsp;&nbsp;';
+                        }
+                        $ret .= '<a href="" onclick="$(\'#excelType\').val(\'csv\');$(\'#downloadForm\').submit(); return false;">Download CSV</a>';
                     }
-                    $json = FormLib::queryStringtoJSON(filter_input(INPUT_SERVER, 'QUERY_STRING'));
-                    $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="?json=%s">Back</a></div>',
-                        $uri,
-                        (strstr($uri, '?') === false ? '?' : '&'),
-                        base64_encode($json)
-                    );
                     $ret = array_reduce($this->defaultDescriptionContent(count($data)),
                         function ($carry, $line) {
                             return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
@@ -800,6 +819,7 @@ class FannieReportPage extends FanniePage
                     $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
                     $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
                 }
+                $this->addScript($url . 'src/javascript/jquery.floatThead.min.js');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
                     if (!$this->new_tablesorter) {
@@ -810,6 +830,7 @@ class FannieReportPage extends FanniePage
                         $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
                         $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                     }
+                    $this->addOnloadCommand("\$('.mySortableTable').floatThead();\n");
                 } elseif ($this->new_tablesorter) {
                     /**
                       New bootstrap-themed tablesorter requires more setup to style correctly
@@ -873,14 +894,14 @@ class FannieReportPage extends FanniePage
                 );
                 $xlsdata = array_merge(array_reduce($this->report_description_content(), 
                     function($carry, $line) {
-                        $carry[] = strip_tags($line);
+                        $carry[] = array(strip_tags($line));
                         return $carry;
                     },
                     array()
                 ),$xlsdata); // prepend
                 $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(count($data)), 
                     function($carry, $line) {
-                        $carry[] = strip_tags($line);
+                        $carry[] = array(strip_tags($line));
                         return $carry;
                     },
                     array() 
@@ -1020,6 +1041,9 @@ class FannieReportPage extends FanniePage
                 ) {
                     $class .= ' d3Data ';
                 }
+            }
+            if ($header) {
+                $class .= ' thead ';
             }
             $class .= '"';
 

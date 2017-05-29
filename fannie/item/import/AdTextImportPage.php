@@ -79,6 +79,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $checks = (FormLib::get('checks')=='yes') ? true : false;
         $normalize = (FormLib::get('norm')=='yes') ? true : false;
+        $overwrite = (FormLib::get('overwrite')=='yes') ? true : false;
 
         $model = new ProductUserModel($dbc);
 
@@ -130,7 +131,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->upc($upc);
             $model->load();
             $changed = false;
-            if ($model->brand() == '' && $indexes['brand'] !== false && !empty($line[$indexes['brand']])) {
+            if (($model->brand() == '' || $overwrite) && $indexes['brand'] !== false && !empty($line[$indexes['brand']])) {
                 $brand = $line[$indexes['brand']];
                 if ($normalize) {
                     $brand = ucwords(strtolower($brand));
@@ -138,7 +139,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $model->brand($brand);
                 $changed = true;
             }
-            if ($model->description() == '' && $indexes['desc'] !== false && !empty($line[$indexes['desc']])) {
+            if (($model->description() == '' || $overwrite) && $indexes['desc'] !== false && !empty($line[$indexes['desc']])) {
                 $desc = $line[$indexes['desc']];
                 if ($normalize) {
                     $desc = ucwords(strtolower($desc));
@@ -146,7 +147,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $model->description($desc);
                 $changed = true;
             }
-            if ($model->sizing() == '' && $indexes['size'] !== false && !empty($line[$indexes['size']])) {
+            if (($model->sizing() == '' || $overwrite) && $indexes['size'] !== false && !empty($line[$indexes['size']])) {
                 $size = $line[$indexes['size']];
                 $model->sizing($size);
                 $changed = true;
@@ -180,6 +181,9 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <input type="checkbox" id="norm" name="norm" value="yes" checked />
                 <label for="norm">Normalize Capitalization</label>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="checkbox" id="overwrite" name="overwrite" value="yes" />
+                <label for="norm">Overwrite Existing Values</label>
                 ';
     }
 

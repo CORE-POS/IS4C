@@ -148,7 +148,6 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             $json['customers'][] = $customer;
-
             $resp = COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
             if ($resp['errors'] > 0) {
                 $this->stats['errors'][] = "Error importing member $cardno ({$line[$indexes['fn']]} {$line[$indexes['ln']]})";

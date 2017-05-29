@@ -25,6 +25,8 @@ class ChefTecExport
 {
 
     public $nice_name = 'ChefTec (CSV)';
+    public $extension = 'csv';
+    public $mime_type = 'test/csv';
 
     public function send_headers()
     {
