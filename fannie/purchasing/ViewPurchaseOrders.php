@@ -599,14 +599,15 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
+        $batchStart = date('Y-m-d', strtotime('+30 days'));
         $batchP = $dbc->prepare("
-            SELECT b.batchName
+            SELECT b.batchName, b.startDate, b.endDate
             FROM batchList AS l
                 INNER JOIN batches AS b ON l.batchID=b.batchID
                 INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
             WHERE l.upc=?
                 AND m.storeID=?
-                AND b.startDate <= " . $dbc->curdate() . "
+                AND b.startDate <= ?
                 AND b.endDate >= " . $dbc->curdate() . "
                 AND b.discounttype > 0
         ");
@@ -733,9 +734,15 @@ HTML;
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
             if (!$order->placed()) {
-                $batchR = $dbc->getValue($batchP, array($obj->internalUPC(), $orderObj->storeID));
-                if ($batchR) {
-                    $css = 'class="info" title="' . $batchR . '"';
+                $batchR = $dbc->execute($batchP, array($obj->internalUPC(), $orderObj->storeID, $batchStart));
+                $title = '';
+                while ($batchW = $dbc->fetchRow($batchR)) {
+                    $title .= $batchW['batchName'] . ' (';
+                    $title .= date('M j', strtotime($batchW['startDate'])) . ' - ';
+                    $title .= date('M j', strtotime($batchW['endDate'])) . ') ';
+                }
+                if ($title) {
+                    $css = 'class="info" title="' . $title . '"';
                 }
             }
             if ($obj->isSpecialOrder()) {
