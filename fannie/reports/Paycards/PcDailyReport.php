@@ -49,6 +49,9 @@ class PcDailyReport extends FannieReportPage
         $ret = array(''); // spacer line
         if ($this->report_format == 'html') {
             $ret[] = $this->form_content();
+            $this->addJQuery();
+            $this->addScript('../../src/javascript/jquery-ui.js');
+            $this->addCssFile('../../src/javascript/jquery-ui.css');
         }
 
         return $ret;
