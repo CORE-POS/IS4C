@@ -117,6 +117,8 @@ class LaneTender extends FannieReportPage
             sort($cashierNames);
         }
         
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc->selectDB($settings['OverShortDatabase']);
         $query = '
             SELECT sum(amt) as amount,
                 emp_no AS lane,
