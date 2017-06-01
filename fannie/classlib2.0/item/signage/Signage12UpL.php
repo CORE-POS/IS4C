@@ -87,7 +87,11 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 33));
             $pdf->Cell($effective_width, 20, $item['upc'], 0, 1, 'L');
-        }
+        } else {
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 33));
+            $pdf->Cell($effective_width, 20, $item['upc'], 0, 1, 'L');
+        } 
 
         return $pdf;
     }
