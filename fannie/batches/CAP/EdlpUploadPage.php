@@ -89,6 +89,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             WHERE priceRuleID=?');
         $extraP = $dbc->prepare('UPDATE prodExtra SET variable_pricing=1 WHERE upc=?');
         $prodP = $dbc->prepare('UPDATE products SET price_rule_id=? WHERE upc=?');
+        $dbc->startTransaction();
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
 
@@ -153,6 +154,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $dbc->execute($prodP, array($rule_id, $upc));
             }
         }
+        $dbc->commitTransaction();
 
         return true;
     }
