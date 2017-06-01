@@ -255,7 +255,7 @@ class SaItemList extends SaHandheldPage
             $upcs = array();
             while ($row = $this->connection->fetchRow($res)) {
                 $ret .= sprintf('<tr>
-                    <td>%s</td>
+                    <td><a href="../../../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
                     <td>%s</td>
@@ -263,7 +263,7 @@ class SaItemList extends SaHandheldPage
                     <td>%s</td>
                     <td>%d</td>
                     </tr>',
-                    $row['upc'],
+                    $row['upc'], $row['upc'],
                     $row['sku'],
                     $row['vendorName'],
                     $row['brand'],
