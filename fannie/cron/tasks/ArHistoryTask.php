@@ -53,9 +53,6 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
             $this->cronMsg($error, FannieLogger::ERROR);
         }
 
-        // temporary; don't want to hang on details with normal overnight run
-        $this->logDetails($dbc);
-
         // rebuild ar history sum table
         if ($this->rebuildCacheTable($dbc) === false) {
             $this->cronMsg('Error rebuilding ar_history_sum table', FannieLogger::ERROR);
@@ -140,79 +137,6 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
         }
 
         return $errors;
-    }
-
-    private function logDetails($dbc)
-    {
-        // get transactions w/o details
-        $res = $dbc->query("
-            SELECT ar_history_id,
-                card_no,
-                tdate,
-                trans_num
-            FROM ar_history AS a
-                LEFT JOIN ArHistoryDetails AS d ON a.ar_history_id=d.arHistoryID
-            WHERE d.arHistoryID IS NULL
-                AND (a.charges <> 0 OR a.payments <> 0)");
-        $addP = $dbc->prepare("
-            INSERT INTO ArHistoryDetails
-            (arHistoryID, description, amount)
-            VALUES (?, ?, ?)");
-        $names = $this->config->get('OP_DB') . $dbc->sep() . 'productUser';
-        $dbc->startTransaction();
-        $count = 0;
-        while ($row = $dbc->fetchRow($res)) {
-            $dlog = DTransactionsModel::selectDlog($row['tdate']);
-            $prep = $dbc->prepare("
-                SELECT COALESCE(n.brand, '') AS brand,
-                    CASE WHEN n.description IS NULL OR n.description='' 
-                        THEN d.description ELSE n.description
-                    END AS description,
-                    SUM(quantity) AS quantity,
-                    SUM(total) AS total
-                FROM {$dlog} AS d
-                    LEFT JOIN {$names} AS n ON d.upc=n.upc
-                WHERE d.tdate BETWEEN ? AND ?
-                    AND d.trans_num=?
-                    AND d.card_no=?
-                    AND d.trans_type <> 'T'
-                    AND d.total <> 0
-                GROUP BY d.upc,
-                    n.brand,
-                    n.description,
-                    d.description
-                ORDER BY d.trans_id");
-            list($date, ) = explode(' ', $row['tdate'], 2);
-            $args = array(
-                $date . ' 00:00:00',
-                $date . ' 23:59:59',
-                $row['trans_num'],
-                $row['card_no'],
-            );
-            $detailR = $dbc->execute($prep, $args);
-            while ($detailW = $dbc->fetchRow($detailR)) {
-                $item = sprintf('%.2f', $detailW['quantity']);
-                if (substr($item, -3) == '.00') {
-                    $item = substr($item, 0, strlen($item)-3);
-                }
-                $item .= ' ';
-                if ($detailW['brand']) {
-                    $item .= $detailW['brand'] . ' ';
-                }
-                $detailW['description'] = str_replace("\n", " ", $detailW['description']);
-                $item .= $detailW['description'];
-                if ($detailW['description'] == 'Tax' || $detailW['description'] == 'Discount') {
-                    $item = $detailW['description'];
-                }
-                $dbc->execute($addP, array($row['ar_history_id'], $item, $detailW['total']));
-            }
-            $count++;
-            if ($count > 500) {
-                $dbc->commitTransaction();
-                $dbc->startTransaction();
-            }
-        }
-        $dbc->commitTransaction();
     }
 
     private function rebuildCacheTable($dbc)
