@@ -133,20 +133,23 @@ class SaItemList extends SaHandheldPage
     private function saveRowToList($dbc, $upc, $row, $settings)
     {
         $dbc->selectDB($settings['ShelfAuditDB']);
-        $model = new SaListModel($dbc);
-        $model->upc($upc);
-        $model->section($this->section);
-        $model->clear(0);
-        $model->uid(FannieAuth::getUID($this->current_user));
-        $entries = $model->find('date', true);
-        if (count($entries) > 0) {
-            $entries[0]->tdate(date('Y-m-d H:i:s'));
-            $entries[0]->quantity(1);
-            return $entries[0]->save();
+        $chkP = $dbc->prepare("
+            SELECT saListID
+            FROM SaList
+            WHERE upc=?
+                AND section=?
+                AND clear=0
+                AND uid=?
+            ORDER BY tdate DESC");
+        $uid = FannieAuth::getUID($this->current_user);
+        $listID = $dbc->getValue($chkP, array($upc, $this->section, $uid));
+        if ($listID) {
+            $upP = $dbc->prepare('UPDATE SaList SET quantity=?, tdate=? WHERE saListID=?');
+            return $dbc->execute($upP, array(1, date('Y-m-d H:i:s'), $listID)) ? true : false;
         } else {
-            $model->tdate(date('Y-m-d H:i:s'));
-            $model->quantity(1);
-            return $model->save();
+            $insP = $dbc->prepare('INSERT INTO SaList (tdate, upc, clear, quantity, uid, section)
+                VALUES (?, ?, 0, ?, ?, ?)');
+            return $dbc->execute($insP, array(date('Y-m-d H:i:s'), $upc, 1, $uid, $this->section)) ? true : false;
         }
     }
 
