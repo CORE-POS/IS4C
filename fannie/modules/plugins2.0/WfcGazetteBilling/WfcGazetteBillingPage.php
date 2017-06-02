@@ -145,6 +145,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $invIssue = trim(FormLib::get('issueName'));
         $custNotes = trim(FormLib::get('customerNotes'));
         $uid = FannieAuth::getUID($this->current_user);
+        $flagP = $sql->prepare('UPDATE dtransactions SET numflag=?, charflag=\'B2\' WHERE emp_no=? AND register_no=? AND trans_no=?');
         
         $transQ = $sql->prepare("SELECT MAX(trans_no) FROM dtransactions
             WHERE emp_no=? AND register_no=?");
@@ -199,6 +200,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $custNotes,
             );
             $sql->execute($invP, $invArgs);
+            $invID = $dbc->insertID();
+            $sql->execute($flagP, array($invID, $EMP_NO, $LANE_NO, $t_no));
         }
         $sql->commitTransaction();
 
