@@ -13,6 +13,8 @@ class B2BInvoicePage extends FannieRESTfulPage
 
     protected function post_id_handler()
     {
+        $EMP_NO = 1001;
+        $LANE_NO = 30;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $invoice = new B2BInvoicesModel($dbc);
@@ -22,6 +24,86 @@ class B2BInvoicePage extends FannieRESTfulPage
         $invoice->customerNotes(FormLib::get('customerNotes'));
         $invoice->internalNotes(FormLib::get('internalNotes'));
         $invoice->lastModifiedBy(FannieAuth::getUID($this->current_user));
+        /**
+         * Mark the invoice as paid
+         * Write a new transaction to offset the original.
+         *
+         * On a reversal:
+         *  The "sale" portion is a positive B2B INVOICING ring to offset the original
+         *  The "tender" portion is an open ring offsets the original sale
+         * On a tender:
+         *  The "sale" portion is a positive B2B INVOICING ring to offset the original
+         *  The tender is an actual tender record.
+         */
+        if (FormLib::get('payFlag', 0)) {
+            $amt = $dbc->prepare('SELECT amount FROM B2BInvoices WHERE b2bInvoiceID=?');
+            $amt = $dbc->getValue($amt, array($this->id));
+            $dRecord = DTrans::defaults();
+            $dRecord['emp_no'] = $EMP_NO;
+            $dRecord['register_no'] = $LANE_NO;
+            $dRecord['trans_type'] = 'D';
+            $dRecord['department'] = 994;
+            $dRecord['upc'] = $amt . 'DP994';
+            $dRecord['description'] = 'B2B INVOICING';
+            $dRecord['quantity'] = 1;
+            $dRecord['ItemQtty'] = 1;
+            $dRecord['unitPrice'] = $amt;
+            $dRecord['total'] = $amt;
+            $dRecord['regPrice'] = $amt;
+            $dRecord['charflag'] = 'B2';
+            $dRecord['numflag'] = $this->id;
+            $dRecord['trans_id'] = 1;
+
+            $tRecord = DTrans::defaults();
+            $tRecord['emp_no'] = $EMP_NO;
+            $tRecord['register_no'] = $LANE_NO;
+            $tRecord['trans_type'] = 'T';
+            $tRecord['department'] = 0;
+            $tRecord['total'] = -1*$amt;
+            $tRecord['quantity'] = 0;
+            $tRecord['ItemQtty'] = 0;
+            switch (FormLib::get('payMethod')) {
+                case 'CK':
+                    $tRecord['trans_subtype'] = 'CK';
+                    $tRecord['description'] = 'Check';
+                    break;
+                case 'CC':
+                    $tRecord['trans_subtype'] = 'CC';
+                    $tRecord['description'] = 'Credit Card';
+                    break;
+                case 'CA':
+                    $tRecord['trans_subtype'] = 'CA';
+                    $tRecord['description'] = 'Cash';
+                    break;
+                case 'RV':
+                    $tRecord['trans_type'] = 'D';
+                    $tRecord['description'] = 'Reverse Invoice #' . $this->id;
+                    $tRecord['department'] = 703;
+                    $tRecord['unitPrice'] = -1*$amt;
+                    $tRecord['regPrice'] = -1*$amt;
+                    $tRecord['quantity'] = 1;
+                    $tRecord['ItemQtty'] = 1;
+                    $invoice->internalNotes($invoice->internalNotes() . "\nTHIS INVOICE WAS REVERSED INSTEAD OF PAID");
+                    break;
+            }
+            $tRecord['charflag'] = 'B2';
+            $tRecord['numflag'] = $this->id;
+            $tRecord['trans_id'] = 2;
+
+            $dRecord['trans_no'] = DTrans::getTransNo($dbc, $EMP_NO, $LANE_NO);
+            $tRecord['trans_no'] = $dRecord['trans_no'];
+            $dParam = DTrans::parameterize($dRecord, 'datetime', $dbc->now());
+            $insD = $dbc->prepare("INSERT INTO dtransactions
+                    ({$dParam['columnString']}) VALUES ({$dParam['valueString']})");
+            $tParam = DTrans::parameterize($tRecord, 'datetime', $dbc->now());
+            $insT = $dbc->prepare("INSERT INTO dtransactions
+                    ({$tParam['columnString']}) VALUES ({$tParam['valueString']})");
+            $dbc->execute($insP, $pParam['arguments']);
+            $dbc->execute($insT, $tParam['arguments']);
+            $invoice->paidDate(date('Y-m-d H:i:s'));
+            $invoice->paidTransNum('1001-30-' . $dTrecord['trans_no']);
+            $invoice->isPaid(FormLib::get('payMethod') == 'RV' ? 2 : 1);
+        }
         $invoice->save();
 
         return 'B2BInvoicePage.php?id=' . $this->id;
@@ -56,6 +138,8 @@ class B2BInvoicePage extends FannieRESTfulPage
         $invoice = $this->invoice->toStdClass();
         $creator = FannieAuth::getName($invoice->createdBy);
         $modifier = FannieAuth::getName($invoice->lastModifiedBy);
+        $finalized = $invoice->isPaid ? 'collapse' : '';
+        $finalAs = $invoice->isPaid == 2 ? 'Reversed' : 'Paid';
 
         $ret = <<<HTML
 <form method="post" action="B2BInvoicePage.php">
@@ -78,7 +162,7 @@ class B2BInvoicePage extends FannieRESTfulPage
         <td><a href="../../../admin/LookupReceipt/RenderReceiptPage.php?date={$invoice->createdDate}&receipt={$invoice->createdTransNum}">{$invoice->createdTransNum}</a></td>
     </tr>
     <tr>
-        <th>Paid</th>
+        <th>{$finalAs}</th>
         <td>{$invoice->paidDate}</td>
         <td>{$invoice->paidTransNum}</td>
     </tr>
@@ -112,7 +196,7 @@ class B2BInvoicePage extends FannieRESTfulPage
     </tr>
 </table>
 <hr />
-<p class="form-inline">
+<p class="form-inline {$finalized}">
     <label>Mark invoice as paid</label>
     <select class="form-control" name="payFlag"><option value="0">No</option><option value="1">Yes</option></select>
     <select class="form-control" name="payMethod">
@@ -121,7 +205,6 @@ class B2BInvoicePage extends FannieRESTfulPage
         <option value="CA">Cash</option>
         <option value="RV">Reversal</option>
     </select>
-    <input type="text" name="paidDate" class="form-control date-field" placeholder="Payment Date (optional)" />
 </p>
 <p>
     <button type="submit" class="btn btn-default">Update Invoice</button>
