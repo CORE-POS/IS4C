@@ -56,7 +56,7 @@ $narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1')
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 $mtP = $dbc->prepare('SELECT p.auto_par 
     FROM MovementTags AS m
-        INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.storeID
+        INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.store_id
     WHERE m.upc=? AND m.storeID=?');
 $updateMT = $dbc->prepare('
     UPDATE MovementTags
