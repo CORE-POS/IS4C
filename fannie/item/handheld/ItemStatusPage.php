@@ -114,9 +114,9 @@ class ItemStatusPage extends FannieRESTfulPage
         $upc = BarcodeLib::padUPC($this->upc);
         $action = FormLib::get('narrowTag');
         if ($action == 'remove') {
-            $dbc->execute($prodUserP, array(0, $upc);
+            $dbc->execute($prodUserP, array(0, $upc));
         } elseif ($action == 'add') {
-            $dbc->execute($prodUserP, array(1, $upc);
+            $dbc->execute($prodUserP, array(1, $upc));
         }
         
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
