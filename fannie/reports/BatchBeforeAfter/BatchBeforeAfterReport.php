@@ -191,12 +191,12 @@ class BatchBeforeAfterReport extends FannieReportPage
         echo '<div class="form-inline">';
         echo "<label>Filters</label> ";
         echo '<select id="typef" class="form-control"
-            onchange="location=\'BatchReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
+            onchange="location=\'BatchBeforeAfterReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
         echo $t_opts;
         echo '</select>';
         echo '&nbsp;&nbsp;&nbsp;&nbsp;';
         echo '<select id="ownerf" class="form-control"
-            onchange="location=\'BatchReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
+            onchange="location=\'BatchBeforeAfterReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
         echo $o_opts;
         echo '</select>';
         echo '</div>';
@@ -221,7 +221,7 @@ class BatchBeforeAfterReport extends FannieReportPage
         $batchP = $dbc->prepare($batchQ);
         $batchR = $dbc->execute($batchP, $args);
 
-        echo '<form action="BatchReport.php" method="get">';
+        echo '<form action="BatchBeforeAfterReport.php" method="get">';
         echo '<div class="row">';
         echo '<div class="col-sm-5">';
         echo '<select size="15" multiple name=batchID[] class="form-control" required>';
@@ -284,7 +284,7 @@ class BatchBeforeAfterReport extends FannieReportPage
                 $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
                 $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
             }
-            $ret[] = '<p><form action="BatchReport.php" method="get">';
+            $ret[] = '<p><form action="BatchBeforeAfterReport.php" method="get">';
             $ret[] = "<span style=\"color:black; display:inline;\">From: 
                     <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />
                     to: 
