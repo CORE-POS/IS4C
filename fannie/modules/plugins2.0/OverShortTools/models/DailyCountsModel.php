@@ -24,6 +24,7 @@
 class DailyCountsModel extends BasicModel {
 
     protected $name = 'dailyCounts';
+    protected $preferred_db = 'plugin:OverShortDatabase';
 
     protected $columns = array(
     'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),

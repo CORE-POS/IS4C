@@ -24,6 +24,7 @@
 class DailyChecksModel extends BasicModel {
 
     protected $name = 'dailyChecks';
+    protected $preferred_db = 'plugin:OverShortDatabase';
 
     protected $columns = array(
     'date' => array('type'=>'VARCHAR(10)'),

@@ -24,6 +24,7 @@
 class DailyDepositModel extends BasicModel {
 
     protected $name = 'dailyDeposit';
+    protected $preferred_db = 'plugin:OverShortDatabase';
 
     protected $columns = array(
     'dateStr' => array('type'=>'VARCHAR(21)','primary_key'=>true),

@@ -24,6 +24,7 @@
 class OverShortsLogModel extends BasicModel {
 
     protected $name = 'overshortsLog';
+    protected $preferred_db = 'plugin:OverShortDatabase';
 
     protected $columns = array(
     'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
