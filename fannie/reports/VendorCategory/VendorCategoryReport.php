@@ -112,7 +112,14 @@ class VendorCategoryReport extends FannieReportPage
 
     public function form_content()
     {
-        return '<div class="alert alert-danger">Direct input not supported</div>';
+        return <<<HTML
+<div class="alert alert-danger">Direct input not supported</div>
+<p>
+Go to <a href="../../item/vendors/VendorIndexPage.php">Manage Vendors</a>, select a vendor,
+and choose <em>View or Edit vendor subcategory margin(s)</em>. Click the rightmost icon for a subcategory
+to view a report of items in that subcategory.
+</p>
+HTML;
     }
 
     public function unitTest($phpunit)
