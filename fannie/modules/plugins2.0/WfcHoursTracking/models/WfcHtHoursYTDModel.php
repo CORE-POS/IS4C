@@ -28,6 +28,7 @@ class WfcHtHoursYTDModel extends BasicModel
 {
 
     protected $name = "hoursytd";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

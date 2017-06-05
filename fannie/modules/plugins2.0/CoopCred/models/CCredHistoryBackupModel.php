@@ -29,6 +29,7 @@ class CCredHistoryBackupModel extends BasicModel
 {
 
     protected $name = "CCredHistoryBackup";
+    protected $preferred_db = 'plugin:CoopCredDatabase';
 
     protected $columns = array(
         // FK to coop_cred.CCredPrograms

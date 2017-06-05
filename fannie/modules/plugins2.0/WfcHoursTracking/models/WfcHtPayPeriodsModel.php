@@ -28,6 +28,7 @@ class WfcHtPayPeriodsModel extends BasicModel
 {
 
     protected $name = "PayPeriods";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'periodID' => array('type'=>'INT', 'primary_key'=>true),

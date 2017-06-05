@@ -27,6 +27,7 @@
 class WarehouseDatesModel extends CoreWarehouseModel
 {
     protected $name = "WarehouseDates";
+    protected $preferred_db = 'plugin:WarehouseDatabase';
 
     protected $columns = array(
     'warehouseDateID' => array('type'=>'INT', 'primary_key'=>true),

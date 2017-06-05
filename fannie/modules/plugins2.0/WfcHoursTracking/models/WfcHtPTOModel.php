@@ -28,6 +28,7 @@ class WfcHtPTOModel extends BasicModel
 {
 
     protected $name = "pto";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

@@ -35,6 +35,7 @@ class GumLoanValidTermsModel extends BasicModel
 {
 
     protected $name = "GumLoanValidTerms";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumLoanValidTermID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),

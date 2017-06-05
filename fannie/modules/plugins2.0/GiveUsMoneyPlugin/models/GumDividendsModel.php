@@ -28,6 +28,7 @@ class GumDividendsModel extends BasicModel
 {
 
     protected $name = "GumDividends";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumDividendID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

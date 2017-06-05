@@ -28,6 +28,7 @@ class WfcHtFullTimeStatusModel extends BasicModel
 {
 
     protected $name = "fullTimeStatus";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT', 'primary_key'=>true),

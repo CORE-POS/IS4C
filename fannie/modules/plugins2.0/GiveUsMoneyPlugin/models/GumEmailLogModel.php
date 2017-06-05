@@ -28,6 +28,7 @@ class GumEmailLogModel extends BasicModel
 {
 
     protected $name = "GumEmailLog";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumEmailLogID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

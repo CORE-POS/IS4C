@@ -28,6 +28,7 @@ class WfcHtCuspingModel extends BasicModel
 {
 
     protected $name = "cusping";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

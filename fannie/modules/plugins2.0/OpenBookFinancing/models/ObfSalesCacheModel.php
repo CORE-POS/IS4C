@@ -28,6 +28,7 @@ class ObfSalesCacheModel extends BasicModel
 {
 
     protected $name = "ObfSalesCache";
+    protected $preferred_db = 'plugin:ObfDatabase';
 
     protected $columns = array(
     'obfSalesCacheID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

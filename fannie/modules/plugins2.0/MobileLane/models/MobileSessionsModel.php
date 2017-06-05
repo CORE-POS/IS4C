@@ -24,6 +24,7 @@
 class MobileSessionsModel extends BasicModel 
 {
     protected $name = 'MobileSessions';
+    protected $preferred_db = 'plugin:MobileLaneDB';
 
     protected $columns = array(
     'empNo' => array('type'=>'SMALLINT', 'primary_key'=>true),

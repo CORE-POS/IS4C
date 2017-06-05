@@ -29,6 +29,7 @@ class CCredMembershipsModel extends BasicModel
 {
 
     protected $name = "CCredMemberships";
+    protected $preferred_db = 'plugin:CoopCredDatabase';
 
     protected $unique = array('cardNo','programID');
 

@@ -28,6 +28,7 @@ class AttendeesModel extends BasicModel
 {
 
     protected $name = "attendees";
+    protected $preferred_db = 'plugin:CalendarDatabase';
 
     protected $columns = array(
     'attendeeID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

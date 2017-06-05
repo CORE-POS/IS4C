@@ -28,6 +28,7 @@ class MemberSummaryModel extends CoreWarehouseModel
 {
 
     protected $name = "MemberSummary";
+    protected $preferred_db = 'plugin:WarehouseDatabase';
 
     protected $columns = array(
     'card_no' => array('type'=>'INT', 'primary_key'=>true),

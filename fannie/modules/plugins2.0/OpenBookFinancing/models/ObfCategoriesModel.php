@@ -28,6 +28,7 @@ class ObfCategoriesModel extends BasicModel
 {
 
     protected $name = "ObfCategories";
+    protected $preferred_db = 'plugin:ObfDatabase';
 
     protected $columns = array(
     'obfCategoryID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

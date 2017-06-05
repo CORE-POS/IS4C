@@ -28,6 +28,7 @@ class ObfCategorySuperDeptMapModel extends BasicModel
 {
 
     protected $name = "ObfCategorySuperDeptMap";
+    protected $preferred_db = 'plugin:ObfDatabase';
 
     protected $columns = array(
     'obfCategoryID' => array('type'=>'INT', 'primary_key'=>true),

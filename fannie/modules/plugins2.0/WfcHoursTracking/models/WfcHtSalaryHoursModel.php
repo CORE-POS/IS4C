@@ -28,6 +28,7 @@ class WfcHtSalaryHoursModel extends BasicModel
 {
 
     protected $name = "salaryHours";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT', 'index'=>true),

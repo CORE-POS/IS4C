@@ -28,6 +28,7 @@ class WfcHtHoursYearlyModel extends BasicModel
 {
 
     protected $name = "hoursyearly";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

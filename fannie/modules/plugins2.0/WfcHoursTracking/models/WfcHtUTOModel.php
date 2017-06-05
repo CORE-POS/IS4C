@@ -28,6 +28,7 @@ class WfcHtUTOModel extends BasicModel
 {
 
     protected $name = "uto";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

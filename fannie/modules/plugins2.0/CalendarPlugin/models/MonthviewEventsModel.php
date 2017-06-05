@@ -28,6 +28,7 @@ class MonthviewEventsModel extends BasicModel
 {
 
     protected $name = "monthview_events";
+    protected $preferred_db = 'plugin:CalendarDatabase';
 
     protected $columns = array(
     'eventID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

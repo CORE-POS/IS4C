@@ -31,6 +31,7 @@ class GumLoanPayoffMapModel extends BasicModel
 {
 
     protected $name = "GumLoanPayoffMap";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumLoanAccountID' => array('type'=>'INT', 'primary_key'=>true),

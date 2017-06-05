@@ -27,6 +27,7 @@
 class ObfQuartersModel extends BasicModel
 {
     protected $name = "ObfQuarters";
+    protected $preferred_db = 'plugin:ObfDatabase';
 
     protected $columns = array(
     'obfQuarterID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

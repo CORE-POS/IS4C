@@ -28,6 +28,7 @@ class WfcHtHoursAllTimeModel extends BasicModel
 {
 
     protected $name = "hoursalltime";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

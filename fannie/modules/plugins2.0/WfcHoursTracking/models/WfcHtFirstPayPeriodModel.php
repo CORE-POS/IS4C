@@ -28,6 +28,7 @@ class WfcHtFirstPayPeriodModel extends BasicModel
 {
 
     protected $name = "firstpayperiod";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

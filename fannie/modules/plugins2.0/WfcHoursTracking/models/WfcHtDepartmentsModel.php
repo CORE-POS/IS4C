@@ -28,6 +28,7 @@ class WfcHtDepartmentsModel extends BasicModel
 {
 
     protected $name = "Departments";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'deptID' => array('type'=>'INT', 'primary_key'=>true),

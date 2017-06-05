@@ -27,6 +27,7 @@
 class DeliInventoryCat2Model extends BasicModel {
 
     protected $name = "deliInventoryCat2";
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'id' => array('type'=>'INT', 'primary_key' => True, 'increment'=>True),

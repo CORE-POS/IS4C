@@ -28,6 +28,7 @@ class ObfLaborModel extends BasicModel
 {
 
     protected $name = "ObfLabor";
+    protected $preferred_db = 'plugin:ObfDatabase';
 
     protected $columns = array(
     'obfLaborID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

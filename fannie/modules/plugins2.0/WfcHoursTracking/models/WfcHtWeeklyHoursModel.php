@@ -28,6 +28,7 @@ class WfcHtWeeklyHoursModel extends BasicModel
 {
 
     protected $name = "weeklyHours";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'weekStart' => array('type'=>'DATETIME'),

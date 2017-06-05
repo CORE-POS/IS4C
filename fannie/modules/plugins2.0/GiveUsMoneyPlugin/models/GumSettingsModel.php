@@ -33,6 +33,7 @@ class GumSettingsModel extends BasicModel
 {
 
     protected $name = "GumSettings";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumSettingID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

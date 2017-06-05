@@ -38,6 +38,7 @@ class GumLoanAccountsModel extends BasicModel
 {
 
     protected $name = "GumLoanAccounts";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumLoanAccountID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

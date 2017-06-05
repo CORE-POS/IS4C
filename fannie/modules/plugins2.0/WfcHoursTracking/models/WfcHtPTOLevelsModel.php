@@ -28,6 +28,7 @@ class WfcHtPTOLevelsModel extends BasicModel
 {
 
     protected $name = "PTOLevels";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'LevelID' => array('type'=>'SMALLINT', 'primary_key'=>true),
