@@ -88,7 +88,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
         /**
           If the receipt header line includes non-printable characters,
           send it to the receipt printer exactly as-is.
-          If the receipt header line is "nv" and a number, print the
+          If the receipt header line is "nv" and number(s), print the
           corresponding image # from the printer's nonvolatile RAM.
           If the receipt header line is a .bmp file (and it exists),
           print it on the receipt. Otherwise just print the line of
@@ -100,6 +100,8 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
             $receipt .= self::$PRINT->rawEscCommand($headerLine) . "\n";
         } elseif (preg_match('/nv(\d{1,3})/i', $headerLine, $match)) {
             $receipt .= self::$PRINT->renderBitmapFromRam((int)$match[1]);
+        } elseif (preg_match('/nv(\d+),(\d+)/i', $headerLine, $match)) {
+            $receipt .= self::$PRINT->renderBitmapFromRam(array((int)$match[1], (int)$match[2]));
         } elseif (substr($headerLine,-4) == ".bmp" && file_exists($graphicsPath.'/'.$headerLine)){
             // save image bytes in cache so they're not recalculated
             // on every receipt

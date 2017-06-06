@@ -703,11 +703,19 @@ class ESCPOSPrintHandler extends PrintHandler {
 
     /**
       Show bitmap stored on the printer device itself
-      @param $image_id [int] storage location ID
+      @param $image_id [int|array] storage location ID
+        OR storage position (start, end)
       @return [string] receipt text
     */
     public function renderBitmapFromRam($image_id)
     {
+        if (is_array($image_id) && count($image_id) >= 2) {
+            return chr(29) . '(L' . chr(6) . chr(0) . '0E' 
+                . chr($image_id[0]) // Start position defined in utility
+                . chr($image_id[1]) // End position defined in utility
+                . chr(1) . chr(1);
+        }
+
         return chr(28) . 'p' . chr($image_id) . chr(0);
     }
     
