@@ -98,10 +98,10 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
         $graphicsPath = __DIR__ . '/../graphics';
         if (!ctype_print($headerLine)) {
             $receipt .= self::$PRINT->rawEscCommand($headerLine) . "\n";
-        } elseif (preg_match('/nv(\d{1,3})/i', $headerLine, $match)) {
-            $receipt .= self::$PRINT->renderBitmapFromRam((int)$match[1]);
         } elseif (preg_match('/nv(\d+),(\d+)/i', $headerLine, $match)) {
             $receipt .= self::$PRINT->renderBitmapFromRam(array((int)$match[1], (int)$match[2]));
+        } elseif (preg_match('/nv(\d{1,3})/i', $headerLine, $match)) {
+            $receipt .= self::$PRINT->renderBitmapFromRam((int)$match[1]);
         } elseif (substr($headerLine,-4) == ".bmp" && file_exists($graphicsPath.'/'.$headerLine)){
             // save image bytes in cache so they're not recalculated
             // on every receipt
