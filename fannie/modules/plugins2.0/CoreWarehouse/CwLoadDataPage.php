@@ -121,7 +121,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
         function check_date($argv, $i, $type)
         {
             if (!isset($argv[$i+1])){
-                throw new Excepion("Missing $type month\n");
+                throw new Exception("Missing $type month\n");
             } elseif (!isset($argv[$i+2])) {
                 throw new Exception("Missing $type year\n");
             }
