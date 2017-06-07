@@ -85,6 +85,9 @@ class WicParser extends Parser
             return true;
         }
         $dbc = Database::pDataConnect();
+        if (substr($upc, 0, 3) == '002') {
+            $upc = substr($upc, 0, 7) . '000000';
+        }
         $itemP = $dbc->prepare('SELECT wicable FROM products WHERE upc=?');
         $wicable = $dbc->getValue($itemP, array($upc));
         if ($wicable !== false  && $wicable == 0 && !in_array($upc, $this->bulk)) {
