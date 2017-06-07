@@ -896,6 +896,7 @@ HTML;
                 $model->wicable(0);
                 $model->scaleprice(0);
                 $model->inUse(1);
+                $model->created(date('Y-m-d H:i:s'));
             }
 
             $taxes = $this->formNoEx('tax', array());

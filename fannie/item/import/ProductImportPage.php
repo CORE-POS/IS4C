@@ -106,6 +106,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
         $skipExisting = FormLib::get('skipExisting', 0);
         $model = new ProductsModel($dbc);
+        $dbc->startTransaction();
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
@@ -132,7 +133,8 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->reset();
             $model->upc($upc);
             $model->store_id(1);
-            if ($model->load() && $skipExisting) {
+            $exists = $model->load();
+            if ($exists && $skipExisting) {
                 continue;
             }
             $model->description($desc);
@@ -141,19 +143,22 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->tax($tax);
             $model->foodstamp($fstamp);
             $model->discount($discount);
-            // fully init new record
-            $model->pricemethod(0);
-            $model->special_price(0);
-            $model->specialpricemethod(0);
-            $model->specialquantity(0);
-            $model->specialgroupprice(0);
-            $model->advertised(0);
-            $model->tareweight(0);
-            $model->start_date('0000-00-00');
-            $model->end_date('0000-00-00');
-            $model->discounttype(0);
-            $model->wicable(0);
-            $model->inUse(1);
+            if (!$exists) {
+                // fully init new record
+                $model->pricemethod(0);
+                $model->special_price(0);
+                $model->specialpricemethod(0);
+                $model->specialquantity(0);
+                $model->specialgroupprice(0);
+                $model->advertised(0);
+                $model->tareweight(0);
+                $model->start_date('0000-00-00');
+                $model->end_date('0000-00-00');
+                $model->discounttype(0);
+                $model->wicable(0);
+                $model->inUse(1);
+                $model->created(date('Y-m-d H:i:s'));
+            }
             $try = $model->save();
 
             if ($try) {
@@ -162,6 +167,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $this->stats['errors'][] = 'Error importing UPC ' . $upc;
             }
         }
+        $dbc->commitTransaction();
 
         return $ret;
     }
