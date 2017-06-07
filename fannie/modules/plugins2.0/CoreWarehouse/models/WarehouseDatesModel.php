@@ -87,8 +87,8 @@ class WarehouseDatesModel extends CoreWarehouseModel
         $obj = new WarehouseDatesModel($this->connection);
         $obj->warehouseDateID(date('Ymd', $ts));
         $obj->year(date('Y', $ts));
-        $obj->month(date('j', $ts));
-        $obj->day(date('n', $ts));
+        $obj->month(date('n', $ts));
+        $obj->day(date('j', $ts));
         $obj->dayOfWeek(date('N', $ts));
         $obj->isoWeekNumber(date('W', $ts));
 
