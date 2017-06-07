@@ -207,6 +207,7 @@ class MercuryDC extends MercuryE2E
             <HostOrIP>' . $dcHost . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>
+            <OKAmount>Disallow</OKAmount>
             <PartialAuth>Allow</PartialAuth>';
             if ($this->conf->get('PaycardsDatacapMode') == 2) {
                 $msgXml .= '<MerchantLanguage>English</MerchantLanguage>';
