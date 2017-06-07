@@ -347,7 +347,7 @@ class FannieSignage
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                  WHERE l.batchID IN (' . $ids . ') ';
-        $query .= ' ORDER BY brand, description';
+        $query .= ' ORDER BY l.batchID, brand, description';
 
         return array('query' => $query, 'args' => $args);
     }
