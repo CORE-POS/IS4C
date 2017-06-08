@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use League\Flysystem\Sftp\SftpAdapter;
+use League\Flysystem\Filesystem;
+
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -148,6 +151,17 @@ class InstaCartTask extends FannieTask
         /**
           Upload export via (S)FTP
         */
+        if (class_exists('League\\Flysystem\\Sftp\\SftpAdapter')) {
+            $settings = $this->config->get('PLUGIN_SETTINGS');
+            $adapter = new SftpAdapter(array(
+                'host' => 'sftp.instacart.com',
+                'username' => $settings['InstaCartFtpUser'],
+                'password' => $settings['InstaCartFtpPw'],
+                'port' => 22,
+            ));
+            $filesystem = new Filesystem($adapter);
+            $filesystem->put('~/' . date('mdY') . '.csv', file_get_contents($csvfile));
+        }
 
         unlink($csvfile);
     }
