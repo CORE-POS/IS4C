@@ -328,11 +328,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
         $month = FormLib::get('month', $month);
         $year = FormLib::get('year', $year);
-        $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
-        $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
         if ($month == 'Last 30 days') {
             $start = date('Y-m-d', strtotime('30 days ago'));
             $end = date('Y-m-d 23:59:59');
+        } else {
+            $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
+            $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
         }
         $args = array($start, $end);
         
@@ -378,7 +379,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             <table class="table table-striped table-bordered tablesorter table-float">';
         $tPlaced = '<div id="placed-pane" class="tab-pane table-responsive ' . ($placed ? 'active' : '') . '">
             <table class="table table-striped table-bordered tablesorter table-float">';
-        $headers .= '<thead style="background: #fff;"><tr>
+        $headers = '<thead style="background: #fff;"><tr>
             <th class="thead">Created</th>
             <th class="thead">Invoice#</th>
             <th class="thead">Store</th>
@@ -815,7 +816,7 @@ HTML;
             return '';
         } elseif ($received == 0 && $ordered != 0) {
             return 'class="danger"';
-        } elseif ($received < $quantity) {
+        } elseif ($received < $ordered) {
             return 'class="warning"';
         } else {
             return '';
