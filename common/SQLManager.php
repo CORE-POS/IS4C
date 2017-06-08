@@ -1809,6 +1809,9 @@ class SQLManager
     */
     public function safeInClause($arr, $args=array(), $dummy_value=-999999)
     {
+        if (!is_array($arr)) {
+            $arr = array($arr);
+        }
         if (count($arr) == 0) { 
             $arr = array($dummy_value);
         }
