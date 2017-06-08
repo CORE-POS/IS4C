@@ -942,7 +942,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             $record['description'],
                             $record['super_name'],
                             $record['department'], $record['dept_name'],
-                            $record['cost'],
+                            isset($record['cost']) ? $record['cost'] : 0,
                             $record['normal_price'],
                             $record['onSale'],
                             $record['special_price']
