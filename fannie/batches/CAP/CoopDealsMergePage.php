@@ -155,7 +155,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
         <tr><th>UPC</th><th>Brand</th><th>Desc</th><th>Sale Price</th>
         <th>Add to Batch</th></tr>\n
         </thead><tbody>";
-        $upcs = array('a', 'b', 'tpr');
+        $upcs = array('a'=>'', 'b'=>'', 'tpr'=>'');
         while ($row = $dbc->fetch_row($result)) {
             $upcoming = $dbc->getValue($upcomingP, array($row['upc']));
             if ($upcoming) {
