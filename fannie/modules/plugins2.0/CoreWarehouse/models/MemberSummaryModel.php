@@ -90,9 +90,9 @@ class MemberSummaryModel extends CoreWarehouseModel
                 MIN(date_id) AS firstVisit,
                 MAX(date_id) AS lastVisit,
                 SUM(retailTotal) AS totalSpending,
-                AVG(retailTotal) AS averageSpending,
+                AVG(retailTotal/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageSpending,
                 SUM(retailQuantity) AS totalItems,
-                AVG(retailQuantity) AS averageItems,
+                AVG(retailQuantity/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageItems,
                 SUM(transCount) AS totalVisits
             FROM sumMemSalesByDay
             WHERE date_id BETWEEN ? AND ?
@@ -221,9 +221,9 @@ class MemberSummaryModel extends CoreWarehouseModel
                 MIN(date_id) AS firstVisit,
                 MAX(date_id) AS lastVisit,
                 SUM(retailTotal) AS totalSpending,
-                AVG(retailTotal) AS averageSpending,
+                AVG(retailTotal/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageSpending,
                 SUM(retailQuantity) AS totalItems,
-                AVG(retailQuantity) AS averageItems,
+                AVG(retailQuantity/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageItems,
                 SUM(transCount) AS totalVisits
             FROM sumMemSalesByDay
             WHERE date_id < ?
