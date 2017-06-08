@@ -45,7 +45,7 @@ class FannieDB
     */
     public static function get($db_name, &$previous_db=null)
     {
-        if (!self::dbIsConfigured()) {
+        if (!is_string($db_name) || !self::dbIsConfigured()) {
             return false;
         } else if (self::$db == null) {
             $previous_db = $db_name;
