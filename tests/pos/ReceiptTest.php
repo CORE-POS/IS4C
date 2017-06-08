@@ -42,7 +42,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('string', $selectStr);
 
             $queryResult = $db->query('SELECT '.$selectStr.' FROM localtemptrans');
-            $this->assertNotEquals(false, $queryResult);
+            $this->assertNotEquals(false, $queryResult, $selectStr . ' creates a failing query');
 
             $msg = $obj->message(1, '1-1-1', false);
             $this->assertInternalType('string', $msg);
