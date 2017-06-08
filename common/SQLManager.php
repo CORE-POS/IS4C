@@ -305,7 +305,7 @@ class SQLManager
     public function setDefaultDB($db_name)
     {
         /** verify connection **/
-        if (!isset($this->connections[$db_name])) {
+        if (!is_string($db_name) || !isset($this->connections[$db_name])) {
             return false;
         }
 
