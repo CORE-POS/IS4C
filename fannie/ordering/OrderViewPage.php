@@ -139,9 +139,10 @@ class OrderViewPage extends FannieRESTfulPage
     protected function post_orderID_description_srp_actual_qty_dept_unitPrice_vendor_transID_changed_handler()
     {
         $dbc = $this->connection;
+        $transDB = $this->config->get('TRANS_DB') . $dbc->sep();
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $basicP = $dbc->prepare('
-            UPDATE PendingSpecialOrder
+            UPDATE ' . $transDB . 'PendingSpecialOrder
             SET description=?,
                 department=?,
                 mixMatch=?,
@@ -169,7 +170,7 @@ class OrderViewPage extends FannieRESTfulPage
         }
 
         $fetchP = $dbc->prepare("SELECT ROUND(100*((regPrice-total)/regPrice),0)
-            FROM PendingSpecialOrder WHERE trans_id=? AND order_id=?");
+            FROM {$transDB}PendingSpecialOrder WHERE trans_id=? AND order_id=?");
         $info['discount'] = $dbc->getValue($fetchP, array($this->transID, $this->orderID));
         echo json_encode($info);
 
