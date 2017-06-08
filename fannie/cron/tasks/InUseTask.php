@@ -214,7 +214,7 @@ class InUseTask extends FannieTask
         $to = $this->config->get('SCANCOORD_EMAIL');
         
         if (class_exists('PHPMailer')) {
-            $msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
+            $msg = '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
                 padding: 5px; }</style>';
             $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
             $msg .= ' [ Runtime: '.$runtime.' ]<br />';

@@ -76,7 +76,7 @@ class EndSalesBatchAlertTask extends FannieTask
         $result = $dbc->execute($prep,$args);
 
         $ret = '';
-        $style .= '
+        $style = '
             <style>
                 table, th, td {
                     border: 1px solid black;
@@ -139,7 +139,7 @@ class EndSalesBatchAlertTask extends FannieTask
                 $mail->From = 'automail@wholefoods.coop';
                 $mail->FromName = 'CORE POS Monitoring';
                 $mail->Subject ='Report: Sales Batches End Alerts';
-                $msg .= $style;
+                $msg = $style;
                 $msg .= date('m-d-y').' Sales batches ending <span class="danger">today</span> 
                     through the next 7 days. <br /><br />';
                 $msg .= $ret;
