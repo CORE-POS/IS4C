@@ -1088,7 +1088,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $items = $this->runSearchMethods($form);
         $phpunit->assertInternalType('array', $items);
-        $phpunit->assertEquals(1, count($items));
+        $phpunit->assertEquals(1, count($items), $this->connection->error());
         $phpunit->assertArrayHasKey('0001707710532', $items);
 
         // easiest filter to trigger is the saved items
