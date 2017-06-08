@@ -228,6 +228,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             'inventoried' => 0,
             'isAlias' => 0,
         );
+        $ret = '';
 
         /**
           Check for entries in the vendorItems table to prepopulate
@@ -307,7 +308,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $rowItem['wicable'] = $dmodel->dept_wicable();
         }
 
-        return $rowItem;
+        return array($rowItem, $ret);
     }
 
     private function highlightUPC($upc)
@@ -376,7 +377,8 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 }
             }
         } else {
-            $rowItem = $this->getNewItem($upc);
+            list($rowItem, $msg) = $this->getNewItem($upc);
+            $ret .= $msg;
             $new_item = true;
 
             foreach ($stores as $id => $obj) {
