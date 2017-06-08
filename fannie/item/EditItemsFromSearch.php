@@ -291,6 +291,16 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $taxes = $this->getTaxes($dbc);
         $depts = $this->getDepts($dbc);
 
+        $hidden = implode("\n", array_map(function ($i) { return '<input name="u[]" type="hidden" value="' .$i . '" />'; }, $this->u)); 
+        $ret .= <<<HTML
+<form action="EditFieldFromSearch.php" method="post">
+    {$hidden}
+    <button type="submit" class="btn btn-default">Edit A Different Field</button>
+</form>
+<br />
+HTML;
+
+
         $ret .= '<form action="EditItemsFromSearch.php" method="post">';
         $ret .= '<table class="table small">';
         $ret .= '<tr>
