@@ -120,7 +120,6 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
-        curl_setopt($ch, CURLOPT_REFERER, $full_url);
         $body = curl_exec($ch);
         $referer = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
