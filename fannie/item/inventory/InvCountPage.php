@@ -298,7 +298,7 @@ class InvCountPage extends FannieRESTfulPage
                 $info['ordered'],
                 $info['sold'],
                 $info['shrunk'],
-                ($info['onHand'] < $ifo['par'] ? 'class="danger" title="Need to order"' : ''),
+                ($info['onHand'] < $info['par'] ? 'class="danger" title="Need to order"' : ''),
                 $info['onHand'],
                 ($info ? $info['par'] : 'n/a'),
                 ($info['par'] > (7*$row['auto_par']) ? 'class="danger" title="Par more than weekly sale"' : ''),
