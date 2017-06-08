@@ -113,7 +113,8 @@ class floorSectionSalesReport extends FannieReportPage
             $upcs[] = $row['upc'];
         }
         
-        list($inClause,$onSaleA) = $dbc->safeInClause($upcs);
+        $onSaleA = array($start, $store);
+        list($inClause,$onSaleA) = $dbc->safeInClause($upcs, $onSaleA);
 
         //$onSaleA = array($start,$store);
         $onSaleQ = "
@@ -124,10 +125,10 @@ class floorSectionSalesReport extends FannieReportPage
                 v.vendorID
             FROM products AS p
                 INNER JOIN batchList AS l ON p.upc=l.upc 
-                INNER JOIN batches AS b ON l.batchID=b.batchID AND b.startDate = ".$start."
+                INNER JOIN batches AS b ON l.batchID=b.batchID AND b.startDate = ?
                 INNER JOIN vendorSKUtoPLU AS v ON p.upc=v.upc
             WHERE p.inUse = 1
-                AND p.store_id = ".$store."
+                AND p.store_id = ?
                 AND p.upc IN (".$inClause.")
         ";
             
