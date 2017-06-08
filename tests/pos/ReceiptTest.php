@@ -31,10 +31,10 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     public function testMessages()
     {
         $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\ReceiptMessage', true);
-        $db = Database::tDataConnect();
         $ph = new PrintHandler();
 
         foreach($mods as $message_class) {
+            $db = Database::tDataConnect();
             $obj = new $message_class();
             $obj->setPrintHandler($ph);
 
