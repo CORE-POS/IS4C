@@ -554,7 +554,7 @@ class HouseCouponEditor extends FanniePage
                     LEFT JOIN products AS p ON p.upc=h.upc AND h.type='DISCOUNT'
                     LEFT JOIN departments AS d ON h.upc=d.dept_no AND h.type='QUALIFIER'
                 WHERE h.coupID=?";
-        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D' || $hc->discountType() == 'S' || $hc->minType() == 'C!' || $hc->minType == 'C^') {
+        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D' || $hc->discountType() == 'S' || $hc->minType() == 'C!' || $hc->minType() == 'C^') {
             $query = '
                 SELECT h.upc,
                     COALESCE(d.dept_name, \'Unknown department\') AS description,
