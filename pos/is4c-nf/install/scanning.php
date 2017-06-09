@@ -7,6 +7,7 @@ use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
@@ -412,9 +413,10 @@ if ($specialDeptMapExists) {
 } else {
     $sconf = CoreLocal::get('SpecialDeptMap');
 }
+$session = new WrappedStorage();
 foreach ($sdepts as $sd) {
     $sclass = str_replace('-', '\\', $sd);
-    $obj = new $sclass();
+    $obj = new $sclass($session);
     $list = '';
     foreach($sconf as $id => $mods){
         if (in_array($sclass,$mods))
