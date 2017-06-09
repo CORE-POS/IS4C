@@ -35,7 +35,9 @@ class InstaFileV3
                 p.end_date,
                 p.discounttype,
                 p.specialpricemethod,
-                y.datedSigns
+                y.datedSigns,
+                CASE WHEN (numflag & (1<<16)) <> 0 THEN 1 ELSE 0 END AS organic,
+                CASE WHEN (numflag & (1<<17)) <> 0 THEN 1 ELSE 0 END AS glutenfree
             FROM products AS p
                 LEFT JOIN productUser AS u on p.upc=u.upc
                 LEFT JOIN taxrates AS t ON p.tax=t.id
@@ -52,7 +54,7 @@ class InstaFileV3
         $prep = $this->dbc->prepare($query);
         $res = $this->dbc->execute($prep, $args);
         $csv = fopen($filename, 'w');
-        fwrite($csv, "upc,price,cost_unit,item_name,size,brand_name,unit_count,department,available,last_sold,alcoholic,tax_rate,bottle_deposit,sale_price,sale_start_at,sale_end_at\r\n");
+        fwrite($csv, "upc,price,cost_unit,item_name,size,brand_name,unit_count,department,available,last_sold,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,sale_price,sale_start_at,sale_end_at\r\n");
         while ($row = $this->dbc->fetchRow($res)) {
             if ($row['normal_price'] <= 0) {
                 continue;
@@ -113,6 +115,10 @@ class InstaFileV3
             fwrite($csv, date('m/d/Y', strtotime($row['last_sold'])) . ',');
 
             fwrite($csv, ($row['idEnforced'] == 21 ? 'TRUE' : 'FALSE') . ',');
+
+            fwrite($csv, $row['upc'] . ',');
+            fwrite($csv, ($row['organic'] ? 'TRUE' : 'FALSE') . ',');
+            fwrite($csv, ($row['glutenfree'] ? 'TRUE' : 'FALSE') . ',');
 
             fprintf($csv, '%.5f,', $row['rate']);
 
