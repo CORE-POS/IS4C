@@ -68,7 +68,7 @@ class InstaCartTask extends FannieTask
                 'port' => 22,
             ));
             $filesystem = new Filesystem($adapter);
-            $filesystem->put('~/' . date('mdY') . '.csv', file_get_contents($csvfile));
+            $filesystem->put(date('mdY') . '.csv', file_get_contents($csvfile));
         }
 
         unlink($csvfile);
