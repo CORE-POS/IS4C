@@ -74,21 +74,20 @@ class InitProductCreated extends FannieTask
          */
         $count = 1;
         while ($missingW = $dbc->fetchRow($missingR)) {
-            echo "{$count}/{$items}\r";
             $upc = $missingW['upc'];
             $store = $missingW['store_id'];
             $created = $dbc->getValue($log1P, array($upc, $store));
-            if ($created === false) {
+            if ($created === false || $created === null) {
                 $created = $dbc->getValue($log1P, array($upc));
-                if ($created === false) {
+                if ($created === false || $created === null) {
                     $created = date('Y-m-d H:i:s');
                 }
             }
+            echo $upc . '-' . $created . PHP_EOL;
             $dbc->execute($update, array($created, $upc, $store));
             $count++;
         }
         $dbc->commitTransaction();
-        echo "\n";
     }
 }
 
