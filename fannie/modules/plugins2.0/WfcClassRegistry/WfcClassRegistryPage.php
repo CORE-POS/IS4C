@@ -236,7 +236,7 @@ class WfcClassRegistryPage extends FanniePage
             $classExp[] = $row['expires'];
         }
         
-        $ret .= '<div class=\'container\'><form method=\'get\'><select class=\'form-control\' name=\'class_plu\'>';
+        $ret = '<div class=\'container\'><form method=\'get\'><select class=\'form-control\' name=\'class_plu\'>';
         $ret .= '<option value=\'1\'>Choose a class...</option>';
         
         $date = date('m/d/y');
@@ -682,7 +682,7 @@ function withdraw()
                     <td><a class="btn btn-default" href="?class_plu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',                
                     $item->upc(),
                     $item->id(),
-                    $key
+                    $item->upc()
                 );
             }
         }
