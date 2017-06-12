@@ -11,12 +11,16 @@ class SubAgreement extends FPDF
     private function getName($json, $index)
     {
         $keys = array_keys($json);
+        if (!isset($keys[$index])) {
+            return '';
+        }
+
         $index = $keys[$index];
         if (isset($json[$index])) {
             return $json[$index]['firstName'] . ' ' . $json[$index]['lastName'];
-        } else {
-            return '';
         }
+
+        return '';
     }
     
     function AutoFill($meminfo)
