@@ -217,9 +217,10 @@ class InventoryTask extends FannieTask
                 d.store_id
             HAVING qty > 0');
         $sales = $dbc->getRow($salesP, $args);
-        $sales = $sales && $sales['qty'] ? $sales['qty'] * $sales['byWeight'] * 1.001 : 0;
-
-        return $sales;
+        if ($sales === false) {
+            return 0;
+        }
+        return $sales['byWeight'] ? $sales['qty'] * 1.001 : $sales['qty'];
     }
 }
 
