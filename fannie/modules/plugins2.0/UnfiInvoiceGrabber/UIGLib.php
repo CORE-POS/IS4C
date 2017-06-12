@@ -61,6 +61,9 @@ class UIGLib
             }
 
             $fp = $za->getStream($info['name']);
+            if (!$fp) { // false or null in failure cases
+                continue;
+            }
             $header_info = array();
             $item_info = array();
             while(!feof($fp)) {
