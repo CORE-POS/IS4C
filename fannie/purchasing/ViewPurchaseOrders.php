@@ -278,7 +278,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     protected function post_id_setPlaced_handler()
     {
         $this->connection->selectDB($this->config->get('OP_DB'));
-        $model = new PurchaseOrderModel(FannieDB::get($this->connection));
+        $model = new PurchaseOrderModel($this->connection);
         $model->orderID($this->id);
         $model->load();
         $model->placed($this->setPlaced);
