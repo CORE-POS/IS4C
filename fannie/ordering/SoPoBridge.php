@@ -21,14 +21,16 @@ class SoPoBridge
     */
     private function getPurchaseOrderID($vendorID, $storeID)
     {
+        $cutoff = date('Y-m-d 00:00:00', strtotime('28 days ago'));
         $prep = $this->dbc->prepare('
             SELECT orderID
             FROM PurchaseOrder
             WHERE vendorID=?
                 AND storeID=?
                 AND placed=0
+                AND creationDate >= ?
             ORDER BY creationDate DESC');
-        return $this->dbc->getValue($prep, array($vendorID, $storeID));
+        return $this->dbc->getValue($prep, array($vendorID, $storeID, $cutoff));
     }
 
     /**
