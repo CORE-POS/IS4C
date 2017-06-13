@@ -407,6 +407,14 @@ class OrderViewPage extends FannieRESTfulPage
                     $orderModel->phone($contact_row['phone']);
                     $orderModel->altPhone($contact_row['email_2']);
                     $orderModel->email($contact_row['email_1']);
+
+                    $prefP = $dbc->prepare($dbc->addSelectLimit("SELECT sendEmails FROM SpecialOrders AS o
+                        INNER JOIN CompleteSpecialOrder AS c ON o.specialOrderID=c.order_id
+                        WHERE c.card_no=?
+                        ORDER BY c.datetime DESC", 1));
+                    $prefVal = $dbc->getValue($prefP, array($memNum));
+                    $orderModel->sendEmails($prefVal ? $prefVal : 0);
+
                     $orderModel->save();
                     $orderModel->specialOrderID($orderID);
                     $orderModel->load();
