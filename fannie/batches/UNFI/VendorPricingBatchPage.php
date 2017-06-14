@@ -150,6 +150,13 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $batchUPCs[$obj->upc()] = true;
         }
 
+        $likeCodeUPCs = array();
+        $likePrep = $dbc->prepare("SELECT upc FROM likeCodeView");
+        $likeRes = $dbc->execute($likePrep);
+        while ($row = $dbc->fetchRow($likeRes)) {
+            $likeCodeUPCs[$row['upc']] = 1;
+        }
+
         $costSQL = Margin::adjustedCostSQL('p.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
         $p_def = $dbc->tableDefinition('products');
@@ -191,7 +198,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
-                LEFT JOIN prodExtra AS x on p.upc=x.upc ";
+                LEFT JOIN prodExtra AS x ON p.upc=x.upc
+                LEFT JOIN likeCodeView AS l ON v.upc=l.upc ";
         $args = array($vendorID);
         if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
@@ -246,7 +254,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                     </span> ';
             }
             $background = "white";
-            if (isset($batchUPCs[$row['upc']])) {
+            if (isset($batchUPCs[$row['upc']]) && !isset($likeCodeUPCs[$row['upc'])) {
                 $background = 'selection';
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
                 $background = (
