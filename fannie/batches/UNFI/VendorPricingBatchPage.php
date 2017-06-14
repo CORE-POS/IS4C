@@ -150,13 +150,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $batchUPCs[$obj->upc()] = true;
         }
 
-        $likeCodeUPCs = array();
-        $likePrep = $dbc->prepare("SELECT upc FROM likeCodeView");
-        $likeRes = $dbc->execute($likePrep);
-        while ($row = $dbc->fetchRow($likeRes)) {
-            $likeCodeUPCs[$row['upc']] = 1;
-        }
-
         $costSQL = Margin::adjustedCostSQL('p.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
         $p_def = $dbc->tableDefinition('products');
@@ -200,7 +193,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             v.vendorDept,
             x.variable_pricing,
             " . $marginCase . " AS margin,
-            CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias
+            CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias,
+            CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN VendorAliases AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID
@@ -209,7 +203,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN prodExtra AS x ON p.upc=x.upc
-                LEFT JOIN likeCodeView AS l ON v.upc=l.upc ";
+                LEFT JOIN upcLike AS l ON v.upc=l.upc ";
         $args = array($vendorID);
         if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
@@ -269,7 +263,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $row['srp'] = $alias['srp'] * $alias['multiplier'];
             }
             $background = "white";
-            if (isset($batchUPCs[$row['upc']]) && !isset($likeCodeUPCs[$row['upc'])) {
+            if (isset($batchUPCs[$row['upc']]) && !$row['likecoded']) {
                 $background = 'selection';
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
                 $background = (
