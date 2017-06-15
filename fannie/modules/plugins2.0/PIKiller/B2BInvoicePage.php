@@ -75,16 +75,6 @@ class B2BInvoicePage extends FannieRESTfulPage
                     $tRecord['trans_subtype'] = 'CA';
                     $tRecord['description'] = 'Cash';
                     break;
-                case 'RV':
-                    $tRecord['trans_type'] = 'D';
-                    $tRecord['description'] = 'Reverse Invoice #' . $this->id;
-                    $tRecord['department'] = 703;
-                    $tRecord['unitPrice'] = -1*$amt;
-                    $tRecord['regPrice'] = -1*$amt;
-                    $tRecord['quantity'] = 1;
-                    $tRecord['ItemQtty'] = 1;
-                    $invoice->internalNotes($invoice->internalNotes() . "\nTHIS INVOICE WAS REVERSED INSTEAD OF PAID");
-                    break;
             }
             $tRecord['charflag'] = 'B2';
             $tRecord['numflag'] = $this->id;
@@ -159,12 +149,10 @@ class B2BInvoicePage extends FannieRESTfulPage
     <tr>
         <th>Created</th>
         <td>{$invoice->createdDate}</td>
-        <td><a href="../../../admin/LookupReceipt/RenderReceiptPage.php?date={$invoice->createdDate}&receipt={$invoice->createdTransNum}">{$invoice->createdTransNum}</a></td>
     </tr>
     <tr>
         <th>{$finalAs}</th>
-        <td>{$invoice->paidDate}</td>
-        <td>{$invoice->paidTransNum}</td>
+        <td>{$invoice->paidDate} {$invoice->paidTransNum}</td>
     </tr>
     <tr>
         <th>Notes for Customer</th>
@@ -203,7 +191,6 @@ class B2BInvoicePage extends FannieRESTfulPage
         <option value="CK">Check</option>
         <option value="CC">Credit Card</option>
         <option value="CA">Cash</option>
-        <option value="RV">Reversal</option>
     </select>
 </p>
 <p>
