@@ -59,7 +59,8 @@ class PIB2BListPage extends PIKillerPage
         $rowcount = 0;
         foreach ($this->__models['b2b'] as $inv) {
             $stamp = strtotime($inv->createdDate());
-            printf('<tr><td>%s</td><td>%s</td>',
+            printf('<tr><td><a href="B2BInvoicePage.php?id=%s">%s (view)</a></td><td>%s</td>',
+                $inv->b2bInvoiceID(),
                 $inv->b2bInvoiceID(),
                 date('Y-m-d', strtotime($inv->createdDate()))
             );
