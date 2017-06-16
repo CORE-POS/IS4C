@@ -34,6 +34,16 @@ class PIAccessPage extends PIKillerPage
     protected $header = 'Access History';
     protected $title = 'Access History';
     public $discoverable = false;
+    private $programs = array(
+        1 => 'Emergency Assistance Program',
+        2 => 'Energy Assistance Program',
+        3 => 'Medicaid',
+        4 => 'Section 8',
+        5 => 'School Meal Program',
+        6 => 'SNAP',
+        7 => 'SSI or RSDI',
+        8 => 'WIC',
+    );
 
     protected function get_id_view()
     {
@@ -41,7 +51,7 @@ class PIAccessPage extends PIKillerPage
         $dlog = DTransactionsModel::selectDlog($date);
 
         $query = $this->connection->prepare("
-            SELECT tdate, trans_num
+            SELECT tdate, trans_num, numflag
             FROM {$dlog}
             WHERE upc='ACCESS'
                 AND tdate >= ?
@@ -57,12 +67,13 @@ class PIAccessPage extends PIKillerPage
                 $max = new DateTime($row['tdate']);
             }
             $tdate = new DateTime($row['tdate']); 
-            $ret .= sprintf('<tr><td>%s</td><td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td></tr>',
+            $ret .= sprintf('<tr><td>%s</td><td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td><td>%s</td></tr>',
                     $row['tdate'],
                     $this->config->get('URL'),
                     $tdate->format('Y-m-d'),
                     $row['trans_num'],
-                    $row['trans_num']
+                    $row['trans_num'],
+                    (isset($this->programs[$row['numflag']]) ? $this->programs[$row['numflag']] : '?')
             );
         }
         $ret .= '</table>';
