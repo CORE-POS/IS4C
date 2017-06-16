@@ -96,7 +96,8 @@ class ParsPage extends FannieRESTfulPage
         if (!$store) {
             $store = Store::getIdByIp();
         }
-        list($algo, $json) = $this->getAlgo($this->id, $store, 0);
+        $deptID = FormLib::get('dept', 0);
+        list($algo, $json) = $this->getAlgo($this->id, $store, $deptID);
         $enabled = $json !== array();
         $extras = '<div class="alert alert-info">Not enabled</div>';
         if ($enabled) {
@@ -113,6 +114,23 @@ class ParsPage extends FannieRESTfulPage
         $vendor = $this->connection->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
         $vendor = $this->connection->getValue($vendor, array($this->id));
 
+        $deptP = $this->connection->prepare('
+            SELECT d.dept_no, d.dept_name
+            FROM departments AS d
+                INNER JOIN products AS p ON d.dept_no=p.department
+            WHERE p.default_vendor_id=?
+                AND p.store_id=?
+            GROUP BY d.dept_no, d.dept_name
+            ORDER BY d.dept_no');
+        $deptR = $this->connection->execute($deptP, array($this->id, $store));
+        $deptSelect = '<select name="dept" class="form-control" id="dept"><option value="0">All Departments</option>';
+        while ($deptW = $this->connection->fetchRow($deptR)) {
+            $deptSelect .= sprintf('<option %s value="%d">%d %s</option>',
+                ($dept == $deptW['dept_no'] ? 'selected' : ''),
+                $deptW['dept_no'], $deptW['dept_no'], $deptW['dept_name']);
+        }
+        $deptSelect .= '</select>';
+
         $algoName = str_replace('\\', '-', get_class($algo));
         $algoSelect = '<select name="algo" class="form-control" 
             onchange="window.location=\'ParsPage.php?id=' . $this->id . '&store=' . $store . '&algo=\'+this.value;">';
@@ -128,6 +146,10 @@ class ParsPage extends FannieRESTfulPage
     <div class="form-group">
         <label>Store</label>
         {$picker['html']}
+    </div>
+    <div class="form-group">
+        <label>Department</label>
+        {$deptSelect}
     </div>
     <div class="form-group">
         <label>Algorithm</label>
