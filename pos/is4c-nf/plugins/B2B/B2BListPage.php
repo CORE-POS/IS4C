@@ -45,6 +45,8 @@ class B2BListPage extends NoInputCorePage
             return true;
         }
 
+        // add comment w/ account number & open ring
+        // flag open ring with invoice ID to mark it as paid later
         if (!empty($entered)) {
             $json = json_decode($entered, true);
             TransRecord::addcomment($json['coding']);
