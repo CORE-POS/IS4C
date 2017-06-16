@@ -50,7 +50,8 @@ class B2BParser extends Parser
         }
 
         $dbc = Database::mDataConnect();
-        $prep = $dbc->prepare('SELECT COUNT(*) FROM B2BInvoices WHERE cardNo=? AND isPaid=0');
+        $mAlt = Database::mAltName();
+        $prep = $dbc->prepare("SELECT COUNT(*) FROM {$mAlt}B2BInvoices WHERE cardNo=? AND isPaid=0");
         $res = $dbc->execute($prep, CoreLocal::get('memberID'));
         if ($res == false || $dbc->numRows($res) == 0) {
             $ret['output'] = DisplayLib::boxMsg(
@@ -63,7 +64,7 @@ class B2BParser extends Parser
 
         $b2b = new B2B();
         $url = $b2b->pluginUrl();
-        $ret['main_frame'] = $url . '/B2BList.php';
+        $ret['main_frame'] = $url . '/B2BListPage.php';
 
         return $ret;
     }

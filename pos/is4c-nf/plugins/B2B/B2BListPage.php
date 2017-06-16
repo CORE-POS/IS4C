@@ -26,15 +26,14 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\DeptLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\parse\DeptKey;
 
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class B2BListPage extends NoInputCorePage 
 {
-    private $boxSize;
-    private $searchResults = array();
-    private $quantity = 0;
+    private $boxSize = 10;
 
     function preprocess()
     {
@@ -48,9 +47,11 @@ class B2BListPage extends NoInputCorePage
         // add comment w/ account number & open ring
         // flag open ring with invoice ID to mark it as paid later
         if (!empty($entered)) {
-            $json = json_decode($entered, true);
+            $json = json_decode(base64_decode($this->form->search), true);
             TransRecord::addcomment($json['coding']);
-            DeptLib::deptKey(100 * $json['amount'], 703);
+            $dept = new DeptLib($this->session);
+            $this->session->set('msgrepeat', 1); // this to bypass department amount limits
+            $ret = $dept->deptkey(100 * $json['amount'], 7030);
             $dbc = Database::tDataConnect();
             $res = $dbc->query('SELECT MAX(trans_id) FROM localtemptrans WHERE trans_type=\'D\' AND department=703');
             $row = $dbc->fetchRow($res);
@@ -66,7 +67,7 @@ class B2BListPage extends NoInputCorePage
     {
         // Javascript is only really needed if there are results
         ?>
-        <script type="text/javascript" src="../js/selectSubmit.js"></script>
+        <script type="text/javascript" src="../../js/selectSubmit.js"></script>
         <?php
     } // END head() FUNCTION
 
@@ -88,8 +89,9 @@ class B2BListPage extends NoInputCorePage
             ."ondblclick=\"document.forms['selectform'].submit();\">";
 
         $dbc = Database::mDataConnect();
-        $prep = $dbc->prepare("SELECT * FROM B2BInvoices WHERE cardNo=? AND isPaid=0 ORDER BY creationDate DESC");
-        $res = $dbc->execute($prep, array(CoreLocal::get('MemberID')));
+        $mAlt = Database::mAltName();
+        $prep = $dbc->prepare("SELECT * FROM {$mAlt}B2BInvoices WHERE cardNo=? AND isPaid=0 ORDER BY createdDate DESC");
+        $res = $dbc->execute($prep, array(CoreLocal::get('memberID')));
         $selected = "selected";
         while ($row = $dbc->fetchRow($res)) {
             $amount = MiscLib::truncate2($row['amount']);
@@ -97,9 +99,9 @@ class B2BListPage extends NoInputCorePage
             $coding = $row['coding'];
             $b2bID = $row['b2bInvoiceID'];
             $date = date('Y-m-d', strtotime($row['createdDate']));
-            $value = json_encode(array('amount'=>$amount, 'id'=>$b2bID, 'coding'=>$coding));
+            $value = base64_encode(json_encode(array('amount'=>$amount, 'id'=>$b2bID, 'coding'=>$coding)));
 
-            printf('<option %s value="%s">%s %s $.2f %s</option>',
+            printf('<option %s value="%s">#%s %s $%.2f %s</option>',
                 $selected, $value, $b2bID, $date, $amount, $for);
             $selected = "";
         }
@@ -121,7 +123,6 @@ class B2BListPage extends NoInputCorePage
             . _('Cancel') . ' <span class="smaller">' . _('[clear]') . '</span>
                 </button></p>'
             ."</div><!-- /.listboxText coloredText .centerOffset -->"
-            .'<input type="hidden" name="qty" value="' . $this->quantity . '" />'
             ."</form>"
             ."<div class=\"clear\"></div>";
         echo "</div>";
