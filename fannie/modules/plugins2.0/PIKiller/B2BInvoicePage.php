@@ -20,6 +20,7 @@ class B2BInvoicePage extends FannieRESTfulPage
         $invoice = new B2BInvoicesModel($dbc);
         $invoice->b2bInvoiceID($this->id);
         $invoice->description(FormLib::get('description'));
+        $invoice->amount(FormLib::get('amount'));
         $invoice->coding(FormLib::get('coding'));
         $invoice->customerNotes(FormLib::get('customerNotes'));
         $invoice->internalNotes(FormLib::get('internalNotes'));
@@ -130,6 +131,9 @@ class B2BInvoicePage extends FannieRESTfulPage
         $modifier = FannieAuth::getName($invoice->lastModifiedBy);
         $finalized = $invoice->isPaid ? 'collapse' : '';
         $finalAs = $invoice->isPaid == 2 ? 'Reversed' : 'Paid';
+        if (!$invoice->isPaid) {
+            $invoice->paidDate = 'Not yet paid';
+        }
 
         $ret = <<<HTML
 <form method="post" action="B2BInvoicePage.php">
@@ -144,7 +148,7 @@ class B2BInvoicePage extends FannieRESTfulPage
     </tr>
     <tr>
         <th>Amount</th>
-        <td colspan="2">{$invoice->amount}</td>
+        <td colspan="2"><input type="text" name="amount" value="{$invoice->amount}" class="form-control" /></td>
     </tr>
     <tr>
         <th>Created</th>

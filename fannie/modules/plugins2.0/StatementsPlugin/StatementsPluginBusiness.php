@@ -11,7 +11,75 @@ class StatementsPluginBusiness extends FannieRESTfulPage
 {
     public $page_set = 'Plugin :: StatementsPlugin';
     public $description = '[Business Statement PDF] generates business invoices';
-    public $themed = true;
+
+    private function b2bHandler($dbc, $ids)
+    {
+        $ids = array_map(function($i) { return str_replace('b2b', '', $i); }, $ids);
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        $pdf->SetAutoPageBreak(false);
+        $invP = $dbc->prepare('SELECT * FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'B2BInvoices WHERE b2bInvoiceID=?');
+        foreach ($ids as $id) {
+            $invoice = $dbc->getRow($invP, array($id));
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($invoice['cardNo']);
+            $primary = array();
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $primary = $c;
+                    break;
+                }
+            }
+
+            $pdf->AddPage();
+            $pdf->Image('new_letterhead_horizontal.png',5,10, 200);
+            $pdf->SetFont('Gill','','12');
+            $pdf->Ln(45);
+            $pdf->Cell(10,5,"Invoice #: " . $invoice['b2bInvoiceID'],0,1,'L');
+            $pdf->Cell(10,5,date('Y-m-d', strtotime($invoice['createdDate'])),0);
+            $pdf->Ln(8);
+
+            $name = $primary['lastName'];
+            if (!empty($primary['firstName'])) {
+                $name = $primary['firstName'].' '.$name;
+            }
+            $pdf->Cell(50,10,trim($card_no).' '.trim($name),0);
+            $pdf->Ln(5);
+            $pdf->Cell(80, 10, $account['addressFirstLine'], 0);
+            $pdf->Ln(5);
+            if ($account['addressSecondLine']) {
+                $pdf->Cell(80, 10, $account['addressSecondLine'], 0);
+                $pdf->Ln(5);
+            }
+            $pdf->Cell(90,10,$account['city'] . ', ' . $account['state'] . '   ' . $account['zip'],0);
+            $pdf->Ln(25);
+
+            $txt = "If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.";
+            $pdf->MultiCell(0,5,$txt);
+            $pdf->Ln(10);
+
+            $indent = 10;
+            $columns = array(140, 30);
+            $pdf->Cell($indent,8,'',0,0,'L');
+            $pdf->Cell($columns[0],8,$invoice['description'],0,0,'L');
+            $pdf->Cell($columns[1],8,'$ ' . sprintf('%.2f',$invoice['amount']),0,0,'L');
+            $pdf->Ln(5);
+
+            if ($invoice['customerNotes']) {
+                $pdf->Ln(5);
+                $pdf->MultiCell(0, 5, 'Notes: ' . $invoice['customerNotes']);
+                $pdf->Ln(5);
+            }
+
+            $pdf->Ln(15);
+            $pdf->Cell($indent,8,'');
+            $pdf->SetFillColor(200);
+            $pdf->Cell(35,8,'Amount Due',0,0,'L',1);
+            $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$invoice['amount']),0,0,'L');
+        }
+        $pdf->Output('makeStatement.pdf','D');
+
+        return false;
+    }
 
     public function post_id_handler()
     {
@@ -22,6 +90,9 @@ class StatementsPluginBusiness extends FannieRESTfulPage
         $args = array();
         if (!is_array($this->id)) {
             $this->id = array($this->id);
+        }
+        if (count($this->id) > 0 && substr($this->id[0], 0, 3) == 'b2b') {
+            return $this->b2bHandler($dbc, $this->id);
         }
         foreach($this->id as $c) {
             $cards .= "?,";

@@ -17,6 +17,85 @@ class StatementsPluginEmail extends FannieRESTfulPage
 
     private $sent = array();
 
+    private function b2bHandler($dbc, $ids)
+    {
+        $ids = array_map(function($i) { return str_replace('b2b', '', $i); }, $ids);
+        $invP = $dbc->prepare('SELECT * FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'B2BInvoices WHERE b2bInvoiceID=?');
+        foreach ($ids as $id) {
+            $mail = new PHPMailer();
+            $mail->isSMTP();
+            $mail->Host = '127.0.0.1';
+            $mail->Port = 25;
+            $mail->SMTPAuth = false;
+            $mail->From = 'finance@wholefoods.coop';
+            $mail->FromName = 'Whole Foods Co-op';
+
+            $invoice = $dbc->getRow($invP, array($id));
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($invoice['cardNo']);
+            $primary = array();
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $primary = $c;
+                    break;
+                }
+            }
+            if (!filter_var($primary['email'], FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+            $name = $primary['lastName'];
+            if (!empty($primary['firstName'])) {
+                $name = $primary['firstName'].' '.$name;
+            }
+            $mail->Subject = 'Invoice ' . $invoice['b2bInvoiceID'];
+            $body = "Invoice #: {$invoice['b2bInvoiceID']}\n";
+            $html = "<p>Invoice #: {$invoice['b2bInvoiceID']}<br>";
+            $stateDate = date('Y-m-d', strtotime($invoice['createdDate']));
+            $body .= $stateDate . "\n\n";
+            $html .= $stateDate . "</p>";
+            $html .= '<p>' . trim($invoice['cardNo']) . ' ' . trim($name) . "<br>";
+            $body .= $account['addressFirstLine'] . "\n";
+            $html .= $account['addressFirstLine'] . "<br>";
+            if ($account['addressSecondLine']) {
+                $body .= $account['addressSecondLine'] . "\n";
+                $html .= $account['addressSecondLine'] . "<br>";
+            }
+            $body .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "\n\n";
+            $html .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "</p>";
+
+            $body .= "If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.\n\n";
+            $html .= "<p>If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.</p>";
+
+            $html .= '<table border="1" cellspacing="0" cellpadding="4">';
+            $body .= str_pad($invoice['description'], 100);
+            $html .= '<tr><td>' . $invoice['description'] . '</td>';
+            $body .= sprintf('$%.2f', $invoice['amount']) . "\n";
+            $html .= sprintf('<td>$%.2f</td></tr>', $invoice['amount']);
+            if ($invoice['customerNotes']) {
+                $body .= 'Notes: ' . $invoice['customerNotes'] . "\n";
+                $html .= '<tr><td colspan=2>Notes: ' . $invoice['customerNotes'] . '</td></tr>';
+            }
+            $body .= "\n";
+            $html .= '</table>';
+
+            $body .= 'Amount Due: ';
+            $html .= '<p>Amount Due: ';
+            $body .= '$ ' . sprintf("%.2f",$invoice['amount']) . "\n";
+            $html .= '$ ' . sprintf("%.2f",$invoice['amount']) . "</p>";
+
+            $mail->isHTML(true);
+            $mail->Body = $html;
+            $mail->AltBody = $body;
+            //$mail->addAddress($primary['email']);
+            //$mail->addBCC('bcarlson@wholefoods.coop');
+            //$mail->addBCC('andy@wholefoods.coop');
+            $mail->addAddress('andy@wholefoods.coop');
+            $mail->send();
+            $this->sent[$name] = $primary['email'];
+        }
+
+        return true;
+    }
+
     public function post_id_handler()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT, $FANNIE_ARCHIVE_DB;
@@ -26,6 +105,9 @@ class StatementsPluginEmail extends FannieRESTfulPage
         $args = array();
         if (!is_array($this->id)) {
             $this->id = array($this->id);
+        }
+        if (count($this->id) > 0 && substr($this->id[0], 0, 3) == 'b2b') {
+            return $this->b2bHandler($dbc, $this->id);
         }
         foreach($this->id as $c) {
             $cards .= "?,";
