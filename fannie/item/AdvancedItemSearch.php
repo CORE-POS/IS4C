@@ -889,7 +889,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             return false;
         }
 
-        $dataStr = http_build_query($_GET);
+        $dataStr = http_build_query($_POST);
         echo 'Found ' . count($items) . ' items';
         echo '&nbsp;&nbsp;&nbsp;&nbsp;';
         echo '<a href="AdvancedItemSearch.php?init=' . base64_encode($dataStr) . '">Permalink for this Search</a>';
