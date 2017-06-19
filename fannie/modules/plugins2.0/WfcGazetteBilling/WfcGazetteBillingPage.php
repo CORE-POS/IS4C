@@ -58,6 +58,11 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             'default' => 5,
             'required' => true
         ),
+        'amount' => array(
+            'display_name' => 'Amount',
+            'default' => 6,
+            'required' => true
+        ),
         'name' => array(
             'display_name' => 'Name',
             'default' => 0,
@@ -163,6 +168,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $desc = FormLib::get_form_value('desc'.$cardno);
             $desc = substr($desc,0,24);
 
+            /*
             $dRecord['trans_no'] = $t_no;
             $dRecord['upc'] = $amt.'DP703';
             $dRecord['description'] = 'Gazette Ad '.$desc;
@@ -187,11 +193,12 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
             $ret .= sprintf("<tr><td>%d</td><td>$%.2f</td><td>%s</td></tr>",
                 $cardno,$amt,$EMP_NO."-".$LANE_NO."-".$t_no);
+            */
 
             $invArgs = array(
                 $cardno,
                 date('Y-m-d H:i:s'),
-                $EMP_NO . '-' . $LANE_NO . '-' . $t_no,
+                'n/a',
                 $amt,
                 $invIssue . ' ' . $desc,
                 $invCoding,
@@ -200,8 +207,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $custNotes,
             );
             $sql->execute($invP, $invArgs);
-            $invID = $dbc->insertID();
-            $sql->execute($flagP, array($invID, $EMP_NO, $LANE_NO, $t_no));
+            $invID = $sql->insertID();
+            $ret .= "<tr><td>Invoice</td><td>$invID</td></tr>";
         }
         $sql->commitTransaction();
 
@@ -220,6 +227,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $SIZE = $this->get_column_index('size');
         $COLOR = $this->get_column_index('color');
         $MEMBER = $this->get_column_index('card_no');
+        $AMOUNT = $this->get_column_index('amount');
 
         $ret = "<b>Gazette Billing Preview</b><br />
             <table class=\"table\"><tr>
@@ -252,6 +260,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $ph = array_pop(explode(" OR ",$ph));
             $ph = str_replace(" ","",$ph);
             $cn = $data[$CONTACT];
+            $amount = trim($data[$AMOUNT]);
+            $amount = trim($amount, '$');
             $sz = trim(strtoupper($data[$SIZE]));
             $clr = trim(strtoupper($data[$COLOR]));
             $data[$MEMBER] = trim(strtoupper($data[$MEMBER])); // match on YES
@@ -324,12 +334,9 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     <input type=hidden name=cardnos[] value=%d />",
                     $row[0],$row[1],$sz,
                     $data[$COLOR],
-                    (substr($data[$MEMBER],0,3)=="YES")?
-                    'MEMBER':'NON-MEMBER',
+                    (substr($data[$MEMBER],0,3)=="YES")? 'MEMBER':'NON-MEMBER',
                     $row[0],
-                    (substr($data[$MEMBER],0,3)=="YES")?
-                    $BILLING_NONMEMBER[$sz.$clr]*0.75:
-                    $BILLING_NONMEMBER[$sz.$clr],
+                    $amount,
                     $row[0],$desc,$row[0]);
             }
         }
