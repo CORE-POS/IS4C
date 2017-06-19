@@ -213,8 +213,8 @@ class BatchListPage extends FannieRESTfulPage
             $owners[] = $ownersW[0];
             $oOpts .= '<option>' . $ownersW[0] . '</option>';
         }
-        $owners[] = 'IT';
-        $oOpts .= '<option>IT</option>';
+        $owners[] = 'MULTIPLE DEPTS.';
+        $oOpts .= '<option>MULTIPLE DEPTS.</option>';
         $oJSON = json_encode($owners);
 
         $typesQ = $dbc->prepare("SELECT batchTypeID,
@@ -530,7 +530,7 @@ HTML;
         $this->newName = 'Test BatchListPage';
         $this->newStart = date('Y-m-d 00:00:00');
         $this->newEnd = date('Y-m-d 00:00:00');
-        $this->newOwner = 'IT';
+        $this->newOwner = 'MULTIPLE DEPTS.';
         ob_start();
         $this->post_newType_newName_newStart_newEnd_newOwner_handler();
         ob_end_clean();
@@ -576,7 +576,7 @@ HTML;
         foreach ($modes as $m) {
             $get = $this->batchListDisplay('', $m, rand(0, 50));
             $phpunit->assertNotEquals(0, strlen($get));
-            $get = $this->batchListDisplay('IT', $m, rand(0, 50));
+            $get = $this->batchListDisplay('MULTIPLE DEPTS.', $m, rand(0, 50));
             $phpunit->assertNotEquals(0, strlen($get));
         }
     }
