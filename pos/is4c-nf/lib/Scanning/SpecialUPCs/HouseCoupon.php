@@ -648,6 +648,14 @@ class HouseCoupon extends SpecialUPC
                     $transDB->query('UPDATE localtemptrans SET percentDiscount=0');
                 }
                 break;
+            case "%I": // percent discount on all relevant items
+                $valQ = "select sum(total) 
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type in ('BOTH', 'DISCOUNT')";
+                $valR = $transDB->query($valQ);
+                $row = $transDB->fetch_row($valR);
+                $value = $row[0] * $infoW["discountValue"];
+                break;
             case "%D": // percent discount on all items in give department(s)
                 $valQ = "select sum(total) 
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
