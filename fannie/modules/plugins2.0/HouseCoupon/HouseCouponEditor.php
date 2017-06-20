@@ -431,6 +431,7 @@ class HouseCouponEditor extends FanniePage
             'BQ'=>'BOGO (Qty limited)',
             '%'=>'Percent Discount (End of transaction)',
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
+            '%I'=>'Percent Discount (Specific Items)',
             '%D'=>'Percent Discount (Department)',
             '%S'=>'Percent Discount (Department excludes sale items)',
             'PD'=>'Percent Discount (Anytime)',
