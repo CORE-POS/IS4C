@@ -107,11 +107,13 @@ class HouseCouponEditor extends FanniePage
             $hci = new HouseCouponItemsModel($this->connection);
             $hci->coupID(FormLib::get('add-to-coupon'));
             $hci->type(FormLib::get('add-to-as'));
+            $this->connection->startTransaction();
             foreach (FormLib::get('add-to-upc') as $upc) {
                 $upc = BarcodeLib::padUPC($upc);
                 $hci->upc($upc);
                 $hci->save();
             }
+            $this->connection->finishTransaction();
             header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?edit_id=' . $hci->coupID());
             return false;
         } elseif (FormLib::get_form_value('edit_id','') !== '') {
