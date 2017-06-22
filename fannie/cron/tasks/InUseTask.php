@@ -120,7 +120,7 @@ class InUseTask extends FannieTask
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
                 INNER JOIN inUseTask AS i ON s.superID = i.superID 
-            SET p.inUse = 0
+            SET p.inUse = 0, modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                 AND p.store_id = ?
                 AND p.upc NOT IN ('.$inClause1.')
@@ -129,7 +129,7 @@ class InUseTask extends FannieTask
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
                 INNER JOIN inUseTask AS i ON s.superID = i.superID 
-            SET p.inUse = 0
+            SET p.inUse = 0, modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                 AND p.store_id = ?
                 AND p.upc NOT IN ('.$inClause2.')
@@ -140,7 +140,7 @@ class InUseTask extends FannieTask
         $updateUse = $dbc->prepare('
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
-            SET p.inUse = 1
+            SET p.inUse = 1, modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
                 AND p.store_id = ?;
         ');
