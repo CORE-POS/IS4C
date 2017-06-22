@@ -190,6 +190,12 @@ class OrderGenTask extends FannieTask
                 $cur = 0;
                 $this->autoZero($dbc, $row['upc'], $row['storeID']);
             }
+            if ($this->multiplier) {
+                $row['par'] *= $this->multiplier;
+            }
+            if ($this->forecast) {
+                $row['par'] *= $this->forecast;
+            }
             if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
                 $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
                 if ($prodW === false || $prodW['inUse'] == 0) {
@@ -239,13 +245,6 @@ class OrderGenTask extends FannieTask
                     } else {
                         $row['par'] = 3;
                     }
-                }
-
-                if ($this->multiplier) {
-                    $row['par'] *= $this->multiplier;
-                }
-                if ($this->forecast) {
-                    $row['par'] *= $this->forecast;
                 }
 
                 /**
