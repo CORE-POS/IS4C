@@ -159,7 +159,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $existsP = $dbc->prepare("SELECT upc FROM vendorItems WHERE upc=? AND vendorID=?");
-        $costP = $dbc->prepare('UPDATE products SET cost=? WHERE upc=? AND default_vendor_id=?');
+        $costP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=? AND default_vendor_id=?');
         $updatedUPCs = array();
 
         $dbc->startTransaction();
