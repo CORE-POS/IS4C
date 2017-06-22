@@ -188,6 +188,7 @@ class B2BInvoicePage extends FannieRESTfulPage
     </tr>
 </table>
 <hr />
+<!--
 <p class="form-inline {$finalized}">
     <label>Mark invoice as paid</label>
     <select class="form-control" name="payFlag"><option value="0">No</option><option value="1">Yes</option></select>
@@ -197,8 +198,11 @@ class B2BInvoicePage extends FannieRESTfulPage
         <option value="CA">Cash</option>
     </select>
 </p>
+-->
 <p>
     <button type="submit" class="btn btn-default">Update Invoice</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="B2BInvoicePage.php" class="btn btn-default">Lookup Another Invoice</a>
 </p>
 <p>
 Created by {$creator}<br />
@@ -212,11 +216,12 @@ HTML;
 
     protected function get_view()
     {
+        $this->addOnloadCommand("\$('#inv-num').focus();");
         return <<<HTML
 <form method="get" action="B2BInvoicePage.php">
     <div class="form-group">
         <label>Invoice #</label>
-        <input type="text" class="form-control" name="id" required />
+        <input type="text" class="form-control" id="inv-num" name="id" required />
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-default btn-core">Get Invoice</button>

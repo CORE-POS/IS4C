@@ -80,6 +80,7 @@ class PIB2BListPage extends PIKillerPage
         if (!$this->all) {
             echo ' <a href="?id=' . $this->id . '&all=1">Show Entire History</a>';
         }
+        echo '<br /><a href="B2BInvoicePage.php">Lookup Invoice by #</a>';
     }
 }
 
