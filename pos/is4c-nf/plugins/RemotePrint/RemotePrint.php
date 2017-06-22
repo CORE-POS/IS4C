@@ -84,14 +84,6 @@ class RemotePrint extends Plugin
             } elseif ($row['trans_subtype'] == 'CM') {
                 $comments[] = $row['description'];
             }
-
-            if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
-                $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
-                fwrite($port, $receipt);
-                fclose($port);
-            } else {
-                $driver->writeLine($receipt);
-            }
         }
 
         if (count($lines) > 0) {
@@ -104,6 +96,14 @@ class RemotePrint extends Plugin
             $receipt .= "\n";
             $receipt .= implode("\n", $comments);
             $receipt .= ReceiptLib::cutReceipt($receipt);
+            
+            if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
+                $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
+                fwrite($port, $receipt);
+                fclose($port);
+            } else {
+                $driver->writeLine($receipt);
+            }
         }
     }
 }
