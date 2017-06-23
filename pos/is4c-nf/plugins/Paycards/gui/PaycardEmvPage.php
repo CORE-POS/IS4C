@@ -79,6 +79,7 @@ class PaycardEmvPage extends PaycardProcessPage
             return false;
         } elseif (FormLib::get('cancel') == 1) {
             UdpComm::udpSend("termReset");
+            echo 'Canceled';
             return false;
         } // post?
 
@@ -113,7 +114,9 @@ function checkForCancel(ev) {
     var jsKey = ev.which ? ev.which : ev.keyCode;
     if (jsKey == 13 && (ccKey2 == 99 || ccKey2 == 67) && (ccKey1 == 108 || ccKey1 == 76)) {
         $.ajax({
+            url: 'PaycardEmvPage.php',
             data: 'cancel=1'
+        }).done(function(){
         });
     }
     ccKey2 = ccKey1;
