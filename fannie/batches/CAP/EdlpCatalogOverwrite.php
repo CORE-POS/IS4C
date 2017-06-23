@@ -122,7 +122,6 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             // grab data from appropriate columns
             $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
             $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-            $qty = $data[$indexes['qty']];
             $upc = str_replace("-","",$data[$indexes['upc']]);
             $upc = str_replace(" ","",$upc);
             if ($rm_checks)
