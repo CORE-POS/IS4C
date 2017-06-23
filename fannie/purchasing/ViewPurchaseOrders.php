@@ -180,10 +180,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 $para .= $row[0] . '<br />';
             } elseif (count($row) > 1) {
                 $ret .= "<tr>\n";
+                $rowEmpty = true;
+                $row = '';
                 foreach ($row as $entry) {
                     if (trim($entry) !== '') {
-                        $ret .= "<td>{$entry}</td>";
+                        $rowEmpty = false;
                     }
+                    $row .= '<td>' . trim($entry) . '</td>';
+                }
+                if (!$rowEmpty) {
+                    $ret .= $row;
                 }
                 $ret .= "</tr>\n";
             }
