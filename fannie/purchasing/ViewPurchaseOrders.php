@@ -181,15 +181,15 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             } elseif (count($row) > 1) {
                 $ret .= "<tr>\n";
                 $rowEmpty = true;
-                $row = '';
+                $trow = '';
                 foreach ($row as $entry) {
                     if (trim($entry) !== '') {
                         $rowEmpty = false;
                     }
-                    $row .= '<td>' . trim($entry) . '</td>';
+                    $trow .= '<td>' . trim($entry) . '</td>';
                 }
                 if (!$rowEmpty) {
-                    $ret .= $row;
+                    $ret .= $trow;
                 }
                 $ret .= "</tr>\n";
             }
