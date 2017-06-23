@@ -6,7 +6,7 @@ use COREPOS\pos\lib\PrintHandlers\PrintHandler;
   Stream raw bytes to printer that accepts
   RAW type connections
 */
-class RemotePrinterHTTP extends PrintHandler
+class RemotePrinterRAW extends PrintHandler
 {
     public function writeLine($text)
     {
