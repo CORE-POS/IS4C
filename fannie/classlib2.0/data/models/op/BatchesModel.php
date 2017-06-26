@@ -40,6 +40,7 @@ class BatchesModel extends BasicModel
     'priority' => array('type'=>'INT'),
     'owner' => array('type'=>'VARCHAR(50)'),
     'transLimit' => array('type'=>'TINYINT', 'default'=>0),
+    'notes' => array('type'=>'TEXT'),
     );
 
     public function doc()

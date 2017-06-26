@@ -72,10 +72,22 @@ class EditBatchPage extends FannieRESTfulPage
             'post<id><upc><swap>',
             'post<id><qualifiers><discount>',
             'post<id><trim>',
-            'post<id><storeID>'
+            'post<id><storeID>',
+            'post<noteID><batchNotes>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function post_noteID_batchNotes_handler()
+    {
+        $model = new BatchesModel($this->connection);
+        $model->batchID($this->noteID);
+        $model->notes($this->batchNotes);
+        $model->save();
+        echo 'Saved';
+
+        return false;
     }
 
     protected function get_id_paste_handler()
@@ -1005,6 +1017,9 @@ HTML;
         }
         $ret .= "</table>";
         $ret .= "<input type=hidden id=currentBatchID value=$id />";
+        $ret .= '<label>Notes</label><textarea name="batchNotes" id="batchNotes" class="form-control" rows="4"
+            onchange="batchEdit.saveNotes(' . $id . ');" onkeyup="batchEdit.noteTyped(' . $id . ');">'
+            . $model->notes() . '</textarea>';
         if ($dbc->numRows($fetchR) > 0) {
             $ret .= '<p>
                 <a href="BatchImportExportPage.php?id=' . $id . '">Export as JSON</a>
