@@ -323,6 +323,15 @@ var batchEdit = (function ($) {
         });
     };
 
+    mod.updatePartial = function(batchID) {
+        var dstr = $('.partialBatch').serialize() + '&partialID=' + batchID;
+        $.ajax({
+            type: 'post',
+            data: dstr
+        }).done(function() {
+        });
+    };
+
     mod.saveNotes = function(batchID) {
         var dstr = $('#batchNotes').serialize() + '&noteID=' + batchID;
         $.ajax({
