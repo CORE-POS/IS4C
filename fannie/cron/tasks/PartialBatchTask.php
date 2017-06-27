@@ -54,6 +54,7 @@ times will be limited by how frequently this task runs.';
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $today = date('Y-m-d');
+        $now = new DateTime();
 
         $curP = $dbc->prepare('SELECT discounttype, batchID FROM products WHERE upc=?');
         $unsaleP = $dbc->prepare('UPDATE products SET special_price=0, batchID=0, discounttype=0 WHERE upc=?');
@@ -82,9 +83,14 @@ times will be limited by how frequently this task runs.';
             if (!$this->appliesToday($row['repetition'])) {
                 continue;
             }
-            $start = explode(':', $row['startTime']);
-            $end = explode(':', $row['endTime']);
-            if ($hour > $end[0] || ($hour == $end[0] && $minute > $end[1])) {
+
+            $start = new DateTime($today . ' ' . $row['startTime']);
+            $end = new DateTime($today . ' ' . $row['endTime']);
+            if ($row['paddingMinutes']) {
+                $end = $end->add(new DateInterval('PT' . $row['paddingMinutes'] . 'M'));
+            }
+
+            if ($now >= $end) {
                 // batch should stop
                 // if the batchID does not match leave it alone
                 $current = $dbc->getRow($curP, array($row['upc']));
@@ -92,7 +98,7 @@ times will be limited by how frequently this task runs.';
                     $dbc->execute($unsaleP, array($row['upc']));
                     $changedUPCs[] = $row['upc'];
                 }
-            } elseif ($hour > $start[0] || ($hour == $start[0] && $minute > $start[1])) {
+            } elseif ($now >= $start) {
                 // batch should start
                 // Matching batchID should mean this sale has already started
                 $current = $dbc->getRow($curP, array($row['upc']));
