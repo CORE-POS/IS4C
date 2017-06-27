@@ -140,7 +140,7 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 $form =  new GumTaxDividendFormTemplate($custdata, $meminfo, $ssn, date('Y'), array(1 => sprintf('%.2f',$ttl)));
                 $ret .= $form->renderAsPDF($pdf, 105);
 
-                $template = new GumCheckTemplate($custdata, $meminfo, $equity+$ttl, 'Dividend Payment', $check->checkNumber());
+                $template = new GumCheckTemplate($custdata, $meminfo, $equity+$ttl, 'Class C & Dividend Payment', $check->checkNumber());
                 $template->renderAsPDF($pdf);
 
                 $check->checkIssued(1);
