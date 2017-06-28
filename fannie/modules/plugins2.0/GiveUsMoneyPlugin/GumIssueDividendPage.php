@@ -152,26 +152,31 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 if (!isset($pdf->fonts['gillsansmtpro-book'])) {
                     $pdf->AddFont('GillSansMTPro-Book', '', 'GillSansMTPro-Book.php');
                 }
-                $pdf->SetFont('GillSansMTPro-Book', '', 11);
+                $pdf->SetFont('GillSansMTPro-Book', '', 10);
 
                 $l = 55;
-                $pdf->SetXY($l, 20);
+                $name = 'WFC Owner';
+                $pdf->SetXY($l, 10);
                 $pdf->Cell(0, 5, date('j F Y'), 0, 1);
-                $pdf->Ln(5);
-                $pdf->SetX($l);
-                $pdf->Cell(0, 5, 'Dear Owner:', 0, 1);
-                $pdf->Ln(2);
-                $pdf->SetX($l);
-                $pdf->MultiCell(135, 5, 'Based on the Co-op\'s profitability in Fiscal Year 2017 (July 1, 2016-June 30, 2017), the Board of Directors approved a three percent (3%) dividend on your Class C equity investment. Your dividend is pro-rated based on when you made your investment during that fiscal year. Your Class C investment is eligible, subject to Board discretion, for an annual dividend, not compound interest.');
-                $pdf->Ln(2);
-                $pdf->SetX($l);
-                $pdf->MultiCell(135, 5, 'You are welcome to cash your check toward a purchase at the Co-op. Thank you for investing in Whole Foods Co-op.');
                 $pdf->Ln(4);
                 $pdf->SetX($l);
-                $pdf->Cell(0, 5, 'Sarah Hannigan', 0, 1);
+                $pdf->Cell(0, 5, 'Dear ' . $name . ':', 0, 1);
                 $pdf->Ln(2);
                 $pdf->SetX($l);
-                $pdf->Cell(0, 5, 'General Manager', 0, 1);
+                $pdf->MultiCell(145, 5, 'Thank you for investing in Whole Foods Co-op\'s expansion.  Since opening our Denfeld store in March 2016, we navigated the typical challenges associated with operating two stores, and are now truly hitting our stride in bringing fantastic food and excellent service to two of Duluth\'s neighborhoods.  It\'s a delight to welcome new shoppers and Owners to our Co-op every day.');
+                $pdf->Ln(2);
+                $pdf->SetX($l);
+                $pdf->MultiCell(145, 5, 'This week the Board of Directors approved a three percent dividend on your Class C Equity investment for the 2017 fiscal year (July 2016 - June 2017).  Additionally, the Board approved the first phase of repayment of Owner financing, which includes the repayment of all Class C Equity shares issued.  The check below represents your initial Class C Equity investment plus the dividend for the fiscal year.  Thank you again for supporting our collective success.');
+                $pdf->Ln(2);
+                $pdf->SetX($l);
+                $pdf->MultiCell(135, 5, 'In cooperation,');
+                $pdf->Ln(12);
+                $pdf->SetX($l);
+                $pdf->Cell(0, 5, 'Sarah Hannigan, General Manager', 0, 1);
+                $pdf->Ln(2);
+                $pdf->SetX($l);
+                $pdf->SetFont('GillSansMTPro-Book', '', 8);
+                $pdf->Cell(0, 5, 'Please retain the form 1099 below for 2017 tax filing purposes.', 0, 1);
             }
         }
 
