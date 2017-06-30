@@ -187,7 +187,7 @@ class InvCountPage extends FannieRESTfulPage
                         <input type="text" pattern="\\d*" class="form-control" 
                             id="count-field" required name="count" />
                     </td><td>
-                        <input type="text" pattern="\\d*" class="form-control" required name="par" value="' . ((int)$info['par']) . '" />
+                        <input type="text" pattern="\\d*" class="form-control" required name="par" value="' . round($info['par'], 2) . '" />
                     </td>
                     <td>
                         <button type="submit" class="btn btn-default btn-sm">Save</button>
