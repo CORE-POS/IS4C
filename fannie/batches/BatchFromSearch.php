@@ -113,7 +113,7 @@ class BatchFromSearch extends FannieRESTfulPage
             $this->itemsToTags($tagset, $dbc, $upcs, $prices);
         }
 
-        return 'Location: newbatch/EditBatchPage.php?id=' . $batchID;
+        return 'newbatch/EditBatchPage.php?id=' . $batchID;
     }
 
     private function itemsToBatch($batchID, $dbc, $upcs, $prices, $round)
