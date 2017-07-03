@@ -205,12 +205,12 @@ class WfcVcTask extends FannieTask
         }
 
         $coupons = array(
-            '0049999900142' => array('2017-01-01', '2017-01-15'),
-            '0049999900143' => array('2017-01-16', '2017-01-31'),
-            '0049999900144' => array('2017-02-01', '2017-02-15'),
-            '0049999900145' => array('2017-02-16', '2017-02-28'),
-            '0049999900146' => array('2017-03-01', '2017-03-15'),
-            '0049999900147' => array('2017-03-16', '2017-03-31'),
+            '0049999900142' => array('2017-07-01', '2017-07-15'),
+            '0049999900143' => array('2017-07-16', '2017-07-31'),
+            '0049999900144' => array('2017-08-01', '2017-08-15'),
+            '0049999900145' => array('2017-08-16', '2017-08-31'),
+            '0049999900146' => array('2017-09-01', '2017-09-15'),
+            '0049999900147' => array('2017-09-16', '2017-09-30'),
         );
         $today = new DateTime(date('Y-m-d'));
         $currentUPC = false;
@@ -238,6 +238,7 @@ class WfcVcTask extends FannieTask
             }
         }
 
+        /** friend coupon
         if ($today >= new DateTime('2017-04-01')) {
             $dbc->query("UPDATE CustomerNotifications SET message='' WHERE source='WFC.OAM'");
             $assignP = $dbc->prepare("UPDATE CustomerNotifications
@@ -261,6 +262,7 @@ class WfcVcTask extends FannieTask
                 }
             }
         }
+         */
 
         // grant coupon to all members
         /*
