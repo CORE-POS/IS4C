@@ -58,6 +58,9 @@ class SaHandheldPage extends FannieRESTfulPage
         if ($this->id !== '') {
             $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
             $upc = BarcodeLib::padUPC($this->id);
+            if (substr($upc, 0, 3) == '002') {
+                $upc = substr($upc, 0, 7) . '000000';
+            }
             $ret['upc'] = $upc;     
             $store = FormLib::get('store', 0);
             $q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
