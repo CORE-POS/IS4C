@@ -190,7 +190,6 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $floorSectionRange[] = 30;
                 $floorSectionRange[] = 47;
             }
-            //updat to reflect floorSectionID range based on store_location
             $args = array($upc,$floorSectionRange[0],$floorSectionRange[1]);
             $prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID BETWEEN ? AND ?");
             $dbc->execute($prepZ,$args);
@@ -267,9 +266,6 @@ class ProdLocationEditor extends FannieRESTfulPage
                 echo mysql_errno() . ": " . mysql_error(). "<br>";
             }
 
-            /*  Find suggestions for each item's location based on department.
-             *    This needs to be updated now that there are multiple STORE_IDs being used
-            */
             foreach ($item as $upc => $row) {
                 $item[$upc]['sugDept'] = $this->getLocation($item[$upc]['dept'],$dbc);
             }
@@ -309,7 +305,8 @@ class ProdLocationEditor extends FannieRESTfulPage
                 ';
             foreach ($item as $key => $row) {
                 $ret .= '
-                    <tr><td><a href="ItemEditorPage.php?searchupc=' . $key . '" target="">' . $key . '</a></td>
+                    <tr><td><a href="ProdLocationEditor.php?store_id=&upc=' . 
+                        $key . '&searchupc=Update+Locations+by+UPC" target="">' . $key . '</a></td>
                     <td>' . $row['brand'] . '</td>
                     <td>' . $row['desc'] . '</td>
                     <td>' . $row['dept'] . '</td>
@@ -353,8 +350,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             </form>
         ';
 
-        if ($_GET['upcs']) {
-            $upcs = $_GET['upcs'];
+        if ($upcs = FormLib::get('upcs')) {
             $plus = array();
             $chunks = explode("\r\n", $upcs);
             foreach ($chunks as $key => $str) {
@@ -434,10 +430,6 @@ class ProdLocationEditor extends FannieRESTfulPage
             }
         }
 
-        /*  Find suggestions for each item's location based on department.
-         *    This needs to be updated now that there are multiple STORE_IDs being used
-        */
-
         foreach ($item as $upc => $row) {
             $item[$upc]['sugDept'] = $this->getLocation($item[$upc]['dept'],$dbc);
         }
@@ -490,7 +482,8 @@ class ProdLocationEditor extends FannieRESTfulPage
             ';
         foreach ($item as $key => $row) {
             $ret .= '
-                <tr><td><a href="ItemEditorPage.php?searchupc=' . $key . '" target="">' . $key . '</a></td>
+                <tr><td><a href="ProdLocationEditor.php?store_id=&upc=' . 
+                    $key . '&searchupc=Update+Locations+by+UPC" target="">' . $key . '</a></td>
                 <td>' . $row['brand'] . '</td>
                 <td>' . $row['desc'] . '</td>
                 <td>' . $row['dept'] . '</td>
