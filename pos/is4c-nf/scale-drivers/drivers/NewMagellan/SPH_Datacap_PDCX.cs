@@ -75,6 +75,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             this.rba = null;
         } else if (k == "disableButtons" && v == "true") {
             this.rba.SetEMV(RbaButtons.None);
+        } else if (k == "logXML" && v == "true") {
+            this.log_xml = true;
         }
     }
 
@@ -139,37 +141,34 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         message = message.Replace("{{SecureDevice}}", this.device_identifier);
                         message = message.Replace("{{ComPort}}", com_port);
                         message = message.Trim(new char[]{'"'});
-                        if (this.verbose_mode > 0) {
-                            Console.WriteLine(message);
-                        }
-                        lock (pdcLock) {
-                            pdc_active = true;
-                        }
-                        string result = ax_control.ProcessTransaction(message, 1, null, null);
-                        lock (pdcLock) {
-                            pdc_active = false;
-                        }
-                        result = WrapHttpResponse(result);
-                        if (this.verbose_mode > 0) {
-                            Console.WriteLine(result);
-                        }
+                        VerboseOutput(message);
+                        LogXml(message);
 
+                        PdcActive(true);
+                        string result = ax_control.ProcessTransaction(message, 1, null, null);
+                        PdcActive(false);
+
+                        result = WrapHttpResponse(result);
+                        VerboseOutput(result);
+                        LogXml(result);
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
-                        if (log_xml) {
-                            using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                                file.WriteLine(message);
-                                file.WriteLine(result);
-                            }
-			            }
                     }
                     client.Close();
                 }
             } catch (Exception ex) {
-                if (verbose_mode > 0) {
-                    Console.WriteLine(ex);
-                }
+                VerboseOutput(ex.ToString());
+                LogXml(ex.ToString());
+            } finally {
+                PdcActive(false);
             }
+        }
+    }
+
+    private void PdcActive(bool isActive)
+    {
+        lock (pdcLock) {
+            pdc_active = isActive;
         }
     }
 
@@ -283,13 +282,9 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "</Account>"
             + "</Transaction>"
             + "</TStream>";
-        lock (pdcLock) {
-            pdc_active = true;
-        }
+        PdcActive(true);
         string result = ax_control.ProcessTransaction(xml, 1, null, null);
-        lock (pdcLock) {
-            pdc_active = false;
-        }
+        PdcActive(false);
         XmlDocument doc = new XmlDocument();
         try {
             doc.LoadXml(result);
@@ -352,6 +347,22 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             return 0;
         } else {
             return Int32.Parse(coord);
+        }
+    }
+
+    private void VerboseOutput(string msg)
+    {
+        if (this.verbose_mode > 0) {
+            Console.WriteLine(msg);
+        }
+    }
+
+    private void LogXml(string xml)
+    {
+        if (log_xml) {
+            using (StreamWriter file = new StreamWriter("log.xml", true)) {
+                file.WriteLine(xml);
+            }
         }
     }
 }

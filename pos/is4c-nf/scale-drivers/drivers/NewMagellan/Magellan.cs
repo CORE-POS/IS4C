@@ -56,6 +56,7 @@ public class Magellan : DelegateForm
     private bool asyncUDP = true;
     private bool disableRBA = false;
     private bool disableButtons = false;
+    private bool logXML = false;
     private Object msgLock = new Object();
     private ushort msgCount = 0;
 
@@ -89,6 +90,7 @@ public class Magellan : DelegateForm
                     s.SetVerbose(verbosity);
                     s.SetConfig("disableRBA", this.disableRBA ? "true" : "false");
                     s.SetConfig("disableButtons", this.disableButtons ? "true" : "false");
+                    s.SetConfig("logXML", this.logXML ? "true" : "false");
                     sph.Add(s);
                 } else {
                     throw new Exception("unknown module: " + pair.module);
@@ -282,6 +284,11 @@ public class Magellan : DelegateForm
             JObject o = JObject.Parse(ini_json);
             var dbt = (bool)o["disableButtons"];
             this.disableButtons = dbt;
+        } catch (Exception) {}
+        try {
+            JObject o = JObject.Parse(ini_json);
+            var lx = (bool)o["logXML"];
+            this.logXML = lx;
         } catch (Exception) {}
 
         return conf;
