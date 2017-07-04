@@ -138,6 +138,9 @@ class SaHandheldPage extends FannieRESTfulPage
         $ret = array();
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $upc = BarcodeLib::padUPC($this->id);
+        if (substr($upc, 0, 3) == '002') {
+            $upc = substr($upc, 0, 7) . '000000';
+        }
         $qty = FormLib::get('qty',0);
         $store = FormLib::get('store', 0);
 
