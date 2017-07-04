@@ -85,6 +85,7 @@ class PaycardEmvSuccess extends BasicCorePage
                 return false;
             } elseif ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
                 && ($this->conf->get('CacheCardType') == 'CREDIT' || $this->conf->get('CacheCardType') == 'EMV' || $this->conf->get('CacheCardType') == 'GIFT' || $this->conf->get('CacheCardType') == '')) {
+                UdpComm::udpSend('termReset');
                 $pluginInfo = new Paycards();
                 $this->change_page($pluginInfo->pluginUrl()."/gui/PaycardEmvVoid.php");
 
@@ -113,7 +114,7 @@ class PaycardEmvSuccess extends BasicCorePage
         function submitWrapper(){
             var str = $('#reginput').val();
             if (str.toUpperCase() == 'RP'){
-                $.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
+                $.ajax({url: '<?php echo $this->page_url; ?>ajax/AjaxEnd.php',
                     cache: false,
                     type: 'post',
                     data: 'receiptType='+$('#rp_type').val()+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>'
