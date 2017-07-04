@@ -257,9 +257,9 @@ HTML;
             $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
                 FROM products AS p
                     left join vendors AS n ON p.default_vendor_id=n.vendorID
-                WHERE description LIKE ? 
+                WHERE (description LIKE ? 
                     OR n.vendorName LIKE ?
-                    OR p.brand LIKE ?";
+                    OR p.brand LIKE ?)";
             $args[] = '%'.$upc.'%';
             $args[] = '%'.$upc.'%';
             $args[] = '%'.$upc.'%';
