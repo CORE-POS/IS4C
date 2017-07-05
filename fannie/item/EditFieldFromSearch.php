@@ -55,7 +55,7 @@ class EditFieldFromSearch extends FannieRESTfulPage
         }
 
         $args = array($this->value);
-        list($inStr, $args) = $this->connection->safeInClause($this->upcs, $args);
+        list($inStr, $args) = $this->connection->safeInClause($this->upc, $args);
         $query = "UPDATE products SET " 
             . $this->connection->identifierEscape($this->field) . "=?,
                 modified=" . $this->connection->now() . "
