@@ -25,7 +25,7 @@ class SNS
             throw new Exception("Install aws/aws-sdk-php");
         }
 
-        $this->client = new Aws\Sns\SnsClient(array(
+        $this->client = new \Aws\Sns\SnsClient(array(
             'version' => 'latest',
             'region' => $settings['AwsRegion'],
             'credentials' => array(
