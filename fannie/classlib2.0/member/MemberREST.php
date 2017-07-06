@@ -934,8 +934,8 @@ class MemberREST
     {
         $query = '
             SELECT a.cardNo,
-                c.firstName,
-                c.lastName,
+                ' . ($minimal ? 'c.firstName' : 'MAX(c.firstName)') . ' AS firstName,
+                ' . ($minimal ? 'c.lastName' : 'MAX(c.lastName)') . ' AS lastName
             FROM CustomerAccounts AS a
                 LEFT JOIN Customers AS c ON a.customerAccountID=c.customerAccountID
             WHERE 1=1 ';
@@ -1015,8 +1015,8 @@ class MemberREST
     {
         $query = '
             SELECT c.CardNo AS cardNo,
-                c.FirstName,
-                c.LastName
+                ' . ($minimal ? 'c.FirstName' : 'MAX(c.FirstName)') . ' AS firstName,
+                ' . ($minimal ? 'c.LastName' : 'MAX(c.LastName)') . ' AS lastName
             FROM custdata AS c
                 LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
                 LEFT JOIN memDates AS d ON c.CardNo=d.card_no
@@ -1157,8 +1157,8 @@ class MemberREST
                 'customers' => array(
                     array(
                         'cardNo' => $row['cardNo'],
-                        'firstName' => $row['FirstName'],
-                        'lastName' => $row['LastName'],
+                        'firstName' => $row['firstName'],
+                        'lastName' => $row['lastName'],
                     ),
                 ),
             );
