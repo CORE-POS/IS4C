@@ -46,7 +46,7 @@ class CustomersModel extends BasicModel
     'staff' => array('type'=>'TINYINT', 'default'=>0),
     'phone' => array('type'=>'VARCHAR(20)'),
     'altPhone' => array('type'=>'VARCHAR(20)'),
-    'email' => array('type'=>'VARCHAR(50)'),
+    'email' => array('type'=>'VARCHAR(100)'),
     'memberPricingAllowed' => array('type'=>'TINYINT', 'default'=>0),
     'memberCouponsAllowed' => array('type'=>'TINYINT', 'default'=>0),
     'lowIncomeBenefits' => array('type'=>'TINYINT', 'default'=>0),
