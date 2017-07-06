@@ -104,6 +104,7 @@ class InstaFileV3
             if (is_numeric($size)) {
                 $size .= $row['unitofmeasure'];
             }
+            $size = str_replace('#', 'lb', $size);
             if (is_numeric(trim($size))) {
                 $size = 'each';
             }
