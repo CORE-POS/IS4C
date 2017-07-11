@@ -25,11 +25,7 @@ namespace COREPOS\common;
 use COREPOS\common\sql\CharSets;
 
 if (!function_exists("ADONewConnection")) {
-    if (file_exists(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php')) {
-        include(dirname(__FILE__) . '/../vendor/adodb/adodb-php/adodb.inc.php');
-    } else {
-        include(dirname(__FILE__).'/adodb5/adodb.inc.php');
-    }
+    include(dirname(__FILE__).'/adodb5/adodb.inc.php');
 }
 
 
@@ -309,7 +305,7 @@ class SQLManager
     public function setDefaultDB($db_name)
     {
         /** verify connection **/
-        if (!isset($this->connections[$db_name])) {
+        if (!is_string($db_name) || !isset($this->connections[$db_name])) {
             return false;
         }
 
@@ -1813,6 +1809,9 @@ class SQLManager
     */
     public function safeInClause($arr, $args=array(), $dummy_value=-999999)
     {
+        if (!is_array($arr)) {
+            $arr = array($arr);
+        }
         if (count($arr) == 0) { 
             $arr = array($dummy_value);
         }

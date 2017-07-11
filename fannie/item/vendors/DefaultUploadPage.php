@@ -147,10 +147,13 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc, isPrimary, multiplier FROM VendorAliases WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
-            $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
+            if (!isset($SKU_TO_PLU_MAP[$skusW['sku']])) {
+                $SKU_TO_PLU_MAP[$skusW['sku']] = array();
+            }
+            $SKU_TO_PLU_MAP[$skusW['sku']][] = $skusW;
         }
 
         $itemP = $dbc->prepare("
@@ -201,8 +204,9 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             if ($this->session->vUploadCheckDigits)
                 $upc = '0'.substr($upc,0,12);
+            $aliases = array(array('upc' => $upc, 'isPrimary'=>1, 'multiplier'=>1));
             if (isset($SKU_TO_PLU_MAP[$sku])) {
-                $upc = $SKU_TO_PLU_MAP[$sku];
+                $aliases = $SKU_TO_PLU_MAP[$sku];
             }
             $category = ($indexes['vDept'] === false) ? 0 : $data[$indexes['vDept']];
 
@@ -257,19 +261,23 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $srp = 0;
             }
 
-            $args = array(
-                $brand, $sku, $size, $upc,
-                $qty, $reg_unit, $description, $category,
-                $VENDOR_ID, $net_unit, date('Y-m-d H:i:s'), $srp
-            );
-            $dbc->execute($itemP, $args);
+            foreach ($aliases as $alias) {
+                $args = array(
+                    $brand, 
+                    $alias['isPrimary'] ? $sku : $alias['upc'],
+                    $size, $alias['upc'],
+                    $qty, $reg_unit, $description, $category,
+                    $VENDOR_ID, $net_unit, date('Y-m-d H:i:s'), $srp
+                );
+                $dbc->execute($itemP, $args);
 
-            if ($srpP) {
-                $dbc->execute($srpP,array($VENDOR_ID,$upc,$srp));
-            }
+                if ($srpP) {
+                    $dbc->execute($srpP,array($VENDOR_ID,$alias['upc'],$srp));
+                }
 
-            if ($this->session->vUploadChangeCosts) {
-                $this->updateCost($pmodel, $upc, $VENDOR_ID, $reg_unit);
+                if ($this->session->vUploadChangeCosts) {
+                    $this->updateCost($pmodel, $alias['upc'], $VENDOR_ID, $reg_unit*$alias['multiplier']);
+                }
             }
         }
         $dbc->commitTransaction();

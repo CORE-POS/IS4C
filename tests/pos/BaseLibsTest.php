@@ -13,6 +13,7 @@ use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+use COREPOS\pos\lib\ItemAction;
 
 /**
  * @backupGlobals disabled
@@ -776,6 +777,13 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     {
         $inf = new ItemNotFound();
         $this->assertNotEquals('', $inf->handle('4011', array()));
+    }
+
+    public function testItemAction()
+    {
+        $act = new ItemAction();
+        // coverage
+        $act->callback(array());
     }
 }
 

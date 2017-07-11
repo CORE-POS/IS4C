@@ -28,6 +28,7 @@ class PermissionsModel extends BasicModel
 {
 
     protected $name = "permissions";
+    protected $preferred_db = 'plugin:CalendarDatabase';
 
     protected $columns = array(
     'permissionID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

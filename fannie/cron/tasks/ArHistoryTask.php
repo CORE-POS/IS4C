@@ -96,7 +96,8 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
                 CASE WHEN department IN $dlist THEN total ELSE 0 END as payments,
                 tdate,trans_num
                 FROM dlog_15
-                WHERE department IN $dlist OR trans_subtype='MI'";
+                WHERE (department IN $dlist OR trans_subtype='MI')
+                    AND tdate < " . $dbc->curdate();
         $lookupP = $dbc->prepare($lookupQ);
         $args = array();
         foreach($case_args as $ca) {

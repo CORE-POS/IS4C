@@ -12,21 +12,8 @@ function fetchOrders(){
     }).done(function(data){
         $('#ordersDiv').html(data);
         $('.tablesorter').tablesorter([[0, 1]]);
+        $('.table-float').floatThead();
 	});
-}
-
-function fetchPage(pager) {
-	var dataStr = $('#orderStatus').val()+"=1";
-	if ($('#orderShow').val() == '1')
-		dataStr += '&all=1';	
-    dataStr += '&pager='+pager;
-	$.ajax({
-		url: 'ViewPurchaseOrders.php?'+dataStr,
-		type: 'get'
-    }).done(function(data){
-        $('#ordersDiv').html(data);
-        window.scrollTo(0,0);
-    });
 }
 
 function togglePlaced(orderID){
@@ -34,10 +21,12 @@ function togglePlaced(orderID){
     console.log($('#receiveBtn').length);
 	if ($('#placedCheckbox').prop('checked')) {
 		dataStr += '1';
-        $('#receiveBtn').show();
+        $('.pending-only').hide();
+        $('.placed-only').show();
 	} else {
 		dataStr += '0';
-        $('#receiveBtn').hide();
+        $('.pending-only').show();
+        $('.placed-only').hide();
     }
 
 	$.ajax({
@@ -116,5 +105,25 @@ function isSO(oid, sku, isSO) {
         type: 'post',
         data: 'id='+oid+'&sku='+sku+'&isSO='+isSO
     });
+}
+
+function itemAdjust(orderID, sku, adjust, elem) {
+    $.ajax({
+        type: 'post',
+        data: 'id='+orderID+'&sku='+sku+'&adjust='+adjust,
+        dataType: 'json'
+    }).done(function (resp) {
+        if (resp.qty !== null) {
+            $('#qty' + elem).html(resp.qty);
+        }
+    });
+}
+
+function itemInc(orderID, sku, elem) {
+    itemAdjust(orderID, sku, 1, elem);
+}
+
+function itemDec(orderID, sku, elem) {
+    itemAdjust(orderID, sku, -1, elem);
 }
 

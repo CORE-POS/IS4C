@@ -107,11 +107,13 @@ class HouseCouponEditor extends FanniePage
             $hci = new HouseCouponItemsModel($this->connection);
             $hci->coupID(FormLib::get('add-to-coupon'));
             $hci->type(FormLib::get('add-to-as'));
+            $this->connection->startTransaction();
             foreach (FormLib::get('add-to-upc') as $upc) {
                 $upc = BarcodeLib::padUPC($upc);
                 $hci->upc($upc);
                 $hci->save();
             }
+            $this->connection->finishTransaction();
             header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?edit_id=' . $hci->coupID());
             return false;
         } elseif (FormLib::get_form_value('edit_id','') !== '') {
@@ -431,11 +433,17 @@ class HouseCouponEditor extends FanniePage
             'BQ'=>'BOGO (Qty limited)',
             '%'=>'Percent Discount (End of transaction)',
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
+            '%I'=>'Percent Discount (Specific Items)',
             '%D'=>'Percent Discount (Department)',
             '%S'=>'Percent Discount (Department excludes sale items)',
             'PD'=>'Percent Discount (Anytime)',
             'AD'=>'All Discount (Department)',
         );
+        if ($mType != '') {
+            unset($dts['%']);
+            unset($dts['%B']);
+            unset($dts['PD']);
+        }
         $ret .= '<div class="row">
             <label class="col-sm-1 control-label">Discount Type</label>
             <div class="col-sm-3">
@@ -549,7 +557,7 @@ class HouseCouponEditor extends FanniePage
                     LEFT JOIN products AS p ON p.upc=h.upc AND h.type='DISCOUNT'
                     LEFT JOIN departments AS d ON h.upc=d.dept_no AND h.type='QUALIFIER'
                 WHERE h.coupID=?";
-        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D' || $hc->discountType() == 'S' || $hc->minType() == 'C!' || $hc->minType == 'C^') {
+        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D' || $hc->discountType() == 'S' || $hc->minType() == 'C!' || $hc->minType() == 'C^') {
             $query = '
                 SELECT h.upc,
                     COALESCE(d.dept_name, \'Unknown department\') AS description,

@@ -52,7 +52,18 @@ $pdf=new WFC_Hybrid_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-$narrowP = $dbc->prepare('SELECT upc FROM NarrowTags WHERE upc=?');
+$narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
+$store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+$mtP = $dbc->prepare('SELECT p.auto_par 
+    FROM MovementTags AS m
+        INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.store_id
+    WHERE m.upc=? AND m.storeID=?');
+$updateMT = $dbc->prepare('
+    UPDATE MovementTags
+    SET lastPar=?
+        modified=' . $dbc->now() . '
+    WHERE upc=?
+        AND storeID=?');
 
 $full = array();
 $half = array();
@@ -62,6 +73,7 @@ foreach ($data as $row) {
         $half[] = $row;
     } else {
         $row['full'] = true;
+        $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
         $full[] = $row;
     }
 }
@@ -115,12 +127,27 @@ foreach($data as $row) {
         $check = $pdf->GetCheckDigit($upc);
         $vendor = substr($row['vendor'],0,7);
 
-        //Start laying out a label 
-        $newUPC = $upc . $check; //add check digit to upc
-        if (strlen($upc) <= 11)
-        $pdf->UPC_A($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
-        else
-        $pdf->EAN13($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
+        /**
+         * Full tags are further sub-divided.
+         * A MovementTag has a slightly different
+         * UPC placement and needs to update the related table
+         */
+        if ($row['movementTag']) {
+            if (strlen($upc) <= 11) {
+                $pdf->UPC_A($full_x+3,$full_y+4,$upc,7);  //generate barcode and place on label
+            } else {
+                $pdf->EAN13($full_x+3,$full_y+4,$upc,7);  //generate barcode and place on label
+            }
+            $pdf->SetXY($full_x+38, $full_y+4);
+            $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*7)), 1, 1, 'C');
+            $dbc->execute($updateMT, array(($row['movementTag']*7), $row['upc'], $store));
+        } else {
+            //Start laying out a label 
+            if (strlen($upc) <= 11)
+            $pdf->UPC_A($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
+            else
+            $pdf->EAN13($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
+        }
 
         // writing data
         // basically just set cursor position

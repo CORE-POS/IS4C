@@ -384,7 +384,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             $v = new VendorsModel($dbc);
             $v->vendorID($pdW['default_vendor_id']);
             if ($v->load()) {
-                $ins_array['mixMatch'] = substr($v->vendorName(),0,26);
+                $ins_array['mixMatch'] = $v->vendorName();
             }
         }
         /**

@@ -44,7 +44,7 @@ class GumCheckTemplate
     const POSITION_TRI_1 = 2;
     const POSITION_TRI_2 = 3;
     const POSITION_TRI_3 = 4;
-    private $position = 0;
+    private $position = 1;
 
     public function setPosition($p)
     {

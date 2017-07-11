@@ -62,6 +62,9 @@ class AutoOrderTask extends FannieTask
         $vendor = new VendorsModel($dbc);
         $costP = $dbc->prepare('SELECT SUM(unitCost*caseSize*quantity) FROM PurchaseOrderItems WHERE orderID=?');
         foreach ($map->find() as $obj) {
+            if ($obj->active() == 0) {
+                continue;
+            }
             $task = new OrderGenTask();
             $task->setConfig($this->config);
             $task->setLogger($this->logger);

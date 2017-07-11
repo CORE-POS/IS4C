@@ -40,6 +40,7 @@ class GumTaxIdentifiersModel extends BasicModel
 {
 
     protected $name = "GumTaxIdentifiers";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumTaxIdentifierID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),

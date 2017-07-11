@@ -86,14 +86,17 @@ SKUs.
     */
     public function createIfMissing($upc, $vendorID)
     {
-        // look for entry directly by UPC or via SKU mapping
+        $aliasP = $this->connection->prepare("SELECT upc FROM VendorAliases WHERE vendorID=? AND upc=?");
+        $aliased = $this->connection->getValue($aliasP, array($vendorID, $upc));
+        if ($aliased) {
+            return true;
+        }
         $findP = $this->connection->prepare('
             SELECT v.upc
             FROM vendorItems AS v
-                LEFT JOIN vendorSKUtoPLU AS m ON v.vendorID=m.vendorID AND v.sku=m.sku
             WHERE v.vendorID=?
-                AND (v.upc=? OR m.upc=?)');
-        $findR = $this->connection->execute($findP, array($vendorID, $upc, $upc));
+                AND v.upc=?');
+        $findR = $this->connection->execute($findP, array($vendorID, $upc));
         if ($this->connection->num_rows($findR) == 0) {
             // create item from product
             $prod = new ProductsModel($this->connection);
@@ -126,7 +129,7 @@ SKUs.
                 modified=' . $this->connection->now() . '
             WHERE vendorID=?
                 AND sku=?'); 
-        $skuModel = new VendorSKUtoPLUModel($this->connection);
+        $skuModel = new VendorAliasesModel($this->connection);
         $skuModel->vendorID($vendorID);
         $skuModel->upc($upc);
         foreach ($skuModel->find() as $obj) {

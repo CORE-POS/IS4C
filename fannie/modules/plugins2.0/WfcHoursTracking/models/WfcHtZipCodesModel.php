@@ -28,6 +28,7 @@ class WfcHtZipCodesModel extends BasicModel
 {
 
     protected $name = "zipcodes";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'zip' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),

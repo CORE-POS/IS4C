@@ -109,6 +109,7 @@ class InventoryTask extends FannieTask
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->clearEntries($dbc, $this->store_id, $this->vendor_id);
 
+        $dbc->startTransaction();
         $insP = $dbc->prepare('
             INSERT INTO InventoryCache
                 (upc, storeID, cacheStart, cacheEnd, baseCount, ordered, sold, shrunk)
@@ -124,10 +125,10 @@ class InventoryTask extends FannieTask
             $last = array($row['upc'], $row['storeID'], $row['countDate']);
             $sales = 0;
             $sales += $this->getSales($dbc, $last);
-            $bdInfo = COREPOS\Fannie\API\item\InventoryLib::isBreakdown($dbc, $row['upc']);
-            if ($bdInfo) {
-                $bdSales = $this->getSales($dbc, array($bdInfo['upc'], $row['storeID'], $row['countDate']));
-                $sales += ($bdInfo['units'] * $bdSales);
+            $aliases = COREPOS\Fannie\API\item\InventoryLib::getAliases($dbc, $row['upc']);
+            foreach ($aliases as $alias) {
+                $aliasSales = $this->getSales($dbc, array($alias['upc'], $row['storeID'], $row['countDate']));
+                $sales += ($alias['multiplier'] * $aliasSales);
             }
 
             $orders = InventoryCacheModel::calculateOrdered($dbc, $row['upc'], $row['storeID'], $row['countDate']);
@@ -160,11 +161,40 @@ class InventoryTask extends FannieTask
             );
             $insR = $dbc->execute($insP, $args);
         }
+        $dbc->commitTransaction();
 
         $dbc->query('
             UPDATE InventoryCache
             SET onHand = baseCount + ordered - sold - shrunk
         ');
+
+        $this->trimCounts($dbc, $this->store_id, $this->vendor_id);
+    }
+
+    // trim the backlog of count data
+    // don't keep more than a 3 count history per item
+    private function trimCounts($dbc, $store_id, $vendor_id)
+    {
+        if ($store_id && $vendor_id) {
+            return true;
+        }
+
+        $dbc->startTransaction();
+        $clearR = $dbc->query("SELECT upc, storeID FROM InventoryCounts GROUP BY upc, storeID HAVING COUNT(*) > 3");
+        $getP = $dbc->prepare("SELECT inventoryCountID, mostRecent FROM InventoryCounts WHERE upc=? AND storeID=? ORDER BY countDate DESC");
+        $delP = $dbc->prepare("DELETE FROM InventoryCounts WHERE inventoryCountID=?");
+        while ($clearW = $dbc->fetchRow($clearR)) {
+            $args = array($clearW['upc'], $clearW['storeID']);
+            $counter = 1;
+            $res = $dbc->execute($getP, $args);
+            while ($row = $dbc->fetchRow($res)) {
+                if ($counter > 3 && $row['mostRecent'] != 1) {
+                    $dbc->execute($delP, array($row['inventoryCountID']));
+                }
+                $counter++;
+            }
+        }
+        $dbc->commitTransaction();
     }
 
     private function getSales($dbc, $args)
@@ -173,7 +203,8 @@ class InventoryTask extends FannieTask
         $salesP = $dbc->prepare('
             SELECT d.upc,
                 d.store_id,
-                ' . DTrans::sumQuantity('d') . ' AS qty
+                ' . DTrans::sumQuantity('d') . ' AS qty,
+                p.scale AS byWeight
             FROM ' . $dlog . ' AS d
                 ' . DTrans::joinProducts('d', 'p', 'INNER') . '
             WHERE p.default_vendor_id > 0
@@ -186,9 +217,10 @@ class InventoryTask extends FannieTask
                 d.store_id
             HAVING qty > 0');
         $sales = $dbc->getRow($salesP, $args);
-        $sales = $sales && $sales['qty'] ? $sales['qty'] : 0;
-
-        return $sales;
+        if ($sales === false) {
+            return 0;
+        }
+        return $sales['byWeight'] ? $sales['qty'] * 1.001 : $sales['qty'];
     }
 }
 

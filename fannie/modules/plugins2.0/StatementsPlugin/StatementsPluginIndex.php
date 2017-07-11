@@ -209,7 +209,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $opt_sets = array('', '');
+        $opt_sets = array('', '', '');
         $q1 = 'SELECT a.card_no,
                 c.LastName,
                 m.email_1
@@ -252,10 +252,31 @@ class StatementsPluginIndex extends FannieRESTfulPage
             $opt_sets[1] .= $option;
         }
 
+        $q2 = 'SELECT a.b2bInvoiceID AS card_no,
+                c.LastName,
+                m.email_1
+               FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'B2BInvoices AS a
+                INNER JOIN custdata AS c ON a.cardNo=c.CardNo AND c.personNum=1
+                LEFT JOIN suspensions AS s ON a.cardNo=s.cardno
+                INNER JOIN meminfo AS m ON a.cardNo=m.card_no
+               WHERE c.Type <> \'TERM\'
+                AND (c.memType=2 OR s.memtype1=2)
+                AND (a.isPaid=0)';
+        $r2 = $dbc->query($q2);
+        while ($row = $dbc->fetch_row($r2)) {
+            if (filter_var($row['email_1'], FILTER_VALIDATE_EMAIL)) {
+                $row['LastName'] .= ' &#x2709;';
+            }
+            $option = sprintf('<option value="b2b%d">%d %s</option>',
+                        $row['card_no'], $row['card_no'], $row['LastName']);
+            $opt_sets[2] .= $option;
+        }
+
         $ret = '<form id="arForm" action="StatementsPluginBusiness.php" method="post">';
         $ret .= '<select onchange="$(\'#arAccounts\').html($(this.value).html());">';
         $ret .= '<option value="#arSet0">Business (Any Balance)</option>';
         $ret .= '<option value="#arSet1">Business (EOM)</option>';
+        $ret .= '<option value="#arSet2">B2B Invoices</option>';
         $ret .= '</select>';
 
         $ret .= '<button type="button" onclick="$(\'#arAccounts option\').each(function(){$(this).prop(\'selected\', true);});
@@ -285,7 +306,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '</select>';
         $ret .= '</form>';
 
-        for ($i=0; $i<2; $i++) {
+        for ($i=0; $i<3; $i++) {
             $ret .= '<div id="arSet' . $i . '" style="display:none;">';
             $ret .= $opt_sets[$i];
             $ret .= '</div>';

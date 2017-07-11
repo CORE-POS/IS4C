@@ -176,8 +176,9 @@ class ProductMovementModular extends FannieReportPage
             $sumQty += $row[4];
             $sumSales += $row[5];
         }
+        $divisor = count($data) > 0 ? count($data) : 1;
         return array(
-            array('Daily Avg.',null,null,null,round($sumQty/count($data),2),round($sumSales/count($data),2)),
+            array('Daily Avg.',null,null,null,round($sumQty/$divisor,2),round($sumSales/$divisor,2)),
             array('Total',null,null,null,$sumQty,$sumSales)
         );
     }

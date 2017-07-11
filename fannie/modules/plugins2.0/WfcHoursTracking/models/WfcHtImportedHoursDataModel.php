@@ -28,6 +28,7 @@ class WfcHtImportedHoursDataModel extends BasicModel
 {
 
     protected $name = "ImportedHoursData";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT', 'primary_key'=>true),

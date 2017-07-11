@@ -60,8 +60,23 @@ class OrderGenTask extends FannieTask
         $this->userID = $u;
     }
 
+    // translate daily pars into the number of days in an
+    // order cycle
+    private $multiplier = 1;
+    public function setMultiplier($m)
+    {
+        $this->multiplier = $m;
+    }
+
+    private $forecast = 0;
+    public function setForecast($f)
+    {
+        $this->forecast = $f;
+    }
+
     private function freshenCache($dbc)
     {
+        $dbc->startTransaction();
         $items = $dbc->query('
             SELECT i.upc,
                 i.storeID,
@@ -79,16 +94,50 @@ class OrderGenTask extends FannieTask
             $args = array($row['upc'], $row['storeID'], $row['countDate'], $row['countDate'], $row['count'], $row['count']);
             $dbc->execute($ins, $args);
         }
+        $dbc->commitTransaction();
+    }
+
+    /**
+     * Scale pars to align with a forecasted sales total
+     */
+    private function forecastFactor($dbc, $forecast, $vendors, $store)
+    {
+        if ($forecast <= 0) {
+            return 0;
+        }
+
+        list($inStr, $args) = $dbc->safeInClause($vendors);
+        $query = "
+            SELECT SUM(CASE WHEN p.discounttype=1 THEN i.par*p.special_price ELSE i.par*p.normal_price END) AS retail
+            FROM products AS p
+                INNER JOIN InventoryCounts AS i ON p.upc=i.upc AND p.store_id=i.storeID AND i.mostRecent=1
+            WHERE p.default_vendor_id IN ({$inStr}) ";
+        if ($store) {
+            $query .= " AND p.store_id=? ";
+            $args[] = $store;
+        }
+        $prep = $dbc->prepare($query);
+        $retail = $dbc->getValue($prep, $args);
+        if ($retail === false) {
+            return 0;
+        }
+
+        return $forecast / $retail;
     }
 
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->freshenCache($dbc);
+        $this->forecast = $this->forecastFactor($dbc, $this->forecast/$this->multiplier, $this->vendors, $this->store);
+
+        $dbc->startTransaction();
         $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount >= 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
         $prodP = $dbc->prepare('SELECT * FROM products WHERE upc=? AND store_id=?');
+        $halfP = $dbc->prepare('SELECT halfCases FROM vendors WHERE vendorID=?');
+
         $orderIDs = array();
         $dtP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
@@ -141,6 +190,12 @@ class OrderGenTask extends FannieTask
                 $cur = 0;
                 $this->autoZero($dbc, $row['upc'], $row['storeID']);
             }
+            if ($this->multiplier) {
+                $row['par'] *= $this->multiplier;
+            }
+            if ($this->forecast) {
+                $row['par'] *= $this->forecast;
+            }
             if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
                 $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
                 if ($prodW === false || $prodW['inUse'] == 0) {
@@ -164,17 +219,6 @@ class OrderGenTask extends FannieTask
                     $orderIDs[] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
-
-                // If the item is a breakdown, get its source package
-                // and multiply the case size to reflect total brokendown units
-                $bdInfo = COREPOS\Fannie\API\item\InventoryLib::isBreakdown($dbc, $row['upc']);
-                if ($bdInfo) {
-                    $itemR2 = $dbc->getRow($catalogP, array($bdInfo['upc'], $row['vid']));
-                    if ($itemR2) {
-                        $itemR = $itemR2;
-                        $itemR['units'] *= $bdInfo['units'];
-                    }
-                }
 
                 // no catalog entry to create an order
                 if ($itemR === false || $itemR['units'] <= 0) {
@@ -208,8 +252,10 @@ class OrderGenTask extends FannieTask
                   and add to order
                 */
                 $cases = 1;
+                $halves = $dbc->getValue($halfP, $row['vid']);
+                $increment = $halves ? 0.5 : 1.0;
                 while (($cases*$itemR['units']) + $cur < $row['par']) {
-                    $cases++;
+                    $cases += $increment;
                 }
                 $poi = new PurchaseOrderItemsModel($dbc);
                 $poi->orderID($orders[$row['vid'].'-'.$row['storeID']]);
@@ -228,6 +274,7 @@ class OrderGenTask extends FannieTask
                 $poi->save();
             }
         }
+        $dbc->commitTransaction();
 
         if (!$this->silent) {
             $this->sendNotifications($dbc, $orders);

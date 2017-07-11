@@ -51,6 +51,9 @@ class Stats
         );
     }
 
+    /**
+     * Exponential least squares fit coefficients
+     */
     public static function exponentialFit($points)
     {
         $ret = new \stdClass();
@@ -114,6 +117,45 @@ class Stats
         } else {
             return 100 * ($a - $b) / ((float)$b);
         }
+    }
+
+    /**
+     * Calculate the next point in the sequence using exponential smoothing
+     *
+     * F = Y[x]*a + (a * (1-a)^1 * Y[x-1]) + (a * (1-a)^2 * Y[x-2]) + (a * (1-a)^3 * Y[x-3]) ...
+     *  F = Forecast
+     *  Y[x] = Observered value at time x
+     *  a = alpha smoothing factor
+     */
+    public static function expSmoothing($points, $alpha)
+    {
+        $points = array_reverse($points);
+        $val = $points[0] * $alpha;
+        for ($i=1; $i<count($points); $i++) {
+            $next = $alpha * (pow(1-$alpha, $i)) * $points[$i];
+            $val += $next;
+        } 
+
+        return $val;
+    }
+
+    /**
+     * Calculate the next point in the sequence using exponential smoothing
+     * This algorithm gives a slightly different results (difference of ~0.02%
+     * over 25 observations)
+     *
+     * F[0] = Y[0]
+     * F[x] = F[x-1] + (a * (Y[x] - F[x-1]))
+     */
+    public static function expSmoothing2($points, $alpha)
+    {
+        $forecast = $points[0];
+        foreach ($points as $point) {
+            $next = $forecast + ($alpha * ($point - $forecast));
+            $forecast = $next;
+        }
+
+        return $forecast;
     }
 }
 

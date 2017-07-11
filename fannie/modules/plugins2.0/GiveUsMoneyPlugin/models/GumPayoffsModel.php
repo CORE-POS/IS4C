@@ -33,6 +33,7 @@ class GumPayoffsModel extends BasicModel
 {
 
     protected $name = "GumPayoffs";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumPayoffID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

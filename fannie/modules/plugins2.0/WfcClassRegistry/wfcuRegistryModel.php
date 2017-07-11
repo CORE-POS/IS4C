@@ -30,6 +30,7 @@ class wfcuRegistryModel extends BasicModel
 {
 
     protected $name = "wfcuRegistry";
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)'),

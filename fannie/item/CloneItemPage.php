@@ -66,6 +66,7 @@ class CloneItemPage extends FannieRESTfulPage
         $description = substr('CLONE ' . $model->description(), 0, 30);
         $model->description($description);
         $model->store_id(1);
+        $model->created(date('Y-m-d H:i:s'));
         $model->save();
 
         if ($dbc->tableExists('prodExtra')) {

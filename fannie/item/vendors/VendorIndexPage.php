@@ -72,17 +72,16 @@ class VendorIndexPage extends FannieRESTfulPage
         $accounts = FormLib::get('autoAccount', array());
         for ($i=0; $i<count($this->autoID); $i++) {
             $map->storeID($this->autoID[$i]);
-            if (in_array($map->storeID(), $enables)) {
-                $map->accountID($accounts[$i]);
-                $map->save();
-            } else {
-                $map->delete();
-            }
+            $active = in_array($map->storeID(), $enables);
+            $map->active($active ? 1 : 0);
+            $map->accountID($accounts[$i]);
+            $map->save();
         }
 
         $vendor = new VendorsModel($dbc);
-        $vendor->vendorID($id);
+        $vendor->vendorID($this->id);
         $vendor->orderMinimum(FormLib::get('minOrder', 0));
+        $vendor->halfCases(FormLib::get('halfs', false) ? 1 : 0);
         $vendor->save();
 
         return false;
@@ -259,7 +258,7 @@ class VendorIndexPage extends FannieRESTfulPage
                 AND p.upc NOT IN (
                     SELECT upc FROM vendorItems WHERE vendorID=?
                 ) AND p.upc NOT IN (
-                    SELECT upc FROM vendorSKUtoPLU WHERE vendorID=?
+                    SELECT upc FROM VendorAliases WHERE vendorID=?
                 )';
         $prep = $dbc->prepare($query);
         $args = array($vendorID, $vendorID, $vendorID);
@@ -335,6 +334,8 @@ class VendorIndexPage extends FannieRESTfulPage
             <div class="panel panel-default">
                 <div class="panel-heading">Mappings</div>
                 <div class="panel-body">';
+        $ret .= "<a href=\"VendorAliasesPage.php?id=$id\">Manage Aliases</a>";
+        $ret .= "<br />";
         $ret .= "<a href=\"UploadPluMapPage.php?vid=$id\">Upload PLU/SKU mapping</a>";
         $ret .= "<br />";
         $ret .= "<a href=\"SkuMapPage.php?id=$id\">View or Edit PLU/SKU mapping</a>";
@@ -480,7 +481,7 @@ class VendorIndexPage extends FannieRESTfulPage
         $map = new AutoOrderMapModel($dbc);
         $map->vendorID($id);
         $ret .= '<div class="panel panel-default">
-            <div class="panel-heading">Auto Order (No, this is not enabled yet)</div>
+            <div class="panel-heading">Auto Order</div>
             <div class="panel-body">
             <div class="form-group">
                 <label>Minimum Order</label>
@@ -489,6 +490,12 @@ class VendorIndexPage extends FannieRESTfulPage
                     <input type="text" name="minOrder" class="form-control auto-order"
                         value="' . $model->orderMinimum() . '" />
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Allow Half Cases
+                    <input type="checkbox" name="halfs" class="auto-order" value="1"
+                        ' . ($model->halfCases() ? 'checked' : '') . ' />
+                </label>
             </div>
             <table class="table table-bordered">
             <tr><th>Store</th><th>Enabled</th><th>Account#</th></tr>';
@@ -503,7 +510,7 @@ class VendorIndexPage extends FannieRESTfulPage
                 </tr>',
                 $store->description(),
                 $store->storeID(),
-                ($exists ? 'checked' : ''),
+                ($map->active() ? 'checked' : ''),
                 $store->storeID(),
                 $map->accountID()
             );
@@ -511,6 +518,8 @@ class VendorIndexPage extends FannieRESTfulPage
         $ret .= '</table>
                 <button type="button" class="btn btn-default" 
                     onclick="vendorEditor.saveAutoOrder(' . $id . '); return false;">Save</button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="ParsPage.php?id=' . $id . '">Pars Algorithm</a>
                 </div>
             </div>';
 
@@ -580,7 +589,7 @@ class VendorIndexPage extends FannieRESTfulPage
         ?>
         <p id="vendorarea">
         <select onchange="if (this.value=='new') vendorEditor.vendorNew(); else location='?vid='+this.value;" 
-            id=vendorselect class="form-control">
+            id=vendorselect class="form-control chosen">
         <?php echo $vendors; ?>
         </select>
         </p>
@@ -596,6 +605,9 @@ class VendorIndexPage extends FannieRESTfulPage
 
         $this->add_script('index.js');
         $this->addOnloadCommand("\$('#vendorselect').focus();\n");
+        $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
 
         return ob_get_clean();
     }

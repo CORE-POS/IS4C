@@ -33,11 +33,11 @@ class InventoryCountsModel extends BasicModel
     'inventoryCountID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
     'storeID' => array('type'=>'INT'),
-    'count' => array('type'=>'DOUBLE'),
+    'count' => array('type'=>'DECIMAL(10,2)'),
     'countDate' => array('type'=>'DATETIME'),
     'mostRecent' => array('type'=>'TINYINT', 'default'=>1),
     'uid' => array('type'=>'VARCHAR(4)'),
-    'par' => array('type'=>'INT'),
+    'par' => array('type'=>'DECIMAL(10,2)'),
     );
 
 }

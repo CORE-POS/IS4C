@@ -1,10 +1,17 @@
 <?php
 include('../../config.php');
 
-if (!isset($_GET['upc'])){
+if (!isset($_GET['upc']) && !isset($_GET['upcs'])){
 ?>
 <form action=barcode.php method=get>
 Get barcodes for UPC: <input type=text name=upc />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type=submit value="Generate PDF" />
+</form>
+<hr />
+<form action=barcode.php method=get>
+Get barcodes for several UPCs 
+<textarea rows="10" cols="15" name="upcs"></textarea>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <input type=submit value="Generate PDF" />
 </form>
@@ -111,7 +118,6 @@ function Barcode($x,$y,$barcode,$h,$w,$len)
 
 //echo $query;
 
-
 $pdf=new PDF();
 $pdf->Open();
 $pdf->SetTopMargin(20);
@@ -130,6 +136,7 @@ $t = 32;
 $u = 20;
 $down = 31;
 
+$upcs = isset($_GET['upcs']) ? explode("\n", $_GET['upcs']) : array();
 while($m < 32){
    if($m == 32){
       $pdf->AddPage();
@@ -158,6 +165,7 @@ while($m < 32){
    }
    $upc = "49999900009";
    if (isset($_GET['upc'])) $upc = $_GET['upc'];
+   if (isset($upcs[$m])) $upc = $upcs[$m];
  
    $check = $pdf->GetCheckDigit($upc);
    

@@ -347,7 +347,7 @@ class FannieSignage
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                  WHERE l.batchID IN (' . $ids . ') ';
-        $query .= ' ORDER BY brand, description';
+        $query .= ' ORDER BY l.batchID, brand, description';
 
         return array('query' => $query, 'args' => $args);
     }
@@ -630,6 +630,7 @@ class FannieSignage
         $suffix = isset($args['suffix']) ? $args['suffix'] : '';
         $font = isset($args['font']) ? $args['font'] : 'Arial';
         $fontsize = isset($args['fontsize']) ? $args['fontsize'] : 9;
+        $vertical = isset($args['vertical']) ? $args['vertical'] : false;
 
         $upc = ltrim($upc, '0');
         $is_ean = false;
@@ -651,14 +652,18 @@ class FannieSignage
         $full_width = 0;
         for ($i=0;$i<strlen($code);$i++) {
             if ($code{$i}=='1') {
-                $pdf->Rect($x+($i*$width), $y, $width, $height, 'F');
+                if ($vertical) {
+                    $pdf->Rect($x, $y+($i*$height), $width, $height, 'F');
+                } else {
+                    $pdf->Rect($x+($i*$width), $y, $width, $height, 'F');
+                }
             }
             $full_width += $width;
         }
 
         // Print text under barcode
         // omits first digit; should always be zero
-        if ($fontsize > 0) {
+        if ($fontsize > 0 && !$vertical) {
             $pdf->SetFont($font, '', $fontsize);
             if ($valign == 'T') {
                 $pdf->SetXY($x, $y - 5);
@@ -1019,6 +1024,9 @@ class FannieSignage
             }
             $price .= ' /lb.';
         } elseif (isset($item['signMultiplier'])) {
+            if (!isset($item['nonSalePrice'])) { // Fix for NOTICES if this didn't get supplied
+                $item['nonSalePrice'] = $item['normal_price'];
+            }
             $price = $this->formatPrice($item['normal_price'], $item['signMultiplier'], $item['nonSalePrice']);
         } else {
             $price = $this->formatPrice($item['normal_price']);

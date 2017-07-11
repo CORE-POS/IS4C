@@ -82,9 +82,11 @@ class GumIssueDividendPage extends FannieRESTfulPage
         foreach ($combined as $card_no => $acc) {
             if (!empty($acc)) {
                 $ttl = 0.0;
+                $equity = 0.0;
                 // roll up totals to a single amount
                 foreach ($acc as $a) {
                     $ttl += $a->dividendAmount();
+                    $equity += $a->equityAmount();
                 }
 
                 // lookup check
@@ -138,7 +140,7 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 $form =  new GumTaxDividendFormTemplate($custdata, $meminfo, $ssn, date('Y'), array(1 => sprintf('%.2f',$ttl)));
                 $ret .= $form->renderAsPDF($pdf, 105);
 
-                $template = new GumCheckTemplate($custdata, $meminfo, $ttl, 'Dividend Payment', $check->checkNumber());
+                $template = new GumCheckTemplate($custdata, $meminfo, $equity+$ttl, 'Class C & Dividend Payment', $check->checkNumber());
                 $template->renderAsPDF($pdf);
 
                 $check->checkIssued(1);
@@ -160,13 +162,13 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 $pdf->Cell(0, 5, 'Dear Owner:', 0, 1);
                 $pdf->Ln(2);
                 $pdf->SetX($l);
-                $pdf->MultiCell(135, 5, 'Based on the Co-op\'s profitability in Fiscal Year 2016 (July 1, 2015-June 30, 2016), the Board of Directors approved a three percent (3%) dividend on your Class C equity investment. Your dividend is pro-rated based on when you made your investment during that fiscal year. Your Class C investment is eligible, subject to Board discretion, for an annual dividend, not compound interest.');
+                $pdf->MultiCell(135, 5, 'Based on the Co-op\'s profitability in Fiscal Year 2017 (July 1, 2016-June 30, 2017), the Board of Directors approved a three percent (3%) dividend on your Class C equity investment. Your dividend is pro-rated based on when you made your investment during that fiscal year. Your Class C investment is eligible, subject to Board discretion, for an annual dividend, not compound interest.');
                 $pdf->Ln(2);
                 $pdf->SetX($l);
                 $pdf->MultiCell(135, 5, 'You are welcome to cash your check toward a purchase at the Co-op. Thank you for investing in Whole Foods Co-op.');
                 $pdf->Ln(4);
                 $pdf->SetX($l);
-                $pdf->Cell(0, 5, 'Sharon Murphy', 0, 1);
+                $pdf->Cell(0, 5, 'Sarah Hannigan', 0, 1);
                 $pdf->Ln(2);
                 $pdf->SetX($l);
                 $pdf->Cell(0, 5, 'General Manager', 0, 1);

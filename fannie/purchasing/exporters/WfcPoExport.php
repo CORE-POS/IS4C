@@ -33,8 +33,6 @@ class WfcPoExport extends DefaultCsvPoExport
 
     public function export_order($id)
     {
-        parent::export_order($id);
-
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $order = new PurchaseOrderModel($dbc);
         $order->orderID($id);
@@ -71,6 +69,8 @@ class WfcPoExport extends DefaultCsvPoExport
             echo "Notes:\r\n";
             echo "\"{$noteContent}\"\r\n";
         }
+
+        parent::export_order($id);
     }
 }
 

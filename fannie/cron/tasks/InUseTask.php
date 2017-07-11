@@ -120,7 +120,7 @@ class InUseTask extends FannieTask
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
                 INNER JOIN inUseTask AS i ON s.superID = i.superID 
-            SET p.inUse = 0
+            SET p.inUse = 0, p.modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                 AND p.store_id = ?
                 AND p.upc NOT IN ('.$inClause1.')
@@ -129,7 +129,7 @@ class InUseTask extends FannieTask
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
                 INNER JOIN inUseTask AS i ON s.superID = i.superID 
-            SET p.inUse = 0
+            SET p.inUse = 0, p.modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                 AND p.store_id = ?
                 AND p.upc NOT IN ('.$inClause2.')
@@ -140,8 +140,7 @@ class InUseTask extends FannieTask
         $updateUse = $dbc->prepare('
             UPDATE products p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
-                INNER JOIN inUseTask AS i ON s.superID = i.superID 
-            SET p.inUse = 1
+            SET p.inUse = 1, p.modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
                 AND p.store_id = ?;
         ');
@@ -215,7 +214,7 @@ class InUseTask extends FannieTask
         $to = $this->config->get('SCANCOORD_EMAIL');
         
         if (class_exists('PHPMailer')) {
-            $msg .= '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
+            $msg = '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
                 padding: 5px; }</style>';
             $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
             $msg .= ' [ Runtime: '.$runtime.' ]<br />';

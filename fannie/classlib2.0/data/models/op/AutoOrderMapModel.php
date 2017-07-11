@@ -37,6 +37,7 @@ class AutoOrderMapModel extends BasicModel
     'vendorID' => array('type'=>'INT', 'primary_key'=>true),
     'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'accountID' => array('type'=>'VARCHAR(25)'),
+    'active' => array('type'=>'TINYINT', 'default'=>0),
     );
 
 }

@@ -28,6 +28,7 @@ class EmailUsageLogModel extends BasicModel
 {
 
     protected $name = "EmailUsageLog";
+    protected $preferred_db = 'plugin:EmailReportingDB';
 
     protected $columns = array(
     'emailUsageLogID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

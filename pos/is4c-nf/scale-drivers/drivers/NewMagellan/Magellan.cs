@@ -54,6 +54,8 @@ public class Magellan : DelegateForm
     private List<SerialPortHandler> sph;
     private UDPMsgBox u;
     private bool asyncUDP = true;
+    private bool disableRBA = false;
+    private bool disableButtons = false;
     private Object msgLock = new Object();
     private ushort msgCount = 0;
 
@@ -85,6 +87,8 @@ public class Magellan : DelegateForm
                     SerialPortHandler s = (SerialPortHandler)Activator.CreateInstance(type, new Object[]{ pair.port });
                     s.SetParent(this);
                     s.SetVerbose(verbosity);
+                    s.SetConfig("disableRBA", this.disableRBA ? "true" : "false");
+                    s.SetConfig("disableButtons", this.disableButtons ? "true" : "false");
                     sph.Add(s);
                 } else {
                     throw new Exception("unknown module: " + pair.module);
@@ -268,7 +272,17 @@ public class Magellan : DelegateForm
             JObject o = JObject.Parse(ini_json);
             var ua = (bool)o["asyncUDP"];
             this.asyncUDP = ua;
-        } catch (Exception ex) {}
+        } catch (Exception) {}
+        try {
+            JObject o = JObject.Parse(ini_json);
+            var drb = (bool)o["disableRBA"];
+            this.disableRBA = drb;
+        } catch (Exception) {}
+        try {
+            JObject o = JObject.Parse(ini_json);
+            var dbt = (bool)o["disableButtons"];
+            this.disableButtons = dbt;
+        } catch (Exception) {}
 
         return conf;
     }

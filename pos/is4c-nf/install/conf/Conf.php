@@ -16,9 +16,9 @@ class Conf
         if (function_exists('posix_getpwuid')){
             $chk = posix_getpwuid(posix_getuid());
             return $chk['name'];
-        } else {
-            return get_current_user();
         }
+
+        return get_current_user();
     }
 
     static private function initWritableFile($filename, $template)
@@ -49,22 +49,22 @@ class Conf
             self::initWritableFile($filename, $template);
         }
 
-        $real_file = realpath(dirname($filename)) . DIRECTORY_SEPARATOR . $basename;
+        $realFile = realpath(dirname($filename)) . DIRECTORY_SEPARATOR . $basename;
 
         if (!file_exists($filename)) {
             echo "<span style=\"color:$failure;\"><b>$status</b>: $basename " . _('does not exist') . "</span><br />";
             if (!$optional) {
                 echo "<b>" . _('Advice') . "</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
-                    touch \"". $real_file ."\"<br />
-                    chown ".self::whoami()." \"". $real_file ."\"</div>";
+                    touch \"". $realFile ."\"<br />
+                    chown ".self::whoami()." \"". $realFile ."\"</div>";
             }
         } elseif (is_writable($filename)) {
             echo "<span style=\"color:green;\">$basename " . _('is writeable') . "</span><br />";
         } else {
             echo "<span style=\"color:red;\"><b>" . _('Warning') . "</b>: $basename " . _('is not writeable') . "</span><br />";
             echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
-                chown ".self::whoami()." \"". $real_file ."\"<br />
-                chmod 600 \"". $real_file ."\"</div>";
+                chown ".self::whoami()." \"". $realFile ."\"<br />
+                chmod 600 \"". $realFile ."\"</div>";
         }
     }
 
@@ -74,9 +74,9 @@ class Conf
             return 'ini.json';
         } elseif (file_exists(__DIR__ . '/../../ini.php')) {
             return 'ini.php';
-        } else {
-            return _('ini file is missing!');
         }
+
+        return _('ini file is missing!');
     }
 
     /**
@@ -97,18 +97,18 @@ class Conf
             return null;
         }
 
-        $ini_php = dirname(__FILE__) . '/../../ini.php';
-        $ini_json = dirname(__FILE__) . '/../../ini.json';
-        $save_php = null;
-        $save_json = null;
-        if (file_exists($ini_json)) {
-            $save_json = JsonConf::save($key, $value);
+        $iniPhp = dirname(__FILE__) . '/../../ini.php';
+        $iniJson = dirname(__FILE__) . '/../../ini.json';
+        $savePhp = null;
+        $saveJson = null;
+        if (file_exists($iniJson)) {
+            $saveJson = JsonConf::save($key, $value);
         }
-        if (file_exists($ini_php)) {
-            $save_php = PhpConf::save($key, $value);
+        if (file_exists($iniPhp)) {
+            $savePhp = PhpConf::save($key, $value);
         }
 
-        return self::savedEither($save_php, $save_json);
+        return self::savedEither($savePhp, $saveJson);
     }
 
     /**
@@ -118,18 +118,18 @@ class Conf
     */
     static public function remove($key)
     {
-        $ini_php = dirname(__FILE__) . '/../../ini.php';
-        $ini_json = dirname(__FILE__) . '/../../ini.json';
-        $save_php = null;
-        $save_json = null;
-        if (file_exists($ini_php)) {
-            $save_php = PhpConf::remove($key);
+        $iniPhp = dirname(__FILE__) . '/../../ini.php';
+        $iniJson = dirname(__FILE__) . '/../../ini.json';
+        $savePhp = null;
+        $saveJson = null;
+        if (file_exists($iniPhp)) {
+            $savePhp = PhpConf::remove($key);
         }
-        if (file_exists($ini_json)) {
-            $save_json = JsonConf::remove($key);
+        if (file_exists($iniJson)) {
+            $saveJson = JsonConf::remove($key);
         }
         
-        return self::savedEither($save_php, $save_json);
+        return self::savedEither($savePhp, $saveJson);
     }
 
     static private function savedEither($php, $json)
@@ -140,9 +140,9 @@ class Conf
         } elseif ($php === null || $json === null) {
             // neither config file found
             return false;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     static public function getLocales()

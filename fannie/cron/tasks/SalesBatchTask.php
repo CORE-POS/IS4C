@@ -91,11 +91,16 @@ class SalesBatchTask extends FannieTask
                                     INNER JOIN products AS p ON u.upc=p.upc
                                 WHERE likeCode=?');
         $product = new ProductsModel($dbc);
+        $isPartial = $dbc->prepare('SELECT batchID FROM PartialBatches WHERE batchID=?');
 
         // lookup current batches
         $prep = $dbc->prepare($this->getSaleItems($dbc));
         $result = $dbc->execute($prep, array($now, $now));
         while ($row = $dbc->fetchRow($result)) {
+            // ignore partials. they have a separate task
+            if ($dbc->getValue($isPartial, $row['batchID'])) {
+                continue;
+            }
             // all items affected by this bathcList record
             // could be more than one in the case of likecodes
             $item_upcs = array();

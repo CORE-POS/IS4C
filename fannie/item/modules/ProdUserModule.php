@@ -79,9 +79,12 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $ret .= '<div class="row form-group">'
                 . '<label class="small col-sm-1">Sign Ct.</label> '
-                . '<div class="col-sm-8">'
+                . '<div class="col-sm-4">'
                 . '<input type="number" class="form-control price-field"
                     name="sign-count" value="' . $model->signCount() . '" />'
+                . '</div>'
+                . '<div class="col-sm-3">'
+                . '<label>Narrow Tag <input type="checkbox" value="1" name="narrowTag" ' . ($model->narrow() ? 'checked' : '') . ' /></label>'
                 . '</div>'
                 . '</div>';
 
@@ -200,6 +203,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $desc = FormLib::get('lf_desc');
         $origin = FormLib::get('origin', 0);
         $floorID = FormLib::get('floor-id', 0);
+        $narrow = FormLib::get('narrowTag', 0) ? 1 : 0;
         $text = FormLib::get('lf_text');
         $text = str_replace("\r", '', $text);
         $text = str_replace("\n", '<br />', $text);
@@ -223,6 +227,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $model->description($desc);
         $model->long_text($text);
         $model->signCount($signs);
+        $model->narrow($narrow);
 
         $multiOrigin = FormLib::get('otherOrigin', array());
         $originMap = array();

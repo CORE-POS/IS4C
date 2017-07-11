@@ -16,8 +16,8 @@ class NamedSession
         // security is not the goal here.
         // hashing just serves to normalize length.
         $this->name = sha1($name);
-        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
-            @session_start();
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() === '') {
+            session_start();
         }
     }
 

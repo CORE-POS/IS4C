@@ -114,10 +114,13 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc, isPrimary, multiplier FROM VendorAliases WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
-            $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
+            if (!isset($SKU_TO_PLU_MAP[$skusW['sku']])) {
+                $SKU_TO_PLU_MAP[$skusW['sku']] = array();
+            }
+            $SKU_TO_PLU_MAP[$skusW['sku']][] = $skusW;
         }
 
         // Repack items that are mapped to bulk items
@@ -198,15 +201,9 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
+            $aliases = array(array('upc'=>$upc, 'multiplier'=>1, 'isPrimary'=>1));
             if (isset($SKU_TO_PLU_MAP[$sku])) {
-                $upc = $SKU_TO_PLU_MAP[$sku];
-                if (substr($size, -1) == '#' && substr($upc, 0, 3) == '002') {
-                    $qty = trim($size, '# ');
-                    $size = '#';
-                } elseif (substr($size, -2) == 'LB' && substr($upc, 0, 3) == '002') {
-                    $qty = trim($size, 'LB ');
-                    $size = 'LB';
-                }
+                $aliases = $SKU_TO_PLU_MAP[$sku];
             }
             $category = $data[$indexes['cat']];
             $reg = trim($data[$indexes['cost']]);
@@ -240,48 +237,50 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             }
 
-            $srp = $rounder->round($srp);
-
             list($organic_flag, $gf_flag) = $this->getFlags($prodInfo);
 
             // need unit cost, not case cost
             $reg_unit = $reg / $qty;
             $net_unit = $net / $qty;
 
-            $dbc->execute($extraP, array($reg_unit,$upc));
-            $dbc->execute($prodP, array($reg_unit,$organic_flag,$gf_flag,$upc,$VENDOR_ID));
-            $updated_upcs[] = $upc;
+            foreach ($aliases as $alias) {
 
-            $args = array(
-                $brand, 
-                $sku === false ? '' : $sku, 
-                $size === false ? '' : $size,
-                $upc,
-                $qty,
-                $reg_unit,
-                $description,
-                $category,
-                $VENDOR_ID,
-                $net_unit,
-                date('Y-m-d H:i:s'),
-                $srp
-            );
-            $dbc->execute($itemP,$args);
+                if (substr($size, -1) == '#' && substr($alias['upc'], 0, 3) == '002') {
+                    $qty = trim($size, '# ');
+                    $reg_unit = $reg / $qty;
+                    $net_unit = $net / $qty;
+                    $size = '#';
+                } elseif (substr($size, -2) == 'LB' && substr($alias['upc'], 0, 3) == '002') {
+                    $qty = trim($size, 'LB ');
+                    $reg_unit = $reg / $qty;
+                    $net_unit = $net / $qty;
+                    $size = 'LB';
+                }
 
-            if ($srpP) {
-                $dbc->execute($srpP,array($VENDOR_ID,$upc,$srp));
-            }
+                $dbc->execute($extraP, array($reg_unit*$alias['multiplier'],$alias['upc']));
+                $dbc->execute($prodP, array($reg_unit*$alias['multiplier'],$organic_flag,$gf_flag,$alias['upc'],$VENDOR_ID));
+                $updated_upcs[] = $alias['upc'];
 
-            if (isset($LINKED_MAP[$upc])) {
-                $dbc->execute($extraP, array($reg_unit,$LINKED_MAP[$upc]));
-                $dbc->execute($prodP, array($reg_unit,$organic_flag,$gf_flag,$LINKED_MAP[$upc],$VENDOR_ID));
-                $updated_upcs[] = $LINKED_MAP[$upc];
-                $linkedArgs = $args;
-                $linkedArgs[1] = $LINKED_MAP[$upc]; // sku re-write
-                $linkedArgs[3] = $LINKED_MAP[$upc]; // upc re-write
-                $dbc->execute($itemP, $linkedArgs);
+                $srp = $rounder->round($srp * $alias['multiplier']);
+
+                $args = array(
+                    $brand, 
+                    $alias['isPrimary'] ? $sku : $alias['upc'],
+                    $size === false ? '' : $size,
+                    $alias['upc'],
+                    $qty,
+                    $reg_unit*$alias['multiplier'],
+                    $description,
+                    $category,
+                    $VENDOR_ID,
+                    $net_unit*$alias['multiplier'],
+                    date('Y-m-d H:i:s'),
+                    $srp
+                );
+                $dbc->execute($itemP,$args);
+
                 if ($srpP) {
-                    $dbc->execute($srpP,array($VENDOR_ID,$LINKED_MAP[$upc],$srp));
+                    $dbc->execute($srpP,array($VENDOR_ID,$alias['upc'],$srp));
                 }
             }
         }

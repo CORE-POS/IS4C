@@ -595,7 +595,7 @@ static private function uploadCCdata()
                 CoreLocal::get("mPass"),
                 False);
     if (CoreLocal::get('CoreCharSet') != '') {
-        $connect->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
+        $sql->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
     }
 
     // test for success

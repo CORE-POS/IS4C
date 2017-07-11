@@ -33,6 +33,7 @@ class GumLoanLedgerModel extends BasicModel
 {
 
     protected $name = "GumLoanLedger";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumLoanLedgerID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

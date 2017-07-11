@@ -37,7 +37,7 @@ class LaneTender extends FannieReportPage
         'Instore Coup', 'Gift Card', 'Rebate', 'Store Cred.', 'Elec. Check', 'Check' );
 
     public $description = '[Tender Report] lists POS tenders against actual counts over a given date range.';
-    public $themed = true;
+    public $discoverable = false;
     public $report_set = 'Cashiering';
 
     function fetch_report_data()
@@ -117,6 +117,8 @@ class LaneTender extends FannieReportPage
             sort($cashierNames);
         }
         
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc->selectDB($settings['OverShortDatabase']);
         $query = '
             SELECT sum(amt) as amount,
                 emp_no AS lane,

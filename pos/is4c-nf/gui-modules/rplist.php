@@ -158,14 +158,14 @@ class rplist extends NoInputCorePage
         $selected = "selected";
         $first = false;
         foreach ($this->getTransactions() as $row) {
-            echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."'";
+            echo "<option value='".$row["emp_no"]."::".$row["register_no"]."::".$row["trans_no"]."'";
             echo $selected;
             echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
                 ." #".$row["trans_no"]." -- $".
                 sprintf('%.2f',$row["total"]);
             $selected = "";
             if (!$first) {
-                $first = $row['register_no'] . '::' . $row['emp_no'] . '::' . $row['trans_no'];
+                $first = $row['emp_no'] . '::' . $row['register_no'] . '::' . $row['trans_no'];
             }
         }
         ?>

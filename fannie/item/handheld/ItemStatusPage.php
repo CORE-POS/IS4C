@@ -110,13 +110,13 @@ class ItemStatusPage extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $narrowTag = new NarrowTagsModel($dbc);
-        $narrowTag->upc(BarcodeLib::padUPC($this->upc));
+        $prodUserP = $dbc->prepare('UPDATE productUser SET narrow=? WHERE upc=?');
+        $upc = BarcodeLib::padUPC($this->upc);
         $action = FormLib::get('narrowTag');
         if ($action == 'remove') {
-            $narrowTag->delete();
+            $dbc->execute($prodUserP, array(0, $upc));
         } elseif ($action == 'add') {
-            $narrowTag->save();
+            $dbc->execute($prodUserP, array(1, $upc));
         }
         
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
@@ -137,9 +137,8 @@ class ItemStatusPage extends FannieRESTfulPage
 
         $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
         $product = new ProductsModel($dbc);
-        $narrowTag = new NarrowTagsModel($dbc);
-        $narrowTag->upc($upc);
-        $isNarrow = $narrowTag->find();
+        $narrowTag = $dbc->prepare('SELECT narrow FROM productUser WHERE upc=?');
+        $isNarrow = $dbc->getValue($narrowTag, array($upc));
         $vendor = new VendorsModel($dbc);
         $product->upc($upc);
         if ($this->config->get('STORE_MODE') == 'HQ') {
@@ -234,7 +233,7 @@ class ItemStatusPage extends FannieRESTfulPage
             $sub->subdept_no(), $sub->subdept_name());
         
         $ret .= '<p> Tags in this queue: ' . $tags . '</p> ';
-        if(isset($isNarrow[0])) {
+        if ($isNarrow) {
             $ret .= 'Flagged As: <span class="alert-warning">Narrow Tag</span>';
             $ret .= '
                 <form class="form-inline" method="get">
@@ -269,7 +268,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '</select></form></p>';
 
         $ret .= '<form class="form-inline" method="get">';    
-        if(isset($isNarrow[0])) {
+        if ($isNarrow) {
             $ret .= '
                 <input type="hidden" name="narrowTag" value="remove">
                 <input type="hidden" name="upc" value="' . $upc . '" />

@@ -30,6 +30,7 @@ class CCredHistoryTodaySumModel extends ViewModel
 
     // Actual name of view being created.
     protected $name = "CCredHistoryTodaySum";
+    protected $preferred_db = 'plugin:CoopCredDatabase';
 
     protected $columns = array(
     'programID' => array('type'=>'INT'),

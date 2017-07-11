@@ -319,6 +319,7 @@ if (function_exists('setlocale') && defined('LC_MESSAGES') && CoreLocal::get('lo
     putenv('LC_MESSAGES=' . CoreLocal::get('locale') . '.utf8');
     if (function_exists('bindtextdomain')) {
         bindtextdomain('pos-nf', realpath(dirname(__FILE__).'/../locale'));
+        bind_textdomain_codeset('pos-nf', 'UTF-8');
         textdomain('pos-nf');
     }
 }

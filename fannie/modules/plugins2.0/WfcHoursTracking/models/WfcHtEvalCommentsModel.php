@@ -28,6 +28,7 @@ class WfcHtEvalCommentsModel extends BasicModel
 {
 
     protected $name = "evalComments";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'id' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

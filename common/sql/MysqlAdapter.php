@@ -110,7 +110,8 @@ class MysqlAdapter implements DialectAdapter
 
     public function dateymd($date1)
     {
-        return "DATE_FORMAT($date1,'%Y%m%d')";
+        $str = "DATE_FORMAT($date1,'%Y%m%d')";
+        return $this->convert($str, 'INT');
     }
 
     public function dayofweek($field)

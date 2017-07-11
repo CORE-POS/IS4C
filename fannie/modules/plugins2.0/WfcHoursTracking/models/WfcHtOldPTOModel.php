@@ -28,6 +28,7 @@ class WfcHtOldPTOModel extends BasicModel
 {
 
     protected $name = "OldPTO";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT', 'primary_key'=>true),

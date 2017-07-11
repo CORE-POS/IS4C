@@ -83,22 +83,34 @@ class AjaxEnd extends AjaxCallback
             $drawer->kick();
         }
 
-        $PRINT = PrintHandler::factory($this->session->get('ReceiptDriver'));
-        $EMAIL = $this->emailObj();
+        $this->outputReceipt($receiptContent, $customerEmail);
+
+        return array();
+    }
+
+    /**
+      Output the receipt to printer and/or email
+      @param $receiptContent [mixed string OR array]
+        A string will always be printed
+        An array will print the 'print' part and email the 'any' part
+      @param $customerEmail [string] customer email address
+    */
+    private function outputReceipt($receiptContent, $customerEmail)
+    {
+        $printObj = PrintHandler::factory($this->session->get('ReceiptDriver'));
+        $emailObj = $this->emailObj();
         foreach ($receiptContent as $receipt) {
             if (is_array($receipt)) {
                 if (!empty($receipt['print'])) {
-                    $PRINT->writeLine($receipt['print']);
+                    $printObj->writeLine($receipt['print']);
                 }
                 if (!empty($receipt['any'])) {
-                    $EMAIL->writeLine($receipt['any'],$customerEmail);
+                    $emailObj->writeLine($receipt['any'],$customerEmail);
                 }
             } elseif(!empty($receipt)) {
-                $PRINT->writeLine($receipt);
+                $printObj->writeLine($receipt);
             }
         }
-
-        return array();
     }
 
     /**

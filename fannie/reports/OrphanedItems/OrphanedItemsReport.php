@@ -56,12 +56,10 @@ class OrphanedItemsReport extends FannieReportPage
                 MAX(p.inUse) AS active
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                LEFT JOIN vendorSKUtoPLU AS s ON p.upc=s.upc AND p.default_vendor_id=s.vendorID
-                LEFT JOIN VendorBreakdowns AS b ON p.upc=b.upc AND p.default_vendor_id=b.vendorID
+                LEFT JOIN VendorAliases AS s ON p.upc=s.upc AND p.default_vendor_id=s.vendorID
             WHERE p.default_vendor_id=?
                 AND v.upc IS NULL
                 AND s.upc IS NULL
-                AND b.upc IS NULL
                 AND " . DTrans::isStoreID($store, 'p') . "
             GROUP BY p.upc,
                 p.brand,

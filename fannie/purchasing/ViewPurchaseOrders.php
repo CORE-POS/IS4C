@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -54,11 +56,70 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'post<id><sku><upc><brand><description><orderQty><orderCost><receiveQty><receiveCost>',
             'post<id><sku><qty><receiveAll>',
             'post<id><note>',
-            'post<id><sku><isSO>'
+            'post<id><sku><isSO>',
+            'post<id><sku><adjust>',
+            'get<merge>'
         );
         if (FormLib::get('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
+    }
+
+    /**
+      Merge a set of purchase orders into one
+      The highest ID order is retained. Items and notes from
+      lower ID orders are added to the highest ID order then
+      the lower ID orders are deleted.
+    */
+    protected function get_merge_handler()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        sort($this->merge);
+        $mergeID = array_pop($this->merge);
+        $moveP = $dbc->prepare('UPDATE PurchaseOrderItems SET orderID=? WHERE orderID=?');
+        $noteP = $dbc->prepare('SELECT notes FROM PurchaseOrderNotes WHERE orderID=?');
+        $delP = $dbc->prepare('DELETE FROM PurchaseOrder WHERE orderID=?');
+        $delNoteP = $dbc->prepare('DELETE FROM PurchaseOrderNotes WHERE orderID=?');
+        $mergeNotes = $dbc->getValue($noteP, array($mergeID));
+        foreach ($this->merge as $orderID) {
+            $moved = $dbc->execute($moveP, array($mergeID, $orderID));
+            if ($moved) {
+                $note = $dbc->getValue($noteP, array($orderID));
+                $mergeNotes .= (strlen($mergeNotes) > 0 ? "\n" : "") . $note;
+                $dbc->execute($delP, array($orderID));
+                $dbc->execute($delNoteP, array($orderID));
+            }
+        }
+        $upP = $dbc->prepare('UPDATE PurchaseOrderNotes SET notes=? WHERE orderID=?');
+        $dbc->execute($upP, array($mergeNotes, $mergeID));
+
+        return 'ViewPurchaseOrders.php?init=pending';
+    }
+
+    protected function post_id_sku_adjust_handler()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $halfP = $this->connection->prepare('
+            SELECT halfCases FROM PurchaseOrder AS o INNER JOIN vendors AS v ON o.vendorID=v.vendorID WHERE o.orderID=?'
+        );
+        $halved = $this->connection->getValue($halfP, array($this->id));
+        if ($halved) {
+            $this->adjust /= 2;
+        }
+        $item = new PurchaseOrderItemsModel($this->connection);
+        $item->orderID($this->id);
+        $item->sku($this->sku);
+        $item->load();
+        $next = $item->quantity() + $this->adjust;
+        if ($next < 0) {
+            $next = 0;
+        }
+        $item->quantity($next);
+        $item->save();
+        echo json_encode(array('qty' => $next));
+
+        return false;
     }
 
     /**
@@ -119,10 +180,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 $para .= $row[0] . '<br />';
             } elseif (count($row) > 1) {
                 $ret .= "<tr>\n";
+                $rowEmpty = true;
+                $trow = '';
                 foreach ($row as $entry) {
                     if (trim($entry) !== '') {
-                        $ret .= "<td>{$entry}</td>";
+                        $rowEmpty = false;
                     }
+                    $trow .= '<td>' . trim($entry) . '</td>';
+                }
+                if (!$rowEmpty) {
+                    $ret .= $trow;
                 }
                 $ret .= "</tr>\n";
             }
@@ -217,7 +284,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     protected function post_id_setPlaced_handler()
     {
         $this->connection->selectDB($this->config->get('OP_DB'));
-        $model = new PurchaseOrderModel(FannieDB::get($this->connection));
+        $model = new PurchaseOrderModel($this->connection);
         $model->orderID($this->id);
         $model->load();
         $model->placed($this->setPlaced);
@@ -260,16 +327,21 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return false;
     }
 
-    protected function get_orders($placed)
+    protected function get_orders($placed, $store=0, $month=0, $year=0)
     {
         $dbc = $this->connection;
-        $store = FormLib::get('store', 0);
+        $store = FormLib::get('store', $store);
 
-        $month = FormLib::get('month');
-        $year = FormLib::get('year');
-        $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
-        $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
-        $args = array($placed, $start, $end);
+        $month = FormLib::get('month', $month);
+        $year = FormLib::get('year', $year);
+        if ($month == 'Last 30 days') {
+            $start = date('Y-m-d', strtotime('30 days ago'));
+            $end = date('Y-m-d 23:59:59');
+        } else {
+            $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
+            $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
+        }
+        $args = array($start, $end);
         
         $query = 'SELECT p.orderID, p.vendorID, MIN(creationDate) as creationDate,
                 MIN(placedDate) as placedDate, COUNT(i.orderID) as records,
@@ -277,13 +349,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 SUM(i.receivedTotalCost) as receivedCost, v.vendorName,
                 MAX(i.receivedDate) as receivedDate,
                 MAX(p.vendorInvoiceID) AS vendorInvoiceID,
-                MAX(s.description) AS storeName
+                MAX(s.description) AS storeName,
+                MAX(p.placed) AS placed,
+                SUM(CASE WHEN isSpecialOrder THEN i.quantity ELSE 0 END) AS soFlag
             FROM PurchaseOrder as p
                 LEFT JOIN PurchaseOrderItems AS i ON p.orderID = i.orderID
                 LEFT JOIN vendors AS v ON p.vendorID=v.vendorID
                 LEFT JOIN Stores AS s ON p.storeID=s.storeID
-            WHERE placed=? 
-                AND creationDate BETWEEN ? AND ? ';
+            WHERE creationDate BETWEEN ? AND ? ';
         if (!$this->show_all) {
             $query .= 'AND userID=? ';
         }
@@ -298,26 +371,66 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
-        $ret = '<div class="table-responsive">
-            <table class="table table-striped table-bordered tablesorter">';
-        $ret .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
-            <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
-        $count = 1;
+        $ret = '<ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="' . ($placed ? '' : 'active') . '">
+                    <a href="#pending-pane" aria-controls="pending-pane" role="tab" data-toggle="tab">Pending</a>
+                </li>
+                <li role="presentation" class="' . ($placed ? 'active' : '') . '">
+                    <a href="#placed-pane" aria-controls="placed-pane" role="tab" data-toggle="tab">Placed</a>
+                </li>
+                </ul>
+                <div class="tab-content">';
+
+        $tPending = '<div id="pending-pane" class="tab-pane table-responsive ' . ($placed ? '' : 'active') . '">
+            <table class="table table-striped table-bordered tablesorter table-float">';
+        $tPlaced = '<div id="placed-pane" class="tab-pane table-responsive ' . ($placed ? 'active' : '') . '">
+            <table class="table table-striped table-bordered tablesorter table-float">';
+        $headers = '<thead style="background: #fff;"><tr>
+            <th class="thead">Created</th>
+            <th class="thead">Invoice#</th>
+            <th class="thead">Store</th>
+            <th class="thead">Vendor</th>
+            <th class="thead"># Items</th>
+            <th class="thead">Est. Cost</th>
+            <th class="thead">Placed</th>
+            <th class="thead">Received</th>
+            <th class="thead">Rec. Cost</th></tr></thead><tbody>';
+        $tPending .= $headers;
+        $tPlaced .= $headers;
+        $mergable = array();
         while ($row = $dbc->fetchRow($result)) {
-            $ret .= $this->orderRowToTable($row, $placed);
+            if ($row['placed']) {
+                $tPlaced .= $this->orderRowToTable($row, $placed);
+            } else {
+                $tPending .= $this->orderRowToTable($row, $placed);
+                if (!isset($mergable[$row['vendorID']])) {
+                    $mergable[$row['vendorID']] = array('orders'=>array(), 'name'=>$row['vendorName']);
+                }
+                $mergable[$row['vendorID']]['orders'][] = $row['orderID'];
+            }
         }
-        $ret .= '</tbody></table></div>';
+        $tPlaced .= '</tbody></table></div>';
+        $mergable = array_filter($mergable, function($i) { return count($i['orders']) > 1; });
+        $tPending .= '</tbody></table>';
+        foreach ($mergable as $m) {
+            $idStr = implode('&', array_map(function($i) { return 'merge[]=' . $i; }, $m['orders']));
+            $tPending .= sprintf('<a href="ViewPurchaseOrders.php?%s">Merge %s Orders</a><br />', $idStr, $m['name']);
+        }
+        $tPending .= '</div>';
+
+        $ret .= $tPending . $tPlaced . '</div>';
 
         return $ret;
     }
 
     private function orderRowToTable($row, $placed)
     {
-        return sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
+        return sprintf('<tr %s><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td><td>%d</td><td>%.2f</td>
                 <td>%s</td><td>%s</td><td>%.2f</td></tr>',
+                ($row['soFlag'] ? 'class="success" title="Contains special order(s)" ' : ''),
                 $row['orderID'],
                 $row['creationDate'], $row['vendorInvoiceID'], $row['storeName'], $row['vendorName'], $row['records'],
                 $row['estimatedCost'],
@@ -472,6 +585,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $orderObj->placedDate = $orderObj->placed ? $orderObj->placedDate : 'n/a';
         $placedCheck = $orderObj->placed ? 'checked' : '';
         $init = $orderObj->placed ? 'init=placed' : 'init=pending';
+        $pendingOnlyClass = 'pending-only' . ($orderObj->placed ? ' collapse' : '');
+        $placedOnlyClass = 'placed-only' . ($orderObj->placed ? '' : ' collapse');
+        $sentDate = new DateTime($order->creationDate());
+        $today = new DateTime();
+        // ban adjustment to placed orders after 90 days
+        if ($today->diff($sentDate)->format('%a') >= 90) {
+            $placedOnlyClass .= ' collapse';
+        }
     
         $notes = $dbc->prepare('SELECT notes FROM PurchaseOrderNotes WHERE orderID=?');
         $notes = $dbc->getValue($notes, $this->id);
@@ -485,14 +606,15 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
+        $batchStart = date('Y-m-d', strtotime('+30 days'));
         $batchP = $dbc->prepare("
-            SELECT b.batchName
+            SELECT b.batchName, b.startDate, b.endDate
             FROM batchList AS l
                 INNER JOIN batches AS b ON l.batchID=b.batchID
                 INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
             WHERE l.upc=?
                 AND m.storeID=?
-                AND b.startDate <= " . $dbc->curdate() . "
+                AND b.startDate <= ?
                 AND b.endDate >= " . $dbc->curdate() . "
                 AND b.discounttype > 0
         ");
@@ -511,13 +633,20 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         if (!$uname) {
             $uname = 'n/a';
         }
+        $receivedP = $dbc->prepare("SELECT DISTINCT u.name FROM PurchaseOrderItems AS p INNER JOIN Users AS u ON p.receivedBy=u.uid WHERE p.orderID=?");
+        $receivers = array();
+        $receivedR = $dbc->execute($receivedP, array($this->id));
+        while ($row = $dbc->fetchRow($receivedR)) {
+            $receivers[] = $row['name'];
+        }
+        $uname .= count($receivers) > 0 ? '<br /><b>Received by</b>: ' . implode(',', $receivers) : '';
 
         $ret = <<<HTML
 <p>
     <div class="form-inline">
         <b>Store</b>: {$sname}
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <b>Vendor</b>: {$vendor['vendorName']}
+        <b>Vendor</b>: <a href="../item/vendors/VendorIndexPage.php?vid={$orderObj->vendorID}">{$vendor['vendorName']}</a>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <b>Created</b>: {$orderObj->creationDate}
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -558,36 +687,23 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     </div>
     <div class="col-sm-6">
     <p>
-HTML;
-        if (!$order->placed()) {
-            $ret .= <<<HTML
-<a class="btn btn-default btn-sm"
-    href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<button class="btn btn-default btn-sm" 
-    onclick="deleteOrder({$this->id}); return false;">Delete Order</button>
-HTML;
-        } else {
-            $sentDate = new DateTime($order->creationDate());
-            $today = new DateTime();
-            if ($today->diff($sentDate)->format('%a') <= 90) {
-                $ret .= <<<HTML
-<a class="btn btn-default btn-sm"
-    href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm" id="receiveBtn"
-    href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm" id="receiveBtn"
-    href="TransferPurchaseOrder.php?id={$this->id}">Transfer Order</a>
-&nbsp;&nbsp;&nbsp;&nbsp;
-<a class="btn btn-default btn-sm"
-    href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
-HTML;
-            }
-        }
-        $ret .= <<<HTML
-        </p>
+        <a class="btn btn-default btn-sm {$pendingOnlyClass}"
+            href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
+        <span class="{$pendingOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <button class="btn btn-default btn-sm {$pendingOnlyClass}" 
+            onclick="deleteOrder({$this->id}); return false;">Delete Order</button>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}"
+            href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
+        <span class="{$placedOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}" id="receiveBtn"
+            href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
+        <span class="{$placedOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}" id="receiveBtn"
+            href="TransferPurchaseOrder.php?id={$this->id}">Transfer Order</a>
+        <span class="{$placedOnlyClass}">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <a class="btn btn-default btn-sm {$placedOnlyClass}"
+            href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
+    </p>
 <div class="panel panel-default"><div class="panel-body">
 Ph: {$vendor['phone']}<br />
 Fax: {$vendor['fax']}<br />
@@ -606,18 +722,38 @@ HTML;
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
 
-        $ret .= '<table class="table tablesorter table-bordered small"><thead>';
-        $ret .= '<tr><th>Coding</th><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
-            <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
-            <th>Est. Cost</th><th>Received</th>
-            <th>Rec. Qty</th><th>Rec. Cost</th><th>SO</th></tr></thead><tbody>';
+        $ret .= '<table class="table tablesorter table-bordered small table-float"><thead style="background:#fff;">';
+        $ret .= '<tr>
+            <th class="thead">Coding</th>
+            <th class="thead">SKU</th>
+            <th class="thead">UPC</th>
+            <th class="thead">Brand</th>
+            <th class="thead">Description</th>
+            <th class="thead">Unit Size</th>
+            <th class="thead">Units/Case</th>
+            <th class="thead">Cases</th>
+            <th class="thead">Est. Cost</th>
+            <th class="thead">Received</th>
+            <th class="thead">Rec. Qty</th>
+            <th class="thead">Rec. Cost</th>
+            <th class="thead">SO</th></tr></thead><tbody>';
+        $count = 0;
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
             if (!$order->placed()) {
-                $batchR = $dbc->getValue($batchP, array($obj->internalUPC(), $orderObj->storeID));
-                if ($batchR) {
-                    $css = 'class="info" title="' . $batchR . '"';
+                $batchR = $dbc->execute($batchP, array($obj->internalUPC(), $orderObj->storeID, $batchStart));
+                $title = '';
+                while ($batchW = $dbc->fetchRow($batchR)) {
+                    $title .= $batchW['batchName'] . ' (';
+                    $title .= date('M j', strtotime($batchW['startDate'])) . ' - ';
+                    $title .= date('M j', strtotime($batchW['endDate'])) . ') ';
                 }
+                if ($title) {
+                    $css = 'class="info" title="' . $title . '"';
+                }
+            }
+            if ($obj->isSpecialOrder()) {
+                $css = 'class="success" title="Special order"';
             }
             if ($obj->salesCode() == '') {
                 $code = $obj->guessCode();
@@ -632,7 +768,14 @@ HTML;
             $codings[$coding] += $obj->receivedTotalCost();
             $ret .= sprintf('<tr %s><td>%d</td><td>%s</td>
                     <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td><td>%s</td>
-                    <td>%s</td><td>%s</td><td>%s</td><td>%.2f</td>
+                    <td>%s</td><td>%s</td>
+                    <td><span id="qty%d">%s</span> <span class="%s pull-right">
+                        <a href="" onclick="itemInc(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-up small" /></a>
+                        <br />
+                        <a href="" onclick="itemDec(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-down small" /></a>
+                        </span>
+                    </td>
+                    <td>%.2f</td>
                     <td>%s</td><td>%s</td><td>%.2f</td>
                     <td>
                         <select class="form-control input-sm" onchange="isSO(%d, \'%s\', this.value);">
@@ -646,13 +789,14 @@ HTML;
                     $obj->brand(),
                     $obj->description(),
                     $obj->unitSize(), $obj->caseSize(),
-                    $obj->quantity(),
+                    $count, $obj->quantity(), $pendingOnlyClass, $this->id, $obj->sku(), $count, $this->id, $obj->sku(), $count,
                     ($obj->quantity() * $obj->caseSize() * $obj->unitCost()),
                     strtotime($obj->receivedDate()) ? date('Y-m-d', strtotime($obj->receivedDate())) : 'n/a',
                     $obj->receivedQty(),
                     $obj->receivedTotalCost(),
                     $this->id, $obj->sku(), $this->specialOrderSelect($obj->isSpecialOrder())
             );
+            $count++;
         }
         $ret .= '</tbody></table>';
 
@@ -665,7 +809,9 @@ HTML;
 
         $this->add_script('js/view.js');
         $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
+        $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         return $ret;
     }
@@ -676,7 +822,7 @@ HTML;
             return '';
         } elseif ($received == 0 && $ordered != 0) {
             return 'class="danger"';
-        } elseif ($received < $quantity) {
+        } elseif ($received < $ordered) {
             return 'class="warning"';
         } else {
             return '';
@@ -930,20 +1076,11 @@ HTML;
     {
         $init = FormLib::get('init', 'placed');
 
-        $month = date('n');
-        $monthOpts = '';
+        $monthOpts = '<option>Last 30 days</option>';
         for($i=1; $i<= 12; $i++) {
             $label = date('F', mktime(0, 0, 0, $i)); 
-            $monthOpts .= sprintf('<option %s value="%d">%s</option>',
-                        ($i == $month ? 'selected' : ''),
+            $monthOpts .= sprintf('<option value="%d">%s</option>',
                         $i, $label);
-        }
-
-        $statusOpts = '';
-        foreach (array('pending', 'placed') as $s) {
-            $statusOpts .= sprintf('<option %s value="%s">%s</option>',
-                        ($init == $s ? 'selected' : ''),
-                        $s, ucwords($s));
         }
 
         $stores = FormLib::storePicker();
@@ -956,18 +1093,17 @@ HTML;
 
         $allSelected = $this->show_all ? 'selected' : '';
         $mySelected = !$this->show_all ? 'selected' : '';
+        $ordersTable = $this->get_orders($init == 'placed' ? 1 : 0, Store::getIdByIp(), 'Last 30 days');
 
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addScript('js/view.js');
-        $this->addOnloadCommand("fetchOrders();\n");
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
+        $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         return <<<HTML
 <div class="form-group form-inline">
-    <label>Status</label> 
-    <select id="orderStatus" onchange="fetchOrders();" class="form-control">
-        {$statusOpts}
-    </select>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="hidden" id="orderStatus" value="{$init}" />
     <label>Showing</label> 
     <select id="orderShow" onchange="fetchOrders();" class="form-control">
         <option {$mySelected} value="0">My Orders</option><option {$allSelected} value="1">All Orders</option>
@@ -987,7 +1123,7 @@ HTML;
     <button class="btn btn-default" onclick="location='PurchasingIndexPage.php'; return false;">Home</button>
 </div>
 <hr />
-<div id="ordersDiv"></div>
+<div id="ordersDiv">{$ordersTable}</div>
 HTML;
     }
 

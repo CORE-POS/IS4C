@@ -28,6 +28,7 @@ if (!class_exists('CoreWarehouseModel')) {
 class SumTendersByDayModel extends CoreWarehouseModel {
 
     protected $name = 'sumTendersByDay';
+    protected $preferred_db = 'plugin:WarehouseDatabase';
     
     protected $columns = array(
     'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),

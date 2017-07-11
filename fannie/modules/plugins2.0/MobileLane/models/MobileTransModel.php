@@ -24,6 +24,7 @@
 class MobileTransModel extends BasicModel 
 {
     protected $name = 'MobileTrans';
+    protected $preferred_db = 'plugin:MobileLaneDB';
 
     protected $columns = array(
     'datetime'    => array('type'=>'DATETIME','index'=>true),

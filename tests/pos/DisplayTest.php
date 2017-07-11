@@ -7,6 +7,7 @@ use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\Tenders\TenderModule;
 use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+use COREPOS\pos\lib\Notifiers\NumPad;
 
 /**
  * @backupGlobals disabled
@@ -257,5 +258,14 @@ class DisplayTest extends PHPUnit_Framework_TestCase
         }
 
         return $ret;
+    }
+
+    public function testNumPad()
+    {
+        $np = new NumPad();
+        CoreLocal::set('touchscreen', true);
+        $this->assertNotEquals(0, strlen($np->draw()));
+        CoreLocal::set('touchscreen', false);
+        $this->assertEquals('', $np->draw());
     }
 }

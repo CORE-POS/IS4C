@@ -78,7 +78,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $upcP = $dbc->prepare('SELECT upc FROM products WHERE upc=? AND inUse=1');
         $skuP = $dbc->prepare('
             SELECT s.upc 
-            FROM vendorSKUtoPLU AS s
+            FROM VendorAliases AS s
                 INNER JOIN products AS p ON s.vendorID=p.default_vendor_id AND s.upc=p.upc
             WHERE s.sku=?'
         );
@@ -97,13 +97,12 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         if ($dbc->num_rows($look2)) {
             $row = $dbc->fetch_row($look2);
             return $row['upc'];
-        } else {
-            $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-            $look3 = $dbc->execute($skuP, array($sku));
-            if ($dbc->num_rows($look3)) {
-                $row = $dbc->fetch_row($look3);
-                return $row['upc'];
-            }
+        }
+        $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
+        $look3 = $dbc->execute($skuP, array($sku));
+        if ($dbc->num_rows($look3)) {
+            $row = $dbc->fetch_row($look3);
+            return $row['upc'];
         }
 
         return $upc;

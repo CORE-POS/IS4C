@@ -28,6 +28,7 @@ class WfcHtSalaryPTOYTDModel extends BasicModel
 {
 
     protected $name = "salarypto_ytd";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

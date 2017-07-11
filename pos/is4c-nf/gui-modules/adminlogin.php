@@ -28,12 +28,7 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 
 /* this module is intended for re-use. 
- * Pass the name of a class with the
- * static properties: 
- *  - adminLoginMsg (message to display)
- *  - adminLoginLevel (employees.frontendsecurity requirement)
- * and static method:
- *  - adminLoginCallback(boolean $success)
+ * Pass the name of a class with the interface AdminLoginInterface
  *
  * The callback should return a URL or True (for pos2.php)
  * when $success is True. When $success is False, the return
@@ -53,19 +48,17 @@ class adminlogin extends NoInputCorePage
     {
         $class = $this->form->tryGet('class');
         $class = str_replace('-', '\\', $class);
-        // make sure calling class implements required
-        // method and properties
-        $method = new ReflectionMethod($class, 'adminLoginCallback');
-        if (!$method->isStatic() || !$method->isPublic())
-            throw new Exception('bad method adminLoginCallback');
-        $property = new ReflectionProperty($class, 'adminLoginMsg');
-        if (!$property->isStatic() || !$property->isPublic())
-            throw new Exception('bad property adminLoginMsg');
-        $property = new ReflectionProperty($class, 'adminLoginLevel');
-        if (!$property->isStatic() || !$property->isPublic())
-            throw new Exception('bad property adminLoginLevel');
+        try {
+            $refl = new ReflectionClass($class); 
+            if ($refl->implementsInterface('COREPOS\\pos\\lib\\adminlogin\\AdminLoginInterface')) {
+                // make sure calling class implements required
+                // method and properties
+                return $class;
+            }
+        } catch (Exception $ex) {}
 
-        return $class;
+        return false;
+
     }
 
     function preprocess()
@@ -75,17 +68,13 @@ class adminlogin extends NoInputCorePage
 
         $posHome = MiscLib::base_url().'gui-modules/pos2.php';
         // get calling class (required)
-        try {
-            $class = $this->getClass();
-        } catch (Exception $ex) {
-            $class = '';
-        }
-        if ($class === '' || !class_exists($class)){
+        $class = $this->getClass();
+        if ($class === false || !class_exists($class)){
             $this->change_page($posHome);
             return False;
         }
 
-        $this->heading = $class::$adminLoginMsg;
+        list($this->heading, $loginLevel) = $class::messageAndLevel();
 
         if ($this->form->tryGet('reginput') !== '' || $this->form->tryGet('userPassword') !== '') {
             $passwd = $this->form->tryGet('reginput');
@@ -102,7 +91,7 @@ class adminlogin extends NoInputCorePage
                 $this->msg = _("re-enter admin password");
             } else {
                 $dbc = Database::pDataConnect();
-                if (Authenticate::checkPermission($passwd, $class::$adminLoginLevel)) {
+                if (Authenticate::checkPermission($passwd, $loginLevel)) {
                     $this->approvedAction($class, $passwd);
 
                     return false;
@@ -112,7 +101,7 @@ class adminlogin extends NoInputCorePage
 
                 TransRecord::addLogRecord(array(
                     'upc' => $passwd,
-                    'description' => substr($class::$adminLoginMsg,0,30),
+                    'description' => substr($this->heading,0,30),
                     'charflag' => 'PW'
                 ));
                 $this->beep();
@@ -137,7 +126,7 @@ class adminlogin extends NoInputCorePage
         $row = Authenticate::getEmployeeByPassword($passwd);
         TransRecord::addLogRecord(array(
             'upc' => $row['emp_no'],
-            'description' => substr($class::$adminLoginMsg . ' ' . $row['FirstName'],0,30),
+            'description' => substr($this->heading . ' ' . $row['FirstName'],0,30),
             'charflag' => 'PW',
             'num_flag' => $row['emp_no']
         ));
@@ -175,8 +164,22 @@ class adminlogin extends NoInputCorePage
         </div>
         </div>
         <?php
-        $this->add_onload_command("\$('#userPassword').focus();");
+        $this->addOnloadCommand("\$('#userPassword').focus();");
     } // END true_body() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->form->class = 'COREPOS-pos-lib-adminlogin-UndoAdminLogin';
+        $phpunit->assertEquals(true, $this->preprocess());
+        ob_end_clean();
+        ob_start();
+        $this->head_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 AutoLoader::dispatch();

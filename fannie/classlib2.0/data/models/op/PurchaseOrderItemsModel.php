@@ -32,7 +32,7 @@ class PurchaseOrderItemsModel extends BasicModel
     protected $columns = array(
     'orderID' => array('type'=>'INT','primary_key'=>True),
     'sku' => array('type'=>'VARCHAR(13)','primary_key'=>True),
-    'quantity' => array('type'=>'DOUBLE'),
+    'quantity' => array('type'=>'DECIMAL(10,2)'),
     'unitCost' => array('type'=>'MONEY'),
     'caseSize' => array('type'=>'DOUBLE'),
     'receivedDate' => array('type'=>'DATETIME'),
@@ -97,11 +97,11 @@ different product, this record will still
         $order->orderID($this->orderID());
         $order->load();
 
-        // case 2: item is SKU-mapped but the order record
+        // case 2: item is aliased but the order record
         // does not reflect the internal PLU
         $deptP = $dbc->prepare('
             SELECT d.salesCode
-            FROM vendorSKUtoPLU AS v
+            FROM VendorAliases AS v
                 ' . DTrans::joinProducts('v', 'p', 'INNER') . '
                 INNER JOIN departments AS d ON p.department=d.dept_no
             WHERE v.sku=?

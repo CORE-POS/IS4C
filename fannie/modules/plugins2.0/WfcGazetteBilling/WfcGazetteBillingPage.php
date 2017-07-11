@@ -58,6 +58,11 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             'default' => 5,
             'required' => true
         ),
+        'amount' => array(
+            'display_name' => 'Amount',
+            'default' => 6,
+            'required' => true
+        ),
         'name' => array(
             'display_name' => 'Name',
             'default' => 0,
@@ -122,20 +127,34 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $tRecord = DTrans::defaults();
         $tRecord['emp_no'] = $EMP_NO;
         $tRecord['register_no'] = $LANE_NO;
-        $tRecord['upc'] = '0';
-        $tRecord['description'] = 'InStore Charges';
-        $tRecord['trans_type'] = 'T';
-        $tRecord['trans_subtype'] = 'MI';
-        $tRecord['quantity'] = 0;
-        $tRecord['ItemQtty'] = 0;
+        $tRecord['trans_type'] = 'D';
+        $tRecord['department'] = 994;
+        $tRecord['quantity'] = 1;
+        $tRecord['ItemQtty'] = 1;
+        //$tRecord['upc'] = '0';
+        //$tRecord['description'] = 'InStore Charges';
+        //$tRecord['trans_type'] = 'T';
+        //$tRecord['trans_subtype'] = 'MI';
+        //$tRecord['quantity'] = 0;
+        //$tRecord['ItemQtty'] = 0;
         $tRecord['trans_id'] = 2;
 
         $tParam = DTrans::parameterize($tRecord, 'datetime', $sql->now());
         $insT = $sql->prepare("INSERT INTO dtransactions
                 ({$tParam['columnString']}) VALUES ({$tParam['valueString']})");
+
+        $invP = $sql->prepare("INSERT INTO B2BInvoices 
+            (cardNo, createdDate, createdTransNum, amount, description, isPaid, coding, createdBy, lastModifiedBy, customerNotes)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)");
+        $invCoding = trim(FormLib::get('coding'));
+        $invIssue = trim(FormLib::get('issueName'));
+        $custNotes = trim(FormLib::get('customerNotes'));
+        $uid = FannieAuth::getUID($this->current_user);
+        $flagP = $sql->prepare('UPDATE dtransactions SET numflag=?, charflag=\'B2\' WHERE emp_no=? AND register_no=? AND trans_no=?');
         
         $transQ = $sql->prepare("SELECT MAX(trans_no) FROM dtransactions
             WHERE emp_no=? AND register_no=?");
+        $sql->startTransaction();
         foreach(FormLib::get_form_value('cardnos',array()) as $cardno){
             $amt = FormLib::get_form_value('billable'.$cardno);
             $transR = $sql->execute($transQ, array($EMP_NO, $LANE_NO));
@@ -149,6 +168,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $desc = FormLib::get_form_value('desc'.$cardno);
             $desc = substr($desc,0,24);
 
+            /*
             $dRecord['trans_no'] = $t_no;
             $dRecord['upc'] = $amt.'DP703';
             $dRecord['description'] = 'Gazette Ad '.$desc;
@@ -161,7 +181,11 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $ins = $sql->execute($insD, $dParam['arguments']);
 
             $tRecord['trans_no'] = $t_no;
+            $tRecord['upc'] = $amt.'DP994';
+            $tRecord['description'] = 'B2B INVOICING';
+            $tRecord['unitPrice'] = -1*$amt;
             $tRecord['total'] = -1*$amt;
+            $tRecord['regPrice'] = -1*$amt;
             $tRecord['card_no'] = $cardno;
 
             $tParam = DTrans::parameterize($tRecord);
@@ -169,7 +193,24 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
             $ret .= sprintf("<tr><td>%d</td><td>$%.2f</td><td>%s</td></tr>",
                 $cardno,$amt,$EMP_NO."-".$LANE_NO."-".$t_no);
+            */
+
+            $invArgs = array(
+                $cardno,
+                date('Y-m-d H:i:s'),
+                'n/a',
+                $amt,
+                $invIssue . ' ' . $desc,
+                $invCoding,
+                $uid,
+                $uid,
+                $custNotes,
+            );
+            $sql->execute($invP, $invArgs);
+            $invID = $sql->insertID();
+            $ret .= "<tr><td>Invoice</td><td>$invID</td></tr>";
         }
+        $sql->commitTransaction();
 
         $ret .= '</table>';
 
@@ -186,6 +227,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $SIZE = $this->get_column_index('size');
         $COLOR = $this->get_column_index('color');
         $MEMBER = $this->get_column_index('card_no');
+        $AMOUNT = $this->get_column_index('amount');
 
         $ret = "<b>Gazette Billing Preview</b><br />
             <table class=\"table\"><tr>
@@ -218,6 +260,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $ph = array_pop(explode(" OR ",$ph));
             $ph = str_replace(" ","",$ph);
             $cn = $data[$CONTACT];
+            $amount = trim($data[$AMOUNT]);
+            $amount = trim($amount, '$');
             $sz = trim(strtoupper($data[$SIZE]));
             $clr = trim(strtoupper($data[$COLOR]));
             $data[$MEMBER] = trim(strtoupper($data[$MEMBER])); // match on YES
@@ -266,15 +310,15 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             }
             
             if ($sql->num_rows($searchR) == 0){
-                $warnings .= sprintf("<i>Warning: no membership found for %s (%s)<br />",
+                $warnings .= sprintf("<i>Warning: no membership found for %s (%s)</i><br />",
                     $data[$CONTACT],$ph);
             }
             elseif ($sql->num_rows($searchR) > 1){
-                $warnings .= sprintf("<i>Warning: multiple memberships found for %s (%s)<br />",
+                $warnings .= sprintf("<i>Warning: multiple memberships found for %s (%s)</i><br />",
                     $data[$CONTACT],$ph);
             }
             elseif (!isset($BILLING_NONMEMBER[$sz.$clr])){
-                $warnings .= sprintf('<i>Warning: size/color "%s" unknown<br />',
+                $warnings .= sprintf('<i>Warning: size/color "%s" unknown</i><br />',
                         $sz.$clr);
             }
             else {
@@ -290,16 +334,25 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     <input type=hidden name=cardnos[] value=%d />",
                     $row[0],$row[1],$sz,
                     $data[$COLOR],
-                    (substr($data[$MEMBER],0,3)=="YES")?
-                    'MEMBER':'NON-MEMBER',
+                    (substr($data[$MEMBER],0,3)=="YES")? 'MEMBER':'NON-MEMBER',
                     $row[0],
-                    (substr($data[$MEMBER],0,3)=="YES")?
-                    $BILLING_NONMEMBER[$sz.$clr]*0.75:
-                    $BILLING_NONMEMBER[$sz.$clr],
+                    $amount,
                     $row[0],$desc,$row[0]);
             }
         }
         $ret .= "</table>";
+        $ret .= '<div class="form-group">
+                <label>For Issue</label>
+                <input type="text" required name="issueName" class="form-control" />
+                </div>
+                <div class="form-group">
+                <label>Coding</label>
+                <input type="text" required name="coding" class="form-control" />
+                </div>
+                <div class="form-group">
+                <label>Notes for Customers</label>
+                <textarea name="customerNotes" class="form-control" rows="5"></textarea>
+                </div>';
         $ret .= '<p><button type=submit class="btn btn-default">Charge Accounts</button></p>';
         $ret .= "</form>";
         $this->output_html = $ret;

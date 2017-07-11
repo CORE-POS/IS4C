@@ -37,6 +37,7 @@ class InstaCart extends \COREPOS\Fannie\API\FanniePlugin
             'description'=>'InstaCart credentials'), 
     );
 
-    public $plugin_description = 'Plugin for submitting InstaCart data';
+    public $plugin_description = 'Plugin for submitting InstaCart data. You may need
+        to install flysystem/sftp via composer to actually transmit data.';
 }
 

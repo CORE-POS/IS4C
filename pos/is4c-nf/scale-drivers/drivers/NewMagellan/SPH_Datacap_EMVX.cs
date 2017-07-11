@@ -52,9 +52,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private RBA_Stub rba = null;
     private string xml_log = null;
     private bool enable_xml_log = false;
-    private ManualResetEvent emv_active;
     private bool pdc_active;
     private Object pdcLock = new Object();
+    private bool emv_reset;
+    private Object emvLock = new Object();
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -68,8 +69,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
         char sep = Path.DirectorySeparatorChar;
         xml_log = my_location + sep + "xml.log";
-        emv_active = new ManualResetEvent(false);
         pdc_active = false;
+        emv_reset = true;
     }
 
     /**
@@ -93,16 +94,15 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
         if (emv_ax_control == null) {
             emv_ax_control = new DsiEMVX();
-            Console.WriteLine("Reset EMV");
-            PadReset();
         }
+        FlaggedReset();
 
         if (rba == null) {
-            if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
+            if (false && device_identifier == "INGENICOISC250_MERCURY_E2E") {
                 rba = new RBA_Stub("COM"+com_port);
                 rba.SetParent(this.parent);
                 rba.SetVerbose(this.verbose_mode);
-                rba.SetEMV(true);
+                rba.SetEMV(RbaButtons.EMV);
             }
         }
 
@@ -240,6 +240,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 if (rba != null) {
                     rba.stubStop();
                 }
+                FlaggedReset();
                 GetSignature();
                 break;
             case "termGetType":
@@ -255,6 +256,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
     /**
       Process XML transaction using dsiPDCX
+      @param xml the request body
+      @param autoReset true if the request requires a reset, false if the request IS a reset
     */
     protected string ProcessEMV(string xml, bool autoReset)
     {
@@ -285,21 +288,30 @@ public class SPH_Datacap_EMVX : SerialPortHandler
               Extract HostOrIP field and split it on commas
               to allow multiple IPs
             */
-            emv_active.Set();
             XmlDocument request = new XmlDocument();
             request.LoadXml(xml);
             var IPs = request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml.Split(new Char[]{','}, StringSplitOptions.RemoveEmptyEntries);
             string result = "";
             foreach (string IP in IPs) {
                 // try request with an IP
+
+                // If this is NOT a pad reset request, check the emv_reset
+                // flag to see if a reset is needed. If so, execute one
+                // and update the flag
+                if (autoReset) {
+                    FlaggedReset();
+                }
+
                 request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
                 result = emv_ax_control.ProcessTransaction(request.OuterXml);
+
+                // if this is not a reset command, set the reset needed flag
                 if (autoReset) {
-                    PadReset();
+                    lock(emvLock) {
+                        emv_reset = true;
+                    }
                 }
-                if (!autoReset) {
-                    Console.WriteLine(result);
-                }
+
                 if (enable_xml_log) {
                     using (StreamWriter sw = new StreamWriter(xml_log, true)) {
                         sw.WriteLine(DateTime.Now.ToString() + " (send emv): " + request.OuterXml);
@@ -331,7 +343,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     break;
                 }
             }
-            emv_active.Reset();
 
             return result;
 
@@ -340,7 +351,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             if (this.verbose_mode > 0) {
                 Console.WriteLine(ex);
             }
-            emv_active.Reset();
         }
 
         return "";
@@ -403,6 +413,24 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "</TStream>";
         
         return ProcessPDC(xml);
+    }
+
+    /**
+      Set a lock, check if the reset flag is active.
+      If so, issue a reset and clear the flag then
+      release the lock
+    */
+    protected string FlaggedReset()
+    {
+        string ret = "";
+        lock(emvLock) {
+            if (emv_reset) {
+                ret  = PadReset();
+                emv_reset = false;
+            }
+        }
+
+        return ret;
     }
 
     /**

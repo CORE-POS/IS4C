@@ -228,39 +228,41 @@ HTML;
         if (is_numeric($upc)) {
             switch($numType) {
                 case 'SKU':
-                    $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
+                    $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
                         FROM products as p inner join 
                         vendorItems as v ON p.upc=v.upc 
-                        left join prodExtra as x on p.upc=x.upc 
+                        left join vendors AS n ON p.default_vendor_id=n.vendorID
                         WHERE v.sku LIKE ? ";
                     $args[] = '%'.$upc;
                     break;
                 case 'Brand Prefix':
-                    $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
-                        FROM products as p left join 
-                        prodExtra as x on p.upc=x.upc 
+                    $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
+                        FROM products as p 
+                        left join vendors AS n ON p.default_vendor_id=n.vendorID
                         WHERE p.upc like ? ";
                     $args[] = '%'.$upc.'%';
                     break;
                 case 'UPC':
                 default:
                     $upc = BarcodeLib::padUPC($upc);
-                    $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
-                        FROM products as p left join 
-                        prodExtra as x on p.upc=x.upc 
+                    $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
+                        FROM products as p
+                        left join vendors AS n ON p.default_vendor_id=n.vendorID
                         WHERE p.upc = ? ";
                     $args[] = $upc;
                     $inUseFlag = 1; // exact matches should be allowed
                     break;
             }
         } else {
-            $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
-                FROM products AS p LEFT JOIN 
-                prodExtra AS x ON p.upc=x.upc
+            $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
+                FROM products AS p
+                    left join vendors AS n ON p.default_vendor_id=n.vendorID
                 WHERE description LIKE ? 
+                    OR n.vendorName LIKE ?
                     OR p.brand LIKE ?";
-            $args[] = '%'.$upc.'%';    
-            $args[] = '%'.$upc.'%';    
+            $args[] = '%'.$upc.'%';
+            $args[] = '%'.$upc.'%';
+            $args[] = '%'.$upc.'%';
         }
         if (!$inUseFlag) {
             $query .= ' AND inUse=1 ';

@@ -48,7 +48,7 @@ class floorSectionSalesReport extends FannieReportPage
         $batchesModel = new BatchesModel($dbc);
         $batchListModel = new BatchListModel($dbc);
         $batchesModel->startDate($start);
-        $batchesModel->startDate($end);
+        $batchesModel->endDate($end);
         
         $batches = array();
         $items = array();
@@ -90,6 +90,7 @@ class floorSectionSalesReport extends FannieReportPage
         $end = FormLib::get_form_value('date2','');
         $floorsection = FormLib::get('floorsection');
         $data = array();
+        $store = FormLib::get('store');
         
         $fsModel = new FloorSectionsModel($dbc);
         $fsModel->floorSectionID($floorsection);
@@ -112,8 +113,10 @@ class floorSectionSalesReport extends FannieReportPage
             $upcs[] = $row['upc'];
         }
         
-        list($inClause,$onSaleA) = $dbc->safeInClause($upcs);
+        $onSaleA = array($start, $store);
+        list($inClause,$onSaleA) = $dbc->safeInClause($upcs, $onSaleA);
 
+        //$onSaleA = array($start,$store);
         $onSaleQ = "
             SELECT 
                 p.upc,p.brand,p.description,p.auto_par,
@@ -122,15 +125,15 @@ class floorSectionSalesReport extends FannieReportPage
                 v.vendorID
             FROM products AS p
                 INNER JOIN batchList AS l ON p.upc=l.upc 
-                INNER JOIN batches AS b ON l.batchID=b.batchID AND CURDATE() BETWEEN b.startDate AND b.endDate
+                INNER JOIN batches AS b ON l.batchID=b.batchID AND b.startDate = ?
                 INNER JOIN vendorSKUtoPLU AS v ON p.upc=v.upc
             WHERE p.inUse = 1
-                AND p.store_id = 1
-                
+                AND p.store_id = ?
+                AND p.upc IN (".$inClause.")
         ";
             
         $onSaleP = $dbc->prepare($onSaleQ);
-        $onSaleR = $dbc->execute($onSaleP);
+        $onSaleR = $dbc->execute($onSaleP,$onSaleA);
         $i = 0;
         while ($row = $dbc->fetchRow($onSaleR)) {
             $upc = $row['upc'];
@@ -150,7 +153,6 @@ class floorSectionSalesReport extends FannieReportPage
         $model = new ProductsModel($dbc);
         foreach ($upcs as $upc) {
             //$data[$i][0] = $upc;
-            
             $args = array($upc,'1');
             $prep = $dbc->prepare("
                 SELECT 

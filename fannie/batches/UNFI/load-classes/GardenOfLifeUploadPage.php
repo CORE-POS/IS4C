@@ -87,18 +87,6 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $idW = $dbc->fetchRow($idR);
         $VENDOR_ID = $idW['vendorID'];
 
-        $clean = $dbc->prepare('
-            DELETE 
-            FROM vendorItems
-            WHERE 
-            vendorID=?
-                AND upc NOT IN (
-                    SELECT upc
-                    FROM VendorBreakdowns
-                    WHERE vendorID=?
-                )');
-        $dbc->execute($clean, array($VENDOR_ID, $VENDOR_ID));
-
         $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products

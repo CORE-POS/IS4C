@@ -29,12 +29,12 @@ use \CoreLocal;
   @class MemStatusAdminLogin
   adminlogin callback for approving member status toggle
 */
-class MemStatusAdminLogin 
+class MemStatusAdminLogin implements AdminLoginInterface
 {
-
-    public static $adminLoginMsg = 'Login to toggle member status';
-    
-    public static $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return array(_('Login to toggle member status'), 30);
+    }
 
     public static function adminLoginCallback($success)
     {
@@ -48,9 +48,8 @@ class MemStatusAdminLogin
             ));
 
             return MiscLib::baseURL().'gui-modules/boxMsg2.php';
-        } else {
-            return false;
         }
+        return false;
     }
 
 }

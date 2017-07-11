@@ -35,7 +35,7 @@ class PreviousPromosReport extends FannieReportPage
     protected $title = "Fannie : Previous Promos";
     protected $header = "Previous Promos";
 
-    protected $report_headers = array('UPC', 'SKU', 'Brand', 'Description', 'Auto Par', 'Case Size', 'Promo 1', 'ADM', 'Promo 2', 'ADM', 'Promo 3', 'ADM', 'Avg All');
+    protected $report_headers = array('UPC', 'SKU', 'Brand', 'Description', 'Auto Par', 'Case Size', 'Promo 1', 'ADM', 'Promo 2', 'ADM', 'Promo 3', 'ADM', 'Avg All', 'xDays');
     protected $required_fields = array('u');
 
     public function fetch_report_data()
@@ -63,6 +63,7 @@ class PreviousPromosReport extends FannieReportPage
             $store = Store::getIdByIp();
         }
         $args[] = $store > 0 ? $store : 1;
+        $days = FormLib::get('days', 1);
 
         $itemP = $dbc->prepare("
             SELECT p.upc, p.brand, p.description, auto_par, v.units, v.sku
@@ -112,6 +113,7 @@ class PreviousPromosReport extends FannieReportPage
             }
             $all_avg = count($averages) == 0 ? 0 : array_sum($averages) / count($averages);
             $record[] = sprintf('%.2f', $all_avg);
+            $record[] = sprintf('%.2f', $days * $all_avg);
             $data[] = $record;
         }
 
@@ -146,8 +148,11 @@ class PreviousPromosReport extends FannieReportPage
             }
         }
         $stores = FormLib::storePicker();
+        $days = FormLib::get('days', 1);
         $dates_form .= '
             <input type="hidden" name="excel" value="" id="excel" />
+            Days
+            <input type="text" name="days" value="' . $days . '" onchange="var d=this.value; $(\'.reportColumn13\').each(function(){ var b = $(this).siblings(\'.reportColumn12\').html(); $(this).html(Math.round(d*b*100)/100); });" />
             ' . $stores['html'] . '
             <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Change Store</button>
             <button type="submit" onclick="$(\'#excel\').val(\'csv\');return true;">Download</button>

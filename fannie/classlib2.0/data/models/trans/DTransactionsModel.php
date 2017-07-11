@@ -147,8 +147,9 @@ class DTransactionsModel extends BasicModel
         $this->name = 'dlog_15';
         unset($this->columns['datetime']);
         $tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
+        $date_id = array('date_id'=>array('type'=>'INT'));
         $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
-        $this->columns = $tdate + $this->columns + $trans_num;
+        $this->columns = $tdate + $date_id + $this->columns + $trans_num;
         $chk = parent::normalize($db_name, $mode, $doCreate);
         if ($chk !== false) {
             $log_adds += $chk;
@@ -216,6 +217,7 @@ class DTransactionsModel extends BasicModel
         // EL: Need to restore $this-columns to original values.
         $this->connection = FannieDB::get($FANNIE_TRANS_DB);
         unset($this->columns['tdate']);
+        unset($this->columns['date_id']);
         unset($this->columns['trans_num']);
         $datetime = array('datetime'=>array('type'=>'datetime','index'=>true));
         $this->columns = $datetime + $this->columns;

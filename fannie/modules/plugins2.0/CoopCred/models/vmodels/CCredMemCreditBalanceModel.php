@@ -30,6 +30,7 @@ class CCredMemCreditBalanceModel extends ViewModel
 
     // Actual name of view being created.
     protected $name = "CCredMemCreditBalance";
+    protected $preferred_db = 'plugin:CoopCredDatabase';
 
     protected $columns = array(
     'programID' => array('type'=>'INT'),

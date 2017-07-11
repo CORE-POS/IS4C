@@ -35,7 +35,8 @@
         "twig/twig": "^1.25",
         "twig/extensions": "^1.4",
         "automattic/woocommerce": "^1.1",
-        "itgalaxy/bmp2image": "^2.0"
+        "itgalaxy/bmp2image": "^2.0",
+        "ramsey/uuid": "^3.6"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",

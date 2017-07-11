@@ -28,6 +28,7 @@ class MemberSummaryModel extends CoreWarehouseModel
 {
 
     protected $name = "MemberSummary";
+    protected $preferred_db = 'plugin:WarehouseDatabase';
 
     protected $columns = array(
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
@@ -88,10 +89,10 @@ class MemberSummaryModel extends CoreWarehouseModel
             SELECT card_no,
                 MIN(date_id) AS firstVisit,
                 MAX(date_id) AS lastVisit,
-                SUM(total) AS totalSpending,
-                AVG(total) AS averageSpending,
-                SUM(quantity) AS totalItems,
-                AVG(quantity) AS averageItems,
+                SUM(retailTotal) AS totalSpending,
+                AVG(retailTotal/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageSpending,
+                SUM(retailQuantity) AS totalItems,
+                AVG(retailQuantity/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageItems,
                 SUM(transCount) AS totalVisits
             FROM sumMemSalesByDay
             WHERE date_id BETWEEN ? AND ?
@@ -132,6 +133,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 spotlightAverageItems=?,
                 spotlightTotalVisits=?
             WHERE card_no=?');
+        $dbc->startTransaction();
         while ($spotlight = $dbc->fetchRow($basicR)) {
             $dbc->execute($upP, array(
                 $spotlight_start,
@@ -144,6 +146,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 $spotlight['card_no'],
             ));
         }
+        $dbc->commitTransaction();
 
         $year_args = array(
             date('Ym01', $lastyear),
@@ -162,6 +165,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 yearAverageItems=?,
                 yearTotalVisits=?
             WHERE card_no=?');
+        $dbc->startTransaction();
         while ($year = $dbc->fetchRow($basicR)) {
             $dbc->execute($upP, array(
                 $year_start,
@@ -174,6 +178,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 $year['card_no'],
             ));
         }
+        $dbc->commitTransaction();
 
 
         $oldlight = array(strtotime($spotlight_args[0]), strtotime($spotlight_args[1]));
@@ -190,6 +195,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 oldlightTotalVisits=?
             WHERE card_no=?');
         $basicR = $dbc->execute($basicP, $oldlight_args);
+        $dbc->startTransaction();
         while ($old = $dbc->fetchRow($basicR)) {
             $dbc->execute($upP, array(
                 $old['totalSpending'],
@@ -200,6 +206,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 $old['card_no'],
             ));
         }
+        $dbc->commitTransaction();
 
         $longSQL = '';
         $long_args = array($spotlight_args[0]);
@@ -213,10 +220,10 @@ class MemberSummaryModel extends CoreWarehouseModel
             SELECT card_no,
                 MIN(date_id) AS firstVisit,
                 MAX(date_id) AS lastVisit,
-                SUM(total) AS totalSpending,
-                AVG(total) AS averageSpending,
-                SUM(quantity) AS totalItems,
-                AVG(quantity) AS averageItems,
+                SUM(retailTotal) AS totalSpending,
+                AVG(retailTotal/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageSpending,
+                SUM(retailQuantity) AS totalItems,
+                AVG(retailQuantity/(CASE WHEN transCount=0 THEN 1 ELSE transCount END)) AS averageItems,
                 SUM(transCount) AS totalVisits
             FROM sumMemSalesByDay
             WHERE date_id < ?
@@ -233,6 +240,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 longlightTotalVisits=?
             WHERE card_no=?');
         $basicR = $dbc->execute($basicP, $long_args);
+        $dbc->startTransaction();
         while ($long = $dbc->fetchRow($basicR)) {
             $dbc->execute($upP, array(
                 $long['totalSpending'],
@@ -243,6 +251,7 @@ class MemberSummaryModel extends CoreWarehouseModel
                 $long['card_no'],
             ));
         }
+        $dbc->commitTransaction();
 
         // do ranks
 
@@ -256,6 +265,7 @@ class MemberSummaryModel extends CoreWarehouseModel
             SET totalSpendingRank=?
             WHERE card_no=?');
         $result = $dbc->query($query);
+        $dbc->startTransaction();
         while ($row = $dbc->fetchRow($result)) {
             $dbc->execute($rankP, array($rank, $row['card_no']));
             $rank++;
@@ -335,6 +345,7 @@ class MemberSummaryModel extends CoreWarehouseModel
             $dbc->execute($rankP, array($rank, $row['card_no']));
             $rank++;
         }
+        $dbc->commitTransaction();
     }
 }
 

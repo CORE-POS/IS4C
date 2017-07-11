@@ -21,15 +21,16 @@ class SoPoBridge
     */
     private function getPurchaseOrderID($vendorID, $storeID)
     {
+        $cutoff = date('Y-m-d 00:00:00', strtotime('28 days ago'));
         $prep = $this->dbc->prepare('
             SELECT orderID
             FROM PurchaseOrder
             WHERE vendorID=?
                 AND storeID=?
-                AND vendorOrderID LIKE \'SO-%\'
                 AND placed=0
+                AND creationDate >= ?
             ORDER BY creationDate DESC');
-        return $this->dbc->getValue($prep, array($vendorID, $storeID));
+        return $this->dbc->getValue($prep, array($vendorID, $storeID, $cutoff));
     }
 
     /**
@@ -40,10 +41,11 @@ class SoPoBridge
     {
         $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
         $prep = $this->dbc->prepare('
-            SELECT v.sku, n.vendorID
+            SELECT v.sku, n.vendorID, d.salesCode
             FROM ' . $pending . ' AS o
                 INNER JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
-                INNER JOIN vendorItems AS v on n.vendorID=v.vendorID AND o.upc=v.upc
+                LEFT JOIN vendorItems AS v on n.vendorID=v.vendorID AND o.upc=v.upc
+                LEFT JOIN departments AS d ON o.department=d.dept_no
             WHERE o.order_id=?
                 AND o.trans_id=?
         ');
@@ -87,10 +89,21 @@ class SoPoBridge
 
         $prep = $this->dbc->prepare('SELECT * FROM vendorItems WHERE sku=? AND vendorID=?');
         $item = $this->dbc->getRow($prep, array($vendorInfo['sku'], $vendorInfo['vendorID']));
+        $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
+        $prep = $this->dbc->prepare("SELECT description, quantity AS units, 0 AS cost, '' AS brand
+            FROM {$pending} WHERE order_id=? AND trans_id=?");
+        $spoRow = $this->dbc->getRow($prep, array($soID, $transID));
+        if ($item === false) {
+            $item = $spoRow;
+            $item['sku'] = uniqid();
+        }
+        $item['units'] = $spoRow['units'];
 
+        $poSKU = substr($vendorInfo['sku'], -12) . ' ';
         $poitem = new PurchaseOrderItemsModel($this->dbc);
         $poitem->orderID($poID);
-        $poitem->sku($vendorInfo['sku']);
+        $poitem->sku($poSKU);
+        $poitem->salesCode($vendorInfo['salesCode']);
         $poitem->isSpecialOrder(1);
         $poitem->unitCost($item['cost']);
         $poitem->quantity($cases);
@@ -122,8 +135,6 @@ class SoPoBridge
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
             WHERE o.vendorID=?
                 AND o.storeID=?
-                AND o.vendorOrderID LIKE \'SO-%\'
-                AND i.sku=?
                 AND i.quantity=?
                 AND i.isSpecialOrder=1
                 AND i.internalUPC=?
@@ -131,7 +142,6 @@ class SoPoBridge
         return $this->dbc->getValue($prep, array(
             $vendorInfo['vendorID'],
             $storeID,
-            $vendorInfo['sku'],
             $cases,
             str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT),
         ));

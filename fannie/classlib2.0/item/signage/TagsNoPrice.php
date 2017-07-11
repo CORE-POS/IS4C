@@ -49,7 +49,7 @@ class TagsNoPrice extends \COREPOS\Fannie\API\item\FannieSignage
         $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
         $mapP = $dbc->prepare("
             SELECT i.units,i.size,s.sku
-            FROM vendorSKUtoPLU AS s
+            FROM VendorAliases AS s
                 INNER JOIN vendorItems AS i ON s.sku=i.sku AND s.vendorID=i.vendorID
                 INNER JOIN vendors AS v ON s.vendorID=v.vendorID
             WHERE s.upc=?

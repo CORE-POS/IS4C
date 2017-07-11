@@ -151,7 +151,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 p.discount,
                 p.line_item_discountable,
                 p.brand AS manufacturer,
-                x.distributor,
+                n.vendorName AS distributor,
                 u.description as ldesc,
                 p.default_vendor_id,
                 v.units AS caseSize,
@@ -162,11 +162,19 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 p.deposit,
                 p.discounttype,
                 p.wicable,
-                p.store_id
+                p.store_id,
+                CASE WHEN c.upc IS NOT NULL THEN 1 ELSE 0 END AS inventoried,
+                c.count AS lastCount,
+                c.countDate,
+                c.par AS invPar,
+                i.onHand,
+                0 AS isAlias
             FROM products AS p 
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                 LEFT JOIN productUser AS u ON p.upc=u.upc 
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
+                LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                LEFT JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
+                LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID
             WHERE p.upc=?';
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
@@ -180,9 +188,9 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 $items[$row['store_id']] = $row;
             }
             return $items;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     private function getNewItem($upc)
@@ -217,7 +225,10 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             'cost' => 0,
             'discounttype' => 0,
             'wicable' => 0,
+            'inventoried' => 0,
+            'isAlias' => 0,
         );
+        $ret = '';
 
         /**
           Check for entries in the vendorItems table to prepopulate
@@ -297,7 +308,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $rowItem['wicable'] = $dmodel->dept_wicable();
         }
 
-        return $rowItem;
+        return array($rowItem, $ret);
     }
 
     private function highlightUPC($upc)
@@ -366,7 +377,8 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 }
             }
         } else {
-            $rowItem = $this->getNewItem($upc);
+            list($rowItem, $msg) = $this->getNewItem($upc);
+            $ret .= $msg;
             $new_item = true;
 
             foreach ($stores as $id => $obj) {
@@ -432,6 +444,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
 
             $jsVendorID = $rowItem['default_vendor_id'] != 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
             $vFieldsDisabled = $jsVendorID == 'no-vendor' || !$active_tab ? 'disabled' : '';
+            $aliasDisabled = $rowItem['isAlias'] ? 'disabled' : '';
             $limit = 30 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
             $cost = sprintf('%.3f', $rowItem['cost']);
             $price = sprintf('%.2f', $rowItem['normal_price']);
@@ -703,7 +716,8 @@ HTML;
         <input type="text" name="vendorSKU" class="form-control input-sm"
             value="{$rowItem['sku']}" 
             onchange="$('#vsku{$jsVendorID}').val(this.value);" 
-            {$vFieldsDisabled} id="product-sku-field" />
+            {$vFieldsDisabled} {$aliasDisabled} id="product-sku-field" />
+        <input type="hidden" name="isAlias" value="{$rowItem['isAlias']}" />
     </td>
 </tr>
 <tr>
@@ -761,7 +775,7 @@ HTML;
                 class="form-control input-sm product-case-size"
                 value="{$rowItem['caseSize']}" 
                 onchange="\$('#vunits{$jsVendorID}').val(this.value);" 
-                {$vFieldsDisabled} />
+                {$vFieldsDisabled} {$aliasDisabled} />
         </td>
         <th class="small text-right">Pack Size</th>
         <td class="col-sm-1">
@@ -791,9 +805,22 @@ HTML;
             </select>
         </td>
     </tr>
-</table>
-</div>
 HTML;
+            if ($rowItem['inventoried']) {
+                $ret .= sprintf('<tr>
+                    <th class="small text-right">On Hand</th><td class="small">%d</td>
+                    <th class="small text-right">Last Count</th><td colspan="2" class="small">%d on %s</td>
+                    <th class="small text-right">Par</th><td class="small">%s</td>
+                    <td colspan="3" class="small"><a href="inventory/InvCountPage.php?id=%s&store=%d">Adjust count/par</a></td>
+                    </tr>',
+                    $rowItem['onHand'],
+                    $rowItem['lastCount'], $rowItem['countDate'],
+                    $rowItem['invPar'],
+                    $upc,
+                    $store_id
+                );
+            }
+            $ret .= '</table></div>';
             if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
             }
@@ -871,6 +898,7 @@ HTML;
                 $model->wicable(0);
                 $model->scaleprice(0);
                 $model->inUse(1);
+                $model->created(date('Y-m-d H:i:s'));
             }
 
             $taxes = $this->formNoEx('tax', array());
@@ -1075,6 +1103,10 @@ HTML;
         try {
             $sku = $this->form->vendorSKU;
             $caseSize = $this->form->caseSize;
+            $alias = $this->form->isAlias;
+            if ($alias) {
+                return true;
+            }
             if (!empty($sku) && $sku != $upc) {
                 /**
                   If a SKU is provided, update any

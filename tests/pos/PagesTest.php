@@ -40,6 +40,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
         while( ($file=readdir($dh)) !== False){
             if ($file[0] == '.') continue;
             if (substr($file,-4) != '.php') continue;
+            if ($file == 'ddd.php') continue;
             $class = substr($file,0,strlen($file)-4);
             $pages[$class] = $file;
         }
@@ -67,8 +68,8 @@ class PagesTest extends PHPUnit_Framework_TestCase
                 $this->assertEquals('<!DOCTYPE html>',substr($output,0,15));
             } else {
                 // output is a proper redirect message
-                $this->assertEquals('</ul>',substr($output,-5));
-                $this->assertEquals('Follow redirect', substr($output,0,15));
+                $this->assertEquals('</ul>',substr($output,-5), "Page $class not redirecting correctly");
+                $this->assertEquals('Follow redirect', substr($output,0,15), "Page $class not redirecting corretly");
             }
 
             $obj->unitTest($this);

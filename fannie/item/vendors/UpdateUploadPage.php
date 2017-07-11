@@ -114,7 +114,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     );
 
     protected $use_splits = true;
-    protected $use_js = true;
+    protected $use_js = false;
 
     private function validateVendorID($dbc)
     {
@@ -158,8 +158,9 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         if ($dbc->tableExists('vendorSRPs')) {
             $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
-        $pmodel = new ProductsModel($dbc);
-        $existsP = $dbc->prepare("SELECT 1 FROM vendorItems WHERE upc=? AND vendorID=?");
+        $existsP = $dbc->prepare("SELECT upc FROM vendorItems WHERE upc=? AND vendorID=?");
+        $costP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=? AND default_vendor_id=?');
+        $updatedUPCs = array();
 
         $dbc->startTransaction();
         foreach($linedata as $data) {
@@ -171,6 +172,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $sku = $data[$indexes['sku']];
             $brand = ($indexes['brand'] === false) ? $vendorName : substr($data[$indexes['brand']], 0, 50);
             $description = ($indexes['desc'] === false) ? '' : substr($data[$indexes['desc']], 0, 50);
+            $description = preg_replace('/[^\x20-\x7E]/','', $description);
             if ($indexes['qty'] === false) {
                 $qty = 1.0;
             } else {
@@ -240,7 +242,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if ($dbc->getValue($existsP, array($upc, $VENDOR_ID))) {
                 $query = 'UPDATE vendorItems SET ';
                 $args = array();
-                if ($indexes['brand'] !== false) {
+                if ($indexes['brand'] !== false && !empty($brand)) {
                     $query .= 'brand=?, ';
                     $args[] = $brand;
                 }
@@ -248,11 +250,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $query .= 'description=?, ';
                     $args[] = $description;
                 }
-                if ($indexes['sku'] !== false) {
-                    $query .= 'sku=?, ';
-                    $args[] = $sku;
-                }
-                if ($indexes['qty'] !== false) {
+                if ($indexes['qty'] !== false && !empty($qty)) {
                     $query .= 'units=?, ';
                     $args[] = $qty;
                 }
@@ -264,7 +262,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $query .= 'saleCost=?, ';
                     $args[] = $net_unit;
                 }
-                if ($indexes['vDept'] !== false) {
+                if ($indexes['vDept'] !== false && !empty($category)) {
                     $query .= 'vendorDept=?, ';
                     $args[] = $category;
                 }
@@ -292,23 +290,18 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             if ($this->session->vUploadChangeCosts && $reg_unit) {
-                $this->updateCost($pmodel, $upc, $VENDOR_ID, $reg_unit);
+                $dbc->execute($costP, array($reg_unit, $upc, $VENDOR_ID));
+                $updatedUPCs[] = $upc;
             }
+        }
+
+        if (count($updatedUPCs) > 0) {
+            $updateModel = new ProdUpdateModel($dbc);
+            $updateModel->logManyUpdates($updatedUPCs, ProdUpdateModel::UPDATE_EDIT);
         }
         $dbc->commitTransaction();
 
         return true;
-    }
-
-    private function updateCost($pmodel, $upc, $vendorID, $cost)
-    {
-        $pmodel->reset();
-        $pmodel->upc($upc);
-        $pmodel->default_vendor_id($vendorID);
-        foreach ($pmodel->find('store_id') as $obj) {
-            $obj->cost($cost);
-            $obj->save();
-        }
     }
 
     /* clear tables before processing */

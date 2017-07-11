@@ -100,7 +100,9 @@ function printMany(){
             <label>Layout</label>: 
         <select id=layoutselector class="form-control">
         <?php
+        $tagEnabled = $this->config->get('ENABLED_TAGS');
         foreach($this->layouts as $l){
+            if (!in_array($l, $tagEnabled) && count($tagEnabled) > 0) continue;
             if ($l == $this->config->get('DEFAULT_PDF'))
                 echo "<option selected>".$l."</option>";
             else

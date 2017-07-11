@@ -15,6 +15,16 @@ use COREPOS\pos\lib\ReceiptLib;
 
 class PrintHandler {
 
+    const BARCODE_UPCA      = 1;
+    const BARCODE_UPCE      = 2;
+    const BARCODE_EAN13     = 3;
+    const BARCODE_EAN8      = 4;
+    const BARCODE_CODE39    = 5;
+    const BARCODE_ITF       = 6;
+    const BARCODE_CODEABAR  = 7;
+    const BARCODE_CODE93    = 8;
+    const BARCODE_CODE128   = 9;
+
     private static $builtin = array(
         'ESCPOSPrintHandler',
         'EmailPrintHandler',
@@ -417,32 +427,9 @@ class PrintHandler {
     function barcodeHeight($dots=162) {
         return '';
     }
-    
-    function barcodeUPC($data, $upcE=false) {
-        return '';
-    }
-    
-    function barcodeEAN($data, $ean8=false) {
-        return '';
-    }
-    
-    function barcodeCODE39($data) {
-        return '';
-    }
-    
-    function barcodeITF($data) {
-        return '';
-    }
-    
-    function barcodeCODEABAR($data) {
-        return '';
-    }
-    
-    function barcodeCODE93($data) {
-        return '';
-    }
-    
-    function barcodeCODE128($data) {
+
+    public function printBarcode($type, $data)
+    {
         return '';
     }
     

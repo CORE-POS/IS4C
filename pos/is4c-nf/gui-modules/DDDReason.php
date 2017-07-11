@@ -36,19 +36,16 @@ class DDDReason extends NoInputCorePage
         $dbc = Database::pDataConnect();
         $result = $dbc->query('SELECT shrinkReasonID, description
                               FROM ShrinkReasons');
-        if ($dbc->numRows($result) == 0) {
-            // no reasons configured. skip the 
-            // this page and continue to next step.
+        if ($dbc->numRows($result) <= 1) {
+            // zero or one reasons
             $this->session->set('shrinkReason', 0);
-            $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
-
-            return false;
-        } elseif ($dbc->numRows($result) == 1) {
-            // exactly one reason configured. 
-            // just use that reason and continue
-            // to next step
             $row = $dbc->fetchRow($result);
-            $this->session->set('shrinkReason', $row['shrinkReasonID']);
+            if ($row) {
+                // exactly one reason configured. 
+                // just use that reason and continue
+                // to next step
+                $this->session->set('shrinkReason', $row['shrinkReasonID']);
+            }
             $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
 
             return false;
@@ -60,13 +57,13 @@ class DDDReason extends NoInputCorePage
 
         try {
             $input = $this->form->selectlist;
-            if ($input == "CL" || $input == '') {
-                $this->session->set("shrinkReason", 0);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-            } else {
+            $this->session->set("shrinkReason", 0);
+            $url = $this->page_url . "gui-modules/pos2.php";
+            if ($input != "CL" && $input == '') {
                 $this->session->set("shrinkReason", (int)$input);
-                $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
+                $url = $this->page_url . "gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin";
             }
+            $this->change_page($url);
 
             return false;
         } catch (Exception $ex) {}
@@ -86,7 +83,7 @@ class DDDReason extends NoInputCorePage
         <div class="centeredDisplay colored">
                 <span class="larger"><?php echo _('Why are these items being marked as shrink/unsellable?'); ?></span>
         <form name="selectform" method="post" 
-            id="selectform" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            id="selectform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
             <select name="selectlist" id="selectlist"
                 onblur="$('#selectlist').focus();">
             <?php
@@ -105,6 +102,17 @@ class DDDReason extends NoInputCorePage
         $this->addOnloadCommand("\$('#selectlist').focus();\n");
         $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->head_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $this->reasons = array(1 => 'test');
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 AutoLoader::dispatch();

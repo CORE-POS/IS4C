@@ -28,6 +28,7 @@ class WfcHtEvalTypesModel extends BasicModel
 {
 
     protected $name = "EvalTypes";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'id' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

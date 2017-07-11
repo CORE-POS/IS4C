@@ -113,12 +113,13 @@ class BatchFromSearch extends FannieRESTfulPage
             $this->itemsToTags($tagset, $dbc, $upcs, $prices);
         }
 
-        return 'Location: newbatch/EditBatchPage.php?id=' . $batchID;
+        return 'newbatch/EditBatchPage.php?id=' . $batchID;
     }
 
     private function itemsToBatch($batchID, $dbc, $upcs, $prices, $round)
     {
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
+        $dbc->startTransaction();
         // add items to batch
         for($i=0; $i<count($upcs); $i++) {
             $upc = $upcs[$i];
@@ -136,10 +137,12 @@ class BatchFromSearch extends FannieRESTfulPage
             $list->quantity(0);
             $list->save();
         }
+        $dbc->commitTransaction();
     }
 
     private function itemsToTags($tagset, $dbc, $upcs, $prices)
     {
+        $dbc->startTransaction();
         $tag = new ShelftagsModel($dbc);
         $product = new ProductsModel($dbc);
         for($i=0; $i<count($upcs);$i++) {
@@ -159,6 +162,7 @@ class BatchFromSearch extends FannieRESTfulPage
             $tag->pricePerUnit($info['pricePerUnit']);
             $tag->save();
         }
+        $dbc->commitTransaction();
     }
 
     function post_redoSRPs_handler()

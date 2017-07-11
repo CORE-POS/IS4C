@@ -34,6 +34,7 @@ class FloorSectionsListViewModel extends ViewModel
 
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
+    'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'sections'=> array('type'=>'VARCHAR(255)'),
     );
 

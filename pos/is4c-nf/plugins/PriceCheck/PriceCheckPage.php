@@ -102,21 +102,7 @@ class PriceCheckPage extends NoInputCorePage
 
     private function getDiscountType($discounttype)
     {
-        $DTClasses = CoreLocal::get("DiscountTypeClasses");
-        if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
-            $class = DiscountType::$MAP[$discounttype];
-            $DiscountObject = new $class();
-        } else if ($discounttype > 64 && isset($DTClasses[($discounttype-64)])) {
-            $class = $DTClasses[($discounttype)-64];
-            $DiscountObject = new $class();
-        } else {
-            // If the requested discounttype isn't available,
-            // fallback to normal pricing. Debatable whether
-            // this should be a hard error.
-            $DiscountObject = new NormalPricing();
-        }
-
-        return $DiscountObject;
+        return DiscountType::getObject($discounttype, $this->session);
     }
 
     private function getItem()

@@ -63,10 +63,13 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc FROM VendorAliases WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
-            $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
+            if (!isset($SKU_TO_PLU_MAP[$skusW['sku']])) {
+                $SKU_TO_PLU_MAP[$skusW['sku']] = array();
+            }
+            $SKU_TO_PLU_MAP[$skusW['sku']][] = $skusW['upc'];
         }
 
         return $SKU_TO_PLU_MAP;
@@ -119,7 +122,6 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             // grab data from appropriate columns
             $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
             $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-            $qty = $data[$indexes['qty']];
             $upc = str_replace("-","",$data[$indexes['upc']]);
             $upc = str_replace(" ","",$upc);
             if ($rm_checks)
@@ -128,8 +130,9 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
+            $aliases = array($upc);
             if (isset($SKU_TO_PLU_MAP[$sku])) {
-                $upc = $SKU_TO_PLU_MAP[$sku];
+                $aliases = array_merge($aliases, $SKU_TO_PLU_MAP[$sku]);
             }
             $reg = trim($data[$indexes['unitCost']]);
             $srp = trim($data[$indexes['srp']]);
@@ -151,9 +154,11 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             }
 
-            $dbc->execute($this->extraP, array($reg,$upc));
-            $dbc->execute($this->prodP, array($reg,$upc,$VENDOR_ID));
-            $updated_upcs[] = $upc;
+            foreach ($aliases as $alias) {
+                $dbc->execute($this->extraP, array($reg,$alias));
+                $dbc->execute($this->prodP, array($reg,$alias,$VENDOR_ID));
+                $updated_upcs[] = $alias;
+            }
 
             $args = array(
                 $reg,

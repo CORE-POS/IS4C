@@ -181,7 +181,9 @@ class CoreLocal
             $dbc = Database::pDataConnect();
             foreach ($settings as $key => $value) {
                 if (!in_array($key, self::$INI_SETTINGS)) {
-                    if ($key == 'SpecialDeptMap') {
+                    if ($key == 'NewMagellanPorts' || $key == 'LaneMap') {
+                        continue;
+                    } elseif ($key == 'SpecialDeptMap') {
                         // SpecialDeptMap has a weird array structure
                         // and gets moved to a dedicated table
                         if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('SpecialDeptMap')) {

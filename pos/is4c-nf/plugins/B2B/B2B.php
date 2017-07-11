@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2015 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,7 +21,13 @@
 
 *********************************************************************************/
 
-$receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
-$receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
-header('Location: ../ajax/AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
+use COREPOS\pos\plugins\Plugin;
+
+class B2B extends Plugin {
+
+    public $plugin_settings = array(
+    );
+
+    public $plugin_description = 'WFC plugin for paying B2B Invoices';
+}
 

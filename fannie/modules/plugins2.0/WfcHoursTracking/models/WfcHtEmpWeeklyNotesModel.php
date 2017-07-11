@@ -28,6 +28,7 @@ class WfcHtEmpWeeklyNotesModel extends BasicModel
 {
 
     protected $name = "EmpWeeklyNotes";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT'),

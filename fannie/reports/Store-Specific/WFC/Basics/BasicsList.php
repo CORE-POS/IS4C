@@ -40,7 +40,8 @@ class BasicsList extends FannieReportPage {
                 CASE WHEN u.brand IS NULL OR u.brand='' THEN p.brand ELSE u.brand END AS brand,
                 CASE WHEN u.description IS NULL OR u.description='' THEN p.description ELSE u.description END AS description,
                 t.description AS ruleType,
-                m.super_name
+                m.super_name,
+                p.department
             FROM products AS p
                 LEFT JOIN productUser AS u ON p.upc=u.upc
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
@@ -58,7 +59,7 @@ class BasicsList extends FannieReportPage {
                 $row['upc'],
                 $row['brand'],
                 $row['description'],
-                $row['super_name'],
+                $row['super_name'] . $row['department'],
                 $row['ruleType'],
                 $row['hillside'] ? 'Yes' : 'No',
                 $row['denfeld'] ? 'Yes' : 'No',

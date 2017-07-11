@@ -49,7 +49,7 @@ class UIGLib
                             (?, ?, 1, ?, 0, ?, ?, ?)');
         $find = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorInvoiceID=?');
         $findPO = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorOrderID=?');
-        $plu = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE vendorID=? AND sku LIKE ?');
+        $plu = $dbc->prepare('SELECT upc FROM VendorAliases WHERE isPrimary=1 AND vendorID=? AND sku LIKE ?');
         $clear = $dbc->prepare('DELETE FROM PurchaseOrderItems WHERE orderID=?');
         $storeID = FannieConfig::config('STORE_ID');
 
@@ -61,6 +61,9 @@ class UIGLib
             }
 
             $fp = $za->getStream($info['name']);
+            if (!$fp) { // false or null in failure cases
+                continue;
+            }
             $header_info = array();
             $item_info = array();
             while(!feof($fp)) {

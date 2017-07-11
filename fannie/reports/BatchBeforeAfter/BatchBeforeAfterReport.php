@@ -31,7 +31,7 @@ class BatchBeforeAfterReport extends FannieReportPage
     protected $header = "Select batch";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','Description','$','Qty','Location');
+    protected $report_headers = array('UPC','Description','Pre $','Pre Qty', 'Promo $', 'Promo Qty', 'Post $', 'Post Qty', 'Location');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Before After Report] lists sales for items in a sales batch before, during, and after the promotional period.';
@@ -47,69 +47,48 @@ class BatchBeforeAfterReport extends FannieReportPage
         $bEnd = FormLib::get_form_value('date2','');
         $model = new BatchesModel($dbc);
 
-        /**
-          Assemble argument array and appropriate string
-          for an IN clause in a prepared statement
-        */
         $batchID = $this->form->batchID;
-        if (!is_array($batchID)) {
-            $batchID = array($batchID);
-        }
-        $inArgs = array();
-        $inClause = '(';
-        $upcs = array();
-        foreach ($batchID as $bID) {
-            $inClause .= '?,';
-            $inArgs[] = $bID;
-            $upcs = array_merge($upcs, $model->getUPCs($bID));
-        }
+        $upcs = $model->getUPCs($batchID);
         $upcs = array_unique($upcs);
-        $inClause = rtrim($inClause,',').')';
 
-        $batchInfoQ = '
-            SELECT batchName,
-                year(startDate) as sy, 
-                month(startDate) as sm, 
-                day(startDate) as sd,
-                year(endDate) as ey, 
-                month(endDate) as em, 
-                day(endDate) as ed
-            FROM batches 
-            WHERE batchID IN '.$inClause;
-        $batchInfoP = $dbc->prepare($batchInfoQ);
-        $batchInfoR = $dbc->execute($batchInfoP, $inArgs);
+        $batchInfoP = $dbc->prepare("SELECT startDate, endDate FROM batches WHERE batchID=?");
+        $batchInfo = $dbc->getRow($batchInfoP, array($batchID));
 
-        $bName = "";
-        while ($batchInfoW = $dbc->fetchRow($batchInfoR)) {
-            $bName .= $batchInfoW['batchName']." ";
-            if (empty($bStart)) {
-                $bStart = sprintf("%d-%02d-%02d",$batchInfoW['sy'],
-                    $batchInfoW['sm'],$batchInfoW['sd']);
-            }
-            if (empty($bEnd)){ 
-                $bEnd = sprintf("%d-%02d-%02d",$batchInfoW['ey'],
-                    $batchInfoW['em'],$batchInfoW['ed']);
-            }
-        }
-        
-        $dlog = DTransactionsModel::selectDlog($bStart,$bEnd);
-        $bStart .= ' 00:00:00';
-        $bEnd .= ' 23:59:59';
-        $reportArgs = array($bStart, $bEnd);
+        $bStart = new DateTimeImmutable($batchInfo['startDate']);
+        $bEnd = new DateTimeImmutable($batchInfo['endDate']);
+        $diff = $bEnd->diff($bStart, true);
+        $rStart = $bStart->sub($diff);
+        $rEnd = $bEnd->add($diff);
+
+        $dlog = DTransactionsModel::selectDlog($rStart->format('Y-m-d'), $rEnd->format('Y-m-d'));
+        $reportArgs = array(
+            $bStart->format('Y-m-d 00:00:00'), // pre sum
+            $bStart->format('Y-m-d 00:00:00'),
+            $bStart->format('Y-m-d 00:00:00'), // promo sum
+            $bEnd->format('Y-m-d 23:59:59'),
+            $bStart->format('Y-m-d 00:00:00'),
+            $bEnd->format('Y-m-d 23:59:59'),
+            $bEnd->format('Y-m-d 23:59:59'), // post sum
+            $bEnd->format('Y-m-d 23:59:59'),
+            $rStart->format('Y-m-d 00:00:00'), // report dates
+            $rEnd->format('Y-m-d 23:59:59'),
+        );
         $in_sql = '';
         list($in_sql, $reportArgs) = $dbc->safeInClause($upcs, $reportArgs);
 
         $salesBatchQ ="
             SELECT d.upc, 
                 p.description, 
-                l.floorSectionID,
-                f.name AS location,
-                SUM(d.total) AS sales, "
-                . DTrans::sumQuantity('d') . " AS quantity 
+                f.sections AS location,
+                SUM(CASE WHEN d.tdate < ? THEN total ELSE 0 END) AS preTTL,
+                SUM(CASE WHEN d.tdate < ? THEN d.quantity ELSE 0 END) AS preQty,
+                SUM(CASE WHEN d.tdate BETWEEN ? AND ? THEN total ELSE 0 END) AS promoTTL,
+                SUM(CASE WHEN d.tdate BETWEEN ? AND ? THEN d.quantity ELSE 0 END) AS promoQty,
+                SUM(CASE WHEN d.tdate > ? THEN total ELSE 0 END) AS postTTL,
+                SUM(CASE WHEN d.tdate > ? THEN d.quantity ELSE 0 END) AS postQty
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
-            LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
-            LEFT JOIN FloorSections as f ON f.floorSectionID=l.floorSectionID
+                LEFT JOIN FloorSectionsListView AS f ON d.upc=f.upc AND d.store_id=f.storeID
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
             GROUP BY d.upc, 
@@ -130,8 +109,12 @@ class BatchBeforeAfterReport extends FannieReportPage
             $record = array();
             $record[] = $row['upc'];
             $record[] = $row['description'];
-            $record[] = $row['sales'];
-            $record[] = $row['quantity'];
+            $record[] = sprintf('%.2f', $row['preTTL']);
+            $record[] = sprintf('%.2f', $row['preQty']);
+            $record[] = sprintf('%.2f', $row['promoTTL']);
+            $record[] = sprintf('%.2f', $row['promoQty']);
+            $record[] = sprintf('%.2f', $row['postTTL']);
+            $record[] = sprintf('%.2f', $row['postQty']);
             $record[] = $row['location'] === null ? '' : $row['location'];
             $ret[] = $record;
         }
@@ -143,14 +126,17 @@ class BatchBeforeAfterReport extends FannieReportPage
     */
     function calculate_footers($data)
     {
-        $sumQty = 0.0;
-        $sumSales = 0.0;
+        $sums = array(0, 0, 0, 0, 0, 0);
         foreach ($data as $row) {
-            $sumQty += $row[3];
-            $sumSales += $row[2];
+            for ($i=0; $i<6; $i++) {
+                $sums[$i] += $row[$i+2];
+            }
         }
+        $sums[] = '';
+        array_unshift($sums, null);
+        array_unshift($sums, 'Total');
 
-        return array('Total',null,$sumSales,$sumQty);
+        return $sums;
     }
 
     function form_content()
@@ -191,12 +177,12 @@ class BatchBeforeAfterReport extends FannieReportPage
         echo '<div class="form-inline">';
         echo "<label>Filters</label> ";
         echo '<select id="typef" class="form-control"
-            onchange="location=\'BatchReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
+            onchange="location=\'BatchBeforeAfterReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
         echo $t_opts;
         echo '</select>';
         echo '&nbsp;&nbsp;&nbsp;&nbsp;';
         echo '<select id="ownerf" class="form-control"
-            onchange="location=\'BatchReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
+            onchange="location=\'BatchBeforeAfterReport.php?btype=\'+$(\'#typef\').val()+\'&owner=\'+escape($(\'#ownerf\').val());">';
         echo $o_opts;
         echo '</select>';
         echo '</div>';
@@ -221,10 +207,10 @@ class BatchBeforeAfterReport extends FannieReportPage
         $batchP = $dbc->prepare($batchQ);
         $batchR = $dbc->execute($batchP, $args);
 
-        echo '<form action="BatchReport.php" method="get">';
+        echo '<form action="BatchBeforeAfterReport.php" method="get">';
         echo '<div class="row">';
         echo '<div class="col-sm-5">';
-        echo '<select size="15" multiple name=batchID[] class="form-control" required>';
+        echo '<select size="15" name=batchID class="form-control" required>';
         while ($batchW = $dbc->fetchRow($batchR)) {
             printf('<option value="%d">%s</option>',
                 $batchW['batchID'],$batchW['batchName']);
@@ -232,10 +218,6 @@ class BatchBeforeAfterReport extends FannieReportPage
         echo '</select>';
         echo '</div>';
         echo '<div class="col-sm-7">';
-        echo '<label>Start Date</label>';
-        echo '<input class="form-control date-field" name="date1" id="date1" />';
-        echo '<label>End Date</label>';
-        echo '<input class="form-control date-field" name="date2" id="date2" />';
         echo '<p><label>Excel ';
         echo '<input type="checkbox" name="excel" value="xls" /></label></p>';
         echo '<p><button type="submit" class="btn btn-default">Run Report</button></p>';
@@ -245,70 +227,6 @@ class BatchBeforeAfterReport extends FannieReportPage
         echo '</form>';
 
         return ob_get_clean();
-    }
-
-    function report_description_content()
-    {
-        $FANNIE_URL = $this->config->get('URL');
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $ret = array();
-        $bStart = FormLib::get('date1','');
-        $bEnd = FormLib::get('date2','');
-        $batchID = FormLib::get('batchID','0');
-        if (!is_array($batchID)) {
-            $batchID = array($batchID);
-        }
-        list($inClause, $inArgs) = $dbc->safeInClause($batchID);
-        $batchInfoQ = $dbc->prepare("
-            SELECT batchName,
-                startDate AS startDate,
-                endDate AS endDate 
-            FROM batches 
-            WHERE batchID IN ($inClause)");
-        $batchInfoR = $dbc->execute($batchInfoQ,$inArgs);
-        $bName = "";
-        while ($batchInfoW = $dbc->fetchRow($batchInfoR)) {
-            $bName .= $batchInfoW['batchName']." ";
-            if (empty($bStart)) {
-                $bStart = $batchInfoW['startDate'];
-            }
-            if (empty($bEnd)) {
-                $bEnd = $batchInfoW['endDate'];
-            }
-        }
-        $ret[] = '<br /><span style="font-size:150%;">'.$bName.'</span>';
-        if ($this->report_format == 'html') {
-            if (!$this->new_tablesorter) {
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-                $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
-                $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-            }
-            $ret[] = '<p><form action="BatchReport.php" method="get">';
-            $ret[] = "<span style=\"color:black; display:inline;\">From: 
-                    <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />
-                    to: 
-                    <input type=\"text\" name=\"date2\" size=\"10\" value=\"$bEnd\" id=\"date2\" />
-                    </span><input type=\"submit\" value=\"Change Dates\" />";
-            $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});");
-            $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});");
-            foreach($batchID as $bID) {
-                $ret[] = sprintf('<input type="hidden" name="batchID[]" value="%d" />', $bID);
-            }
-            $ret[] = '</form></p>';
-        } else {
-            $ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
-        }
-
-        return $ret;
-    }
-
-    public function helpContent()
-    {
-        return '<p>Show per-item sales data for items in a batch or set
-            of batches over the given date range. The filters just narrow
-            down the list of batches. You still have to make selections in
-            the list.</p>';
     }
 }
 

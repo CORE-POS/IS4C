@@ -221,7 +221,7 @@ class OverShortDepositSlips extends FanniePage
         
         $pdf->SetTextColor(0,0,0);
         $str = "";
-        for($i=0;$i<10 || $i < count($counts); $i++){
+        for($i=0;$i<5 || $i < count($counts); $i++){
             $str .= "Check # ".($i+1).":";
             if ($i < count($counts))
                 $str .= "\t\t$counts[$i]";

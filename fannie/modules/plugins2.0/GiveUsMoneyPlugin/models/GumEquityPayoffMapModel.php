@@ -31,6 +31,7 @@ class GumEquityPayoffMapModel extends BasicModel
 {
 
     protected $name = "GumEquityPayoffMap";
+    protected $preferred_db = 'plugin:GiveUsMoneyDB';
 
     protected $columns = array(
     'gumEquityShareID' => array('type'=>'INT', 'primary_key'=>true),

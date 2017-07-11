@@ -28,6 +28,7 @@ class WfcHtEmployeesModel extends BasicModel
 {
 
     protected $name = "employees";
+    protected $preferred_db = 'WfcHtDatabase';
 
     protected $columns = array(
     'empID' => array('type'=>'INT', 'primary_key'=>true),

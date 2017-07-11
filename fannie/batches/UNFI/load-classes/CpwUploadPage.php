@@ -85,10 +85,13 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc FROM VendorAliases WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
-            $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
+            if (!isset($SKU_TO_PLU_MAP[$skusW['sku']])) {
+                $SKU_TO_PLU_MAP[$skusW['sku']] = array();
+            }
+            $SKU_TO_PLU_MAP[$skusW['sku']][] = $skusW['upc'];
         }
 
         $itemP = $dbc->prepare("
@@ -127,8 +130,9 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $upc = str_replace('-', '', $upc);
             $upc = substr($upc, 0, strlen($upc)-1);
             $upc = BarcodeLib::padUPC($upc);
+            $aliases = array($upc);
             if (isset($SKU_TO_PLU_MAP[$sku])) {
-                $upc = $SKU_TO_TO_PLU_MAP[$sku];
+                $aliases = array_merge($aliases, $SKU_TO_TO_PLU_MAP[$sku]);
             }
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000" || !preg_match('/^[0-9]+$/', $upc))
@@ -169,8 +173,10 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // need unit cost, not case cost
             $reg_unit = $reg / $qty;
 
-            $dbc->execute($prodP, array(date('Y-m-d H:i:s'), $reg_unit, $upc));
-            $updated_upcs[] = $upc;
+            foreach ($aliases as $alias) {
+                $dbc->execute($prodP, array(date('Y-m-d H:i:s'), $reg_unit, $alias));
+                $updated_upcs[] = $alias;
+            }
 
             if ($dbc->getValue($existsP, array($upc, $VENDOR_ID))) {
                 $args = array(

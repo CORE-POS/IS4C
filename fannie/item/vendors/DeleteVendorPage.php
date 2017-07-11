@@ -58,6 +58,7 @@ class DeleteVendorPage extends FannieRESTfulPage
             $prep[] = $dbc->prepare('UPDATE vendorDepartments SET vendorID=? WHERE vendorID=?');
             $prep[] = $dbc->prepare('UPDATE vendorSKUtoPLU SET vendorID=? WHERE vendorID=?');
             $prep[] = $dbc->prepare('UPDATE VendorBreakdowns SET vendorID=? WHERE vendorID=?');
+            $prep[] = $dbc->prepare('UPDATE VendorAliases SET vendorID=? WHERE vendorID=?');
             foreach ($prep as $p) {
                 $dbc->execute($p, array($newID, $this->id));
             }

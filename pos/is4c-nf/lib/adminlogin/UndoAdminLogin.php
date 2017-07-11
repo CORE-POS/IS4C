@@ -29,20 +29,19 @@ use COREPOS\pos\lib\MiscLib;
   adminlogin callback for voiding
   entire transactions
 */
-class UndoAdminLogin 
+class UndoAdminLogin  implements AdminLoginInterface
 {
-
-    static public $adminLoginMsg = 'Login to void transactions';
-
-    static public $adminLoginLevel = 30;
+    public static function messageAndLevel()
+    {
+        return array(_('Login to void transaction'), 30);
+    }
 
     static public function adminLoginCallback($success)
     {
         if ($success) {
             return MiscLib::baseURL().'gui-modules/undo.php';
-        } else {
-            return false;
         }
+        return false;
     }
 }
 

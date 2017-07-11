@@ -28,12 +28,15 @@ if (!class_exists('CoreWarehouseModel')) {
 class SumMemSalesByDayModel extends CoreWarehouseModel {
 
     protected $name = 'sumMemSalesByDay';
+    protected $preferred_db = 'plugin:WarehouseDatabase';
     
     protected $columns = array(
     'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-    'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>''),
+    'card_no' => array('type'=>'INT','primary_key'=>True),
     'total' => array('type'=>'MONEY','default'=>0.00),
     'quantity' => array('type'=>'DOUBLE','default'=>0.00),
+    'retailTotal' => array('type'=>'MONEY','default'=>0.00),
+    'retailQuantity' => array('type'=>'DOUBLE','default'=>0.00),
     'transCount' => array('type'=>'SMALLINT','default'=>0)
     );
 
@@ -43,6 +46,7 @@ class SumMemSalesByDayModel extends CoreWarehouseModel {
         $config = FannieConfig::factory();
         $settings = $config->get('PLUGIN_SETTINGS');
         $sql = FannieDB::get($settings['WarehouseDatabase']);
+        $supers = $config->get('OP_DB') . $sql->sep() . 'MasterSuperDepts';
 
         $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
@@ -55,9 +59,13 @@ class SumMemSalesByDayModel extends CoreWarehouseModel {
             CONVERT(SUM(total),DECIMAL(10,2)) as total,
             CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
                 WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity,
+            CONVERT(SUM(CASE WHEN m.superID <> 0 THEN total ELSE 0 END),DECIMAL(10,2)) as retailTotal,
+            CONVERT(SUM(CASE WHEN m.superID=0 THEN 0 WHEN trans_status='M' THEN itemQtty 
+                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as retailQuantity,
             COUNT(DISTINCT trans_num) AS transCount
-            FROM $target_table WHERE
-            tdate BETWEEN ? AND ? AND
+            FROM $target_table AS t
+                LEFT JOIN {$supers} AS m ON t.department=m.dept_ID
+            WHERE tdate BETWEEN ? AND ? AND
             trans_type IN ('I','D') 
             AND card_no <> 0
             GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), card_no";

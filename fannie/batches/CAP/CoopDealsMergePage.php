@@ -128,7 +128,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
             FROM batchList AS l
                 INNER JOIN batches AS b ON l.batchID=b.batchID
             WHERE l.upc=?
-                AND b.endDate >= ' . $dbc->curdate()
+                AND b.endDate >= ' . $dbc->curdate() 
         );
 
         $allR = $dbc->query('
@@ -155,6 +155,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
         <tr><th>UPC</th><th>Brand</th><th>Desc</th><th>Sale Price</th>
         <th>Add to Batch</th></tr>\n
         </thead><tbody>";
+        $upcs = array('a'=>'', 'b'=>'', 'tpr'=>'');
         while ($row = $dbc->fetch_row($result)) {
             $upcoming = $dbc->getValue($upcomingP, array($row['upc']));
             if ($upcoming) {
@@ -173,7 +174,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
                         $row['upc'], \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($row['upc']),
                         $row['multiplier'],
                         $row['brand'],
-                        $row['description'],
+                        $row['description'] . ' ' . $row['subbatch'],
                         $row['price'],$row['price']
             );
             foreach ($opts as $id => $batch) {
@@ -182,10 +183,26 @@ class CoopDealsMergePage extends FannieRESTfulPage
                             $id, $batch);
             }
             $ret .= '</select></td></tr>';
+            if ($row['subbatch'] == 'TPR') {
+                $upcs['tpr'] .= $row['upc'] . "\n";
+            } elseif ($row['subbatch'] == 'A') {
+                $upcs['a'] .= $row['upc'] . "\n";
+            } elseif ($row['subbatch'] == 'B') {
+                $upcs['b'] .= $row['upc'] . "\n";
+            } elseif ($row['subbatch'] == 'AB') {
+                $upcs['a'] .= $row['upc'] . "\n";
+                $upcs['b'] .= $row['upc'] . "\n";
+            }
         }
         $ret .= <<<html
         </tbody>
         </table>
+        <textarea rows="5" cols="15">A
+{$upcs['a']}</textarea>
+        <textarea rows="5" cols="15">B
+{$upcs['b']}</textarea>
+        <textarea rows="5" cols="15">TPR
+{$upcs['tpr']}</textarea>
         <p>    
             <button type=submit class="btn btn-default">Merge Items into Batch(es)</button>
             <a href="CoopDealsReviewPage.php" class="pull-right btn btn-default">Create New Batch(es)</a>

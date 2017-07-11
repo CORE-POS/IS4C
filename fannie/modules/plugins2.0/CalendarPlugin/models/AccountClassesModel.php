@@ -28,6 +28,7 @@ class AccountClassesModel extends BasicModel
 {
 
     protected $name = "account_classes";
+    protected $preferred_db = 'plugin:CalendarDatabase';
 
     protected $columns = array(
     'classID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

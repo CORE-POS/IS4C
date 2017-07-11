@@ -33,12 +33,12 @@ use \CoreLocal;
 
 class InstallUtilities 
 {
-    static public function dbOrFail($db)
+    static public function dbOrFail($dbname)
     {
         return self::dbTestConnect(
                 CoreLocal::get('localhost'),
                 CoreLocal::get('DBMS'),
-                $db,
+                $dbname,
                 CoreLocal::get('localUser'),
                 CoreLocal::get('localPass'));
     }
@@ -53,7 +53,7 @@ class InstallUtilities
         return ParamConf::save($sql, $key, $value);
     }
 
-    static public function dbTestConnect($host,$type,$db,$user,$pw)
+    static public function dbTestConnect($host,$type,$dbname,$user,$pass)
     {
         $sql = false;
         try {
@@ -62,14 +62,14 @@ class InstallUtilities
             } elseif ($type == 'mssql') {
                 ini_set('mssql.connect_timeout',1);
             }
-            $sql =  new \COREPOS\pos\lib\SQLManager($host,$type,$db,$user,$pw);
+            $sql =  new \COREPOS\pos\lib\SQLManager($host,$type,$dbname,$user,$pass);
         } catch(Exception $ex) {}
 
-        if ($sql === false || $sql->isConnected($db) === false) {
+        if ($sql === false || $sql->isConnected($dbname) === false) {
             return false;
-        } else {
-            return $sql;
         }
+
+        return $sql;
     }
 
     /* query to create another table with the same
@@ -97,31 +97,29 @@ class InstallUtilities
             $pluginDbKey = substr($name, 7);
             if (CoreLocal::get("$pluginDbKey",'') !== '') {
                 return CoreLocal::get("$pluginDbKey");
-            } else {
-                return false;
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     private static function checkParameter($param, $checked, $wrong)
     {
-        $p_value = $param->materializeValue();
+        $pValue = $param->materializeValue();
         $checked[$param->param_key()] = true;
-        $i_value = CoreLocal::get($param->param_key());
+        $iValue = CoreLocal::get($param->param_key());
         if (isset($checked[$param->param_key()])) {
             // setting has a lane-specific parameters
-        } elseif (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
+        } elseif (is_numeric($iValue) && is_numeric($pValue) && $iValue == $pValue) {
             // allow loose comparison on numbers
             // i.e., permit integer 1 equal string '1'
-        } elseif ($p_value !== $i_value) {
+        } elseif ($pValue !== $iValue) {
             printf('<span style="color:red;">' . _('Setting mismatch for') . '</span>
                 <a href="" onclick="$(this).next().toggle(); return false;">%s</a>
                 <span style="display:none;"> ' . _('parameters says') . ' %s, ' . _('ini says') . ' %s</span></p>',
-                $param->param_key(), print_r($p_value, true), print_r($i_value, true)
+                $param->param_key(), print_r($pValue, true), print_r($iValue, true)
             );
-            $wrong[$param->param_key()] = $p_value;
+            $wrong[$param->param_key()] = $pValue;
         }
 
         return array($checked, $wrong);

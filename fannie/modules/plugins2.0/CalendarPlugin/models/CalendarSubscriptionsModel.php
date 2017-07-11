@@ -28,6 +28,7 @@ class CalendarSubscriptionsModel extends BasicModel
 {
 
     protected $name = "CalendarSubscriptions";
+    protected $preferred_db = 'plugin:CalendarDatabase';
 
     protected $columns = array(
     'calendarSubscriptionID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),

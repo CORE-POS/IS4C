@@ -38,6 +38,7 @@ class BatchTypeEditor extends FanniePage {
     private $editor_uis = array(
         1 => 'Standard',
         2 => 'Paired Sale',
+        3 => 'Partial',
     );
 
     protected $title = 'Fannie - Batch Module';

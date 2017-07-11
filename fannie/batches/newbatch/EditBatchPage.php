@@ -72,10 +72,41 @@ class EditBatchPage extends FannieRESTfulPage
             'post<id><upc><swap>',
             'post<id><qualifiers><discount>',
             'post<id><trim>',
-            'post<id><storeID>'
+            'post<id><storeID>',
+            'post<noteID><batchNotes>',
+            'post<partialID>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function post_noteID_batchNotes_handler()
+    {
+        $model = new BatchesModel($this->connection);
+        $model->batchID($this->noteID);
+        $model->notes($this->batchNotes);
+        $model->save();
+        echo 'Saved';
+
+        return false;
+    }
+
+    protected function post_partialID_handler()
+    {
+        $partial = new PartialBatchesModel($this->connection);
+        $partial->batchID($this->partialID);
+        foreach ($partial->find() as $obj) {
+            $partial = $obj;
+            break;
+        }
+        $partial->startTime(FormLib::get('pStart', null));
+        $partial->endTime(FormLib::get('pStart', null));
+        $partial->overwriteSales(FormLib::get('pOver', 0));
+        $partial->repetition(FormLib::get('pRepeat'));
+        $partial->save();
+        echo 'Saved';
+
+        return false;
     }
 
     protected function get_id_paste_handler()
@@ -883,6 +914,33 @@ HTML;
             $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"batchEdit.saveTransLimit($id); return false;\">Save Limit</a></span>";
             $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
         }
+
+        /**
+          Insert extra fields to manage partial day batch
+        */
+        if ($typeModel->editorUI() == 3) {
+            $partialP = $dbc->prepare('SELECT * FROM PartialBarches WHERE batchID=?');
+            $partial = $dbc->getRow($partialP, array($id));
+            $ret .= '<table class="table small table-bordered">';
+            $ret .= '<tr><th>Start Time</th><th>End Time</th><th>Override</th><th>Frequency</th></tr>';
+            $ret .= sprintf('<tr><td><input type="text" class="form-control small partialBatch" 
+                        onchange="batchEdit.updatePartial(%d);"
+                        name="pStart" placeholder="HH:MM" value="%s" /></td>', $id, $partial['startTime']);
+            $ret .= sprintf('<td><input type="text" class="form-control small partialBatch" 
+                        onchange="batchEdit.updatePartial(%d);"
+                        name="pEnd" placeholder="HH:MM" value="%s" /></td>', $id, $partial['endTime']);
+            $ret .= sprintf('<td><input type="checkbox" class="partialBatch" name="pOver" %s value="1" 
+                onchange="batchEdit.updatePartial(%d);" /></td>',
+                ($partial['overwriteSales'] ? 'checked' : ''), $id);
+            $ret .= '<td><select name="pRepeat" class="form-control small partialBatch"
+                        onchange="batchEdit.updatePartial(' . $id . ');">';
+            foreach (array('daily', 'weekdays', 'short weekends', 'long weekends', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday') as $r) {
+                $ret .= sprintf('<option %s value="%s">%s</option>',
+                    ($r == $partial['repetition'] ? 'selected' : ''), $r, ucwords($r));
+            }
+            $ret .= '</select></td></tr></table>';
+        }
+
         $ret .= "<br />";
         $ret .= "<table id=yeoldetable class=\"table\">";
         $ret .= "<tr>";
@@ -1005,6 +1063,9 @@ HTML;
         }
         $ret .= "</table>";
         $ret .= "<input type=hidden id=currentBatchID value=$id />";
+        $ret .= '<label>Notes</label><textarea name="batchNotes" id="batchNotes" class="form-control" rows="4"
+            onchange="batchEdit.saveNotes(' . $id . ');" onkeyup="batchEdit.noteTyped(' . $id . ');">'
+            . $model->notes() . '</textarea>';
         if ($dbc->numRows($fetchR) > 0) {
             $ret .= '<p>
                 <a href="BatchImportExportPage.php?id=' . $id . '">Export as JSON</a>

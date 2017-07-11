@@ -45,7 +45,8 @@ function scalePollSuccess(data){
             if (!data.scans && url.substring(url.length - 8) === 'pos2.php' && data.scans.substring(0, 3) !== 'OXA') {
                 data.scans = '0XA' + data.scans;
             }
-			parseWrapper(v+data.scans);
+            // pos2 parseWrapper is adding current input
+			parseWrapper(data.scans);
 			//return; // why is this here? scale needs to keep polling...
 		}
 	}

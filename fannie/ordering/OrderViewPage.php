@@ -139,9 +139,10 @@ class OrderViewPage extends FannieRESTfulPage
     protected function post_orderID_description_srp_actual_qty_dept_unitPrice_vendor_transID_changed_handler()
     {
         $dbc = $this->connection;
+        $transDB = $this->config->get('TRANS_DB') . $dbc->sep();
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $basicP = $dbc->prepare('
-            UPDATE PendingSpecialOrder
+            UPDATE ' . $transDB . 'PendingSpecialOrder
             SET description=?,
                 department=?,
                 mixMatch=?,
@@ -169,7 +170,7 @@ class OrderViewPage extends FannieRESTfulPage
         }
 
         $fetchP = $dbc->prepare("SELECT ROUND(100*((regPrice-total)/regPrice),0)
-            FROM PendingSpecialOrder WHERE trans_id=? AND order_id=?");
+            FROM {$transDB}PendingSpecialOrder WHERE trans_id=? AND order_id=?");
         $info['discount'] = $dbc->getValue($fetchP, array($this->transID, $this->orderID));
         echo json_encode($info);
 
@@ -406,6 +407,14 @@ class OrderViewPage extends FannieRESTfulPage
                     $orderModel->phone($contact_row['phone']);
                     $orderModel->altPhone($contact_row['email_2']);
                     $orderModel->email($contact_row['email_1']);
+
+                    $prefP = $dbc->prepare($dbc->addSelectLimit("SELECT sendEmails FROM SpecialOrders AS o
+                        INNER JOIN CompleteSpecialOrder AS c ON o.specialOrderID=c.order_id
+                        WHERE c.card_no=?
+                        ORDER BY c.datetime DESC", 1));
+                    $prefVal = $dbc->getValue($prefP, array($memNum));
+                    $orderModel->sendEmails($prefVal ? $prefVal : 0);
+
                     $orderModel->save();
                     $orderModel->specialOrderID($orderID);
                     $orderModel->load();
@@ -963,7 +972,7 @@ HTML;
               If the current entry does not match any known vendor,
               revert to showing supplier as a text box.
             */
-            $supplierInput = '<select name="vendor" class="form-control input-sm item-field input-vendor">';
+            $supplierInput = '<select name="vendor" class="form-control input-sm item-field input-vendor chosen" style="max-width: 20em;">';
             $supplierInput .= '<option value=""></option>';
             $found = false;
             foreach ($vendors as $v) {
@@ -981,11 +990,13 @@ HTML;
             } else {
                 $supplierInput .= '</select>';
             }
+            /*
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
                     class="form-control input-sm item-field input-vendor" name="vendor"
                     maxlength="26" 
                     /></td>',$row['mixMatch']);
-            //$ret .= sprintf('<td class="form-inline">Supplier: %s</td>', $supplierInput);
+            */
+            $ret .= sprintf('<td class="form-inline"><span class="form-inline">Vendor: %s</span></td>', $supplierInput);
 
             $ret .= '<td>Discount</td>';
             if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
@@ -1296,6 +1307,8 @@ HTML;
 
         $this->addScript('orderview.js');
         $this->addScript('../item/autocomplete.js');
+        $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
 
         return $ret;
     }

@@ -28,6 +28,7 @@ class StaffArAccountsModel extends BasicModel
 {
 
     protected $name = "StaffArAccounts";
+    protected $preferred_db = 'plugin:StaffArPayrollDB';
 
     protected $columns = array(
     'staffArAccountID' => array('type'=>'INT', 'index'=>true, 'increment'=>true),

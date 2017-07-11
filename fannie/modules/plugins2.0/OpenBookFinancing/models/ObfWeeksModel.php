@@ -28,6 +28,7 @@ class ObfWeeksModel extends BasicModel
 {
 
     protected $name = "ObfWeeks";
+    protected $preferred_db = 'plugin:ObfDatabase';
 
     protected $columns = array(
     'obfWeekID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

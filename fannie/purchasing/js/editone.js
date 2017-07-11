@@ -11,7 +11,7 @@ function itemSearch(){
 		method: 'get',
 		dataType: 'json'
     }).done(function(data){
-        if (data.items.length == 0){
+        if (!data.items || data.items.length == 0){
             $('#SearchResults').html('No item found');
             $('#searchField').focus();
         } else if (data.items.length == 1){

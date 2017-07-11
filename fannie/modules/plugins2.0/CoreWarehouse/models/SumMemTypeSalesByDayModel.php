@@ -28,12 +28,15 @@ if (!class_exists('CoreWarehouseModel')) {
 class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
 
     protected $name = 'sumMemTypeSalesByDay';
+    protected $preferred_db = 'plugin:WarehouseDatabase';
     
     protected $columns = array(
     'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-    'memType' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>''),
+    'memType' => array('type'=>'SMALLINT','primary_key'=>True),
     'total' => array('type'=>'MONEY','default'=>0.00),
     'quantity' => array('type'=>'DOUBLE','default'=>0.00),
+    'retailTotal' => array('type'=>'MONEY','default'=>0.00),
+    'retailQuantity' => array('type'=>'DOUBLE','default'=>0.00),
     'transCount' => array('type'=>'INT','default'=>0)
     );
 
@@ -43,6 +46,7 @@ class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
         $config = FannieConfig::factory();
         $settings = $config->get('PLUGIN_SETTINGS');
         $sql = FannieDB::get($settings['WarehouseDatabase']);
+        $supers = $config->get('OP_DB') . $sql->sep() . 'MasterSuperDepts';
 
         $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
@@ -59,9 +63,13 @@ class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
             MAX(memType) as memType,
             CONVERT(SUM(total),DECIMAL(10,2)) as total,
             CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
-            FROM $target_table WHERE
-            tdate BETWEEN ? AND ? AND
+                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity,
+            CONVERT(SUM(CASE WHEN m.superID <> 0 THEN total ELSE 0 END),DECIMAL(10,2)) as retailTotal,
+            CONVERT(SUM(CASE WHEN m.superID=0 THEN 0 WHEN trans_status='M' THEN itemQtty 
+                WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as retailQuantity
+            FROM $target_table AS t
+                LEFT JOIN {$supers} AS m ON t.department=m.dept_ID
+            WHERE tdate BETWEEN ? AND ? AND
             trans_type IN ('I','D') AND upc <> 'RRR'
             AND card_no <> 0 AND memType IS NOT NULL
             GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_num
@@ -79,10 +87,15 @@ class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
                 $this->memType($row['memType']);
                 $this->total(0.00);
                 $this->quantity(0.00);
+                $this->retailTotal(0.00);
+                $this->quantity(0.00);
+                $this->retailQuantity(0.00);
                 $this->transCount(0);
             }
             $this->total( $this->total() + $row['total'] );
             $this->quantity( $this->quantity() + $row['quantity'] );
+            $this->retailTotal( $this->retailTotal() + $row['retailTotal'] );
+            $this->retailQuantity( $this->retailQuantity() + $row['retailQuantity'] );
             $this->transCount( $this->transCount() + 1 );
         }
         if ($this->date_id() !== ''){

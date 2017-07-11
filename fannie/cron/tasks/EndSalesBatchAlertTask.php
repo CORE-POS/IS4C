@@ -76,7 +76,7 @@ class EndSalesBatchAlertTask extends FannieTask
         $result = $dbc->execute($prep,$args);
 
         $ret = '';
-        $style .= '
+        $style = '
             <style>
                 table, th, td {
                     border: 1px solid black;
@@ -129,25 +129,25 @@ class EndSalesBatchAlertTask extends FannieTask
                 $ret .= '</tr>';
             }
             $ret .= '</tbody></table>';
-
-            $headers = array();
-            $to = '';
-            foreach ($contacts as $contact) {
-                $to .= $contact.'; ';
+            
+            if (class_exists('PHPMailer')) {
+                $mail = new PHPMailer();                
+                foreach ($contacts as $contact) {
+                    $mail->addAddress($contact);
+                }
+                $mail->isHTML();
+                $mail->From = 'automail@wholefoods.coop';
+                $mail->FromName = 'CORE POS Monitoring';
+                $mail->Subject ='Report: Sales Batches End Alerts';
+                $msg = $style;
+                $msg .= date('m-d-y').' Sales batches ending <span class="danger">today</span> 
+                    through the next 7 days. <br /><br />';
+                $msg .= $ret;
+                $mail->Body = $msg;
+                if (!$mail->send()) {
+                    $this->logger->error('Error emailing monitoring notification');
+                }
             }
-            $headers[] = 'MIME-Version: 1.0';
-            $headers[] = 'Content-type: text/html; charset=iso-8859-1';
-            $headers[] = 'from: automail@wholefoods.coop';
-            $msg = '<html><body>';
-            $msg .= $style;
-            $msg .= date('m-d-y').' Sales batches ending <span class="danger">today</span> through the next 7 days. <br />';
-            $msg .= "<br />";
-            $msg .= $ret;
-            $msg .= "<br />";
-            $msg .= "<br />";
-            $mdg .= '</body></html>';
-
-            mail($to,'Report: Sales Batches End Alerts',$msg,implode("\r\n", $headers));
 
             return false;
         }

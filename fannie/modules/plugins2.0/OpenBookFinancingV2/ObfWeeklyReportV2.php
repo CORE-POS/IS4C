@@ -783,9 +783,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['lastYear'] += $row['lastYear'];
             $info['trans'] = $row['trans'];
             $info['lyTrans'] = $row['lyTrans'];
-            foreach ($this->PLAN_SALES as $planID => $plan) {
+            foreach ($this->PLAN_SALES as $planID => $planVal) {
                 if (strpos($planID, $row['catID'] . ',') === 0) {
-                    $info['plan'] += $plan;
+                    $info['plan'] += $planVal;
                 }
             }
             $cat->obfCategoryID($row['catID']);
