@@ -100,7 +100,7 @@ class EditBatchPage extends FannieRESTfulPage
             break;
         }
         $partial->startTime(FormLib::get('pStart', null));
-        $partial->endTime(FormLib::get('pStart', null));
+        $partial->endTime(FormLib::get('pEnd', null));
         $partial->overwriteSales(FormLib::get('pOver', 0));
         $partial->repetition(FormLib::get('pRepeat'));
         $partial->save();
@@ -919,7 +919,7 @@ HTML;
           Insert extra fields to manage partial day batch
         */
         if ($typeModel->editorUI() == 3) {
-            $partialP = $dbc->prepare('SELECT * FROM PartialBarches WHERE batchID=?');
+            $partialP = $dbc->prepare('SELECT * FROM PartialBatches WHERE batchID=?');
             $partial = $dbc->getRow($partialP, array($id));
             $ret .= '<table class="table small table-bordered">';
             $ret .= '<tr><th>Start Time</th><th>End Time</th><th>Override</th><th>Frequency</th></tr>';
