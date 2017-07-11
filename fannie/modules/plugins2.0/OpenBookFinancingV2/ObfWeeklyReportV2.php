@@ -104,9 +104,45 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         '9,17' => 8308.91,
     );
 
+    protected $PLAN_SALES_Q1_2018 = array(
+        '1,6' => 53904.29,      // Hillside Produce
+        '2,10' => 12187.19,     // Hillside Deli
+        '2,11' => 33128.32,
+        '2,16' => 13505.62,
+        '3,1' => 25019.71,      // Hillside Grocery
+        '3,4' => 60877.32,
+        '3,5' => 23046.19,
+        '3,7' => 192.84,
+        '3,8' => 17028.21,
+        '3,9' => 2657.68,
+        '3,13' => 14635.17,
+        '3,17' => 25688.49,
+        '7,6' => 19084.56,      // Denfeld Produce
+        '8,10' => 4516.25,      // Denfeld Deli
+        '8,11' => 13618.01,
+        '8,16' => 5318.20,
+        '9,1' => 8168.40,       // Denfeld Grocery
+        '9,4' => 24552.79,
+        '9,5' => 8522.84,
+        '9,7' => 82.03,
+        '9,8' => 5726.79,
+        '9,9' => 1002.57,
+        '9,13' => 4636.12,
+        '9,17' => 8414.48,
+    );
+
     public function preprocess()
     {
         return FannieReportPage::preprocess();
+    }
+
+    private function getPlanSales($weekID)
+    {
+        if ($weekID < 162) {
+            return $this->PLAN_SALES;
+        } else {
+            return $this->PLAN_SALES_Q1_2018;
+        }
     }
 
     public function fetch_report_data()
@@ -120,6 +156,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
         $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());
+
+        $PLAN_SALES = $this->getPlanSales($this->form->weekID);
 
         $store = FormLib::get('store', 1);
         
@@ -197,7 +235,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             */
             while ($row = $dbc->fetch_row($salesR)) {
                 $projIndex = $category->obfCategoryID() . ',' . $row['superID'];
-                $proj = $this->PLAN_SALES[$projIndex];
+                $proj = $PLAN_SALES[$projIndex];
                 $trend1 = $this->calculateTrend($dbc, $category->obfCategoryID(), $row['superID']);
                 $dept_trend += $trend1;
                 $total_sales->trend += $trend1;
@@ -783,7 +821,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['lastYear'] += $row['lastYear'];
             $info['trans'] = $row['trans'];
             $info['lyTrans'] = $row['lyTrans'];
-            foreach ($this->PLAN_SALES as $planID => $planVal) {
+            foreach ($PLAN_SALES as $planID => $planVal) {
                 if (strpos($planID, $row['catID'] . ',') === 0) {
                     $info['plan'] += $planVal;
                 }
