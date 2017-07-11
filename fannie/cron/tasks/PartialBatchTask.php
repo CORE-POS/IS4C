@@ -65,7 +65,7 @@ times will be limited by how frequently this task runs.';
                 p.endTime,
                 p.paddingMinutes,
                 p.overwriteSales,
-                p.repetition
+                p.repetition,
                 l.salePrice,
                 b.discounttype,
                 l.upc,
