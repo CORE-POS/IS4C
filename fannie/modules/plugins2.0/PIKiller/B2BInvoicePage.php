@@ -37,8 +37,9 @@ class B2BInvoicePage extends FannieRESTfulPage
          *  The tender is an actual tender record.
          */
         if (FormLib::get('payFlag', 0)) {
-            $amt = $dbc->prepare('SELECT amount FROM B2BInvoices WHERE b2bInvoiceID=?');
-            $amt = $dbc->getValue($amt, array($this->id));
+            $amt = $dbc->prepare('SELECT amount, cardNo FROM B2BInvoices WHERE b2bInvoiceID=?');
+            $info = $dbc->getRow($amt, array($this->id));
+            $amt = $info['amount'];
             $dRecord = DTrans::defaults();
             $dRecord['emp_no'] = $EMP_NO;
             $dRecord['register_no'] = $LANE_NO;
@@ -53,6 +54,7 @@ class B2BInvoicePage extends FannieRESTfulPage
             $dRecord['regPrice'] = $amt;
             $dRecord['charflag'] = 'B2';
             $dRecord['numflag'] = $this->id;
+            $dRecord['card_no'] = $info['cardNo'];
             $dRecord['trans_id'] = 1;
 
             $tRecord = DTrans::defaults();
@@ -79,6 +81,7 @@ class B2BInvoicePage extends FannieRESTfulPage
             }
             $tRecord['charflag'] = 'B2';
             $tRecord['numflag'] = $this->id;
+            $tRecord['card_no'] = $info['cardNo'];
             $tRecord['trans_id'] = 2;
 
             $dRecord['trans_no'] = DTrans::getTransNo($dbc, $EMP_NO, $LANE_NO);
@@ -89,10 +92,10 @@ class B2BInvoicePage extends FannieRESTfulPage
             $tParam = DTrans::parameterize($tRecord, 'datetime', $dbc->now());
             $insT = $dbc->prepare("INSERT INTO dtransactions
                     ({$tParam['columnString']}) VALUES ({$tParam['valueString']})");
-            $dbc->execute($insP, $pParam['arguments']);
+            $dbc->execute($insD, $dParam['arguments']);
             $dbc->execute($insT, $tParam['arguments']);
             $invoice->paidDate(date('Y-m-d H:i:s'));
-            $invoice->paidTransNum('1001-30-' . $dTrecord['trans_no']);
+            $invoice->paidTransNum('1001-30-' . $dRecord['trans_no']);
             $invoice->isPaid(FormLib::get('payMethod') == 'RV' ? 2 : 1);
         }
         $invoice->save();
@@ -188,7 +191,6 @@ class B2BInvoicePage extends FannieRESTfulPage
     </tr>
 </table>
 <hr />
-<!--
 <p class="form-inline {$finalized}">
     <label>Mark invoice as paid</label>
     <select class="form-control" name="payFlag"><option value="0">No</option><option value="1">Yes</option></select>
@@ -198,7 +200,6 @@ class B2BInvoicePage extends FannieRESTfulPage
         <option value="CA">Cash</option>
     </select>
 </p>
--->
 <p>
     <button type="submit" class="btn btn-default">Update Invoice</button>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
