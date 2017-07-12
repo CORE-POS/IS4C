@@ -55,8 +55,9 @@ a[type="submit"] {
     }
 
     function get_view(){
-        ob_start();
-        ?>
+        // comment out WFC scan coord tools if COOP_ID is somewhere else
+        $wfcTools = ($this->config->get('COOP_ID') != 'WFC_Duluth') ? array('<!--', '-->') : array('', '');
+        return <<<HTML
 <!doctype html>
 <html>
 <head>
@@ -81,17 +82,18 @@ a[type="submit"] {
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../purchasing/EditOnePurchaseOrder.php" />Create Order</a>
 <hr />
+{$wfcTools[0]}
 <a class="btn btn-default btn-lg" type="submit"
     href="http://192.168.1.2/scancoord/item/SalesChange/SalesChangeIndex.php" />Batch Check</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="http://192.168.1.2/scancoord/item/AuditScanner.php" />Audie</a>
 <hr />
+{$wfcTools[1]}
 </p>
 </body>
 </html>
-        <?php
-        return ob_get_clean();
+HTML;
     }
 }
 
