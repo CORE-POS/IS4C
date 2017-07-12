@@ -206,14 +206,15 @@ class ObfWeekEntryPageV2 extends FannieRESTfulPage
         foreach($model->find('obfWeekID', true) as $week) {
             $ts = strtotime($week->startDate());
             $end = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts)+6, date('Y', $ts)));
-            $select .= sprintf('<option %s value="%d">%s</option>',
+            $start = date('Y-m-d', $ts);
+            $select .= sprintf('<option %s value="%d">%s - %s</option>',
                             ($this->weekModel->obfWeekID() == $week->obfWeekID() ? 'selected' : ''),
-                            $week->obfWeekID(), $end);
+                            $week->obfWeekID(), $start, $end);
         }
         $select .= '</select>';
 
         $ret = '<div class="form-group form-inline">
-                <lablel>Week Ending</label>: ' . $select
+                <lablel>Week of</label>: ' . $select
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                 . '<button type="button" class="btn btn-default"
                     onclick="location=\'index.php\';return false;">Home</button>'
