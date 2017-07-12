@@ -133,6 +133,7 @@ class ObfWeeklyReport extends FannieReportPage
         $total_sales->quarterActual = 0.0;
         $total_sales->quarterProjected = 0.0;
         $total_sales->quarterLaborSales = 0.0;
+        $total_sales->forecast = 0.0;
 
         return $total_sales;
     }
