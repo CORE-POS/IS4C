@@ -794,6 +794,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $dbc = $this->connection;
         $conf = $this->config->get('PLUGIN_SETTINGS');
         $dbc->selectDB($conf['ObfDatabaseV2']);
+        $PLAN_SALES = $this->getPlanSales($weekID);
         /**
           Get sales, plan, and transactions from cache
           Loops through categories to project hours for
