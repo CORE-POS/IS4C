@@ -96,7 +96,7 @@ class RemotePrint extends Plugin
             $receipt .= "\n";
             $receipt .= implode("\n", $comments);
             $receipt .= "\n";
-            $receipt .= ReceiptLib::cutReceipt($receipt);
+            $receipt = ReceiptLib::cutReceipt($receipt);
             
             if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
                 $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
