@@ -950,7 +950,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     return $receipt;
 }
 
-static private function cutReceipt($receipt, $second)
+static public function cutReceipt($receipt, $second)
 {
     if (is_array($receipt)){
         if ($second){

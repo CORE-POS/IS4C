@@ -74,7 +74,7 @@ class RemotePrint extends Plugin
                 // This is a canceled line. Skip it.
                 continue;
             }
-            if ($row['upc'] == 'DORESUME' && $row['charflag'] == 'SR') {
+            if ($row['upc'] == 'RESUME' && $row['charflag'] == 'SR') {
                 // Resumed transaction here. Reset accumulators.
                 $lines = array();
                 $comments = array();
@@ -95,6 +95,7 @@ class RemotePrint extends Plugin
             }
             $receipt .= "\n";
             $receipt .= implode("\n", $comments);
+            $receipt .= "\n";
             $receipt .= ReceiptLib::cutReceipt($receipt);
             
             if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
