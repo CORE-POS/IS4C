@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\ItemSync;
+
 class PartialBatchTask extends FannieTask
 {
     public $name = 'Partial Batch';
@@ -108,6 +110,8 @@ times will be limited by how frequently this task runs.';
                 }
             }
         }
+
+        ItemSync::sync($changedUPCs);
     }
 
     private function appliesToday($repetition)
