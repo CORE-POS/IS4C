@@ -58,7 +58,7 @@ class RemotePrint extends Plugin
         $dbc = Database::tDataConnect();
         $infoP = $dbc->prepare("
             SELECT upc, description, quantity, charflag, trans_status, trans_subtype,
-                CASE WHEN a.identifer IS NOT NULL OR OR b.identifier IS NOT NULL THEN 1 ELSE 0 END as remote
+                CASE WHEN a.identifier IS NOT NULL OR b.identifier IS NOT NULL THEN 1 ELSE 0 END as remote
             FROM localtranstoday AS l
                 LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint AS a
                     ON l.upc=a.identifier AND a.type='UPC'
@@ -66,10 +66,10 @@ class RemotePrint extends Plugin
                     ON l.department=b.identifier AND b.type='Department'
             WHERE emp_no=? AND register_no=? AND trans_no=?
             ORDER BY trans_id");
-        $infoR = $dbc->execute($prep, array($emp, $reg, $trans));
+        $infoR = $dbc->execute($infoP, array($emp, $reg, $trans));
         $lines = array();
         $comments = array();
-        while ($infoW = $dbc->fetchRow($infoR)) {
+        while ($row = $dbc->fetchRow($infoR)) {
             if ($row['trans_status'] == 'X' && $row['charflag'] != 'S') {
                 // This is a canceled line. Skip it.
                 continue;
