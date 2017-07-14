@@ -44,6 +44,7 @@ class IncidentsModel extends BasicModel
     'details' => array('type'=>'TEXT'),
     'trespass' => array('type'=>'TINYINT', 'default'=>0),
     'police' => array('type'=>'TINYINT', 'default'=>0),
+    'storeID' => array('type'=>'INT'),
     );
 }
 

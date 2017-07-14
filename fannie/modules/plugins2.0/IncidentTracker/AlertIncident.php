@@ -31,6 +31,7 @@ class AlertIncident extends FannieRESTfulPage
         $model->trespass(FormLib::get('trespass', 0));
         $model->details(FormLib::get('details'));
         $model->uid(FannieAuth::getUID($this->current_user));
+        $model->storeID(FormLib::get('store'));
 
         if (!empty($_FILES['img1']['tmp_name']) && file_exists($_FILES['img1']['tmp_name'])) {
             $ext = pathinfo($_FILES['img1']['name'], PATHINFO_EXTENSION);
@@ -63,11 +64,13 @@ class AlertIncident extends FannieRESTfulPage
         $query = "SELECT i.*,
                 s.incidentSubType,
                 l.incidentLocation,
-                u.name AS userName
+                u.name AS userName,
+                s.description AS storeName
             FROM {$prefix}Incidents AS i
                 LEFT JOIN {$prefix}IncidentSubTypes AS s ON i.incidentSubTypeID=s.incidentSubTypeID
                 LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
                 LEFT JOIN Users as u ON i.uid=u.uid
+                LEFT JOIN Stores AS s ON i.storeID=s.storeID
             WHERE i.incidentID=?";
         $prep = $this->connection->prepare($query);
         $row = $this->connection->getRow($prep, array($this->id));
@@ -91,6 +94,9 @@ class AlertIncident extends FannieRESTfulPage
 <table class="table table-bordered">
 <tr>
     <th>Date</th><td>{$row['tdate']}</td>
+</tr>
+<tr>
+    <th>Store</th><td>{$row['storeName']}</td>
 </tr>
 <tr>
     <th>Type</th><td>{$row['incidentSubType']}</td>
@@ -148,8 +154,14 @@ HTML;
             $loc .= sprintf('<option value="%d">%s</option>', $typeW['incidentLocationID'], $typeW['incidentLocation']);
         }
 
+        $stores = FormLib::storePicker();
+
         return <<<HTML
 <form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label>Store</label>
+        {$stores['html']}
+    </div>
     <div class="form-group">
         <label>Type of Alert</label>
         <select name="subtype" required class="form-control">
@@ -207,8 +219,14 @@ HTML;
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $table = $settings['IncidentDB'] . $this->connection->sep();
-        $query = "SELECT i.*, s.incidentSubType FROM {$table}Incidents AS i
+        $query = "SELECT i.*, 
+                    COALESCE(s.incidentSubType, 'Other') AS incidentSubType, 
+                    u.name,
+                    t.description AS storeName
+                FROM {$table}Incidents AS i
                 LEFT JOIN {$table}IncidentSubTypes AS s ON i.incidentSubTypeID=s.incidentSubTypeID
+                LEFT JOIN Users AS u ON i.uid=u.uid
+                LEFT JOIN Stores AS t ON i.storeID=t.storeID
             ORDER BY tdate DESC";
         $query = $this->connection->addSelectLimit($query, 30);
         $res = $this->connection->query($query);
@@ -216,8 +234,8 @@ HTML;
         $byDay = array();
         $byCat = array();
         while ($row = $this->connection->fetchRow($res)) {
-            $table .= sprintf('<tr><td>%s</td><td><a href="?id=%d">View</a><td>%s...</td></tr>',
-                $row['tdate'], $row['incidentID'], substr($row['details'], 0, 200));
+            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="?id=%d">View</a><td>%s...</td></tr>',
+                $row['tdate'], $row['storeName'], $row['name'], $row['incidentID'], substr($row['details'], 0, 200));
             list($date,) = explode(' ', $row['tdate'], 2);
             if (!isset($byDay[$date])) {
                 $byDay[$date] = 0;
@@ -237,7 +255,7 @@ HTML;
         while ($start < $end) {
             $key = $start->format('Y-m-d');
             $lineLabels[] = $key;
-            $lineData[] = isset($byDay[$key]) ? $byDay[$key] : 0;
+            $lineData[] = array('x'=>$key, 'y'=>(isset($byDay[$key]) ? $byDay[$key] : 0));
             $start = $start->add($plus);
         }
         $lineData = json_encode($lineData);
@@ -259,7 +277,7 @@ HTML;
     <a href="?new=1" class="btn btn-default">New Alert</a>
 </p>
 <table class="table small table-bordered">
-<tr><th colspan="3" class="text-center">Recent Alerts</th></tr>
+<tr><th colspan="5" class="text-center">Recent Alerts</th></tr>
     {$table}
 </table>
 <div class="row">
@@ -281,9 +299,10 @@ function drawCharts() {
                 data: {$lineData},
                 fill: false,
                 label: 'Alerts per Day',
-                backgroundColor: ["#3366cc"],
-                pointBackgroundColor: ["#3366cc"],
-                borderColor: ["#3366cc"]
+                backgroundColor: "#3366cc",
+                pointBackgroundColor: "#3366cc",
+                pointBorderColor: "#3366cc",
+                borderColor: "#3366cc"
             }],
             labels: {$lineLabels}
         },
