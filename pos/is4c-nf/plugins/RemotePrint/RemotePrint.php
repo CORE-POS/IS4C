@@ -87,7 +87,7 @@ class RemotePrint extends Plugin
         }
 
         if (count($lines) > 0) {
-            $receipt = date('Y-m-d h:i:sA') . ' ' . $reg . '-' . $emp . '-' . $trans . "\n\n";
+            $receipt = date('Y-m-d h:i:sA') . ' ' . $emp . '-' . $reg . '-' . $trans . "\n\n";
             foreach ($lines as $line) {
                 $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
                     . str_pad($line['quantity'], 5, ' ', STR_PAD_LEFT)
