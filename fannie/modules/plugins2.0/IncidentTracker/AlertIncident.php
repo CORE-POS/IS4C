@@ -259,6 +259,7 @@ HTML;
     <a href="?new=1" class="btn btn-default">New Alert</a>
 </p>
 <table class="table small table-bordered">
+<tr><th colspan="3" class="text-center">Recent Alerts</th></tr>
     {$table}
 </table>
 <div class="row">
