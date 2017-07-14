@@ -1,5 +1,8 @@
 <?php
 
+use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Slack;
+use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Email;
+
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -53,17 +56,36 @@ class AlertIncident extends FannieRESTfulPage
         }
         $id = $model->save();
 
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $incident = $this->getIncident($id);
+        $prefix = $settings['IncidentDB'] . $this->connection->sep();
+        $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=1");
+        while ($row = $this->connection->fetchRow($res)) {
+            try {
+                switch (strtolower($row['method'])) {
+                    case 'slack':
+                        $slack = new Slack();
+                        $slack->send($incident, $row['address']);
+                        break;
+                    case 'email':
+                        $email = new Email();
+                        $email->send($incident, $row['address']);
+                        break;
+                }
+            } catch (Exception $ex) {}
+        }
+
         return 'AlertIncident.php?id=' . $id;
     }
 
-    protected function get_id_view()
+    protected function getIncident($id)
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $prefix = $settings['IncidentDB'] . $this->connection->sep();
 
         $query = "SELECT i.*,
-                s.incidentSubType,
-                l.incidentLocation,
+                COALESCE(s.incidentSubType, 'Other') AS incidentSubType,
+                COALESCE(l.incidentLocation, 'Other') AS incidentLocation,
                 u.name AS userName,
                 s.description AS storeName
             FROM {$prefix}Incidents AS i
@@ -73,16 +95,17 @@ class AlertIncident extends FannieRESTfulPage
                 LEFT JOIN Stores AS s ON i.storeID=s.storeID
             WHERE i.incidentID=?";
         $prep = $this->connection->prepare($query);
-        $row = $this->connection->getRow($prep, array($this->id));
+        $row = $this->connection->getRow($prep, array($id));
         $row['reportedBy'] = $row['reportedBy'] == 0 ? 'Staff' : 'Customer';
-        if (empty($row['incidentSubType'])) {
-            $row['incidentSubType'] = 'Other';
-        }
-        if (empty($row['incidentLocation'])) {
-            $row['incidentLocation'] = 'Other';
-        }
         $row['police'] = $row['police'] ? 'Yes' : 'No';
         $row['trespass'] = $row['trespass'] ? 'Yes' : 'No';
+
+        return $row;
+    }
+
+    protected function get_id_view()
+    {
+        $row = $this->getIncident($this->id);
         $row['details'] = nl2br($row['details']);
         $img1 = $row['image1'] ? "<img src=\"image/{$row['image1']}\" />" : '';
         $img2 = $row['image2'] ? "<img src=\"image/{$row['image2']}\" />" : '';
