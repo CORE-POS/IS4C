@@ -21,6 +21,7 @@ class AlertIncident extends FannieRESTfulPage
 
     protected function post_handler()
     {
+        $uid = FannieAuth::getUID($this->current_user);
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($settings['IncidentDB']);
         $model = new IncidentsModel($this->connection);
@@ -33,7 +34,7 @@ class AlertIncident extends FannieRESTfulPage
         $model->police(FormLib::get('police', 0));
         $model->trespass(FormLib::get('trespass', 0));
         $model->details(FormLib::get('details'));
-        $model->uid(FannieAuth::getUID($this->current_user));
+        $model->uid($uid);
         $model->storeID(FormLib::get('store'));
 
         if (!empty($_FILES['img1']['tmp_name']) && file_exists($_FILES['img1']['tmp_name'])) {
