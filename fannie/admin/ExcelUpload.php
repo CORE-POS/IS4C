@@ -25,6 +25,7 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
         $query = 'INSERT INTO GenericUpload VALUES (' . str_repeat('?,', count($headers));
         $query = substr($query, 0, strlen($query)-1) . ')';
         $prep = $dbc->prepare($query);
+        $dbc->startTransaction();
         for ($i=1; $i<count($linedata); $i++) {
             if (count($linedata[$i]) < count($headers)) {
                 while (count($linedata[$i]) < count($headers)) {
@@ -35,7 +36,7 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
             }
             $dbc->execute($prep, $linedata[$i]);
         }
-
+        $dbc->commitTransaction();
 
         return true;
     }
