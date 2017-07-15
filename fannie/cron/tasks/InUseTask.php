@@ -99,7 +99,8 @@ class InUseTask extends FannieTask
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
                 INNER JOIN inUseTask AS i ON s.superID = i.superID
             WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
-            AND p.inUse = 0;
+            AND p.inUse = 0
+            ORDER BY p.store_id;
         ");
         $reportUnUse = $dbc->prepare("
             SELECT upc, brand, description, last_sold, store_id
@@ -107,7 +108,8 @@ class InUseTask extends FannieTask
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
                 INNER JOIN inUseTask AS i ON s.superID = i.superID
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
-            AND p.inUse = 1;
+            AND p.inUse = 1
+            ORDER BY p.store_id;
         ");
         $resultA = $dbc->execute($reportInUse);
         $resultB = $dbc->execute($reportUnUse);
