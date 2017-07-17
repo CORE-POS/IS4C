@@ -101,8 +101,8 @@ last thirteen weeks';
                                 . DTrans::sumQuantity('d') . " as qty,
                                 d.store_id,
                                 MAX(p.department) as dept, MAX(s.superID) as superDept
-                                FROM $dlog AS d INNER JOIN $products AS p
-                                ON d.upc = p.upc
+                                FROM $dlog AS d 
+                                    " . DTrans::joinProducts('d', 'p', 'INNER') . "
                                 LEFT JOIN $supers AS s
                                 ON p.department = s.dept_ID
                                 WHERE tdate BETWEEN ? AND ?
