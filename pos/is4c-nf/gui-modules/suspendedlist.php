@@ -80,10 +80,15 @@ class suspendedlist extends NoInputCorePage
 
     private function getTransactions()
     {
-        $queryLocal = "SELECT register_no, emp_no, trans_no, SUM(total) AS total "
-            ." FROM suspended "
-            ." WHERE datetime >= " . date("'Y-m-d 00:00:00'")
-            ." GROUP BY register_no, emp_no, trans_no";
+        $queryLocal = "
+            SELECT register_no,
+                emp_no,
+                trans_no,
+                SUM(total) AS total,
+                MAX(CASE WHEN trans_subtype='CM' AND charflag='HR' THEN description ELSE '' END) AS hri
+            FROM suspended
+            WHERE datetime >= " date("'Y-m-d 00:00:00'") . "
+            GROUP BY register_no, emp_no, trans_no";
 
         $dbc = Database::tDataConnect();
         $result = "";
@@ -113,9 +118,15 @@ class suspendedlist extends NoInputCorePage
 
         $selected = "selected";
         foreach ($this->tempResult as $row) {
-            echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."' ".$selected
-                ."> lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
-                ." #".$row["trans_no"]." -- $".$row["total"]."\n";
+            $label = sprintf('Lane %d Cashier %d #%d', $row['register_no'], $row['emp_no'], $row['trans_no']);
+            if (isset($row['hri']) && !empty($row['hri'])) {
+                $label = $row['hri'];
+            }
+            $label .= sprintf(' -- $%.2f', $row['total']);
+
+            printf('<option value="%d::%d::%d" %s>%s</option>', 
+                $row['register_no'], $row['emp_no'], $row['trans_no'], $selected, $label);
+
             $selected = "";
         }
 
