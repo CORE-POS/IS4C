@@ -27,23 +27,36 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\Parser;
 
-class Comment extends Parser {
-    function check($str){
-        if (substr($str,0,2) == "CM")
-            return True;
-        return False;
+class Comment extends Parser 
+{
+    public function check($str)
+    {
+        return (substr($str, 0, 2) === 'CM' || substr($str, 0, 3) === 'HRI');
     }
 
-    function parse($str){
+    public function parse($str)
+    {
         $ret = $this->default_json();
-        if (strlen($str) > 2){
+        if ($str === 'CM') {
+            $ret['main_frame'] = MiscLib::baseURL().'gui-modules/bigComment.php';
+        } elseif ($str === 'HRI') {
+            $ret['main_frame'] = MiscLib::baseURL().'gui-modules/requestInfo.php?class=COREPOS-pos-lib-adminlogin-HumanReadableIdRequest';
+        } elseif (substr($str, 0, 3) === 'HRI') {
+            $hri = substr($str, 3);
+            TransRecord::addRecord(array(
+                'description' => $hri,
+                'trans_type' => 'C',
+                'trans_subtype' => 'CM',
+                'trans_status' => 'D',
+                'charflag' => 'HR',
+            ));
+            $ret['output'] = DisplayLib::lastpage();
+        } else {
             $comment = substr($str,2);
             TransRecord::addcomment($comment);
             $ret['output'] = DisplayLib::lastpage();
         }
-        else {
-            $ret['main_frame'] = MiscLib::base_url().'gui-modules/bigComment.php';
-        }
+
         return $ret;
     }
 
