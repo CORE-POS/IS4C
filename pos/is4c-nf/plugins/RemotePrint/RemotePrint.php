@@ -78,6 +78,7 @@ class RemotePrint extends Plugin
         $infoR = $dbc->execute($infoP, array($emp, $reg, $trans));
         $lines = array();
         $comments = array();
+        $hri = false;
         while ($row = $dbc->fetchRow($infoR)) {
             if (CoreLocal::get('RemotePrintDebug')) {
                 $lines[] = array(
@@ -98,13 +99,18 @@ class RemotePrint extends Plugin
             }
             if ($row['remote']) {
                 $lines[] = array('upc'=>$row['upc'], 'description'=>$row['description'], 'qty'=>$row['quantity']);
+            } elseif ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
+                $hri = $row['description'];
             } elseif ($row['trans_subtype'] == 'CM') {
                 $comments[] = $row['description'];
             }
         }
 
         if (count($lines) > 0) {
-            $receipt = date('Y-m-d h:i:sA') . ' ' . $reg . '-' . $emp . '-' . $trans . "\n\n";
+            $receipt = date('Y-m-d h:i:sA') . ' ' . $emp . '-' . $reg . '-' . $trans . "\n\n";
+            if ($hri) {
+                $receipt = date('Y-m-d h:i:sA') . ' ' . $hri . "\n\n";
+            }
             foreach ($lines as $line) {
                 $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
                     . str_pad($line['quantity'], 5, ' ', STR_PAD_LEFT)
