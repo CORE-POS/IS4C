@@ -695,13 +695,9 @@ class FannieSignage
         $upc = FormLib::get('update_upc', array());
         $brand = FormLib::get('update_brand', array());
         $desc = FormLib::get('update_desc', array());
-        $ignore = FormLib::get('ignore_desc', array());
         for ($i=0; $i<count($upc); $i++) {
             $bOver = isset($brand[$i]) ? $brand[$i] : '';
             $dOver = '';
-            if (isset($ignore[$i]) && $ignore[$i] == 0 && isset($desc[$i])) {
-                $dOver = $desc[$i];
-            }
             $overrides[$upc[$i]] = array('brand' => $bOver, 'desc' => $dOver);
         }
         $excludes = array();
@@ -744,9 +740,7 @@ class FannieSignage
                                 name="update_brand[]" value="%s" /></td>
                             <td>
                                 <span class="collapse">%s</span>
-                                <input class="FannieSignageField form-control" type="text" 
-                                name="update_desc[]" value="%s" />
-                                <input type="hidden" name="ignore_desc[]" value="%d" />
+                                <textarea class="FannieSignageField form-control small input-sm" rows="1" name="update_desc[]">%s</textarea>
                             </td>
                             <td>%.2f</td>
                             <td class="form-inline">%s<input type="text" name="custom_origin[]" 
@@ -761,7 +755,6 @@ class FannieSignage
                             $item['brand'],
                             str_replace('"', '&quot;', $item['description']),
                             str_replace('"', '&quot;', $item['description']),
-                            (strstr($item['description'], "\n") ? 1 : 0),
                             $item['normal_price'],
                             $oselect,
                             $item['upc'],
