@@ -105,9 +105,9 @@ class ObfDepartmentReport extends FannieRESTfulPage
         $dates = array_keys($lineData['lastYearSales']);
         $ret = '';
         $ret .= sprintf('<p>
-            <a href="?id=%d&week=%d">Previous</a>
+            <a href="?id=%d&week=%d">Previous Week</a>
             |
-            <a href="?id=%d&week=%d">Next</a>
+            <a href="?id=%d&week=%d">Next Week</a>
             </p>', $this->id, $week-1, $this->id, $week+1);
         $ret .= '<div class="row"><div class="col-sm-6">';
         $ret .= '<table class="table table-bordered table-striped"><thead><tr><th>&nbsp;</th>';
