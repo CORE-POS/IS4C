@@ -36,6 +36,7 @@ class EditBatchPage extends FannieRESTfulPage
     protected $title = 'Sales Batches Tool';
     protected $header = 'Sales Batches Tool';
     protected $enable_linea = true;
+    protected $debug_routing = false;
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';
@@ -189,7 +190,7 @@ class EditBatchPage extends FannieRESTfulPage
           Nothing submitted; don't do anything
         */
         if ($upc === '') {
-            echo json_encode($json);
+            echo $this->debugJSON($json);
             return false;
         }
 
@@ -216,7 +217,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $json['field'] = '#add-item-price';
             }
         }
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -237,7 +238,7 @@ class EditBatchPage extends FannieRESTfulPage
           Nothing submitted; don't do anything
         */
         if ($this->addLC === '') {
-            echo json_encode($json);
+            echo $this->debugJSON($json);
             return false;
         }
 
@@ -259,7 +260,7 @@ class EditBatchPage extends FannieRESTfulPage
             $json['field'] = '#add-item-price';
         }
 
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -295,7 +296,7 @@ class EditBatchPage extends FannieRESTfulPage
             $json['display'] = $this->showBatchDisplay($this->id);
         }
         
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -355,7 +356,7 @@ class EditBatchPage extends FannieRESTfulPage
         }
 
         $json = array('tags' => $tag_count);
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -367,7 +368,7 @@ class EditBatchPage extends FannieRESTfulPage
         $model = new BatchesModel($dbc);
         $model->forceStartBatch($this->id);
         $json = array('error'=>0, 'msg'=>'Batch #' . $this->id . ' has been applied');
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -380,7 +381,7 @@ class EditBatchPage extends FannieRESTfulPage
         $model->forceStopBatch($this->id);
 
         $json = array('error'=>0, 'msg'=> 'Batch items taken off sale');
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -469,7 +470,7 @@ class EditBatchPage extends FannieRESTfulPage
                 (substr($this->upc,0,2)=='LC' ? true : false));
         }
 
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -550,7 +551,7 @@ class EditBatchPage extends FannieRESTfulPage
                 (substr($upc,0,2)=='LC' ? true : false));
         }
         
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -568,7 +569,7 @@ class EditBatchPage extends FannieRESTfulPage
         if ($r === false) {
             $json['error'] = 'Error moving item';
         }
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -607,7 +608,7 @@ class EditBatchPage extends FannieRESTfulPage
         if (!$save1 || !$save2 || !$save3) {
             $json['error'] = 'Error saving paired sale settings';
         }
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -636,7 +637,7 @@ class EditBatchPage extends FannieRESTfulPage
             $dbc->execute($delP, array($this->id, $w['upc']));
         }
         $ret['display'] = $this->showBatchDisplay($this->id);
-        echo json_encode($ret);
+        echo $this->debugJSON($ret);
 
         return false;
     }
@@ -661,7 +662,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $ret['error'] = 'Error saving store mapping';
             }
         }
-        echo json_encode($ret);
+        echo $this->debugJSON($ret);
 
         return false;
     }

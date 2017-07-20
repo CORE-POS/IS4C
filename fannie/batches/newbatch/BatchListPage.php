@@ -35,6 +35,7 @@ class BatchListPage extends FannieRESTfulPage
     protected $auth_classes = array('batches','batches_audited');
     protected $title = 'Sales Batches Tool';
     protected $header = '';
+    protected $debug_routing = false;
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';
@@ -106,7 +107,7 @@ class BatchListPage extends FannieRESTfulPage
         } else {
             $json['new_list'] = $this->batchListDisplay();
         }
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -150,7 +151,7 @@ class BatchListPage extends FannieRESTfulPage
             $json['error'] = 1;
             $json['msg'] = 'Error saving batch ' . $this->batchName;
         }
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
@@ -188,7 +189,7 @@ class BatchListPage extends FannieRESTfulPage
             $json['msg'] = 'Items were unsaled but an error occurred deleting the batch.';
         }
 
-        echo json_encode($json);
+        echo $this->debugJSON($json);
 
         return false;
     }
