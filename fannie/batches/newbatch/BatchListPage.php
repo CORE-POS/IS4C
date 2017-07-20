@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\FannieUI;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -309,8 +311,6 @@ HTML;
             $mode = $this->config->get('BATCH_VIEW', 'all');
         }
 
-        $colors = array('#ffffff','#ffffcc');
-        $c = 0;
         $ret = "";
         $ret .= "<b>Display</b>: ";
         if ($mode != 'pending') {
@@ -334,15 +334,15 @@ HTML;
             $ret .= "All<br />";
         }
 
-        $sort = \COREPOS\Fannie\API\lib\FannieUI::tableSortIcons();
+        $sort = FannieUI::tableSortIcons();
 
-        $ret .= '<table class="table tablesorter tablesorter-core"><thead>';
-        $ret .= "<tr><th bgcolor=$colors[$c]>Batch Name$sort</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Type$sort</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Items$sort</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Start date$sort</th>";
-        $ret .= "<th bgcolor=$colors[$c]>End date$sort</th>";
-        $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.$sort</th>";
+        $ret .= '<table id="batchesTable" class="table tablesorter tablesorter-core"><thead>';
+        $ret .= "<tr><th>Batch Name$sort</th>";
+        $ret .= "<th>Type$sort</th>";
+        $ret .= "<th>Items$sort</th>";
+        $ret .= "<th>Start date$sort</th>";
+        $ret .= "<th>End date$sort</th>";
+        $ret .= "<th>Owner/Super Dept.$sort</th>";
         $ret .= "<th colspan=\"3\">&nbsp;</th></tr></thead><tbody>";
         
         // owner column might be in different places
@@ -416,44 +416,7 @@ HTML;
         $count = 0;
         $lastBatchID = 0;
         while ($fetchW = $dbc->fetchRow($fetchR)) {
-            /**
-              strtotime() and date() are not reciprocal functions
-              date('Y-m-d', strtotime('0000-00-00')) results in
-              -0001-11-30 instead of the expected 0000-00-00
-            */
-            if ($fetchW['startDate'] == '0000-00-00 00:00:00') {
-                $fetchW['startDate'] = '';
-            }
-            if ($fetchW['endDate'] == '0000-00-00 00:00:00') {
-                $fetchW['endDate'] = '';
-            }
-            $c = ($c + 1) % 2;
-            $id = $fetchW['batchID'];
-            $ret .= '<tr id="batchRow' . $fetchW['batchID'] . '" class="batchRow">';
-            $ret .= "<td bgcolor=$colors[$c] id=name{$id}><a id=namelink{$id} 
-                href=\"EditBatchPage.php?id={$id}\">{$fetchW['batchName']}</a></td>";
-            $ret .= "<td bgcolor=$colors[$c] id=type{$id}>" . $fetchW['typeDesc'] . "</td>";
-            $ret .= "<td bgcolor=$colors[$c]>" . $fetchW['items'] . "</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=startdate{$id}>" 
-                . (strtotime($fetchW['startDate']) ? date('Y-m-d', strtotime($fetchW['startDate'])) : '')
-                . "</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=enddate{$id}>" 
-                . (strtotime($fetchW['endDate']) ? date('Y-m-d', strtotime($fetchW['endDate'])) : '')
-                . "</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=owner{$id}>{$fetchW['owner']}</td>";
-            $ret .= "<td bgcolor=$colors[$c] id=edit{$id}>
-                <a href=\"\" onclick=\"editBatchLine({$id}); return false;\" class=\"batchEditLink btn btn-default btn-xs\">
-                    " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "
-                </a>
-                <a href=\"\" onclick=\"saveBatchLine({$id}); return false;\" class=\"batchSaveLink btn btn-default btn-xs collapse\">
-                    " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "
-                </a>
-                </td>";
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" class=\"btn btn-danger btn-xs\"
-                onclick=\"deleteBatch({$id}," . htmlspecialchars(json_encode($fetchW['batchName'])) . "); return false;\">"
-                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"batchReport.php?batchID={$id}\">Report</a></td>";
-            $ret .= "</tr>";
+            $ret .= $this->batchToTableRow($fetchW);
             $count++;
             $lastBatchID = $fetchW[4];
         }
@@ -476,6 +439,43 @@ HTML;
 
         return $ret;
     }
+
+    private function batchToTableRow($batch)
+    {
+        /**
+          strtotime() and date() are not reciprocal functions
+          date('Y-m-d', strtotime('0000-00-00')) results in
+          -0001-11-30 instead of the expected 0000-00-00
+        */
+        $batch['startDate'] = strtotime($batch['startDate']) > 0 ? date('Y-m-d', strtotime($batch['startDate'])) : '';
+        $batch['endDate'] = strtotime($batch['endDate']) > 0 ? date('Y-m-d', strtotime($batch['startDate'])) : '';
+        $bID = $batch['batchID'];
+        $edit = FannieUI::editIcon();
+        $save = FannieUI::saveIcon();
+        $trash = FannieUI::deleteIcon();
+        $safeName =  htmlspecialchars(json_encode($batch['batchName']));
+
+        return <<<HTML
+<tr id="batchRow{$bID}" class="batchRow">
+    <td id="name{$bID}"><a id="namelink{$bID}"
+        href="EditBatchPage.php?id={$bID}">{$batch['batchName']}</a>
+    </td>
+    <td id="type{$bID}">{$batch['typeDesc']}</td>
+    <td>{$batch['items']}</td>
+    <td id="startdate{$bID}">{$batch['startDate']}</td>
+    <td id="enddate{$bID}">{$batch['endDate']}</td>
+    <td id="owner{$bID}">{$batch['owner']}</td>
+    <td id="edit{$bID}">
+        <a href="" onclick="editBatchLine({$bID}); return false;"
+            class="batchEditLink btn btn-default btn-xs">{$edit}</a>
+        <a href="" onclick="saveBatchLine({$bID}); return false;"
+            class="batchSaveLink btn btn-default btn-xs collapse">{$save}</a>
+    <td><a href="" class="btn btn-danger btn-xs"
+        onclick="deleteBatch({$bID}, {$safeName}); return false;">{$trash}</a>
+    </td>
+</tr>
+HTML;
+}
 
     function get_view()
     {
