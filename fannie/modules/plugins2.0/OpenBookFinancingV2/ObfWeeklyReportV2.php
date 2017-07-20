@@ -222,7 +222,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $categories->hasSales(1);
         $categories->storeID($store);
         foreach ($categories->find('name') as $category) {
-            $data[] = $this->headerRow($category->name());
+            $data[] = $this->headerRow($category->name(), 'black', array($category->obfCategoryID(), $week->obfWeekID()));
             $sum = array(0.0, 0.0);
             $dept_proj = 0.0;
             $dept_trend = 0;

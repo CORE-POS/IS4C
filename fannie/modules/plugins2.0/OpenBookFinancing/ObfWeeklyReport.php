@@ -251,8 +251,11 @@ class ObfWeeklyReport extends FannieReportPage
         return $data;
     }
 
-    protected function headerRow($header, $text='black')
+    protected function headerRow($header, $text='black', $link=false)
     {
+        if ($link) {
+            $header = sprintf('<a href="ObfDepartmentReport.php?id=%d&week=%d">%s</a>', $link[0], $link[1], $header);
+        }
         return array($header, '', '', '', '', '', '', '', '', '',
                     'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
                     'meta_background' => $this->colors[0],
