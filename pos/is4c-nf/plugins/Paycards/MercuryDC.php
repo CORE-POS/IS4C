@@ -490,8 +490,9 @@ class MercuryDC extends MercuryE2E
 
         $pan = $xml->query('/RStream/TranResponse/AcctNo');
         $respName = $xml->query('/RStream/TranResponse/CardholderName');
+        $entryMethod = $xml->query('/RStream/TranResponse/EntryMethod');
         $name = $respName ? $respName : 'Cardholder';
-        $request->updateCardInfo($pan, $name, $issuer);
+        $request->updateCardInfo($pan, $name, $issuer, $entryMethod);
 
         switch (strtoupper($xml->query('/RStream/CmdResponse/CmdStatus'))) {
             case 'APPROVED':
