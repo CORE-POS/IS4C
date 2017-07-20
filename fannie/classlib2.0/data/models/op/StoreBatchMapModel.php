@@ -42,12 +42,10 @@ class StoreBatchMapModel extends BasicModel
     public static function initBatch($batchID)
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-        $map = new StoreBatchMapModel($dbc);
-        $stores = new StoresModel($dbc);
-        foreach ($stores->find() as $s) {
-            $map->storeID($s->storeID());
-            $map->batchID($batchID);
-            $map->save(); 
+        $saveP = $dbc->prepare("INSERT INTO StoreBatchMap (storeID, batchID) VALUES (?, ?)");
+        $res = $dbc->query("SELECT storeID FROM Stores WHERE hasOwnItems=1");
+        while ($row = $dbc->fetchRow($res)) {
+            $dbc->execute($saveP, array($row['storeID'], $batchID));
         }
     }
 }
