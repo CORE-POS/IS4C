@@ -93,8 +93,15 @@ class BatchListPage extends FannieRESTfulPage
         $id = $b->save();
 
         $batchUpdate = new BatchUpdateModel($dbc);
+        $batchUpdate->updateType($batchUpdate::UPDATE_CREATE);
         $batchUpdate->batchID($id);
-        $json['batchUpdate'] = $batchUpdate->logUpdate($batchUpdate::UPDATE_CREATE);
+        $batchUpdate->batchType($this->newType);
+        $batchUpdate->modified(date('Y-m-d H:i:s'));
+        $batchUpdate->user(FannieAuth::getUID($this->current_user));
+        $batchUpdate->startDate($this->newStart);
+        $batchUpdate->endDate($this->newEnd);
+        $batchUpdate->owner($this->newOwner);
+        $json['batchUpdate'] = $batchUpdate->save();
 
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($id);
