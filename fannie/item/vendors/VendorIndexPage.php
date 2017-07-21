@@ -127,7 +127,7 @@ class VendorIndexPage extends FannieRESTfulPage
         $vModel->vendorID($id);
         $vModel->phone(FormLib::get('phone'));
         $vModel->fax(FormLib::get('fax'));
-        $vModel->email(FormLib::get('email'));
+        $vModel->email(trim(FormLib::get('email')));
         $vModel->website($web);
         $vModel->notes(FormLib::get('notes'));
         $vModel->address(FormLib::get('address'));
