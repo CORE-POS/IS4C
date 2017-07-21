@@ -35,21 +35,24 @@ class BatchUpdateModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'batchUpdateID' => array('type'=>BIGINT(20), 'primary_key'=>true, 'increment'=>true),
+    'batchUpdateID' => array('type'=>'BIGINT(20)', 'primary_key'=>true, 'increment'=>true),
     'updateType' => array('type'=>'VARCHAR(20)'),
     'upc' => array('type'=>'VARCHAR(13)'),
     'specialPrice' => array('type'=>'decimal(10,2)'),
     'batchID' => array('type'=>'BIGINT(2)'),
-    'batchType' => array('SMALLINT(6)'),
-    'modified' => array('DATETIME'),
-    'user' => array('VARCHAR(20)')
+    'batchType' => array('type'=>'SMALLINT(6)'),
+    'modified' => array('type'=>'DATETIME'),
+    'user' => array('type'=>'VARCHAR(20)'),
+    'startDate' => array('type'=>'DATETIME'),
+    'endDate' => array('type'=>'DATETIME'),
+    'owner'=> array('type'=>'VARCHAR(20)')
     );
 
     const UPDATE_CREATE = 'BATCH CREATED';
     const UPDATE_DELETE = 'BATCH DELETED';
     const UPDATE_FORCED = 'BATCH FORCED';
     const UPDATE_STOPPED = 'BATCH STOPPED';
-    const UPDATE_DATE_EDIT = 'BATCH DATES CHANGED';
+    const UPDATE_EDIT = 'BATCH EDITED';
     const UPDATE_PRICE_EDIT = 'ITEM PRICE CHANGED';
     const UPDATE_REMOVED = 'ITEM REMOVED FROM BATCH';
     const UPDATE_ADDED = 'ITEM ADDED TO BATCH';
@@ -60,84 +63,70 @@ class BatchUpdateModel extends BasicModel
 
     public function logUpdate($type='UNKNOWN', $user=false)
     {
+	global $FANNIE_OP_DB;
+	$dbc = FannieDB::get($FANNIE_OP_DB);
+
         if (!$user) {
             $user = FannieAuth::getUID(FannieAuth::checkLogin());
         }
-        
+
         /*
-            if a UPC was passed to obj, use produpdate and batches modesl, 
+            if a UPC was passed to obj, use produpdate and batches modesl,
                 if BATCHID was passed, use only batches.
         */
-        if ($this->upc) {
-            $batchList = new BatchListModel($this->connection);
-            $batchList->upc($this->upc);
-            $batchList->batchID($this->batchID);
+        if ($this->upc()) {
+            $batchList = new BatchListModel($dbc);
+            $batchList->upc($this->upc());
+            $batchList->batchID($this->batchID());
             $exists = $batchList->load();
-            $logType = 'BATCH';
-        } else {
-            $batch = new BatchesModel($this->connection);
-            $batch->batchID($this->batchID);
-            $exists = $batch->load();
             $logType = 'ITEM';
+        } else {
+            $batch = new BatchesModel($dbc);
+            $batch->batchID($this->batchID());
+            $exists = $batch->load();
+            $logType = 'BATCH';
+
         }
         if (!$exists) {
             return false;
         }
 
-        /* 
+        /*
             2 diff. kind of entries (item,batch)
-        */   
-        if ($logType === 'BATCH') {
+        */
+        if ($logType == 'BATCH') {
             $this->updateType($type);
-            $this->user->($user);
-            $this->startDate($batch->startDate);
-            $this->endDate($batch->endDate);
-            $this->batchName($batch->batchName);
-            $this->owner($batch->owner);
+            $this->user($user);
+            $this->startDate($batch->startDate());
+            $this->endDate($batch->endDate());
+            $this->batchType($batch->batchType());
+            //$this->batchName($batch->batchName); $this->batchName doesn't exist
+            $this->owner($batch->owner());
             $this->modified(date('Y-m-d H:i:s'));
             $saved = $this->save();
         } else {
             $this->updateType($type);
-            $this->upc($this->upc);
+            $this->upc($this->upc());
             $this->specialPrice($batchList->salePrice);
             $this->batchID($batchList->batchID);
             $this->modified(date('Y-m-d H:i:s'));
             $saved = $this->save();
-        }        
+        }
         if ($saved === false) {
             $json['error'] = 1;
-            $json['msg'] = 'Error saving batch ' . $this->batchName;
+            $json['msg'] = 'Error logging batch history ' . $this->batchName;
         }
-        
+
         /*
             a few things that are missing
-                1. price changes batches don't need to be logged. 
-                2. this method doesn't handle like code items being entered?? 
-                   There is a chunck in prodUpdate that handles likecodes that 
-                   may need to be added here. 
+                1. price changes batches don't need to be logged.
+                2. this method doesn't handle like code items
+                   There is a chunck in prodUpdate that handles likecodes that
+                   may need to be added here.
         */
 
         return true;
     }
-
-    private $col_map = array(
-        'upc' => 'p.upc',
-        'description' => 'description',
-        'price' => 'normal_price',
-        'salePrice' => 'special_price',
-        'cost' => 'cost',
-        'dept' => 'department',
-        'tax' => 'tax',
-        'fs' => 'foodstamp',
-        'wic' => 'wicable',
-        'scale' => 'scale',
-        'modified' => 'modified',
-        'forceQty' => 'qttyEnforced',
-        'noDisc' => 'discount',
-        'inUse' => 'inUse',
-        'likeCode' => 'likeCode',
-        'storeID' => 'store_id',
-    );
 
 }
 
