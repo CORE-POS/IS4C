@@ -237,7 +237,9 @@ class BasicModel
         if (isset($this->instance[$col])) {
             return $this->instance[$col];
         } elseif (isset($this->columns[$col]) && isset($this->columns[$col]['default'])) {
-            return $this->columns[$col]['default'];
+            return $this->column[$col]['default'] === true
+                ? $this->getNormalDefault($this->column[$col]['type'])
+                : $this->columns[$col]['default'];
         } else {
             return null;
         }
@@ -382,8 +384,11 @@ class BasicModel
                 $sql .= ' NOT NULL AUTO_INCREMENT';
             }
         } elseif (isset($definition['default']) && (
-            is_string($definition['default']) || is_numeric($definition['default'])
+            is_string($definition['default']) || is_numeric($definition['default']) || $definition['default'] === true
         )) {
+            if ($definition['default'] === true) {
+                $definition['default'] = $this->getNormalDefault($type);
+            }
             if ($dbms == 'mssql') {
                 $sql .= ' '.$definition['default'];
             } else {
@@ -661,6 +666,15 @@ class BasicModel
         $meta = $this->meta_types[strtoupper($type)];
 
         return isset($meta[$dbms]) ? $meta[$dbms] : $meta['default'];
+    }
+
+    protected function getNormalDefault($type)
+    {
+        if (strstr($type, 'CHAR') || strstr($type, 'TEXT')) {
+            return "''";
+        }
+
+        return 0;
     }
 
     /**
@@ -1032,7 +1046,7 @@ class BasicModel
                         . $this->connection->identifierEscape($casemap[strtolower($col_name)]) . ' '
                         . $this->connection->identifierEscape($col_name) . ' '
                         . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbmsName());
-                if (isset($this->columns[$col_name]['default'])) {
+                if (isset($this->columns[$col_name]['default']) && $this->columns[$col_name]['default'] !== true) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                 }
                 if (isset($this->columns[$col_name]['not_null'])) {
@@ -1063,7 +1077,7 @@ class BasicModel
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
                             $col_name, $current[$col_name]['type'], $type);
                     $rebuild = true;
-                } elseif (!$this->isIncrement($this->columns[$col_name]) && isset($this->columns[$col_name]['default']) && trim($this->columns[$col_name]['default'],"'") != $current[$col_name]['default']) {
+                } elseif (!$this->isIncrement($this->columns[$col_name]) && isset($this->columns[$col_name]['default']) && trim($this->columns[$col_name]['default'],"'") != $current[$col_name]['default'] && $this->columns[$col_name]['default'] !== true) {
                     printf("%s column %s default value from %s to %s\n", 
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
                             $col_name, $current[$col_name]['default'], $this->columns[$col_name]['default']);
@@ -1115,7 +1129,7 @@ class BasicModel
                         . $this->connection->identifierEscape($definition['replaces']) . ' '
                         . $this->connection->identifierEscape($col_name) . ' '
                         . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbmsName());
-                if (isset($this->columns[$col_name]['default'])) {
+                if (isset($this->columns[$col_name]['default']) && $this->columns[$col_name]['default'] !== true) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                 }
                 if (isset($this->columns[$col_name]['not_null'])) {
@@ -1232,8 +1246,10 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
             $val = null;
             if (isset($this->instance[$name])) {
                 $val = $this->instance[$name];
-            } elseif (isset($this->instance['default'])) {
-                $val = $this->instance['default'];
+            } elseif (isset($this->columns[$name]['default'])) {
+                $val = $this->columns[$name]['default'] === true 
+                    ? $this->getNormalDefault($this->columns[$name]['type'])
+                    : $this->columns[$name]['default'];
             }
             $ret->{$name} = $val;
         }
