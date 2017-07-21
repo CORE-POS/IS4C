@@ -35,12 +35,12 @@ class BatchUpdateModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'batchUpdateID' => array('type'=>'BIGINT(20)', 'primary_key'=>true, 'increment'=>true),
+    'batchUpdateID' => array('type'=>'BIGINT UNSIGNED', 'primary_key'=>true, 'increment'=>true),
     'updateType' => array('type'=>'VARCHAR(20)'),
     'upc' => array('type'=>'VARCHAR(13)'),
-    'specialPrice' => array('type'=>'decimal(10,2)'),
-    'batchID' => array('type'=>'BIGINT(2)'),
-    'batchType' => array('type'=>'SMALLINT(6)'),
+    'specialPrice' => array('type'=>'MONEY'),
+    'batchID' => array('type'=>'INT'),
+    'batchType' => array('type'=>'SMALLINT'),
     'modified' => array('type'=>'DATETIME'),
     'user' => array('type'=>'VARCHAR(20)'),
     'startDate' => array('type'=>'DATETIME'),
