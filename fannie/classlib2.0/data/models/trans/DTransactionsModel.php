@@ -30,7 +30,7 @@ class DTransactionsModel extends BasicModel
 
     protected $columns = array(
     'datetime'    => array('type'=>'DATETIME','index'=>True),
-    'store_id'    => array('type'=>'SMALLINT'),
+    'store_id'    => array('type'=>'SMALLINT', 'default'=>true),
     'register_no'    => array('type'=>'SMALLINT'),
     'emp_no'    => array('type'=>'SMALLINT'),
     'trans_no'    => array('type'=>'INT'),
