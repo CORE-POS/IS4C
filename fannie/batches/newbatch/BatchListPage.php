@@ -31,7 +31,7 @@ if (!function_exists('checkLogin')) {
     include_once($FANNIE_ROOT . 'auth/login.php');
 }
 
-class BatchListPage extends FannieRESTfulPage 
+class BatchListPage extends FannieRESTfulPage
 {
     protected $must_authenticate = true;
     protected $auth_classes = array('batches','batches_audited');
@@ -83,7 +83,7 @@ class BatchListPage extends FannieRESTfulPage
         if ($infoR && ($infoW = $dbc->fetch_row($infoR))) {
             $discounttype = $infoW['discType'];
         }
-        
+
         $b = new BatchesModel($dbc);
         $b->startDate($this->newStart);
         $b->endDate($this->newEnd);
@@ -94,6 +94,17 @@ class BatchListPage extends FannieRESTfulPage
         $b->owner($this->newOwner);
         $id = $b->save();
 
+        $batchUpdate = new BatchUpdateModel($dbc);
+        $batchUpdate->updateType($batchUpdate::UPDATE_CREATE);
+        $batchUpdate->batchID($id);
+        $batchUpdate->batchType($this->newType);
+        $batchUpdate->modified(date('Y-m-d H:i:s'));
+        $batchUpdate->user(FannieAuth::getUID($this->current_user));
+        $batchUpdate->startDate($this->newStart);
+        $batchUpdate->endDate($this->newEnd);
+        $batchUpdate->owner($this->newOwner);
+        $json['batchUpdate'] = $batchUpdate->save();
+
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($id);
         }
@@ -102,7 +113,7 @@ class BatchListPage extends FannieRESTfulPage
             $insQ = $dbc->prepare("insert batchowner values (?,?)");
             $insR = $dbc->execute($insQ,array($id,$b->owner()));
         }
-        
+
         if ($id === false) {
             $json['error'] = 1;
             $json['msg'] = 'An error occured creating the batch ' . $this->newName;
@@ -118,9 +129,9 @@ class BatchListPage extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        
-        $infoQ = $dbc->prepare("SELECT discType 
-                                FROM batchType 
+
+        $infoQ = $dbc->prepare("SELECT discType
+                                FROM batchType
                                 WHERE batchTypeID=?");
         $infoR = $dbc->execute($infoQ,array($this->batchType));
         $infoW = $dbc->fetch_row($infoR);
@@ -135,7 +146,13 @@ class BatchListPage extends FannieRESTfulPage
         $model->discountType($discounttype);
         $model->owner($this->owner);
         $saved = $model->save();
-        
+
+        //if ($saved === true) {
+            $batchUpdate = new BatchUpdateModel($dbc);
+            $batchUpdate->batchID($this->id);
+            $json['batchUpdate'] = $batchUpdate->logUpdate($batchUpdate::UPDATE_EDIT);
+        //}
+
         if ($dbc->tableExists('batchowner')) {
             $checkQ = $dbc->prepare("select batchID from batchowner where batchID=?");
             $checkR = $dbc->execute($checkQ,array($this->id));
@@ -171,12 +188,17 @@ class BatchListPage extends FannieRESTfulPage
         $json = array('error'=>0,'msg'=>'Deleted batch #' . $this->id);
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $batchUpdate = new BatchUpdateModel($dbc);
+        $batchUpdate->batchID($this->id);
+        $json['batchUpdate'] = $batchUpdate->logUpdate($batchUpdate::UPDATE_DELETE);
+
+
         $batch = new BatchesModel($dbc);
         $batch->forceStopBatch($this->id);
 
         $delQ = $dbc->prepare("delete from batches where batchID=?");
         $batchR = $dbc->execute($delQ,array($this->id));
-    
+
         $delQ = $dbc->prepare("delete from batchList where batchID=?");
         $itemR = $dbc->execute($delQ,array($this->id));
         if ($itemR !== false && $batchR === false) {
@@ -344,7 +366,7 @@ HTML;
         $ret .= "<th>End date$sort</th>";
         $ret .= "<th>Owner/Super Dept.$sort</th>";
         $ret .= "<th colspan=\"3\">&nbsp;</th></tr></thead><tbody>";
-        
+
         // owner column might be in different places
         // depending if schema is up to date
         $ownerclause = "'' as owner FROM batches AS b";
@@ -388,7 +410,7 @@ HTML;
                 break;
             case 'historical':
                 $fetchQ .= ' AND '. $dbc->datediff("b.startDate",$dbc->now()) . ' <= 0 ';
-                break;    
+                break;
         }
         // use a filter - only works in 'all' mode
         if (isset($filters['owner']) && $filters['owner'] != '') {
@@ -412,7 +434,7 @@ HTML;
             array_unshift($args,$maxBatchID);
         }
         $fetchR = $dbc->execute($fetchQ,$args);
-        
+
         $count = 0;
         $lastBatchID = 0;
         while ($fetchW = $dbc->fetchRow($fetchR)) {

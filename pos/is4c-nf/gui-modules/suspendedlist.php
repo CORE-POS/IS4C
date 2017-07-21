@@ -87,7 +87,7 @@ class suspendedlist extends NoInputCorePage
                 SUM(total) AS total,
                 MAX(CASE WHEN trans_subtype='CM' AND charflag='HR' THEN description ELSE '' END) AS hri
             FROM suspended
-            WHERE datetime >= " date("'Y-m-d 00:00:00'") . "
+            WHERE datetime >= " . date("'Y-m-d 00:00:00'") . "
             GROUP BY register_no, emp_no, trans_no";
 
         $dbc = Database::tDataConnect();
