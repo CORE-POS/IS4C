@@ -63,8 +63,8 @@ class BatchUpdateModel extends BasicModel
 
     public function logUpdate($type='UNKNOWN', $user=false)
     {
-	global $FANNIE_OP_DB;
-	$dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
         if (!$user) {
             $user = FannieAuth::getUID(FannieAuth::checkLogin());
