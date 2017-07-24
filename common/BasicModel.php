@@ -237,8 +237,8 @@ class BasicModel
         if (isset($this->instance[$col])) {
             return $this->instance[$col];
         } elseif (isset($this->columns[$col]) && isset($this->columns[$col]['default'])) {
-            return $this->column[$col]['default'] === true
-                ? $this->getNormalDefault($this->column[$col]['type'])
+            return $this->columns[$col]['default'] === true
+                ? $this->getNormalDefault($this->columns[$col]['type'])
                 : $this->columns[$col]['default'];
         } else {
             return null;
