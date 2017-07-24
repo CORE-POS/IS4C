@@ -393,6 +393,7 @@ class HouseCouponEditor extends FanniePage
             'Q'=>'Quantity (at least)',
             'Q+'=>'Quantity (more than)',
             'Q-'=>'Quantity (Per-Item Max)',
+            'QI'=>  'Quantity (at least amount, free item)',
             'C'=>'Department (at least qty)',
             'C+'=>'Department (more than qty)',
             'C!'=>'Dept w/o sales (at least qty)',
@@ -467,12 +468,12 @@ class HouseCouponEditor extends FanniePage
         $ret .= "<hr />";
         $ret .= '<div class="container-fluid">';
         $ret .= '<div class="form-group form-inline" id="add-item-form">';
-        if ($mType == "Q" || $mType == "Q+" || $mType == "M" || $mType == 'MX') {
+        if ($mType == "Q" || $mType == "Q+" || $mType == "M" || $mType == 'MX' || $mType == 'QI') {
             $ret .= '<label class="control-label">Add UPC</label>
                 <input type=text class="form-control add-item-field" name=new_upc 
                     onkeydown="addSubmitDown(event);" />';
         } 
-        if ($mType == "D" || $mType == "D+" || $mType == 'C' || $mType == 'C+' || $dType == '%D' || $dType == 'S' || $mType == 'MX' || $mType == 'C!' || $mType == 'C^') {
+        if ($mType == "D" || $mType == "D+" || $mType == 'C' || $mType == 'C+' || $dType == '%D' || $dType == 'S' || $mType == 'MX' || $mType == 'C!' || $mType == 'C^' || $mType == 'QI') {
             $ret .= '
                 <label class="control-label">Add Dept</label>
                 <select class="form-control add-item-field" name=new_dept>
@@ -484,8 +485,9 @@ class HouseCouponEditor extends FanniePage
             $ret .= "</select> ";
         }
         if ($mType != 'MX') {
+            $extOpt = $mType == 'QI' ? '<option>DEPARTMENT</option>' : '';
             $ret .= '<select class="form-control"name=newtype><option>BOTH</option><option>QUALIFIER</option>
-                    <option>DISCOUNT</option></select>';
+                    <option>DISCOUNT</option>'.$extOpt.'</select>';
         }
         $ret .= ' 
                 <input type="hidden" name="id" value="' . $cid . '" />
@@ -564,6 +566,15 @@ class HouseCouponEditor extends FanniePage
                     h.type
                 FROM houseCouponItems AS h
                     LEFT JOIN departments AS d ON d.dept_no=h.upc
+                WHERE h.coupID=?';
+        } elseif ($hc->minType() == "QI") {
+            $query = '
+                SELECT h.upc,
+                    CASE WHEN h.type=\'DEPARTMENT\' THEN COALESCE(d.dept_name, \'Unknown department\') ELSE COALESCE(p.description, \'Unknown item\') END as description,
+                    h.type
+                FROM houseCouponItems AS h
+                    LEFT JOIN departments AS d ON d.dept_no=h.upc
+                    LEFT JOIN products AS p ON h.upc=p.upc
                 WHERE h.coupID=?';
         }
         $prep = $dbc->prepare($query);
