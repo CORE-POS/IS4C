@@ -99,7 +99,7 @@ class SoPoBridge
         }
         $item['units'] = $spoRow['units'];
 
-        $poSKU = substr($vendorInfo['sku'], -12) . ' ';
+        $poSKU = substr($vendorInfo['sku'], -12) . '.';
         $poitem = new PurchaseOrderItemsModel($this->dbc);
         $poitem->orderID($poID);
         $poitem->sku($poSKU);
