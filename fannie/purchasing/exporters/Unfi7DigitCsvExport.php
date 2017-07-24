@@ -45,7 +45,7 @@ class Unfi7DigitCsvExport
 
         echo 'productCode,quantity' . $NL;
         foreach ($items->find() as $item) {
-            echo str_pad($item->sku(), 7, '0', STR_PAD_LEFT);
+            echo str_pad(str_replace('.', '', $item->sku()), 7, '0', STR_PAD_LEFT);
             echo ',';
             echo $item->quantity();
             echo $NL;
