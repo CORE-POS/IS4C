@@ -470,7 +470,7 @@ HTML;
           -0001-11-30 instead of the expected 0000-00-00
         */
         $batch['startDate'] = strtotime($batch['startDate']) > 0 ? date('Y-m-d', strtotime($batch['startDate'])) : '';
-        $batch['endDate'] = strtotime($batch['endDate']) > 0 ? date('Y-m-d', strtotime($batch['startDate'])) : '';
+        $batch['endDate'] = strtotime($batch['endDate']) > 0 ? date('Y-m-d', strtotime($batch['endDate'])) : '';
         $bID = $batch['batchID'];
         $edit = FannieUI::editIcon();
         $save = FannieUI::saveIcon();
