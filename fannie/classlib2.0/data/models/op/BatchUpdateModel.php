@@ -45,17 +45,18 @@ class BatchUpdateModel extends BasicModel
     'user' => array('type'=>'VARCHAR(20)'),
     'startDate' => array('type'=>'DATETIME'),
     'endDate' => array('type'=>'DATETIME'),
-    'owner'=> array('type'=>'VARCHAR(20)')
+    'owner'=> array('type'=>'VARCHAR(20)'),
+    'batchName'=> array('type'=>'VARCHAR(30)')
     );
 
     const UPDATE_CREATE = 'BATCH CREATED';
     const UPDATE_DELETE = 'BATCH DELETED';
-    const UPDATE_FORCED = 'BATCH FORCED';
+    const UPDATE_FORCED = 'BATCH STARTED';
     const UPDATE_STOPPED = 'BATCH STOPPED';
     const UPDATE_EDIT = 'BATCH EDITED';
-    const UPDATE_PRICE_EDIT = 'ITEM PRICE CHANGED';
-    const UPDATE_REMOVED = 'ITEM REMOVED FROM BATCH';
-    const UPDATE_ADDED = 'ITEM ADDED TO BATCH';
+    const UPDATE_PRICE_EDIT = 'ITEM EDITED';
+    const UPDATE_REMOVED = 'ITEM REMOVED';
+    const UPDATE_ADDED = 'ITEM ADDED';
 
     /*
         Requires tables batches & batchUpdate exist.
@@ -100,7 +101,7 @@ class BatchUpdateModel extends BasicModel
             $this->startDate($batch->startDate());
             $this->endDate($batch->endDate());
             $this->batchType($batch->batchType());
-            //$this->batchName($batch->batchName); $this->batchName doesn't exist
+            $this->batchName($batch->batchName());
             $this->owner($batch->owner());
             $this->modified(date('Y-m-d H:i:s'));
             $saved = $this->save();

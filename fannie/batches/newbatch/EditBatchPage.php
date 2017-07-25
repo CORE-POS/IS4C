@@ -284,7 +284,14 @@ class EditBatchPage extends FannieRESTfulPage
             $model->groupSalePrice($price);
             $model->quantity(0);
             $model->pricemethod(0);
-            $model->save();
+            $saved = $model->save();
+
+            if ($saved == true) {
+                $bu = new BatchUpdateModel($dbc);
+                $bu->batchID($this->id);
+                $bu->upc($this->upc);
+                $bu->logUpdate($bu::UPDATE_ADDED);
+            }
 
             if (FormLib::get('audited') == '1') {
                 \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
@@ -423,6 +430,11 @@ class EditBatchPage extends FannieRESTfulPage
             ');
             $dbc->execute($insP, $args);
         }
+        
+        $bu = new BatchUpdateModel($dbc);
+        $bu->upc($this->upc);
+        $bu->batchID($this->id);
+        $bu->logUpdate($bu::UPDATE_REMOVED);
 
         return false;
     }
@@ -454,7 +466,20 @@ class EditBatchPage extends FannieRESTfulPage
             $model->quantity(0);
         }
         $model->pricemethod($pmethod);    
-        $model->save();
+        $saved = $model->save();
+
+        if ($saved === true) {
+            $bu = new BatchUpdateModel($dbc);
+            $bu->upc($this->upc);
+            $bu->batchID($this->id);
+            $bu->salePrice($this->price);
+            $bu->quantity($this->qty);
+            if ($this->qty <= 1) {
+                $this->qty = 1;
+                $bu->quantity(0);
+            }
+            $bu->logUpdate($bu::UPDATE_PRICE_EDIT);
+        }
 
         $json['price'] = sprintf('%.2f', $this->price);
         $json['qty'] = (int)$this->qty;
@@ -488,7 +513,7 @@ class EditBatchPage extends FannieRESTfulPage
             $obj->end_date(0);
             $ret = $obj->save();
         }
-
+     
         return $ret ? true : false;
     }
 
@@ -528,6 +553,11 @@ class EditBatchPage extends FannieRESTfulPage
                 $json['msg'] = 'Error taking like code ' . $likecode . ' off sale';
             }
         }
+        
+        $bu = new BatchUpdateModel($dbc);
+        $bu->upc($upc);
+        $bu->batchID($id);
+        $bu->logUpdate($bu::UPDATE_REMOVED);
 
         $delQ = $dbc->prepare("delete from batchList where batchID=? and upc=?");
         $delR = $dbc->execute($delQ,array($id,$upc));
@@ -633,9 +663,15 @@ class EditBatchPage extends FannieRESTfulPage
             DELETE FROM batchList
             WHERE batchID=?
                 AND upc=?');
+        $bu = new BatchUpdateModel($dbc);
         while ($w = $dbc->fetchRow($res)) {
             $dbc->execute($delP, array($this->id, $w['upc']));
+            $bu->reset();
+            $bu->batchID($this->id);
+            $bu->upc($w['upc']);
+            $bu->logUpdate($bu::UPDATE_REMOVED);
         }
+
         $ret['display'] = $this->showBatchDisplay($this->id);
         echo $this->debugJSON($ret);
 
