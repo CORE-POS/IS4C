@@ -46,7 +46,8 @@ class BatchUpdateModel extends BasicModel
     'startDate' => array('type'=>'DATETIME'),
     'endDate' => array('type'=>'DATETIME'),
     'owner'=> array('type'=>'VARCHAR(20)'),
-    'batchName'=> array('type'=>'VARCHAR(30)')
+    'batchName'=> array('type'=>'VARCHAR(30)'),
+    'quantity'=> array('type'=>'SMALLINT(6)'),
     );
 
     const UPDATE_CREATE = 'BATCH CREATED';
@@ -58,7 +59,7 @@ class BatchUpdateModel extends BasicModel
     const UPDATE_REMOVED = 'ITEM REMOVED';
     const UPDATE_ADDED = 'ITEM ADDED';
 
-    /*
+    /**
         Requires tables batches & batchUpdate exist.
     */
 
@@ -71,9 +72,9 @@ class BatchUpdateModel extends BasicModel
             $user = FannieAuth::getUID(FannieAuth::checkLogin());
         }
 
-        /*
-            if a UPC was passed to obj, use produpdate and batches modesl,
-                if BATCHID was passed, use only batches.
+        /**
+            if a UPC was passed to obj, use batchList and batches,
+                if only BATCHID was passed, use only batches.
         */
         if ($this->upc()) {
             $batchList = new BatchListModel($dbc);
@@ -92,7 +93,7 @@ class BatchUpdateModel extends BasicModel
             return false;
         }
 
-        /*
+        /**
             2 diff. kind of entries (item,batch)
         */
         if ($logType == 'BATCH') {
@@ -107,24 +108,18 @@ class BatchUpdateModel extends BasicModel
             $saved = $this->save();
         } else {
             $this->updateType($type);
+            $this->user($user);
             $this->upc($this->upc());
-            $this->specialPrice($batchList->salePrice);
-            $this->batchID($batchList->batchID);
+            $this->specialPrice($batchList->salePrice());
+            $this->quantity($batchList->quantity());
+            $this->batchID($batchList->batchID());
             $this->modified(date('Y-m-d H:i:s'));
             $saved = $this->save();
         }
         if ($saved === false) {
             $json['error'] = 1;
-            $json['msg'] = 'Error logging batch history ' . $this->batchName;
+            $json['msg'] = 'Error logging batch history ' . $this->batchID();
         }
-
-        /*
-            a few things that are missing
-                1. price changes batches don't need to be logged.
-                2. this method doesn't handle like code items
-                   There is a chunck in prodUpdate that handles likecodes that
-                   may need to be added here.
-        */
 
         return true;
     }
