@@ -854,7 +854,8 @@ HTML;
         $ret .= '<b>Sale Dates</b>: ' 
             . date('Y-m-d', strtotime($model->startDate())) 
             . ' - ' 
-            . date('Y-m-d', strtotime($model->endDate())) . '<br />';
+            . date('Y-m-d', strtotime($model->endDate()))
+            . ' | ' . '<a href="batchReport.php?batchID=' . $id . '">Report</a><br />';
         if ($this->config->get('STORE_MODE') === 'HQ') {
             $stores = new StoresModel($dbc);
             $stores->hasOwnItems(1);
