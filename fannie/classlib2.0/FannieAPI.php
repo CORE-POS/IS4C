@@ -175,6 +175,7 @@ class FannieAPI
             $file = self::findClass($name, dirname(__FILE__));
             if ($file !== false) {
                 include_once($file);
+                return;
             }
             // search plugins for definition
             $file = self::findClass($name, dirname(__FILE__).'/../modules/plugins2.0');
@@ -183,8 +184,12 @@ class FannieAPI
                 $owner = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
                 if (\COREPOS\Fannie\API\FanniePlugin::isEnabled($owner)) {
                     include_once($file);
+                    return;
                 }
             }
+            $fp = fopen(__DIR__ . '/../logs/fannie.log', 'a');
+            fwrite($fp, date('r') . ": Could not find class {$name}\n");
+            fclose($fp);
         }
     }
 
