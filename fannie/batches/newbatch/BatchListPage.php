@@ -495,9 +495,10 @@ HTML;
     <td><a href="" class="btn btn-danger btn-xs"
         onclick="deleteBatch({$bID}, {$safeName}); return false;">{$trash}</a>
     </td>
+    <td><a href="batchReport.php?batchID={$bID}">Report</a></td>
 </tr>
 HTML;
-}
+    }
 
     function get_view()
     {
