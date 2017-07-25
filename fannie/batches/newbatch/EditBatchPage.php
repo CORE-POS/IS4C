@@ -464,21 +464,19 @@ class EditBatchPage extends FannieRESTfulPage
             $this->qty = 1;
             $model->quantity(0);
         }
-        $model->pricemethod($pmethod);    
+        $model->pricemethod($pmethod);
         $saved = $model->save();
 
-        if ($saved === true) {
-            $bu = new BatchUpdateModel($dbc);
-            $bu->upc($this->upc);
-            $bu->batchID($this->id);
-            $bu->salePrice($this->price);
-            $bu->quantity($this->qty);
-            if ($this->qty <= 1) {
-                $this->qty = 1;
-                $bu->quantity(0);
-            }
-            $bu->logUpdate($bu::UPDATE_PRICE_EDIT);
+        $bu = new BatchUpdateModel($dbc);
+        $bu->upc($this->upc);
+        $bu->batchID($this->id);
+        $bu->specialPrice($this->price);
+        $bu->quantity($this->qty);
+        if ($this->qty <= 1) {
+            $this->qty = 1;
+            $bu->quantity(0);
         }
+        $bu->logUpdate($bu::UPDATE_PRICE_EDIT);
 
         $json['price'] = sprintf('%.2f', $this->price);
         $json['qty'] = (int)$this->qty;
