@@ -535,20 +535,27 @@ class EditBatchPage extends FannieRESTfulPage
         $upc = $this->upc;
 
         $json = array('error'=>0, 'msg'=>'Item ' . $upc . ' removed from batch');
-        
-        if (substr($upc,0,2) != 'LC') {
-            // take the item off sale if this batch is currently on sale
-            if ($this->unsaleUPC($this->upc) === false) {
-                $json['error'] = 1;
-                $json['msg'] = 'Error taking item ' . $upc . ' off sale';
-            }
-            
-            COREPOS\Fannie\API\data\ItemSync::sync($upc);
-        } else {
-            $likecode = substr($upc,2);
-            if ($this->unsaleLikeCode($likecode) === false) {
-                $json['error'] = 1;
-                $json['msg'] = 'Error taking like code ' . $likecode . ' off sale';
+
+        $currentSale = $dbc->query('
+            SELECT batchID 
+            FROM batches 
+            WHERE discountType <> 0
+                AND ' . $dbc->curdate() . ' BETWEEN startDate AND endDate');
+        if ($dbc->numRows($currentSale) > 0) { 
+            if (substr($upc,0,2) != 'LC') {
+                // take the item off sale if this batch is currently on sale
+                if ($this->unsaleUPC($this->upc) === false) {
+                    $json['error'] = 1;
+                    $json['msg'] = 'Error taking item ' . $upc . ' off sale';
+                }
+                
+                COREPOS\Fannie\API\data\ItemSync::sync($upc);
+            } else {
+                $likecode = substr($upc,2);
+                if ($this->unsaleLikeCode($likecode) === false) {
+                    $json['error'] = 1;
+                    $json['msg'] = 'Error taking like code ' . $likecode . ' off sale';
+                }
             }
         }
         
