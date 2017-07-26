@@ -74,6 +74,8 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     // Used to signal drawing thread it's time to exit
     private AutoResetEvent sleeper;
 
+    private bool allowDebitCB = true;
+
     public RBA_Stub(string p)
     {
         this.port = p;
@@ -219,7 +221,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             if (this.emv_buttons == RbaButtons.EMV) {
                 // CHIP+PIN button in place of credit & debit
-                buttons = "TPROMPT6,"+store_name+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+                buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             } else if (this.emv_buttons == RbaButtons.None) {
                 buttons = "TPROMPT6,"+store_name;
             }
@@ -292,6 +294,13 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     // debit
                     ret = true;
                     parent.MsgSend("TERM:DCDC");
+                    if (allowDebitCB) {
+                        ret = false;
+                        WriteMessageToDevice(GetCashBack());
+                        if (this.sleeper.WaitOne(2000) == false) {
+                            WriteMessageToDevice(UpdateScreenMessage("Bbtno,H"));
+                        }
+                    }
                     break;
                 case "B":
                     // credit
@@ -306,6 +315,22 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                 case "D":
                     // ebt food
                     parent.MsgSend("TERM:DCEF");
+                    ret = true;
+                    break;
+                case "1":
+                    parent.MsgSend("TERMCB:10");
+                    ret = true;
+                    break;
+                case "2":
+                    parent.MsgSend("TERMCB:20");
+                    ret = true;
+                    break;
+                case "3":
+                    parent.MsgSend("TERMCB:30");
+                    ret = true;
+                    break;
+                case "4":
+                    parent.MsgSend("TERMCB:40");
                     ret = true;
                     break;
                 default:

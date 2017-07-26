@@ -871,6 +871,68 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
         return msg;
     }
 
+    protected byte[] GetCashBack()
+    {
+        System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+        byte[] form_name = enc.GetBytes("cashb.K3Z");
+        byte[] msg = new byte[67];
+
+        msg[0] = 0x2;
+        msg[1] = 0x32;
+        msg[2] = 0x34;
+        msg[3] = 0x2e;
+
+        int pos = 4;
+        foreach (byte b in form_name) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        byte[] next = enc.GetBytes("BA,S");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn1,10.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn2,20.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn3,30.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn4,40.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+
+        msg[pos] = 0x3;
+
+        return msg;
+    }
+
     /**
       Draw select-card-type screen on demand
     */
