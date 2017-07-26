@@ -15,8 +15,53 @@ class AlertIncident extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<new>');
+        $this->addRoute('get<new>', 'get<search>');
         return parent::preprocess();
+    }
+
+    protected function get_search_view()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $prefix = $settings['IncidentDB'] . $this->connection->sep();
+        $searchP = $this->connection->prepare("
+            SELECT i.*,
+                COALESCE(t.incidentSubType, 'Other') AS incidentSubType,
+                COALESCE(l.incidentLocation, 'Other') AS incidentLocation,
+                u.name AS userName,
+                s.description AS storeName
+            FROM {$prefix}Incidents AS i
+                LEFT JOIN {$prefix}IncidentSubTypes AS t ON i.incidentSubTypeID=t.incidentSubTypeID
+                LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
+                LEFT JOIN Users as u ON i.uid=u.uid
+                LEFT JOIN Stores AS s ON i.storeID=s.storeID
+            WHERE details LIKE ? OR details LIKE ?
+            ORDER BY tdate DESC");
+        $args = array(
+            '%' . $this->search . '%',
+            '%' . str_replace(' ', '%', trim($this->search)) . '%',
+        );
+        $searchR = $this->connection->execute($searchP, $args);
+
+        $ret = '
+            <p><form class="form-inline" method="get">
+                <a href="AlertIncident.php" class="btn btn-default">Home</a>
+                |
+                <input type="text" name="search" id="search" class="form-control" placeholder="search" />
+                <button class="btn btn-default" type="submit">Search</button>
+            </form></p>
+            <table class="table table-bordered">';
+        $matched = false;
+        while ($row = $this->connection->fetchRow($searchR)) {
+            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td>
+                <td><a href="?id=%d">View</a></td><td>%s</td></tr>',
+                $row['tdate'], $row['storeName'], $row['userName'], $row['incidentID'], substr($row['details'], 0, 100));
+            $matched = true;
+        }
+        $ret .= !$matched ? '<tr><td colspan="4">No matches</td></tr>' : '';
+        $ret .= '</table>';
+        $this->addOnloadCommand("\$('#search').focus();");
+
+        return $ret;
     }
 
     protected function post_handler()
@@ -85,12 +130,12 @@ class AlertIncident extends FannieRESTfulPage
         $prefix = $settings['IncidentDB'] . $this->connection->sep();
 
         $query = "SELECT i.*,
-                COALESCE(s.incidentSubType, 'Other') AS incidentSubType,
+                COALESCE(t.incidentSubType, 'Other') AS incidentSubType,
                 COALESCE(l.incidentLocation, 'Other') AS incidentLocation,
                 u.name AS userName,
                 s.description AS storeName
             FROM {$prefix}Incidents AS i
-                LEFT JOIN {$prefix}IncidentSubTypes AS s ON i.incidentSubTypeID=s.incidentSubTypeID
+                LEFT JOIN {$prefix}IncidentSubTypes AS t ON i.incidentSubTypeID=t.incidentSubTypeID
                 LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
                 LEFT JOIN Users as u ON i.uid=u.uid
                 LEFT JOIN Stores AS s ON i.storeID=s.storeID
@@ -297,8 +342,13 @@ HTML;
         $this->addOnloadCommand('drawCharts();');
 
         return <<<HTML
-<p>
-    <a href="?new=1" class="btn btn-default">New Alert</a>
+<p class="form-inline">
+    <form method="get" class="form-inline">
+        <a href="?new=1" class="btn btn-default">New Alert</a>
+        |
+        <input type="text" name="search" class="form-control" placeholder="Search incidents" />
+        <button type="submit" class="btn btn-default">Search</button>
+    </form>
 </p>
 <table class="table small table-bordered">
 <tr><th colspan="5" class="text-center">Recent Alerts</th></tr>
