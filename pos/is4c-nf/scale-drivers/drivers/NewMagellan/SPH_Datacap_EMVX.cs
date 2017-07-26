@@ -71,6 +71,11 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         xml_log = my_location + sep + "xml.log";
         pdc_active = false;
         emv_reset = true;
+
+        if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
+            rba = new RBA_Stub("COM"+com_port);
+            rba.SetEMV(RbaButtons.EMV);
+        }
     }
 
     /**
@@ -97,16 +102,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
         FlaggedReset();
 
-        if (rba == null) {
-            if (false && device_identifier == "INGENICOISC250_MERCURY_E2E") {
-                rba = new RBA_Stub("COM"+com_port);
-                rba.SetParent(this.parent);
-                rba.SetVerbose(this.verbose_mode);
-                rba.SetEMV(RbaButtons.EMV);
-            }
-        }
-
         if (rba != null) {
+            rba.SetParent(this.parent);
+            rba.SetVerbose(this.verbose_mode);
             try {
                 rba.stubStart();
             } catch (Exception) {}
@@ -251,6 +249,22 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 break;
             case "termWait":
                 break;
+        }
+    }
+
+    public override void SetConfig(string k, string v)
+    {
+        if (k == "disableRBA" && v == "true") {
+            try {
+                if (this.rba != null) {
+                    rba.stubStop();
+                }
+            } catch (Exception) {}
+            this.rba = null;
+        } else if (k == "disableButtons" && v == "true") {
+            this.rba.SetEMV(RbaButtons.None);
+        } else if (k == "logXML" && v == "true") {
+            this.enable_xml_log = true;
         }
     }
 
