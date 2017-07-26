@@ -116,9 +116,10 @@ class EditBatchPage extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $uid = getUID($this->current_user);
         $uid = ltrim($uid,'0');
+        $bu = new BatchUpdateModel($dbc);
 
         $prep = $dbc->prepare("
-            SELECT listID 
+            SELECT listID,b.upc
             FROM batchList AS l 
                 INNER JOIN batchCutPaste as b ON b.upc=l.upc AND b.batchID=l.batchID
             WHERE b.uid=?"
@@ -129,6 +130,10 @@ class EditBatchPage extends FannieRESTfulPage
         while ($row = $dbc->fetchRow($res)) {
             $dbc->execute($upP,array($this->id,$row['listID']));
             $count++;
+            $bu->reset();
+            $bu->batchID($this->id);
+            $bu->upc($row['upc']);
+            $bu->logUpdate($bu::UPDATE_ADDED);
         }
         $delP = $dbc->prepare("DELETE FROM batchCutPaste WHERE uid=?");
         $dbc->execute($delP,$uid);

@@ -102,6 +102,7 @@ class BatchListPage extends FannieRESTfulPage
         $batchUpdate->user(FannieAuth::getUID($this->current_user));
         $batchUpdate->startDate($this->newStart);
         $batchUpdate->endDate($this->newEnd);
+        $batchUpdate->batchName($this->newName);
         $batchUpdate->owner($this->newOwner);
         $json['batchUpdate'] = $batchUpdate->save();
 
