@@ -297,9 +297,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     if (allowDebitCB) {
                         ret = false;
                         WriteMessageToDevice(GetCashBack());
-                        if (this.sleeper.WaitOne(2000) == false) {
-                            WriteMessageToDevice(UpdateScreenMessage("Bbtno,H"));
-                        }
                     }
                     break;
                 case "B":
@@ -331,6 +328,10 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     break;
                 case "4":
                     parent.MsgSend("TERMCB:40");
+                    ret = true;
+                    break;
+                case "O":
+                    parent.MsgSend("TERMCB:50");
                     ret = true;
                     break;
                 default:

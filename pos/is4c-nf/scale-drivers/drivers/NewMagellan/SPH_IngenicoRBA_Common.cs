@@ -875,7 +875,7 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
     {
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
         byte[] form_name = enc.GetBytes("cashb.K3Z");
-        byte[] msg = new byte[67];
+        byte[] msg = new byte[79];
 
         msg[0] = 0x2;
         msg[1] = 0x32;
@@ -923,6 +923,15 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
         pos++;
 
         next = enc.GetBytes("Bbtn4,40.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtno,50.00");
         foreach (byte b in next) {
             msg[pos] = b;
             pos++;
