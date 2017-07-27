@@ -280,7 +280,7 @@ class GumCheckTemplate
         $pdf->SetXY($check_right_x - 63.5, $check_top_y + (13*$line_height));
         $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
 
-        $pdf->SetXY($check_left_x + 34.5, $check_bottom_y + $line_height - 1);
+        $pdf->SetXY($check_left_x + 37.7, $check_bottom_y + $line_height - 1);
         if (!isset($pdf->fonts['gnumicr'])) {
             $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
         }
