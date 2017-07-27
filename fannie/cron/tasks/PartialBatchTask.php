@@ -59,8 +59,8 @@ times will be limited by how frequently this task runs.';
         $now = new DateTime();
 
         $curP = $dbc->prepare('SELECT discounttype, batchID FROM products WHERE upc=?');
-        $unsaleP = $dbc->prepare('UPDATE products SET special_price=0, batchID=0, discounttype=0 WHERE upc=?');
-        $saleP = $dbc->prepare('UPDATE products SET special_price=?, batchID=?, discounttype=? WHERE upc=?');
+        $unsaleP = $dbc->prepare('UPDATE products SET special_price=0, batchID=0, discounttype=0, start_date=\'0000-00-00\', end_date=\'0000-00-00\' WHERE upc=?');
+        $saleP = $dbc->prepare('UPDATE products SET special_price=?, batchID=?, discounttype=?, start_date=?, end_date=? WHERE upc=?');
         $changedUPCs = array();
 
         $query = 'SELECT p.startTime,
@@ -105,7 +105,14 @@ times will be limited by how frequently this task runs.';
                 // Matching batchID should mean this sale has already started
                 $current = $dbc->getRow($curP, array($row['upc']));
                 if ($current['batchID'] != $row['batchID'] && ($current['discounttype'] == 0 || $row['overwriteSales'] == 1)) {
-                    $dbc->execute($saleP, array($row['salePrice'], $row['batchID'], $row['discounttype'], $row['upc']));
+                    $dbc->execute($saleP, array(
+                        $row['salePrice'],
+                        $row['batchID'],
+                        $row['discounttype'],
+                        $today . ' ' . $row['startTime'],
+                        $today . ' ' . $row['endTime'],
+                        $row['upc'],
+                    ));
                     $changedUPCs[] = $row['upc'];
                 }
             }
