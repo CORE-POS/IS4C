@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ItemBatchesReport extends FannieReportPage 
+class ItemBatchesReport extends FannieReportPage
 {
     public $description = '[Item Batch History] shows all the sale batches an item has been in.';
     public $themed = true;
@@ -58,6 +58,14 @@ class ItemBatchesReport extends FannieReportPage
 
         $upc = $this->form->upc;
         $upc = BarcodeLib::padUPC($upc);
+        $viewPC = FormLib::get('includePC');
+
+        $lcQuery = 'SELECT likeCode FROM upcLike WHERE upc = ?';
+        $lcPrep = $dbc->prepare($lcQuery);
+        $lcArgs = array($upc);
+        $lcRes = $dbc->execute($lcPrep, $lcArgs);
+        $lc = $dbc->fetchRow($lcRes);
+        $dt = $viewPC ? 99 : 0;
 
         $query = '
             SELECT b.batchName,
@@ -65,16 +73,19 @@ class ItemBatchesReport extends FannieReportPage
                 b.endDate,
                 t.typeDesc,
                 l.salePrice,
-                b.batchID
+                b.batchID,
+                u.likeCode
             FROM batchList AS l
                 INNER JOIN batches AS b ON b.batchID=l.batchID
                 LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
-            WHERE b.discountType <> 0
-                AND l.upc=?
+                LEFT JOIN upcLike AS u ON l.upc=u.upc
+            WHERE b.discountType <> ?
+                AND (l.upc=?
+                    OR l.upc=CONCAT("LC",?))
             ORDER BY b.startDate
         ';
         $prep = $dbc->prepare($query);
-        $args = array($upc);
+        $args = array($dt,$upc,$lc['likeCode']);
         $result = $dbc->execute($prep, $args);
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
@@ -113,10 +124,18 @@ class ItemBatchesReport extends FannieReportPage
         return '
             <form action="' . $_SERVER['PHP_SELF'] . '" method="get">
             <div class="form-group form-inline">
-                <label>UPC</label> 
+                <label>UPC</label>
                 <input type=text name=upc id=upc class="form-control" />
+
+            </div>
+            <div class="form-group form-inline">
+                <input type="checkbox" name="includePC" class="form-control"/>
+                <label>Include Price Change Batches</label>
+            </div>
+            <div class="form-group form-inline">
                 <button type=submit class="btn btn-default">Get Report</button>
             </div>
+
             </form>';
     }
 
