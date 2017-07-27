@@ -155,6 +155,9 @@ class AlertIncident extends FannieRESTfulPage
         $row['details'] = nl2br($row['details']);
         $img1 = $row['image1'] ? "<img src=\"image/{$row['image1']}\" />" : '';
         $img2 = $row['image2'] ? "<img src=\"image/{$row['image2']}\" />" : '';
+        $row['details'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $row['details']);
+        $row['details'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
+            '<a href="$1://$2$3">$1://$2$3</a>', $row['details']);
 
         return <<<HTML
 <p>
