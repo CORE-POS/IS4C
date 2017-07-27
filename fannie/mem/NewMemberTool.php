@@ -199,24 +199,6 @@ class NewMemberTool extends FanniePage
         }
         */
 
-        /* going to create memberships
-           part of the insert arrays can
-           be prepopulated */
-        $meminfo = array(
-            'last_name'=>"''",
-            'first_name'=>"''",
-            'othlast_name'=>"''",
-            'othfirst_name'=>"''",
-            'street'=>"''",
-            'city'=>"''",
-            'state'=>"''",
-            'zip'=>"''",
-            'phone'=>"''",
-            'email_1'=>"''",
-            'email_2'=>"''",
-            'ads_OK'=>1
-        );
-
         /* everything's set but the actual member #s */
         $numQ = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
         if ($FANNIE_SERVER_DBMS == 'MSSQL') {

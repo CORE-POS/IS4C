@@ -393,7 +393,7 @@ class OrderViewPage extends FannieRESTfulPage
             $current_street = $orderModel->street();
             $current_phone = $orderModel->phone();
             if (empty($current_street) && empty($current_phone)) {
-                $contactQ = $dbc->prepare("SELECT street,city,state,zip,phone,email_1,email_2
+                $contactQ = $dbc->prepare("SELECT street,city,state,zip,phone,email_1,email_2 AS altPhone
                         FROM meminfo WHERE card_no=?");
                 $contactR = $dbc->execute($contactQ, array($memNum));
                 if ($dbc->num_rows($contactR) > 0) {
@@ -405,7 +405,7 @@ class OrderViewPage extends FannieRESTfulPage
                     $orderModel->state($contact_row['state']);
                     $orderModel->zip($contact_row['zip']);
                     $orderModel->phone($contact_row['phone']);
-                    $orderModel->altPhone($contact_row['email_2']);
+                    $orderModel->altPhone($contact_row['altPhone']);
                     $orderModel->email($contact_row['email_1']);
 
                     $prefP = $dbc->prepare($dbc->addSelectLimit("SELECT sendEmails FROM SpecialOrders AS o
