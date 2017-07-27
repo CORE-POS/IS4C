@@ -18,7 +18,7 @@ class PITermCheck extends FannieRESTfulPage
 
         $status = $dbc->prepare('SELECT Type FROM custdata WHERE CardNo=? AND personNum=1');
         $status = $dbc->getValue($status, array($this->id));
-        if ($status != 'INACT2') {
+        if ($status != 'INACT2' && $status != 'TERM') {
             echo 'Can only terminate TERMPENDING owners';
             return false;
         }
@@ -29,101 +29,103 @@ class PITermCheck extends FannieRESTfulPage
         $classA = $equity < 20 ? $equity : 20;
         $classB = $equity < 20 ? 0 : $equity - 20;
 
-        /*****************
-         * Terminate account related tables
-         ****************/
-        $susp = new SuspensionsModel($dbc);
-        $susp->cardno($this->id);
-        $susp->type('T');
-        $susp->reasoncode(64);
-        $susp->save();
+        $amount = FormLib::get('amount', false);
+        if ($amount === false) {
+            // Terminate account related tables
+            $susp = new SuspensionsModel($dbc);
+            $susp->cardno($this->id);
+            $susp->type('T');
+            $susp->reasoncode(64);
+            $susp->save();
 
-        $history = new SuspensionHistoryModel($dbc);
-        $history->uesrname($this->current_user);
-        $history->postdate(date('Y-m-d H:i:s'));
-        $history->cardno($this->id);
-        $history->reasoncode(64);
-        $history->save();
+            $history = new SuspensionHistoryModel($dbc);
+            $history->username($this->current_user);
+            $history->postdate(date('Y-m-d H:i:s'));
+            $history->cardno($this->id);
+            $history->reasoncode(64);
+            $history->save();
 
-        $custP = $dbc->prepare("UPDATE custdata SET type='TERM', memType=0, Discount=0, ChargeLimit=0, MemDiscountLimit=0 WHERE CardNo=?");
-        $dbc->execute($custP, array($this->id));
+            $custP = $dbc->prepare("UPDATE custdata SET type='TERM', memType=0, Discount=0, ChargeLimit=0, MemDiscountLimit=0 WHERE CardNo=?");
+            $dbc->execute($custP, array($this->id));
 
-        $note = new MemberNotesModel($dbc);
-        $note->cardno($this->id);
-        $note->note('Equity termination');
-        $note->stamp(date('Y-m-d H:i:s'));
-        $note->username($this->current_user);
-        $note->save();
+            $note = new MemberNotesModel($dbc);
+            $note->cardno($this->id);
+            $note->note('Equity termination');
+            $note->stamp(date('Y-m-d H:i:s'));
+            $note->username($this->current_user);
+            $note->save();
 
-        /*****************
-         * Write a transaction to remote equity
-         ****************/
-        $trans = DTrans::getTransNo($dbc, 1001, 30);
-        $dtrans_table = $this->config->get('TRANS_DB') . $dbc->sep() . 'dtransactions';
-        $record = DTrans::defaults();
-        $record['register_no'] = 30;
-        $record['emp_no'] = 1001;
-        $record['trans_no'] = $trans;
-        $record['upc'] = $classA.'DP992';
-        $record['description'] = 'Class A Equity';
-        $record['trans_type'] = 'D';
-        $record['department'] = 992;
-        $record['unitPrice'] = -1*$classA;
-        $record['total'] = -1*$classA;
-        $record['regPrice'] = -1*$classA;
-        $record['card_no'] = $this->id;
-        $record['trans_id'] = 1;
-        $info = DTrans::parameterize($record, 'datetime', $dbc->now());
-        $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
-        $dbc->execute($prep, $info['arguments']);
+            //
+            // Write a transaction to remote equity
+            $trans = DTrans::getTransNo($dbc, 1001, 30);
+            $dtrans_table = $this->config->get('TRANS_DB') . $dbc->sep() . 'dtransactions';
+            $record = DTrans::defaults();
+            $record['register_no'] = 30;
+            $record['emp_no'] = 1001;
+            $record['trans_no'] = $trans;
+            $record['upc'] = $classA.'DP992';
+            $record['description'] = 'Class A Equity';
+            $record['trans_type'] = 'D';
+            $record['department'] = 992;
+            $record['unitPrice'] = -1*$classA;
+            $record['total'] = -1*$classA;
+            $record['regPrice'] = -1*$classA;
+            $record['card_no'] = $this->id;
+            $record['trans_id'] = 1;
+            $info = DTrans::parameterize($record, 'datetime', $dbc->now());
+            $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
+            $dbc->execute($prep, $info['arguments']);
 
-        $record = DTrans::defaults();
-        $record['register_no'] = 30;
-        $record['emp_no'] = 1001;
-        $record['trans_no'] = $trans;
-        $record['upc'] = $classB.'DP991';
-        $record['description'] = 'Class B Equity';
-        $record['trans_type'] = 'D';
-        $record['department'] = 991;
-        $record['unitPrice'] = -1*$classB;
-        $record['total'] = -1*$classB;
-        $record['regPrice'] = -1*$classB;
-        $record['card_no'] = $this->id;
-        $record['trans_id'] = 2;
-        $info = DTrans::parameterize($record, 'datetime', $dbc->now());
-        $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
-        $dbc->execute($prep, $info['arguments']);
+            $record = DTrans::defaults();
+            $record['register_no'] = 30;
+            $record['emp_no'] = 1001;
+            $record['trans_no'] = $trans;
+            $record['upc'] = $classB.'DP991';
+            $record['description'] = 'Class B Equity';
+            $record['trans_type'] = 'D';
+            $record['department'] = 991;
+            $record['unitPrice'] = -1*$classB;
+            $record['total'] = -1*$classB;
+            $record['regPrice'] = -1*$classB;
+            $record['card_no'] = $this->id;
+            $record['trans_id'] = 2;
+            $info = DTrans::parameterize($record, 'datetime', $dbc->now());
+            $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
+            $dbc->execute($prep, $info['arguments']);
 
-        $record = DTrans::defaults();
-        $record['register_no'] = 30;
-        $record['emp_no'] = 1001;
-        $record['trans_no'] = $trans;
-        $record['upc'] = $equity.'DP7030';
-        $record['description'] = 'Abandon Equity';
-        $record['trans_type'] = 'D';
-        $record['department'] = 703;
-        $record['unitPrice'] = $equity;
-        $record['total'] = $equity;
-        $record['regPrice'] = $equity;
-        $record['card_no'] = $this->id;
-        $record['trans_id'] = 3;
-        $info = DTrans::parameterize($record, 'datetime', $dbc->now());
-        $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
-        $dbc->execute($prep, $info['arguments']);
+            $record = DTrans::defaults();
+            $record['register_no'] = 30;
+            $record['emp_no'] = 1001;
+            $record['trans_no'] = $trans;
+            $record['upc'] = $equity.'DP7030';
+            $record['description'] = 'Abandon Equity';
+            $record['trans_type'] = 'D';
+            $record['department'] = 703;
+            $record['unitPrice'] = $equity;
+            $record['total'] = $equity;
+            $record['regPrice'] = $equity;
+            $record['card_no'] = $this->id;
+            $record['trans_id'] = 3;
+            $info = DTrans::parameterize($record, 'datetime', $dbc->now());
+            $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
+            $dbc->execute($prep, $info['arguments']);
 
-        $record = DTrans::defaults();
-        $record['register_no'] = 30;
-        $record['emp_no'] = 1001;
-        $record['trans_no'] = $trans;
-        $record['upc'] = '0';
-        $record['description'] = '$left0';
-        $record['trans_type'] = 'C';
-        $record['trans_subtype'] = 'CM';
-        $record['card_no'] = $this->idk;
-        $record['trans_id'] = 4;
-        $info = DTrans::parameterize($record, 'datetime', $dbc->now());
-        $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
-        $dbc->execute($prep, $info['arguments']);
+            $record = DTrans::defaults();
+            $record['register_no'] = 30;
+            $record['emp_no'] = 1001;
+            $record['trans_no'] = $trans;
+            $record['upc'] = '0';
+            $record['description'] = '21230-00-00';
+            $record['trans_type'] = 'C';
+            $record['trans_subtype'] = 'CM';
+            $record['card_no'] = $this->id;
+            $record['trans_id'] = 4;
+            $info = DTrans::parameterize($record, 'datetime', $dbc->now());
+            $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
+            $dbc->execute($prep, $info['arguments']);
+        } else {
+            $equity = $amount;
+        }
 
         /******************
          * Generate a check
@@ -156,8 +158,8 @@ class PITermCheck extends FannieRESTfulPage
 
         $pdf->SetXY(0, 0);
         $pdf->Image('../GiveUsMoneyPlugin/img/new_letterhead.png', 10, 10, 35);
-        $pdf->SetFont('Arial', '', 8);
-        $line_height = 3.5;
+        $pdf->SetFont('Arial', '', 12);
+        $line_height = 5;
         $left = 55;
         $width = 125;
         $pdf->SetXY($left, 10);
