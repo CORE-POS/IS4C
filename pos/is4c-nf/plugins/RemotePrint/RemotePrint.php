@@ -92,7 +92,7 @@ class RemotePrint extends Plugin
                 // This is a canceled line. Skip it.
                 continue;
             }
-            if ($row['upc'] == 'RESUME' && $row['charflag'] == 'SR') {
+            if ($row['upc'] == 'RESUME' && ($row['charflag'] == 'SR' || $row['charflag'] == 'S')) {
                 // Resumed transaction here. Reset accumulators.
                 $lines = array();
                 $comments = array();
