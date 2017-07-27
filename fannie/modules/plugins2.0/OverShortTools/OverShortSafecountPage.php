@@ -544,7 +544,7 @@ class OverShortSafecountPage extends FanniePage {
             $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
             $count = 0;
             while($row = $dbc->fetch_row($res)) {
-                if ($count++ > 50) {
+                if ($count++ > 100) {
                     break;
                 }
                 echo '<option>'.$row['dateStr'].'</option>';
