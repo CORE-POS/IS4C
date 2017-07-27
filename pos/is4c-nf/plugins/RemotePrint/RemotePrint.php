@@ -42,6 +42,15 @@ class RemotePrint extends Plugin
                 'HTTP' => 'RemotePrintHandler',
             ),
         ),
+        'RemotePrintDebug' => array(
+            'label' => 'Debug mode',
+            'description' => 'Print debugging info instead of the normal receipt',
+            'default' => 'No',
+            'options' => array(
+                'No' => 0,
+                'Yes' => 1,
+            ),
+        ),
     );
 
     public $plugin_description = 'Send some info to a remote printer';
@@ -70,6 +79,14 @@ class RemotePrint extends Plugin
         $lines = array();
         $comments = array();
         while ($row = $dbc->fetchRow($infoR)) {
+            if (CoreLocal::get('RemotePrintDebug')) {
+                $lines[] = array(
+                    'qty'=>1, 
+                    'upc'=>'', 
+                    'description'=>"{$row['upc']} | {$row['charflag']} | {$row['trans_status']} | {$row['trans_subtype']}",
+                );
+                continue;
+            }
             if ($row['trans_status'] == 'X' && $row['charflag'] != 'S') {
                 // This is a canceled line. Skip it.
                 continue;
