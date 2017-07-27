@@ -128,6 +128,12 @@ class Steering extends Parser
                     $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
                 }
                 return true;
+            case 'RESUME':
+                $this->ret['main_frame'] = $myUrl."gui-modules/suspendedlist.php";
+                if ($this->session->get("SecuritySR") > 20) {
+                    $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
+                }
+                return true;
             case 'RP':
                 if ($this->session->get("LastID") != "0") {
                     $tgl = $this->session->get('receiptToggle');
