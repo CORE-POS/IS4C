@@ -91,6 +91,7 @@ public class Magellan : DelegateForm
                     s.SetConfig("disableRBA", this.disableRBA ? "true" : "false");
                     s.SetConfig("disableButtons", this.disableButtons ? "true" : "false");
                     s.SetConfig("logXML", this.logXML ? "true" : "false");
+                    s.SetConfig(pair.settings);
                     sph.Add(s);
                 } else {
                     throw new Exception("unknown module: " + pair.module);
@@ -249,7 +250,7 @@ public class Magellan : DelegateForm
             // filter list to valid entries
             var valid = o["NewMagellanPorts"].Where(p=> p["port"] != null && p["module"] != null);
             // map entries to ConfigPair objects
-            var pairs = valid.Select(p => new MagellanConfigPair(){port=(string)p["port"], module=(string)p["module"]});
+            var pairs = valid.Select(p => new MagellanConfigPair(){port=(string)p["port"], module=(string)p["module"], settings=p.ToObject<Dictionary<string,string>>()});
             conf = pairs.ToList();
 
             // print errors for invalid entries
@@ -360,4 +361,5 @@ public class MagellanConfigPair
 {
     public string port { get; set; }
     public string module { get; set; }
+    public Dictionary<string,string> settings { get; set; }
 }

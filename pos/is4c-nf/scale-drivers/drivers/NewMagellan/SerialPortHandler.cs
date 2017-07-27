@@ -37,6 +37,7 @@
 using System;
 using System.IO.Ports;
 using System.Threading;
+using System.Collections.Generic;
 using CustomForms;
 
 namespace SPH {
@@ -65,6 +66,7 @@ public class SerialPortHandler {
     }
 
     public virtual void SetConfig(string k, string v) {}
+    public virtual void SetConfig(Dictionary<string,string> d) {}
     
     public void SetParent(DelegateForm p){ parent = p; }
     public void SetVerbose(int v){ verbose_mode = v; }

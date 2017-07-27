@@ -268,6 +268,29 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
     }
 
+    public override void SetConfig(Dictionary<string,string> d)
+    {
+        foreach (var item in d) {
+            Console.WriteLine(item.Key + ":" + item.Value);
+        }
+
+        if (d.ContainsKey("disableRBA") && d["disableRBA"].ToLower() == "true") {
+            try {
+                if (this.rba != null) {
+                    rba.stubStop();
+                }
+            } catch (Exception) {}
+        }
+
+        if (this.rba != null && d.ContainsKey("disableButtons") && d["disableButtons"].ToLower() == "true") {
+            this.rba.SetEMV(RbaButtons.None);
+        }
+
+        if (d.ContainsKey("logXML") && d["logXML"].ToLower() == "true") {
+            this.enable_xml_log = true;
+        }
+    }
+
     /**
       Process XML transaction using dsiPDCX
       @param xml the request body
