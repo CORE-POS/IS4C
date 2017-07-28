@@ -71,14 +71,14 @@ those same items revert to normal pricing.
     */
     public function forceStartBatch($id)
     {
-        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
-        $batchInfoR = $this->connection->execute($batchInfoQ,array($id));
-        $batchInfoW = $this->connection->fetchRow($batchInfoR);
+        $b_def = $this->connection->tableDefinition($this->name);
+        $exit = isset($b_def['exitInventory']) ? 'exitInventory' : '0 AS exitInventory';
+        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType,{$exit} FROM batches WHERE batchID = ?");
+        $batchInfoW = $this->connection->getRow($batchInfoQ,array($id));
 
         $forceQ = "";
         $forceLCQ = "";
         // verify limit columns exist
-        $b_def = $this->connection->tableDefinition($this->name);
         $p_def = $this->connection->tableDefinition('products');
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
@@ -243,6 +243,16 @@ those same items revert to normal pricing.
         }
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
+        if ($batchInfoW['discountType'] != 0 && $batchInfoW['exitInventory'] == 1) {
+            $invP = $this->connection->prepare("
+                UPDATE InventoryCounts AS i
+                SET i.par=0
+                WHERE i.mostRecent=1
+                    AND i.upc IN (
+                        SELECT b.upc FROM batchList AS b WHERE b.batchID=?
+                    )");
+            $invR = $this->connection->execute($invP, array($id));
+        }
 
         $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
         $this->finishForce($id, $updateType, $has_limit);
