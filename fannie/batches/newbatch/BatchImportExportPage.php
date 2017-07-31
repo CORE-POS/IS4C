@@ -53,6 +53,9 @@ class BatchImportExportPage extends FannieRESTfulPage
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($batchID);
         }
+        $bu = new BatchUpdateModel($this->connection);
+        $bu->batchID($batchID);
+        $bu->logUpdate($bu::UPDATE_CREATE);
 
         $item = new BatchListModel($this->connection);
         $item->batchID($batchID);
@@ -65,6 +68,10 @@ class BatchImportExportPage extends FannieRESTfulPage
             $item->quantity($jitem['quantity']);
             $item->signMultiplier($jitem['signMultiplier']);
             $item->save();
+            $bu->reset();
+            $bu->batchID($batchID);
+            $bu->upc($jitem['upc']);
+            $bu->logUpdate($bu::UPDATE_ADDED);
         }
 
         return 'EditBatchPage.php?id=' . $batchID;
