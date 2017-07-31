@@ -42,7 +42,7 @@ namespace SPH {
 public class SPH_Datacap_EMVX : SerialPortHandler 
 {
     private DsiEMVX emv_ax_control = null;
-    private DsiPDCX pdc_ax_control = null; // can I include both?
+    private DsiPDCX pdc_ax_control = null;
     private string device_identifier = null;
     private string com_port = "0";
     protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
@@ -82,7 +82,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
       Initialize EMVX control with servers
       and response timeout
     */
-    protected bool initDevice()
+    protected bool ReInitDevice()
     {
         if (pdc_ax_control == null) {
             pdc_ax_control = new DsiPDCX();
@@ -124,7 +124,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     */
     public override void Read()
     { 
-        initDevice();
+        ReInitDevice();
         TcpListener http = new TcpListener(IPAddress.Loopback, LISTEN_PORT);
         http.Start();
         byte[] buffer = new byte[10];
@@ -228,11 +228,14 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 if (rba != null) {
                     rba.stubStop();
                 }
-                initDevice();
+                ReInitDevice();
                 break;
             case "termManual":
                 break;
             case "termApproved":
+                if (rba != null) {
+                    rba.showApproved();
+                }
                 break;
             case "termSig":
                 if (rba != null) {
@@ -265,6 +268,33 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             this.rba.SetEMV(RbaButtons.None);
         } else if (k == "logXML" && v == "true") {
             this.enable_xml_log = true;
+        }
+    }
+
+    public override void SetConfig(Dictionary<string,string> d)
+    {
+        foreach (var item in d) {
+            Console.WriteLine(item.Key + ":" + item.Value);
+        }
+
+        if (d.ContainsKey("disableRBA") && d["disableRBA"].ToLower() == "true") {
+            try {
+                if (this.rba != null) {
+                    rba.stubStop();
+                }
+            } catch (Exception) {}
+        }
+
+        if (this.rba != null && d.ContainsKey("disableButtons") && d["disableButtons"].ToLower() == "true") {
+            this.rba.SetEMV(RbaButtons.None);
+        }
+
+        if (d.ContainsKey("logXML") && d["logXML"].ToLower() == "true") {
+            this.enable_xml_log = true;
+        }
+
+        if (this.rba != null && d.ContainsKey("cashback") && (d["cashback"].ToLower() == "true" || d["cashback"].ToLower() == "false")) {
+            this.rba.SetCashBack(d["cashback"].ToLower() == "true" ? true : false);
         }
     }
 

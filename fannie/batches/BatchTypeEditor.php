@@ -101,7 +101,17 @@ class BatchTypeEditor extends FanniePage {
             $model->batchTypeID(FormLib::get('bid'));
             $model->allowSingleStore(FormLib::get('savePartial'));
             if ($model->save() === false) {
-                $json['error'] = 'Error saving SO eligibility';
+                $json['error'] = 'Error saving single store option';
+            }
+            echo json_encode($json);
+
+            return false; // ajax call
+        }
+        if (FormLib::get('saveExitInv') !== '') {
+            $model->batchTypeID(FormLib::get('bid'));
+            $model->exitInventory(FormLib::get('saveExitInv'));
+            if ($model->save() === false) {
+                $json['error'] = 'Error saving exit inventory';
             }
             echo json_encode($json);
 
@@ -149,6 +159,7 @@ class BatchTypeEditor extends FanniePage {
             <th>Dated Signs</th>
             <th title="Special Order Eligible">SO Eligible</th>
             <th title="Allow one-store only Batches">Partials</th>
+            <th title="Set ordering par to zero when batch is forced">Exit Inventory</th>
             <th>Editing Interface</th>
             <th>&nbsp;</td>
         </tr>';
@@ -187,6 +198,12 @@ class BatchTypeEditor extends FanniePage {
                     <input type="checkbox" %s onchange="batchTypeEditor.savePartial.call(this, %d);" />
                     </td>',
                     ($obj->allowSingleStore() ? 'checked' : ''),
+                    $obj->batchTypeID()
+                );
+        $ret .= sprintf('<td align="center">
+                    <input type="checkbox" %s onchange="batchTypeEditor.saveExitInv.call(this, %d);" />
+                    </td>',
+                    ($obj->exitInventory() ? 'checked' : ''),
                     $obj->batchTypeID()
                 );
         $ret .= sprintf('<td>

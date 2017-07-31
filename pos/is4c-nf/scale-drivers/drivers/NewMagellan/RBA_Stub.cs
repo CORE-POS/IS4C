@@ -87,6 +87,11 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         this.emv_buttons = emv;
     }
 
+    public void SetCashBack(bool cb)
+    {
+        this.allowDebitCB = cb;
+    }
+
     private void initPort()
     {
         sp = new SerialPort();
@@ -127,10 +132,28 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         SPH_Running = false;
         try {
+            // wake up the RBA_Stub thread if it's sleeping
+            // between sequential messages
             this.sleeper.Set();
+
+            // this *should* trigger an exception that causes
+            // the RBA_Stub thread to exit the Read method
             sp.Close();
+
+            // just in case this will *definitely* trigger an
+            // exception in the RBA_Stub thread
+            SPH_Thread.Abort();
         } catch (Exception) { }
-        SPH_Thread.Join();
+
+        try {
+            // there is a minor possibility that Join throws
+            // an exception. If this occurs future invocations
+            // of RBA_Stub methods likely won't work. The whole
+            // app will need to be restarted to fix it. Catching
+            // here just prevents an immediate crash and puts the
+            // restart at the user's discretion
+            SPH_Thread.Join();
+        } catch (Exception) { }
     }
 
     public void addScreenMessage(string message)
@@ -215,7 +238,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             char fs = (char)0x1c;
-            string store_name = "Whole Foods Co-op";
+            string store_name = "Welcome";
 
             // standard credit/debit/ebt/gift
             string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
@@ -241,12 +264,12 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         while (SPH_Running) {
             try {
                 int b = sp.ReadByte();
-                if (b == 0x06) {
+                if (bytes.Count == 0 && b == 0x06) {
                     // ACK
                     if (this.verbose_mode > 0) {
                         System.Console.WriteLine("ACK!");
                     }
-                } else if (b == 0x15) {
+                } else if (bytes.Count == 0 && b == 0x15) {
                     // NAK
                     // Do not re-send
                     // RBA_Stub is not vital functionality
@@ -271,7 +294,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                         System.Console.Write(buffer[i] + " ");
                     }
                     if (Choice(enc.GetString(buffer))) {
-                        WriteMessageToDevice(SimpleMessageScreen("Swipe card when prompted"));
+                        WriteMessageToDevice(SimpleMessageScreen("Insert, tap, or swipe card when prompted"));
                     }
                     bytes.Clear();
                 }
@@ -281,10 +304,21 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                 if (this.verbose_mode > 0) {
                     System.Console.WriteLine(ex);
                 }
+                // This loop should stop on an exception
+                // 
+                SPH_Running = false;
+                return;
             }
         }
     }
 
+    /**
+      A 24.0 message to the terminal returns a 24.0 response
+      with the selected value at index 5 in the string
+
+      The payment selection screen sends A through B
+      The cashback screen sends 1 through 4 and O
+    */
     private bool Choice(string str)
     {
         bool ret = false;
@@ -308,6 +342,10 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     // ebt cash
                     parent.MsgSend("TERM:DCEC");
                     ret = true;
+                    if (allowDebitCB) {
+                        ret = false;
+                        WriteMessageToDevice(GetCashBack());
+                    }
                     break;
                 case "D":
                     // ebt food

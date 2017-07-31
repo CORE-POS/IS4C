@@ -91,6 +91,7 @@ public class Magellan : DelegateForm
                     s.SetConfig("disableRBA", this.disableRBA ? "true" : "false");
                     s.SetConfig("disableButtons", this.disableButtons ? "true" : "false");
                     s.SetConfig("logXML", this.logXML ? "true" : "false");
+                    s.SetConfig(pair.settings);
                     sph.Add(s);
                 } else {
                     throw new Exception("unknown module: " + pair.module);
@@ -249,7 +250,7 @@ public class Magellan : DelegateForm
             // filter list to valid entries
             var valid = o["NewMagellanPorts"].Where(p=> p["port"] != null && p["module"] != null);
             // map entries to ConfigPair objects
-            var pairs = valid.Select(p => new MagellanConfigPair(){port=(string)p["port"], module=(string)p["module"]});
+            var pairs = valid.Select(p => new MagellanConfigPair(){port=(string)p["port"], module=(string)p["module"], settings=p.ToObject<Dictionary<string,string>>()});
             conf = pairs.ToList();
 
             // print errors for invalid entries
@@ -336,7 +337,7 @@ public class Magellan : DelegateForm
         return conf;
     }
 
-    static public void Main(string[] args)
+    static public int Main(string[] args)
     {
         int verbosity = 0;
         for (int i=0;i<args.Length;i++){
@@ -346,10 +347,23 @@ public class Magellan : DelegateForm
                     try { verbosity = Int32.Parse(args[i+1]); }
                     catch{}
                 }
+            } else if (args[i] == "-m") {
+                // Reference a class in SPH to force SPH.dll to load
+                var load = new List<SerialPortHandler>();
+                var d = new Discover.Discover();
+                var modules = d.GetSubClasses("SPH.SerialPortHandler").Where(t => !t.IsAbstract).ToList();
+                modules.Sort((a,b) => a.ToString().CompareTo(b.ToString()));
+                Console.WriteLine("Available modules:");
+                foreach (var m in modules) {
+                    Console.WriteLine("  " + m);
+                }
+                return 0;
             }
         }
         new Magellan(verbosity);
         Thread.Sleep(Timeout.Infinite);
+
+        return 0;
     }
 }
 
@@ -360,4 +374,5 @@ public class MagellanConfigPair
 {
     public string port { get; set; }
     public string module { get; set; }
+    public Dictionary<string,string> settings { get; set; }
 }

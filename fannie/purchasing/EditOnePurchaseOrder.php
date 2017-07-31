@@ -117,10 +117,14 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
       Finalize a search result
 
       This adds an item's order history and quantity present in the
-      current order. If the item is not in the current order it's
+      current order. If the item is not in the current order and
+      there's exactly one search result then it gets
       automatically added with quantity one. Otherwise it's incremented
       by one. The logic here is oriented around using a handheld scanner
       where scanning something three times results in quantity three.
+
+      When the search returns multiple results the quantities returned
+      are simply current values without any automatic incrementing
     */
     private function mergeSearchResult($ret, $orderID, $dbc)
     {
@@ -142,13 +146,16 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         for ($i=0; $i<count($ret); $i++) {
             $sku = $ret[$i]['sku'];
             $cases = $dbc->getValue($currentP, array($orderID, $sku));
-            $ret[$i]['cases'] = ($cases) ? $cases+1 : 1;
+            $ret[$i]['cases'] = ($cases) ? $cases : 0;
             $this->sku = $ret[$i]['sku'];
             $this->qty = $ret[$i]['cases']; 
             $this->id = $orderID;
-            ob_start();
-            $this->get_id_sku_qty_handler();
-            $result = ob_get_clean();
+            if (count($ret) === 1) {
+                $ret[$i]['cases'] += 1;
+                ob_start();
+                $this->get_id_sku_qty_handler();
+                $result = ob_get_clean();
+            }
             $ret[$i]['history'] = array();
             $historyR = $dbc->execute($historyP, array($storeID, $sku));
             while ($historyW = $dbc->fetchRow($historyR)) {

@@ -71,6 +71,7 @@ class TaxFoodShift extends Parser {
         
         $ret = $this->default_json();
         $ret['output'] = DisplayLib::listItems($this->session->get("currenttopid"),$curID);
+        $ret['redraw_footer'] = true;
         return $ret; // maintain item cursor position
     }
 

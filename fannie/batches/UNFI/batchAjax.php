@@ -113,7 +113,14 @@ case 'batchAdd':
     $model->salePrice($price);
     $model->pricemethod(0);
     $model->quantity(0);
-    $model->save();
+    $saved = $model->save();
+    if ($saved) {
+        $bu = new BatchUpdateModel($dbc);
+        $bu->batchID($bid);
+        $bu->upc($upc);
+        $bu->logUpdate($bu::UPDATE_ADDED);
+    }
+    
 
     $product = new ProductsModel($dbc);
     $product->upc($upc);
@@ -143,7 +150,13 @@ case 'batchDel':
     $model = new BatchListModel($dbc);
     $model->batchID($bid);
     $model->upc($upc);
-    $model->delete();
+    $deleted = $model->delete();
+    if ($deleted) {
+        $bu = new BatchUpdateModel($dbc);
+        $bu->batchID($bid);
+        $bu->upc($upc);
+        $bu->logUpdate($bu::UPDATE_REMOVED);
+    }
 
     $tag = new ShelftagsModel($dbc);
     $tag->id($sid);
