@@ -62,6 +62,8 @@ class WfcHtSyncPage extends FanniePage
                 continue;
             }
             $name = $names[1];
+            list($first, $last) = explode(' ', $name, 2);
+            $name = $last . ', ' . $first;
 
             // create entry in hours database
             $chkR = $dbc->execute($chkQ, array($uid));
