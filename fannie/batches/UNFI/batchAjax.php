@@ -99,6 +99,12 @@ case 'newPrice':
         $dbc->execute($sP,array($price,$upc,$vid));
     }
     echo "New Price Applied";
+    $bu = new BatchUpdateModel($dbc);
+    $bu->batchID($bid);
+    $bu->upc($upc);
+    $bu->specialPrice($price);
+    $bu->logUpdate($bu::UPDATE_PRICE_EDIT);
+
     break;
 case 'batchAdd':
     $vid = FormLib::get_form_value('vendorID');
@@ -147,17 +153,14 @@ case 'batchDel':
     $sid = FormLib::get_form_value('queueID',0);
     if ($sid == 99) $sid = 0;
 
+    $bu = new BatchUpdateModel($dbc);
+    $bu->batchID($bid);
+    $bu->upc($upc);
+    $bu->logUpdate($bu::UPDATE_REMOVED);
     $model = new BatchListModel($dbc);
     $model->batchID($bid);
     $model->upc($upc);
     $deleted = $model->delete();
-    if ($deleted) {
-        $bu = new BatchUpdateModel($dbc);
-        $bu->batchID($bid);
-        $bu->upc($upc);
-        $bu->logUpdate($bu::UPDATE_REMOVED);
-    }
-
     $tag = new ShelftagsModel($dbc);
     $tag->id($sid);
     $tag->upc($upc);
