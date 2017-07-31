@@ -46,7 +46,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected $class_lib = 'ObfLibV2';
 
-    protected $OU_START = 110;
+    protected $OU_START = 162;
 
     /** previous numbers
     protected $PLAN_SALES = array(

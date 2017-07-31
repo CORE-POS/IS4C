@@ -38,11 +38,12 @@ class ObfSummaryReport extends ObfWeeklyReport
         array('', 'Last Year', 'Plan Goal', 'Trend', 'Forecast', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
         array('', 'Last Year', 'Plan Goal', 'Trend', 'Forecast', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
         array('', 'Last Year', 'Plan Goal', 'Trend', 'Forecast', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Current Year', 'Last Year', '', '', '', '', '', ''),
     );
 
     protected $class_lib = 'ObfLibV2';
 
-    protected $OU_START = 110;
+    protected $OU_START = 162;
 
     protected $PLAN_SALES = array(
         '1,6' => 51193.05,      // Hillside Produce
@@ -196,6 +197,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             'lyTrans' => 0,
             'forecast' => 0,
             'trend' => 0,
+            'ou' => 0,
         );
 
         $this->prepareStatements($dbc);
@@ -527,6 +529,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             $org['lyTrans'] += $total_trans->lastYear;
             $org['forecast'] += $total_sales->forecast;
             $org['trend'] += $total_sales->trend;
+            $org['ou'] += $qtd_sales_ou;
 
             if (count($this->colors) > 1) {
                 array_shift($this->colors);
@@ -613,7 +616,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             number_format($org['sales'], 0),
             sprintf('%.2f%%', $this->percentGrowth($org['sales'], $org['lastYear'])),
             number_format(($org['sales']) - ($org['projSales']), 0),
-            '',
+            number_format($org['ou']),
             'meta' => FannieReportPage::META_COLOR | FannieReportPage::META_BOLD,
             'meta_background' => $this->colors[0],
             'meta_foreground' => 'black',
@@ -686,6 +689,8 @@ class ObfSummaryReport extends ObfWeeklyReport
         if (count($this->colors) > 1) {
             array_shift($this->colors);
         }
+
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
 
         $owners = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly);
         $data[] = array($owners[0], $owners[1], $owners[2], '', '', '', '', '', '', 
