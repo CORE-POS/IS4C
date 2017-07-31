@@ -12,6 +12,7 @@ class AlertIncident extends FannieRESTfulPage
 {
     protected $header = 'Alert';
     protected $title = 'Alert';
+    protected $must_authenticate = true;
 
     public function preprocess()
     {
