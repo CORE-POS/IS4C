@@ -220,7 +220,7 @@ public class Signature {
     an array of bytes to the device. This method must add an
     LRC byte at the end as the parameter does not include it
 */
-public class SPH_IngenicoRBA_Common : SerialPortHandler 
+public abstract class SPH_IngenicoRBA_Common : SerialPortHandler 
 {
     protected byte[] last_message;
     /** not used with on-demand implementation

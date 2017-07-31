@@ -337,7 +337,7 @@ public class Magellan : DelegateForm
         return conf;
     }
 
-    static public void Main(string[] args)
+    static public int Main(string[] args)
     {
         int verbosity = 0;
         for (int i=0;i<args.Length;i++){
@@ -347,10 +347,23 @@ public class Magellan : DelegateForm
                     try { verbosity = Int32.Parse(args[i+1]); }
                     catch{}
                 }
+            } else if (args[i] == "-m") {
+                // Reference a class in SPH to force SPH.dll to load
+                var load = new List<SerialPortHandler>();
+                var d = new Discover.Discover();
+                var modules = d.GetSubClasses("SPH.SerialPortHandler").Where(t => !t.IsAbstract).ToList();
+                modules.Sort((a,b) => a.ToString().CompareTo(b.ToString()));
+                Console.WriteLine("Available modules:");
+                foreach (var m in modules) {
+                    Console.WriteLine("  " + m);
+                }
+                return 0;
             }
         }
         new Magellan(verbosity);
         Thread.Sleep(Timeout.Infinite);
+
+        return 0;
     }
 }
 
