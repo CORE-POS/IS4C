@@ -37,6 +37,7 @@ class ResponsesModel extends BasicModel
     'userID' => array('type'=>'INT'),
     'sent' => array('type'=>'TINYINT', 'default'=>0),
     'response' => array('type'=>'TEXT'),
+    'tdate' => array('type'=>'DATETIME'),
     );
 }
 

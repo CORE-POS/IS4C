@@ -42,6 +42,7 @@ class MailPipe extends AttachmentEmailPipe
         $model->publishable(trim($publish) === 'Yes' ? 1 : 0);
         $model->email($email);
         $model->comment($comment);
+        $model->tdate(date('Y-m-d H:i:s'));
         $model->save();
     }
 

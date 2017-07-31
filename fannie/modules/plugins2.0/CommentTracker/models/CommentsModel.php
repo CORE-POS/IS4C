@@ -38,6 +38,7 @@ class CommentsModel extends BasicModel
     'appropriate' => array('type'=>'TINYINT', 'default'=>1),
     'email' => array('type'=>'VARCHAR(255)'),
     'comment' => array('type'=>'TEXT'),
+    'tdate' => array('type'=>'DATETIME'),
     );
 }
 
