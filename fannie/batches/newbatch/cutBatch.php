@@ -54,6 +54,11 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         if (!$saved) {
             $ret['error'] = 1;
             $ret['error_msg'] = 'Save failed';
+        } else {
+            $bu = new BatchUpdateModel($dbc);
+            $bu->batchID($id);
+            $bu->upc($item->upc());
+            $bu->logUpdate($bu::UPDATE_REMOVED);
         }
     }
 
