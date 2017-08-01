@@ -54,8 +54,8 @@ class AlertIncident extends FannieRESTfulPage
         $matched = false;
         while ($row = $this->connection->fetchRow($searchR)) {
             $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td>
-                <td><a href="?id=%d">View</a></td><td>%s</td></tr>',
-                $row['tdate'], $row['storeName'], $row['userName'], $row['incidentID'], substr($row['details'], 0, 100));
+                <td><a href="?id=%d">View #%d</a></td><td>%s</td></tr>',
+                $row['tdate'], $row['storeName'], $row['userName'], $row['incidentID'], $row['incidentID'], substr($row['details'], 0, 100));
             $matched = true;
         }
         $ret .= !$matched ? '<tr><td colspan="4">No matches</td></tr>' : '';
@@ -307,8 +307,8 @@ HTML;
         $byDay = array();
         $byCat = array();
         while ($row = $this->connection->fetchRow($res)) {
-            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="?id=%d">View</a><td>%s...</td></tr>',
-                $row['tdate'], $row['storeName'], $row['name'], $row['incidentID'], substr($row['details'], 0, 200));
+            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="?id=%d">View #%d</a><td>%s...</td></tr>',
+                $row['tdate'], $row['storeName'], $row['name'], $row['incidentID'], $row['incidentID'], substr($row['details'], 0, 200));
             list($date,) = explode(' ', $row['tdate'], 2);
             if (!isset($byDay[$date])) {
                 $byDay[$date] = 0;
