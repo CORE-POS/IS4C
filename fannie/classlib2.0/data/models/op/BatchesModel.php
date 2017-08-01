@@ -47,7 +47,7 @@ class BatchesModel extends BasicModel
     {
         return '
 Depends on:
-* batchType
+Wthis->* batchType
 
 Use:
 This table contains basic information
@@ -246,6 +246,10 @@ those same items revert to normal pricing.
 
         $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
         $this->finishForce($id, $updateType, $has_limit);
+
+		$bu = new BatchUpdateModel($this->connection);
+		$bu->batchID($id);
+		$bu->logUpdate($bu::UPDATE_FORCED);
     }
 
     /**
@@ -338,6 +342,9 @@ those same items revert to normal pricing.
 
         $updateType = ProdUpdateModel::UPDATE_PC_BATCH;
         $this->finishForce($id, $updateType, $has_limit);
+		$bu = new BatchUpdateModel($this->connection);
+        $bu->batchID($id);
+        $bu->logUpdate($bu::UPDATE_STOPPED);
     }
 
     /**

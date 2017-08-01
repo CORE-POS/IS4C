@@ -78,6 +78,9 @@ class EdlpBatchPage extends FannieRESTfulPage
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($batchID);
         }
+        $bu = new BatchUpdateModel($dbc);
+        $bu->batchID($batchID);
+        $bu->logUpdate($bu::UPDATE_CREATE);
 
         $list = new BatchListModel($dbc);
         $list->batchID($batchID);
@@ -85,6 +88,10 @@ class EdlpBatchPage extends FannieRESTfulPage
             $list->upc($itemW['upc']);
             $list->salePrice($itemW['maxPrice']);
             $list->save();
+            $bu->reset();
+            $bu->batchID($batchID);
+            $bu->upc($itemW['upc']);
+            $bu->logUpdate($bu::UPDATE_ADDED);
         }
 
         return sprintf('<div class="alert alert-success">Created Batch. 

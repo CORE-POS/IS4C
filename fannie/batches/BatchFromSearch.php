@@ -92,6 +92,9 @@ class BatchFromSearch extends FannieRESTfulPage
         $batch->priority($priority);
         $batch->owner($owner);
         $batchID = $batch->save();
+        $bu = new BatchUpdateModel($dbc);
+        $bu->batchID($batchID);
+        $bu->logUpdate($bu::UPDATE_CREATE);
 
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($batchID);
@@ -121,6 +124,7 @@ class BatchFromSearch extends FannieRESTfulPage
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         $dbc->startTransaction();
         // add items to batch
+        $bu = new BatchUpdateModel($dbc);
         for($i=0; $i<count($upcs); $i++) {
             $upc = $upcs[$i];
             $price = isset($prices[$i]) ? $prices[$i] : 0.00;
@@ -136,6 +140,10 @@ class BatchFromSearch extends FannieRESTfulPage
             $list->pricemethod(0);
             $list->quantity(0);
             $list->save();
+            $bu->reset();
+            $bu->upc(BarcodeLib::padUPC($upc));
+            $bu->batchID($batchID);
+            $bu->logUpdate($bu::UPDATE_ADDED);
         }
         $dbc->commitTransaction();
     }
