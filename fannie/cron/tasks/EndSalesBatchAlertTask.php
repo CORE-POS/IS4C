@@ -49,6 +49,7 @@ class EndSalesBatchAlertTask extends FannieTask
         $grocEmail = $this->config->get('GROCERY_EMAIL');
         $scanEmail = $this->config->get('SCANCOORD_EMAIL');
         $contacts = array($grocEmail,$scanEmail);
+        $contacts[] = 'jmatthews@wholefoods.coop';
         $this->getBathchesBySuperDept($superDepts,$contacts);
 
         return false;
