@@ -58,7 +58,7 @@ var vendorEditor = (function($) {
             data: 'name='+name+'&new=1'
         }).fail(function(){
             window.alert('Error loading XML document');
-        }).done(function(){
+        }).done(function(resp){
             window.top.location='VendorIndexPage.php?vid='+resp;
         });
     };
