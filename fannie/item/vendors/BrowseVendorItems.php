@@ -124,7 +124,7 @@ class BrowseVendorItems extends FanniePage
             $guess .= ' AND v.vendorDept=? ';
             $args[] = $did;
         }
-        $guess .= ' ORDER BY count(*) DESC';
+        $guess .= ' GROUP BY s.superID ORDER BY count(*) DESC';
 
         $prep = $dbc->prepare($guess);
         $result = $dbc->execute($prep, $args);
@@ -143,6 +143,7 @@ class BrowseVendorItems extends FanniePage
                         INNER JOIN vendorItems AS v ON p.upc=v.upc
                       WHERE v.vendorID=?
                         AND v.vendorDept=?
+                      GROUP BY s.superID
                       ORDER BY count(*) DESC';
             $prep = $dbc->prepare($guess);
             $result = $dbc->execute($prep, array($vid, $did));
