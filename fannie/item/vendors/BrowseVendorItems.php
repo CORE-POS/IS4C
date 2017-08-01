@@ -202,7 +202,10 @@ class BrowseVendorItems extends FanniePage
         
         $ret = "<table class=\"table table-bordered\">";
         $ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
-        $ret .= "<th>Size</th><th>Cost</th><th>Price</th><th>Dept.</th><th>&nbsp;</th></tr>";
+        $ret .= "<th>Size</th><th>Cost</th><th>Price</th>
+            <th class=\"form-inline\">Dept. <select onchange=\"\$('.dept-select').val(this.value);\" 
+                class=\"form-control small\">{$depts}</select></th>
+            <th>&nbsp;</th></tr>";
         $p = $dbc->prepare($query);
         $result = $dbc->execute($p,$args);
         while ($row = $dbc->fetch_row($result)) {
@@ -239,7 +242,7 @@ class BrowseVendorItems extends FanniePage
                             <input type=text size=5 value=%.2f id=price%s 
                                 class=\"form-control price-field\" />
                         </div>
-                    </td><td><select id=\"dept%s\" class=\"form-control\">%s</select></td>
+                    </td><td><select id=\"dept%s\" class=\"form-control dept-select\">%s</select></td>
                     <td id=button%s>
                     <button type=button value=\"Add to POS\" class=\"btn btn-default\"
                     onclick=\"addToPos('%s');\">Add to POS</button></td>
