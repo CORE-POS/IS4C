@@ -29,10 +29,10 @@ if (!class_exists('ProdUpdateModel')) {
 
 class PriceBatchAlertTask extends FannieTask
 {
-    public $name = 'Sale Batch End Alert';
+    public $name = 'Price Change Batch Alert';
 
-    public $description = 'Sends an email to grocery department management with
-        information regarding close-end-date batches.';
+    public $description = 'Sends an email to report whenever a non-produce,
+        non-deli price change batch has started.';
 
     public $default_schedule = array(
         'min' => 50,
@@ -45,7 +45,8 @@ class PriceBatchAlertTask extends FannieTask
     public function run()
     {
 
-        $superDepts = array('GROCERY','REFRIGERATED','FROZEN','GEN MERCH','BULK','WELLNESS','MEAT');
+        $superDepts = array('GROCERY','REFRIGERATED','FROZEN','GEN MERCH','BULK','WELLNESS',
+            'MEAT','MULTIPLE DEPTS.');
         $scanEmail = $this->config->get('SCANCOORD_EMAIL');
         $contacts = array($scanEmail);
         $this->getBathchesBySuperDept($superDepts,$contacts);
@@ -118,11 +119,7 @@ class PriceBatchAlertTask extends FannieTask
         if ($dbc->numRows($result) > 0) {
             $ret .= '<table><thead><th>Batch Name</th><th>Batch ID</th><th>Start Date</th><th>End Date</th><th>Owner</th></thead><tbody>';
             while ($row = $dbc->fetch_row($result)) {
-                if ($row['endDate'] == $date) {
-                    $ret .= '<tr class="danger">';
-                } else {
-                       $ret .= '<tr>';
-                }
+                $ret .= '<tr>';
                 $ret .= '<td>' . $row['batchName'] . '</td>';
                 $ret .= '<td>' . $row['batchID'] . '</td>';
                 $ret .= '<td>' . substr($row['startDate'],0,10) . '</td>';
@@ -142,7 +139,7 @@ class PriceBatchAlertTask extends FannieTask
                 $mail->FromName = 'CORE POS Monitoring';
                 $mail->Subject ='Report: New Prices Starting Today';
                 $msg = $style;
-                $msg .= date('m-d-y').' The following price change batch(es) went 
+                $msg .= date('m-d-y').' The following <strong>PRICE CHANGE BATCH(ES)</strong> went 
                     into effect today. <br /><br />';
                 $msg .= $ret;
                 $mail->Body = $msg;
