@@ -710,47 +710,48 @@ class ObfSummaryReport extends ObfWeeklyReport
         $begin = $weekID - 12;
         $json = array(
             'labels' => array(),
-            'all' => array(),
-            'hillside' => array(),
-            'denfeld' => array(),
-            'hdeli' => array(),
-            'ddeli' => array(),
-            'hmerch' => array(),
-            'dmerch' => array(),
-            'hproduce' => array(),
-            'dproduce' => array(),
+            'sales' => array(),
+            'lySales' => array(),
+            'hours' => array(),
+            'lyHours' => array(),
+            'splh' => array(),
+            'lySplh' => array(),
         );
 
+        $hourP = $dbc->prepare("SELECT SUM(hours) FROM ObfLabor WHERE obfWeekID=?");
+
         $infoP = $dbc->prepare("
-            SELECT o.obfCategoryID,
+            SELECT o.obfWeekID,
                 SUM(o.actualSales) AS sales,
+                SUM(o.lastYearSales) AS lySales,
+                MAX(w.startDate) AS startDate,
                 MAX(w.endDate) AS endDate
             FROM ObfSalesCache AS o
                 LEFT JOIN ObfWeeks AS w ON o.obfWeekID=w.obfWeekID
             WHERE o.obfWeekID BETWEEN ? AND ?
-            GROUP BY o.obfCategoryID,
-                o.obfWeekID        
+            GROUP BY o.obfWeekID
             ORDER BY o.obfWeekID");
         $infoR = $dbc->execute($infoP, array($begin, $weekID));
         while ($infoW = $dbc->fetchRow($infoR)) {
-            if (!in_array($infoW['endDate'], $json['labels'])) {
-                $json['labels'][] = $infoW['endDate'];
+            $dstr = date('m/d', strtotime($infoW['startDate']))
+                . ' - '
+                . date('m/d', strtotime($infoW['endDate']));
+            if (!in_array($dstr, $json['labels'])) {
+                $json['labels'][] = $dstr;
             }
-            switch ($infoW['obfCategoryID']) {
-                case 1: $json['hproduce'][] = $infoW['sales']; break;
-                case 2: $json['hdeli'][] = $infoW['sales']; break;
-                case 3: $json['hmerch'][] = $infoW['sales']; break;
-                case 7: $json['dproduce'][] = $infoW['sales']; break;
-                case 8: $json['ddeli'][] = $infoW['sales']; break;
-                case 9: $json['dmerch'][] = $infoW['sales']; break;
+            if ($infoW['sales'] > 0) {
+                $json['sales'][] = $infoW['sales'];
             }
-        }
-        for ($i=0; $i<count($json['hdeli']);$i++) {
-            $hillside = $json['hdeli'][$i] + $json['hmerch'][$i] + $json['hproduce'][$i];
-            $denfeld = $json['ddeli'][$i] + $json['dmerch'][$i] + $json['dproduce'][$i];
-            $json['hillside'][] = $hillside;
-            $json['denfeld'][] = $denfeld;
-            $json['all'][] = $hillside + $denfeld;
+            $json['lySales'][] = $infoW['lySales'];
+
+            $hours = $dbc->getValue($hourP, array($infoW['obfWeekID']));
+            $lyHours = $dbc->getValue($hourP, array($infoW['obfWeekID'] - 52));
+            if ($hours > 0) {
+                $json['hours'][] = $hours;
+                $json['splh'][] = $hours == 0 ? 0 : $infoW['sales'] / $hours;
+            }
+            $json['lyHours'][] = $lyHours;
+            $json['lySplh'][] = $lyHours == 0 ? 0 : $infoW['lySales'] / $lyHours;
         }
 
         return $json;
