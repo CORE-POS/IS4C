@@ -24,6 +24,7 @@ function addToPos(upc){
 	var vid = $('#vendorID').val();
 	var price = $('#price'+upc).val();
 	var dept = $('#dept'+upc).val();
+    var deptName = $('#dept' + upc + ' option:selected').text();
     var tags = $('#shelftags').val();
 	$.ajax({
 		url: 'BrowseVendorItems.php',
@@ -33,8 +34,8 @@ function addToPos(upc){
     }).fail(function(){
 		alert('Error loading XML document');
     }).done(function(resp){
-        $('#price'+upc).parent().html('&nbsp;');
-        $('#dept'+upc).parent().html('&nbsp;');
+        $('#price'+upc).parent().html('$' + price);
+        $('#dept'+upc).parent().html(deptName);
         $('#button'+upc).html('&nbsp;');
         var cssObj = { "background" : "#ffffcc" }
         $('#row'+upc).css(cssObj);
