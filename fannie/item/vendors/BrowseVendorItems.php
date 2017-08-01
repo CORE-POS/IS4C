@@ -275,14 +275,14 @@ class BrowseVendorItems extends FanniePage
         
         $model = new ProductsModel($dbc);
         $model->upc(BarcodeLib::padUPC($upc));
-        $model->description($vinfo['description']);
+        $model->description(substr($vinfo['description'], 0, 30));
         $model->normal_price($price);
         $model->department($dept);
         $model->tax($dinfo['dept_tax']);
         $model->foodstamp($dinfo['dept_fs']);
         $model->cost($vinfo['cost']);
         $model->default_vendor_id($vid);
-        $model->brand($vinfo['brand']);
+        $model->brand(substr($vinfo['brand'], 0, 30));
         $model->store_id(1);
         $model->save();
 
