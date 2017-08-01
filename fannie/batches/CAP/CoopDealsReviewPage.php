@@ -112,12 +112,20 @@ class CoopDealsReviewPage extends FanniePage
             VALUES (?, ?, ?, 0, ?, ?)
         ');
 
-        $list = new BatchListModel($dbc);
-        $list->active(0);
-        $list->pricemethod(0);
-        $list->quantity(0);
+        $blDef = $dbc->tableDefinition('batchList');
+        $insQ = "INSERT INTO batchList (upc, batchID, salePrice, active";
+        if (isset($blDef['signMultiplier'])) {
+            $insQ .= ", signMultiplier";
+        }
+        $insQ .= ") VALUES (?, ?, ?, 0";
+        if (isset($blDef['signMultiplier'])) {
+            $insQ .= ", ?";
+        }
+        $insQ .= ")";
+        $insP = $dbc->prepare($insQ);
 
         //$bu = new BatchUpdateModel($dbc);
+        $dbc->startTransaction();
         while ($row = $dbc->fetch_row($saleItemsR)) {
             if (!isset($batchIDs[$row['batch']])) {
                 $args = array($row['batch'] . ' ' . $naming, 1, 1);
@@ -145,16 +153,17 @@ class CoopDealsReviewPage extends FanniePage
             }
             $id = $batchIDs[$row['batch']];
 
-            $list->upc($row['upc']);
-            $list->batchID($id);
-            $list->salePrice(sprintf("%.2f",$row['price']));
-            $list->signMultiplier($row['multiplier']);
-            $list->save();
+            $args = array($row['upc'], $id, sprintf('%.2f', $row['price']));
+            if (isset($blDef['signMultiplier'])) {
+                $args[] = $row['multiplier'];
+            }
+            $dbc->execute($insP, $args);
             //$bu->reset();
             //$bu->upc($row['upc']);
             //$bu->batchID($id);
             //$bu->logUpdate(//$bu::UPDATE_ADDED);
         }
+        $dbc->commitTransaction();
 
         $ret = "<p>New sales batches have been created!</p>";
         $ret .= "<p><a href=\"../newbatch/\">View batches</a></p>";
