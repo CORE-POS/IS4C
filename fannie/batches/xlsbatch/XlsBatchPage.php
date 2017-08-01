@@ -80,6 +80,9 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $args = array($date1,$date2,$bname,$btype,$discountType,$owner);
         $insR = $dbc->execute($insQ,$args);
         $batchID = $dbc->insertID();
+        $bu = new BatchUpdateModel($dbc);
+        $bu->batchID($batchID);
+        $bu->logUpdate($bu::UPDATE_CREATE);
 
         return $batchID;
     }
@@ -136,6 +139,10 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $model->salePrice($price);
             $model->groupSalePrice($price);
             $model->save();
+            $bu = new BatchUpdateModel($dbc);
+            $bu->batchID($batchID);
+            $bu->upc($upc);
+            $bu->logUpdate($bu::UPDATE_ADDED);
         }
 
         $ret .= '

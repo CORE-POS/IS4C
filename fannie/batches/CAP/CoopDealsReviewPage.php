@@ -117,6 +117,7 @@ class CoopDealsReviewPage extends FanniePage
         $list->pricemethod(0);
         $list->quantity(0);
 
+        //$bu = new BatchUpdateModel($dbc);
         while ($row = $dbc->fetch_row($saleItemsR)) {
             if (!isset($batchIDs[$row['batch']])) {
                 $args = array($row['batch'] . ' ' . $naming, 1, 1);
@@ -134,6 +135,9 @@ class CoopDealsReviewPage extends FanniePage
                 $dbc->execute($batchP,$args);
                 $bID = $dbc->insertID();
                 $batchIDs[$row['batch']] = $bID;
+                //$bu->reset();
+                //$bu->batchID($bID);
+                //$bu->logUpdate(//$bu::UPDATE_CREATE);
 
                 if ($this->config->get('STORE_MODE') === 'HQ') {
                     StoreBatchMapModel::initBatch($bID);
@@ -146,6 +150,10 @@ class CoopDealsReviewPage extends FanniePage
             $list->salePrice(sprintf("%.2f",$row['price']));
             $list->signMultiplier($row['multiplier']);
             $list->save();
+            //$bu->reset();
+            //$bu->upc($row['upc']);
+            //$bu->batchID($id);
+            //$bu->logUpdate(//$bu::UPDATE_ADDED);
         }
 
         $ret = "<p>New sales batches have been created!</p>";
