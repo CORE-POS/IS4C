@@ -15,7 +15,8 @@
   <!-- Defined constants -->
   <ItemGroup>
     <MonoDefine Include="MONO" Condition=" '$(OS)' == 'Unix' " />
-    <RabbitDefine Include="CORE_RABBIT" Condition=" Exists('RabbitMQ.Client.dll') " />
+    <RabbitDefine Include="CORE_RABBIT"
+        Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
     <JsonDefine Include="NEWTONSOFT_JSON" />
   </ItemGroup>
 
@@ -30,7 +31,8 @@
     <MagellanRef Include="UDPMsgBox.dll" />
     <MagellanRef Include="SPH.dll" />
     <MagellanRef Include="Newtonsoft.Json.dll" />
-    <MagellanRef Include="RabbitMQ.Client.dll" Condition=" Exists('RabbitMQ.Client.dll') " />
+    <MagellanRef Include="RabbitMQ.Client.dll"
+        Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
     <MagellanRef Include="Discover.dll" />
 
     <MagellanTarget Include="DelegateFormLibrary" />
@@ -38,7 +40,10 @@
     <MagellanTarget Include="SPHLibrary" />
     <MagellanTarget Include="JsonLibrary" />
     <MagellanTarget Include="Discover" />
+    <MagellanTarget Include="RabbitMqLibrary"
+        Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
   </ItemGroup>
+
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine) @(RabbitDefine)" />
@@ -85,8 +90,8 @@
     <USBLayer Include="USB-HidSharp.cs" />
     
     <USBLayerRef Include="HidSharp.dll" />
-
     <USBLayerTarget Include="HIDSharpLibrary" />
+
   </ItemGroup>
   <Target Name="USBLayerLibrary" Inputs="@(USBLayer)" Outputs="USBLayer.dll" DependsOnTargets="@(USBLayerTarget)">
     <Csc Sources="@(USBLayer)" TargetType="library" References="@(USBLayerRef)" OutputAssembly="USBLayer.dll" 
@@ -145,12 +150,27 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 
+  <!-- just grab nuget-provided package if it exists instead of building HidSharp -->
   <Target Name="HIDSharpLibrary" Returns="HidSharp.dll">
-    <MSBuild Projects="HidSharp\HidSharp.csproj" />
+    <MSBuild Projects="HidSharp\HidSharp.csproj"
+        Condition=" !Exists('packages\HidSharp.1.5\lib\net35\HidSharp.dll') " />
+    <Copy SourceFiles="packages\HidSharp.1.5\lib\net35\HidSharp.dll" DestinationFolder=".\"
+        Condition=" Exists('packages\HidSharp.1.5\lib\net35\HidSharp.dll') " />
   </Target>
 
+  <!-- just grab nuget-provided package if it exists instead of building Newtonsoft.Json -->
   <Target Name="JsonLibrary" Returns="Newtonsoft.Json.dll">
-    <MSBuild Projects="Newtonsoft.Json\Newtonsoft.Json.Net40.csproj" />
+    <MSBuild Projects="Newtonsoft.Json\Newtonsoft.Json.Net40.csproj" 
+        Condition=" !Exists('packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll') " />
+    <Copy SourceFiles="packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll" 
+        DestinationFolder=".\"
+        Condition=" Exists('packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll') " />
+  </Target>
+
+  <!-- just grab nuget-provided package if it exists instead of building Newtonsoft.Json -->
+  <Target Name="RabbitMqLibrary" Returns="RabbitMQ.Client.dll">
+    <Copy SourceFiles="packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll" DestinationFolder=".\"
+        Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
   </Target>
 
   <ItemGroup>
