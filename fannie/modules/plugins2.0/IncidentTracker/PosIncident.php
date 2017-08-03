@@ -8,61 +8,17 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
-class AlertIncident extends FannieRESTfulPage
+class PosIncident extends AlertIncident
 {
-    protected $header = 'Alert';
-    protected $title = 'Alert';
+    protected $header = 'POS Incidents';
+    protected $title = 'POS Incidents';
     protected $must_authenticate = true;
 
     public function preprocess()
     {
-        $this->addRoute('get<new>', 'get<search>');
+        $this->addRoute('get<new>');
+
         return parent::preprocess();
-    }
-
-    protected function get_search_view()
-    {
-        $settings = $this->config->get('PLUGIN_SETTINGS');
-        $prefix = $settings['IncidentDB'] . $this->connection->sep();
-        $searchP = $this->connection->prepare("
-            SELECT i.*,
-                COALESCE(t.incidentSubType, 'Other') AS incidentSubType,
-                COALESCE(l.incidentLocation, 'Other') AS incidentLocation,
-                u.name AS userName,
-                s.description AS storeName
-            FROM {$prefix}Incidents AS i
-                LEFT JOIN {$prefix}IncidentSubTypes AS t ON i.incidentSubTypeID=t.incidentSubTypeID
-                LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
-                LEFT JOIN Users as u ON i.uid=u.uid
-                LEFT JOIN Stores AS s ON i.storeID=s.storeID
-            WHERE details LIKE ? OR details LIKE ?
-            ORDER BY tdate DESC");
-        $args = array(
-            '%' . $this->search . '%',
-            '%' . str_replace(' ', '%', trim($this->search)) . '%',
-        );
-        $searchR = $this->connection->execute($searchP, $args);
-
-        $ret = '
-            <p><form class="form-inline" method="get">
-                <a href="AlertIncident.php" class="btn btn-default">Home</a>
-                |
-                <input type="text" name="search" id="search" class="form-control" placeholder="search" />
-                <button class="btn btn-default" type="submit">Search</button>
-            </form></p>
-            <table class="table table-bordered">';
-        $matched = false;
-        while ($row = $this->connection->fetchRow($searchR)) {
-            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td>
-                <td><a href="?id=%d">View #%d</a></td><td>%s</td></tr>',
-                $row['tdate'], $row['storeName'], $row['userName'], $row['incidentID'], $row['incidentID'], substr($row['details'], 0, 100));
-            $matched = true;
-        }
-        $ret .= !$matched ? '<tr><td colspan="4">No matches</td></tr>' : '';
-        $ret .= '</table>';
-        $this->addOnloadCommand("\$('#search').focus();");
-
-        return $ret;
     }
 
     protected function post_handler()
@@ -72,41 +28,17 @@ class AlertIncident extends FannieRESTfulPage
         $this->connection->selectDB($settings['IncidentDB']);
         $model = new IncidentsModel($this->connection);
 
-        $model->incidentTypeID(1);
+        $model->incidentTypeID(2);
         $model->incidentSubTypeID(FormLib::get('subtype'));
         $model->incidentLocationID(FormLib::get('location'));
-        $model->reportedBy(FormLib::get('reported'));
         $model->tdate(date('Y-m-d H:i:s'));
-        $model->police(FormLib::get('police', 0));
-        $model->trespass(FormLib::get('trespass', 0));
         $model->details(FormLib::get('details'));
         $model->uid($uid);
         $model->storeID(FormLib::get('store'));
-
-        if (!empty($_FILES['img1']['tmp_name']) && file_exists($_FILES['img1']['tmp_name'])) {
-            $ext = pathinfo($_FILES['img1']['name'], PATHINFO_EXTENSION);
-            $file = md5(rand());
-            while (file_exists(__DIR__  . "/image/{$file}.{$ext}")) {
-                $file = md5(rand());
-            }
-            move_uploaded_file($_FILES['img1']['tmp_name'], __DIR__ . "/image/{$file}.{$ext}");
-            $model->image1($file . '.' . $ext);
-        }
-        if (!empty($_FILES['img2']['tmp_name']) && file_exists($_FILES['img2']['tmp_name'])) {
-            $ext = pathinfo($_FILES['img2']['name'], PATHINFO_EXTENSION);
-            $file = md5(rand());
-            while (file_exists(__DIR__  . "/image/{$file}.{$ext}")) {
-                $file = md5(rand());
-            }
-            move_uploaded_file($_FILES['img2']['tmp_name'], __DIR__ . "/image/{$file}.{$ext}");
-            $model->image2($file . '.' . $ext);
-        }
         $id = $model->save();
 
-        $this->connection->selectDB($this->config->get('OP_DB'));
-        $incident = $this->getIncident($id);
         $prefix = $settings['IncidentDB'] . $this->connection->sep();
-        $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=1");
+        $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=2");
         while ($row = $this->connection->fetchRow($res)) {
             try {
                 switch (strtolower($row['method'])) {
@@ -122,47 +54,18 @@ class AlertIncident extends FannieRESTfulPage
             } catch (Exception $ex) {}
         }
 
-        return 'AlertIncident.php?id=' . $id;
-    }
-
-    protected function getIncident($id)
-    {
-        $settings = $this->config->get('PLUGIN_SETTINGS');
-        $prefix = $settings['IncidentDB'] . $this->connection->sep();
-
-        $query = "SELECT i.*,
-                COALESCE(t.incidentSubType, 'Other') AS incidentSubType,
-                COALESCE(l.incidentLocation, 'Other') AS incidentLocation,
-                u.name AS userName,
-                s.description AS storeName
-            FROM {$prefix}Incidents AS i
-                LEFT JOIN {$prefix}IncidentSubTypes AS t ON i.incidentSubTypeID=t.incidentSubTypeID
-                LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
-                LEFT JOIN Users as u ON i.uid=u.uid
-                LEFT JOIN Stores AS s ON i.storeID=s.storeID
-            WHERE i.incidentID=?";
-        $prep = $this->connection->prepare($query);
-        $row = $this->connection->getRow($prep, array($id));
-        $row['reportedBy'] = $row['reportedBy'] == 0 ? 'Staff' : 'Customer';
-        $row['police'] = $row['police'] ? 'Yes' : 'No';
-        $row['trespass'] = $row['trespass'] ? 'Yes' : 'No';
-
-        return $row;
+        return 'PosIncident.php?id=' . $id;
     }
 
     protected function get_id_view()
     {
         $row = $this->getIncident($this->id);
         $row['details'] = nl2br($row['details']);
-        $img1 = $row['image1'] ? "<img src=\"image/{$row['image1']}\" />" : '';
-        $img2 = $row['image2'] ? "<img src=\"image/{$row['image2']}\" />" : '';
         $row['details'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $row['details']);
-        $row['details'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
-            '<a href="$1://$2$3">$1://$2$3</a>', $row['details']);
 
         return <<<HTML
 <p>
-    <a href="AlertIncident.php" class="btn btn-default">Home</a>
+    <a href="PosIncident.php" class="btn btn-default">Home</a>
 </p>
 <table class="table table-bordered">
 <tr>
@@ -178,24 +81,11 @@ class AlertIncident extends FannieRESTfulPage
     <th>Location</th><td>{$row['incidentLocation']}</td>
 </tr>
 <tr>
-    <th>Reported by</th><td>{$row['reportedBy']}</td>
-</tr>
-<tr>
     <th>Entered by</th><td>{$row['userName']}</td>
-</tr>
-<tr>
-    <th>Called police</th><td>{$row['police']}</td>
-</tr>
-<tr>
-    <th>Requested trespass</th><td>{$row['trespass']}</td>
 </tr>
 </table>
 <p>
     {$row['details']}
-</p>
-<p>
-    {$img1}
-    {$img2}
 </p>
 HTML;
     }
@@ -209,7 +99,7 @@ HTML;
             SELECT s.*
             FROM {$prefix}IncidentSubTypes AS s
                 INNER JOIN {$prefix}IncidentSubTypeTypeMap AS m ON s.incidentSubTypeID=m.incidentSubTypeID
-            WHERE m.incidentTypeID=1
+            WHERE m.incidentTypeID=2
             ORDER BY s.incidentSubType");
         $types = '';
         while ($typeW = $this->connection->fetchRow($typeR)) {
@@ -220,7 +110,7 @@ HTML;
             SELECT s.*
             FROM {$prefix}IncidentLocations AS s
                 INNER JOIN {$prefix}IncidentLocationTypeMap AS m ON s.incidentLocationID=m.incidentLocationID
-            WHERE m.incidentTypeID=1
+            WHERE m.incidentTypeID=2
             ORDER BY s.incidentLocation");
         $loc = '';
         while ($typeW = $this->connection->fetchRow($locR)) {
@@ -236,7 +126,7 @@ HTML;
         {$stores['html']}
     </div>
     <div class="form-group">
-        <label>Type of Alert</label>
+        <label>Type of Incident</label>
         <select name="subtype" required class="form-control">
             <option value="">Select One</option>
             {$types}
@@ -252,37 +142,11 @@ HTML;
         </select>
     </div>
     <div class="form-group">
-        <label>Reported by</label>
-        <select name="reported" required class="form-control">
-            <option value="">Select One</option>
-            <option value="0">Staff</option>
-            <option value="1">Customer</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Called police
-            <input type="checkbox" name="police" value="1" />
-        </label>
-    </div>
-    <div class="form-group">
-        <label>Requested trespass
-            <input type="checkbox" name="trespass" value="1" />
-        </label>
-    </div>
-    <div class="form-group">
-        <label>Tales of Truculence and Tomfoolery</label>
+        <label>Details</label>
         <textarea name="details" class="form-control" rows="10"></textarea>
     </div>
     <div class="form-group">
-        <label>Image #1</label>
-        <input type="file" name="img1" class="form-control" accept="image/*" />
-    </div>
-    <div class="form-group">
-        <label>Image #2</label>
-        <input type="file" name="img2" class="form-control" accept="image/*" />
-    </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-default">Save Alert</button>
+        <button type="submit" class="btn btn-default">Save Incident</button>
     </div>
 </form>
 HTML;
@@ -300,7 +164,7 @@ HTML;
                 LEFT JOIN {$table}IncidentSubTypes AS s ON i.incidentSubTypeID=s.incidentSubTypeID
                 LEFT JOIN Users AS u ON i.uid=u.uid
                 LEFT JOIN Stores AS t ON i.storeID=t.storeID
-            WHERE i.incidentTypeID=1
+            WHERE i.incidentTypeID=2
             ORDER BY tdate DESC";
         $query = $this->connection->addSelectLimit($query, 30);
         $res = $this->connection->query($query);
@@ -308,8 +172,8 @@ HTML;
         $byDay = array();
         $byCat = array();
         while ($row = $this->connection->fetchRow($res)) {
-            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td><a href="?id=%d">View #%d</a><td>%s...</td></tr>',
-                $row['tdate'], $row['storeName'], $row['name'], $row['incidentID'], $row['incidentID'], substr($row['details'], 0, 200));
+            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href="?id=%d">View #%d</a><td>%s...</td></tr>',
+                $row['tdate'], $row['storeName'], $row['incidentSubType'], $row['name'], $row['incidentID'], $row['incidentID'], substr($row['details'], 0, 200));
             list($date,) = explode(' ', $row['tdate'], 2);
             if (!isset($byDay[$date])) {
                 $byDay[$date] = 0;
@@ -349,14 +213,14 @@ HTML;
         return <<<HTML
 <p class="form-inline">
     <form method="get" class="form-inline">
-        <a href="?new=1" class="btn btn-default">New Alert</a>
+        <a href="?new=1" class="btn btn-default">New Incident</a>
         |
         <input type="text" name="search" class="form-control" placeholder="Search incidents" />
         <button type="submit" class="btn btn-default">Search</button>
     </form>
 </p>
 <table class="table small table-bordered">
-<tr><th colspan="5" class="text-center">Recent Alerts</th></tr>
+<tr><th colspan="6" class="text-center">Recent Incidents</th></tr>
     {$table}
 </table>
 <div class="row">
