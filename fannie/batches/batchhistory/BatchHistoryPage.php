@@ -65,7 +65,6 @@ class BatchHistoryPage extends FannieRESTfulPage
         $bu = new BatchUpdateModel($dbc);
         $bu->batchID($bid);
         $bt = new BatchTypeModel($dbc);
-        $users = new UsersModel($dbc);
         $columns = array('updateType','batchName','batchType','owner','startDate',
             'endDate','user','modified');
         $ret .= '<table class="table table-bordered table-condensed small" id="bTable"><thead>';
@@ -95,12 +94,8 @@ class BatchHistoryPage extends FannieRESTfulPage
                         $bt->batchTypeID($obj->$column());
                         $bt->load();
                         $ret .= '<td style="'.$fweight.'">' . $bt->typeDesc() . '</td>';
-                    } else if ($column == 'user') {
-                        $users->reset();
-                        $users->uid($obj->$column());
-                        $users->load();
                     } else {
-                        $ret .= '<td style="'.$fweight.'">' . $users->real_name() . '</td>';
+                        $ret .= '<td style="'.$fweight.'">' . $obj->$column() . '</td>';
                     }
                 }
                 $s = 0;
