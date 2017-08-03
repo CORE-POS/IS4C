@@ -948,6 +948,7 @@ HTML;
             $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"batchEdit.saveTransLimit($id); return false;\">Save Limit</a></span>";
             $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
         }
+        $ret .= " | <a data-toggle='modal' data-target='#myModal'>Batch History</a>";
 
         /**
           Insert extra fields to manage partial day batch
@@ -1294,6 +1295,56 @@ HTML;
         return $this->get_id_view();
     }
 
+    public function batch_history($bid)
+    {
+        include('../batchhistory/BatchHistoryPage.php');   
+        $modal = '';
+        $modal .= '
+            <style>
+            .vertical-alignment-helper {
+                display:table;
+                height: 100%;
+                width: 100%;
+                pointer-events:none; /* This makes sure that we can still click outside of the modal to close it */
+            }
+            .vertical-align-center {
+                /* To center vertically */
+                display: table-cell;
+                vertical-align: middle;
+                pointer-events:none;
+            }
+            .modal-content {
+                /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+                width:inherit;
+                height:inherit;
+                /* To center horizontally */
+                margin: 0 auto;
+                pointer-events: all;
+            }
+            </style>
+        ';
+        $modal .= '
+                <!-- Modal -->
+                <div id="myModal" class="modal" role="dialog">
+                <div class="vertical-alignment-helper">
+                  <div class="modal-dialog vertical-align-center">
+                    <!-- Modal content-->
+                    <div class="modal-content" style="height: 85vh; width: 85vw;">
+                        <div style="max-height: 85vh; overflow-y:auto;">
+                            ';
+        $bhp = new BatchHistoryPage;
+        $modal .= $bhp->getBatchHistory($bid);
+        $modal .='
+                        </div>
+                    </div>
+                  </div>
+                </div>
+                </div>
+        ';
+        
+        return $modal;
+    }
+
     public function get_id_view()
     {
         $this->add_script('edit.js?20160105');
@@ -1304,9 +1355,10 @@ HTML;
         $url = $this->config->get('URL');
         $sort = FormLib::get('sort', 'natural');
         $inputForm = $this->addItemUPCInput();
+        $test = 'test';
         $batchList = $this->showBatchDisplay($this->id, $sort);
         $linea = $this->enable_linea ? '<script type="text/javascript">' . $this->lineaJS() . '</script>' : '';
-
+        $history = $this->batch_history($this->id);
         return <<<HTML
 <div id="inputarea">
 {$inputForm}
@@ -1326,6 +1378,7 @@ HTML;
 <input type="hidden" id="batchID" value="{$this->id}" />
 <input type=hidden id=buttonimgpath value="{$url}src/img/buttons/" />
 {$linea}
+{$history}
 HTML;
     }
 
