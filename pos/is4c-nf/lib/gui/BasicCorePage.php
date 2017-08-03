@@ -81,6 +81,7 @@ class BasicCorePage extends CorePage
         } elseif (file_exists(dirname(__FILE__) . '/../../graphics/your_logo_here.gif')) {
             $this->body_class = 'placeholderBGimage';
         }
+        $this->addOnloadCommand("errorLog.register('{$this->page_url}');");
         ob_start();
         $this->drawPage();
         ob_end_flush();
