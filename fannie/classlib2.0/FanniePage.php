@@ -82,6 +82,30 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         return $ret;
     }
 
+    protected function getMessages()
+    {
+        if (!$this->current_user || !is_object($this->connection)) {
+            return '';
+        }
+        $uid = FannieAuth::getUID($this->current_user);
+        $msg = new COREPOS\Fannie\API\auth\Notifications($this->connection);
+        $msgs = $msg->getMessages($uid);
+        $ret = '';
+        foreach ($msgs as $m) {
+            $ret .= '<div class="alert alert-info">';
+            if ($m['url']) {
+                $ret .= '<a href="' . $url . '">';
+            }
+            $ret .= $m['message'];
+            if ($m['url']) {
+                $ret .= '</a>';
+            }
+            $ret .= '</div>';
+        }
+
+        return $ret;
+    }
+
     /**
       Get the standard header
       @return An HTML string
@@ -128,6 +152,8 @@ class FanniePage extends \COREPOS\common\ui\CorePage
             $this->addScript($url . 'src/javascript/linea/WebHub.js');
             $this->addScript($url . 'src/javascript/linea/core.js');
         }
+
+        echo $this->getMessages();
 
         return ob_get_clean();
     }
