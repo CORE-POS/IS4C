@@ -65,6 +65,21 @@ class AlertIncident extends FannieRESTfulPage
         return $ret;
     }
 
+    protected function post_id_handler()
+    {
+        $uid = FannieAuth::getUID($this->current_user);
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['IncidentDB']);
+        $model = new IncidentCommentsModel($this->connection);
+        $model->incidentID($this->id);
+        $model->userID($uid);
+        $model->tdate(date('Y-m-d H:i:s'));
+        $model->comment(FormLib::get('comment'));
+        $model->save();
+
+        return 'AlertIncident.php?id=' . $this->id;
+    }
+
     protected function post_handler()
     {
         $uid = FannieAuth::getUID($this->current_user);
@@ -125,6 +140,27 @@ class AlertIncident extends FannieRESTfulPage
         return 'AlertIncident.php?id=' . $id;
     }
 
+    protected function getComments($id)
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $prefix = $settings['IncidentDB'] . $this->connection->sep();
+
+        $query = "SELECT i.*,
+                u.name AS userName
+            FROM {$prefix}IncidentComments AS i
+                LEFT JOIN Users as u ON i.userID=u.uid
+            WHERE incidentID=?
+            ORDER BY tdate";
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, array($id));
+        $ret = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $ret[] = $row;
+        }
+
+        return $ret;
+    }
+
     protected function getIncident($id)
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
@@ -160,6 +196,18 @@ class AlertIncident extends FannieRESTfulPage
         $row['details'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
             '<a href="$1://$2$3">$1://$2$3</a>', $row['details']);
 
+        $comments = $this->getComments($this->id);
+        $cHtml = '';
+        foreach ($comments as $c) {
+            $cHtml .= sprintf('<div class="panel panel-default">
+                <div class="panel panel-heading">%s - %s</div>
+                <div class="panel panel-body">%s</div>
+                </div>',
+                $c['tdate'], $c['userName'],
+                nl2br($c['comment'])
+            );
+        }
+
         return <<<HTML
 <p>
     <a href="AlertIncident.php" class="btn btn-default">Home</a>
@@ -190,13 +238,30 @@ class AlertIncident extends FannieRESTfulPage
     <th>Requested trespass</th><td>{$row['trespass']}</td>
 </tr>
 </table>
-<p>
+<div class="panel panel-default">
+    <div class="panel-body">
     {$row['details']}
-</p>
-<p>
-    {$img1}
-    {$img2}
-</p>
+    </div>
+    <p>
+        {$img1}
+        {$img2}
+    </p>
+</div>
+{$cHtml}
+<form method="post">
+    <input type="hidden" name="id" value="{$this->id}" />
+    <div class="panel panel-default">
+        <div class="panel-heading">Add a Comment</div>
+        <div class="panel-body">
+            <p>
+            <textarea name="comment" class="form-control" rows="7"></textarea>
+            </p>
+            <p>
+            <button type="submit" class="btn btn-default">Post Comment</button>
+            </p>
+        </div>
+    </div>
+</form>
 HTML;
     }
 
