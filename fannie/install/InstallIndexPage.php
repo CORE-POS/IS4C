@@ -721,6 +721,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'UserGroupsModel',
         'UserGroupPrivsModel',
         'UserSessionsModel',
+        'UserMessagesModel',
         // VIEWS
         'SuperMinIdViewModel',
         'MasterSuperDeptsModel',
