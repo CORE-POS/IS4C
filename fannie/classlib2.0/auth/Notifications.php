@@ -9,7 +9,7 @@ class Notifications
     public function __construct($dbc, $config)
     {
         $this->dbc = $dbc;
-        $this->config;
+        $this->config = $config;
     }
 
     public function setMessage($uid, $msgID, $msg, $url)
