@@ -152,6 +152,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             $this->id = $orderID;
             if (count($ret) === 1) {
                 $ret[$i]['cases'] += 1;
+                $this->qty = $ret[$i]['cases'];
                 ob_start();
                 $this->get_id_sku_qty_handler();
                 $result = ob_get_clean();
