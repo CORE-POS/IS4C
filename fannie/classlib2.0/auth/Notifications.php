@@ -5,9 +5,11 @@ namespace COREPOS\Fannie\API\auth;
 class Notifications
 {
     private $dbc;
-    public function __construct($dbc)
+    private $config;
+    public function __construct($dbc, $config)
     {
         $this->dbc = $dbc;
+        $this->config;
     }
 
     public function setMessage($uid, $msgID, $msg, $url)
@@ -30,7 +32,8 @@ class Notifications
 
     public function getMessages($uid)
     {
-        $prep = $this->dbc->prepare('SELECT message, url FROM UserMessages WHERE userID=?');
+        $prefix = $this->config->get('OP_DB') . $this->dbc->sep();
+        $prep = $this->dbc->prepare("SELECT message, url FROM {$prefix}UserMessages WHERE userID=?");
         $res = $this->dbc->execute($prep, array($uid));
         $ret = array();
         while ($row = $this->dbc->fetchRow($res)) {

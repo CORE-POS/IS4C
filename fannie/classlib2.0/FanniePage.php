@@ -88,7 +88,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
             return '';
         }
         $uid = FannieAuth::getUID($this->current_user);
-        $msg = new COREPOS\Fannie\API\auth\Notifications($this->connection);
+        $msg = new COREPOS\Fannie\API\auth\Notifications($this->connection, $this->config);
         $msgs = $msg->getMessages($uid);
         $ret = '';
         foreach ($msgs as $m) {
