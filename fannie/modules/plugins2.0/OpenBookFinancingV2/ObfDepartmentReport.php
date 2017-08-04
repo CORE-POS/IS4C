@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\Fannie\API\lib\Stats;
+use COREPOS\Fannie\API\item\ItemText;
 
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -102,6 +103,105 @@ class ObfDepartmentReport extends FannieRESTfulPage
             }
         }
 
+        $weekDates = $this->connection->prepare("SELECT startDate, endDate FROM {$prefix}ObfWeeks WHERE obfWeekID=?");
+        $weekDates = $this->connection->getRow($weekDates, array($week));
+        $weekDates['startDate'] = date('Y-m-d', strtotime($weekDates['startDate']));
+        $weekDates['endDate'] = date('Y-m-d', strtotime($weekDates['endDate']));
+        $store = $this->connection->prepare("SELECT storeID FROM {$prefix}ObfCategories WHERE obfCategoryID=?");
+        $store = $this->connection->getValue($store, array($this->id));
+        $opDB = $this->config->get('OP_DB') . $this->connection->sep();
+        $deptP = $this->connection->prepare("SELECT dept_ID 
+            FROM {$prefix}ObfCategorySuperDeptMap AS o 
+                INNER JOIN {$opDB}superdepts AS s ON o.superID=s.superID 
+            WHERE o.obfCategoryID=?
+            GROUP BY dept_ID");
+        $depts = array();
+        $deptR = $this->connection->execute($deptP, array($this->id));
+        while ($row = $this->connection->fetchRow($deptR)) {
+            $depts[] = $row['dept_ID'];
+        }
+        $args = array_map(function ($i) { return (int)$i; }, $args);
+        $stamp = strtotime($weekDates['startDate']);
+        $lastWeek = array(
+            'startDate' => date('Y-m-d', mktime(0,0,0,date('n',$stamp),date('j',$stamp)-7,date('Y',$stamp))),
+            'endDate' => date('Y-m-d', mktime(0,0,0,date('n',$stamp),date('j',$stamp)-1,date('Y',$stamp))),
+        );
+        $dlog = DTransactionsModel::selectDlog($lastWeek['startDate'], $weekDates['endDate']);
+        list($dIn, $args) = $this->connection->safeInClause($depts);
+        $bestQ = "SELECT d.upc,
+            SUM(total) AS ttl,
+            MAX(d.description) AS saleDesc
+            FROM {$dlog} AS d
+                " . DTrans::joinProducts('d') . "
+                LEFT JOIN {$opDB}productUser AS u ON u.upc=d.upc
+            WHERE d.department IN ({$dIn})
+                AND d.store_id=?
+                AND d.tdate BETWEEN ? AND ?
+                AND d.trans_type IN ('I','D')
+                AND d.charflag <> 'SO'
+            GROUP BY d.upc
+            ORDER BY SUM(total) DESC";
+        $bestQ = $this->connection->addSelectLimit($bestQ, 5);
+        $bestP = $this->connection->prepare($bestQ);
+        $bestArgs = $args;
+        $bestArgs[] = $store;
+        $bestArgs[] = $weekDates['startDate'] . ' 00:00:00';
+        $bestArgs[] = $weekDates['endDate'] . ' 23:59:59';
+        $bestR = $this->connection->execute($bestP, $bestArgs);
+        $best = array();
+        while ($bestW = $this->connection->fetchRow($bestR)) {
+            $best[] = $bestW;
+        }
+
+        $gainLossQ = "SELECT d.upc,
+            SUM(CASE WHEN d.tdate BETWEEN ? AND ? THEN total ELSE 0 END) as thisWeekTTL,
+            SUM(CASE WHEN d.tdate BETWEEN ? AND ? THEN total ELSE 0 END) as lastWeekTTL,
+            SUM(CASE WHEN d.tdate BETWEEN ? AND ? THEN total ELSE 0 END)
+                - SUM(CASE WHEN d.tdate BETWEEN ? AND ? THEN total ELSE 0 END) as diffTTL,
+            MAX(d.description) AS saleDesc
+            FROM {$dlog} AS d
+                " . DTrans::joinProducts('d') . "
+                LEFT JOIN {$opDB}productUser AS u ON u.upc=d.upc
+            WHERE d.department IN ({$dIn})
+                AND d.store_id=?
+                AND d.tdate BETWEEN ? AND ?
+                AND d.trans_type IN ('I','D')
+                AND d.charflag <> 'SO'
+            GROUP BY d.upc
+            HAVING thisWeekTTL > 0 AND lastWeekTTL > 0";
+        $glArgs = array(
+            $weekDates['startDate'] . ' 00:00:00',
+            $weekDates['endDate'] . ' 23:59:59',
+            $lastWeek['startDate'] . ' 00:00:00',
+            $lastWeek['endDate'] . ' 23:59:59',
+            $weekDates['startDate'] . ' 00:00:00',
+            $weekDates['endDate'] . ' 23:59:59',
+            $lastWeek['startDate'] . ' 00:00:00',
+            $lastWeek['endDate'] . ' 23:59:59',
+        );
+        foreach ($args as $a) {
+            $glArgs[] = $a;
+        }
+        $glArgs[] = $store;
+        $glArgs[] = $lastWeek['startDate'] . ' 00:00:00';
+        $glArgs[] = $weekDates['endDate'] . ' 23:59:59';
+        $gainQ = $gainLossQ . ' ORDER BY diffTTL DESC';
+        $gainQ = $this->connection->addSelectLimit($gainQ, 5);
+        $gainP = $this->connection->prepare($gainQ);
+        $gainR = $this->connection->execute($gainP, $glArgs);
+        $gain = array();
+        while ($row = $this->connection->fetchRow($gainR)) {
+            $gain[] = $row;
+        }
+        $lossQ = $gainLossQ . ' ORDER BY diffTTL ASC';
+        $lossQ = $this->connection->addSelectLimit($lossQ, 5);
+        $lossP = $this->connection->prepare($lossQ);
+        $lossR = $this->connection->execute($lossQ, $glArgs);
+        $loss = array();
+        while ($row = $this->connection->fetchRow($lossR)) {
+            $loss[] = $row;
+        }
+
         $dates = array_keys($lineData['lastYearSales']);
         $ret = '';
         $ret .= sprintf('<p>
@@ -175,6 +275,26 @@ class ObfDepartmentReport extends FannieRESTfulPage
             }
         }
         $ret .= '</tr></tbody></table>';
+        $ret .= '<table class="table table-bordered table-striped"><thead><tr><th>Top Sellers</th><th>$</th></tr></thead><tbody>';
+        foreach ($best as $b) {
+            $ret .= sprintf('<tr><td>%s %s</td><td>%.2f</td></tr>',
+                $b['upc'], $b['saleDesc'], $b['ttl']);
+        }
+        $ret .= '</tbody></table>';
+        $ret .= '<table class="table table-bordered table-striped"><thead><tr><th>Gainers</th><th>Last Week</th>
+            <th>This Week</th><th>Diff</th></tr></thead><tbody>';
+        foreach ($gain as $b) {
+            $ret .= sprintf('<tr><td>%s %s</td><td>%.2f</td><td>%.2f</td><td>%.2f</td></tr>',
+                $b['upc'], $b['saleDesc'], $b['lastWeekTTL'], $b['thisWeekTTL'], ($b['thisWeekTTL'] - $b['lastWeekTTL']));
+        }
+        $ret .= '</tbody></table>';
+        $ret .= '<table class="table table-bordered table-striped"><thead><tr><th>Droppers</th><th>Last Week</th>
+            <th>This Week</th><th>Diff</th></tr></thead><tbody>';
+        foreach ($loss as $b) {
+            $ret .= sprintf('<tr><td>%s %s</td><td>%.2f</td><td>%.2f</td><td>%.2f</td></tr>',
+                $b['upc'], $b['saleDesc'], $b['lastWeekTTL'], $b['thisWeekTTL'], ($b['thisWeekTTL'] - $b['lastWeekTTL']));
+        }
+        $ret .= '</tbody></table>';
         $ret .= '</div><div class="col-sm-5"><canvas id="hoursLine"></canvas>
             <br /><canvas id="splhLine"></canvas></div></div>';
 
