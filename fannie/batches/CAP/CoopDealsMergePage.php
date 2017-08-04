@@ -55,6 +55,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
 
         $added = 0;
         $batchList = new BatchListModel($dbc);
+        $bu = new BatchUpdateModel($dbc);
         for ($i=0; $i<count($this->batchID); $i++) {
             if ($this->batchID[$i] == '') {
                 continue;
@@ -68,6 +69,10 @@ class CoopDealsMergePage extends FannieRESTfulPage
             $batchList->signMultiplier($this->mult[$i]);
             if ($batchList->save()) {
                 $added++;
+                $bu->reset();
+                $bu->upc(BarcodeLib::padUPC($this->upc[$i]));
+                $bu->batchID($this->batchID[$i]);
+                $bu->logUpdate($bu::UPDATE_ADDED);
             }
         }
 
