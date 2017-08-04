@@ -100,6 +100,7 @@ HTML;
                 <input type="hidden" name="bid" id="bidIn" value="" />
             </form>
         ';
+        $this->addScript('BatchHistory.js');
 
         return $ret;
 
@@ -144,6 +145,7 @@ HTML;
                 <input type="hidden" name="bid" id="bidIn" value="" />
             </form>
         ';
+        $this->addScript('BatchHistory.js');
 
         return $ret;
     }
@@ -227,11 +229,7 @@ HTML;
     public function javascriptContent()
     {
         ob_start();?>
-function get_bid(bid)
-{
-    $("#bidIn").val(bid);
-    $("#bidForm").submit();
-}
+
         <?php
         return ob_get_clean();
     }
