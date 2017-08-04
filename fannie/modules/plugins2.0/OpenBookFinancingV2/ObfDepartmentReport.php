@@ -296,7 +296,11 @@ class ObfDepartmentReport extends FannieRESTfulPage
         }
         $ret .= '</tbody></table>';
         $ret .= '</div><div class="col-sm-5"><canvas id="hoursLine"></canvas>
-            <br /><canvas id="splhLine"></canvas></div></div>';
+            <br /><canvas id="splhLine"></canvas><br />
+            <br /><canvas id="bestBar"></canvas><br />
+            <br /><canvas id="gainBar"></canvas><br />
+            <br /><canvas id="lossBar"></canvas><br />
+            </div></div>';
 
         $lineLabels = json_encode(array_keys($lineData['lastYearSales']));
         $actualData = $this->jsonify($lineData['actualSales']);
@@ -308,6 +312,14 @@ class ObfDepartmentReport extends FannieRESTfulPage
         $lyHoursData = $this->jsonify($lyHours);
         $splhData = json_encode($splhData);
         $lySplhData = json_encode($lySplhData);
+        $bestLabels = json_encode(array_map(function ($i) { return $i['saleDesc']; }, $best));
+        $bestData = json_encode(array_map(function($i) { return $i['ttl']; }, $best));
+        $gainLabels = json_encode(array_map(function ($i) { return $i['saleDesc']; }, $gain));
+        $gainLW = json_encode(array_map(function ($i) { return $i['lastWeekTTL']; }, $gain));
+        $gainTW = json_encode(array_map(function ($i) { return $i['thisWeekTTL']; }, $gain));
+        $lossLabels = json_encode(array_map(function ($i) { return $i['saleDesc']; }, $loss));
+        $lossLW = json_encode(array_map(function ($i) { return $i['lastWeekTTL']; }, $loss));
+        $lossTW = json_encode(array_map(function ($i) { return $i['thisWeekTTL']; }, $loss));
         $ret .= <<<HTML
 <script type="text/javascript">
 function drawCharts() {
@@ -417,6 +429,74 @@ function drawCharts() {
                 },
             ],
             labels: {$lineLabels}
+        }
+    });
+
+    var ctx5 = document.getElementById('bestBar').getContext('2d');
+    var bar = new Chart(ctx5, {
+        type: 'bar',
+        data: {
+            labels: {$bestLabels},
+            datasets: [{
+                label: 'Top Sellers',
+                data: {$bestData},
+                backgroundColor: "#3366cc",
+                pointBackgroundColor: "#3366cc",
+                pointBorderColor: "#3366cc",
+                borderColor: "#3366cc"
+            }]
+        }
+    });
+
+    var ctx6 = document.getElementById('gainBar').getContext('2d');
+    var bar = new Chart(ctx6, {
+        type: 'bar',
+        data: {
+            labels: {$gainLabels},
+            datasets: [
+                {
+                    label: 'This Week',
+                    data: {$gainTW},
+                    backgroundColor: "#3366cc",
+                    pointBackgroundColor: "#3366cc",
+                    pointBorderColor: "#3366cc",
+                    borderColor: "#3366cc"
+                },
+                {
+                    label: 'Last Week',
+                    data: {$gainLW},
+                    backgroundColor: "#dc3912",
+                    pointBackgroundColor: "#dc3912",
+                    pointBorderColor: "#dc3912",
+                    borderColor: "#dc3912"
+                }
+            ]
+        }
+    });
+
+    var ctx7 = document.getElementById('lossBar').getContext('2d');
+    var bar = new Chart(ctx7, {
+        type: 'bar',
+        data: {
+            labels: {$lossLabels},
+            datasets: [
+                {
+                    label: 'This Week',
+                    data: {$lossTW},
+                    backgroundColor: "#3366cc",
+                    pointBackgroundColor: "#3366cc",
+                    pointBorderColor: "#3366cc",
+                    borderColor: "#3366cc"
+                },
+                {
+                    label: 'Last Week',
+                    data: {$lossLW},
+                    backgroundColor: "#dc3912",
+                    pointBackgroundColor: "#dc3912",
+                    pointBorderColor: "#dc3912",
+                    borderColor: "#dc3912"
+                }
+            ]
         }
     });
 }
