@@ -41,6 +41,14 @@ class BatchHistoryPage extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $this->con = FannieDB::get($FANNIE_OP_DB);
+        if (FormLib::get('nomenu')) {
+            $this->window_dressing = false;
+            include(dirname(__FILE__) . '/../../config.php');
+            $this->addScript($FANNIE_URL . 'src/javascript/jquery.js');
+            $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/jquery-ui.css');
+            $this->addCssFile($FANNIE_URL . 'src/javascript/bootstrap/css/bootstrap.min.css');
+        }
         $this->__routes[] = 'get<upc>';
         $this->__routes[] = 'get<bid>';
 
@@ -98,6 +106,7 @@ HTML;
         $ret .= '
             <form method="get" id="bidForm">
                 <input type="hidden" name="bid" id="bidIn" value="" />
+                <input type="hidden" name="nomenu" value="1" />
             </form>
         ';
         $this->addScript('BatchHistory.js');
@@ -160,6 +169,8 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $ret = '';
+        $ret .= '<a onClick="history.go(-1);return true;"  style="font-size: 10px; 
+            cursor: pointer; ">Back</a>';
 		$bm = new BatchesModel($dbc);
         $ret .= '<div class="" align="center"><h4 style="color: grey">Batch #<strong>'.$bid.'</strong></h4></div>';
         $bu = new BatchUpdateModel($dbc);
@@ -183,7 +194,7 @@ HTML;
                         } else {
                             $fweight = '';
                         }
-                    }
+                    } 
                     ${'last_'.$column} = $obj->$column();
                     if ($column == 'startDate' || $column == 'endDate'){
                         $ret .= '<td style="'.$fweight.'">' . $obj->$column() . '</td>';

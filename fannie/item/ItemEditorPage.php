@@ -476,11 +476,15 @@ HTML;
     href="{$url}reports/CostHistory/?upc={$upc}" title="Cost History">Cost</a>
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
     href="{$url}reports/RecentSales/?upc={$upc}" title="Sales History">Sales</a>
-<a class="btn btn-default btn-sm fancyboxLink" 
-    data-toggle='modal' data-target='#bhModal' title="Batch History">Batches</a>
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
     href="{$url}reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc={$upc}" 
     title="Order History">Orders</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}reports/ItemBatches/ItemBatchesReport.php?upc={$upc}" 
+    title="Batch History">Batches</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink"
+    href="{$url}batches/batchhistory/BatchHistoryPage.php?upc={$upc}&nomenu=1"
+    title="Extended Histocal Batch Data">Batch Historical</a>
 </span>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
@@ -493,61 +497,9 @@ HTML;
         }
         $ret .= '</p>';
         
-        $ret .= $this->batchHistoryModal();
-
         return $ret;
     }
     
-    private function batchHistoryModal()
-    {
-        include('../batchhistory/BatchHistoryPage.php');
-        $modal = '';
-        $modal .= '
-            <style>
-            .vertical-alignment-helper {
-                display:table;
-                height: 100%;
-                width: 100%;
-                pointer-events:none; /* This makes sure that we can still click outside of the modal to close it */
-            }
-            .vertical-align-center {
-                /* To center vertically */
-                display: table-cell;
-                vertical-align: middle;
-                pointer-events:none;
-            }
-            .modal-content {
-                /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
-                width:inherit;
-                height:inherit;
-                /* To center horizontally */
-                margin: 0 auto;
-                pointer-events: all;
-            }
-            </style>
-        ';
-        $modal .= '
-                <!-- Modal -->
-                <div id="bhModal" class="modal" role="dialog">
-                <div class="vertical-alignment-helper">
-                  <div class="modal-dialog vertical-align-center">
-                    <!-- Modal content-->
-                    <div class="modal-content" style="height: 85vh; width: 85vw;">
-                        <div style="max-height: 85vh; overflow-y:auto;">
-                            ';
-        $bhp = new BatchHistoryPage;
-        $modal .= $bhp->getBatchHistory($bid);
-        $modal .='
-                        </div>
-                    </div>
-                  </div>
-                </div>
-                </div>
-        ';
-        
-        return $modal;
-    }
-
     private function editForm($upc,$isNew)
     {
         $FANNIE_PRODUCT_MODULES = $this->getConfiguredModules();
