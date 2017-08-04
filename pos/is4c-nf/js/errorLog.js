@@ -35,18 +35,17 @@ var errorLog = (function ($) {
       Attach logging to the window.onerror event.
       @param urlStem [string] path to pos/is4c-nf/
     */
-    mod.register(urlStem) {
+    mod.register = function(urlStem) {
         window.onerror = function(msg, pageURL, lineNo, colNo, error) {
             var logEntry = { 
                 message: msg,
                 url: pageURL,
                 line: lineNo,
-                col: columnNo,
+                col: colNo,
                 detail: error
             };
+            mod.log(JSON.stringify(logEntry), urlStem);
         };
-
-        mod.log(JSON.stringify(logEntry), urlStem);
     };
 
     return mod;
