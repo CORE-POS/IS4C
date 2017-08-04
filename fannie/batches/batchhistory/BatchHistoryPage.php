@@ -32,26 +32,80 @@ if (!function_exists('checkLogin')) {
 class BatchHistoryPage extends FannieRESTfulPage
 {
     protected $title = 'Batch History';
-    protected $header = '';
+    protected $header = 'Product Batch History';
 
-    public $description = '[Batch History Page] is the primary tool for viewing 
+    public $description = '[Batch History Page] is the primary tool for viewing
         historical activity of batches.';
 
     function preprocess()
     {
         global $FANNIE_OP_DB;
         $this->con = FannieDB::get($FANNIE_OP_DB);
-        $this->__routes[] = 'post<delete><id>';
+        $this->__routes[] = 'get<upc>';
+        $this->__routes[] = 'get<bid>';
 
         return parent::preprocess();
     }
 
     function get_view()
     {
-        
+        return <<< HTML
+<form method="get" class="form-inline">
+    <input type="text" class="form-control" name="upc"/>
+    <button type="submit" class="btn btn-default">View Product History</button>
+</form><br />
+HTML;
     }
-    
-    /** 
+
+    public function get_bid_view()
+    {
+        $bid = FormLib::get('bid');
+        $ret = $this->getBatchHistory($bid);
+        return $ret;
+    }
+
+    public function get_upc_view()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $ret = '';
+        $bu = new BatchUpdateModel($dbc);
+        $upc = FormLib::get('upc');
+        $bu->upc($upc);
+        $upcCols = array('batchID','updateType','upc','modified','user','specialPrice');
+        $ret .= '<table class="table table-bordered table-condensed small" id="iTable"><thead>';
+        foreach ($upcCols as $column) {
+            $ret .= '<th>' . ucwords($column) . '</th>';
+        }
+        $ret .= '</thead><tbody>';
+        foreach ($bu->find() as $obj) {
+            $ret .= '<tr class="info">';
+            if ($obj->upc()) {
+                foreach ($upcCols as $upcCol) {
+                    if ($upcCol == 'batchID'){
+                        $ret .= '<td><a style="cursor: pointer;"
+                            onClick="get_bid('.$obj->$upcCol().'); return false;">'
+                            . $obj->$upcCol() . '</a></td>';
+                    } else {
+                        $ret .= '<td>' . $obj->$upcCol() . '</td>';
+                    }
+                }
+            }
+            $ret .= '</tr>';
+        }
+        $ret .= '</tbody></table>';
+        $ret .= '
+            <form method="get" id="bidForm">
+                <input type="hidden" name="bid" id="bidIn" value="" />
+            </form>
+        ';
+
+        return $ret;
+
+    }
+
+    /**
         @getBatchHistory
         Return batch history info from another page.
     */
@@ -99,7 +153,7 @@ class BatchHistoryPage extends FannieRESTfulPage
                     }
                 }
                 $s = 0;
-            } 
+            }
             $ret .= '</tr>';
         }
         $ret .= '</tbody></table>';
@@ -117,13 +171,25 @@ class BatchHistoryPage extends FannieRESTfulPage
                 foreach ($upcCols as $upcCol) {
                     $ret .= '<td>' . $obj->$upcCol() . '</td>';
                 }
-            } 
+            }
             $ret .= '</tr>';
         }
-  
+
         $ret .= '</tbody></table>';
-        
+
         return $ret;
+    }
+
+    public function javascriptContent()
+    {
+        ob_start();?>
+function get_bid(bid)
+{
+    $("#bidIn").val(bid);
+    $("#bidForm").submit();
+}
+        <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -131,72 +197,6 @@ class BatchHistoryPage extends FannieRESTfulPage
         return '';
     }
 
-    /**
-      Create, update, and delete a batch
-      Try each mode with and without an owner filter
-    */
-    public function unitTest($phpunit)
-    {
-        $get = $this->get_view();
-        $phpunit->assertNotEquals(0, strlen($get));
-
-        $this->connection->selectDB($this->config->get('OP_DB'));
-        $model = new BatchesModel($this->connection);
-
-        $this->newType = 1;
-        $this->newName = 'Test BatchListPage';
-        $this->newStart = date('Y-m-d 00:00:00');
-        $this->newEnd = date('Y-m-d 00:00:00');
-        $this->newOwner = 'MULTIPLE DEPTS.';
-        ob_start();
-        $this->post_newType_newName_newStart_newEnd_newOwner_handler();
-        ob_end_clean();
-        $model->batchName($this->newName);
-        $matches = $model->find();
-        $phpunit->assertEquals(1, count($matches));
-        $model->reset();
-        $model->batchID($matches[0]->batchID());
-        $phpunit->assertEquals(true, $model->load());
-        $phpunit->assertEquals($this->newType, $model->batchType());
-        $phpunit->assertEquals($this->newName, $model->batchName());
-        $phpunit->assertEquals($this->newStart, $model->startDate());
-        $phpunit->assertEquals($this->newEnd, $model->endDate());
-        $phpunit->assertEquals($this->newOwner, $model->owner());
-
-        $this->id = $model->batchID();
-        $this->batchName = 'Change BatchListPage';
-        $this->batchType = 2;
-        $this->startDate = date('Y-m-d 00:00:00', strtotime('yesterday'));
-        $this->endDate = $this->startDate;
-        $this->owner = 'Admin';
-        ob_start();
-        $this->post_id_batchName_batchType_startDate_endDate_owner_handler();
-        ob_end_clean();
-        $model->reset();
-        $model->batchID($this->id);
-        $phpunit->assertEquals(true, $model->load());
-        $phpunit->assertEquals($this->batchType, $model->batchType());
-        $phpunit->assertEquals($this->batchName, $model->batchName());
-        $phpunit->assertEquals($this->startDate, $model->startDate());
-        $phpunit->assertEquals($this->endDate, $model->endDate());
-        $phpunit->assertEquals($this->owner, $model->owner());
-
-        $this->delete = 1;
-        ob_start();
-        $this->post_delete_id_handler();
-        ob_end_clean();
-        $model->reset();
-        $model->batchID($this->id); 
-        $phpunit->assertEquals(false, $model->load());
-
-        $modes = array('pending', 'current', 'historical', 'all');
-        foreach ($modes as $m) {
-            $get = $this->batchListDisplay('', $m, rand(0, 50));
-            $phpunit->assertNotEquals(0, strlen($get));
-            $get = $this->batchListDisplay('MULTIPLE DEPTS.', $m, rand(0, 50));
-            $phpunit->assertNotEquals(0, strlen($get));
-        }
-    }
 }
 
 FannieDispatch::conditionalExec();
