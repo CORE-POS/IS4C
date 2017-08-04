@@ -133,6 +133,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     public function preprocess()
     {
+        $this->addScript('../../../src/javascript/Chart.min.js');
+        $this->addScript('summary.js');
+
         return FannieReportPage::preprocess();
     }
 
@@ -741,6 +744,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly, false);
         $data[] = $this->ownershipThisYear($dbc, $end_ts);
 
+        $json = $this->chartData($dbc, $this->form->weekID, $store);
+        $this->addOnloadCommand("obfSummary.drawChart('" . json_encode($json) . "')");
+
         return $data;
     }
 
@@ -787,6 +793,64 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             'meta_background' => $this->colors[0],
             'meta_foreground' => 'black',
         );
+    }
+
+    private function chartData($dbc, $weekID, $storeID)
+    {
+        $begin = $weekID - 12;
+        $json = array(
+            'labels' => array(),
+            'sales' => array(),
+            'lySales' => array(),
+            'hours' => array(),
+            'lyHours' => array(),
+            'splh' => array(),
+            'lySplh' => array(),
+        );
+
+        $hourP = $dbc->prepare("SELECT SUM(hours) 
+            FROM ObfLabor AS l
+                LEFT JOIN ObfCategories AS c ON l.obfCategoryID=c.obfCategoryID
+            WHERE obfWeekID=?
+                    AND c.storeID=?");
+
+        $infoP = $dbc->prepare("
+            SELECT o.obfWeekID,
+                SUM(o.actualSales) AS sales,
+                SUM(o.lastYearSales) AS lySales,
+                MAX(w.startDate) AS startDate,
+                MAX(w.endDate) AS endDate
+            FROM ObfSalesCache AS o
+                LEFT JOIN ObfWeeks AS w ON o.obfWeekID=w.obfWeekID
+                LEFT JOIN ObfCategories AS c ON o.obfCategoryID=c.obfCategoryID
+            WHERE o.obfWeekID BETWEEN ? AND ?
+                AND c.storeID=?
+            GROUP BY o.obfWeekID
+            ORDER BY o.obfWeekID");
+        $infoR = $dbc->execute($infoP, array($begin, $weekID, $storeID));
+        while ($infoW = $dbc->fetchRow($infoR)) {
+            $dstr = date('m/d', strtotime($infoW['startDate']))
+                . ' - '
+                . date('m/d', strtotime($infoW['endDate']));
+            if (!in_array($dstr, $json['labels'])) {
+                $json['labels'][] = $dstr;
+            }
+            if ($infoW['sales'] > 0) {
+                $json['sales'][] = $infoW['sales'];
+            }
+            $json['lySales'][] = $infoW['lySales'];
+
+            $hours = $dbc->getValue($hourP, array($infoW['obfWeekID'], $storeID));
+            $lyHours = $dbc->getValue($hourP, array($infoW['obfWeekID'] - 52, $storeID));
+            if ($hours > 0) {
+                $json['hours'][] = $hours;
+                $json['splh'][] = $hours == 0 ? 0 : $infoW['sales'] / $hours;
+            }
+            $json['lyHours'][] = $lyHours;
+            $json['lySplh'][] = $lyHours == 0 ? 0 : $infoW['lySales'] / $lyHours;
+        }
+
+        return $json;
     }
 
     private function getOtherStore($storeID, $weekID)
