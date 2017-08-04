@@ -477,7 +477,7 @@ HTML;
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
     href="{$url}reports/RecentSales/?upc={$upc}" title="Sales History">Sales</a>
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
-    href="{$url}reports/ItemBatches/ItemBatchesReport.php?upc={$upc}" 
+    href="{$url}batches/batchhistory/BatchHistoryPage.php?upc={$upc}" 
     title="Batch History">Batches</a>
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
     href="{$url}reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc={$upc}" 
