@@ -104,10 +104,53 @@ HTML;
         return $ret;
 
     }
+    
+    /**
+        @getProdBatchHist
+        Return product batch history w/o loading Fannie ui
+    */
+    public function getProdBatchHist($upc)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $ret = '';
+        $bu = new BatchUpdateModel($dbc);
+        $bu->upc($upc);
+        $upcCols = array('batchID','updateType','upc','modified','user','specialPrice');
+        $ret .= '<table class="table table-bordered table-condensed small" id="iTable"><thead>';
+        foreach ($upcCols as $column) {
+            $ret .= '<th>' . ucwords($column) . '</th>';
+        }
+        $ret .= '</thead><tbody>';
+        foreach ($bu->find() as $obj) {
+            $ret .= '<tr class="info">';
+            if ($obj->upc()) {
+                foreach ($upcCols as $upcCol) {
+                    if ($upcCol == 'batchID'){
+                        $ret .= '<td><a style="cursor: pointer;"
+                            onClick="get_bid('.$obj->$upcCol().'); return false;">'
+                            . $obj->$upcCol() . '</a></td>';
+                    } else {
+                        $ret .= '<td>' . $obj->$upcCol() . '</td>';
+                    }
+                }
+            }
+            $ret .= '</tr>';
+        }
+        $ret .= '</tbody></table>';
+        $ret .= '
+            <form method="get" id="bidForm">
+                <input type="hidden" name="bid" id="bidIn" value="" />
+            </form>
+        ';
+
+        return $ret;
+    }
 
     /**
         @getBatchHistory
-        Return batch history info from another page.
+        Return batch history w/o loading Fannie ui
     */
     public function getBatchHistory($bid)
     {
@@ -115,7 +158,8 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $ret = '';
-        $ret .= '<div class="" align="center"><h4 style="color: grey">Batch Info</h4></div>';
+		$bm = new BatchesModel($dbc);
+        $ret .= '<div class="" align="center"><h4 style="color: grey">Batch #<strong>'.$bid.'</strong></h4></div>';
         $bu = new BatchUpdateModel($dbc);
         $bu->batchID($bid);
         $bt = new BatchTypeModel($dbc);
