@@ -8,6 +8,10 @@
     <li><a href="receiptTest.php">Receipt Output</a><br />
         (Displays raw output for a tender report module)
     </li>
+    <li><a href="logging/index.php">Logging</a><br />
+        (Generate different types of errors and verify they
+         get logged correctly)
+    </li>
     <li><a href="testTenderReport.php">Tender Report</a><br />
         (Displays raw output for a tender report module)
     </li>
