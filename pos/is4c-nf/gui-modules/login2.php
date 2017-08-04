@@ -141,11 +141,8 @@ class login2 extends BasicCorePage
         <div id="loginExit">
             <?php 
             echo _("EXIT");
-            echo "<a href=\"\" ";
-            echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
-            echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
             ?>
-            <img id="exit" style="border:0;" alt="exit"  src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
+            <a href=""><img id="exit" style="border:0;" alt="exit"  src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
     
         </div>
         <form name="hidden">
