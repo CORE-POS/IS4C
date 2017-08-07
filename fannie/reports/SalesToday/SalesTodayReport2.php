@@ -163,14 +163,18 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
 
         echo '<div id="chartDiv"><canvas id="chartCanvas"></canvas></div>';
 
-        $mapper = function($i) { return array('x'=>$i['hr'], 'y'=>$i['ttl']); };
+        $mapper = function($i) { return array('x'=>(int)$i['hr'], 'y'=>$i['ttl']); };
+        $filter = function ($i) { return $i['x'] >= 7; };
         $points = array(
             'avg' => array_map($mapper, $avg),
             'today' => array_map($mapper, $today),
             'lastWeek' => array_map($mapper, $lastWeek),
         );
+        $points['avg'] = array_values(array_filter($points['avg'], $filter));
+        $points['today'] = array_values(array_filter($points['today'], $filter));
+        $points['lastWeek'] = array_values(array_filter($points['lastWeek'], $filter));
+        $labels = json_encode(array_map(function ($i) { return $i['x']; }, $points['avg']));
         $points = json_encode($points);
-        $labels = json_encode(array_map(function ($i) { return $i['hr']; }, $avg));
         $dayName = json_encode(date('D'));
         $this->addOnloadCommand("stChart.lineChart('chartCanvas', {$labels}, {$points}, {$dayName});");
         $this->addOnloadCommand("\$('select[name=store]').change(function() { location='?store='+this.value; });");
