@@ -69,7 +69,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo json_encode($ret);
+            echo json_encode($this->addCurrentQty($dbc, $ret));
             return False;
         }
 
@@ -93,12 +93,33 @@ class EditManyPurchaseOrders extends FannieRESTfulPage
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo json_encode($ret);
+            echo json_encode($this->addCurrentQty($dbc, $ret));
             return False;
         }
 
         echo '[]';
         return False;
+    }
+
+    private function addCurrentQty($dbc, $results)
+    {
+        $idCache = array();
+        $uid = FannieAuth::getUID($this->current_user);
+        $lookupP = $dbc->prepare('SELECT quantity FROM PurchaseOrderItems WHERE orderID=? AND sku=?');
+        for ($i=0; $i<count($results); $i++) {
+            $vendorID = $results[$i]['vendorID'];
+            $sku = $results[$i]['sku'];
+            if (isset($idCache[$vendorID])) {
+                $orderID = $idCache[$vendorID];
+            } else {
+                $orderID = $this->getOrderID($vendorID, $uid);
+                $idCache[$vendorID] = $orderID;
+            }
+            $qty = $dbc->getValue($lookupP, array($orderID, $sku));
+            $results[$i]['currentQty'] = $qty === false ? 0 : $qty;
+        }
+
+        return $results;
     }
 
     /**

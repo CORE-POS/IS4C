@@ -37,7 +37,7 @@ function oneResultForm(obj, resultNum){
 	output += '<tr><td>Unit Cost: '+obj.unitCost+'</td>';
 	output += '<td>Case Cost: '+obj.caseCost+'</td></tr>';
 	output += '<tr>';
-	output += '<td colspan="2">Order <input type="number" size="3" value="1" onfocus="this.select();" id="srQty'+resultNum+'" />';
+	output += '<td colspan="2">Order <input type="number" size="3" value="'+obj.currentQty+'" onfocus="this.select();" id="srQty'+resultNum+'" />';
 	output += ' Cases</td></tr>';	
 	output += '</table>';
 	output += '<input type="hidden" id="srVendorID'+resultNum+'" value="'+obj.vendorID+'" />';
