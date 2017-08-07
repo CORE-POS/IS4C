@@ -469,7 +469,7 @@ class HouseCoupon extends SpecialUPC
             case "Q": // quantity discount
                 // discount = coupon's discountValue
                 // times the cheapeast coupon item
-                $valQ = "select unitPrice, department 
+                $valQ = "select unitPrice, department, trans_id
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
@@ -477,6 +477,13 @@ class HouseCoupon extends SpecialUPC
                 $valR = $transDB->query($valQ);
                 $valW = $transDB->fetch_row($valR);
                 $value = $valW[0] * $infoW["discountValue"];
+                // if the item is free, auto-remove tax
+                // partial removal for partially discounted items
+                // is not currently an option
+                if ($infoW['discountValue'] == 1) {
+                    $prep = $transDB->prepare("UPDATE localtemptrans SET tax=0 WHERE trans_id=?");
+                    $transDB->execute($prep, array($infoW['trans_id']));
+                }
                 break;
             case 'BG': // BOGO
                 $valQ = 'SELECT SUM(l.total), SUM(l.quantity) '
