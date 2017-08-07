@@ -47,6 +47,7 @@ class B2BInvoicesModel extends BasicModel
         'customerNotes' => array('type'=>'TEXT'),
         'internalNotes' => array('type'=>'TEXT'),
         'lastModifiedBy' => array('type'=>'INT'),
+        'uuid' => array('type'=>'VARCHAR(32)'),
     );
 
     public function doc()
@@ -56,6 +57,22 @@ class B2BInvoicesModel extends BasicModel
             is each billing is treated as a discrete event and there is more backend
             flexibility to make direct corrections and associate specific payments with
             specific bills.';
+    }
+
+    public function hookAddColumnuuid()
+    {
+        if (class_exists('Ramsey\\Uuid\\Uuid')) {
+            $dbc = $this->connection;
+            $res = $dbc->query('SELECT b2bInvoiceID FROM B2BInvoices WHERE uuid IS NULL');
+            $upP = $dbc->prepare('UPDATE B2BInvoices SET uuid=? WHERE b2bInvoiceID=?');
+            $dbc->startTransaction();
+            while ($row = $dbc->fetchRow($res)) {
+                $uuid = Ramsey\Uuid\Uuid::uuid4();
+                $uuid = str_replace('-', '', $uuid->toString());
+                $dbc->execute($upP, array($uuid, $row['b2bInvoiceID']));
+            }
+            $dbc->commitTransaction();
+        }
     }
 }
 

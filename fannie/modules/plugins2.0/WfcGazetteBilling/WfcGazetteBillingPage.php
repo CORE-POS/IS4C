@@ -144,8 +144,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 ({$tParam['columnString']}) VALUES ({$tParam['valueString']})");
 
         $invP = $sql->prepare("INSERT INTO B2BInvoices 
-            (cardNo, createdDate, createdTransNum, amount, description, isPaid, coding, createdBy, lastModifiedBy, customerNotes)
-            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)");
+            (cardNo, createdDate, createdTransNum, amount, description, isPaid, coding, createdBy, lastModifiedBy, customerNotes, uuid)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)");
         $invCoding = trim(FormLib::get('coding'));
         $invIssue = trim(FormLib::get('issueName'));
         $custNotes = trim(FormLib::get('customerNotes'));
@@ -195,6 +195,11 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $cardno,$amt,$EMP_NO."-".$LANE_NO."-".$t_no);
             */
 
+            $uuid = '';
+            if (class_exists('Ramsey\\Uuid\\Uuid')) {
+                $uuid = Ramsey\Uuid\Uuid::uuid4();
+                $uuid = str_replace('-', '', $uuid->toString());
+            }
             $invArgs = array(
                 $cardno,
                 date('Y-m-d H:i:s'),
@@ -205,6 +210,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $uid,
                 $uid,
                 $custNotes,
+                $uuid,
             );
             $sql->execute($invP, $invArgs);
             $invID = $sql->insertID();
