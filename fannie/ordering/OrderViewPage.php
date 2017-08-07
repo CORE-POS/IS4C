@@ -595,7 +595,7 @@ class OrderViewPage extends FannieRESTfulPage
             4 => 'Text (T-Mobile)',
             5 => 'Text (Verizon)',
             6 => 'Text (Google Fi)',
-            7 => 'Actual SMS (Still Testing)',
+            7 => 'Actual SMS',
         );
         $contactHtml = '';
         foreach ($contactOpts as $id=>$val) {
