@@ -154,9 +154,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                             result = ProcessPDC(message);
                         }
                         result = WrapHttpResponse(result);
-                        if (this.verbose_mode > 0) {
-                            Console.WriteLine(result);
-                        }
 
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
@@ -164,9 +161,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     client.Close();
                 }
             } catch (Exception ex) {
-                if (verbose_mode > 0) {
-                    Console.WriteLine(ex);
-                }
+                this.LogMessage(ex.ToString());
             }
         }
     }
@@ -273,10 +268,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
     public override void SetConfig(Dictionary<string,string> d)
     {
-        foreach (var item in d) {
-            Console.WriteLine(item.Key + ":" + item.Value);
-        }
-
         if (d.ContainsKey("disableRBA") && d["disableRBA"].ToLower() == "true") {
             try {
                 if (this.rba != null) {
@@ -291,6 +282,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
         if (d.ContainsKey("logXML") && d["logXML"].ToLower() == "true") {
             this.enable_xml_log = true;
+        }
+
+        if (d.ContainsKey("logErrors") && d["logErrors"].ToLower() == "true") {
+            this.enableUnifiedLog();
         }
 
         if (this.rba != null && d.ContainsKey("cashback") && (d["cashback"].ToLower() == "true" || d["cashback"].ToLower() == "false")) {
@@ -323,9 +318,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
         }
         xml = xml.Replace("{{ComPort}}", com_port);
-        if (this.verbose_mode > 0) {
-            Console.WriteLine("Sending: " + xml);
-        }
 
         try {
             /**
@@ -379,9 +371,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     }
                 } catch (Exception ex) {
                     // response was invalid xml
-                    if (this.verbose_mode > 0) {
-                        Console.WriteLine(ex);
-                    }
+                    this.LogMessage(ex.ToString());
                     // status is unclear so do not attempt 
                     // another transaction
                     break;
@@ -392,9 +382,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
         } catch (Exception ex) {
             // request was invalid xml
-            if (this.verbose_mode > 0) {
-                Console.WriteLine(ex);
-            }
+            this.LogMessage(ex.ToString());
         }
 
         return "";
@@ -412,9 +400,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
         xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
         xml = xml.Replace("{{ComPort}}", com_port);
-        if (this.verbose_mode > 0) {
-            Console.WriteLine(xml);
-        }
 
         string ret = "";
         ret = pdc_ax_control.ProcessTransaction(xml, 1, null, null);
@@ -534,7 +519,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             string filename = my_location + sep + "ss-output"+ sep + "tmp" + sep + ticks + ".bmp";
             BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
             parent.MsgSend("TERMBMP" + ticks + ".bmp");
-        } catch (Exception) {
+        } catch (Exception ex) {
+            this.LogMessage(ex.ToString());
             return null;
         }
         

@@ -35,6 +35,7 @@
  *
 *************************************************************/
 using System;
+using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Collections.Generic;
@@ -49,6 +50,8 @@ public class SerialPortHandler {
     protected CustomForms.DelegateForm parent;
     protected string port;
     protected int verbose_mode;
+    protected bool unified_log = false;
+    protected string unified_log_file = "";
 
     // to allow RBA_Stub
     public SerialPortHandler() {}
@@ -78,6 +81,37 @@ public class SerialPortHandler {
         SPH_Running = false;
         SPH_Thread.Join();
         System.Console.WriteLine("SPH Stopped");
+    }
+
+    protected void enableUnifiedLog()
+    {
+        string my_location = AppDomain.CurrentDomain.BaseDirectory;
+        char sep = Path.DirectorySeparatorChar;
+        this.unified_log_file = my_location + sep + ".." + sep + ".." + sep + ".." + sep + "log" + sep + "debug_lane.log";
+        this.unified_log = true;
+    }
+
+    /**
+      Handle debugging output to stdout and/or unified logging
+      @param msg the string output
+      @param verbose_min whether to print message to stdout
+    */
+    protected void LogMessage(string msg, int verbose_min=1)
+    {
+        if (this.verbose_mode >= verbose_min) {
+            Console.WriteLine(msg);
+        }
+        if (this.unified_log) {
+            try {
+                using (StreamWriter sw = File.AppendText(this.unified_log_file)) {
+                    sw.WriteLine(DateTime.Now.ToString() + ": " + msg);
+                }
+            } catch (Exception ex) {
+                if (this.verbose_mode > 0) {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
     }
 
 }

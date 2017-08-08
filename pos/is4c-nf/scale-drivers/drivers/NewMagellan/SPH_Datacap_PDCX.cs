@@ -80,6 +80,29 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         }
     }
 
+    public override void SetConfig(Dictionary<string,string> d)
+    {
+        if (d.ContainsKey("disableRBA") && d["disableRBA"].ToLower() == "true") {
+            try {
+                if (this.rba != null) {
+                    rba.stubStop();
+                }
+            } catch (Exception) {}
+        }
+
+        if (this.rba != null && d.ContainsKey("disableButtons") && d["disableButtons"].ToLower() == "true") {
+            this.rba.SetEMV(RbaButtons.None);
+        }
+
+        if (d.ContainsKey("logXML") && d["logXML"].ToLower() == "true") {
+            this.log_xml = true;
+        }
+
+        if (d.ContainsKey("logErrors") && d["logErrors"].ToLower() == "true") {
+            this.enableUnifiedLog();
+        }
+    }
+
     /**
       Initialize PDCX control with servers
       and response timeout
@@ -141,7 +164,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         message = message.Replace("{{SecureDevice}}", this.device_identifier);
                         message = message.Replace("{{ComPort}}", com_port);
                         message = message.Trim(new char[]{'"'});
-                        VerboseOutput(message);
                         LogXml(message);
 
                         PdcActive(true);
@@ -149,7 +171,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         PdcActive(false);
 
                         result = WrapHttpResponse(result);
-                        VerboseOutput(result);
                         LogXml(result);
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
@@ -157,8 +178,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                     client.Close();
                 }
             } catch (Exception ex) {
-                VerboseOutput(ex.ToString());
-                LogXml(ex.ToString());
+                this.LogMessage(ex.ToString());
             } finally {
                 PdcActive(false);
             }
@@ -307,7 +327,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             if (rba != null) {
                 rba.showApproved();
             }
-        } catch (Exception) {
+        } catch (Exception ex) {
+            this.LogMessage(ex.ToString());
             return null;
         }
         
