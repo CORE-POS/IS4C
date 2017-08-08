@@ -359,7 +359,7 @@ class VoidCmd extends Parser implements AdminLoginInterface
         return $dbc->fetchRow($result);
     }
 
-    private function checkUpcQuantities($voidable, $quantity, $scale)
+    private function checkUpcQuantities($voidable, $quantity, $scale, $row)
     {
         if ($voidable == 0 && $quantity == 1) {
             throw new Exception(DisplayLib::boxMsg(
@@ -525,7 +525,7 @@ class VoidCmd extends Parser implements AdminLoginInterface
             $volSpecial = 0;
             $volume = 0;
             $scale = MiscLib::nullwrap($row["scale"]);
-            $this->checkUpcQuantities($voidable, $quantity, $scale);
+            $this->checkUpcQuantities($voidable, $quantity, $scale, $row);
 
             $row = $this->findUpcLine($upc, $scaleprice, $deliflag, $itemNum);
             // if the selected line was already voided, findUpcLine() might locate
