@@ -482,7 +482,7 @@ class HouseCoupon extends SpecialUPC
                 // is not currently an option
                 if ($infoW['discountValue'] == 1) {
                     $prep = $transDB->prepare("UPDATE localtemptrans SET tax=0 WHERE trans_id=?");
-                    $transDB->execute($prep, array($infoW['trans_id']));
+                    $transDB->execute($prep, array($valW['trans_id']));
                 }
                 break;
             case 'BG': // BOGO
