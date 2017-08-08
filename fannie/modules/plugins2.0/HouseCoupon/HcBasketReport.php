@@ -10,7 +10,7 @@ class HcBasketReport extends FannieReportPage
     protected $header = 'Coupon Basket Report';
     protected $title = 'Coupon Basket Report';
     protected $required_fields = array('date1', 'date2', 'upc');
-    protected $report_headers = array('Date', 'Transaction', 'Total');
+    protected $report_headers = array('Date', 'Transaction', 'Mem Type', 'Total');
     public $description = '[Coupon Basket Report] shows invidual transactions containing a given store coupon.';
 
     function fetch_report_data()
@@ -28,8 +28,10 @@ class HcBasketReport extends FannieReportPage
             SELECT trans_num,
                 YEAR(tdate) AS year,
                 DAY(tdate) AS day,
-                MONTH(tdate) AS month
+                MONTH(tdate) AS month,
+                MAX(memDesc) AS memDesc
             FROM ' . $dlog . ' AS d
+                LEFT JOIN memtype AS m ON d.memType=m.memtype
             WHERE tdate BETWEEN ? AND ?
                 AND upc=?
                 AND ' . DTrans::isStoreID($store, 'd') . '
@@ -54,6 +56,7 @@ class HcBasketReport extends FannieReportPage
             $data[] = array(
                 $date,
                 $baseW['trans_num'],
+                $baseW['memDesc'],
                 sprintf('%.2f', $detail),
             );
         }
@@ -64,7 +67,7 @@ class HcBasketReport extends FannieReportPage
     function calculate_footers($data)
     {
         $sum = array_reduce($data, function($c, $i) { return $c + $i[2]; }, 0);
-        return array('Average', null, sprintf('%.2f', $sum / count($data)));
+        return array('Average', null, null, sprintf('%.2f', $sum / count($data)));
     }
 
     function form_content()
