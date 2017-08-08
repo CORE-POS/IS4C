@@ -39,7 +39,7 @@ class undo extends NoInputCorePage
         <?php echo $this->msg ?>
         </span><br />
         <form name="form" method='post' autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, "PHP_SELF"); ?>">
-        <input type="text" name="reginput" id="reginput" tabindex="0" onblur="($'#reginput').focus();" >
+        <input type="text" name="reginput" id="reginput" tabindex="0" onblur="$('#reginput').focus();" >
         </form>
         <p>
         <?php echo _('Enter transaction number<br />[clear to cancel]'); ?>
