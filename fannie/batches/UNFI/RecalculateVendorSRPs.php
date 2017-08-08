@@ -145,7 +145,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
             <?php echo $opts; ?></select>
         <button type=submit class="btn btn-default">Recalculate</button>
         <button type="button" onclick="location='VendorPricingIndex.php';return false;"
-            class="btn btn-default">Back</button>
+            class="btn btn-default">Back to Vendor Pricing</button>
         </p>
         </form>
         <?php
