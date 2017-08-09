@@ -39,6 +39,68 @@ class VendorAliasesPage extends FannieRESTfulPage
     public $description = '[Vendor Aliases] manages items that are sold under one or more UPCs that
         differ from the vendor catalog UPC.';
 
+    public function preprocess()
+    {
+        $this->__routes[] = 'get<id><print>';
+
+        return parent::preprocess();
+    }
+
+    protected function get_id_print_handler()
+    {
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddPage();
+        $pdf->SetMargins(10,10,10);
+        $pdf->SetFont('Arial', '', 7);
+        $dbc = $this->connection;
+        $upcs = FormLib::get('printUPCs', array());
+        $upcs = array_map(function ($i) { return BarcodeLib::padUPC($i); }, $upcs);
+        $args = array($this->id);
+        list($inStr, $args) = $dbc->safeInClause($upcs, $args);
+        $prep = $dbc->prepare('
+            SELECT p.description, v.sku, n.vendorName, p.brand
+            FROM products AS p
+                INNER JOIN VendorAliases AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                INNER JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+            WHERE v.vendorID=? 
+                AND p.upc IN (' . $inStr . ')
+            GROUP BY p.description, v.sku, n.vendorName'); 
+        $res = $dbc->execute($prep, $args);
+        $posX = 5;
+        $posY = 20;
+        while ($row = $dbc->fetchRow($res)) {
+            //$prepB = $dbc->prepare('SELECT units, size FROM vendorItems WHERE sku = ?');
+            $prepB = $dbc->prepare('SELECT max(receivedDate), caseSize, unitSize, brand FROM PurchaseOrderItems WHERE sku = ?');
+            $resB = $dbc->execute($prepB, $row['sku']);
+            $tagSize = array();
+            $tagSize = $dbc->fetch_row($resB);
+            $pdf->SetXY($posX+3, $posY);
+            $pdf->Cell(0, 5, substr($row['description'], 0, 25));
+            $pdf->Ln(3);
+            $pdf->SetX($posX+3);
+            $pdf->Cell(0, 5, $row['vendorName'] . ' - ' . $row['sku']);
+            $img = Image_Barcode2::draw($row['sku'], 'code128', 'png', false, 20, 1, false);
+            $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+            imagepng($img, $file);
+            $pdf->Image($file, $posX, $posY+7);
+            unlink($file);
+            $pdf->SetXY($posX+3, $posY+16);
+            $pdf->Cell(0, 5, $tagSize['unitSize'] . ' / ' . $tagSize['caseSize'] . ' - ' . $tagSize['brand']);
+            $posX += 52;
+            if ($posX > 170) {
+                $posX = 5;
+                $posY += 31;
+                if ($posY > 250) {
+                    $posY = 20;
+                    $pdf->AddPage();
+                }
+            }
+        }
+        $pdf->Output('skus.pdf', 'I');
+
+        return false;
+    }
+
     protected function delete_id_handler()
     {
         $sku = FormLib::get('sku');
@@ -135,6 +197,8 @@ class VendorAliasesPage extends FannieRESTfulPage
                 <th>Item</th>
                 <th>Unit Size</th>
                 <th>Multiplier</th>
+                <th>&nbsp;</th>
+                <th><span class="glyphicon glyphicon-print"></span></th>
             </thead><tbody>';
         $res = $dbc->execute($prep, array($this->id));
         while ($row = $dbc->fetchRow($res)) {
@@ -145,6 +209,7 @@ class VendorAliasesPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%.2f</td>
                 <td><a class="btn btn-default btn-xs btn-danger" href="?_method=delete&id=%d&sku=%s&upc=%s">%s</a></td>
+                <td><input type="checkbox" class="printUPCs" name="printUPCs[]" value="%d" /></td>
                 </tr>',
                 ($row['isPrimary'] ? 'class="info"' : ''),
                 $row['sku'],
@@ -152,10 +217,17 @@ class VendorAliasesPage extends FannieRESTfulPage
                 $row['description'],
                 $row['size'],
                 $row['multiplier'],
-                $this->id, $row['sku'], $row['upc'], FannieUI::deleteIcon()
+                $this->id, $row['sku'], $row['upc'], FannieUI::deleteIcon(),
+                $row['upc']
             );
         }
         $ret .= '</tbody></table>';
+        $ret .= '<form>
+            <button type="submit" class="btn btn-default"
+                onclick="var dstr = $(\'.printUPCs\').serialize(); dstr += \'&print=1&id=\' + ' . $this->id . ';
+                location=\'?\' + dstr; return false;"
+            >Print Scan Tags</button>
+            </form>';
 
         return $ret;
     }
