@@ -59,13 +59,13 @@ class undo extends NoInputCorePage
         }
 
         // error: malformed transaction number
-        if (!strpos($transNum,"-")){
+        if (!strpos($transNum,"-") && !strpos($transNum,'.')){
             $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
 
-        $temp = explode("-",$transNum);
+        $temp = strpos($transNum,'-') ? explode("-",$transNum) : explode('.',$transNum);
         // error: malformed transaction number (2)
         if (count($temp) != 3){
             $this->boxColor="errorColoredArea";
