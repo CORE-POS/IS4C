@@ -396,18 +396,22 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         lock (pdcLock) {
             pdc_active = true;
         }
-        xml = xml.Trim(new char[]{'"'});
-        xml = xml.Replace("{{SequenceNo}}", SequenceNo());
-        xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
-        xml = xml.Replace("{{ComPort}}", com_port);
-
         string ret = "";
-        ret = pdc_ax_control.ProcessTransaction(xml, 1, null, null);
-        if (enable_xml_log) {
-            using (StreamWriter sw = new StreamWriter(xml_log, true)) {
-                sw.WriteLine(DateTime.Now.ToString() + " (send pdc): " + xml);
-                sw.WriteLine(DateTime.Now.ToString() + " (recv pdc): " + ret);
+        try {
+            xml = xml.Trim(new char[]{'"'});
+            xml = xml.Replace("{{SequenceNo}}", SequenceNo());
+            xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
+            xml = xml.Replace("{{ComPort}}", com_port);
+
+            ret = pdc_ax_control.ProcessTransaction(xml, 1, null, null);
+            if (enable_xml_log) {
+                using (StreamWriter sw = new StreamWriter(xml_log, true)) {
+                    sw.WriteLine(DateTime.Now.ToString() + " (send pdc): " + xml);
+                    sw.WriteLine(DateTime.Now.ToString() + " (recv pdc): " + ret);
+                }
             }
+        } catch (Exception ex) {
+            this.LogMessage(ex.ToString());
         }
         lock (pdcLock) {
             pdc_active = false;
