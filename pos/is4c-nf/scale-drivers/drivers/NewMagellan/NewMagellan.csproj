@@ -47,6 +47,8 @@
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine) @(RabbitDefine)" />
+    <Csc Sources="Watcher.cs" TargetType="exe" OutputAssembly="pos-watcher.exe"
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 
   <!-- Build DelegateForm.dll -->

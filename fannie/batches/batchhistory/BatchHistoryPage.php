@@ -76,12 +76,20 @@ HTML;
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $ret = '';
-        $bu = new BatchUpdateModel($dbc);
         $upc = FormLib::get('upc');
+        $ret = '';
+
+        $p = new ProductsModel($dbc);
+        $p->upc($upc);
+        $p->store_id(1);
+        $p->load();
+        $ret .= $p->brand().'<br />';
+        $ret .= '<strong>'.$p->description().'</strong><br />';
+
+        $b = new BatchesModel($dbc);
+        $bu = new BatchUpdateModel($dbc);
         $bu->upc($upc);
-        $upcCols = array('batchID','updateType','upc','modified','user','specialPrice');
+        $upcCols = array('batchID','batchName','updateType','upc','modified','user','specialPrice');
         $ret .= '<table class="table table-bordered table-condensed small" id="iTable"><thead>';
         foreach ($upcCols as $column) {
             $ret .= '<th>' . ucwords($column) . '</th>';
@@ -91,10 +99,21 @@ HTML;
             $ret .= '<tr class="info">';
             if ($obj->upc()) {
                 foreach ($upcCols as $upcCol) {
+                    if ($upcCol == 'batchName') {
+                        continue;
+                    };
+                    $b->reset();
                     if ($upcCol == 'batchID'){
-                        $ret .= '<td><a style="cursor: pointer;"
-                            onClick="get_bid('.$obj->$upcCol().'); return false;">'
-                            . $obj->$upcCol() . '</a></td>';
+                        $bid = $obj->$upcCol();
+                        $b->batchID($bid);
+                        $b->load();
+                        $ref = '../newbatch/EditBatchPage.php?id='.$obj->$upcCol();
+                        $ret .= '<td><a style="cursor: pointer;" href="'.$ref.'">'
+                            . $obj->$upcCol() . '</a>';
+                        $ret .= ' &nbsp <a style="cursor: pointer;"
+                            onClick="get_bid('.$obj->$upcCol().'); return false;">
+                            <span class="glyphicon glyphicon-book"></span></a></td>';
+                        $ret .= '<td>'.$b->batchName().'</td>';
                     } else {
                         $ret .= '<td>' . $obj->$upcCol() . '</td>';
                     }
@@ -103,10 +122,16 @@ HTML;
             $ret .= '</tr>';
         }
         $ret .= '</tbody></table>';
+        $filename = basename(filter_input(INPUT_SERVER, 'PHP_SELF'));
+        if ($filename == '/ItemEditorPage.php'){
+            $nomenu = '<input type="hidden" name="nomenu" value="1" />';
+        } else {
+            $nomenu = '';
+        }
         $ret .= '
             <form method="get" id="bidForm">
                 <input type="hidden" name="bid" id="bidIn" value="" />
-                <input type="hidden" name="nomenu" value="1" />
+                '.$nomenu.'
             </form>
         ';
         $this->addScript('BatchHistory.js');
@@ -114,7 +139,7 @@ HTML;
         return $ret;
 
     }
-    
+
     /**
         @getProdBatchHist
         Return product batch history w/o loading Fannie ui
@@ -169,10 +194,13 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $ret = '';
-        $ret .= '<a onClick="history.go(-1);return true;"  style="font-size: 10px; 
+        $ret .= '<a onClick="history.go(-1);return true;"  style="font-size: 10px;
             cursor: pointer; ">Back</a>';
 		$bm = new BatchesModel($dbc);
-        $ret .= '<div class="" align="center"><h4 style="color: grey">Batch #<strong>'.$bid.'</strong></h4></div>';
+        $bm->batchID($bid);
+        $bm->load();
+        $ret .= '<div class="" align="center"><h3>Batch History<br />'.$bm->batchName().'</h3>
+            <h4 style="color: grey">Batch #<strong>'.$bid.'</strong></h4></div>';
         $bu = new BatchUpdateModel($dbc);
         $bu->batchID($bid);
         $bt = new BatchTypeModel($dbc);
@@ -194,11 +222,11 @@ HTML;
                         } else {
                             $fweight = '';
                         }
-                    } 
+                    } elseif ($obj->$column() == 'BATCH STARTED' || $obj->$column() == 'BATCH STOPPED') {
+                        $fweight = 'font-weight: bold; color: #6b0000;';
+                    }
                     ${'last_'.$column} = $obj->$column();
                     if ($column == 'startDate' || $column == 'endDate'){
-                        $ret .= '<td style="'.$fweight.'">' . $obj->$column() . '</td>';
-                    } else if ($column == 'modified') {
                         $ret .= '<td style="'.$fweight.'">' . $obj->$column() . '</td>';
                     } else if ($column == 'batchType') {
                         $bt->reset();
@@ -215,12 +243,14 @@ HTML;
         }
         $ret .= '</tbody></table>';
 
-        $ret .= '<div class="" align="center"><h4 style="color: grey">Product Info</h4></div>';
+        $p = new ProductsModel($dbc);
+        $ret .= '<div class="" align="center"><h4 style="color: grey">Products</h4></div>';
         $upcCols = array('updateType','upc','modified','user','specialPrice');
         $ret .= '<table class="table table-bordered table-condensed small" id="iTable"><thead>';
         foreach ($upcCols as $column) {
             $ret .= '<th>' . ucwords($column) . '</th>';
         }
+        $ret .= '<th>Brand | description</th>';
         $ret .= '</thead><tbody>';
         foreach ($bu->find() as $obj) {
             $ret .= '<tr class="info">';
@@ -228,6 +258,10 @@ HTML;
                 foreach ($upcCols as $upcCol) {
                     $ret .= '<td>' . $obj->$upcCol() . '</td>';
                 }
+                $p->reset();
+                $p->upc($obj->upc());
+                $p->load();
+                $ret .= '<td><strong>'.$p->brand().'</strong> '.$p->description().'</td>';
             }
             $ret .= '</tr>';
         }
