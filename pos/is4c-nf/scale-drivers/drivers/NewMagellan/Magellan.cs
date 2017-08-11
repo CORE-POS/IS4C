@@ -377,6 +377,7 @@ public class Magellan : DelegateForm
     {
         Exception ex = (Exception) args.ExceptionObject;
         Magellan.LogMessage(ex.ToString());
+        Environment.Exit(1);
     }
 
     static public int Main(string[] args)
