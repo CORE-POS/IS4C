@@ -122,12 +122,7 @@ HTML;
             $ret .= '</tr>';
         }
         $ret .= '</tbody></table>';
-        $filename = basename(filter_input(INPUT_SERVER, 'PHP_SELF'));
-        if ($filename == '/ItemEditorPage.php'){
-            $nomenu = '<input type="hidden" name="nomenu" value="1" />';
-        } else {
-            $nomenu = '';
-        }
+        $nomenu = '<input type="hidden" name="nomenu" value="1" />';
         $ret .= '
             <form method="get" id="bidForm">
                 <input type="hidden" name="bid" id="bidIn" value="" />
@@ -199,7 +194,7 @@ HTML;
 		$bm = new BatchesModel($dbc);
         $bm->batchID($bid);
         $bm->load();
-        $ret .= '<div class="" align="center"><h3>Batch History<br />'.$bm->batchName().'</h3>
+        $ret .= '<div class="" align="center"><h4>Batch History</h4><h3>'.$bm->batchName().'</h3>
             <h4 style="color: grey">Batch #<strong>'.$bid.'</strong></h4></div>';
         $bu = new BatchUpdateModel($dbc);
         $bu->batchID($bid);
