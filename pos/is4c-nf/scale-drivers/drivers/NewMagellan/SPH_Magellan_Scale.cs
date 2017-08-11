@@ -44,6 +44,8 @@ using System;
 using System.IO;
 using System.IO.Ports;
 using System.Threading;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace SPH {
 
@@ -54,6 +56,10 @@ public class SPH_Magellan_Scale : SerialPortHandler
     private WeighState scale_state;
     private Object writeLock = new Object();
     private string last_weight;
+    private Stopwatch status_gate;
+    private const int STATUS_POLL_TIMEOUT = 500;
+    private const int SCALE_STATUS_DIED =  5000;
+    private bool usingS11 = false;
 
     public SPH_Magellan_Scale(string p) : base(p)
     {
@@ -69,8 +75,16 @@ public class SPH_Magellan_Scale : SerialPortHandler
         
         scale_state = WeighState.None;
         last_weight = "0000";
+        status_gate = new Stopwatch();
 
         sp.Open();
+    }
+
+    public override void SetConfig(Dictionary<string,string> d)
+    {
+        if (d.ContainsKey("dualPollMode") && d["dualPollMode"].ToLower() == "true") {
+            this.usingS11 = true;
+        }
     }
 
     override public void HandleMsg(string msg)
@@ -116,10 +130,21 @@ public class SPH_Magellan_Scale : SerialPortHandler
         }
     }
 
+    /**
+      If we haven't heard from the scale recently, query its status
+      Otherwise request the next stable weight
+    */
     private void GetStatus()
     {
-        lock (writeLock) {
-            sp.Write("S14\r");
+        if (!usingS11 || status_gate.ElapsedMilliseconds > STATUS_POLL_TIMEOUT) {
+            lock (writeLock) {
+                sp.Write("S14\r");
+            }
+            status_gate.Restart();
+        } else {
+            lock (writeLock) {
+                sp.Write("S11\r");
+            }
         }
     }
 
@@ -129,6 +154,7 @@ public class SPH_Magellan_Scale : SerialPortHandler
         if (this.verbose_mode > 0) {
             System.Console.WriteLine("Reading serial data");
         }
+        status_gate.Start();
         GetStatus();
         while (SPH_Running) {
             try {
@@ -147,6 +173,10 @@ public class SPH_Magellan_Scale : SerialPortHandler
                     buffer = "";
                 } else {
                     buffer += ((char)b).ToString();
+                }
+
+                if (usingS11 && status_gate.ElapsedMilliseconds > SCALE_STATUS_DIED) {
+                    GetStatus();
                 }
 
             } catch {
