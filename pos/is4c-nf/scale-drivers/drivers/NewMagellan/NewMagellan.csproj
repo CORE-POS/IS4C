@@ -44,10 +44,17 @@
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
   </ItemGroup>
 
+  <ItemGroup>
+    <ServiceFiles Include="Watcher.cs" />
+    <ServiceFiles Include="WinService.cs" />
+  </ItemGroup>
+
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine) @(RabbitDefine)" />
     <Csc Sources="Watcher.cs" TargetType="exe" OutputAssembly="pos-watcher.exe"
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+    <Csc Sources="@(ServiceFiles)" TargetType="exe" OutputAssembly="pos-service.exe"
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 

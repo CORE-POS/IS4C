@@ -6,6 +6,13 @@ using System.Diagnostics;
 class Watcher
 {
     private static Process current;
+    private static bool serviceMode = false;
+
+    public static void ThreadMe()
+    {
+        Watcher.serviceMode = true;
+        Watcher.Main(new string[]{});
+    }
 
     public static int Main(string[] args)
     {
@@ -18,6 +25,11 @@ class Watcher
             var p = new Process();
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.StartInfo.FileName = my_location + sep + "pos.exe";
+            if (Watcher.serviceMode) {
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.CreateNoWindow = true;
+            }
             p.Start();
             Watcher.current = p;
             p.WaitForExit();
