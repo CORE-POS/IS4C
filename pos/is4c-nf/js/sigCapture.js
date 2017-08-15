@@ -113,6 +113,23 @@ var sigCapture = (function($) {
         return false;
     };
 
+    function addImgToForm(filename) {
+        var fn = bmpPath + filename;
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'bmpfile',
+            value: fn
+        }).appendTo('#formlocal');
+
+        var img = $('<img>').attr({
+            src: fn,
+            width: 250 
+        });
+        $('#imgArea').append(img);
+        $('.boxMsgAlert').html('Approve Signature');
+        $('#sigInstructions').html('[enter] to approve<br />' + optionText());
+    };
+
     /**
       The primary hardware communication AJAX loop invokes a
       parseWrapper method to handle input. This watches for bitmap
@@ -120,21 +137,25 @@ var sigCapture = (function($) {
     */
     mod.parseWrapper = function(str) {
         if (str.substring(0, 7) == 'TERMBMP') {
-            var fn = bmpPath + str.substring(7);
-            $('<input>').attr({
-                type: 'hidden',
-                name: 'bmpfile',
-                value: fn
-            }).appendTo('#formlocal');
-
-            var img = $('<img>').attr({
-                src: fn,
-                width: 250 
-            });
-            $('#imgArea').append(img);
-            $('.boxMsgAlert').html('Approve Signature');
-            $('#sigInstructions').html('[enter] to approve<br />' + optionText());
+            addImgToForm(str.substring(7));
         } 
+    };
+
+    mod.getSignature = function() {
+        $.ajax({
+            url: 'http://localhost:8999',
+            type: 'POST',
+            data: '<msg>termSig</msg>',
+            dataType: 'text'
+        }).done(function (resp) {
+            if (resp.substring(0, 5) == '<img>') {
+                addImgToForm(resp.substring(5, resp.length - 6));
+            } else {
+                $('#imgArea').append('<p>Error: ' + resp.substring(5, resp.length - 6) + '</p>');
+            }
+        }).fail(function () {
+            $('#imgArea').append('<p>Error: did not receive signature</p>');   
+        });
     };
 
     /**
