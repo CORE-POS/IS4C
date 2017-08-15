@@ -295,6 +295,7 @@ HTML;
         $stores = FormLib::storePicker();
 
         return <<<HTML
+<p><a href="AlertIncident.php" class="btn btn-default">Back to All Alerts</a></p>
 <form method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label>Store</label>
