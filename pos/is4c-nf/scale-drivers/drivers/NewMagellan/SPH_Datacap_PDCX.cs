@@ -167,7 +167,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         LogXml(message);
 
                         PdcActive(true);
-                        string result = ax_control.ProcessTransaction(message, 1, null, null);
+                        string result = "Error";
+                        if (message.Contains("termSig")) {
+                            result = GetSignature(true);
+                        } else {
+                            result = ax_control.ProcessTransaction(message, 1, null, null);
+                        }
                         PdcActive(false);
 
                         result = WrapHttpResponse(result);
@@ -288,7 +293,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         return ax_control.ProcessTransaction(xml, 1, null, null);
     }
     
-    protected string GetSignature()
+    protected string GetSignature(bool udp=true)
     {
         string xml="<?xml version=\"1.0\"?>"
             + "<TStream>"
@@ -315,24 +320,24 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             string sigdata = doc.SelectSingleNode("RStream/Signature").InnerText;
             List<Point> points = SigDataToPoints(sigdata);
 
-            int ticks = Environment.TickCount;
             string my_location = AppDomain.CurrentDomain.BaseDirectory;
             char sep = Path.DirectorySeparatorChar;
-            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
-                ticks++;
-            }
+            string ticks = System.Guid.NewGuid().ToString();
             string filename = my_location + sep + "ss-output"+ sep + "tmp" + sep + ticks + ".bmp";
             BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
-            parent.MsgSend("TERMBMP" + ticks + ".bmp");
+            if (udp) {
+                parent.MsgSend("TERMBMP" + ticks + ".bmp");
+            } else {
+                return "<img>" + ticks + ".bmp</img>";
+            }
             if (rba != null) {
                 rba.showApproved();
             }
         } catch (Exception ex) {
             this.LogMessage(ex.ToString());
-            return null;
         }
         
-        return null;
+        return "<err>Error collecting signature</err>";
     }
 
     protected string SecureDeviceToPadType(string device)

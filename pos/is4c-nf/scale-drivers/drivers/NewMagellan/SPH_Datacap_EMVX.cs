@@ -150,6 +150,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         string result = "Error";
                         if (message.Contains("EMV")) {
                             result = ProcessEMV(message, true);
+                        } else if (message.Contains("termSig")) {
+                            FlaggedReset();
+                            result = GetSignature(true);
                         } else if (message.Length > 0) {
                             result = ProcessPDC(message);
                         }
@@ -489,7 +492,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     /**
       PDCX method to get signature from device
     */
-    protected string GetSignature()
+    protected string GetSignature(bool udp=true)
     {
         string xml="<?xml version=\"1.0\"?>"
             + "<TStream>"
@@ -514,21 +517,21 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             string sigdata = doc.SelectSingleNode("RStream/Signature").InnerText;
             List<Point> points = SigDataToPoints(sigdata);
 
-            int ticks = Environment.TickCount;
             string my_location = AppDomain.CurrentDomain.BaseDirectory;
             char sep = Path.DirectorySeparatorChar;
-            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
-                ticks++;
-            }
+            string ticks = System.Guid.NewGuid().ToString();
             string filename = my_location + sep + "ss-output"+ sep + "tmp" + sep + ticks + ".bmp";
             BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
-            parent.MsgSend("TERMBMP" + ticks + ".bmp");
+            if (udp) {
+                parent.MsgSend("TERMBMP" + ticks + ".bmp");
+            } else {
+                return "<img>" + ticks + ".bmp</img>";
+            }
         } catch (Exception ex) {
             this.LogMessage(ex.ToString());
-            return null;
         }
-        
-        return null;
+
+        return "<err>Error collecting signature</err>";
     }
 
     /**
