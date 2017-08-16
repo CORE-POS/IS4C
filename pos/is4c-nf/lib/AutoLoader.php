@@ -70,12 +70,9 @@ class AutoLoader
             }
         } elseif (!isset($map[$name])) {
             // class is unknown
-            // rebuild map to see if the definition
-            // file has been added
-            $map = self::loadMap();
-            if (!is_array($map)) {
-                return;
-            }
+            // don't auto-rebuild. signing out will
+            // do a full filesystem re-map if needed
+            return;
         }
 
         if (isset($map[$name]) && !class_exists($name,false)) {
@@ -94,7 +91,7 @@ class AutoLoader
     static public function loadMap()
     {
         $classMap = array();
-        $searchPath = realpath(dirname(__FILE__).'/../');
+        $searchPath = realpath(dirname(__FILE__).'/../plugins/');
         self::recursiveLoader($searchPath, $classMap);
         CoreLocal::set('ClassLookup', $classMap);
 
@@ -147,7 +144,9 @@ class AutoLoader
         $ret = array();
         
         // lookup plugin modules, then standard modules
-        $map = Plugin::pluginMap();
+        $map = array_filter(CoreLocal::get('ClassLookup'), function ($i) {
+            return strpos($i, 'plugins') > 0;
+        });
         if (isset(self::$classPaths[$baseClass])) {
             $path = realpath(dirname(__FILE__) . self::$classPaths[$baseClass]);
             $map = Plugin::pluginMap($path,$map);
