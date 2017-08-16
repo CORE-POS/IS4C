@@ -290,24 +290,24 @@ class BatchListPage extends FannieRESTfulPage
         <p></p> <!-- spacer -->
         <div class="row">
             <div class="col-sm-4">
-                <select class="form-control" id=filterOwner onchange="reFilter();">
+                <select class="form-control" id=filterOwner onchange="batchList.refilter();">
                     <option value="">Filter list by batch owner / super dept.</option>
                     {$oOpts}
                 </select>
             </div>
             <div class="col-sm-2">
-                <select class="form-control" id="filterStore" onchange="reFilter();">
+                <select class="form-control" id="filterStore" onchange="batchList.refilter();">
                     <option value="">Store...</option>
                     {$storeOpts}
                 </select>
             </div>
             <div class="col-sm-2">
                 <input type="text" class="form-control" id="filterName" 
-                    placeholder="Batch name..." onchange="reFilter();" />
+                    placeholder="Batch name..." onchange="batchList.refilter();" />
             </div>
             <div class="col-sm-2">
                 <input type="text" class="form-control date-field" id="filterDate"
-                    placeholder="Batch date..." onchange="reFilter();" />
+                    placeholder="Batch date..." onchange="batchList.refilter();" />
             </div>
             <a href="{$url}admin/labels/BatchShelfTags.php">Print shelf tags</a>
         </div>
@@ -337,22 +337,22 @@ HTML;
         $ret = "";
         $ret .= "<b>Display</b>: ";
         if ($mode != 'pending') {
-            $ret .= "<a href=\"\" onclick=\"changeTimeSlice('pending'); return false;\">Pending</a> | ";
+            $ret .= "<a href=\"\" onclick=\"batchList.changeTimeSlice('pending'); return false;\">Pending</a> | ";
         } else {
             $ret .= "Pending | ";
         }
         if ($mode != 'current') {
-            $ret .= "<a href=\"\" onclick=\"changeTimeSlice('current'); return false;\">Current</a> | ";
+            $ret .= "<a href=\"\" onclick=\"batchList.changeTimeSlice('current'); return false;\">Current</a> | ";
         } else {
             $ret .= "Current | ";
         }
         if ($mode != 'historical') {
-            $ret .= "<a href=\"\" onclick=\"changeTimeSlice('historical'); return false;\">Historical</a> | ";
+            $ret .= "<a href=\"\" onclick=\"batchList.changeTimeSlice('historical'); return false;\">Historical</a> | ";
         } else {
             $ret .= "Historical | ";
         }
         if ($mode != 'all') {
-            $ret .= "<a href=\"\" onclick=\"changeTimeSlice('all'); return false;\">All</a>";
+            $ret .= "<a href=\"\" onclick=\"batchList.changeTimeSlice('all'); return false;\">All</a>";
         } else {
             $ret .= "All<br />";
         }
@@ -410,7 +410,7 @@ HTML;
                     AND ' . $dbc->datediff("b.endDate",$dbc->now()) . ' >= 0 ';
                 break;
             case 'historical':
-                $fetchQ .= ' AND '. $dbc->datediff("b.startDate",$dbc->now()) . ' <= 0 ';
+                $fetchQ .= ' AND '. $dbc->datediff("b.endDate",$dbc->now()) . ' < 0 ';
                 break;
         }
         // use a filter - only works in 'all' mode
@@ -447,15 +447,14 @@ HTML;
         $ret .= "</tbody></table>";
 
         if (is_numeric($maxBatchID)) {
-            $ret .= sprintf("<a href=\"\" 
-                    onclick=\"scroll(0,0); batchListPager('%s','%s',''); return false;\">First page</a>
-                     | ",
-                    $filter,$mode);
+            $ret .= "<a href=\"\"
+                    onclick=\"scroll(0,0); batchList.movePage(''); return false;\">First page</a>
+                     | ";
         }
         if ($count >= 50) {
             $ret .= sprintf("<a href=\"\" 
-                    onclick=\"scroll(0,0); batchListPager('%s','%s',%d); return false;\">Next page</a>",
-                    $filter,$mode,$lastBatchID);                
+                    onclick=\"scrollTo(0,0); batchList.movePage(%d); return false;\">Next page</a>",
+                    $lastBatchID);
         } else {
             $ret .= "Next page";
         }
