@@ -297,8 +297,9 @@ static public function chargeBalance($receipt, $program="charge", $transNum='')
     $checkR = $dbc->query($checkQ);
     $numRows = $dbc->numRows($checkR);
 
-    $currActivity = CoreLocal::get("memChargeTotal");
-    $currBalance = CoreLocal::get("balance") - $currActivity;
+    $currActivity = is_numeric(CoreLocal::get("memChargeTotal")) ? CoreLocal::get("memChargeTotal") : 0;
+    $currBalance = is_numeric(CoreLocal::get("balance")) ? CoreLocal::get("balance") : 0;
+    $currBalance -= $currActivity;
     
     if (($numRows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem')) {
         $chargeString = $labels["$program"][0] .
