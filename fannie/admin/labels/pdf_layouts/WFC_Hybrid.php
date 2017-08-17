@@ -60,7 +60,7 @@ $mtP = $dbc->prepare('SELECT p.auto_par
     WHERE m.upc=? AND m.storeID=?');
 $updateMT = $dbc->prepare('
     UPDATE MovementTags
-    SET lastPar=?
+    SET lastPar=?,
         modified=' . $dbc->now() . '
     WHERE upc=?
         AND storeID=?');
