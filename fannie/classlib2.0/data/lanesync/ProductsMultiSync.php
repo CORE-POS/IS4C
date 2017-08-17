@@ -1,21 +1,20 @@
 <?php
 
-if (!class_exists('MySQLSync')) {
-    include(__DIR__ . '/MySQLSync.php');
-}
+namespace COREPOS\Fannie\API\data\lanesync;
 
 /**
   Use mysqldump to copy products to the lanes
-  with only records where inUse=1
+  with only records for the appropriate store
+  included.
 */
-class ProductsInUseSync extends MySQLSync
+class ProductsMultiSync extends MySQLSync
 {
     public function push($tableName, $dbName)
     {
         $ret = array('success'=>false, 'details'=>'');
         $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
         $cmd = $this->dumpCommand()
-            . ' -w ' . escapeshellarg('inUse=1')
+            . ' -w ' . escapeshellarg('store_id=' . ((int)$this->config->get('STORE_ID')))
             . ' '   . escapeshellarg($dbName)
             . ' '   . escapeshellarg($table)
             . ' > ' . escapeshellarg($tempfile)

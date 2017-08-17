@@ -85,6 +85,12 @@ class SyncLanes
             return $ret;
         }
 
+        $dbc = \FannieDB::get($op_db);
+        $ruleP = $dbc->prepare("SELECT rule FROM TableSyncRules WHERE table=?");
+        $rule = $dbc->getValue($ruleP, array($table));
+        $rule = str_replace('-', '\\', $rule);
+        $server_db = $db=='op' ? $op_db : $trans_db;
+
         $special = dirname(__FILE__).'/../../sync/special/'.$table.'.php';
         if (file_exists($special)) {
             /* Use special script to send table.
@@ -98,11 +104,15 @@ class SyncLanes
             $ret = array('sending'=>True,'messages'=>'');
             $ret['messages'] = $tmp;
             return $ret;
+        } elseif ($rule && class_exists($rule)) {
+            /** use handler class if configured **/
+            $special = new $rule($config);
+            $ret['messages'] = $special->push($table, $server_db);
+            return $ret;
         } else {
             /* use the transfer option in SQLManager
             *   to copy records onto each lane
             */
-            $server_db = $db=='op' ? $op_db : $trans_db;
             $dbc = \FannieDB::get( $server_db );
             $server_def = $dbc->tableDefinition($table, $server_db);
             $laneNumber=1;

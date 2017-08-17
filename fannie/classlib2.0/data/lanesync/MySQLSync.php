@@ -1,5 +1,6 @@
 <?php
 
+namespace COREPOS\Fannie\API\data\lanesync;
 use COREPOS\Fannie\API\data\SyncSpecial;
 
 /**

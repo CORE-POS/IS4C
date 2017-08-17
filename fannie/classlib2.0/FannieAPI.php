@@ -316,6 +316,9 @@ class FannieAPI
             case 'COREPOS\Fannie\API\monitor\Monitor':
                 $directories[] = dirname(__FILE__) . '/monitor/';
                 break;
+            case 'COREPOS\Fannie\API\data\SyncSpecial':
+                $directories[] = dirname(__FILE__) . '/data/lanesync/';
+                break;
             case 'FanniePage':
                 $directories[] = dirname(__FILE__).'/../admin/';
                 $directories[] = dirname(__FILE__).'/../batches/';
