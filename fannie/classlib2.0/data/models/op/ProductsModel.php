@@ -132,15 +132,14 @@ class ProductsModel extends BasicModel
             SELECT p.upc,
                 p.description,
                 p.normal_price,
-                COALESCE(p.brand, x.manufacturer) AS brand,
-                COALESCE(v.vendorName, x.distributor) AS vendor,
+                p.brand,
+                v.vendorName AS vendor,
                 p.size AS p_size,
                 p.unitofmeasure,
                 i.sku,
                 i.units,  
                 i.size AS vi_size
             FROM products AS p
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN vendorItems AS i ON p.upc=i.upc AND v.vendorID=i.vendorID
             WHERE p.upc=?';

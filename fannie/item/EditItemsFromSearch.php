@@ -321,8 +321,7 @@ HTML;
 
         /**
           List known brands from vendorItems as a drop down selection
-          rather than free text entry. prodExtra remains an imperfect
-          solution but this can at least start normalizing that data
+          rather than free text entry.
         */
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.brandField\');">';
         $ret .= $this->getBrandOpts($dbc);
@@ -363,11 +362,11 @@ HTML;
         list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, d.dept_name,
                     p.tax, p.foodstamp, p.discount, p.scale, p.local,
-                    x.manufacturer, x.distributor, p.line_item_discountable,
+                    p.brand, v.vendorName AS distributor, p.line_item_discountable,
                     p.inUse
                   FROM products AS p
                   LEFT JOIN departments AS d ON p.department=d.dept_no
-                  LEFT JOIN prodExtra AS x ON p.upc=x.upc
+                  LEFT JOIN vendors AS v ON v.vendorID=p.default_vendor_id
                   WHERE p.upc IN (' . $in_sql . ')
                   ORDER BY p.upc';
         $prep = $dbc->prepare($query);
@@ -395,7 +394,7 @@ HTML;
                             $row['upc'], $row['upc'], $row['upc'],
                             $row['upc'],
                             $row['description'],
-                            $row['manufacturer'],
+                            $row['brand'],
                             $row['distributor'],
                             $deptOpts,
                             $taxOpts,

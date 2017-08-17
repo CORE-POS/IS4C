@@ -67,36 +67,24 @@ class LocalMixReport extends FannieReportPage
 
         $vendorQ = '
             SELECT ' . $localCols . '
-                COALESCE(v.vendorName, CASE WHEN x.distributor IS NULL THEN \'\' ELSE x.distributor END) AS vendor,
+                COALESCE(v.vendorName, \'\') AS vendor,
                 SUM(CASE WHEN p.local=0 THEN 1 ELSE 0 END) AS nonLocal,
                 COUNT(*) AS numItems
             FROM products AS p
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc
-            GROUP BY COALESCE(v.vendorName, CASE WHEN x.distributor IS NULL THEN \'\' ELSE x.distributor END)
+            GROUP BY COALESCE(v.vendorName, \'\')
             ORDER BY COUNT(*) DESC';
         $vendorR = $dbc->query($vendorQ);
 
         $brandP = $dbc->prepare('
             SELECT ' . $localCols . '
-                COALESCE(p.brand, CASE WHEN x.manufacturer IS NULL THEN \'\' ELSE x.manufacturer END) AS brand,
+                COALESCE(p.brand, \'\') AS brand,
                 SUM(CASE WHEN p.local=0 THEN 1 ELSE 0 END) AS nonLocal
             FROM products AS p
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
-                LEFT JOIN prodExtra AS x on p.upc=x.upc
-            WHERE (v.vendorName=? OR x.distributor=?)
-            GROUP BY COALESCE(p.brand, CASE WHEN x.manufacturer IS NULL THEN \'\' ELSE x.manufacturer END)
-            ORDER BY COALESCE(p.brand, CASE WHEN x.manufacturer IS NULL THEN \'\' ELSE x.manufacturer END)');
-        $altBrandP = $dbc->prepare('
-            SELECT ' . $localCols . '
-                COALESCE(p.brand, CASE WHEN x.manufacturer IS NULL THEN \'\' ELSE x.manufacturer END) AS brand,
-                SUM(CASE WHEN p.local=0 THEN 1 ELSE 0 END) AS nonLocal
-            FROM products AS p
-                LEFT JOIN prodExtra AS x on p.upc=x.upc
-            WHERE p.default_vendor_id=0 
-                AND (x.distributor IS NULL OR x.distributor=\'\')
-            GROUP BY COALESCE(p.brand, CASE WHEN x.manufacturer IS NULL THEN \'\' ELSE x.manufacturer END)
-            ORDER BY COALESCE(p.brand, CASE WHEN x.manufacturer IS NULL THEN \'\' ELSE x.manufacturer END)');
+            WHERE v.vendorName=?
+            GROUP BY COALESCE(p.brand, \'\')
+            ORDER BY COALESCE(p.brand, \'\')');
 
         $first = true;
         while ($vendorW = $dbc->fetch_row($vendorR)) {
@@ -127,11 +115,7 @@ class LocalMixReport extends FannieReportPage
             }
             $record['meta'] = FannieReportPage::META_BOLD;
             $data[] = $record;
-            if (!empty($vendorW['vendor'])) {
-                $brandR = $dbc->execute($brandP, array($vendorW['vendor'], $vendorW['vendor']));
-            } else {
-                $brandR = $dbc->execute($altBrandP);
-            }
+            $brandR = $dbc->execute($brandP, array($vendorW['vendor'], $vendorW['vendor']));
             while ($brandW = $dbc->fetch_row($brandR)) {
                 $has_local = false;
                 foreach ($this->localSettings as $id => $name) {

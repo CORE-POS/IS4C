@@ -358,14 +358,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
                 (CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
                   WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
-                COALESCE(v.vendorName, x.distributor) AS distributor,
+                v.vendorName AS distributor,
                 i.cost,
                 i.store_id,
                 l.description AS storeName
             FROM products as i 
                 LEFT JOIN departments as d ON i.department = d.dept_no
                 LEFT JOIN taxrates AS t ON t.id = i.tax
-                LEFT JOIN prodExtra as x on i.upc = x.upc
                 LEFT JOIN vendors AS v ON i.default_vendor_id=v.vendorID
                 LEFT JOIN Stores AS l ON i.store_id=l.storeID
                 LEFT JOIN origins AS o ON i.local=o.originID";
@@ -376,8 +375,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             } elseif ($super == -2) {
                 $query .= ' LEFT JOIN MasterSuperDepts AS s ON i.department=s.dept_ID ';                
             }
-        } elseif ($supertype == 'vendor') {
-            $query .= ' LEFT JOIN vendors AS z ON z.vendorName=x.distributor ';
         }
         /** build where clause and parameters based on
             the lookup type **/
@@ -411,11 +408,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $query .= ' AND i.upc LIKE ? ';
             $args = array('%' . $manufacturer . '%');
         } elseif ($supertype == 'manu' && $mtype != 'prefix') {
-            $query .= ' AND (i.brand LIKE ? OR x.manufacturer LIKE ?) ';
-            $args = array('%' . $manufacturer . '%','%' . $manufacturer . '%');
+            $query .= ' AND (i.brand LIKE ?) ';
+            $args = array('%' . $manufacturer . '%');
         } elseif ($supertype == 'vendor') {
-            $query .= ' AND (i.default_vendor_id=? OR z.vendorID=?) ';
-            $args = array($vendorID, $vendorID);
+            $query .= ' AND (i.default_vendor_id=?) ';
+            $args = array($vendorID);
         } elseif ($supertype == 'upc') {
             list($inStr, $args) = $dbc->safeInClause($upc_list, $args);
             $query .= ' AND i.upc IN (' . $inStr . ') ';

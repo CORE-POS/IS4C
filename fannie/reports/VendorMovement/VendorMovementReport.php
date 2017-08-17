@@ -43,7 +43,7 @@ class VendorMovementReport extends FannieReportPage
             default:
                 return "
                     SELECT t.upc,
-                        COALESCE(p.brand, x.manufacturer) AS brand,
+                        p.brand
                         p.description, "
                         . DTrans::sumQuantity('t') . " AS qty,
                         SUM(t.total) AS ttl,
@@ -54,13 +54,12 @@ class VendorMovementReport extends FannieReportPage
                         . DTrans::joinProducts('t', 'p', 'INNER')
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
-                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no = s.dept_ID
-                    WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
+                    WHERE (v.vendorName LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                         AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY t.upc,
-                        COALESCE(p.brand, x.manufacturer),
+                        p.brand,
                         p.description,
                         d.dept_no,
                         d.dept_name,
@@ -76,8 +75,7 @@ class VendorMovementReport extends FannieReportPage
                     FROM $dlog AS t "
                         . DTrans::joinProducts('t', 'p') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
-                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
-                    WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
+                    WHERE (v.vendorName LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                         AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY YEAR(t.tdate),
@@ -99,8 +97,7 @@ class VendorMovementReport extends FannieReportPage
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
-                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
-                    WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
+                    WHERE (v.vendorName LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                         AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY d.dept_no,
@@ -135,7 +132,7 @@ class VendorMovementReport extends FannieReportPage
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
         $query = $this->getQuery($groupby, $store, $dlog);
-        $args = array('%'.$vendor.'%','%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59', $store);
+        $args = array('%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59', $store);
         $prep = $dbc->prepare($query);
 
         $result = $dbc->execute($prep,$args);

@@ -331,12 +331,10 @@ class EditBatchPage extends FannieRESTfulPage
             case when v.sku is null then '' else v.sku end as sku,
             case when v.size is null then '' else v.size end as size,
             case when v.units is null then 1 else v.units end as units,
-            case when z.vendorName is null then x.distributor
-            else z.vendorName end as vendor,
+            z.vendorName as vendor,
             l.batchID
             from batchList as l
                 " . DTrans::joinProducts('l', 'p', 'INNER') . "
-                left join prodExtra as x on l.upc=x.upc
                 left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
                 left join vendors as z on p.default_vendor_id=z.vendorID
             WHERE l.batchID=? ";

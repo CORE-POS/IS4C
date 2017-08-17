@@ -569,8 +569,7 @@ HTML;
                 LEFT JOIN MasterSuperDepts AS m ON t.department=m.dept_ID 
                 LEFT JOIN subdepts AS b ON p.subdept=b.subdept_no
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
-                LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID
-                LEFT JOIN prodExtra AS x ON t.upc=x.upc ';
+                LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID';
         $args = array();
         switch ($lookupType) {
             case 'dept':
@@ -580,9 +579,6 @@ HTML;
                 }
                 break;
             case 'manu':
-                break;
-            case 'vendor':
-                $query .= ' LEFT JOIN vendors AS z ON x.distributor=z.vendorName ';
                 break;
             case 'likecode':
                 $query .= ' LEFT JOIN upcLike AS u ON t.upc=u.upc ';
@@ -656,17 +652,15 @@ HTML;
                     $query .= ' AND t.upc LIKE ? ';
                     $args[] = '%' . FormLib::get('manufacturer') . '%';
                 } else {
-                    $query .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ?) ';
+                    $query .= ' AND (p.brand LIKE ?) ';
                     $manu = '%' . FormLib::get('manufacturer') . '%';
-                    $args[] = $manu;
                     $args[] = $manu;
                     $optimizeP = $dbc->prepare('
                         SELECT p.department
                         FROM products AS p
-                            LEFT JOIN prodExtra AS x ON p.upc=x.upc
-                        WHERE (p.brand LIKE ? OR x.manufacturer LIKE ?)
+                        WHERE p.brand LIKE ?
                         GROUP BY p.department');
-                    $optimizeR = $dbc->execute($optimizeP, array($manu, $manu));
+                    $optimizeR = $dbc->execute($optimizeP, array($manu));
                     $dept_in = '';
                     while ($optimizeW = $dbc->fetch_row($optimizeR)) {
                         $dept_in .= '?,';
@@ -679,18 +673,15 @@ HTML;
                 }
                 break;
             case 'vendor':
-                $query .= ' AND (p.default_vendor_id=? OR z.vendorID=?) ';
+                $query .= ' AND (p.default_vendor_id=?) ';
                 $vID = FormLib::get('vendor', 1);
-                $args[] = $vID;
                 $args[] = $vID;
                 $optimizeP = $dbc->prepare('
                     SELECT p.department
                     FROM products AS p
-                        LEFT JOIN prodExtra AS x ON p.upc=x.upc
-                        LEFT JOIN vendors AS v ON x.distributor=v.vendorName
-                    WHERE (p.default_vendor_id=? OR v.vendorID=?)
+                    WHERE p.default_vendor_id=?
                     GROUP BY p.department');
-                $optimizeR = $dbc->execute($optimizeP, array($vID, $vID));
+                $optimizeR = $dbc->execute($optimizeP, array($vID));
                 $dept_in = '';
                 while ($optimizeW = $dbc->fetch_row($optimizeR)) {
                     $dept_in .= '?,';

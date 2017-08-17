@@ -387,21 +387,6 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
                 $ins_array['mixMatch'] = $v->vendorName();
             }
         }
-        /**
-          If no vendor name was found, try looking in prodExtra
-        */
-        if (empty($ins_array['mixMatch']) && $dbc->tableExists('prodExtra')) {
-            $distP = $dbc->prepare('
-                SELECT x.distributor
-                FROM prodExtra AS x
-                WHERE x.upc=?
-            ');
-            $distR = $dbc->execute($distP, array($upc));
-            if ($distR && $dbc->num_rows($distR) > 0) {
-                $distW = $dbc->fetch_row($distR);
-                $ins_array['mixMatch'] = substr($distW['distributor'],0,26);
-            }
-        }
     } elseif ($srp != 0) {
         // use vendor SRP if applicable
         $ins_array['regPrice'] = $srp*$caseSize*$num_cases;

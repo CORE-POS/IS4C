@@ -196,13 +196,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     $search->where .= ' AND p.upc LIKE ? ';
                     $search->args[] = '%' . $form->brand . '%';
                 } else {
-                    $search->where .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ? OR v.brand LIKE ?) ';
+                    $search->where .= ' AND (p.brand LIKE ? OR v.brand LIKE ?) ';
                     $search->args[] = '%' . $form->brand . '%';
                     $search->args[] = '%' . $form->brand . '%';
-                    $search->args[] = '%' . $form->brand . '%';
-                    if (!strstr($search->from, 'prodExtra')) {
-                        $search->from .= ' LEFT JOIN prodExtra AS x ON p.upc=x.upc ';
-                    }
                     if (!strstr($search->from, 'vendorItems')) {
                         $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
                     }

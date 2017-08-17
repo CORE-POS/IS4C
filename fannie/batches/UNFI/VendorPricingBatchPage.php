@@ -155,7 +155,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $costSQL = Margin::adjustedCostSQL('p.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
-        $p_def = $dbc->tableDefinition('products');
         $marginCase = '
             CASE
                 WHEN g.margin IS NOT NULL AND g.margin <> 0 THEN g.margin
@@ -194,7 +193,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             v.srp,
             " . $srpSQL . " AS rawSRP,
             v.vendorDept,
-            x.variable_pricing,
+            p.price_rule_id AS variable_pricing,
             " . $marginCase . " AS margin,
             CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias,
             CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded
@@ -205,7 +204,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc
                 LEFT JOIN upcLike AS l ON v.upc=l.upc ";
         $args = array($vendorID);
         if ($superID != -1){
@@ -228,9 +226,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $query .= ' GROUP BY p.upc ';
 
         $query .= " ORDER BY p.upc";
-        if (isset($p_def['price_rule_id'])) {
-            $query = str_replace('x.variable_pricing', 'p.price_rule_id AS variable_pricing', $query);
-        }
 
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);

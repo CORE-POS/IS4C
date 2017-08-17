@@ -21,7 +21,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
             p.description,
             u.brand AS goodBrand,
             u.description AS goodDescription,
-            COALESCE(n.vendorName, x.distributor) AS vendor,
+            n.vendorName AS vendor,
             p.last_sold,
             p.normal_price,
             m.super_name,
@@ -31,7 +31,6 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         FROM products AS p
             LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
             LEFT JOIN productUser as u ON p.upc=u.upc
-            LEFT JOIN prodExtra AS x ON p.upc=x.upc
             LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             LEFT JOIN departments AS d ON p.department=d.dept_no
         WHERE p.store_id=1

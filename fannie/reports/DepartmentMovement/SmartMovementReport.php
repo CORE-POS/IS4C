@@ -116,7 +116,7 @@ class SmartMovementReport extends FannieReportPage
                         t.department,
                         d.dept_name,
                         m.super_name,
-                        COALESCE(v.vendorName,x.distributor) AS distributor,
+                        v.vendorName AS distributor,
                         i.sku
                     " . $from_where['query'] . "
                     GROUP BY t.upc,
@@ -126,7 +126,7 @@ class SmartMovementReport extends FannieReportPage
                         t.department,
                         d.dept_name,
                         m.super_name,
-                        COALESCE(v.vendorName,x.distributor)
+                        v.vendorName
                     ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':
