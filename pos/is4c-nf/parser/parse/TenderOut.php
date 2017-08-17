@@ -32,7 +32,7 @@ class TenderOut extends Parser
 {
     function check($str)
     {
-        if ($str == "TO") {
+        if ($str == "TO" || $str == "0TO") {
             return true;
         }
 

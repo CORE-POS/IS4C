@@ -209,6 +209,9 @@ class SigTermCommands extends Parser
             }
 
             return true;
+
+        } elseif ($str == 'TERMSIG') {
+            return true;
         }
 
         return false;
@@ -220,6 +223,8 @@ class SigTermCommands extends Parser
         $ret['scale'] = ''; // redraw righthand column
         if ($str == "CCFROMCACHE") {
             $ret['retry'] = $this->session->get("CachePanEncBlock");
+        } elseif ($str == 'TERMSIG') {
+            $ret['main_frame'] = 'SigCapturePage.php?code=TO&type=Credit';
         }
         if ($this->cbError) {
             $ret['output'] = DisplayLib::boxMsg(
