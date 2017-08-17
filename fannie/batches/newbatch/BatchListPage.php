@@ -505,7 +505,7 @@ HTML;
         $url = $this->config->get('URL');
         $inputForm = $this->newBatchInput();
         $batchList = $this->batchListDisplay();
-        $this->addScript('list.js');
+        $this->addScript('list.js?20170817');
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->add_css_file('index.css');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
