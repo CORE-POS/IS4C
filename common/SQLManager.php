@@ -56,6 +56,8 @@ class SQLManager
     /** Default database connection */
     public $default_db;
 
+    protected $reconnect_info = array();
+
     /** throw exception on failed query **/
     protected $throw_on_fail = false;
 
@@ -161,8 +163,37 @@ class SQLManager
             $this->last_connect_error = $conn->ErrorMsg();
             return $this->connectAndCreate($server, $type, $username, $password, $database);
         }
+        $this->saveConnection($server, $type, $username, $password, $database);
 
         return true;
+    }
+
+    /**
+     * Attempt to reconnect to database using cached credentials
+     *
+     * This exists to solve a very narrow issue in CI testing where enough
+     * time passes between database queries to result in a connection timeout.
+     * The default timeout on MySQL is in hours so this is unlikely to ever
+     * occur in a non-CI environment
+     */
+    private function restoreConnection($database)
+    {
+        $ret = false;
+        if (isset($this->reconnect_info[$database])) {
+            $info = $this->reconnect_info[$database];
+            $ret = $this->addConnection($info[0], $info[1], $database, $info[2], $info[3]);
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Cache the arguments used to create the connection
+     * @see: restoreConnection method
+     */
+    private function saveConnection($server, $type, $username, $password, $database)
+    {
+        $this->reconnect_info[$database] = array($server, $type, $username, $password);
     }
 
     /**
@@ -213,6 +244,7 @@ class SQLManager
             $conn->Execute($adapter->useNamedDB($database));
             $conn->SelectDB($database);
             $this->connections[$database] = $conn;
+            $this->saveConnection($server, $type, $username, $password, $database);
             return true;
         } else {
             $this->last_connect_error = $conn->ErrorMsg();
@@ -369,6 +401,17 @@ class SQLManager
         $con = $this->getNamedConnection($which_connection);
 
         $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
+
+        // recover from "MySQL server has gone away" error
+        // @see: restoreConnection method
+        if (!$result && is_object($con) && $con->ErrorNo() == 2006) {
+            $dbName = ($which_connection === '') ? $this->default_db : $which_connection;
+            $restored = $this->restoreConnection($dbName);
+            if ($restored) {
+                $result = $con->Execute($query_text, $params);
+            }
+        }
+
         if (!$result) {
             $errorMsg = $this->failedQueryMsg($query_text, $params, $which_connection);
             $this->logger($errorMsg);
