@@ -601,23 +601,23 @@ static public function twoColumns($col1, $col2) {
     // find longest string in each column, ignoring font change strings
     list($col1s, $c1max) = self::processColumn($col1);
     list($col2s, $c2max) = self::processColumn($col2);
-    // space the columns as much as they'll fit
-    $spacer = $max - $c1max - $c2max;
     // avoid warnings when calculated length < 0
-    $space_repeat = function ($len) {
-        if ($len < 0) {
+    $safeRepeat = function ($i) {
+        if ($i <= 0) {
             return '';
         }
-        return str_repeat(' ', $length);
+        return str_repeat(' ', $i);
     };
+    // space the columns as much as they'll fit
+    $spacer = $max - $c1max - $c2max;
     // scan both columns
     for( $x=0; isset($col1[$x]) && isset($col2[$x]); $x++) {
         $c1r = trim($col1[$x]);  $c1l = strlen($col1s[$x]);
         $c2r = trim($col2[$x]);  $c2l = strlen($col2s[$x]);
         if( ($c1max+$spacer+$c2l) <= $max) {
-            $text .= $c1r . $space_repeat(($c1max+$spacer)-$c1l) . $c2r . "\n";
+            $text .= $c1r . $safeRepeat(($c1max+$spacer)-$c1l) . $c2r . "\n";
         } else {
-            $text .= $c1r . "\n" . $space_repeat($c1max+$spacer) . $c2r . "\n";
+            $text .= $c1r . "\n" . $safeRepeat($c1max+$spacer) . $c2r . "\n";
         }
     }
     // if one column is longer than the other, print the extras
