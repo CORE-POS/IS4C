@@ -191,7 +191,7 @@ HTML;
         $ret = '';
         $ret .= '<a onClick="history.go(-1);return true;"  style="font-size: 10px;
             cursor: pointer; ">Back</a>';
-		$bm = new BatchesModel($dbc);
+        $bm = new BatchesModel($dbc);
         $bm->batchID($bid);
         $bm->load();
         $ret .= '<div class="" align="center"><h4>Batch History</h4><h3>'.$bm->batchName().'</h3>
