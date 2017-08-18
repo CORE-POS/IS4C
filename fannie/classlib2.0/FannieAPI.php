@@ -187,9 +187,6 @@ class FannieAPI
                     return;
                 }
             }
-            $fp = fopen(__DIR__ . '/../logs/fannie.log', 'a');
-            fwrite($fp, date('r') . ": Could not find class {$name}\n");
-            fclose($fp);
         }
     }
 
