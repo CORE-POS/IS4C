@@ -211,11 +211,10 @@ HTML;
             if ($obj->upc() == NULL) {
                 $ret .= '<tr class="warning">';
                 foreach ($columns as $column) {
+                    $fweight = '';
                     if ($s === 0 && $column != 'modified' && $column != 'updateType') {
                         if ($obj->$column() != ${'last_'.$column}) {
                             $fweight = 'font-weight: bold; color: #6b0000;';
-                        } else {
-                            $fweight = '';
                         }
                     } elseif ($obj->$column() == 'BATCH STARTED' || $obj->$column() == 'BATCH STOPPED') {
                         $fweight = 'font-weight: bold; color: #6b0000;';
