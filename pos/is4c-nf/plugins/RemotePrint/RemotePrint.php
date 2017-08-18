@@ -45,7 +45,7 @@ class RemotePrint extends Plugin
         'RemotePrintDebug' => array(
             'label' => 'Debug mode',
             'description' => 'Print debugging info instead of the normal receipt',
-            'default' => 'No',
+            'default' => 0,
             'options' => array(
                 'No' => 0,
                 'Yes' => 1,
