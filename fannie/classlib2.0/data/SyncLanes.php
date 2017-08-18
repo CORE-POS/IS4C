@@ -86,7 +86,7 @@ class SyncLanes
         }
 
         $dbc = \FannieDB::get($op_db);
-        $ruleP = $dbc->prepare("SELECT rule FROM TableSyncRules WHERE table=?");
+        $ruleP = $dbc->prepare("SELECT rule FROM TableSyncRules WHERE tableName=?");
         $rule = $dbc->getValue($ruleP, array($table));
         $rule = str_replace('-', '\\', $rule);
         $server_db = $db=='op' ? $op_db : $trans_db;

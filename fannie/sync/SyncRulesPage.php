@@ -18,7 +18,7 @@ class SyncRulesPage extends FannieRESTfulPage
             $table = $this->form->table;
             $rule = $this->form->rule;
             $model = new TableSyncRulesModel($this->connection);
-            $model->table($table);
+            $model->tableName($table);
             $model->rule($rule);
             $model->save();
         } catch (Exception $ex) {
@@ -30,7 +30,7 @@ class SyncRulesPage extends FannieRESTfulPage
     protected function delete_id_handler()
     {
         $model = new TableSyncRulesModel($this->connection);
-        $model->table($this->id);
+        $model->tableName($this->id);
         $model->delete();
 
         return 'SyncRulesPage.php';
@@ -45,7 +45,7 @@ class SyncRulesPage extends FannieRESTfulPage
         foreach ($model->find('table') as $rule) {
             $tbody .= sprintf('<tr><td>%s</td><td>%s</td>
                 <td><a class="btn btn-danger btn-xs" href="?_method=delete&id=%s">%s</a></tr>',
-                $rule->table(), $rule->rule(), $rule->table(), FannieUI::deleteIcon());
+                $rule->tableName(), $rule->rule(), $rule->tableName(), FannieUI::deleteIcon());
         }
         $opts = array_reduce($mods, function($c, $i) { return "{$c}<option>{$i}</option>"; });
 

@@ -33,7 +33,7 @@ class TableSyncRulesModel extends BasicModel
 
     protected $columns = array(
     'tableSyncRuleID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
-    'table' => array('type'=>'VARCHAR(255)', 'primary_key'=>true),
+    'tableName' => array('type'=>'VARCHAR(255)', 'primary_key'=>true),
     'rule' => array('type'=>'VARCHAR(255)'),
     );
 
@@ -44,7 +44,7 @@ class TableSyncRulesModel extends BasicModel
             be synced to the lanes. Any table *not* appearing here
             is simply copied one record at a time.
 
-            Table is the name of the table; rule is the name of
+            TableName is the name of the table; rule is the name of
             the SyncSpecial class responsible for that table.
             ';
     }
