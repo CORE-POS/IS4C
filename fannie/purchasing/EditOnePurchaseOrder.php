@@ -73,7 +73,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         while($w = $dbc->fetch_row($skuR)){
             $result = array(
             'sku' => $w['sku'],
-            'title' => $w['brand'].' - '. $this->asciiFilter($w['description']),
+            'title' => $this->asciiFilter($w['brand']).' - '. $this->asciiFilter($w['description']),
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
@@ -95,7 +95,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         while($w = $dbc->fetch_row($upcR)){
             $result = array(
             'sku' => $w['sku'],
-            'title' => $w['brand'].' - '. $this->asciiFilter($w['description']),
+            'title' => $this->asciiFilter($w['brand']).' - '. $this->asciiFilter($w['description']),
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
@@ -200,8 +200,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             $pitem->unitCost($vitem->cost());
             $pitem->caseSize($vitem->units());
             $pitem->unitSize($vitem->size());
-            $pitem->brand($vitem->brand());
-            $pitem->description($vitem->description());
+            $pitem->brand($this->asciiFilter($vitem->brand()));
+            $pitem->description($this->asciiFilter($vitem->description()));
             $pitem->internalUPC($vitem->upc());
     
             $saved = $pitem->save();
@@ -445,8 +445,8 @@ HTML;
                 $batch ? 'class="info" title="' . $batch . '"' : '',
                 $item->sku(), $item->sku(),
                 \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($item->internalUPC()),
-                $item->brand(),
-                $item->description(),
+                $this->asciiFilter($item->brand()),
+                $this->asciiFilter($item->description()),
                 $item->unitSize(),
                 $item->caseSize(),
                 $item->quantity(),
