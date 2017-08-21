@@ -66,7 +66,7 @@ class HcBasketReport extends FannieReportPage
 
     function calculate_footers($data)
     {
-        $sum = array_reduce($data, function($c, $i) { return $c + $i[2]; }, 0);
+        $sum = array_reduce($data, function($c, $i) { return $c + $i[3]; }, 0);
         return array('Average', null, null, sprintf('%.2f', $sum / count($data)));
     }
 
