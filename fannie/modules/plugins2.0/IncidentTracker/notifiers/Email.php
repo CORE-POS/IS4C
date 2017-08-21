@@ -12,6 +12,7 @@ class Email
         }
         $mail = new \PHPMailer();
         $mail->From = 'alerts@wholefoods.coop';
+        $mail->FromName = 'Alerts Notification';
         foreach (explode(',', $address) as $a) {
             $mail->addAddress(trim($a));
         }

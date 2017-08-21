@@ -7,6 +7,12 @@ include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('IncidentsModel')) {
+    include(__DIR__ . '/models/IncidentsModel.php');
+}
+if (!class_exists('IncidentCommentsModel')) {
+    include(__DIR__ . '/models/IncidentCommentsModel.php');
+}
 
 class AlertIncident extends FannieRESTfulPage
 {
@@ -35,7 +41,8 @@ class AlertIncident extends FannieRESTfulPage
                 LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
                 LEFT JOIN Users as u ON i.uid=u.uid
                 LEFT JOIN Stores AS s ON i.storeID=s.storeID
-            WHERE details LIKE ? OR details LIKE ?
+            WHERE (details LIKE ? OR details LIKE ?)
+                AND i.deleted=0
             ORDER BY tdate DESC");
         $args = array(
             '%' . $this->search . '%',
@@ -75,6 +82,18 @@ class AlertIncident extends FannieRESTfulPage
         $model->userID($uid);
         $model->tdate(date('Y-m-d H:i:s'));
         $model->comment(FormLib::get('comment'));
+        $model->save();
+
+        return 'AlertIncident.php?id=' . $this->id;
+    }
+
+    protected function delete_id_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['IncidentDB']);
+        $model = new IncidentsModel($this->connection);
+        $model->incidentID($this->id);
+        $model->deleted($this->form->undo ? 0 : 1);
         $model->save();
 
         return 'AlertIncident.php?id=' . $this->id;
@@ -208,6 +227,9 @@ class AlertIncident extends FannieRESTfulPage
             );
         }
 
+        $deleteURL = "?_method=delete&id={$this->id}&undo=" . ($row['deleted'] ? '1' : '0');
+        $deleteVerb = $row['deleted'] ? 'Undelete' : 'Delete';
+
         return <<<HTML
 <p>
     <a href="AlertIncident.php" class="btn btn-default">Home</a>
@@ -262,6 +284,9 @@ class AlertIncident extends FannieRESTfulPage
         </div>
     </div>
 </form>
+<p>
+    <a href="{$deleteURL}" class="btn btn-danger" onclick="return confirm('{$deleteVerb} this entry?');">{$deleteVerb} this entry</a>
+</p>
 HTML;
     }
 
@@ -367,6 +392,7 @@ HTML;
                 LEFT JOIN Users AS u ON i.uid=u.uid
                 LEFT JOIN Stores AS t ON i.storeID=t.storeID
             WHERE i.incidentTypeID=1
+                AND i.deleted = 0
             ORDER BY tdate DESC";
         $query = $this->connection->addSelectLimit($query, 30);
         $res = $this->connection->query($query);
