@@ -468,6 +468,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $model->orderID($this->id);
         $re_date = FormLib::get('re-date', false);
         $uid = FannieAuth::getUID($this->current_user);
+        $dbc->startTransaction();
         for ($i=0; $i<count($this->sku); $i++) {
             $model->sku($this->sku[$i]);
             $model->load();
@@ -479,6 +480,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             }
             $model->save();
         }
+        $dbc->commitTransaction();
 
         $prep = $dbc->prepare('
             SELECT o.storeID, i.internalUPC
@@ -486,10 +488,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
             WHERE o.orderID=?');
         $res = $dbc->execute($prep, array($this->id));
+        $dbc->startTransaction();
         $cache = new InventoryCacheModel($dbc);
         while ($row = $dbc->fetchRow($res)) {
             $cache->recalculateOrdered($row['internalUPC'], $row['storeID']);
         }
+        $dbc->commitTransaction();
 
         return 'ViewPurchaseOrders.php?id=' . $this->id;
     }
