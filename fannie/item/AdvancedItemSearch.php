@@ -1014,6 +1014,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $model = new BatchTypeModel($dbc);
         $model->discType(0, '<>');
         $btOpts = $model->toOptions();
+        $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
 
         return include(__DIR__ . '/search.template.html');
     }

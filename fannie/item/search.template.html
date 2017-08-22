@@ -85,7 +85,7 @@ return <<<HTML
                 <label class="control-label small">Vendor</label>
              </td>
              <td>
-                <select name="vendor" class="form-control input-sm"
+                <select name="vendor" class="form-control input-sm chosen"
                     onchange="if(this.value==='' || this.value==='0') $('#vendorSale').attr('disabled','disabled'); else $('#vendorSale').removeAttr('disabled');" >
                     <option value="">Any</option>
                     <option value="0">Not Assigned</option>
@@ -134,7 +134,7 @@ return <<<HTML
                 <label class="control-label small">Origin</label>
             </td>
             <td>
-                <select name="originID" class="form-control input-sm"><option value="0">Any Origin</option>
+                <select name="originID" class="form-control input-sm chosen"><option value="0">Any Origin</option>
                     {$originOpts}
                 </select>
             </td>
@@ -142,7 +142,7 @@ return <<<HTML
                 <label class="control-label small">Likecode</label> 
             </td>
             <td>
-                <select name="likeCode" class="form-control input-sm"><option value="">Choose Like Code</option>
+                <select name="likeCode" class="chosen form-control input-sm"><option value="">Choose Like Code</option>
                     <option value="ANY">In Any Likecode</option>
                     <option value="NONE">Not in a Likecode</option>
                     {$lcOpts}

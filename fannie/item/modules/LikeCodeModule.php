@@ -64,7 +64,7 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
                 <b>Like code</b> <button type=\"button\" id=\"lcAddButton\"
                 class=\"btn btn-default\">+</button> ";
         $ret .= "<select name=likeCode id=\"likeCodeSelect\" 
-                onchange=\"updateLcModList(this.value);\" class=\"chosenSelect form-control\">";
+                onchange=\"updateLcModList(this.value);\" class=\"chosen-select form-control\">";
         $ret .= "<option value=-1>(none)</option>";
     
         $lcm = new LikeCodesModel($dbc);
