@@ -514,29 +514,18 @@ HTML;
             if (isset($rowItem['default_vendor_id']) && $rowItem['default_vendor_id'] <> 0) {
                 $normalizedVendorID = $rowItem['default_vendor_id'];
             }
-            /**
-              Use a <select> box if the current vendor corresponds to a valid
-              entry OR if no vendor entry exists. Only allow free text
-              if it's already in place
-            */
             $ret .= ' <th class="text-right">Vendor</th> ';
-            if ($normalizedVendorID || empty($rowItem['distributor'])) {
-                $ret .= '<td colspan="3" class="form-inline"><select name="distributor[]" 
-                            class="chosen-select form-control vendor_field syncable-input"
-                            onchange="baseItem.vendorChanged(this.value);">';
-                $ret .= '<option value="0">Select a vendor</option>';
-                $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName');
-                while ($vendW = $dbc->fetchRow($vendR)) {
-                    $ret .= sprintf('<option %s>%s</option>',
-                                ($vendW['vendorID'] == $normalizedVendorID ? 'selected' : ''),
-                                $vendW['vendorName']);
-                }
-                $ret .= '</select>';
-            } else {
-                $ret .= "<td colspan=\"3\"><input type=text name=distributor[] size=8 value=\""
-                    .(isset($rowItem['distributor'])?$rowItem['distributor']:"")
-                    ."\" class=\"form-control vendor-field syncable-input\" />";
+            $ret .= '<td colspan="3" class="form-inline"><select name="distributor[]" 
+                        class="chosen-select form-control vendor_field syncable-input"
+                        onchange="baseItem.vendorChanged(this.value);">';
+            $ret .= '<option value="0">Select a vendor</option>';
+            $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName');
+            while ($vendW = $dbc->fetchRow($vendR)) {
+                $ret .= sprintf('<option %s>%s</option>',
+                            ($vendW['vendorID'] == $rowItem['default_vendor_id'] ? 'selected' : ''),
+                            $vendW['vendorName']);
             }
+            $ret .= '</select>';
             $ret .= ' <button type="button" 
                         title="Create new vendor"
                         class="btn btn-default btn-sm newVendorButton">
