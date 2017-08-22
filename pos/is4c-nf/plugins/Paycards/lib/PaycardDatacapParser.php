@@ -57,8 +57,9 @@ class PaycardDatacapParser extends Parser
         'DATACAPRECUR',
     );
     
-    public function __construct()
+    public function __construct($session)
     {
+        parent::__construct($session);
         $this->conf = new PaycardConf();
     }
 
