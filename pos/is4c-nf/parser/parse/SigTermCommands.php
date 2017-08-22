@@ -203,7 +203,9 @@ class SigTermCommands extends Parser
                 $this->cbError = false;
                 $this->session->set("CacheCardCashBack",$cashback);
             }
-            $this->session->set('ccTermState','pin');
+            if (!$this->session->get('PaycardsDatacapMode')) {
+                $this->session->set('ccTermState','pin');
+            }
             if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                 UdpComm::udpSend('termGetPin');
             }
