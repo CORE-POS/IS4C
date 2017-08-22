@@ -34,8 +34,9 @@ class paycardEntered extends Parser
     private $swipetype;
     private $manual = false;
 
-    public function __construct()
+    public function __construct($sessio)
     {
+        parent::__construct($session);
         $this->conf = new PaycardConf();
     }
 
