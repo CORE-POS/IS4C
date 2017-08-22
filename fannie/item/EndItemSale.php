@@ -58,12 +58,16 @@ class EndItemSale extends FannieRESTfulPage {
 
         $batchID = FormLib::get_form_value('batchID');
         $batchUPC = FormLib::get_form_value('batchUPC');
+        $bu = new BatchUpdateModel($dbc);
         if ($batchID !== '' && $batchUPC !== ''){
             if (substr($batchUPC,0,2) != 'LC')
                 $batchUPC = BarcodeLib::padUPC($batchUPC);
             $batchP = $dbc->prepare('DELETE FROM batchList
                     WHERE upc=? AND batchID=?');
             $batchR = $dbc->execute($batchP, array($batchUPC, $batchID));
+            $bu->upc($batchUPC);
+            $bu->batchID($batchID);
+            $bu->logUpdate($bu::UPDATE_REMOVED);
         }
 
         COREPOS\Fannie\API\data\ItemSync::sync($upc);
