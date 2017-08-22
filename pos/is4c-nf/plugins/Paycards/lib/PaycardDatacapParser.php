@@ -176,8 +176,8 @@ class PaycardDatacapParser extends Parser
      */
     private function remap($input)
     {
-        $selection = $this->session->get('ccTermState');
-        if ($input !== 'DATACAP' || strlen($selecton) !== 4 || substr($select, 0, 2) !== 'DC') {
+        $selection = $this->conf->get('ccTermState');
+        if ($input !== 'DATACAP' || strlen($selection) !== 4 || substr($selection, 0, 2) !== 'DC') {
             return $input;
         }
         switch (substr($selection, -2)) {
