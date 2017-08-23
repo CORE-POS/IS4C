@@ -649,6 +649,7 @@ HTML;
     private function saveModules($mods, $upc)
     {
         $form = new \COREPOS\common\mvc\FormValueContainer();
+        $this->connection->startTransaction();
         foreach ($mods as $class => $params) {
             $mod = new $class();
             $mod->setConnection($this->connection);
@@ -656,6 +657,7 @@ HTML;
             $mod->setForm($form);
             $mod->SaveFormData($upc);
         }
+        $this->connection->commitTransaction();
     }
 
     private function modulesResult($mods, $upc)
