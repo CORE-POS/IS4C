@@ -107,7 +107,8 @@ class SyncLanes
         } elseif ($rule && class_exists($rule)) {
             /** use handler class if configured **/
             $special = new $rule($config);
-            $ret['messages'] = $special->push($table, $server_db);
+            $sync = $special->push($table, $server_db);
+            $ret['messages'] = $sync['details'];
             return $ret;
         } else {
             /* use the transfer option in SQLManager
