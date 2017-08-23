@@ -76,6 +76,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private Object syncLock;
 
     private bool allowDebitCB = true;
+    private string bufferedCardType = "";
 
     public RBA_Stub(string p)
     {
@@ -113,6 +114,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             initPort();
             sp.Open();
             SPH_Running = true;
+            this.bufferedCardType = "";
             this.sleeper.Reset();
             this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
             SPH_Thread.Start();
@@ -285,6 +287,10 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                         WriteMessageToDevice(SimpleMessageScreen("Insert, tap, or swipe card when prompted"));
                     }
                     bytes.Clear();
+                    // input is done; no need to keep the read thread alive
+                    // and rely on cross-thread signaling to end it later
+                    SPH_Running = false;
+                    break;
                 }
             } catch (TimeoutException) {
                 // expected; not an issue
@@ -321,10 +327,12 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                 case "A":
                     // debit
                     ret = true;
-                    parent.MsgSend("TERM:DCDC");
                     if (allowDebitCB) {
                         ret = false;
                         WriteMessageToDevice(GetCashBack());
+                        this.bufferedCardType = "DCDC";
+                    } else {
+                        parent.MsgSend("TERM:DCDC");
                     }
                     break;
                 case "B":
@@ -334,37 +342,49 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     break;
                 case "C":
                     // ebt cash
-                    parent.MsgSend("TERM:DCEC");
                     ret = true;
                     if (allowDebitCB) {
                         ret = false;
                         WriteMessageToDevice(GetCashBack());
+                        this.bufferedCardType = "DCEC";
+                    } else {
+                        parent.MsgSend("TERM:DCEC");
                     }
                     break;
                 case "D":
                     // ebt food
                     parent.MsgSend("TERM:DCEF");
                     ret = true;
+                    this.sendBufferedCardType();
                     break;
                 case "1":
                     parent.MsgSend("TERMCB:10");
                     ret = true;
+                    this.sendBufferedCardType();
                     break;
                 case "2":
                     parent.MsgSend("TERMCB:20");
                     ret = true;
+                    this.sendBufferedCardType();
                     break;
                 case "3":
                     parent.MsgSend("TERMCB:30");
                     ret = true;
+                    this.sendBufferedCardType();
                     break;
                 case "4":
                     parent.MsgSend("TERMCB:40");
                     ret = true;
+                    this.sendBufferedCardType();
                     break;
                 case "O":
                     parent.MsgSend("TERMCB:50");
                     ret = true;
+                    this.sendBufferedCardType();
+                    break;
+                case "N":
+                    ret = true;
+                    this.sendBufferedCardType();
                     break;
                 default:
                     break;
@@ -372,6 +392,14 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         }
 
         return ret;
+    }
+
+    private void sendBufferedCardType()
+    {
+        if (this.bufferedCardType.Length == 4) {
+            parent.MsgSend("TERM:" + this.bufferedCardType);
+            this.bufferedCardType = "";
+        }
     }
 
     /**
