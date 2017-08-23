@@ -61,8 +61,8 @@ class MySQLSync extends SyncSpecial
         }
 
         $cmd = 'mysqldump'
-            . ' -u ' . escapeshellarg($config->get('SERVER_USER'))
-            . (empty($config->get('SERVER_PW')) ? '' : ' -p' . escapeshellarg($config->get('SERVER_PW')))
+            . ' -u ' . escapeshellarg($this->config->get('SERVER_USER'))
+            . (empty($this->config->get('SERVER_PW')) ? '' : ' -p' . escapeshellarg($this->config->get('SERVER_PW')))
             . ' -h ' . escapeshellarg($host)
             . ' -P ' . escapeshellarg($port);
 
