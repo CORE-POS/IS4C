@@ -277,6 +277,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     rba.stubStop();
                 }
             } catch (Exception) {}
+            this.rba = null;
         }
 
         if (this.rba != null && d.ContainsKey("disableButtons") && d["disableButtons"].ToLower() == "true") {
