@@ -357,6 +357,7 @@ class FannieAPI
                 while( ($file=readdir($dh)) !== false) {
                     if ($file == '.' || $file == '..') continue;
                     if ($file == 'noauto') continue;
+                    if ($file == 'node_modules') continue;
                     if ($file == 'index.php') continue;
                     if ($file == 'Store-Specific') continue;
                     $ret = array_merge($ret, $search($path.'/'.$file, $depth+1));
