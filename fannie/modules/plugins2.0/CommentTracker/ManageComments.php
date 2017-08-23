@@ -4,6 +4,15 @@ include(__DIR__ . '/../../../config.php');
 if (!class_exists('\\FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('CommentsModel')) {
+    include(__DIR__ . '/models/CommentsModel.php');
+}
+if (!class_exists('CategoriesModel')) {
+    include(__DIR__ . '/models/CategoriesModel.php');
+}
+if (!class_exists('ResponsesModel')) {
+    include(__DIR__ . '/models/ResponsesModel.php');
+}
 
 class ManageComments extends FannieRESTfulPage
 {
