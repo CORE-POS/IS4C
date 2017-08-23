@@ -73,6 +73,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private RbaButtons emv_buttons = RbaButtons.Credit;
     // Used to signal drawing thread it's time to exit
     private AutoResetEvent sleeper;
+    private Object syncLock;
 
     private bool allowDebitCB = true;
 
@@ -80,6 +81,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         this.port = p;
         this.sleeper = new AutoResetEvent(false);
+        this.syncLock = new Object();
     }
 
     public void SetEMV(RbaButtons emv)
@@ -130,28 +132,14 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
     public void stubStop()
     {
-        SPH_Running = false;
+        lock (this.syncLock) {
+            SPH_Running = false;
+        }
         try {
             // wake up the RBA_Stub thread if it's sleeping
             // between sequential messages
             this.sleeper.Set();
-
-            // this *should* trigger an exception that causes
-            // the RBA_Stub thread to exit the Read method
-            sp.Close();
-
-            // just in case this will *definitely* trigger an
-            // exception in the RBA_Stub thread
-            SPH_Thread.Abort();
-        } catch (Exception) { }
-
-        try {
-            // there is a minor possibility that Join throws
-            // an exception. If this occurs future invocations
-            // of RBA_Stub methods likely won't work. The whole
-            // app will need to be restarted to fix it. Catching
-            // here just prevents an immediate crash and puts the
-            // restart at the user's discretion
+            // wait for the thread to finish
             SPH_Thread.Join();
         } catch (Exception) { }
     }
@@ -261,7 +249,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 
         ArrayList bytes = new ArrayList();
-        while (SPH_Running) {
+        while (true) {
             try {
                 int b = sp.ReadByte();
                 if (bytes.Count == 0 && b == 0x06) {
@@ -307,9 +295,15 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                 // This loop should stop on an exception
                 // 
                 SPH_Running = false;
-                return;
+            }
+            lock (this.syncLock) {
+                if (!SPH_Running && bytes.Count == 0) break;
             }
         }
+
+        try {
+            this.sp.Close();
+        } catch (Exception) {}
     }
 
     /**
