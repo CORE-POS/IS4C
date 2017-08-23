@@ -29,7 +29,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         $res2 = new ParseResult();
         $serial = $res2->serialize();
-        $res2 = $res2->unserialize($serial);
+        $res2->unserialize($serial);
         $this->assertEquals($res, $res2);
 
         $this->assertEquals(10, $res->count());
