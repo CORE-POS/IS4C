@@ -24,22 +24,17 @@
         
 
 /**
-  @class CommentsModel
+  @class CannedResponsesModel
 */
-class CommentsModel extends BasicModel
+class CannedResponsesModel extends BasicModel
 {
-    protected $name = "Comments";
+    protected $name = "CannedResponses";
     protected $preferred_db = 'plugin::CommentDB';
 
     protected $columns = array(
-    'commentID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
-    'categoryID' => array('type'=>'INT'),
-    'publishable' => array('type'=>'TINYINT', 'default'=>0),
-    'appropriate' => array('type'=>'TINYINT', 'default'=>1),
-    'email' => array('type'=>'VARCHAR(255)'),
-    'comment' => array('type'=>'TEXT'),
-    'tdate' => array('type'=>'DATETIME'),
-    'fromPaper' => array('type'=>'TINYINT', 'default'=>0),
+    'cannedResponseID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'niceName' => array('type'=>'VARCHAR(255)'),
+    'response' => array('type'=>'TEXT'),
     );
 }
 

@@ -13,6 +13,9 @@ if (!class_exists('CategoriesModel')) {
 if (!class_exists('ResponsesModel')) {
     include(__DIR__ . '/models/ResponsesModel.php');
 }
+if (!class_exists('CannedResponsesModel')) {
+    include(__DIR__ . '/models/CannedResponsesModel.php');
+}
 
 class ManageComments extends FannieRESTfulPage
 {
@@ -22,7 +25,7 @@ class ManageComments extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('post<id><catID>', 'post<id><appropriate>');
+        $this->addRoute('post<id><catID>', 'post<id><appropriate>', 'get<new>', 'post<new>', 'get<canned>');
 
         return parent::preprocess();
     }
@@ -88,9 +91,93 @@ class ManageComments extends FannieRESTfulPage
             }
             $response->response($msg);
             $response->save();
+
+            $canName = trim(FormLib::get('saveAs'));
+            if ($canName !== '') {
+                $canned = new CannedResponsesModel($this->connection);
+                $canned->niceName($canName);
+                $canned->response($msg);
+                $canned->save();
+            }
         }
 
         return 'ManageComments.php?id=' . $this->id;
+    }
+
+    protected function post_new_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['CommentDB']);
+        $comment = new CommentsModel($this->connection);
+        $comment->categoryID(FormLib::get('cat'));
+        $comment->publishable(FormLib::get('pub') ? 1 : 0);
+        $comment->appropriate(FormLib::get('appr') ? 1 : 0);
+        $comment->email(FormLib::get('email'));
+        $comment->comment(FormLib::get('comment'));
+        $comment->tdate(FormLib::get('tdate'));
+        $comment->fromPaper(1);
+        $cID = $comment->save();
+
+        return 'ManageComments.php?id=' . $cID;
+    }
+
+    protected function get_canned_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['CommentDB']);
+        $resp = new CannedResponsesModel($this->connection);
+        $resp->cannedResponseID($this->canned);
+        $resp->load();
+
+        echo $resp->response();
+
+        return false;
+    }
+
+    protected function get_new_view()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $categories = new CategoriesModel($this->connection);
+        $categories->whichDB($settings['CommentDB']);
+        $opts = $categories->toOptions();
+        $today = date('Y-m-d');
+
+        return <<<HTML
+<form method="post">
+    <input type="hidden" name="new" value="1" />
+    <div class="form-group">
+        <label>Received</label>
+        <input type="text" name="tdate" value="{$today}" class="form-control date-field" />
+    </div>
+    <div class="form-group">
+        <label>Category</label>
+        <select name="cat" class="form-control">{$opts}</select>
+    </div>
+    <div class="form-group">
+        <label>Publication Allowed
+        <input type="checkbox" name="pub" value="1" checked />
+        </label>
+    </div>
+    <div class="form-group">
+        <label>Appropriate
+        <input type="checkbox" name="appr" value="1" checked />
+        </label>
+    </div>
+    <div class="form-group">
+        <label>Email Address for Response</label>
+        <input type="text" name="email" placeholder="If known..." class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Comment</label>
+        <textarea name="comment" class="form-control" rows="7"></textarea>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default btn-core">Enter Comment</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="ManageComments.php" class="btn btn-default">Back</a>
+    </div>
+</form>
+HTML;
     }
  
     protected function get_id_view()
@@ -134,9 +221,14 @@ class ManageComments extends FannieRESTfulPage
         $opts .= $categories->toOptions($curCat);
         $opts .= '<option value="-1" ' . ($curCat == -1 ? 'selected' : '') . '>Spam</option>';
 
+        $canned = new CannedResponsesModel($this->connection);
+        $canned->whichDB($settings['CommentDB']);
+        $canned = $canned->toOptions();
+
         $publishAllowed = $comment['publishable'] ? 'Yes' : 'No';
         $appropriateCheck = $comment['appropriate'] ? 'checked' : '';
         $comment['comment'] = nl2br($comment['comment']);
+        $source = $comment['fromPaper'] ? 'Manual entry' : 'Website';
         if ($comment['email']) {
             $this->addOnloadCommand("manageComments.sendMsg();");
         } else {
@@ -146,6 +238,9 @@ class ManageComments extends FannieRESTfulPage
 
         return <<<HTML
 <form method="post">
+    <p>
+        <a href="ManageComments.php" class="btn btn-default">Back to All Comments</a>
+    </p>
     <input type="hidden" name="id" value="{$this->id}" />
     <div id="alertArea"></div>
     <table class="table table-bordered">
@@ -167,6 +262,8 @@ class ManageComments extends FannieRESTfulPage
             onchange="manageComments.saveAppropriate({$this->id}, this.checked);" /></td>
     </tr>
     <tr>
+        <th>Source</th><td>{$source}</td> </tr>
+    <tr>
         <td colspan="2"><strong>Comment</strong><br />{$comment['comment']}</td>
     </tr>
     </table>
@@ -178,8 +275,16 @@ class ManageComments extends FannieRESTfulPage
             <p>
                 <textarea id="resp-ta" name="response" class="form-control" rows="10"></textarea>
             </p>
-            <p>
+            <p class="form-inline">
                 <button id="send-btn" disabled type="submit" class="btn btn-default">Enter Response</button>
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                <select onchange="manageComments.canned(this.value);" class="form-control">
+                    <option value="0">Use saved response...</option>
+                    {$canned}
+                </select>
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                Save this Response as
+                <input type="text" name="saveAs" class="form-control" />
             </p>
         </div>
     </div>
@@ -250,6 +355,9 @@ HTML;
 
         return <<<HTML
 <p class="form-inline">
+    <a href="?new=1" class="btn btn-default">Enter Paper Comment</a>
+    | 
+    <label>Showing</label>
     <select name="all" class="form-control filter-select">
         {$filter}
     </select>

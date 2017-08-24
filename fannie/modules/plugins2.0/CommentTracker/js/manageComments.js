@@ -28,6 +28,22 @@ var manageComments = (function($) {
         });
     };
 
+    mod.canned = function(cannedID) {
+        if (cannedID == 0) {
+            $('#resp-ta').val('');
+            $('#resp-ta').trigger('keyup');
+            return;
+        }
+        $.ajax({
+            url: 'ManageComments.php',
+            method: 'get',
+            data: 'canned=' + cannedID
+        }).done(function (resp) {
+            $('#resp-ta').val(resp);
+            $('#resp-ta').trigger('keyup');
+        });
+    };
+
     mod.saveCategory = function(commentID, catID) {
         $.ajax({
             url: 'ManageComments.php',
