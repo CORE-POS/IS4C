@@ -47,7 +47,7 @@ class ItemStatusPage extends FannieRESTfulPage
         }
 
         $this->__routes[] = 'get<tagID><upc>';
-        $this->__routes[] = 'get<floorID><upc>';           
+        $this->__routes[] = 'get<floorID><upc>';
         $this->__routes[] = 'get<narrowTag><upc>';
 
         return parent::preprocess();
@@ -105,20 +105,35 @@ class ItemStatusPage extends FannieRESTfulPage
 
         return false;
     }
-    
+
     public function get_narrowTag_upc_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $prodUserP = $dbc->prepare('UPDATE productUser SET narrow=? WHERE upc=?');
         $upc = BarcodeLib::padUPC($this->upc);
+        $pu = new ProductUserModel($dbc);
+        $pu->upc($upc);
+        if (!$pu->load()) {
+            $p = new ProductsModel($dbc);
+            $p->upc($upc);
+            $p->load();
+            $pu->brand($p->brand());
+            $pu->description($p->description());
+            $pu->signCount(1);
+            $pu->save();
+        }
+        $pu->reset();
+        $pu->upc($upc);
+
         $action = FormLib::get('narrowTag');
         if ($action == 'remove') {
-            $dbc->execute($prodUserP, array(0, $upc));
+            $pu->narrow(0);
+            $pu->save();
         } elseif ($action == 'add') {
-            $dbc->execute($prodUserP, array(1, $upc));
+            $pu->narrow(1);
+            $pu->save();
         }
-        
+
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
 
         return false;
@@ -154,13 +169,13 @@ class ItemStatusPage extends FannieRESTfulPage
 
         $ret .= '<p><strong>Brand</strong>: ' . $product->brand();
         $ret .= ', <strong>Desc.</strong>: ' . $product->description();
-        $ret .= ', <strong>Vendor</strong>:'; 
+        $ret .= ', <strong>Vendor</strong>:';
         if ($vendor->vendorName() != 'UNFI') {
             $ret .= '<span class="alert-warning">' . $vendor->vendorName() . '</span></p>';
         } else {
             $ret .= $vendor->vendorName() . '</p>';
         }
-            
+
 
         $ret .= '<p><strong>Price</strong>: $' . sprintf('%.2f', $product->normal_price());
         if ($product->discounttype() > 0) {
@@ -172,15 +187,15 @@ class ItemStatusPage extends FannieRESTfulPage
                 FROM batchList as l
                     INNER JOIN batches AS b ON l.batchID=b.batchID
                 WHERE l.upc=?
-                    AND ' . $dbc->curdate() . ' >= b.startDate 
+                    AND ' . $dbc->curdate() . ' >= b.startDate
                     AND ' . $dbc->curdate() . ' <= b.endDate');
             $batchR = $dbc->execute($batchP, array($upc));
             if ($batchR && $dbc->num_rows($batchR)) {
                 $batchW = $dbc->fetch_row($batchR);
                 $batchW['startDate'] = date('Y-m-d', strtotime($batchW['startDate']));
                 $batchW['endDate'] = date('Y-m-d', strtotime($batchW['endDate']));
-                $ret .= ' (' . $batchW['batchName'] . ' ' 
-                    . $batchW['startDate'] . ' - ' . $batchW['endDate'] 
+                $ret .= ' (' . $batchW['batchName'] . ' '
+                    . $batchW['startDate'] . ' - ' . $batchW['endDate']
                     . ')';
             } else {
                 $ret .= ' (Unknown batch)';
@@ -212,7 +227,7 @@ class ItemStatusPage extends FannieRESTfulPage
             }
         }
         $ret .= '</p>';
-        
+
         $shelftagsP = $dbc->prepare('
             SELECT count(s.upc) as c
             FROM shelftags as s
@@ -231,7 +246,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= sprintf('<p><strong>Dept</strong>: %d %s, <strong>SubDept</strong>: %d %s</p>',
             $dept->dept_no(), $dept->dept_name(),
             $sub->subdept_no(), $sub->subdept_name());
-        
+
         $ret .= '<p> Tags in this queue: ' . $tags . '</p> ';
         if ($isNarrow) {
             $ret .= 'Flagged As: <span class="alert-warning">Narrow Tag</span>';
@@ -267,7 +282,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= $queues->toOptions($master);
         $ret .= '</select></form></p>';
 
-        $ret .= '<form class="form-inline" method="get">';    
+        $ret .= '<form class="form-inline" method="get">';
         if ($isNarrow) {
             $ret .= '
                 <input type="hidden" name="narrowTag" value="remove">
@@ -284,7 +299,7 @@ class ItemStatusPage extends FannieRESTfulPage
             ';
         }
         $ret .= '</form><br>';
-        
+
         /*
         $ret .= '<p><form class="form-inline" method="get">
             <label>Loc.</label>
@@ -311,7 +326,7 @@ class ItemStatusPage extends FannieRESTfulPage
             <button class="btn btn-default" type="submit">Update Location</button>
             </form></p>';
         */
-        
+
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
             $ret .= '<p><a href="../ItemEditorPage.php?searchupc=' . $this->id . '"
                 class="btn btn-default">Edit This Item</a></p>';
