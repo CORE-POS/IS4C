@@ -561,7 +561,7 @@ public static function ageCheck($requiredAge, $ret)
         $ofAgeOnDay = new DateTime(date('Y-m-d', strtotime('tomorrow')));
     }
     $today = new DateTime(date('Y-m-d'));
-    if ($ofAgeOnDay > $today) {
+    if ($ofAgeOnDay > $today && CoreLocal::get('memAge') !== '1') {
         $ret['udpmsg'] = 'twoPairs';
         $ret['main_frame'] = $myUrl.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC';
         return array(true, $ret);
