@@ -53,11 +53,11 @@
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe"
         Win32Icon="core-nm.ico" OutputAssembly="pos.exe"
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine) @(RabbitDefine)" />
-    <Csc Sources="Watcher.cs" TargetType="exe"
+    <Csc Sources="Watcher.cs" TargetType="exe" Condition=" '$(OS)' != 'Unix' "
         Win32Icon="core-watcher.ico" OutputAssembly="pos-watcher.exe"
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
     <Csc Sources="@(ServiceFiles)" TargetType="exe" OutputAssembly="pos-service.exe"
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" Condition=" '$(OS)' != 'Unix' " />
   </Target>
 
   <!-- Build DelegateForm.dll -->
