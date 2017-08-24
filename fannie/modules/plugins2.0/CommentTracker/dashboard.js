@@ -21,6 +21,12 @@ var dashboard = (function($) {
                 animation: {
                     duration: 0
                 },
+                legend: {
+                    labels: {
+                        fontSize: 30,
+                        boxWidth: 0
+                    }
+                },
                 scales: {
                     xAxes: [{
                         ticks: {
