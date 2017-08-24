@@ -2,6 +2,12 @@
 var stChart = (function() {
     var mod = {};
 
+    var _fontSize = 12;
+
+    mod.setFontSize = function(f) {
+        _fontSize = f;
+    }
+
     mod.lineChart = function(elemID, labels, points, dayName) {
         var ctx = document.getElementById(elemID).getContext('2d');
         var line = new Chart(ctx, {
@@ -38,6 +44,28 @@ var stChart = (function() {
                     }
                 ],
                 labels: labels
+            },
+            options: {
+                animation: {
+                    duration: 0
+                },
+                legend: {
+                    labels: {
+                        fontSize: _fontSize
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            fontSize: _fontSize
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            fontSize: _fontSize
+                        }
+                    }]
+                }
             }
         });
     };

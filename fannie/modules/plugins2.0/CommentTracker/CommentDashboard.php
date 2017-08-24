@@ -36,7 +36,7 @@ class CommentDashboard extends FannieRESTfulPage
         $this->addScript($this->config->get('URL') . 'src/javascript/Chart.min.js');
         $this->addScript('dashboard.js');
         $this->addOnloadCommand("dashboard.openGraph({$barData});");
-        $this->addOnloadCommand("setTimeout('location.reload()', 30000);");
+        //$this->addOnloadCommand("setTimeout('location.reload()', 30000);");
 
         return <<<HTML
 <html>
