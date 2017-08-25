@@ -43,7 +43,7 @@ class VendorMovementReport extends FannieReportPage
             default:
                 return "
                     SELECT t.upc,
-                        p.brand
+                        p.brand,
                         p.description, "
                         . DTrans::sumQuantity('t') . " AS qty,
                         SUM(t.total) AS ttl,
