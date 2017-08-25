@@ -32,6 +32,7 @@ class TransactionSummaryModel extends CoreWarehouseModel {
     
     protected $columns = array(
     'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
+    'store_id' => array('type'=>'INT', 'default'=>1),
     'trans_num' => array('type'=>'VARCHAR(25)','primary_key'=>True,'default'=>''),
     'register_no' => array('type'=>'SMALLINT'),
     'emp_no' => array('type'=>'SMALLINT'),
@@ -66,9 +67,10 @@ class TransactionSummaryModel extends CoreWarehouseModel {
         // 5Jul2013 - percentDiscount not currently exposed via dlog
         $sql = "INSERT INTO ".$this->name." 
             SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
-            trans_num,
-            register_no,
-            emp_no,
+            MAX(store_id),
+            MAX(trans_num),
+            MAX(register_no),
+            MAX(emp_no),
             SUM(CASE WHEN trans_type='T' THEN total ELSE 0 END) as tenderTotal,
             SUM(CASE WHEN upc='TAX' THEN total ELSE 0 END) as taxTotal,
             SUM(CASE WHEN upc='DISCOUNT' THEN total ELSE 0 END) as discountTotal,

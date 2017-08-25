@@ -33,6 +33,7 @@ class SumUpcSalesByDayModel extends CoreWarehouseModel {
     protected $columns = array(
     'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
     'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>''),
+    'store_id' => array('type'=>'INT', 'primary_key'=>true, 'default'=>1),
     'total' => array('type'=>'MONEY','default'=>0.00),
     'quantity' => array('type'=>'DOUBLE','default'=>0.00)
     );
@@ -52,13 +53,14 @@ class SumUpcSalesByDayModel extends CoreWarehouseModel {
         $sql = "INSERT INTO ".$this->name."
             SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
             upc,
+            store_id,
             CONVERT(SUM(total),DECIMAL(10,2)) as total,
             CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
                 WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
             FROM $target_table WHERE
             tdate BETWEEN ? AND ? AND
             trans_type IN ('I') AND upc <> '0'
-            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), upc";
+            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), upc, store_id";
         $prep = $this->connection->prepare($sql);
         $result = $this->connection->execute($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
     }

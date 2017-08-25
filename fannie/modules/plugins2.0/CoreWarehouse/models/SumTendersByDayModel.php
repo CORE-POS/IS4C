@@ -33,6 +33,7 @@ class SumTendersByDayModel extends CoreWarehouseModel {
     protected $columns = array(
     'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
     'trans_subtype' => array('type'=>'VARCHAR(2)','primary_key'=>True,'default'=>''),
+    'store_id' => array('type'=>'INT','primary_key'=>true,'default'=>1),
     'total' => array('type'=>'MONEY','default'=>0.00),
     'quantity' => array('type'=>'DOUBLE','default'=>0.00)
     );
@@ -52,13 +53,14 @@ class SumTendersByDayModel extends CoreWarehouseModel {
         $sql = "INSERT INTO ".$this->name."
             SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
             trans_subtype,
+            store_id,
             CONVERT(SUM(total),DECIMAL(10,2)) as total,
             COUNT(*) AS quantity
             FROM $target_table WHERE
             tdate BETWEEN ? AND ? AND
             trans_type IN ('T') 
             AND total <> 0
-            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_subtype";
+            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_subtype, store_id";
         $prep = $this->connection->prepare($sql);
         $result = $this->connection->execute($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
     }
