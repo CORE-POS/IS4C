@@ -39,7 +39,7 @@ class AnnualMeetingParser extends Parser {
         if (in_array($plu, $this->plus)){
             if (strlen($str)==4) {
                 return true;
-            } elseif(in_array(strtoupper($str[4]), array('M','V','K','N','W'))) {
+            } elseif(in_array(strtoupper($str[4]), array('S','C','T','K'))) {
                 return true;
             }
         }
@@ -53,10 +53,9 @@ class AnnualMeetingParser extends Parser {
             CoreLocal::set('qmInput',$str);
             $desc = $this->descriptions[$str];
             $opts = array(
-                $desc.' (Pork)' => 'M',
-                $desc.' (Ratatouille)' => 'V',
-                $desc.' (Pork, G/F)' => 'N',
-                $desc.' (Ratatouille, G/F)' => 'W',
+                $desc.' (Salmon)' => 'S',
+                $desc.' (Chicken)' => 'C',
+                $desc.' (Tempeh)' => 'T',
             );
             if ($str == 1041){
                 $opts[$desc.' (Kids)'] = 'K';
