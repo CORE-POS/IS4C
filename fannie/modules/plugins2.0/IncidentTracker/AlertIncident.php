@@ -82,6 +82,24 @@ class AlertIncident extends FannieRESTfulPage
         $model->userID($uid);
         $model->tdate(date('Y-m-d H:i:s'));
         $model->comment(FormLib::get('comment'));
+        if (!empty($_FILES['img1']['tmp_name']) && file_exists($_FILES['img1']['tmp_name'])) {
+            $ext = pathinfo($_FILES['img1']['name'], PATHINFO_EXTENSION);
+            $file = md5(rand());
+            while (file_exists(__DIR__  . "/image/{$file}.{$ext}")) {
+                $file = md5(rand());
+            }
+            move_uploaded_file($_FILES['img1']['tmp_name'], __DIR__ . "/image/{$file}.{$ext}");
+            $model->image1($file . '.' . $ext);
+        }
+        if (!empty($_FILES['img2']['tmp_name']) && file_exists($_FILES['img2']['tmp_name'])) {
+            $ext = pathinfo($_FILES['img2']['name'], PATHINFO_EXTENSION);
+            $file = md5(rand());
+            while (file_exists(__DIR__  . "/image/{$file}.{$ext}")) {
+                $file = md5(rand());
+            }
+            move_uploaded_file($_FILES['img2']['tmp_name'], __DIR__ . "/image/{$file}.{$ext}");
+            $model->image2($file . '.' . $ext);
+        }
         $model->save();
 
         return 'AlertIncident.php?id=' . $this->id;
@@ -209,8 +227,8 @@ class AlertIncident extends FannieRESTfulPage
     {
         $row = $this->getIncident($this->id);
         $row['details'] = nl2br($row['details']);
-        $img1 = $row['image1'] ? "<img src=\"image/{$row['image1']}\" />" : '';
-        $img2 = $row['image2'] ? "<img src=\"image/{$row['image2']}\" />" : '';
+        $img1 = $row['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image1']}\" />" : '';
+        $img2 = $row['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image2']}\" />" : '';
         $row['details'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $row['details']);
         $row['details'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
             '<a href="$1://$2$3">$1://$2$3</a>', $row['details']);
@@ -218,12 +236,19 @@ class AlertIncident extends FannieRESTfulPage
         $comments = $this->getComments($this->id);
         $cHtml = '';
         foreach ($comments as $c) {
+            $c['comment'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $c['comment']);
+            $c['comment'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
+                '<a href="$1://$2$3">$1://$2$3</a>', $c['comment']);
+            $cmg1 = $c['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$c['image1']}\" />" : '';
+            $cmg2 = $c['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$c['image2']}\" />" : '';
             $cHtml .= sprintf('<div class="panel panel-default">
                 <div class="panel panel-heading">%s - %s</div>
-                <div class="panel panel-body">%s</div>
+                <div class="panel panel-body">%s
+                <br />%s%s</div>
                 </div>',
                 $c['tdate'], $c['userName'],
-                nl2br($c['comment'])
+                nl2br($c['comment']),
+                $cmg1, $cmg2
             );
         }
 
@@ -270,7 +295,7 @@ class AlertIncident extends FannieRESTfulPage
     </p>
 </div>
 {$cHtml}
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     <input type="hidden" name="id" value="{$this->id}" />
     <div class="panel panel-default">
         <div class="panel-heading">Add a Comment</div>
@@ -278,6 +303,14 @@ class AlertIncident extends FannieRESTfulPage
             <p>
             <textarea name="comment" class="form-control" rows="7"></textarea>
             </p>
+            <div class="form-group">
+                <label>Image #1</label>
+                <input type="file" name="img1" class="form-control" accept="image/*" />
+            </div>
+            <div class="form-group">
+                <label>Image #2</label>
+                <input type="file" name="img2" class="form-control" accept="image/*" />
+            </div>
             <p>
             <button type="submit" class="btn btn-default">Post Comment</button>
             </p>

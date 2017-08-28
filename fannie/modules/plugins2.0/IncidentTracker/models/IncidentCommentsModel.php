@@ -37,6 +37,8 @@ class IncidentCommentsModel extends BasicModel
     'userID' => array('type'=>'INT'),
     'tdate' => array('type'=>'DATETIME'),
     'comment' => array('type'=>'TEXT'),
+    'image1' => array('type'=>'VARCHAR(255)'),
+    'image2' => array('type'=>'VARCHAR(255)'),
     );
 
 }
