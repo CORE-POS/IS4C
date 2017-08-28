@@ -57,12 +57,14 @@ class ObfDepartmentReport extends FannieRESTfulPage
             'actualSales' => array(), 
             'lastYearSales' => array(),
             'trendSales' => array(),
+            'smoothSales' => array(),
         );
         $categorySales = array();
         $hours = array();
         $lyHours = array();
 
         $cacheR = $this->connection->execute($cacheP, array($weeks[0], $weeks[1], $this->id));
+        $lastActual = false;
         while ($cacheW = $this->connection->fetchRow($cacheR)) {
             $weekID = $cacheW['obfWeekID'];
             list($start,) = explode(' ', $cacheW['start']);
@@ -79,17 +81,32 @@ class ObfDepartmentReport extends FannieRESTfulPage
             }
             $lineData['actualSales'][$dates] += $cacheW['actual'];
             $lineData['lastYearSales'][$dates] += $cacheW['ly'];
+            if ($cacheW['actual'] > 0) {
+                $lastActual = $weekID;
+            }
 
-            $trendR = $this->connection->execute($trendP, array($weekID-13, $weekID-1, $cacheW['superID'], $cacheW['catID']));
+            $trendR = $this->connection->execute($trendP, array($lastActual-13, $lastActual-1, $cacheW['superID'], $cacheW['catID']));
             $trend = array();
             $tCount = 0;
+            $smooth = array();
             while ($trendW = $this->connection->fetchRow($trendR)) {
                 $trend[] = array($tCount, $trendW['actual']);
+                $smooth[] = $trendW['actual'];
                 $tCount++;
             }
             $trend = Stats::removeOutliers($trend);
             $exp = Stats::exponentialFit($trend);
-            $lineData['trendSales'][$dates] += exp($exp->a) * exp($exp->b * $tCount);
+            $plotted = $tCount + ($weekID - $lastActual);
+            $lineData['trendSales'][$dates] += exp($exp->a) * exp($exp->b * $plotted);
+
+            // when out of data points extend exponential smoothing
+            // by assuming the previous value is correct
+            $smoothed = Stats::expSmoothing($smooth, 0.6);
+            for ($i=0; $i<($weekID - $lastActual); $i++) {
+                $smooth[] = exp($exp->a) * exp($exp->b * ($tCount + $i));
+                $smoothed = Stats::expSmoothing($smooth, 0.6);
+            }
+            $lineData['smoothSales'][$dates] += $smoothed;
 
             $super = $cacheW['super_name'];
             if (!isset($categorySales[$super])) {
@@ -233,6 +250,11 @@ class ObfDepartmentReport extends FannieRESTfulPage
             $ret .= '<td>' . number_format($actual) . '</td>';
         }
         $ret .= '</tr>';
+        $ret .= '<tr><th>Smoothed Sales</th>';
+        foreach ($lineData['smoothSales'] as $actual) {
+            $ret .= '<td>' . number_format($actual) . '</td>';
+        }
+        $ret .= '</tr>';
         $ret .= '</table>';
         $ret .= '</div><div class="col-sm-5"><canvas id="salesLines"></canvas></div></div>';
 
@@ -305,7 +327,7 @@ class ObfDepartmentReport extends FannieRESTfulPage
         $lineLabels = json_encode(array_keys($lineData['lastYearSales']));
         $actualData = $this->jsonify($lineData['actualSales']);
         $lyData = $this->jsonify($lineData['lastYearSales']);
-        $trendData = $this->jsonify($lineData['trendSales']);
+        $trendData = $this->jsonify($lineData['smoothSales']);
         $pieData = json_encode(array_values($categorySales));
         $pieLabels = json_encode(array_keys($categorySales));
         $hoursData = $this->jsonify($hours);
