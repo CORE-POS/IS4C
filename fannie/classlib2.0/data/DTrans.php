@@ -209,6 +209,7 @@ class DTrans
 
         return ' SUM(CASE '
                 . 'WHEN ' . $prefix . "trans_status = 'M' THEN 0 "
+                . 'WHEN ' . $prefix . "trans_subtype = 'OG' THEN 0 "
                 . 'WHEN ' . $prefix . "unitPrice = 0.01 THEN 1 "
                 . 'ELSE ' . $prefix . 'quantity '
                 . 'END) ';
