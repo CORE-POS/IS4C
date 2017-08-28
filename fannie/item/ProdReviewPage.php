@@ -152,8 +152,7 @@ HTML;
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
-        
+        $upc = BarcodeLib::padUPC(FormLib::get('upc'));        
         $p = new ProductsModel($dbc);
         $p->upc($upc);
         $p->store_id(1);
