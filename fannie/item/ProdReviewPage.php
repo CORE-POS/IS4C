@@ -152,20 +152,18 @@ HTML;
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
-        $pu = new ProdReviewModel($dbc);
-        $pu->upc($upc);
-        if ($pu->load()) {
-            $p = new ProductsModel($dbc);
-            $p->upc($upc);
-            $data = array();
-            foreach ($p->find() as $obj) {
-                $data[$upc]['upc'] = $obj->upc();
-                $data[$upc]['brand'] = $obj->brand();
-                $data[$upc]['description'] = $obj->description();
-            }
-            $table = $this->draw_table($data,$dbc);
-            return <<<HTML
+        $upc = BarcodeLib::padUPC(FormLib::get('upc'));        
+        $p = new ProductsModel($dbc);
+        $p->upc($upc);
+        $p->store_id(1);
+        $data = array();
+        foreach ($p->find() as $obj) {
+            $data[$upc]['upc'] = $obj->upc();
+            $data[$upc]['brand'] = $obj->brand();
+            $data[$upc]['description'] = $obj->description();
+        }
+        $table = $this->draw_table($data,$dbc);
+        return <<<HTML
 <form class="form-inline" method="get">
     {$table}
     <input type="hidden" name="upc" value="{$upc}">
@@ -173,14 +171,14 @@ HTML;
     <input type="submit" class="btn btn-warning" value="Mark as Reviewed" />
 </form><br />
 HTML;
-        }
+
     }
 
     public function get_upc_save_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upc = BarcodeLib::padUPC(FormLib::get('upcs'));
+        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
         $user = FannieAuth::getUID($this->current_user);
         $pr = new ProdReviewModel($dbc);
         $pr->upc($upc);
