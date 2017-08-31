@@ -105,6 +105,9 @@ those same items revert to normal pricing.
                     p.modified = NOW()
                 WHERE l.upc not like 'LC%'
                     and l.batchID = ?";
+            if (isset($p_def['batchID'])) {
+                $forceQ = str_replace('NOW()', 'NOW(), p.batchID=b.batchID', $forceQ);
+            }
                 
             $forceLCQ = "
                 UPDATE products AS p
@@ -129,6 +132,9 @@ those same items revert to normal pricing.
                     p.modified = NOW()
                 WHERE l.upc LIKE 'LC%'
                     AND l.batchID = ?";
+            if (isset($p_def['batchID'])) {
+                $forceLCQ = str_replace('NOW()', 'NOW(), p.batchID=b.batchID', $forceLCQ);
+            }
 
             if ($this->connection->dbmsName() == 'mssql') {
                 $forceQ="UPDATE products
