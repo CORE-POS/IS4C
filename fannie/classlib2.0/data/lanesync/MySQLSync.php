@@ -14,10 +14,10 @@ class MySQLSync extends SyncSpecial
     {
         $ret = array('success'=>false, 'details'=>'');
         
-        $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
+        $tempfile = tempnam(sys_get_temp_dir(),$tableName.".sql");
         $cmd = $this->dumpCommand()
             . ' '   . escapeshellarg($dbName)
-            . ' '   . escapeshellarg($table)
+            . ' '   . escapeshellarg($tableName)
             . ' > ' . escapeshellarg($tempfile)
             . ' 2> ' . escapeshellarg($tempfile . '.err');
         exec($cmd, $output, $exitCode);
