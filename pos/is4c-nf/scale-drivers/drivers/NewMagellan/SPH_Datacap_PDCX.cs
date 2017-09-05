@@ -254,7 +254,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 break;
             case "termApproved":
                 if (rba != null) {
-                    rba.showApproved();
+                    rba.showMessage("APPROVED");
+                }
+                break;
+            case "termDeclined":
+                if (rba != null) {
+                    rba.showMessage("DECLINED");
                 }
                 break;
             case "termSig":

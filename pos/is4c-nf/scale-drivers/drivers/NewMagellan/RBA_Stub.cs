@@ -132,6 +132,18 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         } catch (Exception) {}
     }
 
+    public void showMessage(string msg)
+    {
+        try {
+            stubStop();
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(SimpleMessageScreen(msg));
+            sp.Close();
+        } catch (Exception) {}
+
+    }
+
     public void stubStop()
     {
         lock (this.syncLock) {
@@ -251,7 +263,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 
         ArrayList bytes = new ArrayList();
-        while (true) {
+        while (true && this.emv_buttons != RbaButtons.None) {
             try {
                 int b = sp.ReadByte();
                 if (bytes.Count == 0 && b == 0x06) {
