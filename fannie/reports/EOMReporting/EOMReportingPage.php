@@ -21,12 +21,13 @@
 
 *********************************************************************************/
 
+
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class EOMReportingPage extends FanniePage
+class EOMReportingPage extends \COREPOS\Fannie\API\FannieReportTool
 {
     protected $header = 'EOMReportingPage';
     protected $title = 'EOMReportingPage';
@@ -36,7 +37,7 @@ class EOMReportingPage extends FanniePage
 
     public function body_content()
     {
-        return '<iframe frameborder="0" height="1200px" width="100%" src="http://key/git/fannie/legacy/members/EOM_Reporting/"></iframe>';
+        return '<iframe frameborder="0" height="1200px" width="100%" src="../../legacy/members/EOM_Reporting/"></iframe>';
     }
 
     public function helpContent()
