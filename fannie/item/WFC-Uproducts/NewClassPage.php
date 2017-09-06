@@ -44,7 +44,10 @@ class NewClassPage extends FannieRESTfulPage
     {
         
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $local = FannieDB::get($FANNIE_OP_DB);
+        include(dirname(__FILE__) . '/../../src/Credentials/OutsideDB.tunneled.php');
+        $remote = $dbc;
+        $cons = array(1=>$local,5=>$remote);
         
         $upc = FormLib::get('upc');
         $upc = BarcodeLib::padUPC($upc);
@@ -62,41 +65,43 @@ class NewClassPage extends FannieRESTfulPage
         $saved = array();
         $error = 0;
         
-        $p = new ProductsModel($dbc);
-        $p->upc($upc);
-        $p->description($pDesc);
-        $p->brand($pBrand);
-        $p->normal_price($prices);
-        $p->department($pDept);
-        $p->size($size);
-        if (!$saved[] = $p->save()) {
-            $error++;
-        }
-        
-        $ul = new UpcLikeModel($dbc);
-        $ul->upc($upc);
-        $ul->likeCode($likeCode);
-        if (!$saved[] = $ul->save()) {
-            $error+=10;
+        foreach ($cons as $k => $dbc) {
+            $p = new ProductsModel($dbc);
+            $p->upc($upc);
+            $p->description($pDesc);
+            $p->brand($pBrand);
+            $p->normal_price($prices);
+            $p->department($pDept);
+            $p->size($size);
+            if (!$saved[] = $p->save()) {
+                $error+=$k;
+            }
+            
+            $ul = new UpcLikeModel($dbc);
+            $ul->upc($upc);
+            $ul->likeCode($likeCode);
+            if (!$saved[] = $ul->save()) {
+                $error+=10*$k;
+            }
+
+            $pu = new ProductUserModel($dbc);
+            $pu->upc($upc);
+            $pu->enableOnline($sellonline);
+            $pu->description($wDesc);
+            $pu->brand($wBrand);
+            $pu->long_text($adText);
+            if (!$saved[] = $pu->save()) {
+                $error+=100*$k;
+            }
+            
+            $args = array($upc,$expires);
+            $prep = $dbc->prepare("INSERT INTO productExpires (upc, expires)VALUES (?, ?)");
+            $dbc->execute($prep,$args);
+            if ($dbc->error()) {
+                $error+=1000*$k;
+            }
         }
 
-        $pu = new ProductUserModel($dbc);
-        $pu->upc($upc);
-        $pu->enableOnline($sellonline);
-        $pu->description($wDesc);
-        $pu->brand($wBrand);
-        $pu->long_text($adText);
-        if (!$saved[] = $pu->save()) {
-            $error+=100;
-        }
-        
-        $args = array($upc,$expires);
-        $prep = $dbc->prepare("INSERT INTO productExpires (upc, expires)VALUES (?, ?)");
-        $dbc->execute($prep,$args);
-        if ($dbc->error()) {
-            $error+=1000;
-        }
-        
         if ($error) {
             header('Location: NewClassPage.php?created=failed&error=' . $error);
             return false;
