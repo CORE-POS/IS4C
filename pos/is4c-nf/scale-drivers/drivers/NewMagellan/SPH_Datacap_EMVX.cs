@@ -232,6 +232,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "termManual":
                 break;
             case "termApproved":
+                FlaggedReset();
                 if (rba != null) {
                     rba.showApproved();
                 }
