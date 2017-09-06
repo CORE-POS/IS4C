@@ -80,6 +80,32 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         }
     }
 
+    /**
+      Supported options:
+        -- Global Options --
+        * logErrors [boolean] default true
+            Write error information to the same debug_lane.log file as PHP.
+            Errors are logged regardless of whether the verbose switch (-v) 
+            is used but not all verbose output is treated as an error & logged
+        * logXML [boolean] default false
+            Log XML requests & responses to "xml.log" in the current directory.
+
+        -- Ingencio Specific Options --
+        * disableRBA [boolean] default false
+            Stops all direct communication with Ingenico terminal.
+            Driver will solely utilize Datacap functionality
+        * disableButtons [boolean] default false
+            Does not display payment type or cashback selection buttons.
+            RBA commands can still be used to display static text
+            Irrelevant if disableRBA is true
+        * defaultMessage [string] default "Welcome"
+            Message displayed onscreen at the start of a transaction
+            Irrelevant if disableRBA is true
+        * cashback [boolean] default true
+            Show cashback selections if payment type debit or ebt cash
+            is selected.
+            Irrelevant if disableRBA or disableButtons is true
+    */
     public override void SetConfig(Dictionary<string,string> d)
     {
         if (d.ContainsKey("disableRBA") && d["disableRBA"].ToLower() == "true") {
@@ -95,12 +121,20 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             this.rba.SetEMV(RbaButtons.None);
         }
 
+        if (this.rba != null && d.ContainsKey("defaultMessage")) {
+            this.rba.SetDefaultMessage(d["defaultMessage"]);
+        }
+
         if (d.ContainsKey("logXML") && d["logXML"].ToLower() == "true") {
             this.log_xml = true;
         }
 
         if (d.ContainsKey("logErrors") && d["logErrors"].ToLower() == "true") {
             this.enableUnifiedLog();
+        }
+
+        if (this.rba != null && d.ContainsKey("cashback") && (d["cashback"].ToLower() == "true" || d["cashback"].ToLower() == "false")) {
+            this.rba.SetCashBack(d["cashback"].ToLower() == "true" ? true : false);
         }
     }
 
@@ -254,12 +288,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 break;
             case "termApproved":
                 if (rba != null) {
-                    rba.showMessage("APPROVED");
+                    rba.showMessage("Approved");
                 }
                 break;
             case "termDeclined":
                 if (rba != null) {
-                    rba.showMessage("DECLINED");
+                    rba.showMessage("Declined");
                 }
                 break;
             case "termSig":
