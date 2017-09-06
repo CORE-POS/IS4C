@@ -152,10 +152,11 @@ HTML;
             </div>
             <div class="form-group">
                 <label for="pPrice">Price</label><br/>
-                <input type="radio" name="price" value="$12"/> $12 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="$15"/> $15 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="$20"/> $20 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="$25"/> $25 
+                <input type="radio" name="price" value="0.00"/> <i>Free</i> <span style="color: grey">| </span>
+                <input type="radio" name="price" value="12.00"/> $12 <span style="color: grey">| </span>
+                <input type="radio" name="price" value="15.00"/> $15 <span style="color: grey">| </span>
+                <input type="radio" name="price" value="20.00"/> $20 <span style="color: grey">| </span>
+                <input type="radio" name="price" value="25.00"/> $25 
             </div>
             <div class="form-group">
                 <label for="likeCode">Like Code</label><br/>
