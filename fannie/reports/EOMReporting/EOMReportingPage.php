@@ -33,7 +33,7 @@ class EOMReportingPage extends \COREPOS\Fannie\API\FannieReportTool
     protected $title = 'EOMReportingPage';
     public $description = '[EOMReportingPage] Access EOM reports.';
     protected $must_authenticate = true;
-    protected $auth_classes = array('it','finance');
+    protected $auth_classes = array('editmembers');
 
     public function body_content()
     {
