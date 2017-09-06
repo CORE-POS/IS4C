@@ -55,6 +55,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private bool pdc_active;
     private Object pdcLock = new Object();
     private bool emv_reset;
+    private bool always_reset = false;
     private Object emvLock = new Object();
 
     public SPH_Datacap_EMVX(string p) : base(p)
@@ -269,6 +270,41 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
     }
 
+    /**
+      Supported options:
+        -- Global Options --
+        * alwaysReset [boolean] default false
+            Issue a PadReset command following a transaction. This will make
+            the terminal beep until the customer removes their card. Control
+            will not be returned to the cashier until the card is removed or
+            the reset command times out.
+        * logErrors [boolean] default true
+            Write error information to the same debug_lane.log file as PHP.
+            Errors are logged regardless of whether the verbose switch (-v) 
+            is used but not all verbose output is treated as an error & logged
+        * logXML [boolean] default false
+            Log XML requests & responses to "xml.log" in the current directory.
+
+        -- Ingencio Specific Options --
+        * disableRBA [boolean] default false
+            Stops all direct communication with Ingenico terminal.
+            Driver will solely utilize Datacap functionality
+        * disableButtons [boolean] default false
+            Does not display payment type or cashback selection buttons.
+            RBA commands can still be used to display static text
+            Irrelevant if disableRBA is true
+        * creditButton [boolean] default false
+            Label the payment type buttons as credit/debit/ebt instead of
+            chip+pin/debit/ebt.
+            Irrelevant if disableRBA or disableButtons is true
+        * defaultMessage [string] default "Welcome"
+            Message displayed onscreen at the start of a transaction
+            Irrelevant if disableRBA is true
+        * cashback [boolean] default true
+            Show cashback selections if payment type debit or ebt cash
+            is selected.
+            Irrelevant if disableRBA or disableButtons is true
+    */
     public override void SetConfig(Dictionary<string,string> d)
     {
         if (d.ContainsKey("disableRBA") && d["disableRBA"].ToLower() == "true") {
@@ -282,6 +318,18 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
         if (this.rba != null && d.ContainsKey("disableButtons") && d["disableButtons"].ToLower() == "true") {
             this.rba.SetEMV(RbaButtons.None);
+        }
+
+        if (this.rba != null && d.ContainsKey("creditButton") && d["creditButton"].ToLower() == "true") {
+            this.rba.SetEMV(RbaButtons.Credit);
+        }
+
+        if (this.rba != null && d.ContainsKey("defaultMessage")) {
+            this.rba.SetDefaultMessage(d["defaultMessage"]);
+        }
+
+        if (d.ContainsKey("alwaysReset") && d["alwaysReset"].ToLower() == "true") {
+            this.always_reset = true;
         }
 
         if (d.ContainsKey("logXML") && d["logXML"].ToLower() == "true") {
@@ -380,6 +428,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     // another transaction
                     break;
                 }
+            }
+
+            if (autoReset && this.always_reset) {
+                FlaggedReset();
             }
 
             return result;
