@@ -76,6 +76,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private Object syncLock;
 
     private bool allowDebitCB = true;
+    private string defaultMsg = "Welcome";
     private string bufferedCardType = "";
 
     public RBA_Stub(string p)
@@ -93,6 +94,11 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     public void SetCashBack(bool cb)
     {
         this.allowDebitCB = cb;
+    }
+
+    public void SetDefaultMessage(string msg)
+    {
+        this.defaultMsg = msg;
     }
 
     private void initPort()
@@ -130,6 +136,18 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             WriteMessageToDevice(SimpleMessageScreen("Approved"));
             sp.Close();
         } catch (Exception) {}
+    }
+
+    public void showMessage(string msg)
+    {
+        try {
+            stubStop();
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(SimpleMessageScreen(msg));
+            sp.Close();
+        } catch (Exception) {}
+
     }
 
     public void stubStop()
@@ -228,15 +246,14 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             char fs = (char)0x1c;
-            string store_name = "Welcome";
 
             // standard credit/debit/ebt/gift
-            string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            string buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             if (this.emv_buttons == RbaButtons.EMV) {
                 // CHIP+PIN button in place of credit & debit
-                buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+                buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,S"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             } else if (this.emv_buttons == RbaButtons.None) {
-                buttons = "TPROMPT6,"+store_name;
+                buttons = "TPROMPT6,"+defaultMsg;
             }
 
             WriteMessageToDevice(UpdateScreenMessage(buttons));
@@ -251,7 +268,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 
         ArrayList bytes = new ArrayList();
-        while (true) {
+        while (true && this.emv_buttons != RbaButtons.None) {
             try {
                 int b = sp.ReadByte();
                 if (bytes.Count == 0 && b == 0x06) {

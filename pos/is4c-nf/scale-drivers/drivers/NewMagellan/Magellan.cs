@@ -176,6 +176,10 @@ public class Magellan : DelegateForm
         try {
             if (msg == "exit") {
                 this.ShutDown();
+            } else if (msg == "die!") {
+                new Thread(() => this.ShutDown()).Start();
+                Thread.Sleep(500);
+                Environment.Exit(0);
             } else if (msg == "full_udp") {
                 full_udp = true;
             } else if (msg == "mq_up" && mq_available) {
@@ -247,8 +251,8 @@ public class Magellan : DelegateForm
     public void ShutDown()
     {
         try {
-            sph.ForEach(s => { s.Stop(); });
             u.Stop();
+            sph.ForEach(s => { s.Stop(); });
         }
         catch(Exception ex) {
             Magellan.LogMessage(ex.ToString());

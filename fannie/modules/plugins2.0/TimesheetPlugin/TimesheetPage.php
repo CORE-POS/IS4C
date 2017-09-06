@@ -25,7 +25,11 @@ class TimesheetPage extends FanniePage
         $this->title = 'Fannie - Administration Module';
         $this->display_func = '';
 
-        $max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
+        if (isset($_GET['max'])) {
+            $max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
+        } else {
+            $max = 10;
+        }
 
         if (!$this->current_user && $_GET['login'] == 1 ) {
             $this->loginRedirect();
