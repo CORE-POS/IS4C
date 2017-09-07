@@ -60,7 +60,8 @@ static public function suspendorder($session)
     }
 
     /* ensure the cancel happens */
-    $dba->query("UPDATE localtemptrans SET trans_status='X',charflag='S'");
+    $dba->query("UPDATE localtemptrans SET trans_status='X'");
+    $dba->query("UPDATE localtemptrans SET charflag='S' WHERE charflag=''");
     TransRecord::finalizeTransaction(true);
 
     $session->set("plainmsg",_("transaction suspended"));
