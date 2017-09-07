@@ -225,7 +225,7 @@ class WfcClassRegistryPage extends FanniePage
             WHERE p.description LIKE 'class -%' 
                     AND p.inUse=1
             GROUP BY pu.description
-            ORDER BY pu.description ASC;
+            ORDER BY substr(pu.description,9,2),pu.description ASC;
             ");
         $result = $dbc->execute($query);
         while($row = $dbc->fetch_row($result)){
