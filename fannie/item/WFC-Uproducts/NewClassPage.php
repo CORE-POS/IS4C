@@ -58,32 +58,36 @@ class NewClassPage extends FannieRESTfulPage
         $pDept = FormLib::get('pDept');
         $size = FormLib::get('size');
         $sellonline = FormLib::get('sellonline');
-        $expires = FormLib::get('expires');
+        $expires = FormLib::get('expires') . ' 00:00:00';
         $wBrand = FormLib::get('wBrand');
         $wDesc = FormLib::get('wDesc');
         $adText = FormLib::get('adText');
         $saved = array();
         $error = 0;
+
+        $ul = new UpcLikeModel($local);
+        $ul->upc($upc);
+        $ul->likeCode($likeCode);
+        if (!$saved[] = $ul->save()) {
+            $error+=10;
+        }
         
         foreach ($cons as $k => $dbc) {
             $p = new ProductsModel($dbc);
             $p->upc($upc);
             $p->description($pDesc);
             $p->brand($pBrand);
-            $p->normal_price($prices);
+            $p->normal_price($price);
             $p->department($pDept);
             $p->size($size);
+            $p->inUse(1);
+            if ($k === 5) {
+                $p->store_id(1);
+            }
             if (!$saved[] = $p->save()) {
                 $error+=$k;
             }
             
-            $ul = new UpcLikeModel($dbc);
-            $ul->upc($upc);
-            $ul->likeCode($likeCode);
-            if (!$saved[] = $ul->save()) {
-                $error+=10*$k;
-            }
-
             $pu = new ProductUserModel($dbc);
             $pu->upc($upc);
             $pu->enableOnline($sellonline);
@@ -95,7 +99,7 @@ class NewClassPage extends FannieRESTfulPage
             }
             
             $args = array($upc,$expires);
-            $prep = $dbc->prepare("INSERT INTO productExpires (upc, expires)VALUES (?, ?)");
+            $prep = $dbc->prepare("INSERT INTO productExpires (upc, expires) VALUES (?, ?)");
             $dbc->execute($prep,$args);
             if ($dbc->error()) {
                 $error+=1000*$k;
@@ -103,7 +107,7 @@ class NewClassPage extends FannieRESTfulPage
         }
 
         if ($error) {
-            header('Location: NewClassPage.php?created=failed&error=' . $error);
+            header('Location: NewClassPage.php?created=failed&error=' . $error . '&upc=' . $upc);
             return false;
         } else {
             header('Location: NewClassPage.php?created=success&upc=' . $upc);
@@ -116,19 +120,25 @@ class NewClassPage extends FannieRESTfulPage
     {
         $alert = '';
         $upc = FormLib::get('upc');
+        $ln = '<a href="../ItemEditorPage.php?searchupc='.$upc.
+                '&ntype=UPC&searchBtn=">'.$upc.'</a>';
         if (FormLib::get('created') == 'success') {
             $alert = '<div class="alert alert-success">Class Created Successfully!<br/>
-                View: <a href="../ItemEditorPage.php?searchupc='.$upc.
-                '&ntype=UPC&searchBtn=">'.$upc.'</a></div>';
+                View: '.$ln.'</div>';
         } elseif (FormLib::get('created') == 'failed') {
             $error = FormLib::get('error');
-            $alert = '<div class="alert alert-danger">Page Failed to Create Class. Error-code: '.$error.'</div>';
+            $alert = '<div class="alert alert-danger">Something went wrong. Error-code: 
+                '.$error.'<br/>View: '.$ln.'</div>';
         }
         
         return <<<HTML
-        create a new POS product for a WFC-U Class<br/><br/>
+        <div align="center">
         {$alert}
-        {$this->form_content()}
+        <div class="panel panel-default" style="max-width: 900px;">
+        <div class="panel-heading" id="heading"><strong>Create a new WFC-U Class</strong></div>
+        <div class="panel-body" style="text-align: left;">
+            {$this->form_content()}
+        </div></div></div>
 HTML;
     }
     
@@ -140,30 +150,37 @@ HTML;
         <div class="col-md-3">
             <div class="form-group">
                 <label for="upc">UPC</label>
-                <input type="text" class="form-control len-md" name="upc" id="upc" autofocus value="99" />
+                <input type="text" class="form-control len-md" name="upc" id="upc" autofocus value="99" required/>
             </div>
             <div class="form-group">
                 <label for="pDesc">POS Description</label>
-                <input type="text" class="form-control len-lg" name="pDesc" value="CLASS - " />
+                <input type="text" class="form-control len-lg" name="pDesc" value="CLASS - "
+                    maxlength="30" required/>
             </div>
             <div class="form-group">
                 <label for="pBrand">POS Brand</label>
-                <input type="text" class="form-control len-md" name="pBrand" value="WFC-U" readonly="readonly" />
+                <input type="text" class="form-control len-md" name="pBrand" value="WFC-U" readonly="readonly" required/>
             </div>
             <div class="form-group">
                 <label for="pPrice">Price</label><br/>
-                <input type="radio" name="price" value="0.00"/> <i>Free</i> <span style="color: grey">| </span>
+                <input type="radio" name="price" value="0.00" selected/> <i>Free</i> <span style="color: grey">| </span>
                 <input type="radio" name="price" value="12.00"/> $12 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="15.00"/> $15 <span style="color: grey">| </span>
+                <input type="radio" name="price" value="15.00"/> $15 <br/>
                 <input type="radio" name="price" value="20.00"/> $20 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="25.00"/> $25 
+                <input type="radio" name="price" value="25.00"/> $25 <span style="color: grey">| </span>
+                <input type="radio" name="price" value="40.00"/> $40 
             </div>
             <div class="form-group">
                 <label for="likeCode">Like Code</label><br/>
-                <input type="radio" name="likeCode" value="7000"/> 7000 <span style="color: grey">| </span>$25 -> $20<br/>
+                <input type="radio" name="likeCode" value="" selected/> None <br/>
                 <input type="radio" name="likeCode" value="7001"/> 7001 <span style="color: grey">| </span>$15 -> $12<br/>
                 <input type="radio" name="likeCode" value="7004"/> 7004 <span style="color: grey">| </span>$15 -> $10<br/>
                 <input type="radio" name="likeCode" value="7003"/> 7003 <span style="color: grey">| </span>$20 -> $15<br/>
+                <input type="radio" name="likeCode" value="7005"/> 7005 <span style="color: grey">| </span>$40 -> $30<br/>
+            </div>
+            <div class="form-group">
+                <label for="expires">Expires</label>
+                <input type="date" class="form-control date-field len-md" name="expires" id="expires" value="" required/>
             </div>
         </div>
         
@@ -174,15 +191,27 @@ HTML;
             </div>
             <div class="form-group">
                 <label for="size">Class Size</label>
-                <input type="text" class="form-control len-sm" name="pSize" value="" />
+                <input type="text" class="form-control len-sm" name="size" value="" required/>
+            </div>
+            <div class="form-group">
+                <label for="classname">Class Name</label>
+                <input type="text" class="form-control len-md" name="classname" id="classname" value="" required/>
+            </div>
+            <div class="form-group">
+                <label for="start">Start Time</label>
+                <input type="text" class="form-control len-lg" name="start" id="start" value="" required/>
+            </div>
+            <div class="form-group">
+                <label for="end">End Time</label>
+                <input type="text" class="form-control len-lg" name="end" id="end" value="" required/>
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" class="form-control len-md" name="location" id="location" value="" required/>
             </div>
             <div class="form-group">
                 <label for="sellonline">Sell Online</label>
                 <input type="checkbox" name="sellonline" value="1" checked="checked"/>
-            </div>
-            <div class="form-group">
-                <label for="expires">Expires</label>
-                <input type="date" class="form-control date-field len-md" name="expires" value="" />
             </div>
         </div>
        
@@ -193,11 +222,16 @@ HTML;
             </div>
             <div class="form-group">
                 <label for="wDesc">Web Description</label>
-                <textarea type="text" class="form-control len-lg" name="wDesc" value="" rows="2"></textarea>
+                <textarea type="text" class="form-control len-lg" name="wDesc" id="wDesc" value="" rows="2" 
+                    readonly="readonly" style="overflow-y: hidden">
+MM-DD-YYYY CLASS_NAME &#13;&#10;
+START - END LOCATION
+                </textarea>
             </div>
             <div class="form-group">
                 <label for="adText">Web Paragraph</label>
-                <textarea type="text" class="form-control  len-lg" name="adText" value="" rows="5"></textarea>
+                <textarea type="text" class="form-control  len-lg" name="adText" value="" 
+rows="20"></textarea>
             </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-default" name="create" value="1">Create WFC-U Class</button>
@@ -224,6 +258,9 @@ HTML;
 .len-lg {
     max-width: 400px;
 }
+.alert {
+    max-width: 900px;
+}
 
 HTML;
     }
@@ -236,7 +273,58 @@ $(document).ready(function() {
     var len = input.val().length;
     input[0].focus();
     input[0].setSelectionRange(len, len);
+    autofill();
 });
+function autofill() {
+    $('#upc').change( function() {
+        var upc = $('#upc').val();
+        mo = upc.substr(2,2);
+        da = upc.substr(4,2);
+        ye = upc.substr(6,2);
+        var date = mo+'-'+da+'-20'+ye;
+        var wDesc = $('#wDesc').val();  
+        wDesc = wDesc.replace('MM-DD-YYYY',date);
+        $('#wDesc').val(wDesc);
+        if (da - 2 > 0) {
+            da = da - 2;
+        } else if (mo - 1 > 0) {
+            mo = mo - 1;
+            da = 28;
+        } else {
+            ye = ye - 1;
+            mo = 12;
+            da = 28;
+        }
+        exp = '20'+ye+'-'+mo+'-'+da;
+        $('#expires').val(exp);
+    });
+    $('#classname').change( function() {
+        var name = $('#classname').val();
+        var wDesc = $('#wDesc').val();
+        wDesc = wDesc.replace('CLASS_NAME',name);
+        $('#wDesc').val(wDesc);
+    });
+    $('#start').change( function() {
+        var start = $('#start').val();
+        start = start.toUpperCase();
+        var wDesc = $('#wDesc').val();
+        wDesc = wDesc.replace('START',start);
+        $('#wDesc').val(wDesc);
+    });
+    $('#end').change( function() {
+        var end = $('#end').val();
+        end = end.toUpperCase();
+        var wDesc = $('#wDesc').val();
+        wDesc = wDesc.replace('END',end);
+        $('#wDesc').val(wDesc);
+    });
+    $('#location').change( function() {
+        var loc = $('#location').val();
+        var wDesc = $('#wDesc').val();
+        wDesc = wDesc.replace('LOCATION',loc);
+        $('#wDesc').val(wDesc);
+    });
+}
 HTML;
     }
 
