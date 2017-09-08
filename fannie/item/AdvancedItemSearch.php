@@ -811,7 +811,8 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $search = new stdClass();
         $search->from = 'products AS p 
                 LEFT JOIN departments AS d ON p.department=d.dept_no
-                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID';
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID';
         $search->where = '1=1';
         $search->args = array();
         foreach ($this->search_methods as $method) {
@@ -836,6 +837,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 p.normal_price, 
                 p.special_price,
                 p.cost,
+                v.sku,
                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
                 0 as selected
             FROM ' . $search->from . '
@@ -915,13 +917,14 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $ret .= '<table class="table search-table table-striped">';
         $ret .= '<thead><tr>
                 <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
-                <th>UPC</th><th>Brand</th><th>Desc</th><th>Super</th><th>Dept</th>
+                <th>UPC</th><th>SKU</th><th>Brand</th><th>Desc</th><th>Super</th><th>Dept</th>
                 <th>cost</th><th>Retail</th><th>On Sale</th><th>Sale</th>
                 </tr></thead><tbody>';
         foreach ($data as $upc => $record) {
             $ret .= sprintf('<tr>
                             <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" %s 
                                 onchange="checkedCount(\'#selection-counter\', \'.upcCheckBox\');" /></td>
+                            <td>%s</td>
                             <td>%s</td>
                             <td>%s</td>
                             <td>%s</td>
@@ -934,6 +937,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             </tr>', 
                             $upc, ($record['selected'] == 1 ? 'checked' : ''),
                             \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($upc),
+                            $record['sku'],
                             $record['brand'],
                             $record['description'],
                             $record['super_name'],
