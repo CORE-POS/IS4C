@@ -46,6 +46,7 @@ class ObfIndexPageV2 extends FannieRESTfulPage
             <li><a href="ObfWeekEntryPageV2.php">Enter Weekly Labor and Forecast Data</a></li>
             <li><a href="ObfCategoriesPageV2.php">Manage OBF Categories</a></li>
             <li><a href="ObfMappingPageV2.php">Map OBF Categories to POS</a></li>
+            <li><a href="ObfBigBoardReport.php">View Big Board Report</a></li>
             </ul>';
     }
 }
