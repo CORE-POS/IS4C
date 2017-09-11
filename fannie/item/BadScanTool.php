@@ -188,7 +188,7 @@ class BadScanTool extends FannieRESTfulPage
 
         $ret .= '<div id="ratio">';
         $ret .= sprintf('Approx. bad scan rate: %.2f%%', 
-            $data['itemTTL'] == 0 ? 0 : ((float)$scanCount) / ((float)$data['itemTTL'] != 0) * 100);
+            $data['itemTTL'] == 0 ? 0 : ((float)$scanCount) / ((float)$data['itemTTL']) * 100);
         $ret .= '</div>';
 
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
