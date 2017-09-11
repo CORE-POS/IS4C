@@ -50,7 +50,7 @@ using BitmapBPP;
 
 namespace SPH {
 
-public enum RbaButtons { None, Credit, EMV };
+public enum RbaButtons { None, Credit, EMV, Cashback };
 
 /**
   This class contains all the functionality for building
@@ -252,6 +252,8 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             if (this.emv_buttons == RbaButtons.EMV) {
                 // CHIP+PIN button in place of credit & debit
                 buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,S"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            } else if (this.emv_buttons == RbaButtons.Cashback) {
+                buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,CASHBACK"+fs+"Bbtna,S"+fs+"Bbtnb,CREDIT"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             } else if (this.emv_buttons == RbaButtons.None) {
                 buttons = "TPROMPT6,"+defaultMsg;
             }

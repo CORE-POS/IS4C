@@ -83,7 +83,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     /**
       Supported options:
         -- Global Options --
-        * logErrors [boolean] default true
+        * logErrors [boolean] default false
             Write error information to the same debug_lane.log file as PHP.
             Errors are logged regardless of whether the verbose switch (-v) 
             is used but not all verbose output is treated as an error & logged
@@ -98,6 +98,10 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             Does not display payment type or cashback selection buttons.
             RBA commands can still be used to display static text
             Irrelevant if disableRBA is true
+        * buttons [string] default Credit
+            Change labeling of the buttons. Valid options are "credit"
+            and "cashback" currently.
+            Irrelevant if disableRBA or disableButtons is true
         * defaultMessage [string] default "Welcome"
             Message displayed onscreen at the start of a transaction
             Irrelevant if disableRBA is true
@@ -119,6 +123,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
 
         if (this.rba != null && d.ContainsKey("disableButtons") && d["disableButtons"].ToLower() == "true") {
             this.rba.SetEMV(RbaButtons.None);
+        }
+
+        if (this.rba != null && d.ContainsKey("buttons")) {
+            if (d["buttons"].ToLower() == "cashback") {
+                this.rba.SetEMV(RbaButtons.Cashback);
+            }
         }
 
         if (this.rba != null && d.ContainsKey("defaultMessage")) {
