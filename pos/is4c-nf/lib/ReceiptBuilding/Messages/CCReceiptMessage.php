@@ -59,13 +59,9 @@ class CCReceiptMessage extends ReceiptMessage {
         $sort = 'asc';
 
         $slip = '';
-        $idclause = '';
         $dbc = Database::tDataConnect();
         if ($reprint)
             $dbc = Database::mDataConnect();
-        if ($sigSlip && is_numeric(CoreLocal::get('paycard_id'))) {
-            $idclause = ' AND transID='.CoreLocal::get('paycard_id');
-        }
 
         $trans_type = $dbc->concat('p.cardType', "' '", 'p.transType', '');
 
@@ -84,11 +80,14 @@ class CCReceiptMessage extends ReceiptMessage {
                   WHERE dateID=" . date('Ymd') . "
                     AND empNo=" . $emp . "
                     AND registerNo=" . $reg . "
-                    AND transNo=" . $trans . $idclause . "
+                    AND transNo=" . $trans . "
                     AND p.validResponse=1
                     AND (p.xResultMessage LIKE '%APPROVE%' OR p.xResultMessage LIKE '%PENDING%')
                     AND p.cardType IN ('Credit', 'Debit', 'EMV', 'R.Credit', 'R.EMV')
                   ORDER BY p.requestDatetime";
+        if ($sigSlip) {
+            $query .= ' DESC';
+        }
 
         $result = $dbc->query($query);
 
@@ -200,6 +199,9 @@ class CCReceiptMessage extends ReceiptMessage {
                 }
             }
             $slip .= ReceiptLib::centerString(".................................................")."\n";
+            if ($sigSlip) {
+                break;
+            }
         }
 
         return $slip;
