@@ -34,6 +34,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection;
 
 #if NEWTONSOFT_JSON
 using Newtonsoft.Json;
@@ -48,6 +49,8 @@ using CustomForms;
 using CustomUDP;
 using SPH;
 using Discover;
+
+[assembly: AssemblyVersion("1.0.*")]
 
 public class Magellan : DelegateForm 
 {
@@ -424,3 +427,4 @@ public class MagellanConfigPair
     public string module { get; set; }
     public Dictionary<string,string> settings { get; set; }
 }
+

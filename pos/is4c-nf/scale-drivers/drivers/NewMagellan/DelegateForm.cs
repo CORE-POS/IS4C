@@ -28,6 +28,9 @@
 *************************************************************/
 using System;
 using System.Threading;
+using System.Reflection;
+
+[assembly: AssemblyVersion("1.0.*")]
 
 namespace CustomForms {
 

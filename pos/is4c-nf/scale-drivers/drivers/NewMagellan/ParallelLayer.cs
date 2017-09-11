@@ -1,4 +1,7 @@
 using System.IO;
+using System.Reflection;
+
+[assembly: AssemblyVersion("1.0.*")]
 
 namespace ParallelLayer {
 

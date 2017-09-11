@@ -39,7 +39,10 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Collections.Generic;
+using System.Reflection;
 using CustomForms;
+
+[assembly: AssemblyVersion("1.0.*")]
 
 namespace SPH {
 
