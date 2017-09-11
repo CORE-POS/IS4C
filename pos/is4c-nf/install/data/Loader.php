@@ -66,7 +66,7 @@ class Loader
         echo _("line-by-line") . "<br>\n";
         $fptr = fopen($path, 'r');
         $stmt = false;
-        $success = false;
+        $success = true;
         while(!feof($fptr)) {
             $line = fgetcsv($fptr);
             if (!is_array($line)) continue;
