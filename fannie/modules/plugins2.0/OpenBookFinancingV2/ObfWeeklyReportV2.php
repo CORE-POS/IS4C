@@ -331,7 +331,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 $quarter['planSales'] = $qt_splh['planSales'];
             }
             $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $quarter['planSales'] / $category->salesPerLaborHourTarget();
+            $qt_proj_hours = ($dept_proj * $ou_weeks) / $labor->splhTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;

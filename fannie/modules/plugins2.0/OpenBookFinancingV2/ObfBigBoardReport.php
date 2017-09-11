@@ -60,6 +60,17 @@ class ObfBigBoardReport extends FannieRESTfulPage
         $prefix = $settings['ObfDatabaseV2'] . $this->connection->sep();
         $store = FormLib::get('store', 0);
 
+        $ret = '';
+        $ret = sprintf('<p>
+            <a href="?id=%d&store=%d">Prev Week</a> |
+            <a href="?id=%d&store=%d">Next Week</a> |
+            <a href="?id=%d&store=%d">Other Store</a>
+            </p>',
+            ($this->id-1), $store,
+            ($this->id+1), $store,
+            $this->id, ($store == 1 ? 2 : 1)
+        );
+
         $weekP = $this->connection->prepare("SELECT * FROM {$prefix}ObfWeeks WHERE obfWeekID=?");
         $week = $this->connection->getRow($weekP, array($this->id));
 
@@ -91,7 +102,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
             3 => array('forecast'=>0, 'plan'=>0, 'planHours'=>0),
         );
 
-        $ret = '<table class="table small table-bordered table-striped">';
+        $ret .= '<table class="table small table-bordered table-striped">';
         $ret .= '<tr><th>&nbsp;</th>';
         for ($i=3; $i>=0; $i--) {
             $start = $i == 0 ? $curStart : $curStart->add(new DateInterval('P' . ($i*7) . 'D'));
