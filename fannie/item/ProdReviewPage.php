@@ -32,7 +32,7 @@ class ProdReviewPage extends FannieRESTfulPage
     protected $title = 'Vendor Product Info Review';
 
     public $description = '[Vendor Prodct Info Review] keep a record of the
-		last time product info was verified/updated for individual products.';
+        last time product info was verified/updated for individual products.';
 
     function preprocess()
     {
