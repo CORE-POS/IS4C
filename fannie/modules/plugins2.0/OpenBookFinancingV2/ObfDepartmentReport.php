@@ -101,10 +101,12 @@ class ObfDepartmentReport extends FannieRESTfulPage
 
             // when out of data points extend exponential smoothing
             // by assuming the previous value is correct
-            $smoothed = Stats::expSmoothing($smooth, 0.6);
+            $alpha = 0.6;
+            $smoothed = Stats::expSmoothing($smooth, $alpha);
             for ($i=0; $i<($weekID - $lastActual); $i++) {
                 $smooth[] = exp($exp->a) * exp($exp->b * ($tCount + $i));
-                $smoothed = Stats::expSmoothing($smooth, 0.6);
+                $alpha *= 0.7;
+                $smoothed = Stats::expSmoothing($smooth, 0.4);
             }
             $lineData['smoothSales'][$dates] += $smoothed;
 
