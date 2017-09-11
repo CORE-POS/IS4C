@@ -84,7 +84,7 @@ foreach($records as $w){
     printf('<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
         <td>%s</td><td>%s</td><td>%d</td><td>%d</td>
         <td>%d</td><td>%d</td>
-        <td>%d</td><td>%d</td><td>%s</td></tr>',
+        <td>%d</td><td>%s</td></tr>',
         $w['tdate'],$w['card_no'],$lname,$fname,$w['email'],
         $w['phone'],$w['guest_count']+1,$w['salmon'],$w['chicken'],
         $w['tempeh'], $w['child_count'],
