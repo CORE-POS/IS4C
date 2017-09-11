@@ -78,7 +78,7 @@ class RemotePrint extends Plugin
         $infoR = $dbc->execute($infoP, array($emp, $reg, $trans));
         $lines = array();
         $comments = array();
-        $hri = false;
+        $hri = array();
         while ($row = $dbc->fetchRow($infoR)) {
             if (CoreLocal::get('RemotePrintDebug')) {
                 $lines[] = array(
@@ -88,7 +88,7 @@ class RemotePrint extends Plugin
                 );
                 continue;
             }
-            if ($row['trans_status'] == 'X' && $row['charflag'] != 'S') {
+            if ($row['trans_status'] == 'X' && $row['charflag'] != 'S' && $row['charflag'] != 'HR') {
                 // This is a canceled line. Skip it.
                 continue;
             }
@@ -100,25 +100,39 @@ class RemotePrint extends Plugin
             if ($row['remote']) {
                 $lines[] = array('upc'=>$row['upc'], 'description'=>$row['description'], 'qty'=>$row['quantity']);
             } elseif ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
-                $hri = $row['description'];
+                $hri[] = $row['description'];
             } elseif ($row['trans_subtype'] == 'CM') {
-                $comments[] = $row['description'];
+                $lines[] = $row['description'];
             }
         }
 
         if (count($lines) > 0) {
-            $receipt = date('Y-m-d h:i:sA') . ' ' . $emp . '-' . $reg . '-' . $trans . "\n\n";
-            if ($hri) {
-                $receipt = date('Y-m-d h:i:sA') . ' ' . $hri . "\n\n";
+            $stars = str_repeat('*', 40);
+            $receipt = $stars . "\n\n";
+            $receipt .= date('Y-m-d h:i:sA') . ' ' . $emp . '-' . $reg . '-' . $trans . "\n\n";
+            if (count($hri) > 0) {
+                $receipt = $stars . "\n\n";
+                $receipt .= date('Y-m-d h:i:sA') . "\n" . implode("\n", $hri) . "\n";
             }
+            $receipt .= $stars . "\n\n";
+
+            $prevWasItem = true;
             foreach ($lines as $line) {
-                $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
-                    . str_pad($line['quantity'], 5, ' ', STR_PAD_LEFT)
-                    . "\n";
+                if (is_array($line)) {
+                    $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
+                        . str_pad($line['quantity'], 5, ' ', STR_PAD_LEFT)
+                        . "\n";
+                    $prevWasItem = true;
+                } else {
+                    $receipt .= $line . "\n";
+                    $prevWasItem = false;
+                }
+                if ($prevWasItem) {
+                    $receipt .= "\n";
+                }
             }
-            $receipt .= "\n";
-            $receipt .= implode("\n", $comments);
-            $receipt .= "\n";
+
+            $receipt .= $stars . "\n\n";
             $receipt = ReceiptLib::cutReceipt($receipt);
             
             if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
