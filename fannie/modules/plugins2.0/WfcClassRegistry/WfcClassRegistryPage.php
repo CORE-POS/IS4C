@@ -235,8 +235,10 @@ class WfcClassRegistryPage extends FanniePage
             $classSize[] = $row['size'];
             $classExp[] = $row['expires'];
         }
-        
-        $ret = '<div class=\'container\'><form method=\'get\'><select class=\'form-control\' name=\'class_plu\'>';
+       
+        $curPlu = FormLib::get('class_plu');
+        $ret = '<form method=\'get\' class=\'form-inline\'>
+            <select class=\'form-control\' name=\'class_plu\' style=\'border: 2px solid #38ACEC;\'>';
         $ret .= '<option value=\'1\'>Choose a class...</option>';
         
         $date = date('m/d/y');
@@ -245,9 +247,14 @@ class WfcClassRegistryPage extends FanniePage
        
         foreach ($className as $key => $name) {
             $tempDate = substr($classExp[$key], 0, 7);
+            if ($key == $curPlu) {
+                $sel = 'selected';
+            } else {
+                $sel = '';
+            } 
             $expirationDate = strtotime($tempDate);
             if (FormLib::get('expired') === '') {
-                $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
+                $ret .= '<option value=\'' . $key . '\'' . $sel . '>' . $classDate[$key] . " :: " . $name . '</option>';
             } else {
                 if ($date <= $expirationDate) {
                     $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
@@ -255,24 +262,23 @@ class WfcClassRegistryPage extends FanniePage
             }
         }
         $ret .= '</select>';
-        $ret .= '
-            <div>
-                <div style="float: left">
-                    <input class=\'btn btn-default\' type=\'submit\' value=\'Open Class Registry\'>
-                </div>
-                <div style="float: right">
-                    <a class=\'btn btn-default \' href="?credits=1">View Credits</a>
-                </div>
-                
-            </div>
-        ';
-        $ret .= '<br /><br /><input type="checkbox" class="checkbox" name="expired" value="1" ';
+        $ret .= '<span class="hidden-xs hidden-sm">&nbsp;&nbsp;</span>';
+        $ret .= '<input class=\'btn btn-default\' type=\'submit\' value=\'Select Class\' style=\'border: 2px solid #38ACEC;\'><br/>';
+        $ret .= '<div style="padding: 5px;"><input type="checkbox" class="checkbox" name="expired" value="1" ';
             if (FormLib::get('expired')) {
                 $ret .= 'checked="checked" ';
             }
-        $ret .= ' ><i>Don\'t show Expired Classes</i>';
-        $ret .= '</form></div>';
-        
+        $ret .= ' ><i style="padding: 20;">Don\'t show expired Classes</i></div>';
+        $ret .= '</form>';
+        $vNext = $curPlu+1;
+        $vPrev = $curPlu - 1 > 0 ? $curPlu - 1 : 0;
+        $ret .= '<form method=\'get\' class=\'form-inline\'>';
+        $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vPrev.'">Prev</button>&nbsp;';
+        $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vNext.'">Next</button>&nbsp;|&nbsp;';
+        $ret .= '<a class=\'btn btn-default btn-xs\' href="?credits=1" style="border: 1px solid orange;">View Credits</a>&nbsp&nbsp;';
+        $ret .= '</form>';
+        $ret .= '</div>';
+
         $key = FormLib::get('class_plu');
         $plu = $classUPC[$key];
         $this->plu = $classUPC[$key];
@@ -408,7 +414,7 @@ class WfcClassRegistryPage extends FanniePage
             }
             
             //* Class Roster
-            $ret .= "<h2 align=\"center\">" . $className[$key] . "</h2>";
+            $ret .= "<div style='float: left'><h2>" . $className[$key] . "</h2></div>";
             $ret .= "<h3 align=\"center\">" . $classDate[$key] . "</h3>";
             //$ret .= "<h5 align=\"center\"> <i>Plu</i>: " . $plu . "</h5>";
             $ret .= "<h5 align='center'><a href='/git/fannie/item/ItemEditorPage.php?searchupc=" . $plu . "' target='_blank'>PLU: " . $plu . "</a></h5>";
@@ -475,7 +481,7 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
             $ret .= $this->printItems($items, false);
-            $ret .= '</tbody></table>';
+            $ret .= '</tbody></table></div>';
         }
 
         $this->add_onload_command('itemEditing(' . $classSize . ');');
