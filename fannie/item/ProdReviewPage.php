@@ -82,6 +82,7 @@ class ProdReviewPage extends FannieRESTfulPage
         $p = new ProductsModel($dbc);
         $p->default_vendor_id($vid);
         $p->store_id(1);
+        $p->inUse(1);
 
         $table = '<table class="table table-condensed small">';
         $table .= '<thead><th>UPC</th><th>Brand</th><th>Description</th>
@@ -267,10 +268,13 @@ HTML;
 
         $model = new VendorsModel($dbc);
         $vselect = '';
+        $exclude = array(-1,1,2);
         foreach ($model->find() as $obj) {
-            $vid = $obj->vendorID();
-            $vname = $obj->vendorName();
-            $vselect .= '<option value="'.$vid.'">'.$vname.'</option>';
+            if (!in_array($obj->vendorID(),$exclude)) {
+                $vid = $obj->vendorID();
+                $vname = $obj->vendorName();
+                $vselect .= '<option value="'.$vid.'">'.$vname.'</option>';
+            }
         }
 
         if ($saved = FormLib::get('saved')) {
