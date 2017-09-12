@@ -116,15 +116,17 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
     public void stubStart()
     {
-        try {
-            initPort();
-            sp.Open();
-            SPH_Running = true;
-            this.bufferedCardType = "";
-            this.sleeper.Reset();
-            this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
-            SPH_Thread.Start();
-        } catch (Exception) {}
+        if (this.emv_buttons != RbaButtons.None) {
+            try {
+                initPort();
+                sp.Open();
+                SPH_Running = true;
+                this.bufferedCardType = "";
+                this.sleeper.Reset();
+                this.SPH_Thread = new Thread(new ThreadStart(this.Read));
+                SPH_Thread.Start();
+            } catch (Exception) {}
+        }
     }
 
     public void showApproved()
