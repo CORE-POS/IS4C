@@ -42,6 +42,8 @@ class FanniePage extends \COREPOS\common\ui\CorePage
     protected $title = 'Page window title';
     protected $header = 'Page displayed header';
 
+    public $default_db = false;
+
     /** wrapper around $_SESSION superglobal **/
     protected $session;
 
