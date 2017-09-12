@@ -257,7 +257,7 @@ class WfcClassRegistryPage extends FanniePage
                 $ret .= '<option value=\'' . $key . '\'' . $sel . '>' . $classDate[$key] . " :: " . $name . '</option>';
             } else {
                 if ($date <= $expirationDate) {
-                    $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
+                    $ret .= '<option value=\'' . $key . '\'' . $sel . '>' . $classDate[$key] . " :: " . $name . '</option>';
                 }
             }
         }
@@ -265,14 +265,17 @@ class WfcClassRegistryPage extends FanniePage
         $ret .= '<span class="hidden-xs hidden-sm">&nbsp;&nbsp;</span>';
         $ret .= '<input class=\'btn btn-default\' type=\'submit\' value=\'Select Class\' style=\'border: 2px solid #38ACEC;\'><br/>';
         $ret .= '<div style="padding: 5px;"><input type="checkbox" class="checkbox" name="expired" value="1" ';
-            if (FormLib::get('expired')) {
-                $ret .= 'checked="checked" ';
-            }
-        $ret .= ' ><i style="padding: 20;">Don\'t show expired Classes</i></div>';
+        if ($expired = FormLib::get('expired')) {
+            $ret .= 'checked="checked" ';
+        }
+        $ret .= ' ><i style="padding: 20;"> Don\'t show expired Classes</i></div>';
         $ret .= '</form>';
         $vNext = $curPlu+1;
         $vPrev = $curPlu - 1 > 0 ? $curPlu - 1 : 0;
         $ret .= '<form method=\'get\' class=\'form-inline\'>';
+        if ($expired) {
+            $ret .= '<input type="hidden" name="expired" value="1">';
+        }
         $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vPrev.'">Prev</button>&nbsp;';
         $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vNext.'">Next</button>&nbsp;|&nbsp;';
         $ret .= '<a class=\'btn btn-default btn-xs\' href="?credits=1" style="border: 1px solid orange;">View Credits</a>&nbsp&nbsp;';
@@ -414,8 +417,8 @@ class WfcClassRegistryPage extends FanniePage
             }
             
             //* Class Roster
-            $ret .= "<div style='float: left'><h2>" . $className[$key] . "</h2></div>";
-            $ret .= "<h3 align=\"center\">" . $classDate[$key] . "</h3>";
+            $ret .= "<div style='float: left'><h3>" . $className[$key] . "</h3></div>";
+            $ret .= "<h4 align=\"center\">" . $classDate[$key] . "</h4>";
             //$ret .= "<h5 align=\"center\"> <i>Plu</i>: " . $plu . "</h5>";
             $ret .= "<h5 align='center'><a href='/git/fannie/item/ItemEditorPage.php?searchupc=" . $plu . "' target='_blank'>PLU: " . $plu . "</a></h5>";
             $ret .= "<div id=\"line-div\"></div>";
