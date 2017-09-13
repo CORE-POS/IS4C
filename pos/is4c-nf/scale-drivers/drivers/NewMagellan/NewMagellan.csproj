@@ -69,6 +69,15 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 
+  <!-- Build ComPort.dll -->
+  <ItemGroup>
+    <ComPort Include="ComPort.cs" />
+  </ItemGroup>
+  <Target Name="ComPortLibrary" Inputs="@(ComPort)" Outputs="ComPort.dll">
+    <Csc Sources="@(ComPort)" TargetType="library" OutputAssembly="ComPort.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
   <!-- Build Bitmap.dll -->
   <ItemGroup>
     <Bitmap Include="BitmapConverter.cs" />
@@ -149,12 +158,14 @@
     <SPHRef Include="AxDSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
     <SPHRef Include="DSIEMVXLib.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
     <SPHRef Include="AxDSIEMVXLib.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
+    <SPHRef Include="ComPort.dll" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
     <SPHRef Include="System.Drawing.dll" Condition=" '$(OS)' == 'Unix' " />
 
     <SPHTarget Include="DelegateFormLibrary" />
     <SPHTarget Include="BitmapLibrary" />
     <SPHTarget Include="USBLayerLibrary" />
     <SPHTarget Include="ParallelLayerLibrary" />
+    <SPHTarget Include="ComPortLibrary" Condition=" Exists('DSIEMVXLib.dll') And Exists('AxDSIEMVXLib.dll') " />
   </ItemGroup>
   <Target Name="SPHLibrary" Inputs="@(SPH)" Outputs="SPH.dll" DependsOnTargets="@(SPHTarget)">
     <Csc Sources="@(SPH)" DefineConstants="@(MonoDefine)" References="@(SPHRef)" TargetType="library" OutputAssembly="SPH.dll" 

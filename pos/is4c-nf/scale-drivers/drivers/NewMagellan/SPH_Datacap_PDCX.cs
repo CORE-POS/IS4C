@@ -34,6 +34,7 @@ using CustomForms;
 using BitmapBPP;
 using DSIPDCXLib;
 using AxDSIPDCXLib;
+using ComPort;
 
 namespace SPH {
 
@@ -401,10 +402,10 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         switch (device) {
             case "VX805XPI":
             case "VX805XPI_MERCURY_E2E":
-                return this.FindComPort("Verifone");
+                return ComPortUtility.FindComPort("Verifone");
             case "INGENICOISC250":
             case "INGENICOISC250_MERCURY_E2E":
-                return this.FindComPort("Ingenico");
+                return ComPortUtility.FindComPort("Ingenico");
             default:
                 return "";
         }
@@ -460,34 +461,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 file.WriteLine(xml);
             }
         }
-    }
-
-    protected string FindComPort(string search)
-    {
-        var searcher = new System.Management.ManagementObjectSearcher(
-            "root\\CIMV2",
-            "SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\""
-        );
-        var comRegEx = new System.Text.RegularExpressions.Regex(@"COM[0-9]+");
-
-        foreach (var queryObj in searcher.Get()) {
-            var thisOne = false;
-            foreach (var p in queryObj.Properties) {
-                if (p.Name == "Name" || p.Name == "Description" || p.Name == "Caption") {
-                    if (!thisOne && p.Value.ToString().Contains(search)) {
-                        thisOne = true;
-                    }
-                    if (thisOne) {
-                        var match = comRegEx.Match(p.Value.ToString());
-                        if (match.Success) {
-                            return match.Value;
-                        }
-                    }
-                }
-            }
-        }
-
-        return "";
     }
 }
 
