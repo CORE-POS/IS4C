@@ -69,7 +69,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
         char sep = Path.DirectorySeparatorChar;
-        xml_log = my_location + sep + "xml.log";
+        xml_log = my_location + sep + "log.xml";
         pdc_active = false;
         emv_reset = true;
 
@@ -256,6 +256,12 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "termGetPin":
                 break;
             case "termWait":
+                break;
+            case "termFindPort":
+                var new_port = this.PortSearch(this.device_identifier);
+                if (new_port != "" && new_port != this.com_port && new_port.All(char.IsNumber)) {
+                    this.com_port = new_port;
+                }
                 break;
         }
     }
@@ -595,6 +601,20 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
 
         return "<err>Error collecting signature</err>";
+    }
+
+    protected string PortSearch(string device)
+    {
+        switch (device) {
+            case "VX805XPI":
+            case "VX805XPI_MERCURY_E2E":
+                return this.FindComPort("Verifone");
+            case "INGENICOISC250":
+            case "INGENICOISC250_MERCURY_E2E":
+                return this.FindComPort("Ingenico");
+            default:
+                return "";
+        }
     }
 
     /**

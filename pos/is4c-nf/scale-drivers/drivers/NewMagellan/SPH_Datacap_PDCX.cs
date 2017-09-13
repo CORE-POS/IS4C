@@ -45,7 +45,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected short CONNECT_TIMEOUT = 60;
-    private bool log_xml = true;
+    private bool log_xml = false;
     private RBA_Stub rba = null;
     private bool pdc_active;
     private Object pdcLock = new Object();
@@ -320,6 +320,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 break;
             case "termWait":
                 break;
+            case "termFindPort":
+                var new_port = this.PortSearch(this.device_identifier);
+                if (new_port != "" && new_port != this.com_port && new_port.All(char.IsNumber)) {
+                    this.com_port = new_port;
+                }
+                break;
         }
     }
 
@@ -390,6 +396,20 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         return "<err>Error collecting signature</err>";
     }
 
+    protected string PortSearch(string device)
+    {
+        switch (device) {
+            case "VX805XPI":
+            case "VX805XPI_MERCURY_E2E":
+                return this.FindComPort("Verifone");
+            case "INGENICOISC250":
+            case "INGENICOISC250_MERCURY_E2E":
+                return this.FindComPort("Ingenico");
+            default:
+                return "";
+        }
+    }
+
     protected string SecureDeviceToPadType(string device)
     {
         switch (device) {
@@ -440,6 +460,34 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 file.WriteLine(xml);
             }
         }
+    }
+
+    protected string FindComPort(string search)
+    {
+        var searcher = new System.Management.ManagementObjectSearcher(
+            "root\\CIMV2",
+            "SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\""
+        );
+        var comRegEx = new System.Text.RegularExpressions.Regex(@"COM[0-9]+");
+
+        foreach (var queryObj in searcher.Get()) {
+            var thisOne = false;
+            foreach (var p in queryObj.Properties) {
+                if (p.Name == "Name" || p.Name == "Description" || p.Name == "Caption") {
+                    if (!thisOne && p.Value.ToString().Contains(search)) {
+                        thisOne = true;
+                    }
+                    if (thisOne) {
+                        var match = comRegEx.Match(p.Value.ToString());
+                        if (match.Success) {
+                            return match.Value;
+                        }
+                    }
+                }
+            }
+        }
+
+        return "";
     }
 }
 
