@@ -24,6 +24,9 @@ while ($counter < $limit) {
     $path .= "../";
     $counter++;
 }
+if ($counter >= $limit && $headerConfig instanceof FannieConfig) {
+    $path = $headerConfig->get('URL');
+}
 if (!isset($FANNIE_CHARSET) || empty($FANNIE_CHARSET)) {
     $FANNIE_CHARSET = 'ISO-8859-1';
 }
