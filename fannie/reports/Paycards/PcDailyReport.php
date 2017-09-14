@@ -78,7 +78,7 @@ class PcDailyReport extends FannieReportPage
                     ELSE 'Unknown'
                 END AS transType,
                 issuer AS cardIssuer,
-                CASE WHEN transType IN ('Return', 'VOID') THEN -amount ELSE amount END AS ttl,
+                CASE WHEN transType IN ('VOID') THEN -amount ELSE amount END AS ttl,
                 CASE WHEN transType='VOID' THEN -1 ELSE 1 END AS num,
                 empNo AS emp,
                 registerNo AS reg,
@@ -89,6 +89,7 @@ class PcDailyReport extends FannieReportPage
             WHERE dateID=?
                 AND httpCode=200
                 AND xResultMessage LIKE '%approve%'
+                AND xResultMessage not like '%declined%'
                 AND empNo <> 9999
                 AND registerNo <> 99
                 AND processor='MercuryE2E'";
@@ -175,6 +176,7 @@ class PcDailyReport extends FannieReportPage
             WHERE dateID=?
                 AND httpCode=200
                 AND (xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
+                AND xResultMessage not like '%declined%'
                 AND empNo <> 9999
                 AND registerNo <> 99
                 AND processor='GoEMerchant'";
@@ -243,7 +245,12 @@ class PcDailyReport extends FannieReportPage
                          WHEN trans_subtype = 'EF' THEN 'EBT Food'
                          WHEN trans_subtype = 'EC' THEN 'EBT Cash'
                          ELSE 'Unknown' END as cardType,
-                    CASE WHEN total < 0 THEN 'Sales' ELSE 'Returns' END as transType,
+                     CASE 
+                        WHEN trans_status='V' and total < 0 THEN 'Returns'
+                        WHEN trans_status='V' AND total >= 0 THEN 'Sales'
+                        WHEN total < 0 THEN 'Sales' 
+                        ELSE 'Returns' 
+                     END as transType,
                     'n/a' AS cardIssuer,
                     -total AS ttl,
                     CASE WHEN trans_status='V' THEN -1 ELSE 1 END AS num,
