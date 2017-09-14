@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -45,7 +47,6 @@ class PcDailyReport extends FannieReportPage
 
     public function report_description_content()
     {
-        global $FANNIE_URL;
         $ret = array(''); // spacer line
         if ($this->report_format == 'html') {
             $ret[] = $this->form_content();
@@ -56,12 +57,14 @@ class PcDailyReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_URL;
+        $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
+        $store = FormLib::get('store', false);
+        if ($store === false) {
+            $store = Store::getIdByIp();
+        }
+
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
-
-        $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
-        $store = FormLib::get('store', 0);
 
         $dataset = array();
         $integrated_trans_ids = array();
@@ -398,16 +401,17 @@ class PcDailyReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_URL;
         $this->add_onload_command('$(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'});');
-        $stores = FormLib::storePicker();
+        $date = FormLib::get('date', date('Y-m-d'));
+        $stores = FormLib::storePicker(0);
         return '<form method="get" action="PcDailyReport.php">
             <div class="col-sm-6">
             <div class="row form-group form-inline">
             <label>Change Date</label> <input type="text" name="date" id="date" 
-                class="form-control" required />
+                value="' . $date . '" class="form-control" required />
             ' . $stores['html'] . '
             <button type="submit" class="btn btn-default">Get Report</button>
+            <a href="PcMonthlyReport.php">Switch to Monthly</a>
             </div>
             </div>
             </form>';
