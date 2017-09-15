@@ -201,8 +201,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
     private function saveExtra($dbc, $upc, $form)
     {
         try {
-            $brand = $this->form->brand;
-            $supplier = $this->form->supplier;
+            $brand = $form->brand;
+            $supplier = $form->supplier;
 
             $chkP = $dbc->prepare('SELECT upc FROM prodExtra WHERE upc=?');
             $chkR = $dbc->execute($chkP, array($upc));
