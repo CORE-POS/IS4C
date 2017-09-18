@@ -56,12 +56,43 @@ class PosIncident extends AlertIncident
 
         return 'PosIncident.php?id=' . $id;
     }
+    
+    protected function post_id_handler()
+    {
+        $uid = FannieAuth::getUID($this->current_user);
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['IncidentDB']);
+        $model = new IncidentCommentsModel($this->connection);
+        $model->incidentID($this->id);
+        $model->userID($uid);
+        $model->tdate(date('Y-m-d H:i:s'));
+        $model->comment(FormLib::get('comment'));
+        $model->save();
+
+        return 'PosIncident.php?id=' . $this->id;
+    }
 
     protected function get_id_view()
     {
         $row = $this->getIncident($this->id);
         $row['details'] = nl2br($row['details']);
         $row['details'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $row['details']);
+
+        $comments = $this->getComments($this->id);
+        $cHtml = '';
+        foreach ($comments as $c) {
+            $c['comment'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $c['comment']);
+            $c['comment'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
+                '<a href="$1://$2$3">$1://$2$3</a>', $c['comment']);
+            $cHtml .= sprintf('<div class="panel panel-default">
+                <div class="panel panel-heading">%s - %s</div>
+                <div class="panel panel-body">%s
+                </div>
+                </div>',
+                $c['tdate'], $c['userName'],
+                nl2br($c['comment'])
+            );
+        }
 
         return <<<HTML
 <p>
@@ -84,9 +115,26 @@ class PosIncident extends AlertIncident
     <th>Entered by</th><td>{$row['userName']}</td>
 </tr>
 </table>
-<p>
+<div class="panel panel-default">
+    <div class="panel-body">
     {$row['details']}
-</p>
+    </div>
+</div>
+{$cHtml}
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="id" value="{$this->id}" />
+    <div class="panel panel-default">
+        <div class="panel-heading">Add a Comment</div>
+        <div class="panel-body">
+            <p>
+            <textarea name="comment" class="form-control" rows="7"></textarea>
+            </p>
+            <p>
+            <button type="submit" class="btn btn-default">Post Comment</button>
+            </p>
+        </div>
+    </div>
+</form>
 HTML;
     }
 
