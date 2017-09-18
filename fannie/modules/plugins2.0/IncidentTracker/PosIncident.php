@@ -31,7 +31,7 @@ class PosIncident extends AlertIncident
         $model->incidentTypeID(2);
         $model->incidentSubTypeID(FormLib::get('subtype'));
         $model->incidentLocationID(FormLib::get('location'));
-        $model->tdate(date('Y-m-d H:i:s'));
+        $model->tdate(FormLib::get('iDate') ? FormLib::get('iDate') : date('Y-m-d H:i:s'));
         $model->details(FormLib::get('details'));
         $model->uid($uid);
         $model->storeID(FormLib::get('store'));
@@ -144,6 +144,10 @@ HTML;
     <div class="form-group">
         <label>Details</label>
         <textarea name="details" class="form-control" rows="10"></textarea>
+    </div>
+    <div class="form-group">
+        <label>Date/Time (optional)</label>
+        <input type="text" class="form-control date-field" name="iDate" />
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-default">Save Incident</button>
