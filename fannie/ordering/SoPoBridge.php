@@ -90,16 +90,16 @@ class SoPoBridge
         $prep = $this->dbc->prepare('SELECT * FROM vendorItems WHERE sku=? AND vendorID=?');
         $item = $this->dbc->getRow($prep, array($vendorInfo['sku'], $vendorInfo['vendorID']));
         $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
-        $prep = $this->dbc->prepare("SELECT description, quantity AS units, 0 AS cost, '' AS brand
+        $prep = $this->dbc->prepare("SELECT description, quantity AS units, 0 AS cost, '' AS brand, upc
             FROM {$pending} WHERE order_id=? AND trans_id=?");
         $spoRow = $this->dbc->getRow($prep, array($soID, $transID));
         if ($item === false) {
             $item = $spoRow;
-            $item['sku'] = uniqid();
+            $item['sku'] = is_numeric($item['upc']) ? $item['upc'] : uniqid();
         }
         $item['units'] = $spoRow['units'];
 
-        $poSKU = substr($vendorInfo['sku'], -12) . '.';
+        $poSKU = substr($item['sku'], -12) . '.';
         $poitem = new PurchaseOrderItemsModel($this->dbc);
         $poitem->orderID($poID);
         $poitem->sku($poSKU);
