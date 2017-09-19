@@ -81,6 +81,7 @@ class NewClassPage extends FannieRESTfulPage
             $p->department($pDept);
             $p->size($size);
             $p->inUse(1);
+            $p->tax(0);
             if ($k === 5) {
                 $p->store_id(1);
             }
