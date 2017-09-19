@@ -241,7 +241,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 break;
 
             default:
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . $this->config->get('COOP_ID') . "</td></tr>\n");
                 break;
             }
         }
