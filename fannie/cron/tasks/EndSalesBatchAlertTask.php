@@ -67,7 +67,7 @@ class EndSalesBatchAlertTask extends FannieTask
         $model->endDate($date);
 
         list($inClause,$args) = $dbc->safeInClause($superDepts);
-        $query = "SELECT batchName, batchID, startDate, endDate, owner
+        $query = "SELECT batchName, batchID, startDate, endDate, owner, batchType
             FROM batches
             WHERE endDate BETWEEN CURDATE() AND DATE_ADD(NOW(), INTERVAL 7 DAY)
                 AND owner IN (".$inClause.")
@@ -115,24 +115,44 @@ class EndSalesBatchAlertTask extends FannieTask
             </style>
         ';
 
+        $table = '<table><thead><th>Batch Name</th><th>Batch ID</th><th>Start Date</th>
+                <th>End Date</th><th>Owner</th></thead><tbody>';
+        $tableA = $table;
+        $tableB = $table;
+        $countA = 0;
+        $countB = 0;
+
         if ($dbc->numRows($result) > 0) {
-            $ret .= '<table><thead><th>Batch Name</th><th>Batch ID</th><th>Start Date</th><th>End Date</th><th>Owner</th></thead><tbody>';
             while ($row = $dbc->fetch_row($result)) {
-                if ($row['endDate'] == $date) {
-                    $ret .= '<tr class="danger">';
+                if ($row['batchType'] == 11) {
+                    $route = 'B';
+                    $countB++;
                 } else {
-                       $ret .= '<tr>';
+                    $route = 'A';
+                    $countA++;
                 }
-                $ret .= '<td>' . $row['batchName'] . '</td>';
-                $ret .= '<td>' . $row['batchID'] . '</td>';
-                $ret .= '<td>' . substr($row['startDate'],0,10) . '</td>';
-                $ret .= '<td>' . substr($row['endDate'],0,10) . '</td>';
-                $ret .= '<td class="'.$row['owner'].'">' . $row['owner'] . '</td>';
-                $ret .= '</tr>';
+                if ($row['endDate'] == $date) {
+                    ${'table'.$route} .= '<tr class="danger">';
+                } else {
+                       ${'table'.$route} .= '<tr>';
+                }
+                ${'table'.$route} .= '<td>' . $row['batchName'] . '</td>';
+                ${'table'.$route} .= '<td>' . $row['batchID'] . '</td>';
+                ${'table'.$route} .= '<td>' . substr($row['startDate'],0,10) . '</td>';
+                ${'table'.$route} .= '<td>' . substr($row['endDate'],0,10) . '</td>';
+                ${'table'.$route} .= '<td class="'.$row['owner'].'">' . $row['owner'] . '</td>';
+                ${'table'.$route} .= '</tr>';
             }
-            $ret .= '</tbody></table>';
-            
-            if (class_exists('PHPMailer')) {
+            $tableA .= '</tbody></table>';
+            $tableB .= '</tbody></table>';
+            if ($countA > 0) {
+                $ret .= '<h4>Sales Batches</h4>'.$tableA;
+            }
+            if ($countB > 0) {
+                $ret .= '<h4>Disco Batches</h4>'.$tableB;
+            }
+
+            if (class_exists('PHPMailer') && ($countA > 0 || $countB > 0)) {
                 $mail = new PHPMailer();                
                 foreach ($contacts as $contact) {
                     $mail->addAddress($contact);
