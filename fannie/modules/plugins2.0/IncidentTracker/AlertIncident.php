@@ -52,7 +52,7 @@ class AlertIncident extends FannieRESTfulPage
 
         $ret = '
             <p><form class="form-inline" method="get">
-                <a href="AlertIncident.php" class="btn btn-default">Home</a>
+                <a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" class="btn btn-default">Home</a>
                 |
                 <input type="text" name="search" id="search" class="form-control" placeholder="search" />
                 <button class="btn btn-default" type="submit">Search</button>
