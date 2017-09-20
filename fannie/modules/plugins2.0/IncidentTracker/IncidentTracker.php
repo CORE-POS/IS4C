@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\Plugin\IncidentTracker;
 use COREPOS\Fannie\API\FanniePlugin;
 
 class IncidentTracker extends FanniePlugin 

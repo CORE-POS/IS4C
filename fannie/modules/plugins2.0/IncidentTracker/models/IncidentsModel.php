@@ -46,6 +46,7 @@ class IncidentsModel extends BasicModel
     'police' => array('type'=>'TINYINT', 'default'=>0),
     'storeID' => array('type'=>'INT'),
     'deleted' => array('type'=>'TINYINT', 'default'=>0),
+    'json' => array('type'=>'TEXT'),
     );
 }
 
