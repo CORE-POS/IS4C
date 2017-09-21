@@ -24,6 +24,12 @@
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\MiscLib;
 
+$fp = fopen(__DIR__ . '/cache.php', 'w');
+if ($fp) {
+    fwrite($fp, "<?php\n");
+    fclose($fp);
+}
+
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
 COREPOS\pos\lib\LocalStorage\LaneCache::clear();

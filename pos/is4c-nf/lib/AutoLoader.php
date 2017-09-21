@@ -82,6 +82,34 @@ class AutoLoader
                 CoreLocal::set('ClassLookup', $map);
             }
         }
+
+        self::loadStats($name);
+    }
+
+    static private function loadStats($class)
+    {
+        if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
+            return false;
+        }
+        $stats = CoreLocal::get('ClassStats');
+        if (!is_array($stats)) {
+            $stats = array();
+        }
+        $now = microtime(true);
+        $loads = isset($stats[$class]) ? $stats[$class] : array();
+        array_push($loads, $now);
+        while (count($loads) > 5) {
+            array_shift($loads);
+        }
+        $stats[$class] = $loads;
+        if (count($loads) == 5 && $loads[4] - $loads[0] < 2.0) {
+            $cache = new COREPOS\ClassCache\ClassCache(__DIR__ . '/../cache.php');
+            $added = $cache->add($class);
+            unset($stats[$class]);
+        }
+        CoreLocal::set('ClassStats', $stats);
+
+        return true;
     }
 
     /**
@@ -94,8 +122,27 @@ class AutoLoader
         $searchPath = realpath(dirname(__FILE__).'/../plugins/');
         self::recursiveLoader($searchPath, $classMap);
         CoreLocal::set('ClassLookup', $classMap);
+        self::classCache();
 
         return $classMap;
+    }
+
+    static private function classCache()
+    {
+        if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
+            return false;
+        }
+        $cachefile = __DIR__ . '/../cache.php';
+        $cache = new COREPOS\ClassCache\ClassCache($cachefile);
+        $cache->clean();
+        foreach (self::listModules('COREPOS\\pos\\parser\\PreParser') as $p) {
+            $added = $cache->add($p);
+        }
+        foreach (self::listModules('COREPOS\\pos\\parser\\Parser') as $p) {
+            $added = $cache->add($p);
+        }
+
+        return true;
     }
 
     static private $classPaths = array(
@@ -177,7 +224,9 @@ class AutoLoader
 
             ob_start();
             $nsClass = self::fileToFullClass($file);
-            include_once($file);
+            if (!class_exists($nsClass, false) && !class_exists($name, false)) {
+                include_once($file);
+            }
             if (!class_exists($name, false) && class_exists($nsClass, false)) {
                 $name = $nsClass;
             } elseif (!class_exists($name, false)) { 
@@ -303,6 +352,9 @@ spl_autoload_register(array('AutoLoader','loadClass'), true, true);
 // add composer classes if present
 if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
     include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
+}
+if (file_exists(__DIR__ . '/../cache.php')) {
+    include_once(__DIR__ . '/../cache.php');
 }
 
 COREPOS\common\ErrorHandler::setLogger(new \COREPOS\pos\lib\LaneLogger());

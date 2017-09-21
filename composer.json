@@ -38,6 +38,7 @@
         "itgalaxy/bmp2image": "^2.0",
         "ramsey/uuid": "^3.6",
         "aws/aws-sdk-php": "^3.31",
+        "corepos/class-cache": "^1.1",
         "maknz/slack": "^1.7"
     },
     "require-dev": {
