@@ -89,8 +89,8 @@ class PriceOverride extends NoInputCorePage {
         }
 
         $deptmods = CoreLocal::get('SpecialDeptMap');
-        if (is_array($deptmods) && isset($deptmods[$row['department']])){
-            foreach($deptmods[$row['department']] as $mod){
+        if (is_array($deptmods) && isset($deptmods[$dept])){
+            foreach($deptmods[$dept] as $mod){
                 if ($mod === 'BottleReturnDept') {
                     return true;
                 }
