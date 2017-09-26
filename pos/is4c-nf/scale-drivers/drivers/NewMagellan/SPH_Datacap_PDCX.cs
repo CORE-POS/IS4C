@@ -164,6 +164,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         lock (pdcLock) {
             if (pdc_active) {
                 ax_control.CancelRequest();
+                pdc_active = false;
             }
         }
         if (rba != null) {

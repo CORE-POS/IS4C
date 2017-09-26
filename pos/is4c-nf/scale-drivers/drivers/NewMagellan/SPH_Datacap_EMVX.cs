@@ -96,6 +96,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             if (pdc_active) {
                 Console.WriteLine("Reset PDC");
                 pdc_ax_control.CancelRequest();
+                pdc_active = false;
             }
         }
 
