@@ -166,6 +166,19 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         } catch (Exception) { }
     }
 
+    public void hardReset()
+    {
+        try {
+            stubStop();
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(HardResetMessage());
+            WriteMessageToDevice(OfflineMessage());
+            WriteMessageToDevice(OnlineMessage());
+            sp.Close();
+        } catch (Exception) {}
+    }
+
     public void addScreenMessage(string message)
     {
         try {

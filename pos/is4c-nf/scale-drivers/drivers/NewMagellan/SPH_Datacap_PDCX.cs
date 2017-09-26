@@ -50,6 +50,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     private RBA_Stub rba = null;
     private bool pdc_active;
     private Object pdcLock = new Object();
+    private short hideDialogs = 1;
 
     public SPH_Datacap_PDCX(string p) : base(p)
     { 
@@ -144,6 +145,11 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             this.enableUnifiedLog();
         }
 
+        if (d.ContainsKey("showDialogs") && d["showDialogs"].ToLower() == "true") {
+            Console.WriteLine("with dialogs");
+            this.hideDialogs = 0;
+        }
+
         if (this.rba != null && d.ContainsKey("cashback") && (d["cashback"].ToLower() == "true" || d["cashback"].ToLower() == "false")) {
             this.rba.SetCashBack(d["cashback"].ToLower() == "true" ? true : false);
         }
@@ -218,7 +224,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         if (message.Contains("termSig")) {
                             result = GetSignature(true);
                         } else {
-                            result = ax_control.ProcessTransaction(message, 1, null, null);
+                            Console.WriteLine(this.hideDialogs);
+                            result = ax_control.ProcessTransaction(message, this.hideDialogs, string.Empty, string.Empty);
                         }
                         PdcActive(false);
 
@@ -289,8 +296,18 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             msg = "termSig";
         }
         switch(msg) {
-            case "termReset":
             case "termReboot":
+                lock (pdcLock) {
+                    if (!pdc_active) {
+                        if (rba != null) {
+                            rba.hardReset();
+                        }
+                        ax_control = null;
+                        initDevice();
+                    }
+                }
+                break;
+            case "termReset":
                 if (rba != null) {
                     rba.stubStop();
                 }
@@ -348,7 +365,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "</Admin>"
             + "</TStream>";
         
-        return ax_control.ProcessTransaction(xml, 1, null, null);
+        PdcActive(true);
+        Console.WriteLine(this.hideDialogs);
+        string ret = ax_control.ProcessTransaction(xml, this.hideDialogs, string.Empty, string.Empty);
+        PdcActive(false);
+
+        return ret;
     }
     
     protected string GetSignature(bool udp=true)
@@ -366,7 +388,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "</Transaction>"
             + "</TStream>";
         PdcActive(true);
-        string result = ax_control.ProcessTransaction(xml, 1, null, null);
+        Console.WriteLine(this.hideDialogs);
+        string result = ax_control.ProcessTransaction(xml, this.hideDialogs, string.Empty, string.Empty);
         PdcActive(false);
         XmlDocument doc = new XmlDocument();
         try {
