@@ -58,6 +58,8 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
     <Csc Sources="@(ServiceFiles)" TargetType="exe" OutputAssembly="pos-service.exe"
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" Condition=" '$(OS)' != 'Unix' " />
+    <Csc Sources="ComProbe.cs" References="ComPort.dll" TargetType="exe" OutputAssembly="com-probe.exe"
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" Condition=" '$(OS)' != 'Unix' " />
   </Target>
 
   <!-- Build DelegateForm.dll -->
