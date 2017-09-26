@@ -54,12 +54,17 @@ class EditShelfTags extends FannieRESTfulPage
             SELECT normal_price
             FROM products
             WHERE upc=?');
+        $source = $this->config->get('TAG_DATA_SOURCE');
+        if (empty($source) || !class_exists($source)) {
+            $source = 'COREPOS\\Fannie\\API\\item\\TagDataSource';
+        }
+        $tagSource = new $source();
         foreach ($tags->find() as $tag) {
             $current_price = $this->connection->getValue($priceP, array($tag->upc()));
             if ($current_price !== false) {
                 $tag->normal_price($current_price);
-                $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($current_price, $tag->size());
-                $tag->pricePerUnit($ppo);
+                $tagData = $tagSource->getTagData($this->connection, $tag->upc(), $current_price);
+                $tag->pricePerUnit($tagData['pricePerUnit']);
                 $tag->save();
             }
         }

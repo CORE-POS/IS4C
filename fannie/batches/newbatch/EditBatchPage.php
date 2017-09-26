@@ -324,19 +324,10 @@ class EditBatchPage extends FannieRESTfulPage
         
         $selQ = "
             SELECT l.upc,
-                p.description,
                 l.salePrice, 
-            case when p.brand is null then v.brand
-            else p.brand end as brand,
-            case when v.sku is null then '' else v.sku end as sku,
-            case when v.size is null then '' else v.size end as size,
-            case when v.units is null then 1 else v.units end as units,
-            z.vendorName as vendor,
-            l.batchID
+                l.batchID
             from batchList as l
                 " . DTrans::joinProducts('l', 'p', 'INNER') . "
-                left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
-                left join vendors as z on p.default_vendor_id=z.vendorID
             WHERE l.batchID=? ";
         $args = array($bid);
         if ($this->config->get('STORE_MODE') == 'HQ') {
@@ -351,13 +342,19 @@ class EditBatchPage extends FannieRESTfulPage
             (upc,description,normal_price,brand,sku,size,units,vendor,batchID)
             VALUES (?,?,?,?,?,?,?,?,?)");
         $tag_count = 0;
+        $source = $this->config->get('TAG_DATA_SOURCE');
+        if (empty($source) || !class_exists($source)) {
+            $source = 'COREPOS\\Fannie\\API\\item\\TagDataSource';
+        }
+        $tagSource = new $source();
         while ($selW = $dbc->fetchRow($selR)) {
             if ($upc != $selW['upc']){
+                $tag = $tagSource->getTagData($dbc, $selW['upc'], $selW['salePrice']);
                 $dbc->execute($insP,array(
-                    $selW['upc'], $selW['description'],
-                    $selW['salePrice'], $selW['brand'],
-                    $selW['sku'], $selW['size'],
-                    $selW['units'], $selW['vendor'],
+                    $tag['upc'], $tag['description'],
+                    $tag['normal_price'], $tag['brand'],
+                    $tag['sku'], $tag['size'],
+                    $tag['units'], $tag['vendor'],
                     $selW['batchID']
                 ));
                 $tag_count++;
