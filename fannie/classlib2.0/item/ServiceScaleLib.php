@@ -22,6 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\item;
+use \FannieConfig;
+use \FannieDB;
 
 class ServiceScaleLib 
 {
@@ -142,7 +144,7 @@ class ServiceScaleLib
     static private function getSingletonModel()
     {
         if (self::$model === null) {
-            $model = new \ServiceScalesModel(\FannieDB::get(\FannieConfig::config('OP_DB')));
+            $model = new \ServiceScalesModel(FannieDB::get(FannieConfig::config('OP_DB')));
         }
 
         return $model;
@@ -150,11 +152,18 @@ class ServiceScaleLib
 
     static public function labelTranslate($label, $scale_type)
     {
+        $dbc = FannieDB::get(FannieConfig::get('OP_DB'));
+        $confP = $dbc->prepare("SELECT mappedType FROM ScaleLabels WHERE scaleType=? AND labelType=?");
+        $mapped = $dbc->getValue($confP, array($scale_type, $label));
+        if ($mapped) {
+            return $mapped;
+        }
+        
         if (substr(strtoupper($scale_type), 0, 3) == 'MT_') {
             return self::toledoLabel($label);
-        } else {
-            return $label;
         }
+
+        return $label;
     }
 
     static private function toledoLabel($label)
