@@ -489,6 +489,7 @@ class WfcClassRegistryPage extends FanniePage
 
         $this->add_onload_command('itemEditing(' . $classSize . ');');
         $this->add_onload_command('withdraw();');
+        $this->add_onload_command('checkSoldOut();');
         $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
         $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
@@ -580,7 +581,6 @@ class WfcClassRegistryPage extends FanniePage
         ?>
 function itemEditing(size)
 {
-    
     $('.editable').change(function(){
         var current_seat = $(this).closest('tr').find('.id').html();
         $(this).prev('span.collapse').html($(this).val());
@@ -621,6 +621,18 @@ function withdraw()
         });
     });    
 }
+function checkSoldOut()
+{
+    $('#first_name').change(function(){
+        $.ajax({
+            type: 'post',
+            url: alertRegFull.php,
+            dataType: 'json',
+            data: 'upc='+$('#upc').val(),
+            success: function(resp) {}
+        });
+    });
+}
         <?php
         return ob_get_clean();
     }
@@ -650,7 +662,7 @@ function withdraw()
                 <td class="id collapse">%s</td>
                 <td class="seat">%d</td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm editable" name="editFirst" value="%s" /></td>
+                    <input type="text" class="form-control input-sm editable" id="first_name"  name="editFirst" value="%s" /></td>
                 <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
                 <td><span class="collapse">%s</span>
