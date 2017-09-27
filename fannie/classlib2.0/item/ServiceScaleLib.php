@@ -152,7 +152,7 @@ class ServiceScaleLib
 
     static public function labelTranslate($label, $scale_type)
     {
-        $dbc = FannieDB::get(FannieConfig::get('OP_DB'));
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $confP = $dbc->prepare("SELECT mappedType FROM ScaleLabels WHERE scaleType=? AND labelType=?");
         $mapped = $dbc->getValue($confP, array($scale_type, $label));
         if ($mapped) {
