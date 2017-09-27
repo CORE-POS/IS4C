@@ -1068,6 +1068,9 @@ class MemberREST
         if (count($params) == 0) {
             return array();
         }
+        if ($limit) {
+            $query = $dbc->addSelectLimit($query, $limit);
+        }
 
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $params);

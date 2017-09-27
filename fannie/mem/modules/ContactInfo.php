@@ -270,7 +270,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         }
         $json['customers'] = array($customer);
 
-        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0);
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 1000);
 
         return $accounts;
     }
