@@ -227,8 +227,19 @@ class AlertIncident extends FannieRESTfulPage
     {
         $row = $this->getIncident($this->id);
         $row['details'] = nl2br($row['details']);
-        $img1 = $row['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image1']}\" />" : '';
-        $img2 = $row['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image2']}\" />" : '';
+        //$img1 = $row['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image1']}\" />" : '';
+        //$img2 = $row['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image2']}\" />" : '';
+
+        if ($ext = substr($row['image1'],-3) == "pdf") {
+                $img1 = $row['image1'] ? "<a href=\"image/{$row['image1']}\">{$row['image1']}</a>" : '';
+        } else {
+                $img1 = $row['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image1']}\" />" : '';
+        }
+        if ($ext = substr($row['image2'],-3) == "pdf") {
+                $img2 = $row['image2'] ? "<a href=\"image/{$row['image2']}\">{$row['image2']}</a>" : '';
+        } else {
+                $img2 = $row['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image2']}\" />" : '';
+        }
         $row['details'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $row['details']);
         $row['details'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
             '<a href="$1://$2$3">$1://$2$3</a>', $row['details']);
@@ -239,8 +250,20 @@ class AlertIncident extends FannieRESTfulPage
             $c['comment'] = preg_replace('/#(\d+)/', '<a href="?id=$1">#$1</a>', $c['comment']);
             $c['comment'] = preg_replace('`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`',
                 '<a href="$1://$2$3">$1://$2$3</a>', $c['comment']);
-            $cmg1 = $c['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$c['image1']}\" />" : '';
-            $cmg2 = $c['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$c['image2']}\" />" : '';
+            //$cmg1 = $c['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$c['image1']}\" />" : '';
+            //$cmg2 = $c['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$c['image2']}\" />" : '';
+
+            if ($ext = substr($row['image1'],-3) == "pdf") {
+                    $cmg1 = $row['image1'] ? "<a href=\"image/{$row['image1']}\">{$row['image1']}</a>" : '';
+            } else {
+                    $cmg1 = $row['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image1']}\" />" : '';
+            }
+            if ($ext = substr($row['image2'],-3) == "pdf") {
+                    $cmg2 = $row['image2'] ? "<a href=\"image/{$row['image2']}\">{$row['image2']}</a>" : '';
+            } else {
+                    $cmg2 = $row['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image2']}\" />" : '';
+            }
+
             $cHtml .= sprintf('<div class="panel panel-default">
                 <div class="panel panel-heading">%s - %s</div>
                 <div class="panel panel-body">%s
