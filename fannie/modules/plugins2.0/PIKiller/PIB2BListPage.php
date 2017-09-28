@@ -69,7 +69,7 @@ class PIB2BListPage extends PIKillerPage
             } else {
                 $date = date('Y-m-d', strtotime($inv->paidDate()));
                 printf('<td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s %s</a></td></tr>',
-                    $date, $inv->paidTransNum(), $date, $inv->paidTransNum());
+                    $this->config->get('URL'), $date, $inv->paidTransNum(), $date, $inv->paidTransNum());
             }
             $rowcount++;
             if ($rowcount > 100 && !$this->all) {

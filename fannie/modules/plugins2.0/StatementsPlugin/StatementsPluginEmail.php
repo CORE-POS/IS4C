@@ -82,13 +82,19 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $body .= '$ ' . sprintf("%.2f",$invoice['amount']) . "\n";
             $html .= '$ ' . sprintf("%.2f",$invoice['amount']) . "</p>";
 
+            /*
+            $link = 'http://store.wholefoods.coop/invoice/' . $invoice['uuid'];
+            $html .= '<p><a href="' . $link . '">Pay Online</p>';
+            $body .= "\nPay Online:\n";
+            $body .= $link . "\n";
+            */
+
             $mail->isHTML(true);
             $mail->Body = $html;
             $mail->AltBody = $body;
-            //$mail->addAddress($primary['email']);
-            //$mail->addBCC('bcarlson@wholefoods.coop');
-            //$mail->addBCC('andy@wholefoods.coop');
-            $mail->addAddress('andy@wholefoods.coop');
+            $mail->addAddress($primary['email']);
+            $mail->addBCC('bcarlson@wholefoods.coop');
+            $mail->addBCC('andy@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
         }
