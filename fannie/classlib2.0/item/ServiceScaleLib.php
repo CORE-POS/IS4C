@@ -189,8 +189,9 @@ class ServiceScaleLib
     static public function labelTranslate($label, $scale_type)
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-        $confP = $dbc->prepare("SELECT mappedType FROM ScaleLabels WHERE scaleType=? AND labelType=?");
-        $mapped = $dbc->getValue($confP, array($scale_type, $label));
+        $confP = $dbc->prepare("SELECT mappedType AS labelType, descriptionWidth, textWidth 
+            FROM ScaleLabels WHERE scaleType=? AND labelType=?");
+        $mapped = $dbc->getRow($confP, array($scale_type, $label));
         if ($mapped) {
             return $mapped;
         }
@@ -199,21 +200,21 @@ class ServiceScaleLib
             return self::toledoLabel($label);
         }
 
-        return $label;
+        return array('labelType' => $label, 'descriptionWidth'=>26, 'textWidth'=>0);
     }
 
     static private function toledoLabel($label)
     {
         switch ($label) {
             case 53:
-                return 3;
+                return array('labelType' => 3, 'descriptionWidth'=>26, 'textWidth'=>0);
             case 23:
             case 63:
-                return 2;
+                return array('labelType' => 2, 'descriptionWidth'=>26, 'textWidth'=>0);
             case 103:
             case 133:
             default:
-                return 1;
+                return array('labelType' => 1, 'descriptionWidth'=>26, 'textWidth'=>0);
         }
     }
 }

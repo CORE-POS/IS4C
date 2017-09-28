@@ -36,6 +36,8 @@ class ScaleLabelsModel extends BasicModel
     'labelType' => array('type'=>'SMALLINT'),
     'scaleType' => array('type'=>'VARCHAR(50)'),
     'mappedType' => array('type'=>'VARCHAR(50)'),
+    'descriptionWidth' => array('type'=>'SMALLINT', 'default'=>0),
+    'textWidth' => array('type'=>'SMALLINT', 'default'=>0),
     );
 
 
@@ -72,6 +74,11 @@ is the scale-specific equivalent of one of the above label types.
 
 Some scales may not support all types. The system will try to
 make the best choice from available options.
+
+The width settings are for wordwrapping descriptions and
+expanded text. A value of 0 means no wrapping is applied
+by CORE itself and the scale and/or intermediary software
+can apply any necessary wrapping.
 MD;
     }
 }

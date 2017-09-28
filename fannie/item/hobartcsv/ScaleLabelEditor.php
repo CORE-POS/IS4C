@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\lib\FannieUI;
+
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -24,6 +26,8 @@ class ScaleLabelEditor extends FannieRESTfulPage
             $labels = $this->form->label;
             $scales = $this->form->scale;
             $maps = $this->form->mapped;
+            $dWidth = $this->form->dWidth;
+            $tWidth = $this->form->tWidth;
             $model = new ScaleLabelsModel($this->connection);
             $this->connection->startTransaction();
             for ($i=0; $i<count($this->id); $i++) {
@@ -31,11 +35,22 @@ class ScaleLabelEditor extends FannieRESTfulPage
                 $model->labelType($labels[$i]);
                 $model->scaleType($scales[$i]);
                 $model->mappedType($maps[$i]);
+                $model->descriptionWidth($dWidth[$i]);
+                $model->textWidth($tWidth[$i]);
                 $model->save(); 
             }
             $this->connection->commitTransaction();
         } catch (Exception $ex) {}
         $this->addNew();
+
+        return filter_input(INPUT_SERVER, 'PHP_SELF');
+    }
+
+    protected function delete_id_handler()
+    {
+        $model = new ScaleLabelsModel($this->connection);
+        $model->scaleLabelID($this->id);
+        $model->delete();
 
         return filter_input(INPUT_SERVER, 'PHP_SELF');
     }
@@ -57,6 +72,8 @@ class ScaleLabelEditor extends FannieRESTfulPage
             $model->labelType($this->form->newLabel);
             $model->scaleType($this->form->newScale);
             $model->mappedType($this->form->newMapping);
+            $model->descriptionWidth($this->form->newDW);
+            $model->textWidth($this->form->newTW);
             return $model->save() ? true : false;
         } catch (Exception $ex) {
             return false;
@@ -89,11 +106,18 @@ class ScaleLabelEditor extends FannieRESTfulPage
                     <select name="label[]" class="form-control">%s</select></td>
                 <td><select name="scale[]" class="form-control">%s</select></td>
                 <td><input type="text" class="form-control" name="mapped[]" value="%s" /></td>
+                <td><input type="text" class="form-control" name="dWidth[]" value="%d" /></td>
+                <td><input type="text" class="form-control" name="tWidth[]" value="%d" /></td>
+                <td><a class="btn btn-xs btn-danger" href="?_method=delete&id=%d">%s</a></td>
                 </tr>',
                 $sl->scaleLabelID(),
                 $opts1,
                 $opts2,
-                $sl->mappedType()
+                $sl->mappedType(),
+                $sl->descriptionWidth(),
+                $sl->textWidth(),
+                $sl->scaleLabelID(),
+                FannieUI::deleteIcon()
             );
         }
 
@@ -105,7 +129,8 @@ class ScaleLabelEditor extends FannieRESTfulPage
         return <<<HTML
 <form method="post">
     <table class="table table-striped table-bordered">
-        <tr><th>Label Type</th><th>Scale Type</th><th>Mapping</th></tr>
+        <tr><th>Label Type</th><th>Scale Type</th><th>Mapping</th>
+        <th>Desc.Width</th><th>Text Block Width</th><th /></tr>
         {$table}
     </table>
 <div class="panel panel-default">
@@ -128,6 +153,14 @@ class ScaleLabelEditor extends FannieRESTfulPage
         <div class="form-group">
             <label>Mapping</label>
             <input type="text" name="newMapping" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Description Width (characters)</label>
+            <input type="text" name="newDW" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Text Block Width (characters)</label>
+            <input type="text" name="newTW" class="form-control" />
         </div>
     </div>
 </div>
