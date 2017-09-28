@@ -24,6 +24,7 @@
 namespace COREPOS\Fannie\API\item;
 use \FannieConfig;
 use \FannieDB;
+use \BarcodeLib;
 
 class ServiceScaleLib 
 {
@@ -70,6 +71,41 @@ class ServiceScaleLib
         } else {
             return false;
         }
+    }
+
+    static public function upcToPLU($upc)
+    {
+        $upc = BarcodeLib::padUPC($upc);
+        $len = FannieConfig::config('SPLU_LENGTH');
+        if ($len != 4 && $len != 5) {
+            $len = 4;
+        }
+
+        if ($len == 5) {
+            preg_match("/^002(\d\d\d\d\d)/",$upc,$matches);
+            $s_plu = $matches[1];
+        } else {
+            preg_match("/^002(\d\d\d\d)0/",$upc,$matches);
+            $s_plu = $matches[1];
+            if ($s_plu == '0000') {
+                preg_match("/^0020(\d\d\d\d)/",$upc,$matches);
+                $s_plu = $matches[1];
+            }
+        }
+
+        return $s_plu;
+    }
+
+    static public function pluToUPC($plu)
+    {
+        $len = FannieConfig::config('SPLU_LENGTH');
+        if ($len != 4 && $len != 5) {
+            $len = 4;
+        }
+        $plu = str_pad($plu, $len, '0', STR_PAD_LEFT);
+        $plu = str_pad($plu, 10 - $len, '0', STR_PAD_RIGHT);
+
+        return BarcodeLib::padUPC('2' . $plu);
     }
 
     /**

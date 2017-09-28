@@ -97,7 +97,7 @@ class EpScaleLib
     {
         $line = 'CCOSPIA' . chr(253);
         $line .= 'PNO' . $item_info['PLU'] . chr(253);
-        $line .= 'UPC' . '002' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
+        $line .= 'UPC' . ServiceScaleLib::pluToUPC($item_info['PLU']) . chr(253);
         $desc = (isset($item_info['Description'])) ? $item_info['Description'] : '';
         $line .= self::wrapDescription($desc, 26);
         $line .= 'DS1' . '0' . chr(253);
@@ -164,7 +164,7 @@ class EpScaleLib
                 switch ($key) {
                     case 'PLU':
                         $line .= 'PNO' . $item_info[$key] . chr(253);
-                        $line .= 'UPC' . '002' . str_pad($item_info[$key],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
+                        $line .= 'UPC' . ServiceScaleLib::pluToUPC($item_info[$key]) . chr(253);
                         $line .= 'INO' . $item_info[$key] . chr(253);
                         break;
                     case 'Description':
@@ -330,8 +330,7 @@ class EpScaleLib
                         // not a valid UPC either
                         continue;
                     }
-                    preg_match("/002(\d\d\d\d)0/",$upc,$matches);
-                    $plu = $matches[1];
+                    $plu = ServiceScaleLib::upcToPLU($upc);
                 }
             }
             fclose($fptr);

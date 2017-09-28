@@ -193,8 +193,7 @@ class SyncFromSearch extends FannieRESTfulPage
     private function getItemInfo($model)
     {
         // extract scale PLU
-        preg_match("/002(\d\d\d\d)0/", $model->plu(), $matches);
-        $s_plu = $matches[1];
+        $s_plu = COREPOS\Fannie\API\item\ServiceScaleLib::upcToPLU($model->plu());
 
         $item_info = array(
             'RecordType' => 'ChangeOneItem',

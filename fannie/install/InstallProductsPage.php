@@ -288,6 +288,8 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <?php echo installTextField('FANNIE_PO_EMAILNAME', $FANNIE_PO_EMAILNAME, ''); ?>
         <hr />
         <h4 class="install">Service Scale Integration</h4>
+        <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Scale PLU Length</b>
+        <?php echo installTextField('FANNIE_SPLU_LENGTH', $FANNIE_SPLU_LENGTH, 4); ?>
         <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Data Gate Weigh directory</b>
         <?php
         echo installTextField('FANNIE_DGW_DIRECTORY', $FANNIE_DGW_DIRECTORY, '');

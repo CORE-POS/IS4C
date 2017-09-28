@@ -278,12 +278,7 @@ STR;
         $scaleItem->save();
 
         // extract scale PLU
-        preg_match("/^002(\d\d\d\d)0/",$upc,$matches);
-        $s_plu = $matches[1];
-        if ($s_plu == '0000') {
-            preg_match("/^0020(\d\d\d\d)/",$upc,$matches);
-            $s_plu = $matches[1];
-        }
+        $s_plu = COREPOS\Fannie\API\item\ServiceScaleLib::upcToPLU($upc);
 
         $item_info = array(
             'RecordType' => $action,
