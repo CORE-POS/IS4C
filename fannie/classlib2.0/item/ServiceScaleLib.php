@@ -103,7 +103,7 @@ class ServiceScaleLib
             $len = 4;
         }
         $plu = str_pad($plu, $len, '0', STR_PAD_LEFT);
-        $plu = str_pad($plu, 10 - $len, '0', STR_PAD_RIGHT);
+        $plu .= str_repeat('0', 10 - $len);
 
         return BarcodeLib::padUPC('2' . $plu);
     }
