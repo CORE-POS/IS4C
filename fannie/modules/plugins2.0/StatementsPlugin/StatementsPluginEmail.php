@@ -82,12 +82,10 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $body .= '$ ' . sprintf("%.2f",$invoice['amount']) . "\n";
             $html .= '$ ' . sprintf("%.2f",$invoice['amount']) . "</p>";
 
-            /*
             $link = 'http://store.wholefoods.coop/invoice/' . $invoice['uuid'];
             $html .= '<p><a href="' . $link . '">Pay Online</p>';
             $body .= "\nPay Online:\n";
             $body .= $link . "\n";
-            */
 
             $mail->isHTML(true);
             $mail->Body = $html;
