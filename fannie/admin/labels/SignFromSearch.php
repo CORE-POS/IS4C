@@ -91,7 +91,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         }
         usort($this->upcs, function ($a, $b) use ($locations) {
             if (!isset($locations[$a]) || !isset($locations[$b])) return 0;
-            return $locations[$a] < $locations[$b];
+            if ($locations[$a] == $locations[$b]) return 0;
+            return $locations[$a] < $locations[$b] ? -1 : 1;
         });
 
         if (!$this->initModule()) {
