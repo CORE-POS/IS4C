@@ -236,6 +236,13 @@ class WfcVcTask extends FannieTask
             while ($row = $dbc->fetchRow($usageR)) {
                 $dbc->execute($upP, array($row['card_no']));
             }
+
+            // remove coupon from non-owner accounts
+            $dbc->query("UPDATE CustomerNotifications AS n
+                INNER JOIN custdata AS c ON n.cardNo=c.CardNo
+                SET n.message=''
+                WHERE n.source='WFC.OAM'
+                    AND c.Type <> 'PC'");
         }
 
         /** friend coupon
