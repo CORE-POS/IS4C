@@ -172,9 +172,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             stubStop();
             initPort();
             sp.Open();
-            WriteMessageToDevice(HardResetMessage());
-            WriteMessageToDevice(OfflineMessage());
-            WriteMessageToDevice(OnlineMessage());
+            WriteMessageToDevice(RebootMessage());
             sp.Close();
         } catch (Exception) {}
     }

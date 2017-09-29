@@ -554,6 +554,20 @@ public abstract class SPH_IngenicoRBA_Common : SerialPortHandler
         return msg;
     }
 
+    protected byte[] RebootMessage()
+    {
+        byte[] msg = new byte[5];
+        msg[0] = 0x2; // STX
+
+        msg[1] = 0x39; // Reset Code
+        msg[2] = 0x37;
+        msg[3] = 0x2e;
+
+        msg[4] = 0x3; // ETX
+        
+        return msg;
+    }
+
     protected byte[] ScreenLinesReset()
     {
         byte[] msg = new byte[6];

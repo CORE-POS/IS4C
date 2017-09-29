@@ -244,6 +244,11 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     rba.showMessage("Declined");
                 }
                 break;
+            case "termError":
+                if (rba != null) {
+                    rba.showMessage("Error");
+                }
+                break;
             case "termSig":
                 if (rba != null) {
                     rba.stubStop();

@@ -146,7 +146,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         }
 
         if (d.ContainsKey("showDialogs") && d["showDialogs"].ToLower() == "true") {
-            Console.WriteLine("with dialogs");
             this.hideDialogs = 0;
         }
 
@@ -224,7 +223,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         if (message.Contains("termSig")) {
                             result = GetSignature(true);
                         } else {
-                            Console.WriteLine(this.hideDialogs);
                             result = ax_control.ProcessTransaction(message, this.hideDialogs, string.Empty, string.Empty);
                         }
                         PdcActive(false);
@@ -325,6 +323,11 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                     rba.showMessage("Declined");
                 }
                 break;
+            case "termError":
+                if (rba != null) {
+                    rba.showMessage("Error");
+                }
+                break;
             case "termSig":
                 if (rba != null) {
                     rba.stubStop();
@@ -366,7 +369,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "</TStream>";
         
         PdcActive(true);
-        Console.WriteLine(this.hideDialogs);
         string ret = ax_control.ProcessTransaction(xml, this.hideDialogs, string.Empty, string.Empty);
         PdcActive(false);
 
@@ -388,7 +390,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "</Transaction>"
             + "</TStream>";
         PdcActive(true);
-        Console.WriteLine(this.hideDialogs);
         string result = ax_control.ProcessTransaction(xml, this.hideDialogs, string.Empty, string.Empty);
         PdcActive(false);
         XmlDocument doc = new XmlDocument();
