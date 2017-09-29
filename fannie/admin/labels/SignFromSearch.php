@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -73,6 +75,24 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 $this->upcs[] = BarcodeLib::padUPC($postdata);
             }
         }
+
+        $dbc = $this->connection;
+        $store = Store::getIdByIp();
+        list($inStr, $args) = $dbc->safeInClause($this->upcs);
+        $args[] = $store;
+        $query = "SELECT upc, fs.name FROM FloorSectionProductMap AS f 
+            LEFT JOIN FloorSections AS fs ON f.floorSectionID=fs.floorSectionID 
+            WHERE f.upc IN ({$inStr}) AND fs.storeID = ? ORDER BY fs.name;";
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep,$args); 
+        $locations = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $locations[$row['upc']] = $row['name'];
+        }
+        usort($this->upcs, function ($a, $b) use ($locations) {
+            if (!isset($locations[$a]) || !isset($locations[$b])) return 0;
+            return $locations[$a] < $locations[$b];
+        });
 
         if (!$this->initModule()) {
             echo 'Error: no layouts available';
