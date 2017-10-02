@@ -80,7 +80,7 @@ function enableLinea(selector, callback) {
     });
     ScannerDevice.registerListener(Device);
 
-    if (typeof WebBarcode == 'object') {
+    if (typeof WebBarcode != 'undefined') {
         WebBarcode.onBarcodeScan(function(ev) {
             var data = ev.value;
             lineaBarcode(data, selector, callback);

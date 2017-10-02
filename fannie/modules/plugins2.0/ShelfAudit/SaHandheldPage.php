@@ -245,7 +245,7 @@ Device = new ScannerDevice({
 });
 ScannerDevice.registerListener(Device);
 
-if (typeof WebBarcode == 'object') {
+if (typeof WebBarcode != 'undefined') {
     WebBarcode.onBarcodeScan(function(ev) {
         var data = ev.value;
         var upc = data.substring(0,data.length-1);
@@ -253,6 +253,12 @@ if (typeof WebBarcode == 'object') {
         $('#goBtn').click();
     });
 }
+document.addEventListener("BarcodeScanned", function (ev) {
+    var data = ev.value;
+    var upc = data.substring(0,data.length-1);
+    $('#upc_in').val(upc);
+    $('#goBtn').click();
+}, false);
         <?php } ?>
 
         <?php
