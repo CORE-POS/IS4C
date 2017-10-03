@@ -227,10 +227,9 @@ class WfcVcTask extends FannieTask
             $dbc->query("UPDATE CustomerNotifications SET message='OAM' WHERE source='WFC.OAM'");
             // lookup OAM usage in the last month
             $usageP = $dbc->prepare("SELECT card_no 
-                                    FROM is4c_trans.dlog_90_view
+                                    FROM is4c_trans.houseCouponThisMonth
                                     WHERE upc = ?
-                                    GROUP BY card_no
-                                    HAVING SUM(total) <> 0");
+                                        AND quantity <> 0");
             $usageR = $dbc->execute($usageP, array($currentUPC));
             $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
             while ($row = $dbc->fetchRow($usageR)) {
