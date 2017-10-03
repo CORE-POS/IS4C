@@ -6,7 +6,6 @@ include(__DIR__ . '/../../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__).'/../../../../classlib2.0/FannieAPI.php');
 }
-include($FANNIE_ROOT.'src/functions.php');
 
 class EOMReport extends FannieReportPage
 {
