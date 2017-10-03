@@ -79,7 +79,7 @@ class PaycardEmvGift extends PaycardProcessPage
                 $this->amount = $input / 100.00;
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
-        } elseif (FormLib::get('xml-resp') !== '') {
+        } elseif (FormLib::get('xml-resp', false) !== false) {
             $xml = FormLib::get('xml-resp');
             $this->emvResponseHandler($xml);
             return false;

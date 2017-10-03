@@ -16,13 +16,13 @@ var emv = (function($){
         // go to dedicated error page?
         $('div.baseHeight').html('Finishing transaction');
         var f = $('<form id="js-form"></form>');
-        if (xhr.responseXml !== null) {
-            f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseXml));
-        } else if (xhr.responseText !== null) {
-            f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseText));
-        } else {
-            f.append($('<input type="hidden" name="xml-resp" />').val(''));
+        var resp = 'error';
+        if (xhr.responseXml !== null && xhr.responseXml !== '') {
+            resp = xhr.responseXml;
+        } else if (xhr.responseText !== null && xhr.responseText !== '') {
+            resp = xhr.responseText;
         }
+        f.append($('<input type="hidden" name="xml-resp" />').val(resp));
         f.append($('<input type="hidden" name="err-info" />').val(JSON.stringify(xhr)+'-'+stat+'-'+err));
         $('body').append(f);
         $('#js-form').submit();
