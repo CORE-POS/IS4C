@@ -73,7 +73,7 @@ class Signage4UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetFont($this->font, '', $this->BIG_FONT);
         $pdf->Cell($effective_width, 20, $price, 0, 1, 'C');
 
-        if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
+        if ($this->validDate($item['startDate']) && $this->validDate($item['endDate']) && $item['nonSalePrice'] > $item['normal_price']) {
             // intl would be nice
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
