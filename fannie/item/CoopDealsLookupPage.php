@@ -55,6 +55,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
     function get_insert_view()
     {
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $batchID = FormLib::get('batches');
