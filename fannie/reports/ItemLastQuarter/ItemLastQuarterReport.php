@@ -48,7 +48,18 @@ class ItemLastQuarterReport extends FannieReportPage
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC($this->form->upc));
         $prod->load();
-        return array('Weekly Sales For ' . $prod->upc() . ' ' . $prod->description());
+        $ret = array('Weekly Sales For ' . $prod->upc() . ' ' . $prod->description());
+        if ($this->report_format == 'html') {
+            $store = FormLib::storePicker();
+            $ret[] = '<p><form action="ItemLastQuarterReport.php" method="get" class="form-inline">';
+            $ret[] = "<span style=\"color:black; display:inline;\">
+                Store: {$store['html']} 
+                <input type=\"hidden\" name=\"upc\" value=\"{$this->form->upc}\" />
+                <button type=\"submit\" class=\"btn btn-default btn-core\">Submit</button>";
+            $ret[] .= '</form>';
+        }
+        
+        return $ret;
     }
 
     public function fetch_report_data()
@@ -59,7 +70,10 @@ class ItemLastQuarterReport extends FannieReportPage
 
         $upc = $this->form->upc;
         $upc = BarcodeLib::padUPC($upc);
-        $store = Store::getIdByIp();
+        $store = FormLib::get('store', false);
+        if ($store === false) {
+            $store = Store::getIdByIp();
+        }
 
         $query = "SELECT 
                     l.quantity, l.total,
