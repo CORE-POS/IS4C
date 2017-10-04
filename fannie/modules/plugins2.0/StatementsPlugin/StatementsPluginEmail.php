@@ -46,7 +46,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             if (!empty($primary['firstName'])) {
                 $name = $primary['firstName'].' '.$name;
             }
-            $mail->Subject = 'Invoice ' . $invoice['b2bInvoiceID'];
+            $mail->Subject = 'Invoice ' . $invoice['b2bInvoiceID'] . ', Garbanzo Gazette';
             $body = "Invoice #: {$invoice['b2bInvoiceID']}\n";
             $html = "<p>Invoice #: {$invoice['b2bInvoiceID']}<br>";
             $stateDate = date('Y-m-d', strtotime($invoice['createdDate']));
