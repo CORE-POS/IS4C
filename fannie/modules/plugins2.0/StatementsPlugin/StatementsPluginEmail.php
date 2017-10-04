@@ -86,6 +86,8 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $html .= '<p><a href="' . $link . '">Pay Online</p>';
             $body .= "\nPay Online:\n";
             $body .= $link . "\n";
+            $html .= '<p>Whole Foods Co-op<br />610 E 4th St<br />Duluth, MN 55805</p>';
+            $body .= "\nWhole Foods Co-op\n610 E 4th St\nDuluth, MN 55805\n";
 
             $mail->isHTML(true);
             $mail->Body = $html;
@@ -369,6 +371,8 @@ class StatementsPluginEmail extends FannieRESTfulPage
             }
             $body .= '$ ' . sprintf("%.2f",$balance) . "\n";
             $html .= '$ ' . sprintf("%.2f",$balance) . "</p>";
+            $html .= '<p>Whole Foods Co-op<br />610 E 4th St<br />Duluth, MN 55805</p>';
+            $body .= "\nWhole Foods Co-op\n610 E 4th St\nDuluth, MN 55805\n";
 
             $mail->isHTML(true);
             $mail->Body = $html;
