@@ -630,14 +630,14 @@ class EditBatchPage extends FannieRESTfulPage
 
         $upQ2 = $dbc->prepare("UPDATE batchList SET
                 quantity=?,pricemethod=?,
-                salePrice=? WHERE batchID=?
+                salePrice=?, groupSalePrice=? WHERE batchID=?
                 AND salePrice >= 0");
         $upQ3 = $dbc->prepare("UPDATE batchList SET
                 quantity=?,pricemethod=?,
-                    salePrice=? WHERE batchID=?
+                    salePrice=?, groupSalePrice=? WHERE batchID=?
                     AND salePrice < 0");
-        $save2 = $dbc->execute($upQ2, array($this->qualifiers+1,$pmethod,$this->discount,$this->id));
-        $save3 = $dbc->execute($upQ3,array($this->qualifiers+1,$pmethod,-1*$this->discount,$this->id));
+        $save2 = $dbc->execute($upQ2, array($this->qualifiers+1,$pmethod,$this->discount,$this->discount,$this->id));
+        $save3 = $dbc->execute($upQ3,array($this->qualifiers+1,$pmethod,-1*$this->discount,$this->discount,$this->id));
 
         $json['error'] = 0;
         if (!$save1 || !$save2 || !$save3) {
