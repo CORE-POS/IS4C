@@ -575,5 +575,20 @@ class MercuryDC extends MercuryE2E
             return array_reduce($names, function($c, $i){ return $c . trim($i) . ','; });
         }
     }
+
+    private function batchXmlInit($type)
+    {
+        $termID = $this->getTermID();
+        $msg = <<<XML
+<?xml version="1.0">
+<TStream>
+    <Admin>
+        <MerchantID>{$termID}</MerchantID>
+        <TranCode>{$type}</TranCode>
+        <SecureDevice>{{SecureDevice}}</SecureDevice>
+        <ComPort>{{ComPort}}</ComPort>
+XML;
+        return $msg;
+    }
 }
 
