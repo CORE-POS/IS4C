@@ -51,6 +51,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     private bool pdc_active;
     private Object pdcLock = new Object();
     private short hideDialogs = 1;
+    private string lastResponse = "";
 
     public SPH_Datacap_PDCX(string p) : base(p)
     { 
@@ -213,6 +214,21 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         }
 
                         message = GetHttpBody(message);
+
+                        /**
+                          Re-send the last successful response
+                          If any kind of communication error occurs between this
+                          HTTP server and the POS client then the client does
+                          not know the status of their request. This "termGetLast"
+                          signal lets the client re-establish the connection and
+                          see if any information is available.
+                        */
+                        if (message.Contains("termGetLast")) {
+                            SendResponse(stream, this.lastResponse);
+                            continue;
+                        }
+
+                        this.lastResponse = "";
                         message = message.Replace("{{SecureDevice}}", this.device_identifier);
                         message = message.Replace("{{ComPort}}", com_port);
                         message = message.Trim(new char[]{'"'});
@@ -224,13 +240,12 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                             result = GetSignature(true);
                         } else {
                             result = ax_control.ProcessTransaction(message, this.hideDialogs, string.Empty, string.Empty);
+                            this.lastResponse = result;
                         }
                         PdcActive(false);
 
-                        result = WrapHttpResponse(result);
                         LogXml(result);
-                        byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
-                        stream.Write(response, 0, response.Length);
+                        SendResponse(stream, result);
                     }
                     client.Close();
                 }
@@ -240,6 +255,13 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 PdcActive(false);
             }
         }
+    }
+
+    private void SendResponse(NetworkStream stream, string msg)
+    {
+        msg = WrapHttpResponse(msg);
+        byte[] response = System.Text.Encoding.ASCII.GetBytes(msg);
+        stream.Write(response, 0, response.Length);
     }
 
     private void PdcActive(bool isActive)
@@ -483,7 +505,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     {
         if (log_xml) {
             using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                file.WriteLine(xml);
+                file.WriteLine(DateTime.Now.ToString() + ": " + xml);
             }
         }
     }
