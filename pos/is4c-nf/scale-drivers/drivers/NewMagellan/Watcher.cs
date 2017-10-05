@@ -76,7 +76,7 @@ class Watcher
         }
         var attempts = 0;
         while (attempts < 5) {
-            var drivers = Process.GetProcessesByName("pos.exe");
+            var drivers = Process.GetProcessesByName("pos");
             if (drivers.Length == 0) {
                 return;
             }
