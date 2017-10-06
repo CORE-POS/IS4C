@@ -20,13 +20,12 @@ if (!class_exists('FpdfWithBarcode')) {
         upc
         vendor
         scale
-    4. In your function, build the PDF. Look at 
+    4. In your function, build the PDF. Look at
        existings ones for some hints and/or FPDF
        documentation
 
     Name matching is important
 */
-
 class WFC_Hybrid_PDF extends FpdfWithBarcode
 {
     private $tagdate;
@@ -53,8 +52,9 @@ $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 $narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
+$locationP = $dbc->prepare('SELECT name FROM FloorSectionProductMap WHERE upc=? AND store_id = 1');
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
-$mtP = $dbc->prepare('SELECT p.auto_par 
+$mtP = $dbc->prepare('SELECT p.auto_par
     FROM MovementTags AS m
         INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.store_id
     WHERE m.upc=? AND m.storeID=?');
@@ -67,7 +67,8 @@ $updateMT = $dbc->prepare('
 
 $full = array();
 $half = array();
-foreach ($data as $row) {
+$location = array();
+foreach ($data as $k => $row) {
     if ($dbc->getValue($narrowP, array($row['upc']))) {
         $row['full'] = false;
         $half[] = $row;
@@ -76,8 +77,21 @@ foreach ($data as $row) {
         $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
         $full[] = $row;
     }
+    $loc = $dbc->getValue($locationP, array($row['upc']));
+    $data[$k]['location'] = $loc;
 }
+
 $data = array_merge($full, $half);
+
+function sortByLocation($a, $b)
+{                              
+    $a = $a['location'];       
+    $b = $b['location'];       
+                                           
+    if ($a == $b) return 0;
+    return ($a < $b) ? -1 : 1; 
+}
+//usort($data, 'sortByLocation');
 
 $width = 52; // tag width in mm
 $height = 31; // tag height in mm
@@ -95,7 +109,7 @@ $pdf->SetRightMargin($left);  //Set the right margin of the page
 $pdf->SetAutoPageBreak(False); // manage page breaks yourself
 $pdf->AddPage();  //Add page #1
 
-$num = 1; // count tags 
+$num = 1; // count tags
 // full size tag settings
 $full_x = $left;
 $full_y = $top;
@@ -110,8 +124,19 @@ $baseY = 31; // baseline Y location of label
 $baseX = 6;  // baseline X location of label
 $down = 31.0;
 
-//cycle through result array of query
+/*
+list($inStr, $args) = $dbc->safeInClause($full);
+$query = "SELECT upc, fs.name FROM FloorSectionProductMap AS f
+    LEFT JOIN FloorSections AS fs ON f.floorSectionID=fs.floorSectionID
+    WHERE f.upc IN ({$inStr}) AND fs.storeID = 1 ORDER BY fs.name;";
+$prep = $dbc->prepare($query);
+$res = $dbc->execute($prep,$args);
+$locations = array();
+while ($row = $dbc->fetchRow($res)) {
+    $locations[$row['upc']] = $row['name'];
+}*/
 
+//cycle through result array of query
 foreach($data as $row) {
    // extract & format data
 
@@ -142,7 +167,7 @@ foreach($data as $row) {
             $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*7)), 1, 1, 'C');
             $dbc->execute($updateMT, array(($row['movementTag']*7), $row['upc'], $store));
         } else {
-            //Start laying out a label 
+            //Start laying out a label
             if (strlen($upc) <= 11)
             $pdf->UPC_A($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
             else
@@ -152,7 +177,7 @@ foreach($data as $row) {
         // writing data
         // basically just set cursor position
         // then write text w/ Cell
-        $pdf->SetFont('Arial','',8);  //Set the font 
+        $pdf->SetFont('Arial','',8);  //Set the font
         $pdf->SetXY($full_x,$full_y+12);
         $pdf->Cell($width,4,$desc,0,1,'L');
         $pdf->SetX($full_x);
@@ -179,8 +204,8 @@ foreach($data as $row) {
         $tagdate = date('m/d/y');
         $vendor = substr($row['vendor'],0,7);
 
-        //Start laying out a label 
-        $pdf->SetFont('Arial','',8);  //Set the font 
+        //Start laying out a label
+        $pdf->SetFont('Arial','',8);  //Set the font
         if (strlen($upc) <= 11)
             $pdf->UPC_A($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
         else
@@ -261,7 +286,7 @@ foreach($data as $row) {
     // full size
     $full_x = $left;
     $full_y = $top;
-    
+
     // half size
     $upcX = 7;  //x location of barcode
     $upcY = 15; //y locaton of barcode
