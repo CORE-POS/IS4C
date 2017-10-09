@@ -75,23 +75,15 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             VALUES (?,?,?,?,"1")
         ');
         $dbc->execute($prep,$args);
+
         if ($er = $dbc->error()) {
             return '<div class="alert alert-danger">' . $er . "</div>"
                 . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
         } else {
-            return '<div class="alert alert-success">Item Added to Batch</div>'
+            $b = new BatchesModel($dbc);
+            $b->forceStartBatch($batchID);
+            return '<div class="alert alert-success">Item Added to Batch & batch #'.$batchID.' forced.</div>'
                 . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
-        }
-        
-        //  Add product to Batch Check Queue if Batch Check in session 
-        if ($session = $this->session->session && $store_id = $this->session->store_id) {
-            $dbc = FannieDB::get('woodshed_no_replicate');
-            $argsB = array($upc, $store_id, $session);
-            $prepB = $dbc->prepare('
-                INSERT INTO SaleChangeQueues (queue, upc, store_id, session)
-                VALUES (8,?,?,?)
-            ');
-            $dbc->execute($prepB,$argsB);
         }
 
     }
@@ -229,7 +221,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
 
-        $ret = '';  
+        $ret = '';
         echo 'Month: ' . strtoupper($this->session->month) . '<br>';
 
         $ret .= '
