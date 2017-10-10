@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ObfSummaryReport extends ObfWeeklyReport
+class ObfSummaryReport extends ObfWeeklyReportV2
 {
     protected $sortable = false;
     protected $no_sort_but_style = true;
@@ -99,6 +99,33 @@ class ObfSummaryReport extends ObfWeeklyReport
         '9,17' => 8414.48,
     );
 
+    protected $PLAN_SALES_Q2_2018 = array(
+        '1,6' => 51031.00,      // Hillside Produce
+        '2,10' => 11448.32,     // Hillside Deli
+        '2,11' => 31119.86,
+        '2,16' => 12686.82,
+        '3,1' => 26430.32,      // Hillside Grocery
+        '3,4' => 64309.57,
+        '3,5' => 24345.53,
+        '3,7' => 203.71,
+        '3,8' => 17988.26,
+        '3,9' => 2807.52,
+        '3,13' => 15460.30,
+        '3,17' => 27136.80,
+        '7,6' => 17975.00,      // Denfeld Produce
+        '8,10' => 4383.48,      // Denfeld Deli
+        '8,11' => 13217.67,
+        '8,16' => 5161.85,
+        '9,1' => 8470.24,       // Denfeld Grocery
+        '9,4' => 25460.06,
+        '9,5' => 8837.77,
+        '9,7' => 85.06,
+        '9,8' => 5938.41,
+        '9,9' => 1039.62,
+        '9,13' => 4807.43,
+        '9,17' => 8725.41,
+    );
+
     private $laborPercent = array(
         1 => 8.31,
         2 => 22.41,
@@ -115,10 +142,12 @@ class ObfSummaryReport extends ObfWeeklyReport
 
     private function getPlanSales($weekID)
     {
-        if ($weekID < 162) {
-            return $this->PLAN_SALES;
-        } else {
+        if ($weekID >= 175) {
+            return $this->PLAN_SALES_Q2_2018;
+        } elseif ($weekID >= 162) {
             return $this->PLAN_SALES_Q1_2018;
+        } else {
+            return $this->PLAN_SALES;
         }
     }
 
@@ -246,7 +275,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     if ($quarter === false) {
                         $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                     }
-                    $ou_weeks = ($week->obfWeekID() - $this->OU_START) + 1;
+                    $ou_weeks = ($week->obfWeekID() - $this->getOuStart($week->obfWeekID())) + 1;
                     $qtd_dept_plan += ($proj * $ou_weeks);
                     $qtd_dept_sales += $quarter['actual'];
                     $total_trans->quarterThisYear = $quarter['trans'];

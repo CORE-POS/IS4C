@@ -14,6 +14,14 @@ class ObfBigBoardReport extends FannieRESTfulPage
     protected $title = 'OBF Big Board';
 
     protected $OU_START = 162;
+    protected function getOuStart($weekID)
+    {
+        if ($weekID >= 175) {
+            return 175;
+        }
+
+        return 162;
+    }
 
     protected $PLAN_SALES_Q1_2018 = array(
         '1,6' => 53904.29,      // Hillside Produce
@@ -42,10 +50,41 @@ class ObfBigBoardReport extends FannieRESTfulPage
         '9,17' => 8414.48,
     );
 
-    protected function getPlanSales($catID)
+    protected $PLAN_SALES_Q2_2018 = array(
+        '1,6' => 51031.00,      // Hillside Produce
+        '2,10' => 11448.32,     // Hillside Deli
+        '2,11' => 31119.86,
+        '2,16' => 12686.82,
+        '3,1' => 26430.32,      // Hillside Grocery
+        '3,4' => 64309.57,
+        '3,5' => 24345.53,
+        '3,7' => 203.71,
+        '3,8' => 17988.26,
+        '3,9' => 2807.52,
+        '3,13' => 15460.30,
+        '3,17' => 27136.80,
+        '7,6' => 17975.00,      // Denfeld Produce
+        '8,10' => 4383.48,      // Denfeld Deli
+        '8,11' => 13217.67,
+        '8,16' => 5161.85,
+        '9,1' => 8470.24,       // Denfeld Grocery
+        '9,4' => 25460.06,
+        '9,5' => 8837.77,
+        '9,7' => 85.06,
+        '9,8' => 5938.41,
+        '9,9' => 1039.62,
+        '9,13' => 4807.43,
+        '9,17' => 8725.41,
+    );
+
+    protected function getPlanSales($catID, $weekID)
     {
         $ttl = 0;
-        foreach ($this->PLAN_SALES_Q1_2018 as $k => $v) {
+        $plan = $this->PLAN_SALES_Q1_2018;
+        if ($weekID >= 175) {
+            $plan = $this->PLAN_SALES_Q2_2018;
+        }
+        foreach ($plan as $k => $v) {
             if (strpos($k, $catID . ',') === 0) {
                 $ttl += $v;
             } 
@@ -73,6 +112,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
 
         $weekP = $this->connection->prepare("SELECT * FROM {$prefix}ObfWeeks WHERE obfWeekID=?");
         $week = $this->connection->getRow($weekP, array($this->id));
+        $this->OU_START = $this->getOuStart($this->id);
 
         $curStart = new DateTimeImmutable($week['startDate']);
         $curEnd = new DateTimeImmutable($week['endDate']);
@@ -133,7 +173,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
             $ret .= '<tr><td>' . $catW['name'] . '</td>';
             for ($i=3; $i>=0; $i--) {
                 $weekID = $this->id + $i;
-                $plan = $this->getPlanSales($catID);
+                $plan = $this->getPlanSales($catID, $weekID);
                 $cast = $this->connection->getValue($castP, array($weekID, $catID));
                 $totals[$i]['plan'] += $plan;
                 $totals[$i]['forecast'] += $cast;
@@ -150,7 +190,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
                     // this loop is in case getPlanSales() is revised to take
                     // a weekID argument and choose from multiple plans
                     for ($j=$this->OU_START; $j<=$weekID; $j++) {
-                        $plan = $this->getPlanSales($catID);
+                        $plan = $this->getPlanSales($catID, $j);
                         $sales -= $plan;
                     }
                     $ret .= '<td class="text-right">' . number_format($sales) . '</td>';
@@ -174,7 +214,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
             $splh = $this->connection->getValue($splhP, array($weekID, $catID));
             for ($i=3; $i>=0; $i--) {
                 $weekID = $this->id + $i;
-                $plan = $this->getPlanSales($catID);
+                $plan = $this->getPlanSales($catID, $weekID);
                 if ($plan == 0) {
                     $plan = $totals[$i]['plan'];
                 }
@@ -189,7 +229,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
                     $totals[$i]['actualHours'] += $actual;
                     $hours = $this->connection->getValue($laborP, array($this->OU_START, $weekID, $catID));
                     for ($j=$this->OU_START; $j<=$weekID; $j++) {
-                        $planSales = $this->getPlanSales($catID);
+                        $planSales = $this->getPlanSales($catID, $j);
                         if ($planSales == 0) {
                             $planSales = $totals[$i]['plan'];
                         }
@@ -281,7 +321,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
         <select name="id" class="form-control">{$opts}</select>
     </div>
     <div class="form-group">
-        <label>Week</label>
+        <label>Store</label>
         {$stores['html']}
     </div>
     <div class="form-group">
