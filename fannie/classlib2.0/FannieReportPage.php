@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\FileData;
+
 if (!class_exists('FanniePage')) {
     include_once(dirname(__FILE__).'/FanniePage.php');
 }
@@ -1142,7 +1144,8 @@ class FannieReportPage extends FanniePage
         $item = preg_replace("/(\d) *%$/","$1",$item);
         // 1,000 -> 1000
         $item = preg_replace("/(\d),(\d\d\d)/","$1$2",$item);
-        return $item;
+
+        return FileData::excelNoFormula($item);
     }
 
     /**
