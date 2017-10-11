@@ -11,7 +11,7 @@ class InvCasesPage extends FannieReportPage
     protected $title = 'Inventory Counts';
     protected $must_authenticate = true;
     public $discoverable = false;
-    protected $report_headers = array('UPC', 'Brand', 'Description', 'Case Size');
+    protected $report_headers = array('UPC', 'Brand', 'Description', 'SKU', 'Case Size');
     protected $new_tablesorter = true;
 
     public function fetch_report_data()
@@ -23,6 +23,7 @@ class InvCasesPage extends FannieReportPage
             SELECT p.upc,
                 p.brand,
                 p.description,
+                v.sku,
                 v.units
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID AND p.upc=v.upc
@@ -37,6 +38,7 @@ class InvCasesPage extends FannieReportPage
                 $row['upc'],
                 $row['brand'],
                 $row['description'],
+                $row['sku'],
                 $row['units'],
             );
         }
