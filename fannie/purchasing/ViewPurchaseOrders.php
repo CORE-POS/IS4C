@@ -933,6 +933,7 @@ HTML;
             if ($model->receivedDate() === null) {
                 $model->receivedDate(date('Y-m-d H:i:s'));
             }
+            $model->save();
         }
 
         return false;
