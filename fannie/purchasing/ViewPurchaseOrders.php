@@ -981,10 +981,13 @@ HTML;
             $model->reset();
             $model->orderID($this->id);
             $model->internalUPC(BarcodeLib::padUPC($this->sku));
-            $matches = $model->find();
-            if (count($matches) == 1) {
-                $model = $matches[0];
-                $found = true;
+            $matches = $model->find('quantity');
+            foreach ($matches as $m) {
+                if ($m->quantity() > 0) {
+                    $model = $m;
+                    $found = true;
+                    break;
+                }
             }
         }
         
