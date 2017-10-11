@@ -44,7 +44,7 @@ class DateCountPage extends FannieRESTfulPage
     public function post_vendor_handler()
     {
         try {
-            $date = $this->form->date;
+            $date = $this->form->date . ' 00:00:03';
             $upP = $this->connection->prepare('
                 UPDATE InventoryCounts AS i
                     INNER JOIN products AS p ON p.upc=i.upc AND p.store_id=i.storeID
@@ -95,7 +95,7 @@ class DateCountPage extends FannieRESTfulPage
     {
         $upc = BarcodeLib::padUPC($this->id);
         try {
-            $date = $this->form->date;
+            $date = $this->form->date . ' 00:00:01';
             $store = $this->form->store;
             $upP = $this->connection->prepare('
                 UPDATE InventoryCounts
