@@ -858,6 +858,7 @@ HTML;
                 <input type="hidden" name="id" value="' . $this->id . '" />
                 <button type="submit" class="btn btn-default">Continue</button>
                 <a href="?id=' . $this->id . '&receiveAll=1" class="btn btn-default btn-reset">All</a>
+                <a href="?id=' . $this->id . '" class="btn btn-default btn-reset">Order</a>
                 </form>
             </div></p>
             <div id="item-area">
@@ -922,15 +923,17 @@ HTML;
     {
         $dbc = $this->connection;
         $model = new PurchaseOrderItemsModel($dbc);
-        $model->orderID($this->id);
-        $model->sku($this->sku);
-        $model->receivedQty($this->qty);
-        $model->receivedTotalCost($this->cost);
-        $model->receivedBy(FannieAuth::getUID($this->current_user));
-        if ($model->receivedDate() === null) {
-            $model->receivedDate(date('Y-m-d H:i:s'));
+        for ($i=0; $i<count($this->sku); $i++) {
+            $model->orderID($this->id);
+            $model->sku($this->sku[$i]);
+            $model->load();
+            $model->receivedQty($this->qty[$i]);
+            $model->receivedTotalCost($this->cost[$i]);
+            $model->receivedBy(FannieAuth::getUID($this->current_user));
+            if ($model->receivedDate() === null) {
+                $model->receivedDate(date('Y-m-d H:i:s'));
+            }
         }
-        $model->save();
 
         return false;
     }
@@ -982,13 +985,19 @@ HTML;
             $model->orderID($this->id);
             $model->internalUPC(BarcodeLib::padUPC($this->sku));
             $matches = $model->find('quantity');
-            foreach ($matches as $m) {
-                if ($m->quantity() > 0) {
-                    $model = $m;
-                    $found = true;
-                    break;
-                }
+            if (count($matches) > 0) {
+                $found = true;
             }
+            $spo = $this->findInSPO($this->id, BarcodeLib::padUPC($this->sku));
+            foreach ($spo as $s) {
+                $spoModel = new PurchaseOrderItemsModel($this->connection);
+                $spoModel->orderID($this->id);
+                $spoModel->sku($s);
+                $spoModel->load();
+                $matches[] = $spoModel;
+                $found = true;
+            }
+            $model = $matches;
         }
         
         // item not in order. need all fields to add it.
@@ -1002,6 +1011,28 @@ HTML;
         echo '</form>';
 
         return false;
+    }
+
+    private function findInSPO($orderID, $upc)
+    {
+        $itemsP = $this->connection->prepare('SELECT internalUPC AS upc, sku FROM PurchaseOrderItems WHERE orderID=? AND isSpecialOrder=1');
+        $itemR = $this->connection->execute($itemsP, array($orderID));
+        $spoP = $this->connection->prepare('
+            SELECT upc
+            FROM ' . $this->config->get('TRANS_DB') . '.PendingSpecialOrder
+            WHERE order_id=? AND trans_id=?');
+        $ret = array();
+        while ($itemW = $this->connection->fetchRow($itemR)) {
+            $poUPC = $itemW['upc'];
+            $spoID = ltrim(substr($poUPC, 0, 9), '0');
+            $transID = ltrim(substr($poUPC, -4), '0');
+            $spoUPC = $this->connection->getValue($spoP, array($spoID, $transID));
+            if ($spoUPC == $upc) {
+                $ret[] = $itemW['sku'];
+            }
+        }
+
+        return $ret;
     }
 
     private function receiveUnOrderedItem($dbc)
@@ -1018,7 +1049,7 @@ HTML;
         $item->sku($this->sku);
         $item->load();
         printf('<tr>
-            <td>%s<input type="hidden" name="sku" value="%s" /></td>
+            <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
             <td><input type="text" class="form-control" name="upc" value="%s" /></td>
             <td><input type="text" class="form-control" name="brand" value="%s" /></td>
             <td><input type="text" class="form-control" name="description" value="%s" /></td>
@@ -1047,35 +1078,42 @@ HTML;
         echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
         $uid = FannieAuth::getUID($this->current_user);
-        if ($model->receivedQty() === null) {
-            $model->receivedQty($model->quantity());
-            $model->receivedBy($uid);
+        if (!is_array($model)) {
+            $model = array($model);
         }
-        if ($model->receivedTotalCost() === null) {
-            $model->receivedTotalCost($model->quantity()*$model->unitCost()*$model->caseSize());
-            $model->receivedBy($uid);
+        foreach ($model as $m) {
+            if ($m->receivedQty() === null) {
+                $m->receivedQty($m->quantity() * $m->caseSize());
+                $m->receivedBy($uid);
+            }
+            if ($m->receivedTotalCost() === null) {
+                $m->receivedTotalCost($m->quantity()*$m->unitCost()*$m->caseSize());
+                $m->receivedBy($uid);
+            }
+            printf('<tr %s>
+                <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s (%sx%s)</td>
+                <td>%.2f</td>
+                <td><input type="text" class="form-control" name="qty[]" value="%s" /></td>
+                <td><input type="text" class="form-control" name="cost[]" value="%.2f" /></td>
+                <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id[]" value="%d" /></td>
+                </tr>',
+                ($m->isSpecialOrder() ? 'class="success"' : ''),
+                $m->sku(), $m->sku(),
+                $m->internalUPC(),
+                $m->brand(),
+                $m->description(),
+                $m->quantity() * $m->caseSize(),
+                $m->quantity() , $m->caseSize(),
+                $m->quantity() * $m->unitCost() * $m->caseSize(),
+                $m->receivedQty(),
+                $m->receivedTotalCost(),
+                $this->id
+            );
         }
-        printf('<tr>
-            <td>%s<input type="hidden" name="sku" value="%s" /></td>
-            <td>%s</td>
-            <td>%s</td>
-            <td>%s</td>
-            <td>%s</td>
-            <td>%.2f</td>
-            <td><input type="text" class="form-control" name="qty" value="%s" /></td>
-            <td><input type="text" class="form-control" name="cost" value="%.2f" /></td>
-            <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id" value="%d" /></td>
-            </tr>',
-            $model->sku(), $model->sku(),
-            $model->internalUPC(),
-            $model->brand(),
-            $model->description(),
-            $model->quantity(),
-            $model->quantity() * $model->unitCost() * $model->caseSize(),
-            $model->receivedQty(),
-            $model->receivedTotalCost(),
-            $this->id
-        );
         echo '</table>';
     }
 
