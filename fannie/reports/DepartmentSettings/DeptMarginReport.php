@@ -42,7 +42,7 @@ class DeptMarginReport extends FannieReportPage
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
             $diff = $row['unfiMargin'] - $row['deptMargin'];
-            $diff *= (1 - $row['unfiMargin']);
+            $diff *= (1 - $row['unfiMix']);
             $avg = $row['unfiMargin'] - $diff;
             if ($row['unfiMargin'] == 0) {
                 $avg = $row['deptMargin'];
@@ -62,6 +62,7 @@ class DeptMarginReport extends FannieReportPage
     public function form_content()
     {
         $store = FormLib::storePicker();
+        $date = date('Y-m-d', strtotime('last quarter'));
         return <<<HTML
 <form method="get">
     <div class="form-group">
