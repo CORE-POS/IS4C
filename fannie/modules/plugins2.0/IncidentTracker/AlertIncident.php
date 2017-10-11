@@ -427,7 +427,12 @@ HTML;
             WHERE i.incidentTypeID=1
                 AND i.deleted = 0
             ORDER BY tdate DESC";
-        $query = $this->connection->addSelectLimit($query, 30);
+
+        $tableLabel = _('All Alerts');
+        if (!FormLib::get('all')) {
+            $query = $this->connection->addSelectLimit($query, 30);
+            $tableLabel = _('Recent Alerts (<a href="?all=1">Show All</a>)');
+        }
         $res = $this->connection->query($query);
         $table = '';
         $byDay = array();
@@ -481,7 +486,7 @@ HTML;
     </form>
 </p>
 <table class="table small table-bordered">
-<tr><th colspan="5" class="text-center">Recent Alerts</th></tr>
+<tr><th colspan="5" class="text-center">{$tableLabel}</th></tr>
     {$table}
 </table>
 <div class="row">
