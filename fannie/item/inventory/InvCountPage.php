@@ -244,6 +244,10 @@ class InvCountPage extends FannieRESTfulPage
         $prep = $this->connection->prepare($query);
         $ret = '<form method="post">
             <a href="../vendors/VendorIndexPage.php?vid=' . $this->vendor . '">' . $vname . '</a>
+            |
+            <a href="InvCasesPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Case Sizes</a>
+            |
+            <a href="InvHistoryPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Count History</a>
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
             <input type="hidden" name="store" value="' . $store . '" />
             <table class="table table-bordered table-striped small table-float">
