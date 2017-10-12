@@ -59,7 +59,7 @@ times will be limited by how frequently this task runs.';
         $now = new DateTime();
 
         $curP = $dbc->prepare('SELECT discounttype, batchID FROM products WHERE upc=?');
-        $unsaleP = $dbc->prepare('UPDATE products SET special_price=0, batchID=0, discounttype=0, start_date=\'0000-00-00\', end_date=\'0000-00-00\' WHERE upc=?');
+        $unsaleP = $dbc->prepare('UPDATE products SET special_price=0, batchID=0, discounttype=0, start_date=\'1900-01-01\', end_date=\'1900-01-01\' WHERE upc=?');
         $saleP = $dbc->prepare('UPDATE products SET special_price=?, batchID=?, discounttype=?, start_date=?, end_date=? WHERE upc=?');
         $changedUPCs = array();
 

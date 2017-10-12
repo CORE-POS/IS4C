@@ -507,8 +507,8 @@ class EditBatchPage extends FannieRESTfulPage
         foreach ($product->find('store_id') as $obj) {
             $obj->discountType(0);
             $obj->special_price(0);
-            $obj->start_date(0);
-            $obj->end_date(0);
+            $obj->start_date('1900-01-01');
+            $obj->end_date('1900-01-01');
             $ret = $obj->save();
         }
      
