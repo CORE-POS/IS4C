@@ -363,7 +363,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret .= $this->signage_obj->listItems();
 
         if ($this->userCanSave()) {
-            $ret .= '<input type="hidden" name="update" id="updateBtn" value="Save Text">
+            $ret .= '<div id="signHiddenInput"></div>
             <p><a onClick="updateSigninfo();"
                 class="btn btn-default">[Admin] Save Sign Info</a></p>';
         }
@@ -425,6 +425,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         var c = confirm("Permanently change sign info?");
         if (c == true) {
+            $('#signHiddenInput').html('<input type="hidden" name="update" id="updateBtn" value="Save Text">');
             $("#signform").submit();
         }
     }
