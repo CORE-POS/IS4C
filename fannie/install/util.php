@@ -75,6 +75,13 @@ function confset($key, $value)
     fclose($fptr);
 }
 
+/**
+  Briefly connect to host to verify it's accepting
+  network connections
+  @param $host [string] host name
+  @param $dbms [string] database software identifier
+  @return [boolean]
+*/
 function check_db_host($host,$dbms)
 {
     if (!function_exists("socket_create")) {
