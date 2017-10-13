@@ -60,6 +60,7 @@ class PaycardEmvMenu extends NoInputCorePage
                 case 'PVGD':
                     $json = $parser->parse('PVDATACAP' . substr($choice, -2));
                     $this->change_page($json['main_frame']);
+                    return false;
                 case 'ACGD':
                 case 'AVGD':
                     $json = $parser->parse(substr($choice,0,2) . 'DATACAPGD');
