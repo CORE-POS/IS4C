@@ -230,7 +230,7 @@ class SQLManager
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
         $conn = $this->setConnectTimeout($conn, $type);
-        $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password,$database);
+        $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password);
         $conn = $this->clearConnectTimeout($conn, $type);
         if ($connected) {
             $this->last_connect_error = false;
