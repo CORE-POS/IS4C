@@ -66,10 +66,14 @@ class SQLManager
 
     protected $last_connect_error = false;
 
-    /** Constructor
+    /** 
+        Create an initial connection to the database. Will
+        attempt to create the database if it does not exist
+        and permissions allow.
+
         @param $server Database server host
         @param $type Database type. Most supported are
-        'mysql' and 'mssql' but anything ADOdb supports
+        'mysqli' and 'pdo_mysql' but anything ADOdb supports
         will kind of work
         @param $database Database name
         @param $username Database username
@@ -114,10 +118,12 @@ class SQLManager
         return $conn;
     }
 
-    /** Add another connection
+    /** Add another connection. If the specified database does not
+        exist this method will attempt to create it.
+
         @param $server Database server host
         @param $type Database type. Most supported are
-        'mysql' and 'mssql' but anything ADOdb supports
+        'mysqli' and 'pdo_mysql' but anything ADOdb supports
         will kind of work
         @param $database Database name
         @param $username Database username
