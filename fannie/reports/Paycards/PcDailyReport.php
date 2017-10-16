@@ -441,7 +441,7 @@ class PcDailyReport extends FannieReportPage
     {
         $this->add_onload_command('$(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'});');
         $date = FormLib::get('date', date('Y-m-d'));
-        $stores = FormLib::storePicker(0);
+        $stores = FormLib::storePicker();
         return '<form method="get" action="PcDailyReport.php">
             <div class="col-sm-6">
             <div class="row form-group form-inline">
