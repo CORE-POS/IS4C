@@ -7,6 +7,9 @@
 my_folder=`dirname "$0"`
 cd "$my_folder"
 
-yesterday=`date --date=yesterday +"%F"`
+yesterday=`date --date="2 days ago" +"%F"`
+php CwLoadDataPage.php -x -d "$yesterday"
 
+yesterday=`date --date=yesterday +"%F"`
 php CwLoadDataPage.php -a -d "$yesterday"
+
