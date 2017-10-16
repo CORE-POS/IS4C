@@ -320,7 +320,7 @@ class PcDailyReport extends FannieReportPage
                 $integrated_trans_ids[$pos_trans_id] = 'found';
             } else {
                 $dcR = $dbc->execute($doubleCheckP, array($date_id, $row['register_no'], $row['emp_no'], $row['trans_no'], $row['ttl']));
-                if ($dbc->numRows($dcR) === 1) {
+                if ($dbc->numRows($dcR) === 1 && $row['charflag'] == 'PT') {
                     $dcW = $dbc->fetchRow($dcR);
                     $pos_trans_id = $row['trans_num'] . '-' . $dcW['transID'];
                     $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
