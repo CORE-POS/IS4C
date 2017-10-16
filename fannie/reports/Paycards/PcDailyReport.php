@@ -58,6 +58,7 @@ class PcDailyReport extends FannieReportPage
     public function fetch_report_data()
     {
         $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
+        $date_str = date('Y-m-d', strtotime(FormLib::get('date', date('Y-m-d'))));
         $store = FormLib::get('store', false);
         if ($store === false) {
             $store = Store::getIdByIp();
@@ -239,6 +240,16 @@ class PcDailyReport extends FannieReportPage
         }
         /** end get FAPS / goE **/
 
+        $doubleCheckP = $dbc->prepare("
+            SELECT transID
+            FROM PaycardTransactions
+            WHERE dateID=?
+                AND registerNo=?
+                AND empNo=?
+                AND transNo=?
+                AND amount=?
+                AND (xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
+                AND xResultMessage not like '%declined%'");
 
         /** now get POS transaction records and check which are integrated **/
         $dlog = DTransactionsModel::selectDlog(FormLib::get('date', date('Y-m-d')));
@@ -261,6 +272,8 @@ class PcDailyReport extends FannieReportPage
                     trans_id,
                     numflag,
                     charflag,
+                    emp_no,
+                    trans_no,
                     register_no
                   FROM $dlog AS d
                   WHERE tdate BETWEEN ? AND ?
@@ -300,12 +313,23 @@ class PcDailyReport extends FannieReportPage
             if ($row['charflag'] == 'PT' && isset($pt_ids[$pt_id])) {
                 $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                 $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
+                $integrated_trans_ids[$pos_trans_id] = 'found';
             } elseif (isset($integrated_trans_ids[$pos_trans_id])) {
                 $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                 $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
+                $integrated_trans_ids[$pos_trans_id] = 'found';
             } else {
-                $proc[$cardType]['Non'][$transType]['amt'] += $row['ttl'];
-                $proc[$cardType]['Non'][$transType]['num'] += $row['num'];
+                $dcR = $dbc->execute($doubleCheckP, array($date_id, $row['register_no'], $row['emp_no'], $row['trans_no'], $row['ttl']));
+                if ($dbc->numRows($dcR) === 1) {
+                    $dcW = $dbc->fetchRow($dcR);
+                    $pos_trans_id = $row['trans_num'] . '-' . $dcW['transID'];
+                    $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
+                    $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
+                    $integrated_trans_ids[$pos_trans_id] = 'found';
+                } else {
+                    $proc[$cardType]['Non'][$transType]['amt'] += $row['ttl'];
+                    $proc[$cardType]['Non'][$transType]['num'] += $row['num'];
+                }
             }
         }
         foreach($proc as $type => $info) {
@@ -324,6 +348,20 @@ class PcDailyReport extends FannieReportPage
             );
             $record['meta'] = FannieReportPage::META_BOLD;
             $dataset[] = $record;
+        }
+
+        $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
+        foreach ($integrated_trans_ids as $pos_trans_id => $found) {
+            if ($found === true) {
+                $trans = rtrim($pos_trans_id, '0123456789');
+                $trans = rtrim($trans, '-');
+                $dataset[] = array(
+                    'Suspect Transaction',
+                    $date_str,
+                    $trans,
+                    $pos_trans_id,
+                );
+            }
         }
 
         $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
