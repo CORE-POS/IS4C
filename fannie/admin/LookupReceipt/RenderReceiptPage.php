@@ -164,6 +164,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $emp_no = $transact[0];
         $trans_no = $transact[2];
         $reg_no = $transact[1];
+        $store = FormLib::get('store', false);
 
         $table = DTransactionsModel::selectDtrans(date('Y-m-d',$totime));
         $query1 = "SELECT 
@@ -216,9 +217,13 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 AND register_no=? AND emp_no=? and trans_no=?
                 AND voided <> 4 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
                 AND trans_type <> 'L'
+                " . ($store ? ' AND store_id=? ' : '') . "
             ORDER BY trans_id";
         $args = array("$year-$month-$day 00:00:00", "$year-$month-$day 23:59:59", 
                 $reg_no, $emp_no, $trans_no);
+        if ($store) {
+            $args[] = $store;
+        }
         return $this->receipt_to_table($query1,$args,0,'FFFFFF');
     }
 
