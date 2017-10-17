@@ -56,7 +56,7 @@ var productList = (function($) {
         });
 
         drawTupleSelect(elem, 'td_tax', 'in_tax', taxObj);
-        drawTupleSelect(elem, 'td_local', 'in_local', taxObj);
+        drawTupleSelect(elem, 'td_local', 'in_local', localObj);
 
         elem.find('.td_cmd:first .edit-link').hide();
         elem.find('.td_cmd:first .save-link').show();
@@ -94,11 +94,15 @@ var productList = (function($) {
         var dstr = 'ajax=save';
 
         mathField(elem.find('.in_cost:first').get(0));
-        var cells = ['brand', 'desc', 'supplier', 'cost', 'price'];
+        var cells = ['brand', 'desc', 'cost', 'price'];
         cells.forEach(function(i) {
             dstr = formToCell(elem, i, dstr);
         });
 
+        var supplier = elem.find('.in_supplier:first').val();
+        elem.find('.td_supplier:first').html(vendorObj[supplier]);
+        dstr += '&supplier='+vendorObj[supplier];
+        
         var dept = elem.find('.in_dept:first').val();
         elem.find('.td_dept:first').html(deptObj[dept]);
 
