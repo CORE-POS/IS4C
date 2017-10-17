@@ -48,6 +48,7 @@ class B2BInvoicesModel extends BasicModel
         'internalNotes' => array('type'=>'TEXT'),
         'lastModifiedBy' => array('type'=>'INT'),
         'uuid' => array('type'=>'VARCHAR(32)'),
+        'emailSubject' => array('type'=>'VARCHAR(255)'),
     );
 
     public function doc()

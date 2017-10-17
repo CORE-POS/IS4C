@@ -144,8 +144,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 ({$tParam['columnString']}) VALUES ({$tParam['valueString']})");
 
         $invP = $sql->prepare("INSERT INTO B2BInvoices 
-            (cardNo, createdDate, createdTransNum, amount, description, isPaid, coding, createdBy, lastModifiedBy, customerNotes, uuid)
-            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)");
+            (cardNo, createdDate, createdTransNum, amount, description, isPaid, coding, createdBy, lastModifiedBy, customerNotes, uuid, emailSubject)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, 'Garbanzo Gazette')");
         $invCoding = trim(FormLib::get('coding'));
         $invIssue = trim(FormLib::get('issueName'));
         $custNotes = trim(FormLib::get('customerNotes'));
