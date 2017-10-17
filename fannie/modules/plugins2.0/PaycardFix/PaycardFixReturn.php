@@ -373,14 +373,14 @@ HTML;
         <input type="text" class="form-control" required name="id" />
     </div>
     <div class="form-group">
-        <label>Correction Transaction #</label>
-        <input type="text" class="form-control" name="correctTrans"
-            placeholder="Optional; correction transaction to associate this charge with" />
-    </div>
-    <div class="form-group">
         <label>Return Amount</label>
         <input type="text" class="form-control" name="amount"
             placeholder="Optional; leave blank to refund the entire charge" />
+    </div>
+    <div class="form-group">
+        <label>Correction Transaction #</label>
+        <input type="text" class="form-control" name="correctTrans"
+            placeholder="Optional; correction transaction to associate this charge with" />
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-default btn-core">Continue</button>
