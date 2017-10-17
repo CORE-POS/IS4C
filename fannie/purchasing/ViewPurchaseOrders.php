@@ -460,6 +460,38 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return false;
     }
 
+    /**
+     * Add items to inventory if they're not currently perpetual
+     * @param $orderID [int] purchase order ID
+     * @param $uid [int] user ID
+     * @param $data [array] UPC => inital quantity
+     */
+    private function newToInventory($orderID, $uid, $data)
+    {
+        $order = new PurchaseOrderModel($this->connection);
+        $order->orderID($orderID);
+        $order->load();
+        list($inStr, $args) = $this->connection->safeInClause(array_keys($data));
+        $prodP = $this->connection->prepare("SELECT upc
+            FROM products
+            WHERE upc IN ({$inStr})
+                AND store_id=?");
+        $args[] = $order->storeID();
+        $prodR = $this->connection->execute($prodP, $args);
+        $this->connection->startTransaction();
+        $invP = $this->connection->prepare("SELECT upc FROM InventoryCounts WHERE upc=? AND storeID=?");
+        $insP = $this->connection->prepare("INSERT INTO InventoryCounts (upc, storeID, count, countDate, mostRecent, uid, par)
+            VALUES (?, ?, ?, ?, 1, ?, ?)");
+        while ($prodW = $this->connection->fetchRow($prodR)) {
+            $found = $this->connection->getValue($invP, array($prodW['upc'], $order->storeID()));
+            if ($found === false && isset($data[$prodW['upc']]) && $prodW['upc'] != '0000000000000') {
+                $this->connection->execute($insP, array($prodW['upc'], $order->storeID(),
+                    $data[$prodW['upc']], date('Y-m-d H:i:s'), $uid, $data[$prodW['upc']]));
+            }
+        }
+        $this->connection->commitTransaction();
+    }
+
     protected function post_id_sku_qty_receiveAll_handler()
     {
         $dbc = $this->connection;
@@ -468,6 +500,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $model->orderID($this->id);
         $re_date = FormLib::get('re-date', false);
         $uid = FannieAuth::getUID($this->current_user);
+        $upcs = array();
         $dbc->startTransaction();
         for ($i=0; $i<count($this->sku); $i++) {
             $model->sku($this->sku[$i]);
@@ -478,9 +511,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             if ($model->receivedDate() === null || $re_date) {
                 $model->receivedDate(date('Y-m-d H:i:s'));
             }
+            if (!$model->isSpecialOrder() && $this->qty[$i] > 0) {
+                $upcs[BarcodeLib::padUPC($model->internalUPC())] = $this->qty[$i];
+            }
             $model->save();
         }
         $dbc->commitTransaction();
+
+        $this->newToInventory($this->id, $uid, $upcs);
 
         $prep = $dbc->prepare('
             SELECT o.storeID, i.internalUPC
@@ -923,18 +961,25 @@ HTML;
     {
         $dbc = $this->connection;
         $model = new PurchaseOrderItemsModel($dbc);
+        $uid = FannieAuth::getUID($this->current_user);
+        $upcs = array();
         for ($i=0; $i<count($this->sku); $i++) {
             $model->orderID($this->id);
             $model->sku($this->sku[$i]);
             $model->load();
             $model->receivedQty($this->qty[$i]);
             $model->receivedTotalCost($this->cost[$i]);
-            $model->receivedBy(FannieAuth::getUID($this->current_user));
+            $model->receivedBy($uid);
             if ($model->receivedDate() === null) {
                 $model->receivedDate(date('Y-m-d H:i:s'));
             }
+            if (!$model->isSpecialOrder() && $this->qty[$i] > 0) {
+                $upcs[BarcodeLib::padUPC($model->internalUPC())] = $this->qty[$i];
+            }
             $model->save();
         }
+
+        $this->newToInventory($this->id, $uid, $upcs);
 
         return false;
     }
