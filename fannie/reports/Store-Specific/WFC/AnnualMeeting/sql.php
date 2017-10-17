@@ -9,12 +9,11 @@ $fannieDB = FannieDB::get($FANNIE_OP_DB);
 $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
     $fannieDB->concat('c.FirstName',"' '",'c.LastName','')." as name,
     m.phone, m.email_1 as email,
-    SUM(CASE WHEN charflag IN ('M','V','N','W') THEN quantity ELSE 0 END)-1 as guest_count,
+    SUM(CASE WHEN charflag IN ('S','C','T') THEN quantity ELSE 0 END)-1 as guest_count,
     SUM(CASE WHEN charflag IN ('K') THEN quantity ELSE 0 END) as child_count,
-    SUM(CASE WHEN charflag = 'M' THEN quantity ELSE 0 END) as chicken,
-    SUM(CASE WHEN charflag = 'V' THEN quantity ELSE 0 END) as veg,
-    SUM(CASE WHEN charflag = 'N' THEN quantity ELSE 0 END) as mgf,
-    SUM(CASE WHEN charflag = 'W' THEN quantity ELSE 0 END) as vgf,
+    SUM(CASE WHEN charflag = 'S' THEN quantity ELSE 0 END) as salmon,
+    SUM(CASE WHEN charflag = 'C' THEN quantity ELSE 0 END) as chicken,
+    SUM(CASE WHEN charflag = 'T' THEN quantity ELSE 0 END) as tempeh,
     'pos' AS source
     FROM ".$FANNIE_TRANS_DB.$fannieDB->sep()."dlog AS d
     LEFT JOIN custdata AS c ON c.CardNo=d.card_no AND c.personNum=1
@@ -39,10 +38,9 @@ include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
 // online registrations
 $q = "SELECT tdate,r.card_no,name,email,
     phone,guest_count,child_count,
-    SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as chicken,
-    SUM(CASE WHEN m.subtype=2 THEN 1 ELSE 0 END) as veg,
-    SUM(CASE WHEN m.subtype=3 THEN 1 ELSE 0 END) as mgf,
-    SUM(CASE WHEN m.subtype=4 THEN 1 ELSE 0 END) as vgf,
+    SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as salmon,
+    SUM(CASE WHEN m.subtype=2 THEN 1 ELSE 0 END) as chicken,
+    SUM(CASE WHEN m.subtype=3 THEN 1 ELSE 0 END) as tempeh,
     'website' AS source
     FROM registrations AS r LEFT JOIN
     regMeals AS m ON r.card_no=m.card_no
@@ -64,24 +62,19 @@ foreach ($records as $w) {
         $dbc->escape($w['email']), $dbc->escape($w['phone']),
         $w['guest_count'], $w['child_count']);
     $adult = 'OWNER';
-    for ($i=0; $i<$w['chicken']; $i++) {
+    for ($i=0; $i<$w['salmon']; $i++) {
         printf("INSERT INTO regMeals (card_no, type, subtype) VALUES (%d, '%s', %d);\n",
             $w['card_no'], $adult, 1);
         $adult = 'GUEST';
     }
-    for ($i=0; $i<$w['veg']; $i++) {
+    for ($i=0; $i<$w['chicken']; $i++) {
         printf("INSERT INTO regMeals (card_no, type, subtype) VALUES (%d, '%s', %d);\n",
             $w['card_no'], $adult, 2);
         $adult = 'GUEST';
     }
-    for ($i=0; $i<$w['mgf']; $i++) {
+    for ($i=0; $i<$w['tempeh']; $i++) {
         printf("INSERT INTO regMeals (card_no, type, subtype) VALUES (%d, '%s', %d);\n",
             $w['card_no'], $adult, 3);
-        $adult = 'GUEST';
-    }
-    for ($i=0; $i<$w['vgf']; $i++) {
-        printf("INSERT INTO regMeals (card_no, type, subtype) VALUES (%d, '%s', %d);\n",
-            $w['card_no'], $adult, 4);
         $adult = 'GUEST';
     }
     for ($i=0; $i<$w['child_count']; $i++) {
