@@ -44,6 +44,17 @@ class MSoapClient
         return $this->send($xml);
     }
 
+    public function oneReturnByRecordNo($amt, $token, $refno, $invoice)
+    {
+        $xml = $this->stubTransaction($invoice);
+        $xml['Transaction']['TranCode'] = 'ReturnByRecordNo';
+        $xml['Transaction']['RecordNo'] = $token;
+        $xml['Transaction']['RefNo'] = $refno;
+        $xml['Transaction']['Amount']['Purchase'] = sprintf('%.2f', $amt);
+
+        return $this->send($xml);
+    }
+
     private function arrToXml($arr, $xml)
     {
         foreach ($arr as $k => $v) {
