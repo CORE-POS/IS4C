@@ -246,6 +246,7 @@ class PaycardFixReturn extends FannieRESTfulPage
             $dtrans['unitPrice'] = -1*$amount;
             $dtrans['regPrice'] = -1*$amount;
             $dtrans['card_no'] = 11;
+            $dtrans['store_id'] = $storeID;
             $prep = DTrans::parameterize($dtrans, 'datetime', $this->connection->now());
             $insP = $this->connection->prepare("INSERT INTO {$dtransactions} ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $insR = $this->connection->execute($insP, $prep['arguments']);
@@ -263,6 +264,7 @@ class PaycardFixReturn extends FannieRESTfulPage
             $dtrans['regPrice'] = 0;
             $dtrans['charflag'] = 'PT';
             $dtrans['numflag'] = $pcID;
+            $dtrans['store_id'] = $storeID;
             $prep = DTrans::parameterize($dtrans, 'datetime', $this->connection->now());
             $insR = $this->connection->execute($insP, $prep['arguments']);
             $this->markUsed($table, $pDate, $invoice);
