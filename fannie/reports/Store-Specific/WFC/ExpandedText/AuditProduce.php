@@ -28,6 +28,8 @@ class AuditProduce extends FannieReportPage
 {
     protected $required_fields = array();
     protected $report_headers = array('UPC', 'Brand', 'Description', 'Text', 'Origin', 'Last Sold');
+    protected $sort_direction = 1;
+    protected $sort_column = 5;
 
     function fetch_report_data()
     {
