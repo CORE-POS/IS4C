@@ -98,6 +98,7 @@ class EOMReport extends FannieReportPage
         $reports[] = $this->dekey_array($supers);
 
         $query2 = "SELECT 
+            d.trans_subtype,
             t.TenderName,
             -sum(d.total) as total, SUM(d.quantity) AS qty
         FROM {$warehouse}sumTendersByDay AS d
@@ -106,13 +107,15 @@ class EOMReport extends FannieReportPage
             AND " . DTrans::isStoreID($store, 'd') . "
         AND d.trans_subtype <> 'MA'
         AND d.trans_subtype <> 'IC'
-        GROUP BY t.TenderName";
+        GROUP BY d.trans_subtype, t.TenderName";
         $prep = $this->connection->prepare($query2);
         $res = $this->connection->execute($prep, array($idStart, $idEnd, $store));
         $tenders = array();
         while ($row = $this->connection->fetchRow($res)) {
+            $link = sprintf('<a href="EOMLayers/EOMTenderLayer.php?month=%d&year=%d&store=%d&tender=%s">%s</a>',
+                $month, $year, $store, $row['trans_subtype'], $row['TenderName']);
             $tenders[] = array(
-                $row['TenderName'],
+                $link,
                 sprintf('%.2f', $row['total']),
                 $row['qty'],
             );
@@ -139,7 +142,7 @@ class EOMReport extends FannieReportPage
         $res = $this->connection->execute($prep, array($start . ' 00:00:00', $end . ' 23:59:59', $store));
         while ($row = $this->connection->fetchRow($res)) {
             $tenders[] = array(
-                $row['TenderName'],
+                'Store coupon: ' . $row['TenderName'],
                 sprintf('%.2f', $row['total']),
                 $row['qty'],
             );
