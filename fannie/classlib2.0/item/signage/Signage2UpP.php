@@ -77,11 +77,20 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
         }
-        if ($item['originShortName'] != '' || isset($item['nonSalePrice'])) {
+        if ($item['nonSalePrice'] > $item['normal_price']) {
             $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
-            $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+            $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
             $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
+        }
+        if ($item['originShortName'] != '') {
+            $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $lower = trim(strtolower($item['originShortName']));
+            if (substr($lower, 0, 10) !== 'product of') {
+                $item['originShortName'] = 'Product of ' . trim($item['originShortName']);
+            }
+            $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'C');
         }
 
         return $pdf;
