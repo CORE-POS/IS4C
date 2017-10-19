@@ -852,12 +852,9 @@ HTML;
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes AS l ON b.upc = {$joinColumn}
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
-                LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
-                LEFT JOIN FloorSections AS s ON y.section=s.floorSectionID AND s.storeID=?
                 LEFT JOIN FloorSectionsListView as f on b.upc=f.upc and f.storeID=?
             WHERE b.batchID = ? 
             $orderby";
-        $fetchArgs[] = $store_location;
         $fetchArgs[] = $store_location;
         $fetchArgs[] = $id;
         if ($dbc->tableExists('FloorSectionsListView')) {
