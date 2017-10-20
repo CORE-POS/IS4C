@@ -182,18 +182,19 @@ class EOMReport extends FannieReportPage
         }
         $reports[] = $discounts;
 
-        $query21 = "SELECT m.memDesc, COUNT(*) as qty
+        $query21 = "SELECT m.memDesc, d.memType, COUNT(*) as qty
             FROM {$warehouse}transactionSummary AS d 
                 left join memtype m on d.memType = m.memtype
             WHERE date_id BETWEEN ? AND ? AND (d.memType <> 4)
                 AND " . DTrans::isStoreID($store, 'd') . "
-            GROUP BY m.memdesc";
+            GROUP BY m.memdesc, d.memType";
         $prep = $this->connection->prepare($query21);
         $res = $this->connection->execute($prep, array($idStart, $idEnd, $store));
         $transactions = array();
         while ($row = $this->connection->fetchRow($res)) {
             $transactions[] = array(
-                $row['memDesc'],
+                sprintf('<a href="EOMLayers/EOMCountLayer.php?month=%d&year=%d&store=%d&type=%d">%s</a>',
+                    $month, $year, $store, $row['memType'], $row['memDesc']),
                 $row['qty'],
             );
         }
