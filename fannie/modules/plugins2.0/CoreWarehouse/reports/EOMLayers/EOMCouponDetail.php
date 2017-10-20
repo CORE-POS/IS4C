@@ -10,44 +10,43 @@ class EOMCouponDetail extends FannieReportPage
     protected $header = 'EOM Report';
     protected $title = 'EOM Report';
     public $discoverable = false;
-    protected $required_fields = array('date', 'store', 'type');
-    protected $report_headers = array('Date', 'Dept#', 'Super#', 'Sales Account', 'Department', 'Description', 'Amount', 'Receipt');
+    protected $required_fields = array('date', 'store', 'coupon');
+    protected $report_headers = array('Date', 'Description', 'Amount', 'Receipt');
 
     public function fetch_report_data()
     {
         try {
             $date = $this->form->date;
             $store = $this->form->store;
-            $type = $this->form->type;
+            $coupon = $this->form->coupon;
         } catch (Exception $ex) {
             return array();
         }
 
-        $date = date('Y-m-d', strtotime($date));
         $dlog = DTransactionsModel::selectDlog($date);
 
-        $query = "SELECT tdate,
-                m.memDesc,
-                d.card_no,
-                total AS total,
-                trans_num
-            FROM {$dlog} AS d
-                INNER JOIN memtype m ON d.memType = m.memtype
-            WHERE tdate BETWEEN ? AND ?
-                AND " . DTrans::isStoreID($store, 'd') . "
-                AND d.upc = 'DISCOUNT'
-                AND d.total <> 0
-                AND d.memType=?
-            ORDER BY tdate";
-
-        $prep = $this->connection->prepare($query);
-        $res = $this->connection->execute($prep, array($date . ' 00:00:00', $date . ' 23:59:59', $store, $type));
+        $query2 = "SELECT tdate,
+            d.description,
+            -d.total as total, trans_num
+        FROM {$dlog} AS d
+        WHERE tdate BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 'd'); 
+        $args = array($date . ' 00:00:00', $date . ' 23:59:59', $store);
+        if ($coupon) {
+            $upc = '00499999' . str_pad($coupon, 5, '0', STR_PAD_LEFT);
+            $query2 .= ' AND d.upc=?';
+            $args[] = $upc;
+        } else {
+            $query2 .= " AND d.upc='0' AND d.trans_type='T' AND d.trans_subtype='IC'";
+        }
+        $query2 .= "ORDER BY tdate";
+        $prep = $this->connection->prepare($query2);
+        $res = $this->connection->execute($prep, $args);
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $data[] = array(
                 $row['tdate'],
-                $row['memDesc'],
-                $row['card_no'],
+                $row['description'],
                 sprintf('%.2f', $row['total']),
                 $row['trans_num'],
             );
