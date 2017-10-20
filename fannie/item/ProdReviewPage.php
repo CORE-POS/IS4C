@@ -56,36 +56,128 @@ class ProdReviewPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $args = array();
         $prep = $dbc->prepare("
-            SELECT vendorID, vendorName, p.upc, s.rate, r.reviewed
-            FROM vendors AS v
-                LEFT JOIN products AS p ON v.vendorID=p.default_vendor_id
+            SELECT p.upc, p.default_vendor_id, r.reviewed
+            FROM products AS p
                 LEFT JOIN prodReview AS r ON p.upc=r.upc
-                LEFT JOIN vendorReviewSchedule AS s ON v.vendorID=s.vid
-            WHERE p.inUse = 1
-                AND r.reviewed is not NULL
             GROUP BY p.upc
-            limit 5;
         ");
         $res = $dbc->execute($prep);
-        $vendors = array();
+        $data = array();
         while ($row = $dbc->fetchRow($res)) {
-            $vid = $row['vendorID'];
-            $vendors[$vid]['name'] = $row['vendorName']; 
-            $curDate = date('Y-m-d');
-            /*
-                Maybe just grab once the rate for each vendor, 
-                figure out how many months to look back, then 
-                go through each vendor and add up the good / total.
-            */
+            $data[$row['default_vendor_id']][$row['upc']] = $row['reviewed'];
         }
 
-        foreach($vendors as $vid => $v) {
-            echo $vid . '<br/>';
+        $vprep = $dbc->prepare("
+            SELECT v.vendorID, v.vendorName, s.rate, s.priority
+            FROM vendors AS v
+                LEFT JOIN vendorItems AS p ON v.vendorID=p.vendorID
+                LEFT JOIN prodReview AS r ON r.upc=p.upc
+                LEFT JOIN vendorReviewSchedule AS s ON v.vendorID=s.vid
+            GROUP BY p.vendorID
+        ");
+        $vres = $dbc->execute($vprep);
+        while ($row = $dbc->fetchRow($vres)) {
+            $rate = 12 / $row['rate'];
+            $y = date('Y');
+            $m = date('m');
+            $m -= $rate;
+            if ($m <= 0) {
+                $m = 12 + $m;
+                $y--;
+            }
+            $d = date('d');
+            $data[$row['vendorID']]['rate'] = $y."-".$m."-".$d;
+            $data[$row['vendorID']]['name'] = $row['vendorName'];
+            $data[$row['vendorID']]['vid'] = $row['vendorID'];
+            $data[$row['vendorID']]['star'] = $row['priority'];
         }
+
+        $vendorinfo = '';
+        foreach ($data as $vid => $row) {
+            if (empty($data[$vid]['good'])) {
+                $data[$vid]['good'] = 0;
+            }
+            if (empty($data[$vid]['total'])) {
+                $data[$vid]['total'] = 0;
+            }
+        }
+        foreach ($data as $vid => $row) {
+            foreach ($row as $upc => $review) {
+                if (is_numeric($upc)) {
+                    $data[$vid]['total']++;
+                    if (strtotime($review) ) {
+                        $reviewUTS = strtotime($review);
+                        $rateUTS = strtotime($data[$vid]['rate']);
+                        if ($reviewUTS > $rateUTS) {
+                            $data[$vid]['good']++;
+                        }
+                    }
+                }
+            }
+        }
+        foreach ($data as $vid => $row) {
+            $data[$vid]['priority'] = $row['good'] / $row['total'];
+        }
+        usort($data, function($a, $b) {
+            if ($a["priority"] == $b["priority"]) return 0;
+            return $a["priority"] > $b["priority"] ? 1 : -1;
+        });
+        /* move star'ed vendors to top of list */
+        usort($data, function($a, $b) {
+            if ($a["star"] == $b["star"]) return 0;
+            return $a["star"] > $b["star"] ? -1 : 1;
+        });
+
+        echo '<span class="glyphicon glyphicon-star"></span>';
+        echo '<span class="glyphicon glyphicon-star-empty" style="opacity: 0.5"></span>';
+
+        $table = "<table class='table table-condensed table-bordered table-striped small'>
+            <thead><th>VID</th><th>Vendor</th><th>Priority</th><th>ProdCount</th><th>Score</th></thead><tbody>";
+        $vExclude = array(NULL,-1,1,2,242,70);
+        $i = 0;
+        foreach ($data as $k => $v) {
+            if (!in_array($v["vid"],$vExclude) && $v["priority"] != 0) {
+                $i++;
+                $n = $v["priority"];
+                $r = (255 * $n);
+                $g = (255 - (100 * $n));
+                if ($g > 190) {
+                    $color = "white";
+                } else {
+                    $color = "black";
+                }
+                $b = 0;
+                $grade = "<div style='font-size: 10px; height: 15px; width: 15px; color: {$color}; float: left; text-align: center; background-color: rgba({$g},{$r},{$b},1);); border-radius: 100%;'>{$i}</div>";
+                $score = sprintf("%0.3f",$v['priority']);
+                $table .= "<tr><td>{$v['vid']}</td>";
+                $table .= "<td>{$v['name']}</td>";
+                $table .= "<td>{$grade}</td>";
+                $table .= "<td>{$v['total']}</td>";
+                $table .= "<td>{$score}</td>";
+                //echo $v["name"] . "[{$v['vid']}]"  . " ";
+                //echo "<span style=\"color: rgba({$g},{$r},{$b},1);\">{$v['priority']}</span><br/>";
+            }
+        }
+        foreach ($data as $k => $v) {
+            if (!in_array($v["vid"],$vExclude) && $v["priority"] == 0) {
+                $grade = "<div style='height: 15px; width: 15px; float: left; text-align: center; color: lightgrey; background-color: rgba(155,155,155,1); border-radius: 100%;'></div>";
+                $score = sprintf("%0.3f",$v['priority']);
+                $table .= "<tr><td>{$v['vid']}</td>";
+                $table .= "<td>{$v['name']}</td>";
+                $table .= "<td>{$grade}</td>";
+                $table .= "<td>{$v['total']}</td>";
+                $table .= "<td>{$score}</td>";
+                //echo $v["name"] . "[{$v['vid']}]"  . " ";
+                //echo "<span style=\"color: rgba(155,155,155,1);\">{$v['priority']}</span><br/>";
+            }
+        }
+        $table .= "</tbody></table>";
+
+
         return <<<HTML
-hi!
+This is the vendor review page
+{$table}
 HTML;
     }
 
@@ -247,7 +339,7 @@ HTML;
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $tableA .= "<tr>";
-                $tableA .= "<td class='bid'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
+                $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
                 $batchName = substr($row['batchName'],0,25);
                 $tableA .= "<td>{$batchName}</td>";
                 if ($row['vid'] == 0) {
@@ -635,7 +727,7 @@ function printAll()
     var bids = [];
     $c = confirm("Print All Batches?");
     if ($c == true) {
-        $('.bid').each(function(){
+        $('.biduf').each(function(){
             var bid = $(this).closest('tr').find('.bid').text();
             bids.push(bid);
         });
@@ -730,6 +822,13 @@ function fadeAlerts()
     public function css_content()
     {
         return <<<HTML
+.glyphicon-star {
+    color: orange;
+}
+.glyphicon-star-empty {
+    color: orange;
+    opacity: 0.5;
+}
 textarea {
     height: 25px;
 }
@@ -779,6 +878,7 @@ HTML;
     public function helpContent()
     {
         return <<<HTML
+        <h4>Product Review</h4>
         <p>Mark a product as reviewed once the following
             information has been verified as current:
             <ul>
@@ -786,6 +886,22 @@ HTML;
                 <li>Sku</li>
                 <li>Default Vendor</li>
             </ul>
+        </p>
+        <h4>Vendor Review Schedule</h4>
+        <p>Lists active vendors (excluding vendors 
+            updated every month) in order - prioritizing 
+            vendors with past-due review dates. 
+        </p>
+        <h4>Batch Review Log</h4>
+        <p>Is a record of price change batches. Batches are
+            uploaded to this page manually by auditor. 
+            <ul>
+                <li><b>Print</b> mark one batch as printed / open Signs From Search
+                    to print tags/signs.</li>
+                <li><b>Print All</b> mark all batches currently in the "Un-Forced Batches" 
+                    table as printed / open Signs From Search to print tags/signs.</li>
+                <li><b>Force</b> force a batch in POS and mark it as forced.</li>
+            </ul>     
         </p>
 HTML;
     }
