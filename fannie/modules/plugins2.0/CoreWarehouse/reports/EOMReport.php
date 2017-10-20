@@ -44,6 +44,7 @@ class EOMReport extends FannieReportPage
 
         $query1="SELECT t.department,
             s.superID,
+            s.super_name,
             d.salesCode,d.dept_name,
             SUM(t.total) AS ttl,
             t.store_id
@@ -54,6 +55,7 @@ class EOMReport extends FannieReportPage
             AND " . DTrans::isStoreID($store, 't') . "
             AND t.department <> 0
         GROUP BY s.superID,
+            s.super_name,
             t.department,
             d.dept_name,
             d.salesCode,
@@ -67,12 +69,14 @@ class EOMReport extends FannieReportPage
         $misc = array();
         while ($row = $this->connection->fetchRow($res)) {
             $code = StandardAccounting::extend($row['salesCode'], $row['store_id']);
+            $dLink = sprintf('<a href="EOMLayers/EOMDeptLayer.php?month=%d&year=%d&store=%d&dept=%d">%s</a>',
+                $month, $year, $store, $row['department'], $row['dept_name']);
             if ($row['superID'] == 0) {
                 $misc[] = array(
                     $row['department'],
                     $row['superID'],
                     $code,
-                    $row['dept_name'],
+                    $dLink,
                     sprintf('%.2f', $row['ttl']),
                 );
                 continue;
@@ -81,15 +85,19 @@ class EOMReport extends FannieReportPage
                 $row['department'],
                 $row['superID'],
                 $code,
-                $row['dept_name'],
+                $dLink,
                 sprintf('%.2f', $row['ttl']),
             );
             if (!isset($supers[$row['superID']])) {
-                $supers[$row['superID']] = array($row['superID'], 0);
+                $sLink = sprintf('<a href="EOMLayers/EOMSuperLayer.php?month=%d&year=%d&store=%d&super=%d">%s</a>',
+                    $month, $year, $store, $row['superID'], $row['super_name']);
+                $supers[$row['superID']] = array($row['superID'], $sLink, 0);
             }
-            $supers[$row['superID']][1] += $row['ttl'];
+            $supers[$row['superID']][2] += $row['ttl'];
             if (!isset($pcodes[$code])) {
-                $pcodes[$code] = array($code, $row['superID'], 0);
+                $link = sprintf('<a href="EOMLayers/EOMPCodeLayer.php?month=%d&year=%d&store=%d&pcode=%s">%s</a>',
+                    $month, $year, $store, $row['salesCode'], $code);
+                $pcodes[$code] = array($link, $row['superID'], 0);
             }
             $pcodes[$code][2] += $row['ttl'];
         }
@@ -128,6 +136,7 @@ class EOMReport extends FannieReportPage
                     ELSE 'Generic InStore Coupon'
                 END as TenderName,
                 -sum(d.total) as total, 
+                h.coupID,
                 COUNT(d.total) AS qty
             FROM $dlog AS d
                 LEFT JOIN houseCoupons AS h ON d.upc=concat('00499999', lpad(convert(h.coupID, char), 5, '0'))
@@ -137,12 +146,14 @@ class EOMReport extends FannieReportPage
                 AND d.trans_subtype = 'IC'
                 AND (d.upc = '0' OR d.upc LIKE '00499999%')
                 and d.total <> 0
-            GROUP BY TenderName";
+            GROUP BY TenderName, h.coupID";
         $prep = $this->connection->prepare($queryStoreCoupons);
         $res = $this->connection->execute($prep, array($start . ' 00:00:00', $end . ' 23:59:59', $store));
         while ($row = $this->connection->fetchRow($res)) {
+            $link = sprintf('<a href="EOMLayers/EOMCouponLayer.php?month=%d&year=%d&store=%d&coupon=%d">%s</a>',
+                $month, $year, $store, $row['coupID'], 'Store coupon: ' . $row['TenderName']);
             $tenders[] = array(
-                'Store coupon: ' . $row['TenderName'],
+                $link,
                 sprintf('%.2f', $row['total']),
                 $row['qty'],
             );
@@ -152,19 +163,20 @@ class EOMReport extends FannieReportPage
         $reports[] = $this->dekey_array($pcodes);
         $reports[] = $this->dekey_array($misc);
 
-        $query8 = "SELECT     m.memDesc, SUM(d.total) AS Discount 
-            FROM {$warehouse}sumDiscountsByDay d INNER JOIN
-              memtype m ON d.memType = m.memtype
+        $query8 = "SELECT     d.memType, m.memDesc, SUM(d.total) AS Discount 
+            FROM {$warehouse}sumDiscountsByDay d 
+                INNER JOIN memtype m ON d.memType = m.memtype
         WHERE d.date_id BETWEEN ? AND ?
         AND " . DTrans::isStoreID($store, 'd') . "
-        GROUP BY d.memType
+        GROUP BY d.memType, m.memDesc
         ORDER BY d.memType";
         $prep = $this->connection->prepare($query8);
         $res = $this->connection->execute($prep, array($idStart, $idEnd, $store));
         $discounts = array();
         while ($row = $this->connection->fetchRow($res)) {
             $discounts[] = array(
-                $row['memDesc'],
+                sprintf('<a href="EOMLayers/EOMDiscountLayer.php?month=%d&year=%d&store=%d&type=%d">%s</a>',
+                    $month, $year, $store, $row['memType'], $row['memDesc']),
                 sprintf('%.2f', $row['Discount']),
             );
         }
@@ -281,9 +293,9 @@ class EOMReport extends FannieReportPage
                 $sum = array_reduce($data, function($c, $i) { return $c + $i[4]; });
                 return array('Total', '', '', '', $sum);
             case 2:
-                $this->report_headers[0] = array('Super#', 'Sales');
-                $sum = array_reduce($data, function($c, $i) { return $c + $i[1]; });
-                return array('Total', $sum);
+                $this->report_headers[0] = array('Super#', 'Super', 'Sales');
+                $sum = array_reduce($data, function($c, $i) { return $c + $i[2]; });
+                return array('Total', '', $sum);
             case 3:
                 $this->report_headers[0] = array('Tender', 'Amount', 'Count');
                 $sum = array_reduce($data, function($c, $i) { return $c + $i[1]; });
