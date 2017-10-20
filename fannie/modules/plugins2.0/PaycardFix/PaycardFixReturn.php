@@ -365,6 +365,12 @@ HTML;
     protected function get_view()
     {
         return <<<HTML
+<p class="well">
+This will try to run a refund transaction via Mercury.
+If you've already issued a refund to the card (e.g., by calling the processor)
+use <a href="PaycardFixGeneric.php">this tool</a> instead to create a corresponding
+POS transaction.
+</p>
 <form method="get">
     <div class="form-group">
         <label>Card Transaction Date</label>
