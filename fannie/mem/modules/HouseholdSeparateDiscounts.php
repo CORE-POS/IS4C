@@ -130,21 +130,21 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                     'lowIncomeBenefits' => in_array($pn, $ssi) ? 1 : 0,
                     'chargeAllowed' => $primary['chargeAllowed'],
                     'checksAllowed' => in_array($pn, $checks) ? 1 : 0,
+                    'customerAccountID' => $primary['customerAccountID'],
+                    'phone' => '',
+                    'altPhone' => '',
+                    'email' => '',
                 );
                 $pn++;
             } else { // update or remove existing name
                 for ($j=0; $j<count($json['customers']); $j++) {
                     if ($json['customers'][$j]['customerID'] == $ids[$i]) {
-                        if ($fns[$i] == '' && $lns[$i] == '') {
-                            unset($json['customers'][$j]);
-                        } else {
-                            $json['customers'][$j]['firstName'] = $fns[$i];
-                            $json['customers'][$j]['lastName'] = $lns[$i];
-                            $json['customers'][$j]['accountHolder'] = 0;
-                            $json['customers'][$j]['discount'] = $discs[$i];
-                            $json['customers'][$j]['lowIncomeBenefits'] = in_array($pn, $ssi) ? 1 : 0;
-                            $json['customers'][$j]['checksAllowed'] = in_array($pn, $checks) ? 1 : 0;
-                        }
+                        $json['customers'][$j]['firstName'] = $fns[$i];
+                        $json['customers'][$j]['lastName'] = $lns[$i];
+                        $json['customers'][$j]['accountHolder'] = 0;
+                        $json['customers'][$j]['discount'] = $discs[$i];
+                        $json['customers'][$j]['lowIncomeBenefits'] = in_array($pn, $ssi) ? 1 : 0;
+                        $json['customers'][$j]['checksAllowed'] = in_array($pn, $checks) ? 1 : 0;
                     }
                 }
             }

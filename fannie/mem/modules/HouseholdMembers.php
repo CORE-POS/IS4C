@@ -98,17 +98,17 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
                     'lowIncomeBenefits' => $primary['lowIncomeBenefits'],
                     'chargeAllowed' => $primary['chargeAllowed'],
                     'checksAllowed' => $primary['checksAllowed'],
+                    'customerAccountID' => $primary['customerAccountID'],
+                    'phone' => '',
+                    'altPhone' => '',
+                    'email' => '',
                 );
             } else { // update or remove existing name
                 for ($j=0; $j<count($json['customers']); $j++) {
                     if ($json['customers'][$j]['customerID'] == $ids[$i]) {
-                        if ($fns[$i] == '' && $lns[$i] == '') {
-                            unset($json['customers'][$j]);
-                        } else {
-                            $json['customers'][$j]['firstName'] = $fns[$i];
-                            $json['customers'][$j]['lastName'] = $lns[$i];
-                            $json['customers'][$j]['accountHolder'] = 0;
-                        }
+                        $json['customers'][$j]['firstName'] = $fns[$i];
+                        $json['customers'][$j]['lastName'] = $lns[$i];
+                        $json['customers'][$j]['accountHolder'] = 0;
                     }
                 }
             }

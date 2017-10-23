@@ -290,7 +290,8 @@ class MemberREST
         }
         foreach ($customers->find() as $c) {
             for ($i=0; $i<count($ret['customers']); $i++) {
-                if ($ret['customers'][$i]['firstName'] == $c->firstName() && $ret['customers'][$i]['lastName'] == $c->lastName()) {
+                if ($ret['customers'][$i]['firstName'] == $c->firstName() && $ret['customers'][$i]['lastName'] == $c->lastName()
+                    && (!isset($ret['customers'][$i]['customerID']) || $ret['customers'][$i]['customerID'] == 0)) {
                     $ret['customers'][$i]['customerID'] = $c->customerID();
                     $ret['customers'][$i]['customerAccountID'] = $ret['customerAccountID'];
                     break;
@@ -570,6 +571,7 @@ class MemberREST
 
         if (isset($json['customers']) && is_array($json['customers'])) {
             $columns = $customers->getColumns();
+            $validIDs = array();
             foreach ($json['customers'] as $c_json) {
                 $customers->reset();
                 $customers->cardNo($id); 
@@ -578,21 +580,28 @@ class MemberREST
                     if ($col_name == 'cardNo') continue;
                     if ($col_name == 'modified') continue;
 
-                    $deletable += self::deletableCustomer($col_name, $c_json);
-
                     if (isset($c_json[$col_name])) {
                         $customers->$col_name($c_json[$col_name]);
                     }
                 }
-                if ($deletable == 3) {
-                    // submitted an ID and blank name fields
-                    $customers->delete();
-                } elseif ($deletable == 2 && $customers->customerID() == 0) {
-                    // skip creating member
-                } elseif (!$customers->save()) {
-                    $ret['errors']++;
+                if ($customers->firstName() != '' || $customers->lastName() != '') {
+                    if (isset($c_json['customerID']) && $c_json['customerID']) {
+                        $validIDs[] = $c_json['customerID'];
+                        $ret['errors'] += $customers->save() ? 0 : 1;
+                    } else {
+                        $newID = $customers->save();
+                        if ($newID) {
+                            $validIDs[] = $newID;
+                        } else {
+                            $ret['errors']++;
+                        }
+                    }
                 }
             }
+            list($inStr, $args) = $dbc->safeInClause($validIDs);
+            $args[] = $id;
+            $cleanP = $dbc->prepare("DELETE FROM Customers WHERE customerID NOT IN ({$inStr}) AND cardNo=?");
+            $dbc->execute($cleanP, $args);
         }
         self::$hook_cache['CustomersModel'] = $customers->getHooks();
 
@@ -605,20 +614,6 @@ class MemberREST
         $ret['account'] = self::get($id);
 
         return $ret;
-    }
-
-    private static function deletableCustomer($col_name, $c_json)
-    {
-        $deletable = 0;
-        if ($col_name == 'customerID' && isset($c_json[$col_name]) && $c_json[$col_name] != 0) {
-            $deletable++;
-        } elseif ($col_name == 'firstName' && isset($c_json[$col_name]) && $c_json[$col_name] == '') {
-            $deletable++;
-        } elseif ($col_name == 'lastName' && isset($c_json[$col_name]) && $c_json[$col_name] == '') {
-            $deletable++;
-        }
-
-        return $deletable;
     }
 
     /**
