@@ -188,7 +188,7 @@ class OrderGenTask extends FannieTask
             $cur = $shrink ? $cur - $shrink : $cur;
             if ($cur < 0) { 
                 $cur = 0;
-                $this->autoZero($dbc, $row['upc'], $row['storeID']);
+                //$this->autoZero($dbc, $row['upc'], $row['storeID']);
             }
             if ($this->multiplier) {
                 $row['par'] *= $this->multiplier;
