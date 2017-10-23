@@ -631,7 +631,7 @@ $(document).ready( function() {
 
 function printAll()
 {
-    var signUrl = "http://oldkey/IS4C/fannie/admin/labels/SignFromSearch.php";
+    var signUrl = "http://key/git/IS4C/fannie/admin/labels/SignFromSearch.php";
     var bids = [];
     $c = confirm("Print All Batches?");
     if ($c == true) {
