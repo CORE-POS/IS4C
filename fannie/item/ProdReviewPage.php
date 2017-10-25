@@ -31,7 +31,7 @@ class ProdReviewPage extends FannieRESTfulPage
     protected $header = 'Vendor Product Info Review';
     protected $title = 'Vendor Product Info Review';
 
-    public $description = '[Vendor Prodct Info Review] keep a record of the
+    public $description = '[Vendor Product Info Review] keep a record of the
         last time product info was verified/updated for individual products.';
 
     function preprocess()
@@ -48,7 +48,116 @@ class ProdReviewPage extends FannieRESTfulPage
         $this->__routes[] = 'get<batchLog><print>';
         $this->__routes[] = 'get<batchLog><printAll>';
         $this->__routes[] = 'get<schedule>';
+        $this->__routes[] = 'get<star>';
+        $this->__routes[] = 'get<schedule><setup>';
+        $this->__routes[] = 'get<schedule><setup><save>';
         return parent::preprocess();
+    }
+
+    public function get_schedule_setup_save_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $vid = FormLib::get('vid');
+        $rate = FormLib::get('rate');
+
+        if ($rate) {
+            $args = array($rate,$vid);
+            $prep = $dbc->prepare("UPDATE vendorReviewSchedule SET rate = ?, exclude = 0 WHERE vid = ?");
+        } else {
+            $args = array($vid);
+            $prep = $dbc->prepare("UPDATE vendorReviewSchedule SET rate = 0, exclude = 1 WHERE vid = ?");
+        }
+        $dbc->execute($prep,$args);
+
+        header('location: ProdReviewPage.php?schedule=1&setup=1');
+    }
+
+    public function backBtn()
+    {
+        return <<<HTML
+<button class="btn btn-xs btn-primary backBtn"><span class="glyphicon glyphicon-chevron-left"></span></button>
+HTML;
+    }
+
+    public function get_schedule_setup_view()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $ret = $this->backBtn()."<br/><br/>";
+        $tableA = "<table class=\"table table-striped table-bordered table-condensed\">
+            <thead><th>VID</th><th>Vendor</th><th>Rate</th><th>Excluded</th></thead><tbody>";
+        $prep = $dbc->prepare("SELECT s.vid,s.rate,v.vendorName,s.exclude
+            FROM vendorReviewSchedule AS s
+            LEFT JOIN vendors AS v ON s.vid=v.vendorID WHERE v.inactive = 0
+            ORDER BY exclude DESC, rate DESC, vendorID ASC,vendorName;");
+        $res = $dbc->execute($prep);
+        $tableA .= "<form class=\"form-inline\">";
+        while ($row = $dbc->fetchRow($res)) {
+            $vid = $row['vid'];
+            $rate = $row['rate'];
+            $tableA .= "<tr><td>{$vid}</td>";
+            $tableA .= "<td>{$row['vendorName']}</td>";
+            $tableA .= "<td>
+                <a href=\"#\" onClick=\"setRate({$vid},{$rate});\" id=\"{$vid}vid\">{$rate}</a>
+                </td>";
+            $tableA .= "<td>{$row['exclude']}</td></tr>";
+        }
+        $tableA .= "</tbody></table></form>";
+
+        $modRate = "
+            <div class='modal' id='rateModal'>
+                <div class='modal-dialog vertical-alignment-helper'>
+                    <div class='vertical-align-center'>
+                        <div class='modal-content input-content'>
+                                <div style='padding: 25px; padding-bottom: 5px'>
+                                    <b>Rate</b> is the number of months in a year a vendor
+                                        should be reviewed. Set a vendor's rate to 0 to exclude it from
+                                        the Vendor Review Schedule.<br/><br/>
+                                </div>
+                            <div align='center'>
+                                <form class='form-inline'>
+                                    <input type='hidden' name='schedule' value='1'>
+                                    <input type='hidden' name='setup' value='1'>
+                                    <input type='hidden' name='save' value='1'>
+                                    <input type='hidden' name='vid' id='vid' value='NULL'>
+                                    <div class='input-group'>
+                                        <span class='input-group-addon'>Rate (review every x month)</span>
+                                        <input type='number' class='form-control' name='rate' id='rate'
+                                            min='0' max='12' value='NULL'>
+                                    </div>
+                                    <div class='input-group'>
+                                        <button type='submit' class='btn btn-default'><span class='glyphicon glyphicon-floppy-disk'></span></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ";
+
+        $ret .= $tableA;
+        return <<<HTML
+{$modRate}
+{$ret}
+HTML;
+    }
+
+    public function get_star_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $vid = FormLib::get('star');
+        $action = FormLib::get('action');
+        $action = $action ? "1" : "0";
+        $args = array($action,$vid);
+        $prep = $dbc->prepare("UPDATE vendorReviewSchedule SET priority=? WHERE vid=?");
+        $dbc->execute($prep,$args);
+
+        return header('location: ProdReviewPage.php?schedule=1');
     }
 
     public function get_schedule_view()
@@ -56,36 +165,131 @@ class ProdReviewPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $args = array();
         $prep = $dbc->prepare("
-            SELECT vendorID, vendorName, p.upc, s.rate, r.reviewed
-            FROM vendors AS v
-                LEFT JOIN products AS p ON v.vendorID=p.default_vendor_id
+            SELECT p.upc, p.default_vendor_id, r.reviewed
+            FROM products AS p
                 LEFT JOIN prodReview AS r ON p.upc=r.upc
-                LEFT JOIN vendorReviewSchedule AS s ON v.vendorID=s.vid
-            WHERE p.inUse = 1
-                AND r.reviewed is not NULL
             GROUP BY p.upc
-            limit 5;
         ");
         $res = $dbc->execute($prep);
-        $vendors = array();
+        $data = array();
         while ($row = $dbc->fetchRow($res)) {
-            $vid = $row['vendorID'];
-            $vendors[$vid]['name'] = $row['vendorName']; 
-            $curDate = date('Y-m-d');
-            /*
-                Maybe just grab once the rate for each vendor, 
-                figure out how many months to look back, then 
-                go through each vendor and add up the good / total.
-            */
+            $data[$row['default_vendor_id']][$row['upc']] = $row['reviewed'];
         }
 
-        foreach($vendors as $vid => $v) {
-            echo $vid . '<br/>';
+        $vprep = $dbc->prepare("
+            SELECT v.vendorID, v.vendorName, s.rate, s.priority
+            FROM vendors AS v
+                LEFT JOIN vendorItems AS p ON v.vendorID=p.vendorID
+                LEFT JOIN prodReview AS r ON r.upc=p.upc
+                LEFT JOIN vendorReviewSchedule AS s ON v.vendorID=s.vid
+            GROUP BY p.vendorID
+        ");
+        $vres = $dbc->execute($vprep);
+        while ($row = $dbc->fetchRow($vres)) {
+            $rate = 12 / $row['rate'];
+            $y = date('Y');
+            $m = date('m');
+            $m -= $rate;
+            if ($m <= 0) {
+                $m = 12 + $m;
+                $y--;
+            }
+            $d = date('d');
+            $data[$row['vendorID']]['rate'] = $y."-".$m."-".$d;
+            $data[$row['vendorID']]['name'] = $row['vendorName'];
+            $data[$row['vendorID']]['vid'] = $row['vendorID'];
+            $data[$row['vendorID']]['star'] = $row['priority'];
         }
+
+        $vendorinfo = '';
+        foreach ($data as $vid => $row) {
+            if (empty($data[$vid]['good'])) {
+                $data[$vid]['good'] = 0;
+            }
+            if (empty($data[$vid]['total'])) {
+                $data[$vid]['total'] = 0;
+            }
+        }
+        foreach ($data as $vid => $row) {
+            foreach ($row as $upc => $review) {
+                if (is_numeric($upc)) {
+                    $data[$vid]['total']++;
+                    if (strtotime($review) ) {
+                        $reviewUTS = strtotime($review);
+                        $rateUTS = strtotime($data[$vid]['rate']);
+                        if ($reviewUTS > $rateUTS) {
+                            $data[$vid]['good']++;
+                        }
+                    }
+                }
+            }
+        }
+        foreach ($data as $vid => $row) {
+            $data[$vid]['priority'] = $row['good'] / $row['total'];
+            $data[$vid]['score'] = $row['good'] / $row['total'];
+            if ($data[$vid]['priority'] == 0 && $data[$vid]['star'] == 0) {
+                $data[$vid]['priority'] = 1.01;
+            } elseif($data[$vid]['star'] == 1) {
+                $data[$vid]['priority'] = 0;
+            }
+        }
+        usort($data, function($a, $b) {
+            if ($a["priority"] == $b["priority"]) return 0;
+            return $a["priority"] > $b["priority"] ? 1 : -1;
+        });
+        foreach ($data as $vid => $v) {
+            if ($data[$vid]["star"] == 1) {
+                array_unshift($data,$data[$vid]['priority']);
+            }
+        }
+
+        $table = "<table class='table table-condensed table-bordered table-striped small'>
+            <thead><th>VID</th><th>Vendor</th><th>Priority</th><th>ProdCount</th><th>% Reviewed</th></thead><tbody>";
+        $vExclude = array(NULL,-1,1,2,242,70);
+        foreach ($data as $k => $v) {
+            if (!in_array($v["vid"],$vExclude)) {
+                if ($v["priority"] == 1.01) {
+                    $v["score"] = 0;
+                    $r = 155;
+                    $g = 155;
+                    $b = 155;
+                } else {
+                    $n = $v["priority"];
+                    $r = (255 * $n);
+                    $g = (255 - (100 * $n));
+                    $b = 0;
+                }
+                $star = $v["star"] ?
+                    "<span class='glyphicon glyphicon-star'></span>" :
+                    "<span class='glyphicon glyphicon-star-empty'></span>";
+                if ($g > 190) {
+                    $color = "white";
+                } else {
+                    $color = "black";
+                }
+                $grade = "<span style='font-size: 10px; height: 15px; width: 15px;
+                    color: {$color}; float: left; text-align: center;
+                    background-color: rgba({$g},{$r},{$b},1);); border-radius: 100%;'>
+                    </span>
+                    {$star}
+                    ";
+                $score = sprintf("%d%%",$v['score']*100);
+                $vid = $v['vid'];
+                $table .= "<tr><td class='vid'>{$vid}</td>";
+                $table .= "<td>{$v['name']}</td>";
+                $table .= "<td>{$grade}</td>";
+                $table .= "<td>{$v['total']}</td>";
+                $table .= "<td>{$score}</td>";
+            }
+        }
+        $table .= "</tbody></table>";
+
+
         return <<<HTML
-hi!
+{$this->backBtn()} &nbsp;|&nbsp; <a href="ProdReviewPage.php?schedule=1&setup=1">Vendor Setup</a>
+<br/><br/>
+{$table}
 HTML;
     }
 
@@ -247,7 +451,7 @@ HTML;
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $tableA .= "<tr>";
-                $tableA .= "<td class='bid'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
+                $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
                 $batchName = substr($row['batchName'],0,25);
                 $tableA .= "<td>{$batchName}</td>";
                 if ($row['vid'] == 0) {
@@ -293,7 +497,7 @@ HTML;
         <div class="panel-heading">
             <span class="panel-header">Batch Review Log</span>
             <div style="position:relative;"><div style="position: absolute; top:-20px; left: 0px">
-                <button class="btn btn-xs btn-primary backBtn"><span class="glyphicon glyphicon-chevron-left"></span></button>
+                {$this->backBtn()}
             </div></div>
         </div>
         <div class="panel-body">
@@ -309,11 +513,11 @@ HTML;
         </div>
         {$bData}
         <label class="text-warning">Un-Forced Batches</label>
-        <div class="panel panel-default batchTable" style="overflow-x: auto;">
+        <div class="panel panel-default batchTable">
             {$tableA}
         </div>
         <label class="text-info">Forced Batches</label>
-        <div class="panel panel-default batchTable" style="max-height: 600px; overflow-y: auto;">
+        <div class="panel panel-default batchTable">
             {$tableB}
         </div>
     </div>
@@ -384,6 +588,7 @@ HTML;
         $table .= '</tbody></table>';
 
         return <<<HTML
+{$this->backBtn()}<br/><br/>
 <form class="form-inline" method="get">
     {$table}
     <input type="hidden" name="vendor" value="1">
@@ -441,6 +646,7 @@ HTML;
         }
         $table = $this->draw_table($data,$dbc);
         return <<<HTML
+{$this->backBtn()}<br/><br/>
 <form class="form-inline" method="get">
     {$table}
     <input type="hidden" name="upc" value="{$upc}">
@@ -526,6 +732,7 @@ HTML;
         $table = $this->draw_table($data,$dbc);
 
         return <<<HTML
+{$this->backBtn()}<br/><br/>
 <form class="form-inline" method="get">
     {$table}
     {$input}
@@ -627,7 +834,32 @@ $(document).ready( function() {
     });
     editable();
     backBtn();
+    clickStar();
 });
+
+function setRate(vid,rate)
+{
+    //alert(vid);
+    //alert(rate);
+    $('#vid').val(vid);
+    $('#rate').val(rate);
+    $('#rateModal').modal('show');
+
+}
+
+function clickStar()
+{
+    $('.glyphicon-star').click(function() {
+        var vid = $(this).closest('tr').find('.vid').text();
+        var url = "ProdReviewPage.php?star="+vid+"&action=0";
+        window.open(url, '_self');
+    });
+    $('.glyphicon-star-empty').click(function() {
+        var vid = $(this).closest('tr').find('.vid').text();
+        var url = "ProdReviewPage.php?star="+vid+"&action=1";
+        window.open(url, '_self');
+    });
+}
 
 function printAll()
 {
@@ -635,7 +867,7 @@ function printAll()
     var bids = [];
     $c = confirm("Print All Batches?");
     if ($c == true) {
-        $('.bid').each(function(){
+        $('.biduf').each(function(){
             var bid = $(this).closest('tr').find('.bid').text();
             bids.push(bid);
         });
@@ -730,6 +962,40 @@ function fadeAlerts()
     public function css_content()
     {
         return <<<HTML
+.vertical-alignment-helper {
+    display:table;
+    height: 100%;
+    width: 100%;
+    pointer-events:none; /* This makes sure that we can still click outside of the modal to close it */
+}
+.vertical-align-center {
+    /* To center vertically */
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events:none;
+}
+.input-content {
+    /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+    width:inherit;
+    height:inherit;
+    /* To center horizontally */
+    margin: 0 auto;
+    pointer-events: all;
+    width: 600px;
+    height: 150px;
+}
+.glyphicon-star {
+    color: orange;
+    margin-left: 5px;
+}
+.glyphicon-star-empty {
+    color: orange;
+    opacity: 0.5;
+    margin-left: 5px;
+}
+.glyphicon-star, .glyphicon-star-empty {
+    cursor: pointer;
+}
 textarea {
     height: 25px;
 }
@@ -748,7 +1014,7 @@ textarea {
 }
 .btn-wide {
     width: 100%;
-    //margin-top: 4px;
+    margin-top: 3px;
 }
 .batchTable {
     max-width: 750px;
@@ -773,18 +1039,44 @@ div.main {
     margin: 10px;
     border-radius: 2px;
 }
+h4 {
+    font-weight: bold   font-weight: bold;;
+}
 HTML;
     }
 
     public function helpContent()
     {
         return <<<HTML
+        <h4>Product Review</h4>
         <p>Mark a product as reviewed once the following
             information has been verified as current:
             <ul>
                 <li>Cost</li>
                 <li>Sku</li>
                 <li>Default Vendor</li>
+            </ul>
+        </p>
+        <h4>Vendor Review Schedule</h4>
+        <p>Lists active vendors (excluding vendors
+            updated every month) in order of the number
+            of products that have been reviewed within
+            the given timeframe.
+        </p>
+            <ul>
+                <li>Click the <b>star</b> icon to increase the
+                priority of a vendor. Starred vendors will
+                appear at the top of the list</li>
+            </ul>
+        <h4>Batch Review Log</h4>
+        <p>Is a record of price change batches. Batches are
+            uploaded to this page manually by auditor.
+            <ul>
+                <li><b>Print</b> mark one batch as printed / open Signs From Search
+                    to print tags/signs.</li>
+                <li><b>Print All</b> mark all batches currently in the "Un-Forced Batches"
+                    table as printed / open Signs From Search to print tags/signs.</li>
+                <li><b>Force</b> force a batch in POS and mark it as forced.</li>
             </ul>
         </p>
 HTML;
