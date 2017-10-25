@@ -378,7 +378,7 @@ class DTransactionsModel extends BasicModel
          * archive table. Returning dlog/dtransactions instead minimizes
          * the performance impact of this kind of mistake.
          */
-        if ($start_ts === false || $end_ts === false) {
+        if ($start_ts === false || $end_ts === false || $start_ts < 0 || $end_ts < 0) {
             return ($dlog) ? $FANNIE_TRANS_DB.$sep.'dlog' : $FANNIE_TRANS_DB.$sep.'dtransactions';
         }
     
