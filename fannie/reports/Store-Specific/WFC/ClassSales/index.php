@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 include('../../../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
+include(__DIR__ . '/../../../../src/SQLManager.php');
+include(__DIR__ . '/../../../../src/Credentials/OutsideDB.tunneled.php');
 
 $thisMonth = date('n');
 while(($thisMonth-1)%3 != 0) $thisMonth--;

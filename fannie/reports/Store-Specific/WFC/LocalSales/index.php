@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['submit'])){
@@ -133,7 +133,7 @@ else {
 
 $page_title = "Fannie : Local Sales Report";
 $header = "Local Sales Report";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../../../../src/header.html');
 $lastMonday = "";
 $lastSunday = "";
 
@@ -167,6 +167,6 @@ $(document).ready(function(){
 });
 </script>
 <?php
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../../../../src/footer.html');
 }
 

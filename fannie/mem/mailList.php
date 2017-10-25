@@ -28,7 +28,7 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
    header("Content-type: application/vnd.ms-excel; name='excel'");
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $query = $dbc->prepare("SELECT CardNo, 

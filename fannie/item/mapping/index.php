@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 
 if (isset($_REQUEST['ajax'])){
     // required fields

@@ -2,7 +2,7 @@
 
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
@@ -10,7 +10,7 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $page_title = "Fannie : Scale Delete";
 $header = "Scale Delete";
-include($FANNIE_ROOT."src/header.html");
+include(__DIR__ . "/../../src/header.html");
 
 
 if (isset($_GET['plu'])){
@@ -43,5 +43,5 @@ else {
         </script>";
 }
 
-include($FANNIE_ROOT."src/footer.html");
+include(__DIR__ . "/../../src/footer.html");
 

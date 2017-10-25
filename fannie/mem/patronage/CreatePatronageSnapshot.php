@@ -22,7 +22,7 @@
 *********************************************************************************/
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class CreatePatronageSnapshot extends FannieRESTfulPage
@@ -42,9 +42,9 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
 
     protected function get_date1_date2_mtype_stype_handler()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_ROOT, $FANNIE_OP_DB;
+        global $FANNIE_TRANS_DB, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        include($FANNIE_ROOT.'install/db.php');
+        include(__DIR__ . '/../../install/db.php');
 
         $mtype = "(";
         $mArgs = array();

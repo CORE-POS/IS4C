@@ -1,8 +1,8 @@
 <?php
 include('../../../../config.php');
-include_once($FANNIE_ROOT.'src/SQLManager.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
+include_once(__DIR__ . '/../../../../src/SQLManager.php');
+include_once(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../../src/Credentials/OutsideDB.tunneled.php');
 
 class AnnualMeetingDetailPage extends FannieRESTfulPage {
     protected $header = "Annual Meeting Registration";

@@ -124,20 +124,21 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
     private function canSave($FANNIE_ROOT, $FANNIE_URL)
     {
-        if (is_writable($FANNIE_ROOT.'config.php')) {
+        if (is_writable(__DIR__ . '/../config.php')) {
             confset('FANNIE_ROOT',"'$FANNIE_ROOT'");
             confset('FANNIE_URL',"'$FANNIE_URL'");
             echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
             echo "<hr />";
             return true;
         } else {
+            $path = realpath(__DIR__ . '/install/');
             echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
             echo "<div class=\"well\">";
-            echo "config.php ({$FANNIE_ROOT}config.php) is Fannie's main configuration file.";
+            echo "config.php ({$path}config.php) is Fannie's main configuration file.";
             echo "<ul>";
             echo "<li>If this file exists, ensure it is writable by the user running PHP (see above)";
-            echo "<li>If the file does not exist, copy config.dist.php ({$FANNIE_ROOT}config.dist.php) to config.php";
-            echo "<li>If neither file exists, create a new config.php ({$FANNIE_ROOT}config.php) containing:";
+            echo "<li>If the file does not exist, copy config.dist.php ({$path}config.dist.php) to config.php";
+            echo "<li>If neither file exists, create a new config.php ({$path}config.php) containing:";
             echo "</ul>";
             echo "<pre>
 &lt;?php
@@ -150,14 +151,15 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         }
     }
 
-    private function checkComposer($FANNIE_ROOT)
+    private function checkComposer()
     {
         if (!is_dir(dirname(__FILE__) . '/../../vendor')) {
+            $path = realpath(__DIR__ . '/../';
             echo "<div class=\"alert alert-warning\"><b>Warning</b>: dependencies appear to be missing.</div>";
             echo '<div class=\"well\">';
             echo 'Install <a href="https://getcomposer.org/">Composer</a> then run ';
             echo "<pre>";
-            echo '$ cd "' . $FANNIE_ROOT . "\"\n";
+            echo '$ cd "' . $path . "\"\n";
             echo '$ /path/to/composer.phar update';
             echo '</pre>';
             echo '<a href="https://github.com/CORE-POS/IS4C/wiki/Installation#composer">More info about Composer</a>';
@@ -173,9 +175,10 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 }
             }
             if ($missing) {
+                $path = realpath(__DIR__ . '/../../';
                 echo '<div class="well">Install dependencies by running <a href="https://getcomposer.org/">composer</a>';
                 echo "<pre>";
-                echo '$ cd "' . substr($FANNIE_ROOT, 0, strlen($FANNIE_ROOT)-7) . "\"\n";
+                echo '$ cd "' . $path . "\"\n";
                 echo '$ /path/to/composer.phar update';
                 echo '</pre></div>';
             }
@@ -219,7 +222,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             return ob_get_clean();
         }
 
-        $this->checkComposer($FANNIE_ROOT);
+        $this->checkComposer();
 
         /**
             Detect databases that are supported
@@ -888,7 +891,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $phpunit->assertNotEquals(0, strlen($this->runningAs()));
         ob_start();
         $phpunit->assertInternalType('boolean', $this->canSave($path, $url));
-        $this->checkComposer($path);
+        $this->checkComposer();
         ob_end_clean();
     }
 

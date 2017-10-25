@@ -1,7 +1,7 @@
 <?php
 use COREPOS\Fannie\API\item\StandardAccounting;
 include('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_GET['excel'])){

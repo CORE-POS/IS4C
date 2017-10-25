@@ -38,14 +38,14 @@
 
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-include($FANNIE_ROOT.'auth/login.php');
+include(__DIR__ . '/../auth/login.php');
 $name = checkLogin();
 if (!$name){
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}item/deleteItem_WEFC_Toronto.php");

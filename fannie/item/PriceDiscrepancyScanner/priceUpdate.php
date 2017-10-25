@@ -27,10 +27,10 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 
     include(dirname(__FILE__).'/../../config.php');
     if (!class_exists('FannieAPI')) {
-        include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+        include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
     }
     if (!class_exists('PriceDiscrepancyPage')) {
-        include_once($FANNIE_ROOT.'item/PriceDiscrepancyPage.php');
+        include_once(__DIR__ . '/../PriceDiscrepancyPage.php');
     }
 
     $store_id = $_POST['store_id'];

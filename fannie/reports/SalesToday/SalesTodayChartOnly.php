@@ -32,7 +32,7 @@
 use COREPOS\Fannie\API\data\DataCache;
 
 include(dirname(__FILE__) . '/../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 
 class SalesTodayChartOnly extends \COREPOS\Fannie\API\FannieReportTool 
 {

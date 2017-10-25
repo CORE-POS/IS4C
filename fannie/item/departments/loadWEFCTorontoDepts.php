@@ -83,7 +83,7 @@ COOPKITCHEN 2005    0                               COOPKITCHEN 2005 - COOPKITCH
 /* configuration for your module - Important */
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
@@ -123,7 +123,7 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
     $SUPERDEPTS = 10;                   // K
 
     // EL This lib may not be needed.
-    require($FANNIE_ROOT.'batches/UNFI/lib.php');
+    require(__DIR__ . '/../../batches/UNFI/lib.php');
     /* EL Not pertinent to departments or WEFC products
     $VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
     if ($VENDOR_ID === False){
@@ -415,7 +415,7 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
         /* html header, including navbar */
         $page_title = "Done loading items";
         $header = "Done loading items";
-        include($FANNIE_ROOT."src/header.html");
+        include(__DIR__ . "/../../src/header.html");
 
         echo "Finished processing Departments file<br />";
         if ($PRICEFILE_USE_SPLITS){
@@ -453,7 +453,7 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
         echo "</div>\n";
 
         /* html footer */
-        include($FANNIE_ROOT."src/footer.html");
+        include(__DIR__ . "/../../src/footer.html");
     }
     else {
         $processed = array();
@@ -475,7 +475,7 @@ else {
     /* html header, including navbar */
     $page_title = "Fannie - Load WEFC-Toronto Departments";
     $header = "Load WEFC-Toronto Departments";
-    include($FANNIE_ROOT.'src/header.html');
+    include(__DIR__ . '/../../src/header.html');
 
     // Get a list of files
     $dh = opendir($tpath);
@@ -506,7 +506,7 @@ else {
 
 <?php
     /* html footer */
-    include($FANNIE_ROOT.'src/footer.html');
+    include(__DIR__ . '/../../src/footer.html');
 
 // Form to get the name of the file to process.
 }

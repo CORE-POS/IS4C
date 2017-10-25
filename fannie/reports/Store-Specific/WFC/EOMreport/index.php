@@ -6,7 +6,7 @@ include('../../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__).'/../../../../classlib2.0/FannieAPI.php');
 }
-include($FANNIE_ROOT.'src/functions.php');
+include(__DIR__ . '/../../../../src/functions.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_GET["excel"])){

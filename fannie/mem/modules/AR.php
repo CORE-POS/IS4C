@@ -31,7 +31,7 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
 
     function showEditForm($memNum,$country="US")
     {
-        global $FANNIE_URL,$FANNIE_TRANS_DB, $FANNIE_ROOT;
+        global $FANNIE_URL,$FANNIE_TRANS_DB;
 
         $dbc = $this->db();
         $trans = $FANNIE_TRANS_DB.$dbc->sep();

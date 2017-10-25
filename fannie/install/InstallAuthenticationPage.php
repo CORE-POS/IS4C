@@ -79,7 +79,7 @@ if ($FANNIE_AUTH_ENABLED){
 
 if ($FANNIE_AUTH_ENABLED){
     if (!function_exists("login"))
-        include($FANNIE_ROOT.'auth/login.php');
+        include(__DIR__ . '/../auth/login.php');
 
     // if no users exist, offer to create one
     if (getNumUsers() == 0){

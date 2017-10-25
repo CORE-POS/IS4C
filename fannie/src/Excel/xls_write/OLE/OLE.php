@@ -222,7 +222,6 @@ class OLE extends PEAR
      */
     function getStream($blockIdOrPps)
     {
-        global $FANNIE_ROOT;
         include_once dirname(__FILE__) . '/ChainedBlockStream.php';
         static $isRegistered = false;
         if (!$isRegistered) {
@@ -293,7 +292,6 @@ class OLE extends PEAR
     */
     function _readPpsWks($blockId)
     {
-        global $FANNIE_ROOT;
         $fh = $this->getStream($blockId);
         for ($pos = 0; ; $pos += 128) {
             fseek($fh, $pos, SEEK_SET);

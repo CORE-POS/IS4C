@@ -29,10 +29,9 @@
 
 */
 
-if (!isset($FANNIE_ROOT))
-    require(dirname(__FILE__) . '/../config.php');
+require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('SQLManager'))
-    require($FANNIE_ROOT.'src/SQLManager.php');
+    require(__DIR__ . '/../src/SQLManager.php');
 
 
 function addAllLanes($upc, $table_name){

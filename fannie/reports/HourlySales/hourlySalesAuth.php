@@ -23,10 +23,10 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('validateUserQuiet')) {
-    include($FANNIE_ROOT.'auth/login.php');
+    include(__DIR__ . '/../../auth/login.php');
 }
 if (!isset($_REQUEST['startDate']) || !isset($_REQUEST['endDate'])) {
     return;

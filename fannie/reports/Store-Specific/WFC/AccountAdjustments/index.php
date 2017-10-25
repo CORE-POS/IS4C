@@ -1,6 +1,6 @@
 <?php
 include('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (!isset($_GET['excel'])){
@@ -31,7 +31,7 @@ else {
     echo "<body bgcolor=#99cccc>";
 }
 
-include($FANNIE_ROOT.'src/functions.php');
+include(__DIR__ . '/../../../../src/functions.php');
 
 /* defaults */
 $type = "daily";

@@ -1,7 +1,7 @@
 <?php
 include('../../../../config.php');
-include_once($FANNIE_ROOT.'src/SQLManager.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../../../../src/SQLManager.php');
+include_once(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 
 $fannieDB = FannieDB::get($FANNIE_OP_DB);
 
@@ -34,7 +34,7 @@ while($hereW = $fannieDB->fetch_row($hereR)){
     $records[] = $hereW;
 }
 
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
+include(__DIR__ . '/../../../../src/Credentials/OutsideDB.tunneled.php');
 // online registrations
 $q = "SELECT tdate,r.card_no,name,email,
     phone,guest_count,child_count,

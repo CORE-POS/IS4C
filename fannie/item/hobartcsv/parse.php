@@ -2,9 +2,9 @@
 
 function parseitem($dowrite,$plu,$itemdesc,$tare,$shelflife,$price,$bycount,
                    $type,$exception,$text,$label,$graphics){
-  global $FANNIE_ROOT, $FANNIE_SCALES;
-  $CSV_dir = $FANNIE_ROOT.'item/hobartcsv/csvfiles';
-  $DGW_dir = $FANNIE_ROOT.'item/hobartcsv/csv_output';
+  global $FANNIE_SCALES;
+  $CSV_dir = __DIR__ . '/../../item/hobartcsv/csvfiles';
+  $DGW_dir = __DIR__ . '/../../item/hobartcsv/csv_output';
     if (!function_exists('writeitem')) {
         include('writecsv.php');
     }
@@ -36,9 +36,9 @@ function parseitem($dowrite,$plu,$itemdesc,$tare,$shelflife,$price,$bycount,
 }
 
 function deleteitem($plu){
-  global $FANNIE_ROOT, $FANNIE_SCALES;
-  $CSV_dir = $FANNIE_ROOT.'item/hobartcsv/csvfiles';
-  $DGW_dir = $FANNIE_ROOT.'item/hobartcsv/csv_output';
+  global $FANNIE_SCALES;
+  $CSV_dir = __DIR__ . '/../../item/hobartcsv/csvfiles';
+  $DGW_dir = __DIR__ . '/../../item/hobartcsv/csv_output';
     if (!function_exists('writeitem')) {
         include('writecsv.php');
     }

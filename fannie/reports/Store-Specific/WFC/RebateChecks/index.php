@@ -1,6 +1,6 @@
 <?php
 include('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $q = $dbc->prepare("select year(tdate),month(tdate),day(tdate),count(*) From is4c_trans.dlog_90_view as d 

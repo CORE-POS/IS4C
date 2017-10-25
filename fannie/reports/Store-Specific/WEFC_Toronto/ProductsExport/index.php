@@ -50,10 +50,9 @@
 */
 
 include('../../../../config.php');
-//include($FANNIE_ROOT.'config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ .'/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-include($FANNIE_ROOT.'src/functions.php');
+include(__DIR__ . '/../../../../src/functions.php');
 
 /* from EOMreport
 if (isset($_GET["excel"])){
@@ -300,7 +299,7 @@ else {
 
 $page_title = "Fannie : WEFC Toronto Products Export Report";
 $header = "WEFC Toronto Products Export Report";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../../../../src/header.html');
 ?>
 
 <form action=index.php method=get>
@@ -318,6 +317,6 @@ input[type="checkbox"] {
 </table>
 </form>
 <?php
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../../../../src/footer.html');
 }
 

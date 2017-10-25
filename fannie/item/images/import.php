@@ -1,7 +1,7 @@
 <?php
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('SQLManager')) {
-    include($FANNIE_ROOT . 'src/SQLManager.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;

@@ -133,10 +133,10 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
     public function saveFormData($memNum, $json=array())
     {
 
-        global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
+        global $FANNIE_MEMBER_UPC_PREFIX;
         $dbc = $this->db();
         if (!class_exists("MemberCardsModel"))
-            include($FANNIE_ROOT.'classlib2.0/data/models/MemberCardsModel.php');
+            include(__DIR__ . '/../../classlib2.0/data/models/MemberCardsModel.php');
 
         $prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
         $plen = strlen($prefix);

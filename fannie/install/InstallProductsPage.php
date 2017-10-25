@@ -230,7 +230,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <?php
         $layouts = 'No Layouts Found!';
         if (!function_exists('scan_layouts')) {
-            include($FANNIE_ROOT.'admin/labels/scan_layouts.php');
+            include(__DIR__ . '/../admin/labels/scan_layouts.php');
         }
         $layouts = scan_layouts();
         echo installSelectField('FANNIE_DEFAULT_PDF', $FANNIE_DEFAULT_PDF, $layouts, 'Fannie Standard');
