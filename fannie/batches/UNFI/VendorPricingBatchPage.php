@@ -145,6 +145,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <input type=hidden id=queueID value=%d />
             <input type=hidden id=superID value=%d />",
             $vendorID,$batchID,$queueID,$superID);
+        $ret .= '<br/><b>Show only</b>: <button class="btn btn-danger btn-xs" 
+            onClick="showOnlyClass(\'red\'); return false;"> Red </button> | 
+            <button class="btn btn-warning btn-xs" onClick="showOnlyClass(\'yellow\'); return false;">
+            Yellow</button> | <button class="btn btn-success btn-xs" onClick="showOnlyClass(\'green\');
+            return false;">Green</button> | <button class="btn btn-default btn-xs" onClick="showAll(); 
+            return false;"> <b>All</b> </button><br/><br/>';
 
         $batchUPCs = array();
         $batchList = new BatchListModel($dbc);
@@ -233,9 +239,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $vendorModel = new VendorItemsModel($dbc);
 
         $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
-        $ret .= "<thead><tr><td colspan=6 class=\"thead\">&nbsp;</td><th colspan=2  class=\"thead\">Current</th>
-            <th colspan=3  class=\"thead\">Vendor</th><td colspan=3 class=\"thead\"></td></tr>";
-        $ret .= "<tr><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
+        $ret .= "<thead><tr class=\"thead\"><td colspan=6 class=\"thead\">&nbsp;</td>
+            <th colspan=2  class=\"thead\">Current</th><th colspan=3  class=\"thead\">
+            Vendor</th><td colspan=3 class=\"thead\"></td></tr>";
+        $ret .= "<tr class=\"thead\"><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
             <th class=\"thead\">Base Cost</th>
             <th class=\"thead\">Shipping</th>
             <th class=\"thead\">Discount%</th>
@@ -411,6 +418,19 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         ?>
         var $table = $('#mytable');
         $table.floatThead();
+        function showOnlyClass(classname) {
+            showAll();
+            $('tr').each(function() {
+                var hasclass = $(this).closest('tr').hasClass(classname);
+                if (!hasclass) $(this).closest('tr').hide();
+            });
+        }
+        function showAll()
+        {
+            $('tr').each(function() {
+                $(this).closest('tr').show();
+            });
+        }
         <?php
         return ob_get_clean();
     }
