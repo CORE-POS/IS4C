@@ -154,7 +154,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     private function checkComposer()
     {
         if (!is_dir(dirname(__FILE__) . '/../../vendor')) {
-            $path = realpath(__DIR__ . '/../';
+            $path = realpath(__DIR__ . '/../');
             echo "<div class=\"alert alert-warning\"><b>Warning</b>: dependencies appear to be missing.</div>";
             echo '<div class=\"well\">';
             echo 'Install <a href="https://getcomposer.org/">Composer</a> then run ';
@@ -175,7 +175,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 }
             }
             if ($missing) {
-                $path = realpath(__DIR__ . '/../../';
+                $path = realpath(__DIR__ . '/../../');
                 echo '<div class="well">Install dependencies by running <a href="https://getcomposer.org/">composer</a>';
                 echo "<pre>";
                 echo '$ cd "' . $path . "\"\n";
