@@ -44,7 +44,6 @@ $q = "SELECT tdate,r.card_no,name,email,
     'website' AS source
     FROM registrations AS r LEFT JOIN
     regMeals AS m ON r.card_no=m.card_no
-    WHERE paid=1
     GROUP BY tdate,r.card_no,name,email,
     phone,guest_count,child_count
     ORDER BY tdate";
