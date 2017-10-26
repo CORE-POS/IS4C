@@ -10,7 +10,7 @@ else {
     echo "<a href=index.php?excel=yes>Save to Excel</a><br /><br />";
 }
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
 include('../../db.php');
 
 $totalsByType = array();

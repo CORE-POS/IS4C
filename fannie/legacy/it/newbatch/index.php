@@ -1,10 +1,10 @@
 <?php
 include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 
 include('../../queries/barcode.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
 include('../../db.php');
 
 if (!function_exists('unsale')) {
@@ -820,7 +820,7 @@ function showBatchDisplay($id,$orderby='ORDER BY b.listID DESC'){
     return $ret;
 }
 
-include($FANNIE_ROOT.'auth/login.php');
+include(__DIR__ . '/../../../auth/login.php');
 $user = validateUserQuiet('batches');
 $audited=0;
 if (!$user){

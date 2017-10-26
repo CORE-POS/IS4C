@@ -1,7 +1,7 @@
 <?php
 include('../../../config.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
 include('../../db.php');
 
 if (!isset($_GET['batchID'])){
@@ -37,7 +37,7 @@ else {
     $narrow = (isset($_GET['narrow']))?True:False;
     
     define('FPDF_FONTPATH','font/');
-    require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+    require(__DIR__ . '/../../../src/fpdf/fpdf.php');
     
     /****Credit for the majority of what is below for barcode generation
      has to go to Olivier for posting the script on the FPDF.org scripts

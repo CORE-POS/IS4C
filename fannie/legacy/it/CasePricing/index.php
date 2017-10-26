@@ -5,7 +5,7 @@ require($FANNIE_ROOT.'auth/login.php');
 // 04Oct13 - no longer in use?
 return;
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
 
 include('../../db.php');
 $ms = $sql;
