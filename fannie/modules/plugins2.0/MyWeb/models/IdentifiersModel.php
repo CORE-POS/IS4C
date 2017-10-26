@@ -50,6 +50,7 @@ class IdentifiersModel extends BasicModel
             WHERE personNum=1
                 AND Type='PC'
                 AND CardNo NOT IN (SELECT cardNo FROM {$mydb}Identifiers)");
+        $this->connection->startTransaction();
         while ($row = $this->connection->fetchRow($needR)) {
             $this->reset();
             $this->cardNo($row['CardNo']);
@@ -58,6 +59,7 @@ class IdentifiersModel extends BasicModel
             $this->guid($uuid);
             $this->save();
         }
+        $this->connection->commitTransaction();
 
         /**
          * Auto-disable live pages for accounts not in good standing
