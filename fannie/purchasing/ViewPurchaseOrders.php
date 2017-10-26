@@ -1095,7 +1095,7 @@ HTML;
         $item->sku($this->sku);
         $item->load();
         printf('<tr>
-            <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
+            <td>%s<input type="hidden" name="sku" value="%s" /></td>
             <td><input type="text" class="form-control" name="upc" value="%s" /></td>
             <td><input type="text" class="form-control" name="brand" value="%s" /></td>
             <td><input type="text" class="form-control" name="description" value="%s" /></td>
