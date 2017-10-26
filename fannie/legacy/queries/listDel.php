@@ -1,7 +1,7 @@
 <?php
 
 include('../../config.php');
-include($FANNIE_ROOT.'auth/login.php');
+include(__DIR__ . '/../../auth/login.php');
 $uid = 1005;
 $user = validateUserQuiet('delete_items');
 if (!$user){

@@ -20,7 +20,7 @@ return;
 }
 
 define('FPDF_FONTPATH','font/');
-require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+require(__DIR__ . '/../../src/fpdf/fpdf.php');
 
 class PDF extends FPDF
 {

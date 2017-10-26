@@ -1,6 +1,6 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists("SQLManager")) require_once(__DIR__ . '/../../src/SQLManager.php');
 include('../db.php');
 
 $memTypesQ = "select memtype,memDesc from memtype order by memtype";

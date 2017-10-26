@@ -1,7 +1,7 @@
 <?php
 include('../../../../config.php');
 
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../../auth/login.php');
 include('../db.php');
 
 $name = checkLogin();

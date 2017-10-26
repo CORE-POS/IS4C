@@ -9,7 +9,7 @@ header('Content-Disposition: attachment; filename="departments.xls"');
 }
 
 include('../../../config.php');
-if (!class_exists("SQLManager")) require($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager")) require(__DIR__ . "/../../../src/SQLManager.php");
 
 include('../../db.php');
 

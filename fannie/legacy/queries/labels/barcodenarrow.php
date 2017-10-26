@@ -2,7 +2,7 @@
 include('../../../config.php');
 
 define('FPDF_FONTPATH','font/');
-require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+require(__DIR__ . '/../../../src/fpdf/fpdf.php');
 
 /****Credit for the majority of what is below for barcode generation
  has to go to Olivier for posting the script on the FPDF.org scripts

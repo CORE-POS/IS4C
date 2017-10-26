@@ -19,7 +19,7 @@ if (isset($_GET['excel'])){
         echo "<a href=index.php?excel=yes>Excel</a><p />";
     }
 
-    if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+    if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
     include('../../db.php');
 
     $date = '2011-08-06';

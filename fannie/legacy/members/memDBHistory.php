@@ -1,9 +1,9 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists("SQLManager")) require_once(__DIR__ . '/../../src/SQLManager.php');
 include('../db.php');
 
-include($FANNIE_ROOT.'auth/login.php');
+include(__DIR__ . '/../../auth/login.php');
 
 $username=validateUserQuiet('editmembers');
 

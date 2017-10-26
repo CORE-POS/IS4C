@@ -1,8 +1,8 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 include('../db.php');
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
 $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();
@@ -330,7 +330,7 @@ $utext = preg_replace("/[^\x01-\x7F]/","", $utext); // strip non-ASCII (word cop
 $uonline = isset($_REQUEST['u_enableOnline'])?1:0;
 $uexpires = isset($_REQUEST['u_expires'])?$_REQUEST['u_expires']:'';
 if (!empty($udesc) || !empty($ubrand) || !empty($usize)){
-    include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+    include(__DIR__ . '/../../src/Credentials/OutsideDB.is4c.php');
     $dbs = array($sql);
     $q = $sql->prepare("SELECT special_price,discounttype FROM products WHERE upc=?");
     $r = $sql->execute($q, array($upc));

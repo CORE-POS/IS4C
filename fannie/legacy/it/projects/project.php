@@ -44,8 +44,8 @@ function watchToggle(yn,projID,user){
 $projID = $_GET['projID'];
 
 include('../../../config.php');
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include($FANNIE_ROOT.'src/Credentials/projects.wfc.php');
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
+include(__DIR__ . '/../../../src/Credentials/projects.wfc.php');
 
 $q = $sql->prepare("select projDesc, ITName, reqestDate, status, notes, link, priority from projects where projID = ?");
 $r = $sql->execute($q, array($projID));
@@ -59,7 +59,7 @@ while ($emailW = $sql->fetchRow($emailR))
     $emaillist .= $emailW[0].", ";
 $emaillist = substr($emaillist,0,strlen($emaillist)-2);
 
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 $admin_user = validateUserQuiet('admin');
 $proj_user = validateUserQuiet('projects');
 

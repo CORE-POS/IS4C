@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
 include('prodFunction.php');
-include($FANNIE_ROOT.'auth/login.php');
+include(__DIR__ . '/../../auth/login.php');
 refreshSession();
 ?>
 <html>

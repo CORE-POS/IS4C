@@ -1,11 +1,11 @@
 <?php
 include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
+if (!class_exists("SQLManager")) require_once(__DIR__ . '/../../src/SQLManager.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $sql = $dbc;
 
-include_once($FANNIE_ROOT.'auth/login.php');
+include_once(__DIR__ . '/../../auth/login.php');
 if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc') && !validateUserQuiet('viewmembers')){
     $url = $FANNIE_URL.'auth/ui/loginform.php?redirect='.$_SERVER['PHP_SELF'];
     header('Location: '.$url);

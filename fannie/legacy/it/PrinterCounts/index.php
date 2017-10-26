@@ -6,8 +6,8 @@ if (isset($_GET['excel'])){
 }
 
 include('../../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/Credentials/printcount.wfcdb.php.php');
+include(__DIR__ . '/../../../src/SQLManager.php');
+include(__DIR__ . '/../../../src/Credentials/printcount.wfcdb.php.php');
 
 $query = "SELECT name,type,subtype,num,modified FROM printerCounts
     ORDER BY name,type,subtype";

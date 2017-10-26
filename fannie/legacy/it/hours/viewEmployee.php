@@ -6,7 +6,7 @@ $empID = $_GET["id"];
 require('db.php');
 $sql = hours_dbconnect();
 
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 $name = checkLogin();
 if (!$name){
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/viewEmployee.php?id=".$_GET["id"]);

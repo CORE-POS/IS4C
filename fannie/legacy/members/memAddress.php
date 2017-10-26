@@ -1,5 +1,5 @@
 <?php
-include_once($FANNIE_ROOT.'auth/login.php');
+include_once(__DIR__ . '/../../auth/login.php');
 
 function addressList($memNum)
 {

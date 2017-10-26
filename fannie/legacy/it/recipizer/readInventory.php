@@ -9,7 +9,8 @@ $clearQ = $mysql->prepare("delete from ingredients where id >= ?");
 $clearR = $mysql->execute($clearQ,array($itemID),$mydb);
 
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager"))
+    require(__DIR__ . '/../../../src/SQLManager.php');
 include('../../db.php');
 $mssql = $sql;
 

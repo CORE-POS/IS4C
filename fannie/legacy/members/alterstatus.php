@@ -2,9 +2,9 @@
 include('../../config.php');
 
 if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 
-include($FANNIE_ROOT.'src/SQLManager.php');
+include(__DIR__ . '/../../src/SQLManager.php');
 include('../db.php');
 
 include('memAddress.php');

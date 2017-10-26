@@ -23,7 +23,7 @@ if (isset($_GET['salesCode1'])){
         header("Content-type: application/vnd.ms-excel; name='excel'");
     }
 
-    if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+    if (!class_exists("SQLManager")) require(__DIR__ . "/../../../src/SQLManager.php");
     include('../../db.php');
         
     //printf($date1); //listed here for debugging purposes

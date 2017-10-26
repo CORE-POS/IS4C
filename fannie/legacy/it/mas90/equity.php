@@ -6,7 +6,7 @@ if (!isset($_GET['date'])){
     header('Content-Disposition: attachment; filename="equity'.$date.'.csv"');
 }
 
-require($FANNIE_ROOT.'src/SQLManager.php');
+require(__DIR__ . '/../../../src/SQLManager.php');
 include('../../db.php');
 $sql->query("use $FANNIE_TRANS_DB");
 

@@ -1,9 +1,8 @@
 <?php
 
 function dbconnect(){
-    global $FANNIE_ROOT;
-    if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-    include($FANNIE_ROOT.'src/Credentials/recipizer.wfcdb.php');    
+    if (!class_exists("SQLManager")) require(__DIR__ . "/../../../src/SQLManager.php");
+    include(__DIR__ . '/../../../src/Credentials/recipizer.wfcdb.php');    
     return $sql;
 }
 

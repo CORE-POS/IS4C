@@ -7,7 +7,6 @@ include('../../../config.php');
     invoice file should be named tmp/invoice.csv
 */
 function import_invoice(){
-    global $FANNIE_ROOT;
     $INVOICE_FILE = "tmp/invoice.csv";
 
     // field indexes
@@ -20,7 +19,7 @@ function import_invoice(){
     $fp = fopen($INVOICE_FILE,'r');
     $line_num = 1;
 
-    if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+    if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
     include('../../db.php');
 
     $upQ = $sql->prepare("update prodExtra set cost=? where upc=?");

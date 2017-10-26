@@ -1,9 +1,9 @@
 <?php
 include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require($FANNIE_ROOT.'item/pricePerOunce.php');
+include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
+require(__DIR__ . '/../../../item/pricePerOunce.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
 include('../../db.php');
 
 $buyID = (isset($_POST['buyID']))?$_POST['buyID']:0;

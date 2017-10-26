@@ -2,7 +2,7 @@
 
 include('../../../config.php');
 
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 
 $all = validateUserQuiet('view_all_hours');
 $name = checkLogin();

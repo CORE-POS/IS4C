@@ -1,6 +1,6 @@
 <?php
 include('../../../config.php');
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 
 // 04Oct13 - no longer in use?
 return;
@@ -9,7 +9,7 @@ if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManage
 
 include('../../db.php');
 $ms = $sql;
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.data1.wfc.php');
+include(__DIR__ . '/../../../src/Credentials/OutsideDB.data1.wfc.php');
 
 if (isset($_POST["MAX_FILE_SIZE"])){
     $fn = sys_get_temp_dir()."/cases.csv";
