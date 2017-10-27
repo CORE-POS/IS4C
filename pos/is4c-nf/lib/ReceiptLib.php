@@ -252,14 +252,7 @@ static public function printGiftReceipt($dateTimeStamp, $ref)
 {
     $receipt = "\n";
 
-    $receipt .= self::biggerFont(self::centerBig("WHOLE FOODS COMMUNITY CO-OP"))."\n\n";
-    $receipt .= self::centerString("(218) 728-0884")."\n";
-    $receipt .= self::centerString("MEMBER OWNED SINCE 1970")."\n";
-    $receipt .= self::centerString(self::build_time($dateTimeStamp))."\n";
-    $receipt .= self::centerString('Gift Receipt for this date.')."\n";
-    $parts = explode("-",$ref);
-    $receipt .= self::centerString("Cashier: $parts[0]")."\n";
-    $receipt .= self::centerString("Transaction: $ref")."\n";
+    $reciept .= self::printReceiptHeader($dateTimeStamp, $ref);
     $receipt .= "\n";
 
     $receipt .= self::biggerFont(self::centerBig("GIFT RECEIPT"))."\n\n";
@@ -941,7 +934,6 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $receipt = self::printCabCoupon($dateTimeStamp, $ref);
             CoreLocal::set("cabReference","");
         } elseif ($arg1 == "giftReceipt") {
-            $ref = "";
             $receipt = self::printGiftReceipt($dateTimeStamp, $ref);
         } else {
             $receipt = self::simpleReceipt($receipt, $arg1, $where);
