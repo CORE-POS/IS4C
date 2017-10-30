@@ -123,7 +123,7 @@ class MyStatsModel extends BasicModel
             WHERE c.personNum=1 AND c.type='PC'");
         $num = $this->connection->numRows($memR);
         $count = 1;
-        $maxes = array('coffee'=>0, 'bacon'=>0);
+        $maxes = array('coffee'=>array(0,0,0,0,0), 'bacon'=>array(0,0,0,0,0));
         $owners = array();
         $this->connection->startTransaction();
         while ($memW = $this->connection->fetchRow($memR)) {
@@ -147,16 +147,20 @@ class MyStatsModel extends BasicModel
 
             $coffee = $this->connection->getValue($coffeeP, array_merge($coffeeArgs, array($memW['card_no'])));
             $coffee = $coffee < 0 || $coffee == null ? 0 : $coffee;
-            if ($coffee > $maxes['coffee']) {
-                $maxes['coffee'] = $coffee;
+            if ($coffee > $maxes['coffee'][4]) {
+                array_pop($maxes['coffee']);
+                array_push($maxes['coffee'], $coffee);
+                rsort($maxes['coffee']);
             }
             $stat = array('ttl'=>$coffee,'percent'=>0);
             $this->connection->execute($insP, array($memW['card_no'], 2, json_encode($stat)));
 
             $bacon = $this->connection->getValue($baconP, array_merge($baconArgs, array($memW['card_no'])));
             $bacon = $bacon < 0 || $bacon == null ? 0 : $bacon;
-            if ($bacon > $maxes['bacon']) {
-                $maxes['bacon'] = $bacon;
+            if ($bacon > $maxes['bacon'][4]) {
+                array_pop($maxes['bacon']);
+                array_push($maxes['bacon'], $bacon);
+                rsort($maxes['bacon']);
             }
             $stat = array('ttl'=>$bacon,'percent'=>0);
             $this->connection->execute($insP, array($memW['card_no'], 3, json_encode($stat)));
@@ -178,6 +182,7 @@ class MyStatsModel extends BasicModel
         echo "\n";
         $this->connection->commitTransaction();
 
+        $maxes['coffee'] = array_sum($maxes['coffee']) / 5;
         echo "Coffee max: {$maxes['coffee']}\n";
         if ($maxes['coffee'] > 0) {
             $this->connection->startTransaction();
@@ -190,6 +195,7 @@ class MyStatsModel extends BasicModel
             }
             $this->connection->commitTransaction();
         }
+        $maxes['bacon'] = array_sum($maxes['bacon']) / 5;
         echo "Bacon max: {$maxes['bacon']}\n";
         if ($maxes['bacon'] > 0) {
             $this->connection->startTransaction();
