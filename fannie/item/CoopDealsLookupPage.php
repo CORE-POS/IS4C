@@ -151,7 +151,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
     {
 
         $ret = '';
-        echo 'Month: ' . strtoupper($this->session->month) . '<br>';
+        echo 'Month: ' . $this->session->month . '<br>';
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
@@ -163,25 +163,30 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 <input type="submit" class="btn btn-default" value="go">
             </form>
         ';
-        $dbc = FannieDB::get('woodshed_no_replicate');
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = FormLib::get('upc');
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         echo 'UPC: ' . $upc;
 
-        $month = 'CoopDeals' . $this->session->month;
-        $args = array($month, $upc);
+        $month = $this->session->month; 
+        $args = array($upc, $month);
         $prep = $dbc->prepare('
             SELECT
-                upc,
-                flyerPeriod,
-                brand,
-                sku,
-                description,
-                srp
-            FROM ' . $month . '
-            WHERE upc = ?;
+                c.upc,
+                c.abtpr AS flyerPeriod,
+                p.brand,
+                v.sku,
+                p.description,
+                c.price AS srp
+            FROM CoopDealsItems AS c
+                LEFT JOIN products AS p ON c.upc=p.upc
+                LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
+            WHERE c.upc = ?
+                AND c.dealSet = ?
+            LIMIT 1;
         ');
-        $res = $dbc->execute($prep, $upc);
+        $res = $dbc->execute($prep, $args);
         $ret .=  "<table class='table'  align='center' width='100%'>";
         $check = '';
         while ($row = $dbc->fetch_row($res)) {
@@ -249,11 +254,24 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     and batchType = 1;
             ');
 
-            $curMonth = date('M');
+            $curMonth = date('F');
             if ($curMonth == $this->session->month) {
                 $result = $dbc->execute($curMonthQ);
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
+            }
+
+            $batchIDs = array();
+            while ($row = $dbc->fetchRow($result)) {
+                $batchIDs[] = $row['batchID'];
+            }
+            list($inStr, $prodInBatchA) = $dbc->safeInClause($batchIDs);
+            $prodInBatchA[] = $upc;
+            $prodInBatchQ = 'SELECT batchID from batchList WHERE batchID IN ('.$inStr.') AND upc = ?';
+            $prodInBatchP = $dbc->prepare($prodInBatchQ);
+            $prodInBatchR = $dbc->execute($prodInBatchP,$prodInBatchA);
+            while ($row = $dbc->fetchRow($prodInBatchR)) {
+                echo "<h1>".$row['batchID']."</h1>";
             }
 
             $ret .=  '
@@ -261,6 +279,11 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     Sales Batches<br>
                     <select class="form-control" name="batches">
             ';
+            if ($curMonth == $this->session->month) {
+                $result = $dbc->execute($curMonthQ);
+            } else {
+                $result = $dbc->execute($selMonthQ,$selMonthA);
+            }
             while ($row = $dbc->fetchRow($result)) {
                 $ret .=  '<option value="' . $row['batchID'] . '">' . $row['batchName'] . '</option>';
             }
@@ -292,7 +315,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
 
         $ret = '';
-        echo 'Month: ' . strtoupper($this->session->month) . '<br>';
+        echo 'Month: ' . $this->session->month . '<br>';
 
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="form-inline">
@@ -307,34 +330,32 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
     function get_view()
     {
-        $curMonth = date('M');
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $curMonth = date('F');
+        $dealSets = "";
+        $prep = $dbc->prepare("SELECT dealSet FROM CoopDealsItems
+            GROUP BY dealSet");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $dealSets .= "<option value='{$row['dealSet']}'>{$row['dealSet']}</option>";
+        }
 
-        return '
-            <form method="get" name="useCurMo" class="form-inline">
-                <input type="hidden" name="month" value="' . $curMonth . '">
-                <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
-            </form><br>
+        return <<<HTML
+<form method="get" name="useCurMo" class="form-inline">
+    <input type="hidden" name="month" value="{$curMonth}">
+    <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
+</form><br>
 
-            <form method="get" name="id-form" class="form-inline">
-                or <label>Select a Month</label><br>
-                <select name="month" class="form-control" style="text-align: center;">
-                    <option value="Jan">January</option>
-                    <option value="Feb">February</option>
-                    <option value="Mar">March</option>
-                    <option value="Apr">April</option>
-                    <option value="May">May</option>
-                    <option value="Jun">June</option>
-                    <option value="Jul">July</option>
-                    <option value="Aug">August</option>
-                    <option value="Sep">September</option>
-                    <option value="Oct">October</option>
-                    <option value="Nov">November</option>
-                    <option value="Dec">December</option>
-                </select>&nbsp;
-                <button type="submit" class="form-control btn btn-default">Submit</button><br>
-            </form>
-            '.$this->navBtns().'
-        ';
+<form method="get" name="id-form" class="form-inline">
+    or <label>Select a Month</label><br>
+    <select name="month" class="form-control" style="text-align: center;">
+    {$dealSets}
+    </select>&nbsp;
+    <button type="submit" class="form-control btn btn-default">Submit</button><br>
+</form>
+{$this->navBtns()}
+HTML;
 
     }
 
