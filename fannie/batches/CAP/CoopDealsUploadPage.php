@@ -84,9 +84,9 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         );
         $insP = $dbc->prepare('
             INSERT INTO CoopDealsItems 
-                (dealSet, upc, price, abtpr, multiplier)
+                (dealSet, upc, price, abtpr, multiplier, promoDiscount)
             VALUES
-                (?, ?, ?, ?, ?)');
+                (?, ?, ?, ?, ?, ?)');
 
         return array($upcP, $skuP, $insP);
     }
@@ -175,13 +175,14 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             $price = trim($data[$indexes['price']],"\$");
+            $promo = trim($data[$indexes['Promo Discount']];
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                $dbc->execute($insP,array($month,$upc,$price,$type,$mult));
+                $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo));
             }
             $linked = $this->checkScaleItem($dbc, $upc);
             if ($linked) {
                 foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult));
+                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult,$promo));
                 }
             }
         }
