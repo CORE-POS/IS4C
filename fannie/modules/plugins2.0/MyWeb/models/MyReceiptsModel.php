@@ -50,7 +50,16 @@ class MyReceiptsModel extends BasicModel
         $opdb = $config->get('OP_DB') . $this->connection->sep();
         $transdb = $config->get('TRANS_DB') . $this->connection->sep();
 
-        $this->connection->query("TRUNCATE TABLE {$mydb}MyReceipts");
+        $clearP = $this->connection->prepare("DELETE FROM {$mydb}MyReceipts WHERE tdate < ?");
+        $clearR = $this->connection->execute($clearP, array(date('Y-m-d', strtotime('90 days ago'))));
+
+        $dateP = $this->connection->prepare("SELECT MAX(tdate) FROM {$mydb}MyReceipts");
+        $maxDate = $this->connection->getValue($dateP);
+        if (!$maxDate) {
+            $maxDate = date('Y-m-d', strtotime('90 days ago'));
+        }
+        echo "$maxDate\n";
+
         $insP = $this->connection->prepare("INSERT INTO {$mydb}MyReceipts
             (customerID, posReceiptID, description, quantity, price, tdate, seqID)
             VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -70,18 +79,20 @@ class MyReceiptsModel extends BasicModel
                 LEFT JOIN {$opdb}products AS p ON t.upc=p.upc AND t.store_id=p.store_id
                 LEFT JOIN {$opdb}productUser AS u ON t.upc=u.upc
             WHERE card_no=?
+                AND tdate > ?
             ORDER BY tdate DESC";
         $prep = $this->connection->prepare($query);
         $this->connection->startTransaction();
-        $memR = $this->connection->query("SELECT DISTINCT card_no FROM {$transdb}dlog_90_view AS d
+        $memP = $this->connection->prepare("SELECT DISTINCT card_no FROM {$transdb}dlog_90_view AS d
             LEFT JOIN {$opdb}custdata AS c ON d.card_no=c.CardNo
-            WHERE c.personNum=1 AND c.type='PC'");
+            WHERE c.personNum=1 AND c.type='PC' AND tdate > ?");
+        $memR = $this->connection->execute($memP, array($maxDate));
         $num = $this->connection->numRows($memR);
         $count = 1;
         while ($memW = $this->connection->fetchRow($memR)) {
             echo "$count/$num\r";
             $limiter = array();
-            $res = $this->connection->execute($prep, array($memW['card_no']));
+            $res = $this->connection->execute($prep, array($memW['card_no'], $maxDate));
             while ($row = $this->connection->fetchRow($res)) {
                 $mem = $row['card_no'];
                 if (count($limiter) >= 10) {

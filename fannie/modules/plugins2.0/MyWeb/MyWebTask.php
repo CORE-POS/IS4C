@@ -44,7 +44,11 @@ class MyWebTask extends FannieTask
         $model = new MySpecialOrdersModel($dbc);
         $model->etl($this->config);
 
+        $model = new MyStats($dbc);
+        $model->etl($this->config);
+
         $model = new MyReceiptsModel($dbc);
         $model->etl($this->config);
     }
 }
+
