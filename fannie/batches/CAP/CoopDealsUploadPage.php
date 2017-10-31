@@ -175,7 +175,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             $price = trim($data[$indexes['price']],"\$");
-            $promo = trim($data[$indexes['Promo Discount']];
+            $promo = trim($data[$indexes['Promo Discount']]);
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
                 $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo));
             }
