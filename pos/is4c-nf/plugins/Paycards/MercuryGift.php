@@ -96,6 +96,7 @@ class MercuryGift extends BasicCCModule
         // other modes
         switch ($this->conf->get("paycard_mode")) {
             case PaycardLib::PAYCARD_MODE_AUTH:
+                $this->conf->set('CacheCardType', 'GIFT');
                 return PaycardLib::setupAuthJson($json);
             case PaycardLib::PAYCARD_MODE_ACTIVATE:
             case PaycardLib::PAYCARD_MODE_ADDVALUE:
