@@ -31,6 +31,8 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $SMALL_FONT = 14;
     protected $SMALLER_FONT = 11;
     protected $SMALLEST_FONT = 8;
+    protected $BOGO_BIG_FONT = 100;
+    protected $BOGO_MED_FONT = 28;
 
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
@@ -76,19 +78,28 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $item['size'] = $this->formatSize($item['size'], $item);
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
-            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 35);
-            $pdf->SetFont($this->font, '', $this->BIG_FONT);
-            if (strstr($price, 'lb')) {
-                $price = str_replace(' /lb.', '/lb.', $price);
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-29);
-            } elseif (strstr($price, 'OFF/LB')) {
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-45);
-            } elseif (strstr($price, 'OFF')) {
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
-            } elseif (strstr($price, 'SAVE')) {
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-40);
+            if ($item['signMultiplier'] != -3) {
+                $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 35);
+                $pdf->SetFont($this->font, '', $this->BIG_FONT);
+                if (strstr($price, 'lb')) {
+                    $price = str_replace(' /lb.', '/lb.', $price);
+                    $pdf->SetFont($this->font, '', $this->BIG_FONT-29);
+                } elseif (strstr($price, 'OFF/LB')) {
+                    $pdf->SetFont($this->font, '', $this->BIG_FONT-45);
+                } elseif (strstr($price, 'OFF')) {
+                    $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
+                } elseif (strstr($price, 'SAVE')) {
+                    $pdf->SetFont($this->font, '', $this->BIG_FONT-40);
+                }
+                $pdf->Cell($effective_width, 20, $price, 0, 1, 'C');
+            } else {
+                $pdf->SetXY($this->left + ($this->width*$column -15), $this->top + ($row*$this->height) + 33);
+                $pdf->SetFont($this->font, '', $this->BOGO_MED_FONT);
+                $pdf->MultiCell($effective_width/2, 8, "BUY ONE\nGET ONE", 0, 'R');
+                $pdf->SetXY($this->left + ($this->width*$column + 35), $this->top + ($row*$this->height) + 40);
+                $pdf->SetFont($this->font, '', $this->BOGO_BIG_FONT);
+                $pdf->Cell($effective_width/2, 6, 'FREE', 0, 1, 'L');
             }
-            $pdf->Cell($effective_width, 20, $price, 0, 1, 'C');
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
