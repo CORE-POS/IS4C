@@ -22,11 +22,11 @@
 *********************************************************************************/
 
 include(dirname(__FILE__) . '/../../config.php');
-include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class ZipCodeReport extends FannieReportPage 
+class ZipSalesReport extends FannieReportPage 
 {
-    public $description = '[New Members By Zip Code] lists the number of new owners by zip code for a given period';
+    public $description = '[Zip Code Sales] lists customer counts and sales by zip code for a given period';
     public $report_set = 'Membership';
     public $themed = true;
 
@@ -38,39 +38,40 @@ class ZipCodeReport extends FannieReportPage
     {
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
-        $exclude = FormLib::get_form_value('excludes','');
-
-        $ex = preg_split('/\D+/',$exclude, 0, PREG_SPLIT_NO_EMPTY);
-        $exCondition = '';
-        $exArgs = array();
-        foreach($ex as $num){
-            $exCondition .= '?,';
-            $exArgs[] = $num;
-        }
-        $exCondition = substr($exCondition, 0, strlen($exCondition)-1);
+        $dlog = DTransactionsModel::selectDLog($date1, $date2);
 
         $ret = array();
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $query = "
             SELECT 
-                CASE WHEN m.zip='' THEN 'none' ELSE m.zip END as zipcode,
-                COUNT(*) as num 
-            FROM meminfo AS m 
-                INNER JOIN memDates AS d ON m.card_no=d.card_no 
-            WHERE ";
-        if (!empty($exArgs)) {
-            $query .= "m.card_no NOT IN ($exCondition) AND ";
-        }
-        $query .= "d.start_date >= ?
-            GROUP BY zipcode
-            ORDER BY COUNT(*) DESC";
-        $exArgs[] = $date1.' 00:00:00';
+                CASE WHEN m.zip='' OR m.zip IS NULL THEN 'none' ELSE LEFT(m.zip, 5) END as zipcode,
+                COUNT(DISTINCT d.card_no) AS customers,
+                SUM(total) AS ttl
+            FROM {$dlog} AS d
+                INNER JOIN meminfo AS m ON m.card_no=d.card_no 
+                INNER JOIN MasterSuperDepts AS s ON d.department=s.dept_ID
+            WHERE d.tdate BETWEEN ? AND ?
+                AND s.superID <> 0
+                AND d.trans_type IN ('I', 'D')
+            GROUP BY CASE WHEN m.zip='' OR m.zip IS NULL THEN 'none' ELSE LEFT(m.zip, 5) END";
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $exArgs);
-        while ($row = $dbc->fetch_row($result)) {
-            $record = array($row['zipcode'], $row['num']);
-            $ret[] = $record;
+        $result = $dbc->execute($prep, array($date1 . ' 00:00:00', $date2 . ' 23:59:59'));
+        $ttl = array(0, 0);
+        while ($row = $dbc->fetchRow($result)) {
+            $ret[] = array(
+                $row['zipcode'],
+                sprintf("%d", $row['customers']),
+                0,
+                sprintf("%.2f", $row['ttl']),
+                0,
+            );
+            $ttl[0] += $row['customers'];
+            $ttl[1] += $row['ttl'];
+        }
+        for ($i=0; $i<count($ret); $i++) {
+            $ret[$i][2] = sprintf('%.2f', ($ret[$i][1] / $ttl[0]) * 100);
+            $ret[$i][4] = sprintf('%.2f', ($ret[$i][3] / $ttl[1]) * 100);
         }
 
         return $ret;
@@ -78,35 +79,23 @@ class ZipCodeReport extends FannieReportPage
 
     function calculate_footers($data)
     {
-        switch(count($data[0])){
-        case 2:
-            $this->report_headers = array('Zip Code', '# of Customers');    
-            $this->sort_column = 1;
-            $this->sort_direction = 1;
-            $sum = 1;
-            foreach($data as $row) $sum += $row[1];
-            return array('Total', $sum);
-        case 4:
-        default:
-            $this->report_headers = array('Zip Code', '# Transactions', '# of Customers', 'Total $');
-            $this->sort_column = 3;
-            $this->sort_direction = 1;
+        $this->report_headers = array('Zip Code', '# of Customers', '%', 'Total $', '%');
+        $this->sort_column = 3;
+        $this->sort_direction = 1;
             $sumQty = 0.0;
             $sumSales = 0.0;
             $sumUnique = 0.0;
-            foreach($data as $row){
-                $sumQty += $row[1];
-                $sumUnique += $row[2];
-                $sumSales += $row[3];
-            }
-            return array('Total',$sumQty, $sumUnique, $sumSales);
+        foreach($data as $row){
+            $sumUnique += $row[1];
+            $sumSales += $row[3];
         }
+        return array('Total',$sumUnique, '', $sumSales);
     }
 
     function form_content()
     {
         $ret = '';
-        $ret .= '<form action="ZipCodeReport.php" method="get">
+        $ret .= '<form action="ZipSalesReport.php" method="get">
             <div class="col-sm-5">
             <div class="form-group">
                 <label>Start Date</label>
@@ -117,10 +106,6 @@ class ZipCodeReport extends FannieReportPage
                 <label>End Date</label>
                 <input type="text" name="date2" id="date2" 
                     class="form-control date-field" required/>
-            </div>
-            <div class="form-group">
-                <label>Exclude #(s)</label>
-                <input type="text" name="excludes" class="form-control" />
             </div>
             <p>
                <button type="submit" class="btn btn-default">Get Report</button>
