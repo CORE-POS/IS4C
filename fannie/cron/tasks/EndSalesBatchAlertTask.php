@@ -121,12 +121,14 @@ class EndSalesBatchAlertTask extends FannieTask
         $tableB = $table;
         $countA = 0;
         $countB = 0;
+        $discoIds = array();
 
         if ($dbc->numRows($result) > 0) {
             while ($row = $dbc->fetch_row($result)) {
                 if ($row['batchType'] == 11) {
                     $route = 'B';
                     $countB++;
+                    $discoIds[] = $row['batchID'];
                 } else {
                     $route = 'A';
                     $countA++;
@@ -151,6 +153,20 @@ class EndSalesBatchAlertTask extends FannieTask
             if ($countB > 0) {
                 $ret .= '<h4>Disco Batches</h4>'.$tableB;
             }
+
+            $tableC = '<table><thead><th>upc</th>
+                <th>Brand</th><th>Description</th></thead><tbody>';
+            list($inStr,$args) = $dbc->safeInClause($discoIds);
+            $query = "SELECT b.upc, p.brand, p.description FROM batchList AS b
+                LEFT JOIN products AS p ON b.upc=p.upc WHERE b.batchID IN ({$inStr})
+                GROUP BY b.upc";
+            $prep = $dbc->prepare($query);
+            $res = $dbc->execute($prep,$args);
+            while ($row = $dbc->fetchRow($res)) {
+                $tableC .= "<tr><td>{$row['upc']}</td><td>{$row['brand']}</td><td>{$row['description']}</td></tr>";
+            }
+            $tableC .= "</tbody></table>";
+            $ret .= '<div align="center"><h4>Products in Disco Batches</h4>'.$tableC.'</div>';
 
             if (class_exists('PHPMailer') && ($countA > 0 || $countB > 0)) {
                 $mail = new PHPMailer();                
