@@ -173,7 +173,8 @@ class SuperDeptEditor extends FanniePage {
 
         $delP = $dbc->prepare("DELETE FROM superDeptNames WHERE superID=?");
         $dbc->execute($delP,array($id));
-        $insP = $dbc->prepare("INSERT INTO superDeptNames VALUES (?,?)");
+        $insP = $dbc->prepare("INSERT INTO superDeptNames (superID, super_name)" .
+                " VALUES (?,?)");
         $dbc->execute($insP,array($id,$name));
 
         return array('id' => $id, 'name' => $name);
