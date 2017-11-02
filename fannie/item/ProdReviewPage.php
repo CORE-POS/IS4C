@@ -169,6 +169,7 @@ HTML;
             SELECT p.upc, p.default_vendor_id, r.reviewed
             FROM products AS p
                 LEFT JOIN prodReview AS r ON p.upc=r.upc
+            WHERE p.inUse = 1
             GROUP BY p.upc
         ");
         $res = $dbc->execute($prep);
@@ -183,6 +184,7 @@ HTML;
                 LEFT JOIN vendorItems AS p ON v.vendorID=p.vendorID
                 LEFT JOIN prodReview AS r ON r.upc=p.upc
                 LEFT JOIN vendorReviewSchedule AS s ON v.vendorID=s.vid
+            WHERE inactive = 0
             GROUP BY p.vendorID
         ");
         $vres = $dbc->execute($vprep);
