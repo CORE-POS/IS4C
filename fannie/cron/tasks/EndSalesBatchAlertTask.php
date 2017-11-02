@@ -121,6 +121,7 @@ class EndSalesBatchAlertTask extends FannieTask
         $tableB = $table;
         $countA = 0;
         $countB = 0;
+        $countC = 0;
         $discoIds = array();
 
         if ($dbc->numRows($result) > 0) {
@@ -164,9 +165,12 @@ class EndSalesBatchAlertTask extends FannieTask
             $res = $dbc->execute($prep,$args);
             while ($row = $dbc->fetchRow($res)) {
                 $tableC .= "<tr><td>{$row['upc']}</td><td>{$row['brand']}</td><td>{$row['description']}</td></tr>";
+                $countC++;
             }
             $tableC .= "</tbody></table>";
-            $ret .= '<div align="center"><h4>Products in Disco Batches</h4>'.$tableC.'</div>';
+            if ($countC > 0) {
+                $ret .= '<div align="center"><h4>Products in Disco Batches</h4>'.$tableC.'</div>';
+            }
 
             if (class_exists('PHPMailer') && ($countA > 0 || $countB > 0)) {
                 $mail = new PHPMailer();                
