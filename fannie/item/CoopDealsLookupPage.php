@@ -234,7 +234,6 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         } else {
             if ($date = $this->session->cycleDate) {
                 $datePicker = '"'.$date.'"';
-                //echo "<h1>".$date."</h1>";
             } else {
                 $datePicker = "CURDATE()";
             }
@@ -278,8 +277,10 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $prodInBatchQ = 'SELECT batchID from batchList WHERE batchID IN ('.$inStr.') AND upc = ?';
             $prodInBatchP = $dbc->prepare($prodInBatchQ);
             $prodInBatchR = $dbc->execute($prodInBatchP,$prodInBatchA);
+            $foundIn = array();
             while ($row = $dbc->fetchRow($prodInBatchR)) {
-                echo "<h1>".$row['batchID']."</h1>";
+                echo "<br/><span style='color: grey'>Item found in batch ".$row['batchID']."</span>";
+                $foundIn[] = $row['batchID'];
             }
 
             $ret .=  '
@@ -293,7 +294,14 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 $result = $dbc->execute($selMonthQ,$selMonthA);
             }
             while ($row = $dbc->fetchRow($result)) {
-                $ret .=  '<option value="' . $row['batchID'] . '">' . $row['batchName'] . '</option>';
+                $option = "option";
+                $add = "";
+                $batchID = $row['batchID'];
+                if (in_array($batchID,$foundIn)) {
+                    $option = "option style='background-color: tomato; color: white' ";
+                    $add = "# ";
+                }
+                $ret .=  '<'.$option.' value="' . $batchID . '">' . $add . $row['batchName'] . '</option>';
             }
             $ret .=  '
                 <input type="submit" name="cycle" value="Switch_Cycle" class="btn btn-default">
