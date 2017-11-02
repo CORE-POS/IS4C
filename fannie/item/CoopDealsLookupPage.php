@@ -66,24 +66,29 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         }
 
         $prep = $dbc->prepare('
-            select
+            SELECT
                 batchID,
                 batchName,
                 owner,
-                batchType
-            from is4c_op.batches
-            where CURDATE() between startDate and endDate
-                and batchType = 1;
+                batchType,
+                startDate,
+                endDate
+            FROM is4c_op.batches
+            WHERE CURDATE() between startDate and endDate
+                AND batchType = 1
+                AND (batchName like "%Deals A%"
+                    OR batchName like "%Deals B%")
+            LIMIT 1;
         ');
         $res = $dbc->execute($prep);
         while ($row = $dbc->fetchRow($res)) {
             if (strpos($row['batchName'],"Co-op Deals A")) {
                 $date = new DateTime($row['endDate']);
-                date_add($date, date_interval_create_from_date_string('2 days')); 
+                date_add($date, date_interval_create_from_date_string('2 days'));
                 $this->session->cycleDate = sprintf("%s",$date->format('Y-m-d'));
             } elseif (strpos($row['batchName'],"Co-op Deals B")) {
                 $date = new DateTime($row['startDate']);
-                date_add($date, date_interval_create_from_date_string('-2 days')); 
+                date_add($date, date_interval_create_from_date_string('-2 days'));
                 $this->session->cycleDate = sprintf("%s",$date->format('Y-m-d'));
             }
         }
@@ -152,6 +157,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
         $ret = '';
         echo 'Month: ' . $this->session->month . '<br>';
+        if ($this->session->cycleDate) {
+            echo "<b>Switch_Cycle</b>: Alternate cycle batches loaded.<br/>";
+        }
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
@@ -169,7 +177,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         echo 'UPC: ' . $upc;
 
-        $month = $this->session->month; 
+        $month = $this->session->month;
         $args = array($upc, $month);
         $prep = $dbc->prepare('
             SELECT
@@ -237,7 +245,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     owner,
                     batchType
                 from is4c_op.batches
-                where {$datePicker} between startDate and endDate 
+                where {$datePicker} between startDate and endDate
                 and batchType = 1;
             ";
             $curMonthQ = $dbc->prepare($curMonthQueryStr);
