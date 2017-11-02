@@ -794,7 +794,9 @@ HTML;
                     $css = 'class="info" title="' . $title . '"';
                 }
             }
+            $link = '../item/ItemEditorPage.php?searchupc=' . $obj->internalUPC();
             if ($obj->isSpecialOrder()) {
+                $link = '../ordering/OrderViewPage.php?orderID=' . ltrim(substr($obj->internalUPC(), 0, 9), '0');
                 $css = 'class="success" title="Special order"';
             }
             if ($obj->salesCode() == '') {
@@ -809,7 +811,7 @@ HTML;
             }
             $codings[$coding] += $obj->receivedTotalCost();
             $ret .= sprintf('<tr %s><td>%d</td><td>%s</td>
-                    <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td><td>%s</td>
+                    <td><a href="%s">%s</a></td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td>
                     <td><span id="qty%d">%s</span> <span class="%s pull-right">
                         <a href="" onclick="itemInc(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-up small" /></a>
@@ -827,7 +829,7 @@ HTML;
                     $css,
                     $accounting::toPurchaseCode($obj->salesCode()),
                     $obj->sku(),
-                    $obj->internalUPC(), $obj->internalUPC(),
+                    $link, $obj->internalUPC(),
                     $obj->brand(),
                     $obj->description(),
                     $obj->unitSize(), $obj->caseSize(),
