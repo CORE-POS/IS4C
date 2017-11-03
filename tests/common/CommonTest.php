@@ -135,8 +135,9 @@ class CommonTest extends PHPUnit_Framework_TestCase
 
     public function testSQLConnectException()
     {
-        include(dirname(__FILE__) . '/../../fannie/config.php');
         $this->setExpectedException(Exception::class);
+        include(dirname(__FILE__) . '/../../fannie/config.php');
+        $dbc = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
         $dbc->addConnection($FANNIE_SERVER, '', $FANNIE_TRANS_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
     }
 
