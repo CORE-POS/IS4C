@@ -311,7 +311,7 @@ class DeptLib
                 'unitPrice' => $price,
                 'total' => $price * $this->session->get('quantity'),
                 'regPrice' => $price,
-                'cost' => $price - ($price * $dept['margin']),
+                'cost' => $row['margin'] ? $price - ($price * $dept['margin']) : 0,
                 'tax' => $tax,
                 'foodstamp' => $foodstamp,
                 'discountable' => $deptDiscount,
