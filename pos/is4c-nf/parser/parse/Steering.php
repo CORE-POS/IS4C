@@ -82,7 +82,7 @@ class Steering extends Parser
                 return true;
 
             case 'GIFT':
-                if ($this->session->get("LastID"_ != "0" {
+                if ($this->session->get("LastID") != "0") {
                     $this->ret['output'] = $in_progress_msg;
                 } else {
                     $this->ret['main_frame'] = $myUrl."gui-modules/giftReceiptList.php";
