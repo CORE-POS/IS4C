@@ -23,7 +23,7 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
         ob_start();
         var_dump($get);
         $out = ob_get_clean();
-        $phpunit->assertNotEquals(0, strlen($get), "Returned $out");
+        $phpunit->assertNotEquals(0, strlen($get), $page->debugInfo);
     }
 
     public function testSetCustomer($page, $phpunit)

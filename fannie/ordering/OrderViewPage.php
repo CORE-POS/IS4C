@@ -1236,22 +1236,26 @@ HTML;
 
     protected function get_orderID_handler()
     {
+        $this->debugInfo = 'running get_orderID_handler';
         $TRANS = $this->config->get('TRANS_DB') . $this->connection->sep();
         $open = $this->connection->prepare("SELECT upc FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
         $open = $this->connection->getValue($open, array($this->orderID));
         if ($open !== false) {
             return true;
         }
+        $this->debugInfo = 'No pending records';
         $closed = $this->connection->prepare("SELECT upc FROM {$TRANS}CompleteSpecialOrder WHERE order_id=? AND trans_id > 0");
         $closed = $this->connection->getValue($closed, array($this->orderID));
         if ($closed !== false) {
             return 'OrderReviewPage.php?orderID=' . $this->orderID;
         }
+        $this->debugInfo .= ' and no complete records';
         $status = $this->connection->prepare("SELECT statusFlag FROM {$TRANS}SpecialOrders WHERE specialOrderID=?");
         $status = $this->connection->getValue($status, array($this->orderID));
         if ($status == 7 || $status == 8 || $status == 9) {
             return 'OrderReviewPage.php?orderID=' . $this->orderID;
         }
+        $this->debugInfo .= ' and valid status';
 
         return true;
     }
