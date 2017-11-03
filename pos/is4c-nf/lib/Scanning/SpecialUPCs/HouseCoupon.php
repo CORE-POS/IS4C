@@ -393,6 +393,9 @@ class HouseCoupon extends SpecialUPC
             }
 
             $mDB = Database::mDataConnect();
+            if ($mDB === false) {
+                return true;
+            }
             $mAlt = Database::mAltName();
 
             // Future idea: lookup usage of this coupon by this member

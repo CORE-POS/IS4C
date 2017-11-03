@@ -46,6 +46,9 @@ class EbtReceiptMessage extends ReceiptMessage
         $dbc = Database::tDataConnect();
         if ($reprint) {
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                return '';
+            }
         }
 
         $transType = $dbc->concat('p.cardType', "' '", 'p.transType', '');

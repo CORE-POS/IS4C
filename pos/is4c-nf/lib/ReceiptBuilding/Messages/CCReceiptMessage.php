@@ -59,8 +59,12 @@ class CCReceiptMessage extends ReceiptMessage {
 
         $slip = '';
         $dbc = Database::tDataConnect();
-        if ($reprint)
+        if ($reprint) {
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                return '';
+            }
+        }
 
         $trans_type = $dbc->concat('p.cardType', "' '", 'p.transType', '');
 

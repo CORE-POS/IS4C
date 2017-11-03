@@ -113,6 +113,11 @@ class undo extends NoInputCorePage
         } else {
             // look up transaction remotely
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                $this->boxColor="errorColoredArea";
+                $this->msg = _("Transaction not available");
+                return true;
+            }
             $query = "select upc, description, trans_type, trans_subtype,
                 trans_status, department, quantity, scale, unitPrice,
                 total, regPrice, tax, foodstamp, discount, memDiscount,

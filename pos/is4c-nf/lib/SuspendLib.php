@@ -91,6 +91,9 @@ static public function checksuspended($session)
                     WHERE datetime >= " . date("'Y-m-d 00:00:00'");
         
     $dba = $session->get('standalone') == 1 ? Database::tDataConnect() : Database::mDataConnect();
+    if ($dba === false) {
+        return 0;
+    }
     $result = $dba->query($queryLocal);
     $numRows = $dba->numRows($result);
 

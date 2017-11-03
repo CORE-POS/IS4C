@@ -58,6 +58,9 @@ class cablist extends NoInputCorePage
             if ($this->session->get("standalone") == 0) {
                 $query = str_replace("localtranstoday","dtransactions",$query);
                 $dbc = Database::mDataConnect();
+                if ($dbc === false) {
+                    return array();
+                }
             }
             $result = $dbc->query($query);
 

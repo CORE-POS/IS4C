@@ -402,6 +402,9 @@ class MemberLib
         }
 
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            return false;
+        }
 
         if (\CoreLocal::get('NoCompat') != 1 && !$dbc->tableExists("unpaid_ar_today")) return false;
 

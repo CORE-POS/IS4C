@@ -39,7 +39,11 @@ class CashBuy extends Parser
 
     function parse($str)
     {
+        $ret = $this->default_json();
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            return $dbc;
+        }
         $query = $dbc->prepare('SELECT payments FROM equity_live_balance WHERE memnum= ? ');
         $args = $this->session->get('memberID');
         $result = $dbc->execute($query, $args);
@@ -47,7 +51,6 @@ class CashBuy extends Parser
             $equityPaid = $row['payments'];
         }
         
-        $ret = $this->default_json();
         $title = _('Cash Buy') . $this->session->get('laneno');
         $msg = '
             <form method="post">

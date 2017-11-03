@@ -54,6 +54,9 @@ static public function get($session)
     }
 
     $dba = Database::mDataConnect();
+    if ($dba === false) {
+        return '';
+    }
 
     $blank = self::standardBlank();
     $fieldNames = self::standardFieldNames();

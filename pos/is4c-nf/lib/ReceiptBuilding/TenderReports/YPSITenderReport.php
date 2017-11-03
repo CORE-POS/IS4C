@@ -40,6 +40,9 @@ static public function get($session)
     $DESIRED_TENDERS = is_array($session->get("TRDesiredTenders")) ? $session->get('TRDesiredTenders') : array();
 
     $dba = Database::mDataConnect();
+    if ($dba === false) {
+        return '';
+    }
 
     $blank = self::standardBlank();
     $fieldNames = self::standardFieldNames();
@@ -150,6 +153,9 @@ static public function get($session)
 function trTotal($session,$k, $label,$i=False) 
 {
     $dba = Database::mDataConnect();
+    if ($dba === false) {
+        return '';
+    }
 
     $blank = "             ";
     $fieldNames = "  ".substr("Time".$blank, 0, 10)

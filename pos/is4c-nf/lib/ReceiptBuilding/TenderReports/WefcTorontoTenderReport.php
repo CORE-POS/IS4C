@@ -158,6 +158,9 @@ static public function get($session){
 
     if (MiscLib::pingport($CORE_LOCAL->get("mServer"), $CORE_LOCAL->get("mDBMS"))) {
         $db_a = Database::mDataConnect();
+        if ($db_a === false) {
+            return '';
+        }
         $tTable = "dlog";
         $tDate = "tdate";
         $tSource = "Fannie";

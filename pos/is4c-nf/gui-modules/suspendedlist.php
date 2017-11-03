@@ -107,6 +107,9 @@ class suspendedlist extends NoInputCorePage
             $hriP = $dbc->prepare($hriQ);
         } else {
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                return array();
+            }
             $result = $dbc->query($queryLocal);
             $hriP = $dbc->prepare($hriQ);
         }
