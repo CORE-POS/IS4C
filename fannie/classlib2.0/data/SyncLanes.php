@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\data {
+use \Exception;
 
 /**
   @class SyncLanes
@@ -118,8 +119,13 @@ class SyncLanes
             $server_def = $dbc->tableDefinition($table, $server_db);
             $laneNumber=1;
             foreach ($lanes as $lane) {
-                $dbc->addConnection($lane['host'],$lane['type'],
-                    $lane[$db],$lane['user'],$lane['pw']);
+                try {
+                    $dbc->addConnection($lane['host'],$lane['type'],
+                        $lane[$db],$lane['user'],$lane['pw']);
+                } catch (Exception $ex) {
+                    $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})" . self::endLine();
+                    continue;
+                }
                 if ($dbc->connections[$lane[$db]]) {
                     $lane_def = $dbc->tableDefinition($table, $lane[$db]);
                     $columns = self::commonColumns($server_def, $lane_def);
@@ -204,8 +210,13 @@ class SyncLanes
         }
         $laneNumber=1;
         foreach($lanes as $lane) {
-            $dbc->addConnection($lane['host'],$lane['type'],
-                $lane[$db],$lane['user'],$lane['pw']);
+            try {
+                $dbc->addConnection($lane['host'],$lane['type'],
+                    $lane[$db],$lane['user'],$lane['pw']);
+            } catch (Exception $ex) {
+                $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})";
+                continue;
+            }
             if ($dbc->connections[$lane[$db]]) {
                 $success = $dbc->transfer($lane[$db],
                            "SELECT * FROM $table",

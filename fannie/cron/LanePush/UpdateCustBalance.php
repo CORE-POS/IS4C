@@ -68,7 +68,13 @@ while($fetchW = $sql->fetch_row($fetchR))
 $errors = False;
 // connect to each lane and update balances
 foreach($FANNIE_LANES as $lane){
-    $db = new SQLManager($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
+    try {
+        $db = new SQLManager($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
+    } catch (Exception $ex) {
+        echo cron_msg("Can't connect to lane: ".$lane['host']);
+        $errors = True;
+        continue;
+    }
     if (!$db->isConnected()) {
         echo "Failed on {$lane['host']}\n";
     }

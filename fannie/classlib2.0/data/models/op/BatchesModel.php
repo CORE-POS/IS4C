@@ -451,9 +451,13 @@ those same items revert to normal pricing.
         */
         $FANNIE_LANES = FannieConfig::config('LANES');
         for ($i = 0; $i < count($FANNIE_LANES); $i++) {
-            $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
-                $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
-                $FANNIE_LANES[$i]['pw']);
+            try {
+                $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+                    $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+                    $FANNIE_LANES[$i]['pw']);
+            } catch (Exception $ex) {
+                continue;
+            }
             
             if (!isset($lane_sql->connections[$FANNIE_LANES[$i]['op']]) || $lane_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
                 // connect failed

@@ -70,8 +70,12 @@ class BasicModel extends COREPOS\common\BasicModel
         $current = $this->connection;
         // save to each lane
         foreach ($this->config->get('LANES', array()) as $lane) {
-            $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
-                        $lane['user'],$lane['pw']);    
+            try {
+                $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+                            $lane['user'],$lane['pw']);    
+            } catch (Exception $ex) {
+                continue;
+            }
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
                 continue;
             }
@@ -93,8 +97,12 @@ class BasicModel extends COREPOS\common\BasicModel
         $current = $this->connection;
         // save to each lane
         foreach ($this->config->get('LANES', array()) as $lane) {
-            $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
-                        $lane['user'],$lane['pw']);    
+            try {
+                $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+                            $lane['user'],$lane['pw']);    
+            } catch (Exception $ex) {
+                continue;
+            }
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
                 continue;
             }
@@ -126,8 +134,12 @@ class BasicModel extends COREPOS\common\BasicModel
         $save_fq = $this->fq_name;
         // call normalize() on each lane
         foreach ($this->config->get('LANES', array()) as $lane) {
-            $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
-                        $lane['user'],$lane['pw']);    
+            try {
+                $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
+                            $lane['user'],$lane['pw']);    
+            } catch (Exception $ex) {
+                continue;
+            }
             if (!is_object($sql) || $sql->connections[$lane[$lane_db]] === false) {
                 continue;
             }

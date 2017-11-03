@@ -131,14 +131,16 @@ class FannieDB
                 return self::get($db_name);
             }
 
-            self::$read_only = new SQLManager(
-                $pick['host'],
-                $pick['type'],
-                $db_name,
-                $pick['user'],
-                $pick['pw'],
-                false,
-                true);
+            try {
+                self::$read_only = new SQLManager(
+                    $pick['host'],
+                    $pick['type'],
+                    $db_name,
+                    $pick['user'],
+                    $pick['pw']);
+            } catch (Exception $ex) {
+                return self::get($db_name);
+            }
         } else {
             self::$read_only->selectDB($db_name);
         }

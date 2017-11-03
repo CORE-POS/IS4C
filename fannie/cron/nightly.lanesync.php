@@ -60,7 +60,12 @@ set_time_limit(0);
 
 $dbc = FannieDB::get($FANNIE_TRANS_DB);
 foreach($FANNIE_LANES as $f){
-    $dbc->addConnection($f['host'],$f['type'],$f['trans'],$f['user'],$f['pw']);
+    try {
+        $dbc->addConnection($f['host'],$f['type'],$f['trans'],$f['user'],$f['pw']);
+    } catch (Exception $ex) {
+        echo cron_msg('Cannot connect to '.$f['host']);
+        continue;
+    }
     if ($dbc->connections[$f['trans']] === False){
         echo cron_msg('Cannot connect to '.$f['host']);
         continue;
