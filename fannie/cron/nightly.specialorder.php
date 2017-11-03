@@ -123,6 +123,7 @@ if (strlen($allIDs) > 2){
                 FROM PendingSpecialOrder AS p
                 WHERE p.order_id IN $allIDs
                 GROUP BY p.order_id";
+    $sql->query($historyQ);
 
     // remove from pending orders
     $delQ = "DELETE FROM PendingSpecialOrder
