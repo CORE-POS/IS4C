@@ -19,6 +19,7 @@ class EOMReport extends FannieReportPage
         array('Dept#', 'Super#', 'Account#', 'Dept Name', 'Sales'),
         array('Super#', 'Sales'),
     );
+    protected $report_cache = 'day';
 
     public function fetch_report_data()
     {
