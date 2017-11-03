@@ -77,18 +77,21 @@ static private function getLocalConnection($database1, $database2)
         /**
           Add both local databases to the connection object
         */
-        self::$SQL_CONNECTION = new \COREPOS\pos\lib\SQLManager(
-            CoreLocal::get("localhost"),
-            CoreLocal::get("DBMS"),
-            $database1,
-            CoreLocal::get("localUser"),
-            CoreLocal::get("localPass"),
-            false);
-        if (isset(self::$SQL_CONNECTION->connections[$database1])) {
-            self::$SQL_CONNECTION->connections[$database2] = self::$SQL_CONNECTION->connections[$database1];
-            if (CoreLocal::get('CoreCharSet') != '') {
-                self::$SQL_CONNECTION->setCharSet(CoreLocal::get('CoreCharSet'), $database1);
+        try {
+            self::$SQL_CONNECTION = new \COREPOS\pos\lib\SQLManager(
+                CoreLocal::get("localhost"),
+                CoreLocal::get("DBMS"),
+                $database1,
+                CoreLocal::get("localUser"),
+                CoreLocal::get("localPass"),
+                false);
+            if (isset(self::$SQL_CONNECTION->connections[$database1])) {
+                self::$SQL_CONNECTION->connections[$database2] = self::$SQL_CONNECTION->connections[$database1];
+                if (CoreLocal::get('CoreCharSet') != '') {
+                    self::$SQL_CONNECTION->setCharSet(CoreLocal::get('CoreCharSet'), $database1);
+                }
             }
+        } catch (Exception $ex) {
         }
     } else {
         /**
@@ -106,13 +109,18 @@ static private function getLocalConnection($database1, $database2)
 */
 static public function mDataConnect()
 {
-    $sql = new \COREPOS\pos\lib\SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
-                  CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
-    if ($sql->isConnected(CoreLocal::get('mDatabase')) && CoreLocal::get('CoreCharSet') != '') {
-        $sql->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
+    try {
+        $sql = new \COREPOS\pos\lib\SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
+                      CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
+        if ($sql->isConnected(CoreLocal::get('mDatabase')) && CoreLocal::get('CoreCharSet') != '') {
+            $sql->setCharSet(CoreLocal::get('CoreCharSet'), CoreLocal::get('mDatabase'));
+        }
+
+        return $sql;
+    } catch (Exception $ex) {
     }
 
-    return $sql;
+    return false;
 }
 
 /**
