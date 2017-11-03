@@ -274,8 +274,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 $FANNIE_OP_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
         $createdOps = false;
-        if ($sql === false) {
-            echo "<div class=\"alert alert-danger\">Testing Operational DB connection failed</div>";
+        if (!is_object($sql)) {
+            echo "<div class=\"alert alert-danger\">Testing Operational DB connection failed<br />{$sql}</div>";
         } else {
             echo "<div class=\"alert alert-success\">Testing Operational DB connection succeeded</div>";
             $msgs = $this->create_op_dbs($sql, $FANNIE_OP_DB);
@@ -287,8 +287,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
         $createdTrans = false;
-        if ($sql === false) {
-            echo "<div class=\"alert alert-danger\">Testing Transaction DB connection failed</div>";
+        if (!is_object($sql)) {
+            echo "<div class=\"alert alert-danger\">Testing Transaction DB connection failed<br />{$sql}</div>";
         } else {
             echo "<div class=\"alert alert-success\">Testing Transaction DB connection succeeded</div>";
             $msgs = $this->create_trans_dbs($sql, $FANNIE_TRANS_DB, $FANNIE_OP_DB);
@@ -320,8 +320,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
                 $FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,
                 $FANNIE_SERVER_PW);
-        if ($sql === false) {
-            echo "<div class=\"alert alert-danger\">Testing Archive DB connection failed</div>";
+        if (!is_object($sql)) {
+            echo "<div class=\"alert alert-danger\">Testing Archive DB connection failed<br />{$sql}</div>";
         } else {
             echo "<div class=\"alert alert-success\">Testing Archive DB connection succeeded</div>";
             $msgs = $this->create_archive_dbs($sql, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD);

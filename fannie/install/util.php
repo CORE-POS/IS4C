@@ -127,7 +127,7 @@ function check_db_host($host,$dbms)
 
 function db_test_connect($host,$type,$db,$user,$pw){
     if (!check_db_host($host,$type))
-        return False;
+        return "Database host {$host} does not appear to be online";
 
     if (!class_exists('SQLManager'))
         include(dirname(__FILE__) . '/../src/SQLManager.php');
@@ -135,12 +135,14 @@ function db_test_connect($host,$type,$db,$user,$pw){
     try {
         $sql = new SQLManager($host,$type,$db,$user,$pw);
     }
-    catch(Exception $ex) {}
+    catch(Exception $ex) {
+        return $ex->toString();
+    }
     
     if ($sql === False || $sql->connections[$db] === False)
-        return False;
-    else
-        return $sql;
+        return 'Database connection failed';
+
+    return $sql;
 }
 
 function showInstallTabs($current,$path='') {
