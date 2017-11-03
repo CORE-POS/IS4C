@@ -89,6 +89,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'OB' => 66600,
         'AD' => 66600,
         'RB' => 31140,
+        'PP' => 10295,
         'NCGA' => 66600,
         'Member Discounts' => 66600,
         'Staff Discounts' => 61170,
@@ -143,7 +144,7 @@ class OverShortMAS extends FannieRESTfulPage {
         $discountR = $dbc->execute($discountP, $args);
         while($w = $dbc->fetch_row($discountR)){
             $coding = isset($codes[$w['name']]) ? $codes[$w['name']] : 66600;
-            $coding .= str_pad($w['store_id'], 2, '0', STR_PAD_LEFT) . '00';
+            $coding .= '0000';
             $name = $w['name'];
             $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
             $debit = $w['amount'] > 0 ? $w['amount'] : 0;
