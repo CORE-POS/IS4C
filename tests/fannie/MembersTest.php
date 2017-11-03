@@ -17,7 +17,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    private function testAccount()
+    public function testAccount()
     {
         return array(
             'customerAccountID' => 1,
@@ -97,7 +97,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         $form->ContactInfo_ph2 = '987-6543';
         $form->ContactInfo_email = 'bob@google.com';
         $mod->setForm($form);
-        $mod->saveFormData(1, $json);
+        $json = $mod->saveFormData(1, $json);
         $this->assertEquals('1 main st', $json['addressFirstLine']);
         $this->assertEquals('Apt 0', $json['addressSecondLine']);
         $this->assertEquals('Home', $json['city']);
