@@ -496,6 +496,8 @@ class FannieReportPage extends FanniePage
         $qstr = str_replace('?excel=xlsx', '', $qstr);
         $qstr = str_replace('?excel=csv', '', $qstr);
         $qstr = str_replace('?excel=txt', '', $qstr);
+        $qstr = str_replace('?no-cache=1', '', $qstr);
+        $qstr = str_replace('&no-cache=1', '', $qstr);
 
         return $reflector->getName() . $qstr;
     }
