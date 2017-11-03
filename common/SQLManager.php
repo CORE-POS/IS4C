@@ -23,6 +23,7 @@
 
 namespace COREPOS\common;
 use COREPOS\common\sql\CharSets;
+use \Exception;
 
 if (!function_exists("ADONewConnection")) {
     include(dirname(__FILE__).'/adodb5/adodb.inc.php');
