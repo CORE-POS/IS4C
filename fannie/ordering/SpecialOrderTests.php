@@ -20,9 +20,6 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form->orderID = 1;
         $page->setForm($form);
         $get = $this->runRESTfulPage($page, $form);
-        ob_start();
-        var_dump($get);
-        $out = ob_get_clean();
         $phpunit->assertNotEquals(0, strlen($get), $page->debugInfo);
     }
 
