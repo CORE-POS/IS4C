@@ -1237,7 +1237,7 @@ HTML;
     protected function get_orderID_handler()
     {
         $TRANS = $this->config->get('TRANS_DB') . $this->connection->sep();
-        $open = $this->connection->prepare("SELECT upc {$TRANS}FROM PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
+        $open = $this->connection->prepare("SELECT upc FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
         $open = $this->connection->getValue($open, array($this->orderID));
         if ($open !== false) {
             return true;
