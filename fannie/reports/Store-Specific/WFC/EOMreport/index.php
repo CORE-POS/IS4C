@@ -20,6 +20,7 @@ $_SERVER['REQUEST_URI'] = str_replace("index.php","",$_SERVER['REQUEST_URI']);
         . $storeInfo['html'] . 
         '<input type="submit" value="Change" />
         </form>';
+    echo '<p><a href="../../../../modules/plugins2.0/CoreWarehouse/reports/EOMReport.php">Or use the newer one</a></p>';
 }
 
 $store = FormLib::get('store', false);
