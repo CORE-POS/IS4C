@@ -280,6 +280,24 @@ class OrderReviewPage extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
 
+        $statP = $dbc->prepare("SELECT statusFlag, subStatus FROM SpecialOrders WHERE specialOrderID=?");
+        $stat = $dbc->getRow($statP, array($this->orderID));
+
+        $status = array(
+            0 => "New",
+            3 => "New, Call",
+            1 => "Called/waiting",
+            2 => "Pending",
+            4 => "Placed",
+            5 => "Arrived",
+            7 => "Completed",
+            8 => "Canceled",
+            9 => "Inquiry"
+        );
+
+        $ret = '<div class="alert alert-info">Closed ' . date('Y-m-d h:i:sa', $stat['subStatus'])
+            . ' with status ' . $status[$stat['statusFlag']] . '</div>';
+
         $prep = $dbc->prepare("SELECT entry_date, entry_type, entry_value
                            FROM SpecialOrderHistory
                            WHERE order_id = ?
@@ -287,7 +305,7 @@ class OrderReviewPage extends FannieRESTfulPage
                            ORDER BY entry_date");
         $result = $dbc->execute($prep, array($this->orderID));
 
-        $ret = '<table class="table table-bordered table-striped small">';
+        $ret .= '<table class="table table-bordered table-striped small">';
         $ret .= '<tr>
                     <th>Date</th>
                     <th>Action</th>
