@@ -402,7 +402,11 @@ $(document).ready(function(){
 			$('#itemDiv').html(resp);
             orderView.afterLoadItems();
 		});
-	});
+	}).fail(function(e,s,x) {
+        console.log(e);
+        console.log(s);
+        console.log(x);
+    });
 });
 
 $(window).unload(function() {

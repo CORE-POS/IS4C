@@ -667,6 +667,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $ret .= '</table>';
 
+        $ret = preg_replace('/[^\x0-\x7E]/','', $ret);
         echo json_encode(array('customer'=>$ret, 'footer'=>$extra));
 
         return false;
