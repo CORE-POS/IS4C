@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -119,7 +119,7 @@ class GumEmailPage extends FannieRESTfulPage
 
     public function get_id_loanstatement_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_ROOT;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
         $loan = new GumLoanAccountsModel($dbc);
         $loan->accountNumber($this->id);

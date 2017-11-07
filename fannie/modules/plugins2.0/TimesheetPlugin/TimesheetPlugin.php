@@ -50,7 +50,7 @@ class TimesheetPlugin extends \COREPOS\Fannie\API\FanniePlugin {
 
     public function settingChange()
     {
-        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'];
         if (empty($db_name)) return;

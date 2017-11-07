@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -78,7 +78,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
 
     public function get_add_payid_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $ret = array();
 
         $dbc = FannieDB::get($FANNIE_OP_DB);

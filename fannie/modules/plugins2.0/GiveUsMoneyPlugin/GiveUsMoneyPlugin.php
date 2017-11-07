@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -39,7 +39,7 @@ class GiveUsMoneyPlugin extends \COREPOS\Fannie\API\FanniePlugin
                                 and share-based, dividend earning equity.';
 
     public function settingChange() {
-        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB'];
         if (empty($db_name)) return;

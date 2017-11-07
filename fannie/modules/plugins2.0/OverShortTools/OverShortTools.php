@@ -49,7 +49,7 @@ class OverShortTools extends \COREPOS\Fannie\API\FanniePlugin {
             to totals from the POS transactions database.';
 
     public function settingChange(){
-        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['OverShortDatabase'];
         if (empty($db_name)) return;

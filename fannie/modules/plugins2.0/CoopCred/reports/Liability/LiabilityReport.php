@@ -29,7 +29,7 @@
 
 include(dirname(__FILE__) . '/../../../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../../../classlib2.0/FannieAPI.php');
 }
 
 class LiabilityReport extends FannieReportPage
@@ -54,7 +54,7 @@ class LiabilityReport extends FannieReportPage
 
     function preprocess(){
 
-        global $FANNIE_ROOT,$FANNIE_URL,$FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_URL,$FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
 
         if (!isset($FANNIE_PLUGIN_LIST) || !in_array('CoopCred', $FANNIE_PLUGIN_LIST)) {
             $this->errors[] = "The Coop Cred plugin is not enabled.";

@@ -24,7 +24,7 @@
 
 include(dirname(__FILE__).'/../../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 }
 
 class CoopCredMemberPage extends FanniePage {
@@ -98,11 +98,10 @@ class CoopCredMemberPage extends FanniePage {
     /* Echo the data capture form.
      */
     private function ajax_display_program($pid){
-        global $FANNIE_ROOT;
 
         $mm = 'CoopCredMember';
         if (!class_exists($mm)) {
-            include("{$FANNIE_ROOT}{$this->pluginHome}membership/" .
+            include(__DIR__ . "/" .
                 $mm . '.php');
         }
         else {

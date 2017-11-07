@@ -2,7 +2,7 @@
 
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('RecipesModel')) {
     include(__DIR__ . '/RecipesModel.php');

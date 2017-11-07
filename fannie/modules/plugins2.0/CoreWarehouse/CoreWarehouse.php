@@ -50,7 +50,7 @@ class CoreWarehouse extends \COREPOS\Fannie\API\FanniePlugin {
 
 
     public function settingChange(){
-        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['WarehouseDatabase'];
         if (empty($db_name)) return;

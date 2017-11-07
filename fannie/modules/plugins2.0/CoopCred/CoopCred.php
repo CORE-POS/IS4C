@@ -24,7 +24,7 @@
 
 include(dirname(__FILE__) . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /** Coop Cred - Debit accounts for members.
@@ -85,7 +85,7 @@ class CoopCred extends FanniePlugin
 
     public function settingChange()
     {
-        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
 
         /* Would like to accumulate problems here
          *  and return.

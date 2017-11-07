@@ -27,12 +27,12 @@ class WfcHtLib {
 
     static public function hours_dbconnect()
     {
-        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
+        global $FANNIE_PLUGIN_SETTINGS;
         if (!class_exists("SQLManager")) {
-            require($FANNIE_ROOT.'src/SQLManager.php');
+            include(__DIR__ . '/../../../src/SQLManager.php');
         }
         if (!class_exists('FannieAPI')) {
-            include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+            include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
         }
 
         return FannieDB::get($FANNIE_PLUGIN_SETTINGS['WfcHtDatabase']);

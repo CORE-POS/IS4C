@@ -107,7 +107,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT, $FANNIE_ARCHIVE_DB;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $cards = "(";

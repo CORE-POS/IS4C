@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class GumIssueDividendPage extends FannieRESTfulPage 
@@ -48,10 +48,10 @@ class GumIssueDividendPage extends FannieRESTfulPage
 
     function post_printFY_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_ROOT;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
         if (!class_exists('FPDF')) {
-            include($FANNIE_ROOT.'src/fpdf/fpdf.php');
+            include(__DIR__ . '/../../../src/fpdf/fpdf.php');
             define('FPDF_FONTPATH','font/');
         }
 

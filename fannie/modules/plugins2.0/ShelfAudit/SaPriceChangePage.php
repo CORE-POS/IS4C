@@ -44,9 +44,9 @@ class SaPriceChangePage extends FannieRESTfulPage {
     protected $header = '';
 
     private function linea_support_available(){
-        global $FANNIE_ROOT;
-        if (file_exists($FANNIE_ROOT.'src/javascript/linea/cordova-2.2.0.js')
-        && file_exists($FANNIE_ROOT.'src/javascript/linea/ScannerLib-Linea-2.0.0.js'))
+        $root = __DIR__ . '/../../../';
+        if (file_exists($root.'src/javascript/linea/cordova-2.2.0.js')
+        && file_exists($root.'src/javascript/linea/ScannerLib-Linea-2.0.0.js'))
             return True;
         else
             return False;
