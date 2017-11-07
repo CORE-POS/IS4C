@@ -29,7 +29,7 @@ body {
 </fieldset>
 <?php
 include(dirname(__FILE__) . '/../../../../config.php');
-if (!class_exists('FannieAPI.php')) {
+if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 }
 $database_name = "woodshed_no_replicate";
