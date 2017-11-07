@@ -642,6 +642,13 @@ class HouseCoupon extends SpecialUPC
                 $value = $infoW["discountValue"];
                 $discountable = 0;
                 break;
+            case "FC": // flat but capped at current amount due
+                $value = $infoW["discountValue"];
+                Database::getsubtotals();
+                if ($value > $this->session->get('amtdue')) {
+                    $value = $this->session->get('amtdue');
+                }
+                break;
             case "%": // percent discount on all items
                 Database::getsubtotals();
                 $value = $infoW["discountValue"] * $this->session->get("discountableTotal");
