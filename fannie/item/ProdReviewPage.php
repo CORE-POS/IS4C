@@ -28,6 +28,9 @@ if (!class_exists('FannieAPI')) {
 
 class ProdReviewPage extends FannieRESTfulPage
 {
+    protected $must_authenticate = True;
+    protected $auth_classes = array('admin');
+
     protected $header = 'Vendor Product Info Review';
     protected $title = 'Vendor Product Info Review';
 
