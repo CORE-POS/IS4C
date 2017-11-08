@@ -186,10 +186,12 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 p.brand,
                 v.sku,
                 p.description,
-                c.price AS srp
+                c.price AS srp,
+                m.super_name
             FROM CoopDealsItems AS c
                 LEFT JOIN products AS p ON c.upc=p.upc
                 LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE c.upc = ?
                 AND c.dealSet = ?
             LIMIT 1;
@@ -204,6 +206,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $flyerPeriod = $row['flyerPeriod'];
             $sku = $row['sku'];
             $srp = $row['srp'];
+            $superName = $row['super_name'];
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
             $ret .=  '<td><b>Brand</b></td><td>' . $row['brand'] . '</tr>';
@@ -211,7 +214,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
             $srp = $row['srp'];
             $ret .= '<td><b>Sale Price</b></td><td>' . $srp . '</td></tr>';
-            $ret .=  '<td><b>Sale Period</b></td><td>' . substr($month, 9) . '</td></tr>';
+            $ret .=  '<td><b>Department</b></td><td>' . $superName .'</td></tr>';
             $check = $row['upc'];
         }
         $ret .= '</table>';
