@@ -27,11 +27,12 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
         $headers = $linedata[0]; 
         $headers = array_map(function($i){ return str_replace(' ', '', $i);}, $headers);
         $dbc = $this->connection;
-        if ($dbc->tableExists('GenericUpload')) {
-            $dbc->query('DROP TABLE GenericUpload');
+        $genericUpload = FannieDB::fqn('GenericUpload', 'op');
+        if ($dbc->tableExists($genericUpload)) {
+            $dbc->query('DROP TABLE ' . $genericUpload);
         }
         $upcCol = $this->getColumnIndex('upc');
-        $query = 'CREATE TABLE GenericUpload (';
+        $query = 'CREATE TABLE ' . $genericUpload . ' (';
         for ($i=0; $i<count($headers); $i++) {
             $val = $headers[$i];
             if ($upcCol !== false && $i == $upcCol) {
@@ -52,7 +53,7 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
             $this->result_error = 'Could not create table';
             return false;
         }
-        $query = 'INSERT INTO GenericUpload VALUES (' . str_repeat('?,', count($headers));
+        $query = 'INSERT INTO ' . $genericUpload . ' VALUES (' . str_repeat('?,', count($headers));
         $query = substr($query, 0, strlen($query)-1) . ')';
         $prep = $dbc->prepare($query);
         $dbc->startTransaction();

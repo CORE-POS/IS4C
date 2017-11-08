@@ -230,7 +230,7 @@ class DTrans
             $store_condition = ' AND ' . $product_alias . '.store_id=' . ((int)$store_id); 
         }
 
-        return ' ' . self::normalizeJoin($join_type) . ' JOIN ' . self::opTable('products')
+        return ' ' . self::normalizeJoin($join_type) . ' JOIN ' . FannieDB::fqn('products', 'op')
                 . ' AS ' . $product_alias
                 . ' ON ' . $product_alias . '.upc = ' . $dlog_alias . '.upc ' . $store_condition;
     }
@@ -248,19 +248,6 @@ class DTrans
         }
     }
 
-    private static function opTable($table)
-    {
-        $conf = FannieConfig::factory();
-        $fq_table = $table;
-        if ($conf->get('OP_DB') != '') {
-            $fq_table = $conf->get('OP_DB');
-            $fq_table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
-            $fq_table .= $table;
-        }
-
-        return $fq_table;
-    }
-
     /**
       Get join statement for departments table
       @param $dlog_alias [optional] alias for the transaction table (default 't')
@@ -269,7 +256,7 @@ class DTrans
     */
     public static function joinDepartments($dlog_alias='t', $dept_alias='d')
     {
-        return ' LEFT JOIN ' . self::opTable('departments') . ' AS ' . $dept_alias
+        return ' LEFT JOIN ' . FannieDB::fqn('departments', 'op') . ' AS ' . $dept_alias
                 . ' ON ' . $dept_alias . '.dept_no = ' . $dlog_alias . '.department ';
     }
 
@@ -281,7 +268,7 @@ class DTrans
     */
     public static function joinCustomerAccount($dlog_alias='t', $cust_alias='c')
     {
-        return ' LEFT JOIN ' . self::opTable('custdata') . ' AS ' . $cust_alias
+        return ' LEFT JOIN ' . FannieDB::fqn('custdata', 'op') . ' AS ' . $cust_alias
                 . ' ON ' . $cust_alias . '.CardNo = ' . $dlog_alias . '.card_no '
                 . ' AND ' . $cust_alias . '.personNum = 1 ';
     }
@@ -294,7 +281,7 @@ class DTrans
     */
     public static function joinTenders($dlog_alias='t', $tender_alias='n')
     {
-        return ' LEFT JOIN ' . self::opTable('tenders') . ' AS ' . $tender_alias
+        return ' LEFT JOIN ' . FannieDB::fqn('tenders', 'op') . ' AS ' . $tender_alias
                 . ' ON ' . $tender_alias . '.TenderCode = ' . $dlog_alias . '.trans_subtype ';
     }
 

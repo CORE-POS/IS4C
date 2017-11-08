@@ -159,7 +159,7 @@ class CashierEditor extends FanniePage {
         if ($this->config->get('STORE_MODE') == 'HQ') {
             echo '<div class="form-group">';
             $stores = new StoresModel($dbc);
-            $mapP = $dbc->prepare('SELECT storeID FROM StoreEmployeeMap WHERE storeID=? AND empNo=?');
+            $mapP = $dbc->prepare('SELECT storeID FROM ' . FannieDB::fqn('StoreEmployeeMap', 'op') . ' WHERE storeID=? AND empNo=?');
             foreach ($stores->find('storeID') as $s) {
                 $mapR = $dbc->execute($mapP, array($s->storeID(), $emp_no));
                 $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';

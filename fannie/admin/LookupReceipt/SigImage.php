@@ -49,7 +49,7 @@ class SigImage
         $dbc = FannieDB::getReadOnly($FANNIE_TRANS_DB);
 
         $id = FormLib::get('id', 0);
-        $prep = $dbc->prepare('SELECT filetype, filecontents FROM CapturedSignature WHERE capturedSignatureID=?');
+        $prep = $dbc->prepare('SELECT filetype, filecontents FROM ' . FannieDB::fqn('CapturedSignature', 'trans') . ' WHERE capturedSignatureID=?');
         $result = $dbc->execute($prep, array($id));
         if ($dbc->num_rows($result) > 0) {
             $row = $dbc->fetch_row($result);

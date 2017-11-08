@@ -286,11 +286,11 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $dbc = $this->connection;
         $depts = "<option value=\"\">Select one...</option>";
-        $res = $dbc->query("SELECT dept_no,dept_name from departments order by dept_name");
+        $res = $dbc->query("SELECT dept_no,dept_name from " . FannieDB::fqn('departments', 'op') . " order by dept_name");
         while ($row = $dbc->fetchRow($res)) {
             $depts .= sprintf("<option value=%d>%s</option>",$row[0],$row[1]);
         }
-        $numsR = $dbc->query("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
+        $numsR = $dbc->query("SELECT TenderCode,TenderName FROM " . FannieDB::fqn('tenders', 'op') . " ORDER BY TenderName");
         $tenders = '';
         while ($numsW = $dbc->fetchRow($numsR)) {
             $tenders .= sprintf("<option value=%s>%s</option>",$numsW[0],$numsW[1]); 

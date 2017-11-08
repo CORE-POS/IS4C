@@ -44,7 +44,7 @@ class TaxRateEditor extends FannieRESTfulPage
             $account = $this->form->account;
             $delete_flag = isset($this->form->del) ? $this->form->del : array();
             $tax_id = 1;
-            $trun = $dbc->query("TRUNCATE TABLE taxrates");
+            $trun = $dbc->query("TRUNCATE TABLE " . FannieDB::fqn('taxrates', 'op'));
             $model = new TaxRatesModel($dbc);
             for ($j=0;$j<count($desc);$j++) {
                 if (empty($desc[$j]) || empty($rate[$j])) {

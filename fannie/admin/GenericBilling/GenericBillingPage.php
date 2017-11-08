@@ -76,16 +76,15 @@ class GenericBillingPage extends FannieRESTfulPage
     }
 
     function get_id_handler(){
-        global $FANNIE_TRANS_DB;
         $sql = FannieDB::getReadOnly($this->config->get('OP_DB'));
 
         $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
         $query = "SELECT n.balance
-            FROM  " . $FANNIE_TRANS_DB.$sql->sep()."ar_live_balance AS n 
+            FROM  " . FannieDB::fqn('ar_live_balance', 'trans') . " AS n 
             WHERE n.card_no=?";
         $prep = $sql->prepare($query);
         $result = $sql->execute($prep, array($this->id));
-        $row = $sql->fetch_row($result);
+        $row = $sql->fetchRow($result);
 
         printf("<form onsubmit=\"genericBilling.postBilling();return false;\">
             <div class=\"col-sm-6\">

@@ -134,7 +134,7 @@ class LaneTextStringPage extends FannieRESTfulPage
 
         $trimP = $this->connection->prepare('
             DELETE 
-            FROM customReceipt
+            FROM ' . FannieDB::fqn('customReceipt', 'op') . '
             WHERE type=?
                 AND seq >= ?
         ');

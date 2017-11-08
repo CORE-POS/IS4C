@@ -121,7 +121,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $prep = $this->connection->prepare("
             SELECT trans_num
-            FROM " . $this->config->get('TRANS_DB') . $this->connection->sep() . "voidTransHistory
+            FROM " . FannieDB::fqn('voidTransHistory', 'trans') . "
             WHERE description = ?
                 AND tdate BETWEEN ? AND ?
         ");
@@ -138,7 +138,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $prep = $this->connection->prepare("
             SELECT description
-            FROM " . $this->config->get('TRANS_DB') . $this->connection->sep() . "voidTransHistory
+            FROM " . FannieDB::fqn('voidTransHistory', 'trans') . "
             WHERE trans_num = ?
                 AND tdate BETWEEN ? AND ?
         ");
@@ -308,8 +308,6 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
     function ccInfo($date1, $transNum)
     {
-        global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB;
-        $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
 
@@ -320,7 +318,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
             refNum
-            FROM {$FANNIE_TRANS_DB}{$dbconn}PaycardTransactions
+            FROM " . FannieDB::fqn('PaycardTransactions', 'trans') . "
             WHERE dateID=? AND
                 empNo=? AND registerNo=? AND transNo=?
                 AND commErr=0");
@@ -357,7 +355,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $lookupQ = 'SELECT capturedSignatureID 
-                    FROM CapturedSignature
+                    FROM ' . FannieDB::fqn('CapturedSignature', 'trans') . '
                     WHERE tdate BETWEEN ? AND ?
                         AND emp_no=?
                         AND register_no=?
