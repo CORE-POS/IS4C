@@ -231,7 +231,7 @@ if (!$sql) {
                 $FANNIE_SERVER_PW);
         $refresh = $this->recreate_views($sql);
         foreach ($refresh as $result) {
-            $this->assertEquals(0,$result['error'],
+            $phpunit->assertEquals(0,$result['error'],
                 'Error creating '.$result['db'].'.'.$result['struct'].': '.$result['error_msg']);
         }
     }
