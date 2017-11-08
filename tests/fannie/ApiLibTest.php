@@ -338,5 +338,13 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             $this->assertEquals($output, FileData::excelNoFormula($input));
         }
     }
+
+    public function testDbWrapper()
+    {
+        $config = FannieConfig::factory();
+        $this->assertEquals($config->get('OP_DB') . '.foo', FannieDB::fqn('foo', 'op'));
+        $this->assertEquals($config->get('TRANS_DB') . '.foo', FannieDB::fqn('foo', 'trans'));
+        $this->assertEquals($config->get('ARCHIVE_DB') . '.foo', FannieDB::fqn('foo', 'arch'));
+    }
 }
 

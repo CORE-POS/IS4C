@@ -59,8 +59,8 @@ class ArLiveBalanceModel extends SpanningViewModel
                     AS balance,
                 (CASE WHEN t.card_no IS NULL THEN 0 ELSE 1 END) AS mark
             FROM ' . $custdata . ' AS c
-                LEFT JOIN ar_history_sum AS a ON c.CardNo=a.card_no AND c.personNum=1
-                LEFT JOIN ar_history_today_sum AS t ON c.CardNo = t.card_no AND c.personNum=1
+                LEFT JOIN ' . FannieDB::fqn('ar_history_sum', 'trans') . ' AS a ON c.CardNo=a.card_no AND c.personNum=1
+                LEFT JOIN ' . FannieDB::fqn('ar_history_today_sum', 'trans') . ' AS t ON c.CardNo = t.card_no AND c.personNum=1
             WHERE c.personNum=1
         ';
     }
