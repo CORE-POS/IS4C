@@ -90,42 +90,38 @@ function showGraph() {
             return array();
         }
         
-        $dlog = DTransactionsModel::selectDlog($date1, $date2);
-        $union = (strtotime($date2) >= strtotime(date('Y-m-d')) && strpos($dlog, 'dlog_15') === false);
+        $today = strtotime($date2) >= strtotime(date('Y-m-d'));
 
         $query = "
-            SELECT YEAR(tdate),
-                MONTH(tdate),
-                DAY(tdate),
-                SUM(total)
-            FROM __DLOG__
-            WHERE tdate BETWEEN ? AND ?
-                AND department=992
-                AND register_no <> 30
-            GROUP BY YEAR(tdate),
-                MONTH(tdate),
-                DAY(tdate)";
-        if ($union) {
-            $realQuery = str_replace('__DLOG__', $dlog, $query)
-                . ' UNION ALL '
-                . str_replace('__DLOG__', $this->config->get('TRANS_DB') . $this->connection->sep() . 'dlog', $query);
-        } else {
-            $realQuery = str_replace('__DLOG__', $dlog, $query);
-        }
-
-        $prep = $this->connection->prepare($realQuery);
+            SELECT YEAR(start_date),
+                MONTH(start_date),
+                DAY(start_date),
+                COUNT(*)
+            FROM " . FannieDB::fqn('memDates', 'op') . " AS m
+                INNER JOIN " . FannieDB::fqn('custdata', 'op') . " AS c ON c.CardNo=m.card_no AND c.personNum=1
+                LEFT JOIN " . FannieDB::fqn('suspensions', 'op') . " AS s ON m.card_no=s.cardno
+            WHERE m.start_date BETWEEN ? AND ?
+                AND (c.Type='PC' OR s.memtype1='PC')
+            GROUP BY YEAR(start_date),
+                MONTH(start_date),
+                DAY(start_date)";
+        $prep = $this->connection->prepare($query);
         $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
-        if ($union) {
-            $args[] = $date1 . ' 00:00:00';
-            $args[] = $date2 . ' 23:59:59';
-        }
         $data = array();
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
             $ts = mktime(0,0,0,$row[1],$row[2],$row[0]);
             $data[] = array(
                 date('Y-m-d', $ts),
-                sprintf('%d', $row[3]/20),
+                sprintf('%d', $row[3]),
+            );
+        }
+
+        if ($today) {
+            $prep = $this->connection->prepare('SELECT SUM(total)/20 FROM ' . FannieDB::fqn('dlog', 'trans') . " WHERE department=992");
+            $data[] = array(
+                date('Y-m-d'),
+                sprintf('%d', $this->connection->getValue($prep)),
             );
         }
 
