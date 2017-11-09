@@ -933,7 +933,7 @@ function editable()
 
 function forceBatch(bid)
 {
-    var conf = confirm("Mark batch "+bid+" as forced?");
+    var conf = confirm("Force Batch "+bid+"?");
     if (conf) {
         var path = window.location.pathname;
         window.location.href=path+"?bid="+bid+"&batchLog=1&force=1";
