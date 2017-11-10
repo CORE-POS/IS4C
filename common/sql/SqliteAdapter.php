@@ -155,5 +155,10 @@ class SqliteAdapter implements DialectAdapter
     {
         return "SELECT 0 AS ID, '' AS STATE, '' AS INFO, '' AS USER, '' AS HOST, 0 AS TIME";
     }
+
+    public function kill($intID)
+    {
+        return 'SELECT 1';
+    }
 }
 

@@ -160,5 +160,14 @@ class MssqlAdapter implements DialectAdapter
                 DATEDIFF(ss, NOW(), login_time) AS [TIME]
             FROM master..sysprocesses';
     }
+
+    public function kill($intID)
+    {
+        if ($intID != (int)$intID || ((int)$intID) == 0) {
+            throw new \Exception('Invalid query ID');
+        }
+
+        return sprintf('KILL %d', $intID);
+    }
 }
 

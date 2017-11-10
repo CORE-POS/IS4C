@@ -164,5 +164,14 @@ class PgsqlAdapter implements DialectAdapter
                 EXTRACT(EPOCH FROM (current_timestamp - backend_start)) AS "TIME"
             FROM pg_stat_activity';
     }
+
+    public function kill($intID)
+    {
+        if ($intID != (int)$intID || ((int)$intID) == 0) {
+            throw new \Exception('Invalid query ID');
+        }
+
+        return sprintf('SELECT pg_cancel_backend(%d)', $intID);
+    }
 }
 
