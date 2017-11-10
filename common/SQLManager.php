@@ -1836,7 +1836,7 @@ class SQLManager
         'sqlite3'   => 'COREPOS\common\sql\SqliteAdapter',
     );
 
-    protected function getAdapter($type)
+    public function getAdapter($type)
     {
         if (isset($this->adapters[$type])) {
             return $this->adapters[$type];

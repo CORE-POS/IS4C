@@ -153,7 +153,7 @@ class SqliteAdapter implements DialectAdapter
 
     public function getProcessList()
     {
-        return "SELECT 0 AS ID, '' AS STATE, '' AS COMMAND, '' AS USER, '' AS HOST, 0 AS TIME";
+        return "SELECT 0 AS ID, '' AS STATE, '' AS INFO, '' AS USER, '' AS HOST, 0 AS TIME";
     }
 }
 

@@ -154,7 +154,7 @@ class MssqlAdapter implements DialectAdapter
     {
         return 'SELECT spid AS [ID],
                 status AS [STATE],
-                \'\' AS [COMMAND],
+                \'\' AS [INFO],
                 loginname AS [USER],
                 hostname AS [HOST],
                 DATEDIFF(ss, NOW(), login_time) AS [TIME]

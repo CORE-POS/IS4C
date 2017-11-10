@@ -158,7 +158,7 @@ class PgsqlAdapter implements DialectAdapter
     {
         return 'SELECT pid AS "ID",
                 state AS "STATE",
-                query AS "COMMAND",
+                query AS "INFO",
                 usename AS "USER",
                 client_addr AS "HOST",
                 EXTRACT(EPOCH FROM (current_timestamp - backend_start)) AS "TIME"
