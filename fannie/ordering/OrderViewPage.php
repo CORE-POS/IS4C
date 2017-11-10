@@ -665,6 +665,12 @@ class OrderViewPage extends FannieRESTfulPage
             $orderModel->zip()
         );
 
+        $noteP = $dbc->prepare('SELECT note FROM ' . FannieDB::fqn('memberNotes', 'op') . ' WHERE cardno=? ORDER BY stamp DESC');
+        $acctNote = $dbc->getValue($noteP, array($memNum));
+        if (trim($acctNote)) {
+            $ret .= '<tr><th>Acct Notes</th><td colspan="4">' . $acctNote . '</td></tr>';
+        }
+
         $ret .= '</table>';
 
         $ret = preg_replace('/[^\x0-\x7E]/','', $ret);
