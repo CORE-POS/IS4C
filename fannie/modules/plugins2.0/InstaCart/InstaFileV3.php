@@ -16,6 +16,12 @@ class InstaFileV3
     public function getFile($filename)
     {
         $depositP = $this->dbc->prepare('SELECT normal_price FROM products WHERE upc=?');
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $instaDB = $settings['InstaCartDB'];
+        $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaCartIncludes WHERE upc=?');
+        $excludeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaCartExcludes WHERE upc=?');
+        $instaMode = $settings['InstaCartMode'];
+
         $query = "
             SELECT p.upc,
                 p.normal_price,
@@ -58,6 +64,18 @@ class InstaFileV3
         while ($row = $this->dbc->fetchRow($res)) {
             if ($row['normal_price'] <= 0.01 || $row['normal_price'] >= 500) {
                 continue;
+            }
+
+            if ($instaMode == 1) {
+                $included = $this->dbc->getValue($includeP, array($row['upc']));
+                if ($included === false) {
+                    continue;
+                }
+            } else {
+                $excluded = $this->dbc->getValue($excludeP, array($row['upc']));
+                if ($excluded == $row['upc']) {
+                    continue;
+                }
             }
 
             $upc = ltrim($row['upc'], '0');
