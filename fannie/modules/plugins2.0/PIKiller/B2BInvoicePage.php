@@ -36,7 +36,7 @@ class B2BInvoicePage extends FannieRESTfulPage
          *  The "sale" portion is a positive B2B INVOICING ring to offset the original
          *  The tender is an actual tender record.
          */
-        if (FormLib::get('payFlag', 0)) {
+        if (FormLib::get('payFlag', 0) == 1) {
             $amt = $dbc->prepare('SELECT amount, cardNo FROM B2BInvoices WHERE b2bInvoiceID=?');
             $info = $dbc->getRow($amt, array($this->id));
             $amt = $info['amount'];
@@ -97,6 +97,9 @@ class B2BInvoicePage extends FannieRESTfulPage
             $invoice->paidDate(date('Y-m-d H:i:s'));
             $invoice->paidTransNum('1001-30-' . $dRecord['trans_no']);
             $invoice->isPaid(FormLib::get('payMethod') == 'RV' ? 2 : 1);
+        } elseif (FormLib::get('payFlag', 0) == 2) {
+            $invoice->isPaid(2);
+            $invoice->paidDate(date('Y-m-d H:i:s'));
         }
         $invoice->save();
 
@@ -193,7 +196,7 @@ class B2BInvoicePage extends FannieRESTfulPage
 <hr />
 <p class="form-inline {$finalized}">
     <label>Mark invoice as paid</label>
-    <select class="form-control" name="payFlag"><option value="0">No</option><option value="1">Yes</option></select>
+    <select class="form-control" name="payFlag"><option value="0">No</option><option value="1">Yes</option><option value="2">Cancel Invoice</option></select>
     <select class="form-control" name="payMethod">
         <option value="CK">Check</option>
         <option value="CC">Credit Card</option>
