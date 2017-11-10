@@ -290,5 +290,13 @@ class CommonTest extends PHPUnit_Framework_TestCase
             $this->assertEquals(true, $pool->commit());
         }
     }
+
+    public function testDeComposer()
+    {
+        $path = __DIR__ . '/../../';
+        $dc = new COREPOS\common\DeComposer($path);
+        $this->assertEquals(array(), $dc->extraPackages());
+        $this->assertEquals(array(), $dc->missingPackages());
+    }
 }
 
