@@ -149,5 +149,16 @@ class MssqlAdapter implements DialectAdapter
     {
         return 'SELECT 1';
     }
+
+    public function getProcessList()
+    {
+        return 'SELECT spid AS [ID],
+                status AS [STATE],
+                \'\' AS [COMMAND],
+                loginname AS [USER],
+                hostname AS [HOST],
+                DATEDIFF(ss, NOW(), login_time) AS [TIME]
+            FROM master..sysprocesses';
+    }
 }
 

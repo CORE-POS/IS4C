@@ -153,5 +153,16 @@ class PgsqlAdapter implements DialectAdapter
     {
         return "SET NAMES '$charset'";
     }
+
+    public function getProcessList()
+    {
+        return 'SELECT pid AS "ID",
+                state AS "STATE",
+                query AS "COMMAND",
+                usename AS "USER",
+                client_addr AS "HOST",
+                EXTRACT(EPOCH FROM (current_timestamp - backend_start)) AS "TIME"
+            FROM pg_stat_activity';
+    }
 }
 

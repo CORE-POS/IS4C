@@ -149,5 +149,10 @@ class MysqlAdapter implements DialectAdapter
     {
         return "SET NAMES '$charset'";
     }
+
+    public function getProcessList()
+    {
+        return 'SELECT * FROM information_schema.PROCESSLIST';
+    }
 }
 

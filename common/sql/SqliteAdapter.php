@@ -150,5 +150,10 @@ class SqliteAdapter implements DialectAdapter
     {
         return 'SELECT 1';
     }
+
+    public function getProcessList()
+    {
+        return "SELECT 0 AS ID, '' AS STATE, '' AS COMMAND, '' AS USER, '' AS HOST, 0 AS TIME";
+    }
 }
 
