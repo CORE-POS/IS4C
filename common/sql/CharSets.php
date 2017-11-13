@@ -20,6 +20,9 @@ class CharSets
     public static function get($sql_flavor, $http_encoding)
     {
         $sql_flavor = strtolower($sql_flavor);
+        if ($sql_flavor == 'pdo') {
+            $sql_flavor = 'pdo_mysql';
+        }
         $http_encoding = strtolower($http_encoding);
         foreach (self::$MAP as $flavor => $submap) {
             if (strpos($sql_flavor, $flavor) !== false) {
