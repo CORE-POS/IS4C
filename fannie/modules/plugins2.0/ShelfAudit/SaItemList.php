@@ -83,13 +83,18 @@ class SaItemList extends SaHandheldPage
         $this->section = FormLib::get('section', 1);
 
         if (FormLib::get('clear') === '1') {
+            $set = FormLib::get('set', false);
             $table = $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList';
-            $prep = $dbc->prepare('
-                UPDATE ' . $table . '
+            $query = 'UPDATE ' . $table . '
                 SET clear=1
-                WHERE uid=?
-            ');
-            $dbc->execute($prep, array($uid));
+                WHERE uid=?';
+            $args = array($uid);
+            if ($section) {
+                $query .= ' AND section=?';
+                $args[] = $set;
+            }
+            $prep = $dbc->prepare($query);
+            $dbc->execute($prep, $args);
             return parent::preprocess();
         } elseif (FormLib::get('export') === '1') {
             echo $this->exportList(FormLib::get('set', 1));
@@ -191,7 +196,7 @@ class SaItemList extends SaHandheldPage
         echo $this->getList();
         echo '</div>
             <p>
-            <a href="?clear=1" class="btn btn-default btn-danger"
+            <a href="?clear=1&set=' . $this->section . '" class="btn btn-default btn-danger" id="clearLink"
                 onclick="return window.confirm(\'Clear list?\');">
                 Clear List
             </a>
@@ -239,7 +244,7 @@ class SaItemList extends SaHandheldPage
         for ($i=1; $i<=3; $i++) {
             $ret .= sprintf('<li role="presentation" %s>
                 <a href="#section%d" aria-controls="section%d" role="tab" data-toggle="tab"
-                onclick="$(\'#section\').val(%d); $(\'#exportLink\').attr(\'href\', \'?export=1&set=%d\'); return false;">Set %d</a></li>',
+                onclick="$(\'#section\').val(%d); $(\'#exportLink\').attr(\'href\', \'?export=1&set=%d\'); $(\'#clearLink\').attr(\'href\', \'?clear=1&set=%d\'); return false;">Set %d</a></li>',
                 ($i == $this->section ? 'class="active"' : ''),
                 $i, $i, $i, $i, $i);
         }
