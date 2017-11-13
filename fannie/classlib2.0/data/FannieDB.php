@@ -136,6 +136,7 @@ class FannieDB
             $config->get('SERVER_PW'),
             false, 
             true);
+        self::$db->setCharSet($config->get('CHARSET'), $db_name);
     }
 
     private static function addDB($db_name)
