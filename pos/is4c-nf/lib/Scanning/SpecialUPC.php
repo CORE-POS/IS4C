@@ -41,6 +41,7 @@ class SpecialUPC
         'DatabarCoupon',
         'HouseCoupon',
         'SpecialOrder',
+        'ReducedVariableItem',
     );
 
     protected $session;
