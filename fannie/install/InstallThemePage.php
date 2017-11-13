@@ -95,7 +95,7 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
             . '</tr>';
 
         echo '<tr><td>Character Set</td>'
-            . '<td>' . installTextField('FANNIE_CHARSET', $FANNIE_CHARSET, 'ISO-8859-1') . '</td>'
+            . '<td>' . installTextField('FANNIE_CHARSET', $FANNIE_CHARSET, 'UTF-8') . '</td>'
             . '</tr>';
 
         echo '<tr><td>Logo</td>'
