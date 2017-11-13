@@ -158,6 +158,8 @@ function printMany(){
         <a href="CreateTagsByDept.php">Create Tags By Department</a>
         <br />
         <a href="CreateTagsByManu.php">Create Tags By Brand</a>
+        <br />
+        <a href="QueueTagsByList.php">Queue Tags by A List</a>
         </div>
         <?php
         
