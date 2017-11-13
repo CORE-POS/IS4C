@@ -212,6 +212,11 @@ class SaItemList extends SaHandheldPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($this->config->get('OP_DB'));
         $uid = FannieAuth::getUID($this->current_user);
+        $myUID = $uid;
+        $override = FormLib::get('showUser', false);
+        if ($override) {
+            $uid = $override;
+        }
         $prep = $this->connection->prepare('
             SELECT s.upc,
                 p.brand,
@@ -240,6 +245,7 @@ class SaItemList extends SaHandheldPage
         }
         $ret .= '</ul>';
         $ret .= '<div class="tab-content">';
+        $itemCount = 0;
         for ($i=1; $i<=3; $i++) {
             $res = $this->connection->execute($prep, array($uid, $i));
             $ret .= sprintf('<div role=tablepanel" class="tab-pane %s" id="section%d">',
@@ -275,6 +281,7 @@ class SaItemList extends SaHandheldPage
                     $row['qty']
                 ); 
                 $upcs[] = $row['upc'];
+                $itemCount++;
             }
             $ret .= '</table>';
             $ret .= '<p><form method="post" action="../../../item/AdvancedItemSearch.php">';
@@ -284,6 +291,32 @@ class SaItemList extends SaHandheldPage
             $ret .= '</form></p>';
             $ret .= '</div>';
         }
+
+        $userR = $this->connection->query('SELECT s.uid, u.name
+            FROM ' . $settings['ShelfAuditDB'] . $this->connection->sep() . 'SaList AS s
+                LEFT JOIN ' . FannieDB::fqn('Users', 'op') . ' AS u ON s.uid=u.uid
+            WHERE s.clear=0
+                AND s.quantity <> 0
+            GROUP BY s.uid, u.name
+            ORDER BY u.name');
+        $ret .= '<select class="form-control" onchange="window.location=\'?showUser=\'+this.value;">';
+        $found = false;
+        if ($itemCount == 0) {
+            $found = true;
+            $ret .= "<option value=\"{$myUID}\">(you)</option>";
+        }
+        while ($userW = $this->connection->fetchRow($userR)) {
+            if (empty($userW['name'])) continue;
+            $ret .= sprintf('<option %s value="%s">%s</option>',
+                ($uid == $userW['uid'] ? 'selected' : ''), $userW['uid'], $userW['name']);
+            if ($myUID == $userW['uid']) {
+                $found = true;
+            }
+        }
+        if (!$found) {
+            $ret .= "<option value=\"{$myUID}\">(you)</option>";
+        }
+        $ret .= '</select>';
         $ret .= '</div>';
 
         return $ret;
