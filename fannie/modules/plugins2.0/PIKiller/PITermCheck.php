@@ -26,9 +26,6 @@ class PITermCheck extends FannieRESTfulPage
         $equity = $dbc->prepare('SELECT payments FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'equity_live_balance WHERE memnum=?');
         $equity = $dbc->getValue($equity, array($this->id));
 
-        $classA = $equity < 20 ? $equity : 20;
-        $classB = $equity < 20 ? 0 : $equity - 20;
-
         $amount = FormLib::get('amount', false);
         if ($amount === false) {
             // Terminate account related tables
@@ -127,6 +124,9 @@ class PITermCheck extends FannieRESTfulPage
             $equity = $amount;
         }
 
+        $classA = $equity < 20 ? $equity : 20;
+        $classB = $equity < 20 ? 0 : $equity - 20;
+
         /******************
          * Generate a check
          *****************/
@@ -214,6 +214,7 @@ class PITermCheck extends FannieRESTfulPage
         $pdf->Cell($width, $line_height, 'os@wholefoods.coop', 0, 1);
 
         $check = new GumCheckTemplate($custdata, $meminfo, $equity, 'Equity Refund', $number);
+        $check->shiftMICR(true);
         $check->renderAsPDF($pdf);
 
         $pdf->Output('Equity Refund ' . $this->id . '.pdf', 'I');
