@@ -31,7 +31,7 @@ class DefaultPdfPoExport {
     }
 
     function export_order($id){
-        global $FANNIE_OP_DB, $FANNIE_ROOT;
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         $order = new PurchaseOrderModel($dbc);
@@ -49,7 +49,7 @@ class DefaultPdfPoExport {
         $contact->vendorID($order->vendorID());
         $contact->load();
 
-        if (!class_exists('FPDF')) include_once($FANNIE_ROOT.'src/fpdf/fpdf.php');
+        if (!class_exists('FPDF')) include_once(__DIR__ . '/../../src/fpdf/fpdf.php');
         $pdf = new FPDF('P','mm','Letter');
         $pdf->AddPage();
     

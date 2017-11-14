@@ -4,7 +4,7 @@ use COREPOS\Fannie\API\item\signage\TagsNoPrice;
 
 include(__DIR__ . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class VendorTags extends FannieRESTfulPage

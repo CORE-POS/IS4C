@@ -25,10 +25,10 @@ use COREPOS\Fannie\API\lib\FannieUI;
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('checkLogin')) {
-    include_once($FANNIE_ROOT . 'auth/login.php');
+    include_once(__DIR__ . '/../../auth/login.php');
 }
 
 class BatchListPage extends FannieRESTfulPage

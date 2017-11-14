@@ -26,7 +26,7 @@ use \COREPOS\Fannie\API\item\PriceRounder;
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class VendorPricingBatchPage extends FannieRESTfulPage

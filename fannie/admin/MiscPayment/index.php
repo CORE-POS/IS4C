@@ -1,9 +1,9 @@
 <?php
 include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 $header = "Miscellaneous Payment";
 $page_title = "Fannie :: Misc Payment";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../../src/header.html');
 
 $LANE_NO=30;
 $EMP_NO=1001;
@@ -165,5 +165,5 @@ function bill($amt,$desc,$dept,$tender){
         $EMP_NO,$LANE_NO,$t_no);
 }
 
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../../src/footer.html');
 
