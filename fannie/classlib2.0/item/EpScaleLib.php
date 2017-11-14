@@ -199,8 +199,10 @@ class EpScaleLib
                     case 'Type':
                         if ($item_info[$key] == 'Random Weight') {
                             $line .= 'UMELB' . chr(253);
+                            $line .= 'BCO' . '0' . chr(253);
                         } else {
                             $line .= 'UMEBC' . chr(253);
+                            $line .= 'BCO' . '1' . chr(253);
                         }
                         break;
                     case 'NetWeight':
