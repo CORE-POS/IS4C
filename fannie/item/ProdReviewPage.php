@@ -757,7 +757,7 @@ HTML;
         $model = new VendorsModel($dbc);
         $vselect = '';
         $exclude = array(-1,1,2);
-        foreach ($model->find() as $obj) {
+        foreach ($model->find('vendorName') as $obj) {
             if (!in_array($obj->vendorID(),$exclude)) {
                 $vid = $obj->vendorID();
                 $vname = $obj->vendorName();
