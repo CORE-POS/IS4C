@@ -26,6 +26,9 @@ class PITermCheck extends FannieRESTfulPage
         $equity = $dbc->prepare('SELECT payments FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'equity_live_balance WHERE memnum=?');
         $equity = $dbc->getValue($equity, array($this->id));
 
+        $classA = $equity < 20 ? $equity : 20;
+        $classB = $equity < 20 ? 0 : $equity - 20;
+
         $amount = FormLib::get('amount', false);
         if ($amount === false) {
             // Terminate account related tables
@@ -122,10 +125,9 @@ class PITermCheck extends FannieRESTfulPage
             $dbc->execute($prep, $info['arguments']);
         } else {
             $equity = $amount;
+            $classA = $equity < 20 ? $equity : 20;
+            $classB = $equity < 20 ? 0 : $equity - 20;
         }
-
-        $classA = $equity < 20 ? $equity : 20;
-        $classB = $equity < 20 ? 0 : $equity - 20;
 
         /******************
          * Generate a check
