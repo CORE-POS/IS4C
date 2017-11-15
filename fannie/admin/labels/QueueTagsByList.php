@@ -49,14 +49,10 @@ class QueueTagsByList extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $ret = "";
-        $ret .= $this->get_view();
+        $ret = $this->get_view();
         $list = explode("\n",FormLib::get('list'));
         $tagID = FormLib::get('tagID');
-        $upcs = array();
-        foreach ($list as $upc) {
-            $upcs[] = BarcodeLib::padUPC($upc);
-        }
+        $upcs = array_map(array('BarcodeLib', 'padUPC'), $list);
 
         $product = new ProductsModel($dbc);
         $tag = new ShelftagsModel($dbc);
@@ -64,7 +60,6 @@ class QueueTagsByList extends FannieRESTfulPage
         $aSuccess = "";
         $aDanger = "";
         foreach ($upcs as $upc) {
-            $product->reset();
             $product->upc($upc);
             $product->store_id($this->config->get('STORE_ID'));
             $product->load();
@@ -73,13 +68,6 @@ class QueueTagsByList extends FannieRESTfulPage
 
             $tag = new ShelftagsModel($dbc);
             $tag->upc($upc);
-            foreach ($tag->find() as $obj) {
-                if ($obj->id() != $tagID) {
-                    $obj->delete();
-                }
-            }
-
-            $this->session->LastTagQueue = $tagID;
             $tag->id($tagID);
             $tag->description($info['description']);
             $tag->brand($info['brand']);
