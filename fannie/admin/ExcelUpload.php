@@ -22,16 +22,13 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
     private $result_count = 0;
     private $result_error = false;
 
-    function process_file($linedata, $indexes)
+    private function createTable($dbc, $headers, $upcCol)
     {
-        $headers = $linedata[0]; 
-        $headers = array_map(function($i){ return str_replace(' ', '', $i);}, $headers);
-        $dbc = $this->connection;
         $genericUpload = FannieDB::fqn('GenericUpload', 'op');
         if ($dbc->tableExists($genericUpload)) {
             $dbc->query('DROP TABLE ' . $genericUpload);
         }
-        $upcCol = $this->getColumnIndex('upc');
+
         $query = 'CREATE TABLE ' . $genericUpload . ' (';
         for ($i=0; $i<count($headers); $i++) {
             $val = $headers[$i];
@@ -49,6 +46,35 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
         }
         $query .= ')';
         $created = $dbc->query($query);
+
+        return $created ? true : false;
+    }
+
+    private function rewriteUpc($curUpc)
+    {
+        if (strstr($curUpc, '-')) {
+            $curUpc = str_replace('-', '', $curUpc);
+            if (strlen($curUpc) == 12) {
+                $curUpc = substr($curUpc, 0, 11);
+            }
+        } elseif (strstr($curUpc, ' ')) {
+            $curUpc = str_replace(' ', '', $curUpc);
+            if (strlen($curUpc) == 12) {
+                $curUpc = substr($curUpc, 0, 11);
+            }
+        }
+
+        return $curUpc;
+    }
+
+    function process_file($linedata, $indexes)
+    {
+        $headers = $linedata[0]; 
+        $headers = array_map(function($i){ return str_replace(' ', '', $i);}, $headers);
+        $dbc = $this->connection;
+        $upcCol = $this->getColumnIndex('upc');
+        $genericUpload = FannieDB::fqn('GenericUpload', 'op');
+        $created = $this->createTable($dbc, $headers, $upcCol);
         if ($created === false) {
             $this->result_error = 'Could not create table';
             return false;
@@ -63,24 +89,13 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
                 if (empty($curUpc)) {
                     continue;
                 }
-                if (strstr($curUpc, '-')) {
-                    $curUpc = str_replace('-', '', $curUpc);
-                    if (strlen($curUpc) == 12) {
-                        $curUpc = substr($curUpc, 0, 11);
-                    }
-                } elseif (strstr($curUpc, ' ')) {
-                    $curUpc = str_replace(' ', '', $curUpc);
-                    if (strlen($curUpc) == 12) {
-                        $curUpc = substr($curUpc, 0, 11);
-                    }
-                }
+                $curUpc = $this->rewriteUpc($curUpc);
                 $linedata[$i][$upcCol] = BarcodeLib::padUPC($curUpc);
             }
-            if (count($linedata[$i]) < count($headers)) {
-                while (count($linedata[$i]) < count($headers)) {
-                    $linedata[$i][] = '';
-                }
-            } elseif (count($linedata[$i]) > count($headers)) {
+            while (count($linedata[$i]) < count($headers)) {
+                $linedata[$i][] = '';
+            }
+            if (count($linedata[$i]) > count($headers)) {
                 $linedata[$i] = array_slice($linedata[$i], 0, count($headers));
             }
             $inserted = $dbc->execute($prep, $linedata[$i]);

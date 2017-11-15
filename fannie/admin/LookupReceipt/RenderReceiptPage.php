@@ -58,27 +58,29 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         }
     }
 
+    private function changeReceiptForm()
+    {
+        return <<<HTML
+<form action="RenderReceiptPage.php" method="get" class="hidden-print">
+<p>
+<div class="form-group form-inline">
+    <label>Date</label>:
+    <input type=text name=date id="date-field"
+        class="form-control" />
+    <label>Receipt Num</label>:
+    <input type=text name=receipt id="trans-field"
+        class="form-control" />
+    <button type=submit class="btn btn-default">Find Receipt</button>
+</div>
+</p>
+</form>
+<hr class="hidden-print" />';
+HTML;
+    }
+
     function get_view()
     {
-        ob_start();
-        ?>
-        <form action=RenderReceiptPage.php method=get
-            class="hidden-print">
-        <p>
-        <div class="form-group form-inline">
-            <label>Date</label>:
-            <input type=text name=date id="date-field"
-                class="form-control" />
-            <label>Receipt Num</label>:
-            <input type=text name=receipt id="trans-field"
-                class="form-control" />
-            <button type=submit class="btn btn-default">Find Receipt</button>
-        </div>
-        </p>
-        </form>
-        <hr class="hidden-print" />
-        <?php
-        $ret = ob_get_clean();
+        $ret = $this->changeReceiptForm();
         $date1 = $this->getReceiptDate($this->form);
         try {
             $transNum = $this->form->receipt;
@@ -154,16 +156,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     function receiptHeader($date,$trans) 
     {
         $totime = strtotime($date);
-        $month = date('m',$totime);
-        $year = date('Y',$totime);
-        $day = date('j',$totime);
-        $transact = explode('-',$trans);
-        if (count($transact) != 3) {
-            return '';
-        }
-        $emp_no = $transact[0];
-        $trans_no = $transact[2];
-        $reg_no = $transact[1];
+        list($emp_no, $reg_no, $trans_no) = explode('-', $trans, 3);
         $store = FormLib::get('store', false);
 
         $table = DTransactionsModel::selectDtrans(date('Y-m-d',$totime));
@@ -219,7 +212,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 AND trans_type <> 'L'
                 " . ($store ? ' AND store_id=? ' : '') . "
             ORDER BY trans_id";
-        $args = array("$year-$month-$day 00:00:00", "$year-$month-$day 23:59:59", 
+        $args = array(date('Y-m-d', $totime) . " 00:00:00", date('Y-m-d', $totime) . " 23:59:59", 
                 $reg_no, $emp_no, $trans_no);
         if ($store) {
             $args[] = $store;
@@ -259,47 +252,39 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $prep = $dbc->prepare($query); 
         $results = $dbc->execute($prep,$args);
-        $number_cols = $dbc->numFields($results);
         $rows = array();
-        while ($row = $dbc->fetch_row($results)) {
+        while ($row = $dbc->fetchRow($results)) {
             $rows[] = $row;
         } 
+        $row2 = array('emp_no'=>'','register_no'=>'','trans_no'=>'','datetime'=>'','memberID'=>'');
         if (isset($rows[0])) {
             $row2 = $rows[0];
-        } else {
-            $row2 = array('emp_no'=>'','register_no'=>'','trans_no'=>'','datetime'=>'','memberID'=>'');
         }
         $emp_no = $row2['emp_no'];  
         $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 
         $receiptHeader = $this->receiptHeaderLines();
 
-        $ret = "<table border = $border bgcolor=$bgcolor>\n";
+        $ret = "<table border=\"$border\" bgcolor=\"$bgcolor\">\n";
         $ret .= "{$receiptHeader}\n";
-        $ret .= "<tr><td align=center colspan=4>{$row2['datetime']} &nbsp; &nbsp; $trans_num</td></tr>";
-        $ret .= "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
-        $ret .= "<tr><td colspan=4>&nbsp;</td></tr>";
-        $ret .= "<tr align left>\n";
+        $ret .= "<tr><td align=\"center\" colspan=\"4\">{$row2['datetime']} &nbsp; &nbsp; $trans_num</td></tr>";
+        $ret .= "<tr><td align=\"center\" colspan=\"4\">Cashier:&nbsp;$emp_no</td></tr>";
+        $ret .= '<tr><td colspan="4">&nbsp;</td></tr>';
+        $ret .= "<tr>\n";
         foreach ($rows as $row) {
-            $ret .= "<tr><td align=left>";
+            $ret .= '<tr><td align="left">';
             if ($row['description'] == 'BADSCAN') {
                 $row['description'] .= ' (' . $row['upc'] . ')';
             }
-            $ret .= $row["description"]; 
-            $ret .= "</td>";
-            $ret .= "<td align=right>";
-            $ret .= $row["comment"];
-            $ret .= "</td><td align=right>";
-            $ret .= $row["total"];
-            $ret .= "</td><td align=right>";
-            $ret .= $row["Status"];
-            $ret .= "</td></tr>";   
+            $ret .= $row["description"] . '</td>'; 
+            $ret .= sprintf('<td align="right">%s</td><td align="right">%.2f</td><td align="right">%s</td></tr>',
+                        $row['comment'], $row['total'], $row['Status']);
         } 
         
-        $ret .= "<tr><td colspan=4>&nbsp;</td></tr>";
-        $ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
-        $ret .= "<tr><td colspan=4 align=center>Reprinted Transaction</td></tr>";
-        $ret .= "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
+        $ret .= '<tr><td colspan="4">&nbsp;</td></tr>';
+        $ret .= '<tr><td colspan="4" align="center">--------------------------------------------------------</td></tr>';
+        $ret .= '<tr><td colspan="4" align="center">Reprinted Transaction</td></tr>';
+        $ret .= '<tr><td colspan="4" align="center">--------------------------------------------------------</td></tr>';
         $ret .= "<tr><td colspan=4 align=center>" . _('Owner') . "#: {$row2['memberID']}</td></tr>";
         $ret .= "</table>\n";
 
@@ -309,15 +294,13 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     function ccInfo($date1, $transNum)
     {
         $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
-
         $dateInt = str_replace("-","",$date1);
-        list($emp,$reg,$trans) = explode("-",$transNum);
+        list($emp,$reg,$trans) = explode("-", $transNum, 3);
 
         $query = $dbc->prepare("SELECT transType AS mode, amount, PAN, 
             CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
-            refNum
+            refNum, processor
             FROM " . FannieDB::fqn('PaycardTransactions', 'trans') . "
             WHERE dateID=? AND
                 empNo=? AND registerNo=? AND transNo=?
@@ -326,7 +309,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret = '';
         $pRef = '';
         while ($row = $dbc->fetchRow($result)) {
-            if ($pRef == $row['refNum'] && $row['mode'] != 'VOID') continue;
+            if ($pRef == $row['refNum'] || $row['mode'] != 'VOID') continue;
             $ret .= "<hr />";
             $ret .= 'Mode: '.$row['mode'].'<br />';
             $ret .= "Card: ".$row['issuer'].' '.$row['PAN'].'<br />';
@@ -335,32 +318,25 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $ret .= "Sequence Number: ".$row['xTransactionID'].'<br />';
             $ret .= "Authorization: ".$row['xResultMessage'].'<br />';
             $ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
-            if ($row['mode'] == 'VOID'){}
-            elseif(strstr($row['mode'],'retail_'))
-                $ret .= 'FAPS<br />';
-            else
-                $ret .= 'MERCURY<br />';
+            $ret .= ($row['processor'] == 'GoEMerchant' ? 'FAPS' : 'MERCURY') . '<br />';
             $pRef = $row['refNum'];
         }
+
         return $ret;
     }
 
     private function signatures($tdate, $transNum)
     {
-        if (strstr($tdate, ' ')) {
-            list($tdate, $time) = explode(' ', $tdate, 2);
-        }
+        $tdate = date('Y-m-d', strtotime($tdate));
         list($emp,$reg,$trans) = explode('-', $transNum);
 
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
         $lookupQ = 'SELECT capturedSignatureID 
                     FROM ' . FannieDB::fqn('CapturedSignature', 'trans') . '
                     WHERE tdate BETWEEN ? AND ?
                         AND emp_no=?
                         AND register_no=?
                         AND trans_no=?';
-        $lookupP = $dbc->prepare($lookupQ);
+        $lookupP = $this->connection->prepare($lookupQ);
         $args = array(
             $tdate . ' 00:00:00',
             $tdate . ' 23:59:59',
@@ -368,12 +344,11 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $reg,
             $trans,
         );
-        $lookupR = $dbc->execute($lookupP, $args);
+        $lookupR = $this->connection->execute($lookupP, $args);
         $ret = '';
-        while($row = $dbc->fetch_row($lookupR)) {
+        while($row = $this->connection->fetch_row($lookupR)) {
             $ret .= sprintf('<img style="border: solid 1px black; padding: 5px;"
-                                alt="Signature Image"
-                                src="SigImage.php?id=%d" />',
+                                alt="Signature Image" src="SigImage.php?id=%d" />',
                                 $row['capturedSignatureID']
             );
         }

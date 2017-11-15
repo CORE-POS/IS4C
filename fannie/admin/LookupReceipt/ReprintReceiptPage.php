@@ -172,11 +172,8 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $this->results = "<b>No receipts match the given criteria</b>";
         } elseif ($dbc->numRows($result) == 1){
             $row = $dbc->fetchRow($result);
-            $year = $row[0];
-            $month = $row[1];
-            $day = $row[2];
             $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-            header("Location: RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num");
+            header("Location: RenderReceiptPage.php?year={$row['year']}&month={$row['month']}&day={$row['day']}&receipt=$trans_num");
             return false;
         } else {
             $this->results = $this->toTable($dbc, $result, $dlog);
@@ -215,12 +212,9 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $num_results = $dbc->numRows($result);
         while ($row = $dbc->fetchRow($result)) {
             $ret .= '<tr>';
-            $year = $row[0];
-            $month = $row[1];
-            $day = $row[2];
             $ret .= '<td>' . $row['ts'] . '</td>';
             $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-            $ret .= "<td><a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
+            $ret .= "<td><a href=\"RenderReceiptPage.php?year={$row['year']}&month={$row['month']}&day={$row['day']}&receipt=$trans_num\">";
             $ret .= "$trans_num</a></td>";
             $ret .= '<td>' . $row['emp_no'] . '</td>';
             $ret .= '<td>' . $row['register_no'] . '</td>';
