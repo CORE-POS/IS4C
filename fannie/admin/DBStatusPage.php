@@ -41,6 +41,11 @@ class DBStatusPage extends FannieRESTfulPage
 
         return $ret;
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals('', $this->get_view());
+    }
 }
 
 FannieDispatch::conditionalExec();

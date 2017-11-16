@@ -49,13 +49,16 @@ class LaneParametersEditor extends FannieRESTfulPage
 
     protected function post_id_handler()
     {
-        $parameters = new ParametersModel($this->connection);
-        $parameters->lane_id($this->id);
-        $parameters->store_id(FormLib::get('store'));
-        $parameters->param_key(FormLib::get('key'));
-        $parameters->param_value('');
-        $parameters->is_array(0);
-        $parameters->save();
+        try {
+            $parameters = new ParametersModel($this->connection);
+            $parameters->lane_id($this->id);
+            $parameters->store_id($this->form->store);
+            $parameters->param_key($this->form->key);
+            $parameters->param_value('');
+            $parameters->is_array(0);
+            $parameters->save();
+        } catch (Exception $ex) {
+        }
 
         return 'LaneParametersEditor.php';
     }
@@ -63,11 +66,11 @@ class LaneParametersEditor extends FannieRESTfulPage
     protected function post_handler()
     {
         $parameters = new ParametersModel($this->connection);
-        $lanes = FormLib::get('lane');
-        $stores = FormLib::get('stores');
-        $keys = FormLib::get('key');
-        $vals = FormLib::get('val');
-        $arrays = FormLib::get('array');
+        $lanes = $this->form->tryGet('lane', array());
+        $stores = $this->form->tryGet('stores', array());
+        $keys = $this->form->tryGet('key', array());
+        $vals = $this->form->tryGet('val', array());
+        $arrays = $this->form->tryGet('array', array());
         for ($i=0; $i<count($lanes); $i++) {
             $parameters->lane_id($lanes[$i]);
             $parameters->store_id($stores[$i]);
@@ -82,11 +85,14 @@ class LaneParametersEditor extends FannieRESTfulPage
 
     protected function delete_id_handler()
     {
-        $parameters = new ParametersModel($this->connection);
-        $parameters->lane_id($this->id);
-        $parameters->store_id(FormLib::get('store'));
-        $parameters->param_key(FormLib::get('key'));
-        $parameters->delete();
+        try {
+            $parameters = new ParametersModel($this->connection);
+            $parameters->lane_id($this->id);
+            $parameters->store_id($this->form->store);
+            $parameters->param_key($this->form->key);
+            $parameters->delete();
+        } catch (Exception $ex) {
+        }
 
         return 'LaneParametersEditor.php';
     }
@@ -160,6 +166,21 @@ class LaneParametersEditor extends FannieRESTfulPage
 stored in the database. Some understanding of what these names mean is required. Store overrides
 are settings that apply instead of the global parameter for a given store. Lane overrides are
 settings that apply instead of the global or store parameter for a given lane.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals('', $this->get_view());
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->setMany(array('store'=>0, 'key'=>'foo'));
+        $this->setForm($form);
+        $this->id = 0;
+        $phpunit->assertEquals('LaneParametersEditor.php', $this->post_id_handler());
+        $phpunit->assertEquals('LaneParametersEditor.php', $this->delete_id_handler());
+        $form->store = array(0);
+        $form->key = array('foo');
+        $form->setMany(array('lane'=>array(0), 'val'=>array('bar'), 'array'=>array()));
+        $phpunit->assertEquals('LaneParametersEditor.php', $this->post_handler());
     }
 }
 
