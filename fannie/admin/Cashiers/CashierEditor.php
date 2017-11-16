@@ -26,8 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class CashierEditor extends FanniePage {
-
+class CashierEditor extends FannieRESTfulPage
+{
     protected $title = "Fannie : Edit Cashier";
     protected $header = "Edit Cashier";
     protected $must_authenticate = True;
@@ -38,46 +38,51 @@ class CashierEditor extends FanniePage {
 
     private $messages = '';
 
-    public function preprocess()
+    public function post_handler()
     {
-        $emp_no = FormLib::get('emp_no',0);
+        try {
+            $emp_no = $this->form->emp_no;
+            $fname = $this->form->fname;
 
-        if (FormLib::get('fname') !== '') {
-            $dbc = FannieDB::get($this->config->get('OP_DB'));
+            if ($fname !== '') {
+                $dbc = FannieDB::get($this->config->get('OP_DB'));
 
-            // avoid duplicate passwords
-            $chkP = $dbc->prepare("
-                SELECT emp_no
-                FROM employees
-                WHERE (CashierPassword=? OR AdminPassword=?)
-                    AND emp_no <> ?");
-            $passwdInUse = $dbc->getValue($chkP, array(FormLib::get('passwd'), FormLib::get('passwd'), $emp_no));
-            if ($passwdInUse !== false) {
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Password already in use');\n");
-                return true;
+                // avoid duplicate passwords
+                $chkP = $dbc->prepare("
+                    SELECT emp_no
+                    FROM employees
+                    WHERE (CashierPassword=? OR AdminPassword=?)
+                        AND emp_no <> ?");
+                $passwdInUse = $dbc->getValue($chkP, array($this->form->passwd, $this->form->passwd, $emp_no));
+                if ($passwdInUse !== false) {
+                    $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Password already in use');\n");
+                    return true;
+                }
+
+                $employee = new EmployeesModel($dbc);
+                $employee->emp_no($emp_no);
+                $employee->FirstName($fname);
+                $employee->LastName($this->form->lname);
+                $employee->CashierPassword($this->form->passwd);
+                $employee->AdminPassword($this->form->passwd);
+                $employee->frontendsecurity($this->form->fes);
+                $employee->backendsecurity($this->form->fes);
+                $active = $this->form->tryGet('active', '') !== '' ? 1 : 0;
+                $employee->EmpActive($active);
+                $employee->birthdate($this->form->birthdate);
+                $saved = $employee->save();
+
+                $this->saveStoreMapping($dbc, $emp_no);
+
+                if ($saved) {
+                    $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
+                    $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', '$message');\n");
+                } else {
+                    $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
+                }
             }
-
-            $employee = new EmployeesModel($dbc);
-            $employee->emp_no($emp_no);
-            $employee->FirstName(FormLib::get('fname'));
-            $employee->LastName(FormLib::get('lname'));
-            $employee->CashierPassword(FormLib::get('passwd'));
-            $employee->AdminPassword(FormLib::get('passwd'));
-            $employee->frontendsecurity(FormLib::get('fes'));
-            $employee->backendsecurity(FormLib::get('fes'));
-            $active = FormLib::get('active') !== '' ? 1 : 0;
-            $employee->EmpActive($active);
-            $employee->birthdate(FormLib::get('birthdate'));
-            $saved = $employee->save();
-
-            $this->saveStoreMapping($dbc, $emp_no);
-
-            if ($saved) {
-                $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', '$message');\n");
-            } else {
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
-            }
+        } catch (Exception $ex) {
+            $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier (" . $ex->getMessage() . ")');\n");
         }
 
         return true;
@@ -87,7 +92,7 @@ class CashierEditor extends FanniePage {
     {
         $map = new StoreEmployeeMapModel($dbc);
         $map->empNo($emp_no);
-        $stores = FormLib::get('store', array());
+        $stores = $this->form->tryGet('store', array());
         foreach ($stores as $s) {
             $map->storeID($s);
             $map->save();
@@ -124,10 +129,15 @@ class CashierEditor extends FanniePage {
         return $storeMap;
     }
 
-    function body_content()
+    protected function post_view()
+    {
+        return $this->get_view();
+    }
+
+    protected function get_view()
     {
         $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
-        $emp_no = FormLib::get('emp_no',0);
+        $emp_no = $this->form->tryGet('emp_no',0);
 
         $storeMap = $this->storeMapHtml($dbc, $emp_no);
 
@@ -201,7 +211,18 @@ HTML;
     public function unitTest($phpunit)
     {
         $this->config->set('FANNIE_STORE_MODE', 'HQ');
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_view()));
+        $form = new COREPOS\Common\mvc\ValueContainer();
+        $form->emp_no = 1;
+        $form->fname = 'Test';
+        $form->lname = '';
+        $form->passwd = '1234';
+        $form->fes = 20;
+        $form->birthdate = '2000-01-01';
+        $form->store = array(1);
+        $this->setForm($form);
+        $phpunit->assertEquals(true, $this->post_handler());
         $this->config->set('FANNIE_STORE_MODE', 'STORE');
     }
 }
