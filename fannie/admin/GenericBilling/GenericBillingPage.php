@@ -127,12 +127,17 @@ class GenericBillingPage extends FannieRESTfulPage
 
     function post_id_handler()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $sql = FannieDB::get($FANNIE_TRANS_DB);
-
-        $amount = FormLib::get_form_value('amount');
-        $desc = FormLib::get_form_value('desc');
+        $sql = FannieDB::get($this->config->get('TRANS_DB'));
         $json = array('msg' => '', 'billed' => 0);
+
+        try {
+            $amount = $this->form->amount;
+            $desc = $this->form->desc;
+        } catch (Exception $ex) {
+            $json['msg'] = 'Invalid request';
+            echo json_encode($json);
+            return false;
+        }
         if ($amount === '') {
             $json['msg'] = "Amount is required";
             echo json_encode($json);
@@ -189,6 +194,13 @@ class GenericBillingPage extends FannieRESTfulPage
         $this->id = 1;
         ob_start();
         $phpunit->assertEquals(false, $this->get_id_handler());
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $form = new COREPOS\common\ValueContainer();
+        $form->amount = 1;
+        $form->desc = 'TEST';
+        $this->setForm($form);
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_handler());
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
 }
