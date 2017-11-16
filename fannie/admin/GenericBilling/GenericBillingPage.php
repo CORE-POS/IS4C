@@ -195,7 +195,7 @@ class GenericBillingPage extends FannieRESTfulPage
         ob_start();
         $phpunit->assertEquals(false, $this->get_id_handler());
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
-        $form = new COREPOS\common\ValueContainer();
+        $form = new COREPOS\common\mvc\ValueContainer();
         $form->amount = 1;
         $form->desc = 'TEST';
         $this->setForm($form);

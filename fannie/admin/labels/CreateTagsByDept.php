@@ -149,7 +149,7 @@ class CreateTagsByDept extends FannieRESTfulPage
     {
         $this->msgs = 'test message';
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
-        $form = new COREPOS\common\ValueContainer();
+        $form = new COREPOS\common\mvc\ValueContainer();
         $form->setMany(array('deptStart'=>1, 'deptEnd'=>1));
         $this->setForm($form);
         $phpunit->assertEquals(true, $this->post_handler());

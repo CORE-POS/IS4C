@@ -213,7 +213,7 @@ HTML;
         $this->config->set('FANNIE_STORE_MODE', 'HQ');
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $phpunit->assertNotEquals(0, strlen($this->post_view()));
-        $form = new COREPOS\Common\mvc\ValueContainer();
+        $form = new COREPOS\common\mvc\ValueContainer();
         $form->emp_no = 1;
         $form->fname = 'Test';
         $form->lname = '';
