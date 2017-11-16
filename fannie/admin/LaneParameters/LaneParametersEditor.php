@@ -177,9 +177,8 @@ settings that apply instead of the global or store parameter for a given lane.</
         $this->id = 0;
         $phpunit->assertEquals('LaneParametersEditor.php', $this->post_id_handler());
         $phpunit->assertEquals('LaneParametersEditor.php', $this->delete_id_handler());
-        $form->store = array(0);
         $form->key = array('foo');
-        $form->setMany(array('lane'=>array(0), 'val'=>array('bar'), 'array'=>array()));
+        $form->setMany(array('stores'=>array(0), 'lane'=>array(0), 'val'=>array('bar'), 'array'=>array()));
         $phpunit->assertEquals('LaneParametersEditor.php', $this->post_handler());
     }
 }
