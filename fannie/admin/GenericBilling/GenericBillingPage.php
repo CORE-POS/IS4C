@@ -208,6 +208,12 @@ class GenericBillingPage extends FannieRESTfulPage
         $delP = $this->connection->prepare('DELETE FROM ' . FannieDB::fqn('dtransactions', 'trans') . ' WHERE emp_no=? AND register_no=? AND trans_no=?');
         $delR = $this->connection->execute($delP, array($this->EMP_NO, $this->LANE_NO, $json['trans_no']));
         $phpunit->assertNotEquals(false, $delR, 'Cleaning up: ' . $this->connection->error());
+        $debug = $this->EMP_NO . '-' . $this->LANE_NO . '-' $json['trans_no'] . ', ' . FannieDB::fqn('dtransactions');
+        $res = $this->connection->query('SELECT * FROM ' . FannieDB::fqn('dtransactions', 'trans');
+        while ($row = $this->connection->fetchRow($res)) {
+            $debug .= var_export($row, true);
+        }
+        $phpunit->assertEquals(false, true, $debug);
     }
 }
 
