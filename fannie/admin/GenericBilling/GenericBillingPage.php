@@ -174,6 +174,7 @@ class GenericBillingPage extends FannieRESTfulPage
                 Receipt is %d-%d-%d.",$this->id,$amount,
                 $this->EMP_NO,$this->LANE_NO,$t_no);
         $json['billed'] = 1;
+        $json['trans_no'] = $t_no;
         echo json_encode($json);
 
         return false;
@@ -201,7 +202,10 @@ class GenericBillingPage extends FannieRESTfulPage
         $this->setForm($form);
         ob_start();
         $phpunit->assertEquals(false, $this->post_id_handler());
-        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $json = ob_get_clean();
+        $json = json_decode($json, true);
+        $delP = $this->connection->prepare('DELETE FROM ' . FannieDB::fqn('dtransactions', 'trans') . ' WHERE emp_no=? AND register_no=? AND trans_no=?');
+        $delR = $this->connection->execute($delP, array($this->EMP_NO, $this->LANE_NO, $json['trans_no']));
     }
 }
 
