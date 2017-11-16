@@ -204,7 +204,7 @@ class GenericBillingPage extends FannieRESTfulPage
         $phpunit->assertEquals(false, $this->post_id_handler());
         $json = ob_get_clean();
         $json = json_decode($json, true);
-        $this->assertArrayHasKey('trans_no', $json);
+        $phpunit->assertArrayHasKey('trans_no', $json);
         $delP = $this->connection->prepare('DELETE FROM ' . FannieDB::fqn('dtransactions', 'trans') . ' WHERE emp_no=? AND register_no=? AND trans_no=?');
         $delR = $this->connection->execute($delP, array($this->EMP_NO, $this->LANE_NO, $json['trans_no']));
         $phpunit->assertNotEquals(false, $delR, 'Cleaning up: ' . $this->connection->error());
