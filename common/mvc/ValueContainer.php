@@ -47,6 +47,13 @@ class ValueContainer implements \Iterator
         return isset($this->values[$name]) ? $this->values[$name] : $default;
     }
 
+    public function setMany(array $values)
+    {
+        foreach ($values as $k => $v) {
+            $this->values[$k] = $v;
+        }
+    }
+
     public function __isset($name)
     {
         return isset($this->values[$name]);
