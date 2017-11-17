@@ -206,14 +206,8 @@ return <<<HTML
                 <div class="form-group">
                     <label class="control-label small">Location</label>
                     <select name="location" class="form-control input-sm">
-                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
-                    </select>
-                </div>
-                &nbsp;&nbsp;
-                <div class="form-group">
-                    <label class="control-label small">Sign Info</label>
-                    <select name="signinfo" class="form-control input-sm">
-                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
+                    <option value="">Any</option><option value="-1">Yes</option><option value="0">No</option>
+                    {$floorOpts}
                     </select>
                 </div>
             </td>
@@ -250,6 +244,13 @@ return <<<HTML
                     Upcoming Sales
                     <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_upcoming" id="sale_upcoming" value="1" /> 
                 </label>
+                |
+                <div class="form-group">
+                    <label class="control-label small">Sign Info</label>
+                    <select name="signinfo" class="form-control input-sm">
+                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
+                    </select>
+                </div>
             </td>
         </tr>
     </table>

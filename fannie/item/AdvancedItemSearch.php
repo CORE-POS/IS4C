@@ -547,10 +547,14 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function searchLocation($search, $form)
     {
         if ($form->location !== '') {
-            if ($form->location == '1') {
-                $search->from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
+            if ($form->location == 0) {
+                $search->where .= ' AND p.upc NOT IN (SELECT DISTINCT upc FROM FloorSectionProductMap) ';
+            } elseif ($form->location == -1) {
+                $search->where .= ' AND p.upc IN (SELECT DISTINCT upc FROM FloorSectionProductMap) ';
             } else {
-                $search->where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
+                $search->from .= ' INNER JOIN FloorSectionProductMap AS y ON p.upc=y.upc ';
+                $search->where .= ' AND y.floorSectionID=? ';
+                $search->args[] = $form->location;
             }
         }
 
@@ -1010,6 +1014,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
         $model = new TaxRatesModel($dbc);
         $taxOpts = $model->toOptions();
+
+        $model = new FloorSectionsModel($dbc);
+        $floorOpts = $model->toOptions();
 
         $model = new BatchTypeModel($dbc);
         $model->discType(0, '<>');

@@ -34,5 +34,25 @@ class FloorSectionsModel extends BasicModel
     'storeID' => array('type'=>'INT', 'default'=>1),
     'name' => array('type'=>'VARCHAR(50)'),
     );
+
+    public function toOptions($selected=0, $id_as_label=false)
+    {
+        $prep = $this->connection->prepare('
+            SELECT f.floorSectionID,
+                s.description,
+                f.name
+            FROM ' . FannieDB::fqn('FloorSections', 'op') . ' AS f
+                INNER JOIN ' . FannieDB::fqn('Stores', 'op') . ' AS s ON f.storeID=s.storeID
+            ORDER BY s.description, f.name');
+        $res = $this->connection->execute($prep);
+        $ret = '';
+        while ($row = $this->connection->fetchRow($res)) {
+            $ret .= sprintf('<option %s value="%d">%s %s</option>',
+                ($row['floorSectionID'] == $selected ? 'selected' : ''),
+                $row['floorSectionID'], $row['description'], $row['name']);
+        }
+
+        return $ret;
+    } 
 }
 
