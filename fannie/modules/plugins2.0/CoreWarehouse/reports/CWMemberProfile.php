@@ -12,11 +12,16 @@ class CWMemberProfile extends FannieRESTfulPage
     protected $header = 'Shopper Profile';
     protected $title = 'Shopper Profile';
 
+    protected function post_id_view()
+    {
+        return $this->get_id_view();
+    }
+
     protected function get_id_view()
     {
-        $doAvg = FormLib::get('doAvg', 0);
-        $doTop = FormLib::get('doTop', 0);
-        $ids = explode("\n", $this->id);
+        $doAvg = FormLib::get('doAvg', 1);
+        $doTop = FormLib::get('doTop', 1);
+        $ids = is_array($this->id) ? $this->id : explode("\n", $this->id);
         $ids = array_map('trim', $ids);
         $ids = array_filter($ids, 'is_numeric');
         list($inStr, $args) = $this->connection->safeInClause($ids);
@@ -156,10 +161,10 @@ HTML;
         <textarea name="id" rows="10" class="form-control"></textarea>
     </div>
     <div class="form-group">
-        <label><input type="checkbox" name="doAvg" value="1" checked /> Include average owner</label>
+        <label><input type="checkbox" name="doAvg" value="0" /> Omit average owner</label>
     </div>
     <div class="form-group">
-        <label><input type="checkbox" name="doTop" value="1" checked /> Include top 25% owner</label>
+        <label><input type="checkbox" name="doTop" value="0" /> Omit top 25% owner</label>
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-default">Submit</button>

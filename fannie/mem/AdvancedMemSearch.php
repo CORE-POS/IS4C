@@ -33,7 +33,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
         $search = new stdClass();
         $search->args = array();
         $search->where = '1=1 ';
-        $search->from = 'custdata AS c ';
+        $search->from = 'custdata AS c LEFT JOIN memtype AS t ON c.memType=t.memtype ';
         foreach ($this->searchMethods as $method) {
             $search = $this->$method($search, $this->form);
         }
@@ -46,7 +46,9 @@ class AdvancedMemSearch extends FannieRESTfulPage
         $query = "SELECT c.CardNo,
                 c.personNum,
                 c.FirstName,
-                c.LastName
+                c.LastName,
+                c.Type,
+                t.memDesc
             FROM {$search->from}
             WHERE {$search->where}";
         $prep = $this->connection->prepare($query);
@@ -89,7 +91,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
         $ret = '<p>Found ' . count($data) . ' matches</p>';
         $ret .= '<table class="table small">
             <thead><tr><th style="width:25px;"><input type="checkbox" onchange="toggleAll(this, \'.savedCB\');" />
-            <th>Owner #</th><th>First Name</th><th>Last Name</th></thead>
+            <th>Owner #</th><th>First Name</th><th>Last Name</th><th>Status</th><th>Type</th></thead>
             <tbody>';
         $copyPaste = "";
         foreach ($data as $d) {
@@ -97,7 +99,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
             $ret .= "<tr>
                 <td><input type=\"checkbox\" class=\"savedCB\" {$checked} name=\"saved[]\" value=\"{$d['CardNo']}\" /></td>
                 <td><a href=\"MemberEditor.php?memNum={$d['CardNo']}\">{$d['CardNo']}</a></td>
-                <td>{$d['FirstName']}</td><td>{$d['LastName']}</td></tr>";
+                <td>{$d['FirstName']}</td><td>{$d['LastName']}</td><td>{$d['Type']}</td><td>{$d['memDesc']}</td></tr>";
             $copyPaste .= $d['CardNo'] . "\n";
         }
         $ret .= '</tbody></table>';
@@ -323,10 +325,11 @@ class AdvancedMemSearch extends FannieRESTfulPage
         return <<<HTML
 <script type="text/javascript">
 function runSearch() {
+    var dstr = $('#memSearchForm').serialize();
     $('#resultsArea').html('');
     $('#progressBar').show();
     $.ajax({
-        data: $('#memSearchForm').serialize(),
+        data: dstr,
         method: 'post',
     }).error(function (e1, e2, e3) {
         $('#progressBar').hide();
@@ -342,13 +345,28 @@ function toggleAll(elem, selector) {
     } else {
         $(selector).prop('checked', false);
     }
-    checkedCount('#selection-counter', selector);
+}
+function sendTo(url) {
+    $('#sendForm').html('');
+    $('#sendForm').attr('action', url);
+    var checks = $('.savedCB:checked');
+    if (checks.length > 0) {
+        $.each(checks, function (i, o) {
+            $('#sendForm').append('<input type="hidden" name="id[]" value="' + o.value + '" />');
+        });
+        $('#sendForm').submit();
+    }
 }
 </script>
 <form method="post" id="memSearchForm" onsubmit="runSearch(); return false;">
+<div class="row">
+<div class="col-sm-11">
 <table class="table table-bordered small">
     <tr>
-        <th>Owner #</th>
+        <th>Owner #
+            <label><input type="checkbox" name="isPrimary" value="1" checked />
+                Is Primary Owner</label>
+        </th>
         <td><textarea class="form-control input-sm" rows="2" name="card_no"></textarea></td>
         <th>Status</th>
         <td><select name="status" class="form-control input-sm">
@@ -365,7 +383,7 @@ function toggleAll(elem, selector) {
         <th>Equity</th>
         <td class="form-inline">
         <select name="equityOp" class="form-control input-sm"><option>=</option><option>&gt;</option><option>&lt;</option></select>
-        <input type="text" name="equity" class="form-control input-sm" /></td>
+        <input type="text" name="equity" class="form-control input-sm price-field" /></td>
     </tr>
     <tr>
         <th>First Name</th>
@@ -407,11 +425,18 @@ function toggleAll(elem, selector) {
             <input type="text" class="form-control input-sm date-field" name="join1" />
             <input type="text" class="form-control input-sm date-field" name="join2" 
                 placeholder="Optional" />
-            <label><input type="checkbox" name="isPrimary" value="1" checked />
-                Is Primary Owner</label>
         </td>
     </tr>
 </table>
+</div>
+<div class="col-sm-1">
+    <button class="btn btn-default btn-sm" type="button" 
+        onclick="sendTo('TargetMailList.php?type=all');">Mailing List</button>
+    <br /><br />
+    <button class="btn btn-default btn-sm" type="button" 
+        onclick="sendTo('../modules/plugins2.0/CoreWarehouse/reports/CWMemberProfile.php');">Profile</button>
+</div>
+</div>
 <p>
     <button type="submit" class="btn btn-default btn-core">Search</button>
     <button type="reset" class="btn btn-default btn-reset">Reset Form</button>
@@ -425,6 +450,7 @@ function toggleAll(elem, selector) {
 </div>
 <div id="resultsArea"></div>
 </form>
+<form id="sendForm" method="post" target="_new"></form>
 HTML;
     }
 }
