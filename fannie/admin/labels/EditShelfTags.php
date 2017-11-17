@@ -83,7 +83,7 @@ class EditShelfTags extends FannieRESTfulPage
     private function valOrDefault($field, $index, $default)
     {
         $arr = FormLib::get($field, array());
-        return isset($arr[$field]) ? $arr[$field] : $default;
+        return isset($arr[$index]) ? $arr[$index] : $default;
     }
 
     public function post_id_handler()
