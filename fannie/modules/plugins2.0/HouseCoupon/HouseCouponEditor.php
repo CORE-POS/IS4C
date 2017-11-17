@@ -238,7 +238,7 @@ class HouseCouponEditor extends FanniePage
         $ret .= '<tr><th>ID</th><th>Name</th><th>Value</th>';
         $ret .= '<th>Begins</th><th>Expires</th></tr>';
         $model = new HouseCouponsModel($dbc);
-        foreach($model->find('coupID') as $obj) {
+        foreach($model->find('coupID', true) as $obj) {
             if (strstr($obj->startDate(), ' ')) {
                 $tmp = explode(' ', $obj->startDate());
                 $obj->startDate($tmp[0]);
