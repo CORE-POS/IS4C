@@ -172,9 +172,9 @@ class GenericBillingPage extends FannieRESTfulPage
 
         $json['msg'] = sprintf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
                 Receipt is %d-%d-%d.",$this->id,$amount,
-                $this->EMP_NO,$this->LANE_NO,$t_no);
+                $this->EMP_NO,$this->LANE_NO,$trans_no);
         $json['billed'] = 1;
-        $json['trans_no'] = $t_no;
+        $json['trans_no'] = $trans_no;
         echo json_encode($json);
 
         return false;
