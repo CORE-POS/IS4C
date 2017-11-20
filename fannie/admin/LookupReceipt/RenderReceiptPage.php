@@ -74,7 +74,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
 </div>
 </p>
 </form>
-<hr class="hidden-print" />';
+<hr class="hidden-print" />
 HTML;
     }
 
@@ -309,13 +309,14 @@ HTML;
         $ret = '';
         $pRef = '';
         while ($row = $dbc->fetchRow($result)) {
-            if ($pRef == $row['refNum'] || $row['mode'] != 'VOID') continue;
+            if ($pRef == $row['refNum'] || $row['mode'] == 'VOID') continue;
             $ret .= "<hr />";
             $ret .= 'Mode: '.$row['mode'].'<br />';
             $ret .= "Card: ".$row['issuer'].' '.$row['PAN'].'<br />';
             $ret .= "Name: ".$row['name'].'<br />';
             $ret .= "Entry Method: ".$row['entryMethod'].'<br />';
             $ret .= "Sequence Number: ".$row['xTransactionID'].'<br />';
+            $ret .= "Reference Number: ".$row['refNum'].'<br />';
             $ret .= "Authorization: ".$row['xResultMessage'].'<br />';
             $ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
             $ret .= ($row['processor'] == 'GoEMerchant' ? 'FAPS' : 'MERCURY') . '<br />';
