@@ -326,12 +326,12 @@ class PaycardFixReturn extends FannieRESTfulPage
                     AND trans_subtype IN ('CC', 'AX')
                     AND total <> 0"
             );
-            $cRow = $this->connection->getRow($correctP, array(date('Y-m-d', $transNum)));
+            $cRow = $this->connection->getRow($correctP, array(date('Y-m-d'), $transNum));
             if ($cRow === false) {
                 return '<div class="alert alert-danger">Correction transaction not found</div>'
                     . $this->get_view();
             }
-            if ($returnAmount != (-1*$cRow['total'])) {
+            if ($returnAmount != $cRow['total']) {
                 return sprintf('<div class="alert alert-danger">Correction transaction amount (%.2f) does not
                     match charge refund amount (%.2f)</div>', -1*$cRow['total'], $returnAmount)
                     . $this->get_view();
