@@ -719,17 +719,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function filterMovement($items, $form)
     {
         if ($form->soldOp !== '') {
-            $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$form->soldOp-1, date('Y')));
+            list($days, $store) = explode(':', $form->soldOp);
+            $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$days-1, date('Y')));
             $movementEnd = date('Y-m-d', strtotime('yesterday'));
             $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
 
             $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
             list($upc_in, $args) = $this->connection->safeInClause(array_keys($items), $args);
+            $args[] = $store;
 
             $query = "SELECT t.upc
                       FROM $dlog AS t
                       WHERE tdate BETWEEN ? AND ?
                         AND t.upc IN ($upc_in)
+                        AND " . DTrans::isStoreID($store, 't') . "
                         AND t.charflag <> 'SO'
                       GROUP BY t.upc
                       HAVING SUM(total) <> 0";
@@ -1018,8 +1021,22 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $model = new FloorSectionsModel($dbc);
         $floorOpts = $model->toOptions();
 
+        $model = new StoresModel($dbc);
+        $model->hasOwnItems(1);
+        $stores = array();
+        foreach ($model->find() as $obj) {
+            $stores[$obj->storeID()] = $obj->description();
+        }
+        $soldOpts = '';
+        foreach (array(7, 30, 90) as $days) {
+            $soldOpts .= "<option value=\"{$days}:0\">Last {$days} days (any)</option>";
+            foreach ($stores as $k => $v) {
+                $soldOpts .= "<option value=\"{$days}:{$k}\">Last {$days} days ({$v})</option>";
+            }
+        }
+
         $model = new BatchTypeModel($dbc);
-        $model->discType(0, '<>');
+        $model->discType(0, '>');
         $btOpts = $model->toOptions();
         $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
