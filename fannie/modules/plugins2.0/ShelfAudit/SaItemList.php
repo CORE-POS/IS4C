@@ -89,7 +89,7 @@ class SaItemList extends SaHandheldPage
                 SET clear=1
                 WHERE uid=?';
             $args = array($uid);
-            if ($section) {
+            if ($set) {
                 $query .= ' AND section=?';
                 $args[] = $set;
             }
@@ -246,7 +246,7 @@ class SaItemList extends SaHandheldPage
                 <a href="#section%d" aria-controls="section%d" role="tab" data-toggle="tab"
                 onclick="$(\'#section\').val(%d); $(\'#exportLink\').attr(\'href\', \'?export=1&set=%d\'); $(\'#clearLink\').attr(\'href\', \'?clear=1&set=%d\'); return false;">Set %d</a></li>',
                 ($i == $this->section ? 'class="active"' : ''),
-                $i, $i, $i, $i, $i);
+                $i, $i, $i, $i, $i, $i);
         }
         $ret .= '</ul>';
         $ret .= '<div class="tab-content">';
