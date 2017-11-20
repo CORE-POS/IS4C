@@ -160,7 +160,7 @@ class EditBatchPage extends FannieRESTfulPage
                 AND l.upc = ?
                 AND ? <= b.endDate
                 AND ? >= b.startDate
-                AND b.discounttype <> 0
+                AND b.discounttype > 0
                 AND b.endDate >= ' . $dbc->curdate()
         );
         $args = array(
@@ -539,7 +539,7 @@ class EditBatchPage extends FannieRESTfulPage
         $currentSale = $dbc->query('
             SELECT batchID 
             FROM batches 
-            WHERE discountType <> 0
+            WHERE discountType > 0
                 AND ' . $dbc->curdate() . ' BETWEEN startDate AND endDate');
         if ($dbc->numRows($currentSale) > 0) { 
             if (substr($upc,0,2) != 'LC') {
@@ -816,6 +816,7 @@ HTML;
         if ($typeModel->editorUI() == 2) {
             return $this->showPairedBatchDisplay($id,$name);
         }
+        $noprices = $typeModel->editorUI() == 4 ? 'collapse' : '';
 
         $limit = $model->transLimit();
         $hasLimit = $limit > 0 ? true : false;
@@ -874,7 +875,7 @@ HTML;
                 INNER JOIN batches AS b ON b.batchID=l.batchID
             WHERE l.upc=?
                 AND l.batchID <> ?
-                AND b.discounttype <> 0
+                AND b.discounttype > 0
                 AND (
                     (b.startDate BETWEEN ? AND ?)
                     OR
@@ -938,16 +939,16 @@ HTML;
             $ret .= "<a href=\"EditBatchPage.php?id=$id&paste=1\">Paste Items ($cpCount)</a> | ";
         }
         if ($dtype == 0 || (time() >= $start && time() <= $end)) {
-            $ret .= "<a href=\"\" onclick=\"batchEdit.forceNow($id); return false;\">Force batch</a> | ";
+            $ret .= "<a href=\"\" class=\"{$noprices}\" onclick=\"batchEdit.forceNow($id); return false;\">Force batch</a> | ";
         }
         if ($dtype != 0) {
-            $ret .= "<a href=\"\" onclick=\"batchEdit.unsaleNow($id); return false;\">Stop Sale</a> | ";
+            $ret .= "<a href=\"\" class=\"{$noprices}\" onclick=\"batchEdit.unsaleNow($id); return false;\">Stop Sale</a> | ";
         }
         
         $ret .= "<a href=\"\" onclick=\"batchEdit.cutAll($id,$uid); return false;\">Cut All</a> ";
         
-        if ($dtype == 0) {
-            $ret .= " <a href=\"\" onclick=\"batchEdit.trimPcBatch($id); return false;\">Trim Unchanged</a> ";
+        if ($dtype <= 0) {
+            $ret .= " <a href=\"\" class=\"{$noprices}\" onclick=\"batchEdit.trimPcBatch($id); return false;\">Trim Unchanged</a> ";
         } else {
             $ret .= " | <span id=\"edit-limit-link\"><a href=\"\" 
                 onclick=\"batchEdit.editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
@@ -1006,9 +1007,9 @@ HTML;
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=price_a\">Normal Price</a></th>";
         }
         if ($orderby != "ORDER BY b.salePrice DESC") {
-            $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=sale_d\">$saleHeader</a></th>";
+            $ret .= "<th class=\"{$noprices}\"><a href=\"EditBatchPage.php?id=$id&sort=sale_d\">$saleHeader</a></th>";
         } else {
-            $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=sale_a\">$saleHeader</a></th>";
+            $ret .= "<th class=\"{$noprices}\"><a href=\"EditBatchPage.php?id=$id&sort=sale_a\">$saleHeader</a></th>";
         }
         $ret .= "<th colspan=\"3\">&nbsp;</th>";
         if ($orderby != 'ORDER BY locationName') {
@@ -1051,7 +1052,7 @@ HTML;
             $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['normal_price']}</td>";
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
             $qty = is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0 ? $fetchW['quantity'] : 1;
-            $ret .= "<td bgcolor=$colors[$cur] class=\"\">";
+            $ret .= "<td bgcolor=$colors[$cur] class=\"{$noprices}\">";
             $ret .= '<span id="editable-text-' . $fetchW['upc'] . '">';
             $ret .= '<span class="editable-' . $fetchW['upc'] . ($qty == 1 ? ' collapse ' : '') . '"'
                     . ' id="item-qty-' . $fetchW['upc'] . '" data-name="qty">'
@@ -1068,7 +1069,7 @@ HTML;
             $ret .= sprintf('<input text="text" class="form-control" name="price" value="%.2f" />', $fetchW['salePrice']);
             $ret .= '</div></div></td>';
             $ret .= "<td bgcolor=$colors[$cur] id=editLink{$fetchW['upc']}>
-                <a href=\"\" class=\"edit\" onclick=\"batchEdit.editUpcPrice('{$fetchW['upc']}'); return false;\">
+                <a href=\"\" class=\"edit {$noprices}\" onclick=\"batchEdit.editUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</a>
                 <a href=\"\" class=\"save collapse\" onclick=\"batchEdit.saveUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "</a>

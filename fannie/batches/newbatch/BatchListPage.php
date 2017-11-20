@@ -193,25 +193,28 @@ class BatchListPage extends FannieRESTfulPage
         $batchUpdate->batchID($this->id);
         $json['batchUpdate'] = $batchUpdate->logUpdate($batchUpdate::UPDATE_DELETE);
 
-
         $batch = new BatchesModel($dbc);
-        $batch->forceStopBatch($this->id);
+        $batch->batchID($this->id);
+        $batch->load();
+        if ($batch->discountType() > 0) {
+            $batch->forceStopBatch($this->id);
 
-        $delQ = $dbc->prepare("delete from batches where batchID=?");
-        $batchR = $dbc->execute($delQ,array($this->id));
+            $delQ = $dbc->prepare("delete from batches where batchID=?");
+            $batchR = $dbc->execute($delQ,array($this->id));
 
-        $delQ = $dbc->prepare("delete from batchList where batchID=?");
-        $itemR = $dbc->execute($delQ,array($this->id));
-        if ($itemR !== false && $batchR === false) {
-            $json['error'] = 1;
-            $json['msg'] = 'Items were unsaled and removed from the batch, but the batch could not be deleted';
-        } elseif ($itemR === false && $batchR !== false) {
-            $json['error'] = 1;
-            $json['msg'] = 'Items were unsaled and the batch was deleted, but some orphaned items remain in the batchList table.'
-                . ' This probably is not a big deal unless it happens often.';
-        } elseif ($itemR === false && $batchR === false) {
-            $json['error'] = 1;
-            $json['msg'] = 'Items were unsaled but an error occurred deleting the batch.';
+            $delQ = $dbc->prepare("delete from batchList where batchID=?");
+            $itemR = $dbc->execute($delQ,array($this->id));
+            if ($itemR !== false && $batchR === false) {
+                $json['error'] = 1;
+                $json['msg'] = 'Items were unsaled and removed from the batch, but the batch could not be deleted';
+            } elseif ($itemR === false && $batchR !== false) {
+                $json['error'] = 1;
+                $json['msg'] = 'Items were unsaled and the batch was deleted, but some orphaned items remain in the batchList table.'
+                    . ' This probably is not a big deal unless it happens often.';
+            } elseif ($itemR === false && $batchR === false) {
+                $json['error'] = 1;
+                $json['msg'] = 'Items were unsaled but an error occurred deleting the batch.';
+            }
         }
 
         echo $this->debugJSON($json);

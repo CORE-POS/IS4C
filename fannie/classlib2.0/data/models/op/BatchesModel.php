@@ -75,6 +75,9 @@ those same items revert to normal pricing.
         $exit = isset($b_def['exitInventory']) ? 'exitInventory' : '0 AS exitInventory';
         $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType,{$exit} FROM batches WHERE batchID = ?");
         $batchInfoW = $this->connection->getRow($batchInfoQ,array($id));
+        if ($batchInfoW['discountType'] < 0) {
+            return;
+        }
 
         $forceQ = "";
         $forceLCQ = "";
@@ -82,7 +85,7 @@ those same items revert to normal pricing.
         $p_def = $this->connection->tableDefinition('products');
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
-        if ($batchInfoW['discountType'] != 0) { // item is going on sale
+        if ($batchInfoW['discountType'] > 0) { // item is going on sale
             $forceQ="
                 UPDATE products AS p
                     INNER JOIN batchList AS l ON p.upc=l.upc
@@ -181,7 +184,7 @@ those same items revert to normal pricing.
                     left join batches as b on b.batchID = l.batchID
                     where b.batchID=?";
             }
-        } else { // normal price is changing
+        } elseif ($batchInfoW['discountType'] == 0) { // normal price is changing
             $forceQ = "
                 UPDATE products AS p
                     INNER JOIN batchList AS l ON l.upc=p.upc
@@ -290,8 +293,8 @@ those same items revert to normal pricing.
             // cannot find batch. do not change products
             return false;
         }
-        if ($self['discountType'] == 0) {
-            // price change batch. nothing to stop.
+        if ($self['discountType'] <= 0) {
+            // price change batch or tracking batch. nothing to stop.
             return true;
         }
         if ($self['current'] == 0) {

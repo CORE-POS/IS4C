@@ -56,7 +56,7 @@ class SalesBatchTask extends FannieTask
                     ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . '
                   FROM batches AS b
                     INNER JOIN batchList AS l ON b.batchID = l.batchID
-                  WHERE b.discounttype <> 0
+                  WHERE b.discounttype > 0
                     AND b.startDate <= ?
                     AND b.endDate >= ?
                   ORDER BY l.upc,
