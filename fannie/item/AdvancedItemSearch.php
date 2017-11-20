@@ -1021,15 +1021,19 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $model = new FloorSectionsModel($dbc);
         $floorOpts = $model->toOptions();
 
-        $model = new StoresModel($dbc);
-        $model->hasOwnItems(1);
         $stores = array();
-        foreach ($model->find() as $obj) {
-            $stores[$obj->storeID()] = $obj->description();
+        $any = '';
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $any = '(any)';
+            $model = new StoresModel($dbc);
+            $model->hasOwnItems(1);
+            foreach ($model->find() as $obj) {
+                $stores[$obj->storeID()] = $obj->description();
+            }
         }
         $soldOpts = '';
         foreach (array(7, 30, 90) as $days) {
-            $soldOpts .= "<option value=\"{$days}:0\">Last {$days} days (any)</option>";
+            $soldOpts .= "<option value=\"{$days}:0\">Last {$days} days {$any}</option>";
             foreach ($stores as $k => $v) {
                 $soldOpts .= "<option value=\"{$days}:{$k}\">Last {$days} days ({$v})</option>";
             }
