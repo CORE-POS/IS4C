@@ -183,6 +183,24 @@ class EOMReport extends FannieReportPage
         }
         $reports[] = $discounts;
 
+        $query21 = "SELECT m.memDesc, d.memType, SUM(retailTotal) AS ttl
+            FROM {$warehouse}transactionSummary AS d 
+                left join memtype m on d.memType = m.memtype
+            WHERE date_id BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd') . "
+            GROUP BY m.memdesc, d.memType";
+        $prep = $this->connection->prepare($query21);
+        $res = $this->connection->execute($prep, array($idStart, $idEnd, $store));
+        $memSales = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $memSales[] = array(
+                sprintf('<a href="EOMLayers/EOMCountLayer.php?month=%d&year=%d&store=%d&type=%d">%s</a>',
+                    $month, $year, $store, $row['memType'], $row['memDesc']),
+                sprintf('%.2f', $row['ttl']),
+            );
+        }
+        $reports[] = $memSales;
+
         $query21 = "SELECT m.memDesc, d.memType, COUNT(*) as qty
             FROM {$warehouse}transactionSummary AS d 
                 left join memtype m on d.memType = m.memtype
@@ -315,13 +333,17 @@ class EOMReport extends FannieReportPage
                 $sum = array_reduce($data, function($c, $i) { return $c + $i[1]; });
                 return array('Total', $sum);
             case 7:
-                $this->report_headers[0] = array('Customer Type', 'Transactions');
+                $this->report_headers[0] = array('Customer Type', 'Sales');
                 $sum = array_reduce($data, function($c, $i) { return $c + $i[1]; });
                 return array('Total', $sum);
             case 8:
+                $this->report_headers[0] = array('Customer Type', 'Transactions');
+                $sum = array_reduce($data, function($c, $i) { return $c + $i[1]; });
+                return array('Total', $sum);
+            case 9:
                 $this->report_headers[0] = array('Miscellaneous', '$');
                 break;
-            case 9:
+            case 10:
                 $this->report_headers[0] = array();
                 break;
         }
