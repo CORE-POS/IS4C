@@ -1029,23 +1029,32 @@ HTML;
         if ($model->load()) {
             $found = true;
         } else {
-            $model->reset();
-            $model->orderID($this->id);
-            $model->internalUPC(BarcodeLib::padUPC($this->sku));
-            $matches = $model->find('quantity');
-            if (count($matches) > 0) {
-                $found = true;
+            $barcodes = array(
+                BarcodeLib::padUPC($this->sku),
+                BarcodeLib::padUPC(substr($this->sku, 0, strlen($this->sku)-1)),
+            );
+            foreach ($barcodes as $barcode) {
+                $model->reset();
+                $model->orderID($this->id);
+                $model->internalUPC($barcode);
+                $matches = $model->find('quantity');
+                if (count($matches) > 0) {
+                    $found = true;
+                }
+                $spo = $this->findInSPO($this->id, $barcode);
+                foreach ($spo as $s) {
+                    $spoModel = new PurchaseOrderItemsModel($this->connection);
+                    $spoModel->orderID($this->id);
+                    $spoModel->sku($s);
+                    $spoModel->load();
+                    $matches[] = $spoModel;
+                    $found = true;
+                }
+                if ($found) {
+                    $model = $matches;
+                    break;
+                }
             }
-            $spo = $this->findInSPO($this->id, BarcodeLib::padUPC($this->sku));
-            foreach ($spo as $s) {
-                $spoModel = new PurchaseOrderItemsModel($this->connection);
-                $spoModel->orderID($this->id);
-                $spoModel->sku($s);
-                $spoModel->load();
-                $matches[] = $spoModel;
-                $found = true;
-            }
-            $model = $matches;
         }
         
         // item not in order. need all fields to add it.
