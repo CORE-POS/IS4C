@@ -46,7 +46,7 @@ class ProdReviewModule extends \COREPOS\Fannie\API\item\ItemModule
     <div id="ProdReviewContents" class="panel-body {$css}">
         <strong>Last Reviewed</strong> {$review['reviewed']} by {$review['user']}<br />
         <label>Mark as reviewed today 
-            <input type="checkbox" name="prodReview" class="form-control" value="1" {$newItem} />
+            <input type="checkbox" name="prodReview" value="1" {$newItem} />
         </label>
     </div>
 </div>
