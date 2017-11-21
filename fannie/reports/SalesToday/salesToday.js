@@ -36,6 +36,33 @@ var salesToday = (function($) {
         singleline(data, Array(xmin, xmax), Array(ymin, ymax), '#chartDiv');
     };
 
+    mod.chartData = function() {
+        var labels = Array();
+        $('.x-data').each(function (i, e) {
+            labels.push(Number($(e).html()));
+        });
+        var dataPoints = Array();
+        $('.y-data').each(function (i, e) {
+            dataPoints.push(Number($(e).html()));
+        });
+        var ctx = document.getElementById('newChartCanvas');
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataPoints,
+                    fill: false,
+                    label: 'Hourly Sales',
+                    backgroundColor: "#3366cc",
+                    pointBackgroundColor: "#3366cc",
+                    pointBorderColor: "#3366cc",
+                    borderColor: "#3366cc"
+                }]
+            }
+        });
+    };
+
     return mod;
 
 }(jQuery));
