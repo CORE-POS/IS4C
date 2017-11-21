@@ -59,6 +59,25 @@ var salesToday = (function($) {
                     pointBorderColor: "#3366cc",
                     borderColor: "#3366cc"
                 }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            callback: function(val, i, vals) {
+                                return val.toLocaleString("en-US",{style:"currency", currency:"USD"});
+                            }
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            callback: function(val, i, vals) {
+                                if (val == 12) return '12pm';
+                                return (val < 12) ? val+'am' : (val-12) + 'pm';
+                            }
+                        }
+                    }]
+                }
             }
         });
     };

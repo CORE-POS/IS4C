@@ -91,7 +91,7 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $this->addScript('../../src/javascript/d3.js/charts/singleline/singleline.js');
         $this->addCssFile('../../src/javascript/d3.js/charts/singleline/singleline.css');
         $this->addScript('../../src/javascript/Chart.min.js');
-        $this->addScript('salesToday.js');
+        $this->addScript('salesToday.js?date=20171121');
 
         return True;
 
