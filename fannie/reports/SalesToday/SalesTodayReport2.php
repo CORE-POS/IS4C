@@ -71,7 +71,7 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
         $this->header = '';
 
         $this->addScript($this->config->get('URL').'src/javascript/Chart.min.js');
-        $this->addScript('stChart.js');
+        $this->addScript('stChart.js?date=20171121');
 
         return true;
 

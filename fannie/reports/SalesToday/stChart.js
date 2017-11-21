@@ -57,12 +57,19 @@ var stChart = (function() {
                 scales: {
                     xAxes: [{
                         ticks: {
-                            fontSize: _fontSize
+                            fontSize: _fontSize,
+                            callback: function(val, i, vals) {
+                                if (val == 12) return '12pm';
+                                return (val < 12) ? val+'am' : (val-12) + 'pm';
+                            }
                         }
                     }],
                     yAxes: [{
                         ticks: {
-                            fontSize: _fontSize
+                            fontSize: _fontSize,
+                            callback: function(val, i, vals) {
+                                return val.toLocaleString("en-US",{style:"currency", currency:"USD"});
+                            }
                         }
                     }]
                 }
