@@ -207,22 +207,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         System.Console.WriteLine(enc.GetString(b));
     }
 
-    // Waits for acknowledgement from device & resends
-    // if necessary. Should probably be used instead
-    // of ByteWrite for most messages.
-    private void ConfirmedWrite(byte[] b)
-    {
-        if (this.verbose_mode > 0) {
-            System.Console.WriteLine("Tried to write");
-        }
-
-        ByteWrite(b);
-
-        if (this.verbose_mode > 0) {
-            System.Console.WriteLine("wrote");
-        }
-    }
-
     // computes check character and appends it
     // to the array
     private byte[] GetLRC(byte[] b)
@@ -239,6 +223,23 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         return ret;
     }
 
+    private bool ReadAndAck()
+    {
+        int readBytes = 0;
+        try {
+            while (true) {
+                var next = sp.ReadByte();
+                readBytes++;
+            }
+        } catch (Exception) { }
+        if (readBytes > 1) { // exactly one byte was just an ACK or NAK
+            ByteWrite(new byte[1]{0x6});
+
+            return true;
+        }
+        return false;
+    }
+
     // use an AutoResetEvent to pause to 2 seconds
     // if the event is signalled that means RBA_Stub
     // should exit and release the serial port so the
@@ -248,6 +249,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             WriteMessageToDevice(GetCardType());
+            this.ReadAndAck();
             if (this.sleeper.WaitOne(2000) == false) {
                 addPaymentButtons();
             }
@@ -272,6 +274,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             }
 
             WriteMessageToDevice(UpdateScreenMessage(buttons));
+            this.ReadAndAck();
         } catch (Exception) {
         }
     }
@@ -317,6 +320,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     }
                     if (Choice(enc.GetString(buffer))) {
                         WriteMessageToDevice(SimpleMessageScreen("Insert, tap, or swipe card when prompted"));
+                        this.ReadAndAck();
                         // input is done; no need to keep the read thread alive
                         // and rely on cross-thread signaling to end it later
                         SPH_Running = false;
@@ -362,6 +366,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     if (allowDebitCB) {
                         ret = false;
                         WriteMessageToDevice(GetCashBack());
+                        this.ReadAndAck();
                         this.bufferedCardType = "DCDC";
                     } else {
                         parent.MsgSend("TERM:DCDC");
@@ -378,6 +383,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     if (allowDebitCB) {
                         ret = false;
                         WriteMessageToDevice(GetCashBack());
+                        this.ReadAndAck();
                         this.bufferedCardType = "DCEC";
                     } else {
                         parent.MsgSend("TERM:DCEC");
@@ -439,7 +445,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     */
     public override void WriteMessageToDevice(byte[] msg)
     {
-        ConfirmedWrite(GetLRC(msg));
+        ByteWrite(GetLRC(msg));
     }
 }
 
