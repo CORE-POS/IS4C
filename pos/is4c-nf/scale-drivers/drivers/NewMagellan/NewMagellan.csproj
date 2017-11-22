@@ -60,6 +60,8 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" Condition=" '$(OS)' != 'Unix' " />
     <Csc Sources="ComProbe.cs" References="ComPort.dll" TargetType="exe" OutputAssembly="com-probe.exe"
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" Condition=" '$(OS)' != 'Unix' " />
+    <Csc Sources="RbaVolume.cs" References="SPH.dll" TargetType="exe" OutputAssembly="rbavolume.exe"
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" Condition=" '$(OS)' != 'Unix' " />
   </Target>
 
   <!-- Build DelegateForm.dll -->
