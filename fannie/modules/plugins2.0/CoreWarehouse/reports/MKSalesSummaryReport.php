@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\data\DataCache;
+
 include(dirname(__FILE__).'/../../../../config.php');
 if (!class_exists('\\FannieAPI')) {
     include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
@@ -32,6 +34,16 @@ class MKSalesSummaryReport extends FannieRESTfulPage
 
     public function get_view()
     {
+        $cache = unserialize(DataCache::getFile('monthly', 'MKSales'));
+        $this->addScript('../../../../src/javascript/Chart.min.js');
+        $this->addScript('mk.js');
+        if (is_array($cache) && $cache['expires'] > time()) {
+            foreach ($cache['commands'] as $c) {
+                $this->addOnloadCommand($c);
+            }
+            return $cache['data'];
+        }
+
         $warehouse = $this->config->get('PLUGIN_SETTINGS');
         $warehouse = $warehouse['WarehouseDatabase'];
         $warehouse .= $this->connection->sep();
@@ -192,11 +204,14 @@ class MKSalesSummaryReport extends FannieRESTfulPage
             ), 
         );
 
-        $this->addScript('../../../../src/javascript/Chart.min.js');
-        $this->addScript('mk.js');
-        $this->addOnloadCommand("mk.drawLines({$lineData});");
-        $this->addOnloadCommand("mk.drawBars({$barData});");
-        return <<<HTML
+        $commands = array();
+        $commands[] = "mk.drawLines({$lineData});";
+        $commands[] = "mk.drawBars({$barData});";
+        foreach ($commands as $c) {
+            $this->addOnloadCommand($c);
+        }
+
+        $report = <<<HTML
 <div class="row">
     <div class="col-sm-12">
         <canvas id="denfeldLine"></canvas>
@@ -269,6 +284,9 @@ class MKSalesSummaryReport extends FannieRESTfulPage
     </div>
 </div>
 HTML;
+        $cached = DataCache::putFile('monthly', serialize(array('data'=>$report, 'commands'=>$commands, 'expires'=>strtotime('next monday'))), 'MKSales');
+
+        return $report;
     }
 }
 
