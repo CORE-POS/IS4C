@@ -29,6 +29,7 @@ use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Kickers\Kicker;
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -143,7 +144,8 @@ class Steering extends Parser
                 }
                 return true;
             case 'SUSPEND':
-                $this->ret['main_frame'] = $myUrl."gui-modules/adminlist.php?selectlist=SUSPEND";
+                $token = FormLib::generateToken();
+                $this->ret['main_frame'] = "{$myUrl}gui-modules/adminlist.php?selectlist=SUSPEND&crsfToken={$token}";
                 if ($this->session->get("SecuritySR") > 20) {
                     $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
                 }
