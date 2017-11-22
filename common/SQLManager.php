@@ -159,7 +159,7 @@ class SQLManager
         if ($database) {
             $connected = $conn->Connect($this->getDSN($server,$type,$database),$username,$password,$database);
         } else {
-            $connected = $conn->Connect($this->getDSN($server,$type),$username,$password);
+            $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password);
         }
         $conn = $this->clearConnectTimeout($conn, $type);
 
