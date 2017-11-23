@@ -527,6 +527,35 @@ class EditBatchPage extends FannieRESTfulPage
         return $ret ? true : false;
     }
 
+    private function repriceLikeCode($likecode,$data)
+    {
+        $upcLike = new UpcLikeModel($this->connection);
+        $upcLike->likeCode($likecode);
+        $ret = true;
+        foreach ($upcLike->find() as $u) {
+            $ret = $this->repriceUPC($u->upc(),$data);
+        }
+
+        return $ret ? true : false;
+    }
+
+    private function repriceUPC($upc,$data)
+    {
+        // set price of item to match current sale batch
+        $product = new ProductsModel($this->connection);
+        $product->upc($upc);
+        $ret = true;
+        foreach ($product->find('store_id') as $obj) {
+            $obj->discountType($data['discountType']);
+            $obj->special_price($data['salePrice']);
+            $obj->start_date($data['startDate']);
+            $obj->end_date($data['endDate']);
+            $ret = $obj->save();
+        }
+
+        $ret ? true : false;
+    }
+
     protected function delete_id_upc_handler()
     {
         global $FANNIE_OP_DB;
@@ -538,7 +567,8 @@ class EditBatchPage extends FannieRESTfulPage
 
         $currentSalesA = array($upc);
         $currentSalesP = $dbc->prepare("
-            SELECT b.batchID, bl.upc FROM batches AS b
+            SELECT b.batchID, bl.upc, bl.salePrice, b.discountType, b.startDate, b.endDate
+            FROM batches AS b
                 LEFT JOIN batchList AS bl ON b.batchID=bl.batchID
             WHERE b.discountType > 0
                 AND bl.upc = ?
@@ -546,8 +576,24 @@ class EditBatchPage extends FannieRESTfulPage
         ");
         $currentSalesR = $dbc->execute($currentSalesP,$currentSalesA);
         $i = 0;
+        $curSale = array(
+            'batchID' => 0,
+            'salePrice' => 0,
+            'discountType' => 1,
+            'startDate' => '',
+            'endDate' => '',
+        );
         while ($row = $dbc->fetchRow($currentSalesR)) {
             $i++;
+            if ($row['batchID'] != $id) {
+                if ($row['salePrice'] < $curSale['salePrice'] || $curSale['salePrice'] == 0) {
+                    $curSale['salePrice'] = $row['salePrice'];
+                    $curSale['batchID'] = $row['batchID'];
+                    $cursale['discountType'] = $row['discountType'];
+                    $cursale['startDate'] = $row['startDate'];
+                    $cursale['endDate'] = $row['endDate'];
+                }
+            }
         }
         if ($i == 1) {
             if (substr($upc,0,2) != 'LC') {
@@ -563,6 +609,22 @@ class EditBatchPage extends FannieRESTfulPage
                 if ($this->unsaleLikeCode($likecode) === false) {
                     $json['error'] = 1;
                     $json['msg'] = 'Error taking like code ' . $likecode . ' off sale';
+                }
+            }
+        } elseif($i > 1 && $curSale['salePrice'] != 0) {
+            if (substr($upc,0,2) != 'LC') {
+                // take the item off sale if this batch is currently on sale
+                if ($this->repriceUPC($this->upc,$curSale) === false) {
+                    $json['error'] = 1;
+                    $json['msg'] = 'Error repricing item ' . $upc;
+                }
+
+                COREPOS\Fannie\API\data\ItemSync::sync($upc);
+            } else {
+                $likecode = substr($upc,2);
+                if ($this->repriceLikeCode($likecode,$curSale) === false) {
+                    $json['error'] = 1;
+                    $json['msg'] = 'Error taking like code ' . $likecode . ' repricing like code';
                 }
             }
         }
