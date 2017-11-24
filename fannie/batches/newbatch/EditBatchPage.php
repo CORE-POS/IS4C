@@ -618,7 +618,7 @@ class EditBatchPage extends FannieRESTfulPage
 
         $json = array('error'=>0, 'msg'=>'Item ' . $upc . ' removed from batch');
         $currentP = $dbc->prepare('SELECT batchID FROM batches WHERE ? BETWEEN startDate AND endDate AND batchID=?');
-        $current = $dbc->getValue($currentP, array(date('Y-m-d 00:00:00')));
+        $current = $dbc->getValue($currentP, array(date('Y-m-d 00:00:00'), $this->id));
         if ($current) {
 
             $effective = PriceLib::effectiveSalePrice($dbc, $this->config, $upc);
