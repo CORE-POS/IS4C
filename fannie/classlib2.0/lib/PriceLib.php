@@ -82,7 +82,7 @@ class PriceLib
                 if (!isset($ret[$row['upc']])) {
                     $ret[$row['upc']] = array();
                 }
-                $ret[$row['upc']][$row['storeID'] = $row;
+                $ret[$row['upc']][$row['storeID']] = $row;
             } else {
                 $ret[$row['upc']] = $row;
             }
