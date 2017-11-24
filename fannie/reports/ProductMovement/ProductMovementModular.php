@@ -48,6 +48,8 @@ class ProductMovementModular extends FannieReportPage
             $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
             $this->add_script('../../src/javascript/d3.js/charts/singleline/singleline.js');
             $this->add_css_file('../../src/javascript/d3.js/charts/singleline/singleline.css');
+            $this->addScript('../../src/javascript/Chart.min.js');
+            $this->addScript('../../src/javascript/CoreChart.js');
         }
 
         return $ret;
@@ -59,6 +61,7 @@ class ProductMovementModular extends FannieReportPage
 
         if ($this->report_format == 'html') {
             $default .= '<div id="chartDiv"></div>';
+            $default .= '<div class="col-sm-10"><canvas id="chartCanvas"></canvas></div>';
 
             $this->add_onload_command('showGraph()');
         }
@@ -192,6 +195,10 @@ class ProductMovementModular extends FannieReportPage
         ob_start();
         ?>
 function showGraph() {
+    var xLabels = $('td.reportColumn0').toArray().map(x => x.innerHTML.trim());
+    var yData = $('td.reportColumn4').toArray().map(x => Number(x.innerHTML.trim()));
+    CoreChart.lineChart('chartCanvas', xLabels, [yData], ["Daily Qty Sold"]);
+    return;
     var ymin = 999999999;
     var ymax = 0;
 
