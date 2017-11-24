@@ -28,6 +28,68 @@ namespace COREPOS\Fannie\API\lib;
 */
 class PriceLib 
 {
+    /**
+     * Lookup the current sale status of item(s)
+     * @param $dbc [SQLManager] database connection
+     * @param $config [FannieConfig] configuration object
+     * @param $upc [string|array] UPC(s)
+     *      (may include batch-style LC### UPCs)
+     * @return [array]
+     *
+     *  In single-store mode the array is simply keyed by UPC
+     *  and the value is a record w/ pricemethod, salePrice, etc
+     *
+     *  In multi-store mode the array is keyed by UPC and the
+     *  value is *another* array keyed by storeID. The value at
+     *  $return[UPC][storeID] is a record w/ pricemethod, salePrice,
+     *  etc. If the return value only has data from some storeIDs
+     *  then that UPC is only on sale at some stores
+     */
+    public static function effectiveSalePrice($dbc, $config, $upc)
+    {
+        if (!is_array($upc)) {
+            $upc = array($upc);
+        }
+        list($inStr, $args) = $dbc->safeInClause($upc);
+
+        $query = "SELECT l.upc, 
+                    l.batchID, 
+                    l.pricemethod, 
+                    l.salePrice, 
+                    l.groupSalePrice,
+                    l.quantity,
+                    b.startDate, 
+                    b.endDate, 
+                    b.discounttype,
+                    b.transLimit
+                  FROM batches AS b
+                    INNER JOIN batchList AS l ON b.batchID = l.batchID
+                  WHERE b.discounttype > 0
+                    AND l.upc IN ({$inStr})
+                    AND ? BETWEEN b.startDate AND b.endDate
+                  ORDER BY l.upc,
+                    l.salePrice DESC";
+        if ($config->get('STORE_MODE') === 'HQ') {
+            $query = str_replace('WHERE', ' LEFT JOIN StoreBatchMap AS s ON b.batchID=s.batchID WHERE ', $query);
+            $query = str_replace('SELECT', 'SELECT s.storeID,', $query);
+        }
+        $prep = $dbc->prepare($query);
+        $args[] = date('Y-m-d 00:00:00');
+        $res = $dbc->execute($prep, $args);
+        $ret = array();
+        while ($row = $dbc->fetchRow($res)) {
+            if (isset($row['storeID'])) {
+                if (!isset($ret[$row['upc']])) {
+                    $ret[$row['upc']] = array();
+                }
+                $ret[$row['upc']][$row['storeID'] = $row;
+            } else {
+                $ret[$row['upc']] = $row;
+            }
+        }
+
+        return $ret;
+    }
 
     public static function pricePerUnit($price,$sizeStr)
     {

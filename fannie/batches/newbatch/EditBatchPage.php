@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\PriceLib;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -498,6 +500,27 @@ class EditBatchPage extends FannieRESTfulPage
         return false;
     }
 
+    private function unsaleItem($upc, $json)
+    {
+        if (substr($upc,0,2) != 'LC') {
+            // take the item off sale if this batch is currently on sale
+            if ($this->unsaleUPC($upc) === false) {
+                $json['error'] = 1;
+                $json['msg'] = 'Error taking item ' . $upc . ' off sale';
+            }
+
+            COREPOS\Fannie\API\data\ItemSync::sync($upc);
+        } else {
+            $likecode = substr($upc,2);
+            if ($this->unsaleLikeCode($likecode) === false) {
+                $json['error'] = 1;
+                $json['msg'] = 'Error taking like code ' . $likecode . ' off sale';
+            }
+        }
+
+        return $json;
+    }
+
     private function unsaleUPC($upc)
     {
         // take the item off sale if this batch is currently on sale
@@ -527,29 +550,59 @@ class EditBatchPage extends FannieRESTfulPage
         return $ret ? true : false;
     }
 
-    private function repriceLikeCode($likecode,$data)
+    private function repriceItem($upc, $data, $json, $useStores=false)
+    {
+        if (substr($upc,0,2) != 'LC') {
+            // take the item off sale if this batch is currently on sale
+            if ($this->repriceUPC($upc,$data,$useStores) === false) {
+                $json['error'] = 1;
+                $json['msg'] = 'Error repricing item ' . $upc;
+            }
+
+            COREPOS\Fannie\API\data\ItemSync::sync($upc);
+        } else {
+            $likecode = substr($upc,2);
+            if ($this->repriceLikeCode($likecode,$data,$useStores) === false) {
+                $json['error'] = 1;
+                $json['msg'] = 'Error taking like code ' . $likecode . ' repricing like code';
+            }
+        }
+
+        return $json;
+    }
+
+    private function repriceLikeCode($likecode, $data, $useStores=false)
     {
         $upcLike = new UpcLikeModel($this->connection);
         $upcLike->likeCode($likecode);
         $ret = true;
         foreach ($upcLike->find() as $u) {
-            $ret = $this->repriceUPC($u->upc(),$data);
+            $ret = $this->repriceUPC($u->upc(),$data,$useStores);
         }
 
         return $ret ? true : false;
     }
 
-    private function repriceUPC($upc,$data)
+    private function repriceUPC($upc, $data, $useStores=false)
     {
         // set price of item to match current sale batch
         $product = new ProductsModel($this->connection);
         $product->upc($upc);
         $ret = true;
         foreach ($product->find('store_id') as $obj) {
-            $obj->discountType($data['discountType']);
-            $obj->special_price($data['salePrice']);
-            $obj->start_date($data['startDate']);
-            $obj->end_date($data['endDate']);
+            if ($useStores && !isset($data[$obj->store_id()])) {
+                $data[$obj->store_id()] = array(
+                    'discountType'=>0,
+                    'salePrice'=>0,
+                    'startDate'=>'1900-01-01',
+                    'endDate'=>'1900-01-01',
+                );
+            }
+            $cur = $useStores ? $data[$obj->store_id()] : $data;
+            $obj->discountType($cur['discountType']);
+            $obj->special_price($cur['salePrice']);
+            $obj->start_date($cur['startDate']);
+            $obj->end_date($cur['endDate']);
             $ret = $obj->save();
         }
 
@@ -564,69 +617,53 @@ class EditBatchPage extends FannieRESTfulPage
         $upc = $this->upc;
 
         $json = array('error'=>0, 'msg'=>'Item ' . $upc . ' removed from batch');
+        $currentP = $dbc->prepare('SELECT batchID FROM batches WHERE ? BETWEEN startDate AND endDate AND batchID=?');
+        $current = $dbc->getValue($currentP, array(date('Y-m-d 00:00:00')));
+        if ($current) {
 
-        $currentSalesA = array($upc);
-        $currentSalesP = $dbc->prepare("
-            SELECT b.batchID, bl.upc, bl.salePrice, b.discountType, b.startDate, b.endDate
-            FROM batches AS b
-                LEFT JOIN batchList AS bl ON b.batchID=bl.batchID
-            WHERE b.discountType > 0
-                AND bl.upc = ?
-                AND CONCAT(CURDATE(),' 00:00:00') BETWEEN startDate AND endDate;
-        ");
-        $currentSalesR = $dbc->execute($currentSalesP,$currentSalesA);
-        $i = 0;
-        $curSale = array(
-            'batchID' => 0,
-            'salePrice' => 0,
-            'discountType' => 1,
-            'startDate' => '',
-            'endDate' => '',
-        );
-        while ($row = $dbc->fetchRow($currentSalesR)) {
-            $i++;
-            if ($row['batchID'] != $id) {
-                if ($row['salePrice'] < $curSale['salePrice'] || $curSale['salePrice'] == 0) {
-                    $curSale['salePrice'] = $row['salePrice'];
-                    $curSale['batchID'] = $row['batchID'];
-                    $cursale['discountType'] = $row['discountType'];
-                    $cursale['startDate'] = $row['startDate'];
-                    $cursale['endDate'] = $row['endDate'];
+            $effective = PriceLib::effectiveSalePrice($dbc, $this->config, $upc);
+            if (!isset($effective[$upc])) { // Item is not on sale
+                $this->unsaleItem($upc, $json);
+            } else { // Item is on sale [at some stores, possibly]
+                $useStores = $this->config->get('STORE_MODE') == 'HQ' ? true : false;
+                $json = $this->repriceItem($upc, $effective[$upc], $json, $useStores);
+            }
+
+            /*
+            $currentSalesA = array($upc, date('Y-m-d 00:00:00'));
+            $currentSalesP = $dbc->prepare("
+                SELECT b.batchID, bl.upc, bl.salePrice, b.discountType, b.startDate, b.endDate
+                FROM batches AS b
+                    LEFT JOIN batchList AS bl ON b.batchID=bl.batchID
+                WHERE b.discountType > 0
+                    AND bl.upc = ?
+                    AND ? BETWEEN startDate AND endDate;
+            ");
+            $currentSalesR = $dbc->execute($currentSalesP,$currentSalesA);
+            $curSale = array(
+                'batchID' => $row['batchID'],
+                'salePrice' => 0,
+                'discountType' => 1,
+                'startDate' => '',
+                'endDate' => '',
+            );
+            while ($row = $dbc->fetchRow($currentSalesR)) {
+                if ($row['batchID'] != $id) {
+                    if ($row['salePrice'] < $curSale['salePrice'] || $curSale['salePrice'] == 0) {
+                        $curSale['salePrice'] = $row['salePrice'];
+                        $curSale['batchID'] = $row['batchID'];
+                        $cursale['discountType'] = $row['discountType'];
+                        $cursale['startDate'] = $row['startDate'];
+                        $cursale['endDate'] = $row['endDate'];
+                    }
                 }
             }
-        }
-        if ($i == 1) {
-            if (substr($upc,0,2) != 'LC') {
-                // take the item off sale if this batch is currently on sale
-                if ($this->unsaleUPC($this->upc) === false) {
-                    $json['error'] = 1;
-                    $json['msg'] = 'Error taking item ' . $upc . ' off sale';
-                }
-
-                COREPOS\Fannie\API\data\ItemSync::sync($upc);
-            } else {
-                $likecode = substr($upc,2);
-                if ($this->unsaleLikeCode($likecode) === false) {
-                    $json['error'] = 1;
-                    $json['msg'] = 'Error taking like code ' . $likecode . ' off sale';
-                }
+            if ($curSale['batchID'] == $id) {
+                $json = $this->unsaleItem($upc, $json);
+            } elseif ($curSale['batchID'] != $id && $curSale['salePrice'] != 0) {
+                $json = $this->repriceItem($upc, $curSale, $json);
             }
-        } elseif($i > 1 && $curSale['salePrice'] != 0) {
-            if (substr($upc,0,2) != 'LC') {
-                // take the item off sale if this batch is currently on sale
-                if ($this->repriceUPC($this->upc,$curSale) === false) {
-                    $json['error'] = 1;
-                    $json['msg'] = 'Error repricing item ' . $upc;
-                }
-
-                COREPOS\Fannie\API\data\ItemSync::sync($upc);
-            } else {
-                $likecode = substr($upc,2);
-                if ($this->repriceLikeCode($likecode,$curSale) === false) {
-                    $json['error'] = 1;
-                    $json['msg'] = 'Error taking like code ' . $likecode . ' repricing like code';
-                }
-            }
+             */
         }
 
         $bu = new BatchUpdateModel($dbc);
