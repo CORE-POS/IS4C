@@ -70,9 +70,8 @@ class DenfeldTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $this->title = "Fannie : Today's $this->name Sales [Denfeld, Real-Time]";
         $this->header = '';
 
-        $this->addScript($this->config->get('URL').'src/javascript/d3.js/d3.v3.min.js');
-        $this->addScript('../../../src/javascript/d3.js/charts/singleline/singleline.js');
-        $this->addCssFile('../../../src/javascript/d3.js/charts/singleline/singleline.css');
+        $this->addScript('../../../src/javascript/Chart.min.js');
+        $this->addScript('../../../src/javascript/CoreChart.js');
         $this->addScript('../../SalesToday/salesToday.js');
 
         return True;
@@ -150,9 +149,9 @@ class DenfeldTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         }
         echo "</select></div>";
 
-        echo '<div id="chartDiv"></div>';
+        echo '<div><canvas id="newChartCanvas"></canvas></div>';
 
-        $this->addOnloadCommand('salesToday.graphData();');
+        $this->addOnloadCommand('salesToday.chartData();');
         $this->addOnloadCommand("\$('select').change(salesToday.reloadGraph);\n");
 
         echo '</div>';

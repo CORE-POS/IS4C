@@ -274,7 +274,7 @@ class ObfTrendReport extends FannieReportPage
         if ($this->report_format == 'html') {
             $default .= '<div id="chartArea" style="border: 1px solid black;padding: 2em;">';
             $default .= 'Graph: <select id="grapher" onchange="showGraph(this.value);"></select>';
-            $default .= '<div id="chartDiv"></div>';
+            $default .= '<div><canvas id="chartCanvas"></canvas></div>';
             $default .= '</div>';
             $this->addScript('trend.js');
             $this->addOnloadCommand('addOptions();');
@@ -289,9 +289,8 @@ class ObfTrendReport extends FannieReportPage
         parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->addScript('../../../src/javascript/d3.js/d3.v3.min.js');
-            $this->addScript('../../../src/javascript/d3.js/charts/singleline/singleline.js');
-            $this->addCssFile('../../../src/javascript/d3.js/charts/singleline/singleline.css');
+            $this->addScript('../../../src/javascript/Chart.min.js');
+            $this->addScript('../../../src/javascript/CoreChart.js');
         }
 
         return true;
