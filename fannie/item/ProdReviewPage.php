@@ -868,20 +868,22 @@ function clickStar()
 
 function printAll()
 {
-    var signUrl = "http://key/git/IS4C/fannie/admin/labels/SignFromSearch.php";
+    var signUrl = "../admin/labels/SignFromSearch.php";
     var bids = [];
     $c = confirm("Print All Batches?");
     if ($c == true) {
-        $('.biduf').each(function(){
-            var bid = $(this).closest('tr').find('.bid').text();
-            bids.push(bid);
-        });
         var data = '?';
-        bids.forEach(function(element) {
-            data = data.concat("batch[]="+element+"&");
+        $('td').each(function() {
+
+            if ($(this).hasClass('biduf')) {
+                var bid = $(this).text();
+                bids.push(bid);
+            }
+        });
+        $.each(bids, function(k,v) {
+            data = data.concat("batch[]="+v+"&");
         });
         data = data.slice(0,-1);
-            //need to replace url with FannieAPI
         window.open(signUrl+data, '_blank');
 
         var path = window.location.pathname;
