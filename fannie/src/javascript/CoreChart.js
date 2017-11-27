@@ -3,7 +3,7 @@
   Wrapper for Chart.js so commonly used
   chart formats can be repeated easily
 */
-var CoreChart = (function ($) {
+var CoreChart = (function () {
     var mod = {};
 
     var colors = [
@@ -60,5 +60,5 @@ var CoreChart = (function ($) {
 
     return mod;
 
-}(jQuery));
+}());
 
