@@ -32,6 +32,16 @@ class MKSalesSummaryReport extends FannieRESTfulPage
         return mktime(0, 0, 0, date('n', $ts), date('j', $ts)-7, date('Y', $ts));
     }
 
+    private function startFY()
+    {
+        $month = date('n');
+        $year = date('Y');
+        if ($month <= 6) {
+            return mktime(0,0,0, 7, 1, $year-1);
+        }
+        return mktime(0,0,0, 7, 1, $year);
+    }
+
     public function get_view()
     {
         $cache = unserialize(DataCache::getFile('monthly', 'MKSales'));
@@ -51,9 +61,10 @@ class MKSalesSummaryReport extends FannieRESTfulPage
         $weeks = array();
         $endTS = strtotime('last sunday');
         $startTS = mktime(0, 0, 0, date('n', $endTS), date('j', $endTS)-6, date('Y', $endTS));
+        $startFY = $this->startFY();
         list($lyStart, $lyEnd) = $this->getLastYear($endTS);
         $dates = array();
-        while (count($dates) < 20) {
+        while ($startTS >= $startFY) {
             $dates[] = array(
                 'thisYear' => array($startTS, $endTS),
                 'lastYear' => array($lyStart, $lyEnd),
