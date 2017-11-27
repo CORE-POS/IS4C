@@ -58,6 +58,20 @@ var CoreChart = (function () {
         });
     };
 
+    mod.pieChart = function(elementID, pieLabels, pieData) {
+        var ctx = document.getElementById(elementID);
+        var line = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: colors
+                }]
+            }
+        });
+    };
+
     return mod;
 
 }());
