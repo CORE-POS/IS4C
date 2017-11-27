@@ -566,7 +566,6 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $p = new ProductsModel($dbc);
         $p->default_vendor_id($vid);
-        $p->store_id(1);
         $p->inUse(1);
 
         $table = '<table class="table table-condensed small">';
@@ -575,20 +574,24 @@ HTML;
             <input type="checkbox" id="checkAll" style="border: 1px solid red;"></td>';
 
         $pr = new ProdReviewModel($dbc);
+        $in = array();
         foreach ($p->find() as $obj) {
-            $table .= '<tr>';
-            $table .= '<td>'.$obj->upc().'</td>';
-            $table .= '<td>'.$obj->brand().'</td>';
-            $table .= '<td>'.$obj->description().'</td>';
-            $pr->reset();
-            $pr->upc($obj->upc());
-            if ($pr->load()) {
-                $table .= '<td>'.$pr->reviewed().'</td>';
-            } else {
-                $table .= '<td><i>no review date</i></td>';
+            if (!in_array($obj->upc(),$in)) {
+                $table .= '<tr>';
+                $table .= '<td>'.$obj->upc().'</td>';
+                $table .= '<td>'.$obj->brand().'</td>';
+                $table .= '<td>'.$obj->description().'</td>';
+                $pr->reset();
+                $pr->upc($obj->upc());
+                if ($pr->load()) {
+                    $table .= '<td>'.$pr->reviewed().'</td>';
+                } else {
+                    $table .= '<td><i>no review date</i></td>';
+                }
+                $table .= '<td><input type="checkbox"class="chk" name="checked[]" value="'.$obj->upc().'"></td>';
+                $table .= '</tr>';
             }
-            $table .= '<td><input type="checkbox"class="chk" name="checked[]" value="'.$obj->upc().'"></td>';
-            $table .= '</tr>';
+            $in[] = $obj->upc();
         }
         $table .= '</tbody></table>';
 
