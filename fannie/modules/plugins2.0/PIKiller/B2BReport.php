@@ -11,7 +11,12 @@ class B2BReport extends FannieReportPage
     protected $title = 'B2B Report';
     public $disoverable = false;
     protected $required_fields = array();
-    protected $report_headers = array('Email', 'Name', 'Item', 'Amount', 'Invoice #', 'Payment URL');
+    protected $report_headers = array('Email Address', 'Name', 'Invoice Item', 'Invoice Amount', 'Invoice Number', 'Payment URL');
+
+    protected function defaultDescriptionContent($rowcount, $datefields=array())
+    {
+        return array();
+    }
 
     public function fetch_report_data()
     {
