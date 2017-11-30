@@ -1115,13 +1115,17 @@ static public function mostRecentReceipt()
     return $row['emp_no'] . '-' . $row['register_no'] . '-' . $row['trans_no'];
 }
 
-static public function code39($barcode)
+static public function code39($barcode, $forcePaper=false)
 {
     if (!is_object(self::$PRINT)) {
         self::$PRINT= PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
+    $printMod = self::$PRINT;
+    if ($forcePaper && (get_class(self::$PRINT) == self::$EMAIL || get_class(self::$PRINT) == self::$HTML)) {
+        $printMod = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+    }
 
-    return self::$PRINT->printBarcode(PrintHandler::BARCODE_CODE39, $barcode);
+    return $printMod->printBarcode(PrintHandler::BARCODE_CODE39, $barcode);
 }
 
 static public function emailReceiptMod()
