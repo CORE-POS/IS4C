@@ -75,13 +75,14 @@ class ObfTrendReport extends FannieReportPage
             ORDER BY m.super_name, s.obfWeekID');
 
         $laborP = $dbc->prepare('
-            SELECT hours
+            SELECT hours,
+                wages
             FROM ObfLabor
             WHERE obfWeekID BETWEEN ? AND ?
                 AND obfCategoryID=?
             ORDER BY obfWeekID');
 
-        $sales=$growth=$labor=$slph=array();
+        $sales=$growth=$labor=$wages=$slph=array();
         $headers = array();
         $res = $dbc->execute($categoryP, array($start, $end, $store));
         $first = true;
@@ -111,13 +112,16 @@ class ObfTrendReport extends FannieReportPage
 
             $laborR = $dbc->execute($laborP, array($start, $end, $catID));
             $h_record = array($catName . ' Labor Hours');
+            $w_record = array($catName . ' Labor Wages');
             $p_record = array($catName . ' SPLH');
             while ($labW = $dbc->fetchRow($laborR)) {
                 $wsales = array_shift($ttl);
                 $h_record[] = $labW['hours'];
+                $w_record[] = $labW['wages'];
                 $p_record[] = round($wsales / $labW['hours'], 2);
             }
             $labor[] = $h_record;
+            $wages[] = $w_record;
             $splh[] = $p_record;
 
             $super = null;
@@ -154,15 +158,18 @@ class ObfTrendReport extends FannieReportPage
         $nsR = $dbc->execute($noSalesP, array($store));
         while ($nsW = $dbc->fetchRow($nsR)) {
             $l_record = array($nsW['name'] . ' Labor Hours');
+            $w_record = array($nsW['name'] . ' Labor Wages');
             $s_record = array($nsW['name'] . ' SPLH');
             $laborR = $dbc->execute($laborP, array($start, $end, $nsW['obfCategoryID']));
             $week = 1;
             while ($labW = $dbc->fetchRow($laborR)) {
                 $l_record[] = $labW['hours'];
+                $w_record[] = $labW['wages'];
                 $s_record[] = sprintf('%.2f', $sttl[$week]/$labW['hours']);
                 $week++;
             }
             $labor[] = $l_record;
+            $wages[] = $w_record;
             $splh[] = $s_record;
         }
 
@@ -170,10 +177,13 @@ class ObfTrendReport extends FannieReportPage
         $lttl = $this->sumLabor($labor);
         array_unshift($labor, $lttl);
 
+        $wttl = $this->sumWages($wages);
+        array_unshift($wages, $wttl);
+
         $pttl = $this->sumSPLH($sttl, $lttl);
         array_unshift($splh, $pttl);
 
-        return array_merge($sales, $growth, $labor, $splh);
+        return array_merge($sales, $growth, $labor, $wages, $splh);
     }
 
     private function sumSPLH($sttl, $lttl)
@@ -211,6 +221,21 @@ class ObfTrendReport extends FannieReportPage
     private function sumLabor($labor)
     {
         $lttl = array('Total Labor');
+        for ($i = 1; $i<count($labor[0]); $i++) {
+            $lsum = 0;
+            for ($j=0;$j<count($labor);$j++) {
+                $lsum += $labor[$j][$i];
+            }
+            $lttl[] = $lsum;
+        }
+        $lttl['meta'] = FannieReportPage::META_BOLD;
+
+        return $lttl;
+    }
+
+    private function sumWages($labor)
+    {
+        $lttl = array('Total Wages');
         for ($i = 1; $i<count($labor[0]); $i++) {
             $lsum = 0;
             for ($j=0;$j<count($labor);$j++) {
