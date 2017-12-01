@@ -192,7 +192,7 @@ HTML;
         ");
         $vres = $dbc->execute($vprep);
         while ($row = $dbc->fetchRow($vres)) {
-            $rate = 12 / $row['rate'];
+            $rate = $row['rate'] == 0 ? 0 : 12 / $row['rate'];
             $y = date('Y');
             $m = date('m');
             $m -= $rate;
@@ -222,7 +222,7 @@ HTML;
                     $data[$vid]['total']++;
                     if (strtotime($review) ) {
                         $reviewUTS = strtotime($review);
-                        $rateUTS = strtotime($data[$vid]['rate']);
+                        $rateUTS = !isset($data[$vid]['rate']) ? 0 : strtotime($data[$vid]['rate']);
                         if ($reviewUTS > $rateUTS) {
                             $data[$vid]['good']++;
                         }
@@ -388,8 +388,8 @@ HTML;
         $bid = FormLib::get('bid');
         $bidLn = "../batches/newbatch/EditBatchPage.php?id=".$bid;
 
+        $bData = '';
         if ($bid) {
-            $bData = '';
             $pArgs = array($bid);
             $pPrep = $dbc->prepare("SELECT bid FROM batchReviewLog WHERE bid = ?");
             $pRes = $dbc->execute($pPrep,$pArgs);
@@ -769,8 +769,8 @@ HTML;
             }
         }
 
+        $alert = '';
         if ($saved = FormLib::get('saved')) {
-            $alert = '';
             if ($saved == 'false') {
                 $alert = '<div class="alert alert-danger">Save Unsuccessful</div>';
             } else {
