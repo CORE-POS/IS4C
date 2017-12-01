@@ -206,6 +206,7 @@ class EOMReport extends FannieReportPage
                 left join memtype m on d.memType = m.memtype
             WHERE date_id BETWEEN ? AND ? AND (d.memType <> 4)
                 AND " . DTrans::isStoreID($store, 'd') . "
+                AND register_no not in (20,30)
             GROUP BY m.memdesc, d.memType";
         $prep = $this->connection->prepare($query21);
         $res = $this->connection->execute($prep, array($idStart, $idEnd, $store));
@@ -263,7 +264,7 @@ class EOMReport extends FannieReportPage
             'Deli' => array(0.0225, 0),
             'County' => array(0.005, 0),
         );
-        if ($startID >= 20171001) {
+        if ($idStart >= 20171001) {
             $collectors['County'] = array(0, 0);
         }
         while ($row = $this->connection->fetchRow($res)) {
