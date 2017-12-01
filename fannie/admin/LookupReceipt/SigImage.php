@@ -32,6 +32,8 @@ if (!class_exists('FannieAPI')) {
 */
 class SigImage 
 {
+    public $default_db = false;
+
     public function setConfig()
     {
     }
