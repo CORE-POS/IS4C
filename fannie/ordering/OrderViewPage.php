@@ -1090,7 +1090,7 @@ HTML;
                 } else {
                     $pricing = "% Discount";
                 }
-            } elseif ($w['discountable'] == 0) {
+            } elseif (isset($w['discountable']) && $w['discountable'] == 0) {
                 $pricing = _('Basics');
             }
             $ret .= sprintf('<tr>
