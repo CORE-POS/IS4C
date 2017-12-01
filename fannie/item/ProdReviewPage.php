@@ -419,7 +419,8 @@ HTML;
                     + Add to log</td>";
             }
             $bData .= "
-                <div class='panel panel-default batchTable'>
+                <label class='text-success'>New Batch</label>
+                <div class='batchTable'>
                 <table class='table table-condensed table-striped alert-success'>
                     <thead><th>Name</th><th>BatchID</th><th>Owner</th><th>BatchType</th><th></td></thead>
                     <tbody>
@@ -483,7 +484,7 @@ HTML;
             } else {
                 $tableB .= "<tr>";
                 $tableB .= "<td class='bid'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
-                $batchName = substr($row['batchName'],0,25);
+                $batchName = $row['batchName'];
                 $tableB .= "<td>{$batchName}</td>";
                 $tableB .= "<td>{$row['vid']}</td>";
                 $tableB .= "<td>{$row['vendorName']}</td>";
@@ -498,7 +499,7 @@ HTML;
 
         return <<<HTML
 <div align="center">
-    <div class="panel panel-info" style="max-width: 800px;">
+    <div class="panel panel-default">
         <div class="panel-heading">
             <span class="panel-header">Batch Review Log</span>
             <div style="position:relative;"><div style="position: absolute; top:-20px; left: 0px">
@@ -518,11 +519,11 @@ HTML;
         </div>
         {$bData}
         <label class="text-warning">Un-Forced Batches</label>
-        <div class="panel panel-default batchTable">
+        <div class="batchTable">
             {$tableA}
         </div>
         <label class="text-info">Forced Batches</label>
-        <div class="panel panel-default batchTable">
+        <div class="batchTable">
             {$tableB}
         </div>
     </div>
@@ -776,36 +777,46 @@ HTML;
 
         return <<<HTML
 <div align="center">
-    <div class="panel panel-default " style="max-width: 500px;">
+    <div class="panel panel-default " style="max-width: 800px;">
     <div class="panel-heading">Product Review</div>
-    <div class="panel-body" >
+    <div class="panel-body" style="text-align: left;">
         {$alert}
         <div class="row">
             <div class="col-md-6">
                 <form class="form" method="get">
                     <div class="form-group input-group-sm">
                         <label>Review a single UPC</label>
-                        <input type="text" class="form-control" name="upc" value="" autofocus>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-default" type="submit">Update Reviewed Date</button>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="upc" value="" autofocus>
+                            <span class="input-group-addon">
+                                <button class="input-addon-btn" type="submit">
+                                    <span class="glyphicon glyphicon-chevron-right"></span>
+                                </button>
+                            </span>
+                        </div>
                     </div>
                  </form>
                  <div class="divider"></div>
                 <form class="form" method="get">
                     <div class="form-group">
                         <label>Review Products by Vendor</label>
-                        <select class="form-control" name="vendor">
-                            <option value="1">Select a Vendor</option>
-                            {$vselect}
-                        </select>
+                        <div class="input-group">
+                            <select class="form-control" name="vendor">
+                                <option value="1">Select a Vendor</option>
+                                {$vselect}
+                            </select>
+                            <div class="input-group-addon">
+                                <button class="input-addon-btn" type="submit">
+                                    <span class="glyphicon glyphicon-chevron-right"></span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <button class="btn btn-default" type="submit">View Items by Vendor</button>
-                    </div>
-                    <br/>
+                    <div class="divider"></div>
+                    <label>Other Pages</label>
                     <ul>
                         <li><a href="ProdReviewPage.php?schedule=1">Vendor Review Schedule</a></li>
+                        <li><a href="ProdReviewPage.php?schedule=1&setup=1">Vendor Schedule Setup</a></li>
                         <li><a href="ProdReviewPage.php?batchLog=1">Review Batch Log</a></li>
                     </ul>
                 </form>
@@ -815,12 +826,14 @@ HTML;
             <div class="col-md-6">
                 <div class="form-group">
                     <label>Review a list of UPCs</label>
-                    <textarea class="form-control" rows="10" rows="25"
-                        name="list"></textarea>
+                    <div class="input-group">
+                    <textarea class="form-control" rows="10" rows="25" name="list"></textarea>
+                    <span class="input-group-addon">
+                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                    </span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <button class="btn btn-default" type="submit">Update List as Reviewed</button>
-                </div>
+                                    
             </div>
         </form>
     </div>
@@ -969,6 +982,12 @@ function fadeAlerts()
     public function css_content()
     {
         return <<<HTML
+textarea { resize: vertical }
+.input-addon-btn {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
 .vertical-alignment-helper {
     display:table;
     height: 100%;
@@ -1017,14 +1036,15 @@ textarea {
 .batchLogInput {
     border: 1px transparent;
     background-color: transparent;
-    font-size: 10px;
+    width: 100%;
 }
 .btn-wide {
     width: 100%;
     margin-top: 3px;
 }
 .batchTable {
-    max-width: 750px;
+    border: 2px transparent;
+    border-radius: 0;
 }
 span.panel-header {
     font-weight: bold;
@@ -1043,8 +1063,8 @@ div.main {
 .divider {
     background-color: lightgrey;
     height: 2px;
-    margin: 10px;
     border-radius: 2px;
+    margin-bottom: 10px;
 }
 h4 {
     font-weight: bold   font-weight: bold;;
