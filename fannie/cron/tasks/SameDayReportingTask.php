@@ -50,10 +50,12 @@ repeatedly throughout the day.';
             $rotate = $dbc->prepare('
                 INSERT INTO dlog_15
                 SELECT * FROM dlog
-                WHERE store_row_id > ?
-                    AND store_id=?
+                WHERE store_id=?
+                    AND store_row_id NOT IN (
+                        SELECT store_row_id FROM dlog_15 WHERE store_id=?
+                    )
             ');
-            $dbc->execute($rotate, array($row[0], $row[1]));
+            $dbc->execute($rotate, array($row['store_id'], $row['store_id']));
         }
     }
 }
