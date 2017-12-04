@@ -123,7 +123,7 @@ class DeptLib
             dept_minimum,
             dept_discount,";
         if ($this->session->get('NoCompat') == 1) {
-            $query .= 'dept_see_id, memberOnly, line_item_discount, magin';
+            $query .= 'dept_see_id, memberOnly, line_item_discount, margin';
         } else {
             $table = $dbc->tableDefinition('departments');
             if (isset($table['dept_see_id'])) {

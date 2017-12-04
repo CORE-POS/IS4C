@@ -63,6 +63,10 @@ class adminlist extends NoInputCorePage
                 TenderReport::printReport();
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
+            case 'EOD':
+                TenderReport::printReport('WfcLimitedTenderReport');
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return false;
             case 'OTR':
                 if ($this->security >= 30) {
                     $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=COREPOS-pos-lib-adminlogin-AnyTenderReportRequest');
@@ -154,6 +158,9 @@ class adminlist extends NoInputCorePage
         <?php if ($this->security >= 30){ ?>
             <option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
             <option value='UNDO'><?php echo _('Undo Transaction'); ?>
+        <?php } ?>
+        <?php if ($this->session->get('store') == 'wfc') { ?>
+            <option value="EOD">End of Day Report</option>
         <?php } ?>
         </select>
         <?php if ($this->session->get('touchscreen')) { ?>

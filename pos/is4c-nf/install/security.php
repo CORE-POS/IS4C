@@ -60,6 +60,10 @@ body {
     <td><?php echo $form->selectField('SecurityLineItemDiscount', $privLevels, 20); ?></td>
 </tr>
 <tr>
+    <td><b><?php echo _('Unlock Screen'); ?></b>: </td>
+    <td><?php echo $form->selectField('SecurityUnlock', $privLevels, 30); ?></td>
+</tr>
+<tr>
     <td><b><?php echo _('Void Limit'); ?></b>: </td>
     <td>
     <?php

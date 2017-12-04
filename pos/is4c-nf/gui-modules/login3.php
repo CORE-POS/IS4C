@@ -57,11 +57,13 @@ class login3 extends BasicCorePage
         if ($this->form->tryGet('reginput', false) !== false || $this->form->tryGet('scannerInput', false) !== false) {
 
             $passwd = $this->getPassword();
+            $level = $this->session->get('SecurityUnlock');
+            $level = $level ? $level : 30;
 
             if (Authenticate::checkPassword($passwd)){
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
-            } elseif ($this->session->get('LastID') == 0 && Authenticate::checkPermission($passwd, 25)) {
+            } elseif ($this->session->get('LastID') == 0 && Authenticate::checkPermission($passwd, $level)) {
                 Database::setglobalvalue("LoggedIn", 0);
                 $this->session->set("LoggedIn",0);
                 $this->session->set("training",0);

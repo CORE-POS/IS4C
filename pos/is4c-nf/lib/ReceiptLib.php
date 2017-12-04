@@ -131,8 +131,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
         }
     }
 
-    $receipt .= "\n";
-    $receipt .= "Cashier: ".CoreLocal::get("cashier")."\n\n";
+    $receipt .= "\n\n";
 
     $time = self::build_time($dateTimeStamp);
     $time = str_replace(" ","     ",$time);
