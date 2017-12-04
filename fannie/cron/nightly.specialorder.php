@@ -38,6 +38,9 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('cron_msg')) {
     include(__DIR__ . '/../src/cron_msg.php');
 }
+if (!class_exists('SoPoBridge')) {
+    include(__DIR__ . '/../ordering/SoPoBridge.php');
+}
 
 set_time_limit(0);
 
@@ -55,6 +58,7 @@ if (file_exists($cachepath)) {
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+$bridge = new SoPoBridge($sql, FannieConfig::factory());
 
 // auto-close called/waiting after 30 days
 $subquery = "select p.order_id from PendingSpecialOrder as p
@@ -73,6 +77,17 @@ if (strlen($cwIDs) > 2){
     $copyQ = "INSERT INTO CompleteSpecialOrder
         SELECT p.* FROM PendingSpecialOrder AS p
         WHERE p.order_id IN $cwIDs";
+    $copyR = $sql->query($copyQ);
+
+    $itemQ = "SELECT s.storeID, p.order_id, p.trans_id
+        FROM PendingSpecialOrder AS p
+            LEFT JOIN SpecialOrders AS s ON p.order_id=s.specialOrderID
+        WHERE p.trans_id > 0
+            AND p.order_id IN {$cwIDs}";
+    $itemR = $sql->query($itemQ);
+    while ($itemW = $sql->fetchRow($itemR)) {
+        $bridge->removeItemFromPurchaseOrder($itemW['order_id'], $itemW['trans_id'], $itemW['storeID']);
+    }
 
     // make note in history table
     $historyQ = "INSERT INTO SpecialOrderHistory
@@ -112,6 +127,16 @@ if (strlen($allIDs) > 2){
         SELECT p.* FROM PendingSpecialOrder AS p
         WHERE p.order_id IN $allIDs";
     $sql->query($copyQ);
+
+    $itemQ = "SELECT s.storeID, p.order_id, p.trans_id
+        FROM PendingSpecialOrder AS p
+            LEFT JOIN SpecialOrders AS s ON p.order_id=s.specialOrderID
+        WHERE p.trans_id > 0
+            AND p.order_id IN {$allIDs}";
+    $itemR = $sql->query($itemQ);
+    while ($itemW = $sql->fetchRow($itemR)) {
+        $bridge->removeItemFromPurchaseOrder($itemW['order_id'], $itemW['trans_id'], $itemW['storeID']);
+    }
 
     // make note in history table
     $historyQ = "INSERT INTO SpecialOrderHistory

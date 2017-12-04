@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+if (!class_exists('SoPoBridge')) {
+    include(__DIR__ . '/../../ordering/SoPoBridge.php');
+}
+
 class SpecialOrdersTask extends FannieTask
 {
     public $name = 'Special Orders Task';
@@ -95,6 +99,17 @@ class SpecialOrdersTask extends FannieTask
         $copyQ = "INSERT INTO CompleteSpecialOrder
             SELECT p.* FROM PendingSpecialOrder AS p
             WHERE p.order_id IN $cwIDs";
+
+        $bridge = new SoPoBridge($sql, FannieConfig::factory());
+        $itemQ = "SELECT s.storeID, p.order_id, p.trans_id
+            FROM PendingSpecialOrder AS p
+                LEFT JOIN SpecialOrders AS s ON p.order_id=s.specialOrderID
+            WHERE p.trans_id > 0
+                AND p.order_id IN {$cwIDs}";
+        $itemR = $sql->query($itemQ);
+        while ($itemW = $sql->fetchRow($itemR)) {
+            $bridge->removeItemFromPurchaseOrder($itemW['order_id'], $itemW['trans_id'], $itemW['storeID']);
+        }
 
         // make note in history table
         $historyQ = "INSERT INTO SpecialOrderHistory

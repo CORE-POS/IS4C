@@ -27,6 +27,9 @@ if (!class_exists('FannieAPI')) {
 if (!class_exists('OrderNotifications')) {
     include(__DIR__ . '/OrderNotifications.php');
 }
+if (!class_exists('SoPoBridge')) {
+    include(__DIR__ . '/SoPoBridge.php');
+}
 
 class OrderAjax extends FannieRESTfulPage
 {
@@ -65,8 +68,19 @@ class OrderAjax extends FannieRESTfulPage
                 SELECT * FROM PendingSpecialOrder
                 WHERE order_id=?");
         $dbc->execute($moveP, array($this->id));
+
+        $itemP = $dbc->prepare("SELECT s.storeID, p.order_id, p.trans_id 
+                FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . " AS p
+                    LEFT JOIN " . FannieDB::fqn('SpecialOrders', 'trans') . " AS s ON p.order_id=s.specialOrderID
+                WHERE p.order_id=?
+                    AND p.trans_id > 0");
+        $bridge = new SoPoBridge($dbc, $this->config);
+        $itemR = $dbc->execute($itemP, array($this->id));
+        while ($itemW = $dbc->fetchRow($itemR)) {
+            $bridge->removeItemFromPurchaseOrder($this->id, $itemW['trans_id'], $itemW['storeID']);
+        }
         
-        $cleanP = $dbc->prepare("DELETE FROM PendingSpecialOrder
+        $cleanP = $dbc->prepare("DELETE FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . "
                 WHERE order_id=?");
         $dbc->execute($cleanP, array($this->id));
 
