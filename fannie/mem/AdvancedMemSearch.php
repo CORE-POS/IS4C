@@ -26,6 +26,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
     private $filterMethods = array(
         'filterHasShopped',
         'filterHasNotShopped',
+        'filterUsedCoupon',
     );
 
     protected function post_handler()
@@ -36,11 +37,6 @@ class AdvancedMemSearch extends FannieRESTfulPage
         $search->from = 'custdata AS c LEFT JOIN memtype AS t ON c.memType=t.memtype ';
         foreach ($this->searchMethods as $method) {
             $search = $this->$method($search, $this->form);
-        }
-
-        if (count($search->args) == 0) {
-            echo 'Too many results';
-            return false;
         }
 
         $query = "SELECT c.CardNo,
@@ -57,14 +53,15 @@ class AdvancedMemSearch extends FannieRESTfulPage
         while ($row = $this->connection->fetchRow($res)) {
             $key = $row['CardNo'] . ':' . $row['personNum'];
             $data[$key] = $row;
-            if (count($data) > 3000) {
-                echo 'Too many results';
-                return false;
-            }
         }
 
         foreach ($this->filterMethods as $method) {
             $data = $this->$method($data, $this->form);
+        }
+
+        if (count($data) > 3000) {
+            echo 'Too many results';
+            return false;
         }
 
         echo $this->sendOutputTable($data);
@@ -241,6 +238,38 @@ class AdvancedMemSearch extends FannieRESTfulPage
         return $search;
     }
 
+    private function filterUsedCoupon($data, $form)
+    {
+        if (is_numeric($form->usedCoupon)) {
+            $couponP = $this->connection->prepare("SELECT * FROM houseCoupons WHERE coupID=?");
+            $coupon = $this->connection->getRow($couponP, array($form->usedCoupon));
+            $dlog = DTransactionsModel::selectDlog($coupon['startDate'], $coupon['endDate']);
+            $cardP = $this->connection->prepare("SELECT card_no
+                FROM {$dlog}
+                WHERE upc=?
+                    AND tdate BETWEEN ? AND ?
+                GROUP BY card_no");
+            $args = array(
+                '00499999' . str_pad($this->form->usedCoupon, 5, '0', STR_PAD_LEFT),
+                $coupon['startDate'],
+                str_replace('00:00:00', '23:59:59', $coupon['endDate']),
+            );
+            $cardR = $this->connection->execute($cardP, $args);
+            $cards = array();
+            while ($cardW = $this->connection->fetchRow($cardR)) {
+                $cards[$cardW['card_no']] = $cardW['card_no'];
+            }
+            foreach (array_keys($data) as $idStr) {
+                list($card,) = explode(':', $idStr, 2);
+                if (!isset($cards[$card])) {
+                    unset($data[$idStr]);
+                }
+            }
+        }
+
+        return $data;
+    }
+
     private function filterHasShopped($data, $form)
     {
         if (is_numeric($form->hasShopped)) {
@@ -322,6 +351,11 @@ class AdvancedMemSearch extends FannieRESTfulPage
     {
         $memtype = new MemtypeModel($this->connection);
         $memtype = $memtype->toOptions(-999);
+        $couponR = $this->connection->query('SELECT coupID, description FROM houseCoupons ORDER BY startDate DESC');
+        $coupons = '';
+        while ($couponW = $this->connection->fetchRow($couponR)) {
+            $coupons .= sprintf('<option value="%s">%s</option>', $couponW['coupID'], $couponW['description']);
+        }
         return <<<HTML
 <script type="text/javascript">
 function runSearch() {
@@ -426,6 +460,13 @@ function sendTo(url) {
             <input type="text" class="form-control input-sm date-field" name="join2" 
                 placeholder="Optional" />
         </td>
+    </tr>
+    <tr>
+        <th>Used Coupon</th>
+        <td><select name="usedCoupon" class="form-control input-sm">
+            <option value="">Select one...</option>
+            {$coupons}
+        </select></td>
     </tr>
 </table>
 </div>
