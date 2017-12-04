@@ -98,6 +98,7 @@ class PaycardEmvMenu extends NoInputCorePage
                 $this->menu = array(
                     'EMV' => 'EMV Credit/Debit',
                     'CC' => 'Credit only',
+                    'DC' => 'Debit only',
                     'EBT' => 'EBT',
                     'GIFT' => 'Gift',
                 );
