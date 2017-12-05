@@ -94,7 +94,8 @@ class AdvancedMemSearch extends FannieRESTfulPage
         foreach ($data as $d) {
             $checked = in_array($d['CardNo'], $saved) ? 'checked' : '';
             $ret .= "<tr>
-                <td><input type=\"checkbox\" class=\"savedCB\" {$checked} name=\"saved[]\" value=\"{$d['CardNo']}\" /></td>
+                <td><input type=\"checkbox\" onchange=\"checkedCount('#selection-counter', '.savedCB');\" 
+                    class=\"savedCB\" {$checked} name=\"saved[]\" value=\"{$d['CardNo']}\" /></td>
                 <td><a href=\"MemberEditor.php?memNum={$d['CardNo']}\">{$d['CardNo']}</a></td>
                 <td>{$d['FirstName']}</td><td>{$d['LastName']}</td><td>{$d['Type']}</td><td>{$d['memDesc']}</td></tr>";
             $copyPaste .= $d['CardNo'] . "\n";
@@ -373,12 +374,21 @@ function runSearch() {
         $('#resultsArea').html(resp);   
     });
 }
+function checkedCount(output_selector, checked_selector) {
+    var count = $(checked_selector + ':checked').length;
+    if (count == 0) {
+        $(output_selector).html('');
+    } else {
+        $(output_selector).html(count + ' items selected. These items will be retained in the next search.');
+    }
+}
 function toggleAll(elem, selector) {
     if (elem.checked) {
         $(selector).prop('checked', true);
     } else {
         $(selector).prop('checked', false);
     }
+    checkedCount('#selection-counter', selector);
 }
 function sendTo(url) {
     $('#sendForm').html('');
@@ -481,6 +491,8 @@ function sendTo(url) {
 <p>
     <button type="submit" class="btn btn-default btn-core">Search</button>
     <button type="reset" class="btn btn-default btn-reset">Reset Form</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <span id="selection-counter"></span>
 </p>
 <hr />
 <div id="progressBar" class="progress collapse">
