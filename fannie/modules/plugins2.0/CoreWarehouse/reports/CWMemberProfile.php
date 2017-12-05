@@ -27,7 +27,8 @@ class CWMemberProfile extends FannieRESTfulPage
         list($inStr, $args) = $this->connection->safeInClause($ids);
 
         $maxP = $this->connection->prepare('SELECT MAX(yearTotalSpendingRank)
-            FROM ' . FannieDB::fqn('MemberSummary', 'plugin:WarehouseDatabase'));
+            FROM ' . FannieDB::fqn('MemberSummary', 'plugin:WarehouseDatabase') . '
+            WHERE yearTotalSpending > 0');
         $max = $this->connection->getValue($maxP);
         $top25 = array();
         $allP = $this->connection->prepare('SELECT d.card_no
