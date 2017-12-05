@@ -154,9 +154,9 @@ class CoreLocal
         if (!self::get('ValidJson') && self::validateJsonIni()) {
             $settings = self::readIniJson();
             self::set('ValidJson', true);
-        } elseif (file_exists(dirname(__FILE__) . '/../../ini.php')) {
+        } elseif (!self::get('ValidJson') && file_exists(dirname(__FILE__) . '/../../ini.php')) {
             $settings = self::readIniPhp();
-        } else {
+        } elseif (!self::get('ValidJson')) {
             self::loadEnv();
         }
         foreach ($settings as $key => $value) {
