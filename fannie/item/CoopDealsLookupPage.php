@@ -196,6 +196,24 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 AND c.dealSet = ?
             LIMIT 1;
         ');
+        $pPrep = $dbc->prepare('
+            SELECT
+                c.abtpr AS flyerPeriod,
+                c.price AS srp
+            FROM CoopDealsItems AS c
+                LEFT JOIN products AS p ON c.upc=p.upc
+                LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE c.upc = ?
+                AND c.dealSet = ?;
+        ');
+        $pRes = $dbc->execute($pPrep, $args);
+        $flyerPeriod = '';
+        while ($row = $dbc->fetchRow($pRes)) {
+            $flyerPeriod .= $row['flyerPeriod'].",";
+        }
+        $flyerPeriod = substr_replace($flyerPeriod, "", -1);
+
         $res = $dbc->execute($prep, $args);
         $ret .=  "<table class='table'  align='center' width='100%'>";
         $check = '';
@@ -203,14 +221,13 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $upc = $row['upc'];
             $description = $row['description'];
             $brand = $row['brand'];
-            $flyerPeriod = $row['flyerPeriod'];
             $sku = $row['sku'];
             $srp = $row['srp'];
             $superName = $row['super_name'];
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
             $ret .=  '<td><b>Brand</b></td><td>' . $row['brand'] . '</tr>';
-            $ret .=  '<td><b>Flyer Period</b></td><td>' . $row['flyerPeriod'] . '</tr>';
+            $ret .=  '<td><b>Flyer Period</b></td><td>' . $flyerPeriod . '</tr>';
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
             $srp = $row['srp'];
             $ret .= '<td><b>Sale Price</b></td><td>' . $srp . '</td></tr>';
