@@ -638,6 +638,18 @@ class HouseCoupon extends SpecialUPC
                 $sets = ($qualW['qty'] > $discW['qty']) ? $discW['qty'] : $qualW['qty'];
                 $value = $sets * $value;
                 break;
+            case 'SC':
+                $giftQ = "
+                    SELECT COUNT(*) AS cards,
+                       SUM(CASE WHEN total IS NULL THEN 0 ELSE total END) AS ttl
+                    " . $this->baseSQL($transDB, $coupID, 'department') . "
+                    and h.type in ('BOTH', 'DISCOUNT') AND l.trans_type='D'";
+                $giftR = $transDB->query($giftQ);
+                $giftW = $transDB->fetchRow($giftR);
+                $freeCards = floor($giftW['ttl'] / $infoW['minValue']);
+                $value = $infoW['discountValue'] * $freeCards;
+                TransRecord::addtender('Store Credit', 'SC', $value);
+                break;
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
                 $discountable = 0;
