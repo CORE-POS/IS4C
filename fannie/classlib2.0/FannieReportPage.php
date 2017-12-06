@@ -718,11 +718,12 @@ class FannieReportPage extends FanniePage
                     );
                     $ret .= '</div>';
                 }
+                $tableID = 'reportTable' . $this->multi_counter;
                 if ($this->sortable || $this->no_sort_but_style) {
-                    $ret .= '<table class="mySortableTable tablesorter tablesorter-bootstrap">';
+                    $ret .= '<table class="mySortableTable tablesorter tablesorter-bootstrap" id="' . $tableID . '">';
                 } else {
                     $ret .= '<table class="mySortableTable" cellspacing="0" 
-                        cellpadding="4" border="1">' . "\n";
+                        id="' . $tableID . '" cellpadding="4" border="1">' . "\n";
                 }
                 break;
             case 'csv':
