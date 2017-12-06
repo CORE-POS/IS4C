@@ -439,6 +439,7 @@ class HouseCouponEditor extends FanniePage
             '%S'=>'Percent Discount (Department excludes sale items)',
             'PD'=>'Percent Discount (Anytime)',
             'AD'=>'All Discount (Department)',
+            'SC'=>'Store Credit (WFC; maybe temporary)',
         );
         if ($mType != '') {
             unset($dts['%']);
