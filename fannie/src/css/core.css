@@ -52,3 +52,13 @@
 .tablesorter-bootstrap.tablesorter-core > tbody > tr.tablesorter-hasChildRow.even:hover ~ .tablesorter-childRow.even > td {
     background-color: #d9edf7;
 }
+
+@font-face {
+    font-family: 'Free3of9';
+    src: url('free3of9.woff') format('woff');
+}
+
+.barcode {
+    font-family: 'Free3of9';
+    font-size: 24pt;
+}
