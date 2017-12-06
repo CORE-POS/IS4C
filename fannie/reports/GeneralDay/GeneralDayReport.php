@@ -46,6 +46,19 @@ class GeneralDayReport extends FannieReportPage
     protected $report_headers = array('Desc','Qty','Amount');
     protected $required_fields = array('date');
 
+    public function preprocess()
+    {
+        if ($this->report_format == 'html') {
+            $this->addScript('../../src/javascript/Chart.min.js');
+            $this->addScript('../../src/javascript/CoreChart.js');
+            $this->addScript('generalDay.js');
+            $this->addOnloadCommand('generalDay.tenders();');
+            $this->addOnloadCommand('generalDay.sales();');
+        }
+
+        return parent::preprocess();
+    }
+
     function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,
