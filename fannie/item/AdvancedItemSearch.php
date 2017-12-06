@@ -979,7 +979,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $url = $this->config->get('URL');
         $today = date('Y-m-d');
 
-        $this->addScript('search.js');
+        $this->addScript('search.js?date=20171206');
         $this->addScript('autocomplete.js');
         $this->addOnloadCommand("bindAutoComplete('#brand-field', '../ws/', 'brand');\n");
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');

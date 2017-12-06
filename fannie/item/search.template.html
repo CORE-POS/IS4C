@@ -276,21 +276,23 @@ return <<<HTML
         <div class="panel-heading">Selected Items</div>
         <div class="panel-body">
             <p><button type="submit" class="btn btn-default btn-xs" 
-                onclick="goToBatch();">Price or Sale Batch</button></p>
+                onclick="goToPage('../batches/BatchFromSearch.php');">Price or Sale Batch</button></p>
             <p><button type="submit" class="btn btn-default btn-xs" 
-                onclick="goToEdit();">Group Edit Items</button></p>
+                onclick="goToPage('EditItemsFromSearch.php');">Group Edit Items</button></p>
             <p><button type="submit" class="btn btn-default btn-xs" 
                 onclick="goToList();">Product List Tool</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToSigns();">Tags/Signs</button></p>
+                onclick="goToPage('../admin/labels/SignFromSearch.php');">Tags/Signs</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToManualSigns();">Manual Signs</button></p>
+                onclick="goToPage('../admin/labels/ManualSignsPage.php');">Manual Signs</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToMargins();">Margins</button></p>
+                onclick="goToPage('../admin/labels/PickTagsPage.php');">Pick Tags</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToCoupons();">Store Coupons</button></p>
+                onclick="goToMargins('MarginToolFromSearch.php');">Margins</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToSync();">Scale Sync</button></p>
+                onclick="goToPage('../modules/plugins2.0/HouseCoupon/HouseCouponEditor.php');">Store Coupons</button></p>
+            <p><button class="btn btn-default btn-xs" type="submit" 
+                onclick="goToPage('hobartcsv/SyncFromSearch.php');">Scale Sync</button></p>
         </div>
     </div>
     <div class="panel panel-default">
