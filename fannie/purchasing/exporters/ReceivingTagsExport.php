@@ -67,7 +67,7 @@ class ReceivingTagsExport extends DefaultCsvPoExport
                 'vendor' => $infoW['vendorName'],
                 'scale' => 0,
                 'numflag' => 0,
-                'pricePerUnit', '',
+                'pricePerUnit' => '',
             );
             if ($infoW['quantity'] <= 0) {
                 $infoW['quantity'] = 1;
