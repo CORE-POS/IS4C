@@ -69,9 +69,6 @@ class ReceivingTagsExport extends DefaultCsvPoExport
                 'numflag' => 0,
                 'pricePerUnit' => '',
             );
-            if ($infoW['quantity'] <= 0) {
-                $infoW['quantity'] = 1;
-            }
             for ($i=0; $i<$infoW['quantity']; $i++) {
                 $item['normal_price'] = ($i+1) . '/' . $infoW['quantity'];
                 if ($infoW['isSpecialOrder']) {
