@@ -91,7 +91,12 @@ class SmartMovementReport extends FannieReportPage
             ' . $stores['html'] . '
             <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Change Dates</button>
             <button type="submit" onclick="$(\'#excel\').val(\'csv\');return true;">Download</button>
-            </form>';
+            </form>
+            <style type="text/css">
+            .ui-datepicker {
+                z-index: 999 !important;
+            }
+            </style>';
 
         $this->add_onload_command("\$('.date-field').datepicker({dateFormat:'yy-mm-dd'});");
         
