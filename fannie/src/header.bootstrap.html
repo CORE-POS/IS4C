@@ -79,13 +79,13 @@ function smartToggle()
     
     <div class="hidden-print">
         <table> <!-- yes. sick of fighting with floating divs... -->
-        <tr><td>
+        <tr><td class="hidden-xs">
             <?php if (isset($FANNIE_CSS_LOGO) && !empty($FANNIE_CSS_LOGO)) { ?>
             <img src="<?php echo $FANNIE_CSS_LOGO; ?>" alt="logo" />
             <?php } ?>
         </td>
         <td>
-        <div style="font-size:28px;margin-bottom:5px;" class="primaryColor">
+        <div class="hidden-xs" style="font-size:28px;margin-bottom:5px;" class="primaryColor">
         <a href="<?php echo $path; ?>">
         <?php echo $BACKEND_NAME; ?>
         <?php if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
@@ -98,7 +98,7 @@ function smartToggle()
         <div style="font-size:20px;" class="secondaryColor"
             data-toggle="collapse" data-target=".navbar-default"
             onclick="smartToggle();">
-        IT CORE maintenance &amp; reporting
+            <span class="hidden-xs">IT CORE</span> maintenance &amp; reporting
         </div>
         </td></tr>
         </table>
