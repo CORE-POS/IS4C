@@ -395,7 +395,12 @@ HTML;
                     <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />
                     to: 
                     <input type=\"text\" name=\"date2\" size=\"10\" value=\"$bEnd\" id=\"date2\" />
-                    </span><input type=\"submit\" value=\"Change Dates\" />";
+                    </span><input type=\"submit\" value=\"Change Dates\" />
+                    <style type=\"text/css\">
+                    .ui-datepicker {
+                        z-index: 999 !important;
+                    }
+                    </style>";
             $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});");
             $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});");
             foreach($batchID as $bID) {
