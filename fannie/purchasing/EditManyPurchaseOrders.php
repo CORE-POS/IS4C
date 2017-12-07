@@ -221,23 +221,23 @@ class EditManyPurchaseOrders extends FannieRESTfulPage
 
     private function getOrderID($vendorID, $userID)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $cutoff = date('Y-m-d', strtotime('30 days ago'));
         $orderQ = 'SELECT orderID FROM PurchaseOrder WHERE
-            vendorID=? AND userID=? and placed=0
+            vendorID=? AND userID=? AND storeID=? AND creationDate > ? and placed=0
             ORDER BY creationDate DESC';
         $orderP = $dbc->prepare($orderQ);
-        $orderR = $dbc->execute($orderP, array($vendorID, $userID));
-        if ($dbc->num_rows($orderR) > 0){
-            $row = $dbc->fetch_row($orderR);
-            return $row['orderID'];
-        } else {
+        $orderID = $dbc->getValue($orderP, array($vendorID, $userID, $store, $cutoff));
+        if (!$orderID) {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
-                placed, userID) VALUES (?, '.$dbc->now().', 0, ?)';
+                placed, userID, storeID) VALUES (?, '.$dbc->now().', 0, ?, ?)';
             $insP = $dbc->prepare($insQ);
-            $insR = $dbc->execute($insP, array($vendorID, $userID));
-            return $dbc->insertID();
+            $insR = $dbc->execute($insP, array($vendorID, $userID, $store));
+            $orderID = $dbc->insertID();
         }
+
+        return $orderID;
     }
 
     public function helpContent()

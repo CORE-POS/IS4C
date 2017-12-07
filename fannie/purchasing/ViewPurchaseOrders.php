@@ -387,14 +387,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             <table class="table table-striped table-bordered tablesorter table-float">';
         $headers = '<thead style="background: #fff;"><tr>
             <th class="thead">Created</th>
-            <th class="thead">Invoice#</th>
-            <th class="thead">Store</th>
+            <th class="thead hidden-xs">Invoice#</th>
+            <th class="thead hidden-xs">Store</th>
             <th class="thead">Vendor</th>
             <th class="thead"># Items</th>
-            <th class="thead">Est. Cost</th>
-            <th class="thead">Placed</th>
-            <th class="thead">Received</th>
-            <th class="thead">Rec. Cost</th></tr></thead><tbody>';
+            <th class="thead hidden-xs">Est. Cost</th>
+            <th class="thead hidden-xs">Placed</th>
+            <th class="thead hidden-xs">Received</th>
+            <th class="thead hidden-xs">Rec. Cost</th></tr></thead><tbody>';
         $tPending .= $headers;
         $tPlaced .= $headers;
         $mergable = array();
@@ -425,14 +425,15 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
     private function orderRowToTable($row, $placed)
     {
-        return sprintf('<tr %s><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td><td>%d</td><td>%.2f</td>
-                <td>%s</td><td>%s</td><td>%.2f</td></tr>',
+        list($date, $time) = explode(' ', $row['creationDate']);
+        return sprintf('<tr %s><td><a href="ViewPurchaseOrders.php?id=%d">%s <span class="hidden-xs">%s</span></a></td>
+                <td class="hidden-xs">%s</td>
+                <td class="hidden-xs">%s</td>
+                <td>%s</td><td>%d</td><td class="hidden-xs">%.2f</td>
+                <td class="hidden-xs">%s</td><td class="hidden-xs">%s</td><td class="hidden-xs">%.2f</td></tr>',
                 ($row['soFlag'] ? 'class="success" title="Contains special order(s)" ' : ''),
                 $row['orderID'],
-                $row['creationDate'], $row['vendorInvoiceID'], $row['storeName'], $row['vendorName'], $row['records'],
+                $date, $time, $row['vendorInvoiceID'], $row['storeName'], $row['vendorName'], $row['records'],
                 $row['estimatedCost'],
                 ($placed == 1 ? $row['placedDate'] : '&nbsp;'),
                 (!empty($row['receivedDate']) ? $row['receivedDate'] : '&nbsp;'),
@@ -766,19 +767,19 @@ HTML;
 
         $ret .= '<table class="table tablesorter table-bordered small table-float"><thead style="background:#fff;">';
         $ret .= '<tr>
-            <th class="thead">Coding</th>
+            <th class="thead hidden-xs">Coding</th>
             <th class="thead">SKU</th>
-            <th class="thead">UPC</th>
-            <th class="thead">Brand</th>
+            <th class="thead hidden-xs">UPC</th>
+            <th class="thead hidden-xs">Brand</th>
             <th class="thead">Description</th>
-            <th class="thead">Unit Size</th>
+            <th class="thead hidden-xs">Unit Size</th>
             <th class="thead">Units/Case</th>
             <th class="thead">Cases</th>
-            <th class="thead">Est. Cost</th>
-            <th class="thead">Received</th>
+            <th class="thead hidden-xs">Est. Cost</th>
+            <th class="thead hidden-xs">Received</th>
             <th class="thead">Rec. Qty</th>
-            <th class="thead">Rec. Cost</th>
-            <th class="thead">SO</th></tr></thead><tbody>';
+            <th class="thead hidden-xs">Rec. Cost</th>
+            <th class="thead hidden-xs">SO</th></tr></thead><tbody>';
         $count = 0;
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
@@ -810,18 +811,18 @@ HTML;
                 $codings[$coding] = 0.0;
             }
             $codings[$coding] += $obj->receivedTotalCost();
-            $ret .= sprintf('<tr %s><td>%d</td><td>%s</td>
-                    <td><a href="%s">%s</a></td><td>%s</td><td>%s</td>
-                    <td>%s</td><td>%s</td>
+            $ret .= sprintf('<tr %s><td class="hidden-xs">%d</td><td>%s</td>
+                    <td class="hidden-xs"><a href="%s">%s</a></td><td class="hidden-xs">%s</td><td>%s</td>
+                    <td class="hidden-xs">%s</td><td>%s</td>
                     <td><span id="qty%d">%s</span> <span class="%s pull-right">
                         <a href="" onclick="itemInc(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-up small" /></a>
                         <br />
                         <a href="" onclick="itemDec(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-down small" /></a>
                         </span>
                     </td>
-                    <td>%.2f</td>
-                    <td>%s</td><td>%s</td><td>%.2f</td>
-                    <td>
+                    <td class="hidden-xs">%.2f</td>
+                    <td class="hidden-xs">%s</td><td>%s</td><td class="hidden-xs">%.2f</td>
+                    <td class="hidden-xs">
                         <select class="form-control input-sm" onchange="isSO(%d, \'%s\', this.value);">
                         %s
                         </select>
