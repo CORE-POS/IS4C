@@ -39,6 +39,34 @@ class ItemList2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $top = 43;
     protected $left = 5;
 
+    protected function priceDiff($data)
+    {
+        usort($data, function($a, $b) {
+            if ($a['nonSalePrice'] < $b['nonSalePrice']) {
+                return -1;
+            } elseif ($a['nonSalePrice'] > $b['nonSalePrice']) {
+                return 1;
+            }
+            return 0;
+        });
+
+        $seenPrices = array();
+        for ($i=0; $i<count($data); $i++) {
+            $price = $data[$i]['nonSalePrice'];
+            if (!isset($seenPrices['p' . $price])) {
+                $data[$i]['description'] = sprintf('Regularly $%.2f', $price);
+                $data[$i]['size'] = '';
+                $seenPrices['p' . $price] = $i;
+            }
+        }
+        $ret = array();
+        foreach ($seenPrices as $p => $i) {
+            $ret[] = $data[$i];
+        }
+
+        return $ret;
+    }
+
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
