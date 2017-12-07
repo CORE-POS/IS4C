@@ -3,6 +3,10 @@ var generalDay = (function ($) {
 
     var mod = {};
 
+    var round = function(val) {
+        return Math.round(val * 100) / 100;
+    };
+
     mod.tenders = function() {
         var labels = $('#reportTable1 td.reportColumn0').toArray()
             .map(x => x.innerHTML.trim());
@@ -12,7 +16,7 @@ var generalDay = (function ($) {
             .filter(x => x[1] > 0);
         var ttl = zipped.reduce((acc, i) => acc + i[1], 0);
         labels = zipped.map(x => x[0]);
-        vals = zipped.map(x => x[1] / ttl * 100);
+        vals = zipped.map(x => round(x[1] / ttl * 100));
 
         $('#reportTable1').after('<div class="col-sm-6 col-sm-offset-3"><canvas id="tenderChart"></canvas></div>');
         CoreChart.pieChart('tenderChart', labels, vals);
@@ -27,7 +31,7 @@ var generalDay = (function ($) {
             .filter(x => x[1] > 0);
         var ttl = zipped.reduce((acc, i) => acc + i[1], 0);
         labels = zipped.map(x => x[0]);
-        vals = zipped.map(x => x[1] / ttl * 100);
+        vals = zipped.map(x => round(x[1] / ttl * 100));
 
         $('#reportTable2').after('<div class="col-sm-6 col-sm-offset-3"><canvas id="salesChart"></canvas></div>');
         CoreChart.pieChart('salesChart', labels, vals);
