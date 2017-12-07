@@ -259,23 +259,23 @@ class SaItemList extends SaHandheldPage
                 <table class="table table-bordered table-striped small">
                 <tr>
                     <th>UPC</th>
-                    <th>SKU</th>
-                    <th>Vendor</th>
-                    <th>Brand</th>
+                    <th class="hidden-xs">SKU</th>
+                    <th class="hidden-xs">Vendor</th>
+                    <th class="hidden-xs">Brand</th>
                     <th>Description</th>
-                    <th>Size</th>
-                    <th>Qty</th>
+                    <th class="hidden-xs">Size</th>
+                    <th class="hidden-xs">Qty</th>
                 </tr>';
             $upcs = array();
             while ($row = $this->connection->fetchRow($res)) {
                 $ret .= sprintf('<tr>
                     <td><a href="../../../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
+                    <td class="hidden-xs">%s</td>
+                    <td class="hidden-xs">%s</td>
+                    <td class="hidden-xs">%s</td>
                     <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%d</td>
+                    <td class="hidden-xs">%s</td>
+                    <td class="hidden-xs">%d</td>
                     </tr>',
                     $row['upc'], $row['upc'],
                     $row['sku'],
@@ -289,11 +289,11 @@ class SaItemList extends SaHandheldPage
                 $itemCount++;
             }
             $ret .= '</table>';
-            $ret .= '<p><form method="post" action="../../../item/AdvancedItemSearch.php">';
+            $ret .= '<form method="post" action="../../../item/AdvancedItemSearch.php"><p class="hidden-xs">';
             $ret .= '<textarea name="upcs">' . implode("\n", $upcs) . '</textarea>';
             $ret .= '<input type="hidden" name="extern" value="1" />';
             $ret .= '<button type="submit" class="btn btn-default">Search These</button>';
-            $ret .= '</form></p>';
+            $ret .= '</p></form>';
             $ret .= '</div>';
         }
 
