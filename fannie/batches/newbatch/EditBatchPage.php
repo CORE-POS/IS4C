@@ -1022,6 +1022,7 @@ HTML;
         if ($model->discountType() == 0) {
             $ret .= '<div class="alert alert-danger">This is a price change batch</div>';
         }
+        $ret .= '<span class="hidden-print">';
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
         $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discountType());
         /**
@@ -1063,6 +1064,7 @@ HTML;
             $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
         }
         $ret .= " | <a data-toggle='modal' data-target='#myModal'>Batch History</a>";
+        $ret .= '</span>';
 
         /**
           Insert extra fields to manage partial day batch
@@ -1118,7 +1120,7 @@ HTML;
         } else {
             $ret .= "<th class=\"{$noprices}\"><a href=\"EditBatchPage.php?id=$id&sort=sale_a\">$saleHeader</a></th>";
         }
-        $ret .= "<th colspan=\"3\">&nbsp;</th>";
+        $ret .= "<th class=\"hidden-print\" colspan=\"3\">&nbsp;</th>";
         if ($orderby != 'ORDER BY locationName') {
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=loc_a\">Location</a></th>";
         } else {
@@ -1175,23 +1177,23 @@ HTML;
             $ret .= '<span class="input-group-addon">$</span>';
             $ret .= sprintf('<input text="text" class="form-control" name="price" value="%.2f" />', $fetchW['salePrice']);
             $ret .= '</div></div></td>';
-            $ret .= "<td bgcolor=$colors[$cur] id=editLink{$fetchW['upc']}>
+            $ret .= "<td class=\"hidden-print\" bgcolor=$colors[$cur] id=editLink{$fetchW['upc']}>
                 <a href=\"\" class=\"edit {$noprices}\" onclick=\"batchEdit.editUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</a>
                 <a href=\"\" class=\"save collapse\" onclick=\"batchEdit.saveUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "</a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\"
+            $ret .= "<td class=\"hidden-print\" bgcolor=$colors[$cur]><a href=\"\"
                 onclick=\"batchEdit.deleteUPC.call(this, $id, '{$fetchW['upc']}'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . "</a>
                 </td>";
             if ($fetchW['isCut'] == 1) {
-                $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
+                $ret .= "<td class=\"hidden-print\" bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
                     <a href=\"\" class=\"unCutLink\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 0); return false;\">Undo</a>
                     <a href=\"\" class=\"cutLink collapse\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 1); return false;\">Cut</a>
                     </td>";
             } else {
-                $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
+                $ret .= "<td class=\"hidden-print\" bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
                     <a href=\"\" class=\"unCutLink collapse\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,0); return false;\">Undo</a>
                     <a href=\"\" class=\"cutLink\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
                     </td>";
@@ -1474,7 +1476,7 @@ HTML;
         $linea = $this->enable_linea ? '<script type="text/javascript">' . $this->lineaJS() . '</script>' : '';
         $history = $this->batch_history($this->id);
         return <<<HTML
-<div id="inputarea">
+<div id="inputarea" class="hidden-print">
 {$inputForm}
 </div>
 <div class="progress collapse" id="progress-bar">
