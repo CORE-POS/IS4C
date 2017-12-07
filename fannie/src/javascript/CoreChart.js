@@ -29,6 +29,13 @@ var CoreChart = (function () {
         "#3b3eac"
     ];
 
+    var getColorIndex = 0;
+    mod.getColor = function() {
+        var ret = colors[getColorIndex];
+        getColorIndex = (getColorIndex + 1) % colors.length;
+        return ret;
+    };
+
     var lineDataSets = function(lineData, lineLabels) {
         var datasets = [];
         for (var i=0; i<lineData.length; i++) {
@@ -68,6 +75,27 @@ var CoreChart = (function () {
                     data: pieData,
                     backgroundColor: colors
                 }]
+            }
+        });
+    };
+
+    mod.barChart = function(elementID, labels, dataSets) {
+        var ctx = document.getElementById(elementID);
+        dataSets = dataSets.map(function(obj, i) {
+            if (!('backgroundColor' in obj)) {
+                obj['backgroundColor'] = colors[i]; 
+            }
+            if (!('borderColor' in obj)) {
+                obj['borderColor'] = colors[i]; 
+            }
+            return obj;
+        });
+        console.log(dataSets);
+        var line = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: dataSets
             }
         });
     };
