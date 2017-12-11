@@ -50,6 +50,7 @@ class ProdReviewPage extends FannieRESTfulPage
         $this->__routes[] = 'get<batchLog><force>';
         $this->__routes[] = 'get<batchLog><print>';
         $this->__routes[] = 'get<batchLog><printAll>';
+        $this->__routes[] = 'get<batchLog><deleteRow><id>';
         $this->__routes[] = 'get<schedule>';
         $this->__routes[] = 'get<star>';
         $this->__routes[] = 'get<schedule><setup>';
@@ -298,6 +299,18 @@ HTML;
 HTML;
     }
 
+    public function get_batchLog_deleteRow_id_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $bid = FormLib::get('id');
+        $args = array($bid);
+        $prep = $dbc->prepare("DELETE FROM batchReviewLog WHERE bid= ?");
+        $dbc->execute($prep,$args);
+
+        return header('location: '.$ERVER['PHP_SELF'].'?batchLog=1');
+    }
+
     public function get_batchLog_printAll_handler()
     {
         global $FANNIE_OP_DB;
@@ -439,21 +452,23 @@ HTML;
             onClick='printAll(); return false;'>Print All</button>";
         $tableA = "<table class='table table-condensed table-striped alert-warning'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
-            <th>Comments</th><th>{$pAllBtn}</th><tr></thead><tbody>";
+            <th>Comments</th><th></th><th>{$pAllBtn}</th><tr></thead><tbody>";
         $tableB = "<table class='table table-condensed table-striped small alert-info'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Forced On</th>
-            <th>user</th><th>Comments</th><tr></thead><tbody>";
+            <th>user</th><tr></thead><tbody>";
         $args = array();
         $prep = $dbc->prepare("
             SELECT l.vid, l.printed, l.user, l.created, l.forced,
-                b.batchName, b.batchID, v.vendorName, l.comments
+                b.batchName, l.bid, v.vendorName, l.comments, u.name
             FROM batchReviewLog AS l
                 LEFT JOIN batches AS b ON l.bid=b.batchID
                 LEFT JOIN vendors AS v ON l.vid=v.vendorID
+                LEFT JOIN Users AS u ON l.user=u.uid 
+            GROUP BY l.bid
         ");
         $res = $dbc->execute($prep,$args);
         while ($row = $dbc->fetchRow($res)) {
-            $curBid = $row['batchID'];
+            $curBid = $row['bid'];
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $tableA .= "<tr>";
@@ -479,6 +494,7 @@ HTML;
                     $action = "<td class='btn btn-default btn-wide' style='border: 1px solid tomato;'
                         onClick='forceBatch($curBid); return false;'>Force</td>";
                 }
+                $tableA .= "<td><span class='glyphicon glyphicon-trash' onClick='deleteRow($curBid)'></span></td>";
                 $tableA .= $action;
                 $tableA .= "</tr>";
             } else {
@@ -489,8 +505,7 @@ HTML;
                 $tableB .= "<td>{$row['vid']}</td>";
                 $tableB .= "<td>{$row['vendorName']}</td>";
                 $tableB .= "<td>{$row['forced']}</td>";
-                $tableB .= "<td>{$row['user']}</td>";
-                $tableB .= "<td>{$row['comments']}</td>";
+                $tableB .= "<td>{$row['user']} | {$row['name']}</td>";
                 $tableB .= "</tr>";
             }
         }
@@ -858,6 +873,15 @@ $(document).ready( function() {
     backBtn();
     clickStar();
 });
+
+function deleteRow(id)
+{
+    var url = "ProdReviewPage.php?batchLog=1&deleteRow=1&id="+id;
+    var c = confirm('Remove Batch From Table?');
+    if (c == true) {
+        window.open(url, '_self'); 
+    }
+}
 
 function setRate(vid,rate)
 {
