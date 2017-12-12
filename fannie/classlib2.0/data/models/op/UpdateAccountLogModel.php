@@ -58,6 +58,7 @@ class UpdateAccountLogModel extends BasicModel
             $user = FannieAuth::getUID(FannieAuth::checkLogin());
         }
         $this->reset();
+        $account->load();
         foreach ($this->columns as $name=>$info) {
             if ($name === 'updateAccountLogID') {
             } elseif ($name === 'updateType') {
