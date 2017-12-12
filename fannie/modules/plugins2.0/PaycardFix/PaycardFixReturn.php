@@ -324,7 +324,7 @@ class PaycardFixReturn extends FannieRESTfulPage
                     AND trans_num=?
                     AND trans_type='T'
                     AND trans_subtype IN ('CC', 'AX')
-                    AND total <> 0"
+                    AND total > 0"
             );
             $cRow = $this->connection->getRow($correctP, array(date('Y-m-d'), $transNum));
             if ($cRow === false) {
