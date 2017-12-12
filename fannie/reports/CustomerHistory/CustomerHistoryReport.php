@@ -72,20 +72,21 @@ class CustomerHistoryReport extends FannieReportPage
                 u.name
             FROM " . FannieDB::fqn('UpdateCustomerLog', 'op') . " AS c
                 LEFT JOIN " . FannieDB::fqn('Users', 'op') . " AS u ON c.userID=u.uid
-            WHERE c.cardNo=?");
+            WHERE c.cardNo=?
+            ORDER BY c.modified DESC, c.accountHolder DESC, c.lastName, c.firstName");
         $res = $dbc->execute($prep, array($id));
         $data = array();
         $last = false;
         while ($row = $dbc->fetchRow($res)) {
             $time = strtotime($row['modified']);
-            if ($last !== false && $time !== false && $time - $last > 5) {
+            if ($last !== false && $time !== false && $last - $time > 5) {
                 $data[] = array('meta' => FannieReportPage::META_BLANK);
             }
             $last = $time;
             $data[] = array(
                 $row['modified'],
                 $row['userID'],
-                $row['name'],
+                $row['name'] !== null ? $row['name'] : 'n/a',
                 $row['firstName'],
                 $row['lastName'],
                 $row['accountHolder'],
