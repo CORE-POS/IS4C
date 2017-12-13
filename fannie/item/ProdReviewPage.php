@@ -473,7 +473,7 @@ HTML;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $tableA .= "<tr>";
                 $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
-                $batchName = substr($row['batchName'],0,25);
+                $batchName = $row['batchName'];
                 $tableA .= "<td>{$batchName}</td>";
                 if ($row['vid'] == 0) {
                     $vid = "n/a";
