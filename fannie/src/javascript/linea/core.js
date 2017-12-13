@@ -98,6 +98,7 @@ function enableLinea(selector, callback) {
         } else {
             if (Device) {
                 Device.setScanBeep(false, []);
+                $('#smallscreen-menu-toggle').before('<br />');
             }
         }
     }
