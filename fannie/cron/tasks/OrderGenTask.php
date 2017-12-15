@@ -231,7 +231,7 @@ class OrderGenTask extends FannieTask
                     $itemR['units'] = 1;
                 }
                 if ($itemR['units'] <= 0) {
-                    $itemR['units'] = 0;
+                    $itemR['units'] = 1;
                 }
 
                 /**
