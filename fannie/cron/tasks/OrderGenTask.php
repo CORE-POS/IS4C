@@ -221,7 +221,7 @@ class OrderGenTask extends FannieTask
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
 
                 // no catalog entry to create an order
-                if ($itemR === false || $itemR['units'] <= 0) {
+                if ($itemR === false) {
                     $itemR['sku'] = $row['upc'];
                     $itemR['brand'] = $prodW['brand'];
                     $itemR['description'] = $prodW['description'];
@@ -229,6 +229,9 @@ class OrderGenTask extends FannieTask
                     $itemR['saleCost'] = 0;
                     $itemR['size'] = $prodW['size'];
                     $itemR['units'] = 1;
+                }
+                if ($itemR['units'] <= 0) {
+                    $itemR['units'] = 0;
                 }
 
                 /**
