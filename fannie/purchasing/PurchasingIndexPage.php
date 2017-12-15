@@ -148,6 +148,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
                     <li><a href="ImportPurchaseOrder.php">From Spreadsheet</a></li>
                 </ul>
             </li>
+            <li><a href="../admin/labels/PickTagsPage.php">Pick Tags</a>
             </ul>';
         
     }

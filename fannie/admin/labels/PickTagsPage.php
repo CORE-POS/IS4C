@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\Fannie\API\item\signage\Tags4x8P;
+use COREPOS\Fannie\API\lib\Store;
 
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -68,10 +69,65 @@ class PickTagsPage extends FannieRESTfulPage
             unset($map[$upc]);
         }
 
+        $orderItems = $this->ordersToItems();
+        if (count($orderItems) > 0) {
+            $items = array_merge($items, $orderItems);
+        }
+
         $pdf = new Tags4x8P($items, 'provided');
         $pdf->drawPDF();
 
         return false;
+    }
+
+    protected function post_handler()
+    {
+        $orderItems = $this->ordersToItems();
+        $pdf = new Tags4x8P($orderItems, 'provided');
+        $pdf->drawPDF();
+
+        return false;
+
+    }
+
+    private function ordersToItems()
+    {
+        $orders = FormLib::get('oid', array());
+        list($inStr, $args) = $this->connection->safeInClause($orders);
+        $items = array();
+        $itemP = $this->connection->prepare("
+            SELECT *
+            FROM PurchaseOrderItems AS i
+                INNER JOIN PurchaseOrder AS p ON i.orderID=p.orderID
+                LEFT JOIN vendors AS n ON p.vendorID=n.vendorID
+            WHERE i.orderID IN ({$inStr})
+            ORDER BY i.orderID, i.salesCode, i.brand, i.description");
+        $res = $this->connection->execute($itemP, $args);
+        while ($row = $this->connection->fetchRow($res)) {
+            $item = array(
+                'upc' => $row['internalUPC'],
+                'description' => $row['description'],
+                'posDescription' => $row['description'],
+                'brand' => $row['brand'],
+                'normal_price' => 0,
+                'units' => $row['caseSize'],
+                'size' => $row['unitSize'],
+                'sku' => $row['sku'],
+                'vendor' => $row['vendorName'],
+                'scale' => 0,
+                'numflag' => 0,
+                'pricePerUnit' => '',
+            );
+            for ($i=0; $i<$row['quantity']; $i++) {
+                $item['normal_price'] = ($i+1) . '/' . $row['quantity'];
+                if ($row['isSpecialOrder']) {
+                    $item['normal_price'] = 'SO';
+                }
+                $items[] = $item;
+            }
+        }
+
+        return $items;
     }
 
     protected function post_u_view()
@@ -93,6 +149,9 @@ class PickTagsPage extends FannieRESTfulPage
                 $row['upc'], $row['upc'], $row['brand'], $row['description']);
         }
 
+        $poList = $this->purchaseOrderList();
+        $noPOs = $poList == '' ? 'collapse' : '';
+
         return <<<HTML
 <form method="post">
     <p><button type="submit" class="btn btn-default">Get Tags</button></p>
@@ -100,6 +159,51 @@ class PickTagsPage extends FannieRESTfulPage
         <tr><th>Qty</th><th>UPC</th><th>Brand</th><th>Description</th></tr>
         {$tableBody}
     </table>
+    <p><button type="submit" class="btn btn-default {$noPOs}">Get Tags</button></p>
+    {$poList}
+    <p><button type="submit" class="btn btn-default">Get Tags</button></p>
+</form>
+HTML;
+    }
+
+    protected function purchaseOrderList()
+    {
+        $store = Store::getIdByIp(0);
+        $prep = $this->connection->prepare("
+            SELECT p.orderID,
+                p.placedDate,
+                n.vendorName
+            FROM PurchaseOrder AS p
+                LEFT JOIN vendors AS n ON p.vendorID=n.vendorID 
+                INNER JOIN PurchaseOrderItems AS i ON p.orderID=i.orderID
+            WHERE p.placed=1
+                AND p.storeID=?
+                AND p.placedDate > ?
+                AND (p.vendorInvoiceID NOT LIKE 'XFER-%' OR p.vendorInvoiceID IS NULL)
+            GROUP BY p.orderID, p.placedDate, n.vendorName
+            HAVING MAX(i.receivedQty) IS NULL
+            ORDER BY p.placedDate DESC
+        ");
+        $res = $this->connection->execute($prep, array($store, date('Y-m-d', strtotime('30 days ago'))));
+        $ret = '';
+        while ($row = $this->connection->fetchRow($res)) {
+            $ret .= sprintf('<p>
+                <input type="checkbox" name="oid[]" value="%d" />
+                <a href="../../purchasing/ViewPurchaseOrders.php?id=%d">%s %s</a>
+                </p>',
+                $row['orderID'], $row['orderID'], $row['placedDate'], $row['vendorName']);
+        }
+
+        return $ret;
+    }
+
+    protected function get_view()
+    {
+        $poList = $this->purchaseOrderList();
+        return <<<HTML
+<form method="post" action="PickTagsPage.php">
+    <p><button type="submit" class="btn btn-default">Get Tags</button></p>
+    {$poList}
     <p><button type="submit" class="btn btn-default">Get Tags</button></p>
 </form>
 HTML;
