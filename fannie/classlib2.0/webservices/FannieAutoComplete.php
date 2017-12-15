@@ -131,6 +131,23 @@ class FannieAutoComplete extends FannieWebService
 
                 return $ret;
 
+            case 'catalog':
+                list($vID,$search) = explode(':', $args->search);
+                $prep = $dbc->prepare('SELECT sku, description
+                                       FROM vendorItems
+                                       WHERE vendorID=?
+                                        AND (sku LIKE ? OR description LIKE ?)
+                                       ORDER BY description');
+                $search = '%' . $search . '%';
+                $res = $dbc->execute($prep, array($vID, $search, $search));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = array(
+                        'label' => $row['sku'] . ' ' . $row['description'],
+                        'value' => $row['sku'] . ' ' . $row['description'],
+                    );
+                }
+                return $ret;
+
             case 'mfirstname':
             case 'mlastname':
             case 'maddress':
