@@ -54,12 +54,12 @@ class CpwPriceTask extends FannieTask
             $data = fgetcsv($file);
             $sku = trim($data[8]);
             $upc = trim($data[7]);
-            if (empty($upc) || empty($sku)) {
+            if (empty($upc) && empty($sku)) {
                 continue;
             }
             $upc = str_replace('-', '', $upc);
             $upc = substr($upc, 0, strlen($upc)-1);
-            if (!is_numeric($upc)) {
+            if (!is_numeric($upc) && !is_numeric($sku)) {
                 continue;
             }
             $upc = BarcodeLib::padUPC($upc);
