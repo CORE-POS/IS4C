@@ -128,6 +128,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         }
         $ret .= '</select></div>';
         $otherOriginBlock .= '</div></div>';
+        $otherOriginBlock = str_replace("\n", "", $otherOriginBlock);
         $ret .= '<div class="col-sm-3 text-left">';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;<a href="" 
                 onclick="$(\'#originsBeforeMe\').before(\'' . $otherOriginBlock . '\'); return false;">Add more</a>';
@@ -136,14 +137,16 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $mapP = 'SELECT originID FROM ProductOriginsMap WHERE upc=? AND originID <> ?';
         $mapR = $dbc->execute($mapP, array($upc, $prod->current_origin_id()));
         while ($mapW = $dbc->fetch_row($mapR)) {
-            $ret .= '<div class="form-group form-inline">
-                <select name="otherOrigin[]" class="form-control"><option value="0">n/a</option>';
+            $ret .= '<div class="row form-group">'
+                . '<label class="col-sm-1"><a href="' . $FANNIE_URL . 'item/origins/OriginEditor.php">Origin</a></label>'
+                . '<div class="col-sm-8">';
+            $ret .= '<select name="otherOrigin[]" class="form-control"><option value="0">n/a</option>';
             foreach ($origins->find('name') as $o) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             $mapW['originID'] == $o->originID() ? 'selected' : '',
                             $o->originID(), $o->name());
             }
-            $ret .= '</select></div>';
+            $ret .= '</select></div></div>';
         }
         $ret .= '<div id="originsBeforeMe"></div>';
         $ret .= '<label>Item Photo</label>';
