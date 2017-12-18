@@ -403,8 +403,18 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
             if (!isset($FANNIE_LANES[$i]['trans'])) $FANNIE_LANES[$i]['trans'] = 'translog';
             $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'trans', 'LANE_TRANS_');
-            $conf .= "'trans'=>'{$FANNIE_LANES[$i]['trans']}'";
+            $conf .= "'trans'=>'{$FANNIE_LANES[$i]['trans']}',";
             echo "Lane ".($i+1)." Transaction DB: <input type=text name=LANE_TRANS_$i value=\"{$FANNIE_LANES[$i]['trans']}\" /><br />";
+
+            if (!isset($FANNIE_LANES[$i]['offline'])) $FANNIE_LANES[$i]['offline'] = 0;
+            $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'offline', 'LANE_OFFLINE_');
+            echo "Lane " .($i+1) . " Offline: <select name=\"LANE_OFFLINE_{$i}\">";
+            foreach (array('No', 'Yes') as $k => $v) {
+                printf('<option %s value="%d">%s</option>',
+                    ($k == $FANNIE_LANES[$i]['offline'] ? 'selected' : ''), $k, $v);
+            }
+            $conf .= "'offline'=>" . ((int)$FANNIE_LANES[$i]['offline']);
+            echo '</select><br />';
 
             $conf .= ")";
             echo "</div>";  
