@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\SyncLanes;
+
 /*
  * NOTE: SQLManager's transfer method is not the fastest way of pulling
  * this off. I'm using it so I can mix & match MySQL and SQL Server
@@ -55,8 +57,9 @@ class TableSyncPage extends FanniePage
         if ($table === '' && $othertable !== '') {
             $table = $othertable;
         }
+        $offline = FormLib::get('includeOffline') ? true : false;
 
-        $sync = \COREPOS\Fannie\API\data\SyncLanes::pushTable($table);
+        $sync = SyncLanes::pushTable($table, 'op', SyncLanes::TRUNCATE_DESTINATION, $offline);
 
         $this->results = "<p>Syncing table $table <br />";
         if ($sync['sending'] === true) {

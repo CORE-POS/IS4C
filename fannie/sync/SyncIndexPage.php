@@ -78,6 +78,7 @@ class SyncIndexPage extends FanniePage
         </p>
         <p>
             <button type="submit" value="Send Data" class="btn btn-default">Send Data</button>
+            <label><input type="checkbox" name="includeOffline" value="1" /> Include offline lanes</label>
         </p>
         </form>
         {$stores}
