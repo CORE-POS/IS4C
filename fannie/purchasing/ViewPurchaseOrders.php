@@ -1132,9 +1132,11 @@ HTML;
 
     private function receiveOrderedItem($dbc, $model)
     {
-        echo '<table class="table table-bordered">';
-        echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
-            <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
+        echo '<table class="table table-bordered small">';
+        echo '<tr><th class="">SKU</th><th class="hidden-xs">UPC</th>
+            <th class="hidden-xs">Brand</th><th class="">Description</th>
+            <th>Qty Ordered</th><th class="hidden-xs">Cost (est)</th>
+            <th>Qty Received</th><th>Cost Received</th></tr>';
         $uid = FannieAuth::getUID($this->current_user);
         if (!is_array($model)) {
             $model = array($model);
@@ -1149,14 +1151,14 @@ HTML;
                 $m->receivedBy($uid);
             }
             printf('<tr %s>
-                <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
+                <td class="">%s<input type="hidden" name="sku[]" value="%s" /></td>
+                <td class="hidden-xs">%s</td>
+                <td class="hidden-xs">%s</td>
+                <td class="">%s</td>
                 <td>%s (%sx%s)</td>
-                <td>%.2f</td>
-                <td><input type="text" class="form-control" name="qty[]" value="%s" /></td>
-                <td><input type="text" class="form-control" name="cost[]" value="%.2f" /></td>
+                <td class="hidden-xs">%.2f</td>
+                <td><input type="text" pattern="\\d*" class="form-control" name="qty[]" value="%s" /></td>
+                <td><input type="number" min="-999" max="999" step="0.01" pattern="\\d+(\\.\\d*)?" class="form-control" name="cost[]" value="%.2f" /></td>
                 <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id[]" value="%d" /></td>
                 </tr>',
                 ($m->isSpecialOrder() ? 'class="success"' : ''),
