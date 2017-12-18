@@ -86,6 +86,9 @@ if ($ret > 0) {
     // Load the mysqldump from Fannie to each lane.
     $laneNumber=1;
     foreach ($FANNIE_LANES as $lane) {
+        if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+            continue;
+        }
         $ret = 0;
         $output = array();
         $lane_host = $lane['host'];
