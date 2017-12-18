@@ -81,6 +81,7 @@ class SaItemList extends SaHandheldPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $uid = FannieAuth::getUID($this->current_user);
         $this->section = FormLib::get('section', 1);
+        $this->addRoute('get<dateID>');
 
         if (FormLib::get('clear') === '1') {
             $set = FormLib::get('set', false);
@@ -124,10 +125,30 @@ class SaItemList extends SaHandheldPage
             $row = $dbc->getRow($prep, array($upc));
             if ($row) {
                 $this->saveRowToList($dbc, $upc, $row, $settings);
+                if (FormLib::get('dates', false)) {
+                    return 'SaItemList.php?dateID=' . $upc;
+                }
             }
         }
         
         return true;
+    }
+
+    protected function post_id_handler()
+    {
+        $upc = BarcodeLib::padUPC($this->id);
+        $uid = FannieAuth::getUID($this->current_user);
+        $date = FormLib::get('setDate');
+        $upP = $this->connection->prepare("
+            UPDATE " . FannieDB::fqn('SaList', 'plugin:ShelfAuditDB') . "
+            SET tdate=?
+            WHERE upc=?
+                AND section=?
+                AND uid=?
+                AND clear=0");
+        $upR = $this->connection->execute($upP, array($date, $upc, $this->section, $uid));
+
+        return 'SaItemList.php?datedMode=1';
     }
 
     protected function get_id_view()
@@ -161,6 +182,7 @@ class SaItemList extends SaHandheldPage
     // override ajax behavior of SaHandheldPage
     protected function upcForm($section)
     {
+        $checked = FormLib::get('datedMode', false) || FormLib::get('dates', false) ? 'checked' : '';
         ?>
 <form method="get" id="upcScanForm">
 <a href="SaMenuPage.php">Menu</a>
@@ -175,9 +197,49 @@ class SaItemList extends SaHandheldPage
         />
     </div>
     <button type="submit" class="btn btn-success" tabindex="-1" id="goBtn">Go</button>
+    <label><input type="checkbox" name="dates" value="1" <?php echo $checked; ?> /> Enter Dates</input></label>
 </div>
 </form>
         <?php
+    }
+
+    protected function get_dateID_view()
+    {
+        $opts = array();
+        $lbls = array();
+        for ($i=0; $i<12; $i++) {
+            $opts[] = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j') + $i + 1, date('Y')));
+            $lbls[] = date('m-d', mktime(0, 0, 0, date('n'), date('j') + $i + 1, date('Y')));
+        }
+        return <<<HTML
+<form method="post">
+    <input type="hidden" name="id" value="{$this->dateID}" />
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[0]}">{$lbls[0]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[1]}">{$lbls[1]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[2]}">{$lbls[2]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[3]}">{$lbls[3]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[4]}">{$lbls[4]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[5]}">{$lbls[5]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[6]}">{$lbls[6]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[7]}">{$lbls[7]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[8]}">{$lbls[8]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[9]}">{$lbls[9]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[10]}">{$lbls[10]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[11]}">{$lbls[11]}</button></div>
+    </div>
+</form>
+HTML;
     }
 
     public function get_view()
@@ -229,7 +291,8 @@ class SaItemList extends SaHandheldPage
                 p.size,
                 s.quantity as qty,
                 v.sku,
-                n.vendorName
+                n.vendorName,
+                s.tdate
             FROM ' . $settings['ShelfAuditDB'] . $this->connection->sep() . 'SaList AS s
                 ' . DTrans::joinProducts('s') . '
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
@@ -259,31 +322,35 @@ class SaItemList extends SaHandheldPage
                 <table class="table table-bordered table-striped small">
                 <tr>
                     <th>UPC</th>
+                    <th>Date</th>
                     <th class="hidden-xs">SKU</th>
                     <th class="hidden-xs">Vendor</th>
                     <th class="hidden-xs">Brand</th>
                     <th>Description</th>
                     <th class="hidden-xs">Size</th>
-                    <th class="hidden-xs">Qty</th>
                 </tr>';
             $upcs = array();
             while ($row = $this->connection->fetchRow($res)) {
+                list($date, $time) = explode(' ', $row['tdate'], 2);
+                if ($time != '00:00:00') {
+                    $date = '';
+                }
                 $ret .= sprintf('<tr>
                     <td><a href="../../../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
+                    <td>%s</td>
                     <td class="hidden-xs">%s</td>
                     <td class="hidden-xs">%s</td>
                     <td class="hidden-xs">%s</td>
                     <td>%s</td>
                     <td class="hidden-xs">%s</td>
-                    <td class="hidden-xs">%d</td>
                     </tr>',
                     $row['upc'], $row['upc'],
+                    $date,
                     $row['sku'],
                     $row['vendorName'],
                     $row['brand'],
                     $row['description'],
-                    $row['size'],
-                    $row['qty']
+                    $row['size']
                 ); 
                 $upcs[] = $row['upc'];
                 $itemCount++;
