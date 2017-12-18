@@ -8,11 +8,14 @@ use \FannieDB;
 */
 class TaxRatesSync extends SyncSpecial
 {
-    public function push($tableName, $dbName)
+    public function push($tableName, $dbName, $includeOffline=false)
     {
         $ret = array('success'=>true, 'details'=>'');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         foreach ($this->config->get('LANES') as $lane) {
+            if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
+                continue;
+            }
             $dbc->addConnection($lane['host'],$lane['type'],$lane['trans'],
                     $lane['user'],$lane['pw']);
             if ($dbc->isConnected($lane['trans'])) {

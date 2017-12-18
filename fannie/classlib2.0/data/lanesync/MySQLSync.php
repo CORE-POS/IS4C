@@ -10,7 +10,7 @@ use COREPOS\Fannie\API\data\SyncSpecial;
 */
 class MySQLSync extends SyncSpecial
 {
-    public function push($tableName, $dbName)
+    public function push($tableName, $dbName, $includeOffline=false)
     {
         $ret = array('success'=>false, 'details'=>'');
         
@@ -35,6 +35,9 @@ class MySQLSync extends SyncSpecial
         $laneNumber = 1;
         $ret['success'] = true;
         foreach ($this->config->get('LANES') as $lane) {
+            if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
+                continue;
+            }
             $laneCmd = $this->laneConnect($lane, $dbName, $tempfile); 
             exec($laneCmd, $output, $exitCode);
             if ($exitCode == 0) {

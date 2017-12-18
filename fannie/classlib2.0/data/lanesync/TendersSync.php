@@ -18,7 +18,7 @@ use \TendersModel;
 */
 class TendersSync extends SyncSpecial
 {
-    public function push($tableName, $dbName)
+    public function push($tableName, $dbName, $includeOffline=false)
     {
         $ret = array('success'=>true, 'details'=>'');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -31,6 +31,9 @@ class TendersSync extends SyncSpecial
         list($idIn, $idArgs) = $dbc->safeInClause($ids);
         
         foreach ($this->config->get('LANES') as $lane) {
+            if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
+                continue;
+            }
             $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
                     $lane['user'],$lane['pw']);
             if ($dbc->isConnected($lane['op'])) {

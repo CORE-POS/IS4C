@@ -20,11 +20,12 @@ class SyncSpecial
       Send table to the lanes
       @param $tableName [string]
       @param $dbName [string]
+      @param $includeOffline [bool; default false]
       @return [keyed array]
         - success [boolean]
         - details [string]
     */
-    public function push($tableName, $dbName)
+    public function push($tableName, $dbName, $includeOffline=false)
     {
         return array('success'=>false, 'details'=>'Just a base class');
     }

@@ -8,7 +8,7 @@ namespace COREPOS\Fannie\API\data\lanesync;
 */
 class ProductsInUseSync extends MySQLSync
 {
-    public function push($tableName, $dbName)
+    public function push($tableName, $dbName, $includeOffline=false)
     {
         $ret = array('success'=>false, 'details'=>'');
         $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
@@ -34,6 +34,9 @@ class ProductsInUseSync extends MySQLSync
         $laneNumber = 1;
         $ret['success'] = true;
         foreach ($this->config->get('LANES') as $lane) {
+            if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
+                continue;
+            }
             $laneCmd = $this->laneConnect($lane, $dbName, $tempfile); 
             exec($laneCmd, $output, $exitCode);
             if ($exitCode == 0) {
