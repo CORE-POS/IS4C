@@ -90,6 +90,9 @@ class FannieItemLaneSync extends \COREPOS\Fannie\API\webservices\FannieWebServic
                 WHERE p.upc = ?';
             $FANNIE_LANES = \FannieConfig::config('LANES');
             for ($i = 0; $i < count($FANNIE_LANES); $i++) {
+                if (isset($FANNIE_LANES[$i]['offline']) && $FANNIE_LANES[$i]['offline']) {
+                    continue;
+                }
                 try {
                     $lane_sql = new \SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
                         $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
