@@ -58,11 +58,13 @@ class SyncLanes
         (default is 'op')
       @param $truncate integer
         (default is TRUNCATE_DESTINATION)
+      @param $includeOffline boolean push to lanes marked as offline
+        (default is false)
       @return array
         - sending => boolean attempted to copy table
         - messages => string result information
     */
-    static public function pushTable($table,$db='op',$truncate=self::TRUNCATE_DESTINATION)
+    static public function pushTable($table,$db='op',$truncate=self::TRUNCATE_DESTINATION,$includeOffline=false)
     {
         $config = \FannieConfig::factory();
         $op_db = $config->get('OP_DB');
@@ -119,6 +121,9 @@ class SyncLanes
             $server_def = $dbc->tableDefinition($table, $server_db);
             $laneNumber=1;
             foreach ($lanes as $lane) {
+                if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
+                    continue;
+                }
                 try {
                     $dbc->addConnection($lane['host'],$lane['type'],
                         $lane[$db],$lane['user'],$lane['pw']);
