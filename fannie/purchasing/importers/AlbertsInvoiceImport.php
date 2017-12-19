@@ -182,6 +182,9 @@ class AlbertsInvoiceImport extends \COREPOS\Fannie\API\FannieUploadPage
             list($case, $unit) = $this->parseSize($size);
             $qty = trim($data[$indexes['cases']]);
             $cool = trim($data[$indexes['cool']]);
+            if (strtolower($cool) == 'united states') {
+                $cool = 'USA';
+            }
 
             if ($first) {
                 $inv = trim($data[$indexes['inv']]);
