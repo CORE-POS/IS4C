@@ -185,6 +185,11 @@ class AlbertsInvoiceImport extends \COREPOS\Fannie\API\FannieUploadPage
             if (strtolower($cool) == 'united states') {
                 $cool = 'USA';
             }
+            if (strpos($cool, ' and ')) {
+                $tmp = explode(' and ', $cool);
+                sort($tmp);
+                $cool = implode(' and ', $tmp);
+            }
 
             if ($first) {
                 $inv = trim($data[$indexes['inv']]);
