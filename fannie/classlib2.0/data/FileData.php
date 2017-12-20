@@ -49,6 +49,8 @@ class FileData
         } elseif (substr(basename($filename),-3) == 'lsx') {
             // php tempfile nameing only allows a three character prefix
             return self::xlsxToArray($filename, $limit);
+        } elseif (substr(basename($filename),-3) == 'pdf') {
+            return self::pdfToArray($filename, $limit);
         } else {
             return array();
         }
@@ -203,6 +205,18 @@ class FileData
         return $str;
     }
 
+    public static function pdfToArray($filename, $limit)
+    {
+        if (!class_exists('\\Smalot\\PdfParser\\Parser')) {
+            return false;
+        }
+
+        $parser = new \Smalot\PdfParser\Parser();
+        $pdf = $parser->parseFile($filename);
+        $lines = explode("\n", $pdf->getText());
+
+        return $limit ? array_slice($lines, 0, $limit) : $lines;
+    }
 }
 
 }
