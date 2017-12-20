@@ -117,7 +117,7 @@ HTML;
         $weekday = FormLib::get('weekday', 0);
         $buyer = FormLib::get('buyer', '');
     
-        $ret = array(); 
+        $ret = array();
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
