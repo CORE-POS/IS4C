@@ -119,26 +119,30 @@ HTML;
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $id = FormLib::get('id');
-        $formValues = array('owner','firstName','lastName','phone','address','uid',
+        $formValues = array('store','owner','firstName','lastName','phone','address',
             'date','subject','content','complete');
         foreach ($formValues as $name) {
             ${$name} = FormLib::get($name);
         }
+        $uid = FannieAuth::getUID($this->current_user);
 
-        $args = array($storeID,$uid,$date,$complete,$subject,$content,
+        $argsSave = array($store,$uid,$complete,$subject,$content,
             $firstName,$lastName,$owner,$phone,$address);
         $prepSave = $dbc->prepare("INSERT INTO CustomerServiceTracker.Tracker (
             storeID,uid,date,complete,subject,content,firstName,lastName,
-            owner,phone,address) VALUES (?,?,?,?,?,?,?,?,?,?,?);");
+            owner,phone,address) VALUES (?,?,NOW(),?,?,?,?,?,?,?,?);");
+
+        $argsUpdate= array($complete,$subject,$content,
+            $firstName,$lastName,$owner,$phone,$address,$id);
         $prepUpdate = $dbc->prepare("UPDATE CustomerServiceTracker.Tracker
-            set storeID = ?, uid = ?, date = ?, complete = ?, subject = ?,
+            set complete = ?, subject = ?,
             content = ?, firstName = ?, lastName = ?, owner = ?, phone = ?,
             address = ? WHERE id = ?");
+
         if ($id) {
-            $args[] = $id;
-            $res = $dbc->execute($prepUpdate,$args);
+            $res = $dbc->execute($prepUpdate,$argsUpdate);
         } else {
-            $res = $dbc->execute($prepSave,$args);
+            $res = $dbc->execute($prepSave,$argsSave);
         }
 
         return header('location: CustomerServiceLog.php');
@@ -147,26 +151,6 @@ HTML;
 
     protected function get_new_view()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        if ($this->config->get('STORE_MODE') == 'HQ') {
-            $store = 1;
-            //$store = Store::getIdByIp();
-            $stores = array();
-            $prep = $dbc->prepare("SELECT * FROM Stores ORDER BY storeID;");
-            $res = $dbc->execute($prep);
-            $options = '';
-            while ($row = $dbc->fetchRow($res)) {
-                $sel = ($row['storeID'] == $store) ? ' selected' : '';
-                $options .= '<option value="'.$row['storeID'].'" '.$sel.'>'.$row['description'].'</option>';
-            }
-            $storeForm = '
-                <label>Store</label>
-                <select class="form-control" name="store">
-                    '.$options.'
-                </select>';
-        } else {
-            $storeForm = '<input type="hidden" name="store" value="1">';
-        }
 
         return <<<HTML
 {$this->form_content()}
@@ -200,10 +184,10 @@ HTML;
             foreach ($fields as $field) {
                 $data[$row['id']][$field] = $row[$field];
             }
-            foreach ($hiddenFields as $hf) { 
-                $hiddenData[$row['id']][$hf] = $row[$hf]; 
-            } 
-        } 
+            foreach ($hiddenFields as $hf) {
+                $hiddenData[$row['id']][$hf] = $row[$hf];
+            }
+        }
         if ($er = $dbc->error) echo '<div class="alert alert-danger">'.$er.'</div>';
 
         $table = '<div class="table-responsive"><table class="table table-striped table-condensed table-bordered">
@@ -240,7 +224,7 @@ HTML;
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $stores = array();
-        $prep = $dbc->prepare("SELECT * FROM Stores ORDER BY storeID;");
+        $prep = $dbc->prepare("SELECT * FROM Stores WHERE storeID < 50 ORDER BY storeID;");
         $res = $dbc->execute($prep);
         while ($row = $dbc->fetchRow($res)) {
             $stores[$row['storeID']] = $row['description'];
@@ -270,6 +254,26 @@ HTML;
     {
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $store = 1;
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            $stores = array();
+            $prep = $dbc->prepare("SELECT * FROM Stores WHERE storeID < 50 ORDER BY storeID;");
+            $res = $dbc->execute($prep);
+            $options = '';
+            while ($row = $dbc->fetchRow($res)) {
+                $sel = ($row['storeID'] == $store) ? ' selected' : '';
+                $options .= '<option value="'.$row['storeID'].'" '.$sel.'>'.$row['description'].'</option>';
+            }
+            $storeForm = '
+                <label>Store</label>
+                <select class="form-control" name="store">
+                    '.$options.'
+                </select>';
+        } else {
+            $storeForm = '<input type="hidden" name="store" value="1">';
+        }
+
         $ids = $this->get_active_comment_ids($dbc);
         $id = FormLib::get('id');
         $new = FormLib::get('new');
@@ -287,14 +291,22 @@ HTML;
         $n = array_search($id,$ids)+1;
         $prev = ($p > array_search($first,$ids)) ? $ids[$p] : $first;
         $next = ($n < array_search($last,$ids)) ? $ids[$n] : $last;
-        $left = (!$new) ? '
-            <a class="btn btn-default btn-xs" href="CustomerServiceLog.php?id='.$prev.'">
+
+        if ($new) {
+            $left = '';
+            $right = '';
+            $btnComplete = '';
+        } else {
+            $left = '<a class="btn btn-default btn-xs" href="CustomerServiceLog.php?id='.$prev.'">
                 <span class="glyphicon glyphicon-chevron-left"></span>
-            </a>' : '';
-        $right = (!$new) ? '
-            <a class="btn btn-default btn-xs" href="CustomerServiceLog.php?id='.$next.'">
+            </a>';
+            $right = '<a class="btn btn-default btn-xs" href="CustomerServiceLog.php?id='.$next.'">
                 <span class="glyphicon glyphicon-chevron-right" ></span>
-            </a>' : '';
+            </a>';
+            $btnComplete = '<button class="btn btn-default btn-complete" name="complete" value="1">
+                <span class="glyphicon glyphicon-ok"></span>
+            </button>';
+        }
 
         return <<<HTML
 <p class="form-inline">
@@ -329,6 +341,11 @@ HTML;
                 <label>Last Name</label>
                 <input type="text" class="form-control input-xs" name="lastName" id="last_name" value="{$lastName}">
             </div>
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-3">
+                {$storeForm}
+            </div>
         </div>
         <div class="row">
             <div class="col-md-3">
@@ -338,9 +355,6 @@ HTML;
             <div class="col-md-3">
                 <label>Address</label>
                 <input type="text" class="form-control input-xs" name="address" id="address" value="{$address}">
-            </div>
-            <div class="col-md-3">
-                {$storeForm}
             </div>
         </div>
         <div class="spacer"></div>
@@ -356,9 +370,7 @@ HTML;
             {$newFormIn}
             <button class="btn btn-default btn-save" name="save" value="1">Save</button> |
             <a class="btn btn-default" href="CustomerServiceLog.php">Cancel</a>
-            <button class="btn btn-default btn-complete" name="complete" value="1">
-                <span class="glyphicon glyphicon-ok"></span>
-            </button>
+            {$btnComplete}
         </div>
     </form>
 </p>
