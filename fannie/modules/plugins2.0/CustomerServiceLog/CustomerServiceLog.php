@@ -76,6 +76,7 @@ HTML;
             FROM custdata AS c
                 LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
             WHERE c.CardNo = ?
+                AND personNum = 1
             LIMIT 1
         ");
         $res = $dbc->execute($prep,$args);
