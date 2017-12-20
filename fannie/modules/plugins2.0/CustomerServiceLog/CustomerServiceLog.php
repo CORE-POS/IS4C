@@ -56,7 +56,7 @@ HTML;
         $id = FormLib::get('id');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $args = array($id);
-        $prep = $dbc->prepare("UPDATE CustomerServiceTracker.Pending
+        $prep = $dbc->prepare("UPDATE CustomerServiceTracker.Tracker
             SET complete = NOW() WHERE id = ?");
         $res = $dbc->execute($prep,$args);
 
@@ -99,7 +99,7 @@ HTML;
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $args = array($id);
         $formFields = array('owner','firstName','lastName','phone','address','uid','date','subject','content');
-        $prep = $dbc->prepare("SELECT * FROM CustomerServiceTracker.Pending WHERE id = ?;");
+        $prep = $dbc->prepare("SELECT * FROM CustomerServiceTracker.Tracker WHERE id = ?;");
         $res = $dbc->execute($prep,$args);
         while ($row = $dbc->fetchRow($res)) {
             foreach($formFields as $field) {
@@ -127,10 +127,10 @@ HTML;
 
         $args = array($storeID,$uid,$date,$complete,$subject,$content,
             $firstName,$lastName,$owner,$phone,$address);
-        $prepSave = $dbc->prepare("INSERT INTO CustomerServiceTracker.Pending (
+        $prepSave = $dbc->prepare("INSERT INTO CustomerServiceTracker.Tracker (
             storeID,uid,date,complete,subject,content,firstName,lastName,
             owner,phone,address) VALUES (?,?,?,?,?,?,?,?,?,?,?);");
-        $prepUpdate = $dbc->prepare("UPDATE CustomerServiceTracker.Pending
+        $prepUpdate = $dbc->prepare("UPDATE CustomerServiceTracker.Tracker
             set storeID = ?, uid = ?, date = ?, complete = ?, subject = ?,
             content = ?, firstName = ?, lastName = ?, owner = ?, phone = ?,
             address = ? WHERE id = ?");
@@ -185,13 +185,15 @@ HTML;
 
     protected function get_comments()
     {
+        $id = FormLib::get('id');
+        $trx = ($id) ? 'highlight' : '';
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $stores = array();
         $fields = array('id','storeID','uid','date','subject','content','owner','firstName','lastName');
         $hiddenFields = array('firstName','lastName','owner','phone','address');
         $storeNames = array(1=>'Hillside',2=>'Denfeld');
         $prep = $dbc->prepare("SELECT *
-            FROM CustomerServiceTracker.Pending WHERE complete = '0000-00-00 00:00:00' ORDER BY id;");
+            FROM CustomerServiceTracker.Tracker WHERE complete = '0000-00-00 00:00:00' ORDER BY id;");
         $res = $dbc->execute($prep);
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
@@ -365,7 +367,7 @@ HTML;
 
     private function get_active_comment_ids($dbc)
     {
-        $prep = $dbc->prepare("SELECT id from CustomerServiceTracker.Pending
+        $prep = $dbc->prepare("SELECT id from CustomerServiceTracker.Tracker
             WHERE complete = '0000-00-00 00:00:00' ORDER BY id");
         $res = $dbc->execute($prep);
         $ids = array();
