@@ -53,6 +53,62 @@ class HourlySalesReport extends FannieReportPage
         return true;
     }
 
+    private function fetch_adjacent_period()
+    {
+        $date1 = FormLib::get('date1');
+        $date2 = FormLib::get('date2');
+        $diff = abs(strtotime($date2) - strtotime($date1));
+        $days = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24));
+
+        $formContents = array('buyer','deptStart','deptEnd','store','other_dates');
+        foreach ($formContents as $input) {
+            ${$input} = FormLib::get($input);
+        }
+
+        $actions = array(
+            'increment' => array(
+                'action' => '+',
+                'glyph' => 'right',
+            ),
+            'decrement' => array(
+                'action' => '-',
+                'glyph' => 'left',
+            ),
+        );
+        foreach ($actions as $k => $row) {
+            $temp1 = new DateTime($date1);
+            $temp2 = new DateTime($date2);
+            if ($days == 0) {
+                $temp1->modify($row['action'].'1 Day');
+                $temp2->modify($row['action'].'1 Day');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            } elseif ($days === 7) {
+                $temp1->modify($row['action'].'1 Week');
+                $temp2->modify($row['action'].'1 Week');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            } else {
+                $temp1->modify($row['action'].'1 Month');
+                $temp2->modify($row['action'].'1 Month');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            }
+            ${'form'.$k} = '<form method="get" style="display: inline-block;">';
+            foreach ($formContents as $input) {
+                ${'form'.$k} .= "<input type='hidden' name='$input' value='${$input}'>";
+            }
+            ${'form'.$k} .= "<input type='hidden' name='date1' value='$newDate1'>";
+            ${'form'.$k} .= "<input type='hidden' name='date2' value='$newDate2'>";
+            ${'form'.$k} .= '<button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-chevron-'.$row['glyph'].'"></span></button>';
+            ${'form'.$k} .= '</form>';
+        }
+
+        return <<<HTML
+<div><label>Change Period</label>: $formdecrement | $formincrement</div>
+HTML;
+    }
+
     public function report_description_content()
     {
         $deptStart = FormLib::get('deptStart');
@@ -80,6 +136,7 @@ class HourlySalesReport extends FannieReportPage
             $ret[] = sprintf(' <a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
                             filter_input(INPUT_SERVER, 'QUERY_STRING'));
         }
+        $ret[] = $this->fetch_adjacent_period();
 
         return $ret;
     }
