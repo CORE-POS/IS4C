@@ -479,7 +479,7 @@ class VoidCmd extends Parser implements AdminLoginInterface
             if ($currentTotal + (-1*$total) > $this->session->get('VoidLimit') && $this->session->get('voidOverride') != 1) {
                 $this->session->set('strRemembered', $this->session->get('strEntered'));
                 $this->session->set('voidOverride', 0);
-                throw new Exception(MiscLib::baseUL().'gui-modules/adminlogin.php?class=COREPOS-pos-parser-parse-Void', 1);
+                throw new Exception(MiscLib::baseURL().'gui-modules/adminlogin.php?class=COREPOS-pos-parser-parse-VoidCmd', 1);
             }
         }
     }
