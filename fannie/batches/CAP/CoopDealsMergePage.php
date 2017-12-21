@@ -202,22 +202,24 @@ class CoopDealsMergePage extends FannieRESTfulPage
         $ret .= <<<html
         </tbody>
         </table>
-        <textarea rows="5" cols="15">A
-{$upcs['a']}</textarea>
-        <textarea rows="5" cols="15">B
-{$upcs['b']}</textarea>
-        <textarea rows="5" cols="15">TPR
-{$upcs['tpr']}</textarea>
-        <p>    
-            <button type=submit class="btn btn-default">Merge Items into Batch(es)</button>
-            <a href="CoopDealsReviewPage.php" class="pull-right btn btn-default">Create New Batch(es)</a>
-        </p>
         </form>
 html;
 
-        return $ret;
+        $lists = <<<html
+                <textarea rows="5" cols="15">A
+        {$upcs['a']}</textarea>
+                <textarea rows="5" cols="15">B
+        {$upcs['b']}</textarea>
+                <textarea rows="5" cols="15">TPR
+        {$upcs['tpr']}</textarea>
+                <p>    
+                    <button type=submit class="btn btn-default">Merge Items into Batch(es)</button>
+                    <a href="CoopDealsReviewPage.php" class="pull-right btn btn-default">Create New Batch(es)</a>
+                </p>
+html;
+        return $lists.$ret;
     }
-    
+
     public function helpContent()
     {
         return '<p>This tool creates A, B, and TPR batches. The TPR batches will
