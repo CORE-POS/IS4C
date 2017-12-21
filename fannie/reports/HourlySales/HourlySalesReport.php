@@ -83,7 +83,7 @@ class HourlySalesReport extends FannieReportPage
                 $temp2->modify($row['action'].'1 Day');
                 $newDate1 = $temp1->format('Y-m-d');
                 $newDate2 = $temp2->format('Y-m-d');
-            } elseif ($days === 7) {
+            } elseif ($days == 6) {
                 $temp1->modify($row['action'].'1 Week');
                 $temp2->modify($row['action'].'1 Week');
                 $newDate1 = $temp1->format('Y-m-d');
