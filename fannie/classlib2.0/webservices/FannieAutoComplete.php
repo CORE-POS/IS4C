@@ -216,7 +216,7 @@ class FannieAutoComplete extends FannieWebService
                         $link = $url . str_replace($root, '', $reflect->getFileName());
                         $all[$obj->description] = $link;
                         if (isset($obj->accepts['numbers'])) {
-                            $acceptsNumbers[$obj->description] = array('link'=>$link, 'field'=>$obj['accepts']['numbers']);
+                            $acceptsNumbers[$obj->description] = $link . '?' . urlencode($obj->accepts['numbers']);
                         }
                     }
                     $pages = array(
@@ -234,8 +234,8 @@ class FannieAutoComplete extends FannieWebService
                         }
                     }
                 } else {
-                    foreach ($pages['numbers'] as $description => $info) {
-                        $ret[] = array('label' => $description, 'link' => $info['link'], $field => $info['field']);
+                    foreach ($pages['numbers'] as $description => $link) {
+                        $ret[] = array('label' => $description, 'value' => $link . '=' . $this->search);
                     }
                 }
                 return $ret;
