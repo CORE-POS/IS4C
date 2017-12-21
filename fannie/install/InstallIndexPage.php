@@ -728,6 +728,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'VendorBreakdownsModel',
         'VendorDepartmentsModel',
         'VendorAliasesModel',
+        'VendorLikeCodeMapModel',
+        'SkuCOOLHistoryModel',
         'UpdateAccountLogModel',
         'UpdateCustomerLogModel',
         'UsersModel',
