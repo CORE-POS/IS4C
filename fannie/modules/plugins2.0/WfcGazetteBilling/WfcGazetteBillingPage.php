@@ -151,12 +151,22 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $custNotes = trim(FormLib::get('customerNotes'));
         $uid = FannieAuth::getUID($this->current_user);
         $flagP = $sql->prepare('UPDATE dtransactions SET numflag=?, charflag=\'B2\' WHERE emp_no=? AND register_no=? AND trans_no=?');
+        $addP = $sql->prepare("UPDATE B2BInvoices SET amount=amount+?, description=CONCAT(description,'\\n',?) WHERE b2bInvoiceID=?");
         
         $transQ = $sql->prepare("SELECT MAX(trans_no) FROM dtransactions
             WHERE emp_no=? AND register_no=?");
         $sql->startTransaction();
-        foreach(FormLib::get_form_value('cardnos',array()) as $cardno){
-            $amt = FormLib::get_form_value('billable'.$cardno);
+        $invoices = array();
+        $cards = FormLib::get('cardnos', array());
+        $amts = FormLib::get('billable', array());
+        $types = FormLib::get('desc', array());
+        for ($i=0; $i<count($cards); $i++) {
+            $cardno = $cards[$i];
+            $amt = $amts[$i];
+            $desc = $types[$i];
+            $desc = substr($desc,0,24);
+
+            /*
             $transR = $sql->execute($transQ, array($EMP_NO, $LANE_NO));
             $t_no = '';
             if ($sql->num_rows($transR) > 0){
@@ -165,10 +175,6 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             }
             if ($t_no == "") $t_no = 1;
             else $t_no++;
-            $desc = FormLib::get_form_value('desc'.$cardno);
-            $desc = substr($desc,0,24);
-
-            /*
             $dRecord['trans_no'] = $t_no;
             $dRecord['upc'] = $amt.'DP703';
             $dRecord['description'] = 'Gazette Ad '.$desc;
@@ -195,26 +201,31 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $cardno,$amt,$EMP_NO."-".$LANE_NO."-".$t_no);
             */
 
-            $uuid = '';
-            if (class_exists('Ramsey\\Uuid\\Uuid')) {
-                $uuid = Ramsey\Uuid\Uuid::uuid4();
-                $uuid = str_replace('-', '', $uuid->toString());
+            if (isset($invoices[$cardno])) {
+                $sql->execute($addP, array($amt, 'Winter 2017/18 ' . $desc, $invoices[$cardno]));
+            } else {
+                $uuid = '';
+                if (class_exists('Ramsey\\Uuid\\Uuid')) {
+                    $uuid = Ramsey\Uuid\Uuid::uuid4();
+                    $uuid = str_replace('-', '', $uuid->toString());
+                }
+                $invArgs = array(
+                    $cardno,
+                    date('Y-m-d H:i:s'),
+                    'n/a',
+                    $amt,
+                    $invIssue . ' ' . $desc,
+                    $invCoding,
+                    $uid,
+                    $uid,
+                    $custNotes,
+                    $uuid,
+                );
+                $sql->execute($invP, $invArgs);
+                $invID = $sql->insertID();
+                $invoices[$cardno] = $invID;
+                $ret .= "<tr><td>Invoice</td><td>$invID</td></tr>";
             }
-            $invArgs = array(
-                $cardno,
-                date('Y-m-d H:i:s'),
-                'n/a',
-                $amt,
-                $invIssue . ' ' . $desc,
-                $invCoding,
-                $uid,
-                $uid,
-                $custNotes,
-                $uuid,
-            );
-            $sql->execute($invP, $invArgs);
-            $invID = $sql->insertID();
-            $ret .= "<tr><td>Invoice</td><td>$invID</td></tr>";
         }
         $sql->commitTransaction();
 
@@ -318,6 +329,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             if ($sql->num_rows($searchR) == 0){
                 $warnings .= sprintf("<i>Warning: no membership found for %s (%s)</i><br />",
                     $data[$CONTACT],$ph);
+                //$warnings .= '<pre>' . print_r($data, true) . '</pre>';
             }
             elseif ($sql->num_rows($searchR) > 1){
                 $warnings .= sprintf("<i>Warning: multiple memberships found for %s (%s)</i><br />",
@@ -333,17 +345,16 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     <td>%s %s (%s)</td>
                     <td><div class=\"input-group\">
                         <span class=\"input-group-addon\">\$</span>
-                        <input type=text class=\"form-control\" name=billable%d 
+                        <input type=text class=\"form-control\" name=billable[] 
                             required value=%.2f />
                     </div></td></tr>
-                    <input type=hidden name=desc%d value=\"%s\" />
+                    <input type=hidden name=desc[] value=\"%s\" />
                     <input type=hidden name=cardnos[] value=%d />",
                     $row[0],$row[1],$sz,
                     $data[$COLOR],
                     (substr($data[$MEMBER],0,3)=="YES")? 'MEMBER':'NON-MEMBER',
-                    $row[0],
                     $amount,
-                    $row[0],$desc,$row[0]);
+                    $desc,$row[0]);
             }
         }
         $ret .= "</table>";
