@@ -65,17 +65,18 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $body .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "\n\n";
             $html .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "</p>";
 
+
             $body .= "If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.\n\n";
             $html .= "<p>If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.</p>";
 
             $html .= '<table border="1" cellspacing="0" cellpadding="4">';
             $body .= str_pad($invoice['description'], 100);
-            $html .= '<tr><td>' . $invoice['description'] . '</td>';
+            $html .= '<tr><td>' . nl2br($invoice['description']) . '</td>';
             $body .= sprintf('$%.2f', $invoice['amount']) . "\n";
             $html .= sprintf('<td>$%.2f</td></tr>', $invoice['amount']);
             if ($invoice['customerNotes']) {
                 $body .= 'Notes: ' . $invoice['customerNotes'] . "\n";
-                $html .= '<tr><td colspan=2>Notes: ' . $invoice['customerNotes'] . '</td></tr>';
+                $html .= '<tr><td colspan=2>Notes: ' . nl2br($invoice['customerNotes']) . '</td></tr>';
             }
             $body .= "\n";
             $html .= '</table>';
@@ -95,9 +96,10 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $mail->isHTML(true);
             $mail->Body = $html;
             $mail->AltBody = $body;
-            $mail->addAddress($primary['email']);
-            $mail->addBCC('bcarlson@wholefoods.coop');
-            $mail->addBCC('andy@wholefoods.coop');
+            //$mail->addAddress($primary['email']);
+            //$mail->addBCC('bcarlson@wholefoods.coop');
+            //$mail->addBCC('andy@wholefoods.coop');
+            $mail->addAddress('andy@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
         }
