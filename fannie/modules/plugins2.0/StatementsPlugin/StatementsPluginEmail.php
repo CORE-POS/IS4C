@@ -87,7 +87,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $html .= '$ ' . sprintf("%.2f",$invoice['amount']) . "</p>";
 
             $link = 'http://store.wholefoods.coop/invoice/' . $invoice['uuid'];
-            $html .= '<p><a href="' . $link . '">Pay Online</p>';
+            $html .= '<p><a href="' . $link . '">Pay Online</a></p>';
             $body .= "\nPay Online:\n";
             $body .= $link . "\n";
             $html .= '<p>Whole Foods Co-op<br />610 E 4th St<br />Duluth, MN 55805</p>';
