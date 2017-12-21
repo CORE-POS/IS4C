@@ -4,12 +4,12 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 }
 
-class NewOwnersReport extends FannieReportPage
+class EquityOwnersReport extends FannieReportPage
 {
-    protected $report_headers = array('Date', '# of New Owners', 'Paid in Full');
+    protected $report_headers = array('Date', 'Total Equity Sold', 'Not New Owners');
     protected $required_fields = array('date1', 'date2');
-    protected $title = 'New Owners Report';
-    protected $header = 'New Owners Report';
+    protected $title = 'Equity Owners Report';
+    protected $header = 'Equity Owners Report';
 
     public function preprocess()
     {
@@ -42,7 +42,7 @@ function showGraph() {
     var xData = $('td.reportColumn0').toArray().map(x => x.innerHTML.trim());
     var yData = $('td.reportColumn1').toArray().map(x => Number(x.innerHTML.trim()));
     var y2Data = $('td.reportColumn2').toArray().map(x => Number(x.innerHTML.trim()));
-    CoreChart.lineChart('chartCanvas', xData, [yData, y2Data], ['New Owners', 'Paid in Full']);
+    CoreChart.lineChart('chartCanvas', xData, [yData, y2Data], ['All Equity', 'Not New']);
 }
 JAVASCRIPT;
     }
@@ -55,24 +55,26 @@ JAVASCRIPT;
         } catch (Exception $ex) {
             return array();
         }
-        
-        $today = strtotime($date2) >= strtotime(date('Y-m-d'));
 
+        $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        
+        $tdate = $this->connection->dateymd('d.tdate');
+        $mdate = $this->connection->dateymd('m.start_date');
         $query = "
-            SELECT YEAR(start_date),
-                MONTH(start_date),
-                DAY(start_date),
-                COUNT(*),
-                SUM(CASE WHEN e.payments >= 100 THEN 1 ELSE 0 END) as paidInFull
-            FROM " . FannieDB::fqn('memDates', 'op') . " AS m
-                INNER JOIN " . FannieDB::fqn('custdata', 'op') . " AS c ON c.CardNo=m.card_no AND c.personNum=1
-                LEFT JOIN " . FannieDB::fqn('suspensions', 'op') . " AS s ON m.card_no=s.cardno
-                LEFT JOIN " . FannieDB::fqn('equity_live_balance', 'trans') . " AS e ON m.card_no=e.memnum
-            WHERE m.start_date BETWEEN ? AND ?
-                AND (c.Type='PC' OR s.memtype1='PC')
-            GROUP BY YEAR(start_date),
-                MONTH(start_date),
-                DAY(start_date)";
+            SELECT YEAR(tdate),
+                MONTH(tdate),
+                DAY(tdate),
+                SUM(total) as allEq,
+                SUM(CASE WHEN {$tdate} > {$mdate} THEN total ELSE 0 END) AS notNew,
+                COUNT(*) as paidInFull
+            FROM {$dlog} AS d
+                INNER JOIN memDates AS m ON d.card_no=m.card_no
+            WHERE d.tdate BETWEEN ? AND ?
+                AND department IN (991, 992)
+                AND register_no <> 30
+            GROUP BY YEAR(tdate),
+                MONTH(tdate),
+                DAY(tdate)";
         $prep = $this->connection->prepare($query);
         $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
         $data = array();
@@ -82,7 +84,7 @@ JAVASCRIPT;
             $data[] = array(
                 date('Y-m-d', $ts),
                 sprintf('%d', $row[3]),
-                sprintf('%d', $row['paidInFull']),
+                sprintf('%d', $row['notNew']),
             );
         }
 
@@ -104,10 +106,11 @@ JAVASCRIPT;
         return array('Total', $sum, $sum2);
     }
 
+
     public function report_description_content()
     {
         return array(
-            sprintf('<br /><a href="EquityOwnersReport.php?date1=%s&date2=%s">All Equity This Period</a>',
+            sprintf('<br /><a href="NewOwnersReport.php?date1=%s&date2=%s">New Owners This Period</a>',
                 FormLib::get('date1'), FormLib::get('date2')),
         );
     }
