@@ -90,16 +90,17 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $html .= '<p><a href="' . $link . '">Pay Online</a></p>';
             $body .= "\nPay Online:\n";
             $body .= $link . "\n";
+            $body .= "You may also pay in person at either store or mail a check payable to Whole Foods Co-op to:\n";
+            $html .= "<p>You may also pay in person at either store or mail a check payable to Whole Foods Co-op to:</p>";
             $html .= '<p>Whole Foods Co-op<br />610 E 4th St<br />Duluth, MN 55805</p>';
             $body .= "\nWhole Foods Co-op\n610 E 4th St\nDuluth, MN 55805\n";
 
             $mail->isHTML(true);
             $mail->Body = $html;
             $mail->AltBody = $body;
-            //$mail->addAddress($primary['email']);
-            //$mail->addBCC('bcarlson@wholefoods.coop');
-            //$mail->addBCC('andy@wholefoods.coop');
-            $mail->addAddress('andy@wholefoods.coop');
+            $mail->addAddress($primary['email']);
+            $mail->addBCC('bcarlson@wholefoods.coop');
+            $mail->addBCC('andy@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
         }
