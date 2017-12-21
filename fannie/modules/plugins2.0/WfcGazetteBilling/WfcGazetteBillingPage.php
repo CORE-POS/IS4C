@@ -151,12 +151,14 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $custNotes = trim(FormLib::get('customerNotes'));
         $uid = FannieAuth::getUID($this->current_user);
         $flagP = $sql->prepare('UPDATE dtransactions SET numflag=?, charflag=\'B2\' WHERE emp_no=? AND register_no=? AND trans_no=?');
-        $addP = $sql->prepare("UPDATE B2BInvoices SET amount=amount+?, description=CONCAT(description,'\\n',?) WHERE b2bInvoiceID=?");
+        $amtP = $sql->prepare("UPDATE B2BInvoices SET description=CONCAT(description, ' (\$', amount, ')') WHERE b2bInvoiceID=?");
+        $addP = $sql->prepare("UPDATE B2BInvoices SET amount=amount+?, description=CONCAT(description, '\\n', ?) WHERE b2bInvoiceID=?");
         
         $transQ = $sql->prepare("SELECT MAX(trans_no) FROM dtransactions
             WHERE emp_no=? AND register_no=?");
         $sql->startTransaction();
         $invoices = array();
+        $multi = array();
         $cards = FormLib::get('cardnos', array());
         $amts = FormLib::get('billable', array());
         $types = FormLib::get('desc', array());
@@ -202,7 +204,12 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             */
 
             if (isset($invoices[$cardno])) {
-                $sql->execute($addP, array($amt, 'Winter 2017/18 ' . $desc, $invoices[$cardno]));
+                $b2bID = $invoices[$cardno];
+                if (!isset($multi[$b2bID])) {
+                    $sql->execute($amtP, array($b2bID));
+                    $multi[$b2bID] = true;
+                }
+                $sql->execute($addP, array($amt, 'Winter 2017/18 ' . $desc . sprintf(' ($%.2f)', $amt), $b2bID));
             } else {
                 $uuid = '';
                 if (class_exists('Ramsey\\Uuid\\Uuid')) {
