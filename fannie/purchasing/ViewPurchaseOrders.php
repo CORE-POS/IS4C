@@ -1099,13 +1099,28 @@ HTML;
         echo '<table class="table table-bordered">';
         echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
-        $order = new PurchaseOrderModel($dbc);
-        $order->orderID($this->id);
-        $order->load();
-        $item = new VendorItemsModel($dbc);
-        $item->vendorID($order->vendorID());
-        $item->sku($this->sku);
-        $item->load();
+        $vendP = $dbc->prepare('SELECT vendorID FROM PurchaseOrder WHERE orderID=?');
+        $vendorID = $dbc->getValue($vendP, array($this->id));
+        $itemP = $dbc->prepare('SELECT * FROM vendorItems WHERE vendorID=? AND sku LIKE ?');
+        $item = $dbc->getRow($itemP, array($vendorID, '%' . $this->sku));
+        if ($item === false) {
+            $itemP = $dbc->prepare('SELECT * FROM vendorItems WHERE vendorID=? AND upc=?');
+            $item = $dbc->getRow($itemP, array($vendorID, BarcodeLib::padUPC($this->sku)));
+            if ($item === false) {
+                $itemP = $dbc->prepare('SELECT *, 1 AS units FROM products WHERE default_vendor_id=? AND upc=?');
+                $item = $dbc->getRow($itemP, array($vendorID, BarcodeLib::padUPC($this->sku)));
+            }
+        }
+        if ($item === false) {
+            $item = array(
+                'sku' => $this->sku,
+                'upc' => BarcodeLib::padUPC($this->sku),
+                'brand' => '',
+                'description' => '',
+                'cost' => 0,
+                'units' => 1,
+            );
+        }
         printf('<tr>
             <td>%s<input type="hidden" name="sku" value="%s" /></td>
             <td><input type="text" class="form-control" name="upc" value="%s" /></td>
@@ -1117,12 +1132,13 @@ HTML;
             <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
             <td><button type="submit" class="btn btn-default">Add New Item</button><input type="hidden" name="id" value="%d" /></td>
             </tr>',
-            $item->sku(), $item->sku(),
-            $item->upc(),
-            $item->brand(),
-            $item->description(),
-            1,
-            $item->cost() * $item->units(),
+            $item['sku'],
+            $item['sku'],
+            $item['upc'],
+            $item['brand'],
+            $item['description'],
+            0,
+            $item['cost'] * $item['units'],
             0,
             0,
             $this->id
