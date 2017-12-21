@@ -134,12 +134,11 @@ HTML;
             owner,phone,address) VALUES (?,?,NOW(),?,?,?,?,?,?,?,?);");
 
         $argsUpdate= array($complete,$subject,$content,
-            $firstName,$lastName,$owner,$phone,$address,$id);
+            $firstName,$lastName,$owner,$phone,$address,$store,$id);
         $prepUpdate = $dbc->prepare("UPDATE CustomerServiceTracker.Tracker
             set complete = ?, subject = ?,
             content = ?, firstName = ?, lastName = ?, owner = ?, phone = ?,
-            address = ? WHERE id = ?");
-
+            address = ?, storeID = ? WHERE id = ?");
         if ($id) {
             $res = $dbc->execute($prepUpdate,$argsUpdate);
         } else {
@@ -232,7 +231,7 @@ HTML;
         }
         $filterBtns = '';
         foreach ($stores as $id => $store) {
-            $filterBtns .= '<p class="btn btn-default active filter" value="'.$id.'">'.$store.'</p> ';
+            $filterBtns .= '<p class="btn btn-primary filter" value="'.$id.'">'.$store.'</p> ';
         }
         return <<<HTML
 <p class="form-inline">
@@ -308,6 +307,7 @@ HTML;
                 <span class="glyphicon glyphicon-ok"></span>
             </button>';
         }
+        $uid = FannieAuth::getName($uid);
 
         return <<<HTML
 <p class="form-inline">
@@ -425,23 +425,22 @@ $('#owner').change(function(){
 });
 
 $(document).ready(function() {
-    $('#hillside').addClass('inactive');
     btnClick();
 });
 
 function btnClick()
 {
     $('.btn').click(function() {
-        if ($(this).hasClass('active')) {
-           $(this).removeClass('active').addClass('inactive');
+        if ($(this).hasClass('btn-primary')) {
+           $(this).removeClass('btn-primary').addClass('btn-default');
         } else {
-           $(this).removeClass('inactive').addClass('active');
+           $(this).removeClass('btn-default').addClass('btn-primary');
         }
     });
 }
 
 $('p.filter').click(function() {
-    var off = $(this).hasClass('active');
+    var off = $(this).hasClass('btn-primary');
     var btn = $(this).text();
     if (off) {
         $('tr').each(function() {
