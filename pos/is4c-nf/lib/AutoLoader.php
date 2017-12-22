@@ -353,7 +353,7 @@ spl_autoload_register(array('AutoLoader','loadClass'), true, true);
 if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
     include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
 }
-if (file_exists(__DIR__ . '/../cache.php')) {
+if (is_array(CoreLocal::get('ClassLookup')) && file_exists(__DIR__ . '/../cache.php')) {
     include_once(__DIR__ . '/../cache.php');
 }
 
