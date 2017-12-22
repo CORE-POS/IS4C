@@ -486,6 +486,9 @@ function sendTo(url) {
     <br /><br />
     <button class="btn btn-default btn-sm" type="button" 
         onclick="sendTo('../modules/plugins2.0/CoreWarehouse/reports/CWMemberProfile.php');">Profile</button>
+    <br /><br />
+    <button class="btn btn-default btn-sm" type="button" 
+        onclick="sendTo('../reports/from-search/AccountNames/AccountNamesFromSearch.php');">All Names</button>
 </div>
 </div>
 <p>
