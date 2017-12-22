@@ -57,6 +57,13 @@ class AccountNamesFromSearch extends FannieReportPage
 
         return array();
     }
+
+    public function form_content()
+    {
+        global $FANNIE_URL;
+        return "Use <a href=\"{$FANNIE_URL}item/AdvancedItemSearch.php\">Search</a> to
+            select items for this report";;
+    }
 }
 
 FannieDispatch::conditionalExec();
