@@ -446,6 +446,7 @@ static public function addFlaggedTender($strtenderdesc, $strtendercode, $dbltend
 */
 static public function addcomment($comment) 
 {
+    $comment = htmlspecialchars($comment);
     if (strlen($comment) > 30) {
         $comment = substr($comment,0,30);
     }
