@@ -125,7 +125,8 @@ class NewClassPage extends FannieRESTfulPage
                 '&ntype=UPC&searchBtn=">'.$upc.'</a>';
         if (FormLib::get('created') == 'success') {
             $alert = '<div class="alert alert-success">Class Created Successfully!<br/>
-                View: '.$ln.'</div>';
+                View: '.$ln.' | 
+                <a href="NewClassPage.php">Create Another</a></div>';
         } elseif (FormLib::get('created') == 'failed') {
             $error = FormLib::get('error');
             $alert = '<div class="alert alert-danger">Something went wrong. Error-code: 
@@ -155,7 +156,7 @@ HTML;
             </div>
             <div class="form-group">
                 <label for="pDesc">POS Description</label>
-                <input type="text" class="form-control len-lg" name="pDesc" value="CLASS - "
+                <input type="text" class="form-control len-lg" name="pDesc" id="pDesc" value="CLASS - "
                     maxlength="30" required/>
             </div>
             <div class="form-group">
@@ -169,7 +170,8 @@ HTML;
                 <input type="radio" name="price" value="15.00"/> $15 <br/>
                 <input type="radio" name="price" value="20.00"/> $20 <span style="color: grey">| </span>
                 <input type="radio" name="price" value="25.00"/> $25 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="40.00"/> $40 
+                <input type="radio" name="price" value="40.00"/> $40 <br/>
+                <input type="radio" name="price" value="60.00"/> $60 
             </div>
             <div class="form-group">
                 <label for="likeCode">Like Code</label><br/>
@@ -177,11 +179,13 @@ HTML;
                 <input type="radio" name="likeCode" value="7001"/> 7001 <span style="color: grey">| </span>$15 -> $12<br/>
                 <input type="radio" name="likeCode" value="7004"/> 7004 <span style="color: grey">| </span>$15 -> $10<br/>
                 <input type="radio" name="likeCode" value="7003"/> 7003 <span style="color: grey">| </span>$20 -> $15<br/>
+                <input type="radio" name="likeCode" value="7003"/> 7000 <span style="color: grey">| </span>$20 -> $25<br/>
                 <input type="radio" name="likeCode" value="7005"/> 7005 <span style="color: grey">| </span>$40 -> $30<br/>
+                <input type="radio" name="likeCode" value="7006"/> 7006 <span style="color: grey">| </span>$60 -> $40<br/>
             </div>
             <div class="form-group">
                 <label for="expires">Expires</label>
-                <input type="date" class="form-control date-field len-md" name="expires" id="expires" value="" required/>
+                <input type="text" class="form-control date-field len-md" name="expires" id="expires" value="" required/>
             </div>
         </div>
         
@@ -224,7 +228,7 @@ HTML;
             <div class="form-group">
                 <label for="wDesc">Web Description</label>
                 <textarea type="text" class="form-control len-lg" name="wDesc" id="wDesc" value="" rows="2" 
-                    readonly="readonly" style="overflow-y: hidden">
+                     style="overflow-y: hidden">
 MM-DD-YYYY CLASS_NAME &#13;&#10;
 START - END LOCATION
                 </textarea>
@@ -326,6 +330,11 @@ function autofill() {
         $('#wDesc').val(wDesc);
     });
 }
+    $('#pDesc').change( function() {
+        var temp = $('#pDesc').val();
+        temp = temp.toUpperCase();
+        $('#pDesc').val(temp);
+    });
 HTML;
     }
 
