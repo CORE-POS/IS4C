@@ -41,7 +41,7 @@ class PickTagsPage extends FannieRESTfulPage
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                 LEFT JOIN departments AS d ON p.department=d.dept_no
             WHERE p.upc IN ({$inStr})
-            ORDER BY d.salesCode, p.brand, p.description");
+            ORDER BY n.vendorName, d.salesCode, p.brand, p.description");
         $itemR = $this->connection->execute($itemP, $args);
         $items = array();
         while ($itemW = $this->connection->fetchRow($itemR)) {
