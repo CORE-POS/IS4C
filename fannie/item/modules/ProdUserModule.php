@@ -46,15 +46,27 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $model->upc($upc);
         $model->load();
 
-        $loc = new ProdPhysicalLocationModel($dbc);
-        $loc->upc($upc);
-        $loc->load();
-
         $sections = new FloorSectionsModel($dbc);
+        $sectionP = $dbc->prepare("SELECT s.description AS store,
+                f.floorSectionID,
+                f.name,
+                CASE WHEN m.upc IS NULL THEN 0 ELSE 1 END AS matched
+            FROM FloorSections AS f
+                LEFT JOIN Stores AS s ON f.storeId=s.storeID
+                LEFT JOIN FloorSectionProductMap AS m ON f.floorSectionID=m.floorSectionID AND m.upc=?
+            ORDER BY s.description, f.name");
+        $sectionR = $dbc->execute($sectionP, array($upc));
+        $sections = array();
+        $marked = array();
+        while ($row = $dbc->fetchRow($sectionR)) {
+            $sections[$row['floorSectionID']] = array('label'=> $row['store'] . ' ' . $row['name'], 'matches' => $row['matched']);
+            if ($row['matched']) {
+                $marked[] = $row['floorSectionID'];
+            }
+        }
 
-        $prod = new ProductsModel($dbc);
-        $prod->upc($upc);
-        $prod->load();
+        $originP = $dbc->prepare('SELECT current_origin_id FROM products WHERE upc=?');
+        $originID = $dbc->getValue($originP, array($upc));
 
         $ret .= '<div class="col-sm-6">';
         $ret .= '<div class="row form-group">'
@@ -88,24 +100,32 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
                 . '</div>'
                 . '</div>';
 
-        $ret .= '<div class="row form-group">
-                    <label tile="Location on the floor" class="col-sm-1">Loc.</label>
-                    <div class="col-sm-8">
-                        <select name="floor-id" class="form-control">
+        // ensure there's always an extra <select> for new entries
+        $marked[] = -1;
+        for ($i=0; $i<count($marked); $i++) {
+            $ret .= '<div class="row form-group">
+                        <label title="Location on the floor" class="col-sm-1">Loc.</label>
+                        <div class="col-sm-8">
+                            <select name="floorID[]" class="form-control">
                             <option value="0">n/a</option>';
-        foreach ($sections->find('name') as $section) {
-            $ret .= sprintf('<option %s value="%d">%s</option>',
-                    ($loc->floorSectionID() == $section->floorSectionID() ? 'selected' : ''),
-                    $section->floorSectionID(), $section->name()
-            );
+            foreach ($sections as $id => $arr) {
+                $ret .= sprintf('<option %s value="%d">%s</option>',
+                        isset($marked[$i]) && $marked[$i] == $id ? 'selected' : '',
+                        $id, $arr['label']
+                );
+            }
+            $ret .= '</select>
+                    </div>
+                    <div class="col-sm-3 text-left">
+                        ' . ($i == 0 ? '<a href="mapping/FloorSectionsPage.php" target="_blank">Add more</a>' : '') . '
+                    </div>
+                    </div>';
         }
-        $ret .= '</select>
-                </div>
-                <div class="col-sm-3 text-left">
-                    <a href="mapping/FloorSectionsPage.php" target="_blank">Add more</a>
-                </div>
-                </div>';
-
+        foreach ($marked as $m) {
+            if ($m > 0) {
+                $ret .= '<input type="hidden" name="currentFloor[]" value="' . $m . '" />';
+        }
+        }
 
         $otherOriginBlock = '<div class=row>
                 <div class=col-sm-1 />
@@ -121,7 +141,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $origins->local(0);
         foreach ($origins->find('name') as $o) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
-                        $prod->current_origin_id() == $o->originID() ? 'selected' : '',
+                        $originID == $o->originID() ? 'selected' : '',
                         $o->originID(), $o->name());
             $otherOriginBlock .= sprintf('<option value=%d>%s</option>',
                                             $o->originID(), $o->name());
@@ -135,7 +155,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '</div></div>';
 
         $mapP = 'SELECT originID FROM ProductOriginsMap WHERE upc=? AND originID <> ?';
-        $mapR = $dbc->execute($mapP, array($upc, $prod->current_origin_id()));
+        $mapR = $dbc->execute($mapP, array($upc, $originID));
         while ($mapW = $dbc->fetch_row($mapR)) {
             $ret .= '<div class="row form-group">'
                 . '<label class="col-sm-1"><a href="' . $FANNIE_URL . 'item/origins/OriginEditor.php">Origin</a></label>'
@@ -199,13 +219,42 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         }
     }
 
+    /**
+     * Update location data for the item (FloorSectionProductMap)
+     * @param $dbc [SQLManager] database connection
+     * @param $upc [string] UPC
+     * @param $floorIDs [array] submitted floor section IDs
+     * @param $oldFloorIDs [array] current floor section IDs assigned to the item
+     *
+     * This method compares new and old values instead of just DELETING the current entries
+     * and re-populating with the submitted values. This is mostly to avoid churning
+     * through identity column values on every save.
+     */
+    private function saveLocation($dbc, $upc, $floorIDs, $oldFloorIDs)
+    {
+        $insP = $dbc->prepare('INSERT INTO FloorSectionProductMap (floorSectionID, upc) VALUES (?, ?)');
+        $upP = $dbc->prepare('UPDATE FloorSectionProductMap SET floorSectionID=? WHERE floorSectionID=? AND upc=?');
+        $delP = $dbc->prepare('DELETE FROM FloorSectionProductMap WHERE floorSectionID=? AND upc=?');
+        for ($i=0; $i<count($floorIDs); $i++) {
+            $newID = $floorIDs[$i];
+            if ($newID == 0 && isset($oldFloorIDs[$i]))  {
+                $dbc->execute($delP, array($oldFloorIDs[$i], $upc));
+            } elseif (isset($oldFloorIDs[$i]) && $newID != $oldFloorIDs[$i]) {
+                $dbc->execute($upP, array($newID, $oldFloorIDs[$i], $upc));
+            } else {
+                $dbc->execute($insP, array($newID, $upc));
+            }
+        }
+    }
+
     function SaveFormData($upc)
     {
         $upc = BarcodeLib::padUPC($upc);
         $brand = FormLib::get('lf_brand');
         $desc = FormLib::get('lf_desc');
         $origin = FormLib::get('origin', 0);
-        $floorID = FormLib::get('floor-id', 0);
+        $floorIDs = FormLib::get('floorID', array());
+        $oldfloorIDs = FormLib::get('currentFloor', array());
         $narrow = FormLib::get('narrowTag', 0) ? 1 : 0;
         $text = FormLib::get('lf_text');
         $text = str_replace("\r", '', $text);
@@ -219,10 +268,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $dbc = $this->db();
 
-        $loc = new ProdPhysicalLocationModel($dbc);
-        $loc->upc($upc);
-        $loc->floorSectionID($floorID);
-        $loc->save();
+        $this->saveLocation($dbc, $upc, $floorIDs, $oldFloorIDs);
 
         $model = new ProductUserModel($dbc);
         $model->upc($upc);
@@ -265,14 +311,10 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
             $items[] = $w['upc'];
         }
 
-        $prod = new ProductsModel($dbc);
-        $stores = new StoresModel($dbc);
+        $prodP = $dbc->prepare('UPDATE products SET current_origin_id=? WHERE upc=?');
         foreach ($items as $item) {
-            $prod->upc($item);
-            $prod->store_id(1);
-            $prod->current_origin_id($origin);
-            $prod->enableLogging(false);
-            $prod->save();
+            // not adding to prodUpdate here is intentional
+            $dbc->execute($prodP, array($origin, $item));
 
             $dbc->execute($mapP, array($item));
             foreach ($originMap as $originID) {
