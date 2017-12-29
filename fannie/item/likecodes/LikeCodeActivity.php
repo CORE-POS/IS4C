@@ -9,6 +9,7 @@ class LikeCodeActivity extends FannieRESTfulPage
 {
     protected $title = 'Like Code Activity';
     protected $header = 'Like Code Activity';
+    public $description = '[Like Code Activity] shows usage and availability for likecodes.';
 
     protected function post_id_handler()
     {
