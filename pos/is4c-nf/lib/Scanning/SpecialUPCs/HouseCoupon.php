@@ -648,6 +648,7 @@ class HouseCoupon extends SpecialUPC
                 $giftW = $transDB->fetchRow($giftR);
                 $freeCards = floor($giftW['ttl'] / $infoW['minValue']);
                 $value = $infoW['discountValue'] * $freeCards;
+                $discountable = 0;
                 TransRecord::addtender('Store Credit', 'SC', $value);
                 break;
             case "F": // completely flat; no scaling for weight
