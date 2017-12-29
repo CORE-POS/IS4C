@@ -41,7 +41,7 @@ class PaycardEmvMenu extends NoInputCorePage
         $this->conf = new PaycardConf();
         $choice = FormLib::get('selectlist', false);
         if ($choice !== false) {
-            $parser = new PaycardDatacapParser();
+            $parser = new PaycardDatacapParser($this->session);
             switch ($choice) {
                 case 'CAADMIN':
                     $this->change_page('PaycardEmvCaAdmin.php');
