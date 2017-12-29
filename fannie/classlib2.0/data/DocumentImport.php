@@ -1,7 +1,6 @@
 <?php
 
 namespace COREPOS\Fannie\API\data;
-use FileData;
 
 /**
   @class DocumentImport
