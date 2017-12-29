@@ -42,6 +42,7 @@ class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
         if ($reprint || CoreLocal::get('autoReprint') == 0) {
             if ($val >= 20 && $val % 20 == 0) {
                 for ($i=0; $i<$val; $i+=20) {
+                    if (empty($slip)) $slip = "\n";
                     $slip = ReceiptLib::cutReceipt($slip, false);
                     $slip .= $this->slipBody(20);
                 }
