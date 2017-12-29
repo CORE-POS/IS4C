@@ -134,8 +134,7 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                     'phone' => '',
                     'altPhone' => '',
                     'email' => '',
-                );
-                $pn++;
+                );                
             } else { // update or remove existing name
                 for ($j=0; $j<count($json['customers']); $j++) {
                     if ($json['customers'][$j]['customerID'] == $ids[$i]) {
@@ -148,6 +147,7 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                     }
                 }
             }
+            $pn++;
         }
 
         return $json;
