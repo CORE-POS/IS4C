@@ -85,6 +85,11 @@ class SaHandheldPage extends FannieRESTfulPage
                 $args = array($upc, $store, $this->section, $orderID, $transID);
                 $p = $dbc->prepare($q);
                 $r = $dbc->execute($p, $args);
+                if ($dbc->numRows($r) == 0) {
+                    $q2 = str_replace('PendingSpecialOrder', 'CompleteSpecialOrder', $q);
+                    $p = $dbc->prepare($q2);
+                    $r = $dbc->execute($p, $args);
+                }
             } elseif ($dbc->numRows($r)==0) {
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
