@@ -46,6 +46,9 @@ class ItemSync
         $server_table_def = $laneupdate_sql->tableDefinition('products',$FANNIE_OP_DB);
 
         for ($i = 0; $i < count($FANNIE_LANES); $i++) {
+            if (isset($FANNIE_LANES[$i]['offline']) && $FANNIE_LANES[$i]['offline']) {
+                continue;
+            }
             try {
                 $laneupdate_sql = self::laneConnect($laneupdate_sql, $FANNIE_LANES[$i]);
             
@@ -85,6 +88,9 @@ class ItemSync
         $laneupdate_sql = \FannieDB::get($FANNIE_OP_DB);
 
         for ($i = 0; $i < count($FANNIE_LANES); $i++){
+            if (isset($FANNIE_LANES[$i]['offline']) && $FANNIE_LANES[$i]['offline']) {
+                continue;
+            }
             try {
                 $tmp = self::laneConnect($laneupdate_sql, $FANNIE_LANES[$i]);
                 $delQ = $tmp->prepare("DELETE FROM products WHERE upc=?", $FANNIE_LANES[$i]['op']);
