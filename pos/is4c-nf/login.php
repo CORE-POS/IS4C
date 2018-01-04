@@ -23,6 +23,9 @@
 
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+use COREPOS\ajax\AjaxParser;
+use COREPOS\common\mvc\ValueContainer;
 
 $fp = fopen(__DIR__ . '/cache.php', 'w');
 if ($fp) {
@@ -59,6 +62,17 @@ if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
 } else {
     CoreLocal::set('MQ', false);
 }
+
+/**
+ * Force a command to run through input parsing
+ * This will increase the time it takes to draw an
+ * initial login screen but should reduce some of the
+ * delay on the first command entered by the user
+ */
+$form = new ValueContainer();
+$form->input = 'CL';
+$ajax = new AjaxParser(new WrappedStorage(), $form);
+$cacheWarm = $ajax->ajax();
 
 /**
   Go to login screen if no one is signed in
