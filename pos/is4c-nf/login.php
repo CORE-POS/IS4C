@@ -24,7 +24,7 @@
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\LocalStorage\WrappedStorage;
-use COREPOS\ajax\AjaxParser;
+use COREPOS\pos\ajax\AjaxParser;
 use COREPOS\common\mvc\ValueContainer;
 
 $fp = fopen(__DIR__ . '/cache.php', 'w');
