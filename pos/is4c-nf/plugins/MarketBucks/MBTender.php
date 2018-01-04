@@ -47,7 +47,7 @@ class MBTender extends TenderModule
     public function preReqCheck()
     {
         $eligible = $this->getEligibleAmount();
-        if (($this->amount - $eligible) > 0.005) {
+        if (($this->amount - $eligible) > 0.005 && CoreLocal::get('msgrepeat') == 0) {
             CoreLocal::set("boxMsg", sprintf('Redeem for $%.2f', $eligible));
             CoreLocal::set('lastRepeat', 'confirmMB');
             CoreLocal::set('boxMsgButtons', array(
