@@ -1,4 +1,6 @@
 <?php
+header('Location: ../../modules/plugins2.0/StaffArPayrollDeduction/StaffArAccountsPage.php');
+exit;
 include('../../config.php');
 
 if (!class_exists('FannieAPI')) include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
