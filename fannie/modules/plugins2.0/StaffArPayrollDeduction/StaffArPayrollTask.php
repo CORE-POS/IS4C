@@ -52,7 +52,6 @@ StaffArPayrollDeduction plugin.';
           Update plugin's table from legacy table, if present.
           Can go away once WFC transistions away from legacy
           table.
-        */
         $legacy_table = $FANNIE_TRANS_DB . $dbc->sep() . 'staffAR';
         if ($dbc->tableExists($legacy_table)) {
             $query = 'SELECT cardNo, adjust FROM ' . $legacy_table;
@@ -76,6 +75,7 @@ StaffArPayrollDeduction plugin.';
                 $dbc->execute($prep, $args);
             }
         } // end legacy table handling
+        */
 
         // build department list
         $ar_dept = 0;

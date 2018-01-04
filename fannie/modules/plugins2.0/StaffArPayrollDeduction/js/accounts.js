@@ -35,6 +35,34 @@ function addNew()
     });
 }
 
+function jumpToChange(card) {
+    $('#changeMem').val(card);
+    $('#changeAmount').focus();
+
+    return false;
+}
+
+function changeAmount() {
+    var cardNo = $('#changeMem').val();
+    var dstr = 'change=' + cardNo + '&deduction=' + $('#changeAmount').val();
+    $('#changeMem').val('');
+    $('#changeAmount').val('');
+    $.ajax({
+        url: 'StaffArAccountsPage.php',
+        type: 'post',
+        data: dstr,
+        dataType: 'json'
+    }).done(function (resp) {
+        if (resp.error) {
+            alert(resp.error);
+        } else {
+            console.log(cardNo);
+            console.log(resp.deduct);
+           $('#row'+cardNo).find('.nextdeduction').html(resp.deduct);
+        }
+    });
+}
+
 function removeAccount(cn)
 {
     $.ajax({

@@ -41,6 +41,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
         $this->title = _('Payroll Deductions');
         $this->header = _('Payroll Deductions');
         $this->__routes[] = 'get<add><payid>';
+        $this->__routes[] = 'post<change><deduction>';
         $this->__routes[] = 'get<delete>';
         $this->__routes[] = 'post<saveIds><saveAmounts>';
         $this->__routes[] = 'get<excel>';
@@ -72,6 +73,22 @@ class StaffArAccountsPage extends FannieRESTfulPage
                 $row['adjust']
             );
         }
+
+        return false;
+    }
+
+    protected function post_change_deduction_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc = FannieDB::get($settings['StaffArPayrollDB']);
+        $upP = $dbc->prepare('UPDATE StaffArAccounts SET nextPayment=? WHERE card_no=?');
+        $res = $dbc->execute($upP, array($this->deduction, $this->change));
+        $ret = array('error'=>false);
+        if ($res === false) {
+            $ret['error'] = 'Save failed!';
+        }
+        $ret['deduct'] = sprintf('%.2f', $this->deduction);
+        echo json_encode($ret);
 
         return false;
     }
@@ -147,7 +164,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $this->add_script('js/accounts.js');
+        $this->add_script('js/accounts.js?changed=20180104');
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['StaffArPayrollDB']);
 
         $model = new StaffArAccountsModel($dbc);
@@ -210,11 +227,11 @@ class StaffArAccountsPage extends FannieRESTfulPage
                 <th>Next Deduction</th><th>New Deduction</th><th>&nbsp;</td></tr>';
         foreach($info as $card_no => $data) {
             $ret .= sprintf('<tr class="accountrow" id="row%d">
-                            <td class="cardnotext">%d</td>
+                            <td class="cardnotext"><a href="" onclick="jumpToChange(%d); return false;">%d</td>
                             <td class="payidtext">%s</td>
                             <td class="nametext">%s</td>
                             <td class="currentbalance">%.2f</td>
-                            <td>%.2f</td>
+                            <td class="nextdeduction">%.2f</td>
                             <td><div class="input-group">
                                 <span class="input-group-addon">$</span>
                                 <input type="text" class="nextdeduct form-control" value="%.2f" />
@@ -222,7 +239,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
                             <td><a href="" onclick="removeAccount(%d); return false;">Remove from List</a></td>
                             </tr>',
                             $card_no,
-                            $card_no,
+                            $card_no, $card_no,
                             $data['payroll'],
                             $data['name'],
                             $data['balance'],
@@ -251,6 +268,16 @@ class StaffArAccountsPage extends FannieRESTfulPage
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="submit" onclick="addNew(); return false;" 
             class="btn btn-default">Add</button>';
+        $ret .= '</div>';
+        $ret .= '<hr />';
+        $ret .= '<h4>Change Single Deduction</h4>';
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<label>Mem#</label>: <input type="text" id="changeMem" class="form-control" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<label>Deduction Amount</label>: <input type="text" id="changeAmount" class="form-control" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<button type="submit" onclick="changeAmount(); return false;" 
+            class="btn btn-default">Change Deduction</button>';
         $ret .= '</div>';
 
         return $ret;
