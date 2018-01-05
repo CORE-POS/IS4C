@@ -75,7 +75,7 @@ class AjaxCallback
             */
             self::perfStart();
             self::executeCallback($callback_class);
-            self::perfEnd();
+            self::perfEnd($callback_class);
         }
     }
 
@@ -113,8 +113,9 @@ class AjaxCallback
          * Some AJAX handlers might close the current session in
          * which case we can't record a performance figure
          */
-        if (substr($classback_class, -13) != 'AjaxPollScale' && session_status() == PHP_SESSION_ACTIVE) {
+        if (substr($callback_class, -13) != 'AjaxPollScale' && session_status() == PHP_SESSION_ACTIVE) {
             $timer = sprintf('%.4f', microtime(true) - self::$elapsed);
+            $session = new WrappedStorage();
             $perf = $session->get('perfLog');
             if (!is_array($perf)) {
                 $perf = array();
@@ -128,7 +129,7 @@ class AjaxCallback
                 $input = $form->tryGet('reginput');
             }
             array_push($perf, array('action'=>$callback_class, 'time'=>$timer, 'input'=>$input));
-            $perf->set('perfLog', $perf);
+            $session->set('perfLog', $perf);
         }
     }
 

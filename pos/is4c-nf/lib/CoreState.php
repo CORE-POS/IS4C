@@ -129,6 +129,12 @@ static public function systemInit()
     CoreLocal::set("plainmsg","");
 
     /**
+     * @var perfLog
+     * Logging for performance metrics
+     */
+    CoreLocal::set('perfLog', array());
+
+    /**
       Load lane and store numbers from LaneMap array
       if present
     */

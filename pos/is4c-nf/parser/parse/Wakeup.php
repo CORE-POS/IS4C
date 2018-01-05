@@ -30,7 +30,7 @@ class Wakeup extends Parser
 {
     function check($str)
     {
-        if ($str == "WAKEUP" || $str == 'WAKEUP2' || $str == 'PERF') {
+        if ($str == "WAKEUP" || $str == 'WAKEUP2' || $str == 'PROFILE') {
             return True;
         }
         return False;
@@ -39,7 +39,7 @@ class Wakeup extends Parser
     function parse($str)
     {
         $ret = $this->default_json();
-        if ($str == 'PERF') {
+        if ($str == 'PROFILE') {
             return $this->perfLog($ret);
         }
         $ret['udpmsg'] = $str == 'WAKEUP' ? 'wakeup' : 'reBoot';
@@ -54,6 +54,10 @@ class Wakeup extends Parser
         if (is_array($perf) || count($perf) > 0) {
             $msg .= '<table>';
             foreach ($perf as $p) {
+                if (strpos($p['action'], '\\')) {
+                    $tmp = explode('\\', $p['action']);
+                    $p['action'] = $tmp[count($tmp) - 1];
+                }
                 $msg .= "<tr><td>{$p['action']}</td><td>{$p['time']}</td><td>{$p['input']}</td></tr>";
             }
             $msg .= '</table>';
