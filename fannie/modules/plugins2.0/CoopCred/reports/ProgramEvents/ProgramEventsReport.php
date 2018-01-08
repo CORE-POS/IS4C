@@ -94,7 +94,7 @@ class ProgramEventsReport extends FannieReportPage {
             // Better to do this in JS in the form.
             if ($_REQUEST['programID'] == "") {
                 $this->errors[] = "Please choose a Program";
-                $this->add_script("{$FANNIE_URL}src/CalendarControl.js");
+                $this->addScript("{$FANNIE_URL}src/CalendarControl.js");
                 return True;
             }
             $programID = (int)$_REQUEST['programID'];
@@ -129,16 +129,16 @@ class ProgramEventsReport extends FannieReportPage {
 
             if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
                 $this->report_format = 'xls';
-                $this->has_menus(False);
+                $this->hasMenus(False);
             } elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
                 $this->report_format = 'csv';
-                $this->has_menus(False);
+                $this->hasMenus(False);
             }
         } else {
             if (FormLib::get_form_value('pid',0) != 0) {
                 $this->pid = FormLib::get_form_value('pid',0);
             }
-            $this->add_script("{$FANNIE_URL}src/CalendarControl.js");
+            $this->addScript("{$FANNIE_URL}src/CalendarControl.js");
         }
 
         return True;
