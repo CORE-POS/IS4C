@@ -164,7 +164,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $this->add_script('js/accounts.js?changed=20180104');
+        $this->addScript('js/accounts.js?changed=20180104');
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['StaffArPayrollDB']);
 
         $model = new StaffArAccountsModel($dbc);

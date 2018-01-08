@@ -80,7 +80,7 @@ class StaffArDatesPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_URL;
-        $this->add_script('js/dates.js');
+        $this->addScript('js/dates.js');
 
         $ret = '<div id="mainDisplayDiv" class="col-sm-4">';
         $ret .= $this->dateTable();
