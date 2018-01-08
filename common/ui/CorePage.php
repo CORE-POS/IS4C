@@ -387,7 +387,7 @@ class CorePage
 
     public function baseTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->getHeader());
+        $phpunit->assertNotEquals(0, strlen($this->getHeader()));
         $phpunit->assertNotEquals(0, strlen($this->getFooter()));
         $this->addCssFile('/url.css');
         $this->addScript('/url.css');
