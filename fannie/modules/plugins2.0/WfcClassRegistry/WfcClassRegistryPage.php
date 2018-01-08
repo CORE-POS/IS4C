@@ -183,9 +183,9 @@ class WfcClassRegistryPage extends FanniePage
         
         $this->add_onload_command('itemEditing(' . $classSize . ');');
         //$this->add_onload_command('withdraw();');
-        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
-        $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
         
         return $ret; 
     }
@@ -487,12 +487,12 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '</tbody></table></div>';
         }
 
-        $this->add_onload_command('itemEditing(' . $classSize . ');');
-        $this->add_onload_command('withdraw();');
-        $this->add_onload_command('checkSoldOut();');
-        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand('itemEditing(' . $classSize . ');');
+        $this->addOnloadCommand('withdraw();');
+        $this->addOnloadCommand('checkSoldOut();');
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
-        $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
         
         $dbc->close();
         
