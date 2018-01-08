@@ -36,10 +36,10 @@ class PIKillerPage extends FannieRESTfulPage {
     function getHeader() 
     {
         global $FANNIE_URL;
-        $this->add_css_file('css/styles.css');
-        $this->add_css_file($FANNIE_URL . 'src/javascript/jquery-ui.css');
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+        $this->addCssFile('css/styles.css');
+        $this->addCssFile($FANNIE_URL . 'src/javascript/jquery-ui.css');
+        $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
+        $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         return '<!DOCTYPE html>
             <html lang="en">
             <head>
