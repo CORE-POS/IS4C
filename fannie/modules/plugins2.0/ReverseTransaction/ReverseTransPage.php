@@ -224,7 +224,7 @@ class ReverseTransPage extends FannieRESTfulPage
 
     function get_view(){
         global $FANNIE_URL;
-        $this->add_script('js/reverse.js');
+        $this->addScript('js/reverse.js');
         ob_start();
         ?>
         <form onsubmit="loadReceipt(); return false;">
