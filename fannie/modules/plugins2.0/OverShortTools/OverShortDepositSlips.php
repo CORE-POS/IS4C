@@ -300,7 +300,7 @@ class OverShortDepositSlips extends FanniePage
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->add_script('js/count.js');
+        $this->addScript('js/count.js');
         ob_start();
         ?>
         <form action=OverShortDepositSlips.php method=get>

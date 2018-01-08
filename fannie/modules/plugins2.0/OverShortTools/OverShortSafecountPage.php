@@ -515,13 +515,13 @@ class OverShortSafecountPage extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->add_script('js/count.js');
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-        $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
-        $this->add_css_file($FANNIE_URL.'src/style.css');
-        $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-        $this->add_onload_command("\$('#startDate').datepicker({dateFormat:'yy-mm-dd'});");
-        $this->add_onload_command("\$('#endDate').datepicker({dateFormat:'yy-mm-dd'});");
+        $this->addScript('js/count.js');
+        $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
+        $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
+        $this->addCssFile($FANNIE_URL.'src/style.css');
+        $this->addCssFile($FANNIE_URL.'src/javascript/jquery-ui.css');
+        $this->addOnloadCommand("\$('#startDate').datepicker({dateFormat:'yy-mm-dd'});");
+        $this->addOnloadCommand("\$('#endDate').datepicker({dateFormat:'yy-mm-dd'});");
         ob_start();
         ?>
         <html>
