@@ -342,7 +342,7 @@ class GumMainPage extends FannieRESTfulPage
     public function get_id_view()
     {
         global $FANNIE_URL;
-        $this->add_script('js/main.js');
+        $this->addScript('js/main.js');
         $ret = '';
 
         $ret .= '<form id="piForm" action="GumMainPage.php" method="post">';
