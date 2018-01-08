@@ -144,15 +144,8 @@ class CoreRESTfulRouter
         }
     }
 
-
-    /**
-      Parse request info and determine which route to use
-    */
-    public function readRoutes()
+    private function candidateRoutes()
     {
-        // routes begin with method
-        $this->__method = $this->detectMethod();
-
         // find all matching routes
         $try_routes = array();
         foreach($this->__routes as $route) {
@@ -169,6 +162,21 @@ class CoreRESTfulRouter
                 }
             }
         }
+
+        return $try_routes;
+    }
+
+
+    /**
+      Parse request info and determine which route to use
+    */
+    public function readRoutes()
+    {
+        // routes begin with method
+        $this->__method = $this->detectMethod();
+
+        // find all matching routes
+        $try_routes = $this->candidateRoutes();
         
         // use the route with the most parameters
         // set class variables to parameters
@@ -228,13 +236,14 @@ class CoreRESTfulRouter
 
         if ($ret === true || $ret === false) {
             return $ret;
-        } elseif (is_string($ret)) {
+        }
+        if (is_string($ret)) {
             header('Location: ' . $ret);
             return false;
-        } else {
-            // dev error/bug?
-            return false;
         }
+
+        // dev error/bug?
+        return false;
     }
 
     /**
