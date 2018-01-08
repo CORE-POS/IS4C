@@ -55,8 +55,8 @@ class SaOrderingPage extends FanniePage
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_TRANS_DB;
 
-        //$this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-        //$this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+        //$this->addScript($FANNIE_URL.'src/javascript/jquery.js');
+        //$this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
 
         if (FormLib::get('upc_in') !== '') {
             $upc = BarcodeLib::padUPC(FormLib::get('upc_in'));
@@ -157,12 +157,12 @@ class SaOrderingPage extends FanniePage
 
         $this->linea_ios_mode = $this->linea_support_available();
         if ($this->linea_ios_mode) {
-            $this->add_script($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
-            $this->add_script($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+            $this->addScript($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
+            $this->addScript($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
         }
-        $this->add_script($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
-        $this->add_css_file($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
-        //$this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+        $this->addScript($FANNIE_URL.'src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addCssFile($FANNIE_URL.'src/javascript/tablesorter/themes/blue/style.css');
+        //$this->addCssFile($FANNIE_URL.'src/javascript/jquery-ui.css');
         
         return true;
     }
