@@ -218,9 +218,9 @@ class MemberSearchPage extends FanniePage {
             }
             $ret .= "</tbody></table>";
             $ret .= "</div></div>";
-            $this->add_css_file('../src/javascript/tablesorter/themes/blue/style.css');
+            $this->addCssFile('../src/javascript/tablesorter/themes/blue/style.css');
             $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');
-            $this->add_onload_command('$(\'.tablesorter\').tablesorter();');
+            $this->addOnloadCommand('$(\'.tablesorter\').tablesorter();');
         }
 
         return $ret;

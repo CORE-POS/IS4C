@@ -53,7 +53,7 @@ class InstallPage extends \FanniePage
     */
     function getHeader()
     {
-        $this->add_css_file($this->config->get('URL') . 'src/css/install.css');
+        $this->addCssFile($this->config->get('URL') . 'src/css/install.css');
         ob_start();
         $page_title = $this->title;
         $header = $this->header;

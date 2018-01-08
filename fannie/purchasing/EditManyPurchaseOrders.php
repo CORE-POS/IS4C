@@ -213,8 +213,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage
         $ret .= $this->calculate_sidebar();
         $ret .= '</div>';
 
-        $this->add_onload_command("\$('#searchField').focus();\n");
-        $this->add_script('js/editmany.js');
+        $this->addOnloadCommand("\$('#searchField').focus();\n");
+        $this->addScript('js/editmany.js');
     
         return $ret;
     }

@@ -236,10 +236,10 @@ class WicSalesReport extends FannieReportPage
     </div>
 </form>
 <?php
-        $this->add_script($this->config->get('URL') . 'item/autocomplete.js');
+        $this->addScript($this->config->get('URL') . 'item/autocomplete.js');
         $ws = $this->config->get('URL') . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
-        $this->add_onload_command('$(\'#manu\').focus();');
+        $this->addOnloadCommand("bindAutoComplete('#manu', '$ws', 'brand');\n");
+        $this->addOnloadCommand('$(\'#manu\').focus();');
 
         return ob_get_clean();
     }

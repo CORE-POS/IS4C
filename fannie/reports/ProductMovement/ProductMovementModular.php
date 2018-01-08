@@ -248,10 +248,10 @@ function showGraph() {
     </div>
 </form>
 <?php
-        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $this->addScript($FANNIE_URL . 'item/autocomplete.js');
         $ws = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
-        $this->add_onload_command('$(\'#upc\').focus();');
+        $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
+        $this->addOnloadCommand('$(\'#upc\').focus();');
 
         return ob_get_clean();
     }

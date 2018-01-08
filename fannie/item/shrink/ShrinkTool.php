@@ -213,10 +213,10 @@ HTML;
     public function get_view()
     {
         global $FANNIE_URL;
-        $this->add_script('../autocomplete.js');
+        $this->addScript('../autocomplete.js');
         $ws = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#upc-field', '$ws', 'item');\n");
-        $this->add_onload_command("\$('#upc-field').focus();");
+        $this->addOnloadCommand("bindAutoComplete('#upc-field', '$ws', 'item');\n");
+        $this->addOnloadCommand("\$('#upc-field').focus();");
         $this->addOnloadCommand("enableLinea('#upc-field');\n");
 
         return '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">

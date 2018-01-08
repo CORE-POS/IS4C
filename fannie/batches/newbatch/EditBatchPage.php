@@ -1463,9 +1463,9 @@ HTML;
 
     public function get_id_view()
     {
-        $this->add_script('edit.js?20160105');
-        $this->add_css_file('index.css');
-        $this->add_onload_command('$(\'#addItemUPC\').focus()');
+        $this->addScript('edit.js?20160105');
+        $this->addCssFile('index.css');
+        $this->addOnloadCommand('$(\'#addItemUPC\').focus()');
         $this->addOnloadCommand("enableLinea('#addItemUPC');\n");
 
         $url = $this->config->get('URL');

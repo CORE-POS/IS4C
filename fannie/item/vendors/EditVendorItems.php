@@ -195,10 +195,10 @@ class EditVendorItems extends FannieRESTfulPage
         $ret .= '<input type="hidden" id="vendor-id" value="' . $this->id . '" />';
         $ret .= '<p><a href="VendorIndexPage.php?vid=' . $this->id . '" class="btn btn-default">Home</a></p>';
         //$this->add_onload_command('deleteVendorItem(\'button\',1234,4567);');
-        $this->add_onload_command('itemEditing();');
-        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand('itemEditing();');
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
-        $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
         
 
         return $ret;

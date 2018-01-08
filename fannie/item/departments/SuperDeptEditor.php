@@ -286,7 +286,7 @@ class SuperDeptEditor extends FanniePage {
             href="../../reports/DepartmentSettings/DeptSettingsReport.php?dept1=<?php echo $deptRange['min']; ?>&dept2=<?php echo $deptRange['max']; ?>&submit=by_dr">View All Departments' Primary Super Department</a>
         </p>
         <?php
-        $this->add_script('super.js?20160106');
+        $this->addScript('super.js?20160106');
         $this->addOnloadCommand("\$('#sd_email').keyup(function(e){ if (e.which==13) superDept.saveData(); });\n");
 
         return ob_get_clean();

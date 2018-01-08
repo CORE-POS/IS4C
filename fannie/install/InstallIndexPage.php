@@ -64,8 +64,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         // To set authentication.
         FanniePage::__construct();
 
-        $this->add_script('../src/javascript/syntax-highlighter/scripts/jquery.syntaxhighlighter.min.js');
-        $this->add_onload_command('
+        $this->addScript('../src/javascript/syntax-highlighter/scripts/jquery.syntaxhighlighter.min.js');
+        $this->addOnloadCommand('
             $.SyntaxHighlighter.init({
                 baseUrl: \'../src/javascript/syntax-highlighter\',
                 prettifyBaseUrl: \'../src/javascript/syntax-highlighter/prettify\',

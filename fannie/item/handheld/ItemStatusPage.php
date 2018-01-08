@@ -339,10 +339,10 @@ class ItemStatusPage extends FannieRESTfulPage
 
     public function get_view()
     {
-        $this->add_script('../autocomplete.js');
-        $this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
+        $this->addScript('../autocomplete.js');
+        $this->addOnloadCommand("bindAutoComplete('#upc', '../../ws/', 'item');\n");
         if (FormLib::get('linea') != 1) {
-            $this->add_onload_command("\$('#upc').focus();\n");
+            $this->addOnloadCommand("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
         return '<form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">

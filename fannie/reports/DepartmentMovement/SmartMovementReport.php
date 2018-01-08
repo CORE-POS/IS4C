@@ -54,9 +54,9 @@ class SmartMovementReport extends FannieReportPage
         }
 
         $url = $this->config->get('URL');
-        $this->add_script($url . 'src/javascript/jquery.js');
-        $this->add_script($url . 'src/javascript/jquery-ui.js');
-        $this->add_css_file($url . 'src/javascript/jquery-ui.css');
+        $this->addScript($url . 'src/javascript/jquery.js');
+        $this->addScript($url . 'src/javascript/jquery-ui.js');
+        $this->addCssFile($url . 'src/javascript/jquery-ui.css');
 
         $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
         foreach ($_GET as $key => $value) {

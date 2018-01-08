@@ -92,7 +92,7 @@ class SalesAndTaxTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $this->title = "Fannie : Today's $this->name Sales and Taxes";
         $this->header = "Today's $this->name Sales and Taxes";
 
-        $this->has_menus(True);
+        $this->hasMenus(True);
 
         return True;
 

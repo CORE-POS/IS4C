@@ -852,8 +852,8 @@ HTML;
         }
         $ret = str_replace('{{CODING}}', $coding_rows, $ret);
 
-        $this->add_script('js/view.js');
-        $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addScript('js/view.js');
+        $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
         $this->addOnloadCommand("\$('.table-float').floatThead();\n");
@@ -889,7 +889,7 @@ HTML;
     */
     protected function get_id_receive_view()
     {
-        $this->add_script('js/view.js');
+        $this->addScript('js/view.js');
         $ret = '
             <p>Receiving order #<a href="ViewPurchaseOrders.php?id=' . $this->id . '">' . $this->id . '</a></p>
             <p><div class="form-inline">

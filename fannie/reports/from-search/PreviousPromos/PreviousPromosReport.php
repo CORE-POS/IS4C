@@ -134,7 +134,7 @@ class PreviousPromosReport extends FannieReportPage
         }
 
         $url = $this->config->get('URL');
-        $this->add_script($url . 'src/javascript/jquery.js');
+        $this->addScript($url . 'src/javascript/jquery.js');
         $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
         foreach ($_POST as $key => $value) {
             if ($key != 'store') {

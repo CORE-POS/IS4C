@@ -74,8 +74,8 @@ class NonMovementReport extends FannieReportPage {
         $ret = parent::preprocess();
         // custom: needs extra JS for delete option
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script("../../src/javascript/jquery.js");
-            $this->add_script('delete.js');
+            $this->addScript("../../src/javascript/jquery.js");
+            $this->addScript('delete.js');
         }
 
         return $ret;

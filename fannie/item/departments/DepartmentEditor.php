@@ -238,9 +238,9 @@ class DepartmentEditor extends FannieRESTfulPage
         <div id="infodiv" class="deptFields"></div>
         <?php
     
-        $this->add_script('dept.js');
+        $this->addScript('dept.js');
         if ($selectedDID !== '') {
-            $this->add_onload_command('deptEdit.deptchange();'); 
+            $this->addOnloadCommand('deptEdit.deptchange();'); 
         }
 
         return ob_get_clean();

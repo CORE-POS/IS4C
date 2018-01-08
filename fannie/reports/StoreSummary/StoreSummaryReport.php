@@ -66,7 +66,7 @@ class StoreSummaryReport extends FannieReportPage {
             */
             if (FormLib::get_form_value('excel') !== '') {
                 $this->report_format = FormLib::get_form_value('excel');
-                $this->has_menus(False);
+                $this->hasMenus(False);
             }
         }
 

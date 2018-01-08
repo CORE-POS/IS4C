@@ -603,7 +603,7 @@ class VendorIndexPage extends FannieRESTfulPage
         </p>
         <?php
 
-        $this->add_script('index.js');
+        $this->addScript('index.js');
         $this->addOnloadCommand("\$('#vendorselect').focus();\n");
         $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');

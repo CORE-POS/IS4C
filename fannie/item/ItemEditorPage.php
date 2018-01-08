@@ -206,17 +206,17 @@ class ItemEditorPage extends FanniePage
 </p>
 HTML;
         
-        $this->add_script('autocomplete.js');
+        $this->addScript('autocomplete.js');
         $wsUrl = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#upc', '$wsUrl', 'item');\n");
-        $this->add_onload_command('$(\'#upc\').focus();');
+        $this->addOnloadCommand("bindAutoComplete('#upc', '$wsUrl', 'item');\n");
+        $this->addOnloadCommand('$(\'#upc\').focus();');
 
-        $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
-        $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
-        $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\'});');
+        $this->addScript($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->addCssFile($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
+        $this->addOnloadCommand('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\'});');
 
         // bind scanner to UPC field
-        $this->add_onload_command("enableLinea('#upc');\n");
+        $this->addOnloadCommand("enableLinea('#upc');\n");
 
         return $ret;
     }
@@ -393,9 +393,9 @@ HTML;
         }
         $ret .= '</tbody></table>';
 
-        $this->add_css_file($FANNIE_URL . 'src/javascript/tablesorter/themes/blue/style.css');
-        $this->add_script($FANNIE_URL . 'src/javascript/tablesorter/jquery.tablesorter.min.js');
-        $this->add_onload_command('$(\'#itemSearchResults\').tablesorter();');
+        $this->addCssFile($FANNIE_URL . 'src/javascript/tablesorter/themes/blue/style.css');
+        $this->addScript($FANNIE_URL . 'src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addOnloadCommand('$(\'#itemSearchResults\').tablesorter();');
 
         return $ret;
     }
@@ -462,8 +462,8 @@ HTML;
         }
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <a class="btn btn-default btn-sm" href="' . $self . '">Back</a>';
-        $this->add_script($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
-        $this->add_css_file($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
+        $this->addScript($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->addCssFile($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
         if (!$isNew) {
             $ret .= <<<HTML
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -506,9 +506,9 @@ HTML;
         $FANNIE_URL = $this->config->get('URL');
         $shown = array();
 
-        $this->add_script('autocomplete.js');
-        $this->add_script($FANNIE_URL . 'src/javascript/chosen/chosen.jquery.min.js');
-        $this->add_css_file($FANNIE_URL . 'src/javascript/chosen/bootstrap-chosen.css');
+        $this->addScript('autocomplete.js');
+        $this->addScript($FANNIE_URL . 'src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile($FANNIE_URL . 'src/javascript/chosen/bootstrap-chosen.css');
         $wsUrl = $FANNIE_URL . 'ws/';
 
         $authorized = $this->userCanEdit($upc, $isNew);

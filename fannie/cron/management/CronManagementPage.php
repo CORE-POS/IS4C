@@ -245,9 +245,9 @@ class CronManagementPage extends FanniePage
                     class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
-        $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
-        $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
-        $this->add_onload_command('$(\'.fancybox-link\').fancybox();');
+        $this->addScript($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->addCssFile($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
+        $this->addOnloadCommand('$(\'.fancybox-link\').fancybox();');
 
         return $ret;
     }

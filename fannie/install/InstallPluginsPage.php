@@ -52,13 +52,13 @@ class InstallPluginsPage extends \COREPOS\Fannie\API\InstallPage {
 
         $SRC = '../src';
         // Link to a file of CSS by using a function.
-        $this->add_css_file("$SRC/css/toggle-switch.css");
+        $this->addCssFile("$SRC/css/toggle-switch.css");
     // __construct()
     }
 
     // If chunks of CSS are going to be added the function has to be
     //  redefined to return them.
-    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    // If this is to override x.css draw_page() needs to load it after the addCssFile
     /**
       Define any CSS needed
       @return a CSS string

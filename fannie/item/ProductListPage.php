@@ -461,8 +461,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($ret);
             $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToCsv($array);
         } else {
-            $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
-            $this->add_onload_command("\$('.tablesorter').tablesorter();\n");
+            $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+            $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
         }
 
         return $ret;

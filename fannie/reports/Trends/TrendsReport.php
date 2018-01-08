@@ -44,9 +44,9 @@ class TrendsReport extends FannieReportPage
         }
 
         $url = $this->config->get('URL');
-        $this->add_script($url . 'src/javascript/jquery.js');
-        $this->add_script($url . 'src/javascript/jquery-ui.js');
-        $this->add_css_file($url . 'src/javascript/jquery-ui.css');
+        $this->addScript($url . 'src/javascript/jquery.js');
+        $this->addScript($url . 'src/javascript/jquery-ui.js');
+        $this->addCssFile($url . 'src/javascript/jquery-ui.css');
 
         $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
         foreach ($_GET as $key => $value) {
@@ -238,10 +238,10 @@ class TrendsReport extends FannieReportPage
 </p>
 </form>
         <?php
-        $this->add_script($this->config->URL . 'item/autocomplete.js');
+        $this->addScript($this->config->URL . 'item/autocomplete.js');
         $ws = $this->config->URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
-        $this->add_onload_command("bindAutoComplete('#upc-field', '$ws', 'item');\n");
+        $this->addOnloadCommand("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
+        $this->addOnloadCommand("bindAutoComplete('#upc-field', '$ws', 'item');\n");
 
         return ob_get_clean();
     }
