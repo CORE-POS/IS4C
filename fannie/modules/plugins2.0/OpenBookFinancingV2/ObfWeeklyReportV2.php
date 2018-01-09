@@ -50,7 +50,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected function getOuStart($weekID)
     {
-        if ($weekID >= 175) { // Week of Oct 2, 2017
+        if ($weekID >= 188) {
+            return 188;
+        } elseif ($weekID >= 175) { // Week of Oct 2, 2017
             return 175;
         }
 
@@ -167,6 +169,33 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         '9,17' => 8725.41,
     );
 
+    protected $PLAN_SALES_Q3_2018 = array(
+        '1,6' => 51510.00,      // Hillside Produce
+        '2,10' => 11676.94,     // Hillside Deli
+        '2,11' => 31742.34,
+        '2,16' => 12940.72,
+        '3,1' => 25497.83,      // Hillside Grocery
+        '3,4' => 62041.83,
+        '3,5' => 23487.33,
+        '3,7' => 196.81,
+        '3,8' => 17353.57,
+        '3,9' => 2708.96,
+        '3,13' => 14914.74,
+        '3,17' => 26179.90,
+        '7,6' => 20085.00,      // Denfeld Produce
+        '8,10' => 4514.67,      // Denfeld Deli
+        '8,11' => 13615.10,
+        '8,16' => 5317.08,
+        '9,1' => 8949.35,       // Denfeld Grocery
+        '9,4' => 26900.87,
+        '9,5' => 9338.17,
+        '9,7' => 89.81,
+        '9,8' => 6274.05,
+        '9,9' => 1098.86,
+        '9,13' => 5079.05,
+        '9,17' => 9218.78,
+    );
+
     public function preprocess()
     {
         $this->addScript('../../../src/javascript/Chart.min.js');
@@ -177,7 +206,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     private function getPlanSales($weekID)
     {
-        if ($weekID >= 175) {
+        if ($weekID >= 188) {
+            return $this->PLAN_SALES_Q3_2018;
+        } elseif ($weekID >= 175) {
             return $this->PLAN_SALES_Q2_2018;
         } elseif ($weekID >= 162) {
             return $this->PLAN_SALES_Q1_2018;
@@ -924,14 +955,16 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['lastYear'] += $row['lastYear'];
             $info['trans'] = $row['trans'];
             $info['lyTrans'] = $row['lyTrans'];
+            $catPlan = 0;
             foreach ($PLAN_SALES as $planID => $planVal) {
                 if (strpos($planID, $row['catID'] . ',') === 0) {
                     $info['plan'] += $planVal;
+                    $catPlan += $planVal;
                 }
             }
             $cat->obfCategoryID($row['catID']);
             $cat->load();
-            $plan[$row['catID']] = $this->projectHours($cat->salesPerLaborHourTarget(), $row['plan'], $row['plan']);
+            $plan[$row['catID']] = $this->projectHours($cat->salesPerLaborHourTarget(), $catPlan, $catPlan);
         }
 
         /**
