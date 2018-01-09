@@ -26,14 +26,60 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class LikeCodeAjax extends COREPOS\Fannie\API\FannieReadOnlyPage
+class LikeCodeAjax extends FannieRESTfulPage
 {
     public $discoverable = false;
+
+    public function preprocess()
+    {
+        $this->addRoute(
+            'post<id><strict>',
+            'post<id><organic>',
+            'post<id><multi>',
+            'post<id><vendorID>',
+            'post<id><storeID><inUse>',
+            'post<id><storeID><internal>'
+        );
+
+        return parent::preprocess();
+    }
 
     protected function get_id_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+
+        $likeCode = new LikeCodesModel($dbc);
+        $likeCode->likeCode($this->id);
+        $likeCode->load();
+
+        $vendors = new VendorsModel($dbc);
+        $vOpts = $vendors->toOptions($likeCode->preferredVendorID());
+
+        $activeP = $dbc->prepare('
+            SELECT s.storeID, s.description, l.*
+            FROM Stores AS s
+                LEFT JOIN LikeCodeActiveMap AS l ON s.storeID=l.storeID AND l.likeCode=?
+            WHERE s.hasOwnItems=1
+            ORDER BY s.storeID');
+        $activeR = $dbc->execute($activeP, array($this->id));
+        $table = '';
+        while ($activeW = $dbc->fetchRow($activeR)) {
+            $table .= sprintf('<tr><td>%s</td>
+                <td><input type="checkbox" onchange="lcEditor.toggleUsage(%d,%d);" %s /></td>
+                <td><input type="checkbox" onchange="lcEditor.toggleInternal(%d,%d);" %s /></td>
+                <td>%s</td></tr>',
+                $activeW['description'],
+                $this->id, $activeW['storeID'], $activeW['inUse'] ? 'checked' : '',
+                $this->id, $activeW['storeID'], $activeW['internalUse'] ? 'checked' : '',
+                $activeW['lastSold']
+            );
+        }
+        if ($table !== '') {
+            $table = '<table class="table small table-bordered table-striped">
+                <tr><th>Store</th><th>Active</th><th>Internal</th><th>Last Sold</th></tr>'
+                . $table . '</table>';
+        }
 
         $prep = $dbc->prepare("SELECT u.upc,p.description FROM
                 upcLike AS u 
@@ -46,8 +92,136 @@ class LikeCodeAjax extends COREPOS\Fannie\API\FannieReadOnlyPage
             $ret .= "<a style=\"font-size:90%;\" href=\"../ItemEditorPage.php?searchupc=$row[0]\">";
             $ret .= $row[0]."</a> ".substr($row[1],0,25)."<br />";
         }
-        echo $ret;
+        if ($ret === '') {
+            $ret = '<div class="alert alert-danger">Empty like code</div>';
+        }
 
+        $preamble = sprintf('<div class="panel panel-default">
+            <div class="panel panel-heading">' . $likeCode->likeCode() . ' ' . $likeCode->likeCodeDesc() . '</div>
+            <div class="panel panel-body">
+                <label><input type="checkbox" %s onchange="lcEditor.toggleStrict(%d);" /> Strict</label>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+                <label><input type="checkbox" %s onchange="lcEditor.toggleOrganic(%d);" /> Organic</label>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+                <label><input type="checkbox" %s onchange="lcEditor.toggleMulti(%d);" /> Multi-Vendor</label>
+                <p>
+                    <label>Preferred Vendor</label>
+                    <select onchange="lcEditor.updateVendor(%d, this.value);" class="form-control v-chosen">
+                        <option value="0">Select...</option>%s
+                    </select>
+                </p>
+                %s
+                <p>%s</p>
+            </div>
+            </div>',
+            $likeCode->strict() ? 'checked' : '',
+            $likeCode->likeCode(),
+            $likeCode->organic() ? 'checked' : '',
+            $likeCode->likeCode(),
+            $likeCode->multiVendor() ? 'checked' : '',
+            $likeCode->likeCode(),
+            $likeCode->likeCode(),
+            $vOpts,
+            $table,
+            $ret
+        );
+        echo $preamble;
+
+        return false;
+    }
+
+    protected function post_id_strict_handler()
+    {
+        return $this->toggleField($this->id, 'strict');
+    }
+
+    protected function post_id_organic_handler()
+    {
+        return $this->toggleField($this->id, 'organic');
+    }
+
+    protected function post_id_multi_handler()
+    {
+        return $this->toggleField($this->id, 'multiVendor');
+    }
+
+    protected function post_id_vendorID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new LikeCodesModel($dbc);
+        $model->likeCode($this->id);
+        if (!$model->load()) {
+            echo 'No such likecode';
+            return false;
+        }
+
+        $model->preferredVendorID($this->vendorID);
+        $model->save();
+
+        echo 'Done';
+        return false;
+    }
+
+    protected function post_id_storeID_inUse_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new LikeCodesModel($dbc);
+        $model->likeCode($this->id);
+        if (!$model->load()) {
+            echo 'No such likecode';
+            return false;
+        }
+
+        $active = new LikeCodeActiveMapModel($dbc);
+        $active->likeCode($this->id);
+        $active->storeID($this->storeID);
+        $active->load();
+        $active->inUse($active->inUse() ? 0 : 1);
+        $active->save();
+
+        echo 'Done';
+        return false;
+    }
+
+    protected function post_id_storeID_internal_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new LikeCodesModel($dbc);
+        $model->likeCode($this->id);
+        if (!$model->load()) {
+            echo 'No such likecode';
+            return false;
+        }
+
+        $active = new LikeCodeActiveMapModel($dbc);
+        $active->likeCode($this->id);
+        $active->storeID($this->storeID);
+        $active->load();
+        $active->internalUse($active->internalUse() ? 0 : 1);
+        $active->save();
+
+        echo 'Done';
+        return false;
+    }
+
+    private function toggleField($likeCode, $field)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new LikeCodesModel($dbc);
+        $model->likeCode($likeCode);
+        if (!$model->load()) {
+            echo 'No such likecode';
+            return false;
+        }
+
+        $model->$field($model->$field() ? 0 : 1);
+        $model->save();
+
+        echo 'Done';
         return false;
     }
 

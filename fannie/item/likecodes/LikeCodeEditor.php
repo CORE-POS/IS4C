@@ -99,6 +99,7 @@ class LikeCodeEditor extends FanniePage {
         ob_start();
         ?>
 function loadlc(id){
+    $('.progress').show();
     $.ajax({
         url: 'LikeCodeAjax.php',
         type: 'get',
@@ -106,8 +107,11 @@ function loadlc(id){
     }).fail(function(request,error){
         console.log(request);
         console.log(error);
+        $('.progress').hide();
     }).done(function(resp){
+        $('.progress').hide();
         $('#rightdiv').html(resp);
+        $('.v-chosen').chosen();
     });
 }
         <?php
@@ -156,8 +160,18 @@ function loadlc(id){
             </form>
         </div>
         <div id="rightdiv" class="col-sm-6">
+            <div class="progress collapse">
+                <div class="progress-bar progress-bar-striped active"  role="progressbar" 
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                    <span class="sr-only">Searching</span>
+                </div>
+            </div>
         </div>
         <?php
+
+        $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addScript('lcEditor.js');
 
         return ob_get_clean();
     }
@@ -174,7 +188,23 @@ function loadlc(id){
             to all items in the like code.</p>
             <p>This tool is just for creating, renaming, and deleting
             like codes. Use the item editor to assign a particular item
-            to a like code.</p>';
+            to a like code.</p>
+            <p>A <strong>Strict</strong> likecode enforces a greater
+            degree of consistency across items. In particular all items
+            in a strict likecode will have identical descriptions.</p>
+            <p>An <strong>Organic</strong> likecode is a flag used
+            to create appropriate signage.</p>
+            <p>A <strong>Multi-Vendor</strong> likecode is an item that
+            can be purchased from more than one vendor and is routinely
+            comparison shopped. The <strong>Preferred Vendor</strong>
+            is the source currently in use. Preferred vendor can be
+            assigned for single-source likecodes but assigning the vendor
+            directly to the item may work better.</p>
+            <p>For each store the <strong>Active</strong> flag indicates
+            whether the likecode is currently being sold to customers.
+            The <strong>Internal</strong> flag indicates the likecode is
+            purchased for internal use as well as (or instead of) for
+            retail sales.</p>';
     }
 
     public function unitTest($phpunit)
