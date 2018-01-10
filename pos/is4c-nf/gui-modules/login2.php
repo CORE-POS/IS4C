@@ -53,6 +53,7 @@ class login2 extends BasicCorePage
 
     public function preprocess()
     {
+        $start = microtime(true);
         $this->boxCSS = 'coloredArea';
         $this->msg = _('please enter your password');
         $this->body_class = '';
@@ -73,13 +74,14 @@ class login2 extends BasicCorePage
                     'upc' => 'SIGNIN',
                     'description' => 'Sign In Emp#' . $this->session->get('CashierNo'),
                 ));
+                $this->perfLog($start);
                 $this->kick($drawer);
 
+                $destination = $this->page_url."gui-modules/pos2.php";
                 if ($drawer->current() == 0) {
-                    $this->change_page($this->page_url."gui-modules/drawerPage.php");
-                } else {
-                    $this->change_page($this->page_url."gui-modules/pos2.php");
+                    $destination = $this->page_url."gui-modules/drawerPage.php";
                 }
+                $this->change_page($destination);
 
                 return false;
             }
@@ -88,6 +90,20 @@ class login2 extends BasicCorePage
         }
 
         return true;
+    }
+
+    private function perfLog($start)
+    {
+        $timer = sprintf('%.4f', microtime(true) - $start);
+        $perf = $this->session->get('perfLog');
+        if (!is_array($perf)) {
+            $perf = array();
+        }
+        if (count($perf) > 10) {
+            array_shift($perf);
+        }
+        array_push($perf, array('action'=>'login', 'time'=>$timer, 'input'=>''));
+        $this->session->set('perfLog', $perf);
     }
 
     public function head_content()
