@@ -204,22 +204,13 @@ class WfcVcTask extends FannieTask
             $dbc->execute($insP, array($row['CardNo']));
         }
 
-        $coupons = array(
-            '0049999900224' => array('2018-01-01', '2018-03-31'),
-        );
-        $today = new DateTime(date('Y-m-d'));
-        $currentUPC = false;
-        foreach ($coupons as $upc => $dates) {
-            $start = new DateTime($dates[0]);
-            $end = new DateTime($dates[1]);
-            if ($today >= $start && $today <= $end) {
-                $currentUPC = $upc;
-                break;
-            }
-        }
+        $curP = $dbc->prepare('SELECT * FROM WfcOamSchedule WHERE ? BETWEEN startDate AND endDate');
+        $curRow = $dbc->getRow($curP, array(date('Y-m-d')));
 
-        if ($currentUPC) {
-            $dbc->query("UPDATE CustomerNotifications SET message='OAM' WHERE source='WFC.OAM'");
+        if ($curRow) {
+            $currentUPC = $curRow['upc'];
+            $setP = $dbc->prepare("UPDATE CustomerNotifications SET message=? WHERE source='WFC.OAM'");
+            $dbc->execute($setP, array($curRow['msg']));
             // lookup OAM usage in the last month
             $usageP = $dbc->prepare("SELECT card_no 
                                     FROM is4c_trans.houseCouponThisMonth
@@ -237,6 +228,8 @@ class WfcVcTask extends FannieTask
                 SET n.message=''
                 WHERE n.source='WFC.OAM'
                     AND c.Type <> 'PC'");
+        } else {
+            $dbc->query("UPDATE CustomerNotifications SET message='' WHERE source='WFC.OAM'");
         }
 
         /** friend coupon
