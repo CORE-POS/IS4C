@@ -355,12 +355,27 @@ class OrderReviewPage extends FannieRESTfulPage
 
     public function get_orderID_view()
     {
-        $body = <<<HTML
+        $orderP = $this->connection->prepare('SELECT * FROM ' . FannieDB::fqn('SpecialOrders', 'trans') . ' WHERE specialOrderID=?');
+        $order = $this->connection->getRow($orderP, array($this->orderID));
+        $nodupe = '';
+        $checked = '';
+        if ($order['noDuplicate']) {
+            $nodupe = 'disabled title="This order cannot be duplicated"';
+            $checked = 'checked';
+        }
+        $noToggle = FannieAuth::validateUserQuiet('ordering_edit') ? '' : 'disabled';
+        return <<<HTML
 <p>
-    <button type="button" class="btn btn-default"
-        onclick="copyOrder({{orderID}}); return false;">
+    <button type="button" class="btn btn-default btn-dupe" {$nodupe}
+        onclick="copyOrder({$this->orderID}); return false;">
     Duplicate Order
     </button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <label>
+        <input type="checkbox" id="dupeCB" {$checked} {$noToggle} 
+            onchange="toggleDisable({$this->orderID});" />
+        Disable duplication for this order
+    </label>
 </p>
 <div class="panel panel-default">
     <div class="panel-heading">Customer Information</div>
@@ -375,7 +390,6 @@ class OrderReviewPage extends FannieRESTfulPage
     <div class="panel-body" id="historyDiv"></div>
 </div>
 HTML;
-        return str_replace('{{orderID}}', $this->orderID, $body);
     }
 
     public function javascriptContent()
@@ -394,6 +408,23 @@ function copyOrder(oid){
             location='OrderViewPage.php?orderID='+resp;
         });
     }
+}
+function toggleDisable(oid) {
+    var nodupe = 0;
+    if ($('#dupeCB').prop('checked')) {
+        nodupe = 1;
+    }
+    $.ajax({
+        url: 'OrderAjax.php',
+        data: 'id='+oid+'&nodupe='+nodupe,
+        method: 'post',
+    }).done(function (resp) {
+        if (nodupe) {
+            $('.btn-dupe').prop('disabled', true);
+        } else {
+            $('.btn-dupe').prop('disabled', false);
+        }
+    });
 }
 $(document).ready(function(){
     $.ajax({

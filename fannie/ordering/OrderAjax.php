@@ -45,7 +45,8 @@ class OrderAjax extends FannieRESTfulPage
             'post<id><confirm>',
             'post<id><store>',
             'post<id><close>',
-            'post<id><testNotify>'
+            'post<id><testNotify>',
+            'post<id><nodupe>'
         );
 
         return parent::preprocess();
@@ -175,6 +176,16 @@ class OrderAjax extends FannieRESTfulPage
         $json['sentEmail'] = $email->orderTestEmail($this->id);
 
         echo json_encode($json);
+
+        return false;
+    }
+
+    protected function post_id_nodupe_handler()
+    {
+        $dbc = $this->tdb();
+        $prep = $dbc->prepare('UPDATE SpecialOrders SET noDuplicate=? WHERE specialOrderID=?');
+        $res = $dbc->execute($prep, array($this->nodupe ? 1 : 0, $this->id));
+        echo 'Done';
 
         return false;
     }
