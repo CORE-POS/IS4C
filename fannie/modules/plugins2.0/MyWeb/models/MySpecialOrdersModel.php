@@ -72,6 +72,7 @@ class MySpecialOrdersModel extends BasicModel
                 LEFT JOIN {$opdb}productUser AS u ON o.upc=u.upc
             WHERE o.datetime > ?
                 AND s.statusFlag IN (5, 7)
+                AND s.noDuplicate=0
                 AND o.trans_id > 0
                 AND c.personNum=1
                 AND c.type='PC'";
