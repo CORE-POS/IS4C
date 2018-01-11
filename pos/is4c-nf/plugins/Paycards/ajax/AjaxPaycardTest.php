@@ -119,5 +119,5 @@ class AjaxPaycardTest extends AjaxCallback
     }
 }
 
-AjaxPaycardText::run();
+AjaxPaycardTest::run();
 
