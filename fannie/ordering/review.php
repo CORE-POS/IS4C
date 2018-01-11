@@ -49,9 +49,21 @@ if ($orderID === ''){
     include(__DIR__ . '/../src/footer.html');
     return;
 }
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
+$orderP = $dbc->prepare('SELECT * FROM ' . FannieDB::fqn('SpecialOrders', 'trans') . ' WHERE specialOrderID=?');
+$order = $dbc->getRow($orderP, array($orderID));
+$nodupe = '';
+$checked = '';
+if ($order['noDuplicate']) {
+    $nodupe = 'disabled title="This order cannot be duplicated"';
+    $checked = 'checked';
+}
 ?>
-<input type="submit" value="Duplicate Order" 
+    <input type="submit" value="Duplicate Order" <?php echo $nodupe; ?>
     onclick="copyOrder(<?php echo $orderID; ?>); return false;" />
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="checkbox" disabled <?php echo $checked; ?> />
+    Duplication disabled for this order
 <fieldset>
 <legend>Customer Information</legend>
 <div id="customerDiv"></div>
