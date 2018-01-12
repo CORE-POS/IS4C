@@ -75,6 +75,17 @@ class FannieUploadPage extends \FanniePage
     protected $error_details = 'n/a';
 
     /**
+        Some files contain a number of introductory lines
+        at the begging of the file before the actual data beings.
+        Showing them in the column preview isn't helpful and in
+        some cases may interfere with detecting the number of
+        data columns. This skipping only applies to the preview
+        screen. The lines are still present when the whole
+        file is processed.
+     */
+    protected $skip_first = 0;
+
+    /**
       Split uploaded file into multiple smaller files
       process_file() will be called separately for
       each smaller file. split_start() and split_end()
@@ -577,9 +588,12 @@ class FannieUploadPage extends \FanniePage
         $fp = fopen($this->upload_file_name,'r');
         $width = 0;
         $table = "";
-        $linedata = $this->fileToArray(5);
+        $linedata = $this->fileToArray(5 + $this->skip_first);
+        $row = -1;
         foreach ($linedata as $data) {
             $j=0;
+            $row++;
+            if ($row < $this->skip_first) continue;
             foreach($data as $d) {
                 $table .='<td>'.$d.'</td>';
                 $j++;
