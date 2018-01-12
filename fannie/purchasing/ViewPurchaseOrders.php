@@ -883,6 +883,13 @@ HTML;
         }
     }
 
+    protected function get_id_receive_handler()
+    {
+        $this->enable_linea = true;
+
+        return true;
+    }
+
     /**
       Receiving interface for processing enter recieved costs and quantities
       on an order
@@ -904,6 +911,7 @@ HTML;
             </div></p>
             <div id="item-area">
             </div>';
+        $this->addOnloadCommand("enableLinea('#sku-in', receiveSKU);");
         $this->addOnloadCommand("\$('#sku-in').focus();\n");
 
         return $ret;
