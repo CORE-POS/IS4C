@@ -43,6 +43,8 @@ class MySpecialOrdersModel extends BasicModel
     'caseSize' => array('type'=>'SMALLINT'),
     'numCases' => array('type'=>'SMALLINT'),
     'status' => array('type'=>'VARCHAR(255)'),
+    'originalOrderID' => array('type'=>'INT'),
+    'originalTransID' => array('type'=>'INT'),
     );
 
     public function etl($config)
@@ -64,7 +66,9 @@ class MySpecialOrdersModel extends BasicModel
                 " . ItemText::longBrandSQL() . ",
                 o.upc,
                 s.statusFlag,
-                o.card_no
+                o.card_no,
+                o.order_id,
+                o.trans_id
             FROM {$transdb}CompleteSpecialOrder AS o
                 INNER JOIN {$transdb}SpecialOrders AS s ON o.order_id=s.specialOrderID
                 LEFT JOIN {$opdb}custdata AS c ON o.card_no=c.CardNo
@@ -93,6 +97,8 @@ class MySpecialOrdersModel extends BasicModel
             $this->price($row['total']);
             $this->caseSize($row['quantity']);
             $this->numCases($row['ItemQtty']);
+            $this->originalOrderID($row['order_id']);
+            $this->originalTransID($row['trans_id']);
             switch ($row['statusFlag']) {
                 case 5:
                 case 7:
@@ -116,7 +122,9 @@ class MySpecialOrdersModel extends BasicModel
                 " . ItemText::longBrandSQL() . ",
                 o.upc,
                 s.statusFlag,
-                o.card_no
+                o.card_no,
+                o.order_id,
+                o.trans_id
             FROM {$transdb}PendingSpecialOrder AS o
                 INNER JOIN {$transdb}SpecialOrders AS s ON o.order_id=s.specialOrderID
                 LEFT JOIN {$opdb}custdata AS c ON o.card_no=c.CardNo
@@ -142,6 +150,8 @@ class MySpecialOrdersModel extends BasicModel
             $this->price($row['total']);
             $this->caseSize($row['quantity']);
             $this->numCases($row['ItemQtty']);
+            $this->originalOrderID($row['order_id']);
+            $this->originalTransID($row['trans_id']);
             switch ($row['statusFlag']) {
                 case 0:
                 case 1:
