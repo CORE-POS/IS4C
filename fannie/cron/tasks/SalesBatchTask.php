@@ -171,7 +171,7 @@ class SalesBatchTask extends FannieTask
                 $sale_upcs = $this->addSaleUPC($sale_upcs, $upc, $product->store_id());
 
                 // for qtyEnforcedGroupPM the salePrice is the whole group price
-                if ($specialpricemethod == 2) {
+                if ($specialpricemethod == 2 && $special_price == $specialgroupprice) {
                     $special_price = $product->normal_price();
                 }
 
