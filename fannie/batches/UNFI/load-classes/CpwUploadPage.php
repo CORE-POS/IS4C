@@ -82,6 +82,9 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             return false;
         }
 
+        $resetP = $dbc->prepare('UPDATE vendorItems SET vendorDept=0 WHERE vendorID=? AND vendorDept < 5');
+        $dbc->execute($resetP, array($VENDOR_ID));
+
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
@@ -101,7 +104,7 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 VALUES 
                 (
                  '',    ?,   ?,    ?,   ?,     ?,    ?,
-                 0,          ?,        0,        ?,        0)
+                 999999,          ?,        0,        ?,        0)
         ");
         $updated_upcs = array();
         $prodP = $dbc->prepare('UPDATE products SET modified=?, cost=? WHERE upc=?');
@@ -112,8 +115,9 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 sku=?,
                 cost=?,
                 units=?,
-                size=?
-                modified=?
+                size=?,
+                modified=?,
+                vendorDept=999999
             WHERE upc=?
                 AND vendorID=?");
 

@@ -95,6 +95,8 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
 
         $dbc->startTransaction();
+        $resetP = $dbc->prepare('UPDATE vendorItems SET vendorDept=1 WHERE vendorID=?');
+        $dbc->execute($resetP, array($VENDOR_ID));
         $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products
@@ -109,7 +111,7 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 vendorID, saleCost, modified, srp
             ) VALUES (
                 '', ?, ?, ?,
-                ?, ?, ?, 0,
+                ?, ?, ?, 999999,
                 ?, 0, ?, 0
             )");
         $delP = $dbc->prepare('DELETE FROM vendorItems WHERE sku=? AND vendorID=?');
