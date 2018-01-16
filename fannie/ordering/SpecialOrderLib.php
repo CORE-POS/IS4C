@@ -96,7 +96,7 @@ class SpecialOrderLib
 
     private function createContactRow($orderID)
     {
-        $dbc = $this->connection;
+        $dbc = $this->dbc;
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
