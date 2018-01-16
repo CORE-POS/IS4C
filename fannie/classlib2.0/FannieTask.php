@@ -224,6 +224,33 @@ class FannieTask
 
         return $parts[1];
     }
+
+    protected function getLockFile()
+    {
+        $dir = sys_get_temp_dir();
+        $class = str_replace('\\', '_', get_class($this));
+
+        return $dir . DIRECTORY_SEPARATOR . $class . '.lock';
+    }
+
+    protected function isLocked()
+    {
+        return file_exists($this->getLockFile());
+    }
+
+    protected function lock()
+    {
+        $file = $this->getLockFile();
+        $lock = fopen($file, 'w');
+        fwrite($lock, date('Y-m-d H:i:s'));
+        fclose($lock);
+        chmod($file, 0666);
+    }
+
+    protected function unlock()
+    {
+        unlink($this->getLockFile());
+    }
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
