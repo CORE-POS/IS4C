@@ -89,16 +89,18 @@ class MyWebSpoImport extends FannieTask
                         o.phone=?,
                         o.email=?,
                         o.notes=?,
-                        o.statusFlag,
-                        o.subStatus
+                        o.storeID=?,
+                        o.statusFlag=?,
+                        o.subStatus=?
                     WHERE p.order_id=?');
         $setR = $dbc->execute($setP, array(
             $queue['phone'],
             $queue['email'],
             $queue['notes'],
+            $queue['storeID'],
             $queue['confirm'] ? 3 : 1,
             time(),
-            $orderID
+            $orderID,
         ));
     }
 
