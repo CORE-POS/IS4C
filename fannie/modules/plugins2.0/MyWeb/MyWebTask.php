@@ -27,6 +27,11 @@ if (!class_exists('FannieAPI')) {
 }
 
 /**
+ * @class MyWebTask
+ *
+ * Gather local data that will be uploaded to & displayed on
+ * the personalized web site. Actual work is deferred to the
+ * underlying models.
 */
 class MyWebTask extends FannieTask 
 {

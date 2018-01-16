@@ -11,14 +11,32 @@ if (!class_exists('OrderItemLib')) {
     include_once(__DIR__ . '/../../../ordering/OrderItemLib.php');
 }
 
+/**
+ * @class MyWebSpoImport
+ *
+ * Cron task to query the website and import new, pending re-orders.
+ * This is normally triggered via MySpoMailPipe but should still run
+ * periodically in case some step in the email delivery chain hiccups.
+ *
+ * Concurrent runs are prevented via simple file lock. If orders stop
+ * importing check for a /tmp/MyWebSpoImport.lock file.
+ *
+ * This is intended to be functionally identical to duplicating an order
+ * although the end-user could select line items from several different
+ * orders.
+ */
 class MyWebSpoImport extends FannieTask 
 {
     public $name = 'My Web SPO Import Task';
-
     public $description = 'Imports special order data from online orders';
 
     public function run()
     {
+        if ($this->isLocked()) {
+            return true;
+        }
+        $this->lock();
+
         $local = FannieDB::get($this->config->get('OP_DB'));
         require(__DIR__ . '/../../../src/Credentials/OutsideDB.tunneled.php');
         $tagP = $dbc->prepare('UPDATE ReorderQueue SET processed=? WHERE reorderQueueID=?');
@@ -40,6 +58,7 @@ class MyWebSpoImport extends FannieTask
 
             $dbc->execute($tagP, array(1, $row['reorderQueueID']));
         }
+        $this->unlock();
     }
 
     private function setMember($dbc, $orderID, $queue)
@@ -63,15 +82,24 @@ class MyWebSpoImport extends FannieTask
 
         $setP = $dbc->prepare('UPDATE ' . FannieDB::fqn('PendingSpecialOrder', 'trans') . ' AS p
                         INNER JOIN ' . FannieDB::fqn('meminfo', 'op') . ' AS m ON p.card_no=m.card_no
-                        INNER JOIN ' . FannieDB::fqn('SpecialOrders', 'trans') . ' AS 0 ON p.order_id=o.specialOrderID
-                    SET o.street=m.stret,
+                        INNER JOIN ' . FannieDB::fqn('SpecialOrders', 'trans') . ' AS o ON p.order_id=o.specialOrderID
+                    SET o.street=m.street,
                         o.city=m.city,
                         o.zip=m.zip,
                         o.phone=?,
                         o.email=?,
-                        o.notes=?
+                        o.notes=?,
+                        o.statusFlag,
+                        o.subStatus
                     WHERE p.order_id=?');
-        $setR = $dbc->execute($setP, array($queue['phone'], $queue['email'], $queue['notes'], $orderID));
+        $setR = $dbc->execute($setP, array(
+            $queue['phone'],
+            $queue['email'],
+            $queue['notes'],
+            $queue['confirm'] ? 3 : 1,
+            time(),
+            $orderID
+        ));
     }
 
     private function addItems($dbc, $orderID, $items, $cardNo)
