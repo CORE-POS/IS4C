@@ -450,7 +450,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                         LEFT JOIN $summary AS q ON p.upc=q.upc AND p.store_id=q.storeID
                     WHERE department IN ({$in_sql})
                         AND cost <> 0
-                        AND p.store_id=?
+                        AND " . DTrans::isStoreID($store, 'p') . "
                     GROUP BY department, dept_name";
         $marginP = $dbc->prepare($marginQ);
         $marginR = $dbc->execute($marginP, $args);
@@ -506,7 +506,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                       LEFT JOIN ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'productSummaryLastQuarter AS q
                         ON p.upc=q.upc AND p.store_id=q.storeID
                   WHERE p.upc IN (' . $in_sql . ')
-                    AND p.store_id=?
+                    AND ' . DTrans::isStoreID($store, 'p') . '
                   ORDER BY p.upc';
         $args[] = $store;
         $prep = $dbc->prepare($query);
