@@ -19,12 +19,23 @@ class WfcHtEvalList extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB('HoursTracking');
 
-        $idP = $dbc->prepare("SELECT MAX(empID) FROM employees WHERE empID > 10000");
-        $newID = $dbc->getValue($idP);
-        $newID = $newID ? 10000 : $newID+1;
+        $idP = $dbc->prepare("SELECT MAX(empID) FROM employees WHERE empID");
+        $newID = $dbc->getValue($idP) + 1;
 
         $newP = $dbc->prepare('INSERT INTO employees (empID, name, deleted) VALUES (?, ?, ?)');
         $dbc->execute($newP, array($newID, '0 NEW EMPLOYEE', 1));
+
+        return 'WfcHtEvalList.php';
+    }
+
+    protected function delete_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc = $this->connection;
+        $dbc->selectDB('HoursTracking');
+        $emp = FormLib::get('emp');
+        $delP = $dbc->prepare('UPDATE employees SET deleted=1 WHERE empID=?');
+        $dbc->execute($delP, array($emp));
 
         return 'WfcHtEvalList.php';
     }
@@ -92,6 +103,7 @@ class WfcHtEvalList extends FannieRESTfulPage
             <th><a href="?o=adpID">ADP ID</a></th>
             <th><a href="?o=hireDate">Hire Date</a></th>
             <th colspan="2"><a href="?o=nextEval">Next Eval</a></th>
+            <th>&nbsp;</th>
         </tr>';
         while($w = $dbc->fetch_row($r)){
             $next = "&nbsp;";
@@ -100,10 +112,11 @@ class WfcHtEvalList extends FannieRESTfulPage
                 $next = $tmp[1]."/".$tmp[0];
             }
             printf("<tr><td><a href=WfcHtEvalView.php?id=%d>%s</a></td>
-                <td>%d</td><td>%s</td><td>%s</td><td>%s</td></tr>",
+                <td>%d</td><td>%s</td><td>%s</td><td>%s</td>
+                <td><a href=\"?_method=delete&emp=%d\">Delete</a></td></tr>",
                 $w[0],$w[1],$w[2],
                 (!empty($w[4])?$w[4]:'&nbsp;'),$next,
-                (!empty($w[5])?$w[5]:'&nbsp;'));
+                (!empty($w[5])?$w[5]:'&nbsp;'), $w[0]);
         }
         echo "</table>";
     }

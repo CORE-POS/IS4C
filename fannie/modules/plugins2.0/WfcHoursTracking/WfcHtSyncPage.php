@@ -54,8 +54,11 @@ class WfcHtSyncPage extends FanniePage
         }
         $new_accounts = array();
         $dbc = WfcHtLib::hours_dbconnect();
-        $chkQ = $dbc->prepare("SELECT empID, name FROM employees WHERE empID=?");
+        $chkQ = $dbc->prepare("SELECT name FROM employees WHERE name=? AND deleted=0");
         $insQ = $dbc->prepare("INSERT INTO employees VALUES (?,?,NULL,0,8,NULL,0)");
+        $nextP = $dbc->prepare('SELECT MAX(empID) FROM employees');
+        $next = $dbc->getValue($nextP) + 1;
+        echo $next;
         foreach ($accounts as $uid => $names) {
             $shortname = $names[0];
             if (isset($EXCLUDE_EMAILS[$shortname])) {
@@ -66,18 +69,12 @@ class WfcHtSyncPage extends FanniePage
             $name = $last . ', ' . $first;
 
             // create entry in hours database
-            $chkR = $dbc->execute($chkQ, array($uid));
-            if ($dbc->num_rows($chkR) == 0) {
+            $chkR = $dbc->execute($chkQ, array($name));
+            if ($dbc->numRows($chkR) == 0) {
                 $new_accounts[$uid] = $shortname;
-                $dbc->execute($insQ, array($uid, $name));
-                echo "Added ADP entry for $name<br />";
-            } else {
-                $row = $dbc->fetch_row($chkR);
-                if ($name != $row['name']) {
-                    echo '<span class="glpyhicon glyphicon-exclamation-sign"></span>';
-                }
-                echo "$name ($uid) exists as ";
-                echo $row['name'] . '<br />';
+                $dbc->execute($insQ, array($next, $name));
+                echo "Add ADP entry for $name<br />";
+                $next++;
             }
         }
 
@@ -101,6 +98,9 @@ class WfcHtSyncPage extends FanniePage
             'relfvin'=>True,
             'jkresha'=>True,
             'wpulford'=>true,
+            'receivingl'=>true,
+            'receivingr'=>true,
+            'denfeldcsc'=>true,
         );
         $new_accounts = $this->checkLocalAccounts($EXCLUDE_EMAILS);
 
