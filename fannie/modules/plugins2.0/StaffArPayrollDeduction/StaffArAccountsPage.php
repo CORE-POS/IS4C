@@ -51,18 +51,19 @@ class StaffArAccountsPage extends FannieRESTfulPage
 
     public function get_excel_handler()
     {
-        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc = FannieDB::get($settings['StaffArPayrollDB']);
 
         header('Content-Type: application/ms-excel');
         header('Content-Disposition: attachment; filename="epiU8U16.csv"');
         $res = $dbc->query("
-            SELECT s.adpID,
-                a.lastName,
-                a.firstName,
-                a.adjust
-            FROM staffAR AS a
-                LEFT JOIN staffID AS s ON a.cardNo=s.cardno
-            ORDER BY a.lastName");
+            SELECT s.payrollIdentifier AS adpID,
+                c.lastName,
+                c.firstName,
+                s.nextPayment AS adjust
+            FROM StaffArAccounts AS s
+                LEFT JOIN " . FannieDB::fqn('custdata', 'op') . " AS c ON s.card_no=c.CardNo AND c.personNum=1
+            ORDER BY c.lastName");
         echo "Co Code,Batch ID,File #,adjust ded code ,adjust ded amount\r\n";
         while ($row = $dbc->fetchRow($res)) {
             printf('"%s","%s","%s","%s",%.2f' . "\r\n",
@@ -148,15 +149,16 @@ class StaffArAccountsPage extends FannieRESTfulPage
         $ids = json_decode($this->saveIds);
         $amounts = json_decode($this->saveAmounts);
 
-        $model = new StaffArAccountsModel($dbc);
+        $upP = $dbc->prepare('UPDATE StaffArAccounts SET nextPayment=? WHERE card_no=?');
+
+        $dbc->startTransaction();
         for($i=0; $i<count($ids); $i++) {
             if (!is_numeric($ids[$i]) || !isset($amounts[$i])) {
                 continue;
             }
-            $model->card_no($ids[$i]);
-            $model->nextPayment($amounts[$i]);
-            $model->save();
+            $upR = $dbc->execute($upP, array($amounts[$i], $ids[$i]));
         }
+        $dbc->commitTransaction();
 
         return false;
     }
@@ -221,13 +223,16 @@ class StaffArAccountsPage extends FannieRESTfulPage
         $ret .= '&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="submit" onclick="saveForm(); return false;" class="btn btn-default">
             Save New as Next Deduction</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $ret .= '<a href="?excel=1" class="btn btn-default">Download to Excel</a>';
         $ret .= '</p>';
         $ret .= '<table class="table">';
         $ret .= '<tr><th>Mem#</th><th>PayrollID</th><th>Name</th><th>Current</th>
                 <th>Next Deduction</th><th>New Deduction</th><th>&nbsp;</td></tr>';
+        $ttl = 0;
         foreach($info as $card_no => $data) {
             $ret .= sprintf('<tr class="accountrow" id="row%d">
-                            <td class="cardnotext"><a href="" onclick="jumpToChange(%d); return false;">%d</td>
+                            <td><a class="cardnotext" href="" onclick="jumpToChange(%d); return false;">%d</td>
                             <td class="payidtext">%s</td>
                             <td class="nametext">%s</td>
                             <td class="currentbalance">%.2f</td>
@@ -247,7 +252,9 @@ class StaffArAccountsPage extends FannieRESTfulPage
                             $data['amount'],
                             $card_no
             );
+            $ttl += $data['amount'];
         }
+        $ret .= '<tr><th colspan="5">Total</th><th>$' . number_format($ttl, 2) . '</th></tr>';
         $ret .= '</table>';
         $ret .= '<p>';
         $ret .= '<button type="button" onclick="useCurrent(); return false;" class="btn btn-default">
