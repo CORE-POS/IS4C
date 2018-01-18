@@ -55,10 +55,10 @@ class BasketLimitedReport extends FannieReportPage
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
         $setupQ = $dbc->prepare("INSERT INTO groupingTempBS
-            SELECT upc, quantity, total, trans_num
+            SELECT upc, SUM(quantity) AS qty, SUM(total) AS ttl, trans_num
             FROM $dlog AS d WHERE tdate BETWEEN ? AND ?
             AND trans_type IN ('I','D')
-            GROUP BY year(tdate),month(tdate),day(tdate),trans_num 
+            GROUP BY year(tdate),month(tdate),day(tdate),trans_num,upc
             HAVING COUNT(*) <= ?");
         $dbc->execute($setupQ,array($date1.' 00:00:00',$date2.' 23:59:59',$qty));
 
