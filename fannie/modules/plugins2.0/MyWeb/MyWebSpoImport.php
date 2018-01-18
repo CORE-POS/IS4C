@@ -98,10 +98,27 @@ class MyWebSpoImport extends FannieTask
             $queue['email'],
             $queue['notes'],
             $queue['storeID'],
-            $queue['confirm'] ? 3 : 1,
+            $queue['confirm'] ? 3 : 0,
             time(),
             $orderID,
         ));
+
+        $contactQ = "
+            SELECT sendEmails
+            FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . " AS p
+                INNER JOIN " . FannieDB('SpecialOrders', 'trans') . " AS s ON p.order_id=s.specialOrderID
+            WHERE p.card_no=?
+                AND p.order_id <> ?
+            ORDER BY p.order_id DESC";
+        $contact = $dbc->getValue($dbc->prepare($contactQ), array($cardNo, $orderID));
+        if ($contact === false) {
+            $contactQ = str_replace('PendingSpecialOrder', 'CompleteSpecialOrder', $contactQ);
+            $contact = $dbc->getValue($dbc->prepare($contactQ), array($cardNo, $orderID));
+        }
+        if ($contact !== false) {
+            $upP = $dbc->prepare('UPDATE ' . FannieDB::fqn('SpecialOrders', 'trans') . '  SET sendEmails=? WHERE specialOrderID=?');
+            $dbc->execute($upP, array($contact, $orderID));
+        }
     }
 
     private function addItems($dbc, $orderID, $items, $cardNo)
