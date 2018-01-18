@@ -373,6 +373,7 @@ class DTrans
                 }
             }
         }
+	var_dump('MEMTYPE IS:' . $model->memType());
 
         $defaults = self::defaults();
         $skip = array('datetime', 'emp_no', 'register_no', 'trans_no', 'trans_id');
@@ -387,6 +388,7 @@ class DTrans
             }
         }
         $model->datetime(date('Y-m-d H:i:s'));
+	var_dump('MEMTYPE IS:' . $model->memType());
 
         if ($model->save()) {
             return true;
