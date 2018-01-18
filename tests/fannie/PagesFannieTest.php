@@ -11,8 +11,11 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');
-        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
+        $dbc = FannieDB::forceReconnect($op_db);
         $dbc->throwOnFailure(true);
+        if (strstr($config->get('SERVER_DBMS'), 'mysql')) {
+            $dbc->query("SET SESSION sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+        }
 
         foreach ($reports as $report_class) {
             $obj = new $report_class();
@@ -56,6 +59,9 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $op_db = $config->get('OP_DB');
         $dbc = FannieDB::get($op_db);
         $dbc->throwOnFailure(true);
+        if (strstr($config->get('SERVER_DBMS'), 'mysql')) {
+            $dbc->query("SET SESSION sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+        }
 
         $speed = array();
         foreach ($pages as $page_class) {

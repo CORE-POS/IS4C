@@ -108,6 +108,9 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $dbc->throwOnFailure(true);
+        if (strstr(FannieConfig::config('SERVER_DBMS'), 'mysql')) {
+            $dbc->query("SET SESSION sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+        }
 
         $signs = new \COREPOS\Fannie\API\item\FannieSignage(array(), 'shelftags', 1);
         $signs->setDB($dbc);
