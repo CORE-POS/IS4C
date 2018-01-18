@@ -360,6 +360,8 @@ class DTrans
             $model->trans_id($last->trans_id() + 1);
         }
 
+        $model->memType(0);
+        $model->staff(0);
         if (isset($params['card_no'])) {
             $account = \COREPOS\Fannie\API\member\MemberREST::get($params['card_no']);
             if ($account) {
