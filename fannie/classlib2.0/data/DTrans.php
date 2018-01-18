@@ -365,8 +365,12 @@ class DTrans
         if (isset($params['card_no'])) {
             $account = \COREPOS\Fannie\API\member\MemberREST::get($params['card_no']);
             if ($account) {
-                $model->memType($account['customerTypeID']);
-                $model->staff($account['customers'][0]['staff']);
+                if (is_numeric($account['customerTypeID'])) {
+                    $model->memType($account['customerTypeID']);
+                }
+                if (is_numeric($account['customers'][0]['staff'])) {
+                    $model->staff($account['customers'][0]['staff']);
+                }
             }
         }
 
