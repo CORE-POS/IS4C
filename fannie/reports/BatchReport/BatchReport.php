@@ -178,7 +178,7 @@ class BatchReport extends FannieReportPage
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
                 LEFT JOIN FloorSectionsListView as l on d.upc=l.upc AND l.storeID=d.store_id
-                LEFT JOIN vendorItems AS vi ON (p.upc = v.upc AND p.default_vendor_id = v.vendorID)
+                LEFT JOIN vendorItems AS v ON (p.upc = v.upc AND p.default_vendor_id = v.vendorID)
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
                 AND " . DTrans::isStoreID($store, 'd') . "
