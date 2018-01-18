@@ -170,21 +170,23 @@ class BatchReport extends FannieReportPage
                 p.brand,
                 p.description, 
                 p.default_vendor_id,
-                lv.sections AS location,
-                vi.sku,
+                MAX(l.sections) AS location,
+                MAX(v.sku) AS sku,
                 SUM(d.total) AS sales, "
                 . DTrans::sumQuantity('d') . " AS quantity, 
                 SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
-                LEFT JOIN FloorSectionsListView as lv on d.upc=lv.upc AND lv.storeID=d.store_id
-                LEFT JOIN vendorItems AS vi ON (p.upc = vi.upc AND p.default_vendor_id = vi.vendorID)
+                LEFT JOIN FloorSectionsListView as l on d.upc=l.upc AND l.storeID=d.store_id
+                LEFT JOIN vendorItems AS vi ON (p.upc = v.upc AND p.default_vendor_id = v.vendorID)
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
                 AND " . DTrans::isStoreID($store, 'd') . "
                 AND d.charflag <> 'SO'
             GROUP BY d.upc, 
-                p.description
+                p.brand,
+                p.description,
+                p.default_vendor_id
             ORDER BY d.upc";
         $salesBatchP = $dbc->prepare($salesBatchQ);
         $salesBatchR = $dbc->execute($salesBatchP, $reportArgs);
