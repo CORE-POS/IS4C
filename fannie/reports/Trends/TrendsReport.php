@@ -107,7 +107,7 @@ class TrendsReport extends FannieReportPage
             CASE WHEN p.description IS NULL THEN t.description ELSE p.description END AS description';
         $group_cols = '
             t.upc, 
-            p.brand, 
+            CASE WHEN p.brand IS NULL THEN \'\' ELSE p.brand END, 
             CASE WHEN p.description IS NULL THEN t.description ELSE p.description END';
         if (FormLib::get('lookup-type') == 'likecode') {
             $select_cols = '
@@ -140,7 +140,12 @@ class TrendsReport extends FannieReportPage
                 DAY(t.tdate)";
         $prep = $dbc->prepare($query);
         $from_where['args'][] = $store;
-        $result = $dbc->execute($prep,$from_where['args']);
+        try {
+            $result = $dbc->execute($prep,$from_where['args']);
+        } catch (Exception $ex) {
+            // MySQL 5.6 GROUP BY
+            return array();
+        }
     
         // variable columns. one per dates
         $dates = array();
