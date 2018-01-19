@@ -53,7 +53,7 @@ class LikeCodePricingReport extends FannieReportPage
             FROM upcLike AS u
                 INNER JOIN likeCodes AS l ON l.likeCode=u.likeCode
                 INNER JOIN products AS p ON p.upc=u.upc
-            GROUP BY u.likeCode
+            GROUP BY u.likeCode, l.likeCodeDesc
             ORDER BY u.likeCode");
         $data = array();
         while ($row = $dbc->fetchRow($res)) {

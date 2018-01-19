@@ -222,7 +222,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage
     private function getOrderID($vendorID, $userID)
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp(0);
         $cutoff = date('Y-m-d', strtotime('30 days ago'));
         $orderQ = 'SELECT orderID FROM PurchaseOrder WHERE
             vendorID=? AND userID=? AND storeID=? AND creationDate > ? and placed=0
