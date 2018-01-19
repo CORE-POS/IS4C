@@ -89,7 +89,7 @@ class LocalMovementReport extends FannieReportPage
         */
         $query = "SELECT
                     d.upc,
-                    COALESCE(p.brand, '') AS brand,
+                    MAX(COALESCE(p.brand, '')) AS brand,
                     d.description,
                     d.department,
                     e.dept_name,

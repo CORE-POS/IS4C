@@ -307,10 +307,10 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             MAX(creationDate) as date,
             sum(unitCost*caseSize*quantity) as estimatedCost
             FROM PurchaseOrder as p 
-            INNER JOIN vendors as v ON p.vendorID=v.vendorID
-            LEFT JOIN PurchaseOrderItems as i
-            ON p.orderID=i.orderID
-            WHERE p.orderID=?';
+                INNER JOIN vendors as v ON p.vendorID=v.vendorID
+                LEFT JOIN PurchaseOrderItems as i ON p.orderID=i.orderID
+            WHERE p.orderID=?
+            GROUP BY vendorName';
         $p = $dbc->prepare($q);
         $row = $dbc->getRow($p, array($orderID)); 
         $cost = sprintf('%.2f', $row['estimatedCost']);
