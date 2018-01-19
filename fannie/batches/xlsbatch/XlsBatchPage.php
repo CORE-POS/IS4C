@@ -71,6 +71,9 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         $dtQ = $dbc->prepare("SELECT discType FROM batchType WHERE batchTypeID=?");
         $discountType = $dbc->getValue($dtQ, array($btype));
+        if ($discountType === false || !is_numeric($discountType)) {
+            $discountType = 0;
+        }
 
         $insQ = $dbc->prepare("
             INSERT INTO batches 
