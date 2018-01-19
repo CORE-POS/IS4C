@@ -55,7 +55,6 @@ class TrackChange extends FannieReportPage
                 pu.tax,
                 pu.fs,
                 pu.scale,
-                pu.modified,
                 u.name, 
                 u.real_name,
                 u.uid,
@@ -63,11 +62,13 @@ class TrackChange extends FannieReportPage
             FROM prodUpdate as pu
             LEFT JOIN Users as u on u.uid=pu.user
             WHERE pu.upc='{$upc}'
-            GROUP BY pu.modified;";
+            ORDER BY pu.modified";
         $result = $dbc->query($query);
         $summary_desc = '';
         $desc = array();
+        $prev = false;
         while ($row = $dbc->fetch_row($result)) {
+            if ($prev == $row['modified']) continue;
             $desc[] = $row['description'];
             $salePrice[] = $row['salePrice'];
             $price[] = $row['price'];
@@ -83,6 +84,7 @@ class TrackChange extends FannieReportPage
             if ($summary_desc === '') {
                 $summary_desc = $row['description'];
             }
+            $prev = $row['modified'];
         }     
         echo "Changes made to " . $upc . " <B>" . $summary_desc . '</B><br />';
         
