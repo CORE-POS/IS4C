@@ -407,21 +407,23 @@ $('.btn-complete').click(function(){
 
 $('#owner').change(function(){
     var ownerid = $('#owner').val();
-    $.ajax ({
-        type: 'post',
-        data: 'ownerid='+ownerid+'&custdata=1',
-        dataType: 'json',
-        success: function(resp)
-        {
-            var card_no = resp['card_no'];
-            var data = ['first_name','last_name','street','city',
-                'state','zip','email_1','email_2','phone','address'];
-            $.each(data, function(k,v) {
-                var value = resp[v];
-                $('#'+v).val(value);
-            });
-        }
-    });
+    if (ownerid != 11) {
+        $.ajax ({
+            type: 'post',
+            data: 'ownerid='+ownerid+'&custdata=1',
+            dataType: 'json',
+            success: function(resp)
+            {
+                var card_no = resp['card_no'];
+                var data = ['first_name','last_name','street','city',
+                    'state','zip','email_1','email_2','phone','address'];
+                $.each(data, function(k,v) {
+                    var value = resp[v];
+                    $('#'+v).val(value);
+                });
+            }
+        });
+    }
 });
 
 $(document).ready(function() {

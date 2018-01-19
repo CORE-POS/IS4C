@@ -106,8 +106,8 @@ class NewItemsReport extends FannieReportPage
         }
         $query .= "WHERE $where
             GROUP BY a.upc,p.description,p.department, d.dept_name
-            HAVING entryDate BETWEEN ? AND ?
-            ORDER BY entryDate";
+            HAVING MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END) BETWEEN ? AND ?
+            ORDER BY MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END)";
 
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($query, $args);
