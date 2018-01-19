@@ -16,13 +16,22 @@ class CustomerServiceLog extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<new>','post<save>','post<custdata>','post<complete>');
+        $this->addRoute('get<new>','post<save>','post<custdata>','post<complete>',
+            'get<old>','get<id><old>');
         return parent::preprocess();
     }
 
     public function css_content()
     {
         return <<<HTML
+.old-table {
+    background-color: #e2e2e2;
+}
+.sm-text {
+    font-size: 14px;
+    font-weight: normal;
+    font-decoration: italic;
+}
 .btn-complete {
     float: right;
 }
@@ -116,6 +125,28 @@ HTML;
 HTML;
     }
 
+    protected function get_id_old_view()
+    {
+        $id = FormLib::get('id');
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $args = array($id);
+        $formFields = array('owner','firstName','lastName','phone','address','uid','date','subject','content','complete');
+        $prep = $dbc->prepare("SELECT * FROM CustomerServiceTracker.Tracker WHERE id = ?;");
+        $res = $dbc->execute($prep,$args);
+        while ($row = $dbc->fetchRow($res)) {
+            foreach($formFields as $field) {
+                ${$field} = $row[$field];
+            }
+        }
+        $thisForm = $this->inner_form_content($owner,$firstName,$lastName,$phone,$address,$uid,$date,$subject,$content,$complete);
+
+        return <<<HTML
+{$this->form_content()}
+<div id="innerForm">{$thisForm}</div>
+{$this->get_comments('old')}
+HTML;
+    }
+
     protected function post_save_handler()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -167,7 +198,15 @@ HTML;
 HTML;
     }
 
-    protected function get_comments()
+    protected function get_old_view()
+    {
+        return <<<HTML
+{$this->form_content()}
+{$this->get_comments('old')}
+HTML;
+}
+    
+    protected function get_comments($mode='new')
     {
         $id = FormLib::get('id');
         $trx = ($id) ? 'highlight' : '';
@@ -176,8 +215,9 @@ HTML;
         $fields = array('id','storeID','uid','date','subject','content','owner','firstName','lastName');
         $hiddenFields = array('firstName','lastName','owner','phone','address');
         $storeNames = array(1=>'Hillside',2=>'Denfeld');
-        $prep = $dbc->prepare("SELECT *
-            FROM CustomerServiceTracker.Tracker WHERE complete = '0000-00-00 00:00:00' ORDER BY id;");
+        $qOpr = ($mode == 'new') ? '=' : '!=';
+        $query = "SELECT * FROM CustomerServiceTracker.Tracker WHERE complete $qOpr'0000-00-00 00:00:00' ORDER BY id;";
+        $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep);
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
@@ -189,15 +229,19 @@ HTML;
             }
         }
         if ($er = $dbc->error) echo '<div class="alert alert-danger">'.$er.'</div>';
+        $identify = ($mode == 'new') ? ': Pending/Current | <i><a href="CustomerServiceLog.php?old=1">See Old</i></a>'
+            : ': Completed/Old | <i><a href="CustomerServiceLog.php">See Current</i></a>';
+        $tclass = ($mode == 'new') ? '' : 'old-table';
 
         $table = '<div class="table-responsive"><table class="table table-striped table-condensed table-bordered">
-            <thead><th class="text-center" colspan="7">Customer Service Tracker</th></thead><tbody>';
+            <thead class="'.$tclass.'"><th class="text-center" colspan="7">Customer Service Tracker <span class="sm-text">'.$identify.'</span></th></thead><tbody>';
         foreach ($data as $id => $row) {
             $owner = '<a href="../PIKiller/PIMemberPage.php?id='.$row['owner'].'" target="_blank">'.$row['owner'].'</a>';
             $firstName = $row['firstName'];
             $lastName = $row['lastName'];
             $table .= '<tr><span style="display: none" class="id">'.$row['id'].'</span>';
-            $table .= '<td><span></span><a href="CustomerServiceLog.php?id='.$row['id'].'"> #'.$row['id'].'</a></td>';
+            $idLink = ($mode == 'new') ? $row['id'] : $row['id'].'&old=1';
+            $table .= '<td><span></span><a href="CustomerServiceLog.php?id='.$idLink.'"> #'.$row['id'].'</a></td>';
             $table .= '<td class="store">'.$storeNames[$row['storeID']].'</td>';
             foreach (array('date','subject','content') as $field) {
                 if ($field === 'content') {
@@ -250,10 +294,15 @@ HTML;
     }
 
     protected function inner_form_content($owner='',$firstName='',$lastName='',
-        $phone='',$address='',$uid='',$date='',$subject='',$content='')
+        $phone='',$address='',$uid='',$date='',$subject='',$content='',$complete='')
     {
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        if ($complete != '') {
+            $complete = substr($complete,0,10);
+            $complete = "<label>Completed On</label>
+                <div class='form-control input-xs'>$complete</div>";
+        }
         if ($this->config->get('STORE_MODE') == 'HQ') {
             $store = 1;
             $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
@@ -357,6 +406,12 @@ HTML;
                 <label>Address</label>
                 <input type="text" class="form-control input-xs" name="address" id="address" value="{$address}">
             </div>
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-3">
+                $complete
+            </div>
+
         </div>
         <div class="spacer"></div>
         <div class="form-group">
