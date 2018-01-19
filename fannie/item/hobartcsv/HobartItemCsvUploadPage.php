@@ -202,7 +202,7 @@ class HobartItemCsvUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         $this->stats = array('done'=>0, 'error'=>array('foo'));
         $phpunit->assertNotEquals(0, strlen($this->results_content()));
-        $data = array('21234000000','test item',1.99,'Random Weight',0,0,0.05,100,0);
+        $data = array('12340','test item',1.99,'Random Weight',0,0,0.05,100,0);
         $indexes = array('barcode'=>0,'desc'=>1,'price'=>2,'type'=>3,'graphics'=>4,'label'=>5,'tare'=>6,'shelf'=>7,'net'=>8);
         $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }

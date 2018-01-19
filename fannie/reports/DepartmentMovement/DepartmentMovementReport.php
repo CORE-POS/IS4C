@@ -202,8 +202,13 @@ class DepartmentMovementReport extends FannieReportPage
           special case to combine year, month, and day into
           a single field
         */
-        $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep,$args);
+        try {
+            $prep = $dbc->prepare($query);
+            $result = $dbc->execute($prep,$args);
+        } catch (Exception $ex) {
+            // MySQL 5.6 doesn't handle correctly
+            return array();
+        }
         $ret = array();
         while ($row = $dbc->fetchRow($result)) {
             $record = array();
