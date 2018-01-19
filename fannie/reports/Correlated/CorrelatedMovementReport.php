@@ -82,14 +82,22 @@ class CorrelatedMovementReport extends FannieReportPage
 
         $dateConvertStr = ($FANNIE_SERVER_DBMS=='MSSQL')?'convert(char(11),d.tdate,110)':'convert(date(d.tdate),char)';
 
-        $loadQ = $dbc->prepare("INSERT INTO groupingTemp
-            SELECT $dateConvertStr as tdate,
-            emp_no,register_no,trans_no FROM $dlog AS d
-            WHERE $where AND tdate BETWEEN ? AND ?
-            GROUP BY $dateConvertStr, emp_no,register_no,trans_no");
-        $dArgs[] = $date1.' 00:00:00';
-        $dArgs[] = $date2.' 23:59:59';
-        $dbc->execute($loadQ,$dArgs);
+        try {
+            $loadQ = $dbc->prepare("INSERT INTO groupingTemp
+                SELECT $dateConvertStr as tdate,
+                emp_no,register_no,trans_no FROM $dlog AS d
+                WHERE $where AND tdate BETWEEN ? AND ?
+                GROUP BY $dateConvertStr, emp_no,register_no,trans_no");
+            $dArgs[] = $date1.' 00:00:00';
+            $dArgs[] = $date2.' 23:59:59';
+            $dbc->execute($loadQ,$dArgs);
+        } catch (Exception $ex) {
+            // This fails in strict grouping mode in MySQL < 5.7
+            // It shouldn't, but the SQL engine doesn't understand
+            // how the function call maps back to the underlying
+            // column
+            return array();
+        }
 
         $dataQ = $dbc->prepare("
             SELECT d.upc,
