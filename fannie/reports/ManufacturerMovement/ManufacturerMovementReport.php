@@ -63,6 +63,7 @@ class ManufacturerMovementReport extends FannieReportPage
                 AND t.tdate BETWEEN ? AND ?
                 AND " . DTrans::isStoreID($store, 't') . "
             GROUP BY t.upc,
+                p.brand,
                 p.description,
                 d.dept_no,
                 d.dept_name,
