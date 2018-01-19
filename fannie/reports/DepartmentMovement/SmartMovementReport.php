@@ -181,7 +181,12 @@ class SmartMovementReport extends FannieReportPage
         }
 
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $from_where['args']);
+        try {
+            $result = $dbc->execute($prep, $from_where['args']);
+        } catch (Exception $ex) {
+            // MySQL 5.6 GROUP BY problem
+            return array();
+        }
         $data = array();
         while ($row = $dbc->fetch_row($result)) {
             switch ($this->mode) {

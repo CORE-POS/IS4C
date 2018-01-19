@@ -273,7 +273,7 @@ class OrderViewPage extends FannieRESTfulPage
         $soModel->phone($this->ph1);
         $soModel->altPhone($this->ph2);
         $soModel->email($this->email);
-        $soModel->sendEmails(FormLib::get('contactBy'));
+        $soModel->sendEmails(FormLib::get('contactBy', 0));
 
         if (FormLib::get('fn', false) !== false) {
             $soModel->firstName(FormLib::get('fn'));
