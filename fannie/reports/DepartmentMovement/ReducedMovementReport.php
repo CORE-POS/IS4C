@@ -122,7 +122,12 @@ class ReducedMovementReport extends FannieReportPage
             ORDER BY SUM(CASE WHEN charflag='RD' THEN total ELSE 0 END) DESC";
 
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $from_where['args']);
+        try {
+            $result = $dbc->execute($prep, $from_where['args']);
+        } catch (Exception $ex) {
+            // MySQL 5.6 doesn't GROUP BY correctly
+            return array();
+        }
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
             if ($onlyRD && $row['reducedQty'] == 0 && $row['reducedTTL'] == 0) {
