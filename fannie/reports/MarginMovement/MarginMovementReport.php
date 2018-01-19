@@ -129,7 +129,7 @@ class MarginMovementReport extends FannieReportPage
         if ($include_sales != 1) {
             $query .= "AND d.discounttype=0 ";
         }
-        $query .= "GROUP BY d.upc,p.description,d.department,t.dept_name
+        $query .= "GROUP BY d.upc,p.brand,p.description,d.department,t.dept_name
             ORDER BY sum(total) DESC";
 
         $prep = $dbc->prepare($query);
