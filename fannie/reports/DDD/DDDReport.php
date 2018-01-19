@@ -95,7 +95,7 @@ class DDDReport extends FannieReportPage
                     MONTH(datetime) AS month,
                     DAY(datetime) AS day,
                     d.upc,
-                    COALESCE(p.brand, '') AS brand,
+                    MAX(COALESCE(p.brand, '')) AS brand,
                     d.description,
                     d.department,
                     e.dept_name,
@@ -103,9 +103,9 @@ class DDDReport extends FannieReportPage
                     SUM(d.quantity) AS quantity,
                     SUM(d.total) AS total,
                     s.description AS shrinkReason,
-                    " . ($superTable == 'MasterSuperDepts' ? 'm.super_name,' : "'' AS super_name,") . "
-                    e.salesCode,
-                    d.charflag
+                    MAX(" . ($superTable == 'MasterSuperDepts' ? 'm.super_name' : "''") . ") AS super_name,
+                    MAX(e.salesCode) AS salesCode,
+                    MAX(d.charflag) AS charflag
                   FROM {$dtrans} AS d
                     LEFT JOIN departments AS e ON d.department=e.dept_no
                     LEFT JOIN ShrinkReasons AS s ON d.numflag=s.shrinkReasonID
