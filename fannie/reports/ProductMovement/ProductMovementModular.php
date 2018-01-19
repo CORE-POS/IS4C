@@ -138,7 +138,12 @@ class ProductMovementModular extends FannieReportPage
                 GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
         }
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep,$args);
+        try {
+            $result = $dbc->execute($prep,$args);
+        } catch (Exception $ex) {
+            // MySQL 5.6 GROUP BY issue
+            return array();
+        }
 
         /**
           Simple report
