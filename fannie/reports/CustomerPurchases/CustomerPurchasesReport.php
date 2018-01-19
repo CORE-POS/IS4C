@@ -58,7 +58,8 @@ class CustomerPurchasesReport extends FannieReportPage
               trans_type IN ('I','D') AND
               tdate BETWEEN ? AND ?
               group by year(t.tdate),month(t.tdate),day(t.tdate),
-              t.upc,p.description
+              t.upc,p.description,
+              t.department,d.dept_name,m.super_name
               order by year(t.tdate),month(t.tdate),day(t.tdate)";
         $args = array($card_no, $date1.' 00:00:00',$date2.' 23:59:59');
     

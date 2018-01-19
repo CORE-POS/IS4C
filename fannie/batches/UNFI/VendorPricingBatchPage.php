@@ -227,9 +227,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         if ($filter === false) {
             $query .= " AND p.normal_price <> v.srp ";
         }
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = $this->config->get('STORE_ID');
+        }
 
         $query .= ' AND p.upc IN (SELECT upc FROM products WHERE inUse = 1) ';
-        $query .= ' GROUP BY p.upc ';
 
         $query .= " ORDER BY p.upc";
 
