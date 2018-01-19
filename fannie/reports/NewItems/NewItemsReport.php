@@ -105,7 +105,7 @@ class NewItemsReport extends FannieReportPage
             $query .= 'LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID ';
         }
         $query .= "WHERE $where
-            GROUP BY p.upc,p.description,p.department, d.dept_name
+            GROUP BY a.upc,p.description,p.department, d.dept_name
             HAVING entryDate BETWEEN ? AND ?
             ORDER BY entryDate";
 
