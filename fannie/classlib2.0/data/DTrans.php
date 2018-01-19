@@ -52,7 +52,7 @@ class DTrans
         'trans_type'=>'',
         'trans_subtype'=>'',
         'trans_status'=>'',
-        'department'=>'',
+        'department'=>0,
         'quantity'=>0,
         'scale'=>0,
         'cost'=>0,
