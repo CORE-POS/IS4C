@@ -226,6 +226,7 @@ if (!is_array(CoreLocal::get('ReceiptMessageMods'))){
 $available = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\ReceiptMessage');
 $available = array_map(function($i){ return str_replace('\\', '-', $i); }, $available);
 $current = CoreLocal::get('ReceiptMessageMods');
+$current = array_map(function($i){ return str_replace('\\', '-', $i); }, $current);
 for($i=0;$i<=count($current);$i++){
     $c = isset($current[$i]) ? $current[$i] : '';
     echo '<select name="RM_MODS[]">';
