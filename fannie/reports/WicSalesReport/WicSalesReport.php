@@ -81,6 +81,7 @@ class WicSalesReport extends FannieReportPage
                 WHERE $type_condition
                     AND t.tdate BETWEEN ? AND ?
                 GROUP BY t.upc,
+                    p.brand,
                     p.description,
                     d.dept_no,
                     d.dept_name,
