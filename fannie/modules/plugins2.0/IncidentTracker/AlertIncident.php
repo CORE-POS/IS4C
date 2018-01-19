@@ -102,6 +102,9 @@ class AlertIncident extends FannieRESTfulPage
         }
         $model->save();
 
+        $modP = $dbc->prepare('UPDATE Incidents SET modified=? WHERE incidentID=?');
+        $dbc->execute($modP, array(date('Y-m-d H:i:s'), $this->id));
+
         return 'AlertIncident.php?id=' . $this->id;
     }
 
@@ -129,6 +132,7 @@ class AlertIncident extends FannieRESTfulPage
         $model->incidentLocationID(FormLib::get('location'));
         $model->reportedBy(FormLib::get('reported'));
         $model->tdate(date('Y-m-d H:i:s'));
+        $model->modified(date('Y-m-d H:i:s'));
         $model->police(FormLib::get('police', 0));
         $model->trespass(FormLib::get('trespass', 0));
         $model->details(FormLib::get('details'));
@@ -430,6 +434,7 @@ HTML;
 
         $tableLabel = _('All Alerts');
         if (!FormLib::get('all')) {
+            $query = str_replace('ORDER BY tdate', 'ORDER BY modified', $query);
             $query = $this->connection->addSelectLimit($query, 30);
             $tableLabel = _('Recent Alerts (<a href="?all=1">Show All</a>)');
         }

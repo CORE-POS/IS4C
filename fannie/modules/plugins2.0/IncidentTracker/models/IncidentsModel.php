@@ -47,6 +47,7 @@ class IncidentsModel extends BasicModel
     'storeID' => array('type'=>'INT'),
     'deleted' => array('type'=>'TINYINT', 'default'=>0),
     'json' => array('type'=>'TEXT'),
+    'modified' => array('type'=>'DATETIME'),
     );
 }
 
