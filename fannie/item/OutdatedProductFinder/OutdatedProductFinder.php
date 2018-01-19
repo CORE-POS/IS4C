@@ -69,7 +69,7 @@ class OutdatedProductFinder extends FanniePage
             }
             
             // Check to see if the script made changes
-            $query = "SELECT upc, last_sold 
+            $query = "SELECT upc, MAX(last_sold) AS last_sold
                     FROM products 
                     WHERE last_sold < '{$datetime}' and inUse = 1
                     GROUP BY upc;

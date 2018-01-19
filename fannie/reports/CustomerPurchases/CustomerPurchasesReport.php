@@ -62,14 +62,14 @@ class CustomerPurchasesReport extends FannieReportPage
                   t.upc,p.description,
                   t.department,d.dept_name,m.super_name
                   order by year(t.tdate),month(t.tdate),day(t.tdate)";
+            $args = array($card_no, $date1.' 00:00:00',$date2.' 23:59:59');
+        
+            $prep = $dbc->prepare($query);
+            $result = $dbc->execute($prep,$args);
         } catch (Exception $ex) {
             // MySQL 5.6 doesn't handle this correctly in strict mode
             return array();
         }
-        $args = array($card_no, $date1.' 00:00:00',$date2.' 23:59:59');
-    
-        $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep,$args);
 
         /**
           Simple report
