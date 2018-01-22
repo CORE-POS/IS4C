@@ -137,7 +137,7 @@ class FannieAutoComplete extends FannieWebService
                 $prep = $dbc->prepare('SELECT sku, description, cost
                                        FROM vendorItems
                                        WHERE vendorID=?
-                                        AND vendorDept=999999
+                                        AND vendorDept > 1
                                         AND (sku LIKE ? OR description LIKE ?)
                                        ORDER BY description');
                 $search = '%' . $search . '%';
