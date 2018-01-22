@@ -35,6 +35,9 @@ class CpwPriceTask extends FannieTask
         $idP = $dbc->prepare('SELECT vendorID FROM vendors WHERE vendorName=\'CPW\'');
         $vendorID = $dbc->getValue($idP);
 
+        $resetP = $dbc->prepare('UPDATE vendorItems SET vendorDept=0 WHERE vendorID=? AND vendorDept < 5');
+        $dbc->execute($resetP, array($vendorID));
+
         $prodP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=?');
         $upcs = array();
 
@@ -92,6 +95,9 @@ class CpwPriceTask extends FannieTask
             $salePrice /= $caseSize;
 
             $dept = trim($data[16]);
+            if ($dept < 5) {
+                $dept = 999999;
+            }
             $brand = trim($data[1]);
             if (!empty(trim($data[2]))) {
                 $brand = trim($data[2]);
