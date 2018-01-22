@@ -66,7 +66,6 @@ class LikeCodeTask extends FannieTask
                 $active->inUse(1);
                 $active->lastSold($transW['last_sold']);
                 $active->save();
-                echo $row['likeCode'] . ':' . $transW['store_id'] . "\n";
             }
         }
         $dbc->commitTransaction();
