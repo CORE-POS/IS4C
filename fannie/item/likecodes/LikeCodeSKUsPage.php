@@ -75,7 +75,8 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 m.sku,
                 v.description,
                 m.vendorID,
-                v.cost
+                v.cost,
+                v.vendorDept
             FROM likeCodes AS l
                 LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode
                 LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
@@ -92,11 +93,12 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             }
         }
         foreach (array_keys($map) as $lc) {
-            $best = 999999;
+            $best = PHP_INT_MAX;
             $bestID = false;
+            $skus = $map[$lc]['skus'];
             foreach (array_keys($map[$lc]['skus']) as $vendor) {
-                if ($map[$lc]['skus'][$vendor]['cost'] < $best) {
-                    $best = $map[$lc]['skus'][$vendor]['cost'];
+                if ($skus[$vendor]['cost'] < $best && $skus[$vendor]['vendorDept'] == 999999) {
+                    $best = $skus[$vendor]['cost'];
                     $bestID = $vendor;
                 }
             }
@@ -110,7 +112,12 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $tableBody .= "<tr><td class=\"rowLC\">{$lc}</td><td>{$data['name']}</td>";
             foreach (array(25, 28, 136) as $vID) {
                 if (isset($data['skus'][$vID])) {
-                    $css = isset($data['skus'][$vID]['best']) ? 'class="success"' : '';
+                    $css = '';
+                    if (isset($data['skus'][$vID]['best'])) {
+                        $css = 'class="success"';
+                    } elseif ($data['skus'][$vID]['vendorDept'] != 999999) {
+                        $css = 'class="danger"';
+                    }
                     $tableBody .= "<td {$css}><input type=\"text\" name=\"sku[]\" 
                         value=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
                         title=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
