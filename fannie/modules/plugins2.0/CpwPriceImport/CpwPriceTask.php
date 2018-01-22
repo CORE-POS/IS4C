@@ -12,6 +12,7 @@ class CpwPriceTask extends FannieTask
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_AUTOREFERER, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         $filename = tempnam(sys_get_temp_dir(), 'cpw');
         $file = fopen($filename, 'w');
         curl_setopt($curl, CURLOPT_FILE, $file);
@@ -80,6 +81,13 @@ class CpwPriceTask extends FannieTask
             }
 
             $caseSize = trim($data[13]);
+            if ($caseSize == 1 && strpos($data[11], '-')) {
+                list($start,$end) = explode('-', trim($caseSize));
+                $caseSize = ($start + $end) / 2;
+            } elseif ($caseSize == 1 && is_numeric(trim($data[11]))) {
+                $caseSize = trim($data[11]);
+                $size = trim($data[12]);
+            }
             $regPrice /= $caseSize;
             $salePrice /= $caseSize;
 
