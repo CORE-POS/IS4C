@@ -113,6 +113,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                     $css = isset($data['skus'][$vID]['best']) ? 'class="success"' : '';
                     $tableBody .= "<td {$css}><input type=\"text\" name=\"sku[]\" 
                         value=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
+                        title=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
                         class=\"form-control input-sm sku-field$vID\" /></td>
                         <td {$css}>\$<span class=\"skuCost{$vID}\">{$data['skus'][$vID]['cost']}</span></td>";
                 } else {
