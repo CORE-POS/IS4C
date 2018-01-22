@@ -102,6 +102,11 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
         }
         $dbc = $this->db();
 
+        // need a better solution for a catch-all or anti-strict like code
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $likecode == 999) {
+            return true;
+        }
+
         $delP = $dbc->prepare('DELETE FROM upcLike WHERE upc=?'); 
         $delR = $dbc->execute($delP,array($upc));
         if ($likecode == -1){
