@@ -44,13 +44,6 @@ class GenericBillingPage extends FannieRESTfulPage
         $value = FormLib::get_form_value('id');
         $this->add_onload_command('$(\'#memnum\').val($(\'#sel\').val());');
         $this->addScript('billing.js');
-        $ret = "<form onsubmit=\"genericBilling.getMemInfo(); return false;\">
-            <div class=\"form-group form-inline\">
-            <label>Member #</label>:
-            <input type=text id=memnum name=id 
-                class=\"form-control\" value=\"$value\" />
-            <select id=sel class=\"form-control\"
-                onchange=\"\$('#memnum').val(this.value);\">";
         $accounts = \COREPOS\Fannie\API\member\MemberREST::search(
             array(
                 'customerTypeID' => 2,
@@ -61,18 +54,29 @@ class GenericBillingPage extends FannieRESTfulPage
             0,
             true
         );
+        $opts = '';
         foreach ($accounts as $account) {
-            $ret .= sprintf('<option %s value="%d">%d %s</option>',
+            $opts .= sprintf('<option %s value="%d">%d %s</option>',
                     ($value == $account['cardNo'] ? 'selected' : ''),
                     $account['cardNo'], $account['cardNo'],
                     $account['customers'][0]['lastName']);
         }
-        $ret .= "</select>
-            <button type=submit class=\"btn btn-default\">Submit</button>
-            </div>
-            </form><hr /><div id=\"contentArea\"></div>
-            <div id=\"resultArea\"></div>";
-        return $ret;
+
+        return <<<HTML
+<form onsubmit="genericBilling.getMemInfo(); return false;">
+<div class="form-group form-inline">
+    <label>Member #</label>:
+    <input type=text id=memnum name=id 
+        class="form-control" value="{$value}" />
+    <select id=sel class="form-control"
+        onchange="$('#memnum').val(this.value);">"
+        {$opts}
+    </select>
+    <button type=submit class="btn btn-default">Submit</button>
+</div>
+</form><hr /><div id="contentArea"></div>
+<div id="resultArea"></div>
+HTML;
     }
 
     function get_id_handler(){
@@ -83,44 +87,41 @@ class GenericBillingPage extends FannieRESTfulPage
             FROM  " . FannieDB::fqn('ar_live_balance', 'trans') . " AS n 
             WHERE n.card_no=?";
         $prep = $sql->prepare($query);
-        $result = $sql->execute($prep, array($this->id));
-        $row = $sql->fetchRow($result);
+        $row = $sql->getRow($prep, array($this->id));
 
-        printf("<form onsubmit=\"genericBilling.postBilling();return false;\">
-            <div class=\"col-sm-6\">
-            <table class=\"table\">
-            <tr>
-                <th>Member</th>
-                <td>%d<input type=hidden id=form_memnum value=%d /></td>
-                <th>Name</th>
-                <td>%s</td>
-            </tr>
-            <tr>
-                <th>Current Balance</th>
-                <td>%.2f</td>
-                <th>Bill</th>
-                <td>
-                    <div class=\"input-group\">
-                        <span class=\"input-group-addon\">$</span>
-                        <input type=text class=\"form-control\" id=amount required />
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <th>For</th>
-                <td colspan=3><input type=text maxlength=35 id=desc 
-                    class=\"form-control\" required /></td>
-            </tr>
-            </table>
-            <p>
-            <button type=submit class=\"btn btn-default\">Bill Account</button>
-            </p>
-            </div>
-            </form>",
-            $account['cardNo'], $account['cardNo'],
-            $account['customers'][0]['lastName'],
-            $row['balance']
-        );
+        echo <<<HTML
+<form onsubmit="genericBilling.postBilling();return false;">
+<div class="col-sm-6">
+    <table class="table">
+        <tr>
+            <th>Member</th>
+            <td>{$account['cardNo']}<input type=hidden id=form_memnum value="{$account['cardNo']}" /></td>
+            <th>Name</th>
+            <td>{$account['customers'][0]['lastName']}</td>
+        </tr>
+        <tr>
+            <th>Current Balance</th>
+            <td>{$row['balance']}</td>
+            <th>Bill</th>
+            <td>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input type=text class="form-control" id=amount required />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>For</th>
+            <td colspan=3><input type=text maxlength=35 id=desc 
+                class="form-control" required /></td>
+        </tr>
+    </table>
+    <p>
+        <button type=submit class="btn btn-default">Bill Account</button>
+    </p>
+</div>
+</form>
+HTML;
 
         return false;
     }
@@ -135,21 +136,18 @@ class GenericBillingPage extends FannieRESTfulPage
             $desc = $this->form->desc;
         } catch (Exception $ex) {
             $json['msg'] = 'Invalid request';
-            echo json_encode($json);
-            return false;
         }
-        if ($amount === '') {
+        if (isset($amount) && $amount === '') {
             $json['msg'] = "Amount is required";
-            echo json_encode($json);
-            return false;
-        } elseif ($desc === '') {
+        } elseif (isset($desc) && $desc === '') {
             $json['msg'] =  "Description is required";
+        }
+        if ($json['msg']) {
             echo json_encode($json);
             return false;
         }
 
         $desc = str_replace("'","''",$desc);
-
         $trans_no = DTrans::getTransNo($sql, $this->EMP_NO, $this->LANE_NO);
         $params = array(
             'card_no' => $this->id,
