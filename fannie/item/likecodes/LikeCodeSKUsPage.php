@@ -10,6 +10,31 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
     protected $title = 'Like Code SKUs';
     protected $header = 'Like Code SKus';
 
+    protected function post_id_handler()
+    {
+        $sku = trim(FormLib::get('sku'));
+        $vID = FormLib::get('vendorID');
+        $dbc = $this->connection;
+
+        $existsP = $dbc->prepare('SELECT likeCode FROM VendorLikeCodeMap WHERE likeCode=? AND vendorID=?');
+        $exists = $dbc->getValue($existsP, array($this->id, $vID));
+        if ($exists && empty($sku)) {
+            $delP = $dbc->prepare('DELETE FROM VendorLikeCodeMap WHERE likeCode=? AND vendorID=?');
+            $dbc->execute($delP, array($this->id, $vID));
+        } elseif ($exists) {
+            list($sku,) = explode(' ', $sku, 2);
+            $upP = $dbc->prepare('UPDATE VendorLikeCodeMap SET sku=? WHERE likeCode=? AND vendorID=?');
+            $dbc->execute($upP, array($sku, $this->id, $vID));
+        } else {
+            list($sku,) = explode(' ', $sku, 2);
+            $insP = $dbc->prepare('INSERT INTO VendorLikeCodeMap (likeCode, vendorID, sku) VALUES (?, ?, ?)');
+            $dbc->execute($insP, array($this->id, $vID, $sku));
+        }
+        echo 'Done';
+
+        return false;
+    }
+
     private function getItems($vendorID)
     {
         $prep = $this->connection->prepare("
@@ -49,7 +74,8 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 l.likeCodeDesc,
                 m.sku,
                 v.description,
-                m.vendorID
+                m.vendorID,
+                v.cost
             FROM likeCodes AS l
                 LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode
                 LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
@@ -65,17 +91,33 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 $map[$code]['skus'][$row['vendorID']] = $row;
             }
         }
+        foreach (array_keys($map) as $lc) {
+            $best = 999999;
+            $bestID = false;
+            foreach (array_keys($map[$lc]['skus']) as $vendor) {
+                if ($map[$lc]['skus'][$vendor]['cost'] < $best) {
+                    $best = $map[$lc]['skus'][$vendor]['cost'];
+                    $bestID = $vendor;
+                }
+            }
+            if ($bestID) {
+                $map[$lc]['skus'][$bestID]['best'] = true;
+            }
+        }
         $tableBody = '';
         foreach ($map as $lc => $data) {
             if (count($data['skus']) == 0) continue;
-            $tableBody .= "<tr><td>{$lc}</td><td>{$data['name']}</td>";
+            $tableBody .= "<tr><td class=\"rowLC\">{$lc}</td><td>{$data['name']}</td>";
             foreach (array(25, 28, 136) as $vID) {
                 if (isset($data['skus'][$vID])) {
-                    $tableBody .= "<td><input type=\"text\" name=\"sku[]\" 
+                    $css = isset($data['skus'][$vID]['best']) ? 'class="success"' : '';
+                    $tableBody .= "<td {$css}><input type=\"text\" name=\"sku[]\" 
                         value=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
-                        class=\"form-control input-sm sku-field$vID\" /></td>";
+                        class=\"form-control input-sm sku-field$vID\" /></td>
+                        <td {$css}>\$<span class=\"skuCost{$vID}\">{$data['skus'][$vID]['cost']}</span></td>";
                 } else {
-                    $tableBody .= '<td></td>';
+                    $tableBody .= '<td><input type="text" class="form-control input-sm sku-field' . $vID . '" /></td>
+                        <td>$<span class="skuCost' . $vID . '"></span></td>';
                 }
             }
             $tableBody .= '</tr>';
@@ -84,6 +126,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         $this->addScript('skuMap.js');
         foreach (array(25, 28, 136) as $vID) {
             $this->addOnloadCommand("skuMap.autocomplete('.sku-field$vID', $vID);");
+            $this->addOnloadCommand("skuMap.unlink('.sku-field$vID', $vID);");
         }
 
         return <<<HTML
@@ -92,9 +135,9 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
     <tr>
         <th class="text-center">Like Code</th>
         <th class="text-center">Like Code</th>
-        <th class="text-center">CPW</th>
-        <th class="text-center">Alberts</th>
-        <th class="text-center">RDW</th>
+        <th class="text-center" colspan="2">CPW</th>
+        <th class="text-center" colspan="2">Alberts</th>
+        <th class="text-center" colspan="2">RDW</th>
     </tr>
 </thead>
     {$tableBody}
