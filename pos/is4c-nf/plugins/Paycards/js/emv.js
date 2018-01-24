@@ -1,6 +1,11 @@
 var emv = (function($){
     var mod = {};
 
+    var serverURL = 'http://localhost:8999';
+    mod.setURL = function(url) {
+        serverURL = url;
+    };
+
     var finishTrans = function(resp) {
         // POST result to PHP page in POS to
         // process the result.
@@ -30,7 +35,7 @@ var emv = (function($){
 
     mod.submit = function(xmlData) {
         $.ajax({
-            url: 'http://localhost:8999',
+            url: serverURL,
             type: 'POST',
             data: xmlData,
             dataType: 'text'
