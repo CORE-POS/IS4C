@@ -133,9 +133,10 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
             $descP = $dbc->prepare('SELECT p.description FROM upcLike AS u
                 INNER JOIN products AS p ON p.upc=u.upc
                 WHERE u.upc <> ?
+                    AND u.likeCode=?
                 GROUP BY p.description
                 ORDER BY COUNT(*) DESC');
-            $desc = $dbc->getValue($descP, array($upc));
+            $desc = $dbc->getValue($descP, array($upc, $likecode));
             if ($desc) {
                 $upQ .= ', description=?';
                 $upArgs[] = $desc;
