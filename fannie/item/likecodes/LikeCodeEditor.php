@@ -158,6 +158,11 @@ function loadlc(id){
                     Delete Selected LC</button>
             </p>
             </form>
+            <hr />
+            <ul>
+                <li><a href="LikeCodeActivity.php">Likecode Status & Activity</a></li>
+                <li><a href="LikeCodeSKUsPage.php">Likecode Vendor SKUs & Pricing</a></li>
+            </ul>
         </div>
         <div id="rightdiv" class="col-sm-6">
             <div class="progress collapse">
