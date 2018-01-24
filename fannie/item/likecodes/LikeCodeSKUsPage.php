@@ -12,9 +12,21 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('post<id><vendorID>', 'post<id><vendorID><sku>');
+        $this->addRoute('post<id><vendorID>',
+            'post<id><vendorID><sku>',
+            'post<id><multiVendor>'
+        );
 
         return parent::preprocess();
+    }
+
+    protected function post_id_multiVendor_handler()
+    {
+        $prep = $this->connection->prepare('UPDATE likeCodes SET multiVendor=? WHERE likeCode=?');
+        $this->connection->execute($prep, array($this->multiVendor, $this->id));
+        echo 'Done';
+
+        return false;
     }
 
     protected function post_id_vendorID_sku_handler()
@@ -112,7 +124,8 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 m.vendorID,
                 v.cost,
                 v.vendorDept,
-                l.preferredVendorID
+                l.preferredVendorID,
+                multiVendor
             FROM likeCodes AS l
                 LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode
                 LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
@@ -123,7 +136,12 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         while ($row = $this->connection->fetchRow($res)) {
             $code = $row['likeCode'];
             if (!isset($map[$code])) {
-                $map[$code] = array('skus'=>array(), 'name'=>$row['likeCodeDesc']);
+                $map[$code] = array(
+                    'skus'=>array(),
+                    'name'=>$row['likeCodeDesc'],
+                    'multi'=>$row['multiVendor'],
+                    'vendorID'=>$row['preferredVendorID'],
+                );
             }
             if ($row['sku']) {
                 $map[$code]['skus'][$row['vendorID']] = $row;
@@ -145,8 +163,11 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         }
         $tableBody = '';
         foreach ($map as $lc => $data) {
-            //if (count($data['skus']) == 0) continue;
-            $tableBody .= "<tr><td class=\"rowLC\">{$lc}</td><td>{$data['name']}</td>";
+            $checkMulti = $vID == $data['multi'] ? 'checked' : '';
+            $tableBody .= "<tr><td class=\"rowLC\">{$lc}</td><td>{$data['name']}
+                <input type=\"checkbox\" {$checkMulti} class=\"pull-right\" 
+                onchange=\"skuMap.setMulti({$lc}, this.checked);\"
+                title=\"Blend Costs\"/></td>";
             foreach (array(25, 28, 136) as $vID) {
                 if (isset($data['skus'][$vID])) {
                     $css = '';
@@ -157,7 +178,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                         $css = 'class="danger"';
                         $disableRadio = 'disabled';
                     }
-                    $checkRadio = $vID == $data['skus'][$vID]['preferredVendorID'] ? 'checked' : '';
+                    $checkRadio = $vID == $data['vendorID'] ? 'checked' : '';
                     $tableBody .= "<td {$css}><input type=\"text\" name=\"sku[]\" 
                         value=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
                         title=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"

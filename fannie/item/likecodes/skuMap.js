@@ -74,6 +74,14 @@ var skuMap = (function ($) {
         });
     };
 
+    mod.setMulti = function(lc, multi) {
+        $.ajax({
+            url: 'LikeCodeSKUsPage.php',
+            method: 'post',
+            data: 'id='+lc+'&multiVendor='+(multi ? 1 : 0)
+        });
+    };
+
     return mod;
 
 }(jQuery));
