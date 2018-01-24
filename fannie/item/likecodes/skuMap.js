@@ -41,6 +41,8 @@ var skuMap = (function ($) {
                     var tmp = theSKU.split('$');
                     var cost = tmp[tmp.length - 1];
                     popOver.closest('tr').find('.skuCost'+vendorID).html(cost);
+                    console.log(popOver.closest('tr').find('.preferred'+vendorID));
+                    popOver.closest('tr').find('.preferred'+vendorID).prop('disabled', false);
                 });
             },
         });
@@ -58,8 +60,17 @@ var skuMap = (function ($) {
                 }).done(function (resp) {
                     showBootstrapPopover(popOver, '', '');
                     popOver.closest('tr').find('.skuCost'+vendorID).html('');
+                    popOver.closest('tr').find('.preferred'+vendorID).prop('disabled', true);
                 });
             }
+        });
+    };
+
+    mod.setVendor = function(lc, vID) {
+        $.ajax({
+            url: 'LikeCodeSKUsPage.php',
+            method: 'post',
+            data: 'id='+lc+'&vendorID='+vID
         });
     };
 

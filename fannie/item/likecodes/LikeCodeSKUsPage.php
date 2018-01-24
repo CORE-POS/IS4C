@@ -8,12 +8,19 @@ if (!class_exists('FannieAPI')) {
 class LikeCodeSKUsPage extends FannieRESTfulPage
 {
     protected $title = 'Like Code SKUs';
-    protected $header = 'Like Code SKus';
+    protected $header = 'Like Code SKUs';
 
-    protected function post_id_handler()
+    public function preprocess()
     {
-        $sku = trim(FormLib::get('sku'));
-        $vID = FormLib::get('vendorID');
+        $this->addRoute('post<id><vendorID>', 'post<id><vendorID><sku>');
+
+        return parent::preprocess();
+    }
+
+    protected function post_id_vendorID_sku_handler()
+    {
+        $sku = trim($this->sku);
+        $vID = $this->vendorID;
         $dbc = $this->connection;
 
         $existsP = $dbc->prepare('SELECT likeCode FROM VendorLikeCodeMap WHERE likeCode=? AND vendorID=?');
@@ -30,6 +37,18 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $insP = $dbc->prepare('INSERT INTO VendorLikeCodeMap (likeCode, vendorID, sku) VALUES (?, ?, ?)');
             $dbc->execute($insP, array($this->id, $vID, $sku));
         }
+        echo 'Done';
+
+        return false;
+    }
+
+    protected function post_id_vendorID_handler()
+    {
+        $prep = $this->connection->prepare("
+            UPDATE " . FannieDB::fqn('likeCodes', 'op') . "
+            SET preferredVendorID=?
+            WHERE likeCode=?");
+        $res = $this->connection->execute($prep, array($this->vendorID, $this->id));
         echo 'Done';
 
         return false;
@@ -63,25 +82,43 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         return $opt;
     }
 
-    protected function get_view()
+    protected function get_id_view()
     {
         $items = array(
             25 => $this->getItems(25),
             28 => $this->getItems(28),
             136 => $this->getItems(136),
         );
-        $query = "SELECT l.likeCode,
+        $lcP = $this->connection->prepare('
+            SELECT l.likeCode
+            FROM LikeCodeActiveMap AS l
+                INNER JOIN upcLike AS u ON l.likeCode=u.likeCode
+                INNER JOIN products AS p ON u.upc=p.upc
+                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE l.storeID=?
+                AND l.inUse=1
+                AND m.superID=?
+            GROUP BY l.likeCode');
+        $lcR = $this->connection->execute($lcP, array(FormLib::get('store'), $this->id));
+        $allCodes = array();
+        while ($lcW = $this->connection->fetchRow($lcR)) {
+            $allCodes[] = $lcW['likeCode'];
+        }
+        list($inStr, $args) = $this->connection->safeInClause($allCodes);
+        $query = $this->connection->prepare("SELECT l.likeCode,
                 l.likeCodeDesc,
                 m.sku,
                 v.description,
                 m.vendorID,
                 v.cost,
-                v.vendorDept
+                v.vendorDept,
+                l.preferredVendorID
             FROM likeCodes AS l
                 LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode
                 LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
-            ORDER BY l.likeCode, m.vendorID";
-        $res = $this->connection->query($query);
+            WHERE l.likeCode IN ({$inStr})
+            ORDER BY l.likeCode, m.vendorID");
+        $res = $this->connection->execute($query, $args);
         $map = array();
         while ($row = $this->connection->fetchRow($res)) {
             $code = $row['likeCode'];
@@ -108,24 +145,32 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         }
         $tableBody = '';
         foreach ($map as $lc => $data) {
-            if (count($data['skus']) == 0) continue;
+            //if (count($data['skus']) == 0) continue;
             $tableBody .= "<tr><td class=\"rowLC\">{$lc}</td><td>{$data['name']}</td>";
             foreach (array(25, 28, 136) as $vID) {
                 if (isset($data['skus'][$vID])) {
                     $css = '';
+                    $disableRadio = '';
                     if (isset($data['skus'][$vID]['best'])) {
                         $css = 'class="success"';
                     } elseif ($data['skus'][$vID]['vendorDept'] != 999999) {
                         $css = 'class="danger"';
+                        $disableRadio = 'disabled';
                     }
+                    $checkRadio = $vID == $data['skus'][$vID]['preferredVendorID'] ? 'checked' : '';
                     $tableBody .= "<td {$css}><input type=\"text\" name=\"sku[]\" 
                         value=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
                         title=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
                         class=\"form-control input-sm sku-field$vID\" /></td>
-                        <td {$css}>\$<span class=\"skuCost{$vID}\">{$data['skus'][$vID]['cost']}</span></td>";
+                        <td {$css}>\$<span class=\"skuCost{$vID}\">{$data['skus'][$vID]['cost']}</span>
+                        <input name=\"pref{$lc}\" class=\"preferred{$vID}\" type=\"radio\" title=\"Preferred Vendor\" 
+                            onclick=\"skuMap.setVendor({$lc},{$vID});\" {$checkRadio} {$disableRadio} /></td>";
                 } else {
                     $tableBody .= '<td><input type="text" class="form-control input-sm sku-field' . $vID . '" /></td>
-                        <td>$<span class="skuCost' . $vID . '"></span></td>';
+                        <td>$<span class="skuCost' . $vID . '"></span>
+                        <input type="radio" disabled class="preferred' . $vID . '" name="pref' . $lc . '"
+                            onclick="skuMap.setVendor(' . $lc . ',' . $vID . ')" />
+                        </td>';
                 }
             }
             $tableBody .= '</tr>';
@@ -150,6 +195,31 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
 </thead>
     {$tableBody}
 </table>
+HTML;
+    }
+
+    protected function get_view()
+    {
+        $model = new MasterSuperDeptsModel($this->connection);
+        $opts = $model->toOptions();
+        $store = FormLib::storePicker();
+
+        return <<<HTML
+<form method="get">
+    <div class="form-group">
+        <label>Super Department</label>
+        <select name="id" class="form-control">
+            {$opts}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Store</label>
+        {$store['html']}
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default btn-core">Continue</button>
+    </div>
+</form>
 HTML;
     }
 }
