@@ -41,7 +41,6 @@ class LikeCodeTask extends FannieTask
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $dlog = $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog_90_view';
         $dbc->startTransaction();
-        $dbc->query('UPDATE LikeCodeActiveMap SET inUse=0');
         $active = new LikeCodeActiveMapModel($dbc);
         $upcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode=?');
         $res = $dbc->query('SELECT likeCode FROM upcLike GROUP BY likeCode');
@@ -63,7 +62,6 @@ class LikeCodeTask extends FannieTask
             while ($transW = $dbc->fetchRow($transR)) {
                 $active->likeCode($row['likeCode']);
                 $active->storeID($transW['store_id']);
-                $active->inUse(1);
                 $active->lastSold($transW['last_sold']);
                 $active->save();
             }
