@@ -70,6 +70,7 @@ class ManageComments extends FannieRESTfulPage
         $orig = explode("\n", $comment->comment());
         $orig = array_map(function ($i) { return '> ' . $i; }, $orig);
         $orig = implode("\n", $orig);
+        $orig = html_entity_decode($orig, ENT_QUOTES | ENT_HTML401);
 
         $email = trim($comment->email());
 
@@ -86,6 +87,7 @@ class ManageComments extends FannieRESTfulPage
                 $mail->FromName = 'Whole Foods Co-op';
                 $mail->addAddress($email);
                 $mail->Subject = 'WFC Comment Response';
+                $mail->CharSet = 'utf-8';
                 $mail->Body = $msg . "\n\n" . $orig;
                 $mail->send();
             }
