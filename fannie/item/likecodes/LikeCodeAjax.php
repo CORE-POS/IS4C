@@ -57,7 +57,7 @@ class LikeCodeAjax extends FannieRESTfulPage
         $vOpts = $vendors->toOptions($likeCode->preferredVendorID());
 
         $activeP = $dbc->prepare('
-            SELECT s.storeID, s.description, l.*
+            SELECT s.storeID AS sID, s.description, l.*
             FROM Stores AS s
                 LEFT JOIN LikeCodeActiveMap AS l ON s.storeID=l.storeID AND l.likeCode=?
             WHERE s.hasOwnItems=1
@@ -70,8 +70,8 @@ class LikeCodeAjax extends FannieRESTfulPage
                 <td><input type="checkbox" onchange="lcEditor.toggleInternal(%d,%d);" %s /></td>
                 <td>%s</td></tr>',
                 $activeW['description'],
-                $this->id, $activeW['storeID'], $activeW['inUse'] ? 'checked' : '',
-                $this->id, $activeW['storeID'], $activeW['internalUse'] ? 'checked' : '',
+                $this->id, $activeW['sID'], $activeW['inUse'] ? 'checked' : '',
+                $this->id, $activeW['sID'], $activeW['internalUse'] ? 'checked' : '',
                 $activeW['lastSold']
             );
         }
