@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\AjaxCallback;
-use COREPOS\pos\plugins\Paycards\xml\XmlData;
+use COREPOS\pos\plugins\Paycards\xml\BetterXmlData;
 
 if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
@@ -71,6 +71,7 @@ class AjaxPaycardTest extends AjaxCallback
     public function ajax($input=array())
     {
         $post = trim(file_get_contents('php://input'));
+        $post = trim($post, '"');
         $xml = new BetterXmlData($post);
         $empNo = $xml->query('/TStream/Transaction/OperatorID');
         $amount = $xml->query('/TStream/Transaction/Amount/Purchase');
@@ -112,10 +113,11 @@ class AjaxPaycardTest extends AjaxCallback
             default:
                 $out = str_replace('{STATUS}', 'Declined', $out);
                 $out = str_replace('{TEXT}', 'Declined', $out);
+                $out = str_replace('{AuthCode}', '', $out);
                 break;
         }
 
-        return '<' . '?xml version="1.0"?' . '>' . "\n". $out;
+        return '<' . '?xml version="1.0"?' . '>' . $out;
     }
 }
 
