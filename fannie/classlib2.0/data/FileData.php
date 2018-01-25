@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\data {
-
 /**
   @class FileData
 
@@ -42,18 +40,21 @@ class FileData
     {
         if (!file_exists($filename)) {
             return array();
-        } elseif (substr(basename($filename),-3) == 'csv') {
-            return self::csvToArray($filename, $limit);
-        } elseif (substr(basename($filename),-3) == 'xls') {
-            return self::xlsToArray($filename, $limit);
-        } elseif (substr(basename($filename),-3) == 'lsx') {
-            // php tempfile nameing only allows a three character prefix
-            return self::xlsxToArray($filename, $limit);
-        } elseif (substr(basename($filename),-3) == 'pdf') {
-            return self::pdfToArray($filename, $limit);
-        } else {
-            return array();
         }
+
+        switch (substr(basename($filename), -3)) {
+            case 'csv':
+                return self::csvToArray($filename, $limit);
+            case 'xls':
+                return self::xlsToArray($filename, $limit);
+            case 'lsx':
+                // php tempfile nameing only allows a three character prefix
+                return self::xlsxToArray($filename, $limit);
+            case 'pdf':
+                return self::pdfToArray($filename, $limit);
+        }
+
+        return array();
     }
 
     /**
@@ -68,7 +69,7 @@ class FileData
         $ret = array();
         while (!feof($fptr)) {
             $ret[] = fgetcsv($fptr);
-            if ($limit != 0 && count($ret) >= $limit) {
+            if ($limit > 0 && count($ret) >= $limit) {
                 break;
             }
         }
@@ -123,7 +124,7 @@ class FileData
     /**
       Helper for xlsx files. See fileToArray()
     */
-    public static function xlsxToArray($filename, $limit)
+    public static function xlsxToArray($filename, $limit=0)
     {
         if (!class_exists('\\PHPExcel_IOFactory')) {
             return false;
@@ -139,7 +140,7 @@ class FileData
                 return $sheet->getCellByColumnAndRow($j, $i)->getValue();
             }, range(0, $cols));
             $ret[] = $new;
-            if ($limit != 0 && count($ret) >= $limit) {
+            if ($limit > 0 && count($ret) >= $limit) {
                 break;
             }
         }
@@ -181,10 +182,10 @@ class FileData
     */
     public static function excelNoFormula($str)
     {
+        $str = trim($str);
         $first = substr(trim($str), 0, 1);
         while ($first == '=' || $first == '@' || $first == '+' || $first == '-') {
-            $str = trim($str);
-            switch (substr($str, 0, 1)) {
+            switch ($first) {
                 case '-':
                     if (preg_match('/^-[0-9]+\.[0-9]+$/', $str) || preg_match('/^-[0-9]+$/', $str)) {
                         return $str;
@@ -219,8 +220,3 @@ class FileData
     }
 }
 
-}
-
-namespace {
-    class FileData extends \COREPOS\Fannie\API\data\FileData {}
-}
