@@ -78,7 +78,7 @@ if (isset($_GET['action'])){
         $model->category($category);
         $model->save();
         
-        $out .= $this->gettable();
+        $out = $this->gettable();
         break;
     case 'saveitem':
         $id = $_GET["id"];
@@ -194,15 +194,17 @@ if (isset($_GET['action'])){
                group by category order by category";
         $fetchR = $sql->query($fetchQ);
         
-        $out .= "$id"."`";
-        $out .= "<select onchange=\"saveCat($id);\" id=catSelect$id>";
+        $json = array('id' => $id, 'html' => '');
+        $json['html'] .= "<select onchange=\"saveCat($id);\" id=catSelect$id>";
         while ($fetchW = $sql->fetchRow($fetchR)){
             if ($fetchW[0] == $cat)
-                $out .= "<option selected>$fetchW[0]</option>";
+                $json['html'] .= "<option selected>$fetchW[0]</option>";
             else
-                $out .= "<option>$fetchW[0]</option>";
+                $json['html'] .= "<option>$fetchW[0]</option>";
         }
-        $out .= "</select>";
+        $json['html'] .= "</select>";
+        echo json_encode($json);
+        $out = '';
         break;
     case 'changeCat':
         $id = $_GET['id'];
@@ -226,7 +228,7 @@ if (isset($_GET['action'])){
         $clearQ = "update " . $this->table_name . " set cases=0, fraction=0,
             totalstock=0, total=0";
         $clearR = $sql->query($clearQ);
-        $out .= $this->gettable();
+        $out = $this->gettable();
         break;
     }
     
@@ -413,7 +415,6 @@ if (isset($_GET['action'])){
 <head><title>Inventory</title>
 <script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"></script>
 <script type="text/javascript" src="index.js"></script>
-<script type="text/javascript" src="send.js"></script>
 <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
