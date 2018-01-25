@@ -18,7 +18,7 @@ class SyncTest extends PHPUnit_Framework_TestCase
         foreach ($builtins as $class) {
             $obj = new $class($config);
             $stat = $obj->push('departments', $config->get('OP_DB'));
-            $this->assertEquals(true, $stat['success']);
+            $this->assertEquals(true, $stat['success'], "Sync failed on {$class}: {$stat['details']}");
         }
     }
 }
