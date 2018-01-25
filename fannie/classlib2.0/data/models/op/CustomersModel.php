@@ -233,5 +233,16 @@ class CustomersModel extends BasicModel
 
         return $saved;
     }
+
+    public function doc()
+    {
+        return '
+Use:
+Part of an eventual replacement for a handful of existing customer tables including
+custdata, meminfo, memDates, and some others. At present data should be mirrored in
+both sets of tables. This table is meant to hold information that is only of one
+individual person on a given account.
+            ';
+    }
 }
 

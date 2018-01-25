@@ -40,5 +40,21 @@ class InventoryCountsModel extends BasicModel
     'par' => array('type'=>'DECIMAL(10,2)'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Inventory Counts as the baseline for perpetual inventory.
+All calculations related to inventory levels are calculated
+starting from the date and time of the most recent count.
+
+The only non-obvious field here is par. Par is used not for
+calculated inventory levels but rather when generating orders
+based on inventory levels. It\'s often useful to set a par
+after counting or re-counting an item since someone just looked
+at inventory and can decide if present stock is higher or lower
+than desired.
+            ';
+    }
 }
 

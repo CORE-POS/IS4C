@@ -38,5 +38,15 @@ class EquityPaymentPlanAccountsModel extends BasicModel
     'nextPaymentDate' => array('type'=>'DATETIME'),
     'nextPaymentAmount' => array('type'=>'MONEY'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Attach an equity payment plan to a particular customer account.
+The last and next fields are calculated based on the payment plan
+parameters and are updated by the nightly equity task.
+            ';
+    }
 }
 

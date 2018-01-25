@@ -26,7 +26,6 @@
 */
 class CustomerAccountsModel extends BasicModel
 {
-
     protected $name = "CustomerAccounts";
     /**
       Suppress create offer from updates tab
@@ -249,6 +248,17 @@ class CustomerAccountsModel extends BasicModel
         }
 
         return $saved;
+    }
+
+    public function doc()
+    {
+        return '
+Use:
+Part of an eventual replacement for a handful of existing customer tables including
+custdata, meminfo, memDates, and some others. At present data should be mirrored in
+both sets of tables. This table is meant to hold information that is consistent for
+all individual people on a given account.
+            ';
     }
 }
 

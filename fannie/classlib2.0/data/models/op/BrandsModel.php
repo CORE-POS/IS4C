@@ -26,7 +26,6 @@
 */
 class BrandsModel extends BasicModel
 {
-
     protected $name = "Brands";
     protected $preferred_db = 'op';
 
@@ -40,5 +39,12 @@ class BrandsModel extends BasicModel
     'localOriginID' => array('type'=>'INT', 'default'=>0),
     );
 
+    public function doc()
+    {
+        return '
+Idea to store brands as full-fledged entities instead
+of just free text. Not used yet.
+            ';
+    }
 }
 

@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 /**
-  @class BatchCutPasteModel
-*/
+ * @class BatchCutPasteModel
+ */
 class BatchCutPasteModel extends BasicModel
 {
 

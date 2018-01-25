@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 /**
-  @class BatchBarcodesModel
-*/
+ * @class BatchBarcodesModel
+ */
 class BatchBarcodesModel extends BasicModel
 {
 

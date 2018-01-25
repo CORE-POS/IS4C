@@ -124,5 +124,12 @@ class BatchUpdateModel extends BasicModel
         return true;
     }
 
+    public function doc()
+    {
+        return '
+This table keeps a record of all changes
+made to sales batches.
+        ';
+    }
 }
 

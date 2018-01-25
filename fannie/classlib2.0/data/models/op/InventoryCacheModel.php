@@ -91,5 +91,22 @@ class InventoryCacheModel extends BasicModel
             $obj->save();
         }
     }
+
+    public function doc()
+    {
+        return '
+Use:
+InventoryCache stores a snapshot of inventory activity to
+avoid real-time calculation across large chunks of data.
+* baseCount is the amount present at the last count
+* ordered is the amount ordered since the last count
+  and can be re-calculated from purchase orders
+* sold is the amount sold since the last count
+  and can be re-calculated from transaction data
+* shrunk is the amount shrunk since the last count
+  and can be re-calculated from transaction data
+* onHand is baseCount + ordered - sold - shrunk
+            ';
+    }
 }
 

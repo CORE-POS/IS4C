@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 /**
-  @class BatchListModel
-*/
+ * @class BatchListModel
+ */
 class BatchListModel extends BasicModel 
 {
 

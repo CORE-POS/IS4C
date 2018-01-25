@@ -54,5 +54,13 @@ class FloorSectionsModel extends BasicModel
 
         return $ret;
     } 
+
+    public function doc()
+    {
+        return '
+Floor Sections are a simplified way of managing in-store product locations.
+A floor section is just an arbitrarily named area of the store that can be
+as large or as small makes practical sense.';
+    }
 }
 

@@ -28,7 +28,6 @@
 */
 class CommissionsModel extends BasicModel
 {
-
     protected $name = "Commissions";
     protected $preferred_db = 'op';
 
@@ -39,5 +38,11 @@ class CommissionsModel extends BasicModel
     'type' => array('type'=>'VARCHAR(25)'),
     );
 
+    public function doc()
+    {
+        return '
+Table to track which employee sold each ownership.
+            ';
+    }
 }
 
