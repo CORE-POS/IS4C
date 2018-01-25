@@ -32,8 +32,14 @@ class MySQLSync extends SyncSpecial
             return $ret;
         }
 
-        $laneNumber = 1;
         $ret['success'] = true;
+
+        return $this->sendDumpToLanes($ret, $dbName, $tempfile, $includeOffline);
+    }
+
+    protected function sendDumpToLanes($ret, $dbName, $tempfile, $includeOffline)
+    {
+        $laneNumber = 1;
         foreach ($this->config->get('LANES') as $lane) {
             if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
                 continue;
@@ -51,8 +57,6 @@ class MySQLSync extends SyncSpecial
             $laneNumber++;
         }
         unlink($tempfile);
-
-        return $ret;
     }
 
     protected function dumpCommand()
