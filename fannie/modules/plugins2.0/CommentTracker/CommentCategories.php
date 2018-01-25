@@ -16,6 +16,7 @@ class CommentCategories extends FannieRESTfulPage
         $names = FormLib::get('name');
         $nMethods = FormLib::get('notify');
         $nAddrs = FormLib::get('address');
+        $ccAddrs = FormLib::get('cc');
         $new = FormLib::get('new');
 
         $settings = $this->config->get('PLUGIN_SETTINGS');
@@ -32,6 +33,7 @@ class CommentCategories extends FannieRESTfulPage
             $model->name($names[$i]);
             $model->notifyMethod($nMethods[$i]);
             $model->notifyAddress($nAddrs[$i]);
+            $model->ccAddress($ccAddrs[$i]);
             $model->save();
         }
 
@@ -62,12 +64,14 @@ class CommentCategories extends FannieRESTfulPage
                 <input type="text" class="form-control" name="name[]" value="%s" /></td>
                 <td><input type="text" class="form-control" name="notify[]" value="%s" /></td>
                 <td><input type="text" class="form-control" name="address[]" value="%s" /></td>
+                <td><input type="text" class="form-control" name="cc[]" value="%s" /></td>
                 <td><a href="?_method=delete&id=%d">%s</a>
                 </tr>',
                 $obj->categoryID(),
                 $obj->name(),
                 $obj->notifyMethod(),
                 $obj->notifyAddress(),
+                $obj->ccAddress(),
                 $obj->categoryID(),
                 COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
@@ -77,7 +81,7 @@ class CommentCategories extends FannieRESTfulPage
 <form method="post">
     <table class="table table-bordered">
     <thead>
-        <tr><th>Name</th><th>Notification Method</th><th>Notification Address(es)</th></tr>
+        <tr><th>Name</th><th>Notification Method</th><th>Notification Address(es)</th><th>CC Address(es)</tr>
     </thead>
     <tbody>
         {$rows}
@@ -91,6 +95,8 @@ class CommentCategories extends FannieRESTfulPage
 </p>
 <p>
     <button class="btn btn-default btn-core">Save</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="ManageComments.php" class="btn btn-default">Back to Comments</a>
 </p>
 </form>
 HTML;
