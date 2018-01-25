@@ -91,13 +91,7 @@ if (!is_array($FANNIE_PLUGIN_LIST)) $FANNIE_PLUGIN_LIST = array();
 if (!isset($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 
-$mods = FannieAPI::ListModules('FanniePlugin');
-$others = FannieAPI::listModules('\COREPOS\Fannie\API\FanniePlugin');
-foreach ($others as $o) {
-    if (!in_array($o, $mods)) {
-        $mods[] = $o;
-    }
-}
+$mods = FannieAPI::listModules('\COREPOS\Fannie\API\FanniePlugin');
 $sortName = function($name) {
     if (strstr($name, '\\')) {
         $parts = explode('\\', $name);

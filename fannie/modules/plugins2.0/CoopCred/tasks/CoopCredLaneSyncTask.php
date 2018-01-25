@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\FanniePlugin;
+
 /* Version to run as Automated Task, by FannieTask.php
  *  that doesn't support command line arguments.
  */

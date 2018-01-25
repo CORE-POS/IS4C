@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\FanniePlugin;
+
 class CoopCredHistoryTask extends FannieTask
 {
 

@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\FanniePlugin;
+
 class CoopCredUpdateBalanceTask extends FannieTask
 {
     public $name = 'Coop Cred Update Lane Balance';
