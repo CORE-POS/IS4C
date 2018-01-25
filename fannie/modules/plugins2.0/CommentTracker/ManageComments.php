@@ -232,6 +232,7 @@ HTML;
         $comment['comment'] = nl2br($comment['comment']);
         $source = $comment['fromPaper'] ? 'Manual entry' : 'Website';
         if ($comment['email']) {
+            $comment['email'] .= sprintf(' (<a href="ManageComments.php?email=%s">All Comments</a>)', $comment['email']);
             $this->addOnloadCommand("manageComments.sendMsg();");
         } else {
             $this->addOnloadCommand("manageComments.sendBtn();");
@@ -294,6 +295,15 @@ HTML;
 HTML;
     }
 
+    protected function get_handler()
+    {
+        if (FormLib::get('email', false)) {
+            $this->header = '<h3>Comments from ' . FormLib::get('email') . ' (<a href="ManageComments.php">All Users</a>)</h3>';
+        }
+
+        return true;
+    }
+
     protected function get_view()
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
@@ -321,6 +331,14 @@ HTML;
         }
         if (!FormLib::get('all', false)) {
             $query .= ' AND r.commentID IS NULL';
+        }
+        $hidden = '';
+        $subheading = '';
+        if (FormLib::get('email', false)) {
+            $query .= ' AND c.email=?';
+            $args[] = FormLib::get('email');
+            $hidden = sprintf('<input type="hidden" class="filter-select" name="email" value="%s" />',
+                FormLib::get('email'));
         }
         $query .= ' ORDER BY c.commentID DESC, c.tdate DESC';
 
@@ -366,6 +384,9 @@ HTML;
     <select name="category" class="form-control filter-select">
         {$opts}
     </select>
+    {$hidden}
+    |
+    <a href="CommentCategories.php">Manage Categories</a>
 </p>
 <table class="table table-bordered">
 <thead>
