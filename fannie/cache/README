@@ -1,8 +1,0 @@
-DEPRECATED 09July2014
-Use DataCache API class for caching info
-to files.
-
-You need writeable cache directories, like so:
-
-# mkdir -p cachefiles/{daily,monthly}
-# chmod -R 777 cachefiles
