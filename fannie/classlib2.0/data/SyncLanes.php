@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\data {
+namespace COREPOS\Fannie\API\data;
 use \Exception;
 
 /**
@@ -273,11 +273,5 @@ class SyncLanes
 
         return substr($colstr, 0, strlen($colstr)-1);
     }
-}
-
-}
-
-namespace {
-    class SyncLanes extends \COREPOS\Fannie\API\data\SyncLanes {}
 }
 
