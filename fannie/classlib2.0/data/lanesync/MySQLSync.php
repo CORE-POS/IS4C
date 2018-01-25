@@ -85,7 +85,7 @@ class MySQLSync extends SyncSpecial
         }
         $laneCmd = 'mysql --connect-timeout 15 '
             . ' -u ' . escapeshellarg($lane['user'])
-            . ' -p' . escapeshellarg($lane['pw'])
+            . (empty($lane['pw']) ? '' : ' -p' . escapeshellarg($lane['pw']))
             . ' -h ' . escapeshellarg($lane_host)
             . ' -P ' . escapeshellarg($lane_port)
             . ' ' . escapeshellarg($lane['op'])
