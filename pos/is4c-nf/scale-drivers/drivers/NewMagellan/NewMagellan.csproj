@@ -40,6 +40,7 @@
     <MagellanTarget Include="SPHLibrary" />
     <MagellanTarget Include="JsonLibrary" />
     <MagellanTarget Include="Discover" />
+    <MagellanTarget Include="ComPortLibrary" />
     <MagellanTarget Include="RabbitMqLibrary"
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
   </ItemGroup>
