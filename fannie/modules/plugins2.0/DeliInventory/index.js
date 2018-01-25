@@ -15,7 +15,7 @@ function additem(category){
 	if (category == "__new__")
 		sendcat = document.getElementById('category__new__').value;
 	
-	var dstr = 'action=additem&item='+item+'&orderno='+orderno+'&units='+units+'&cases='+'&price='+price+'&size='+size+'&cases='+cases+'&fraction='+fraction+'&category='+sendcat);
+	var dstr = 'action=additem&item='+item+'&orderno='+orderno+'&units='+units+'&cases='+'&price='+price+'&size='+size+'&cases='+cases+'&fraction='+fraction+'&category='+sendcat;
     $.ajax({
 		url: 'DeliInventoryPage.php',
 		data: dstr,
