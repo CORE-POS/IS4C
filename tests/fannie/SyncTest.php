@@ -12,7 +12,7 @@ class SyncTest extends PHPUnit_Framework_TestCase
         $config = FannieConfig::factory();
         $sync = new SyncSpecial($config);
         $stat = $sync->push('foo', $config->get('OP_DB'));
-        $this->assertEquals(true, $stat['success']);
+        $this->assertEquals(false, $stat['success']);
 
         $builtins = FannieAPI::listModules('COREPOS\Fannie\API\data\SyncSpecial');
         foreach ($builtins as $class) {
