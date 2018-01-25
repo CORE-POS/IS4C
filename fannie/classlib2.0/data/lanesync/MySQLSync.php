@@ -57,6 +57,8 @@ class MySQLSync extends SyncSpecial
             $laneNumber++;
         }
         unlink($tempfile);
+
+        return $ret;
     }
 
     protected function dumpCommand()
