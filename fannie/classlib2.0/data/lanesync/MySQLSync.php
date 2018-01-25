@@ -23,7 +23,7 @@ class MySQLSync extends SyncSpecial
         exec($cmd, $output, $exitCode);
         
         if ($exitCode > 0) {
-            $ret['details'] = 'mysqldump failed';
+            $ret['details'] = 'mysqldump failed. Ran as ' . $cmd;
             if (file_exists($tempfile . '.err')) {
                 $ret['details'] .= ': ' . file_get_contents($tempfile . '.err');
                 unlink($tempfile . '.err');

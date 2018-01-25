@@ -15,7 +15,7 @@ class ProductsInUseSync extends MySQLSync
         $cmd = $this->dumpCommand()
             . ' -w ' . escapeshellarg('inUse=1')
             . ' '   . escapeshellarg($dbName)
-            . ' '   . escapeshellarg($table)
+            . ' '   . escapeshellarg($tableName)
             . ' > ' . escapeshellarg($tempfile)
             . ' 2> ' . escapeshellarg($tempfile . '.err');
 

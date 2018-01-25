@@ -17,7 +17,7 @@ class SyncTest extends PHPUnit_Framework_TestCase
         $builtins = FannieAPI::listModules('COREPOS\Fannie\API\data\SyncSpecial');
         foreach ($builtins as $class) {
             $obj = new $class($config);
-            $stat = $obj->push('departments', $config->get('OP_DB'));
+            $stat = $obj->push('products', $config->get('OP_DB'));
             $this->assertEquals(true, $stat['success'], "Sync failed on {$class}: {$stat['details']}");
         }
     }

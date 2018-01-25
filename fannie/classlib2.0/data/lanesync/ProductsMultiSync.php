@@ -16,7 +16,7 @@ class ProductsMultiSync extends MySQLSync
         $cmd = $this->dumpCommand()
             . ' -w ' . escapeshellarg('store_id=' . ((int)$this->config->get('STORE_ID')))
             . ' '   . escapeshellarg($dbName)
-            . ' '   . escapeshellarg($table)
+            . ' '   . escapeshellarg($tableName)
             . ' > ' . escapeshellarg($tempfile)
             . ' 2> ' . escapeshellarg($tempfile . '.err');
 
