@@ -75,17 +75,13 @@ abstract class JsonEndPoint
         $method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
         switch (strtolower($method)) {
             case 'get':
-                $this->sendResponse($this->get());
-                break;
+                return $this->sendResponse($this->get());
             case 'post':
-                $this->sendResponse($this->post($this->readInput()));
-                break;
+                return $this->sendResponse($this->post($this->readInput()));
             case 'put':
-                $this->sendResponse($this->put($this->readInput()));
-                break;
+                return $this->sendResponse($this->put($this->readInput()));
             case 'delete':
-                $this->sendResponse($this->delete());
-                break;
+                return $this->sendResponse($this->delete());
             default:
                 header('HTTP/1.0 405 Method Not Allowed');
                 echo "Unknown HTTP method";
