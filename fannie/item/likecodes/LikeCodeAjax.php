@@ -145,14 +145,24 @@ class LikeCodeAjax extends FannieRESTfulPage
         return $this->toggleField($this->id, 'multiVendor');
     }
 
-    protected function post_id_vendorID_handler()
+    protected function getLcModel($likeCode)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $model = new LikeCodesModel($dbc);
-        $model->likeCode($this->id);
+        $model->likeCode($likeCode);
         if (!$model->load()) {
             echo 'No such likecode';
+            return false;
+        }
+
+        return $model;
+    }
+
+    protected function post_id_vendorID_handler()
+    {
+        $model = $this->getLcModel($this->id);
+        if ($model === false) {
             return false;
         }
 
@@ -165,56 +175,34 @@ class LikeCodeAjax extends FannieRESTfulPage
 
     protected function post_id_storeID_inUse_handler()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $model = new LikeCodesModel($dbc);
-        $model->likeCode($this->id);
-        if (!$model->load()) {
-            echo 'No such likecode';
-            return false;
-        }
-
-        $active = new LikeCodeActiveMapModel($dbc);
-        $active->likeCode($this->id);
-        $active->storeID($this->storeID);
-        $active->load();
-        $active->inUse($active->inUse() ? 0 : 1);
-        $active->save();
-
-        echo 'Done';
-        return false;
+        return $this->toggleStoreField($this->storeID, $this->id, 'inUse');
     }
 
     protected function post_id_storeID_internal_handler()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $model = new LikeCodesModel($dbc);
-        $model->likeCode($this->id);
-        if (!$model->load()) {
-            echo 'No such likecode';
+        return $this->toggleStoreField($this->storeID, $this->id, 'internal');
+    }
+
+    private function toggleStoreField($store, $likeCode, $field)
+    {
+        $model = $this->getLcModel($likeCode);
+        if ($model === false) {
             return false;
         }
 
-        $active = new LikeCodeActiveMapModel($dbc);
-        $active->likeCode($this->id);
-        $active->storeID($this->storeID);
-        $active->load();
-        $active->internalUse($active->internalUse() ? 0 : 1);
-        $active->save();
+        $model->storeID($store);
+        $model->$field($model->$field() ? 0 : 1);
+        $model->save();
 
         echo 'Done';
         return false;
+
     }
 
     private function toggleField($likeCode, $field)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $model = new LikeCodesModel($dbc);
-        $model->likeCode($likeCode);
-        if (!$model->load()) {
-            echo 'No such likecode';
+        $model = $this->getLcModel($likeCode);
+        if ($model === false) {
             return false;
         }
 
@@ -230,6 +218,19 @@ class LikeCodeAjax extends FannieRESTfulPage
         ob_start();
         $this->id = 1;
         $phpunit->assertEquals(false, $this->get_id_handler());
+        $this->strict = 1;
+        $phpunit->assertEquals(false, $this->post_id_strict_handler());
+        $this->organic = 1;
+        $phpunit->assertEquals(false, $this->post_id_organic_handler());
+        $this->multi = 1;
+        $phpunit->assertEquals(false, $this->post_id_multi_handler());
+        $this->vendorID = 1;
+        $phpunit->assertEquals(false, $this->post_id_vendorID_handler());
+        $this->storeID = 1;
+        $this->inUse = 1;
+        $phpunit->assertEquals(false, $this->post_id_storeID_inUse_handler());
+        $this->internal = 1;
+        $phpunit->assertEquals(false, $this->post_id_storeID_internal_handler());
         ob_end_clean();
     }
 }
