@@ -63,6 +63,9 @@ Replaces nightly.lanesync.php and/or lanesync.api.php';
         if ($this->config->get('COOP_ID') == 'WEFC_Toronto') {
             $this->regularPushTables[] = 'tenders';
         }
+        if ($this->test_mode) {
+            $this->regularPushTables = array('houseCoupons');
+        }
         foreach ($this->regularPushTables as $table) {
             $result = SyncLanes::pushTable("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
             /**
