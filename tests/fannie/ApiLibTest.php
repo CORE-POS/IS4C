@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\Fannie\API\data\FileData;
+use COREPOS\Fannie\API\lib\AuditLib;
 
 /**
  * @backupGlobals disabled
@@ -348,6 +349,11 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($config->get('OP_DB') . '.foo', FannieDB::fqn('foo', 'op'));
         $this->assertEquals($config->get('TRANS_DB') . '.foo', FannieDB::fqn('foo', 'trans'));
         $this->assertEquals($config->get('ARCHIVE_DB') . '.foo', FannieDB::fqn('foo', 'arch'));
+    }
+
+    public function testAudit()
+    {
+        $this->assertInternalType('boolean', AuditLib::itemUpdate('0000000000111', true));
     }
 }
 
