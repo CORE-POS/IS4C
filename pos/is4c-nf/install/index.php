@@ -181,9 +181,6 @@ if (is_array(CoreLocal::get('LaneMap'))) {
 <?php echo _('Testing operational DB Connection:'); ?>
 <?php
 $gotDBs = 0;
-if (CoreLocal::get("DBMS") == "mysql")
-    $val = ini_set('mysql.connect_timeout',5);
-
 $sql = InstallUtilities::dbTestConnect(CoreLocal::get('localhost'),
         CoreLocal::get('DBMS'),
         CoreLocal::get('pDatabase'),

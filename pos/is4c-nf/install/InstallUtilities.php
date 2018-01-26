@@ -29,7 +29,9 @@ use COREPOS\pos\install\conf\JsonConf;
 use COREPOS\pos\install\conf\ParamConf;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
+use \Exception;
 
 class InstallUtilities 
 {
@@ -57,14 +59,12 @@ class InstallUtilities
     {
         $sql = false;
         try {
-            if ($type == 'mysql') {
-                ini_set('mysql.connect_timeout',1);
-            } elseif ($type == 'mssql') {
-                ini_set('mssql.connect_timeout',1);
+            if (!@MiscLib::pingPort($host, $type)) {
+                return 'No database detected on ' . $host;
             }
             $sql =  new \COREPOS\pos\lib\SQLManager($host,$type,$dbname,$user,$pass);
         } catch(Exception $ex) {
-            return $ex->toString();
+            return $ex->getMessage();
         }
 
         if ($sql === false || $sql->isConnected($dbname) === false) {
