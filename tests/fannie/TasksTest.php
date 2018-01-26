@@ -346,9 +346,27 @@ class TasksTest extends PHPUnit_Framework_TestCase
         return $task;
     }
 
+    public function testLaneSyncTask()
+    {
+        $task = new LaneSyncTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
     public function testLikeCodes()
     {
         $task = new LikeCodeTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testMonitors()
+    {
+        $task = new MonitorsTask();
         $task = $this->initTask($task);
         ob_start();
         $task->run();
