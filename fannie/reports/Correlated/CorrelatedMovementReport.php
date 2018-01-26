@@ -42,10 +42,9 @@ class CorrelatedMovementReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
         // creates a temporary table so requesting a writable connection
         // does make sense here
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
 
         $depts = FormLib::get('depts', array());
         $upc = FormLib::get('upc');
@@ -80,7 +79,7 @@ class CorrelatedMovementReport extends FannieReportPage
         $query = $dbc->prepare("CREATE TABLE groupingTemp (tdate varchar(11), emp_no int, register_no int, trans_no int)");
         $dbc->execute($query);
 
-        $dateConvertStr = ($FANNIE_SERVER_DBMS=='MSSQL')?'convert(char(11),d.tdate,110)':'convert(date(d.tdate),char)';
+        $dateConvertStr = ($this->config->get('SERVER_DBMS') =='MSSQL')?'convert(char(11),d.tdate,110)':'convert(date(d.tdate),char)';
 
         try {
             $loadQ = $dbc->prepare("INSERT INTO groupingTemp
@@ -93,9 +92,6 @@ class CorrelatedMovementReport extends FannieReportPage
             $dbc->execute($loadQ,$dArgs);
         } catch (Exception $ex) {
             // This fails in strict grouping mode in MySQL < 5.7
-            // It shouldn't, but the SQL engine doesn't understand
-            // how the function call maps back to the underlying
-            // column
             return array();
         }
 
@@ -181,45 +177,21 @@ class CorrelatedMovementReport extends FannieReportPage
         ';
     }
 
-    public function javascript_content()
-    {
-        if ($this->content_function != 'form_content') {
-            return '';
-        }
-
-        ob_start();
-        ?>
-function flipover(opt){
-    if (opt == 'UPC'){
-        document.getElementById('inputset1').style.display='none';
-        document.getElementById('inputset2').style.display='block';
-        document.forms[0].dept1.value='';
-        document.forms[0].dept2.value='';
-    }
-    else {
-        document.getElementById('inputset2').style.display='none';
-        document.getElementById('inputset1').style.display='block';
-        document.forms[0].upc.value='';
-    }
-}
-        <?php
-        return ob_get_clean();
-    }
-
     public function form_content()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+        $this->addScript('correlated.js');
 
         $deptQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
         $deptR = $dbc->execute($deptQ);
-        $depts = array();
-        while ($deptW = $dbc->fetchRow($deptR)){
-            $depts[$deptW[0]] = $deptW[1];
+        $dOpts = '';
+        while ($row = $dbc->fetchRow($deptR)){
+            $dOpts .= sprintf('<option value="%d">%d %s</option>', $row[0], $row[0], $row[1]);
         }
+        $dates = FormLib::dateRangePicker();
 
-        ob_start();
-        ?>
+        return <<<HTML
 <form action="CorrelatedMovementReport.php" method="get">
 <div class="row">
     <div class="col-sm-6">
@@ -235,11 +207,7 @@ function flipover(opt){
             <div class="tab-pane active" id="department-tab">
                 <label class="control-label">Department(s)</label>
                 <select size=7 multiple name=depts[] class="form-control">
-                <?php 
-                foreach ($depts as $no=>$name) {
-                    echo "<option value=$no>$no $name</option>";    
-                }
-                ?>
+                    {$dOpts}
                 </select>
             </div>
             <div class="tab-pane" id="upc-tab">
@@ -260,15 +228,11 @@ function flipover(opt){
     <div class="col-sm-6">
         <label class="control-label">Result Filter (optional)</label>
         <select size=7 multiple name=filters[] class="form-control">
-        <?php 
-        foreach ($depts as $no=>$name) {
-            echo "<option value=$no>$no $name</option>";    
-        }
-        ?>
+            {$dOpts}
         </select>
     </div>
     <div class="col-sm-6">
-        <?php echo FormLib::date_range_picker(); ?>
+        {$dates}
     </div>
 </div>
 <hr />
@@ -277,9 +241,7 @@ function flipover(opt){
     <label><input type=checkbox name=excel value="xls" /> Excel</label>
 </p>
 </form>
-        <?php
-
-        return ob_get_clean(); 
+HTML;
     }
     
     public function helpContent()
