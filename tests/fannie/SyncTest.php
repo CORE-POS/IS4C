@@ -41,7 +41,7 @@ class SyncTest extends PHPUnit_Framework_TestCase
         $sync = SyncLanes::pullTable('', 'op');
         $this->assertEquals(false, $sync['sending']);
         $sync = SyncLanes::pullTable('disableCoupon', 'op');
-        $this->assertEquals(true, $sync['sending']);
+        $this->assertEquals(true, $sync['sending'], 'Pull failed w/ ' . $sync['messages']);
     }
 }
 

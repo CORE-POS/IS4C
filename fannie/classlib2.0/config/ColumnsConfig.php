@@ -24,6 +24,8 @@ class ColumnsConfig implements PageConfig
             $ret .= sprintf('<label><input type="checkbox" name="config%s[]" %s value="%s" />%s</label><br />',
                 $this->name, (in_array($val, $current) ? 'checked' : ''), $val, $key);
         }
+
+        return $ret;
     }
 
     public function update($form)
