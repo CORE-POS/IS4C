@@ -23,6 +23,62 @@ class CpwPriceTask extends FannieTask
         return $filename;
     }
 
+    private function validateLine($data)
+    {
+        $ret = array('valid'=>false);
+        $ret['sku'] = trim($data[8]);
+        $ret['upc'] = trim($data[7]);
+        if (empty($ret['upc']) && empty($ret['sku'])) {
+            return $ret;
+        }
+        $ret['upc'] = str_replace('-', '', $ret['upc']);
+        $ret['upc'] = substr($ret['upc'], 0, strlen($ret['upc'])-1);
+        if (!is_numeric($ret['sku']) && !is_numeric($ret['sku'])) {
+            return $ret;
+        }
+        $ret['upc'] = BarcodeLib::padUPC($ret['upc']);
+
+        $ret['price'] = trim($data[6]);
+        if (!is_numeric($ret['price'])) {
+            return $ret;
+        }
+
+        $ret['valid'] = true;
+        return $ret;
+    }
+
+    private function sizeItem($item, $data)
+    {
+        $item['size'] = trim($data[11]);
+        if (is_numeric($item['size'])) {
+            $item['size'] .= ' ' . trim($data[12]);
+        }
+
+        $item['caseSize'] = trim($data[13]);
+        if ($item['caseSize'] == 1 && strpos($data[11], '-')) {
+            list($start,$end) = explode('-', trim($item['caseSize']));
+            $caseSize = ($start + $end) / 2;
+        } elseif ($item['caseSize'] == 1 && is_numeric(trim($data[11]))) {
+            $item['caseSize'] = trim($data[11]);
+            $item['size'] = trim($data[12]);
+        }
+
+        return $item;
+    }
+
+    private function priceItem($item, $data)
+    {
+        $item['reg'] = trim($data[15]);
+        $item['sale'] = 0;
+        if ($item['price'] != $item['reg']) {
+            $item['sale'] = $item['price'];
+        }
+        $item['reg'] /= $item['caseSize'];
+        $item['sale'] /= $item['caseSize'];
+
+        return $item;
+    }
+
     public function run()
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
@@ -56,43 +112,13 @@ class CpwPriceTask extends FannieTask
         $dbc->startTransaction();
         while (!feof($file)) {
             $data = fgetcsv($file);
-            $sku = trim($data[8]);
-            $upc = trim($data[7]);
-            if (empty($upc) && empty($sku)) {
+            $item = $this->validateLine($data);
+            if (!$item['valid']) {
                 continue;
             }
-            $upc = str_replace('-', '', $upc);
-            $upc = substr($upc, 0, strlen($upc)-1);
-            if (!is_numeric($upc) && !is_numeric($sku)) {
-                continue;
-            }
-            $upc = BarcodeLib::padUPC($upc);
 
-            $price = trim($data[6]);
-            if (!is_numeric($price)) {
-                continue;
-            }
-            $regPrice = trim($data[15]);
-            $salePrice = 0;
-            if ($price != $regPrice) {
-                $salePrice = $price;
-            }
-
-            $size = trim($data[11]);
-            if (is_numeric($size)) {
-                $size .= ' ' . trim($data[12]);
-            }
-
-            $caseSize = trim($data[13]);
-            if ($caseSize == 1 && strpos($data[11], '-')) {
-                list($start,$end) = explode('-', trim($caseSize));
-                $caseSize = ($start + $end) / 2;
-            } elseif ($caseSize == 1 && is_numeric(trim($data[11]))) {
-                $caseSize = trim($data[11]);
-                $size = trim($data[12]);
-            }
-            $regPrice /= $caseSize;
-            $salePrice /= $caseSize;
+            $item = $this->sizeItem($item, $data);
+            $item = $this->priceItem($item, $data);
 
             $dept = trim($data[16]);
             if ($dept < 5) {
@@ -105,15 +131,15 @@ class CpwPriceTask extends FannieTask
             $brand = preg_replace('/\(.+\)/', '', $brand);
             $description = trim($data[4]);
 
-            $exists = $dbc->getValue($vendP, array($sku, $vendorID));
+            $exists = $dbc->getValue($vendP, array($item['sku'], $vendorID));
             if ($exists) {
-                $dbc->execute($upP, array($regPrice, $salePrice, $dept, $sku, $vendorID));
+                $dbc->execute($upP, array($item['reg'], $item['sale'], $dept, $item['sku'], $vendorID));
             } else {
-                $dbc->execute($insP, array($upc, $sku, $brand, $description, $size, $caseSize, $regPrice, $salePrice, $dept, $vendorID));
+                $dbc->execute($insP, array($item['upc'], $item['sku'], $brand, $description, $item['size'], $item['caseSize'], $item['reg'], $item['sale'], $dept, $vendorID));
             }
             if ($mode) {
-                $dbc->execute($prodP, array($regPrice, $upc));
-                $upcs[] = $upc;
+                $dbc->execute($prodP, array($item['reg'], $item['upc']));
+                $upcs[] = $item['upc'];
             }
 
             $exists = $dbc->getValue($deptP, array($dept, $vendorID));
