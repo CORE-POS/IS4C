@@ -30,7 +30,7 @@ class ColumnsConfig implements PageConfig
 
     public function update($form)
     {
-        $newValue = $this->form->tryGet('config' . $this->name);
+        $newValue = $form->tryGet('config' . $this->name);
         if (!is_array($newValue) || count($newValue) == 0) {
             $formatted = 'array()';
         } else {
