@@ -48,6 +48,7 @@ class SaInvComparePage extends FannieRESTfulPage
                 }
             }
 
+            $this->connection->execute($upP, array($upc, $store));
             $args = array(
                 $upc,
                 $store,
@@ -64,14 +65,8 @@ class SaInvComparePage extends FannieRESTfulPage
         return $ret;
     }
 
-    protected function get_id_view()
+    private function getItems($vendorID, $storeID, $depts)
     {
-        $matches = preg_match_all("/[0-9]+/", FormLib::get('dept'), $depts);
-        if ($matches == 0) {
-            $depts = array();
-        } else {
-            $depts = array_pop($depts);
-        }
         list($inStr, $args) = $this->connection->safeInClause($depts);
         $query = "SELECT s.upc, p.brand, p.description, p.department,
                 SUM(s.quantity) AS qty,
@@ -85,9 +80,20 @@ class SaInvComparePage extends FannieRESTfulPage
                 AND p.default_vendor_id=?
             GROUP BY s.upc, p.brand, p.description, p.department";
         $prep = $this->connection->prepare($query);
-        $args[] = FormLib::get('store');
-        $args[] = $this->id;
-        $res = $this->connection->execute($prep, $args);
+        $args[] = $storeID;
+        $args[] = $vendorID;
+        return $this->connection->execute($prep, $args);
+    }
+
+    protected function get_id_view()
+    {
+        $matches = preg_match_all("/[0-9]+/", FormLib::get('dept'), $depts);
+        if ($matches == 0) {
+            $depts = array();
+        } else {
+            $depts = array_pop($depts);
+        }
+        $res = $this->getItems($this->id, FormLib::get('store'), $depts);
 
         $ret = '<form method="post" action="SaInvComparePage.php">';
         $ret .= '<table class="table small">
