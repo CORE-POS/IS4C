@@ -59,5 +59,10 @@ class MonthlyDLogModel extends DLogModel
             return false;
         }
     }
+
+    public function doc()
+    {
+        return 'Same as other dlog views but over per-month archive tables';
+    }
 }
 

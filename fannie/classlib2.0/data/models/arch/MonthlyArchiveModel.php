@@ -66,5 +66,14 @@ class MonthlyArchiveModel extends DTransactionsModel
             return parent::create();
         }
     }
+
+    public function doc()
+    {
+        return '
+Use:
+Alternative transaction archive method. Creates separate tables
+for each month rather than one partitioned table.
+            ';
+    }
 }
 
