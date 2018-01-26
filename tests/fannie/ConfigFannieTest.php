@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\config\ColumnsConfig;
+
 /**
  * @backupGlobals disabled
  */
@@ -116,6 +118,14 @@ class ConfigFannieTest extends PHPUnit_Framework_TestCase
         $obj = new InstallIndexPage();
         $obj = $this->initPage($obj);
         $obj->unitTest($this);
+    }
+
+    public function testPageConfigs()
+    {
+        $col = new ColumnsConfig('foo', array('bar'));
+        $this->assertNotEquals(0, strlen($col->render(FannieConfig::factory())));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $col->update($form);
     }
 }
 
