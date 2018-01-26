@@ -335,5 +335,24 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
         ob_end_clean();
     }
+
+    private function initTask($task)
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        return $task;
+    }
+
+    public function testLikeCodes()
+    {
+        $task = new LikeCodeTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
 }
 

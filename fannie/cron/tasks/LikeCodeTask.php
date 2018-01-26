@@ -36,12 +36,31 @@ class LikeCodeTask extends FannieTask
         'weekday' => '*',
     );
 
+    private function setLastSold($dbc, $likeCode, $upcs, $dlog)
+    {
+        $active = new LikeCodeActiveMapModel($dbc);
+        list($inStr, $args) = $dbc->safeInClause($upcs);
+        $transP = $dbc->prepare("
+            SELECT store_id,
+                MAX(tdate) AS last_sold
+            FROM {$dlog}
+            WHERE upc IN ({$inStr})
+            GROUP BY store_id
+            HAVING SUM(total) > 0");
+        $transR = $dbc->execute($transP, $args);
+        while ($transW = $dbc->fetchRow($transR)) {
+            $active->likeCode($likeCode);
+            $active->storeID($transW['store_id']);
+            $active->lastSold($transW['last_sold']);
+            $active->save();
+        }
+    }
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $dlog = $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog_90_view';
         $dbc->startTransaction();
-        $active = new LikeCodeActiveMapModel($dbc);
         $upcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode=?');
         $res = $dbc->query('SELECT likeCode FROM upcLike GROUP BY likeCode');
         while ($row = $dbc->fetchRow($res)) {
@@ -50,21 +69,7 @@ class LikeCodeTask extends FannieTask
             while ($upcW = $dbc->fetchRow($upcR)) {
                 $upcs[] = $upcW['upc'];
             }
-            list($inStr, $args) = $dbc->safeInClause($upcs);
-            $transP = $dbc->prepare("
-                SELECT store_id,
-                    MAX(tdate) AS last_sold
-                FROM {$dlog}
-                WHERE upc IN ({$inStr})
-                GROUP BY store_id
-                HAVING SUM(total) > 0");
-            $transR = $dbc->execute($transP, $args);
-            while ($transW = $dbc->fetchRow($transR)) {
-                $active->likeCode($row['likeCode']);
-                $active->storeID($transW['store_id']);
-                $active->lastSold($transW['last_sold']);
-                $active->save();
-            }
+            $this->setLastSold($dbc, $row['likeCode'], $upcs, $dlog);
         }
         $dbc->commitTransaction();
     }
