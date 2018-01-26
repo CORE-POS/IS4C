@@ -64,18 +64,7 @@ class MyWebSpoImport extends FannieTask
     private function setMember($dbc, $orderID, $queue)
     {
         $cardNo = $queue['cardNo'];
-        $name = $queue['name'];
-        $person = 1;
-        $findP = $dbc->prepare('SELECT personNum FROM custdata WHERE CardNo=? AND (FirstName LIKE ? OR LastName LIKE ?)');
-        foreach (explode(' ', $name) as $part) {
-            $part = trim($part);
-            if (strlen($part) < 2) continue;
-            $match = $dbc->getValue($findP, array($cardNo, '%' . $part . '%', '%' . $part . '%'));
-            if ($match !== false) {
-                $person = $match;
-                break;
-            }
-        }
+        $person = $this->findPersonByName($dbc, $cardNo, $queue['name']);
 
         $setP = $dbc->prepare('UPDATE ' . FannieDB::fqn('PendingSpecialOrder', 'trans') . ' SET card_no=?, voided=?, mixMatch=\'website\' WHERE order_id=?');
         $setR = $dbc->execute($setP, array($cardNo, $person, $orderID));
@@ -103,6 +92,28 @@ class MyWebSpoImport extends FannieTask
             $orderID,
         ));
 
+        $this->setContactMethod($dbc, $cardNo, $orderID);
+    }
+
+    private function findPersonByName($dbc, $cardNo, $name)
+    {
+        $person = 1;
+        $findP = $dbc->prepare('SELECT personNum FROM custdata WHERE CardNo=? AND (FirstName LIKE ? OR LastName LIKE ?)');
+        foreach (explode(' ', $name) as $part) {
+            $part = trim($part);
+            if (strlen($part) < 2) continue;
+            $match = $dbc->getValue($findP, array($cardNo, '%' . $part . '%', '%' . $part . '%'));
+            if ($match !== false) {
+                $person = $match;
+                break;
+            }
+        }
+
+        return $person;
+    }
+
+    private function setContactMethod($dbc, $cardNo, $orderID)
+    {
         $contactQ = "
             SELECT sendEmails
             FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . " AS p
