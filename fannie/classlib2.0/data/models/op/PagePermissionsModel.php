@@ -34,5 +34,14 @@ class PagePermissionsModel extends BasicModel
     'pageClass' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
     'authClass' => array('type'=>'VARCHAR(50)'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Assign custom permissions to a specific page without altering
+the code of the page itself.
+            ';
+    }
 }
 

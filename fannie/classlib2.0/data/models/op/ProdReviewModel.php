@@ -43,5 +43,14 @@ class ProdReviewModel extends BasicModel
     
     protected $unique = array('upc');
 
+    public function doc()
+    {
+        return '
+Use:
+Tracks the last time a product\'s cost and price were
+reviewed by a person.
+            ';
+    }
+
 }
 

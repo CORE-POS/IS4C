@@ -34,5 +34,13 @@ class MetaProductRulesModel extends BasicModel
     'colName' => array('type'=>'VARCHAR(255)', 'primary_key'=>true),
     'variable' => array('type'=>'TINYINT', 'default'=>0),
     );
+
+    public function doc()
+    {
+        return '
+Enforcement idea for products column consistency
+across stores. Not used yet.
+            ';
+    }
 }
 

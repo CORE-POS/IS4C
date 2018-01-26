@@ -38,5 +38,16 @@ class MovementTagsModel extends BasicModel
     'lastPar' => array('type'=>'DOUBLE', 'default'=>0),
     'modified' => array('type'=>'DATETIME'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Movement tags are a special subset of shelftags that include movement
+data. Since this can change over time saving the values from the last
+time a given tag was printed can help identify tags that need to be
+replaced
+            ';
+    }
 }
 

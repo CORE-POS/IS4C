@@ -35,5 +35,14 @@ class VendorSpecificMarginsModel extends BasicModel
     'deptID' => array('type'=>'INT', 'primary_key'=>true),
     'margin' => array('type'=>'DOUBLE'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Store a margin associated with a vendor and POS department number.
+This is the highest priority margin target.
+            ';
+    }
 }
 

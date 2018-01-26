@@ -26,7 +26,6 @@
 */
 class UserSessionsModel extends BasicModel
 {
-
     protected $name = "userSessions";
     protected $preferred_db = 'op';
 
@@ -36,5 +35,14 @@ class UserSessionsModel extends BasicModel
     'ip' => array('type'=>'VARCHAR(45)'),
     'expires' => array('type'=>'DATETIME'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Authentication system. Storing session separately from the user
+account allows multiple concurrent logins.
+            ';
+    }
 }
 

@@ -26,7 +26,6 @@
 */
 class UserGroupPrivsModel extends BasicModel
 {
-
     protected $name = "userGroupPrivs";
     protected $preferred_db = 'op';
 
@@ -36,5 +35,14 @@ class UserGroupPrivsModel extends BasicModel
     'sub_start' => array('type'=>'VARCHAR(50)'),
     'sub_end' => array('type'=>'VARCHAR(50)'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Authentication system. This stores authorizations that
+apply to all users in a given group.
+            ';
+    }
 }
 

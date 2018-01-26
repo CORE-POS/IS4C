@@ -44,6 +44,7 @@ class ProdPhysicalLocationModel extends BasicModel
     public function doc()
     {
         return '
+(Deprecated: See FloorSections)
 Depends on:
 * products (table)
 

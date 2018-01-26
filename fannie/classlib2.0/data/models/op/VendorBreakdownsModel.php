@@ -71,5 +71,13 @@ class VendorBreakdownsModel extends BasicModel
         return false;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+Vendor Breakdowns are deprecated and replaced by Vendor Aliases.
+            ';
+    }
+
 }
 

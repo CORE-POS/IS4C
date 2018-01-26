@@ -38,5 +38,15 @@ class LikeCodeActiveMapModel extends BasicModel
     'internalUse' => array('type'=>'TINYINT', 'default'=>0),
     'lastSold' => array('type'=>'DATETIME'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Track status and last-sold for like codes on a per-store basis.
+The internalUse field is used to designate likecodes that are
+purchased for non-retail use
+            ';
+    }
 }
 

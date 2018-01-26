@@ -38,5 +38,16 @@ class UsersModel extends BasicModel
     'real_name' => array('type'=>'VARCHAR(75)'),
     'email' => array('type'=>'VARCHAR(75)'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Authentication system. Stores user accounts. Session here is no
+longer used; UserSessions stores that instead. The password and
+salt fields are only relevant when authenticating against the
+table rather than an external source.
+            ';
+    }
 }
 

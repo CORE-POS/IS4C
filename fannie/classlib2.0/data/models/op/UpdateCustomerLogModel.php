@@ -71,5 +71,14 @@ class UpdateCustomerLogModel extends BasicModel
         return $this->save();
     }
 
+    public function doc()
+    {
+        return '
+Use:
+Log changes to customer accounts. This table logs fields that are
+specific to an individual person on the account.
+            ';
+    }
+
 }
 

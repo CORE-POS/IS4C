@@ -36,5 +36,9 @@ class NarrowTagsModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     );
 
+    public function doc()
+    {
+        return 'Indicates a product needs a narrow width tag';
+    }
 }
 
