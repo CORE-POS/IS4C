@@ -50,7 +50,7 @@ class OrdersTest extends PHPUnit_Framework_TestCase
             //'DefaultPdfPoExport', FPDF die()s because it can't ouput
             'ReceivingTagsExport',
             'Unfi7DigitCsvExport',
-            'WfcPoExport.php',
+            'WfcPoExport',
         );
         foreach ($exp as $e) {
             if (!class_exists($e)) {
