@@ -102,8 +102,8 @@ class AlertIncident extends FannieRESTfulPage
         }
         $model->save();
 
-        $modP = $dbc->prepare('UPDATE Incidents SET modified=? WHERE incidentID=?');
-        $dbc->execute($modP, array(date('Y-m-d H:i:s'), $this->id));
+        $modP = $this->connection->prepare('UPDATE Incidents SET modified=? WHERE incidentID=?');
+        $this->connection->execute($modP, array(date('Y-m-d H:i:s'), $this->id));
 
         return 'AlertIncident.php?id=' . $this->id;
     }
