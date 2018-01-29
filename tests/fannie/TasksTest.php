@@ -399,5 +399,32 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
         ob_end_clean();
     }
+
+    public function testRemote()
+    {
+        $task = new PullRemoteTransactionsTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testMultiDisrep()
+    {
+        $task = new MultiStoreProductDiscrepancyTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testVirtCoup()
+    {
+        $task = new VirtualCouponTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
 }
 
