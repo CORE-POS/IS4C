@@ -31,6 +31,9 @@ if (!class_exists('SoPoBridge')) {
 if (!class_exists('OrderNotifications')) {
     include(__DIR__ . '/OrderNotifications.php');
 }
+if (!class_exists('SpecialOrderLib')) {
+    include(__DIR__ . '/SpecialOrderLib.php');
+}
 
 class OrderViewPage extends FannieRESTfulPage
 {
@@ -780,67 +783,14 @@ class OrderViewPage extends FannieRESTfulPage
 
     private function genericRow($orderID)
     {
-        return array(
-        'order_id'=>$orderID,
-        'datetime'=>date('Y-m-d H:i:s'),
-        'emp_no'=>1001,
-        'register_no'=>30,
-        'trans_no'=>$orderID,
-        'upc'=>'0',
-        'description'=>"SPECIAL ORDER",
-        'trans_type'=>"C",
-        'trans_subtype'=>"",
-        'trans_status'=>"",
-        'department'=>0,
-        'quantity'=>0,
-        'scale'=>0,
-        'cost'=>0,
-        'unitPrice'=>0,
-        'total'=>0,
-        'regPrice'=>0,
-        'tax'=>0,
-        'foodstamp'=>0,
-        'discount'=>0,
-        'memDiscount'=>0,
-        'discountable'=>1,
-        'discounttype'=>0,
-        'voided'=>0,
-        'percentDiscount'=>0,
-        'ItemQtty'=>0,
-        'volDiscType'=>0,
-        'volume'=>0,
-        'VolSpecial'=>0,
-        'mixMatch'=>0,
-        'matched'=>0,
-        'memType'=>0,
-        'staff'=>0,
-        'numflag'=>0,
-        'charflag'=>"",   
-        'card_no'=>0,
-        'trans_id'=>0
-        );
+        $spoLib = new SpecialOrderLib($this->connection, $this->config);
+        return $spoLib->genericRow($orderID);
     }
 
     private function createContactRow($orderID)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
-        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
-
-        $so_order = new SpecialOrdersModel($dbc);
-        $so_order->specialOrderID($orderID);
-        $so_order->firstName('');
-        $so_order->lastName('');
-        $so_order->street('');
-        $so_order->city('');
-        $so_order->state('');
-        $so_order->zip('');
-        $so_order->phone('');
-        $so_order->altPhone('');
-        $so_order->email('');
-        $so_order->save();
-
-        $dbc->selectDB($this->config->get('OP_DB'));
+        $spoLib = new SpecialOrderLib($this->connection, $this->config);
+        return $spoLib->createContactRow($orderID);
     }
 
     protected function get_orderID_items_handler()
