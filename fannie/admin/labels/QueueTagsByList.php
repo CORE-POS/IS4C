@@ -108,13 +108,24 @@ HTML;
         $queues = new ShelfTagQueuesModel($dbc); 
         $queues->load();
         $options = $queues->toOptions();
-
+        
         return <<<HTML
+<p><button class="glyphicon glyphicon-chevron-left btn btn-default" id="back"></button></p>
 <form class="form-inline" method="get">
     <textarea name="list" class="form-control" rows="10"></textarea>
     <select name="tagID" class="form-control">{$options}</select>
     <button type="submit" class="btn btn-default">Add to Queue</button>
 </form>    
+HTML;
+    }
+
+    public function javascriptContent()
+    {
+        return <<<HTML
+$('#back').click(function(){
+    window.history.go(-1);
+    return false;
+});
 HTML;
     }
 }
