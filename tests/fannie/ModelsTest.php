@@ -5,6 +5,13 @@
  */
 class ModelsTest extends PHPUnit_Framework_TestCase
 {
+    public function testHooks()
+    {
+        $hook = new COREPOS\Fannie\API\data\hooks\BasicModelHook();
+        $this->assertEquals(false, $hook->operatesOnTAble('products'));
+        $this->assertEquals(null, $hook->onSave('products', null));
+    }
+
     public function testModels()
     {
         $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));

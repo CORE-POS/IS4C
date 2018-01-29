@@ -296,7 +296,6 @@ class FannieAPI
             case 'BasicModel':
                 $directories[] = dirname(__FILE__).'/data/models/';
                 break;
-            case 'BasicModelHook':
             case 'COREPOS\Fannie\API\data\hooks\BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;

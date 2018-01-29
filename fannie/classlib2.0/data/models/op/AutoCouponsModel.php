@@ -23,7 +23,6 @@
 
 /**
  * @class AutoCouponsModel
- * @codeCoverageIgnore
  */
 class AutoCouponsModel extends BasicModel
 {
