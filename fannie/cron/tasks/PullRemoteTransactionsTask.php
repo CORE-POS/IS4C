@@ -61,7 +61,7 @@ class PullRemoteTransactionsTask extends FannieTask
             if ($store->dbHost() == $this->config->get('SERVER')) {
                 // that's me! just continue.
                 continue;
-            } else if ($store->pull() == 0) {
+            } elseif ($store->pull() == 0 || $store->dbDriver() == '') {
                 // configured not to pull from this store
                 continue;
             }
