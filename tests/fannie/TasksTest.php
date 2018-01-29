@@ -372,5 +372,32 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
         ob_end_clean();
     }
+
+    public function testPaycards()
+    {
+        $task = new PaycardCleanTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testLaneTrim()
+    {
+        $task = new LaneTrimTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testPartial()
+    {
+        $task = new PartialBatchTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
 }
 
