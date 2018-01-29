@@ -58,7 +58,7 @@ class OrdersTest extends PHPUnit_Framework_TestCase
             }
             $obj = new $e();
             ob_start();
-            $e->export_order(1);
+            $obj->export_order(1);
             ob_end_clean();
         }
     }
