@@ -426,5 +426,14 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
         ob_end_clean();
     }
+
+    public function testRecvCost()
+    {
+        $task = new ReceivedCostTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
 }
 

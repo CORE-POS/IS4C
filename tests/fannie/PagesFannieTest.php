@@ -98,6 +98,29 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         var_dump($speed);
     }
 
+    public function testInstallPages()
+    {
+        $pages = array('InstallUpdatesPage');
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::get($op_db);
+        $dbc->throwOnFailure(true);
+        foreach ($pages as $page) {
+            if (!class_exists($page)) {
+                include(__DIR__ . '/../../fannie/install/' . $page . '.php');
+            }
+            $obj = new $page();
+            $obj->setConfig($config);
+            $obj->setLogger($logger);
+            $dbc->selectDB($op_db);
+            $obj->setConnection($dbc);
+            $obj = FannieDispatch::twig($obj);
+
+            $this->assertNotEquals(0, strlen($obj->body_content()));
+        }
+    }
+
     public function testBase()
     {
         $obj = new FanniePage();

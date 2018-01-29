@@ -57,49 +57,50 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
         } elseif (substr($name, 0, 7) == 'plugin:') {
             $settings = $this->config->get('PLUGIN_SETTINGS');
             $pluginDB = substr($name, 7);
-            if (isset($settings[$pluginDB])) {
-                return $settings[$pluginDB];
-            } else {
-                return false;
-            }
-        } else {
-            return false;
+            return isset($settings[$pluginDB]) ? $settings[$pluginDB] : false;
         }
+
+        return false;
     }
 
-    function body_content(){
+    private function runUpdate($updateClass)
+    {
+        $ret = '<div class="well">';
+        $ret .= 'Attempting to update model: "'.$updateClass.'"<br />';
+        if (!class_exists($updateClass)) {
+            $ret .= '<div class="alert alert-danger">Error: class not found</div>';
+        } elseif (!is_subclass_of($updateClass, 'BasicModel')) {
+            $ret .= '<div class="alert alert-danger">Error: not a valid model</div>';
+        } else {
+            $updateModel = new $updateClass(null);
+            $db_name = $this->normalize_db_name($updateModel->preferredDB());
+            if ($db_name === false) {
+                $ret .= '<div class="alert alert-danger">Error: requested database unknown</div>';
+            } else {
+                ob_start();
+                $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY, true);
+                $details = ob_get_clean();
+                if ($changes === false) {
+                    $ret .= '<div class="alert alert-danger">An error occured applying the update</div>';
+                } else {
+                    $ret .= '<div class="alert alert-success">Update complete</div>';
+                }
+                $ret .= sprintf(' <a href="" onclick="$(\'#updateDetails\').toggle();return false;"
+                    >Details</a><pre class="collapse" id="updateDetails">%s</pre>',
+                    $details);
+            }
+        }
+
+        return $ret;
+    }
+
+    public function body_content()
+    {
         ob_start();
         echo showInstallTabs('Updates');
-?>
-<p class="ichunk">Database Updates.</p>
-<?php
-        if (FormLib::get_form_value('mupdate') !== ''){
-            $updateClass = FormLib::get_form_value('mupdate');
-            echo '<div class="well">';
-            echo 'Attempting to update model: "'.$updateClass.'"<br />';
-            if (!class_exists($updateClass))
-                echo '<div class="alert alert-danger">Error: class not found</div>';
-            elseif(!is_subclass_of($updateClass, 'BasicModel'))
-                echo '<div class="alert alert-danger">Error: not a valid model</div>';
-            else {
-                $updateModel = new $updateClass(null);
-                $db_name = $this->normalize_db_name($updateModel->preferredDB());
-                if ($db_name === False)
-                    echo '<div class="alert alert-danger">Error: requested database unknown</div>';
-                else {
-                    ob_start();
-                    $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY, true);
-                    $details = ob_get_clean();
-                    if ($changes === False)
-                        echo '<div class="alert alert-danger">An error occured applying the update</div>';
-                    else
-                        echo '<div class="alert alert-success">Update complete</div>';
-                    printf(' <a href="" onclick="$(\'#updateDetails\').toggle();return false;"
-                        >Details</a><pre class="collapse" id="updateDetails">%s</pre>',
-                        $details);
-                }
-            }
-            echo '</div>';
+        echo '<p class="ichunk">Database Updates.</p>';
+        if (FormLib::get('mupdate') !== ''){
+            echo $this->runUpdate(FormLib::get('mupdate'));
         }
 
         $obj = new BasicModel(null);
@@ -118,11 +119,9 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
 
             if ($changes === False){
                 printf('<li>%s had errors.', $class);
-            }
-            elseif($changes > 0){
+            } elseif($changes > 0){
                 printf('<li>%s has updates available.', $class);
-            }
-            elseif($changes < 0){
+            } elseif($changes < 0){
                 printf('<li>%s does not match the schema but cannot be updated.', $class);
             }
 
@@ -138,8 +137,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
                     $class, $class, $details, $class,
                     $cmd, $db_name, $model_file
                     );
-            }
-            else if ($changes < 0 || $changes === False){
+            } elseif ($changes < 0 || $changes === False){
                 printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
                     >Details</a><br /><pre class="collapse" id="mDetails%s">%s</pre></li>',
                     $class, $class, $details
@@ -149,40 +147,6 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
         echo '</ul>';
 
         return ob_get_clean();
-    // body_content
-    }
-
-    private static function versionSort($a, $b) 
-    {
-        $a_valid = preg_match('/^(.*?)(\d+)\D(\d+)\D(\d+)\D/', $a, $a_parts);
-        $b_valid = preg_match('/^(.*?)(\d+)\D(\d+)\D(\d+)\D/', $b, $b_parts);
-        if (!$a_valid && !$b_valid) {
-            return 0;
-        } elseif ($a_valid && !$b_valid) {
-            return 1;
-        } elseif (!$a_valid && $b_valid) {
-            return -1;
-        }
-
-        if ($a_parts[2] > $b_parts[2]) { // major 
-            return 1;
-        } elseif ($a_parts[2] < $b_parts[2]) { // major 
-            return -1;
-        } elseif ($a_parts[3] > $b_parts[3]) { // minor 
-            return 1;
-        } elseif ($a_parts[3] < $b_parts[3]) { // minor
-            return -1;
-        } elseif ($a_parts[4] > $b_parts[4]) { // revision
-            return 1;
-        } elseif ($a_parts[4] < $b_parts[4]) { // revision
-            return -1;
-        } elseif (empty($a_parts[1]) && !empty($b_parts[1])) { // has prefix
-            return 1;
-        } elseif (!empty($a_parts[1]) && empty($b_parts[1])) { // has prefix
-            return -1;
-        } else {
-            return 0;
-        }
     }
 
 // InstallUpdatesPage
