@@ -14,6 +14,7 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
         foreach ($models as $class) {
             $obj = new $class($dbc);
             if (strstr($class, 'EWic')) continue;
+            echo "Testing POS model $class\n";
             // this just improves coverage; the doc method isn't
             // user-facing functionality
             $this->assertInternalType('string', $obj->doc());
