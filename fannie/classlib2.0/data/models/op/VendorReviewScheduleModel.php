@@ -37,5 +37,10 @@ class VendorReviewScheduleModel extends BasicModel
     'priority' => array('type'=>'INT', 'default'=>0),
     'exclude' => array('type'=>'TINYINT', 'default'=>0),
     );
+
+    public function doc()
+    {
+        return 'Stores schedule for vendor price review frequency';
+    }
 }
 
