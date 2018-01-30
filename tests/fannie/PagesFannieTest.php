@@ -59,6 +59,15 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
     {
         $pages = FannieAPI::listModules('FanniePage', true);
         $pages[] = 'COREPOS\\Fannie\\API\\FannieCRUDPage';
+        if (!class_exists('TableSyncPage', false)) {
+            include(__DIR__ . '/../../fannie/sync/TableSyncPage.php');
+        }
+        if (!class_exists('SyncIndexPage', false)) {
+            include(__DIR__ . '/../../fannie/sync/SyncIndexPage.php');
+        }
+        if (!class_exists('SyncRulesPage', false)) {
+            include(__DIR__ . '/../../fannie/sync/SyncRulesPage.php');
+        }
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');

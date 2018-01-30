@@ -355,5 +355,29 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
     {
         $this->assertInternalType('boolean', AuditLib::itemUpdate('0000000000111', true));
     }
+
+    public function testCSS()
+    {
+        ob_start();
+        include(__DIR__ . '/../../fannie/src/css/configurable.php');
+        $this->assertNotEquals(0, strlen(ob_get_clean()));
+    }
+
+    public function testLegacy()
+    {
+        if (!function_exists('cron_msg')) {
+            include(__DIR__ . '/../../fannie/src/cron_msg.php');
+        }
+        $this->assertInternalType('string', cron_msg('foo'));
+        if (!function_exists('select_to_table')) {
+            include(__DIR__ . '/../../fannie/src/functions.php');
+        }
+        $data = array(
+            array(0=>'5.5', 2=>'test'),
+        );
+        ob_start();
+        select_to_table3($data, 3, 1, '#ffffff');
+        $this->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
