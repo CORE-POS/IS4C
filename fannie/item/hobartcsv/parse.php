@@ -25,13 +25,17 @@ function parseitem($dowrite,$plu,$itemdesc,$tare,$shelflife,$price,$bycount,
     $i++;
   }
   
+  copycsv($CSV_dir, $DGW_dir, $session_key . '_wi_scale_');
+  copycsv($CSV_dir, $DGW_dir, $session_key . '_et_scale_');
+}
+
+function copycsv($src, $dest, $prefix)
+{
+  global $FANNIE_SCALES;
   for ($i = 0; $i < count($FANNIE_SCALES); $i++){
-    copy($CSV_dir."/".$session_key."_wi_scale_".$i.".csv",
-        $DGW_dir."/".$session_key."_wi_scale_".$i.".csv");
-    unlink($CSV_dir."/".$session_key."_wi_scale_".$i.".csv");
-    copy($CSV_dir."/".$session_key."_et_scale_".$i.".csv",
-    $DGW_dir."/".$session_key."_et_scale_".$i.".csv");
-    unlink($CSV_dir."/".$session_key."_et_scale_".$i.".csv");
+    copy($src."/".$prefix.$i.".csv",
+        $dest."/".$prefix.$i.".csv");
+    unlink($src."/".$prefix.$i.".csv");
   }
 }
 
@@ -58,13 +62,7 @@ function deleteitem($plu){
     $i++;
   }
 
-  for ($i = 0; $i < count($FANNIE_SCALES); $i++){
-    copy($CSV_dir."/".$session_key."_di_scale_".$i.".csv",
-         $DGW_dir."/".$session_key."_di_scale_".$i.".csv");
-    unlink($CSV_dir."/".$session_key."_di_scale_".$i.".csv");
-    copy($CSV_dir."/".$session_key."_dt_scale_".$i.".csv",
-         $DGW_dir."/".$session_key."_dt_scale_".$i.".csv");
-    unlink($CSV_dir."/".$session_key."_dt_scale_".$i.".csv");
-  }
+  copycsv($CSV_dir, $DGW_dir, $session_key . '_di_scale_');
+  copycsv($CSV_dir, $DGW_dir, $session_key . '_dt_scale_');
 }
 
