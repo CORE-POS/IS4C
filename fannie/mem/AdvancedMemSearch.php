@@ -357,51 +357,8 @@ class AdvancedMemSearch extends FannieRESTfulPage
         while ($couponW = $this->connection->fetchRow($couponR)) {
             $coupons .= sprintf('<option value="%s">%s</option>', $couponW['coupID'], $couponW['description']);
         }
+        $this->addScript('search.js');
         return <<<HTML
-<script type="text/javascript">
-function runSearch() {
-    var dstr = $('#memSearchForm').serialize();
-    $('#resultsArea').html('');
-    $('#progressBar').show();
-    $.ajax({
-        data: dstr,
-        method: 'post',
-    }).error(function (e1, e2, e3) {
-        $('#progressBar').hide();
-        $('#resultsArea').html(JSON.stringify(e1) + ", " + e2 + ", " + e3);
-    }).done(function (resp) {
-        $('#progressBar').hide();
-        $('#resultsArea').html(resp);   
-    });
-}
-function checkedCount(output_selector, checked_selector) {
-    var count = $(checked_selector + ':checked').length;
-    if (count == 0) {
-        $(output_selector).html('');
-    } else {
-        $(output_selector).html(count + ' items selected. These items will be retained in the next search.');
-    }
-}
-function toggleAll(elem, selector) {
-    if (elem.checked) {
-        $(selector).prop('checked', true);
-    } else {
-        $(selector).prop('checked', false);
-    }
-    checkedCount('#selection-counter', selector);
-}
-function sendTo(url) {
-    $('#sendForm').html('');
-    $('#sendForm').attr('action', url);
-    var checks = $('.savedCB:checked');
-    if (checks.length > 0) {
-        $.each(checks, function (i, o) {
-            $('#sendForm').append('<input type="hidden" name="id[]" value="' + o.value + '" />');
-        });
-        $('#sendForm').submit();
-    }
-}
-</script>
 <form method="post" id="memSearchForm" onsubmit="runSearch(); return false;">
 <div class="row">
 <div class="col-sm-11">
@@ -508,6 +465,37 @@ function sendTo(url) {
 </form>
 <form id="sendForm" method="post" target="_new"></form>
 HTML;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->get_view());
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_handler());
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->setMany(array(
+            'card_no' => 1,
+            'status' => 'PC',
+            'type' => 1,
+            'equityOp' => '>',
+            'equity' => 0,
+            'fn' => 'a',
+            'ln' => 'a',
+            'phone' => '1',
+            'email' => '@',
+            'addr' => '1',
+            'city' => 'a',
+            'state' => 'm',
+            'zip' => '1',
+            'join1' => '2000-01-01',
+            'isPrimary' => 1,
+            'usedCoupon' => 1,
+            'hasShopped' => 90,
+            'hasntShopped' => 30,
+        ));
+        $this->setForm($form);
+        $phpunit->assertEquals(false, $this->post_handler());
+        ob_end_clean();
     }
 }
 
