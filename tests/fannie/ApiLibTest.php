@@ -369,6 +369,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             include(__DIR__ . '/../../fannie/src/cron_msg.php');
         }
         $this->assertInternalType('string', cron_msg('foo'));
+
         if (!function_exists('select_to_table')) {
             include(__DIR__ . '/../../fannie/src/functions.php');
         }
@@ -378,6 +379,30 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         ob_start();
         select_to_table3($data, 3, 1, '#ffffff');
         $this->assertNotEquals(0, strlen(ob_get_clean()));
+
+        if (!function_exists('graph')) {
+            include(__DIR__ . '/../../fannie/reports/cash_report/graph.php');
+        }
+        $data = array(10, 20, 30);
+        $labels = array('Jan', 'Feb', 'Mar');
+        $file = tempnam(sys_get_temp_dir(), 'gph');
+        $ret = graph($data, $labels, $file);
+        if (file_exists($file)) {
+            unlink($file);
+        }
+        $this->assertEquals(22 + (10*3) + 2, $ret);
+
+        if (!function_exists('writeitem')) {
+            include(__DIR__ . '/../../fannie/item/hobartcsv/writecsv.php');
+        }
+        $file = tempnam(sys_get_temp_dir(), 'hbt');
+        writeitem($file, 'type', '127.0.0.1', 'dept', 'write', '1234', 'test', 0.01, 5, 1.99, 0, 'iType', 0.00, 1, 1);
+        $this->assertEquals(true, file_exists($file));
+        unlink($file);
+        $file = tempnam(sys_get_temp_dir(), 'hbt');
+        writetext($file, 'type', '127.0.0.1', 'dept', '1234', 'test');
+        $this->assertEquals(true, file_exists($file));
+        unlink($file);
     }
 }
 

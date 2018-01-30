@@ -75,5 +75,22 @@ class ModelsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(null, $model->updateCostByUPC('0000000000111', 1.00, 99));
     }
 
+    public function testParameters()
+    {
+        $param = new ParametersModel(null);
+        $param->is_array(0);
+        $param->param_value('true');
+        $this->assertEquals(true, $param->materializeValue());
+        $param->param_value('false');
+        $this->assertEquals(false, $param->materializeValue());
+        $param->param_value('foo');
+        $this->assertEquals('foo', $param->materializeValue());
+        $param->param_value('');
+        $param->is_array(1);
+        $this->assertEquals(array(), $param->materializeValue());
+        $param->param_value('foo=>bar,bar=>foo');
+        $this->assertEquals(array('foo'=>'bar','bar'=>'foo'), $param->materializeValue());
+    }
+
 }
 
