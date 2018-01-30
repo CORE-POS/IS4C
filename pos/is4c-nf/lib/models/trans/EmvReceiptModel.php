@@ -41,5 +41,14 @@ class EmvReceiptModel extends BasicModel
     'transID' => array('type'=>'INT'),
     'content' => array('type'=>'BLOB'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Store verbatim suggested receipt text that is returned
+with authorization attemps.
+            ';
+    }
 }
 
