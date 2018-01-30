@@ -1138,16 +1138,16 @@ HTML;
 
     public function unitTest($phpunit)
     {
-        $this->assertInternalType('string', $this->css_content());
-        $this->assertInternalType('string', $this->javascript_content());
-        $this->assertInternalType('string', $this->get_view());
-        $this->list = "4011\r\n111";
-        $this->assertInternalType('string', $this->get_list_view());
-        $this->upc = '4011';
-        $this->assertInternalType('string', $this->get_upc_view());
-        $this->vendor = 1;
-        $this->assertInternalType('string', $this->get_vendor_view());
-        $this->assertInternalType('string', $this->get_schedule_setup_view());
+        $phpunit->assertInternalType('string', $this->css_content());
+        $phpunit->assertInternalType('string', $this->javascript_content());
+        $phpunit->assertInternalType('string', $this->get_view());
+        $phpunit->list = "4011\r\n111";
+        $phpunit->assertInternalType('string', $this->get_list_view());
+        $phpunit->upc = '4011';
+        $phpunit->assertInternalType('string', $this->get_upc_view());
+        $phpunit->vendor = 1;
+        $phpunit->assertInternalType('string', $this->get_vendor_view());
+        $phpunit->assertInternalType('string', $this->get_schedule_setup_view());
     }
 }
 
