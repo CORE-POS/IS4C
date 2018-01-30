@@ -67,5 +67,13 @@ class ModelsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($pair, array(false, ''));
     }
 
+    public function testVendorItems()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $model = new VendorItemsModel($dbc);
+        $this->assertEquals(null, $model->createIfMissing('0000000000111', 99));
+        $this->assertEquals(null, $model->updateCostByUPC('0000000000111', 1.00, 99));
+    }
+
 }
 

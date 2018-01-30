@@ -57,68 +57,40 @@ memtype.
         ';
     }
 
-    protected function hookAddColumnCustdataType()
+    protected function addColumnFromDefaults($defaultCol, $myCol)
     {
-        if ($this->connection->table_exists('memdefaults')) {
-            $dataR = $this->connection->query('SELECT memtype, cd_type FROM memdefaults');
+        if ($this->connection->tableExists('memdefaults')) {
+            $dataR = $this->connection->query("SELECT memtype, {$defaultCol} FROM memdefaults");
             $tempModel = new MemtypeModel($this->connection);
-            while($dataW = $this->connection->fetch_row($dataR)) {
+            while ($dataW = $this->connection->fetchRow($dataR)) {
                 $tempModel->reset();
                 $tempModel->memtype($dataW['memtype']);
                 if ($tempModel->load()) {
-                    $tempModel->custdataType($dataW['cd_type']);
+                    $tempModel->$myCol($dataW[$defaultCol]);
                     $tempModel->save();
                 }
             }
         }
+    }
+
+    protected function hookAddColumnCustdataType()
+    {
+        $this->addColumnFromDefaults('cd_type', 'custdataType');
     }
 
     protected function hookAddColumnDiscount()
     {
-        if ($this->connection->table_exists('memdefaults')) {
-            $dataR = $this->connection->query('SELECT memtype, discount FROM memdefaults');
-            $tempModel = new MemtypeModel($this->connection);
-            while($dataW = $this->connection->fetch_row($dataR)) {
-                $tempModel->reset();
-                $tempModel->memtype($dataW['memtype']);
-                if ($tempModel->load()) {
-                    $tempModel->discount($dataW['discount']);
-                    $tempModel->save();
-                }
-            }
-        }
+        $this->addColumnFromDefaults('discount', 'discount');
     }
 
     protected function hookAddColumnStaff()
     {
-        if ($this->connection->table_exists('memdefaults')) {
-            $dataR = $this->connection->query('SELECT memtype, staff FROM memdefaults');
-            $tempModel = new MemtypeModel($this->connection);
-            while($dataW = $this->connection->fetch_row($dataR)) {
-                $tempModel->reset();
-                $tempModel->memtype($dataW['memtype']);
-                if ($tempModel->load()) {
-                    $tempModel->staff($dataW['staff']);
-                    $tempModel->save();
-                }
-            }
-        }
+        $this->addColumnFromDefaults('staff', 'staff');
     }
 
     protected function hookAddColumnSsi()
     {
-        if ($this->connection->table_exists('memdefaults')) {
-            $dataR = $this->connection->query('SELECT memtype, SSI FROM memdefaults');
-            $tempModel = new MemtypeModel($this->connection);
-            while($dataW = $this->connection->fetch_row($dataR)) {
-                $tempModel->reset();
-                $tempModel->memtype($dataW['memtype']);
-                if ($tempModel->load()) {
-                    $tempModel->ssi($dataW['SSI']);
-                    $tempModel->save();
-                }
-            }
-        }
+        $this->addColumnFromDefaults('SSI', 'ssi');
     }
 }
 
