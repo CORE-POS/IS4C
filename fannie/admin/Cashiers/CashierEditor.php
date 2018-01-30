@@ -23,11 +23,11 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class CashierEditor extends FanniePage {
-
+class CashierEditor extends FannieRESTfulPage
+{
     protected $title = "Fannie : Edit Cashier";
     protected $header = "Edit Cashier";
     protected $must_authenticate = True;
@@ -38,46 +38,51 @@ class CashierEditor extends FanniePage {
 
     private $messages = '';
 
-    public function preprocess()
+    public function post_handler()
     {
-        $emp_no = FormLib::get('emp_no',0);
+        try {
+            $emp_no = $this->form->emp_no;
+            $fname = $this->form->fname;
 
-        if (FormLib::get('fname') !== '') {
-            $dbc = FannieDB::get($this->config->get('OP_DB'));
+            if ($fname !== '') {
+                $dbc = FannieDB::get($this->config->get('OP_DB'));
 
-            // avoid duplicate passwords
-            $chkP = $dbc->prepare("
-                SELECT emp_no
-                FROM employees
-                WHERE (CashierPassword=? OR AdminPassword=?)
-                    AND emp_no <> ?");
-            $passwdInUse = $dbc->getValue($chkP, array(FormLib::get('passwd'), FormLib::get('passwd'), $emp_no));
-            if ($passwdInUse !== false) {
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Password already in use');\n");
-                return true;
+                // avoid duplicate passwords
+                $chkP = $dbc->prepare("
+                    SELECT emp_no
+                    FROM employees
+                    WHERE (CashierPassword=? OR AdminPassword=?)
+                        AND emp_no <> ?");
+                $passwdInUse = $dbc->getValue($chkP, array($this->form->passwd, $this->form->passwd, $emp_no));
+                if ($passwdInUse !== false) {
+                    $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Password already in use');\n");
+                    return true;
+                }
+
+                $employee = new EmployeesModel($dbc);
+                $employee->emp_no($emp_no);
+                $employee->FirstName($fname);
+                $employee->LastName($this->form->lname);
+                $employee->CashierPassword($this->form->passwd);
+                $employee->AdminPassword($this->form->passwd);
+                $employee->frontendsecurity($this->form->fes);
+                $employee->backendsecurity($this->form->fes);
+                $active = $this->form->tryGet('active', '') !== '' ? 1 : 0;
+                $employee->EmpActive($active);
+                $employee->birthdate($this->form->birthdate);
+                $saved = $employee->save();
+
+                $this->saveStoreMapping($dbc, $emp_no);
+
+                if ($saved) {
+                    $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
+                    $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', '$message');\n");
+                } else {
+                    $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
+                }
             }
-
-            $employee = new EmployeesModel($dbc);
-            $employee->emp_no($emp_no);
-            $employee->FirstName(FormLib::get('fname'));
-            $employee->LastName(FormLib::get('lname'));
-            $employee->CashierPassword(FormLib::get('passwd'));
-            $employee->AdminPassword(FormLib::get('passwd'));
-            $employee->frontendsecurity(FormLib::get('fes'));
-            $employee->backendsecurity(FormLib::get('fes'));
-            $active = FormLib::get('active') !== '' ? 1 : 0;
-            $employee->EmpActive($active);
-            $employee->birthdate(FormLib::get('birthdate'));
-            $saved = $employee->save();
-
-            $this->saveStoreMapping($dbc, $emp_no);
-
-            if ($saved) {
-                $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', '$message');\n");
-            } else {
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
-            }
+        } catch (Exception $ex) {
+            $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier (" . $ex->getMessage() . ")');\n");
         }
 
         return true;
@@ -87,7 +92,7 @@ class CashierEditor extends FanniePage {
     {
         $map = new StoreEmployeeMapModel($dbc);
         $map->empNo($emp_no);
-        $stores = FormLib::get('store', array());
+        $stores = $this->form->tryGet('store', array());
         foreach ($stores as $s) {
             $map->storeID($s);
             $map->save();
@@ -101,89 +106,97 @@ class CashierEditor extends FanniePage {
         }
     }
 
-    function body_content()
+    private function storeMapHtml($dbc, $emp_no)
     {
-        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
-        $ret = '';
-        if (!empty($this->messages)){
-            $ret .= '<blockquote style="background: solid 1x black; 
-                padding: 5px; margin: 5px;">';
-            $ret .= $this->messages;
-            $ret .= '</blockquote>';
-        }   
-
-        $emp_no = FormLib::get_form_value('emp_no',0);
-        $employee = new EmployeesModel($dbc);
-        $employee->emp_no($emp_no);
-        $employee->load();
-
-        ob_start();
-        ?>
-        <div id="alert-area"></div>
-        <form action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" method="post">
-        <div class="form-group">
-            <label>First Name</label>
-            <input type="text" name="fname" value="<?php echo $employee->FirstName(); ?>"
-                class="form-control" required />
-        </div>
-        <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" name="lname" value="<?php echo $employee->LastName(); ?>"
-                class="form-control" />
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="text" name="passwd" value="<?php echo $employee->CashierPassword(); ?>"
-                class="form-control" required />
-        </div>
-        <div class="form-group">
-            <label>Privileges</label>
-            <select name="fes" class="form-control">
-            <option value="20" <?php echo $employee->frontendsecurity() <= 20 ? 'selected' : '' ?>>Regular</option>
-            <option value="30" <?php echo $employee->frontendsecurity() > 20 ? 'selected' : '' ?>>Manager</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Active
-                <input type="checkbox" name="active" class="checkbox-inline"
-                    <?php echo $employee->EmpActive()==1 ? 'checked' : ''; ?> />
-            </label>
-        </div>
-        <div class="form-group">
-            <label>Birthdate</label>
-            <input type="text" class="form-control date-field" name="birthdate" 
-                id="birth-date-field" value="<?php echo $employee->birthdate(); ?>"
-                placeholder="Optional; for stores selling age-restricted items" />
-        </div>
-        <?php
+        $storeMap = '';
         if ($this->config->get('STORE_MODE') == 'HQ') {
-            echo '<div class="form-group">';
+            $storeMap .= '<div class="form-group">';
             $stores = new StoresModel($dbc);
-            $mapP = $dbc->prepare('SELECT storeID FROM StoreEmployeeMap WHERE storeID=? AND empNo=?');
+            $mapP = $dbc->prepare('SELECT storeID FROM ' . FannieDB::fqn('StoreEmployeeMap', 'op') . ' WHERE storeID=? AND empNo=?');
             foreach ($stores->find('storeID') as $s) {
                 $mapR = $dbc->execute($mapP, array($s->storeID(), $emp_no));
                 $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
-                printf('<label>
+                $storeMap .= sprintf('<label>
                     <input type="checkbox" name="store[]" value="%d" %s />
                     %s
                     </label> | ',
                     $s->storeID(),
                     $checked, $s->description());
             }
-            echo '</div>';
+            $storeMap .= '</div>';
         }
-        ?>
-        <p>
-            <button type="submit" class="btn btn-default">Save</button>
-            <button type="button" class="btn btn-default"
-                onclick="location='ViewCashiersPage.php';return false;">Back</button>
-        </p>
-        <input type="hidden" name="emp_no" value="<?php echo $emp_no; ?>" />
-        </form>
-        <?php
-        $this->add_onload_command("\$('input.form-control:first').focus();\n");
 
-        return ob_get_clean();
+        return $storeMap;
+    }
+
+    protected function post_view()
+    {
+        return $this->get_view();
+    }
+
+    protected function get_view()
+    {
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
+        $emp_no = $this->form->tryGet('emp_no',0);
+
+        $storeMap = $this->storeMapHtml($dbc, $emp_no);
+
+        $employee = new EmployeesModel($dbc);
+        $employee->emp_no($emp_no);
+        $employee->load();
+        $emp = $employee->toStdClass();
+        $select20 = $emp->frontendsecurity <= 20 ? 'selected' : '';
+        $select30 = $emp->frontendsecurity > 20 ? 'selected' : '';
+        $active = $emp->EmpActive ? 'checked' : '';
+
+        $action = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $this->addOnloadCommand("\$('input.form-control:first').focus();\n");
+
+        return <<<HTML
+<div id="alert-area"></div>
+<form action="{$action}" method="post">
+    <div class="form-group">
+        <label>First Name</label>
+        <input type="text" name="fname" value="{$emp->FirstName}"
+            class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" name="lname" value="{$emp->LastName}"
+            class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Password</label>
+        <input type="text" name="passwd" value="{$emp->CashierPassword}"
+            class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Privileges</label>
+        <select name="fes" class="form-control">
+        <option value="20" {$select20}>Regular</option>
+        <option value="30" {$select30}>>Manager</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Active
+            <input type="checkbox" name="active" class="checkbox-inline" {$active} />
+        </label>
+    </div>
+    <div class="form-group">
+        <label>Birthdate</label>
+        <input type="text" class="form-control date-field" name="birthdate" 
+            id="birth-date-field" value="{$emp->birthdate}"
+            placeholder="Optional; for stores selling age-restricted items" />
+    </div>
+    {$storeMap}
+    <p>
+        <button type="submit" class="btn btn-default">Save</button>
+        <a class="btn btn-default" href="ViewCashiersPage.php">Back</a>
+    </p>
+    <input type="hidden" name="emp_no" value="{$emp_no}" />
+</form>
+HTML;
+
     }
 
     public function helpContent()
@@ -198,8 +211,18 @@ class CashierEditor extends FanniePage {
     public function unitTest($phpunit)
     {
         $this->config->set('FANNIE_STORE_MODE', 'HQ');
-        $this->messages = 'Test Message';
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_view()));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->emp_no = 1;
+        $form->fname = 'Test';
+        $form->lname = '';
+        $form->passwd = '1234';
+        $form->fes = 20;
+        $form->birthdate = '2000-01-01';
+        $form->store = array(1);
+        $this->setForm($form);
+        $phpunit->assertEquals(true, $this->post_handler());
         $this->config->set('FANNIE_STORE_MODE', 'STORE');
     }
 }

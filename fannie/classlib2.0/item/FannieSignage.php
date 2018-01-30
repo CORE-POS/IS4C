@@ -695,14 +695,15 @@ class FannieSignage
         $upc = FormLib::get('update_upc', array());
         $brand = FormLib::get('update_brand', array());
         $desc = FormLib::get('update_desc', array());
-        $ignore = FormLib::get('ignore_desc', array());
+        $customOrigin = FormLib::get('custom_origin', array());
+        $stdOrigin = FormLib::get('update_origin', array());
         for ($i=0; $i<count($upc); $i++) {
             $bOver = isset($brand[$i]) ? $brand[$i] : '';
+            $coOver = isset($customOrigin[$i]) ? $customOrigin[$i] : '';
+            $oOver = isset($stdOrigin[$i]) ? $stdOrigin[$i] : 0;
             $dOver = '';
-            if (isset($ignore[$i]) && $ignore[$i] == 0 && isset($desc[$i])) {
-                $dOver = $desc[$i];
-            }
-            $overrides[$upc[$i]] = array('brand' => $bOver, 'desc' => $dOver);
+            $overrides[$upc[$i]] = array('brand' => $bOver, 'desc' => $dOver,
+                'custOrigin' => $coOver, 'stdOrigin'=>$oOver);
         }
         $excludes = array();
         foreach (FormLib::get('exclude', array()) as $e) {
@@ -723,18 +724,22 @@ class FannieSignage
         $data = $this->loadItems();
         $origins = $this->getOrigins();
         foreach ($data as $item) {
-            $oselect = '<select name="update_origin[]" class="FannieSignageField form-control originField"><option value="0"></option>'; 
-            foreach ($origins as $id => $name) {
-                $oselect .= sprintf('<option %s value="%d">%s</option>',
-                    ($id == $item['originID'] ? 'selected' : ''), $id, $name);
-            }
-            $oselect .= '</select>';
             if (isset($overrides[$item['upc']]) && $overrides[$item['upc']]['brand'] != '') {
                 $item['brand'] = $overrides[$item['upc']]['brand'];
             }
             if (isset($overrides[$item['upc']]) && $overrides[$item['upc']]['desc'] != '') {
                 $item['desc'] = $overrides[$item['upc']]['desc'];
             }
+            if (isset($overrides[$item['upc']]) && $overrides[$item['upc']]['stdOrigin'] != '') {
+                $item['originID'] = $overrides[$item['upc']]['stdOrigin'];
+            }
+            $item['custOrigin'] = isset($overrides[$item['upc']]['custOrigin']) ? $overrides[$item['upc']]['custOrigin'] : '';
+            $oselect = '<select name="update_origin[]" class="FannieSignageField form-control originField"><option value="0"></option>'; 
+            foreach ($origins as $id => $name) {
+                $oselect .= sprintf('<option %s value="%d">%s</option>',
+                    ($id == $item['originID'] ? 'selected' : ''), $id, $name);
+            }
+            $oselect .= '</select>';
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
                             <input type="hidden" name="update_upc[]" value="%s" />
@@ -744,13 +749,11 @@ class FannieSignage
                                 name="update_brand[]" value="%s" /></td>
                             <td>
                                 <span class="collapse">%s</span>
-                                <input class="FannieSignageField form-control" type="text" 
-                                name="update_desc[]" value="%s" />
-                                <input type="hidden" name="ignore_desc[]" value="%d" />
+                                <textarea class="FannieSignageField form-control small input-sm" rows="1" name="update_desc[]">%s</textarea>
                             </td>
                             <td>%.2f</td>
                             <td class="form-inline">%s<input type="text" name="custom_origin[]" 
-                                class="form-control FannieSignageField originField" placeholder="Custom origin..." value="" />
+                                class="form-control FannieSignageField originField" placeholder="Custom origin..." value="%s" />
                             </td>
                             <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" %s /></td>
                             </tr>',
@@ -761,9 +764,9 @@ class FannieSignage
                             $item['brand'],
                             str_replace('"', '&quot;', $item['description']),
                             str_replace('"', '&quot;', $item['description']),
-                            (strstr($item['description'], "\n") ? 1 : 0),
                             $item['normal_price'],
                             $oselect,
+                            $item['custOrigin'],
                             $item['upc'],
                             (in_array($item['upc'], $excludes) ? 'checked' : '')
             );

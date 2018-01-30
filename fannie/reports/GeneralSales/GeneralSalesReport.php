@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class GeneralSalesReport extends FannieReportPage 
@@ -47,12 +47,27 @@ class GeneralSalesReport extends FannieReportPage
     {
         parent::preprocess();
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
-            $this->add_script('../../src/javascript/d3.js/charts/pie/pie.js');
-            $this->add_onload_command('drawPieChart();');
+            $this->addScript('../../src/javascript/Chart.min.js');
+            $this->addScript('../../src/javascript/CoreChart.js');
+            $this->addOnloadCommand('pieChart();');
         }
 
         return true;
+    }
+
+    public function javascript_content()
+    {
+        if ($this->report_format != 'html') {
+            return '';
+        }
+        return <<<JAVASCRIPT
+function pieChart() {
+    var labels = $('.d3Label').toArray().map(x => x.innerHTML.trim());
+    var data = $('.d3Data').toArray().map(x => Number(x.innerHTML));
+    $('body').append('<div style="width:50%"><canvas id="pieCanvas"></canvas></div>');
+    CoreChart.pieChart('pieCanvas', labels, data);
+}
+JAVASCRIPT;
     }
 
     private function thenQuery($dbc, $dlog, $store)

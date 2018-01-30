@@ -25,7 +25,7 @@ use COREPOS\Fannie\API\item\ItemText;
 
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class ManualSignsPage extends FannieRESTfulPage 
@@ -139,7 +139,16 @@ class ManualSignsPage extends FannieRESTfulPage
         $ret .= '</div>';
         $ret .= '<hr />';
 
-        $ret .= <<<HTML
+        $ret .= $this->formTableHeader();
+        $ret .= $this->formTableBody($this->items);
+        $ret .= '</tbody></table>';
+
+        return $ret;
+    }
+
+    private function formTableHeader()
+    {
+        return <<<HTML
 <table class="table table-bordered table-striped small">
     <thead>
     <tr>
@@ -191,11 +200,16 @@ class ManualSignsPage extends FannieRESTfulPage
         </td>
     </tr>
 HTML;
-        $max = count($this->items) > 32 ? count($this->items) : 32;
+    }
+
+    private function formTableBody($items)
+    {
+        $max = count($items) > 32 ? count($items) : 32;
+        $ret = '';
         for ($i=0; $i<$max; $i++) {
-            $brand = isset($this->items[$i]) ? $this->items[$i]['brand'] : '';
-            $desc = isset($this->items[$i]) ? $this->items[$i]['description'] : '';
-            $size = isset($this->items[$i]) ? $this->items[$i]['size'] : '';
+            $brand = isset($items[$i]) ? $items[$i]['brand'] : '';
+            $desc = isset($items[$i]) ? $items[$i]['description'] : '';
+            $size = isset($items[$i]) ? $items[$i]['size'] : '';
             $ret .= <<<HTML
 <tr>
     <td><input type="text" name="brand[]" class="form-control input-sm input-brand" value="{$brand}" /></td>
@@ -212,7 +226,6 @@ HTML;
 </tr>
 HTML;
         }
-        $ret .= '</tbody></table>';
 
         return $ret;
     }

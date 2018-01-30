@@ -42,6 +42,8 @@ class FanniePage extends \COREPOS\common\ui\CorePage
     protected $title = 'Page window title';
     protected $header = 'Page displayed header';
 
+    public $default_db = false;
+
     /** wrapper around $_SESSION superglobal **/
     protected $session;
 
@@ -82,6 +84,30 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         return $ret;
     }
 
+    protected function getMessages()
+    {
+        if (!$this->current_user || !is_object($this->connection)) {
+            return '';
+        }
+        $uid = FannieAuth::getUID($this->current_user);
+        $msg = new COREPOS\Fannie\API\auth\Notifications($this->connection, $this->config);
+        $msgs = $msg->getMessages($uid);
+        $ret = '';
+        foreach ($msgs as $m) {
+            $ret .= '<div class="alert alert-info">';
+            if ($m['url']) {
+                $ret .= '<a href="' . $url . '">';
+            }
+            $ret .= $m['message'];
+            if ($m['url']) {
+                $ret .= '</a>';
+            }
+            $ret .= '</div>';
+        }
+
+        return $ret;
+    }
+
     /**
       Get the standard header
       @return An HTML string
@@ -107,7 +133,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
                 $this->addScript($url . 'src/javascript/jquery-ui.js');
             }
             $this->addScript($url . 'src/javascript/calculator.js');
-            $this->addScript($url . 'src/javascript/core.js');
+            $this->addScript($url . 'src/javascript/core.js?date=20171213');
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                 // windows has trouble with symlinks
                 $this->addCssFile($url . 'src/javascript/jquery-ui-1.10.4/css/smoothness/jquery-ui.min.css?id=20140625');
@@ -128,6 +154,8 @@ class FanniePage extends \COREPOS\common\ui\CorePage
             $this->addScript($url . 'src/javascript/linea/WebHub.js');
             $this->addScript($url . 'src/javascript/linea/core.js');
         }
+
+        echo $this->getMessages();
 
         return ob_get_clean();
     }

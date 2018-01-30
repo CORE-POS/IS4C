@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class AddCashierPage extends FannieRESTfulPage 
@@ -83,7 +83,7 @@ class AddCashierPage extends FannieRESTfulPage
     {
         $idQ = $dbc->prepare("
             SELECT MAX(emp_no) AS max
-            FROM employees 
+            FROM " . FannieDB::fqn('employees', 'op') . "
             WHERE emp_no < 1000
         ");
         $idR = $dbc->execute($idQ);
@@ -100,7 +100,7 @@ class AddCashierPage extends FannieRESTfulPage
     {
         $passwd = '';
         srand();
-        $checkP = $dbc->prepare("SELECT * FROM employees WHERE CashierPassword=?");
+        $checkP = $dbc->prepare("SELECT * FROM " . FannieDB::fqn('employees', 'op') . " WHERE CashierPassword=?");
         while ($passwd === '') {
             $newpass = rand(1000,9999);
             $checkR = $dbc->execute($checkP,array($newpass));

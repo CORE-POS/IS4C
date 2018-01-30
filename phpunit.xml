@@ -66,6 +66,7 @@
                 <directory>fannie/cron/LanePush</directory>
                 <directory>fannie/cron/Suspensions</directory>
                 <directory>fannie/per_coop</directory>
+                <directory>fannie/reports/noauto</directory>
                 <directory>fannie/reports/Store-Specific</directory>
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>

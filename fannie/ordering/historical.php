@@ -27,7 +27,7 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 $edit = FannieAuth::validateUserQuiet('ordering_edit');
 if (Store::getIdByIp() == 2 || $edit || FannieConfig::config('SO_UI') === 'bootstrap') {
@@ -35,7 +35,7 @@ if (Store::getIdByIp() == 2 || $edit || FannieConfig::config('SO_UI') === 'boots
     return;
 }
 if (!function_exists('checkLogin')) {
-    include($FANNIE_ROOT.'auth/login.php');
+    include(__DIR__ . '/../auth/login.php');
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
@@ -53,7 +53,7 @@ $header = "Manage Special Orders";
 if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
     $header = "Special Orders for Member #".((int)$_REQUEST['card_no']);
 }
-//include($FANNIE_ROOT.'src/header.html');
+//include(__DIR__ . '/../src/header.html');
 echo '<html>
     <head><title>'.$page_title.'</title>
     <link rel="STYLESHEET" href="'.$FANNIE_URL.'src/style.css" type="text/css">
@@ -385,5 +385,5 @@ function applyMemNum(n){
 }
 </script>
 <?php
-//include($FANNIE_ROOT.'src/footer.html');
+//include(__DIR__ . '/../src/footer.html');
 

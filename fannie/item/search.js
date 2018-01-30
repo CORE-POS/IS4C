@@ -51,18 +51,6 @@ function getItems() {
     });
     return ret;
 }
-function goToBatch() {
-    if (getItems()) {
-        $('#actionForm').attr('action', '../batches/BatchFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToEdit() {
-    if (getItems()) {
-        $('#actionForm').attr('action', 'EditItemsFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
 function goToList() {
     if (getItems()) {
         $('#actionForm').attr('action', 'ProductListPage.php');
@@ -70,39 +58,12 @@ function goToList() {
         $('#actionForm').submit();
     }
 }
-function goToSigns() {
-    if (getItems()) {
-        $('#actionForm').attr('action', '../admin/labels/SignFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToManualSigns() {
-    if (getItems()) {
-        $('#actionForm').attr('action', '../admin/labels/ManualSignsPage.php');
-        $('#actionForm').submit();
-    }
-}
-function goToMargins() {
-    if (getItems()) {
-        $('#actionForm').attr('action', 'MarginToolFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToCoupons() {
-    if (getItems()) {
-        $('#actionForm').attr('action', '../modules/plugins2.0/HouseCoupon/HouseCouponEditor.php');
-        $('#actionForm').submit();
-    }
-}
-function goToSync() {
-    if (getItems()) {
-        $('#actionForm').attr('action', 'hobartcsv/SyncFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
 function goToReport() {
+    goToPage($('#reportURL').val());
+}
+function goToPage(url) {
     if (getItems()) {
-        $('#actionForm').attr('action', $('#reportURL').val());
+        $('#actionForm').attr('action', url);
         $('#actionForm').submit();
     }
 }

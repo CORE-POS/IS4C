@@ -1,9 +1,9 @@
 <?php
 include('../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 $header = "Miscellaneous Payment";
 $page_title = "Fannie :: Misc Payment";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../../src/header.html');
 
 $LANE_NO=30;
 $EMP_NO=1001;
@@ -75,7 +75,7 @@ function regularDisplay()
         \$<input type=text name=amount /></td></tr>
         <tr><td><b>Department</b></td>
         <td><select name=dept>";
-    $numsQ = $dbc->prepare("SELECT dept_no,dept_name FROM departments 
+    $numsQ = $dbc->prepare("SELECT dept_no,dept_name FROM " . FannieDB::fqn('departments', 'op') . "
         ORDER BY dept_no");
     $numsR = $dbc->execute($numsQ);
     while($numsW = $dbc->fetch_row($numsR)){
@@ -87,7 +87,7 @@ function regularDisplay()
     echo "</select></td></tr>
         <tr><td><b>Tender Type</b></td>
         <td><select name=tender>";
-    $numsQ = $dbc->prepare("SELECT TenderCode,TenderName FROM tenders 
+    $numsQ = $dbc->prepare("SELECT TenderCode,TenderName FROM " . FannieDB::fqn('tenders', 'op') . "
         ORDER BY TenderName");
     $numsR = $dbc->execute($numsQ);
     while($numsW = $dbc->fetch_row($numsR)){
@@ -126,20 +126,20 @@ function bill($amt,$desc,$dept,$tender){
     global $FANNIE_OP_DB,$EMP_NO,$LANE_NO,$CARD_NO, $FANNIE_TRANS_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 
-    $tnQ = $dbc->prepare("SELECT TenderName FROM tenders WHERE TenderCode=?");
+    $tnQ = $dbc->prepare("SELECT TenderName FROM " . FannieDB::fqn('tenders', 'op') . " WHERE TenderCode=?");
     $tnR = $dbc->execute($tnQ,array($tender));
     $tname = array_pop($dbc->fetchRow($tnR));
 
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
-    $transQ = $dbc->prepare("SELECT MAX(trans_no) FROM dtransactions
+    $transQ = $dbc->prepare("SELECT MAX(trans_no) FROM " . FannieDB::fqn('dtransactions', 'trans') . "
         WHERE emp_no=? AND register_no=?");
     $transR = $dbc->execute($transQ,array($EMP_NO,$LANE_NO));
     $t_no = array_pop($dbc->fetchRow($transR));
     if ($t_no == "") $t_no = 1;
     else $t_no++;
 
-    $insQ = $dbc->prepare("INSERT INTO dtransactions VALUES (
+    $insQ = $dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " VALUES (
         ".$dbc->now().",0,0,?,?,?,
         ?,?,'D','','',?,
         1.0,0,0.00,?,?,?,0,0,.0,.0,
@@ -151,7 +151,7 @@ function bill($amt,$desc,$dept,$tender){
 
     $amt *= -1;
     $amt = sprintf('%.2f',$amt);
-    $insQ2 = $dbc->prepare("INSERT INTO dtransactions VALUES (
+    $insQ2 = $dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " VALUES (
         ".$dbc->now().",0,0,?,?,?,
         0,?,'T',?,0,0,
         0.0,0,0.00,.0,?,.0,0,0,.0,.0,
@@ -165,5 +165,5 @@ function bill($amt,$desc,$dept,$tender){
         $EMP_NO,$LANE_NO,$t_no);
 }
 
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../../src/footer.html');
 

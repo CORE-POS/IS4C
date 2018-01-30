@@ -136,7 +136,7 @@ class MemberLib
 
             \CoreLocal::set("memMsg", $memMsg);
             \CoreLocal::set("memMsg", $memMsg . _(' : Intra Coop spent: $') .
-               number_format(((float)CoreLocal::get("balance") * 1),2)
+               number_format(((float)\CoreLocal::get("balance") * 1),2)
             );
 
             if ($member < 99000) {
@@ -224,12 +224,12 @@ class MemberLib
 
                     // Store Charge
                     \CoreLocal::set("memMsg", $memMsg . _(' : Store Charge: $') .
-                        number_format(((float)CoreLocal::get("availBal") * 1),2)
+                        number_format(((float)\CoreLocal::get("availBal") * 1),2)
                     );
                     // Prepay
                     if ($limit == 0.00) {
                         \CoreLocal::set("memMsg", $memMsg . _(' : Pre Pay: $') .
-                            number_format(((float)CoreLocal::get("availBal") * 1),2)
+                            number_format(((float)\CoreLocal::get("availBal") * 1),2)
                         );
                     }
                 }
@@ -333,7 +333,7 @@ class MemberLib
             $prep = $conn->prepare('SELECT discount, staff, ssi 
                                     FROM memtype
                                     WHERE memtype=?');
-            $res = $conn->execute($prep, array((int)CoreLocal::get('memType')));
+            $res = $conn->execute($prep, array((int)\CoreLocal::get('memType')));
             if ($conn->numRows($res) > 0) {
                 $mtRow = $conn->fetchRow($res);
                 $row['Discount'] = $mtRow['discount'];
@@ -402,6 +402,9 @@ class MemberLib
         }
 
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            return false;
+        }
 
         if (\CoreLocal::get('NoCompat') != 1 && !$dbc->tableExists("unpaid_ar_today")) return false;
 

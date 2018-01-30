@@ -21,9 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\common\mvc\FormValueContainer;
+
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class MemberEditor extends FanniePage {
@@ -84,9 +86,11 @@ class MemberEditor extends FanniePage {
                 $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
                 \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
                 FannieAPI::listModules('COREPOS\Fannie\API\member\MemberModule');
+                $form = new FormValueContainer();
                 foreach($FANNIE_MEMBER_MODULES as $mm){
                     if (class_exists($mm)) {
                         $instance = new $mm();
+                        $instance->setForm($form);
                         $saved = $instance->saveFormData($this->memNum, $account);
                         /**
                           The API return type is changing here. Any un-updated

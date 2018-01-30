@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -58,6 +58,9 @@ class SaHandheldPage extends FannieRESTfulPage
         if ($this->id !== '') {
             $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
             $upc = BarcodeLib::padUPC($this->id);
+            if (substr($upc, 0, 3) == '002') {
+                $upc = substr($upc, 0, 7) . '000000';
+            }
             $ret['upc'] = $upc;     
             $store = FormLib::get('store', 0);
             $q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
@@ -135,6 +138,9 @@ class SaHandheldPage extends FannieRESTfulPage
         $ret = array();
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $upc = BarcodeLib::padUPC($this->id);
+        if (substr($upc, 0, 3) == '002') {
+            $upc = substr($upc, 0, 7) . '000000';
+        }
         $qty = FormLib::get('qty',0);
         $store = FormLib::get('store', 0);
 
@@ -239,7 +245,7 @@ Device = new ScannerDevice({
 });
 ScannerDevice.registerListener(Device);
 
-if (typeof WebBarcode == 'object') {
+if (typeof WebBarcode != 'undefined') {
     WebBarcode.onBarcodeScan(function(ev) {
         var data = ev.value;
         var upc = data.substring(0,data.length-1);
@@ -247,6 +253,12 @@ if (typeof WebBarcode == 'object') {
         $('#goBtn').click();
     });
 }
+document.addEventListener("BarcodeScanned", function (ev) {
+    var data = ev.value;
+    var upc = data.substring(0,data.length-1);
+    $('#upc_in').val(upc);
+    $('#goBtn').click();
+}, false);
         <?php } ?>
 
         <?php

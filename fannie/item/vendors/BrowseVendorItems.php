@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class BrowseVendorItems extends FanniePage 
@@ -124,7 +124,7 @@ class BrowseVendorItems extends FanniePage
             $guess .= ' AND v.vendorDept=? ';
             $args[] = $did;
         }
-        $guess .= ' ORDER BY count(*) DESC';
+        $guess .= ' GROUP BY s.superID ORDER BY count(*) DESC';
 
         $prep = $dbc->prepare($guess);
         $result = $dbc->execute($prep, $args);
@@ -143,6 +143,7 @@ class BrowseVendorItems extends FanniePage
                         INNER JOIN vendorItems AS v ON p.upc=v.upc
                       WHERE v.vendorID=?
                         AND v.vendorDept=?
+                      GROUP BY s.superID
                       ORDER BY count(*) DESC';
             $prep = $dbc->prepare($guess);
             $result = $dbc->execute($prep, array($vid, $did));
@@ -202,7 +203,10 @@ class BrowseVendorItems extends FanniePage
         
         $ret = "<table class=\"table table-bordered\">";
         $ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
-        $ret .= "<th>Size</th><th>Cost</th><th>Price</th><th>Dept.</th><th>&nbsp;</th></tr>";
+        $ret .= "<th>Size</th><th>Cost</th><th>Price</th>
+            <th class=\"form-inline\">Dept. <select onchange=\"\$('.dept-select').val(this.value);\" 
+                class=\"form-control small\">{$depts}</select></th>
+            <th>&nbsp;</th></tr>";
         $p = $dbc->prepare($query);
         $result = $dbc->execute($p,$args);
         while ($row = $dbc->fetch_row($result)) {
@@ -239,7 +243,7 @@ class BrowseVendorItems extends FanniePage
                             <input type=text size=5 value=%.2f id=price%s 
                                 class=\"form-control price-field\" />
                         </div>
-                    </td><td><select id=\"dept%s\" class=\"form-control\">%s</select></td>
+                    </td><td><select id=\"dept%s\" class=\"form-control dept-select\">%s</select></td>
                     <td id=button%s>
                     <button type=button value=\"Add to POS\" class=\"btn btn-default\"
                     onclick=\"addToPos('%s');\">Add to POS</button></td>
@@ -272,14 +276,14 @@ class BrowseVendorItems extends FanniePage
         
         $model = new ProductsModel($dbc);
         $model->upc(BarcodeLib::padUPC($upc));
-        $model->description($vinfo['description']);
+        $model->description(substr($vinfo['description'], 0, 30));
         $model->normal_price($price);
         $model->department($dept);
         $model->tax($dinfo['dept_tax']);
         $model->foodstamp($dinfo['dept_fs']);
         $model->cost($vinfo['cost']);
         $model->default_vendor_id($vid);
-        $model->brand($vinfo['brand']);
+        $model->brand(substr($vinfo['brand'], 0, 30));
         $model->store_id(1);
         $model->save();
 

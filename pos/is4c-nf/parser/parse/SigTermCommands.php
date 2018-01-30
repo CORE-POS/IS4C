@@ -203,11 +203,16 @@ class SigTermCommands extends Parser
                 $this->cbError = false;
                 $this->session->set("CacheCardCashBack",$cashback);
             }
-            $this->session->set('ccTermState','pin');
+            if (!$this->session->get('PaycardsDatacapMode')) {
+                $this->session->set('ccTermState','pin');
+            }
             if ($this->session->get('PaycardsStateChange') == 'coordinated') {
                 UdpComm::udpSend('termGetPin');
             }
 
+            return true;
+
+        } elseif ($str == 'TERMSIG') {
             return true;
         }
 
@@ -220,6 +225,8 @@ class SigTermCommands extends Parser
         $ret['scale'] = ''; // redraw righthand column
         if ($str == "CCFROMCACHE") {
             $ret['retry'] = $this->session->get("CachePanEncBlock");
+        } elseif ($str == 'TERMSIG') {
+            $ret['main_frame'] = 'SigCapturePage.php?code=TO&type=Credit';
         }
         if ($this->cbError) {
             $ret['output'] = DisplayLib::boxMsg(

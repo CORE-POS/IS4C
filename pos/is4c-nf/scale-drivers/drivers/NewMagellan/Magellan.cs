@@ -34,6 +34,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection;
 
 #if NEWTONSOFT_JSON
 using Newtonsoft.Json;
@@ -49,6 +50,8 @@ using CustomUDP;
 using SPH;
 using Discover;
 
+[assembly: AssemblyVersion("1.0.*")]
+
 public class Magellan : DelegateForm 
 {
     private List<SerialPortHandler> sph;
@@ -56,8 +59,10 @@ public class Magellan : DelegateForm
     private bool asyncUDP = true;
     private bool disableRBA = false;
     private bool disableButtons = false;
+    private bool logXML = false;
     private Object msgLock = new Object();
     private ushort msgCount = 0;
+    private static string log_path = "debug_lane.log";
 
     private bool mq_enabled = false;
     private bool full_udp = false;
@@ -76,6 +81,9 @@ public class Magellan : DelegateForm
     {
         var d = new Discover.Discover();
         var modules = d.GetSubClasses("SPH.SerialPortHandler");
+        var my_location = AppDomain.CurrentDomain.BaseDirectory;
+        var sep = Path.DirectorySeparatorChar;
+        Magellan.log_path = my_location + sep + ".." + sep + ".." + sep + ".." + sep + "log" + sep + "debug_lane.log";
 
         List<MagellanConfigPair> conf = ReadConfig();
         sph = new List<SerialPortHandler>();
@@ -89,6 +97,8 @@ public class Magellan : DelegateForm
                     s.SetVerbose(verbosity);
                     s.SetConfig("disableRBA", this.disableRBA ? "true" : "false");
                     s.SetConfig("disableButtons", this.disableButtons ? "true" : "false");
+                    s.SetConfig("logXML", this.logXML ? "true" : "false");
+                    s.SetConfig(pair.settings);
                     sph.Add(s);
                 } else {
                     throw new Exception("unknown module: " + pair.module);
@@ -143,32 +153,50 @@ public class Magellan : DelegateForm
 
     private void UdpListen()
     {
-        u = new UDPMsgBox(9450, this.asyncUDP);
-        u.SetParent(this);
-        u.My_Thread.Start();
+        try {
+            u = new UDPMsgBox(9450, this.asyncUDP);
+            u.SetParent(this);
+            u.My_Thread.Start();
+        } catch (Exception ex) {
+            Magellan.LogMessage(ex.ToString());
+            Console.WriteLine("Failed to start UDP server");
+            Console.WriteLine(ex);
+        }
     }
 
     private void MonitorSerialPorts()
     {
-        var valid = sph.Where(s => s != null);
-        valid.ToList().ForEach(s => { s.SPH_Thread.Start(); });
+        try {
+            var valid = sph.Where(s => s != null);
+            valid.ToList().ForEach(s => { s.SPH_Thread.Start(); });
+        } catch (Exception ex) {
+            Magellan.LogMessage(ex.ToString());
+        }
     }
 
     public void MsgRecv(string msg)
     {
-        if (msg == "exit") {
-            this.ShutDown();
-        } else if (msg == "full_udp") {
-            full_udp = true;
-        } else if (msg == "mq_up" && mq_available) {
-            mq_enabled = true;
-        } else if (msg == "mq_down") {
-            mq_enabled = false;
-        } else if (msg == "status") {
-            byte[] body = System.Text.Encoding.ASCII.GetBytes(Status());
-            getClient().Send(body, body.Length); 
-        } else {
-            sph.ForEach(s => { s.HandleMsg(msg); });
+        try {
+            if (msg == "exit") {
+                this.ShutDown();
+            } else if (msg == "die!") {
+                new Thread(() => this.ShutDown()).Start();
+                Thread.Sleep(500);
+                Environment.Exit(0);
+            } else if (msg == "full_udp") {
+                full_udp = true;
+            } else if (msg == "mq_up" && mq_available) {
+                mq_enabled = true;
+            } else if (msg == "mq_down") {
+                mq_enabled = false;
+            } else if (msg == "status") {
+                byte[] body = System.Text.Encoding.ASCII.GetBytes(Status());
+                getClient().Send(body, body.Length); 
+            } else {
+                sph.ForEach(s => { s.HandleMsg(msg); });
+            }
+        } catch (Exception ex) {
+            Magellan.LogMessage(ex.ToString());
         }
     }
 
@@ -184,49 +212,65 @@ public class Magellan : DelegateForm
 
     public void MsgSend(string msg)
     {
-        if (full_udp) {
-            byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
-            getClient().Send(body, body.Length); 
-        } else if (mq_available && mq_enabled) {
-            #if CORE_RABBIT
-            byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
-            rabbit_channel.BasicPublish("", "core-pos", null, body);
-            #endif
-        } else {
-            lock (msgLock) {
-                string filename = System.Guid.NewGuid().ToString();
-                string my_location = AppDomain.CurrentDomain.BaseDirectory;
-                char sep = Path.DirectorySeparatorChar;
-                /**
-                  Depending on msg rate I may replace "1" with a bigger value
-                  as long as the counter resets at least once per 65k messages
-                  there shouldn't be sequence issues. But real world disk I/O
-                  may be trivial with a serial message source
-                */
-                if (msgCount % 1 == 0 && Directory.GetFiles(my_location+sep+"ss-output/").Length == 0) {
-                    msgCount = 0;
-                }
-                filename = msgCount.ToString("D5") + filename;
-                msgCount++;
+        try {
+            if (full_udp) {
+                byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
+                getClient().Send(body, body.Length); 
+            } else if (mq_available && mq_enabled) {
+                #if CORE_RABBIT
+                byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
+                rabbit_channel.BasicPublish("", "core-pos", null, body);
+                #endif
+            } else {
+                lock (msgLock) {
+                    string filename = System.Guid.NewGuid().ToString();
+                    string my_location = AppDomain.CurrentDomain.BaseDirectory;
+                    char sep = Path.DirectorySeparatorChar;
+                    /**
+                      Depending on msg rate I may replace "1" with a bigger value
+                      as long as the counter resets at least once per 65k messages
+                      there shouldn't be sequence issues. But real world disk I/O
+                      may be trivial with a serial message source
+                    */
+                    if (msgCount % 1 == 0 && Directory.GetFiles(my_location+sep+"ss-output/").Length == 0) {
+                        msgCount = 0;
+                    }
+                    filename = msgCount.ToString("D5") + filename;
+                    msgCount++;
 
-                TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+filename);
-                sw = TextWriter.Synchronized(sw);
-                sw.WriteLine(msg);
-                sw.Close();
-                File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+filename,
-                      my_location+sep+"ss-output/" +sep+filename);
+                    TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+filename);
+                    sw = TextWriter.Synchronized(sw);
+                    sw.WriteLine(msg);
+                    sw.Close();
+                    File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+filename,
+                          my_location+sep+"ss-output/" +sep+filename);
+                }
             }
+        } catch (Exception ex) {
+            Magellan.LogMessage(ex.ToString());
         }
     }
 
     public void ShutDown()
     {
         try {
-            sph.ForEach(s => { s.Stop(); });
             u.Stop();
+            sph.ForEach(s => { s.Stop(); });
         }
         catch(Exception ex) {
+            Magellan.LogMessage(ex.ToString());
             Console.WriteLine(ex);
+        }
+    }
+
+    private static void LogMessage(string msg)
+    {
+        try {
+            using (StreamWriter sw = File.AppendText(Magellan.log_path)) {
+                sw.WriteLine(DateTime.Now.ToString() + ": " + msg);
+            }
+        } catch (Exception ex) {
+            Console.WriteLine("Failed to log: " + ex.ToString());
         }
     }
 
@@ -247,7 +291,7 @@ public class Magellan : DelegateForm
             // filter list to valid entries
             var valid = o["NewMagellanPorts"].Where(p=> p["port"] != null && p["module"] != null);
             // map entries to ConfigPair objects
-            var pairs = valid.Select(p => new MagellanConfigPair(){port=(string)p["port"], module=(string)p["module"]});
+            var pairs = valid.Select(p => new MagellanConfigPair(){port=(string)p["port"], module=(string)p["module"], settings=p.ToObject<Dictionary<string,string>>()});
             conf = pairs.ToList();
 
             // print errors for invalid entries
@@ -266,6 +310,7 @@ public class Magellan : DelegateForm
             // not a fatal problem
         } catch (Exception ex) {
             // unexpected exception
+            Magellan.LogMessage(ex.ToString());
             Console.WriteLine(ex);
         }
         try {
@@ -282,6 +327,11 @@ public class Magellan : DelegateForm
             JObject o = JObject.Parse(ini_json);
             var dbt = (bool)o["disableButtons"];
             this.disableButtons = dbt;
+        } catch (Exception) {}
+        try {
+            JObject o = JObject.Parse(ini_json);
+            var lx = (bool)o["logXML"];
+            this.logXML = lx;
         } catch (Exception) {}
 
         return conf;
@@ -329,7 +379,15 @@ public class Magellan : DelegateForm
         return conf;
     }
 
-    static public void Main(string[] args)
+    // log unhandled exception before app dies
+    static void LastRites(object sender, UnhandledExceptionEventArgs args) 
+    {
+        Exception ex = (Exception) args.ExceptionObject;
+        Magellan.LogMessage(ex.ToString());
+        Environment.Exit(1);
+    }
+
+    static public int Main(string[] args)
     {
         int verbosity = 0;
         for (int i=0;i<args.Length;i++){
@@ -339,10 +397,24 @@ public class Magellan : DelegateForm
                     try { verbosity = Int32.Parse(args[i+1]); }
                     catch{}
                 }
+            } else if (args[i] == "-m") {
+                // Reference a class in SPH to force SPH.dll to load
+                var load = new List<SerialPortHandler>();
+                var d = new Discover.Discover();
+                var modules = d.GetSubClasses("SPH.SerialPortHandler").Where(t => !t.IsAbstract).ToList();
+                modules.Sort((a,b) => a.ToString().CompareTo(b.ToString()));
+                Console.WriteLine("Available modules:");
+                foreach (var m in modules) {
+                    Console.WriteLine("  " + m);
+                }
+                return 0;
             }
         }
+        AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(LastRites);
         new Magellan(verbosity);
         Thread.Sleep(Timeout.Infinite);
+
+        return 0;
     }
 }
 
@@ -353,4 +425,6 @@ public class MagellanConfigPair
 {
     public string port { get; set; }
     public string module { get; set; }
+    public Dictionary<string,string> settings { get; set; }
 }
+

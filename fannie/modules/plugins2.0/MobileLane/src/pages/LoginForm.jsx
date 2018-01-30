@@ -10,7 +10,7 @@ import {
     Alert
 } from 'react-bootstrap';
 const $ = require('jquery');
-import LOGIN from './../lib/State.jsx';
+import { LOGIN } from './../lib/State.jsx';
 
 export default class LoginForm extends React.Component {
     constructor(props) {

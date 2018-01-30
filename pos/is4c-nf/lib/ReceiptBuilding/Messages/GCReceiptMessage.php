@@ -55,6 +55,9 @@ class GCReceiptMessage extends ReceiptMessage
         $dbc = Database::tDataConnect();
         if ($reprint) {
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                return '';
+            }
         }
 
         $order = ($sigSlip) ? 'DESC' : 'ASC';

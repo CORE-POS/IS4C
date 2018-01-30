@@ -3,8 +3,8 @@
     *  4Apr2013 Eric Lee No change for WEFC_Toronto. CORE does this differently now.
 */
 function allLanes($upc){
-  global $FANNIE_LANES, $FANNIE_ROOT;
-  if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+  global $FANNIE_LANES;
+  if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../src/SQLManager.php");
   $ret = "";
 
   $queryItem = '';

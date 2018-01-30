@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class GeneralDayReport extends FannieReportPage 
@@ -45,6 +45,20 @@ class GeneralDayReport extends FannieReportPage
 
     protected $report_headers = array('Desc','Qty','Amount');
     protected $required_fields = array('date');
+
+    public function preprocess()
+    {
+        if ($this->report_format == 'html' && $this->hasAllFields($this->required_fields)) {
+            $this->addScript('../../src/javascript/Chart.min.js');
+            $this->addScript('../../src/javascript/CoreChart.js?date=20171207');
+            $this->addScript('generalDay.js?date=20171207');
+            $this->addOnloadCommand('generalDay.tenders();');
+            $this->addOnloadCommand('generalDay.sales();');
+            $this->addOnloadCommand('generalDay.members();');
+        }
+
+        return parent::preprocess();
+    }
 
     function fetch_report_data()
     {
@@ -323,8 +337,7 @@ class GeneralDayReport extends FannieReportPage
 
     function form_content()
     {
-        ob_start();
-        ?>
+        return <<<HTML
         <form action=GeneralDayReport.php method=get>
         <div class="form-group">
             <label>
@@ -332,7 +345,7 @@ class GeneralDayReport extends FannieReportPage
                 (<a href="../GeneralRange/">Range of Dates</a>)
             </label>
             <input type=text id=date name=date 
-                class="form-control date-field" required />
+                class="form-control date-field" />
         </div>
         <div class="form-group">
             <label>List Sales By</label>
@@ -350,8 +363,7 @@ class GeneralDayReport extends FannieReportPage
             class="btn btn-default">Submit</button>
         </p>
         </form>
-        <?php
-        return ob_get_clean();
+HTML;
     }
 
     public function helpContent()

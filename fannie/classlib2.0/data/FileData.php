@@ -49,6 +49,8 @@ class FileData
         } elseif (substr(basename($filename),-3) == 'lsx') {
             // php tempfile nameing only allows a three character prefix
             return self::xlsxToArray($filename, $limit);
+        } elseif (substr(basename($filename),-3) == 'pdf') {
+            return self::pdfToArray($filename, $limit);
         } else {
             return array();
         }
@@ -158,6 +160,63 @@ class FileData
         return date('Y-m-d H:i:s', mktime($hour, $minutes, $seconds, 1, $days-1, 1900));
     }
 
+    /**
+      Reduce potential for CSV based exploits
+
+      Different spreadsheet software *may* interpret values in CSVs/TSVs
+      that begin with =, @, +, or - as forumals and cause the spreadsheet to
+      execute the cell's value. This may or may not include user-facing 
+      warning messages.
+
+      One common solution is to prefix such fields with single quote ('). I'm
+      not using that option since it creates different headaches for users trying
+      to use the CSV/TSV as a data interchange format rather than just look at
+      it in Excel. Instead:
+
+      1. Leading =, @, or + characters are simply removed. This should include multiples,
+         e.g. "=@+=1+1" becomes "1+1". This creates a small set of strings that cannot
+         be used as product names, brands, etc but should be an OK compromise.
+      2. Values with a leading - do need to be allowed. This are validated as either
+         negative integers (-123) or negative floats (-123.45).
+    */
+    public static function excelNoFormula($str)
+    {
+        $first = substr(trim($str), 0, 1);
+        while ($first == '=' || $first == '@' || $first == '+' || $first == '-') {
+            $str = trim($str);
+            switch (substr($str, 0, 1)) {
+                case '-':
+                    if (preg_match('/^-[0-9]+\.[0-9]+$/', $str) || preg_match('/^-[0-9]+$/', $str)) {
+                        return $str;
+                    }
+                    return 'badval';
+                    break;
+
+                case '=':
+                case '@':
+                case '+':
+                default:
+                    $str = substr($str, 1);
+                    break;
+            }
+            $first = substr(trim($str), 0, 1);
+        }
+
+        return $str;
+    }
+
+    public static function pdfToArray($filename, $limit)
+    {
+        if (!class_exists('\\Smalot\\PdfParser\\Parser')) {
+            return false;
+        }
+
+        $parser = new \Smalot\PdfParser\Parser();
+        $pdf = $parser->parseFile($filename);
+        $lines = explode("\n", $pdf->getText());
+
+        return $limit ? array_slice($lines, 0, $limit) : $lines;
+    }
 }
 
 }

@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'/classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
@@ -69,7 +69,7 @@ class PIB2BListPage extends PIKillerPage
             } else {
                 $date = date('Y-m-d', strtotime($inv->paidDate()));
                 printf('<td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s %s</a></td></tr>',
-                    $date, $inv->paidTransNum(), $date, $inv->paidTransNum());
+                    $this->config->get('URL'), $date, $inv->paidTransNum(), $date, $inv->paidTransNum());
             }
             $rowcount++;
             if ($rowcount > 100 && !$this->all) {

@@ -27,9 +27,7 @@
    is much faster than SQLManager transfer
 */
 
-if (!isset($FANNIE_ROOT)) {
-    include(dirname(__FILE__).'/../../config.php');
-}
+include(dirname(__FILE__).'/../../config.php');
 
 $ret = 0;
 $output = array();

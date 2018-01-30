@@ -29,6 +29,7 @@ use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Kickers\Kicker;
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -81,6 +82,14 @@ class Steering extends Parser
                 }
                 return true;
 
+            case 'GIFT':
+                if ($this->session->get("LastID") != "0") {
+                    $this->ret['output'] = $in_progress_msg;
+                } else {
+                    $this->ret['main_frame'] = $myUrl."gui-modules/giftReceiptList.php";
+                }
+                return true;
+
             case "PV":
                 $this->ret['main_frame'] = $myUrl."gui-modules/productlist.php";
                 if (isset($pvsearch) && $pvsearch != '') {
@@ -130,6 +139,13 @@ class Steering extends Parser
                 return true;
             case 'RESUME':
                 $this->ret['main_frame'] = $myUrl."gui-modules/suspendedlist.php";
+                if ($this->session->get("SecuritySR") > 20) {
+                    $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
+                }
+                return true;
+            case 'SUSPEND':
+                $token = FormLib::generateToken();
+                $this->ret['main_frame'] = "{$myUrl}gui-modules/adminlist.php?selectlist=SUSPEND&crsfToken={$token}";
                 if ($this->session->get("SecuritySR") > 20) {
                     $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
                 }

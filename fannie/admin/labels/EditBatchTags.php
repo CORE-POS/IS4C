@@ -23,7 +23,7 @@
 
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class EditBatchTags extends FanniePage 
@@ -35,51 +35,39 @@ class EditBatchTags extends FanniePage
 
     public $description = '[Edit Batch Shelf Tags] updates the text information for a set of tags.';
 
+    private function getOrDefault($field, $index, $default)
+    {
+        $arr = FormLib::get($field, array());
+        return isset($arr[$index]) ? $arr[$index] : $default;
+    }
+
     public function preprocess()
     {
         $this->ids = FormLib::get('batchID',0);
 
         if (FormLib::get('submit', false) !== false) {
             $upcs = FormLib::get('upc',array());
-            $descs = FormLib::get('desc',array());
-            $prices = FormLib::get('price',array());
-            $brands = FormLib::get('brand',array());
-            $skus = FormLib::get('sku',array());
-            $sizes = FormLib::get('size',array());
-            $units = FormLib::get('units',array());
-            $vendors = FormLib::get('vendor',array());
-            $ppos = FormLib::get('ppo',array());
 
             $dbc = FannieDB::get($this->config->get('OP_DB'));
             $tag = new BatchBarcodesModel($dbc);
             for ($i = 0; $i < count($upcs); $i++){
                 $batchID = $this->ids[$i];
                 $upc = $upcs[$i];
-                $desc = isset($descs[$i]) ? $descs[$i] : '';
-                $price = isset($prices[$i]) ? $prices[$i] : 0;
-                $brand = isset($brands[$i]) ? $brands[$i] : '';
-                $size = isset($sizes[$i]) ? $sizes[$i] : '';
-                $sku = isset($skus[$i]) ? $skus[$i] : '';
-                $unit = isset($units[$i]) ? $units[$i] : 1;
-                $vendor = isset($vendors[$i]) ? $vendors[$i] : '';
-                $ppo = isset($ppos[$i]) ? $ppos[$i] : '';
-                $count = isset($counts[$i]) ? $counts[$i] : 1;
             
                 $tag->batchID($batchID);
                 $tag->upc($upc);
-                $tag->description($desc);
-                $tag->normal_price($price);
-                $tag->brand($brand);
-                $tag->sku($sku);
-                $tag->size($size);
-                $tag->units($unit);
-                $tag->vendor($vendor);
-                $tag->pricePerUnit($ppo);
+                $tag->description($this->getOrDefault('desc', $i, ''));
+                $tag->normal_price($this->getOrDefault('price', $i, 0));
+                $tag->brand($this->getOrDefault('brand', $i, ''));
+                $tag->sku($this->getOrDefault('sku', $i, ''));
+                $tag->size($this->getOrDefalt('size', $i, ''));
+                $tag->units($this->getOrDefault('units', $i, ''));
+                $tag->vendor($this->getOrDefault('vendor', $i, ''));
+                $tag->pricePerUnit($this->getOrDefault('ppo', $i, ''));
                 $tag->save();
             }
-            header("Location: BatchShelfTags.php");
 
-            return false;
+            return 'BatchShelfTags.php';
         }
 
         return true;

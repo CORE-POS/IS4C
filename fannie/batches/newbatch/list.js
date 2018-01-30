@@ -1,3 +1,75 @@
+
+var batchList = (function($) {
+
+    var mod = {};
+
+    /**
+      State data controlling how list
+      is currently displayed
+    */
+    var filters = {
+        owner: "",
+        store: "",
+        name: "",
+        date: "",
+    };
+    var mode = "all";
+    var pageStart = "";
+
+    /**
+      Refetch list from server based on current
+      display criteria
+    */
+    var redrawList = function() {
+        var data = 'mode=' + encodeURIComponent(mode);
+        data += '&filter=' + encodeURIComponent(JSON.stringify(filters));
+        data += '&max=' + encodeURIComponent(pageStart);
+        $.ajax({
+            url: 'BatchListPage.php',
+            type: 'get',
+            data: data
+        }).done(function(resp) {
+            $('#displayarea').html(resp);
+        });
+    };
+
+    /**
+      Update mode state & redraw
+      Reset page start since new time slice might have
+      fewer pages
+    */
+    mod.changeTimeSlice = function(m) {
+        mode = m;
+        pageStart = '';
+        redrawList();
+    };
+
+    /**
+      Update paging state & redraw
+    */
+    mod.movePage = function(p) {
+        pageStart = p;
+        redrawList();
+    };
+
+    /**
+      Update filters state & redraw
+      Reset page start since new filtered set might have
+      fewer pages
+    */
+    mod.refilter = function() {
+        filters.owner = $('#filterOwner').val();
+        filters.store = $('#filterStore').val();
+        filters.name = $('#filterName').val();
+        filters.date = $('#filterDate').val();
+        pageStart = '';
+        redrawList();
+    };
+
+    return mod;
+
+}(jQuery));
+
 function newBatch()
 {
     var dataStr = $('#newBatchForm').serialize();
@@ -132,37 +204,3 @@ function deleteBatch(id, name)
     }
 }
 
-function getFilters()
-{
-    var filters = {};
-    filters.owner = $('#filterOwner').val();
-    filters.store = $('#filterStore').val();
-    filters.name = $('#filterName').val();
-    filters.date = $('#filterDate').val();
-
-    return JSON.stringify(filters);
-}
-
-function changeTimeSlice(mode) 
-{
-    batchListPager(getFilters(), mode, '');
-}
-
-function reFilter()
-{
-    batchListPager(getFilters(), 'all', '');
-}
-
-function batchListPager(filter,mode,batchID)
-{
-    var data = 'mode=' + encodeURIComponent(mode);
-    data += '&filter=' + encodeURIComponent(filter);
-    data += '&max=' + encodeURIComponent(batchID);
-    $.ajax({
-        url: 'BatchListPage.php',
-        type: 'get',
-        data: data
-    }).done(function(resp) {
-        $('#displayarea').html(resp);
-    });
-}

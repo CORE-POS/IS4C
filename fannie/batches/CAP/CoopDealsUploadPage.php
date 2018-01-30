@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
@@ -84,9 +84,9 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         );
         $insP = $dbc->prepare('
             INSERT INTO CoopDealsItems 
-                (dealSet, upc, price, abtpr, multiplier)
+                (dealSet, upc, price, abtpr, multiplier, promoDiscount)
             VALUES
-                (?, ?, ?, ?, ?)');
+                (?, ?, ?, ?, ?, ?)');
 
         return array($upcP, $skuP, $insP);
     }
@@ -175,13 +175,14 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             $price = trim($data[$indexes['price']],"\$");
+            $promo = $data[$indexes['Promo Discount']];
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                $dbc->execute($insP,array($month,$upc,$price,$type,$mult));
+                $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo));
             }
             $linked = $this->checkScaleItem($dbc, $upc);
             if ($linked) {
                 foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult));
+                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult,$promo));
                 }
             }
         }
@@ -222,8 +223,8 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     public function unitTest($phpunit)
     {
         $phpunit->assertNotEquals(0, strlen($this->results_content()));
-        $indexes = array('upc'=>0, 'price'=>1, 'abt'=>2, 'sku'=>3, 'mult'=>4);
-        $data = array('4011', 0.99, 'ABTPR', '4011', '2/$2');
+        $indexes = array('upc'=>0, 'price'=>1, 'abt'=>2, 'sku'=>3, 'mult'=>4, 'promoDiscount'=>5);
+        $data = array('4011', 0.99, 'ABTPR', '4011', '2/$2', '20%');
         for ($i=0; $i<14; $i++) {
             $data[] = 0;
         }

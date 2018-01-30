@@ -47,7 +47,7 @@ class BatchesModel extends BasicModel
     {
         return '
 Depends on:
-* batchType
+Wthis->* batchType
 
 Use:
 This table contains basic information
@@ -71,18 +71,21 @@ those same items revert to normal pricing.
     */
     public function forceStartBatch($id)
     {
-        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
-        $batchInfoR = $this->connection->execute($batchInfoQ,array($id));
-        $batchInfoW = $this->connection->fetchRow($batchInfoR);
+        $b_def = $this->connection->tableDefinition($this->name);
+        $exit = isset($b_def['exitInventory']) ? 'exitInventory' : '0 AS exitInventory';
+        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType,{$exit} FROM batches WHERE batchID = ?");
+        $batchInfoW = $this->connection->getRow($batchInfoQ,array($id));
+        if ($batchInfoW['discountType'] < 0) {
+            return;
+        }
 
         $forceQ = "";
         $forceLCQ = "";
         // verify limit columns exist
-        $b_def = $this->connection->tableDefinition($this->name);
         $p_def = $this->connection->tableDefinition('products');
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
-        if ($batchInfoW['discountType'] != 0) { // item is going on sale
+        if ($batchInfoW['discountType'] > 0) { // item is going on sale
             $forceQ="
                 UPDATE products AS p
                     INNER JOIN batchList AS l ON p.upc=l.upc
@@ -105,6 +108,9 @@ those same items revert to normal pricing.
                     p.modified = NOW()
                 WHERE l.upc not like 'LC%'
                     and l.batchID = ?";
+            if (isset($p_def['batchID'])) {
+                $forceQ = str_replace('NOW()', 'NOW(), p.batchID=b.batchID', $forceQ);
+            }
                 
             $forceLCQ = "
                 UPDATE products AS p
@@ -129,6 +135,9 @@ those same items revert to normal pricing.
                     p.modified = NOW()
                 WHERE l.upc LIKE 'LC%'
                     AND l.batchID = ?";
+            if (isset($p_def['batchID'])) {
+                $forceLCQ = str_replace('NOW()', 'NOW(), p.batchID=b.batchID', $forceLCQ);
+            }
 
             if ($this->connection->dbmsName() == 'mssql') {
                 $forceQ="UPDATE products
@@ -175,7 +184,7 @@ those same items revert to normal pricing.
                     left join batches as b on b.batchID = l.batchID
                     where b.batchID=?";
             }
-        } else { // normal price is changing
+        } elseif ($batchInfoW['discountType'] == 0) { // normal price is changing
             $forceQ = "
                 UPDATE products AS p
                     INNER JOIN batchList AS l ON l.upc=p.upc
@@ -243,9 +252,23 @@ those same items revert to normal pricing.
         }
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
+        if ($batchInfoW['discountType'] != 0 && $batchInfoW['exitInventory'] == 1) {
+            $invP = $this->connection->prepare("
+                UPDATE InventoryCounts AS i
+                SET i.par=0
+                WHERE i.mostRecent=1
+                    AND i.upc IN (
+                        SELECT b.upc FROM batchList AS b WHERE b.batchID=?
+                    )");
+            $invR = $this->connection->execute($invP, array($id));
+        }
 
         $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
         $this->finishForce($id, $updateType, $has_limit);
+        
+        $bu = new BatchUpdateModel($this->connection);
+        $bu->batchID($id);
+        $bu->logUpdate($bu::UPDATE_FORCED);
     }
 
     /**
@@ -270,8 +293,8 @@ those same items revert to normal pricing.
             // cannot find batch. do not change products
             return false;
         }
-        if ($self['discountType'] == 0) {
-            // price change batch. nothing to stop.
+        if ($self['discountType'] <= 0) {
+            // price change batch or tracking batch. nothing to stop.
             return true;
         }
         if ($self['current'] == 0) {
@@ -338,6 +361,9 @@ those same items revert to normal pricing.
 
         $updateType = ProdUpdateModel::UPDATE_PC_BATCH;
         $this->finishForce($id, $updateType, $has_limit);
+        $bu = new BatchUpdateModel($this->connection);
+        $bu->batchID($id);
+        $bu->logUpdate($bu::UPDATE_STOPPED);
     }
 
     /**
@@ -428,9 +454,13 @@ those same items revert to normal pricing.
         */
         $FANNIE_LANES = FannieConfig::config('LANES');
         for ($i = 0; $i < count($FANNIE_LANES); $i++) {
-            $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
-                $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
-                $FANNIE_LANES[$i]['pw']);
+            try {
+                $lane_sql = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+                    $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+                    $FANNIE_LANES[$i]['pw']);
+            } catch (Exception $ex) {
+                continue;
+            }
             
             if (!isset($lane_sql->connections[$FANNIE_LANES[$i]['op']]) || $lane_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
                 // connect failed

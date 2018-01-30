@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class SuperDeptEditor extends FanniePage {
@@ -173,7 +173,8 @@ class SuperDeptEditor extends FanniePage {
 
         $delP = $dbc->prepare("DELETE FROM superDeptNames WHERE superID=?");
         $dbc->execute($delP,array($id));
-        $insP = $dbc->prepare("INSERT INTO superDeptNames VALUES (?,?)");
+        $insP = $dbc->prepare("INSERT INTO superDeptNames (superID, super_name)" .
+                " VALUES (?,?)");
         $dbc->execute($insP,array($id,$name));
 
         return array('id' => $id, 'name' => $name);

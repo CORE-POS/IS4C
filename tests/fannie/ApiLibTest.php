@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\data\FileData;
+
 /**
  * @backupGlobals disabled
  */
@@ -317,6 +319,32 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         ob_start();
         FannieDispatch::runPage('AdminIndexPage');
         ob_end_clean();
+    }
+
+    public function testFileData()
+    {
+        $expect = array(
+            '=asdf' => 'asdf',
+            '@asdf' => 'asdf',
+            '+asdf' => 'asdf',
+            ' +asdf' => 'asdf',
+            ' ++==@=asdf' => 'asdf',
+            '-123' => '-123',
+            '-123.45' => '-123.45',
+            '-=asdf' => 'badval',
+            ' -=asdf' => 'badval',
+        );
+        foreach ($expect as $input => $output) {
+            $this->assertEquals($output, FileData::excelNoFormula($input));
+        }
+    }
+
+    public function testDbWrapper()
+    {
+        $config = FannieConfig::factory();
+        $this->assertEquals($config->get('OP_DB') . '.foo', FannieDB::fqn('foo', 'op'));
+        $this->assertEquals($config->get('TRANS_DB') . '.foo', FannieDB::fqn('foo', 'trans'));
+        $this->assertEquals($config->get('ARCHIVE_DB') . '.foo', FannieDB::fqn('foo', 'arch'));
     }
 }
 

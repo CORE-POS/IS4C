@@ -47,7 +47,7 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
         $myLC = $this->getLikeCode($dbc, $upc);
         $ret = '<div id="LikeCodeFieldSet" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
-                <a href=\"\" onclick=\"\$('#LikeCodeFieldsetContent').toggle();return false;\">
+                <a href=\"\" onclick=\"\$('#LikeCodeFieldsetContent').toggle();$('#likeCodeSelect').chosen();return false;\">
                 Likecode
                 </a></div>";
         $style = '';
@@ -64,7 +64,7 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
                 <b>Like code</b> <button type=\"button\" id=\"lcAddButton\"
                 class=\"btn btn-default\">+</button> ";
         $ret .= "<select name=likeCode id=\"likeCodeSelect\" 
-                onchange=\"updateLcModList(this.value);\" class=\"chosenSelect form-control\">";
+                onchange=\"updateLcModList(this.value);\" class=\"chosen-select form-control\">";
         $ret .= "<option value=-1>(none)</option>";
     
         $lcm = new LikeCodesModel($dbc);

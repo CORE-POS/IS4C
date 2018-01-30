@@ -23,10 +23,10 @@
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('checkLogin')) {
-    include($FANNIE_ROOT.'auth/login.php');
+    include(__DIR__ . '/../auth/login.php');
 }
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -387,21 +387,6 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
                 $ins_array['mixMatch'] = $v->vendorName();
             }
         }
-        /**
-          If no vendor name was found, try looking in prodExtra
-        */
-        if (empty($ins_array['mixMatch']) && $dbc->tableExists('prodExtra')) {
-            $distP = $dbc->prepare('
-                SELECT x.distributor
-                FROM prodExtra AS x
-                WHERE x.upc=?
-            ');
-            $distR = $dbc->execute($distP, array($upc));
-            if ($distR && $dbc->num_rows($distR) > 0) {
-                $distW = $dbc->fetch_row($distR);
-                $ins_array['mixMatch'] = substr($distW['distributor'],0,26);
-            }
-        }
     } elseif ($srp != 0) {
         // use vendor SRP if applicable
         $ins_array['regPrice'] = $srp*$caseSize*$num_cases;
@@ -729,7 +714,7 @@ function getCustomerForm($orderID,$memNum="0")
         $current_street = $orderModel->street();
         $current_phone = $orderModel->phone();
         if (empty($current_street) && empty($current_phone)) {
-            $contactQ = $dbc->prepare("SELECT street,city,state,zip,phone,email_1,email_2
+            $contactQ = $dbc->prepare("SELECT street,city,state,zip,phone,email_1,email_2 AS altPhone
                     FROM meminfo WHERE card_no=?");
             $contactR = $dbc->execute($contactQ, array($memNum));
             if ($dbc->num_rows($contactR) > 0) {
@@ -741,7 +726,7 @@ function getCustomerForm($orderID,$memNum="0")
                 $orderModel->state($contact_row['state']);
                 $orderModel->zip($contact_row['zip']);
                 $orderModel->phone($contact_row['phone']);
-                $orderModel->altPhone($contact_row['email_2']);
+                $orderModel->altPhone($contact_row['altPhone']);
                 $orderModel->email($contact_row['email_1']);
                 $orderModel->save();
                 $orderModel->specialOrderID($orderID);

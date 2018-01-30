@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
@@ -121,21 +121,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $SKU_TO_PLU_MAP[$skusW['sku']] = array();
             }
             $SKU_TO_PLU_MAP[$skusW['sku']][] = $skusW;
-        }
-
-        // Repack items that are mapped to bulk items
-        $LINKED_MAP = array();
-        $linkP = $dbc->prepare('
-            SELECT p.upc,
-                s.plu
-            FROM products AS p 
-                INNER JOIN scaleItems AS s ON p.upc=s.linkedPLU
-            WHERE p.default_vendor_id=?
-            GROUP BY p.upc,
-                s.plu');
-        $linkR = $dbc->execute($linkP, array($VENDOR_ID));
-        while ($linkW = $dbc->fetchRow($linkR)) {
-            $LINKED_MAP[$linkW['upc']] = $linkW['plu'];
         }
 
         $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
@@ -257,6 +242,9 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $size = 'LB';
                 }
 
+                if ($alias['multiplier'] == 0 || $alias['multiplier']*$reg_unit == 0) {
+                    $alias['multiplier'] = 1;
+                }
                 $dbc->execute($extraP, array($reg_unit*$alias['multiplier'],$alias['upc']));
                 $dbc->execute($prodP, array($reg_unit*$alias['multiplier'],$organic_flag,$gf_flag,$alias['upc'],$VENDOR_ID));
                 $updated_upcs[] = $alias['upc'];

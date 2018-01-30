@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class SmartMovementReport extends FannieReportPage 
@@ -91,7 +91,12 @@ class SmartMovementReport extends FannieReportPage
             ' . $stores['html'] . '
             <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Change Dates</button>
             <button type="submit" onclick="$(\'#excel\').val(\'csv\');return true;">Download</button>
-            </form>';
+            </form>
+            <style type="text/css">
+            .ui-datepicker {
+                z-index: 999 !important;
+            }
+            </style>';
 
         $this->add_onload_command("\$('.date-field').datepicker({dateFormat:'yy-mm-dd'});");
         
@@ -116,7 +121,7 @@ class SmartMovementReport extends FannieReportPage
                         t.department,
                         d.dept_name,
                         m.super_name,
-                        COALESCE(v.vendorName,x.distributor) AS distributor,
+                        v.vendorName AS distributor,
                         i.sku
                     " . $from_where['query'] . "
                     GROUP BY t.upc,
@@ -126,7 +131,7 @@ class SmartMovementReport extends FannieReportPage
                         t.department,
                         d.dept_name,
                         m.super_name,
-                        COALESCE(v.vendorName,x.distributor)
+                        v.vendorName
                     ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':

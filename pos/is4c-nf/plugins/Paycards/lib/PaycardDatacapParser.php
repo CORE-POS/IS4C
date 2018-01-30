@@ -57,8 +57,9 @@ class PaycardDatacapParser extends Parser
         'DATACAPRECUR',
     );
     
-    public function __construct()
+    public function __construct($session)
     {
+        parent::__construct($session);
         $this->conf = new PaycardConf();
     }
 
@@ -84,19 +85,23 @@ class PaycardDatacapParser extends Parser
         $this->conf->set('paycard_amount', $this->conf->get('amtdue'));
         $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
         $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
+        $str = $this->remap($str);
         switch ($str) {
             case 'DATACAP':
                 $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvMenu.php';
                 break; 
             case 'DATACAPEMV': 
                 $this->conf->set('CacheCardType', 'EMV');
+                $this->conf->set('CacheCardCashBack', 0);
                 break;
             case 'DATACAPCC':
                 $this->conf->set('CacheCardType', 'CREDIT');
+                $this->conf->set('CacheCardCashBack', 0);
                 break;
             case 'DATACAPCCAUTO':
                 $autoMode = $this->conf->get('PaycardsDatacapMode') == 1 ? 'EMV' : 'CREDIT';
                 $this->conf->set('CacheCardType', $autoMode);
+                $this->conf->set('CacheCardCashBack', 0);
                 $ret['main_frame'] .= '?reginput=';
                 break;
             case 'DATACAPDC':
@@ -118,6 +123,7 @@ class PaycardDatacapParser extends Parser
                 }
                 $this->conf->set('paycard_amount', $this->conf->get('fsEligible'));
                 $this->conf->set('CacheCardType', 'EBTFOOD');
+                $this->conf->set('CacheCardCashBack', 0);
                 break;
             case 'DATACAPEC':
                 if ($this->conf->get('CacheCardCashBack')) {
@@ -128,6 +134,7 @@ class PaycardDatacapParser extends Parser
             case 'DATACAPGD':
                 $this->conf->set('CacheCardType', 'GIFT');
                 $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $this->conf->set('CacheCardCashBack', 0);
                 break;
             case 'PVDATACAPGD':
                 $this->conf->set('CacheCardType', 'GIFT');
@@ -164,6 +171,33 @@ class PaycardDatacapParser extends Parser
         $this->conf->set('paycard_id', $this->conf->get('LastID')+1);
 
         return $ret;
+    }
+
+    /**
+     * If the customer selected a tender type, re-write the generic
+     * DATACAP command to skip the menu and proceed with the chosen
+     * tender type. DC maps to magstripe debit for cashback purposes.
+     * CC maps to EMV if that functionality is enabled or magstripe credit
+     * if not.
+     */
+    private function remap($input)
+    {
+        $selection = $this->conf->get('ccTermState');
+        if ($input !== 'DATACAP' || strlen($selection) !== 4 || substr($selection, 0, 2) !== 'DC') {
+            return $input;
+        }
+        switch (substr($selection, -2)) {
+            case 'DC':
+                return 'DATACAPDC';
+            case 'EC':
+                return 'DATACAPEC';
+            case 'EF':
+                return 'DATACAPEF';
+            case 'CC':
+                return $this->conf->get('PaycardsDatacapMode') == 1 ? 'DATACAPEMV' : 'DATACAPCC';
+        }
+
+        return $input;
     }
 }
 

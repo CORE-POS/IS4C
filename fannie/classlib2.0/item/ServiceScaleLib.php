@@ -22,6 +22,9 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\item;
+use \FannieConfig;
+use \FannieDB;
+use \BarcodeLib;
 
 class ServiceScaleLib 
 {
@@ -68,6 +71,41 @@ class ServiceScaleLib
         } else {
             return false;
         }
+    }
+
+    static public function upcToPLU($upc)
+    {
+        $upc = BarcodeLib::padUPC($upc);
+        $len = FannieConfig::config('SPLU_LENGTH');
+        if ($len != 4 && $len != 5) {
+            $len = 4;
+        }
+
+        if ($len == 5) {
+            preg_match("/^002(\d\d\d\d\d)/",$upc,$matches);
+            $s_plu = $matches[1];
+        } else {
+            preg_match("/^002(\d\d\d\d)0/",$upc,$matches);
+            $s_plu = $matches[1];
+            if ($s_plu == '0000') {
+                preg_match("/^0020(\d\d\d\d)/",$upc,$matches);
+                $s_plu = $matches[1];
+            }
+        }
+
+        return $s_plu;
+    }
+
+    static public function pluToUPC($plu)
+    {
+        $len = FannieConfig::config('SPLU_LENGTH');
+        if ($len != 4 && $len != 5) {
+            $len = 4;
+        }
+        $plu = str_pad($plu, $len, '0', STR_PAD_LEFT);
+        $plu .= str_repeat('0', 10 - $len);
+
+        return BarcodeLib::padUPC('2' . $plu);
     }
 
     /**
@@ -142,7 +180,7 @@ class ServiceScaleLib
     static private function getSingletonModel()
     {
         if (self::$model === null) {
-            $model = new \ServiceScalesModel(\FannieDB::get(\FannieConfig::config('OP_DB')));
+            $model = new \ServiceScalesModel(FannieDB::get(FannieConfig::config('OP_DB')));
         }
 
         return $model;
@@ -150,25 +188,33 @@ class ServiceScaleLib
 
     static public function labelTranslate($label, $scale_type)
     {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $confP = $dbc->prepare("SELECT mappedType AS labelType, descriptionWidth, textWidth 
+            FROM ScaleLabels WHERE scaleType=? AND labelType=?");
+        $mapped = $dbc->getRow($confP, array($scale_type, $label));
+        if ($mapped) {
+            return $mapped;
+        }
+        
         if (substr(strtoupper($scale_type), 0, 3) == 'MT_') {
             return self::toledoLabel($label);
-        } else {
-            return $label;
         }
+
+        return array('labelType' => $label, 'descriptionWidth'=>26, 'textWidth'=>0);
     }
 
     static private function toledoLabel($label)
     {
         switch ($label) {
             case 53:
-                return 3;
+                return array('labelType' => 3, 'descriptionWidth'=>26, 'textWidth'=>0);
             case 23:
             case 63:
-                return 2;
+                return array('labelType' => 2, 'descriptionWidth'=>26, 'textWidth'=>0);
             case 103:
             case 133:
             default:
-                return 1;
+                return array('labelType' => 1, 'descriptionWidth'=>26, 'textWidth'=>0);
         }
     }
 }

@@ -2,8 +2,8 @@
 include('../../../config.php');
 
 if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
 include('../../db.php');
 
 if (isset($_GET['delete'])){

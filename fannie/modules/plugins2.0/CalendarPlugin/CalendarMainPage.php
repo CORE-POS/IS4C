@@ -23,13 +23,13 @@
 
 include_once(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FanniePage')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FanniePage.php');
 }
 if (!class_exists('CalendarPlugin')) {
     include(dirname(__FILE__).'/CalendarPlugin.php');
 }
 if (!class_exists('FannieAuth')) {
-    include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
+    include(__DIR__ . '/../../../classlib2.0/auth/FannieAuth.php');
 }
 if (!class_exists('CalendarPluginDisplayLib')) {
     include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');

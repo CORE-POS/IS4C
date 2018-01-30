@@ -23,18 +23,40 @@
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
-class SyncIndexPage extends FanniePage {
+class SyncIndexPage extends FanniePage 
+{
 
     protected $title = "Fannie : Sync Lane";
     protected $header = "Sync Lane Operational Tables";
     public $themed = true;
 
-    function body_content(){
-        ob_start();
-        ?>
+    private function storesHTML()
+    {
+        $res = $this->connection->query('
+            SELECT storeID, description, webServiceUrl
+            FROM ' . FannieDB::fqn('Stores', 'op') . '
+            WHERE hasOwnItems=1'); 
+        $ret = '<p>';
+        while ($row = $this->connection->fetchRow($res)) {
+            if (empty(trim($row['webServiceUrl'])) || $row['storeID'] == $this->config->get('STORE_ID')) {
+                continue;
+            }
+            $ret .= sprintf('<a href="%s">Sync Tables at %s</a><br />',
+                str_replace('/ws/', '/sync/', $row['webServiceUrl']), $row['description']);
+        }
+        $ret .= '</p>';
+
+        return $ret != '<p></p>' ? '<hr />' . $ret : '';
+    }
+
+    function body_content()
+    {
+        $cashiers = _('Cashiers');
+        $stores = $this->storesHtml();
+        return <<<HTML
         <form action="TableSyncPage.php" method="get" class="form">
         <p>
             <label>Table</label><select name="tablename" class="form-control">
@@ -43,7 +65,7 @@ class SyncIndexPage extends FanniePage {
             <option value="productUser">Extra Product Info</option>
             <option value="custdata">Members</option>
             <option value="memberCards">Membership Cards</option>
-            <option value="employees"><?php echo _('Cashiers'); ?></option>
+            <option value="employees">{$cashiers}</option>
             <option value="departments">Departments</option>
             <option value="tenders">Tenders</option>
             <option value="houseCoupons">House Coupons</option>
@@ -56,10 +78,11 @@ class SyncIndexPage extends FanniePage {
         </p>
         <p>
             <button type="submit" value="Send Data" class="btn btn-default">Send Data</button>
+            <label><input type="checkbox" name="includeOffline" value="1" /> Include offline lanes</label>
         </p>
         </form>
-        <?php
-        return ob_get_clean();
+        {$stores}
+HTML;
     }
 
     public function helpContent()
@@ -74,5 +97,5 @@ class SyncIndexPage extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

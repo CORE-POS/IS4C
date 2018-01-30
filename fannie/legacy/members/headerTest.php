@@ -1,6 +1,5 @@
 <?php
-if (!isset($FANNIE_ROOT))
-    include('../../config.php');
+include('../../config.php');
 
 include('header.html');
 

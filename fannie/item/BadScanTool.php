@@ -23,7 +23,7 @@
 
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class BadScanTool extends FannieRESTfulPage
@@ -188,7 +188,7 @@ class BadScanTool extends FannieRESTfulPage
 
         $ret .= '<div id="ratio">';
         $ret .= sprintf('Approx. bad scan rate: %.2f%%', 
-            $data['itemTTL'] == 0 ? 0 : ((float)$scanCount) / ((float)$data['itemTTL'] != 0) * 100);
+            $data['itemTTL'] == 0 ? 0 : ((float)$scanCount) / ((float)$data['itemTTL']) * 100);
         $ret .= '</div>';
 
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');

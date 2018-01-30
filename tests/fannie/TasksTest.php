@@ -51,7 +51,11 @@ class TasksTest extends PHPUnit_Framework_TestCase
         */
         $trans_db = FannieDB::get($config->get('TRANS_DB'));
         $records = $trans_db->query('SELECT * FROM dtransactions');
-        $this->assertEquals(0, $trans_db->num_rows($records), 'dtransactions not cleared');
+        $data = array();
+        while ($row = $trans_db->fetchRow($records)) {
+            $data[] = $row;
+        }
+        $this->assertEquals(0, $trans_db->num_rows($records), 'dtransactions not cleared: ' . var_export($data, true));
     }
 
     public function testPatronageChecks()

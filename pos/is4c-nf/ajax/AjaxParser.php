@@ -145,7 +145,7 @@ class AjaxParser extends AjaxCallback
                 $this->session->set("CachePanEncBlock",$entered);
             }
 
-            $pce = new paycardEntered();
+            $pce = new paycardEntered(new WrappedStorage());
             if ($pce->check($entered)){
                 $json = $pce->parse($entered);
                 $entered = "PAYCARD";

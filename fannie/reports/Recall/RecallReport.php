@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class RecallReport extends FannieReportPage 
@@ -36,7 +36,7 @@ class RecallReport extends FannieReportPage
     protected $report_headers = array('Mem#', 'Name', 'Address', 'City', 'State', 'Zip', 'Phone', 'Alt. Phone', 'Email', 'Qty', 'Amt');
     protected $title = "Fannie : Recall Report";
     protected $header = "Recall Report";
-    protected $required_fields = array('date1', 'date2');
+    protected $required_fields = array('date1', 'date2', 'store');
 
     protected $sort_column = 1;
 
@@ -45,14 +45,20 @@ class RecallReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
+        $upc = FormLib::get('upc');
+        $upc = explode("\n", $upc);
+        $upc = array_filter($upc, function ($i) { return trim($i) != ''; });
+        $upc = array_map(array('BarcodeLib', 'padUPC'), $upc);
+        list($inStr, $args) = $dbc->safeInClause($upc);
 
-        $q = $dbc->prepare("SELECT description FROM products WHERE upc=?");
-        $r = $dbc->execute($q,array($upc));
-        $w = $dbc->fetch_row($r);
-        $description = $w[0];
+        $q = $dbc->prepare("SELECT upc, description FROM products WHERE upc IN ({$inStr}) GROUP BY upc, description");
+        $r = $dbc->execute($q,$args);
+        $ret = 'Purchases for ';
+        while ($w = $dbc->fetchRow($r)) {
+            $ret .= "{$w['upc']} ({$w['description']}) ";
+        }
 
-        return array("Purchases for $upc ($description)");
+        return array($ret);
     }
 
     public function fetch_report_data()
@@ -60,22 +66,30 @@ class RecallReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
+        $upc = FormLib::get('upc');
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
+        $upc = explode("\n", $upc);
+        $upc = array_filter($upc, function ($i) { return trim($i) != ''; });
+        $upc = array_map(array('BarcodeLib', 'padUPC'), $upc);
+        list($inStr, $args) = $dbc->safeInClause($upc);
 
         $q = $dbc->prepare("
             SELECT d.card_no,
                 sum(quantity) as qty,
                 sum(total) as amt
             FROM $dlog AS d 
-            WHERE d.upc=? AND 
-                tdate BETWEEN ? AND ?
+            WHERE d.upc IN ({$inStr})
+                AND " . DTrans::isStoreID($this->form->store, 'd') . "
+                AND tdate BETWEEN ? AND ?
             GROUP BY d.card_no
             ORDER BY d.card_no");
-        $r = $dbc->execute($q,array($upc,$date1.' 00:00:00',$date2.' 23:59:59'));
+        $args[] = $this->form->store;
+        $args[] = $date1 . ' 00:00:00';
+        $args[] = $date2 . ' 23:59:59';
+        $r = $dbc->execute($q,$args);
 
         $data = array();
         while($w = $dbc->fetch_row($r)) {
@@ -111,13 +125,14 @@ class RecallReport extends FannieReportPage
     public function form_content()
     {
         $this->add_onload_command('$(\'#upc\').focus();');
+        $stores = FormLib::storePicker();
         return '
             <form action=RecallReport.php method=get>
             <div class="col-sm-4">
             <div class="form-group">
                 <label>UPC</label>
-                <input type=text name=upc class="form-control" 
-                    id="upc" required />
+                <textarea rows="2" name=upc class="form-control" 
+                    id="upc"></textarea>
             </div>
             <div class="form-group">
                 <label>Start date</label>
@@ -128,6 +143,10 @@ class RecallReport extends FannieReportPage
                 <label>End date</label>
                 <input type=text name=date2 id="date2" required
                     class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <label>Store</label>
+                ' . $stores['html'] . '
             </div>
             <div class="form-group">
                 <button type=submit name=submit value="Get Report" 

@@ -25,11 +25,11 @@
     * 10Oct12 Eric Lee New.
 */
 
-include('../../config.php');
+include(__DIR__ . '/../../config.php');
 
 $page_title = "Fannie : WEFC Toronto utilities";
 $header = "WEFC Toronto utilities";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../../src/header.html');
 
 echo "<ul>";
 ?>
@@ -42,5 +42,5 @@ echo "<ul>";
 <?php
 echo "</ul>";
                                      
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../../src/footer.html');
 

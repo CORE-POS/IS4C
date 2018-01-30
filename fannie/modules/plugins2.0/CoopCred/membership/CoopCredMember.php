@@ -461,7 +461,6 @@ class CoopCredMember extends COREPOS\Fannie\API\member\MemberModule
      */
     public function saveFormData($memNum, $json=array())
     {
-        global $FANNIE_ROOT;
         //$dbc = $this->db();
         global $FANNIE_URL;
         global $FANNIE_PLUGIN_LIST,$FANNIE_PLUGIN_SETTINGS;
@@ -480,13 +479,13 @@ class CoopCredMember extends COREPOS\Fannie\API\member\MemberModule
         // Test probably not necessary.
         if (!class_exists("CCredMembershipsModel")) {
             $dbc->logger("Had to include CCredMembershipsModel");
-            include($FANNIE_ROOT . 'modules/plugins2.0/CoopCred/models/CCredMembershipsModel.php');
+            include(__DIR__ . '/../models/CCredMembershipsModel.php');
         }
 
         // Test probably not necessary.
         if (!class_exists("CCredProgramsModel")) {
             $dbc->logger("Had to include CCredProgramsModel");
-            include($FANNIE_ROOT . 'modules/plugins2.0/CoopCred/models/CCredProgramsModel.php');
+            include(__DIR__ . '/../models/CCredProgramsModel.php');
         }
 
         // For Coop Cred limit always 0.

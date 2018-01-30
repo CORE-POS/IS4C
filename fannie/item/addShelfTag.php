@@ -27,7 +27,7 @@
     * 21Mar2013 EL Hacked FANNIE_POUNDS_AS_POUNDS until established.
     *              Use input description width 30, not 27, OK per AT.
     * 16Mar2013 Eric Lee Need to get the vendor name either from the form
-    *            or from, ideally, vendors, or prodExtra.
+    *            or from vendors
     *            Currently the vendor name input is just text, not controlled.
     *           It would be better if it used size and unitofmeasure from the form.
     *            In update, would need a post-update shelftag create as in insertItem.php
@@ -36,7 +36,7 @@
 
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class addShelfTag extends FannieRESTfulPage

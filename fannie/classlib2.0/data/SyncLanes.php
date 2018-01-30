@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\data {
+use \Exception;
 
 /**
   @class SyncLanes
@@ -57,11 +58,13 @@ class SyncLanes
         (default is 'op')
       @param $truncate integer
         (default is TRUNCATE_DESTINATION)
+      @param $includeOffline boolean push to lanes marked as offline
+        (default is false)
       @return array
         - sending => boolean attempted to copy table
         - messages => string result information
     */
-    static public function pushTable($table,$db='op',$truncate=self::TRUNCATE_DESTINATION)
+    static public function pushTable($table,$db='op',$truncate=self::TRUNCATE_DESTINATION,$includeOffline=false)
     {
         $config = \FannieConfig::factory();
         $op_db = $config->get('OP_DB');
@@ -85,6 +88,12 @@ class SyncLanes
             return $ret;
         }
 
+        $dbc = \FannieDB::get($op_db);
+        $ruleP = $dbc->prepare("SELECT rule FROM TableSyncRules WHERE tableName=?");
+        $rule = $dbc->getValue($ruleP, array($table));
+        $rule = str_replace('-', '\\', $rule);
+        $server_db = $db=='op' ? $op_db : $trans_db;
+
         $special = dirname(__FILE__).'/../../sync/special/'.$table.'.php';
         if (file_exists($special)) {
             /* Use special script to send table.
@@ -98,17 +107,30 @@ class SyncLanes
             $ret = array('sending'=>True,'messages'=>'');
             $ret['messages'] = $tmp;
             return $ret;
+        } elseif ($rule && class_exists($rule)) {
+            /** use handler class if configured **/
+            $special = new $rule($config);
+            $sync = $special->push($table, $server_db);
+            $ret['messages'] = $sync['details'];
+            return $ret;
         } else {
             /* use the transfer option in SQLManager
             *   to copy records onto each lane
             */
-            $server_db = $db=='op' ? $op_db : $trans_db;
             $dbc = \FannieDB::get( $server_db );
             $server_def = $dbc->tableDefinition($table, $server_db);
             $laneNumber=1;
             foreach ($lanes as $lane) {
-                $dbc->addConnection($lane['host'],$lane['type'],
-                    $lane[$db],$lane['user'],$lane['pw']);
+                if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
+                    continue;
+                }
+                try {
+                    $dbc->addConnection($lane['host'],$lane['type'],
+                        $lane[$db],$lane['user'],$lane['pw']);
+                } catch (Exception $ex) {
+                    $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})" . self::endLine();
+                    continue;
+                }
                 if ($dbc->connections[$lane[$db]]) {
                     $lane_def = $dbc->tableDefinition($table, $lane[$db]);
                     $columns = self::commonColumns($server_def, $lane_def);
@@ -193,8 +215,13 @@ class SyncLanes
         }
         $laneNumber=1;
         foreach($lanes as $lane) {
-            $dbc->addConnection($lane['host'],$lane['type'],
-                $lane[$db],$lane['user'],$lane['pw']);
+            try {
+                $dbc->addConnection($lane['host'],$lane['type'],
+                    $lane[$db],$lane['user'],$lane['pw']);
+            } catch (Exception $ex) {
+                $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})";
+                continue;
+            }
             if ($dbc->connections[$lane[$db]]) {
                 $success = $dbc->transfer($lane[$db],
                            "SELECT * FROM $table",

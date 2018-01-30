@@ -31,7 +31,7 @@ class InUseTask extends FannieTask
 {
     public $name = 'Product In-Use Maintenance';
 
-    public $description = 'Scans last-sold dates for all registered prodcuts and 
+    public $description = 'Scans last-sold dates for all registered prodcuts and
         updates in-use status based on a determined range by super-department.';
 
     public $default_schedule = array(
@@ -41,10 +41,10 @@ class InUseTask extends FannieTask
         'month' => '*',
         'weekday' => '*',
     );
-    
-    /* 
+
+    /*
     *   UNIX TIME
-    * 
+    *
     *   86400 = 1 Day
     *   2678400 = 1 Month
     *   5356800 = ~2 Months
@@ -56,25 +56,25 @@ class InUseTask extends FannieTask
 
         $start = time();
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        
+
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
             $this->logger->warning('products table does not have a last_sold column');
             return;
         }
-        
+
         $upcs = array();
         $prepZ = $dbc->prepare("SELECT upc FROM products GROUP BY upc");
         $resZ = $dbc->execute($prepZ);
         while ($row = $dbc->fetchRow($resZ)) {
             $upcs[] = $row['upc'];
         }
-        
+
         $y = date('Y');
         $m = date('m') - 1;
         $d = date('d');
         $checkDate = $y.'-'.$m.'-'.$d;
-        
+
         $exempts1 = array();
         $exempts2 = array();
         foreach ($upcs as $upc) {
@@ -93,24 +93,26 @@ class InUseTask extends FannieTask
             }
         }
 
-        $reportInUse = $dbc->prepare("                                            
-            SELECT upc, brand, description, last_sold, store_id                                       
-                FROM products AS p                                                
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department      
-                INNER JOIN inUseTask AS i ON s.superID = i.superID                
+        $reportInUse = $dbc->prepare("
+            SELECT upc, brand, description, last_sold, store_id
+                FROM products AS p
+                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
+                INNER JOIN inUseTask AS i ON s.superID = i.superID
             WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
-            AND p.inUse = 0;                                                      
-        ");                                                                                                                                                 
-        $reportUnUse = $dbc->prepare("                                            
-            SELECT upc, brand, description, last_sold, store_id                                       
-                FROM products AS p                                                
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department      
-                INNER JOIN inUseTask AS i ON s.superID = i.superID                
+            AND p.inUse = 0
+            ORDER BY p.store_id;
+        ");
+        $reportUnUse = $dbc->prepare("
+            SELECT upc, brand, description, last_sold, store_id
+                FROM products AS p
+                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
+                INNER JOIN inUseTask AS i ON s.superID = i.superID
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
-            AND p.inUse = 1;                                                      
-        ");                                                                                                                                                 
-        $resultA = $dbc->execute($reportInUse);                                   
-        $resultB = $dbc->execute($reportUnUse);                                   
+            AND p.inUse = 1
+            ORDER BY p.store_id;
+        ");
+        $resultA = $dbc->execute($reportInUse);
+        $resultB = $dbc->execute($reportUnUse);
 
         list($inClause1,$args1) = $dbc->safeInClause($exempts1);
         list($inClause2,$args2) = $dbc->safeInClause($exempts2);
@@ -118,8 +120,8 @@ class InUseTask extends FannieTask
         array_unshift($args2,2);
         $updateQunuse1 = '
             UPDATE products p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
-                INNER JOIN inUseTask AS i ON s.superID = i.superID 
+                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
+                INNER JOIN inUseTask AS i ON s.superID = i.superID
             SET p.inUse = 0, p.modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                 AND p.store_id = ?
@@ -127,8 +129,8 @@ class InUseTask extends FannieTask
             ';
         $updateQunuse2 = '
             UPDATE products p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
-                INNER JOIN inUseTask AS i ON s.superID = i.superID 
+                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
+                INNER JOIN inUseTask AS i ON s.superID = i.superID
             SET p.inUse = 0, p.modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                 AND p.store_id = ?
@@ -136,20 +138,20 @@ class InUseTask extends FannieTask
             ';
         $updateUnuse1 = $dbc->prepare($updateQunuse1);
         $updateUnuse2 = $dbc->prepare($updateQunuse2);
-        
+
         $updateUse = $dbc->prepare('
             UPDATE products p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department 
+                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
             SET p.inUse = 1, p.modified = '.$dbc->now().'
             WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
                 AND p.store_id = ?;
         ');
         $dbc->execute($updateUnuse1,$args1);
         $dbc->execute($updateUnuse2,$args2);
-        
+
         $dbc->execute($updateUse,1);
         $dbc->execute($updateUse,2);
-        
+
         $data = '';
         $inUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody>';
         $unUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody>';
@@ -168,7 +170,7 @@ class InUseTask extends FannieTask
             $updateUpcs[] = $row['upc'];
         }
         $inUseData .= '</tbody></table>';
-        
+
         while ($row = $dbc->fetch_row($resultB)) {
             if ($row['store_id'] == 1) {
                 if (!in_array($row['upc'],$exempts1)) {
@@ -190,11 +192,11 @@ class InUseTask extends FannieTask
                             $column = '<i>no data</i>';
                         }
                         $unUseData .= '<td>' . $row[$column] . '</td>';
-                    }             
-                    $unUseData .= '</tr>';   
+                    }
+                    $unUseData .= '</tr>';
                     $updateUpcs[] = $row['upc'];
                 }
-            }            
+            }
         }
         $unUseData .= '</tbody></table>';
 
@@ -204,17 +206,17 @@ class InUseTask extends FannieTask
         $headers = array(
             'MIME-Version: 1.0',
             'Content-type: text/html; charset=iso-8859-1',
-            'from: automail@wholefoods.coop'            
+            'from: automail@wholefoods.coop'
         );
 
         $end = time();
         $runtime = ($end - $start);
         $runtime = $this->convert_unix_time($runtime);
-        
+
         $to = $this->config->get('SCANCOORD_EMAIL');
-        
+
         if (class_exists('PHPMailer')) {
-            $msg = '<style>table, tr, td { border-collapse: collapse; border: 1px solid black; 
+            $msg = '<style>table, tr, td { border-collapse: collapse; border: 1px solid black;
                 padding: 5px; }</style>';
             $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
             $msg .= ' [ Runtime: '.$runtime.' ]<br />';
@@ -226,7 +228,7 @@ class InUseTask extends FannieTask
             $msg .= $inUseData;
             $msg .= '<br />';
             $msg .= '<br />';
-                
+
             $mail = new PHPMailer();
             $mail->isHTML();
             $mail->addAddress($to);
@@ -241,7 +243,7 @@ class InUseTask extends FannieTask
             $msg = 'The In Use Task $message could not be formatted. [Error] : class PHPMailer could not found.';
             mail($to,'Report: In Use Task',$msg,implode("\r\n",$headers));
         }
-        
+
     }
 
     public function convert_unix_time($secs) {
@@ -260,7 +262,7 @@ class InUseTask extends FannieTask
             'm' => $secs / 60 % 60,
             's' => $secs % 60
         );
-           
+
         foreach($bit as $k => $v)
             if($k == 's') {
                 $ret[] = $v;
@@ -268,8 +270,8 @@ class InUseTask extends FannieTask
                 $ret[] = $v . ':';
             }
             if ($v == 0) $ret[] = '0';
-               
+
         return join('', $ret);
     }
-    
+
 }

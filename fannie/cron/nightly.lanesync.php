@@ -47,10 +47,10 @@
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('cron_msg')) {
-    include($FANNIE_ROOT.'src/cron_msg.php');
+    include(__DIR__ . '/../src/cron_msg.php');
 }
 if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
     $FANNIE_LANES = array();
@@ -60,7 +60,12 @@ set_time_limit(0);
 
 $dbc = FannieDB::get($FANNIE_TRANS_DB);
 foreach($FANNIE_LANES as $f){
-    $dbc->addConnection($f['host'],$f['type'],$f['trans'],$f['user'],$f['pw']);
+    try {
+        $dbc->addConnection($f['host'],$f['type'],$f['trans'],$f['user'],$f['pw']);
+    } catch (Exception $ex) {
+        echo cron_msg('Cannot connect to '.$f['host']);
+        continue;
+    }
     if ($dbc->connections[$f['trans']] === False){
         echo cron_msg('Cannot connect to '.$f['host']);
         continue;

@@ -90,17 +90,35 @@ class suspendedlist extends NoInputCorePage
             WHERE datetime >= " . date("'Y-m-d 00:00:00'") . "
             GROUP BY register_no, emp_no, trans_no";
 
+        $hriQ = "SELECT description
+            FROM suspended
+            WHERE datetime >= " . date("'Y-m-d 00:00:00'") . "
+                AND trans_subtype='CM'
+                AND charflag='HR'
+                AND register_no=?
+                AND emp_no=?
+                AND trans_no=?
+            ORDER BY trans_id DESC";
+
         $dbc = Database::tDataConnect();
         $result = "";
         if ($this->session->get("standalone") == 1) {
             $result = $dbc->query($queryLocal);
+            $hriP = $dbc->prepare($hriQ);
         } else {
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                return array();
+            }
             $result = $dbc->query($queryLocal);
+            $hriP = $dbc->prepare($hriQ);
         }
 
         $ret = array();
         while ($row = $dbc->fetchRow($result)) {
+            if (trim($row['hri'])) {
+                $row['hri'] = $dbc->getValue($hriP, array($row['register_no'], $row['emp_no'], $row['trans_no']));
+            }
             $ret[] = $row;
         }
 

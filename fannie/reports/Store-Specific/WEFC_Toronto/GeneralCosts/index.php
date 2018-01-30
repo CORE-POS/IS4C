@@ -40,7 +40,7 @@
 */
 
 include(dirname(__FILE__) . '/../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 /* This program has two modes:
@@ -218,7 +218,7 @@ else {
 
 $page_title = "Fannie : General Costs Report";
 $header = "General Costs Report";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../../../../src/header.html');
 $lastMonday = "";
 $lastSunday = "";
 
@@ -299,6 +299,6 @@ input[type="checkbox"] {
 </table>
 </form>
 <?php
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../../../../src/footer.html');
 }
 

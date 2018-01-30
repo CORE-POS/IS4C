@@ -23,13 +23,13 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('FPDF')) {
-    require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+    require(__DIR__ . '/../../src/fpdf/fpdf.php');
 }
 if (!defined('FPDF_FONTPATH')) {
-    define('FPDF_FONTPATH',$FANNIE_ROOT.'src/fpdf/font/');
+    define('FPDF_FONTPATH', __DIR__ . '/../../src/fpdf/font/');
 }
 
 class MemberStickerPage extends FanniePage {

@@ -207,11 +207,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
           were properly discovered
         */
         $required_classes = array(
-            'AutoLoader',
-            'Authenticate',
-            'DisplayLib',
-            'Database',
-            'LocalStorage',
+            'Plugin',
         );
 
         foreach($required_classes as $class){

@@ -35,8 +35,7 @@ class TwoLineTag extends DefaultReceiptTag
       @param $rowset an array of records
       @return an array of records
     */
-    // @hintable
-    public function tag($rowset)
+    public function tag(array $rowset)
     {
         $rowset = parent::tag($rowset);
         return array_map(function($i) {

@@ -36,37 +36,37 @@
 
 include(dirname(__FILE__) . '/../config.php');
 if (!function_exists('cron_msg')) {
-    include($FANNIE_ROOT.'src/cron_msg.php');
+    include(__DIR__ . '/../src/cron_msg.php');
 }
 
 set_time_limit(0);
 
-$path = 'cache/cachefiles/daily/';
-if (!file_exists($FANNIE_ROOT . $path)) {
+$path = __DIR__ '/../cache/cachefiles/daily/';
+if (!file_exists($path)) {
     return;
 }
-$dh = opendir($FANNIE_ROOT.$path);
+$dh = opendir($path);
 if (!$dh) {
-    echo cron_msg("$FANNIE_ROOT.$path does not exist.");
+    echo cron_msg("$path does not exist.");
     return;
 }
 while ( ($file = readdir($dh)) !== False){
-    if (is_file($FANNIE_ROOT.$path.$file))
-        unlink($FANNIE_ROOT.$path.$file);
+    if (is_file($path.$file))
+        unlink($path.$file);
 }
 closedir($dh);
 echo cron_msg("Cleared daily cache");
 
 if (date('j') == 1){
     $path = 'cache/cachefiles/monthly/';
-    $dh = opendir($FANNIE_ROOT.$path);
+    $dh = opendir($path);
     if (!$dh) {
-        echo cron_msg("$FANNIE_ROOT.$path does not exist.");
+        echo cron_msg("$path does not exist.");
         return;
     }
     while ( ($file = readdir($dh)) !== False){
-        if (is_file($FANNIE_ROOT.$path.$file))
-            unlink($FANNIE_ROOT.$path.$file);
+        if (is_file($path.$file))
+            unlink($path.$file);
     }
     closedir($dh);
     echo cron_msg("Cleared monthly cache");

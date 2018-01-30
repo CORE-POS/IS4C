@@ -3,6 +3,8 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
+[assembly: AssemblyVersion("1.0.*")]
+
 namespace Discover {
 
 public class Discover

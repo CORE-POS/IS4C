@@ -25,10 +25,10 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('checkLogin')) {
-    include($FANNIE_ROOT.'auth/login.php');
+    include(__DIR__ . '/../auth/login.php');
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -41,12 +41,12 @@ if (!checkLogin()){
 
 $page_title = "Special Order :: Review";
 $header = "Review Special Order";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../src/header.html');
 
 $orderID = isset($_REQUEST['orderID'])?$_REQUEST['orderID']:'';
 if ($orderID === ''){
     echo 'Error: no order specified';
-    include($FANNIE_ROOT.'src/footer.html');
+    include(__DIR__ . '/../src/footer.html');
     return;
 }
 ?>
@@ -117,5 +117,5 @@ $(document).ready(function(){
 });
 </script>
 <?php
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../src/footer.html');
 

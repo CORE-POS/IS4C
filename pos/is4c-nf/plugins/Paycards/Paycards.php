@@ -210,6 +210,16 @@ messages from POS?',
             'description' => 'Password for use with encrypted Mercury processing',
             'default' => '',
         ),
+        'MercuryGiftID' => array(
+            'label' => 'Mercury Gift Terminal ID',
+            'description' => 'Terminal ID number for use with Mercury gift card processing',
+            'default' => '',
+        ),
+        'MercuryGiftPassword' => array(
+            'label' => 'Mercury Gift Password',
+            'description' => 'Password for use with Mercury gift card processing',
+            'default' => '',
+        ),
     );
 
     public function plugin_transaction_reset()

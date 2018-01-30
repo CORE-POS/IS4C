@@ -189,17 +189,15 @@ $sql = InstallUtilities::dbTestConnect(CoreLocal::get('localhost'),
         CoreLocal::get('pDatabase'),
         CoreLocal::get('localUser'),
         CoreLocal::get('localPass'));
-if ($sql === False) {
+if (!is_object($sql)) {
     echo "<span class='fail'>" . _('Failed') . "</span>";
     echo '<div class="db_hints" style="margin-left:25px;">';
     if (!function_exists('socket_create')){
         echo _('<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>');
-    }
-    elseif (@MiscLib::pingport(CoreLocal::get('localhost'),CoreLocal::get('DBMS'))){
+    } elseif (@MiscLib::pingport(CoreLocal::get('localhost'),CoreLocal::get('DBMS'))){
         printf(_('<i>Database found at %s. Verify username and password
-            and/or database account permissions.</i>'), CoreLocal::get('localhost'));
-    }
-    else {
+            and/or database account permissions. Problem details: %s</i>'), CoreLocal::get('localhost'), $sql);
+    } else {
         printf(_('<i>Database does not appear to be listening for connections on 
             %s. Verify host is correct, database is running and
             firewall is allowing connections.</i>'), CoreLocal::get('localhost'));
@@ -235,12 +233,12 @@ $sql = InstallUtilities::dbTestConnect(CoreLocal::get('localhost'),
         CoreLocal::get('tDatabase'),
         CoreLocal::get('localUser'),
         CoreLocal::get('localPass'));
-if ($sql === False ) {
+if (!is_object($sql)) {
     echo "<span class='fail'>" . _('Failed') . "</span>";
     echo '<div class="db_hints" style="margin-left:25px;">';
-    echo _('<i>If both connections failed, see above. If just this one
+    printf(_('<i>If both connections failed, see above. If just this one
         is failing, it\'s probably an issue of database user 
-        permissions.</i>');
+        permissions. Details: %s</i>'), $sql);
     echo '</div>';
 } else {
     echo "<span class='success'>" . _('Succeeded') . "</span><br />";
@@ -335,17 +333,15 @@ $sql = InstallUtilities::dbTestConnect(CoreLocal::get('mServer'),
         CoreLocal::get('mDatabase'),
         CoreLocal::get('mUser'),
         CoreLocal::get('mPass'));
-if ($sql === False){
+if (!is_object($sql)) {
     echo "<span class='fail'>" . _('Failed') . "</span>";
     echo '<div class="db_hints" style="margin-left:25px;width:350px;">';
     if (!function_exists('socket_create')){
         echo _('<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>');
-    }
-    elseif (@MiscLib::pingport(CoreLocal::get('mServer'),CoreLocal::get('mDBMS'))){
+    } elseif (@MiscLib::pingport(CoreLocal::get('mServer'),CoreLocal::get('mDBMS'))){
         printf(_('<i>Database found at %s. Verify username and password
-            and/or database account permissions.</i>'), CoreLocal::get('mServer'));
-    }
-    else {
+            and/or database account permissions. Details: %s</i>'), CoreLocal::get('mServer'), $sql);
+    } else {
         printf(_('<i>Database does not appear to be listening for connections on 
             %s. Verify host is correct, database is running and
             firewall is allowing connections.</i>'), CoreLocal::get('mServer'));

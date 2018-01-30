@@ -50,6 +50,16 @@ class B2BParser extends Parser
         }
 
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Cannot process invoice right now"),
+                _('Connection error'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
+
+            return $ret;
+        }
         $mAlt = Database::mAltName();
         $prep = $dbc->prepare("SELECT COUNT(*) FROM {$mAlt}B2BInvoices WHERE cardNo=? AND isPaid=0");
         $res = $dbc->execute($prep, CoreLocal::get('memberID'));

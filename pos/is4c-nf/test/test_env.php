@@ -10,4 +10,5 @@ if (!class_exists('AutoLoader')) include(dirname(__FILE__).'/../lib/AutoLoader.p
 
 AutoLoader::loadMap();
 CoreState::initiateSession();
+COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 

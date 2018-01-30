@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class HourlySalesReport extends FannieReportPage 
@@ -46,12 +46,67 @@ class HourlySalesReport extends FannieReportPage
         parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
-            $this->add_script('../../src/javascript/d3.js/charts/singleline/singleline.js');
-            $this->add_css_file('../../src/javascript/d3.js/charts/singleline/singleline.css');
+            $this->addScript('../../src/javascript/Chart.min.js');
+            $this->addScript('../../src/javascript/CoreChart.js');
         }
 
         return true;
+    }
+
+    private function fetch_adjacent_period()
+    {
+        $date1 = FormLib::get('date1');
+        $date2 = FormLib::get('date2');
+        $diff = abs(strtotime($date2) - strtotime($date1));
+        $days = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24));
+
+        $formContents = array('buyer','deptStart','deptEnd','store','other_dates');
+        foreach ($formContents as $input) {
+            ${$input} = FormLib::get($input);
+        }
+
+        $actions = array(
+            'increment' => array(
+                'action' => '+',
+                'glyph' => 'right',
+            ),
+            'decrement' => array(
+                'action' => '-',
+                'glyph' => 'left',
+            ),
+        );
+        foreach ($actions as $k => $row) {
+            $temp1 = new DateTime($date1);
+            $temp2 = new DateTime($date2);
+            if ($days == 0) {
+                $temp1->modify($row['action'].'1 Day');
+                $temp2->modify($row['action'].'1 Day');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            } elseif ($days == 6) {
+                $temp1->modify($row['action'].'1 Week');
+                $temp2->modify($row['action'].'1 Week');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            } else {
+                $temp1->modify($row['action'].'1 Month');
+                $temp2->modify($row['action'].'1 Month');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            }
+            ${'form'.$k} = '<form method="get" style="display: inline-block;">';
+            foreach ($formContents as $input) {
+                ${'form'.$k} .= "<input type='hidden' name='$input' value='${$input}'>";
+            }
+            ${'form'.$k} .= "<input type='hidden' name='date1' value='$newDate1'>";
+            ${'form'.$k} .= "<input type='hidden' name='date2' value='$newDate2'>";
+            ${'form'.$k} .= '<button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-chevron-'.$row['glyph'].'"></span></button>';
+            ${'form'.$k} .= '</form>';
+        }
+
+        return <<<HTML
+<div><label>Change Period</label>: $formdecrement | $formincrement</div>
+HTML;
     }
 
     public function report_description_content()
@@ -81,6 +136,7 @@ class HourlySalesReport extends FannieReportPage
             $ret[] = sprintf(' <a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
                             filter_input(INPUT_SERVER, 'QUERY_STRING'));
         }
+        $ret[] = $this->fetch_adjacent_period();
 
         return $ret;
     }
@@ -89,17 +145,13 @@ class HourlySalesReport extends FannieReportPage
         $default = parent::report_content();
 
         if ($this->report_format == 'html') {
-            $default .= '<div id="chartArea" style="border: 1px solid black;padding: 2em;">';
-            $default .= 'Graph: <select onchange="showGraph(this.value);">';
-            for ($i=count($this->report_headers)-1; $i >= 1; $i--) {
-                $default .= sprintf('<option value="%d">%s</option>',
-                                $i, $this->report_headers[$i]);
-            }
-            $default .= '</select>';
-            $default .= '<div id="chartDiv"></div>';
-            $default .= '</div>';
+            $default .= '<div class="row">
+                <div class="col-sm-10"><canvas id="dailyCanvas"></canvas></div>
+                </div><div class="row">
+                <div class="col-sm-10"><canvas id="totalCanvas"></canvas></div>
+                </div>';
 
-            $this->add_onload_command('showGraph('.(count($this->report_headers)-1).')');
+            $this->addOnloadCommand('chartAll('.(count($this->report_headers)-1).')');
         }
 
         return $default;
@@ -280,57 +332,22 @@ class HourlySalesReport extends FannieReportPage
             return;
         }
 
-        ob_start();
-        ?>
-function showGraph(i) {
-    $('#chartDiv').html('');
-
-    var ymin = 999999999;
-    var ymax = 0;
-    var xmin = 999999999;
-    var xmax = 0;
-
-    var ydata = Array();
-    $('td.reportColumn'+i).each(function(){
-        var y = Number($(this).html());
-        ydata.push(y);
-        if (y > ymax) {
-            ymax = y;
-        }
-        if (y < ymin) {
-            ymin = y;
-        }
-    });
-
-    var xdata = Array();
-    $('td.reportColumn0').each(function(){
-        var hour = $(this).html().trim().substring(0,2);
-        if (hour.charAt(0) == '0') {
-            hour = hour.charAt(1);
-        }
-        hour = Number(hour);
-        if ($(this).html().indexOf('PM') != -1 && hour < 12) {
-            hour += 12;
-        }
-        xdata.push(hour);
-
-        if (hour > xmax) {
-            xmax = hour;
-        }
-        if (hour < xmin) {
-            xmin = hour;
-        }
-    });
-
-    var data = Array();
-    for (var i=0; i < xdata.length; i++) {
-        data.push(Array(xdata[i], ydata[i]));
+        return <<<JAVASCRIPT
+function chartAll(totalCol) {
+    var xLabels = $('td.reportColumn0').toArray().map(x => x.innerHTML.trim());
+    var totals = $('td.reportColumn' + totalCol).toArray().map(x => Number(x.innerHTML.trim()));
+    var daily = [];
+    var dailyLabels = [];
+    for (var i=1; i<totalCol; i++) {
+        dailyLabels.push($('th.reportColumn'+i).first().text().trim());
+        var yData = $('td.reportColumn' + i).toArray().map(x => Number(x.innerHTML.trim()));
+        daily.push(yData);
     }
 
-    singleline(data, Array(xmin, xmax), Array(ymin, ymax), '#chartDiv');
+    CoreChart.lineChart('dailyCanvas', xLabels, daily, dailyLabels);
+    CoreChart.lineChart('totalCanvas', xLabels, [totals], ["Total"]);
 }
-        <?php
-        return ob_get_clean();
+JAVASCRIPT;
     }
 
     public function form_content()

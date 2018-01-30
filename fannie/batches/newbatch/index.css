@@ -29,3 +29,10 @@ img {
     cursor: pointer;
     cursor: hand;
 }
+
+#batchesTable tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+#batchesTable tbody tr:nth-child(odd) {
+    background-color: #ffffcc;
+}

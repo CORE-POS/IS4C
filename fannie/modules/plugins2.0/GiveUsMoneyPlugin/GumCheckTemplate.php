@@ -45,10 +45,16 @@ class GumCheckTemplate
     const POSITION_TRI_2 = 3;
     const POSITION_TRI_3 = 4;
     private $position = 1;
+    private $micrShift = false;
 
     public function setPosition($p)
     {
         $this->position = $p;
+    }
+
+    public function shiftMICR($m)
+    {
+        $this->micrShift = true;
     }
 
     public function addBankLine($line)
@@ -280,7 +286,12 @@ class GumCheckTemplate
         $pdf->SetXY($check_right_x - 63.5, $check_top_y + (13*$line_height));
         $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
 
+        // Seem to have random MICR alignment problems
+        // here at times
         $pdf->SetXY($check_left_x + 34.5, $check_bottom_y + $line_height - 1);
+        if ($this->micrShift) {
+            $pdf->SetXY($check_left_x + 37.7, $check_bottom_y + $line_height - 1);
+        }
         if (!isset($pdf->fonts['gnumicr'])) {
             $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
         }

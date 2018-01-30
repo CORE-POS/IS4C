@@ -35,7 +35,7 @@
 
 include(dirname(__FILE__) . '/../config.php');
 if (!function_exists('cron_msg')) {
-    include($FANNIE_ROOT.'src/cron_msg.php');
+    include(__DIR__ . '/../src/cron_msg.php');
 }
 
 set_time_limit(0);

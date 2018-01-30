@@ -43,6 +43,7 @@ class CorePage
     public $doc_link = '';
     protected $window_dressing = true;
     public $has_unit_tests = false;
+    public $accepts = array();
 
     /**
       Instance of DB connection object

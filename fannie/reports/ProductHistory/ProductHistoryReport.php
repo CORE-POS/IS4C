@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class ProductHistoryReport extends FannieReportPage 
@@ -64,13 +64,14 @@ class ProductHistoryReport extends FannieReportPage
                     scale,
                     likeCode,
                     modified,
-                    user,
+                    CASE WHEN u.name IS NULL THEN user ELSE u.name END AS user,
                     forceQty,
                     noDisc,
                     inUse,
                     salePrice,
                     updateType
-                  FROM ' . $table . '
+                  FROM ' . $table . ' AS p
+                    LEFT JOIN Users AS u ON p.user=u.uid      
                   WHERE upc = ?';
         $args = array($upc);
         if ($date1 !== '' && $date2 !== '') {

@@ -81,7 +81,7 @@ class SaReportPage extends FanniePage {
         if ($this->config->get('STORE_MODE') !== 'HQ') {
             $store = 0;
         }
-        $soP = $dbc->prepare("
+        $soQ = "
             SELECT s.id,
                 s.datetime,
                 s.upc,
@@ -112,7 +112,9 @@ class SaReportPage extends FanniePage {
                 ON v.vendorID=c.vendorID AND v.vendorDept=c.deptID 
             WHERE clear!=1
                 AND s.upc=?
-                AND s.storeID=?');
+                AND s.storeID=?';
+        $soP = $dbc->prepare($soQ);
+        $soP2 = $dbc->prepare(str_replace('PendingSpecialOrder', 'CompleteSpecialOrder', $soQ));
 
             $OPDB = $this->config->get('OP_DB') . $dbc->sep();
             $q= $dbc->prepare("SELECT
@@ -180,6 +182,9 @@ class SaReportPage extends FanniePage {
                         $transID = substR($row['upc'], -2);
                         $args = array($orderID, $transID, $row['upc'], $this->store);
                         $row = $dbc->getRow($soP, $args);
+                        if (empty($row['description']) && empty($row['normal_retail'])) {
+                            $row = $dbc->getRow($soP2, $args);
+                        }
                     }
                     $key = $row['upc'] . $row['section'];
                     if (!isset($upcs[$key])) {

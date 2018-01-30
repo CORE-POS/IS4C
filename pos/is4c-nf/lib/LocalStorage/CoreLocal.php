@@ -154,8 +154,10 @@ class CoreLocal
         if (!self::get('ValidJson') && self::validateJsonIni()) {
             $settings = self::readIniJson();
             self::set('ValidJson', true);
-        } elseif (file_exists(dirname(__FILE__) . '/../../ini.php')) {
+        } elseif (!self::get('ValidJson') && file_exists(dirname(__FILE__) . '/../../ini.php')) {
             $settings = self::readIniPhp();
+        } elseif (!self::get('ValidJson')) {
+            self::loadEnv();
         }
         foreach ($settings as $key => $value) {
             if (!in_array($key, self::$INI_SETTINGS)) {
@@ -165,6 +167,24 @@ class CoreLocal
             }
             self::set($key, $value, true);
         }
+    }
+
+    private static function loadEnv()
+    {
+        self::set('laneno', self::getEnvOrDefault('LANENO', 99), true);
+        self::set('store_id', self::getEnvOrDefault('STOREID', 1), true);
+        self::set('localhost', self::getEnvOrDefault('LOCALHOST', '127.0.0.1'), true);
+        self::set('DBMS', self::getEnvOrDefault('DBMS', 'MYSQLI'), true);
+        self::set('localUser', self::getEnvOrDefault('LOCALUSER', 'root'), true);
+        self::set('localPass', self::getEnvOrDefault('LOCALPASS', ''));
+        self::set('pDatabase', self::getEnvOrDefault('PDATABASE', 'opdata'), true);
+        self::set('tDatabase', self::getEnvOrDefault('TDATABASE', 'translog'), true);
+    }
+
+    private static function getEnvOrDefault($name, $default)
+    {
+        $val = getenv($name);
+        return $val === false ? $default : $val;
     }
 
     /**

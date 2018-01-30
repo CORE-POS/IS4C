@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -60,12 +60,18 @@ class WooProductsTask extends FannieTask
         /**
           Map existing item's SKU (UPC) to woo's IDs
         */
-        $json = $woo->get('products');
-        $products = json_decode($json, true);
         $exists = array();
-        foreach ($products as $p) {
-            $exists[$p['sku']] = $p['id'];
-        }
+        $page = 1;
+        do {
+            $json = $woo->get('products', array('per_page' => 20, 'page'=>$page));
+            $headers = $woo->headers();
+            foreach ($json as $p) {
+                if (substr($p['sku'], -3) == '-CS') {
+                    $exists[$p['sku']] = $p['id'];
+                }
+            }
+            $page++;
+        } while (isset($headers['Link']) && strstr($headers['Link'], 'rel="next"'));
 
         /**
           Get CORE items and batch submit them to woo

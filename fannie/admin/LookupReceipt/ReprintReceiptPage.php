@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage 
@@ -172,11 +172,8 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $this->results = "<b>No receipts match the given criteria</b>";
         } elseif ($dbc->numRows($result) == 1){
             $row = $dbc->fetchRow($result);
-            $year = $row[0];
-            $month = $row[1];
-            $day = $row[2];
             $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-            header("Location: RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num");
+            header("Location: RenderReceiptPage.php?year={$row['year']}&month={$row['month']}&day={$row['day']}&receipt=$trans_num");
             return false;
         } else {
             $this->results = $this->toTable($dbc, $result, $dlog);
@@ -215,12 +212,9 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $num_results = $dbc->numRows($result);
         while ($row = $dbc->fetchRow($result)) {
             $ret .= '<tr>';
-            $year = $row[0];
-            $month = $row[1];
-            $day = $row[2];
             $ret .= '<td>' . $row['ts'] . '</td>';
             $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-            $ret .= "<td><a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
+            $ret .= "<td><a href=\"RenderReceiptPage.php?year={$row['year']}&month={$row['month']}&day={$row['day']}&receipt=$trans_num\">";
             $ret .= "$trans_num</a></td>";
             $ret .= '<td>' . $row['emp_no'] . '</td>';
             $ret .= '<td>' . $row['register_no'] . '</td>';
@@ -286,11 +280,11 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $dbc = $this->connection;
         $depts = "<option value=\"\">Select one...</option>";
-        $res = $dbc->query("SELECT dept_no,dept_name from departments order by dept_name");
+        $res = $dbc->query("SELECT dept_no,dept_name from " . FannieDB::fqn('departments', 'op') . " order by dept_name");
         while ($row = $dbc->fetchRow($res)) {
             $depts .= sprintf("<option value=%d>%s</option>",$row[0],$row[1]);
         }
-        $numsR = $dbc->query("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
+        $numsR = $dbc->query("SELECT TenderCode,TenderName FROM " . FannieDB::fqn('tenders', 'op') . " ORDER BY TenderName");
         $tenders = '';
         while ($numsW = $dbc->fetchRow($numsR)) {
             $tenders .= sprintf("<option value=%s>%s</option>",$numsW[0],$numsW[1]); 

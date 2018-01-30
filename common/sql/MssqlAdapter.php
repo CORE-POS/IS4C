@@ -149,5 +149,25 @@ class MssqlAdapter implements DialectAdapter
     {
         return 'SELECT 1';
     }
+
+    public function getProcessList()
+    {
+        return 'SELECT spid AS [ID],
+                status AS [STATE],
+                \'\' AS [INFO],
+                loginname AS [USER],
+                hostname AS [HOST],
+                DATEDIFF(ss, NOW(), login_time) AS [TIME]
+            FROM master..sysprocesses';
+    }
+
+    public function kill($intID)
+    {
+        if ($intID != (int)$intID || ((int)$intID) == 0) {
+            throw new \Exception('Invalid query ID');
+        }
+
+        return sprintf('KILL %d', $intID);
+    }
 }
 

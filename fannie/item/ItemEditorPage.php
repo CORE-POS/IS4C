@@ -257,9 +257,9 @@ HTML;
             $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
                 FROM products AS p
                     left join vendors AS n ON p.default_vendor_id=n.vendorID
-                WHERE description LIKE ? 
+                WHERE (description LIKE ? 
                     OR n.vendorName LIKE ?
-                    OR p.brand LIKE ?";
+                    OR p.brand LIKE ?)";
             $args[] = '%'.$upc.'%';
             $args[] = '%'.$upc.'%';
             $args[] = '%'.$upc.'%';
@@ -477,11 +477,14 @@ HTML;
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
     href="{$url}reports/RecentSales/?upc={$upc}" title="Sales History">Sales</a>
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
-    href="{$url}reports/ItemBatches/ItemBatchesReport.php?upc={$upc}" 
-    title="Batch History">Batches</a>
-<a class="btn btn-default btn-sm iframe fancyboxLink" 
     href="{$url}reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc={$upc}" 
     title="Order History">Orders</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}reports/ItemBatches/ItemBatchesReport.php?upc={$upc}" 
+    title="Batch History">Batches</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink"
+    href="{$url}batches/batchhistory/BatchHistoryPage.php?upc={$upc}&nomenu=1"
+    title="Extended Histocal Batch Data">Batch Historical</a>
 </span>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a class="btn btn-default btn-sm iframe fancyboxLink" 
@@ -493,10 +496,10 @@ HTML;
 HTML;
         }
         $ret .= '</p>';
-
+        
         return $ret;
     }
-
+    
     private function editForm($upc,$isNew)
     {
         $FANNIE_PRODUCT_MODULES = $this->getConfiguredModules();
@@ -646,6 +649,7 @@ HTML;
     private function saveModules($mods, $upc)
     {
         $form = new \COREPOS\common\mvc\FormValueContainer();
+        $this->connection->startTransaction();
         foreach ($mods as $class => $params) {
             $mod = new $class();
             $mod->setConnection($this->connection);
@@ -653,6 +657,7 @@ HTML;
             $mod->setForm($form);
             $mod->SaveFormData($upc);
         }
+        $this->connection->commitTransaction();
     }
 
     private function modulesResult($mods, $upc)

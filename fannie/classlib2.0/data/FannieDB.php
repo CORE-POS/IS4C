@@ -36,7 +36,18 @@ class FannieDB
 
     private static $read_only = null;
 
+    private static $config = null;
+
     private function __construct(){}
+
+    private static function config()
+    {
+        if (self::$config === null) {
+            $config = FannieConfig::factory();
+        }
+
+        return $config;
+    }
 
     /**
       Get a database connection
@@ -76,9 +87,34 @@ class FannieDB
         return self::get($db_name);
     }
 
+    /**
+     * Convert bare table name to fully-qualified name
+     * @param $table [string] table name
+     * @param $dbGeneric [string] database identifier
+     * @return [string] fully-qualified table name
+     */
+    public static function fqn($table, $dbGeneric)
+    {
+        $config = self::config();
+        $sep = $config->get('SERVER_DBMS') == 'mssql' || $config->get('SERVER_DBMS') == 'pdo_mssql' ? '.dbo.' : '.';
+        if ($dbGeneric == 'op') {
+            return $config->get('OP_DB') . $sep . $table;
+        } elseif ($dbGeneric == 'trans') {
+            return $config->get('TRANS_DB') . $sep . $table;
+        } elseif ($dbGeneric == 'arch') {
+            return $config->get('ARCHIVE_DB') . $sep . $table;
+        } elseif (substr($dbGeneric, 0, 7) == 'plugin:') {
+            $settings = $config->get('PLUGIN_SETTINGS');
+            $dbName = substr($dbGeneric, 7);
+            return isset($settings[$dbName]) ? $settings[$dbName] . $sep . $table : $table;
+        }
+
+        return $table;
+    }
+
     private static function dbIsConfigured()
     {
-        $config = FannieConfig::factory();
+        $config = self::config();
         if ($config->get('SERVER') == '' || $config->get('SERVER_DBMS') == '' || $config->get('SERVER_USER') == '') {
             return false;
         } else {
@@ -88,7 +124,7 @@ class FannieDB
 
     private static function newDB($db_name)
     {
-        $config = FannieConfig::factory();
+        $config = self::config();
         if (!class_exists('SQLManager')) {
             include(dirname(__FILE__) . '/../../src/SQLManager.php');
         }
@@ -100,6 +136,7 @@ class FannieDB
             $config->get('SERVER_PW'),
             false, 
             true);
+        self::$db->setCharSet($config->get('CHARSET'), $db_name);
     }
 
     private static function addDB($db_name)
@@ -119,7 +156,7 @@ class FannieDB
     public static function getReadOnly($db_name)
     {
         if (self::$read_only === null) {
-            $config = FannieConfig::factory();
+            $config = self::config();
             $json = json_decode($config->get('READONLY_JSON'), true);
             if (!is_array($json)) {
                 return self::get($db_name);
@@ -131,14 +168,16 @@ class FannieDB
                 return self::get($db_name);
             }
 
-            self::$read_only = new SQLManager(
-                $pick['host'],
-                $pick['type'],
-                $db_name,
-                $pick['user'],
-                $pick['pw'],
-                false,
-                true);
+            try {
+                self::$read_only = new SQLManager(
+                    $pick['host'],
+                    $pick['type'],
+                    $db_name,
+                    $pick['user'],
+                    $pick['pw']);
+            } catch (Exception $ex) {
+                return self::get($db_name);
+            }
         } else {
             self::$read_only->selectDB($db_name);
         }

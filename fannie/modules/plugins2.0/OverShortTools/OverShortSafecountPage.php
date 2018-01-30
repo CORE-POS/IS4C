@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class OverShortSafecountPage extends FanniePage {
@@ -154,7 +154,7 @@ class OverShortSafecountPage extends FanniePage {
         foreach ($denoms as $d) $ret .= "<th>$d</th>";
         $ret .= "<th>Total</th></tr>";
 
-        $ret .= "<tr class=color><th>Change Order</th>";
+        $ret .= "<tr class=color><th title=\"Currency ordered from the bank. This should match Buy Amount from the previous count.\">Change Order</th>";
         $sum = 0;
         foreach($denoms as $d){ 
             if ($d == 'Checks' || $d == "100.00" || $d == "50.00" || $d == "20.00" || $d == "Junk") 
@@ -167,7 +167,7 @@ class OverShortSafecountPage extends FanniePage {
         }
         $ret .= "<td id=changeOrderTotal>$sum</td></tr>";
 
-        $ret .= "<tr><th>Open Safe Count</th>";
+        $ret .= "<tr><th title=\"Money in the safe at the start of this cont.\">Open Safe Count</th>";
         $sum = 0;
         foreach($denoms as $d){
             if ($d == 'Checks') 
@@ -197,7 +197,7 @@ class OverShortSafecountPage extends FanniePage {
         $bags = round($osCounts['SCA'] / 168.00);
         //$osCounts['CA'] -= 168*$bags;
 
-        $ret .= "<tr class=color><th>Total change fund</th>";
+        $ret .= "<tr class=color><th title=\"This is the Open Safe Count plus the Change Order.\">Total Change Fund</th>";
         $sum = 0;
         foreach($denoms as $d){
             if ($d == "Checks"){
@@ -212,7 +212,7 @@ class OverShortSafecountPage extends FanniePage {
         $ret .= "<td id=cashInTillsTotal>$sum</td></tr>";
         $accountableTotal += $sum;
 
-        $ret .= "<tr><th>Drop Amount</th>";
+        $ret .= "<tr><th title=\"Money dropped by cashiers since the last count. The total comes from adding the daily over/short counts for cash and checks. The 1.00 value is then auto-adjusted so the line sum matches the total.\">Drop Amount</th>";
         foreach($denoms as $d){
             if ($d == "1.00"){
                 $ret .= "<td id=dropAmount1.00>".$holding['dropAmount'][$d]."</td>";
@@ -230,7 +230,7 @@ class OverShortSafecountPage extends FanniePage {
         $buyAmountTotal -= $val;
         $accountableTotal += $val;
 
-        $ret .= "<tr class=\"color\"><th>ATM</th>";
+        $ret .= "<tr class=\"color\"><th title=\"Fill is cash retained to refill the ATM. Reject is worn or damaged bills that the ATM cannot process and will be deposited instead.\">ATM</th>";
         $ret .= "<td colspan=\"7\">&nbsp;</td>";
         $ret .= "<td>Fill:</td>";
         $ret .= "<td><input size=4 type=text id=atmFill value=\"".$holding['atm']['fill']."\"
@@ -271,7 +271,7 @@ class OverShortSafecountPage extends FanniePage {
             }
         }
 
-        $ret .= "<tr class=\"color\"><th>Deposit Amount</th>";
+        $ret .= "<tr class=\"color\"><th title=\"The amount we're sending to the bank is calculated by subtracting the Total Change Fund and Drop Amount from the Par Amount. With coins loose amounts that won't fit in a roll are also deposited. With 20.00s the deposit is modifed by ATM fills and rejects.\">Deposit Amount</th>";
         $sum = 0;
         $depositAmount = array();
         foreach($denoms as $d){
@@ -346,7 +346,7 @@ class OverShortSafecountPage extends FanniePage {
         $buyAmountTotal += $sum;
         $accountableTotal -= $sum;
         
-        $ret .= "<tr><th>Close Safe Count</th>";
+        $ret .= "<tr><th title=\"What remains in the safe after the count is Total Change Fund plus Drop Amount minus Deposit Amount.\">Close Safe Count</th>";
         $sum = 0;
         foreach($denoms as $d){
             if ($d == 'Checks' || $d == "Junk") 
@@ -361,7 +361,7 @@ class OverShortSafecountPage extends FanniePage {
         $actualTotal += $sum;
 
         $parTTL = 0; foreach($pars as $k=>$v) $parTTL += $v;
-        $ret .= "<tr class=\"color\"><th><a href=\"OverShortParsPage.php\">Par Amounts</a></th>";
+        $ret .= "<tr class=\"color\"><th title=\"Pars are the amounts we want to keep on hand of each denomination. Click here to adjust the current pars for the store.\"><a href=\"OverShortParsPage.php\">Par Amounts</a></th>";
         $ret .= "<td id=par0.01>".$pars['0.01']."</td>";
         $ret .= "<td id=par0.05>".$pars['0.05']."</td>";
         $ret .= "<td id=par0.10>".$pars['0.10']."</td>";
@@ -404,7 +404,7 @@ class OverShortSafecountPage extends FanniePage {
         $buyAmounts['0.05'] += $overs['0.05'];
         $buyAmounts['0.01'] += $overs['0.01'];
 
-        $ret .= "<tr><th>Buy Amount</th>";
+        $ret .= "<tr><th title=\"This is what we need to order from the bank to reach pars. It's not exactly Par Amount minus Close Safe Count because we can only purchase change in specific-sized rolls.\">Buy Amount</th>";
         foreach ($denoms as $d){
             if (isset($buyAmounts[$d]))
                 $ret .= "<td id=buyAmount$d>".$buyAmounts[$d]."</td>";
@@ -544,7 +544,7 @@ class OverShortSafecountPage extends FanniePage {
             $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
             $count = 0;
             while($row = $dbc->fetch_row($res)) {
-                if ($count++ > 50) {
+                if ($count++ > 100) {
                     break;
                 }
                 echo '<option>'.$row['dateStr'].'</option>';

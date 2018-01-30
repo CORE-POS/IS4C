@@ -188,7 +188,7 @@ class OrderGenTask extends FannieTask
             $cur = $shrink ? $cur - $shrink : $cur;
             if ($cur < 0) { 
                 $cur = 0;
-                $this->autoZero($dbc, $row['upc'], $row['storeID']);
+                //$this->autoZero($dbc, $row['upc'], $row['storeID']);
             }
             if ($this->multiplier) {
                 $row['par'] *= $this->multiplier;
@@ -221,13 +221,16 @@ class OrderGenTask extends FannieTask
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
 
                 // no catalog entry to create an order
-                if ($itemR === false || $itemR['units'] <= 0) {
+                if ($itemR === false) {
                     $itemR['sku'] = $row['upc'];
                     $itemR['brand'] = $prodW['brand'];
                     $itemR['description'] = $prodW['description'];
                     $itemR['cost'] = $prodW['cost'];
                     $itemR['saleCost'] = 0;
                     $itemR['size'] = $prodW['size'];
+                    $itemR['units'] = 1;
+                }
+                if ($itemR['units'] <= 0) {
                     $itemR['units'] = 1;
                 }
 

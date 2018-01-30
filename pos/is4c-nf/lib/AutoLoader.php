@@ -70,12 +70,9 @@ class AutoLoader
             }
         } elseif (!isset($map[$name])) {
             // class is unknown
-            // rebuild map to see if the definition
-            // file has been added
-            $map = self::loadMap();
-            if (!is_array($map)) {
-                return;
-            }
+            // don't auto-rebuild. signing out will
+            // do a full filesystem re-map if needed
+            return;
         }
 
         if (isset($map[$name]) && !class_exists($name,false)) {
@@ -85,6 +82,34 @@ class AutoLoader
                 CoreLocal::set('ClassLookup', $map);
             }
         }
+
+        self::loadStats($name);
+    }
+
+    static private function loadStats($class)
+    {
+        if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
+            return false;
+        }
+        $stats = CoreLocal::get('ClassStats');
+        if (!is_array($stats)) {
+            $stats = array();
+        }
+        $now = microtime(true);
+        $loads = isset($stats[$class]) ? $stats[$class] : array();
+        array_push($loads, $now);
+        while (count($loads) > 5) {
+            array_shift($loads);
+        }
+        $stats[$class] = $loads;
+        if (count($loads) == 5 && $loads[4] - $loads[0] < 2.0) {
+            $cache = new COREPOS\ClassCache\ClassCache(__DIR__ . '/../cache.php');
+            $added = $cache->add($class);
+            unset($stats[$class]);
+        }
+        CoreLocal::set('ClassStats', $stats);
+
+        return true;
     }
 
     /**
@@ -94,11 +119,30 @@ class AutoLoader
     static public function loadMap()
     {
         $classMap = array();
-        $searchPath = realpath(dirname(__FILE__).'/../');
+        $searchPath = realpath(dirname(__FILE__).'/../plugins/');
         self::recursiveLoader($searchPath, $classMap);
         CoreLocal::set('ClassLookup', $classMap);
+        self::classCache();
 
         return $classMap;
+    }
+
+    static private function classCache()
+    {
+        if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
+            return false;
+        }
+        $cachefile = __DIR__ . '/../cache.php';
+        $cache = new COREPOS\ClassCache\ClassCache($cachefile);
+        $cache->clean();
+        foreach (self::listModules('COREPOS\\pos\\parser\\PreParser') as $p) {
+            $added = $cache->add($p);
+        }
+        foreach (self::listModules('COREPOS\\pos\\parser\\Parser') as $p) {
+            $added = $cache->add($p);
+        }
+
+        return true;
     }
 
     static private $classPaths = array(
@@ -147,7 +191,9 @@ class AutoLoader
         $ret = array();
         
         // lookup plugin modules, then standard modules
-        $map = Plugin::pluginMap();
+        $map = array_filter(CoreLocal::get('ClassLookup'), function ($i) {
+            return strpos($i, 'plugins') > 0;
+        });
         if (isset(self::$classPaths[$baseClass])) {
             $path = realpath(dirname(__FILE__) . self::$classPaths[$baseClass]);
             $map = Plugin::pluginMap($path,$map);
@@ -178,9 +224,12 @@ class AutoLoader
 
             ob_start();
             $nsClass = self::fileToFullClass($file);
-            if (!class_exists($name, false) && class_exists($nsClass)) {
+            if (!class_exists($nsClass, false) && !class_exists($name, false)) {
+                include_once($file);
+            }
+            if (!class_exists($name, false) && class_exists($nsClass, false)) {
                 $name = $nsClass;
-            } elseif (!class_exists($name)) { 
+            } elseif (!class_exists($name, false)) { 
                 ob_end_clean();
                 continue;
             }
@@ -304,6 +353,9 @@ spl_autoload_register(array('AutoLoader','loadClass'), true, true);
 if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
     include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
 }
+if (is_array(CoreLocal::get('ClassLookup')) && file_exists(__DIR__ . '/../cache.php')) {
+    include_once(__DIR__ . '/../cache.php');
+}
 
 COREPOS\common\ErrorHandler::setLogger(new \COREPOS\pos\lib\LaneLogger());
 COREPOS\common\ErrorHandler::setErrorHandlers();
@@ -314,6 +366,10 @@ COREPOS\common\ErrorHandler::setErrorHandlers();
   but the gettext functions may or may not
   be available
 */
+if (!defined('LC_MESSAGES')) {
+    // manually define for windows
+    define('LC_MESSAGES', 5);
+}
 if (function_exists('setlocale') && defined('LC_MESSAGES') && CoreLocal::get('locale') !== '') {
     setlocale(LC_MESSAGES, CoreLocal::get('locale') . '.utf8');
     putenv('LC_MESSAGES=' . CoreLocal::get('locale') . '.utf8');

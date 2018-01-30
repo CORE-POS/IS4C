@@ -22,7 +22,7 @@
 *********************************************************************************/
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 if (!class_exists('SoPoBridge')) {
@@ -393,7 +393,7 @@ class OrderViewPage extends FannieRESTfulPage
             $current_street = $orderModel->street();
             $current_phone = $orderModel->phone();
             if (empty($current_street) && empty($current_phone)) {
-                $contactQ = $dbc->prepare("SELECT street,city,state,zip,phone,email_1,email_2
+                $contactQ = $dbc->prepare("SELECT street,city,state,zip,phone,email_1,email_2 AS altPhone
                         FROM meminfo WHERE card_no=?");
                 $contactR = $dbc->execute($contactQ, array($memNum));
                 if ($dbc->num_rows($contactR) > 0) {
@@ -405,7 +405,7 @@ class OrderViewPage extends FannieRESTfulPage
                     $orderModel->state($contact_row['state']);
                     $orderModel->zip($contact_row['zip']);
                     $orderModel->phone($contact_row['phone']);
-                    $orderModel->altPhone($contact_row['email_2']);
+                    $orderModel->altPhone($contact_row['altPhone']);
                     $orderModel->email($contact_row['email_1']);
 
                     $prefP = $dbc->prepare($dbc->addSelectLimit("SELECT sendEmails FROM SpecialOrders AS o
@@ -595,6 +595,7 @@ class OrderViewPage extends FannieRESTfulPage
             4 => 'Text (T-Mobile)',
             5 => 'Text (Verizon)',
             6 => 'Text (Google Fi)',
+            7 => 'Actual SMS',
         );
         $contactHtml = '';
         foreach ($contactOpts as $id=>$val) {
@@ -664,8 +665,15 @@ class OrderViewPage extends FannieRESTfulPage
             $orderModel->zip()
         );
 
+        $noteP = $dbc->prepare('SELECT note FROM ' . FannieDB::fqn('memberNotes', 'op') . ' WHERE cardno=? ORDER BY stamp DESC');
+        $acctNote = $dbc->getValue($noteP, array($memNum));
+        if (trim($acctNote)) {
+            $ret .= '<tr><th>Acct Notes</th><td colspan="4">' . $acctNote . '</td></tr>';
+        }
+
         $ret .= '</table>';
 
+        $ret = preg_replace('/[^\x0-\x7E]/','', $ret);
         echo json_encode(array('customer'=>$ret, 'footer'=>$extra));
 
         return false;
@@ -1082,7 +1090,7 @@ HTML;
                 } else {
                     $pricing = "% Discount";
                 }
-            } elseif ($w['discountable'] == 0) {
+            } elseif (isset($w['discountable']) && $w['discountable'] == 0) {
                 $pricing = _('Basics');
             }
             $ret .= sprintf('<tr>
@@ -1231,6 +1239,32 @@ HTML;
         $orderID = $this->createEmptyOrder();
 
         return filter_input(INPUT_SERVER, 'PHP_SELF') . '?orderID=' . $orderID;
+    }
+
+    protected function get_orderID_handler()
+    {
+        $this->debugInfo = 'running get_orderID_handler';
+        $TRANS = $this->config->get('TRANS_DB') . $this->connection->sep();
+        $open = $this->connection->prepare("SELECT upc FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
+        $open = $this->connection->getValue($open, array($this->orderID));
+        if ($open !== false) {
+            return true;
+        }
+        $this->debugInfo = 'No pending records';
+        $closed = $this->connection->prepare("SELECT upc FROM {$TRANS}CompleteSpecialOrder WHERE order_id=? AND trans_id > 0");
+        $closed = $this->connection->getValue($closed, array($this->orderID));
+        if ($closed !== false) {
+            return 'OrderReviewPage.php?orderID=' . $this->orderID;
+        }
+        $this->debugInfo .= ' and no complete records';
+        $status = $this->connection->prepare("SELECT statusFlag FROM {$TRANS}SpecialOrders WHERE specialOrderID=?");
+        $status = $this->connection->getValue($status, array($this->orderID));
+        if ($status == 7 || $status == 8 || $status == 9) {
+            return 'OrderReviewPage.php?orderID=' . $this->orderID;
+        }
+        $this->debugInfo .= ' and valid status';
+
+        return true;
     }
 
     // this shouldn't occur unless something goes wonky creating the new order

@@ -73,8 +73,12 @@ class BasicModel extends COREPOS\common\BasicModel
             if (isset($lane['offline']) && $lane['offline']) {
                 continue;
             }
-            $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
-                        $lane['user'],$lane['pw']);    
+            try {
+                $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+                            $lane['user'],$lane['pw']);    
+            } catch (Exception $ex) {
+                continue;
+            }
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
                 continue;
             }
@@ -99,8 +103,12 @@ class BasicModel extends COREPOS\common\BasicModel
             if (isset($lane['offline']) && $lane['offline']) {
                 continue;
             }
-            $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
-                        $lane['user'],$lane['pw']);    
+            try {
+                $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+                            $lane['user'],$lane['pw']);    
+            } catch (Exception $ex) {
+                continue;
+            }
             if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
                 continue;
             }
@@ -135,8 +143,12 @@ class BasicModel extends COREPOS\common\BasicModel
             if (isset($lane['offline']) && $lane['offline']) {
                 continue;
             }
-            $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
-                        $lane['user'],$lane['pw']);    
+            try {
+                $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
+                            $lane['user'],$lane['pw']);    
+            } catch (Exception $ex) {
+                continue;
+            }
             if (!is_object($sql) || $sql->connections[$lane[$lane_db]] === false) {
                 continue;
             }
@@ -153,6 +165,8 @@ class BasicModel extends COREPOS\common\BasicModel
         return true;
     }
 
+    protected static $hookCache = null;
+
     /**
       Search available classes to load applicable
       hook objects into this instance
@@ -161,14 +175,17 @@ class BasicModel extends COREPOS\common\BasicModel
     {
        $this->hooks = array();
        if (class_exists('FannieAPI')) {
-           $hook_classes = FannieAPI::listModules('BasicModelHook');
-           $others = FannieAPI::listModules('\COREPOS\Fannie\API\data\hooks\BasicModelHook');
-           foreach ($others as $o) {
-               if (!in_array($o, $hook_classes)) {
-                   $hook_classes[] = $o;
+           if (self::$hookCache === null) {
+               $hook_classes = FannieAPI::listModules('BasicModelHook');
+               $others = FannieAPI::listModules('\COREPOS\Fannie\API\data\hooks\BasicModelHook');
+               foreach ($others as $o) {
+                   if (!in_array($o, $hook_classes)) {
+                       $hook_classes[] = $o;
+                   }
                }
+               self::$hookCache = $hook_classes;
            }
-           foreach($hook_classes as $class) {
+           foreach(self::$hookCache as $class) {
                 if (!class_exists($class)) continue;
                 $hook_obj = new $class();
                 if ($hook_obj->operatesOnTable($this->name)) {

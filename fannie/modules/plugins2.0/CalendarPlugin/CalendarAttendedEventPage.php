@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FanniePage')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FanniePage.php');
 }
 if (!class_exists('CalendarPlugin')) {
     include(dirname(__FILE__).'/CalendarPlugin.php');

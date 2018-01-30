@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\FileData;
+
 if (!class_exists('FanniePage')) {
     include_once(dirname(__FILE__).'/FanniePage.php');
 }
@@ -494,6 +496,8 @@ class FannieReportPage extends FanniePage
         $qstr = str_replace('?excel=xlsx', '', $qstr);
         $qstr = str_replace('?excel=csv', '', $qstr);
         $qstr = str_replace('?excel=txt', '', $qstr);
+        $qstr = str_replace('?no-cache=1', '', $qstr);
+        $qstr = str_replace('&no-cache=1', '', $qstr);
 
         return $reflector->getName() . $qstr;
     }
@@ -714,11 +718,12 @@ class FannieReportPage extends FanniePage
                     );
                     $ret .= '</div>';
                 }
+                $tableID = 'reportTable' . $this->multi_counter;
                 if ($this->sortable || $this->no_sort_but_style) {
-                    $ret .= '<table class="mySortableTable tablesorter tablesorter-bootstrap">';
+                    $ret .= '<table class="mySortableTable tablesorter tablesorter-bootstrap" id="' . $tableID . '">';
                 } else {
                     $ret .= '<table class="mySortableTable" cellspacing="0" 
-                        cellpadding="4" border="1">' . "\n";
+                        id="' . $tableID . '" cellpadding="4" border="1">' . "\n";
                 }
                 break;
             case 'csv':
@@ -1142,7 +1147,8 @@ class FannieReportPage extends FanniePage
         $item = preg_replace("/(\d) *%$/","$1",$item);
         // 1,000 -> 1000
         $item = preg_replace("/(\d),(\d\d\d)/","$1$2",$item);
-        return $item;
+
+        return FileData::excelNoFormula($item);
     }
 
     /**

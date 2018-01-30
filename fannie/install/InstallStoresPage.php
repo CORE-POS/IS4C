@@ -108,7 +108,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
 
         // redirect to self so refreshing the page
         // doesn't repeat HTML POST
-        if ($posted) {
+        if (!empty($_POST)) {
             // capture POST of input field
             installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, 1);
             installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
@@ -117,7 +117,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
                 $FANNIE_READONLY_JSON = json_encode(json_decode(FormLib::get('FANNIE_READONLY_JSON')));
                 confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
             }
-            $netIDs = FormLib::get('storeNetId');
+            $netIDs = FormLib::get('storeNetId', array());
             $nets = FormLib::get('storeNet');
             $saveStr = 'array(';
             for ($i=0; $i<count($netIDs); $i++) {

@@ -23,7 +23,7 @@
 
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class CoopDealsLookupPage extends FannieRESTfulPage
@@ -49,12 +49,57 @@ class CoopDealsLookupPage extends FannieRESTfulPage
        $this->__routes[] = 'get<upc>';
        $this->__routes[] = 'get<insert>';
        $this->__routes[] = 'get<month>';
+       $this->__routes[] = 'get<cycle>';
 
        return parent::preprocess();
     }
 
+    function get_cycle_handler() {
+
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $upc = FormLib::get('upc');
+
+        if ($this->session->cycleDate) {
+            unset($this->session->cycleDate);
+            return header('location: CoopDealsLookupPage.php?upc='.$upc);
+        }
+
+        $prep = $dbc->prepare('
+            SELECT
+                batchID,
+                batchName,
+                owner,
+                batchType,
+                startDate,
+                endDate
+            FROM is4c_op.batches
+            WHERE CURDATE() between startDate and endDate
+                AND batchType = 1
+                AND (batchName like "%Deals A%"
+                    OR batchName like "%Deals B%")
+            LIMIT 1;
+        ');
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            if (strpos($row['batchName'],"Co-op Deals A")) {
+                $date = new DateTime($row['endDate']);
+                date_add($date, date_interval_create_from_date_string('2 days'));
+                $this->session->cycleDate = sprintf("%s",$date->format('Y-m-d'));
+            } elseif (strpos($row['batchName'],"Co-op Deals B")) {
+                $date = new DateTime($row['startDate']);
+                date_add($date, date_interval_create_from_date_string('-2 days'));
+                $this->session->cycleDate = sprintf("%s",$date->format('Y-m-d'));
+            }
+        }
+
+        return header('location: CoopDealsLookupPage.php?upc='.$upc);
+
+    }
+
     function get_insert_view()
     {
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $batchID = FormLib::get('batches');
@@ -70,36 +115,51 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
         $prep = $dbc->prepare('
             INSERT INTO batchList
-            (upc, batchID, salePrice, groupSalePrice, active)
-            VALUES (?,?,?,?,"1")
+            (upc, batchID, salePrice, groupSalePrice, active) VALUES (?,?,?,?,"1")
         ');
         $dbc->execute($prep,$args);
+
         if ($er = $dbc->error()) {
             return '<div class="alert alert-danger">' . $er . "</div>"
                 . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
         } else {
-            return '<div class="alert alert-success">Item Added to Batch</div>'
+            $msg = "Item Added to Batch";
+            $b = new BatchesModel($dbc);
+            if ($this->forceBatchOkay($batchID,$b)) {
+                $b->forceStartBatch($batchID);
+                $msg .= " & Batch #{$batchID} forced.";
+            }
+            return '<div class="alert alert-success">'.$msg.'</div>'
                 . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
         }
-        
-        //  Add product to Batch Check Queue if Batch Check in session 
-        if ($session = $this->session->session && $store_id = $this->session->store_id) {
-            $dbc = FannieDB::get('woodshed_no_replicate');
-            $argsB = array($upc, $store_id, $session);
-            $prepB = $dbc->prepare('
-                INSERT INTO SaleChangeQueues (queue, upc, store_id, session)
-                VALUES (8,?,?,?)
-            ');
-            $dbc->execute($prepB,$argsB);
-        }
 
+    }
+
+    private function forceBatchOkay($id,$b)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $b->batchID($id);
+        $b->load();
+        $start = new DateTime($b->startDate());
+        $end = new DateTime($b->endDate());
+        $now = new DateTime(date('Y-m-d'));
+        if ($now >= $start && $now <= $end) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function get_upc_view()
     {
 
         $ret = '';
-        echo 'Month: ' . strtoupper($this->session->month) . '<br>';
+        echo 'Month: ' . $this->session->month . '<br>';
+        if ($this->session->cycleDate) {
+            echo "<b>Switch_Cycle</b>: Alternate cycle batches loaded.<br/>";
+        }
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
@@ -111,42 +171,68 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 <input type="submit" class="btn btn-default" value="go">
             </form>
         ';
-        $dbc = FannieDB::get('woodshed_no_replicate');
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = FormLib::get('upc');
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         echo 'UPC: ' . $upc;
 
-        $month = 'CoopDeals' . $this->session->month;
-        $args = array($month, $upc);
+        $month = $this->session->month;
+        $args = array($upc, $month);
         $prep = $dbc->prepare('
             SELECT
-                upc,
-                flyerPeriod,
-                brand,
-                sku,
-                description,
-                srp
-            FROM ' . $month . '
-            WHERE upc = ?;
+                c.upc,
+                c.abtpr AS flyerPeriod,
+                p.brand,
+                v.sku,
+                p.description,
+                c.price AS srp,
+                m.super_name
+            FROM CoopDealsItems AS c
+                LEFT JOIN products AS p ON c.upc=p.upc
+                LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE c.upc = ?
+                AND c.dealSet = ?
+            LIMIT 1;
         ');
-        $res = $dbc->execute($prep, $upc);
+        $pPrep = $dbc->prepare('
+            SELECT
+                c.abtpr AS flyerPeriod,
+                c.price AS srp
+            FROM CoopDealsItems AS c
+                INNER JOIN products AS p ON c.upc=p.upc
+                INNER JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
+                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE c.upc = ?
+                AND c.dealSet = ?
+            GROUP BY c.abtpr;
+        ');
+        $pRes = $dbc->execute($pPrep, $args);
+        $flyerPeriod = ' ';
+        while ($row = $dbc->fetchRow($pRes)) {
+            $flyerPeriod .= $row['flyerPeriod'].",";
+        }
+        $flyerPeriod = substr_replace($flyerPeriod, "", -1);
+
+        $res = $dbc->execute($prep, $args);
         $ret .=  "<table class='table'  align='center' width='100%'>";
         $check = '';
         while ($row = $dbc->fetch_row($res)) {
             $upc = $row['upc'];
             $description = $row['description'];
             $brand = $row['brand'];
-            $flyerPeriod = $row['flyerPeriod'];
             $sku = $row['sku'];
             $srp = $row['srp'];
+            $superName = $row['super_name'];
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
             $ret .=  '<td><b>Brand</b></td><td>' . $row['brand'] . '</tr>';
-            $ret .=  '<td><b>Flyer Period</b></td><td>' . $row['flyerPeriod'] . '</tr>';
+            $ret .=  '<td><b>Flyer Period</b></td><td>' . $flyerPeriod . '</tr>';
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
             $srp = $row['srp'];
             $ret .= '<td><b>Sale Price</b></td><td>' . $srp . '</td></tr>';
-            $ret .=  '<td><b>Sale Period</b></td><td>' . substr($month, 9) . '</td></tr>';
+            $ret .=  '<td><b>Department</b></td><td>' . $superName .'</td></tr>';
             $check = $row['upc'];
         }
         $ret .= '</table>';
@@ -155,8 +241,11 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $ret .= '<div class="alert alert-warning">' . $dbc->error() . '</div>';
         }
 
-        $months = array('Jan'=>1,'Feb'=>2,'Mar'=>3,'Apr'=>4,'May'=>5,'June'=>6,
-            'July'=>7,'Aug'=>8,'Sep'=>9,'Oct'=>10,'Nov'=>11,'Dec'=>12);
+        $months = array();
+        for ($i=1; $i<13; $i++) {
+            $months[date('M')] = $i;
+        }
+
         $year = date('Y');
         $checkMoStart = $year . '-' .$months[$this->session->month] . '-01 00:00:00';
         $checkMoEnd = $year . '-' .$months[$this->session->month] . '-31 00:00:00';
@@ -164,16 +253,22 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
         } else {
-            $curMonthQ = $dbc->prepare('
+            if ($date = $this->session->cycleDate) {
+                $datePicker = '"'.$date.'"';
+            } else {
+                $datePicker = "CURDATE()";
+            }
+            $curMonthQueryStr = "
                 select
                     batchID,
                     batchName,
                     owner,
                     batchType
                 from is4c_op.batches
-                where CURDATE() between startDate and endDate
-                    and batchType = 1;
-            ');
+                where {$datePicker} between startDate and endDate
+                and batchType = 1;
+            ";
+            $curMonthQ = $dbc->prepare($curMonthQueryStr);
 
             $selMonthA = array($checkMoStart,$checkMoEnd);
             $selMonthQ = $dbc->prepare('
@@ -187,11 +282,26 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     and batchType = 1;
             ');
 
-            $curMonth = date('M');
+            $curMonth = date('F');
             if ($curMonth == $this->session->month) {
                 $result = $dbc->execute($curMonthQ);
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
+            }
+
+            $batchIDs = array();
+            while ($row = $dbc->fetchRow($result)) {
+                $batchIDs[] = $row['batchID'];
+            }
+            list($inStr, $prodInBatchA) = $dbc->safeInClause($batchIDs);
+            $prodInBatchA[] = $upc;
+            $prodInBatchQ = 'SELECT batchID from batchList WHERE batchID IN ('.$inStr.') AND upc = ?';
+            $prodInBatchP = $dbc->prepare($prodInBatchQ);
+            $prodInBatchR = $dbc->execute($prodInBatchP,$prodInBatchA);
+            $foundIn = array();
+            while ($row = $dbc->fetchRow($prodInBatchR)) {
+                echo "<br/><span style='color: grey'>Item found in batch ".$row['batchID']."</span>";
+                $foundIn[] = $row['batchID'];
             }
 
             $ret .=  '
@@ -199,10 +309,23 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     Sales Batches<br>
                     <select class="form-control" name="batches">
             ';
+            if ($curMonth == $this->session->month) {
+                $result = $dbc->execute($curMonthQ);
+            } else {
+                $result = $dbc->execute($selMonthQ,$selMonthA);
+            }
             while ($row = $dbc->fetchRow($result)) {
-                $ret .=  '<option value="' . $row['batchID'] . '">' . $row['batchName'] . '</option>';
+                $option = "option";
+                $add = "";
+                $batchID = $row['batchID'];
+                if (in_array($batchID,$foundIn)) {
+                    $option = "option style='background-color: tomato; color: white' ";
+                    $add = "# ";
+                }
+                $ret .=  '<'.$option.' value="' . $batchID . '">' . $add . $row['batchName'] . '</option>';
             }
             $ret .=  '
+                <input type="submit" name="cycle" value="Switch_Cycle" class="btn btn-default">
                 </select><br>
                     <input type="submit" class="btn btn-danger" value="Add this item to batch">
                     <input type="hidden" name="insert" value="1">
@@ -228,8 +351,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
 
-        $ret = '';  
-        echo 'Month: ' . strtoupper($this->session->month) . '<br>';
+        $ret = '';
+        echo 'Month: ' . $this->session->month . '<br>';
 
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="form-inline">
@@ -244,34 +367,32 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
     function get_view()
     {
-        $curMonth = date('M');
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $curMonth = date('F');
+        $dealSets = "";
+        $prep = $dbc->prepare("SELECT dealSet FROM CoopDealsItems
+            GROUP BY dealSet");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $dealSets .= "<option value='{$row['dealSet']}'>{$row['dealSet']}</option>";
+        }
 
-        return '
-            <form method="get" name="useCurMo" class="form-inline">
-                <input type="hidden" name="month" value="' . $curMonth . '">
-                <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
-            </form><br>
+        return <<<HTML
+<form method="get" name="useCurMo" class="form-inline">
+    <input type="hidden" name="month" value="{$curMonth}">
+    <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
+</form><br>
 
-            <form method="get" name="id-form" class="form-inline">
-                or <label>Select a Month</label><br>
-                <select name="month" class="form-control" style="text-align: center;">
-                    <option value="Jan">January</option>
-                    <option value="Feb">February</option>
-                    <option value="Mar">March</option>
-                    <option value="Apr">April</option>
-                    <option value="May">May</option>
-                    <option value="Jun">June</option>
-                    <option value="Jul">July</option>
-                    <option value="Aug">August</option>
-                    <option value="Sep">September</option>
-                    <option value="Oct">October</option>
-                    <option value="Nov">November</option>
-                    <option value="Dec">December</option>
-                </select>&nbsp;
-                <button type="submit" class="form-control btn btn-default">Submit</button><br>
-            </form>
-            '.$this->navBtns().'
-        ';
+<form method="get" name="id-form" class="form-inline">
+    or <label>Select a Month</label><br>
+    <select name="month" class="form-control" style="text-align: center;">
+    {$dealSets}
+    </select>&nbsp;
+    <button type="submit" class="form-control btn btn-default">Submit</button><br>
+</form>
+{$this->navBtns()}
+HTML;
 
     }
 

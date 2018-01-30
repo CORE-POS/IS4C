@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'/classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
@@ -310,8 +310,13 @@ class PIMemberPage extends PIKillerPage {
             echo "<td>$status</td>";
         }
         echo "<td colspan=2><a href=PISuspensionPage.php?id=".$this->card_no.">History</a>";
-        if ($this->auth_mode == 'Full')
+        if ($this->auth_mode == 'Full') {
             echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?edit=1&id='.$this->card_no.'">Change Status</a>';
+            if (substr($status, 0, 4) === 'TERM' && $this->__models['equity']->payments() > 0) {
+                echo '&nbsp;&nbsp;&nbsp;<a onclick="return confirm(\'Refund equity via check?\');" 
+                    href="PITermCheck.php?id='.$this->card_no.'">Term Check</a>';
+            }
+        }
         else if ($this->auth_mode == 'Limited' && isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() == 16){
             echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?fixaddress=1&id='.$this->card_no.'"
                 onclick="return confirm(\'Address is correct?\');">Address Corrected</a>';
@@ -469,6 +474,8 @@ class PIMemberPage extends PIKillerPage {
             echo '<a href="PIMemberPage.php?id=' . ($this->card_no - 1) . '">Prev Mem</a>';
             echo '&nbsp;&nbsp;';
             echo '<a href="PIMemberPage.php?id=' . ($this->card_no + 1) . '">Next Mem</a>';
+            echo '&nbsp;&nbsp;';
+            echo '<a href="../../../reports/CustomerHistory/AccountHistoryReport.php?id=' . $this->card_no . '">Changes History</a>';
         }
         else
             echo '<input type="submit" value="Save Member" />';

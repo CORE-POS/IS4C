@@ -24,7 +24,7 @@
 //ini_set('display_errors','1');
 include(dirname(__FILE__) . '/../config.php'); 
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('confset')) {
     include(dirname(__FILE__) . '/util.php');

@@ -46,6 +46,9 @@ class EbtReceiptMessage extends ReceiptMessage
         $dbc = Database::tDataConnect();
         if ($reprint) {
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                return '';
+            }
         }
 
         $transType = $dbc->concat('p.cardType', "' '", 'p.transType', '');
@@ -97,12 +100,12 @@ class EbtReceiptMessage extends ReceiptMessage
             $balance = 'unknown';
             $ebtType = substr(strtoupper($row['ebtMode']), 0, 5);
             if ($ebtType == 'EBT F' || $ebtType == 'EBTFO') {
-                if (is_numeric(CoreLocal::get('EbtFsBalance'))) {
-                    $balance = sprintf('%.2f', CoreLocal::get('EbtFsBalance'));
+                if (is_numeric($row['xBalance'])) {
+                    $balance = sprintf('%.2f', $row['xBalance']);
                 }
             } elseif ($ebtType == 'EBT C' || $ebtType == 'EBTCA') {
-                if (is_numeric(CoreLocal::get('EbtCaBalance'))) {
-                    $balance = sprintf('%.2f', CoreLocal::get('EbtCaBalance'));
+                if (is_numeric($row['xBalance'])) {
+                    $balance = sprintf('%.2f', $row['xBalance']);
                 }
             }
             $col1[] = "New Balance: " . $balance;

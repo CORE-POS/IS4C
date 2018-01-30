@@ -63,7 +63,7 @@ class InventoryCacheModel extends BasicModel
                     AND placedDate IS NOT NULL
                     AND storeID=?
                     AND i.isSpecialOrder = 0
-                    AND i.quantity > 0
+                    AND (i.quantity > 0 OR (i.receivedQty IS NOT NULL AND i.receivedQty > 0))
                     AND (i.receivedQty > 0 OR i.receivedQty IS NULL)
                     AND (placedDate >= ? OR receivedDate >= ?)');
         }

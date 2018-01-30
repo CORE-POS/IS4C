@@ -60,6 +60,9 @@ static public function get($session){
              );
 
     $dba = Database::mDataConnect();
+    if ($dba === false) {
+        return '';
+    }
 
     $blank = "             ";
     $fieldNames = "  ".substr("Time".$blank, 0, 13)

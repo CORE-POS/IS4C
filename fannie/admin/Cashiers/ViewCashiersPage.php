@@ -21,9 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\FannieUI;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class ViewCashiersPage extends FannieRESTfulPage 
@@ -78,6 +80,27 @@ function deleteEmp(emp_no,filter){
         return $this->get_view();
     }
 
+    private function getOrderColumn()
+    {
+        try {
+            $order = $this->form->order;
+        } catch (Exception $ex) {
+            $order = 'num';
+        }
+
+        switch($order) {
+            case 'num':
+            default:
+                return 'emp_no';
+            case 'name':
+                return 'FirstName';
+            case 'pass':
+                return 'CashierPassword';
+            case 'fes':
+                return 'frontendsecurity';
+        }
+    }
+
     function get_view()
     {
         try {
@@ -85,28 +108,7 @@ function deleteEmp(emp_no,filter){
         } catch (Exception $ex) {
             $filter = 1;
         }
-        try {
-            $order = $this->form->order;
-        } catch (Exception $ex) {
-            $order = 'num';
-        }
-
-        $orderby = '';
-        switch($order) {
-            case 'num':
-            default:
-                $orderby = 'emp_no';
-                break;
-            case 'name':
-                $orderby = 'FirstName';
-                break;
-            case 'pass':
-                $orderby = 'CashierPassword';
-                break;
-            case 'fes':
-                $orderby = 'frontendsecurity';
-                break;
-        }
+        $orderby = $this->getOrderColumn();
         
         $ret = '<div id="alert-area"></div><div class="form-inline">';
         $ret .= "<label>Showing</label> <select class=\"form-control\"
@@ -138,8 +140,8 @@ function deleteEmp(emp_no,filter){
                     ($emp->frontendsecurity()<=20?'Regular':'Manager'));
             $ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\">%s</a></td>
                 <td><a href=\"\" onclick=\"deleteEmp(%d,%d); return false;\">%s</a></td></tr>",
-                $emp->emp_no(),\COREPOS\Fannie\API\lib\FannieUI::editIcon(),
-                $emp->emp_no(),$filter, \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
+                $emp->emp_no(),FannieUI::editIcon(),
+                $emp->emp_no(),$filter, FannieUI::deleteIcon());
         }
         $ret .= "</table>";
 

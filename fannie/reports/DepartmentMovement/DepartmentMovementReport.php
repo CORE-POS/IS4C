@@ -124,12 +124,11 @@ class DepartmentMovementReport extends FannieReportPage
                       . DTrans::sumQuantity('t')." as qty,
                       SUM(t.total) AS total,
                       d.dept_no,d.dept_name,s.superID,
-                      COALESCE(v.vendorName,x.distributor) AS distributor
+                      v.vendorName AS distributor
                       FROM $dlog as t "
                       . DTrans::joinProducts()
                       . DTrans::joinDepartments()
                       . "LEFT JOIN $superTable AS s ON t.department = s.dept_ID
-                      LEFT JOIN prodExtra as x on t.upc = x.upc
                       LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                       WHERE $filter_condition
                       AND t.trans_type IN ('I', 'D')

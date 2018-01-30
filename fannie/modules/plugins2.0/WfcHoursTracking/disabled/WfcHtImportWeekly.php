@@ -6,14 +6,14 @@ class WfcHtImportWeekly {}
 return;
 
 include(dirname(__FILE__).'/../../../config.php');
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 if (!validateUserQuiet('upload_hours_data')){
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$_SERVER['PHP_SELF']}");
     return;
 }
 
-require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/tmp_dir.php');
+require(__DIR__ . '/../../../src/csv_parser.php');
+require(__DIR__ . '/../../../src/tmp_dir.php');
 require(dirname(__FILE__).'/db.php');
 $db = hours_dbconnect();
 

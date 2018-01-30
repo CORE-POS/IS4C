@@ -490,8 +490,9 @@ class MercuryDC extends MercuryE2E
 
         $pan = $xml->query('/RStream/TranResponse/AcctNo');
         $respName = $xml->query('/RStream/TranResponse/CardholderName');
+        $entryMethod = $xml->query('/RStream/TranResponse/EntryMethod');
         $name = $respName ? $respName : 'Cardholder';
-        $request->updateCardInfo($pan, $name, $issuer);
+        $request->updateCardInfo($pan, $name, $issuer, $entryMethod);
 
         switch (strtoupper($xml->query('/RStream/CmdResponse/CmdStatus'))) {
             case 'APPROVED':
@@ -573,6 +574,21 @@ class MercuryDC extends MercuryE2E
         } else {
             return array_reduce($names, function($c, $i){ return $c . trim($i) . ','; });
         }
+    }
+
+    private function batchXmlInit($type)
+    {
+        $termID = $this->getTermID();
+        $msg = <<<XML
+<?xml version="1.0">
+<TStream>
+    <Admin>
+        <MerchantID>{$termID}</MerchantID>
+        <TranCode>{$type}</TranCode>
+        <SecureDevice>{{SecureDevice}}</SecureDevice>
+        <ComPort>{{ComPort}}</ComPort>
+XML;
+        return $msg;
     }
 }
 

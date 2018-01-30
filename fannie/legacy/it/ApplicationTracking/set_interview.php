@@ -2,7 +2,7 @@
 
 include('../../../config.php');
 require('db.php');
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 $sql = db_connect();
 
 // handle a bit of interview update/processing for

@@ -144,13 +144,13 @@
 /* configuration for your module - Important */
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../auth/login.php');
 
 if ( !validateUserQuiet('admin') ) {
     $redirect = $_SERVER['REQUEST_URI'];
@@ -195,7 +195,7 @@ if ( isset($_REQUEST['product_csv']) && $_REQUEST['product_csv'] != "" ) {
     $product_csv = $_REQUEST['product_csv'];
 
     /* EL Not pertinent to departments or WEFC products
-    require($FANNIE_ROOT.'batches/UNFI/lib.php');
+    require(__DIR__ . '/../../batches/UNFI/lib.php');
     $VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
     if ($VENDOR_ID === False){
         echo "Error: no vendor has this load script";
@@ -1249,7 +1249,7 @@ vary based on whose code you're running
         /* html header, including navbar */
         $page_title = "Done deleteing file";
         $header = "Done deleteing file";
-        include($FANNIE_ROOT."src/header.html");
+        include(__DIR__ . "/../../src/header.html");
 
         // Display messages accumulated during the run.
         for ( $n=0; $n<count($messages); $n++ ) {
@@ -1266,7 +1266,7 @@ vary based on whose code you're running
         echo "</div>\n";
 
         /* html footer */
-        include($FANNIE_ROOT."src/footer.html");
+        include(__DIR__ . "/../../src/footer.html");
 
     } else {
 
@@ -1297,7 +1297,7 @@ vary based on whose code you're running
             /* html header, including navbar */
             $page_title = "Done loading items";
             $header = "Done loading items";
-            include($FANNIE_ROOT."src/header.html");
+            include(__DIR__ . "/../../src/header.html");
 
             echo "Finished processing Products file<br />";
             if ($PRICEFILE_USE_SPLITS){
@@ -1345,7 +1345,7 @@ vary based on whose code you're running
             echo "</div>\n";
 
             /* html footer */
-            include($FANNIE_ROOT."src/footer.html");
+            include(__DIR__ . "/../../src/footer.html");
 
         }
         else {
@@ -1372,7 +1372,7 @@ else {
     /* html header, including navbar */
     $page_title = "Fannie - Load WEFC-Toronto Products";
     $header = "Load WEFC-Toronto Products";
-    include($FANNIE_ROOT.'src/header.html');
+    include(__DIR__ . '/../../src/header.html');
 
     // Get a list of files
     $dh = opendir($tpath);
@@ -1439,7 +1439,7 @@ else {
 
 <?php
     /* html footer */
-    include($FANNIE_ROOT.'src/footer.html');
+    include(__DIR__ . '/../../src/footer.html');
 
 // Form to get the name of the file to process.
 }

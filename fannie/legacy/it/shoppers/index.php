@@ -5,7 +5,8 @@
 <?php
 
 include('../../../config.php');
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager"))
+    require(__DIR__ . '/../../../src/SQLManager.php');
 include('../../db.php');
 
 $hourlyQ = "select year(tdate),month(tdate),day(tdate),

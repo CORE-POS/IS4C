@@ -168,47 +168,72 @@ $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 if (!$sql) {
     echo "<div class='alert alert-danger'>Cannot connect to database to refresh views.</div>";
 } else {
-    echo "Refreshing database views ... ";
-    $this->recreate_views($sql);
-    echo "done.";
+    $info = $this->recreate_views($sql);
+    $errors = trim($this->dbErrors($info));
+    if ($errors == '') {
+        echo '<div class="alert alert-success">Refreshed views successfully</div>';
+    } else {
+        echo '<div class="alert alert-danger">Problems encountered refreshing views:<br />' . $errors . '</div>';
+    }
 }
 
         return ob_get_clean();
     // body_content
     }
 
+    private function dbErrors($arr)
+    {
+        return array_reduce(
+            array_filter($arr, function($i) { return $i['error'] != 0; }),
+            function ($carry, $item) { return $carry . $item['error_msg'] . '<br />'; }
+        );
+    }
+
     // rebuild views that depend on ar & equity
     // department definitions
     function recreate_views($con)
     {
+        $ret = array();
         $db_name = $this->config->get('TRANS_DB');
 
         $con->query("DROP VIEW ar_history_today",$db_name);
         $model = new ArHistoryTodayModel($con);
-        $model->createIfNeeded($db_name);
+        $ret[] = $model->createIfNeeded($db_name);
 
         $con->query("DROP VIEW ar_history_today_sum",$db_name);
         $model = new ArHistoryTodaySumModel($con);
-        $model->createIfNeeded($db_name);
+        $ret[] = $model->createIfNeeded($db_name);
 
         $con->query("DROP VIEW ar_live_balance",$db_name);
         $model = new ArLiveBalanceModel($con);
         $model->addExtraDB($this->config->get('OP_DB'));
-        $model->createIfNeeded($db_name);
+        $ret[] = $model->createIfNeeded($db_name);
 
         $con->query("DROP VIEW stockSumToday",$db_name);
         $model = new StockSumTodayModel($con);
-        $model->createIfNeeded($db_name);
+        $ret[] = $model->createIfNeeded($db_name);
 
         $con->query("DROP VIEW equity_live_balance",$db_name);
         $model = new EquityLiveBalanceModel($con);
         $model->addExtraDB($this->config->get('OP_DB'));
-        $model->createIfNeeded($db_name);
+        $ret[] = $model->createIfNeeded($db_name);
+
+        return $ret;
     }
 
     public function unitTest($phpunit)
     {
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
+
+        include(dirname(__FILE__) . '/../config.php');
+        $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+                $FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
+                $FANNIE_SERVER_PW);
+        $refresh = $this->recreate_views($sql);
+        foreach ($refresh as $result) {
+            $phpunit->assertEquals(0,$result['error'],
+                'Error creating '.$result['db'].'.'.$result['struct'].': '.$result['error_msg']);
+        }
     }
 
 // InstallMembershipPage

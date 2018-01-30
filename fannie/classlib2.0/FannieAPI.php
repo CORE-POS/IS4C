@@ -175,6 +175,7 @@ class FannieAPI
             $file = self::findClass($name, dirname(__FILE__));
             if ($file !== false) {
                 include_once($file);
+                return;
             }
             // search plugins for definition
             $file = self::findClass($name, dirname(__FILE__).'/../modules/plugins2.0');
@@ -183,6 +184,7 @@ class FannieAPI
                 $owner = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
                 if (\COREPOS\Fannie\API\FanniePlugin::isEnabled($owner)) {
                     include_once($file);
+                    return;
                 }
             }
         }
@@ -311,6 +313,9 @@ class FannieAPI
             case 'COREPOS\Fannie\API\monitor\Monitor':
                 $directories[] = dirname(__FILE__) . '/monitor/';
                 break;
+            case 'COREPOS\Fannie\API\data\SyncSpecial':
+                $directories[] = dirname(__FILE__) . '/data/lanesync/';
+                break;
             case 'FanniePage':
                 $directories[] = dirname(__FILE__).'/../admin/';
                 $directories[] = dirname(__FILE__).'/../batches/';
@@ -352,6 +357,7 @@ class FannieAPI
                 while( ($file=readdir($dh)) !== false) {
                     if ($file == '.' || $file == '..') continue;
                     if ($file == 'noauto') continue;
+                    if ($file == 'node_modules') continue;
                     if ($file == 'index.php') continue;
                     if ($file == 'Store-Specific') continue;
                     $ret = array_merge($ret, $search($path.'/'.$file, $depth+1));

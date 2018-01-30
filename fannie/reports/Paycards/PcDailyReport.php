@@ -21,9 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class PcDailyReport extends FannieReportPage 
@@ -45,7 +47,6 @@ class PcDailyReport extends FannieReportPage
 
     public function report_description_content()
     {
-        global $FANNIE_URL;
         $ret = array(''); // spacer line
         if ($this->report_format == 'html') {
             $ret[] = $this->form_content();
@@ -59,12 +60,15 @@ class PcDailyReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_URL;
+        $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
+        $date_str = date('Y-m-d', strtotime(FormLib::get('date', date('Y-m-d'))));
+        $store = FormLib::get('store', false);
+        if ($store === false) {
+            $store = Store::getIdByIp();
+        }
+
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
-
-        $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
-        $store = FormLib::get('store', 0);
 
         $dataset = array();
         $integrated_trans_ids = array();
@@ -81,7 +85,7 @@ class PcDailyReport extends FannieReportPage
                     ELSE 'Unknown'
                 END AS transType,
                 issuer AS cardIssuer,
-                CASE WHEN transType IN ('Return', 'VOID') THEN -amount ELSE amount END AS ttl,
+                CASE WHEN transType IN ('VOID') THEN -amount ELSE amount END AS ttl,
                 CASE WHEN transType='VOID' THEN -1 ELSE 1 END AS num,
                 empNo AS emp,
                 registerNo AS reg,
@@ -92,6 +96,7 @@ class PcDailyReport extends FannieReportPage
             WHERE dateID=?
                 AND httpCode=200
                 AND xResultMessage LIKE '%approve%'
+                AND xResultMessage not like '%declined%'
                 AND empNo <> 9999
                 AND registerNo <> 99
                 AND processor='MercuryE2E'";
@@ -178,6 +183,7 @@ class PcDailyReport extends FannieReportPage
             WHERE dateID=?
                 AND httpCode=200
                 AND (xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
+                AND xResultMessage not like '%declined%'
                 AND empNo <> 9999
                 AND registerNo <> 99
                 AND processor='GoEMerchant'";
@@ -237,6 +243,16 @@ class PcDailyReport extends FannieReportPage
         }
         /** end get FAPS / goE **/
 
+        $doubleCheckP = $dbc->prepare("
+            SELECT transID
+            FROM PaycardTransactions
+            WHERE dateID=?
+                AND registerNo=?
+                AND empNo=?
+                AND transNo=?
+                AND amount=?
+                AND (xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
+                AND xResultMessage not like '%declined%'");
 
         /** now get POS transaction records and check which are integrated **/
         $dlog = DTransactionsModel::selectDlog(FormLib::get('date', date('Y-m-d')));
@@ -246,7 +262,12 @@ class PcDailyReport extends FannieReportPage
                          WHEN trans_subtype = 'EF' THEN 'EBT Food'
                          WHEN trans_subtype = 'EC' THEN 'EBT Cash'
                          ELSE 'Unknown' END as cardType,
-                    CASE WHEN total < 0 THEN 'Sales' ELSE 'Returns' END as transType,
+                     CASE 
+                        WHEN trans_status='V' and total < 0 THEN 'Returns'
+                        WHEN trans_status='V' AND total >= 0 THEN 'Sales'
+                        WHEN total < 0 THEN 'Sales' 
+                        ELSE 'Returns' 
+                     END as transType,
                     'n/a' AS cardIssuer,
                     -total AS ttl,
                     CASE WHEN trans_status='V' THEN -1 ELSE 1 END AS num,
@@ -254,6 +275,8 @@ class PcDailyReport extends FannieReportPage
                     trans_id,
                     numflag,
                     charflag,
+                    emp_no,
+                    trans_no,
                     register_no
                   FROM $dlog AS d
                   WHERE tdate BETWEEN ? AND ?
@@ -293,12 +316,23 @@ class PcDailyReport extends FannieReportPage
             if ($row['charflag'] == 'PT' && isset($pt_ids[$pt_id])) {
                 $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                 $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
+                $integrated_trans_ids[$pos_trans_id] = 'found';
             } elseif (isset($integrated_trans_ids[$pos_trans_id])) {
                 $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                 $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
+                $integrated_trans_ids[$pos_trans_id] = 'found';
             } else {
-                $proc[$cardType]['Non'][$transType]['amt'] += $row['ttl'];
-                $proc[$cardType]['Non'][$transType]['num'] += $row['num'];
+                $dcR = $dbc->execute($doubleCheckP, array($date_id, $row['register_no'], $row['emp_no'], $row['trans_no'], $row['ttl']));
+                if ($dbc->numRows($dcR) === 1 && $row['charflag'] == 'PT') {
+                    $dcW = $dbc->fetchRow($dcR);
+                    $pos_trans_id = $row['trans_num'] . '-' . $dcW['transID'];
+                    $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
+                    $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
+                    $integrated_trans_ids[$pos_trans_id] = 'found';
+                } else {
+                    $proc[$cardType]['Non'][$transType]['amt'] += $row['ttl'];
+                    $proc[$cardType]['Non'][$transType]['num'] += $row['num'];
+                }
             }
         }
         foreach($proc as $type => $info) {
@@ -317,6 +351,20 @@ class PcDailyReport extends FannieReportPage
             );
             $record['meta'] = FannieReportPage::META_BOLD;
             $dataset[] = $record;
+        }
+
+        $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
+        foreach ($integrated_trans_ids as $pos_trans_id => $found) {
+            if ($found === true) {
+                $trans = rtrim($pos_trans_id, '0123456789');
+                $trans = rtrim($trans, '-');
+                $dataset[] = array(
+                    'Suspect Transaction',
+                    $date_str,
+                    $trans,
+                    $pos_trans_id,
+                );
+            }
         }
 
         $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
@@ -394,16 +442,17 @@ class PcDailyReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_URL;
         $this->add_onload_command('$(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'});');
+        $date = FormLib::get('date', date('Y-m-d'));
         $stores = FormLib::storePicker();
         return '<form method="get" action="PcDailyReport.php">
             <div class="col-sm-6">
             <div class="row form-group form-inline">
             <label>Change Date</label> <input type="text" name="date" id="date" 
-                class="form-control" required />
+                value="' . $date . '" class="form-control" required />
             ' . $stores['html'] . '
             <button type="submit" class="btn btn-default">Get Report</button>
+            <a href="PcMonthlyReport.php">Switch to Monthly</a>
             </div>
             </div>
             </form>';

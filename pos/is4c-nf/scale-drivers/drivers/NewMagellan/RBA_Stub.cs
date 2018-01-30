@@ -50,7 +50,7 @@ using BitmapBPP;
 
 namespace SPH {
 
-public enum RbaButtons { None, Credit, EMV };
+public enum RbaButtons { None, Credit, EMV, Cashback };
 
 /**
   This class contains all the functionality for building
@@ -73,16 +73,32 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private RbaButtons emv_buttons = RbaButtons.Credit;
     // Used to signal drawing thread it's time to exit
     private AutoResetEvent sleeper;
+    private Object syncLock;
+
+    private bool allowDebitCB = true;
+    private string defaultMsg = "Welcome";
+    private string bufferedCardType = "";
 
     public RBA_Stub(string p)
     {
         this.port = p;
         this.sleeper = new AutoResetEvent(false);
+        this.syncLock = new Object();
     }
 
     public void SetEMV(RbaButtons emv)
     {
         this.emv_buttons = emv;
+    }
+
+    public void SetCashBack(bool cb)
+    {
+        this.allowDebitCB = cb;
+    }
+
+    public void SetDefaultMessage(string msg)
+    {
+        this.defaultMsg = msg;
     }
 
     private void initPort()
@@ -100,14 +116,17 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
     public void stubStart()
     {
-        try {
-            initPort();
-            sp.Open();
-            SPH_Running = true;
-            this.sleeper.Reset();
-            this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
-            SPH_Thread.Start();
-        } catch (Exception) {}
+        if (this.emv_buttons != RbaButtons.None) {
+            try {
+                initPort();
+                sp.Open();
+                SPH_Running = true;
+                this.bufferedCardType = "";
+                this.sleeper.Reset();
+                this.SPH_Thread = new Thread(new ThreadStart(this.Read));
+                SPH_Thread.Start();
+            } catch (Exception) {}
+        }
     }
 
     public void showApproved()
@@ -121,14 +140,41 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         } catch (Exception) {}
     }
 
+    public void showMessage(string msg)
+    {
+        try {
+            stubStop();
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(SimpleMessageScreen(msg));
+            sp.Close();
+        } catch (Exception) {}
+
+    }
+
     public void stubStop()
     {
-        SPH_Running = false;
+        lock (this.syncLock) {
+            SPH_Running = false;
+        }
         try {
+            // wake up the RBA_Stub thread if it's sleeping
+            // between sequential messages
             this.sleeper.Set();
-            sp.Close();
+            // wait for the thread to finish
+            SPH_Thread.Join();
         } catch (Exception) { }
-        SPH_Thread.Join();
+    }
+
+    public void hardReset()
+    {
+        try {
+            stubStop();
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(RebootMessage());
+            sp.Close();
+        } catch (Exception) {}
     }
 
     public void addScreenMessage(string message)
@@ -161,22 +207,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         System.Console.WriteLine(enc.GetString(b));
     }
 
-    // Waits for acknowledgement from device & resends
-    // if necessary. Should probably be used instead
-    // of ByteWrite for most messages.
-    private void ConfirmedWrite(byte[] b)
-    {
-        if (this.verbose_mode > 0) {
-            System.Console.WriteLine("Tried to write");
-        }
-
-        ByteWrite(b);
-
-        if (this.verbose_mode > 0) {
-            System.Console.WriteLine("wrote");
-        }
-    }
-
     // computes check character and appends it
     // to the array
     private byte[] GetLRC(byte[] b)
@@ -193,6 +223,23 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         return ret;
     }
 
+    private bool ReadAndAck()
+    {
+        int readBytes = 0;
+        try {
+            while (true) {
+                var next = sp.ReadByte();
+                readBytes++;
+            }
+        } catch (Exception) { }
+        if (readBytes > 1) { // exactly one byte was just an ACK or NAK
+            ByteWrite(new byte[1]{0x6});
+
+            return true;
+        }
+        return false;
+    }
+
     // use an AutoResetEvent to pause to 2 seconds
     // if the event is signalled that means RBA_Stub
     // should exit and release the serial port so the
@@ -202,6 +249,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             WriteMessageToDevice(GetCardType());
+            this.ReadAndAck();
             if (this.sleeper.WaitOne(2000) == false) {
                 addPaymentButtons();
             }
@@ -216,15 +264,18 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
             string store_name = "Our Table Cooperative";
 
             // standard credit/debit/ebt/gift
-            string buttons = "TPROMPT6,"+store_name+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            string buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             if (this.emv_buttons == RbaButtons.EMV) {
                 // CHIP+PIN button in place of credit & debit
-                buttons = "TPROMPT6,"+store_name+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+                buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,S"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            } else if (this.emv_buttons == RbaButtons.Cashback) {
+                buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,CASHBACK"+fs+"Bbtna,S"+fs+"Bbtnb,CREDIT"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             } else if (this.emv_buttons == RbaButtons.None) {
-                buttons = "TPROMPT6,"+store_name;
+                buttons = "TPROMPT6,"+defaultMsg;
             }
 
             WriteMessageToDevice(UpdateScreenMessage(buttons));
+            this.ReadAndAck();
         } catch (Exception) {
         }
     }
@@ -236,15 +287,15 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 
         ArrayList bytes = new ArrayList();
-        while (SPH_Running) {
+        while (true && this.emv_buttons != RbaButtons.None) {
             try {
                 int b = sp.ReadByte();
-                if (b == 0x06) {
+                if (bytes.Count == 0 && b == 0x06) {
                     // ACK
                     if (this.verbose_mode > 0) {
                         System.Console.WriteLine("ACK!");
                     }
-                } else if (b == 0x15) {
+                } else if (bytes.Count == 0 && b == 0x15) {
                     // NAK
                     // Do not re-send
                     // RBA_Stub is not vital functionality
@@ -269,7 +320,12 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                         System.Console.Write(buffer[i] + " ");
                     }
                     if (Choice(enc.GetString(buffer))) {
-                        WriteMessageToDevice(SimpleMessageScreen("Swipe card when prompted"));
+                        WriteMessageToDevice(SimpleMessageScreen("Insert, tap, or swipe card when prompted"));
+                        this.ReadAndAck();
+                        // input is done; no need to keep the read thread alive
+                        // and rely on cross-thread signaling to end it later
+                        SPH_Running = false;
+                        break;
                     }
                     bytes.Clear();
                 }
@@ -279,10 +335,27 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                 if (this.verbose_mode > 0) {
                     System.Console.WriteLine(ex);
                 }
+                // This loop should stop on an exception
+                // 
+                SPH_Running = false;
+            }
+            lock (this.syncLock) {
+                if (!SPH_Running && bytes.Count == 0) break;
             }
         }
+
+        try {
+            this.sp.Close();
+        } catch (Exception) {}
     }
 
+    /**
+      A 24.0 message to the terminal returns a 24.0 response
+      with the selected value at index 5 in the string
+
+      The payment selection screen sends A through B
+      The cashback screen sends 1 through 4 and O
+    */
     private bool Choice(string str)
     {
         bool ret = false;
@@ -291,7 +364,14 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                 case "A":
                     // debit
                     ret = true;
-                    parent.MsgSend("TERM:DCDC");
+                    if (allowDebitCB) {
+                        ret = false;
+                        WriteMessageToDevice(GetCashBack());
+                        this.ReadAndAck();
+                        this.bufferedCardType = "DCDC";
+                    } else {
+                        parent.MsgSend("TERM:DCDC");
+                    }
                     break;
                 case "B":
                     // credit
@@ -300,13 +380,50 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     break;
                 case "C":
                     // ebt cash
-                    parent.MsgSend("TERM:DCEC");
                     ret = true;
+                    if (allowDebitCB) {
+                        ret = false;
+                        WriteMessageToDevice(GetCashBack());
+                        this.ReadAndAck();
+                        this.bufferedCardType = "DCEC";
+                    } else {
+                        parent.MsgSend("TERM:DCEC");
+                    }
                     break;
                 case "D":
                     // ebt food
                     parent.MsgSend("TERM:DCEF");
                     ret = true;
+                    this.sendBufferedCardType();
+                    break;
+                case "1":
+                    parent.MsgSend("TERMCB:10");
+                    ret = true;
+                    this.sendBufferedCardType();
+                    break;
+                case "2":
+                    parent.MsgSend("TERMCB:20");
+                    ret = true;
+                    this.sendBufferedCardType();
+                    break;
+                case "3":
+                    parent.MsgSend("TERMCB:30");
+                    ret = true;
+                    this.sendBufferedCardType();
+                    break;
+                case "4":
+                    parent.MsgSend("TERMCB:40");
+                    ret = true;
+                    this.sendBufferedCardType();
+                    break;
+                case "O":
+                    parent.MsgSend("TERMCB:50");
+                    ret = true;
+                    this.sendBufferedCardType();
+                    break;
+                case "N":
+                    ret = true;
+                    this.sendBufferedCardType();
                     break;
                 default:
                     break;
@@ -316,12 +433,20 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         return ret;
     }
 
+    private void sendBufferedCardType()
+    {
+        if (this.bufferedCardType.Length == 4) {
+            parent.MsgSend("TERM:" + this.bufferedCardType);
+            this.bufferedCardType = "";
+        }
+    }
+
     /**
         Write a message to the device
     */
     public override void WriteMessageToDevice(byte[] msg)
     {
-        ConfirmedWrite(GetLRC(msg));
+        ByteWrite(GetLRC(msg));
     }
 }
 

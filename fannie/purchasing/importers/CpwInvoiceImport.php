@@ -21,339 +21,272 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\FileData;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class CpwInvoiceImport extends FannieRESTfulPage 
+class CpwInvoiceImport extends \COREPOS\Fannie\API\FannieUploadPage 
 {
-
-    public $themed = true;
+    protected $COOL_MAP = array(
+        'LOCAL' => 'USA',
+        'WA' => 'USA',
+        'OR' => 'USA',
+        'CA' => 'USA',
+        'AZ' => 'USA',
+        'NM' => 'USA',
+        'NV' => 'USA',
+        'ID' => 'USA',
+        'MT' => 'USA',
+        'CO' => 'USA',
+        'UT' => 'USA',
+        'WY' => 'USA',
+        'TX' => 'USA',
+        'OK' => 'USA',
+        'KS' => 'USA',
+        'NE' => 'USA',
+        'SD' => 'USA',
+        'ND' => 'USA',
+        'MN' => 'USA',
+        'WI' => 'USA',
+        'IA' => 'USA',
+        'MO' => 'USA',
+        'AR' => 'USA',
+        'LA' => 'USA',
+        'MS' => 'USA',
+        'AL' => 'USA',
+        'GA' => 'USA',
+        'FL' => 'USA',
+        'SC' => 'USA',
+        'NC' => 'USA',
+        'TN' => 'USA',
+        'KY' => 'USA',
+        'IN' => 'USA',
+        'IL' => 'USA',
+        'MI' => 'USA',
+        'OH' => 'USA',
+        'WV' => 'USA',
+        'VA' => 'USA',
+        'MD' => 'USA',
+        'PA' => 'USA',
+        'NY' => 'USA',
+        'DE' => 'USA',
+        'NJ' => 'USA',
+        'MA' => 'USA',
+        'NH' => 'USA',
+        'VT' => 'USA',
+        'RI' => 'USA',
+        'ME' => 'USA',
+        'AK' => 'USA',
+        'HI' => 'USA',
+        'MX' => 'MEXICO',
+        'ARG' => 'ARGENTINA',
+        'NZ' => 'NEW ZEALAND',
+        'THAI' => 'THAILAND',
+        'PERU' => 'PERU',
+        'CH' => 'CHILE',
+        'CHILE' => 'CHILE',
+        'ECUADOR' => 'ECUADOR',
+    );
     protected $header = 'Import CPW Invoice';
     protected $title = 'Import CPW Invoice';
 
     public $description = '[CPW Invoice Import] is a specialized tool for importing CPW invoices';
     public $page_set = 'Purchasing';
 
-    private $filedata;
+    protected $preview_opts = array(
+        'qty' => array(
+            'display_name' => 'Qty Ordered *',
+            'default' => 0,
+            'required' => true
+        ),
+        'ship' => array(
+            'display_name' => 'Qty Shipped *',
+            'default' => 1,
+            'required' => true
+        ),
+        'desc' => array(
+            'display_name' => 'Desc *',
+            'default' => 2,
+            'required' => true
+        ),
+        'sku' => array(
+            'display_name' => 'SKU *',
+            'default' => 5,
+            'required' => true
+        ),
+        'cost' => array(
+            'display_name' => 'Case Cost *',
+            'default' => 6,
+            'required' => true
+        ),
+    );
 
-    public function preprocess()
+    protected $use_splits = false;
+    protected $use_js = false;
+
+    protected function getVendorID()
     {
-        $this->__routes[] = 'post<file>';
-        $this->__routes[] = 'post<vendorID><invoice_num><po_num><invoice_date>';
-        $this->__routes[] = 'get<complete>';
+        $idP = $this->connection->prepare("SELECT vendorID FROM vendors WHERE vendorName=? ORDER BY vendorID");
+        $vid = $this->connection->getValue($idP, array('CPW'));
 
-        return parent::preprocess();
+        return $vid;
     }
 
-    public function post_vendorID_invoice_num_po_num_invoice_date_handler()
+    protected function expandCOOL($str)
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $skus = FormLib::get('sku', array());
-        $upcs = FormLib::get('upc', array());
-        $descriptions = FormLib::get('desc', array());
-        $cases = FormLib::get('qty', array());
-        $units = FormLib::get('units', array());
-        $sizes = FormLib::get('size', array());
-        $costs = FormLib::get('unitCost', array());
-        $totals = FormLib::get('totalCost', array());
+        return $this->COOL_MAP[$str] ? $this->COOL_MAP[$str] : $str;
+    }
 
-        $order = new PurchaseOrderModel($dbc);
-        $order->vendorID($this->vendorID);
-        $order->creationDate($this->invoice_date);
-        $order->placed(1);
-        $order->placedDate($this->invoice_date);
-        $order->vendorOrderID($this->po_num);
-        $order->vendorInvoiceID($this->invoice_num);
-        $order->userID(0);
-        $orderID = $order->save();
+    protected function findCOOL($str)
+    {
+        if (preg_match('/[A-Z]+\/[A-Z\/]+/', $str, $matches)) {
+            $origins = array();
+            $all = explode('/', $matches[0]);
+            foreach ($all as $a) {
+                $exp = $this->expandCOOL($a);
+                if (!isset($origins[$exp])) {
+                    $origins[$exp] = $exp;
+                }
+            }
+            $vals = array_values($origins);
+            sort($vals);
 
-        $checkP = $dbc->prepare('
-            SELECT v.sku
-            FROM vendorItems AS v
-            WHERE v.vendorID=?
-                AND v.upc <> \'0000000000000\'
-                AND v.upc <> \'\'
-                AND v.upc IS NOT NULL
-                AND v.sku=?');
-        $vendorItem = new VendorItemsModel($dbc);
+            return implode(' and ', $vals);
+        }
 
-        $item = new PurchaseOrderItemsModel($dbc);
-
-        for ($i=0; $i<count($skus); $i++) {
-            $sku = $skus[$i];
-            $upc = BarcodeLib::padUPC(isset($upcs[$i]) ? $upcs[$i] : '');
-            $qty = isset($cases[$i]) ? $cases[$i] : 1;
-            $caseSize = isset($units[$i]) ? $units[$i] : 1;
-            $unitSize = isset($sizes[$i]) ? $sizes[$i] : '';
-            $unitCost = isset($costs[$i]) ? $costs[$i] : 0;
-            $totalCost = isset($totals[$i]) ? $totals[$i] : 0;
-            $desc = isset($descriptions[$i]) ? substr($descriptions[$i], 0, 50) : '';
-
-            $item->reset();
-            $item->orderID($orderID);
-            $item->sku($sku);
-            $item->quantity($qty);
-            $item->unitCost($unitCost);
-            $item->caseSize($caseSize);
-            $item->receivedDate($this->invoice_date);
-            $item->receivedQty($qty);
-            $item->receivedTotalCost($totalCost);
-            $item->unitSize($unitSize);
-            $item->brand('');
-            $item->description($desc);
-            $item->internalUPC($upc);
-            $item->save();
-
-            /**
-              Add entries to vendor catalog if they don't exist
-            */
-            $checkR = $dbc->execute($checkP, array($this->vendorID, $sku));
-            if ($checkR && $dbc->numRows($checkR) == 0) {
-                $vendorItem->vendorID($this->vendorID);
-                $vendorItem->sku($sku);
-                $vendorItem->upc($upc);
-                $vendorItem->description($desc);
-                $vendorItem->brand('');
-                $vendorItem->units($caseSize);
-                $vendorItem->size($unitSize);
-                $vendorItem->cost($unitCost);
-                $vendorItem->vendorDept(0);
-                $vendorItem->save();
+        foreach ($this->COOL_MAP as $abbrev => $full) {
+            if (strpos($str, ' ' . $abbrev)) {
+                return $full;
             }
         }
 
-        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?complete=' . $orderID);
+        return '';
+    }
+
+    private function findHorizontal($fields, $key)
+    {
+        for ($i=0; $i<count($fields); $i++) {
+            if (strpos($fields[$i], $key) === 0 && isset($fields[$i+2])) {
+                return $fields[$i+2];
+            }
+        }
 
         return false;
     }
 
-    public function post_file_handler()
+    function process_file($linedata, $indexes)
     {
-        if (!isset($_FILES['file-upload'])) {
-            $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'No file uploaded!');");
-            $this->__route_stem = 'get';
-
-            return true;
-        } 
-
-        if ($_FILES['file-upload']['error'] != UPLOAD_ERR_OK) {
-            $msg = \COREPOS\Fannie\API\lib\UploadLib::errorToMessage($_FILES['file-upload']['error']);
-            $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', '$msg');");
-            $this->__route_stem = 'get';
-
-            return true;
+        $VENDOR_ID = $this->getVendorID();
+        if ($VENDOR_ID === false) {
+            $this->error_details = 'Cannot find vendor';
+            return false;
         }
 
-        $path_parts = pathinfo($_FILES['file-upload']['name']);
-        if (!isset($path_parts['extension']) || (strtolower($path_parts['extension']) != 'xls' && strtolower($path_parts['extension'] != 'csv'))) {
-            $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'Uploaded file is not a .csv or .xls');");
-            $this->__route_stem = 'get';
-
-            return true;
+        $upcP = $this->connection->prepare('SELECT upc FROM vendorItems WHERE sku=? AND vendorID=?');
+        $items = array();
+        $invNum = false;
+        $orderDate = false;
+        $shipDate = false;
+        foreach ($linedata as $data) {
+            $sku = trim($data[$indexes['sku']]);
+            if (!preg_match('/^[0-9]+$/', $sku)) {
+                if (!$invNum) {
+                    $invNum = $this->findHorizontal($data, 'Invoice No');
+                }
+                if (!$orderDate) {
+                    $orderDate = $this->findHorizontal($data, 'Order Date');
+                }
+                if (!$shipDate) {
+                    $shipDate = $this->findHorizontal($data, 'Ship Date');
+                }
+                continue;
+            }
+            $item = array(
+                'sku' => $sku,
+                'ordered' => trim($data[$indexes['qty']]),
+                'shipped' => trim($data[$indexes['ship']]),
+                'description' => trim($data[$indexes['desc']]),
+                'caseCost' => trim($data[$indexes['cost']]),
+                'upc' => $this->connection->getValue($upcP, array($sku, $VENDOR_ID)),
+            );
+            $item['cool'] = $this->findCOOL($item['description']);
+            $items[] = $item;
         }
 
-        $name_with_extension = tempnam(sys_get_temp_dir(), 'cpw') . '.' . $path_parts['extension'];
-        $tmpfile = $_FILES['file-upload']['tmp_name'];
-        move_uploaded_file($tmpfile, $name_with_extension);
+        //echo '<pre>' . print_r($items, true) . '</pre>';
 
-        $this->filedata = \COREPOS\Fannie\API\data\FileData::fileToArray($name_with_extension);
-        unlink($name_with_extension);
+        $orderDate = $orderDate ? FileData::excelFloatToDate($orderDate) : date('Y-m-d');
+        $shipDate = $shipDate ? FileData::excelFloatToDate($shipDate) : date('Y-m-d');
+        $order = new PurchaseOrderModel($this->connection);
+        $order->vendorID($VENDOR_ID);
+        $order->storeID(FormLib::get('store'));
+        $order->creationDate($orderDate);
+        $order->placedDate($orderDate);
+        $order->placed(1);
+        $order->userID(0);
+        $order->vendorInvoiceID($invNum);
+        $orderID = $order->save();
+        if ($orderID === false) {
+            $this->error_details = 'Could not create purchase order';
+            return false;
+        }
+
+        $this->connection->startTransaction();
+        $itemP = $this->connection->prepare("INSERT INTO PurchaseOrderItems
+            (orderID, sku, quantity, unitCost, caseSize, receivedDate, receivedQty, receivedTotalCost,
+            unitSize, brand, description, internalUPC) VALUES (?, ?, ?, ?, 1, ?, ?, ?, '', '', ?, ?)");
+        $coolP = $this->connection->prepare("SELECT coolText FROM SkuCOOLHistory WHERE vendorID=? AND sku=? AND ordinal=1");
+        $coolModel = new SkuCOOLHistoryModel($this->connection);
+        $logCOOL = FormLib::get('logCOOL', false);
+        $this->lineCount = 0;
+        $this->coolCount = 0;
+        foreach ($items as $item) {
+            $this->connection->execute($itemP, array($orderID, $item['sku'], $item['ordered'], $item['caseCost'],
+                $shipDate, $item['shipped'], $item['shipped']*$item['caseCost'], $item['description'], $item['upc']));
+            $this->lineCount++;
+            if ($logCOOL) {
+                $current = $this->connection->getValue($coolP, array($VENDOR_ID, $item['sku']));
+                if ($current === false || strtolower($current) != strtolower($item['cool'])) {
+                    $coolModel->rotateIn($VENDOR_ID, $item['sku'], $item['cool']);
+                    $this->coolCount++;
+                }
+            }
+        }
+        $this->connection->commitTransaction();
+        $this->orderID = $orderID;
 
         return true;
     }
 
-    public function post_file_view()
+    public function preview_content()
     {
-        $inv_no = '';
-        $inv_date = '';
-        $po_no = '';
-        $line = 0;
-        for ($line; $line<count($this->filedata); $line++) {
-            $data = $this->filedata[$line];
-            if (isset($data[4]) && $data[4] == 'Invoice No:') {
-                $inv_no = $data[6];    
-            } elseif (isset($data[4]) && $data[4] == 'PO #:') {
-                $po_no = $data[6];
-            } elseif (isset($data[4]) && $data[4] == 'Order Date:') {
-                $inv_date = \COREPOS\Fannie\API\data\FileData::excelFloatToDate($data[6]);
-            } elseif (in_array('Ordered', $data) && in_array('Price', $data)) {
-                break; // item data begins
-            }
-        }
-        $ret = '<form method="post">';
-        $ret .= '<div class="form-group">
-            <label>Invoice #</label>
-            <input type="text" name="invoice_num" class="form-control" value="' . $inv_no . '" />
-            </div>';
-        $ret .= '<div class="form-group">
-            <label>PO #</label>
-            <input type="text" name="po_num" class="form-control" value="' . $po_no . '" />
-            </div>';
-        $ret .= '<div class="form-group">
-            <label>Invoice Date</label>
-            <input type="text" name="invoice_date" class="form-control date-field" value="' . $inv_date . '" />
-            </div>';
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $vendors = new VendorsModel($dbc);
-        $ret .= '<div class="form-group">
-            <label>Vendor</label>
-            <select class="form-control" name="vendorID">';
-        $vendorID = 0;
-        foreach ($vendors->find('vendorName') as $obj) {
-            $ret .= sprintf('<option %s value="%d">%s</option>',
-                (preg_match('/cpw/i', $obj->vendorName()) ? 'selected' : ''),
-                $obj->vendorID(), $obj->vendorName());
-            if (preg_match('/cpw/i', $obj->vendorName())) {
-                $vendorID = $obj->vendorID();
-            }
-        }
-        $ret .= '</select></div>';
-        $ret .= '<table class="table">
-            <tr>
-                <th>SKU</th>
-                <th>UPC</th>
-                <th>Item</th>
-                <th>Unit Size</th>
-                <th>Case Size</th>
-                <th># of Cases</th>
-                <th>Unit Cost</th>
-                <th>Total Cost</th>
-            </tr>';
-        $upcP = $dbc->prepare('
-            SELECT upc
-            FROM vendorItems
-            WHERE vendorID=?
-                AND sku=?');
-        for ($line; $line<count($this->filedata); $line++) {
-            $data = $this->filedata[$line];
-            if (!is_numeric($data[0]) || !is_numeric($data[5]) || !is_numeric($data[7])) {
-                // not an item line
-                continue;
-            }
-            $numCases = $data[1];
-            $description = $data[2];
-            $sku = $data[5];
-            $caseCost = $data[6];
-            $totalCost = $data[7];
-            list($caseSize, $unitSize) = $this->caseAndUnit($description);
+        $stores = FormLib::storePicker();
+        return <<<HTML
+<div class="form-inline">
+    <div class="form-group">
+        <label>Store</label>
+        {$stores['html']}
+    </div>
+    <div class="form-group">
+        <label><input type="checkbox" value="1" name="logCOOL" checked />
+        Update COOL data</label>
+    </div>
+</div>
+HTML;
+    }
 
-            $unitCost = $caseCost / $caseSize;
-            $upc = '';
-            $upcR = $dbc->execute($upcP, array($vendorID, $sku));
-            if ($upcR && $dbc->numRows($upcR)) {
-                $upcW = $dbc->fetchRow($upcR);
-                $upc = $upcW['upc'];
-            }
-
-            $ret .= sprintf('<tr>
-                <td><input type="text" name="sku[]" size="8" value="%s" class="form-control input-sm" /></td>
-                <td><input type="text" name="upc[]" size="13" value="%s" class="form-control upc-field input-sm" /></td>
-                <td><input type="text" name="desc[]" value="%s" class="form-control input-sm" /></td>
-                <td><input type="text" name="size[]" size="3" value="%s" class="form-control input-sm" /></td>
-                <td><input type="text" name="units[]" size="4" value="%s" class="form-control input-sm" /></td>
-                <td><input type="text" name="qty[]" size="3" value="%d" class="form-control input-sm" /></td>
-                <td>
-                    <div class="input-group">
-                        <div class="input-group-addon">$</div>
-                        <input type="text" name="unitCost[]" size="5" value="%.2f" class="form-control input-sm" />
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <div class="input-group-addon">$</div>
-                        <input type="text" name="totalCost[]" size="5" value="%.2f" class="form-control input-sm" />
-                    </div>
-                </td>
-                </tr>',
-                $sku,
-                $upc,
-                $description,
-                $unitSize,
-                $caseSize,
-                $numCases,
-                $unitCost,
-                $totalCost);
-        }
-        $ret .= '</table>
-            <p>
-                <button type="submit" class="btn btn-default">Import Invoice</button>
-            </p>
-            </form>';
-
-        $this->addScript('../../item/autocomplete.js');
-        $this->addOnloadCommand("bindAutoComplete('.upc-field', '../../ws/', 'item');\n");
+    function results_content()
+    {
+        $ret = "<p>Price data import complete</p>";
+        $ret .= "<p>Imported {$this->lineCount} records. Saw {$this->coolCount} COOL changes</p>";
+        $ret .= "<p><a href=\"../ViewPurchaseOrders.php?id={$this->orderID}\">View order</a></p>";
+        $ret .= '<p><a href="'.filter_input(INPUT_SERVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
     }
-
-    private function caseAndUnit($description)
-    {
-        $caseSize = 1;
-        $unitSize = '';
-        if (preg_match('/(\d+) *\/(\d+) ?LB/', $description, $matches)) {
-            $caseSize = $matches[1] * $matches[2];
-            $unitSize = 'LB';
-        } elseif (preg_match('/(\d+) *\/(\d+) ?#/', $description, $matches)) {
-            $caseSize = $matches[1] * $matches[2];
-            $unitSize = 'LB';
-        } elseif (preg_match('/(\d+) *- *(\d+) ?LB/', $description, $matches)) {
-            $caseSize = ($matches[1] + $matches[2]) / 2.0;
-            $unitSize = 'LB';
-        } elseif (preg_match('/(\d+) *- *(\d+) ?#/', $description, $matches)) {
-            $caseSize = ($matches[1] + $matches[2]) / 2.0;
-            $unitSize = 'LB';
-        } elseif (preg_match('/(\d+) *LB/', $description, $matches)) {
-            $caseSize = $matches[1];
-            $unitSize = 'LB';
-        } elseif (preg_match('/(\d+) *#/', $description, $matches)) {
-            $caseSize = $matches[1];
-            $unitSize = 'LB';
-        } elseif (preg_match('/(\d+) *- *(\d+) ?CT/', $description, $matches)) {
-            $caseSize = ($matches[1] + $matches[2]) / 2.0;
-            $unitSize = 'CT';
-        } elseif (preg_match('/(\d+) *CT/', $description, $matches)) {
-            $caseSize = $matches[1];
-            $unitSize = 'CT';
-        }
-
-        return array($caseSize, $unitSize);
-    }
-
-    public function get_complete_view()
-    {
-        return '<div class="alert alert-success">Import complete</div>
-                <p>
-                    <a href="../ViewPurchaseOrders.php?id=' . $this->complete . '"
-                        class="btn btn-default">View Order</a>
-                </p>';
-    }
-
-    public function get_view()
-    {
-        return '<form method="post"
-            enctype="multipart/form-data">
-            <div id="alert-area"></div>
-            <p>
-            <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-            <input type="hidden" name="file" value="1" />
-            Filename: <input type="file" id="file-upload" name="file-upload" />
-            <button type="submit" class="btn btn-default">Upload File</button>
-            </p>
-            </form>';
-    }
-
-    public function helpContent()
-    {
-        return '<p>
-            Upload a CPW invoice file. Review the information
-            extracted from the file and make any necessary
-            adjustments. Finally, import the amended information
-            as a new invoice.
-            </p>';
-    }
-
 }
 
 FannieDispatch::conditionalExec();

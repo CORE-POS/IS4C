@@ -39,7 +39,7 @@ $SPINS_SERVER = "ftp.spins.com";
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -47,8 +47,8 @@ if (!class_exists('FannieAPI')) {
   SPINS.php needs to define your FTP username and
   password as $SPINS_USER and $SPINS_PW respectively.
 */
-if (file_exists($FANNIE_ROOT.'src/Credentials/SPINS.php')) {
-    include($FANNIE_ROOT.'src/Credentials/SPINS.php');
+if (file_exists(__DIR__ . '/../src/Credentials/SPINS.php')) {
+    include(__DIR__ . '/../src/Credentials/SPINS.php');
 } else {
     return;
 }

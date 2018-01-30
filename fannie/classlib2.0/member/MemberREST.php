@@ -290,7 +290,8 @@ class MemberREST
         }
         foreach ($customers->find() as $c) {
             for ($i=0; $i<count($ret['customers']); $i++) {
-                if ($ret['customers'][$i]['firstName'] == $c->firstName() && $ret['customers'][$i]['lastName'] == $c->lastName()) {
+                if ($ret['customers'][$i]['firstName'] == $c->firstName() && $ret['customers'][$i]['lastName'] == $c->lastName()
+                    && (!isset($ret['customers'][$i]['customerID']) || $ret['customers'][$i]['customerID'] == 0)) {
                     $ret['customers'][$i]['customerID'] = $c->customerID();
                     $ret['customers'][$i]['customerAccountID'] = $ret['customerAccountID'];
                     break;
@@ -313,7 +314,7 @@ class MemberREST
                 c.staff,
                 m.phone,
                 m.email_1,
-                m.email_2,
+                m.email_2 AS altPhone,
                 CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
                 c.SSI,
                 CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
@@ -341,7 +342,7 @@ class MemberREST
                 $customer['accountHolder'] = 1;
                 $customer['phone'] = $row['phone'] === null ? '' : $row['phone'];
                 $customer['email'] = $row['email_1'] === null ? '' : $row['email_1'];
-                $customer['altPhone'] = $row['email_2'] === null ? '' : $row['email_2'];
+                $customer['altPhone'] = $row['altPhone'] === null ? '' : $row['altPhone'];
             } else {
                 $customer['accountHolder'] = 0;
                 $customer['phone'] = '';
@@ -391,7 +392,7 @@ class MemberREST
                 c.staff,
                 m.phone,
                 m.email_1,
-                m.email_2,
+                m.email_2 AS altPhone,
                 c.SSI,
                 c.personNum,
                 CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
@@ -464,7 +465,7 @@ class MemberREST
                 'modified' => $row['modified'],
                 'phone' => $row['phone'] === null || $row['personNum'] != 1 ? '' : $row['phone'],
                 'email' => $row['email_1'] === null || $row['personNum'] != 1 ? '' : $row['email_1'],
-                'altPhone' => $row['email_2'] === null || $row['personNum'] != 1 ? '' : $row['email_2'],
+                'altPhone' => $row['altPhone'] === null || $row['personNum'] != 1 ? '' : $row['altPhone'],
                 'memberPricingAllowed' => $account['memberStatus'] == 'PC' ? 1 : 0,
                 'memberCouponsAllowed' => $account['memberStatus'] == 'PC' ? 1 : 0,
             );
@@ -570,6 +571,7 @@ class MemberREST
 
         if (isset($json['customers']) && is_array($json['customers'])) {
             $columns = $customers->getColumns();
+            $validIDs = array();
             foreach ($json['customers'] as $c_json) {
                 $customers->reset();
                 $customers->cardNo($id); 
@@ -578,21 +580,28 @@ class MemberREST
                     if ($col_name == 'cardNo') continue;
                     if ($col_name == 'modified') continue;
 
-                    $deletable += self::deletableCustomer($col_name, $c_json);
-
                     if (isset($c_json[$col_name])) {
                         $customers->$col_name($c_json[$col_name]);
                     }
                 }
-                if ($deletable == 3) {
-                    // submitted an ID and blank name fields
-                    $customers->delete();
-                } elseif ($deletable == 2 && $customers->customerID() == 0) {
-                    // skip creating member
-                } elseif (!$customers->save()) {
-                    $ret['errors']++;
+                if ($customers->firstName() != '' || $customers->lastName() != '') {
+                    if (isset($c_json['customerID']) && $c_json['customerID']) {
+                        $validIDs[] = $c_json['customerID'];
+                        $ret['errors'] += $customers->save() ? 0 : 1;
+                    } else {
+                        $newID = $customers->save();
+                        if ($newID) {
+                            $validIDs[] = $newID;
+                        } else {
+                            $ret['errors']++;
+                        }
+                    }
                 }
             }
+            list($inStr, $args) = $dbc->safeInClause($validIDs);
+            $args[] = $id;
+            $cleanP = $dbc->prepare("DELETE FROM Customers WHERE customerID NOT IN ({$inStr}) AND cardNo=?");
+            $dbc->execute($cleanP, $args);
         }
         self::$hook_cache['CustomersModel'] = $customers->getHooks();
 
@@ -605,20 +614,6 @@ class MemberREST
         $ret['account'] = self::get($id);
 
         return $ret;
-    }
-
-    private static function deletableCustomer($col_name, $c_json)
-    {
-        $deletable = 0;
-        if ($col_name == 'customerID' && isset($c_json[$col_name]) && $c_json[$col_name] != 0) {
-            $deletable++;
-        } elseif ($col_name == 'firstName' && isset($c_json[$col_name]) && $c_json[$col_name] == '') {
-            $deletable++;
-        } elseif ($col_name == 'lastName' && isset($c_json[$col_name]) && $c_json[$col_name] == '') {
-            $deletable++;
-        }
-
-        return $deletable;
     }
 
     /**
@@ -934,8 +929,8 @@ class MemberREST
     {
         $query = '
             SELECT a.cardNo,
-                c.firstName,
-                c.lastName,
+                ' . ($minimal ? 'c.firstName' : 'MAX(c.firstName)') . ' AS firstName,
+                ' . ($minimal ? 'c.lastName' : 'MAX(c.lastName)') . ' AS lastName
             FROM CustomerAccounts AS a
                 LEFT JOIN Customers AS c ON a.customerAccountID=c.customerAccountID
             WHERE 1=1 ';
@@ -1015,8 +1010,8 @@ class MemberREST
     {
         $query = '
             SELECT c.CardNo AS cardNo,
-                c.FirstName,
-                c.LastName
+                ' . ($minimal ? 'c.FirstName' : 'MAX(c.FirstName)') . ' AS firstName,
+                ' . ($minimal ? 'c.LastName' : 'MAX(c.LastName)') . ' AS lastName
             FROM custdata AS c
                 LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
                 LEFT JOIN memDates AS d ON c.CardNo=d.card_no
@@ -1067,6 +1062,9 @@ class MemberREST
     {
         if (count($params) == 0) {
             return array();
+        }
+        if ($limit) {
+            $query = $dbc->addSelectLimit($query, $limit);
         }
 
         $prep = $dbc->prepare($query);
@@ -1157,8 +1155,8 @@ class MemberREST
                 'customers' => array(
                     array(
                         'cardNo' => $row['cardNo'],
-                        'firstName' => $row['FirstName'],
-                        'lastName' => $row['LastName'],
+                        'firstName' => $row['firstName'],
+                        'lastName' => $row['lastName'],
                     ),
                 ),
             );

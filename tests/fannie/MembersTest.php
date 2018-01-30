@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\common\mvc\ValueContainer;
+
 /**
  * @backupGlobals disabled
  */
@@ -13,6 +15,100 @@ class MembersTest extends PHPUnit_Framework_TestCase
         foreach($mems as $mem_class) {
             $obj = new $mem_class();
         }
+    }
+
+    public function testAccount()
+    {
+        return array(
+            'customerAccountID' => 1,
+            'cardNo' => 1,
+            'memberStatus' => 'PC',
+            'activeStatus' => '',
+            'customerTypeID' => 1,
+            'chargeBalance' => 0,
+            'chargeLimit' => 0,
+            'startDate' => '2000-01-01',
+            'endDate' => '2099-01-01',
+            'addressFirstLine' => '123 4th St',
+            'addressSecondLine' => 'Apt 678',
+            'city' => 'ANYTOWN',
+            'state' => 'US',
+            'zip' => '12345',
+            'contactAllowed' => 1,
+            'contactMethod' => 'mail',
+            'modified' => '2000-01-01 00:00:00',
+            'customers' => array(
+                array(
+                    'customerID' => 1,
+                    'customerAccountID' => 1,
+                    'cardNo' => 1,
+                    'firstName' => 'PRIMARY',
+                    'lastName' => 'PERSON',
+                    'chargeAllowed' => 1,
+                    'checksAllowed' => 1,
+                    'discount' => 0,
+                    'accountHolder' => 1,
+                    'staff' => 0,
+                    'phone' => '867-5309',
+                    'altPhone' => '',
+                    'email' => 'bob@bob.com',
+                    'memberPricingAllowed' => 0,
+                    'memberCouponsAllowed' => 0,
+                    'lowIncomeBenefits' => 0,
+                    'modified' => '2000-01-01 00:00:00',
+                ),
+                array(
+                    'customerID' => 2,
+                    'customerAccountID' => 1,
+                    'cardNo' => 1,
+                    'firstName' => 'SECONDARY',
+                    'lastName' => 'PERSON',
+                    'chargeAllowed' => 1,
+                    'checksAllowed' => 1,
+                    'discount' => 0,
+                    'accountHolder' => 0,
+                    'staff' => 0,
+                    'phone' => '867-5309',
+                    'altPhone' => '',
+                    'email' => 'jim@bob.com',
+                    'memberPricingAllowed' => 0,
+                    'memberCouponsAllowed' => 0,
+                    'lowIncomeBenefits' => 0,
+                    'modified' => '2000-01-01 00:00:00',
+                ),
+            ),
+        );
+    }
+
+    public function testContact()
+    {
+        $mod = new ContactInfo();
+        $json = $this->testAccount();
+        $form = new ValueContainer();
+        $form->ContactInfo_addr1 = '1 main st';
+        $form->ContactInfo_addr2 = 'Apt 0';
+        $form->ContactInfo_city = 'Home';
+        $form->ContactInfo_state = 'ZZ';
+        $form->ContactInfo_zip = '54321';
+        $form->ContactInfo_mail = 'checked';
+        $form->ContactInfo_ln = 'SMITH';
+        $form->ContactInfo_fn = 'BOB';
+        $form->ContactInfo_ph1 = '123-4567';
+        $form->ContactInfo_ph2 = '987-6543';
+        $form->ContactInfo_email = 'bob@google.com';
+        $mod->setForm($form);
+        $json = $mod->saveFormData(1, $json);
+        $this->assertEquals('1 main st', $json['addressFirstLine']);
+        $this->assertEquals('Apt 0', $json['addressSecondLine']);
+        $this->assertEquals('Home', $json['city']);
+        $this->assertEquals('ZZ', $json['state']);
+        $this->assertEquals('54321', $json['zip']);
+        $this->assertEquals(1, $json['contactAllowed']);
+        $this->assertEquals('SMITH', $json['customers'][0]['lastName']);
+        $this->assertEquals('BOB', $json['customers'][0]['firstName']);
+        $this->assertEquals('bob@google.com', $json['customers'][0]['email']);
+        $this->assertEquals('123-4567', $json['customers'][0]['phone']);
+        $this->assertEquals('987-6543', $json['customers'][0]['altPhone']);
     }
 
     public function testREST()

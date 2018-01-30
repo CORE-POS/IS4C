@@ -78,7 +78,8 @@ class BarcodeLib
         if (substr($upc, 0, 1) == 0 && strlen($upc) == 7) {
             $upc = self::expandUPCE($upc);
         }
-        return str_pad(trim($upc), 13, '0', STR_PAD_LEFT);
+        $padded = str_pad(trim($upc), 13, '0', STR_PAD_LEFT);
+        return substr($padded, -13);
     }
 
     static public function trimCheckDigit($upc)

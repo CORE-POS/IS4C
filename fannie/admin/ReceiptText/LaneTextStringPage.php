@@ -22,7 +22,7 @@
 *********************************************************************************/
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -134,7 +134,7 @@ class LaneTextStringPage extends FannieRESTfulPage
 
         $trimP = $this->connection->prepare('
             DELETE 
-            FROM customReceipt
+            FROM ' . FannieDB::fqn('customReceipt', 'op') . '
             WHERE type=?
                 AND seq >= ?
         ');

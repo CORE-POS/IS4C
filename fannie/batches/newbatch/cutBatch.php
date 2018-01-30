@@ -27,7 +27,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 
     include(dirname(__FILE__).'/../../config.php');
     if (!class_exists('FannieAPI')) {
-        include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+        include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
     }
 
     $ret = '';
@@ -54,6 +54,11 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         if (!$saved) {
             $ret['error'] = 1;
             $ret['error_msg'] = 'Save failed';
+        } else {
+            $bu = new BatchUpdateModel($dbc);
+            $bu->batchID($id);
+            $bu->upc($item->upc());
+            $bu->logUpdate($bu::UPDATE_REMOVED);
         }
     }
 

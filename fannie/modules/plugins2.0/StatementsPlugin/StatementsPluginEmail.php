@@ -46,7 +46,10 @@ class StatementsPluginEmail extends FannieRESTfulPage
             if (!empty($primary['firstName'])) {
                 $name = $primary['firstName'].' '.$name;
             }
-            $mail->Subject = 'Invoice ' . $invoice['b2bInvoiceID'];
+            $mail->Subject = 'Invoice ' . $invoice['b2bInvoiceID'] . ', Garbanzo Gazette';
+            if (!empty($invoice['emailSubject'])) {
+                $mail->Subject = 'Invoice ' . $invoice['b2bInvoiceID'] . ', ' . $invoice['emailSubject'];
+            }
             $body = "Invoice #: {$invoice['b2bInvoiceID']}\n";
             $html = "<p>Invoice #: {$invoice['b2bInvoiceID']}<br>";
             $stateDate = date('Y-m-d', strtotime($invoice['createdDate']));
@@ -62,17 +65,18 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $body .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "\n\n";
             $html .= $account['city'] . ', ' . $account['state'] . '   ' . $account['zip'] . "</p>";
 
+
             $body .= "If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.\n\n";
             $html .= "<p>If payment has been made or sent, please ignore this invoice. If you have any questions about this invoice or would like to make arrangements to pay your balance, please write or call the Finance Department at the above address or (218) 728-0884.</p>";
 
             $html .= '<table border="1" cellspacing="0" cellpadding="4">';
             $body .= str_pad($invoice['description'], 100);
-            $html .= '<tr><td>' . $invoice['description'] . '</td>';
+            $html .= '<tr><td>' . nl2br($invoice['description']) . '</td>';
             $body .= sprintf('$%.2f', $invoice['amount']) . "\n";
             $html .= sprintf('<td>$%.2f</td></tr>', $invoice['amount']);
             if ($invoice['customerNotes']) {
                 $body .= 'Notes: ' . $invoice['customerNotes'] . "\n";
-                $html .= '<tr><td colspan=2>Notes: ' . $invoice['customerNotes'] . '</td></tr>';
+                $html .= '<tr><td colspan=2>Notes: ' . nl2br($invoice['customerNotes']) . '</td></tr>';
             }
             $body .= "\n";
             $html .= '</table>';
@@ -82,13 +86,21 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $body .= '$ ' . sprintf("%.2f",$invoice['amount']) . "\n";
             $html .= '$ ' . sprintf("%.2f",$invoice['amount']) . "</p>";
 
+            $link = 'http://store.wholefoods.coop/invoice/' . $invoice['uuid'];
+            $html .= '<p><a href="' . $link . '">Pay Online</a></p>';
+            $body .= "\nPay Online:\n";
+            $body .= $link . "\n";
+            $body .= "You may also pay in person at either store or mail a check payable to Whole Foods Co-op to:\n";
+            $html .= "<p>You may also pay in person at either store or mail a check payable to Whole Foods Co-op to:</p>";
+            $html .= '<p>Whole Foods Co-op<br />610 E 4th St<br />Duluth, MN 55805</p>';
+            $body .= "\nWhole Foods Co-op\n610 E 4th St\nDuluth, MN 55805\n";
+
             $mail->isHTML(true);
             $mail->Body = $html;
             $mail->AltBody = $body;
-            //$mail->addAddress($primary['email']);
-            //$mail->addBCC('bcarlson@wholefoods.coop');
-            //$mail->addBCC('andy@wholefoods.coop');
-            $mail->addAddress('andy@wholefoods.coop');
+            $mail->addAddress($primary['email']);
+            $mail->addBCC('bcarlson@wholefoods.coop');
+            $mail->addBCC('andy@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
         }
@@ -98,7 +110,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT, $FANNIE_ARCHIVE_DB;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $cards = "(";
@@ -365,6 +377,8 @@ class StatementsPluginEmail extends FannieRESTfulPage
             }
             $body .= '$ ' . sprintf("%.2f",$balance) . "\n";
             $html .= '$ ' . sprintf("%.2f",$balance) . "</p>";
+            $html .= '<p>Whole Foods Co-op<br />610 E 4th St<br />Duluth, MN 55805</p>';
+            $body .= "\nWhole Foods Co-op\n610 E 4th St\nDuluth, MN 55805\n";
 
             $mail->isHTML(true);
             $mail->Body = $html;

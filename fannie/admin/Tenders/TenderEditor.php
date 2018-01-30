@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class TenderEditor extends FannieRESTfulPage 
@@ -165,10 +165,10 @@ class TenderEditor extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $newID=1;
-        $idQ = $dbc->prepare("SELECT MAX(TenderID) FROM tenders");
+        $idQ = $dbc->prepare("SELECT MAX(TenderID) FROM " . FannieDB::fqn('tenders', 'op'));
         $idR = $dbc->execute($idQ);
-        if ($dbc->num_rows($idR) > 0){
-            $idW = $dbc->fetch_row($idR);
+        if ($dbc->numRows($idR) > 0){
+            $idW = $dbc->fetchRow($idR);
             if (!empty($idW[0])) $newID = $idW[0] + 1;
         }
 

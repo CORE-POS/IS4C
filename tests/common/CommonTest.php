@@ -133,6 +133,14 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $obj->unitTest($this, $dbc);
     }
 
+    public function testSQLConnectException()
+    {
+        $this->setExpectedException(Exception::class);
+        include(dirname(__FILE__) . '/../../fannie/config.php');
+        $dbc = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
+        $dbc->addConnection($FANNIE_SERVER, '', $FANNIE_TRANS_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+    }
+
     public function testSQL()
     {
         include(dirname(__FILE__) . '/../../fannie/config.php');
@@ -140,7 +148,6 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $dbc->throwOnFailure(true);
         $this->assertEquals($FANNIE_OP_DB, $dbc->defaultDatabase());
 
-        $this->assertEquals(false, $dbc->addConnection($FANNIE_SERVER, '', $FANNIE_TRANS_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW));
         $this->assertEquals(true, $dbc->addConnection($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW));
 
         $this->assertEquals(true, $dbc->isConnected());
@@ -282,6 +289,14 @@ class CommonTest extends PHPUnit_Framework_TestCase
             $this->assertEquals(true, $pool->saveDeferred($baz));
             $this->assertEquals(true, $pool->commit());
         }
+    }
+
+    public function testDeComposer()
+    {
+        $path = __DIR__ . '/../../';
+        $dc = new COREPOS\common\DeComposer($path);
+        $this->assertEquals(array(), $dc->extraPackages());
+        $this->assertEquals(array(), $dc->missingPackages());
     }
 }
 

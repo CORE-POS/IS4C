@@ -153,5 +153,25 @@ class PgsqlAdapter implements DialectAdapter
     {
         return "SET NAMES '$charset'";
     }
+
+    public function getProcessList()
+    {
+        return 'SELECT pid AS "ID",
+                state AS "STATE",
+                query AS "INFO",
+                usename AS "USER",
+                client_addr AS "HOST",
+                EXTRACT(EPOCH FROM (current_timestamp - backend_start)) AS "TIME"
+            FROM pg_stat_activity';
+    }
+
+    public function kill($intID)
+    {
+        if ($intID != (int)$intID || ((int)$intID) == 0) {
+            throw new \Exception('Invalid query ID');
+        }
+
+        return sprintf('SELECT pg_cancel_backend(%d)', $intID);
+    }
 }
 

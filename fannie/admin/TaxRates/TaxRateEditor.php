@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class TaxRateEditor extends FannieRESTfulPage 
@@ -44,7 +44,7 @@ class TaxRateEditor extends FannieRESTfulPage
             $account = $this->form->account;
             $delete_flag = isset($this->form->del) ? $this->form->del : array();
             $tax_id = 1;
-            $trun = $dbc->query("TRUNCATE TABLE taxrates");
+            $trun = $dbc->query("TRUNCATE TABLE " . FannieDB::fqn('taxrates', 'op'));
             $model = new TaxRatesModel($dbc);
             for ($j=0;$j<count($desc);$j++) {
                 if (empty($desc[$j]) || empty($rate[$j])) {

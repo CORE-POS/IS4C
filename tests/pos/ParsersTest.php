@@ -26,6 +26,20 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     {
         $res = new ParseResult();
         $this->assertNotEquals(false, strstr(json_encode($res), 'main_frame'));
+
+        $res2 = new ParseResult();
+        $serial = $res2->serialize();
+        $res2->unserialize($serial);
+        $this->assertEquals($res, $res2);
+
+        $this->assertEquals(10, $res->count());
+        $this->assertInternalType('array', $res->toArray());
+        $this->assertEquals('main_frame', $res->key());
+        $this->assertEquals(false, $res->current());
+        $res->next();
+        $this->assertEquals('target', $res->key());
+        $res->rewind();
+        $this->assertEquals('main_frame', $res->key());
     }
 
     /**

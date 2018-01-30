@@ -99,7 +99,15 @@ This scales with quantity to deal with by-weight items.
 department(s) instead of a specific UPC
 <li><b>F Flat Discount</b> removes exactly the given amount, once, from the transaction
 <li><b>Per-Item Discount</b> removes the discount amount times the number of matching items.</li>
-<li><b>BOGO (Buy one get one)</b> applies a discount at the price of the product per pair of items rang until Discount Value is met.</li>
+<li><b>BOGO</b> Gives a certain number of items for free per pair of products purchased. 
+    <ul>
+        <li><b>BOGO (Buy one get one)</b> applies a discount at the price of the product per pair of items rang 
+            until Discount Value is met. Pairs of items must be of equal value.</li>
+        <li><b>BOGO (Qty Limited)</b> Using Quantity (at least): minimum value should always equal 2. Discount
+            value equals the maximum number of items given for free; per pair of items sold, one product is given 
+            free (of lesser value). </li>
+    </ul>
+</li>
 <li><b>Percent Discounts</b> provide a percentage off all discountable items (e.g., member 
 appreciation month):
     <ul>

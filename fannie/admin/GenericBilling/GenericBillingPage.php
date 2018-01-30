@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class GenericBillingPage extends FannieRESTfulPage 
@@ -76,16 +76,15 @@ class GenericBillingPage extends FannieRESTfulPage
     }
 
     function get_id_handler(){
-        global $FANNIE_TRANS_DB;
         $sql = FannieDB::getReadOnly($this->config->get('OP_DB'));
 
         $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
         $query = "SELECT n.balance
-            FROM  " . $FANNIE_TRANS_DB.$sql->sep()."ar_live_balance AS n 
+            FROM  " . FannieDB::fqn('ar_live_balance', 'trans') . " AS n 
             WHERE n.card_no=?";
         $prep = $sql->prepare($query);
         $result = $sql->execute($prep, array($this->id));
-        $row = $sql->fetch_row($result);
+        $row = $sql->fetchRow($result);
 
         printf("<form onsubmit=\"genericBilling.postBilling();return false;\">
             <div class=\"col-sm-6\">
@@ -128,12 +127,17 @@ class GenericBillingPage extends FannieRESTfulPage
 
     function post_id_handler()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $sql = FannieDB::get($FANNIE_TRANS_DB);
-
-        $amount = FormLib::get_form_value('amount');
-        $desc = FormLib::get_form_value('desc');
+        $sql = FannieDB::get($this->config->get('TRANS_DB'));
         $json = array('msg' => '', 'billed' => 0);
+
+        try {
+            $amount = $this->form->amount;
+            $desc = $this->form->desc;
+        } catch (Exception $ex) {
+            $json['msg'] = 'Invalid request';
+            echo json_encode($json);
+            return false;
+        }
         if ($amount === '') {
             $json['msg'] = "Amount is required";
             echo json_encode($json);
@@ -168,8 +172,9 @@ class GenericBillingPage extends FannieRESTfulPage
 
         $json['msg'] = sprintf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
                 Receipt is %d-%d-%d.",$this->id,$amount,
-                $this->EMP_NO,$this->LANE_NO,$t_no);
+                $this->EMP_NO,$this->LANE_NO,$trans_no);
         $json['billed'] = 1;
+        $json['trans_no'] = $trans_no;
         echo json_encode($json);
 
         return false;
@@ -191,6 +196,18 @@ class GenericBillingPage extends FannieRESTfulPage
         ob_start();
         $phpunit->assertEquals(false, $this->get_id_handler());
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->amount = 1;
+        $form->desc = 'TEST';
+        $this->setForm($form);
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_handler());
+        $json = ob_get_clean();
+        $json = json_decode($json, true);
+        $phpunit->assertArrayHasKey('trans_no', $json);
+        $delP = $this->connection->prepare('DELETE FROM ' . FannieDB::fqn('dtransactions', 'trans') . ' WHERE emp_no=? AND register_no=? AND trans_no=?');
+        $delR = $this->connection->execute($delP, array($this->EMP_NO, $this->LANE_NO, $json['trans_no']));
+        $phpunit->assertNotEquals(false, $delR, 'Cleaning up: ' . $this->connection->error());
     }
 }
 

@@ -24,7 +24,7 @@ class SoPoBridge
         $cutoff = date('Y-m-d 00:00:00', strtotime('28 days ago'));
         $prep = $this->dbc->prepare('
             SELECT orderID
-            FROM PurchaseOrder
+            FROM ' . FannieDB::fqn('PurchaseOrder', 'op') . '
             WHERE vendorID=?
                 AND storeID=?
                 AND placed=0
@@ -43,9 +43,9 @@ class SoPoBridge
         $prep = $this->dbc->prepare('
             SELECT v.sku, n.vendorID, d.salesCode
             FROM ' . $pending . ' AS o
-                INNER JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
-                LEFT JOIN vendorItems AS v on n.vendorID=v.vendorID AND o.upc=v.upc
-                LEFT JOIN departments AS d ON o.department=d.dept_no
+                INNER JOIN ' . FannieDB::fqn('vendors', 'op') . ' AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
+                LEFT JOIN ' . FannieDB::fqn('vendorItems', 'op') . ' AS v on n.vendorID=v.vendorID AND o.upc=v.upc
+                LEFT JOIN ' . FannieDB::fqn('departments', 'op') . ' AS d ON o.department=d.dept_no
             WHERE o.order_id=?
                 AND o.trans_id=?
         ');
@@ -90,16 +90,16 @@ class SoPoBridge
         $prep = $this->dbc->prepare('SELECT * FROM vendorItems WHERE sku=? AND vendorID=?');
         $item = $this->dbc->getRow($prep, array($vendorInfo['sku'], $vendorInfo['vendorID']));
         $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
-        $prep = $this->dbc->prepare("SELECT description, quantity AS units, 0 AS cost, '' AS brand
+        $prep = $this->dbc->prepare("SELECT description, quantity AS units, 0 AS cost, '' AS brand, upc
             FROM {$pending} WHERE order_id=? AND trans_id=?");
         $spoRow = $this->dbc->getRow($prep, array($soID, $transID));
         if ($item === false) {
             $item = $spoRow;
-            $item['sku'] = uniqid();
+            $item['sku'] = is_numeric($item['upc']) ? $item['upc'] : uniqid();
         }
         $item['units'] = $spoRow['units'];
 
-        $poSKU = substr($vendorInfo['sku'], -12) . ' ';
+        $poSKU = substr($item['sku'], -12) . '.';
         $poitem = new PurchaseOrderItemsModel($this->dbc);
         $poitem->orderID($poID);
         $poitem->sku($poSKU);
@@ -131,8 +131,8 @@ class SoPoBridge
 
         $prep = $this->dbc->prepare('
             SELECT o.orderID
-            FROM PurchaseOrder AS o
-                INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
+            FROM ' . FannieDB::fqn('PurchaseOrder', 'op') . ' AS o
+                INNER JOIN ' . FannieDB::fqn('PurchaseOrderItems', 'op') . ' AS i ON o.orderID=i.orderID
             WHERE o.vendorID=?
                 AND o.storeID=?
                 AND i.quantity=?
@@ -145,6 +145,37 @@ class SoPoBridge
             $cases,
             str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT),
         ));
+    }
+
+    /**
+      Delete a SPO item from a PO
+      @param $soID [int] special order ID
+      @param $transID [int] special order line item ID
+      @param $storeID [int] store ID
+      @return [bool] success
+
+      An item is only deleted from a PO if it has not yet been received
+    */
+    public function removeItemFromPurchaseOrder($soID, $transID, $storeID)
+    {
+        $orderID = $this->findPurchaseOrder($soID, $transID, $storeID);
+        if (!$orderID) {
+            return false;
+        }
+        $upc = str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT);
+
+        $itemP = $this->dbc->prepare('SELECT * FROM ' . FannieDB::fqn('PurchaseOrderItems', 'op')
+                                . ' WHERE internalUPC=? AND orderID=?');
+        $item = $this->dbc->getRow($itemP, array($upc, $orderID));
+        if ($item === false || $item['receivedDate'] || $item['receivedBy']) {
+            return false;
+        }
+
+        $cleanP = $this->dbc->prepare("DELETE FROM " . FannieDB::fqn('PurchaseOrderItems', 'op')
+                                . " WHERE sku=? AND orderID=?");
+        $cleanR = $this->dbc->execute($cleanP, array($item['sku'], $orderID));
+
+        return $cleanR ? true : false;
     }
 
     /**

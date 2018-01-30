@@ -42,6 +42,9 @@ class WfcLimitedTenderReport extends TenderReport
         $receipt .= ReceiptLib::biggerFont(ReceiptLib::centerBig($time)) . "\n\n";
         $receipt .=    ReceiptLib::centerString("------------------------------------------------------") . "\n";
         $dba = Database::mDataConnect();
+        if ($dba === false) {
+            return '';
+        }
         $receipt .= ReceiptLib::centerString('T E L E C H E C K') . "\n";
         $receipt .=    ReceiptLib::centerString("------------------------------------------------------") . "\n";
         $receipt .= $fieldNames;

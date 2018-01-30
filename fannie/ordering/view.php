@@ -26,7 +26,7 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 $edit = FannieAuth::validateUserQuiet('ordering_edit');
 if ((Store::getIdByIp() == 2 || $edit || FannieConfig::config('SO_UI') === 'bootstrap') && count($_GET) === 0) {
@@ -34,7 +34,7 @@ if ((Store::getIdByIp() == 2 || $edit || FannieConfig::config('SO_UI') === 'boot
     return;
 }
 if (!function_exists('checkLogin')) {
-    include($FANNIE_ROOT.'auth/login.php');
+    include(__DIR__ . '/../auth/login.php');
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -51,7 +51,7 @@ if (session_id() == '' && !headers_sent()) {
 
 $page_title = "Special Order :: Create";
 $header = "Create Special Order";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../src/header.html');
 
 $orderID = isset($_REQUEST['orderID'])?$_REQUEST['orderID']:'';
 $return_path = (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'],'fannie/ordering/clearinghouse.php')) ? $_SERVER['HTTP_REFERER'] : '';
@@ -105,5 +105,5 @@ if (isset($_REQUEST['k']) && file_exists($cachepath.$_REQUEST['k'])){
 </script>
 <?php
 printf("<input type=hidden value=\"%d\" id=\"init_oid\" />",$orderID);
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../src/footer.html');
 

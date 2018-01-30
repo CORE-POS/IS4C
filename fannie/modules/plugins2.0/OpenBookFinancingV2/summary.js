@@ -13,76 +13,86 @@ var obfSummary = (function () {
                 labels: inp.labels,
                 datasets: [
                     { 
-                        data: inp.all, 
+                        data: inp.sales, 
                         fill: false,
-                        label: 'Total',
+                        label: 'Current Sales',
                         hidden: hide,
-                        backgroundColor: 'rgba(228,26,28,0.9)',
-                        borderColor: 'rgba(228,26,28,0.4)'
+                        backgroundColor: "#3366cc",
+                        pointBackgroundColor: "#3366cc",
+                        pointBorderColor: "#3366cc",
+                        borderColor: "#3366cc"
                     },
                     { 
-                        data: inp.hillside, 
+                        data: inp.lySales, 
                         fill: false,
-                        label: 'Hillside',
+                        label: 'Last Year Sales',
                         hidden: hide,
-                        backgroundColor: 'rgba(55,126,184,0.9)',
-                        borderColor: 'rgba(55,126,184,0.4)'
+                        backgroundColor: "#dc3912",
+                        pointBackgroundColor: "#dc3912",
+                        pointBorderColor: "#dc3912",
+                        borderColor: "#dc3912"
+                    }
+                ]
+            }
+        });
+
+        var ctx2 = document.getElementById('obfHoursCanvas');
+
+        var myChart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: inp.labels,
+                datasets: [
+                    { 
+                        data: inp.hours, 
+                        fill: false,
+                        label: 'Current Hours',
+                        hidden: hide,
+                        backgroundColor: "#3366cc",
+                        pointBackgroundColor: "#3366cc",
+                        pointBorderColor: "#3366cc",
+                        borderColor: "#3366cc"
                     },
                     { 
-                        data: inp.denfeld, 
+                        data: inp.lyHours, 
                         fill: false,
-                        label: 'Denfeld',
+                        label: 'Last Year Hours',
                         hidden: hide,
-                        backgroundColor: 'rgba(77,175,74,0.9)',
-                        borderColor: 'rgba(77,175,74,0.4)',
+                        backgroundColor: "#dc3912",
+                        pointBackgroundColor: "#dc3912",
+                        pointBorderColor: "#dc3912",
+                        borderColor: "#dc3912"
+                    }
+                ]
+            }
+        });
+
+        var ctx3 = document.getElementById('obfSplhCanvas');
+
+        var myChart = new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: inp.labels,
+                datasets: [
+                    { 
+                        data: inp.splh, 
+                        fill: false,
+                        label: 'Current SPLH',
+                        hidden: hide,
+                        backgroundColor: "#3366cc",
+                        pointBackgroundColor: "#3366cc",
+                        pointBorderColor: "#3366cc",
+                        borderColor: "#3366cc"
                     },
                     { 
-                        data: inp.hdeli, 
+                        data: inp.lySplh, 
                         fill: false,
-                        label: 'H. Deli',
+                        label: 'Last Year SPLH',
                         hidden: hide,
-                        backgroundColor: 'rgba(152,78,163,0.9)',
-                        borderColor: 'rgba(152,78,163,0.4)'
-                    },
-                    { 
-                        data: inp.ddeli, 
-                        fill: false,
-                        label: 'D. Deli',
-                        hidden: hide,
-                        backgroundColor: 'rgba(255,127,0,0.9)',
-                        borderColor: 'rgba(255,127,0,0.4)'
-                    },
-                    { 
-                        data: inp.hmerch, 
-                        fill: false,
-                        label: 'H. Merch',
-                        hidden: hide,
-                        backgroundColor: 'rgba(215,215,51,0.9)',
-                        borderColor: 'rgba(255,255,51,0.4)'
-                    },
-                    { 
-                        data: inp.dmerch, 
-                        fill: false,
-                        label: 'D. Merch',
-                        hidden: hide,
-                        backgroundColor: 'rgba(166,86,40,0.9)',
-                        borderColor: 'rgba(166,86,40,0.4)'
-                    },
-                    { 
-                        data: inp.hproduce, 
-                        fill: false,
-                        label: 'H. Produce',
-                        hidden: hide,
-                        backgroundColor: 'rgba(247,129,191,0.9)',
-                        borderColor: 'rgba(247,129,191,0.4)'
-                    },
-                    { 
-                        data: inp.dproduce, 
-                        fill: false,
-                        label: 'D. Produce',
-                        hidden: hide,
-                        backgroundColor: 'rgba(153,153,153,0.9)',
-                        borderColor: 'rgba(153,153,153,0.4)'
+                        backgroundColor: "#dc3912",
+                        pointBackgroundColor: "#dc3912",
+                        pointBorderColor: "#dc3912",
+                        borderColor: "#dc3912"
                     }
                 ]
             }
@@ -106,6 +116,14 @@ var obfSummary = (function () {
         var canvas = document.createElement("canvas");
         canvas.id = "obfCanvas";
         document.body.appendChild(canvas);
+
+        var canvas2 = document.createElement("canvas");
+        canvas2.id = "obfHoursCanvas";
+        document.body.appendChild(canvas2);
+
+        var canvas3 = document.createElement("canvas");
+        canvas3.id = "obfSplhCanvas";
+        document.body.appendChild(canvas3);
 
         mod.renderChart(false);
     };

@@ -25,7 +25,7 @@ use COREPOS\Fannie\API\lib\Stats;
 
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class InvCountPage extends FannieRESTfulPage
@@ -187,7 +187,7 @@ class InvCountPage extends FannieRESTfulPage
                         <input type="text" pattern="\\d*" class="form-control" 
                             id="count-field" required name="count" />
                     </td><td>
-                        <input type="text" pattern="\\d*" class="form-control" required name="par" value="' . ((int)$info['par']) . '" />
+                        <input type="text" pattern="\\d*" class="form-control" required name="par" value="' . round($info['par'], 2) . '" />
                     </td>
                     <td>
                         <button type="submit" class="btn btn-default btn-sm">Save</button>
@@ -244,6 +244,10 @@ class InvCountPage extends FannieRESTfulPage
         $prep = $this->connection->prepare($query);
         $ret = '<form method="post">
             <a href="../vendors/VendorIndexPage.php?vid=' . $this->vendor . '">' . $vname . '</a>
+            |
+            <a href="InvCasesPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Case Sizes</a>
+            |
+            <a href="InvHistoryPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Count History</a>
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
             <input type="hidden" name="store" value="' . $store . '" />
             <table class="table table-bordered table-striped small table-float">

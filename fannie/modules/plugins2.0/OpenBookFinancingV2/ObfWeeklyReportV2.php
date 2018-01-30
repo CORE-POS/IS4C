@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class ObfWeeklyReportV2 extends ObfWeeklyReport
@@ -46,7 +46,16 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected $class_lib = 'ObfLibV2';
 
-    protected $OU_START = 110;
+    protected $OU_START = 162;
+
+    protected function getOuStart($weekID)
+    {
+        if ($weekID >= 175) { // Week of Oct 2, 2017
+            return 175;
+        }
+
+        return 162;
+    }
 
     /** previous numbers
     protected $PLAN_SALES = array(
@@ -104,9 +113,77 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         '9,17' => 8308.91,
     );
 
+    protected $PLAN_SALES_Q1_2018 = array(
+        '1,6' => 53904.29,      // Hillside Produce
+        '2,10' => 12187.19,     // Hillside Deli
+        '2,11' => 33128.32,
+        '2,16' => 13505.62,
+        '3,1' => 25019.71,      // Hillside Grocery
+        '3,4' => 60877.32,
+        '3,5' => 23046.19,
+        '3,7' => 192.84,
+        '3,8' => 17028.21,
+        '3,9' => 2657.68,
+        '3,13' => 14635.17,
+        '3,17' => 25688.49,
+        '7,6' => 19084.56,      // Denfeld Produce
+        '8,10' => 4516.25,      // Denfeld Deli
+        '8,11' => 13618.01,
+        '8,16' => 5318.20,
+        '9,1' => 8168.40,       // Denfeld Grocery
+        '9,4' => 24552.79,
+        '9,5' => 8522.84,
+        '9,7' => 82.03,
+        '9,8' => 5726.79,
+        '9,9' => 1002.57,
+        '9,13' => 4636.12,
+        '9,17' => 8414.48,
+    );
+
+    protected $PLAN_SALES_Q2_2018 = array(
+        '1,6' => 51031.00,      // Hillside Produce
+        '2,10' => 11448.32,     // Hillside Deli
+        '2,11' => 31119.86,
+        '2,16' => 12686.82,
+        '3,1' => 26430.32,      // Hillside Grocery
+        '3,4' => 64309.57,
+        '3,5' => 24345.53,
+        '3,7' => 203.71,
+        '3,8' => 17988.26,
+        '3,9' => 2807.52,
+        '3,13' => 15460.30,
+        '3,17' => 27136.80,
+        '7,6' => 17975.00,      // Denfeld Produce
+        '8,10' => 4383.48,      // Denfeld Deli
+        '8,11' => 13217.67,
+        '8,16' => 5161.85,
+        '9,1' => 8470.24,       // Denfeld Grocery
+        '9,4' => 25460.06,
+        '9,5' => 8837.77,
+        '9,7' => 85.06,
+        '9,8' => 5938.41,
+        '9,9' => 1039.62,
+        '9,13' => 4807.43,
+        '9,17' => 8725.41,
+    );
+
     public function preprocess()
     {
+        $this->addScript('../../../src/javascript/Chart.min.js');
+        $this->addScript('summary.js');
+
         return FannieReportPage::preprocess();
+    }
+
+    private function getPlanSales($weekID)
+    {
+        if ($weekID >= 175) {
+            return $this->PLAN_SALES_Q2_2018;
+        } elseif ($weekID >= 162) {
+            return $this->PLAN_SALES_Q1_2018;
+        } else {
+            return $this->PLAN_SALES;
+        }
     }
 
     public function fetch_report_data()
@@ -120,6 +197,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
         $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());
+
+        $PLAN_SALES = $this->getPlanSales($this->form->weekID);
 
         $store = FormLib::get('store', 1);
         
@@ -184,7 +263,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $categories->hasSales(1);
         $categories->storeID($store);
         foreach ($categories->find('name') as $category) {
-            $data[] = $this->headerRow($category->name());
+            $data[] = $this->headerRow($category->name(), 'black', array($category->obfCategoryID(), $week->obfWeekID()));
             $sum = array(0.0, 0.0);
             $dept_proj = 0.0;
             $dept_trend = 0;
@@ -197,7 +276,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             */
             while ($row = $dbc->fetch_row($salesR)) {
                 $projIndex = $category->obfCategoryID() . ',' . $row['superID'];
-                $proj = $this->PLAN_SALES[$projIndex];
+                $proj = $PLAN_SALES[$projIndex];
                 $trend1 = $this->calculateTrend($dbc, $category->obfCategoryID(), $row['superID']);
                 $dept_trend += $trend1;
                 $total_sales->trend += $trend1;
@@ -208,7 +287,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 if ($quarter === false) {
                     $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                 }
-                $ou_weeks = ($week->obfWeekID() - $this->OU_START) + 1;
+                $ou_weeks = ($week->obfWeekID() - $this->getOuStart($week->obfWeekID())) + 1;
                 $qtd_dept_plan += ($proj * $ou_weeks);
                 $qtd_dept_sales += $quarter['actual'];
                 $total_trans->quarterThisYear = $quarter['trans'];
@@ -224,7 +303,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                     sprintf('%.2f%%', $this->percentGrowth($row['actualSales'], $row['lastYearSales'])),
                     number_format($row['actualSales'], 0), // converts to % of sales
                     number_format($row['actualSales'] - $proj, 0),
-                    number_format($quarter['actual'] - $quarter['plan'], 0),
+                    number_format($quarter['actual'] - ($proj * $ou_weeks), 0),
                     'meta' => FannieReportPage::META_COLOR,
                     'meta_background' => $this->colors[0],
                     'meta_foreground' => 'black',
@@ -290,7 +369,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 $quarter['planSales'] = $qt_splh['planSales'];
             }
             $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $quarter['planSales'] / $category->salesPerLaborHourTarget();
+            $qt_proj_hours = ($dept_proj * $ou_weeks) / $labor->splhTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
@@ -703,6 +782,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly, false);
         $data[] = $this->ownershipThisYear($dbc, $end_ts);
 
+        $json = $this->chartData($dbc, $this->form->weekID, $store);
+        $this->addOnloadCommand("obfSummary.drawChart('" . json_encode($json) . "')");
+
         return $data;
     }
 
@@ -751,11 +833,70 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         );
     }
 
+    private function chartData($dbc, $weekID, $storeID)
+    {
+        $begin = $weekID - 12;
+        $json = array(
+            'labels' => array(),
+            'sales' => array(),
+            'lySales' => array(),
+            'hours' => array(),
+            'lyHours' => array(),
+            'splh' => array(),
+            'lySplh' => array(),
+        );
+
+        $hourP = $dbc->prepare("SELECT SUM(hours) 
+            FROM ObfLabor AS l
+                LEFT JOIN ObfCategories AS c ON l.obfCategoryID=c.obfCategoryID
+            WHERE obfWeekID=?
+                    AND c.storeID=?");
+
+        $infoP = $dbc->prepare("
+            SELECT o.obfWeekID,
+                SUM(o.actualSales) AS sales,
+                SUM(o.lastYearSales) AS lySales,
+                MAX(w.startDate) AS startDate,
+                MAX(w.endDate) AS endDate
+            FROM ObfSalesCache AS o
+                LEFT JOIN ObfWeeks AS w ON o.obfWeekID=w.obfWeekID
+                LEFT JOIN ObfCategories AS c ON o.obfCategoryID=c.obfCategoryID
+            WHERE o.obfWeekID BETWEEN ? AND ?
+                AND c.storeID=?
+            GROUP BY o.obfWeekID
+            ORDER BY o.obfWeekID");
+        $infoR = $dbc->execute($infoP, array($begin, $weekID, $storeID));
+        while ($infoW = $dbc->fetchRow($infoR)) {
+            $dstr = date('m/d', strtotime($infoW['startDate']))
+                . ' - '
+                . date('m/d', strtotime($infoW['endDate']));
+            if (!in_array($dstr, $json['labels'])) {
+                $json['labels'][] = $dstr;
+            }
+            if ($infoW['sales'] > 0) {
+                $json['sales'][] = $infoW['sales'];
+            }
+            $json['lySales'][] = $infoW['lySales'];
+
+            $hours = $dbc->getValue($hourP, array($infoW['obfWeekID'], $storeID));
+            $lyHours = $dbc->getValue($hourP, array($infoW['obfWeekID'] - 52, $storeID));
+            if ($hours > 0) {
+                $json['hours'][] = $hours;
+                $json['splh'][] = $hours == 0 ? 0 : $infoW['sales'] / $hours;
+            }
+            $json['lyHours'][] = $lyHours;
+            $json['lySplh'][] = $lyHours == 0 ? 0 : $infoW['lySales'] / $lyHours;
+        }
+
+        return $json;
+    }
+
     private function getOtherStore($storeID, $weekID)
     {
         $dbc = $this->connection;
         $conf = $this->config->get('PLUGIN_SETTINGS');
         $dbc->selectDB($conf['ObfDatabaseV2']);
+        $PLAN_SALES = $this->getPlanSales($weekID);
         /**
           Get sales, plan, and transactions from cache
           Loops through categories to project hours for
@@ -783,7 +924,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['lastYear'] += $row['lastYear'];
             $info['trans'] = $row['trans'];
             $info['lyTrans'] = $row['lyTrans'];
-            foreach ($this->PLAN_SALES as $planID => $planVal) {
+            foreach ($PLAN_SALES as $planID => $planVal) {
                 if (strpos($planID, $row['catID'] . ',') === 0) {
                     $info['plan'] += $planVal;
                 }

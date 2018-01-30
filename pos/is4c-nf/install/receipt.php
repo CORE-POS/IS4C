@@ -67,6 +67,8 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     if (!$dbc->tableExists('rp_receipt_reorder_unions_g')) {
         unset($receipts[1]);
     }
+    // change connection back for saving further paramters
+    $dbc = Database::pDataConnect();
     echo $form->selectField('newReceipt', $receipts, 2);
     ?>
     <span class='noteTxt'><?php echo _('

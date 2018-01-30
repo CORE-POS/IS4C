@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -205,12 +205,12 @@ class WfcVcTask extends FannieTask
         }
 
         $coupons = array(
-            '0049999900142' => array('2017-01-01', '2017-01-15'),
-            '0049999900143' => array('2017-01-16', '2017-01-31'),
-            '0049999900144' => array('2017-02-01', '2017-02-15'),
-            '0049999900145' => array('2017-02-16', '2017-02-28'),
-            '0049999900146' => array('2017-03-01', '2017-03-15'),
-            '0049999900147' => array('2017-03-16', '2017-03-31'),
+            '0049999900142' => array('2017-10-01', '2017-10-15'),
+            '0049999900143' => array('2017-10-16', '2017-10-31'),
+            '0049999900144' => array('2017-11-01', '2017-11-15'),
+            '0049999900145' => array('2017-11-16', '2017-11-30'),
+            '0049999900146' => array('2017-12-01', '2017-12-15'),
+            '0049999900147' => array('2017-12-16', '2017-12-31'),
         );
         $today = new DateTime(date('Y-m-d'));
         $currentUPC = false;
@@ -227,17 +227,24 @@ class WfcVcTask extends FannieTask
             $dbc->query("UPDATE CustomerNotifications SET message='OAM' WHERE source='WFC.OAM'");
             // lookup OAM usage in the last month
             $usageP = $dbc->prepare("SELECT card_no 
-                                    FROM is4c_trans.dlog_90_view
+                                    FROM is4c_trans.houseCouponThisMonth
                                     WHERE upc = ?
-                                    GROUP BY card_no
-                                    HAVING SUM(total) <> 0");
+                                        AND quantity <> 0");
             $usageR = $dbc->execute($usageP, array($currentUPC));
             $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
             while ($row = $dbc->fetchRow($usageR)) {
                 $dbc->execute($upP, array($row['card_no']));
             }
+
+            // remove coupon from non-owner accounts
+            $dbc->query("UPDATE CustomerNotifications AS n
+                INNER JOIN custdata AS c ON n.cardNo=c.CardNo
+                SET n.message=''
+                WHERE n.source='WFC.OAM'
+                    AND c.Type <> 'PC'");
         }
 
+        /** friend coupon
         if ($today >= new DateTime('2017-04-01')) {
             $dbc->query("UPDATE CustomerNotifications SET message='' WHERE source='WFC.OAM'");
             $assignP = $dbc->prepare("UPDATE CustomerNotifications
@@ -261,6 +268,7 @@ class WfcVcTask extends FannieTask
                 }
             }
         }
+         */
 
         // grant coupon to all members
         /*

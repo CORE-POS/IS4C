@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class CwLoadDataPage extends FanniePage {
@@ -114,7 +114,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
     }
     else {
         function print_cli_help(){
-            echo "Usage: php CwReloadDataPage.php [-a || -m <model file>]\n";
+            echo "Usage: php CwReloadDataPage.php [-a || -x || -m <model file>]\n";
             echo "\t[ -d <year-month-day] || [-s <start month> <start year> [-e <end month> <end year>]]\n";
             echo "Specify a single date or a range of months.\n";
         }
@@ -201,6 +201,9 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
             case '--all':
                 $all = True;
                 break;
+            case '-x':
+                $all = 1;
+                break;
             case '-h':
             case '-?':
             case '--help':
@@ -235,6 +238,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
 
         $con = FannieDB::get($FANNIE_PLUGIN_SETTINGS['WarehouseDatabase']);
         foreach($models as $class){
+            if ($all === 1 && $class == "MemberSummaryModel") continue;
             echo "Reloading data for $class\n";
             if (!class_exists($class))
                 include(dirname(__FILE__).'/models/'.$class.'.php');

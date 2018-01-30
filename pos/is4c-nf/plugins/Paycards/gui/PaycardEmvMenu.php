@@ -41,7 +41,7 @@ class PaycardEmvMenu extends NoInputCorePage
         $this->conf = new PaycardConf();
         $choice = FormLib::get('selectlist', false);
         if ($choice !== false) {
-            $parser = new PaycardDatacapParser();
+            $parser = new PaycardDatacapParser($this->session);
             switch ($choice) {
                 case 'CAADMIN':
                     $this->change_page('PaycardEmvCaAdmin.php');
@@ -60,6 +60,7 @@ class PaycardEmvMenu extends NoInputCorePage
                 case 'PVGD':
                     $json = $parser->parse('PVDATACAP' . substr($choice, -2));
                     $this->change_page($json['main_frame']);
+                    return false;
                 case 'ACGD':
                 case 'AVGD':
                     $json = $parser->parse(substr($choice,0,2) . 'DATACAPGD');
@@ -97,6 +98,7 @@ class PaycardEmvMenu extends NoInputCorePage
                 $this->menu = array(
                     'EMV' => 'EMV Credit/Debit',
                     'CC' => 'Credit only',
+                    'DC' => 'Debit only',
                     'EBT' => 'EBT',
                     'GIFT' => 'Gift',
                 );

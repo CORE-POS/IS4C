@@ -27,9 +27,7 @@
    is much faster than SQLManager transfer
 */
 
-if (!isset($FANNIE_ROOT)) {
-    include(dirname(__FILE__).'/../../config.php');
-}
+include(dirname(__FILE__).'/../../config.php');
 
 $ret = 0;
 $output = array();
@@ -88,6 +86,9 @@ if ($ret > 0) {
     // Load the mysqldump from Fannie to each lane.
     $laneNumber=1;
     foreach ($FANNIE_LANES as $lane) {
+        if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+            continue;
+        }
         $ret = 0;
         $output = array();
         $lane_host = $lane['host'];

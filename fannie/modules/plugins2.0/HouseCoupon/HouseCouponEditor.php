@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -238,7 +238,7 @@ class HouseCouponEditor extends FanniePage
         $ret .= '<tr><th>ID</th><th>Name</th><th>Value</th>';
         $ret .= '<th>Begins</th><th>Expires</th></tr>';
         $model = new HouseCouponsModel($dbc);
-        foreach($model->find('coupID') as $obj) {
+        foreach($model->find('coupID', true) as $obj) {
             if (strstr($obj->startDate(), ' ')) {
                 $tmp = explode(' ', $obj->startDate());
                 $obj->startDate($tmp[0]);
@@ -427,6 +427,7 @@ class HouseCouponEditor extends FanniePage
             'FD'=>'Scaling Discount (Department)',
             'MD'=>'Capped Discount (Department)',
             'F'=>'Flat Discount',
+            'FC' => 'Flat Discount (Capped at amount due)',
             'PI'=>'Per-Item Discount',
             'PS'=>'Per-Set Discount',
             'BG'=>'BOGO (Buy one get one)',
@@ -438,6 +439,7 @@ class HouseCouponEditor extends FanniePage
             '%S'=>'Percent Discount (Department excludes sale items)',
             'PD'=>'Percent Discount (Anytime)',
             'AD'=>'All Discount (Department)',
+            'SC'=>'Store Credit (WFC; maybe temporary)',
         );
         if ($mType != '') {
             unset($dts['%']);

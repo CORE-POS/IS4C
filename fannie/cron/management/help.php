@@ -72,7 +72,7 @@ function checkBase64Encoded($encodedString) {
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
@@ -85,10 +85,11 @@ if ($fn == ''){
     return;
 }
 
+$path = realpath(__DIR__ . '/../');
 if ( checkBase64Encoded($fn) ) {
-    $fn = $FANNIE_ROOT.'cron/'.base64_decode($fn);
+    $fn = $path.'/cron/'.base64_decode($fn);
 } else {
-    $fn = $FANNIE_ROOT.'cron/'.urldecode($fn);
+    $fn = $path.'/cron/'.urldecode($fn);
 }
 
 if (!file_exists($fn) && !class_exists(basename($fn))){

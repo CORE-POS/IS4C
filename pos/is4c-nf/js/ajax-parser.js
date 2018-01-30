@@ -18,7 +18,9 @@ function parserError(xhr, statusText, err)
 
 function customerWindowHtml(selector, content)
 {
-    CustomerDisplay.updateCustomerDisplay(selector, content);
+    if (CustomerDisplay) {
+        CustomerDisplay.updateCustomerDisplay(selector, content);
+    }
 }
 
 function parserHandler(data)

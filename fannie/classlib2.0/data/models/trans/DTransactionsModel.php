@@ -30,7 +30,7 @@ class DTransactionsModel extends BasicModel
 
     protected $columns = array(
     'datetime'    => array('type'=>'DATETIME','index'=>True),
-    'store_id'    => array('type'=>'SMALLINT'),
+    'store_id'    => array('type'=>'SMALLINT', 'default'=>true),
     'register_no'    => array('type'=>'SMALLINT'),
     'emp_no'    => array('type'=>'SMALLINT'),
     'trans_no'    => array('type'=>'INT'),
@@ -369,6 +369,18 @@ class DTransactionsModel extends BasicModel
         }
         $start_ts = strtotime($start);
         $end_ts = strtotime($end);
+
+        /**
+         * Possible revision: throw an exception
+         * If the calling code is providing invalid date(s) and
+         * this method returns bigArchive or dlogBig, the calling
+         * code might very well issue a query that scans the entire
+         * archive table. Returning dlog/dtransactions instead minimizes
+         * the performance impact of this kind of mistake.
+         */
+        if ($start_ts === false || $end_ts === false || $start_ts < 0 || $end_ts < 0) {
+            return ($dlog) ? $FANNIE_TRANS_DB.$sep.'dlog' : $FANNIE_TRANS_DB.$sep.'dtransactions';
+        }
     
         // today. return dlog/dtrans
         if (date('Y-m-d',$start_ts) == date('Y-m-d')) {

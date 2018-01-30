@@ -3061,10 +3061,10 @@ error_reporting(E_ERROR | E_WARNING);
 include(dirname(__FILE__) . '/../config.php');
 //require('../src/SQLManager.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('cron_msg')) {
-    include($FANNIE_ROOT.'src/cron_msg.php');
+    include(__DIR__ . '/../src/cron_msg.php');
 }
 
 /* No limit on PHP execution time.
@@ -3098,8 +3098,8 @@ $dryRun = 0;
  * as long as fannie/logs is writeableC.
  */
 if (!is_writable('../logs')) {
-    $message = $FANNIE_ROOT.
-    'logs must be writable by the user running this program.';
+    $message = realpath(__DIR__ . '/../') .
+    '/logs must be writable by the user running this program.';
     dieHere($message, $dieMail);
 }
 
@@ -3199,7 +3199,7 @@ $memberCardField = "member_card_number_1";
 $is4cMin = 470;
 $is4cMax = 99900;
  */
-$civiConfig = $FANNIE_ROOT . 'config_civicrm.php';
+$civiConfig = __DIR__ . '/../config_civicrm.php';
 if (!is_readable($civiConfig)) {
     $message = "The file $civiConfig which defines database connection " .
         "and other values needed by this program doesn't exist.\n" .

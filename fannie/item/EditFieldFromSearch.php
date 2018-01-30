@@ -23,7 +23,7 @@
 
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class EditFieldFromSearch extends FannieRESTfulPage
@@ -55,7 +55,7 @@ class EditFieldFromSearch extends FannieRESTfulPage
         }
 
         $args = array($this->value);
-        list($inStr, $args) = $this->connection->safeInClause($this->upcs, $args);
+        list($inStr, $args) = $this->connection->safeInClause($this->upc, $args);
         $query = "UPDATE products SET " 
             . $this->connection->identifierEscape($this->field) . "=?,
                 modified=" . $this->connection->now() . "

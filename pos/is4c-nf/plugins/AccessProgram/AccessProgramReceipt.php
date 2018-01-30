@@ -101,6 +101,9 @@ class AccessProgramReceipt extends ReceiptMessage
         $db_name = CoreLocal::get('ServerOpDB');
         $ret = '';
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            return $ret;
+        }
         $query = 'SELECT street, zip, phone, email_1, email_2
                   FROM ' . $db_name . $dbc->sep() . 'meminfo
                   WHERE card_no = ' . ((int)CoreLocal::get('memberID'));

@@ -24,7 +24,10 @@ using System;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using CustomForms;
+
+[assembly: AssemblyVersion("1.0.*")]
 
 namespace CustomUDP {
 

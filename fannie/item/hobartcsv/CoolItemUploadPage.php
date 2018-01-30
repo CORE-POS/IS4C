@@ -23,7 +23,7 @@
 
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
@@ -100,7 +100,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $scale_info = array(
                 'RecordType' => 'ChangeOneItem',
-                'PLU' => substr($upc, 3, 4),
+                'PLU' => COREPOS\Fannie\API\item\ServiceScaleLib::upcToPLU($upc),
                 'Description' => $itemdesc,
                 'Price' => $price,
                 'Type' => $item['weight'] == 0 ? 'Random Weight' : 'Fixed Weight',

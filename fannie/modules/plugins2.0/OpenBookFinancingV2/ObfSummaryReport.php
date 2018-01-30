@@ -23,10 +23,10 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
-class ObfSummaryReport extends ObfWeeklyReport
+class ObfSummaryReport extends ObfWeeklyReportV2
 {
     protected $sortable = false;
     protected $no_sort_but_style = true;
@@ -35,20 +35,15 @@ class ObfSummaryReport extends ObfWeeklyReport
     public $discoverable = false;
 
     protected $report_headers = array(
-        array('', 'Last Year', 'Plan Goal', 'Trend', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Last Year', 'Plan Goal', 'Trend', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Last Year', 'Plan Goal', 'Trend', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Last Year', 'Plan Goal', 'Trend', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Last Year', 'Plan Goal', 'Trend', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Last Year', 'Plan Goal', 'Trend', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
-        array('', 'Current Year', 'Last Year', '', '', '', '', '', '', ''),
+        array('', 'Last Year', 'Plan Goal', 'Trend', 'Forecast', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', 'Trend', 'Forecast', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', 'Trend', 'Forecast', 'Actual', '% Growth', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Current Year', 'Last Year', '', '', '', '', '', ''),
     );
 
     protected $class_lib = 'ObfLibV2';
 
-    protected $OU_START = 110;
+    protected $OU_START = 162;
 
     protected $PLAN_SALES = array(
         '1,6' => 51193.05,      // Hillside Produce
@@ -77,6 +72,60 @@ class ObfSummaryReport extends ObfWeeklyReport
         '9,17' => 8308.91,
     );
 
+    protected $PLAN_SALES_Q1_2018 = array(
+        '1,6' => 53904.29,      // Hillside Produce
+        '2,10' => 12187.19,     // Hillside Deli
+        '2,11' => 33128.32,
+        '2,16' => 13505.62,
+        '3,1' => 25019.71,      // Hillside Grocery
+        '3,4' => 60877.32,
+        '3,5' => 23046.19,
+        '3,7' => 192.84,
+        '3,8' => 17028.21,
+        '3,9' => 2657.68,
+        '3,13' => 14635.17,
+        '3,17' => 25688.49,
+        '7,6' => 19084.56,      // Denfeld Produce
+        '8,10' => 4516.25,      // Denfeld Deli
+        '8,11' => 13618.01,
+        '8,16' => 5318.20,
+        '9,1' => 8168.40,       // Denfeld Grocery
+        '9,4' => 24552.79,
+        '9,5' => 8522.84,
+        '9,7' => 82.03,
+        '9,8' => 5726.79,
+        '9,9' => 1002.57,
+        '9,13' => 4636.12,
+        '9,17' => 8414.48,
+    );
+
+    protected $PLAN_SALES_Q2_2018 = array(
+        '1,6' => 51031.00,      // Hillside Produce
+        '2,10' => 11448.32,     // Hillside Deli
+        '2,11' => 31119.86,
+        '2,16' => 12686.82,
+        '3,1' => 26430.32,      // Hillside Grocery
+        '3,4' => 64309.57,
+        '3,5' => 24345.53,
+        '3,7' => 203.71,
+        '3,8' => 17988.26,
+        '3,9' => 2807.52,
+        '3,13' => 15460.30,
+        '3,17' => 27136.80,
+        '7,6' => 17975.00,      // Denfeld Produce
+        '8,10' => 4383.48,      // Denfeld Deli
+        '8,11' => 13217.67,
+        '8,16' => 5161.85,
+        '9,1' => 8470.24,       // Denfeld Grocery
+        '9,4' => 25460.06,
+        '9,5' => 8837.77,
+        '9,7' => 85.06,
+        '9,8' => 5938.41,
+        '9,9' => 1039.62,
+        '9,13' => 4807.43,
+        '9,17' => 8725.41,
+    );
+
     private $laborPercent = array(
         1 => 8.31,
         2 => 22.41,
@@ -90,6 +139,17 @@ class ObfSummaryReport extends ObfWeeklyReport
         10 => 4.43,
         11 => 0.53,
     );
+
+    private function getPlanSales($weekID)
+    {
+        if ($weekID >= 175) {
+            return $this->PLAN_SALES_Q2_2018;
+        } elseif ($weekID >= 162) {
+            return $this->PLAN_SALES_Q1_2018;
+        } else {
+            return $this->PLAN_SALES;
+        }
+    }
 
     public function preprocess()
     {
@@ -110,6 +170,8 @@ class ObfSummaryReport extends ObfWeeklyReport
 
         $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());
+
+        $PLAN_SALES = $this->getPlanSales($this->form->weekID);
 
         /**
            Timestamps for the start and end of
@@ -162,6 +224,9 @@ class ObfSummaryReport extends ObfWeeklyReport
             'wages' => 0,
             'trans' => 0,
             'lyTrans' => 0,
+            'forecast' => 0,
+            'trend' => 0,
+            'ou' => 0,
         );
 
         $this->prepareStatements($dbc);
@@ -199,7 +264,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 */
                 while ($row = $dbc->fetch_row($salesR)) {
                     $projID = $category->obfCategoryID() . ',' . $row['superID'];
-                    $proj = $this->PLAN_SALES[$projID];
+                    $proj = $PLAN_SALES[$projID];
                     $trend1 = $this->calculateTrend($dbc, $category->obfCategoryID(), $row['superID']);
                     $dept_trend += $trend1;
                     $total_sales->trend += $trend1;
@@ -210,7 +275,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     if ($quarter === false) {
                         $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                     }
-                    $ou_weeks = ($week->obfWeekID() - $this->OU_START) + 1;
+                    $ou_weeks = ($week->obfWeekID() - $this->getOuStart($week->obfWeekID())) + 1;
                     $qtd_dept_plan += ($proj * $ou_weeks);
                     $qtd_dept_sales += $quarter['actual'];
                     $total_trans->quarterThisYear = $quarter['trans'];
@@ -234,12 +299,17 @@ class ObfSummaryReport extends ObfWeeklyReport
                     $qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
                 }
 
+                $labor->obfCategoryID($category->obfCategoryID());
+                $labor->load();
+                $total_sales->forecast += $labor->forecastSales();
+
                 /** total sales for the category **/
                 $record = array(
                     $category->name() . ' Sales',
                     number_format($sum[1], 0),
                     number_format($dept_proj, 0),
                     number_format($dept_trend, 0),
+                    number_format($labor->forecastSales(), 0),
                     number_format($sum[0], 0),
                     sprintf('%.2f%%', $this->percentGrowth($sum[0], $sum[1])),
                     number_format($sum[0] - $dept_proj, 0),
@@ -253,8 +323,6 @@ class ObfSummaryReport extends ObfWeeklyReport
                 /**
                   Now labor values based on sales calculationsabove
                 */
-                $labor->obfCategoryID($category->obfCategoryID());
-                $labor->load();
                 // use SPLH instead of pre-allocated
                 list($proj_hours, $trend_hours) = $this->projectHours($labor->splhTarget(), $dept_proj, $dept_trend);
                 // approximate wage to convert hours into dollars
@@ -292,6 +360,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     '',
                     number_format($dept_proj / $proj_hours, 2),
                     number_format($dept_trend / $trend_hours, 2),
+                    '',
                     number_format($labor->hours() == 0 ? 0 : $sum[0] / $labor->hours(), 2),
                     sprintf('%.2f%%', $this->percentGrowth(($labor->hours() == 0 ? 0 : $sum[0]/$labor->hours()), $dept_proj/$proj_hours)),
                     number_format(($labor->hours() == 0 ? 0 : $sum[0]/$labor->hours()) - ($dept_proj / $proj_hours), 2),
@@ -305,6 +374,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     'Labor % of Sales',
                     '',
                     sprintf('%.2f%%', $this->laborPercent[$category->obfCategoryID()]),
+                    '',
                     '',
                     sprintf('%.2f%%', $labor->wages() / $sum[0] * 100),
                     '',
@@ -360,6 +430,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     '',
                     sprintf('%.2f', $total_sales->projected / $proj_hours),
                     sprintf('%.2f', $total_sales->trend / $trend_hours),
+                    '',
                     number_format($labor->hours() == 0 ? 0 : $total_sales->thisYear / $labor->hours(), 2),
                     '',
                     number_format(($labor->hours() == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
@@ -373,6 +444,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                     'Labor % of Sales',
                     '',
                     sprintf('%.2f%%', $this->laborPercent[$c->obfCategoryID()]),
+                    '',
                     '',
                     sprintf('%.2f%%', $labor->wages() / $total_sales->thisYear * 100),
                     '',
@@ -403,6 +475,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 number_format($total_sales->lastYear, 0),
                 number_format($total_sales->projected, 0),
                 number_format($total_sales->trend, 0),
+                number_format($total_sales->forecast, 0),
                 number_format($total_sales->thisYear, 0),
                 sprintf('%.2f%%', $this->percentGrowth($total_sales->thisYear, $total_sales->lastYear)),
                 number_format($total_sales->thisYear - $total_sales->projected, 0),
@@ -419,6 +492,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 '',
                 sprintf('%.2f', $total_sales->projected / $total_hours->projected),
                 sprintf('%.2f', $total_sales->trend / $total_hours->trend),
+                '',
                 number_format($total_hours->actual == 0 ? 0 : $total_sales->thisYear / $total_hours->actual, 2),
                 '',
                 number_format(($total_hours->actual == 0 ? 0 : $total_sales->thisYear/$total_hours->actual) - ($total_sales->projected/$total_hours->projected), 2),
@@ -432,6 +506,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 'Labor % of Sales',
                 '',
                 sprintf('%.2f%%', $plan_wages / $total_sales->projected * 100),
+                '',
                 '',
                 sprintf('%.2f%%', ($total_wages->actual / $total_sales->thisYear) * 100),
                 '',
@@ -447,6 +522,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 $total_trans->lastYear,
                 '',
                 '',
+                '',
                 $total_trans->thisYear,
                 '',
                 '',
@@ -459,6 +535,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             $data[] = array(
                 'Basket Size',
                 sprintf('%.2f', $total_sales->lastYear / $total_trans->lastYear),
+                '',
                 '',
                 '',
                 sprintf('%.2f', $total_sales->thisYear / $total_trans->thisYear),
@@ -479,6 +556,9 @@ class ObfSummaryReport extends ObfWeeklyReport
             $org['wages'] += $total_wages->actual;
             $org['trans'] += $total_trans->thisYear;
             $org['lyTrans'] += $total_trans->lastYear;
+            $org['forecast'] += $total_sales->forecast;
+            $org['trend'] += $total_sales->trend;
+            $org['ou'] += $qtd_sales_ou;
 
             if (count($this->colors) > 1) {
                 array_shift($this->colors);
@@ -518,6 +598,7 @@ class ObfSummaryReport extends ObfWeeklyReport
                 '',
                 sprintf('%.2f', $org['projSales'] / $proj_hours),
                 sprintf('%.2f', $org['trendSales'] / $proj_hours),
+                '',
                 number_format($labor->hours() == 0 ? 0 : ($org['sales']) / $labor->hours(), 2),
                 '',
                 number_format(($labor->hours() == 0 ? 0 : ($org['sales']/$labor->hours()) - ($org['projSales'] / $proj_hours)), 2),
@@ -529,6 +610,7 @@ class ObfSummaryReport extends ObfWeeklyReport
 
             $data[] = array(
                 'Labor % of Sales',
+                '',
                 '',
                 '',
                 '',
@@ -558,11 +640,12 @@ class ObfSummaryReport extends ObfWeeklyReport
             'Organization Sales',
             number_format($org['lastYear'], 0),
             number_format($org['projSales'], 0),
-            '',
+            number_format($org['trend'], 0),
+            number_format($org['forecast'], 0),
             number_format($org['sales'], 0),
             sprintf('%.2f%%', $this->percentGrowth($org['sales'], $org['lastYear'])),
             number_format(($org['sales']) - ($org['projSales']), 0),
-            '',
+            number_format($org['ou']),
             'meta' => FannieReportPage::META_COLOR | FannieReportPage::META_BOLD,
             'meta_background' => $this->colors[0],
             'meta_foreground' => 'black',
@@ -576,6 +659,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             'SLPH per Hour',
             '',
             sprintf('%.2f', ($org['projSales']) / ($org['projHours'])),
+            '',
             '',
             number_format($total_hours->actual == 0 ? 0 : ($org['sales']) / ($org['hours']), 2),
             '',
@@ -591,6 +675,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             '',
             '16.00%',
             '',
+            '',
             sprintf('%.2f%%', $org['wages'] / $org['sales'] * 100),
             '',
             '',
@@ -603,6 +688,7 @@ class ObfSummaryReport extends ObfWeeklyReport
         $data[] = array(
             'Transactions',
             $org['lyTrans'],
+            '',
             '',
             '',
             $org['trans'],
@@ -619,6 +705,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             sprintf('%.2f', $org['lastYear'] / $org['lyTrans']),
             '',
             '',
+            '',
             sprintf('%.2f', $org['sales'] / $org['trans']),
             '',
             '',
@@ -632,14 +719,14 @@ class ObfSummaryReport extends ObfWeeklyReport
             array_shift($this->colors);
         }
 
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+
         $owners = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly);
-        unset($owners[8]);
-        unset($owners[9]);
-        $data[] = $owners;
+        $data[] = array($owners[0], $owners[1], $owners[2], '', '', '', '', '', '', 
+            'meta' => $owners['meta'], 'meta_background' => $owners['meta_background']);
         $owners = $this->ownershipThisYear($dbc, $end_ts);
-        unset($owners[8]);
-        unset($owners[9]);
-        $data[] = $owners;
+        $data[] = array($owners[0], $owners[1], $owners[2], '', '', '', '', '', '', 
+            'meta' => $owners['meta'], 'meta_background' => $owners['meta_background']);
 
         $json = $this->chartData($dbc, $this->form->weekID);
         $this->addOnloadCommand("obfSummary.drawChart('" . json_encode($json) . "')");
@@ -652,47 +739,48 @@ class ObfSummaryReport extends ObfWeeklyReport
         $begin = $weekID - 12;
         $json = array(
             'labels' => array(),
-            'all' => array(),
-            'hillside' => array(),
-            'denfeld' => array(),
-            'hdeli' => array(),
-            'ddeli' => array(),
-            'hmerch' => array(),
-            'dmerch' => array(),
-            'hproduce' => array(),
-            'dproduce' => array(),
+            'sales' => array(),
+            'lySales' => array(),
+            'hours' => array(),
+            'lyHours' => array(),
+            'splh' => array(),
+            'lySplh' => array(),
         );
 
+        $hourP = $dbc->prepare("SELECT SUM(hours) FROM ObfLabor WHERE obfWeekID=?");
+
         $infoP = $dbc->prepare("
-            SELECT o.obfCategoryID,
+            SELECT o.obfWeekID,
                 SUM(o.actualSales) AS sales,
+                SUM(o.lastYearSales) AS lySales,
+                MAX(w.startDate) AS startDate,
                 MAX(w.endDate) AS endDate
             FROM ObfSalesCache AS o
                 LEFT JOIN ObfWeeks AS w ON o.obfWeekID=w.obfWeekID
             WHERE o.obfWeekID BETWEEN ? AND ?
-            GROUP BY o.obfCategoryID,
-                o.obfWeekID        
+            GROUP BY o.obfWeekID
             ORDER BY o.obfWeekID");
         $infoR = $dbc->execute($infoP, array($begin, $weekID));
         while ($infoW = $dbc->fetchRow($infoR)) {
-            if (!in_array($infoW['endDate'], $json['labels'])) {
-                $json['labels'][] = $infoW['endDate'];
+            $dstr = date('m/d', strtotime($infoW['startDate']))
+                . ' - '
+                . date('m/d', strtotime($infoW['endDate']));
+            if (!in_array($dstr, $json['labels'])) {
+                $json['labels'][] = $dstr;
             }
-            switch ($infoW['obfCategoryID']) {
-                case 1: $json['hproduce'][] = $infoW['sales']; break;
-                case 2: $json['hdeli'][] = $infoW['sales']; break;
-                case 3: $json['hmerch'][] = $infoW['sales']; break;
-                case 7: $json['dproduce'][] = $infoW['sales']; break;
-                case 8: $json['ddeli'][] = $infoW['sales']; break;
-                case 9: $json['dmerch'][] = $infoW['sales']; break;
+            if ($infoW['sales'] > 0) {
+                $json['sales'][] = $infoW['sales'];
             }
-        }
-        for ($i=0; $i<count($json['hdeli']);$i++) {
-            $hillside = $json['hdeli'][$i] + $json['hmerch'][$i] + $json['hproduce'][$i];
-            $denfeld = $json['ddeli'][$i] + $json['dmerch'][$i] + $json['dproduce'][$i];
-            $json['hillside'][] = $hillside;
-            $json['denfeld'][] = $denfeld;
-            $json['all'][] = $hillside + $denfeld;
+            $json['lySales'][] = $infoW['lySales'];
+
+            $hours = $dbc->getValue($hourP, array($infoW['obfWeekID']));
+            $lyHours = $dbc->getValue($hourP, array($infoW['obfWeekID'] - 52));
+            if ($hours > 0) {
+                $json['hours'][] = $hours;
+                $json['splh'][] = $hours == 0 ? 0 : $infoW['sales'] / $hours;
+            }
+            $json['lyHours'][] = $lyHours;
+            $json['lySplh'][] = $lyHours == 0 ? 0 : $infoW['lySales'] / $lyHours;
         }
 
         return $json;
@@ -735,6 +823,7 @@ class ObfSummaryReport extends ObfWeeklyReport
             sprintf('%.0f', $totalLY),
             '',
             '',
+            '',
             sprintf('%.0f', $total),
             sprintf('%.2f%%', $this->percentGrowth($total, $totalLY)),
             '',
@@ -744,76 +833,6 @@ class ObfSummaryReport extends ObfWeeklyReport
             'meta_foreground' => 'black',
         );
     }
-
-    private function getOtherStore($storeID, $weekID)
-    {
-        $dbc = $this->connection;
-        $conf = $this->config->get('PLUGIN_SETTINGS');
-        $dbc->selectDB($conf['ObfDatabaseV2']);
-        /**
-          Get sales, plan, and transactions from cache
-          Loops through categories to project hours for
-          each individual category based on sales
-        */
-        $query = $dbc->prepare('
-            SELECT SUM(actualSales) AS actual,
-                SUM(lastYearSales) AS lastYear,
-                MAX(transactions) AS trans,
-                MAX(lastYearTransactions) AS lyTrans,
-                SUM(lastYearSales * (1+s.growthTarget)) AS plan,
-                s.obfCategoryID AS catID
-            FROM ObfSalesCache AS s
-                INNER JOIN ObfCategories AS c ON s.obfCategoryID=c.obfCategoryID
-            WHERE s.obfWeekID=?
-                AND c.storeID=?
-            GROUP BY s.obfCategoryID');
-        $args = array($weekID, $storeID==1?2:1);
-        $info = array('actual'=>0, 'lastYear'=>0, 'trans'=>0, 'lyTrans'=>0, 'plan'=>0);
-        $res = $dbc->execute($query, $args);
-        $cat = new ObfCategoriesModelV2($dbc);
-        $plan = array();
-        while ($row = $dbc->fetchRow($res)) {
-            $info['actual'] += $row['actual'];
-            $info['lastYear'] += $row['lastYear'];
-            $info['trans'] = $row['trans'];
-            $info['lyTrans'] = $row['lyTrans'];
-            $info['plan'] += $row['plan'];
-            $cat->obfCategoryID($row['catID']);
-            $cat->load();
-            $plan[$row['catID']] = $this->projectHours($cat->salesPerLaborHourTarget(), $row['plan'], $row['plan']);
-        }
-
-        /**
-          Get additional hours & wages from non-inventory labor
-          Plan hours is built from hours projected in the previous loop
-          If plan hours was NOT previously calculated it means the category has
-          no sales and should use total store sales for projecting instead
-        */
-        $extra = $dbc->prepare('
-            SELECT hours,
-                l.obfCategoryID AS catID
-            FROM ObfLabor AS l
-                INNER JOIN ObfCategories AS c ON l.obfCategoryID=c.obfCategoryID
-            WHERE l.obfWeekID=?
-                AND c.storeID=?');
-        $info['hours'] = 0;
-        $info['planHours'] = 0;
-        $res = $dbc->execute($extra, $args);
-        while ($row = $dbc->fetchRow($res)) {
-            $info['hours'] += $row['hours'];
-            if (isset($plan[$row['catID']])) {
-                $info['planHours'] += $plan[$row['catID']][0];
-            } else {
-                $cat->obfCategoryID($row['catID']);
-                $cat->load();
-                list($tmpP, $tmpT) = $this->projectHours($cat->salesPerLaborHourTarget(), $info['plan'], $info['plan']);
-                $info['planHours'] += $tmpP;
-            }
-        }
-
-        return $info;
-    }
-
 }
 
 FannieDispatch::conditionalExec();

@@ -27,7 +27,7 @@
 /* configuration for your module - Important */
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class RecalculateVendorSRPs extends FannieRESTfulPage
@@ -145,7 +145,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
             <?php echo $opts; ?></select>
         <button type=submit class="btn btn-default">Recalculate</button>
         <button type="button" onclick="location='VendorPricingIndex.php';return false;"
-            class="btn btn-default">Back</button>
+            class="btn btn-default">Back to Vendor Pricing</button>
         </p>
         </form>
         <?php

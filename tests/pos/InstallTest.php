@@ -60,7 +60,6 @@ class InstallTest extends PHPUnit_Framework_TestCase
             'MasterSuperDepts',
             'parameters',
             'products',
-            'subdepts',
             'tenders',
         );
         $dbc = Database::pDataConnect();

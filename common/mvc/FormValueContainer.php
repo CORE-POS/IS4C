@@ -27,15 +27,8 @@ class FormValueContainer extends ValueContainer
 {
     public function __construct()
     {
-        foreach ($_POST as $key => $value)
-        {
-            $this->__set($key, $value);
-        }
-
-        foreach ($_GET as $key => $value)
-        {
-            $this->__set($key, $value);
-        }
+        $this->setMany($_POST);
+        $this->setMany($_GET);
     }
 }
 

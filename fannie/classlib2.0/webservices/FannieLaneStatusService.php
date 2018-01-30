@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\webservices;
+use \Exception;
 
 class FannieLaneStatusService extends \COREPOS\Fannie\API\webservices\FannieWebService
 {
@@ -52,7 +53,12 @@ class FannieLaneStatusService extends \COREPOS\Fannie\API\webservices\FannieWebS
 
         $ret = array_map(function($f) use ($check_upc) {
             $lane = array();
-            $sql = new \SQLManager($f['host'],$f['type'],$f['op'],$f['user'],$f['pw']);
+            try {
+                $sql = new \SQLManager($f['host'],$f['type'],$f['op'],$f['user'],$f['pw']);
+            } catch (Exception $ex) {
+                $lane['online'] = false;
+                return $lane;
+            }
             if ($sql->isConnected($f['op'])) {
                 $lane['online'] = true;
                 if ($check_upc) {

@@ -83,6 +83,9 @@ class FannieDispatch
         if (is_a($obj, 'FannieReportPage')) {
             $dbc = FannieDB::getReadOnly($op_db);
         }
+        if ($obj->default_db) {
+            $dbc = FannieDB::get($obj->default_db);
+        }
         $obj->setConnection($dbc);
         $obj = self::twig($obj);
         $obj->draw_page();

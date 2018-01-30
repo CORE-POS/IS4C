@@ -30,7 +30,7 @@
 */
 
 include(dirname(__FILE__) . '/../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 
 class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool 
 {
@@ -87,10 +87,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $this->title = "Fannie : Today's $this->name Sales";
         $this->header = '';
 
-        $this->addScript($this->config->get('URL').'src/javascript/d3.js/d3.v3.min.js');
-        $this->addScript('../../src/javascript/d3.js/charts/singleline/singleline.js');
-        $this->addCssFile('../../src/javascript/d3.js/charts/singleline/singleline.css');
-        $this->addScript('salesToday.js');
+        $this->addScript('../../src/javascript/Chart.min.js');
+        $this->addScript('salesToday.js?date=20171121');
 
         return True;
 
@@ -174,9 +172,9 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         }
         echo "</select></div>";
 
-        echo '<div id="chartDiv"></div>';
+        echo '<div class="row"><div id="newChartDiv" class="col-sm-10 col-sm-offset-1"><canvas id="newChartCanvas"></canvas></div></div>';
 
-        $this->addOnloadCommand('salesToday.graphData();');
+        $this->addOnloadCommand('salesToday.chartData();');
         $this->addOnloadCommand("\$('select').change(salesToday.reloadGraph);\n");
 
         echo '</div>';

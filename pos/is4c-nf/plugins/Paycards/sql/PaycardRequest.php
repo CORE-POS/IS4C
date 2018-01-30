@@ -177,22 +177,37 @@ class PaycardRequest
         $this->dbTrans->query($upQ);
     }
 
-    public function updateCardInfo($pan, $name, $issuer)
+    private function entryMethodID($entryMethod)
+    {
+        switch (strtoupper($entryMethod)) {
+            case 'CHIP':
+                return -1;
+            case 'SWIPED':
+                return 0;
+            default:
+                return ($this->conf->get("paycard_keyed")===true ? 1 : 0);
+        }
+    }
+
+    public function updateCardInfo($pan, $name, $issuer, $entryMethod)
     {
         $this->setPAN($pan);
         $this->cardholder = $name;
         $this->issuer = $issuer;
+        $this->manual = $this->entryMethodID($entryMethod);
         $upP = $this->dbTrans->prepare('
             UPDATE PaycardTransactions
             SET PAN=?,
                 issuer=?,
-                name=?
+                name=?,
+                manual=?
             WHERE paycardTransactionID=?
         ');
         $this->dbTrans->execute($upP, array(
             $this->pan,
             $this->issuer,
             $this->cardholder,
+            $this->manual,
             $this->last_paycard_transaction_id,
         ));
     }

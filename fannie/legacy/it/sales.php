@@ -1,7 +1,7 @@
 <?php
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+require(__DIR__ . '/../../src/SQLManager.php');
 include('../db.php');
 
 if (isset($_GET['excel'])){

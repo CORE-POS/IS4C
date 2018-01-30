@@ -1,7 +1,7 @@
 <?php
 
 include(dirname(__FILE__) . '/../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['loadID'])){
@@ -115,7 +115,7 @@ if ($errors == "" && $query != ""){
 else {
     $header = "Reporting for DBAs";
     $page_title = "Fannie :: Skip learning PHP/HTML";
-    include($FANNIE_ROOT.'src/header.html');
+    include(__DIR__ . '/../../src/header.html');
 
     if (!empty($errors))
         echo "<blockquote>".$errors."</blockquote>";
@@ -171,6 +171,6 @@ else {
         <input type="submit" value="Run Report" />
         </form>';
 
-    include($FANNIE_ROOT.'src/footer.html');
+    include(__DIR__ . '/../../src/footer.html');
 }
 

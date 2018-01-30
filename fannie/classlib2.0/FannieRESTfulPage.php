@@ -92,6 +92,8 @@ class FannieRESTfulPage extends FanniePage
 
     protected $__route_stem = 'unknownRequest';
 
+    protected $debug_routing;
+
     protected $form;
 
     protected $routing_trait;
@@ -262,8 +264,26 @@ class FannieRESTfulPage extends FanniePage
     protected function unknownRequestHandler()
     {
         echo '<html><head><title>HTTP 400 - Bad Request</title>
-            <body><h1>HTTP 400 - Bad Request</body></html>';
+            <body><h1>HTTP 400 - Bad Request</h1>
+            ' . ($this->debug_routing 
+                    ? '<p>Debug: ' . $this->__route_stem . '</p>'
+                    : '') . '
+            </body></html>';
         return False;
+    }
+
+    /**
+     * Inject current route name into the response if
+     * debugging is enabled then JSON encode the response
+     * @param [array] $json - the response
+     * @return [string] JSON-encoded response
+     */
+    protected function debugJSON($json)
+    {
+        if ($this->debug_routing) {
+            $json['debug_route'] = $this->__route_stem;
+        }
+        return json_encode($json);
     }
 
     public function bodyContent()
@@ -272,12 +292,13 @@ class FannieRESTfulPage extends FanniePage
 
         $func = $this->__route_stem.'View';
         $old_func = $this->__route_stem.'_view';
+        $debug = $this->debug_routing ? '<p>Debug: ' . $this->__route_stem  . '</p>' : '';
         if (method_exists($this, $func)) {
-            return $this->$func();
+            return $debug . $this->$func();
         } elseif (method_exists($this, $old_func)) {
-            return $this->$old_func();
+            return $debug . $this->$old_func();
         } else {
-            return $this->unknownRequestView();
+            return $debug . $this->unknownRequestView();
         }
     }
 

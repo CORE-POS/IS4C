@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -122,9 +122,8 @@ class GumPromissoryPage extends FannieRESTfulPage
 
     public function get_id_pdf_handler()
     {
-        global $FANNIE_ROOT;
         if (!class_exists('FPDF')) {
-            include($FANNIE_ROOT.'src/fpdf/fpdf.php');
+            include(__DIR__ . '/../../../src/fpdf/fpdf.php');
             define('FPDF_FONTPATH','font/');
         }
 

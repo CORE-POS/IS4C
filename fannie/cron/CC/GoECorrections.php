@@ -28,20 +28,20 @@ if (!chdir(dirname(__FILE__))){
 
 include('../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('xmlData')) {
-    include($FANNIE_ROOT.'src/xmlData.php');
+    include(__DIR__ . '/../../src/xmlData.php');
 }
-if (file_exists($FANNIE_ROOT.'src/Credentials/GoE.wfc.php')) {
-    require_once($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
+if (file_exists(__DIR__ . '/../../src/Credentials/GoE.wfc.php')) {
+    require_once(__DIR__ . '/../../src/Credentials/GoE.wfc.php');
 } else {
     // cannot continue
     echo 'missing credentials file';
     return;
 }
 if (!function_exists('getFailedTrans')) {
-    include($FANNIE_ROOT.'src/fetchLib.php');
+    include(__DIR__ . '/../../src/fetchLib.php');
 }
 
 /* HELP

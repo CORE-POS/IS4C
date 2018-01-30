@@ -23,7 +23,7 @@
 
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class AdvancedItemSearch extends FannieRESTfulPage
@@ -196,13 +196,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     $search->where .= ' AND p.upc LIKE ? ';
                     $search->args[] = '%' . $form->brand . '%';
                 } else {
-                    $search->where .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ? OR v.brand LIKE ?) ';
+                    $search->where .= ' AND (p.brand LIKE ? OR v.brand LIKE ?) ';
                     $search->args[] = '%' . $form->brand . '%';
                     $search->args[] = '%' . $form->brand . '%';
-                    $search->args[] = '%' . $form->brand . '%';
-                    if (!strstr($search->from, 'prodExtra')) {
-                        $search->from .= ' LEFT JOIN prodExtra AS x ON p.upc=x.upc ';
-                    }
                     if (!strstr($search->from, 'vendorItems')) {
                         $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
                     }
@@ -551,10 +547,14 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function searchLocation($search, $form)
     {
         if ($form->location !== '') {
-            if ($form->location == '1') {
-                $search->from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
+            if ($form->location == 0) {
+                $search->where .= ' AND p.upc NOT IN (SELECT DISTINCT upc FROM FloorSectionProductMap) ';
+            } elseif ($form->location == -1) {
+                $search->where .= ' AND p.upc IN (SELECT DISTINCT upc FROM FloorSectionProductMap) ';
             } else {
-                $search->where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
+                $search->from .= ' INNER JOIN FloorSectionProductMap AS y ON p.upc=y.upc ';
+                $search->where .= ' AND y.floorSectionID=? ';
+                $search->args[] = $form->location;
             }
         }
 
@@ -719,17 +719,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function filterMovement($items, $form)
     {
         if ($form->soldOp !== '') {
-            $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$form->soldOp-1, date('Y')));
+            list($days, $store) = explode(':', $form->soldOp);
+            $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$days-1, date('Y')));
             $movementEnd = date('Y-m-d', strtotime('yesterday'));
             $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
 
             $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
             list($upc_in, $args) = $this->connection->safeInClause(array_keys($items), $args);
+            $args[] = $store;
 
             $query = "SELECT t.upc
                       FROM $dlog AS t
                       WHERE tdate BETWEEN ? AND ?
                         AND t.upc IN ($upc_in)
+                        AND " . DTrans::isStoreID($store, 't') . "
                         AND t.charflag <> 'SO'
                       GROUP BY t.upc
                       HAVING SUM(total) <> 0";
@@ -976,7 +979,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $url = $this->config->get('URL');
         $today = date('Y-m-d');
 
-        $this->addScript('search.js');
+        $this->addScript('search.js?date=20171206');
         $this->addScript('autocomplete.js');
         $this->addOnloadCommand("bindAutoComplete('#brand-field', '../ws/', 'brand');\n");
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');
@@ -1015,9 +1018,33 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $model = new TaxRatesModel($dbc);
         $taxOpts = $model->toOptions();
 
+        $model = new FloorSectionsModel($dbc);
+        $floorOpts = $model->toOptions();
+
+        $stores = array();
+        $any = '';
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $any = '(any)';
+            $model = new StoresModel($dbc);
+            $model->hasOwnItems(1);
+            foreach ($model->find() as $obj) {
+                $stores[$obj->storeID()] = $obj->description();
+            }
+        }
+        $soldOpts = '';
+        foreach (array(7, 30, 90) as $days) {
+            $soldOpts .= "<option value=\"{$days}:0\">Last {$days} days {$any}</option>";
+            foreach ($stores as $k => $v) {
+                $soldOpts .= "<option value=\"{$days}:{$k}\">Last {$days} days ({$v})</option>";
+            }
+        }
+
         $model = new BatchTypeModel($dbc);
-        $model->discType(0, '<>');
+        $model->discType(0, '>');
         $btOpts = $model->toOptions();
+        $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
 
         return include(__DIR__ . '/search.template.html');
     }

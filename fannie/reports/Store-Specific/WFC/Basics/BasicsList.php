@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 
 class BasicsList extends FannieReportPage {
 
@@ -47,7 +47,7 @@ class BasicsList extends FannieReportPage {
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 INNER JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
                 INNER JOIN PriceRuleTypes AS t ON r.priceRuleTypeID=t.priceRuleTypeID
-            WHERE t.priceRuleTypeID IN (6,7,8)
+            WHERE t.priceRuleTypeID IN (6,8)
             GROUP BY p.upc,
                 brand,
                 description,
@@ -55,6 +55,7 @@ class BasicsList extends FannieReportPage {
         $res = $dbc->query($query);
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
+            if (!$row['hillside'] && !$row['denfeld']) continue;
             $data[] = array(
                 $row['upc'],
                 $row['brand'],

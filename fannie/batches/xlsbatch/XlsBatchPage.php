@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
@@ -80,6 +80,9 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $args = array($date1,$date2,$bname,$btype,$discountType,$owner);
         $insR = $dbc->execute($insQ,$args);
         $batchID = $dbc->insertID();
+        $bu = new BatchUpdateModel($dbc);
+        $bu->batchID($batchID);
+        $bu->logUpdate($bu::UPDATE_CREATE);
 
         return $batchID;
     }
@@ -104,8 +107,14 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $model->pricemethod(0);
         $model->quantity(0);
         $model->active(0);
+        $insP = $dbc->prepare("INSERT INTO batchList 
+            (batchID, pricemethod, quantity, active, upc, salePrice, groupSalePrice)
+            VALUES
+            (?, 0, 0, 0, ?, ?, ?)");
 
         $ret = '';
+        $allUPCs = array();
+        $dbc->startTransaction();
         foreach ($linedata as $line) {
             if (!isset($line[$indexes['upc_lc']])) continue;
             if (!isset($line[$indexes['price']])) continue;
@@ -132,11 +141,17 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 if ($dbc->num_rows($chkR) ==  0) continue;
             }   
 
-            $model->upc($upc);
-            $model->salePrice($price);
-            $model->groupSalePrice($price);
-            $model->save();
+            $insArgs = array($batchID, $upc, $price, $price);
+            $dbc->execute($insP, $insArgs);
+            $allUPCs[] = $upc;
+            /** Worried about speed here. Log many?
+            $bu = new BatchUpdateModel($dbc);
+            $bu->batchID($batchID);
+            $bu->upc($upc);
+            $bu->logUpdate($bu::UPDATE_ADDED);
+             */
         }
+        $dbc->commitTransaction();
 
         $ret .= '
         <p>

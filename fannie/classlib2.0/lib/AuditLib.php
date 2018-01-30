@@ -52,6 +52,14 @@ class AuditLib
         $product->load();
         $desc = $product->description();
 
+        $uid = FannieAuth::getUID();
+        $lastQ = 'SELECT user FROM prodUpdate WHERE upc=? ORDER BY modified DESC';
+        $lastP = $dbc->prepare($dbc->addSelectLimit($lastQ, 1));
+        $lastChanger = $dbc->getValue($lastP, array($uid));
+        if ($lastChanger !== false && $uid !== false && $lastChanger != $uid) {
+            return true;
+        }
+
         $subject = "Item Update notification: ".$upc;
 
         $message = "Item $upc ($desc) has been changed\n";  

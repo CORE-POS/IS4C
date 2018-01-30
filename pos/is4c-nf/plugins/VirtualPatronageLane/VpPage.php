@@ -71,15 +71,19 @@ class VpPage extends NoInputCorePage
     {
         $stem = MiscLib::baseURL() . 'graphics/';
         $dbc = Database::mDataConnect();
-        $prep = $dbc->prepare("
-            SELECT cardNo, amount
-            FROM VirtualVouchers
-            WHERE redeemed=0
-                AND expired=0
-                AND cardNo=?
-                AND amount > 0
-        ");
-        $info = $dbc->getRow($prep, array(CoreLocal::get('memberID')));
+        if ($dbc === false) {
+            $info = array('amount' => 0);
+        } else {
+            $prep = $dbc->prepare("
+                SELECT cardNo, amount
+                FROM VirtualVouchers
+                WHERE redeemed=0
+                    AND expired=0
+                    AND cardNo=?
+                    AND amount > 0
+            ");
+            $info = $dbc->getRow($prep, array(CoreLocal::get('memberID')));
+        }
         $msg = sprintf('Redeem $%.2f voucher as', $info['amount']);
         ?>
         <div class="baseHeight">

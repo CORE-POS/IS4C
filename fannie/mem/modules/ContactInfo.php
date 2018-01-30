@@ -139,19 +139,19 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
 
     public function saveFormData($memNum, $json=array())
     {
-        $json['addressFirstLine'] = FormLib::get('ContactInfo_addr1');
-        $json['addressSecondLine'] = FormLib::get('ContactInfo_addr2');
-        $json['city'] = FormLib::get('ContactInfo_city');
-        $json['state'] = FormLib::get('ContactInfo_state');
-        $json['zip'] = FormLib::get('ContactInfo_zip');
-        $json['contactAllowed'] = (FormLib::get('ContactInfo_mail')!=='' ? 1 : 0);
+        $json['addressFirstLine'] = $this->form->tryGet('ContactInfo_addr1');
+        $json['addressSecondLine'] = $this->form->tryGet('ContactInfo_addr2');
+        $json['city'] = $this->form->tryGet('ContactInfo_city');
+        $json['state'] = $this->form->tryGet('ContactInfo_state');
+        $json['zip'] = $this->form->tryGet('ContactInfo_zip');
+        $json['contactAllowed'] = ($this->form->tryGet('ContactInfo_mail')!=='' ? 1 : 0);
         for ($i = 0; $i<count($json['customers']); $i++) {
             if ($json['customers'][$i]['accountHolder']) {
-                $json['customers'][$i]['lastName'] = FormLib::get('ContactInfo_ln');
-                $json['customers'][$i]['firstName'] = FormLib::get('ContactInfo_fn');
-                $json['customers'][$i]['phone'] = FormLib::get('ContactInfo_ph1');
-                $json['customers'][$i]['altPhone'] = FormLib::get('ContactInfo_ph2');
-                $json['customers'][$i]['email'] = FormLib::get('ContactInfo_email');
+                $json['customers'][$i]['lastName'] = $this->form->tryGet('ContactInfo_ln');
+                $json['customers'][$i]['firstName'] = $this->form->tryGet('ContactInfo_fn');
+                $json['customers'][$i]['phone'] = $this->form->tryGet('ContactInfo_ph1');
+                $json['customers'][$i]['altPhone'] = $this->form->tryGet('ContactInfo_ph2');
+                $json['customers'][$i]['email'] = $this->form->tryGet('ContactInfo_email');
 
                 // Phone# style: ###-###-####
                 if (preg_match("/^[MKLP]/", $json['zip']) ) {
@@ -270,7 +270,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         }
         $json['customers'] = array($customer);
 
-        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0);
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 1000);
 
         return $accounts;
     }

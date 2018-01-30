@@ -38,10 +38,10 @@ $LOCAL_STORAGE_MECHANISM = 'COREPOS\\pos\\lib\\LocalStorage\\SessionStorage';
 if (!class_exists($LOCAL_STORAGE_MECHANISM)) {
     include(__DIR__ . '/SessionStorage.php');
 }
-if (!class_exists('CoreLocal')) {
+if (!class_exists('CoreLocal', false)) {
     include(__DIR__ . '/CoreLocal.php');
 }
-if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\WrappedStorage')) {
+if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\WrappedStorage', false)) {
     include(__DIR__ . '/WrappedStorage.php');
 }
 CoreLocal::setHandler($LOCAL_STORAGE_MECHANISM);

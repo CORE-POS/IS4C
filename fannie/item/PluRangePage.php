@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class PluRangePage extends FannieRESTfulPage 
@@ -68,8 +68,8 @@ class PluRangePage extends FannieRESTfulPage
         $model->specialgroupprice(0);
         $model->advertised(0);
         $model->tareweight(0);
-        $model->start_date('');
-        $model->end_date('');
+        $model->start_date('1900-01-01');
+        $model->end_date('1900-01-01');
         $model->discounttype(0);
         $model->wicable(0);
         $model->inUse(1);

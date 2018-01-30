@@ -220,7 +220,7 @@ public class Signature {
     an array of bytes to the device. This method must add an
     LRC byte at the end as the parameter does not include it
 */
-public class SPH_IngenicoRBA_Common : SerialPortHandler 
+public abstract class SPH_IngenicoRBA_Common : SerialPortHandler 
 {
     protected byte[] last_message;
     /** not used with on-demand implementation
@@ -554,6 +554,20 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
         return msg;
     }
 
+    protected byte[] RebootMessage()
+    {
+        byte[] msg = new byte[5];
+        msg[0] = 0x2; // STX
+
+        msg[1] = 0x39; // Reset Code
+        msg[2] = 0x37;
+        msg[3] = 0x2e;
+
+        msg[4] = 0x3; // ETX
+        
+        return msg;
+    }
+
     protected byte[] ScreenLinesReset()
     {
         byte[] msg = new byte[6];
@@ -866,6 +880,77 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
             msg[pos] = b;
             pos++;
         }
+        msg[pos] = 0x3;
+
+        return msg;
+    }
+
+    protected byte[] GetCashBack()
+    {
+        System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+        byte[] form_name = enc.GetBytes("cashb.K3Z");
+        byte[] msg = new byte[79];
+
+        msg[0] = 0x2;
+        msg[1] = 0x32;
+        msg[2] = 0x34;
+        msg[3] = 0x2e;
+
+        int pos = 4;
+        foreach (byte b in form_name) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        byte[] next = enc.GetBytes("BA,S");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn1,10.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn2,20.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn3,30.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtn4,40.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+
+        msg[pos] = 0x1c;
+        pos++;
+
+        next = enc.GetBytes("Bbtno,50.00");
+        foreach (byte b in next) {
+            msg[pos] = b;
+            pos++;
+        }
+
         msg[pos] = 0x3;
 
         return msg;

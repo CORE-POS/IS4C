@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class ProductMovementModular extends FannieReportPage 
@@ -45,9 +45,8 @@ class ProductMovementModular extends FannieReportPage
         $ret = parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->add_script('../../src/javascript/d3.js/d3.v3.min.js');
-            $this->add_script('../../src/javascript/d3.js/charts/singleline/singleline.js');
-            $this->add_css_file('../../src/javascript/d3.js/charts/singleline/singleline.css');
+            $this->addScript('../../src/javascript/Chart.min.js');
+            $this->addScript('../../src/javascript/CoreChart.js');
         }
 
         return $ret;
@@ -58,9 +57,9 @@ class ProductMovementModular extends FannieReportPage
         $default = parent::report_content();
 
         if ($this->report_format == 'html') {
-            $default .= '<div id="chartDiv"></div>';
+            $default .= '<div class="col-sm-10 col-sm-offset-1"><canvas id="chartCanvas"></canvas></div>';
 
-            $this->add_onload_command('showGraph()');
+            $this->addOnloadCommand('showGraph()');
         }
 
         return $default;
@@ -192,41 +191,9 @@ class ProductMovementModular extends FannieReportPage
         ob_start();
         ?>
 function showGraph() {
-    var ymin = 999999999;
-    var ymax = 0;
-
-    var ydata = Array();
-    $('td.reportColumn4').each(function(){
-        var y = Number($(this).html());
-        ydata.push(y);
-        if (y > ymax) {
-            ymax = y;
-        }
-        if (y < ymin) {
-            ymin = y;
-        }
-    });
-
-    var xmin = new Date();
-    var xmax = new Date(1900, 01, 01); 
-    var xdata = Array();
-    $('td.reportColumn0').each(function(){
-        var x = new Date( Date.parse($(this).html()) );
-        xdata.push(x);
-        if (x > xmax) {
-            xmax = x;
-        }
-        if (x < xmin) {
-            xmin = x;
-        }
-    });
-
-    var data = Array();
-    for (var i=0; i < xdata.length; i++) {
-        data.push(Array(xdata[i], ydata[i]));
-    }
-
-    singleline(data, Array(xmin, xmax), Array(ymin, ymax), '#chartDiv');
+    var xLabels = $('td.reportColumn0').toArray().map(x => x.innerHTML.trim());
+    var yData = $('td.reportColumn4').toArray().map(x => Number(x.innerHTML.trim()));
+    CoreChart.lineChart('chartCanvas', xLabels, [yData], ["Daily Qty Sold"]);
 }
         <?php
         return ob_get_clean();

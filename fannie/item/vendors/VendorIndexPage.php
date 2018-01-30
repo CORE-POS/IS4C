@@ -32,7 +32,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class VendorIndexPage extends FannieRESTfulPage 
@@ -127,7 +127,7 @@ class VendorIndexPage extends FannieRESTfulPage
         $vModel->vendorID($id);
         $vModel->phone(FormLib::get('phone'));
         $vModel->fax(FormLib::get('fax'));
-        $vModel->email(FormLib::get('email'));
+        $vModel->email(trim(FormLib::get('email')));
         $vModel->website($web);
         $vModel->notes(FormLib::get('notes'));
         $vModel->address(FormLib::get('address'));

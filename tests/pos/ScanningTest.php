@@ -1,7 +1,9 @@
 <?php
 
+use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MemberLib;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Scanning\DiscountTypes\NormalPricing;
 use COREPOS\pos\lib\Scanning\DiscountTypes\EveryoneSale;
@@ -972,4 +974,74 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('0212345000000', $v->translate($check, true));
     }
 
+    public function testMemberOnlySales()
+    {
+        /**
+         * Available in sample data:
+         *
+         * 0089773700120 Reg Price: 2.25, Sale Price: 1.79, non-scale
+         * 0000000000393 Reg Price: 2.35, Sale Price: 1.99, scale
+         * 0029208000000 Reg Price: 9.99, Sale Price: 8.99, packed & scale
+         *
+         * Customer #1 Member
+         * Customer #11 Non-member
+         */
+        $dbc = Database::tDataConnect();
+        $dbc->query('TRUNCATE TABLE localtemptrans');
+        CoreState::transReset();
+        $session = new WrappedStorage();
+        $itemP = $dbc->prepare('SELECT * FROM localtemptrans WHERE upc=? AND trans_id=?');
+
+        /**
+         * Add item, set member, verify discount
+         */
+        $upc = new UPC($session);
+        $upc->parse('0089773700120');
+        MemberLib::setMember(1, 1);
+        $item = $dbc->getRow($itemP, array('0089773700120', 1));
+        $this->assertEquals($item['unitPrice'], $item['regPrice']);
+        $this->assertEquals(0.46, $item['memDiscount']);
+        $this->assertEquals('', $item['trans_status']);
+        $item = $dbc->getRow($itemP, array('0089773700120', 3));
+        $this->assertEquals($item['total'], $item['regPrice']);
+        $this->assertEquals($item['total'], $item['unitPrice']);
+        $this->assertEquals(-0.46, $item['total']);
+        $this->assertEquals('M', $item['trans_status']);
+        $this->assertEquals(-0.46, $item['memDiscount']);
+        $this->assertEquals(1, $item['quantity']);
+        $this->assertEquals(0, $item['ItemQtty']);
+        $this->assertEquals(20, $item['discounttype']);
+        $this->assertEquals(8, $item['voided']);
+
+        /**
+         * Add item again w/ member already applied
+         */
+        $upc = new UPC($session);
+        $upc->parse('0089773700120');
+        $item = $dbc->getRow($itemP, array('0089773700120', 5));
+        $this->assertEquals($item['total'], $item['unitPrice']);
+        $this->assertEquals(1.79, $item['unitPrice']);
+        $this->assertEquals(2.25, $item['regPrice']);
+        $this->assertEquals(0.46, $item['memDiscount']);
+        $this->assertEquals('', $item['trans_status']);
+
+        /**
+         * Set non-member and undo discount
+         */
+        MemberLib::setMember(11, 1);
+        $item = $dbc->getRow($itemP, array('0089773700120', 8));
+        $this->assertEquals($item['total'], $item['regPrice']);
+        $this->assertEquals($item['total'], $item['unitPrice']);
+        $this->assertEquals(0.92, $item['total']);
+        $this->assertEquals('M', $item['trans_status']);
+        $this->assertEquals(0.92, $item['memDiscount']);
+        $this->assertEquals(1, $item['quantity']);
+        $this->assertEquals(0, $item['ItemQtty']);
+        $this->assertEquals(20, $item['discounttype']);
+        $this->assertEquals(8, $item['voided']);
+
+        $dbc->query('TRUNCATE TABLE localtemptrans');
+        CoreState::transReset();
+    }
 }
+

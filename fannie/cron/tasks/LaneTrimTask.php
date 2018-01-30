@@ -53,10 +53,12 @@ Deprecates lanes.clean.php.';
             }
 
             $table = 'localtrans_today';
-            $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
-            $cleanR = $sql->query($cleanQ,$ln['trans']);
-            if ($cleanR === false) {
-                $this->cronMsg("Could not clean $table on lane: ".$ln['host']);
+            if ($sql->tableExists($table)) {
+                $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
+                $cleanR = $sql->query($cleanQ,$ln['trans']);
+                if ($cleanR === false) {
+                    $this->cronMsg("Could not clean $table on lane: ".$ln['host']);
+                }
             }
 
             $table = 'localtranstoday';

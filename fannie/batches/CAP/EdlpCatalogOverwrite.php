@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage 
@@ -101,76 +101,82 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $idP = $dbc->prepare("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
-        $VENDOR_ID = $dbc->getValue($idP);
-        if ($VENDOR_ID === false) {
+        $idR = $dbc->query("SELECT vendorID FROM vendors WHERE vendorName='UNFI' OR vendorName LIKE 'UNFI %' ORDER BY vendorID");
+        $VENDOR_IDS = array();
+        while ($idW = $dbc->fetchRow($idR)) {
+            $VENDOR_IDS[] = $idW['vendorID'];
+        }
+        if (count($VENDOR_IDS) == 0) {
             $this->error_details = 'Cannot find vendor';
             return False;
         }
         $this->prepareStatements($dbc);
 
-        $SKU_TO_PLU_MAP = $this->buildSkuMap($dbc, $VENDOR_ID);
-        $rm_checks = (FormLib::get('rm_cds') != '') ? true : false;
+        foreach ($VENDOR_IDS as $VENDOR_ID) {
 
-        $updated_upcs = array();
+            $SKU_TO_PLU_MAP = $this->buildSkuMap($dbc, $VENDOR_ID);
+            $rm_checks = (FormLib::get('rm_cds') != '') ? true : false;
 
-        foreach ($linedata as $data) {
-            if (!is_array($data)) continue;
+            $updated_upcs = array();
 
-            if (!isset($data[$indexes['upc']])) continue;
+            foreach ($linedata as $data) {
+                if (!is_array($data)) continue;
 
-            // grab data from appropriate columns
-            $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
-            $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-            $upc = str_replace("-","",$data[$indexes['upc']]);
-            $upc = str_replace(" ","",$upc);
-            if ($rm_checks)
-                $upc = substr($upc,0,strlen($upc)-1);
-            $upc = BarcodeLib::padUPC($upc);
-            // zeroes isn't a real item, skip it
-            if ($upc == "0000000000000")
-                continue;
-            $aliases = array($upc);
-            if (isset($SKU_TO_PLU_MAP[$sku])) {
-                $aliases = array_merge($aliases, $SKU_TO_PLU_MAP[$sku]);
-            }
-            $reg = trim($data[$indexes['unitCost']]);
-            $srp = trim($data[$indexes['srp']]);
-            // can't process items w/o price (usually promos/samples anyway)
-            if (empty($reg) or empty($srp))
-                continue;
+                if (!isset($data[$indexes['upc']])) continue;
 
-            // syntax fixes. kill apostrophes in text fields,
-            // trim $ off amounts as well as commas for the
-            // occasional > $1,000 item
-            $reg = $this->sanitizePrice($reg);
-            $srp = $this->sanitizePrice($srp);
+                // grab data from appropriate columns
+                $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
+                $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
+                $upc = str_replace("-","",$data[$indexes['upc']]);
+                $upc = str_replace(" ","",$upc);
+                if ($rm_checks)
+                    $upc = substr($upc,0,strlen($upc)-1);
+                $upc = BarcodeLib::padUPC($upc);
+                // zeroes isn't a real item, skip it
+                if ($upc == "0000000000000")
+                    continue;
+                $aliases = array($upc);
+                if (isset($SKU_TO_PLU_MAP[$sku])) {
+                    $aliases = array_merge($aliases, $SKU_TO_PLU_MAP[$sku]);
+                }
+                $reg = trim($data[$indexes['unitCost']]);
+                $srp = trim($data[$indexes['srp']]);
+                // can't process items w/o price (usually promos/samples anyway)
+                if (empty($reg) or empty($srp))
+                    continue;
 
-            // skip the item if prices aren't numeric
-            // this will catch the 'label' line in the first CSV split
-            // since the splits get returned in file system order,
-            // we can't be certain *when* that chunk will come up
-            if (!is_numeric($reg) or !is_numeric($srp)) {
-                continue;
-            }
+                // syntax fixes. kill apostrophes in text fields,
+                // trim $ off amounts as well as commas for the
+                // occasional > $1,000 item
+                $reg = $this->sanitizePrice($reg);
+                $srp = $this->sanitizePrice($srp);
 
-            foreach ($aliases as $alias) {
-                $dbc->execute($this->extraP, array($reg,$alias));
-                $dbc->execute($this->prodP, array($reg,$alias,$VENDOR_ID));
-                $updated_upcs[] = $alias;
-            }
+                // skip the item if prices aren't numeric
+                // this will catch the 'label' line in the first CSV split
+                // since the splits get returned in file system order,
+                // we can't be certain *when* that chunk will come up
+                if (!is_numeric($reg) or !is_numeric($srp)) {
+                    continue;
+                }
 
-            $args = array(
-                $reg,
-                $srp,
-                date('Y-m-d H:i:s'),
-                $sku,
-                $VENDOR_ID,
-            );
-            $dbc->execute($this->itemP,$args);
+                foreach ($aliases as $alias) {
+                    $dbc->execute($this->extraP, array($reg,$alias));
+                    $dbc->execute($this->prodP, array($reg,$alias,$VENDOR_ID));
+                    $updated_upcs[] = $alias;
+                }
 
-            if ($this->srpP) {
-                $dbc->execute($this->srpP,array($srp,$upc,$VENDOR_ID));
+                $args = array(
+                    $reg,
+                    $srp,
+                    date('Y-m-d H:i:s'),
+                    $sku,
+                    $VENDOR_ID,
+                );
+                $dbc->execute($this->itemP,$args);
+
+                if ($this->srpP) {
+                    $dbc->execute($this->srpP,array($srp,$upc,$VENDOR_ID));
+                }
             }
         }
 

@@ -26,7 +26,7 @@
 /**
   @class PartialBatchesModel
 */
-class PartialBatchesModel extends \COREPOS\common\BasicModel
+class PartialBatchesModel extends BasicModel
 {
     protected $name = "PartialBatches";
     protected $preferred_db = 'op';

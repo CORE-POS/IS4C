@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class ReverseTransPage extends FannieRESTfulPage 
@@ -142,7 +142,7 @@ class ReverseTransPage extends FannieRESTfulPage
             discountable, discounttype, voided, PercentDiscount,
             ItemQtty, volDiscType, volume, volSpecial, mixMatch,
             matched, memType, staff, card_no, numflag, charflag, 
-            trans_id 
+            trans_id, store_id
             from $dlog where register_no = ?
             and emp_no = ? and trans_no = ?
             and datetime BETWEEN ? AND ?
@@ -173,6 +173,7 @@ class ReverseTransPage extends FannieRESTfulPage
         $dbc->execute($prep, $params['arguments']);
         $record['trans_id'] += 1;
 
+        $storeID = false;
         while($w = $dbc->fetch_row($result)){
             $next = $record; // copy base record
 
@@ -206,6 +207,7 @@ class ReverseTransPage extends FannieRESTfulPage
             $next['numflag'] = $w['numflag'];
             $next['charflag'] = $w['charflag'];
             $next['card_no'] = $w['card_no'];
+            $next['store_id'] = $w['store_id'];
 
             $params = DTrans::parameterize($next, 'datetime', $dbc->now());
             $prep = $dbc->prepare("INSERT INTO $table ({$params['columnString']})

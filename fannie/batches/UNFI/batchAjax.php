@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
@@ -99,6 +99,12 @@ case 'newPrice':
         $dbc->execute($sP,array($price,$upc,$vid));
     }
     echo "New Price Applied";
+    $bu = new BatchUpdateModel($dbc);
+    $bu->batchID($bid);
+    $bu->upc($upc);
+    $bu->specialPrice($price);
+    $bu->logUpdate($bu::UPDATE_PRICE_EDIT);
+
     break;
 case 'batchAdd':
     $vid = FormLib::get_form_value('vendorID');
@@ -113,7 +119,14 @@ case 'batchAdd':
     $model->salePrice($price);
     $model->pricemethod(0);
     $model->quantity(0);
-    $model->save();
+    $saved = $model->save();
+    if ($saved) {
+        $bu = new BatchUpdateModel($dbc);
+        $bu->batchID($bid);
+        $bu->upc($upc);
+        $bu->logUpdate($bu::UPDATE_ADDED);
+    }
+    
 
     $product = new ProductsModel($dbc);
     $product->upc($upc);
@@ -140,11 +153,14 @@ case 'batchDel':
     $sid = FormLib::get_form_value('queueID',0);
     if ($sid == 99) $sid = 0;
 
+    $bu = new BatchUpdateModel($dbc);
+    $bu->batchID($bid);
+    $bu->upc($upc);
+    $bu->logUpdate($bu::UPDATE_REMOVED);
     $model = new BatchListModel($dbc);
     $model->batchID($bid);
     $model->upc($upc);
-    $model->delete();
-
+    $deleted = $model->delete();
     $tag = new ShelftagsModel($dbc);
     $tag->id($sid);
     $tag->upc($upc);

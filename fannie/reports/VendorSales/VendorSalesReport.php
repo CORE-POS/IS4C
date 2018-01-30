@@ -53,23 +53,16 @@ class VendorSalesReport extends FannieReportPage
 
         /**
           Report Query notes:
-          * Combining vendorName and prodExtra.distributor is a nod to
-            legacy data. Eventually data should be fully normalized on
-            products.default_vendor_id
-          * Excluding prodExtra.distributor empty string combines those
-            records with SQL NULL. Having two different "blank" rows
-            is confusing for users.
           * Joins are only needed is a super department condition is 
             involved. WHERE clause changes similarly.
         */
         $query = '
-            SELECT COALESCE(v.vendorName, x.distributor) AS vendor,
+            SELECT v.vendorName AS vendor,
                 ' . DTrans::sumQuantity('t') . ' AS qty,
                 SUM(t.total) AS ttl
             FROM ' . $dlog . ' AS t
                 ' . DTrans::joinProducts('t', 'p', 'LEFT') . '
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                 ';
         if ($buyer !== '' && $buyer > -1) {
             $query .= ' LEFT JOIN superdepts AS s ON t.department=s.dept_ID ';
@@ -97,7 +90,7 @@ class VendorSalesReport extends FannieReportPage
             $query .= " AND p.subdept IN ($inStr) ";
         }
         $query .= '
-            GROUP BY COALESCE(v.vendorName, x.distributor)
+            GROUP BY v.vendorName
             ORDER BY SUM(total) DESC';
 
         $prep = $dbc->prepare($query);

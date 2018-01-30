@@ -95,7 +95,7 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
             . '</tr>';
 
         echo '<tr><td>Character Set</td>'
-            . '<td>' . installTextField('FANNIE_CHARSET', $FANNIE_CHARSET, 'ISO-8859-1') . '</td>'
+            . '<td>' . installTextField('FANNIE_CHARSET', $FANNIE_CHARSET, 'UTF-8') . '</td>'
             . '</tr>';
 
         echo '<tr><td>Logo</td>'
@@ -104,6 +104,24 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
             . '</tr>';
 
         echo '</table>';
+        $this_page = $_SERVER['REQUEST_URI'];
+        $test_page = str_replace('install/InstallThemePage.php', 'install/util.php', $this_page);
+        $headers = get_headers('http://' . $_SERVER['HTTP_HOST'] . $test_page);
+        echo '<em>Request Headers</em><br /><pre>';
+        foreach ($headers as $h) {
+            echo $h . "\n";
+        }
+        echo '</pre>';
+        echo '<em>Database character set information</em><br /><pre>';
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $res = $dbc->query("SHOW VARIABLES LIKE '%char%'");
+        $ret = '';
+        while ($row = $dbc->fetchRow($res)) { 
+            if ($row[0] === 'character_set_client' || $row[0] === 'character_set_connection' || $row[0] === 'character_set_results') {
+                echo $row[0] . ': ' . $row[1] . "\n";
+            }
+        }
+        echo '</pre>';
         echo '<hr />
             <p>
                 <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>

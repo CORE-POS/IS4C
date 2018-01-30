@@ -1,10 +1,8 @@
 <?php
 
 include('../../config.php');
-if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
-}
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
+if (!class_exists("SQLManager")) require_once(__DIR__ . '/../../src/SQLManager.php');
 include('../db.php');
 
 $query = "select c.CardNo, c.LastName, c.FirstName, m.street, m.city, m.state, m.zip, e.payments

@@ -72,6 +72,14 @@ class SpecialOrder extends SpecialUPC
         }
 
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            $json['output'] = DisplayLib::boxMsg(
+                _("Cannot get order at this time"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+        }
         $mAlt = Database::mAltName();
         $query = sprintf("SELECT upc,description,department,
                 quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,

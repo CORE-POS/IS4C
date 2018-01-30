@@ -73,6 +73,7 @@ class PaycardProcessPage extends BasicCorePage
         $jquery = MiscLib::win32() ? 'jquery-1.8.3.min.js' : 'jquery.js';
         echo "<script type=\"text/javascript\"
             src=\"{$myUrl}js/{$jquery}\"></script>";
+        echo '<script type="text/javascript" src="' . $myUrl . '/js/errorLog.js"></script>';
         $this->paycardJscriptFunctions();
         $this->head_content();
         echo "</head>";

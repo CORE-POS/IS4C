@@ -22,7 +22,7 @@
 *********************************************************************************/
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class NewMemberTool extends FanniePage 
@@ -198,24 +198,6 @@ class NewMemberTool extends FanniePage
             }
         }
         */
-
-        /* going to create memberships
-           part of the insert arrays can
-           be prepopulated */
-        $meminfo = array(
-            'last_name'=>"''",
-            'first_name'=>"''",
-            'othlast_name'=>"''",
-            'othfirst_name'=>"''",
-            'street'=>"''",
-            'city'=>"''",
-            'state'=>"''",
-            'zip'=>"''",
-            'phone'=>"''",
-            'email_1'=>"''",
-            'email_2'=>"''",
-            'ads_OK'=>1
-        );
 
         /* everything's set but the actual member #s */
         $numQ = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");

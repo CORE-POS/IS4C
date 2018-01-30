@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\Fannie\API\webservices; 
+use COREPOS\Fannie\API\data\DataCache;
 use COREPOS\Fannie\API\member\MemberREST;
 use \FannieDB;
 use \FannieConfig;
@@ -131,6 +132,23 @@ class FannieAutoComplete extends FannieWebService
 
                 return $ret;
 
+            case 'catalog':
+                list($vID,$search) = explode(':', $args->search);
+                $prep = $dbc->prepare('SELECT sku, description
+                                       FROM vendorItems
+                                       WHERE vendorID=?
+                                        AND (sku LIKE ? OR description LIKE ?)
+                                       ORDER BY description');
+                $search = '%' . $search . '%';
+                $res = $dbc->execute($prep, array($vID, $search, $search));
+                while ($row = $dbc->fetch_row($res)) {
+                    $ret[] = array(
+                        'label' => $row['sku'] . ' ' . $row['description'],
+                        'value' => $row['sku'] . ' ' . $row['description'],
+                    );
+                }
+                return $ret;
+
             case 'mfirstname':
             case 'mlastname':
             case 'maddress':
@@ -177,6 +195,49 @@ class FannieAutoComplete extends FannieWebService
                     }
                 }
 
+                return $ret;
+
+            case 'page':
+                $pages = DataCache::getFile('forever', 'pageAutoComplete');
+                if ($pages === false) {
+                    return $ret;
+                }
+                $pages = unserialize($pages);
+                if (!is_array($pages) || !isset($pages['ttl']) || time() > $pages['ttl']) {
+                    $all = array();
+                    $acceptsNumbers = array();
+                    $url = FannieConfig::config('URL');
+                    $root = FannieConfig::config('ROOT');
+                    foreach (\FannieAPI::listModules('FanniePage') as $obj) {
+                        if (!$obj->discoverable) {
+                            continue;
+                        }
+                        $refl = new \ReflectionClass($obj);
+                        $link = $url . str_replace($root, '', $reflect->getFileName());
+                        $all[$obj->description] = $link;
+                        if (isset($obj->accepts['numbers'])) {
+                            $acceptsNumbers[$obj->description] = $link . '?' . urlencode($obj->accepts['numbers']);
+                        }
+                    }
+                    $pages = array(
+                        'all' => $all,
+                        'numbers' => $acceptsNumbers,
+                        'ttl' => time() + (24*60*60),
+                    );
+                    DataCache::putFile('forever', serialize($pages), 'pageAutoComplete');
+                }
+                if (!is_numeric($this->search)) {
+                    $lower = strtolower($this->search);
+                    foreach ($pages['all'] as $description => $link) {
+                        if (strpos(strtolower($description), $lower) !== false) {
+                            $ret[] = array('label' => $description, 'value'=>$link);
+                        }
+                    }
+                } else {
+                    foreach ($pages['numbers'] as $description => $link) {
+                        $ret[] = array('label' => $description, 'value' => $link . '=' . $this->search);
+                    }
+                }
                 return $ret;
 
             default:

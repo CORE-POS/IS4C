@@ -56,15 +56,14 @@ class CCReceiptMessage extends ReceiptMessage {
     {
         $date = ReceiptLib::build_time(time());
         list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
-        $sort = 'asc';
 
         $slip = '';
-        $idclause = '';
         $dbc = Database::tDataConnect();
-        if ($reprint)
+        if ($reprint) {
             $dbc = Database::mDataConnect();
-        if ($sigSlip && is_numeric(CoreLocal::get('paycard_id'))) {
-            $idclause = ' AND transID='.CoreLocal::get('paycard_id');
+            if ($dbc === false) {
+                return '';
+            }
         }
 
         $trans_type = $dbc->concat('p.cardType', "' '", 'p.transType', '');
@@ -72,7 +71,7 @@ class CCReceiptMessage extends ReceiptMessage {
         $query = "SELECT $trans_type AS tranType,
                     CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
                     p.PAN,
-                    CASE WHEN p.manual=1 THEN 'Manual' ELSE 'Swiped' END as entryMethod,
+                    CASE WHEN p.manual=1 THEN 'Manual' WHEN p.manual=-1 THEN 'Chip' ELSE 'Swiped' END as entryMethod,
                     p.issuer,
                     p.xResultMessage,
                     p.xApprovalNumber,
@@ -82,15 +81,25 @@ class CCReceiptMessage extends ReceiptMessage {
                     p.transID
                   FROM PaycardTransactions AS p
                   WHERE dateID=" . date('Ymd') . "
-                    AND empNo=" . $emp . "
-                    AND registerNo=" . $reg . "
-                    AND transNo=" . $trans . $idclause . "
                     AND p.validResponse=1
                     AND (p.xResultMessage LIKE '%APPROVE%' OR p.xResultMessage LIKE '%PENDING%')
-                    AND p.cardType IN ('Credit', 'Debit', 'EMV', 'R.Credit', 'R.EMV')
-                  ORDER BY p.requestDatetime";
+                    AND p.cardType IN ('Credit', 'Debit', 'EMV', 'R.Credit', 'R.EMV') ";
+        $moreSpecific = $query;
+        $moreSpecific .= "
+                    AND empNo=" . $emp . "
+                    AND registerNo=" . $reg . "
+                    AND transNo=" . $trans;
+        $query .= " ORDER BY p.requestDatetime";
+        $moreSpecific .= " ORDER BY p.requestDatetime";
+        if ($sigSlip) {
+            $query .= ' DESC';
+            $moreSpecific .= ' DESC';
+        }
 
-        $result = $dbc->query($query);
+        $result = $dbc->query($moreSpecific);
+        if ($sigSlip && $dbc->numRows($result) == 0) {
+            $result = $dbc->query($query);
+        }
 
         $emvP = $dbc->prepare('
             SELECT content
@@ -200,6 +209,9 @@ class CCReceiptMessage extends ReceiptMessage {
                 }
             }
             $slip .= ReceiptLib::centerString(".................................................")."\n";
+            if ($sigSlip) {
+                break;
+            }
         }
 
         return $slip;

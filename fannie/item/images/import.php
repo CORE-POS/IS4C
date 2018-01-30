@@ -1,7 +1,7 @@
 <?php
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('SQLManager')) {
-    include($FANNIE_ROOT . 'src/SQLManager.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
@@ -29,7 +29,7 @@ while( ($file = readdir($dh)) !== False){
     $r1 = $dbc->execute($p1,array($upc));
     if ($dbc->num_rows($r1) > 0){
         $row = $dbc->fetchRow($r1);
-        if ($row['photo'] && file_exists('done/' . $row['photo'])) {
+        if (false && $row['photo'] && file_exists('done/' . $row['photo'])) {
             echo "UPC $upc already has image\n";
         } else {
             echo "UPC $upc found in productUser\n";

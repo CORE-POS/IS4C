@@ -81,7 +81,6 @@ class EqRecurTask extends FannieTask
                 // process actual transaction
                 $soap = new MSoapClient($this->CREDENTIALS[$store][0], $this->CREDENTIALS[$store][1]);
                 $xml = $soap->saleByRecordNo($amount, $payment['xToken'], $payment['xTransactionID'], $invoice);
-                echo $xml->asXML();
 
                 $elapsed = microtime(true) - $startTime;
                 $pcRow[] = date('Y-m-d H:i:s');

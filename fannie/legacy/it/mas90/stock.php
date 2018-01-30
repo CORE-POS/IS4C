@@ -3,7 +3,7 @@
     header('Content-Disposition: attachment; filename="dailyAR.csv"');
 
 include('../../../config.php');
-require($FANNIE_ROOT'src/SQLManager.php');
+require(__DIR__ . '/../../../src/SQLManager.php');
 include('../../db.php');
 
 $SEP=",";

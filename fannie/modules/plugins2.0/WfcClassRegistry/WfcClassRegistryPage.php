@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class WfcClassRegistryPage extends FanniePage 
@@ -225,7 +225,7 @@ class WfcClassRegistryPage extends FanniePage
             WHERE p.description LIKE 'class -%' 
                     AND p.inUse=1
             GROUP BY pu.description
-            ORDER BY pu.description ASC;
+            ORDER BY substr(pu.description,9,2),pu.description ASC;
             ");
         $result = $dbc->execute($query);
         while($row = $dbc->fetch_row($result)){
@@ -235,8 +235,10 @@ class WfcClassRegistryPage extends FanniePage
             $classSize[] = $row['size'];
             $classExp[] = $row['expires'];
         }
-        
-        $ret = '<div class=\'container\'><form method=\'get\'><select class=\'form-control\' name=\'class_plu\'>';
+       
+        $curPlu = FormLib::get('class_plu');
+        $ret = '<form method=\'get\' class=\'form-inline\'>
+            <select class=\'form-control\' name=\'class_plu\' style=\'border: 2px solid #38ACEC;\'>';
         $ret .= '<option value=\'1\'>Choose a class...</option>';
         
         $date = date('m/d/y');
@@ -245,34 +247,41 @@ class WfcClassRegistryPage extends FanniePage
        
         foreach ($className as $key => $name) {
             $tempDate = substr($classExp[$key], 0, 7);
+            if ($key == $curPlu) {
+                $sel = 'selected';
+            } else {
+                $sel = '';
+            } 
             $expirationDate = strtotime($tempDate);
             if (FormLib::get('expired') === '') {
-                $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
+                $ret .= '<option value=\'' . $key . '\'' . $sel . '>' . $classDate[$key] . " :: " . $name . '</option>';
             } else {
                 if ($date <= $expirationDate) {
-                    $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
+                    $ret .= '<option value=\'' . $key . '\'' . $sel . '>' . $classDate[$key] . " :: " . $name . '</option>';
                 }
             }
         }
         $ret .= '</select>';
-        $ret .= '
-            <div>
-                <div style="float: left">
-                    <input class=\'btn btn-default\' type=\'submit\' value=\'Open Class Registry\'>
-                </div>
-                <div style="float: right">
-                    <a class=\'btn btn-default \' href="?credits=1">View Credits</a>
-                </div>
-                
-            </div>
-        ';
-        $ret .= '<br /><br /><input type="checkbox" class="checkbox" name="expired" value="1" ';
-            if (FormLib::get('expired')) {
-                $ret .= 'checked="checked" ';
-            }
-        $ret .= ' ><i>Don\'t show Expired Classes</i>';
-        $ret .= '</form></div>';
-        
+        $ret .= '<span class="hidden-xs hidden-sm">&nbsp;&nbsp;</span>';
+        $ret .= '<input class=\'btn btn-default\' type=\'submit\' value=\'Select Class\' style=\'border: 2px solid #38ACEC;\'><br/>';
+        $ret .= '<div style="padding: 5px;"><input type="checkbox" class="checkbox" name="expired" value="1" ';
+        if ($expired = FormLib::get('expired')) {
+            $ret .= 'checked="checked" ';
+        }
+        $ret .= ' ><i style="padding: 20;"> Don\'t show expired Classes</i></div>';
+        $ret .= '</form>';
+        $vNext = $curPlu+1;
+        $vPrev = $curPlu - 1 > 0 ? $curPlu - 1 : 0;
+        $ret .= '<form method=\'get\' class=\'form-inline\'>';
+        if ($expired) {
+            $ret .= '<input type="hidden" name="expired" value="1">';
+        }
+        $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vPrev.'">Prev</button>&nbsp;';
+        $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vNext.'">Next</button>&nbsp;|&nbsp;';
+        $ret .= '<a class=\'btn btn-default btn-xs\' href="?credits=1" style="border: 1px solid orange;">View Credits</a>&nbsp&nbsp;';
+        $ret .= '</form>';
+        $ret .= '</div>';
+
         $key = FormLib::get('class_plu');
         $plu = $classUPC[$key];
         $this->plu = $classUPC[$key];
@@ -408,8 +417,8 @@ class WfcClassRegistryPage extends FanniePage
             }
             
             //* Class Roster
-            $ret .= "<h2 align=\"center\">" . $className[$key] . "</h2>";
-            $ret .= "<h3 align=\"center\">" . $classDate[$key] . "</h3>";
+            $ret .= "<div style='float: left'><h3>" . $className[$key] . "</h3></div>";
+            $ret .= "<h4 align=\"center\">" . $classDate[$key] . "</h4>";
             //$ret .= "<h5 align=\"center\"> <i>Plu</i>: " . $plu . "</h5>";
             $ret .= "<h5 align='center'><a href='/git/fannie/item/ItemEditorPage.php?searchupc=" . $plu . "' target='_blank'>PLU: " . $plu . "</a></h5>";
             $ret .= "<div id=\"line-div\"></div>";
@@ -475,11 +484,12 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
             $ret .= $this->printItems($items, false);
-            $ret .= '</tbody></table>';
+            $ret .= '</tbody></table></div>';
         }
 
         $this->add_onload_command('itemEditing(' . $classSize . ');');
         $this->add_onload_command('withdraw();');
+        $this->add_onload_command('checkSoldOut();');
         $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
         $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
@@ -571,7 +581,6 @@ class WfcClassRegistryPage extends FanniePage
         ?>
 function itemEditing(size)
 {
-    
     $('.editable').change(function(){
         var current_seat = $(this).closest('tr').find('.id').html();
         $(this).prev('span.collapse').html($(this).val());
@@ -612,6 +621,18 @@ function withdraw()
         });
     });    
 }
+function checkSoldOut()
+{
+    $('#first_name').change(function(){
+        $.ajax({
+            type: 'post',
+            url: alertRegFull.php,
+            dataType: 'json',
+            data: 'upc='+$('#upc').val(),
+            success: function(resp) {}
+        });
+    });
+}
         <?php
         return ob_get_clean();
     }
@@ -641,7 +662,7 @@ function withdraw()
                 <td class="id collapse">%s</td>
                 <td class="seat">%d</td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm editable" name="editFirst" value="%s" /></td>
+                    <input type="text" class="form-control input-sm editable" id="first_name"  name="editFirst" value="%s" /></td>
                 <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
                 <td><span class="collapse">%s</span>

@@ -21,9 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\FannieUI;
+
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class EditShelfTags extends FannieRESTfulPage 
@@ -54,12 +56,17 @@ class EditShelfTags extends FannieRESTfulPage
             SELECT normal_price
             FROM products
             WHERE upc=?');
+        $source = $this->config->get('TAG_DATA_SOURCE');
+        if (empty($source) || !class_exists($source)) {
+            $source = 'COREPOS\\Fannie\\API\\item\\TagDataSource';
+        }
+        $tagSource = new $source();
         foreach ($tags->find() as $tag) {
             $current_price = $this->connection->getValue($priceP, array($tag->upc()));
             if ($current_price !== false) {
                 $tag->normal_price($current_price);
-                $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($current_price, $tag->size());
-                $tag->pricePerUnit($ppo);
+                $tagData = $tagSource->getTagData($this->connection, $tag->upc(), $current_price);
+                $tag->pricePerUnit($tagData['pricePerUnit']);
                 $tag->save();
             }
         }
@@ -73,37 +80,32 @@ class EditShelfTags extends FannieRESTfulPage
             . $this->get_id_view();
     }
 
+    private function valOrDefault($field, $index, $default)
+    {
+        $arr = FormLib::get($field, array());
+        return isset($arr[$index]) ? $arr[$index] : $default;
+    }
+
     public function post_id_handler()
     {
         $upcs = FormLib::get('upc',array());
-        $descs = FormLib::get('desc',array());
-        $prices = FormLib::get('price',array());
-        $brands = FormLib::get('brand',array());
-        $skus = FormLib::get('sku',array());
-        $sizes = FormLib::get('size',array());
-        $units = FormLib::get('units',array());
-        $vendors = FormLib::get('vendor',array());
-        $ppos = FormLib::get('ppo',array());
-        $counts = FormLib::get('counts',array());
-
         $tag = new ShelftagsModel($this->connection);
         for ($i = 0; $i < count($upcs); $i++){
             $tag->id($this->id);
             $tag->upc($upcs[$i]);
-            $tag->description(isset($descs[$i]) ? $descs[$i] : '');
-            $tag->normal_price(isset($prices[$i]) ? $prices[$i] : 0);
-            $tag->brand(isset($brands[$i]) ? $brands[$i] : '');
-            $tag->sku(isset($skus[$i]) ? $skus[$i] : '');
-            $tag->size(isset($sizes[$i]) ? $sizes[$i] : '');
-            $tag->units(isset($units[$i]) ? $units[$i] : 1);
-            $tag->vendor(isset($vendors[$i]) ? $vendors[$i] : '');
-            $tag->pricePerUnit(isset($ppos[$i]) ? $ppos[$i] : '');
-            $tag->count(isset($counts[$i]) ? $counts[$i] : 1);
+            $tag->description($this->valOrDefault('desc', $i, ''));
+            $tag->normal_price($this->valOrDefault('price', $i, 0));
+            $tag->brand($this->valOrDefault('brand', $i, ''));
+            $tag->sku($this->valOrDefault('sku', $i, ''));
+            $tag->size($this->valOrDefault('size', $i, ''));
+            $tag->units($this->valOrDefault('units', $i, 1));
+            $tag->vendor($this->valOrDefault('vendor', $i, ''));
+            $tag->pricePerUnit($this->valOrDefault('ppo', $i, ''));
+            $tag->count($this->valOrDefault('counts', $i, 1));
             $tag->save();
         }
-        header("Location: ShelfTagIndex.php");
 
-        return false;
+        return 'ShelfTagIndex.php';
     }
 
     public function delete_id_upc_confirm_handler()
@@ -194,7 +196,7 @@ class EditShelfTags extends FannieRESTfulPage
                     class=\"form-control input-sm price-field\" /></td>";
         $ret .= '<td><a href="?_method=delete&id=' . $this->id . '&upc=' . $tag->upc() . '"
                     class="btn btn-danger">'
-                    . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon('Delete OR Change Queue')
+                    . FannieUI::deleteIcon('Delete OR Change Queue')
                     . '</a></td>';
         $ret .= "</tr>";
 
@@ -209,21 +211,26 @@ class EditShelfTags extends FannieRESTfulPage
         $tag->id($this->id);
         $tag->upc(BarcodeLib::padUPC($this->upc));
         $tag->load();
+        $tag = $tag->toStdClass();
+        $queues = new ShelfTagQueuesModel($dbc);
+        $qOpts = $queues->toOptions();
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $icon = FannieUI::deleteIcon();
 
-        $ret = <<<HTML
-<form action="{{SELF}}" method="post">
+        return <<<HTML
+<form action="{$self}" method="post">
 <div class="panel panel-default">
     <div class="panel-heading">Selected Tag</div>
     <div class="panel-body">
-        {{upc}} - {{brand}} {{description}}
+        {$this->upc} - {$tag->brand} {$tab->description}
     </div>
 </div>
 <div class="panel panel-default">
     <div class="panel-heading">Delete</div>
     <div class="panel-body">
         <div class="form-group">
-            <a href="?_method=delete&id={{id}}&upc={{upc}}&confirm=1" class="btn btn-danger">
-                {{ICON}} Remove Tag from Queue
+            <a href="?_method=delete&id={$this->id}&upc={$this->upc}&confirm=1" class="btn btn-danger">
+                {$icon} Remove Tag from Queue
             </a>
         </div>
     </div>
@@ -234,28 +241,18 @@ class EditShelfTags extends FannieRESTfulPage
         <div class="form-group">
             <label>Move to another Queue</label>
             <select name="newID" class="form-control">
-                {{QUEUES}}
+                {$qOpts}
             </select>
         </div>
         <div class="form-group">
             <button class="btn btn-default" type="submit">Move Tag</button>
         </div>
-        <input type="hidden" name="oldID" value="{{id}}" />
-        <input type="hidden" name="upc" value="{{upc}}" />
+        <input type="hidden" name="oldID" value="{$this->id}" />
+        <input type="hidden" name="upc" value="{$this->upc}" />
     </div>
 </div>
 </form>
 HTML;
-        $queues = new ShelfTagQueuesModel($dbc);
-        $ret = str_replace('{{SELF}}', filter_input(INPUT_SERVER, 'PHP_SELF'), $ret);
-        $ret = str_replace('{{id}}', $this->id, $ret);
-        $ret = str_replace('{{upc}}', $this->upc, $ret);
-        $ret = str_replace('{{brand}}', $tag->brand(), $ret);
-        $ret = str_replace('{{description}}', $tag->description(), $ret);
-        $ret = str_replace('{{QUEUES}}', $queues->toOptions(), $ret);
-        $ret = str_replace('{{ICON}}', \COREPOS\Fannie\API\lib\FannieUI::deleteIcon(), $ret);
-
-        return $ret;
     }
 
     public function helpContent()

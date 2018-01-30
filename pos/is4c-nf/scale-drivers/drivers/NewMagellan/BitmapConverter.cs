@@ -1,4 +1,7 @@
 using System;
+using System.Reflection;
+
+[assembly: AssemblyVersion("1.0.*")]
 
 namespace BitmapBPP {
 
@@ -127,6 +130,16 @@ public class BitmapConverter {
         return newbmp;
     }
 
+    public static byte[] Invert(byte[] bmp)
+    {
+        var start = 12 + 40 + 8 + 1;
+        for (var i=start; i<bmp.Length; i++) {
+            bmp[i] = (byte)(bmp[i] ^ 0xff);
+        }
+
+        return bmp;
+    }
+
     // read an integer from a byte array
     private static int GetInt(byte[] data, int start, int end){
         int val = 0;
@@ -157,6 +170,10 @@ public class BitmapConverter {
         }
         else {
             byte[] newbmp = BitmapConverter.To1bpp(args[0]);
+            if (args.Length > 1 && args[1] == "--invert") {
+                Console.WriteLine("Inverting");
+                newbmp = BitmapConverter.Invert(newbmp);
+            }
             System.Console.WriteLine(newbmp);
             System.IO.File.WriteAllBytes("out.bmp",newbmp);
         }

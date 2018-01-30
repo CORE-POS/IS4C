@@ -16,6 +16,12 @@ class InstaFileV3
     public function getFile($filename)
     {
         $depositP = $this->dbc->prepare('SELECT normal_price FROM products WHERE upc=?');
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $instaDB = $settings['InstaCartDB'];
+        $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaCartIncludes WHERE upc=?');
+        $excludeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaCartExcludes WHERE upc=?');
+        $instaMode = $settings['InstaCartMode'];
+
         $query = "
             SELECT p.upc,
                 p.normal_price,
@@ -56,8 +62,20 @@ class InstaFileV3
         $csv = fopen($filename, 'w');
         fwrite($csv, "upc,price,cost_unit,item_name,size,brand_name,unit_count,department,available,last_sold,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,sale_price,sale_start_at,sale_end_at\r\n");
         while ($row = $this->dbc->fetchRow($res)) {
-            if ($row['normal_price'] <= 0) {
+            if ($row['normal_price'] <= 0.01 || $row['normal_price'] >= 500) {
                 continue;
+            }
+
+            if ($instaMode == 1) {
+                $included = $this->dbc->getValue($includeP, array($row['upc']));
+                if ($included === false) {
+                    continue;
+                }
+            } else {
+                $excluded = $this->dbc->getValue($excludeP, array($row['upc']));
+                if ($excluded == $row['upc']) {
+                    continue;
+                }
             }
 
             $upc = ltrim($row['upc'], '0');
@@ -81,23 +99,34 @@ class InstaFileV3
             fwrite($csv, ($row['scale'] ? 'lb' : 'each') . ',');
 
             $desc = str_replace('"', '', $row['description']);
+            $desc = str_replace("\r", '', $desc);
+            $desc = str_replace("\n", ' ', $desc);
             $desc = substr($desc, 0, 100);
             fwrite($csv, '"' . $desc . '",');
 
             $size = $row['size'] ? $row['size'] : 1;
             if ($row['scale']) {
                 $size = 'per lb';
+            } elseif (trim($size) == '#') {
+                $size = 'per lb';
             }
             $units = 1;
-            if (strstr($size, '/')) {
+            if (strstr($size, '/') && !$row['scale']) {
                 list($units, $size) = explode('/', $size, 2);
             } elseif (strstr($size, '-')) {
                 list($units, $size) = explode('-', $size, 2);
             }
+            if (!is_numeric($units)) {
+                $units = 1;
+            }
             if (is_numeric($size)) {
                 $size .= $row['unitofmeasure'];
             }
+            $size = str_replace('#', 'lb', $size);
             if (is_numeric(trim($size))) {
+                $size = 'each';
+            }
+            if ($size != 'each' && $size != 'per lb' && !preg_match('/\d+/', $size)) {
                 $size = 'each';
             }
             fwrite($csv, $size . ',');

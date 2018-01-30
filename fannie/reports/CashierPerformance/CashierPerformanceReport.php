@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class CashierPerformanceReport extends FannieReportPage 
@@ -74,12 +74,13 @@ class CashierPerformanceReport extends FannieReportPage
                 SUM(CASE WHEN trans_status=\'X\' AND charflag <> \'S\' THEN total ELSE 0 END) as cancelTotal
             FROM ' . $dtrans . ' AS d
                 INNER JOIN employees AS e ON d.emp_no=e.emp_no
+                LEFT JOIN Stores AS s ON d.store_id=s.storeID
             WHERE d.datetime BETWEEN ? AND ?
                 AND trans_type IN (\'I\', \'D\')
                 AND trans_status <> \'M\'
                 AND register_no <> 99
                 AND d.emp_no <> 9999
-                AND d.store_id <> 50
+                AND (s.hasOwnItems=1 OR s.hasOwnItems IS NULL)
         ';
         if ($emp_no) {
             $basicQ .= ' AND d.emp_no = ? ';

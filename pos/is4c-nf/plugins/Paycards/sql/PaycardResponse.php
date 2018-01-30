@@ -94,7 +94,7 @@ class PaycardResponse
     {
         $this->token['record'] = $rec;
         $this->token['proc'] = $proc;
-        $this->token['acq'] = $acq;
+        $this->token['acq'] = substr($acq, 0, 100);
     }
 
     public function setBalance($bal)

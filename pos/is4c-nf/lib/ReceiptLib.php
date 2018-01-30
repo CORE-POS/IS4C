@@ -131,8 +131,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
         }
     }
 
-    $receipt .= "\n";
-    $receipt .= "Cashier: ".CoreLocal::get("cashier")."\n\n";
+    $receipt .= "\n\n";
 
     $time = self::build_time($dateTimeStamp);
     $time = str_replace(" ","     ",$time);
@@ -247,6 +246,20 @@ static public function printCabCoupon($dateTimeStamp, $ref)
     return $receipt;
 }
 
+
+static public function printGiftReceipt($dateTimeStamp, $ref)
+{
+    $receipt = "\n";
+
+    $reciept .= self::printReceiptHeader($dateTimeStamp, $ref);
+    $receipt .= "\n";
+
+    $receipt .= self::biggerFont(self::centerBig("GIFT RECEIPT"))."\n\n";
+    $receipt .= "\n";
+
+    return $receipt;
+}
+
 /***** jqh 09/29/05 functions added for new receipt *****/
 static public function biggerFont($str) {
     $receipt=chr(29).chr(33).chr(17);
@@ -297,8 +310,9 @@ static public function chargeBalance($receipt, $program="charge", $transNum='')
     $checkR = $dbc->query($checkQ);
     $numRows = $dbc->numRows($checkR);
 
-    $currActivity = CoreLocal::get("memChargeTotal");
-    $currBalance = CoreLocal::get("balance") - $currActivity;
+    $currActivity = is_numeric(CoreLocal::get("memChargeTotal")) ? CoreLocal::get("memChargeTotal") : 0;
+    $currBalance = is_numeric(CoreLocal::get("balance")) ? CoreLocal::get("balance") : 0;
+    $currBalance -= $currActivity;
     
     if (($numRows > 0 || $currBalance != 0) && CoreLocal::get("memberID") != CoreLocal::get('defaultNonMem')) {
         $chargeString = $labels["$program"][0] .
@@ -601,6 +615,13 @@ static public function twoColumns($col1, $col2) {
     // find longest string in each column, ignoring font change strings
     list($col1s, $c1max) = self::processColumn($col1);
     list($col2s, $c2max) = self::processColumn($col2);
+    // avoid warnings when calculated length < 0
+    $safeRepeat = function ($i) {
+        if ($i <= 0) {
+            return '';
+        }
+        return str_repeat(' ', $i);
+    };
     // space the columns as much as they'll fit
     $spacer = $max - $c1max - $c2max;
     // scan both columns
@@ -608,9 +629,9 @@ static public function twoColumns($col1, $col2) {
         $c1r = trim($col1[$x]);  $c1l = strlen($col1s[$x]);
         $c2r = trim($col2[$x]);  $c2l = strlen($col2s[$x]);
         if( ($c1max+$spacer+$c2l) <= $max) {
-            $text .= $c1r . str_repeat(" ", ($c1max+$spacer)-$c1l) . $c2r . "\n";
+            $text .= $c1r . $safeRepeat(($c1max+$spacer)-$c1l) . $c2r . "\n";
         } else {
-            $text .= $c1r . "\n" . str_repeat(" ", $c1max+$spacer) . $c2r . "\n";
+            $text .= $c1r . "\n" . $safeRepeat($c1max+$spacer) . $c2r . "\n";
         }
     }
     // if one column is longer than the other, print the extras
@@ -730,7 +751,7 @@ static private function getTypeMap()
 static private function memberFooter($receipt, $ref)
 {
     $mod = CoreLocal::get('ReceiptThankYou');
-    if ($mod != '' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\' . $mod)) {
+    if ($mod != '' && substr($mod, 0, 7) !== 'COREPOS' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\' . $mod)) {
         $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\' . $mod;
     } elseif ($mod === '' || !class_exists($mod)) {
         $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\DefaultReceiptThanks';
@@ -869,7 +890,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $receipt['any'] .= self::$PRINT->addRenderingSpacer('end of items');
 
             $savingsMode = CoreLocal::get('ReceiptSavingsMode');
-            if ($savingsMode != '' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode)) {
+            if ($savingsMode != '' && substr($savingsMode, 0, 7) !== 'COREPOS' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode)) {
                 $savingsMode = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode;
             } elseif ($savingsMode === '' || !class_exists($savingsMode)) {
                 $savingsMode = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\DefaultReceiptSavings';
@@ -911,6 +932,8 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $ref = CoreLocal::get("cabReference");
             $receipt = self::printCabCoupon($dateTimeStamp, $ref);
             CoreLocal::set("cabReference","");
+        } elseif ($arg1 == "giftReceipt") {
+            $receipt = self::printGiftReceipt($dateTimeStamp, $ref);
         } else {
             $receipt = self::simpleReceipt($receipt, $arg1, $where);
         }
@@ -1035,7 +1058,7 @@ static public function memReceiptMessages($cardNo)
     while ($row = $dbc->fetchRow($memR)) {
         // EL This bit new for messages from plugins.
         $className = $row['modifier_module'];
-        if (!empty($className) && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $className)) {
+        if (!empty($className) && substr($className, 0, 7) !== 'COREPOS' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $className)) {
             $className = 'COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $className;
         }
         if (!empty($className) && class_exists($className)) {
@@ -1091,13 +1114,17 @@ static public function mostRecentReceipt()
     return $row['emp_no'] . '-' . $row['register_no'] . '-' . $row['trans_no'];
 }
 
-static public function code39($barcode)
+static public function code39($barcode, $forcePaper=false)
 {
     if (!is_object(self::$PRINT)) {
         self::$PRINT= PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
+    $printMod = self::$PRINT;
+    if ($forcePaper && (get_class(self::$PRINT) == self::$EMAIL || get_class(self::$PRINT) == self::$HTML)) {
+        $printMod = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+    }
 
-    return self::$PRINT->printBarcode(PrintHandler::BARCODE_CODE39, $barcode);
+    return $printMod->printBarcode(PrintHandler::BARCODE_CODE39, $barcode);
 }
 
 static public function emailReceiptMod()

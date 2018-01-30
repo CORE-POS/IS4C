@@ -26,7 +26,7 @@ use \COREPOS\Fannie\API\item\PriceRounder;
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
 class VendorPricingBatchPage extends FannieRESTfulPage
@@ -124,6 +124,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $b->discountType(0);
             $b->priority(0);
             $batchID = $b->save();
+            $bu = new BatchUpdateModel($dbc);
+            $bu->batchID($batchID);
+            $bu->logUpdate($bu::UPDATE_CREATE);
             if ($this->config->get('STORE_MODE') === 'HQ') {
                 StoreBatchMapModel::initBatch($batchID);
             }
@@ -142,6 +145,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <input type=hidden id=queueID value=%d />
             <input type=hidden id=superID value=%d />",
             $vendorID,$batchID,$queueID,$superID);
+        $ret .= '<br/><b>Show only</b>: <button class="btn btn-danger btn-xs" 
+            onClick="showOnlyClass(\'red\'); return false;"> Red </button> | 
+            <button class="btn btn-warning btn-xs" onClick="showOnlyClass(\'yellow\'); return false;">
+            Yellow</button> | <button class="btn btn-success btn-xs" onClick="showOnlyClass(\'green\');
+            return false;">Green</button> | <button class="btn btn-default btn-xs" onClick="showAll(); 
+            return false;"> <b>All</b> </button><br/><br/>';
 
         $batchUPCs = array();
         $batchList = new BatchListModel($dbc);
@@ -152,7 +161,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $costSQL = Margin::adjustedCostSQL('p.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
-        $p_def = $dbc->tableDefinition('products');
         $marginCase = '
             CASE
                 WHEN g.margin IS NOT NULL AND g.margin <> 0 THEN g.margin
@@ -191,7 +199,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             v.srp,
             " . $srpSQL . " AS rawSRP,
             v.vendorDept,
-            x.variable_pricing,
+            p.price_rule_id AS variable_pricing,
             " . $marginCase . " AS margin,
             CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias,
             CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded
@@ -202,7 +210,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc
                 LEFT JOIN upcLike AS l ON v.upc=l.upc ";
         $args = array($vendorID);
         if ($superID != -1){
@@ -225,9 +232,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $query .= ' GROUP BY p.upc ';
 
         $query .= " ORDER BY p.upc";
-        if (isset($p_def['price_rule_id'])) {
-            $query = str_replace('x.variable_pricing', 'p.price_rule_id AS variable_pricing', $query);
-        }
 
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
@@ -235,9 +239,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $vendorModel = new VendorItemsModel($dbc);
 
         $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
-        $ret .= "<thead><tr><td colspan=6 class=\"thead\">&nbsp;</td><th colspan=2  class=\"thead\">Current</th>
-            <th colspan=3  class=\"thead\">Vendor</th><td colspan=3 class=\"thead\"></td></tr>";
-        $ret .= "<tr><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
+        $ret .= "<thead><tr class=\"thead\"><td colspan=6 class=\"thead\">&nbsp;</td>
+            <th colspan=2  class=\"thead\">Current</th><th colspan=3  class=\"thead\">
+            Vendor</th><td colspan=3 class=\"thead\"></td></tr>";
+        $ret .= "<tr class=\"thead\"><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
             <th class=\"thead\">Base Cost</th>
             <th class=\"thead\">Shipping</th>
             <th class=\"thead\">Discount%</th>
@@ -413,6 +418,19 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         ?>
         var $table = $('#mytable');
         $table.floatThead();
+        function showOnlyClass(classname) {
+            showAll();
+            $('tr').each(function() {
+                var hasclass = $(this).closest('tr').hasClass(classname);
+                if (!hasclass) $(this).closest('tr').hide();
+            });
+        }
+        function showAll()
+        {
+            $('tr').each(function() {
+                $(this).closest('tr').show();
+            });
+        }
         <?php
         return ob_get_clean();
     }

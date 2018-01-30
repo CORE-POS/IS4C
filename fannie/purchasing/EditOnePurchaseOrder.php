@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 
 class EditOnePurchaseOrder extends FannieRESTfulPage 
@@ -73,7 +73,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         while($w = $dbc->fetch_row($skuR)){
             $result = array(
             'sku' => $w['sku'],
-            'title' => $w['brand'].' - '. $this->asciiFilter($w['description']),
+            'title' => $this->asciiFilter($w['brand']).' - '. $this->asciiFilter($w['description']),
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
@@ -95,7 +95,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         while($w = $dbc->fetch_row($upcR)){
             $result = array(
             'sku' => $w['sku'],
-            'title' => $w['brand'].' - '. $this->asciiFilter($w['description']),
+            'title' => $this->asciiFilter($w['brand']).' - '. $this->asciiFilter($w['description']),
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
@@ -117,10 +117,14 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
       Finalize a search result
 
       This adds an item's order history and quantity present in the
-      current order. If the item is not in the current order it's
+      current order. If the item is not in the current order and
+      there's exactly one search result then it gets
       automatically added with quantity one. Otherwise it's incremented
       by one. The logic here is oriented around using a handheld scanner
       where scanning something three times results in quantity three.
+
+      When the search returns multiple results the quantities returned
+      are simply current values without any automatic incrementing
     */
     private function mergeSearchResult($ret, $orderID, $dbc)
     {
@@ -142,13 +146,17 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         for ($i=0; $i<count($ret); $i++) {
             $sku = $ret[$i]['sku'];
             $cases = $dbc->getValue($currentP, array($orderID, $sku));
-            $ret[$i]['cases'] = ($cases) ? $cases+1 : 1;
+            $ret[$i]['cases'] = ($cases) ? $cases : 0;
             $this->sku = $ret[$i]['sku'];
             $this->qty = $ret[$i]['cases']; 
             $this->id = $orderID;
-            ob_start();
-            $this->get_id_sku_qty_handler();
-            $result = ob_get_clean();
+            if (count($ret) === 1) {
+                $ret[$i]['cases'] += 1;
+                $this->qty = $ret[$i]['cases'];
+                ob_start();
+                $this->get_id_sku_qty_handler();
+                $result = ob_get_clean();
+            }
             $ret[$i]['history'] = array();
             $historyR = $dbc->execute($historyP, array($storeID, $sku));
             while ($historyW = $dbc->fetchRow($historyR)) {
@@ -192,8 +200,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             $pitem->unitCost($vitem->cost());
             $pitem->caseSize($vitem->units());
             $pitem->unitSize($vitem->size());
-            $pitem->brand($vitem->brand());
-            $pitem->description($vitem->description());
+            $pitem->brand($this->asciiFilter($vitem->brand()));
+            $pitem->description($this->asciiFilter($vitem->description()));
             $pitem->internalUPC($vitem->upc());
     
             $saved = $pitem->save();
@@ -413,32 +421,32 @@ HTML;
             <table class="table table-bordered table-striped">
             <tr>
                 <th>SKU</th>
-                <th>UPC</th>
-                <th>Brand</th>
+                <th class="hidden-xs">UPC</th>
+                <th class="hidden-xs">Brand</th>
                 <th>Description</th>
-                <th>Size</th>
+                <th class="hidden-xs">Size</th>
                 <th>Units/Case</th>
                 <th>Cases</th>
-                <th>Est. Cost</th>
+                <th class="hidden-xs">Est. Cost</th>
             </tr>';
         $offset = 0;
         foreach ($poi->find() as $item) {
             $batch = $this->connection->getValue($batchP, array($item->internalUPC(), $order->storeID()));
             $ret .= sprintf('<tr %s>
                 <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
+                <td class="hidden-xs">%s</td>
+                <td class="hidden-xs">%s</td>
                 <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
+                <td class="hidden-xs">%s</td>
                 <td><input type="text" class="form-control" name="case[]" value="%s" /></td>
                 <td><input type="text" class="form-control" name="qty[]" value="%s" /></td>
-                <td>%.2f</td>
+                <td class="hidden-xs">%.2f</td>
                 </tr>',
                 $batch ? 'class="info" title="' . $batch . '"' : '',
                 $item->sku(), $item->sku(),
                 \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($item->internalUPC()),
-                $item->brand(),
-                $item->description(),
+                $this->asciiFilter($item->brand()),
+                $this->asciiFilter($item->description()),
                 $item->unitSize(),
                 $item->caseSize(),
                 $item->quantity(),
@@ -472,24 +480,26 @@ HTML;
     */
     private function getOrderID($vendorID, $userID)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        if (FormLib::get('store', false)) {
+            $store = FormLib::get('store');
+        }
+        $cutoff = date('Y-m-d', strtotime('30 days ago'));
         $orderQ = 'SELECT orderID FROM PurchaseOrder WHERE
-            vendorID=? AND userID=? and placed=0
+            vendorID=? AND userID=? AND storeID=? AND creationDate > ? and placed=0
             ORDER BY creationDate DESC';
         $orderP = $dbc->prepare($orderQ);
-        $orderR = $dbc->execute($orderP, array($vendorID, $userID));
-        if ($dbc->num_rows($orderR) > 0){
-            $row = $dbc->fetch_row($orderR);
-            return $row['orderID'];
-        } else {
+        $orderID = $dbc->getValue($orderP, array($vendorID, $userID, $store, $cutoff));
+        if (!$orderID) {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
                 placed, userID, storeID) VALUES (?, '.$dbc->now().', 0, ?, ?)';
             $insP = $dbc->prepare($insQ);
-            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
             $insR = $dbc->execute($insP, array($vendorID, $userID, $store));
-            return $dbc->insertID();
+            $orderID = $dbc->insertID();
         }
+
+        return $orderID;
     }
 
     /**
@@ -500,14 +510,22 @@ HTML;
         global $FANNIE_OP_DB;
         $model = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
         $vOpts = $model->toOptions();
+        $stores = FormLib::storePicker();
+        $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
 
         return <<<HTML
 <form class="form" action="EditOnePurchaseOrder.php" method="get">
     <div class="form-group">
         <label>Select a vendor</label>
-        <select name="vendorID" class="form-control">
+        <select name="vendorID" class="form-control chosen">
             {$vOpts}
         </select>
+    </div>
+    <div class="form-group">
+        <label>Select a store</label>
+        {$stores['html']}
     </div>
     <p>
         <button type="submit" class="btn btn-default">Go</button>

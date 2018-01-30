@@ -1,6 +1,6 @@
 <?php
-require($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
-include($FANNIE_ROOT.'src/xmlData.php');
+require(__DIR__ . '/../../../../src/Credentials/GoE.wfc.php');
+include(__DIR__ . '/../../../../src/xmlData.php');
 
 function getProcessorInfo($dateStr){
     global $FANNIE_TRANS_DB;

@@ -44,7 +44,7 @@ class MeminfoModel extends BasicModel
     'state' => array('type'=>'VARCHAR(2)'),
     'zip' => array('type'=>'VARCHAR(10)'),
     'phone' => array('type'=>'VARCHAR(30)'),
-    'email_1' => array('type'=>'VARCHAR(50)'),
+    'email_1' => array('type'=>'VARCHAR(100)'),
     'email_2' => array('type'=>'VARCHAR(50)'),
     'ads_OK' => array('type'=>'TINYINT','default'=>1),
     'modified'=>array('type'=>'DATETIME','ignore_updates'=>true),

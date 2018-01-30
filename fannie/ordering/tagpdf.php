@@ -25,17 +25,17 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('checkLogin')) {
-    include($FANNIE_ROOT.'auth/login.php');
+    include(__DIR__ . '/../auth/login.php');
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $TRANS = $FANNIE_TRANS_DB.$dbc->sep();
 
 if (isset($_REQUEST['toids'])){
     define('FPDF_FONTPATH','font/');
-    include($FANNIE_ROOT.'src/fpdf/fpdf.php');
+    include(__DIR__ . '/../src/fpdf/fpdf.php');
 
     $pdf=new FPDF('P','mm','Letter'); //start new instance of PDF
     $pdf->Open(); //open new PDF Document
@@ -151,7 +151,7 @@ if (isset($_REQUEST['toids'])){
 
 $page_title = "Fannie :: Special Orders";
 $header = "Special Orders";
-include($FANNIE_ROOT.'src/header.html');
+include(__DIR__ . '/../src/header.html');
 
 if (!isset($_REQUEST['oids'])){
     echo "<i>No order(s) selected</i><br />";
@@ -219,5 +219,5 @@ else {
     echo '</form>';
 }
 
-include($FANNIE_ROOT.'src/footer.html');
+include(__DIR__ . '/../src/footer.html');
 

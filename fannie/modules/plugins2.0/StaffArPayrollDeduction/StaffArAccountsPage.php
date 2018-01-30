@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 /**
@@ -78,7 +78,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
 
     public function get_add_payid_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ROOT;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $ret = array();
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -180,6 +180,10 @@ class StaffArAccountsPage extends FannieRESTfulPage
             $info[$row['CardNo']]['name'] = $row['LastName'] . ', ' . $row['FirstName'];
             $info[$row['CardNo']]['balance'] = $row['balance'];
         }
+        uasort($info, function ($a, $b) {
+            if ($a['name'] == $b['name']) return 0;
+            return ($a['name'] < $b['name']) ? -1 : 1;
+        });
 
         $ret = '<div id="mainDisplayDiv">';
         $query = 'SELECT tdate FROM StaffArDates WHERE tdate >= ' . $dbc->now();
@@ -270,9 +274,19 @@ class StaffArAccountsPage extends FannieRESTfulPage
             specified amounts</p>
             <p>It is important not to alter the <em>Next Deduction</em>
             amounts in the time between entering the deduction information
-            in the payroll system and pay day. If accounts continue to
-            make charges during this time period, their balance will not
-            be reduced all the way to zero.</p>';
+            in the payroll system and pay day or the amount deducted via payroll
+            will not match the balance payment made in POS.
+            </p>
+            <p>Account balance often will not be exactly zero on the morning
+            after payday. This is because if accounts continue to make 
+            charges during this time period between setting the deduction amounts
+            and issuing paychecks their balance will not be reduced all the way 
+            to zero.</p>
+            <p>Use the form at the bottom of the page to add new employees to
+            this cycle. The Owner/member# is required but the payroll identifier
+            is entirely optional.</p>
+            <p>The <em>View Schedule</em> link at the top of the page also lets
+            you add or adjust future payroll dates.</p>';
     }
 }
 

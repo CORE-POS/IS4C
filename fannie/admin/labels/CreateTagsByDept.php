@@ -22,12 +22,12 @@
 *********************************************************************************/
 
 include(dirname(__FILE__) . '/../../config.php');
-if (!class_exists('FannieAPI.php')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class CreateTagsByDept extends FanniePage {
-
+class CreateTagsByDept extends FannieRESTfulPage
+{
     protected $title = "Fannie : Department Shelf Tags";
     protected $header = "Department Shelf Tags";
 
@@ -37,39 +37,46 @@ class CreateTagsByDept extends FanniePage {
 
     private $msgs = '';
 
-    function preprocess()
+    protected function post_handler()
     {
-        global $FANNIE_OP_DB;
-        if (FormLib::get_form_value('deptStart',False) !== false) {
-            $start = FormLib::get_form_value('deptStart');
-            $end = FormLib::get_form_value('deptEnd');
-            $pageID = FormLib::get_form_value('sID',0);
-            $dbc = FannieDB::get($FANNIE_OP_DB);
-            $prodP = $dbc->prepare("
-                SELECT p.upc
-                FROM products AS p
-                WHERE p.department BETWEEN ? AND ?
-            ");
-            $prodR = $dbc->execute($prodP, array($start,$end));
-            $tag = new ShelftagsModel($dbc);
-            $product = new ProductsModel($dbc);
-            while ($row = $dbc->fetch_row($prodR)) {
-                $product->upc($row['upc']);
-                $info = $product->getTagData();
-                $tag->id($pageID);
-                $tag->upc($row['upc']);
-                $tag->setData($info);
-                $tag->save();
-            }
-            $this->msgs = sprintf('<em>Created tags for departments #%d through #%d</em>
-                    <br /><a href="ShelfTagIndex.php">Home</a>',
-                $start, $end);
+        try {
+            $start = $this->form->deptStart;
+            $end = $this->form->deptEnd;
+        } catch (Exception $ex) {
+            return true;
         }
+
+        $pageID = $this->form->tryGet('sID',0);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $prodP = $dbc->prepare("
+            SELECT p.upc
+            FROM products AS p
+            WHERE p.department BETWEEN ? AND ?
+        ");
+        $prodR = $dbc->execute($prodP, array($start,$end));
+        $tag = new ShelftagsModel($dbc);
+        $product = new ProductsModel($dbc);
+        while ($row = $dbc->fetch_row($prodR)) {
+            $product->upc($row['upc']);
+            $info = $product->getTagData();
+            $tag->id($pageID);
+            $tag->upc($row['upc']);
+            $tag->setData($info);
+            $tag->save();
+        }
+        $this->msgs = sprintf('<em>Created tags for departments #%d through #%d</em>
+                <br /><a href="ShelfTagIndex.php">Home</a>',
+            $start, $end);
 
         return true;
     }
 
-    function body_content()
+    protected function post_view()
+    {
+        return $this->get_view();
+    }
+
+    protected function get_view()
     {
         $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
         $deptsQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
@@ -91,7 +98,7 @@ class CreateTagsByDept extends FanniePage {
 
         ob_start();
         ?>
-        <form action="CreateTagsByDept.php" method="get">
+        <form action="CreateTagsByDept.php" method="post">
         <div class="row form-group form-horizontal"> 
             <label class="col-sm-2">Department Start</label>
             <div class="col-sm-4">
@@ -140,7 +147,13 @@ class CreateTagsByDept extends FanniePage {
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->msgs = 'test message';
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->setMany(array('deptStart'=>1, 'deptEnd'=>1));
+        $this->setForm($form);
+        $phpunit->assertEquals(true, $this->post_handler());
+        $phpunit->assertNotEquals(0, strlen($this->post_view()));
     }
 }
 

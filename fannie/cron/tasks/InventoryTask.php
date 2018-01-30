@@ -72,6 +72,43 @@ class InventoryTask extends FannieTask
     }
 
     /**
+     * Find items with multiple most-recent counts
+     * Mark all but the one with the newest timestamp
+     * as not-most-recent
+     */
+    private function deepClean($dbc, $store_id, $vendor_id)
+    {
+        if ($store_id || $vendor_id) {
+            return true;
+        }
+
+        $keepP = $dbc->prepare('SELECT inventoryCountID
+            FROM InventoryCounts
+            WHERE mostRecent=1
+                AND upc=?
+                AND storeID=?
+            ORDER BY countDate DESC');
+        $cleanP = $dbc->prepare('UPDATE InventoryCounts
+            SET mostRecent=0
+            WHERE upc=?
+                AND storeID=?
+                AND inventoryCountID <> ?');
+        $res = $dbc->query('SELECT upc, storeID 
+            FROM InventoryCounts
+            WHERE mostRecent=1
+            GROUP BY upc, storeID
+            HAVING COUNT(*) > 1');
+        while ($row = $dbc->fetchRow($res)) {
+            $keepID = $dbc->getValue(array($row['upc'], $row['storeID']));
+            if ($keepID) {
+                $dbc->execute($cleanP, array($row['upc'], $row['storeID'], $keepID));
+            }
+        }
+
+        return true;
+    }
+
+    /**
       Normal nightly behavior is to get all base counts and
       rebuild cache but if store and vendor IDs have been
       specified only those entires are recalculated
@@ -108,6 +145,7 @@ class InventoryTask extends FannieTask
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->clearEntries($dbc, $this->store_id, $this->vendor_id);
+        //$this->deepClean($dbc, $this->store_id, $this->vendor_id);
 
         $dbc->startTransaction();
         $insP = $dbc->prepare('

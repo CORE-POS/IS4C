@@ -37,6 +37,7 @@ class CoopDealsItemsModel extends BasicModel
     'price' => array('type'=>'MONEY'),
     'abtpr' => array('type'=>'VARCHAR(3)'),
     'multiplier' => array('type'=>'INT', 'default'=>1),
+    'promoDiscount' => array('type'=>'VARCHAR(10)'),
     );
 }
 

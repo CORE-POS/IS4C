@@ -39,9 +39,13 @@ class EquityCheck extends Parser
 
     function parse($str)
     {
+        $ret = $this->default_json();
         $equityPaid = 0;
         $equityBalance = 0;
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            return $ret;
+        }
         $dbName = Database::mAltName();
 
         $query = $dbc->prepare('SELECT payments FROM ' . $dbName . 'equity_live_balance WHERE memnum= ? ');
@@ -52,7 +56,6 @@ class EquityCheck extends Parser
         }
         $equityBalance = 10000 - $equityPaid;
 
-        $ret = $this->default_json();
         $title = _('Member #') . $this->session->get('memberID');
         $msg = _("Current amount of Equity paid is ") . $equityPaid . "<br />"
              . _("Amount of Equity left is ") . (100.00 - $equityPaid) . ".";

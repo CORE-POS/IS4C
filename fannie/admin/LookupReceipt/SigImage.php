@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
+}
 
 /**
   @class SigImage
@@ -30,6 +32,8 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 */
 class SigImage 
 {
+    public $default_db = false;
+
     public function setConfig()
     {
     }
@@ -49,7 +53,7 @@ class SigImage
         $dbc = FannieDB::getReadOnly($FANNIE_TRANS_DB);
 
         $id = FormLib::get('id', 0);
-        $prep = $dbc->prepare('SELECT filetype, filecontents FROM CapturedSignature WHERE capturedSignatureID=?');
+        $prep = $dbc->prepare('SELECT filetype, filecontents FROM ' . FannieDB::fqn('CapturedSignature', 'trans') . ' WHERE capturedSignatureID=?');
         $result = $dbc->execute($prep, array($id));
         if ($dbc->num_rows($result) > 0) {
             $row = $dbc->fetch_row($result);

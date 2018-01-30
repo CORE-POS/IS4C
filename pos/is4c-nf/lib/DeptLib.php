@@ -123,7 +123,7 @@ class DeptLib
             dept_minimum,
             dept_discount,";
         if ($this->session->get('NoCompat') == 1) {
-            $query .= 'dept_see_id, memberOnly, line_item_discount';
+            $query .= 'dept_see_id, memberOnly, line_item_discount, margin';
         } else {
             $table = $dbc->tableDefinition('departments');
             if (isset($table['dept_see_id'])) {
@@ -137,9 +137,14 @@ class DeptLib
                 $query .= '0 AS memberOnly,';
             }
             if (isset($table['line_item_discount'])) {
-                $query .= 'line_item_discount';
+                $query .= 'line_item_discount,';
             } else {
-                $query .= '1 AS line_item_discount';
+                $query .= '1 AS line_item_discount,';
+            }
+            if (isset($table['margin'])) {
+                $query .= 'margin';
+            } else {
+                $query .= '0 AS margin';
             }
         }
         $query .= " FROM departments 
@@ -306,6 +311,7 @@ class DeptLib
                 'unitPrice' => $price,
                 'total' => $price * $this->session->get('quantity'),
                 'regPrice' => $price,
+                'cost' => $dept['margin'] ? $price - ($price * $dept['margin']) : 0,
                 'tax' => $tax,
                 'foodstamp' => $foodstamp,
                 'discountable' => $deptDiscount,

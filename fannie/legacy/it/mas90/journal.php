@@ -1,9 +1,10 @@
 <?php
 include('../../../config.php');
 
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager"))
+    require(__DIR__ . '/../../../src/SQLManager.php');
 
 include('../../db.php');
 

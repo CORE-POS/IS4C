@@ -63,10 +63,12 @@ class InstallUtilities
                 ini_set('mssql.connect_timeout',1);
             }
             $sql =  new \COREPOS\pos\lib\SQLManager($host,$type,$dbname,$user,$pass);
-        } catch(Exception $ex) {}
+        } catch(Exception $ex) {
+            return $ex->toString();
+        }
 
         if ($sql === false || $sql->isConnected($dbname) === false) {
-            return false;
+            return 'Cannot connect to database';
         }
 
         return $sql;

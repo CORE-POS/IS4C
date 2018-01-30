@@ -45,5 +45,7 @@ interface DialectAdapter
     public function concat($expressions);
     public function setLockTimeout($seconds);
     public function setCharSet($charset);
+    public function getProcessList();
+    public function kill($intID);
 }
 

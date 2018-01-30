@@ -31,7 +31,6 @@ if (!function_exists('confset')) {
 if (!function_exists('dropDeprecatedStructure')) {
     include(dirname(__FILE__) . '/db.php');
 }
-$FILEPATH = $FANNIE_ROOT;
 
 /**
     @class InstallPluginsPage

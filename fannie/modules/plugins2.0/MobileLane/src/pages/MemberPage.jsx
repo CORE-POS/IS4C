@@ -10,6 +10,7 @@ import {
     Alert
 } from 'react-bootstrap';
 const $ = require('jquery');
+import { MEMBER, NAVIGATE } from './../lib/State.jsx';
 
 export default class MemberPage extends React.Component {
     constructor(props) {

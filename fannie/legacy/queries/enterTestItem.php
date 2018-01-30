@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require($FANNIE_ROOT.'auth/login.php');
+include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
+require(__DIR__ . '/../../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
 $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();

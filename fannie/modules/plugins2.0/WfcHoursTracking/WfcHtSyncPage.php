@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('WfcHtLib')) {
     require(dirname(__FILE__).'/WfcHtLib.php');
@@ -62,6 +62,8 @@ class WfcHtSyncPage extends FanniePage
                 continue;
             }
             $name = $names[1];
+            list($first, $last) = explode(' ', $name, 2);
+            $name = $last . ', ' . $first;
 
             // create entry in hours database
             $chkR = $dbc->execute($chkQ, array($uid));

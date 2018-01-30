@@ -47,10 +47,10 @@
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('cron_msg')) {
-    include($FANNIE_ROOT.'src/cron_msg.php');
+    include(__DIR__ . '/../src/cron_msg.php');
 }
 
 set_time_limit(0);
@@ -97,7 +97,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
         END 
         WHERE l.upc NOT LIKE 'LC%'
         AND CURDATE() >= b.startDate AND CURDATE() <= b.endDate
-        AND b.discounttype <> 0");
+        AND b.discounttype > 0");
 
     $sql->query("UPDATE products AS p LEFT JOIN
         upcLike AS v ON v.upc=p.upc LEFT JOIN
@@ -117,7 +117,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
         END 
         WHERE l.upc LIKE 'LC%'
         AND CURDATE() >= b.startDate AND CURDATE() <= b.endDate
-        AND b.discounttype <> 0");
+        AND b.discounttype > 0");
 }
 else {
     $sql->query("UPDATE products
@@ -145,7 +145,7 @@ else {
         LEFT JOIN batchList AS l ON p.upc=l.upc
         LEFT JOIN batches AS b ON l.batchID=b.batchID
         WHERE l.upc NOT LIKE 'LC%'
-        AND b.discountType <> 0");
+        AND b.discountType > 0");
 
     $sql->query("UPDATE products SET special_price = l.salePrice,
         end_date = b.enddate,start_date=b.startdate,
@@ -164,6 +164,6 @@ else {
         batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
         LEFT JOIN batches AS b ON l.batchID=b.batchID
         WHERE l.upc LIKE 'LC%'
-        AND b.discountType <> 0");
+        AND b.discountType > 0");
 }
 

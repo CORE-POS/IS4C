@@ -156,8 +156,13 @@ class CCredSigSlip extends ReceiptMessage {
         $slip = '';
         $idclause = '';
         $db = Database::tDataConnect();
-        if ($reprint)
+        if ($reprint) {
             $db = Database::mDataConnect();
+            if ($db === false) {
+                return $db;
+            }
+        }
+        
         if ($sigSlip && is_numeric($CORE_LOCAL->get('paycard_id'))) {
             $idclause = ' AND transID='.$CORE_LOCAL->get('paycard_id');
         }

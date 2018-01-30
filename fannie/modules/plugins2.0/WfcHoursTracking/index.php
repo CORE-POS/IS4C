@@ -6,7 +6,7 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 include(dirname(__FILE__).'/../../../config.php');
 
 if (!function_exists('validateUserQuiet')) {
-    require($FANNIE_ROOT.'auth/login.php');
+    require(__DIR__ . '/../../../auth/login.php');
 }
 
 $all = validateUserQuiet('view_all_hours');

@@ -39,7 +39,7 @@ class undo extends NoInputCorePage
         <?php echo $this->msg ?>
         </span><br />
         <form name="form" method='post' autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, "PHP_SELF"); ?>">
-        <input type="text" name="reginput" id="reginput" tabindex="0" onblur="($'#reginput').focus();" >
+        <input type="text" name="reginput" id="reginput" tabindex="0" onblur="$('#reginput').focus();" >
         </form>
         <p>
         <?php echo _('Enter transaction number<br />[clear to cancel]'); ?>
@@ -59,13 +59,13 @@ class undo extends NoInputCorePage
         }
 
         // error: malformed transaction number
-        if (!strpos($transNum,"-")){
+        if (!strpos($transNum,"-") && !strpos($transNum,'.')){
             $this->boxColor="errorColoredArea";
             $this->msg = _("Transaction not found");
             return true;
         }
 
-        $temp = explode("-",$transNum);
+        $temp = strpos($transNum,'-') ? explode("-",$transNum) : explode('.',$transNum);
         // error: malformed transaction number (2)
         if (count($temp) != 3){
             $this->boxColor="errorColoredArea";
@@ -113,6 +113,11 @@ class undo extends NoInputCorePage
         } else {
             // look up transaction remotely
             $dbc = Database::mDataConnect();
+            if ($dbc === false) {
+                $this->boxColor="errorColoredArea";
+                $this->msg = _("Transaction not available");
+                return true;
+            }
             $query = "select upc, description, trans_type, trans_subtype,
                 trans_status, department, quantity, scale, unitPrice,
                 total, regPrice, tax, foodstamp, discount, memDiscount,

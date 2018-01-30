@@ -23,7 +23,7 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class SaItemList extends SaHandheldPage
@@ -81,15 +81,21 @@ class SaItemList extends SaHandheldPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $uid = FannieAuth::getUID($this->current_user);
         $this->section = FormLib::get('section', 1);
+        $this->addRoute('get<dateID>');
 
         if (FormLib::get('clear') === '1') {
+            $set = FormLib::get('set', false);
             $table = $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList';
-            $prep = $dbc->prepare('
-                UPDATE ' . $table . '
+            $query = 'UPDATE ' . $table . '
                 SET clear=1
-                WHERE uid=?
-            ');
-            $dbc->execute($prep, array($uid));
+                WHERE uid=?';
+            $args = array($uid);
+            if ($set) {
+                $query .= ' AND section=?';
+                $args[] = $set;
+            }
+            $prep = $dbc->prepare($query);
+            $dbc->execute($prep, $args);
             return parent::preprocess();
         } elseif (FormLib::get('export') === '1') {
             echo $this->exportList(FormLib::get('set', 1));
@@ -119,10 +125,30 @@ class SaItemList extends SaHandheldPage
             $row = $dbc->getRow($prep, array($upc));
             if ($row) {
                 $this->saveRowToList($dbc, $upc, $row, $settings);
+                if (FormLib::get('dates', false)) {
+                    return 'SaItemList.php?dateID=' . $upc;
+                }
             }
         }
         
         return true;
+    }
+
+    protected function post_id_handler()
+    {
+        $upc = BarcodeLib::padUPC($this->id);
+        $uid = FannieAuth::getUID($this->current_user);
+        $date = FormLib::get('setDate');
+        $upP = $this->connection->prepare("
+            UPDATE " . FannieDB::fqn('SaList', 'plugin:ShelfAuditDB') . "
+            SET tdate=?
+            WHERE upc=?
+                AND section=?
+                AND uid=?
+                AND clear=0");
+        $upR = $this->connection->execute($upP, array($date, $upc, $this->section, $uid));
+
+        return 'SaItemList.php?datedMode=1';
     }
 
     protected function get_id_view()
@@ -156,6 +182,7 @@ class SaItemList extends SaHandheldPage
     // override ajax behavior of SaHandheldPage
     protected function upcForm($section)
     {
+        $checked = FormLib::get('datedMode', false) || FormLib::get('dates', false) ? 'checked' : '';
         ?>
 <form method="get" id="upcScanForm">
 <a href="SaMenuPage.php">Menu</a>
@@ -170,9 +197,49 @@ class SaItemList extends SaHandheldPage
         />
     </div>
     <button type="submit" class="btn btn-success" tabindex="-1" id="goBtn">Go</button>
+    <label><input type="checkbox" name="dates" value="1" <?php echo $checked; ?> /> Enter Dates</input></label>
 </div>
 </form>
         <?php
+    }
+
+    protected function get_dateID_view()
+    {
+        $opts = array();
+        $lbls = array();
+        for ($i=0; $i<12; $i++) {
+            $opts[] = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j') + $i + 1, date('Y')));
+            $lbls[] = date('m-d', mktime(0, 0, 0, date('n'), date('j') + $i + 1, date('Y')));
+        }
+        return <<<HTML
+<form method="post">
+    <input type="hidden" name="id" value="{$this->dateID}" />
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[0]}">{$lbls[0]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[1]}">{$lbls[1]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[2]}">{$lbls[2]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[3]}">{$lbls[3]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[4]}">{$lbls[4]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[5]}">{$lbls[5]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[6]}">{$lbls[6]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[7]}">{$lbls[7]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[8]}">{$lbls[8]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[9]}">{$lbls[9]}</button></div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[10]}">{$lbls[10]}</button></div>
+        <div class="col-xs-5"><button type="submit" class="btn btn-default btn-lg" name="setDate" value="{$opts[11]}">{$lbls[11]}</button></div>
+    </div>
+</form>
+HTML;
     }
 
     public function get_view()
@@ -191,7 +258,7 @@ class SaItemList extends SaHandheldPage
         echo $this->getList();
         echo '</div>
             <p>
-            <a href="?clear=1" class="btn btn-default btn-danger"
+            <a href="?clear=1&set=' . $this->section . '" class="btn btn-default btn-danger" id="clearLink"
                 onclick="return window.confirm(\'Clear list?\');">
                 Clear List
             </a>
@@ -212,6 +279,11 @@ class SaItemList extends SaHandheldPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($this->config->get('OP_DB'));
         $uid = FannieAuth::getUID($this->current_user);
+        $myUID = $uid;
+        $override = FormLib::get('showUser', false);
+        if ($override) {
+            $uid = $override;
+        }
         $prep = $this->connection->prepare('
             SELECT s.upc,
                 p.brand,
@@ -219,7 +291,8 @@ class SaItemList extends SaHandheldPage
                 p.size,
                 s.quantity as qty,
                 v.sku,
-                n.vendorName
+                n.vendorName,
+                s.tdate
             FROM ' . $settings['ShelfAuditDB'] . $this->connection->sep() . 'SaList AS s
                 ' . DTrans::joinProducts('s') . '
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
@@ -234,12 +307,13 @@ class SaItemList extends SaHandheldPage
         for ($i=1; $i<=3; $i++) {
             $ret .= sprintf('<li role="presentation" %s>
                 <a href="#section%d" aria-controls="section%d" role="tab" data-toggle="tab"
-                onclick="$(\'#section\').val(%d); $(\'#exportLink\').attr(\'href\', \'?export=1&set=%d\'); return false;">Set %d</a></li>',
+                onclick="$(\'#section\').val(%d); $(\'#exportLink\').attr(\'href\', \'?export=1&set=%d\'); $(\'#clearLink\').attr(\'href\', \'?clear=1&set=%d\'); return false;">Set %d</a></li>',
                 ($i == $this->section ? 'class="active"' : ''),
-                $i, $i, $i, $i, $i);
+                $i, $i, $i, $i, $i, $i);
         }
         $ret .= '</ul>';
         $ret .= '<div class="tab-content">';
+        $itemCount = 0;
         for ($i=1; $i<=3; $i++) {
             $res = $this->connection->execute($prep, array($uid, $i));
             $ret .= sprintf('<div role=tablepanel" class="tab-pane %s" id="section%d">',
@@ -248,42 +322,73 @@ class SaItemList extends SaHandheldPage
                 <table class="table table-bordered table-striped small">
                 <tr>
                     <th>UPC</th>
-                    <th>SKU</th>
-                    <th>Vendor</th>
-                    <th>Brand</th>
+                    <th>Date</th>
+                    <th class="hidden-xs">SKU</th>
+                    <th class="hidden-xs">Vendor</th>
+                    <th class="hidden-xs">Brand</th>
                     <th>Description</th>
-                    <th>Size</th>
-                    <th>Qty</th>
+                    <th class="hidden-xs">Size</th>
                 </tr>';
             $upcs = array();
             while ($row = $this->connection->fetchRow($res)) {
+                list($date, $time) = explode(' ', $row['tdate'], 2);
+                if ($time != '00:00:00') {
+                    $date = '';
+                }
                 $ret .= sprintf('<tr>
                     <td><a href="../../../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
+                    <td class="hidden-xs">%s</td>
+                    <td class="hidden-xs">%s</td>
+                    <td class="hidden-xs">%s</td>
                     <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%d</td>
+                    <td class="hidden-xs">%s</td>
                     </tr>',
                     $row['upc'], $row['upc'],
+                    $date,
                     $row['sku'],
                     $row['vendorName'],
                     $row['brand'],
                     $row['description'],
-                    $row['size'],
-                    $row['qty']
+                    $row['size']
                 ); 
                 $upcs[] = $row['upc'];
+                $itemCount++;
             }
             $ret .= '</table>';
-            $ret .= '<p><form method="post" action="../../../item/AdvancedItemSearch.php">';
+            $ret .= '<form method="post" action="../../../item/AdvancedItemSearch.php"><p class="hidden-xs">';
             $ret .= '<textarea name="upcs">' . implode("\n", $upcs) . '</textarea>';
             $ret .= '<input type="hidden" name="extern" value="1" />';
             $ret .= '<button type="submit" class="btn btn-default">Search These</button>';
-            $ret .= '</form></p>';
+            $ret .= '</p></form>';
             $ret .= '</div>';
         }
+
+        $userR = $this->connection->query('SELECT s.uid, u.name
+            FROM ' . $settings['ShelfAuditDB'] . $this->connection->sep() . 'SaList AS s
+                LEFT JOIN ' . FannieDB::fqn('Users', 'op') . ' AS u ON s.uid=u.uid
+            WHERE s.clear=0
+                AND s.quantity <> 0
+            GROUP BY s.uid, u.name
+            ORDER BY u.name');
+        $ret .= '<select class="form-control" onchange="window.location=\'?showUser=\'+this.value;">';
+        $found = false;
+        if ($itemCount == 0) {
+            $found = true;
+            $ret .= "<option value=\"{$myUID}\">(you)</option>";
+        }
+        while ($userW = $this->connection->fetchRow($userR)) {
+            if (empty($userW['name'])) continue;
+            $ret .= sprintf('<option %s value="%s">%s</option>',
+                ($uid == $userW['uid'] ? 'selected' : ''), $userW['uid'], $userW['name']);
+            if ($myUID == $userW['uid']) {
+                $found = true;
+            }
+        }
+        if (!$found) {
+            $ret .= "<option value=\"{$myUID}\">(you)</option>";
+        }
+        $ret .= '</select>';
         $ret .= '</div>';
 
         return $ret;

@@ -3,9 +3,9 @@ use COREPOS\Fannie\API\item\StandardAccounting;
 
 include('../../../config.php');
 
-require($FANNIE_ROOT.'src/SQLManager.php');
+require(__DIR__ . '/../../../src/SQLManager.php');
 if (!class_exists('FannieAPI')) {
-    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 include('../../db.php');

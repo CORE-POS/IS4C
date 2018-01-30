@@ -25,6 +25,20 @@ NewMagellan is a .NET 4.0 application.
       https://github.com/CORE-POS/IS4C/wiki/New-Magellan#building-on-ubuntu-1404lts
 
 ================================
+NuGet
+================================
+The project currently supports but does not require
+using NuGet. Visual Studio will probably sort things out
+on its own from packages.config. For a pure command line
+build download the CLI version of nuget and run "nuget restore"
+to install HidSharp, Newtonsoft.Json, and RabbitMQ.Client.
+
+At some point this might become mandatory so there isn't
+3rd party code directly in the repo but for now the HidSharp
+and Newtonsoft.Json will be built from the included source
+if they aren't installed via NuGet.
+
+================================
 What happened to the .NET 2.0 version
 ================================
 NewMagellan is beginning to take advantage of 3rd party libraries. 

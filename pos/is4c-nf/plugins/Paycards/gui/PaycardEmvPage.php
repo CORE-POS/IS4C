@@ -25,6 +25,7 @@
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\LaneLogger;
 use COREPOS\pos\plugins\Paycards\card\CardValidator;
 if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
@@ -73,8 +74,13 @@ class PaycardEmvPage extends PaycardProcessPage
                 }
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
-        } elseif (FormLib::get('xml-resp') !== '') {
+        } elseif (FormLib::get('xml-resp', false) !== false) {
             $xml = FormLib::get('xml-resp');
+            $err = FormLib::get('err-info');
+            if ($err) {
+                $log = new LaneLogger();
+                $log->error('javascript: ' . $err);
+            }
             $this->emvResponseHandler($xml);
             return false;
         } elseif (FormLib::get('cancel') == 1) {

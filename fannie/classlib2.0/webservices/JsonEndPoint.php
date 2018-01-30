@@ -15,9 +15,9 @@ use \FannieDispatch;
 */
 abstract class JsonEndPoint
 {
-    private $dbc;
-    private $config;
-    private $logger;
+    protected $dbc;
+    protected $config;
+    protected $logger;
 
     public function setLogger($l)
     {

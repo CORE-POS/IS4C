@@ -47,6 +47,16 @@ class VpParser extends Parser
         }
 
         $dbc = Database::mDataConnect();
+        if ($dbc === false) {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Cannot apply patrnage right now"),
+                _('Connection error'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
+
+            return $ret;
+        }
         $prep = $dbc->prepare("
             SELECT cardNo, amount
             FROM VirtualVouchers

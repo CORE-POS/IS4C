@@ -1,8 +1,8 @@
 <?php
 include('../../../config.php');
-include($FANNIE_ROOT.'src/fpdf/fpdf.php');
+include(__DIR__ . '/../../../src/fpdf/fpdf.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+if (!class_exists("SQLManager")) require_once(__DIR__ . "/../../../src/SQLManager.php");
 include('../../db.php');
 $TRANS = $FANNIE_TRANS_DB. ($FANNIE_SERVER_DBMS == "MSSQL" ? 'dbo.' : '.');
 
@@ -113,7 +113,7 @@ $rowNum=0;
 while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->AddPage();
    $pdf->Ln(5);
-   $pdf->Image($FANNIE_ROOT.'legacy/images/letterhead.jpg',10,10,200);
+   $pdf->Image(__DIR__ . '/../../images/letterhead.jpg',10,10,200);
    $pdf->Ln(5);
    $pdf->SetFont('Arial','','12');
    $pdf->Ln(35);
@@ -330,7 +330,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$selAddW[7]),0,0,'L');
 
    if ($gazette){
-    $pdf->Image($FANNIE_ROOT.'legacy/images/WFCLogoCThru1.jpg',75,214,50,25);
+    $pdf->Image(__DIR__ . '/../../images/WFCLogoCThru1.jpg',75,214,50,25);
 
     $pdf->SetY(205);
     $pdf->Cell(0,8,'','B',1);

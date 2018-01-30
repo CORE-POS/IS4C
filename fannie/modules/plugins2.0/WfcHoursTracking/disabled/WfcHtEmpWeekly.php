@@ -5,7 +5,7 @@ class WfcHtEmpWeekly {}
   Kept for reference.
 
 include(dirname(__FILE__).'/../../../config.php');
-require($FANNIE_ROOT.'auth/login.php');
+require(__DIR__ . '/../../../auth/login.php');
 if (!validateUserQuiet('view_all_hours')){
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$_SERVER['PHP_SELF']}");
     return;

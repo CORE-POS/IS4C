@@ -1,7 +1,7 @@
 <?php 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class TimesheetPage extends FanniePage 
@@ -25,7 +25,11 @@ class TimesheetPage extends FanniePage
         $this->title = 'Fannie - Administration Module';
         $this->display_func = '';
 
-        $max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
+        if (isset($_GET['max'])) {
+            $max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
+        } else {
+            $max = 10;
+        }
 
         if (!$this->current_user && $_GET['login'] == 1 ) {
             $this->loginRedirect();
