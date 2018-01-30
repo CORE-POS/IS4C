@@ -482,6 +482,11 @@ class DepartmentDiscrepancyPage extends FannieRESTfulPage {
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->css_content());
+        $phpunit->assertInternalType('string', $this->get_view());
+    }
 }
 
 FannieDispatch::conditionalExec();

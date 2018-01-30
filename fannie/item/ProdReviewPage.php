@@ -576,7 +576,7 @@ HTML;
 
     public function get_vendor_view()
     {
-        $vid = FormLib::get('vendor');
+        $vid = $this->vendor;
 
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -658,7 +658,7 @@ HTML;
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
+        $upc = BarcodeLib::padUPC($this->upc);
         $p = new ProductsModel($dbc);
         $p->upc($upc);
         $p->store_id(1);
@@ -733,10 +733,9 @@ HTML;
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $list = FormLib::get('list');
         $upcs = array();
         $plus = array();
-        $chunks = explode("\r\n", $list);
+        $chunks = explode("\r\n", $this->list);
         foreach ($chunks as $key => $str) {
             $upcs[] = BarcodeLib::padUPC($str);
         }
@@ -1137,6 +1136,19 @@ HTML;
 HTML;
     }
 
+    public function unitTest($phpunit)
+    {
+        $this->assertInternalType('string', $this->css_content());
+        $this->assertInternalType('string', $this->javascript_content());
+        $this->assertInternalType('string', $this->get_view());
+        $this->list = "4011\r\n111";
+        $this->assertInternalType('string', $this->get_list_view());
+        $this->upc = '4011';
+        $this->assertInternalType('string', $this->get_upc_view());
+        $this->vendor = 1;
+        $this->assertInternalType('string', $this->get_vendor_view());
+        $this->assertInternalType('string', $this->get_schedule_setup_view());
+    }
 }
 
 FannieDispatch::conditionalExec();
