@@ -147,7 +147,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
             $opts[$allW['batchID']] = $allW['batchName'];
         }
 
-        $ret = "<form action=CoopDealsMergePage.php method=post>
+        $ret = "
         <div class=\"form-group\">
             <label>Month</label>
             <select name=\"deal-set\" class=\"form-control\" 
@@ -212,6 +212,7 @@ html;
         {$upcs['b']}</textarea>
                 <textarea rows="5" cols="15">TPR
         {$upcs['tpr']}</textarea>
+                <form action=CoopDealsMergePage.php method=post>
                 <p>    
                     <button type=submit class="btn btn-default">Merge Items into Batch(es)</button>
                     <a href="CoopDealsReviewPage.php" class="pull-right btn btn-default">Create New Batch(es)</a>
