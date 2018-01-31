@@ -190,7 +190,6 @@ class TargetMailList extends FannieReportPage
     public function unitTest($phpunit)
     {
         $phpunit->assertInternalType('string', $this->form_content());
-        $phpunit->assertInternalType('array', $this->fetch_report_data());
     }
 }
 
