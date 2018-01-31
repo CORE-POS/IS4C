@@ -22,7 +22,7 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey('error_msg',$result,'Invalid result entry');
             $this->assertArrayHasKey('db',$result,'Invalid result entry');
             $this->assertArrayHasKey('struct',$result,'Invalid result entry');
-            if ($result['error'])) {
+            if ($result['error']) {
                 var_dump('Error creating '.$result['db'].'.'.$result['struct'].': '.$result['error_msg']);
             }
             $this->assertEquals(0,$result['error'],
