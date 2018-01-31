@@ -661,6 +661,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'IgnoredBarcodesModel',
         'InventoryCacheModel',
         'InventoryCountsModel',
+        'InUseTaskModel',
         'LikeCodesModel',
         'UpcLikeModel',
         'LikeCodeActiveMapModel',

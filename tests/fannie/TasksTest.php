@@ -9,7 +9,6 @@ class TasksTest extends PHPUnit_Framework_TestCase
     {
         $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $tasks = FannieAPI::listModules('FannieTask', true);
-        var_dump($tasks);
 
         foreach($tasks as $task_class) {
             $obj = new $task_class();
@@ -463,7 +462,6 @@ class TasksTest extends PHPUnit_Framework_TestCase
             ob_start();
             $task->run();
             ob_end_clean();
-
         }
     }
 }
