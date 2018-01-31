@@ -255,9 +255,6 @@ HTML;
     {
         $phpunit->assertInternalType('boolean', $this->readinessCheck());
         $phpunit->assertInternalType('string', $this->get_view());
-        $this->id = 1;
-        $phpunit->assertEquals(true, $this->get_id_handler());
-        $phpunit->assertInternalType('string', $this->get_id_view());
     }
 }
 
