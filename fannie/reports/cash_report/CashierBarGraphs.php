@@ -253,11 +253,11 @@ HTML;
 
     public function unitTest($phpunit)
     {
-        $this->assertInternalType('boolean', $this->readinessCheck());
-        $this->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('boolean', $this->readinessCheck());
+        $phpunit->assertInternalType('string', $this->get_view());
         $this->id = 1;
-        $this->assertEquals(true, $this->get_id_handler());
-        $this->assertInternalType('string', $this->get_id_view());
+        $phpunit->assertEquals(true, $this->get_id_handler());
+        $phpunit->assertInternalType('string', $this->get_id_view());
     }
 }
 
