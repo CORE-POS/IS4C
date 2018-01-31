@@ -192,7 +192,7 @@ class SoPoBridge
         $this->dbc->execute($itemP, array($soID, $transID));
 
         $all = $this->dbc->prepare('SELECT MIN(memType) FROM ' . $table . ' WHERE order_id=? AND trans_id > 0');
-        $min = $this->dbc->execute($all, array($soID));
+        $min = $this->dbc->getValue($all, array($soID));
         if ($min == 1) {
             $table = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'SpecialOrders';
             $upP = $this->dbc->prepare('UPDATE ' . $table . ' SET statusFlag=?, subStatus=? WHERE specialOrderID=?');

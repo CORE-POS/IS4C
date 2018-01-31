@@ -42,6 +42,21 @@ class OrdersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, is_numeric($lib->createEmptyOrder()));
     }
 
+    public function testBridge()
+    {
+        if (!class_exists('SoPoBridge')) {
+            include(__DIR__ . '/../../fannie/ordering/SoPoBridge.php');
+        }
+        $conf = FannieConfig::factory();
+        $bridge = new SoPoBridge(FannieDB::get($conf->get('OP_DB')), $conf);
+        
+        $this->assertEquals(false, $bridge->canPurchaseOrder(999, 9));
+        $this->assertEquals(false, $bridge->addItemToPurchaseOrder(999, 9, 1));
+        $this->assertEquals(false, $bridge->findPurchaseOrder(999, 9, 1));
+        $this->assertEquals(false, $bridge->removeItemFromPurchaseOrder(999, 9, 1));
+        $bridge->markAsPlaced(999, 9);
+    }
+
     public function testExporters()
     {
         $exp = array(

@@ -515,7 +515,6 @@ class ProdLocationEditor extends FannieRESTfulPage
 
     function get_batch_view()
     {
-        $ret = "";
         $ret .= '
             <form method="get"class="form-inline">
 
@@ -793,6 +792,14 @@ function updateAll(val, selector) {
 
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('string', $this->get_searchupc_view());
+        $phpunit->assertInternalType('string', $this->get_batch_view());
+        $phpunit->assertInternalType('string', $this->get_list_view());
+        $phpunit->assertInternalType('string', $this->get_start_view());
+    }
 }
 
 FannieDispatch::conditionalExec();

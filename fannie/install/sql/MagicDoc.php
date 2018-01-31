@@ -44,10 +44,9 @@ class MagicDoc extends FannieRESTfulPage
 
         $ret = '<ul>';
         foreach ($sets as $s) {
-            $set = $assort[$s];
-            ksort($set);
+            ksort($assort[$s]);
             $ret .= "<li>{$s}<ul>";
-            foreach ($set as $a) {
+            foreach ($assort[$s] as $a) {
                 $ret .= "<li>{$a}</li>";
             }
             $ret .= "</ul></li>";
@@ -55,6 +54,13 @@ class MagicDoc extends FannieRESTfulPage
         $ret .= "</ul>";
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->get_view());
+        $this->id = base64_encode('EmployeesModel');
+        $phpunit->assertInternalType('string', $this->get_id_view());
     }
 }
 

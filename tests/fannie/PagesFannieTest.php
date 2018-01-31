@@ -68,6 +68,9 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         if (!class_exists('SyncRulesPage', false)) {
             include(__DIR__ . '/../../fannie/sync/SyncRulesPage.php');
         }
+        if (!class_exists('MagicDoc', false)) {
+            include(__DIR__ . '/../../fannie/install/sql/MagicDoc.php');
+        }
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');

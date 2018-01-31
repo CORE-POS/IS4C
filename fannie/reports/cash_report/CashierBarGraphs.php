@@ -44,21 +44,18 @@ class CashierBarGraphs extends FannieRESTfulPage
 
     public function get_view()
     {
-        ob_start();
-        ?>
-        <form method=get action=<?php echo $_SERVER['PHP_SELF'] ?>
-            class="form-inline">
-        <p>
-        <label>Enter Employee Number</label>
-        <input type=text id=emp_no name="id" class="form-control" />
-        <button type="submit" class="btn btn-default">Get Report</button>
-        <label><input type=checkbox name=pdf /> PDF</label>
-        </p>
-        </form>
-        <?php
-        $this->add_onload_command('$(\'#emp_no\').focus();');
-
-        return ob_get_clean();
+        $this->addOnloadCommand('$(\'#emp_no\').focus();');
+        return <<<HTML
+<form method=get action="CashierBarGraphs.php">
+    class="form-inline">
+<p>
+    <label>Enter Employee Number</label>
+    <input type=text id=emp_no name="id" class="form-control" />
+    <button type="submit" class="btn btn-default">Get Report</button>
+    <label><input type=checkbox name=pdf /> PDF</label>
+</p>
+</form>
+HTML;
     }
 
     public function get_id_handler()
@@ -252,6 +249,15 @@ class CashierBarGraphs extends FannieRESTfulPage
                 <li><em>Canceled</em> in this context means voiding a line
                     in a transaction.</li>
             </ul>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->assertInternalType('boolean', $this->readinessCheck());
+        $this->assertInternalType('string', $this->get_view());
+        $this->id = 1;
+        $this->assertEquals(true, $this->get_id_handler());
+        $this->assertInternalType('string', $this->get_id_view());
     }
 }
 

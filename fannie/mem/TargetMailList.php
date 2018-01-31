@@ -115,8 +115,6 @@ class TargetMailList extends FannieReportPage
             $where .= " AND c.CardNo IN ({$inStr}) ";
         }
 
-        var_dump($where);
-
         $query .= $where;
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
@@ -187,6 +185,12 @@ class TargetMailList extends FannieReportPage
         </form>';
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->form_content());
+        $phpunit->assertInternalType('array', $this->fetch_report_data());
     }
 }
 
