@@ -32,8 +32,8 @@ class InUseTaskModel extends BasicModel
     protected $preferredDB = 'op';
 
     protected $columns = array(
-    'superID' => array('int', 'primary_key'=>true),
-    'time' => array('int'),
+    'superID' => array('type'=>'int', 'primary_key'=>true),
+    'time' => array('type'=>'int'),
     );
 
     public function doc()
