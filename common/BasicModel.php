@@ -365,12 +365,8 @@ class BasicModel
 
     protected function arrayToSQL($definition, $dbms)
     {
-        $sql = '';
-        $type = $definition['type'];
-        if (isset($this->meta_types[strtoupper($type)])) {
-            $type = $this->getMeta($type, $dbms);
-        }
-        $sql .= $type;
+        $type = $this->getMeta($definition['type'], $dbms);
+        $sql = $type;
 
         if (isset($definition['not_null']) && $definition['not_null']) {
             $sql .= ' NOT NULL';
@@ -389,11 +385,10 @@ class BasicModel
             if ($definition['default'] === true) {
                 $definition['default'] = $this->getNormalDefault($type);
             }
-            if ($dbms == 'mssql') {
-                $sql .= ' '.$definition['default'];
-            } else {
-                $sql .= ' DEFAULT '.$definition['default'];
+            if ($dbms != 'mssql') {
+                $sql .= ' DEFAULT';
             }
+            $sql .= ' '.$definition['default'];
         }
 
         return $sql;
@@ -403,9 +398,9 @@ class BasicModel
     {
         if (isset($column['primary_key']) && $column['primary_key'] === true) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     protected function isIndexed($column)
@@ -459,6 +454,17 @@ class BasicModel
         return $ret;
     }
 
+    protected function isUnique()
+    {
+        foreach($this->unique as $column) {
+            if (!isset($this->instance[$column])) {
+                return false;
+            }
+        }
+
+        return count($this->unique) > 0 ? true : false;
+    }
+
     /**
       Populate instance with database values
       Requires a uniqueness constraint. Assign
@@ -470,10 +476,8 @@ class BasicModel
         if (empty($this->unique)) {
             return false;
         }
-        foreach($this->unique as $column) {
-            if (!isset($this->instance[$column])) {
-                return false;
-            }
+        if (!$this->isUnique()) {
+            return false;
         }
 
         $table_def = $this->getDefinition();
@@ -629,13 +633,8 @@ class BasicModel
     */
     public function delete()
     {
-        if (empty($this->unique)) {
+        if (!$this->isUnique()) {
             return false;
-        }
-        foreach($this->unique as $column) {
-            if (!isset($this->instance[$column])) {
-                return false;
-            }
         }
 
         $sql = 'DELETE FROM '.$this->fq_name.' WHERE 1=1';
@@ -730,17 +729,8 @@ class BasicModel
             }
         }
 
-        $new_record = false;
         // do we have values to look up?
-        foreach($this->unique as $column)
-        {
-            if (!isset($this->instance[$column])) {
-                $new_record = true;
-            }
-        }
-        if (count($this->unique) == 0) {
-            $new_record = true;
-        }
+        $new_record = !$this->isUnique();
 
         if (!$new_record) {
             // see if matching record exists
@@ -760,9 +750,9 @@ class BasicModel
 
         if ($new_record) {
             return $this->insertRecord();
-        } else {
-            return $this->updateRecord();
         }
+
+        return $this->updateRecord();
     }
 
     /**
