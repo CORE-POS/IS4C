@@ -446,6 +446,15 @@ class TasksTest extends PHPUnit_Framework_TestCase
         ob_end_clean();
     }
 
+    public function testInUse()
+    {
+        $task = new InUseTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
     public function testOneTime()
     {
         foreach (array('InitProductCreated', 'InitLastSold', 'InitProductAttributes') as $class) {
