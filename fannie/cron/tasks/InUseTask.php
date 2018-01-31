@@ -107,7 +107,10 @@ class InUseTask extends FannieTask
                 FROM products AS p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
                 INNER JOIN inUseTask AS i ON s.superID = i.superID
-            WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
+            WHERE (
+                    UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
+                    OR (UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.created) > i.time AND p.last_sold IS NULL)
+            )
             AND p.inUse = 1
             ORDER BY p.store_id;
         ");
