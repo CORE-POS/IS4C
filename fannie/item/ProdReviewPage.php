@@ -465,6 +465,7 @@ HTML;
                 LEFT JOIN vendors AS v ON l.vid=v.vendorID
                 LEFT JOIN Users AS u ON l.user=u.uid 
             GROUP BY l.bid
+            ORDER BY l.bid DESC
         ");
         $res = $dbc->execute($prep,$args);
         while ($row = $dbc->fetchRow($res)) {
