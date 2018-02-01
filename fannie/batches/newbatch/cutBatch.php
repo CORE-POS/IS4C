@@ -21,47 +21,62 @@
 
 *********************************************************************************/
 
-class cutBatch {} // compat
+include(__DIR__ . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
+}
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
+class cutBatch extends FannieRESTfulPage {
 
-    include(dirname(__FILE__).'/../../config.php');
-    if (!class_exists('FannieAPI')) {
-        include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
-    }
+    public $discoverable = false;
 
-    $ret = '';
-    $timeStamp = date('Y-m-d h:i:s');
-    $dbc = FannieDB::get($FANNIE_OP_DB);
-    
-    $id = FormLib::get('id');
-    $uid = FormLib::get('uid');
-    
-    $blModel = new BatchListModel($dbc);
-    $blModel->batchID($id);
-    $blModel->load();
-    $cut = new BatchCutPasteModel($dbc);
-    $cut->batchID($id);
-    $cut->uid($uid);
-    
-    $ret = array('error' => 0);
-    foreach ($blModel->find() as $item) {
-        $cut->upc($item->upc());
+    protected function get_id_handler()
+    {
+        $ret = '';
+        $timeStamp = date('Y-m-d h:i:s');
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        
+        $id = $this->id;
+        $uid = FormLib::get('uid');
+        
+        $blModel = new BatchListModel($dbc);
+        $blModel->batchID($id);
+        $blModel->load();
+        $cut = new BatchCutPasteModel($dbc);
         $cut->batchID($id);
         $cut->uid($uid);
-        $cut->tdate($timeStamp);
-        $saved = $cut->save();
-        if (!$saved) {
-            $ret['error'] = 1;
-            $ret['error_msg'] = 'Save failed';
-        } else {
-            $bu = new BatchUpdateModel($dbc);
-            $bu->batchID($id);
-            $bu->upc($item->upc());
-            $bu->logUpdate($bu::UPDATE_REMOVED);
+        
+        $ret = array('error' => 0);
+        foreach ($blModel->find() as $item) {
+            $cut->upc($item->upc());
+            $cut->batchID($id);
+            $cut->uid($uid);
+            $cut->tdate($timeStamp);
+            $saved = $cut->save();
+            if (!$saved) {
+                $ret['error'] = 1;
+                $ret['error_msg'] = 'Save failed';
+            } else {
+                $bu = new BatchUpdateModel($dbc);
+                $bu->batchID($id);
+                $bu->upc($item->upc());
+                $bu->logUpdate($bu::UPDATE_REMOVED);
+            }
         }
+
+        echo json_encode($ret);
+
+        return false;
     }
 
-    echo json_encode($ret);
-
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        ob_start();
+        $this->assertEquals(false, $this->get_id_handler());
+        ob_get_clean();
+    }
 }
+
+FannieDispatch::conditionalExec();
+
