@@ -34,7 +34,7 @@ class cutBatch extends FannieRESTfulPage {
     {
         $ret = '';
         $timeStamp = date('Y-m-d h:i:s');
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $id = $this->id;
         $uid = FormLib::get('uid');
