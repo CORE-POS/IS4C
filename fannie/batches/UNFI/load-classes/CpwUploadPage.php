@@ -231,9 +231,9 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public function unitTest($phpunit)
     {
-        $this->assertInternalType('string', $this->results_content());
-        $this->assertEquals('123', $this->sanitizePrice('$1,23'));
-        $this->assertEquals(false, $this->process_file(array(), array()));
+        $phpunit->assertInternalType('string', $this->results_content());
+        $phpunit->assertEquals('123', $this->sanitizePrice('$1,23'));
+        $phpunit->assertEquals(false, $this->process_file(array(), array()));
     }
 }
 
