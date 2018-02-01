@@ -5,11 +5,11 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class RoundUpReport extends FannieReportPage
+class RoundUpAccountReport extends FannieReportPage
 {
     protected $header = 'Round Up Report';
     protected $title = 'Round Up Report';
-    public $description = '[Round Up Report] shows round up donations for a given year and customer account';
+    public $description = '[Round Up Account Report] shows round up donations for a given year and customer account';
 
     protected $required_fields = array('year', 'cardNo');
     protected $report_headers = array('Month', 'Total');
