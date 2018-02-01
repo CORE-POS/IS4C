@@ -56,8 +56,9 @@ class CpwPriceTask extends FannieTask
 
         $item['caseSize'] = trim($data[13]);
         if ($item['caseSize'] == 1 && strpos($data[11], '-')) {
-            list($start,$end) = explode('-', trim($item['caseSize']));
-            $caseSize = ($start + $end) / 2;
+            list($start,$end) = explode('-', trim($data[11]));
+            $item['caseSize'] = ($start + $end) / 2;
+            $item['size'] = trim($data[12]);
         } elseif ($item['caseSize'] == 1 && is_numeric(trim($data[11]))) {
             $item['caseSize'] = trim($data[11]);
             $item['size'] = trim($data[12]);
@@ -101,7 +102,7 @@ class CpwPriceTask extends FannieTask
         $insP = $dbc->prepare('INSERT INTO vendorItems 
             (upc, sku, brand, description, size, units, cost, saleCost, vendorDept, vendorID, modified)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ' . $dbc->now() . ')');
-        $upP = $dbc->prepare('UPDATE vendorItems SET cost=?, saleCost=?, vendorDept=?, modified=' . $dbc->now() . '
+        $upP = $dbc->prepare('UPDATE vendorItems SET cost=?, saleCost=?, vendorDept=?, units=?, size=?, modified=' . $dbc->now() . '
             WHERE sku=? AND vendorID=?');
 
         $deptP = $dbc->prepare('SELECT deptID FROM vendorDepartments WHERE deptID=? AND vendorID=?');
@@ -133,7 +134,7 @@ class CpwPriceTask extends FannieTask
 
             $exists = $dbc->getValue($vendP, array($item['sku'], $vendorID));
             if ($exists) {
-                $dbc->execute($upP, array($item['reg'], $item['sale'], $dept, $item['sku'], $vendorID));
+                $dbc->execute($upP, array($item['reg'], $item['sale'], $dept, $item['caseSize'], $item['size'], $item['sku'], $vendorID));
             } else {
                 $dbc->execute($insP, array($item['upc'], $item['sku'], $brand, $description, $item['size'], $item['caseSize'], $item['reg'], $item['sale'], $dept, $vendorID));
             }
