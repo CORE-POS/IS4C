@@ -173,7 +173,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         ';
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upc = FormLib::get('upc');
+        $upc = $this->upc;
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         echo 'UPC: ' . $upc;
 
@@ -410,6 +410,13 @@ HTML;
         return $ret;
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('string', $this->get_month_view());
+        $this->upc = '0000000000111';
+        $phpunit->assertInternalType('string', $this->get_upc_view());
+    }
 }
 
 FannieDispatch::conditionalExec();
