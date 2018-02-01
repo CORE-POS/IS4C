@@ -132,6 +132,24 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         return array($VENDOR_ID, $row['vendorName']);
     }
 
+    private function getCost($data, $unitIndex, $caseIndex, $caseSize)
+    {
+        $reg_unit = '';
+        if ($unitIndex !== false) {
+            $reg_unit = trim($data[$unitIndex]);
+            $reg_unit = $this->priceFix($reg_unit);
+        }
+        if (!is_numeric($reg_unit) && $caseIndex !== false) {
+            $reg = trim($data[$caseIndex]);
+            $reg = $this->priceFix($reg);
+            if (is_numeric($reg)) {
+                $reg_unit = $reg / $caseSize;
+            }
+        }
+
+        return $reg_unit;
+    }
+
     public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
@@ -197,31 +215,8 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $upc = '0'.substr($upc,0,12);
             $category = ($indexes['vDept'] === false) ? 0 : $data[$indexes['vDept']];
 
-            $reg_unit = '';
-            if ($indexes['unitCost'] !== false) {
-                $reg_unit = trim($data[$indexes['unitCost']]);
-                $reg_unit = $this->priceFix($reg_unit);
-            }
-            if (!is_numeric($reg_unit) && $indexes['cost'] !== false) {
-                $reg = trim($data[$indexes['cost']]);
-                $reg = $this->priceFix($reg);
-                if (is_numeric($reg)) {
-                    $reg_unit = $reg / $qty;
-                }
-            }
-
-            $net_unit = '';
-            if ($indexes['unitSaleCost'] !== false) {
-                $net_unit = trim($data[$indexes['unitSaleCost']]);
-                $net_unit = $this->priceFix($net_unit);
-            }
-            if (!is_numeric($net_unit) && $indexes['saleCost'] !== false) {
-                $net = trim($data[$indexes['saleCost']]);
-                $net = $this->priceFix($net);
-                if (is_numeric($net)) {
-                    $net_unit = $net / $qty;
-                }
-            }
+            $reg_unit = $this->getCost($data, $indexes['unitCost'], $indexes['cost'], $qty);
+            $net_unit = $this->getCost($data, $indexes['unitSaleCost'], $indexes['saleCost'], $qty);
             if (empty($net_unit)) {
                 $net_unit = 0.00;
             }
@@ -383,6 +378,10 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     public function unitTest($phpunit)
     {
         $phpunit->assertNotEquals(0, strlen($this->preview_content()));
+        $phpunit->assertEquals('123', $this->priceFix('$1,23'));
+        $this->session = new COREPOS\common\mvc\ValueContainer();
+        $phpunit->assertInternalType('string', $this->form_content());
+        $this->splitStart();
     }
 }
 

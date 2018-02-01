@@ -170,6 +170,26 @@ class ScaleLabelEditor extends FannieRESTfulPage
 </form>
 HTML;
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->assertInternalType('string', $this->get_view());
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->newLabel = 'label';
+        $form->newScale = 'test';
+        $form->newMapping = 'mapped';
+        $this->id = array(1);
+        $this->label = array('label');
+        $this->scale = array('test');
+        $this->mapped = array('mapped');
+        $this->dWidth = array(50);
+        $this->tWidth = array(50);
+        $this->setForm($form);
+        $this->assertInternalType('string', $this->post_id_handler());
+        $this->assertInternalType('string', $this->post_handler());
+        $this->id = 1;
+        $this->assertInternalType('string', $this->delete_id_handler());
+    }
 }
 
 FannieDispatch::conditionalExec();

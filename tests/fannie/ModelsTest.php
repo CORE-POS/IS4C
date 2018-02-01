@@ -92,5 +92,15 @@ class ModelsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array('foo'=>'bar','bar'=>'foo'), $param->materializeValue());
     }
 
+    public function testDeliveries()
+    {
+        $del = new VendorDeliveriesModel();
+        $del->frequency('weekly');
+        $del->monday(1);
+        $del->autoNext();
+        $this->assertNotEquals('', $del->nextDelivery());
+        $this->assertNotEquals('', $del->nextNextDelivery());
+    }
+
 }
 
