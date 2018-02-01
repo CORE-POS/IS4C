@@ -14,6 +14,12 @@ class RoundUpReport extends FannieReportPage
     protected $required_fields = array('year', 'cardNo');
     protected $report_headers = array('Month', 'Total');
 
+    private function guessDepartment()
+    {
+        $prep = $this->connection->prepare("SELECT dept_no FROM departments WHERE dept_name LIKE '%DONAT%'");
+        return $this->connection->getValue($prep);
+    }
+
     public function fetch_report_data()
     {
         try {
@@ -30,10 +36,11 @@ class RoundUpReport extends FannieReportPage
             FROM {$dlog}
             WHERE tdate BETWEEN ? AND ?
                 AND card_no=?
-                AND department=701
+                AND department=?
             GROUP BY MONTH(tdate)";
         $prep = $this->connection->prepare($query);
-        $res = $this->connection->execute($prep, array($start . ' 00:00:00', $end . ' 23:59:59', $cardNo));
+        $res = $this->connection->execute($prep,
+                array($start . ' 00:00:00', $end . ' 23:59:59', $cardNo, $this->guessDepartment()));
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $time = mktime(0,0,0,$row['month'],1,$year);
