@@ -201,12 +201,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 c.abtpr AS flyerPeriod,
                 c.price AS srp
             FROM CoopDealsItems AS c
-                INNER JOIN products AS p ON c.upc=p.upc
-                INNER JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
-                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE c.upc = ?
                 AND c.dealSet = ?
-            GROUP BY c.abtpr;
         ');
         $pRes = $dbc->execute($pPrep, $args);
         $flyerPeriod = ' ';
