@@ -37,7 +37,7 @@ class cutBatch extends FannieRESTfulPage {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $id = $this->id;
-        $uid = FormLib::get('uid');
+        $uid = FormLib::get('uid', 0);
         
         $blModel = new BatchListModel($dbc);
         $blModel->batchID($id);
