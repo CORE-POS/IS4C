@@ -21,51 +21,41 @@
 
 *********************************************************************************/
 
-class priceUpdate {} // compat
-
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-
-    include(dirname(__FILE__).'/../../config.php');
-    if (!class_exists('FannieAPI')) {
-        include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
-    }
-    if (!class_exists('PriceDiscrepancyPage')) {
-        include_once(__DIR__ . '/../PriceDiscrepancyPage.php');
-    }
-
-    $store_id = $_POST['store_id'];
-    $upc = $_POST['upc'];
-    $price = $_POST['price'];
-    
-    $dbc = FannieDB::get($FANNIE_OP_DB);
-    $item = new ProductsModel($dbc);    
-    $ret = array('error'=>0);
-    if (strlen($upc) == 13) {
-        $item->upc($upc);
-    } else {
-        $ret['error'] = 1;
-    }
-    
-    $item->store_id($store_id);
-    $item->normal_price($price);        
-    $ret .= '
-        <div class="alert alert-info">
-            <form method="get">
-                <input type="text" name="test' . $i . '">
-                <input type="submit">
-            </form>
-            This form was added to the page through ajax. 
-        </div>
-    ';
-    
-    if ($ret['error'] == 0) {
-        $saved = $item->save();
-        if (!$saved) {
-            $ret['error'] = 1;
-            $ret['error_msg'] = 'Save failed';
-        }
-    }
-
-    echo json_encode($ret);
-
+include(dirname(__FILE__).'/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
+
+class priceUpdate
+{
+    public $discoverable = false;
+
+    protected function post_handler()
+    {
+        $store_id = FormLib::get('store_id');
+        $upc = FormLib::get('upc');
+        $price = FormLib::get('price');
+    
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $item = new ProductsModel($dbc);    
+        $ret = array('error'=>1);
+        if (strlen($upc) == 13) {
+            $item->upc($upc);
+            $item->store_id($store_id);
+            $item->normal_price($price);        
+            $saved = $item->save();
+            $ret['error'] = 0;
+            if (!$saved) {
+                $ret['error'] = 1;
+                $ret['error_msg'] = 'Save failed';
+            }
+        }
+    
+        echo json_encode($ret);
+
+        return false;
+    }
+}
+
+FannieDispatch::conditionalExec();
+
