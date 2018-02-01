@@ -360,7 +360,8 @@ static public function lineItemTaxes()
             'rate_id' => $tr['id'],
             'description' => $tr['description'],
             'amount' => $tr['taxTotal'],
-            'exempt' => $tr['fsExempt']
+            'exempt' => $tr['fsExempt'],
+            'rate' => $tr['taxrate'],
         );
     }
     return $ret;

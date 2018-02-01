@@ -777,7 +777,7 @@ static public function finalizeTransaction($incomplete=false)
             }
             self::addLogRecord(array(
                 'upc' => 'TAXLINEITEM',
-                'description' => $tax['description'],
+                'description' => $tax['description'] . ' ' . $tax['rate'],
                 'numflag' => $tax['rate_id'],
                 'amount2' => $tax['amount'],
             ));
