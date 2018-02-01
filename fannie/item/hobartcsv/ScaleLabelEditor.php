@@ -173,7 +173,7 @@ HTML;
 
     public function unitTest($phpunit)
     {
-        $this->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('string', $this->get_view());
         $form = new COREPOS\common\mvc\ValueContainer();
         $form->newLabel = 'label';
         $form->newScale = 'test';
@@ -185,10 +185,10 @@ HTML;
         $this->dWidth = array(50);
         $this->tWidth = array(50);
         $this->setForm($form);
-        $this->assertInternalType('string', $this->post_id_handler());
-        $this->assertInternalType('string', $this->post_handler());
+        $phpunit->assertInternalType('string', $this->post_id_handler());
+        $phpunit->assertInternalType('string', $this->post_handler());
         $this->id = 1;
-        $this->assertInternalType('string', $this->delete_id_handler());
+        $phpunit->assertInternalType('string', $this->delete_id_handler());
     }
 }
 
