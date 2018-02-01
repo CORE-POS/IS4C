@@ -73,7 +73,7 @@ class cutBatch extends FannieRESTfulPage {
     {
         $this->id = 1;
         ob_start();
-        $this->assertEquals(false, $this->get_id_handler());
+        $phpunit->assertEquals(false, $this->get_id_handler());
         ob_get_clean();
     }
 }
