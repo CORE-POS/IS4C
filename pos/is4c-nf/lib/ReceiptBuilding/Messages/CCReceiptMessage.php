@@ -166,7 +166,7 @@ class CCReceiptMessage extends ReceiptMessage {
                     if (strpos($row['tranType'], ' R.')) {
                         $para1 = 'Whole Foods Co-op (WFC) will charge four (4) additional $20 payments to your card. Payments will occur monthly starting one month from today. Each $20 payment will purchase four (4) shares of class B equity in WFC. Entries on your bank statement may be labeled recurring.';
                         $para2 = 'To cancel this arrangement at any point, contact WFC by phone at 218-728-0884 or by email at equity@wholefoods.coop.';
-                        $para3 = 'WFC does not keep any credit card information on file. If a monthly payment fails or is declined, no future monthly charges will be made. You will retain ownership of all equity purchased up to that point and may pay the remaining balance any time before the due date, one year from today.';
+                        $para3 = 'WFC does not keep any credit card information on file. As such if a monthly payment fails or is declined, no future monthly charges will be made. You will retain ownership of all equity purchased up to that point and may pay the remaining balance any time before the due date, one year from today.';
                         $slip .= wordwrap($para1, 55) . "\n\n";
                         $slip .= wordwrap($para2, 55) . "\n\n";
                         $slip .= wordwrap($para3, 55) . "\n\n";
