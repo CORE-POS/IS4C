@@ -106,8 +106,10 @@ class TaxRateEditor extends FannieRESTfulPage
             <td>NEW</td></tr>';
         $ret .= "</table>";
         $ret .= '<p><button type="submit" value="1" name="sub"
-                        class="btn btn-default">Save Tax Rates</button></p>';
-        $ret .= '</form>';
+                        class="btn btn-default btn-core">Save Tax Rates</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<a href="TaxComponentEditor.php" class="btn btn-default">Edit Component Rates</a>';
+        $ret .= '</p></form>';
 
         return $ret;
     }

@@ -719,6 +719,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'SuspensionHistoryModel',
         'TableSyncRulesModel',
         'TaxRatesModel',
+        'TaxRateComponentsModel',
         'TendersModel',
         'VendorsModel',
         'VendorContactModel',

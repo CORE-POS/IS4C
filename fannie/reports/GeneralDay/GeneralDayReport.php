@@ -174,19 +174,36 @@ class GeneralDayReport extends FannieReportPage
 
         $report = array();
         $trans = DTransactionsModel::selectDTrans($d1);
+        $componentP = $dbc->prepare('SELECT description, rate FROM TaxRateComponents WHERE taxRateID=?');
         $lineItemQ = $dbc->prepare("
-            SELECT description,
+            SELECT MAX(description) AS description,
+                numflag,
                 SUM(regPrice) AS ttl
             FROM $trans AS d
             WHERE datetime BETWEEN ? AND ?
                 AND d.upc='TAXLINEITEM'
                 AND " . DTrans::isNotTesting('d') . "
-            GROUP BY d.description
+            GROUP BY numflag
         ");
         $lineItemR = $dbc->execute($lineItemQ, $dates);
         while ($lineItemW = $dbc->fetch_row($lineItemR)) {
+            $componentR = $dbc->execute($componentP, array($lineItemW['numflag']));
+            $baseDesc = $lineItemW['description'];
+            if ($dbc->numRows($componentR) > 0) {
+                $lineItemW['description'] .= ' - Total';
+            }
             $record = array($lineItemW['description'] . ' (est. owed)', sprintf('%.2f', $lineItemW['ttl']));
             $report[] = $record;
+            $comp = array();
+            $sum = 0;
+            while ($compW = $dbc->fetchRow($componentR)) {
+                $comp[] = $compW;
+                $sum += $compW['rate'];
+            }
+            foreach ($comp as $c) {
+                $report[] = array($baseDesc . ' - ' . $c['description']. ' (est. owed)',
+                    sprintf('%.2f', $lineItemW['ttl'] * ($c['rate']/$sum)));
+            }
         }
 
         $taxSumQ = $dbc->prepare("SELECT  sum(total) as tax_collected
@@ -294,6 +311,7 @@ class GeneralDayReport extends FannieReportPage
             $this->report_headers = array('Tax', 'Amount');
             $sumTax = 0.0;
             for ($i=0; $i<count($data)-1; $i++) {
+                if (!strstr($data[$i][0], ' - Total (')) continue;
                 $sumTax += $data[$i][1];
             }
             return array('Total Sales Tax', sprintf('%.2f', $sumTax));
