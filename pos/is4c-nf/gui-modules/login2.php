@@ -53,6 +53,8 @@ class login2 extends BasicCorePage
 
     public function preprocess()
     {
+        $this->addScript('js/login2.js');
+        $this->addCssFile('../css/spinner.css');
         $start = microtime(true);
         $this->boxCSS = 'coloredArea';
         $this->msg = _('please enter your password');
@@ -141,14 +143,15 @@ class login2 extends BasicCorePage
             </div><?php echo $logging; ?>
         </div>
         <div id="loginCenter">
-        <div class="box <?php echo $this->boxCSS; ?> rounded">
+        <div id="loginBox" class="box <?php echo $this->boxCSS; ?> rounded">
                 <b><?php echo _("log in"); ?></b>
                 <form id="formlocal" name="form" method="post" autocomplete="off" 
+                    onsubmit="login2.tryLogin(); return false;"
                     action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
                 <input type="password" name="userPassword" size="20" tabindex="0" 
                     onblur="$('#userPassword').focus();" id="userPassword" >
                 <input type="hidden" name="reginput" id="reginput" value="" />
-                <p>
+                <p id="loginMsg">
                 <?php echo $this->msg ?>
                 </p>
                 </form>
