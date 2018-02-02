@@ -199,28 +199,34 @@ class WfcVcTask extends FannieTask
         $res = $dbc->query('SELECT DISTINCT c.CardNo FROM custdata AS c WHERE Type=\'PC\' AND c.CardNo NOT IN (
             SELECT cardNo FROM CustomerNotifications WHERE source=\'WFC.OAM\'
         )');
+        $dbc->startTransaction();
         $insP = $dbc->prepare('INSERT INTO CustomerNotifications (cardNo, source, type, message) VALUES (?, \'WFC.OAM\', \'blueline\', \'\')');
         while ($row = $dbc->fetchRow($res)) {
             $dbc->execute($insP, array($row['CardNo']));
         }
+        $dbc->commitTransaction();
 
         $curP = $dbc->prepare('SELECT * FROM WfcOamSchedule WHERE ? BETWEEN startDate AND endDate');
         $curRow = $dbc->getRow($curP, array(date('Y-m-d')));
 
         if ($curRow) {
-            $currentUPC = $curRow['upc'];
             $setP = $dbc->prepare("UPDATE CustomerNotifications SET message=? WHERE source='WFC.OAM'");
             $dbc->execute($setP, array($curRow['msg']));
             // lookup OAM usage in the last month
             $usageP = $dbc->prepare("SELECT card_no 
-                                    FROM is4c_trans.houseCouponThisMonth
+                                    FROM trans_archive.dlogBig
                                     WHERE upc = ?
-                                        AND quantity <> 0");
-            $usageR = $dbc->execute($usageP, array($currentUPC));
+                                        AND tdate BETWEEN ? AND ?
+                                    GROUP BY card_no, upc
+                                    HAVING SUM(quantity) <> 0");
+            $usageArgs = array($curRow['upc'], $curRow['startDate'], str_replace('00:00:00', '23:59:59', $curRow['endDate']));
+            $usageR = $dbc->execute($usageP, $usageArgs);
+            $dbc->startTransaction();
             $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
             while ($row = $dbc->fetchRow($usageR)) {
                 $dbc->execute($upP, array($row['card_no']));
             }
+            $dbc->commitTransaction();
 
             // remove coupon from non-owner accounts
             $dbc->query("UPDATE CustomerNotifications AS n
