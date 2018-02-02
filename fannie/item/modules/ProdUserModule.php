@@ -268,7 +268,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $dbc = $this->db();
 
-        $this->saveLocation($dbc, $upc, $floorIDs, $oldFloorIDs);
+        $this->saveLocation($dbc, $upc, $floorIDs, $oldfloorIDs);
 
         $model = new ProductUserModel($dbc);
         $model->upc($upc);
