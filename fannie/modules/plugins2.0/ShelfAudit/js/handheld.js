@@ -33,10 +33,7 @@ var handheld = (function($) {
 
     mod.updateQty = function(amt){
         var cur = Number($('#cur_qty').val());
-        if (cur + amt < 0)
-            cur = 0;
-        else
-            cur = cur+amt;
+        cur = cur+amt;
         $('#cur_qty').val(cur);
 
         cur += Number($('#old-qty').html());
