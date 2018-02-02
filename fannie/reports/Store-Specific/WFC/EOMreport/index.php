@@ -368,7 +368,7 @@ echo $output;
     $startDT = new DateTime($start);
     $noCounty = new DateTime('2017-10-01');
     if ($startDT >= $noCount) {
-        $county = 0;
+        //$county = 0;
     }
     echo '<table border="1" cellspacing="0" cellpadding="4">';
     echo '<tr><th>Tax Collected on Regular rate items</th>
