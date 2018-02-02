@@ -173,7 +173,7 @@ class GeneralDayReport extends FannieReportPage
         $discR = $dbc->execute($discQ,$dates);
         $report = array();
         while($discW = $dbc->fetch_row($discR)){
-            $record = array($discW['memDesc'],$discW[2],$discW[1]);
+            $record = array($discW['memDesc'],$discW[2],sprintf('%.2f', $discW[1]));
             $report[] = $record;
             $reconciliation['Discounts'] += $discW['Discount'];
         }
