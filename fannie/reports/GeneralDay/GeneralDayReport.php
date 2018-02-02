@@ -68,6 +68,8 @@ class GeneralDayReport extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $d1 = $this->form->date;
         $dates = array($d1.' 00:00:00',$d1.' 23:59:59');
+        $store = FormLib::get('store');
+        $dates[] = $store;
         $data = array();
 
         if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
@@ -88,6 +90,7 @@ class GeneralDayReport extends FannieReportPage
             FROM $dlog as d,
                 {$FANNIE_OP_DB}.tenders as t 
             WHERE d.tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd') . "
                 AND d.trans_subtype = t.TenderCode
                 AND d.total <> 0{$shrinkageUsers}
             GROUP BY t.TenderName ORDER BY TenderName");
@@ -113,6 +116,7 @@ class GeneralDayReport extends FannieReportPage
                     WHERE d.department <> 0
                         AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
                         AND d.tdate BETWEEN ? AND ?
+                        AND ' . DTrans::isStoreID($store, 'd') . '
                     GROUP BY t.dept_name
                     ORDER BY t.dept_name'; 
                 break;
@@ -126,6 +130,7 @@ class GeneralDayReport extends FannieReportPage
                     WHERE d.department <> 0
                         AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
                         AND d.tdate BETWEEN ? AND ?
+                        AND ' . DTrans::isStoreID($store, 'd') . '
                     GROUP BY t.salesCode
                     ORDER BY t.salesCode'; 
                 break;
@@ -140,6 +145,7 @@ class GeneralDayReport extends FannieReportPage
                     WHERE d.department <> 0
                         AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
                         AND d.tdate BETWEEN ? AND ?
+                        AND ' . DTrans::isStoreID($store, 'd') . '
                     GROUP BY m.super_name
                     ORDER BY m.super_name';
                 break;
@@ -160,6 +166,7 @@ class GeneralDayReport extends FannieReportPage
                 FROM $dlog d 
                     INNER JOIN memtype m ON d.memType = m.memtype
                 WHERE d.tdate BETWEEN ? AND ?
+                    AND " . DTrans::isStoreID($store, 'd') . "
                    AND d.upc = 'DISCOUNT'{$shrinkageUsers}
                 AND total <> 0
                 GROUP BY m.memDesc ORDER BY m.memDesc");
@@ -181,6 +188,7 @@ class GeneralDayReport extends FannieReportPage
                 SUM(regPrice) AS ttl
             FROM $trans AS d
             WHERE datetime BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd') . "
                 AND d.upc='TAXLINEITEM'
                 AND " . DTrans::isNotTesting('d') . "
             GROUP BY numflag
@@ -209,6 +217,7 @@ class GeneralDayReport extends FannieReportPage
         $taxSumQ = $dbc->prepare("SELECT  sum(total) as tax_collected
             FROM $dlog as d 
             WHERE d.tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd') . "
                 AND (d.upc = 'tax'){$shrinkageUsers}
             GROUP BY d.upc");
         $taxR = $dbc->execute($taxSumQ,$dates);
@@ -235,6 +244,7 @@ class GeneralDayReport extends FannieReportPage
             from $dlog as d
             left join memtype as m on d.memType = m.memtype
             WHERE d.tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd') . "
                 AND trans_type in ('I','D')
                 AND upc <> 'RRR'{$shrinkageUsers}
             ) as q 
@@ -280,6 +290,7 @@ class GeneralDayReport extends FannieReportPage
                 FROM $dlog as d
                 LEFT JOIN {$FANNIE_OP_DB}.departments as t ON d.department = t.dept_no
                 WHERE d.tdate BETWEEN ? AND ?
+                    AND " . DTrans::isStoreID($store, 'd') . "
                     AND d.department IN $dlist{$shrinkageUsers}
                 GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name");
             $equityR = $dbc->execute($equityQ,$dates);
@@ -355,6 +366,7 @@ class GeneralDayReport extends FannieReportPage
 
     function form_content()
     {
+        $store = FormLib::storePicker();
         return <<<HTML
         <form action=GeneralDayReport.php method=get>
         <div class="form-group">
@@ -364,6 +376,10 @@ class GeneralDayReport extends FannieReportPage
             </label>
             <input type=text id=date name=date 
                 class="form-control date-field" />
+        </div>
+        <div class="form-group">
+            <label>Store</label>
+            {$store['html']}
         </div>
         <div class="form-group">
             <label>List Sales By</label>
