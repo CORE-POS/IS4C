@@ -381,7 +381,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $phpunit->assertEquals('123', $this->priceFix('$1,23'));
         $this->session = new COREPOS\common\mvc\ValueContainer();
         $phpunit->assertInternalType('string', $this->form_content());
-        $this->splitStart();
+        $this->split_start();
     }
 }
 
