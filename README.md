@@ -33,14 +33,9 @@ Feel free to open an issue relating to any subject - development, usage, or othe
 In this directory you'll find:
 * common
   * Contains shared code used by both Fannie and POS
-* documentation
-  * Contains legacy documentation.
-  * Up to date documentation can be found
-    on Github's [wiki](https://github.com/CORE-POS/IS4C/wiki)
-  * fannie
-    * Backend tools and reporting for POS data
-  * pos/is4c-nf
-    * The actual POS
-  * scripts
-    * A catch-all for utilities that don't fit elsewhere 
-
+* fannie
+  * Backend tools and reporting for POS data
+* pos/is4c-nf
+  * The actual POS
+* scripts
+  * A catch-all for utilities that don't fit elsewhere 
