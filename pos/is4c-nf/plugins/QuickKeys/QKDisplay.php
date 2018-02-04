@@ -131,7 +131,7 @@ class QKDisplay extends NoInputCorePage
         echo "<div class=\"baseHeight\">";
         echo "<form action=\"" . filter_input(INPUT_SERVER,"PHP_SELF") ."\" method=\"post\">";
 
-        $launcher = new QuickKeysLauncher();
+        $launcher = new QuickKeyLauncher();
         $my_keys = $launcher->getKeys(CoreLocal::get('qkNumber'));
 
         $num_pages = ceil(count($my_keys)/9.0);
