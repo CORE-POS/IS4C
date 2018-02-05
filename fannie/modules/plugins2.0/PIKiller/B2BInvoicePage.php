@@ -24,6 +24,7 @@ class B2BInvoicePage extends FannieRESTfulPage
         $invoice->coding(FormLib::get('coding'));
         $invoice->customerNotes(FormLib::get('customerNotes'));
         $invoice->internalNotes(FormLib::get('internalNotes'));
+        $invoice->emailSubject(FormLib::get('subject'));
         $invoice->lastModifiedBy(FannieAuth::getUID($this->current_user));
         /**
          * Mark the invoice as paid
@@ -104,6 +105,29 @@ class B2BInvoicePage extends FannieRESTfulPage
         $invoice->save();
 
         return 'B2BInvoicePage.php?id=' . $this->id;
+    }
+
+    protected function put_id_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $inv = new B2BInvoicesModel($dbc);
+        $inv->cardNo($this->id);
+        $inv->description(FormLib::get('for'));
+        $inv->amount(FormLib::get('amt'));
+        $inv->createdDate(date('Y-m-d H:i:s'));
+        $uid = FannieAuth::getUID($this->current_user);
+        $inv->createdBy($uid);
+        $inv->lastModifiedBy($uid);
+        $uuid = '';
+        if (class_exists('Ramsey\\Uuid\\Uuid')) {
+            $uuid = Ramsey\Uuid\Uuid::uuid4();
+            $uuid = str_replace('-', '', $uuid->toString());
+        }
+        $inv->uuid($uuid);
+        $newID = $inv->save();
+
+        return 'B2BInvoicePage.php?id=' . $newID;
     }
 
     protected function get_id_handler()
@@ -192,6 +216,14 @@ class B2BInvoicePage extends FannieRESTfulPage
         <th>Internal Notes</th>
         <td colspan="2"><textarea class="form-control" rows="3" name="internalNotes">{$invoice->internalNotes}</textarea></td>
     </tr>
+    <tr>
+        <th>Email Subject</th>
+        <td colspan="2"><input type="text" class="form-control" name="subject" value="{$invoice->emailSubject}" /></td>
+    </tr>
+    <tr>
+        <th>Web ID</th>
+        <td colspan="2">{$invoice->uuid}</td>
+    </tr>
 </table>
 <hr />
 <p class="form-inline {$finalized}">
@@ -229,6 +261,28 @@ HTML;
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-default btn-core">Get Invoice</button>
+    </div>
+</form>
+<hr />
+<form method="get" action="B2BInvoicePage.php">
+    <div class="form-group">
+        <label>Customer #</label>
+        <input type="text" class="form-control" name="id" required />
+        <input type="hidden" name="_method" value="put" />
+    </div>
+    <div class="form-group">
+        <label>For</label>
+        <input type="text" class="form-control" name="for" required />
+    </div>
+    <div class="form-group">
+        <label>Amount</label>
+        <div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="text" class="form-control" name="amt" required />
+        </div>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default btn-core">Create New Invoice</button>
     </div>
 </form>
 HTML;
