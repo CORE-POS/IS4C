@@ -208,6 +208,14 @@ HTML;
 </form>
 HTML;
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->assertInternalType('string', $this->get_view());
+        $this->u = array('0000000000111');
+        $this->assertInternalType('string', $this->post_u_view());
+        $this->assertInternalType('array', $this->ordersToItems());
+    }
 }
 
 FannieDispatch::conditionalExec();

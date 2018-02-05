@@ -21,32 +21,45 @@
 
 *********************************************************************************/
 
-class DeleteVendorItems {}
-
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    
-    include(dirname(__FILE__) . '/../../config.php');
-    if (!class_exists('FannieAPI')) {
-        include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
-    }
-
-    $upc = FormLib::get('upc');
-    $sku = FormLib::get('sku');
-    $vendorID = FormLib::get('vendorID');
-
-    global $FANNIE_OP_DB;
-    $dbc = FannieDB::get($FANNIE_OP_DB);
-    $item = new VendorItemsModel($dbc);
-
-    $item->upc($upc);
-    $item->sku($sku);
-    $item->vendorID($vendorID);
-       
-    $deleted = $item->delete();
-    if (!$deleted) {
-        $ret['error'] = 1;
-        $ret['error_msg'] = 'Save failed';
-    }
-
-    echo json_encode($ret);    
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
+
+class DeleteVendorItems extends FannieRESTfulPage
+{
+    public $discoverable = false; 
+
+    protected function get_handler()
+    {
+        $upc = FormLib::get('upc');
+        $sku = FormLib::get('sku');
+        $vendorID = FormLib::get('vendorID');
+
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $item = new VendorItemsModel($dbc);
+
+        $item->upc($upc);
+        $item->sku($sku);
+        $item->vendorID($vendorID);
+           
+        $ret = array('error' => 0);
+        if (!$item->delete()) {
+            $ret['error'] = 1;
+            $ret['error_msg'] = 'Delete failed';
+        }
+        echo json_encode($ret);    
+
+        return false;
+    }
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_handler());
+        ob_end_clean();
+    }
+}
+
+FannieDispatch::conditionalExec();
+

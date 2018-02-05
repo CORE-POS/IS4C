@@ -113,8 +113,6 @@ class VendorAliasesPage extends FannieRESTfulPage
                 AND upc=?');
         $delR = $dbc->execute($delP, array($this->id, $sku, $upc));
 
-        $resp = array('error'=>($delR === false ? 1 : 0));
-
         return 'VendorAliasesPage.php?id=' . $this->id;
     }
 
@@ -230,6 +228,28 @@ class VendorAliasesPage extends FannieRESTfulPage
             </form>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Aliases are items that are sold under alternate UPCs or PLUs. Aliases supplant
+            both SKU maps and Breakdown items. A given vendor SKU may have multiple aliases
+            but only one primary alias. The primary alias is shown with the actual vendor SKU
+            associated and is the unit that is counted for inventory purposes. The multiplier
+            is a conversion factor between a given alias and the primary alias. If the primary
+            alias is a single item and there\'s a secondary alias that\'s a four-pack the multiplier
+            on the latter alias will be four.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $phpunit->assertInternalType('string', $this->get_id_view());
+        $phpunit->assertInternalType('string', $this->post_id_view());
+        $phpunit->assertInternalType('string', $this->delete_id_handler());
+        $phpunit->assertEquals(true, $this->post_id_handler());
     }
 }
 

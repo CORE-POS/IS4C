@@ -1,6 +1,5 @@
 <?php
 
-
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../classlib2.0/FannieAPI.php');
@@ -275,6 +274,13 @@ overriden as needed. When all the items to be transferred have been entered, use
 to create the purchase orders. Specify which store is sending the items as <em>From</em> and which store is
 receiving the items as <em>To</em>. Both purchase orders will be marked as placed but neither will be marked
 as received.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('string', $this->get_id_view());
+        $this->id = 111;
     }
 }
 
