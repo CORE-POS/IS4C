@@ -211,10 +211,10 @@ HTML;
 
     public function unitTest($phpunit)
     {
-        $this->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('string', $this->get_view());
         $this->u = array('0000000000111');
-        $this->assertInternalType('string', $this->post_u_view());
-        $this->assertInternalType('array', $this->ordersToItems());
+        $phpunit->assertInternalType('string', $this->post_u_view());
+        $phpunit->assertInternalType('array', $this->ordersToItems());
     }
 }
 
