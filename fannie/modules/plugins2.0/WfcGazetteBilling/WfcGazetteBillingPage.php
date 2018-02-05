@@ -371,7 +371,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 </div>
                 <div class="form-group">
                 <label>Coding</label>
-                <input type="text" required name="coding" class="form-control" />
+                <input type="text" required name="coding" class="form-control" value="65520" />
                 </div>
                 <div class="form-group">
                 <label>Notes for Customers</label>
