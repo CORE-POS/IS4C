@@ -50,6 +50,7 @@ class SatelliteRedisRecv extends FannieTask
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
         if (!$dbc->isConnected()) {
             echo "No connection";
+            $this->unlock();
             return false;
         }
 

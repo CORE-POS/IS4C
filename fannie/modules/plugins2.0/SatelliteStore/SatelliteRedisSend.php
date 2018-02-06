@@ -52,12 +52,14 @@ class SatelliteRedisSend extends FannieTask
         $remote = FannieDB::get($this->config->get('TRANS_DB'));
         if (!$remote->isConnected()) {
             echo "No connection";
+            $this->unlock();
             return false;
         }
 
         $local = $this->localDB($remote, $myID, $my_db);
         if (!$local->isConnected($my_db)) {
             echo "No local connection";
+            $this->unlock();
             return false;
         }
 
