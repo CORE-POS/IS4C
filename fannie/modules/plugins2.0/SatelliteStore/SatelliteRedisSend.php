@@ -39,6 +39,11 @@ class SatelliteRedisSend extends FannieTask
     
     public function run()
     {
+        if ($this->isLocked()) {
+            return false;
+        }
+        $this->lock();
+
         $conf = $this->config->get('PLUGIN_SETTINGS');
         $my_db = $conf['SatelliteDB'];
         $myID = $conf['SatelliteStoreID'];
@@ -56,11 +61,16 @@ class SatelliteRedisSend extends FannieTask
             return false;
         }
 
-        $redis = new Predis\Client($redis_host);
+        try {
+            $redis = new Predis\Client($redis_host);
 
-        $this->sendTable($local, $redis, $myID, 'dtransactions', 'store_row_id');
-        $this->sendTable($local, $redis, $myID, 'PaycardTransactions', 'storeRowId');
-        $this->sendTable($local, $redis, $myID, 'CapturedSignature', 'capturedSignatureID');
+            $this->sendTable($local, $redis, $myID, 'dtransactions', 'store_row_id');
+            $this->sendTable($local, $redis, $myID, 'PaycardTransactions', 'storeRowId');
+            $this->sendTable($local, $redis, $myID, 'CapturedSignature', 'capturedSignatureID');
+        } catch (Exception $ex) {
+        }
+
+        $this->unlock();
     }
 
     /**

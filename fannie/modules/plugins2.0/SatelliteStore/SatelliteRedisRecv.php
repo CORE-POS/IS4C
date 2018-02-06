@@ -39,6 +39,11 @@ class SatelliteRedisRecv extends FannieTask
     
     public function run()
     {
+        if ($this->isLocked()) {
+            return false;
+        }
+        $this->lock();
+
         $conf = $this->config->get('PLUGIN_SETTINGS');
         $redis_host = $conf['SatelliteRedis'];
 
@@ -48,11 +53,16 @@ class SatelliteRedisRecv extends FannieTask
             return false;
         }
 
-        $redis = new Predis\Client($redis_host);
+        try {
+            $redis = new Predis\Client($redis_host);
 
-        $this->getTrans($dbc, $redis, new DTransactionsModel(null));
-        $this->getTrans($dbc, $redis, new PaycardTransactionsModel(null));
-        $this->getTrans($dbc, $redis, new CapturedSignatureModel(null), array('capturedSignatureID'));
+            $this->getTrans($dbc, $redis, new DTransactionsModel(null));
+            $this->getTrans($dbc, $redis, new PaycardTransactionsModel(null));
+            $this->getTrans($dbc, $redis, new CapturedSignatureModel(null), array('capturedSignatureID'));
+        } catch (Exception $ex) {
+        }
+
+        $this->unlock();
     }
 
     private function getTrans($dbc, $redis, $model, $skip_columns=array())
