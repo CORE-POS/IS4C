@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\Parser;
 
@@ -76,6 +77,9 @@ class AccessProgramParser extends Parser {
             'ItemQtty' => 1,
             'numflag' => $selection,
         ));
+
+        DiscountModule::updateDiscount(new DiscountModule(10, 'custdata'));
+        TransRecord::discountnotify(10);
 
         $ret['output'] = DisplayLib::lastpage();
         $ret['receipt'] = 'accessSignupSlip';
