@@ -173,7 +173,9 @@ HTML;
             SELECT p.upc, p.default_vendor_id, r.reviewed
             FROM products AS p
                 LEFT JOIN prodReview AS r ON p.upc=r.upc
+                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE p.inUse = 1
+                AND m.superID in (1,4,5,8,9,13,17)
             GROUP BY p.upc
         ");
         $res = $dbc->execute($prep);
@@ -585,15 +587,26 @@ HTML;
         $p->default_vendor_id($vid);
         $p->inUse(1);
 
-        $table = '<table class="table table-condensed small">';
+        $masterDepts = array(1,4,5,8,9,13,17);
+        $curDepts = array();
+        $m = new MasterSuperDeptsModel($dbc);
+        foreach ($masterDepts as $mDept) {
+            $m->reset();
+            $m->superID($mDept);
+            foreach ($m->find() as $obj) {
+                $curDepts[] = $obj->dept_ID();
+            }
+        }
+
+        $table = '<table class="table table-condensed small" id="reviewtable">';
         $table .= '<thead><th>UPC</th><th>Brand</th><th>Description</th>
-            <th></th></thead><tbody><td></td><td></td><td></td><td></td><td>
+            <th>Reviewed On</th></thead><tbody><td></td><td></td><td></td><td></td><td>
             <input type="checkbox" id="checkAll" style="border: 1px solid red;"></td>';
 
         $pr = new ProdReviewModel($dbc);
         $in = array();
         foreach ($p->find() as $obj) {
-            if (!in_array($obj->upc(),$in)) {
+            if (!in_array($obj->upc(),$in) && in_array($obj->department(),$curDepts)) {
                 $table .= '<tr>';
                 $table .= '<td>'.$obj->upc().'</td>';
                 $table .= '<td>'.$obj->brand().'</td>';
@@ -603,7 +616,7 @@ HTML;
                 if ($pr->load()) {
                     $table .= '<td>'.$pr->reviewed().'</td>';
                 } else {
-                    $table .= '<td><i>no review date</i></td>';
+                    $table .= '<td><i class="text-danger">no review date</i></td>';
                 }
                 $table .= '<td><input type="checkbox"class="chk" name="checked[]" value="'.$obj->upc().'"></td>';
                 $table .= '</tr>';
