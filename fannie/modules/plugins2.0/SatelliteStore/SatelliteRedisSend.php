@@ -97,7 +97,7 @@ class SatelliteRedisSend extends FannieTask
             if ($lastID === null) {
                 $lastID = 0;
             }
-            $prep = $local->prepare('SELECT * FROM ' . $table . ' WHERE ' . $column . ' > ?');
+            $prep = $local->prepare('SELECT * FROM ' . $table . ' WHERE ' . $column . ' > ? ORDER BY ' . $column);
             $res = $local->execute($prep, array($lastID));
             $max = $lastID;
             while ($row = $local->fetchRow($res)) {
@@ -105,8 +105,8 @@ class SatelliteRedisSend extends FannieTask
                     $max = $row[$column];
                 }
                 $redis->lpush($table, json_encode($row));
+                $redis->set($table . ':' . $column . ':' . $myID, $max);
             }
-            $redis->set($table . ':' . $column . ':' . $myID, $max);
         } catch (Exception $ex) {
             // connection to redis failed. 
             // no cleanup required
