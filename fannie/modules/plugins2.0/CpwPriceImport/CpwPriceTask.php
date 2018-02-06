@@ -7,6 +7,10 @@ if (!class_exists('FannieAPI')) {
 
 class CpwPriceTask extends FannieTask
 {
+    private $forceAsProduce = array(
+        '202' => true,
+    );
+
     private function download($url)
     {
         $curl = curl_init($url);
@@ -122,7 +126,7 @@ class CpwPriceTask extends FannieTask
             $item = $this->priceItem($item, $data);
 
             $dept = trim($data[16]);
-            if ($dept < 5) {
+            if ($dept < 5 || isset($this->forceAsProduce[$item['sku']])) {
                 $dept = 999999;
             }
             $brand = trim($data[1]);
