@@ -7,10 +7,6 @@ if (!class_exists('FannieAPI')) {
 
 class CpwPriceTask extends FannieTask
 {
-    private $forceAsProduce = array(
-        '202' => true,
-    );
-
     private function download($url)
     {
         $curl = curl_init($url);
@@ -115,10 +111,14 @@ class CpwPriceTask extends FannieTask
 
         $file = fopen($filename, 'r');
         $dbc->startTransaction();
+        $seenSKUs = array();
         while (!feof($file)) {
             $data = fgetcsv($file);
             $item = $this->validateLine($data);
             if (!$item['valid']) {
+                continue;
+            }
+            if (isset($seenSKUs[$item['sku']])) {
                 continue;
             }
 
@@ -126,7 +126,7 @@ class CpwPriceTask extends FannieTask
             $item = $this->priceItem($item, $data);
 
             $dept = trim($data[16]);
-            if ($dept < 5 || isset($this->forceAsProduce[$item['sku']])) {
+            if ($dept < 5) {
                 $dept = 999999;
             }
             $brand = trim($data[1]);
@@ -142,6 +142,7 @@ class CpwPriceTask extends FannieTask
             } else {
                 $dbc->execute($insP, array($item['upc'], $item['sku'], $brand, $description, $item['size'], $item['caseSize'], $item['reg'], $item['sale'], $dept, $vendorID));
             }
+            $seenSKUs[$item['sku']] = true;
             if ($mode) {
                 $dbc->execute($prodP, array($item['reg'], $item['upc']));
                 $upcs[] = $item['upc'];
