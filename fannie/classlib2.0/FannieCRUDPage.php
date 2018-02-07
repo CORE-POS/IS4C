@@ -258,7 +258,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
             foreach ($columns as $col_name => $c) {
                 if ($col_name == $id_col) {
                     $ret .= '<input type="hidden" class="crudID" name="id[]" value="' . $o->$id_col() . '" />';    
-                } else {
+                } elseif ($c['type'] != 'BLOB') {
                     $css = 'form-control';
                     if (strtoupper($c['type'] == 'DATETIME')) {
                         $css .= ' date-field';
