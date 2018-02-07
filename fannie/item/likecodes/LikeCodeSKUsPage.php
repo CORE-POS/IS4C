@@ -111,6 +111,14 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 AND l.inUse=1
                 AND m.superID=?
             GROUP BY l.likeCode');
+        if ($this->id == -1) {
+            $lcP = $this->connection->prepare('
+                SELECT likeCode
+                FROM LikeCodeActiveMap
+                WHERE storeID=?
+                    AND internalUse=1
+                    AND ? IS NOT NULL');
+        }
         $lcR = $this->connection->execute($lcP, array(FormLib::get('store'), $this->id));
         $allCodes = array();
         while ($lcW = $this->connection->fetchRow($lcR)) {
@@ -222,7 +230,7 @@ HTML;
     protected function get_view()
     {
         $model = new MasterSuperDeptsModel($this->connection);
-        $opts = $model->toOptions();
+        $opts = $model->toOptions(-999);
         $store = FormLib::storePicker();
 
         return <<<HTML
@@ -230,6 +238,8 @@ HTML;
     <div class="form-group">
         <label>Super Department</label>
         <select name="id" class="form-control">
+            <option value="" selected>Select one</option>
+            <option value="-1">Internal Use</option>
             {$opts}
         </select>
     </div>
