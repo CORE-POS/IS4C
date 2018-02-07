@@ -127,7 +127,6 @@ class SoPoBridge
         if ($vendorInfo === false) {
             return false;
         }
-        $cases = $this->numCases($soID, $transID);
 
         $prep = $this->dbc->prepare('
             SELECT o.orderID
@@ -135,14 +134,12 @@ class SoPoBridge
                 INNER JOIN ' . FannieDB::fqn('PurchaseOrderItems', 'op') . ' AS i ON o.orderID=i.orderID
             WHERE o.vendorID=?
                 AND o.storeID=?
-                AND i.quantity=?
                 AND i.isSpecialOrder=1
                 AND i.internalUPC=?
         ');
         return $this->dbc->getValue($prep, array(
             $vendorInfo['vendorID'],
             $storeID,
-            $cases,
             str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT),
         ));
     }
@@ -151,17 +148,12 @@ class SoPoBridge
       Delete a SPO item from a PO
       @param $soID [int] special order ID
       @param $transID [int] special order line item ID
-      @param $storeID [int] store ID
       @return [bool] success
 
       An item is only deleted from a PO if it has not yet been received
     */
-    public function removeItemFromPurchaseOrder($soID, $transID, $storeID)
+    public function removeItemFromPurchaseOrder($soID, $transID)
     {
-        $orderID = $this->findPurchaseOrder($soID, $transID, $storeID);
-        if (!$orderID) {
-            return false;
-        }
         $upc = str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT);
 
         $itemP = $this->dbc->prepare('SELECT * FROM ' . FannieDB::fqn('PurchaseOrderItems', 'op')
