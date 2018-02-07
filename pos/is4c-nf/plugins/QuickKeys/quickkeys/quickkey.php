@@ -80,7 +80,7 @@ class quickkey {
                 md5($this->title),
                 $this->output_text);
         } else {
-            $imgURL = 'quickkeys/imgs/' . (is_numeric($this->img) ? 'img.php?imgID=' . $this->img : $this->img);
+            $imgURL = 'quickkeys/' . (is_numeric($this->img) ? 'noauto/img.php?imgID=' . $this->img : 'imgs/' . $this->img);
             $ret .= sprintf("<input type=\"submit\"
                 name=\"quickkey_submit\" id=\"%s\" value=\"%s\"
                 class=\"quick_button pos-button coloredBorder quickButtonImage\" 
