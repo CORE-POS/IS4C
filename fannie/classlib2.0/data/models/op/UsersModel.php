@@ -37,6 +37,7 @@ class UsersModel extends BasicModel
     'session_id' => array('type'=>'VARCHAR(50)'),
     'real_name' => array('type'=>'VARCHAR(75)'),
     'email' => array('type'=>'VARCHAR(75)'),
+    'totpURL' => array('type'=>'VARCHAR(255)'),
     );
 
     public function doc()

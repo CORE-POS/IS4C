@@ -27,6 +27,9 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('validateUserQuiet')) {
     require(dirname(__FILE__) . '/../login.php');
 }
+if (!function_exists('doLogin')) {
+    require(dirname(__FILE__) . '/../utilities.php');
+}
 
 class FannieAuthLoginPage extends FannieRESTfulPage
 {
@@ -53,6 +56,8 @@ class FannieAuthLoginPage extends FannieRESTfulPage
         }
         $this->__routes[] = 'get<logout>';
         $this->__routes[] = 'post<name><password>';
+        $this->__routes[] = 'get<name><factor>';
+        $this->__routes[] = 'post<name><factor>';
 
         return parent::preprocess();
     }
@@ -70,6 +75,12 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     /**
       Check submitted credentials. Redirect to destination
       on success, proceed to error message on failure
+
+      If two-factor authentication is required, this redirects
+      to an additional form to enter the code. So people can't
+      [easily] skip the name & password requirement, a short-lived
+      entry is created in userSessions to flag that correct first
+      credentials have been entered for the account.
     */
     public function post_name_password_handler()
     {
@@ -87,11 +98,87 @@ class FannieAuthLoginPage extends FannieRESTfulPage
         }
 
         if ($login) {
-            header("Location: $redirect");
-            return false;
+            $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+            $otpP = $dbc->prepare('SELECT * FROM Users WHERE name=?');
+            $user = $dbc->getRow($otpP, array($name));
+            if (isset($user['totpURL']) && $user['totpURL']) {
+                $redirect = 'loginform.php?name=' . urlencode($name) . '&factor=1&redirect=' . urlencode($redirect);
+                $uid = getUID($name);
+                $expires = date('Y-m-d H:i:s', time() + (3*60));
+                $sessionP = $dbc->prepare('INSERT INTO userSessions 
+                            (uid,session_id,ip,expires)
+                            VALUES (?,?,?,?)');
+                $dbc->execute($sessionP, array($uid, 'temp-login', '127.0.0.1', $expires));
+            } else {
+                doLogin($name);
+            }
+            return $redirect;
         } else {
             return true;
         }
+    }
+
+    /**
+     * Validate two-factor token provided
+     * If correct, the user is logged in. If not it's
+     * treated identical to an incorrect password
+     */
+    protected function post_name_factor_handler()
+    {
+        $redirect = FormLib::get('redirect', 'menu.php');
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $otpP = $dbc->prepare('SELECT totpURL FROM Users WHERE name=?');
+        $uri = $dbc->getValue($otpP, array($this->name));
+        $otp = OTPHP\Factory::loadFromProvisioningUri($uri);
+        if ($otp->verify($this->factor)) {
+            $delP = $dbc->prepare("DELETE FROM userSessions WHERE name=? AND session_id='temp-login'");
+            $dbc->execute($delP, array($this->name));
+            doLogin($this->name);
+            return $redirect;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check for a temporary userSession indicating a recent
+     * correct name & password before presenting the two factor form
+     */
+    protected function get_name_factor_handler()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $chkP = $dbc->prepare("SELECT session_id FROM userSessions
+            WHERE uid=? AND session_id='temp-login' AND expires < " . $dbc->now());
+        $chk = $dbc->getValue($chkP, array(getUID($this->name)));
+        if ($chk === false) {
+            return 'loginform.php';
+        }
+
+        return true;
+    }
+
+    protected function get_name_factor_view()
+    {
+        $redirect = FormLib::get('redirect');
+        $this->addOnloadCommand("\$('#factor').focus()");
+        return <<<HTML
+<form method="post" action="loginform.php">
+    <input type="hidden" name="name" value="{$this->name}" />
+    <input type="hidden" name="redirect" value="{$redirect}" />
+    <div class="form-group">
+        <label>Enter Code</label>
+        <input type="text" class="form-control" name="factor" id="factor" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default">Log In</button>
+    </div>
+</form>
+HTML;
+    }
+
+    protected function post_name_factor_view()
+    {
+        return $this->post_name_password_view();
     }
 
     /**
@@ -100,7 +187,7 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     public function post_name_password_view()
     {
         $redirect = FormLib::get('redirect', 'menu.php');
-        return "Login failed. <a href=loginform.php?redirect=$redirect>Try again</a>?";
+        return "<p>Login failed. <a href=loginform.php?redirect=$redirect>Try again</a>?</p>";
     }
 
     /**

@@ -89,6 +89,7 @@ class AuthIndexPage extends FanniePage {
         if (!$this->config->get('AUTH_SHADOW', false) && !$this->config->get('AUTH_LDAP', false)) { 
             echo "<li><a href=AuthChangePassword.php>Change password</a></li>";
         }
+        echo '<li><a href="AuthFactorPage.php">Two Factor Authentication</a> (experimental)</li>';
         echo "</ul>";
 
         return ob_get_clean();

@@ -68,8 +68,6 @@ function login($name,$password){
     return false;
   }
 
-  doLogin($name);
-
   return true;
 }
 
@@ -128,7 +126,6 @@ function shadow_login($name,$passwd){
     $pwhash = $output[0];
     if (crypt($passwd,$pwhash) == $pwhash){
         syncUserShadow($name);
-        doLogin($name);
         return true;
     }   
     return false;
@@ -168,7 +165,6 @@ function ldap_login($name,$passwd)
     $fullname = $ldap_info[0][$config->get('LDAP_RN_FIELD')][0];
 
     syncUserLDAP($name,$uid,$fullname); 
-    doLogin($name);
     return true;
 }
 
@@ -321,6 +317,7 @@ function checkLogin(){
   }
   $checkQ = $sql->prepare("select * from Users AS u LEFT JOIN
             userSessions AS s ON u.uid=s.uid where u.name=? 
+            AND s.session_id<>'temp-login'
             and s.session_id=?");
   $checkR = $sql->execute($checkQ,array($name,$session_id));
 
