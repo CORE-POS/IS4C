@@ -78,14 +78,17 @@ class QuickKeyLauncher extends Parser
         $my_keys = array();
         if (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('QuickLookups')) {
             $prep = $dbc->prepare('
-                SELECT label,
-                    action
+                SELECT *
                 FROM QuickLookups
                 WHERE lookupSet = ?
                 ORDER BY sequence');
             $res = $dbc->execute($prep, array($number));
             while ($row = $dbc->fetch_row($res)) {
-                $my_keys[] = new quickkey($row['label'], $row['action']);
+                if (isset($row['imageType']) && $row['imageType']) {
+                    $my_keys[] = new quickkey($row['label'], $row['action'], $row['quickLookupID']);
+                } else {
+                    $my_keys[] = new quickkey($row['label'], $row['action']);
+                }
             }
         }
         if (count($my_keys) == 0) {
