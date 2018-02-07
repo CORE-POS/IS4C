@@ -83,7 +83,7 @@ class quickkey {
             $ret .= sprintf("<input type=\"submit\"
                 name=\"quickkey_submit\" id=\"%s\" value=\"%s\"
                 class=\"quick_button pos-button coloredBorder quickButtonImage\" 
-                style=\"background-image:url(%s);\"
+                style=\"background-image:url(%s);\" />
                 <input type=\"hidden\" name=\"%s\"
                 value=\"%s\" />",$id,$this->title,
                 "quickkeys/imgs/".$this->img,
