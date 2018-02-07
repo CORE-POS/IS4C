@@ -99,7 +99,7 @@ class QuickKeyLauncher extends Parser
     {
         $my_keys = $this->getKeys($number);
         if (count($my_keys) == 0) {
-            return DisplayLib::boxMsg('Menu not found', '', false, DisplayLib::standardClearButton());
+            return DisplayLib::boxMsg(_('Menu not found') . ' (#' . $number . ')', '', false, DisplayLib::standardClearButton());
         }
 
         $clearButton = false;
