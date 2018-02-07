@@ -134,7 +134,7 @@ class FannieAutoComplete extends FannieWebService
 
             case 'catalog':
                 list($vID,$search) = explode(':', $args->search);
-                $prep = $dbc->prepare('SELECT sku, description, cost
+                $prep = $dbc->prepare('SELECT sku, description, cost, size, units
                                        FROM vendorItems
                                        WHERE vendorID=?
                                         AND vendorDept > 1
@@ -143,9 +143,10 @@ class FannieAutoComplete extends FannieWebService
                 $search = '%' . $search . '%';
                 $res = $dbc->execute($prep, array($vID, $search, $search));
                 while ($row = $dbc->fetch_row($res)) {
+                    $str = "{$row['sku']} {$row['description']} {$row['size']}/{$row['units']} \${$row['cost']}";
                     $ret[] = array(
-                        'label' => $row['sku'] . ' ' . $row['description'] . ' $' . $row['cost'],
-                        'value' => $row['sku'] . ' ' . $row['description'] . ' $' . $row['cost'],
+                        'label' => $str,
+                        'value' => $str,
                     );
                 }
                 return $ret;
