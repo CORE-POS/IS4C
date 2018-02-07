@@ -180,17 +180,15 @@ class LikeCodeAjax extends FannieRESTfulPage
 
     protected function post_id_storeID_internal_handler()
     {
-        return $this->toggleStoreField($this->storeID, $this->id, 'internal');
+        return $this->toggleStoreField($this->storeID, $this->id, 'internalUse');
     }
 
     private function toggleStoreField($store, $likeCode, $field)
     {
-        $model = $this->getLcModel($likeCode);
-        if ($model === false) {
-            return false;
-        }
-
+        $model = new LikeCodeActiveMapModel($this->connection);
+        $model->likeCode($likeCode);
         $model->storeID($store);
+        $model->load();
         $model->$field($model->$field() ? 0 : 1);
         $model->save();
 
