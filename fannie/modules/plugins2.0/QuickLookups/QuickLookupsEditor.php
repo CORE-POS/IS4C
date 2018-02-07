@@ -39,6 +39,12 @@ class QuickLookupsEditor extends \COREPOS\Fannie\API\FannieCRUDPage
     'sequence' => 'Position in Menu',
     );
 
+    public function get_view()
+    {
+        return '<div class="alert alert-info"><a href="QuickLookupsImages.php">Manage Images</a> for menu entires</div>'
+            . parent::get_view();
+    }
+
     public function helpContent()
     {
         return '<p>
