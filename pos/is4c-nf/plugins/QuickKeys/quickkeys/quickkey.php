@@ -81,12 +81,11 @@ class quickkey {
                 $this->output_text);
         } else {
             $ret .= sprintf("<input type=\"submit\"
-                name=\"quickkey_submit\" id=\"%s\"
-                value=\"%s\" class=\"quick_button\" 
-                src=\"%s\" />
+                name=\"quickkey_submit\" id=\"%s\" value=\"%s\"
+                class=\"quick_button pos-button coloredBorder quickButtonImage\" 
+                style=\"background-image:url(%s);\"
                 <input type=\"hidden\" name=\"%s\"
                 value=\"%s\" />",$id,$this->title,
-                MiscLib::base_url().
                 "quickkeys/imgs/".$this->img,
                 md5($this->title),
                 $this->output_text);
