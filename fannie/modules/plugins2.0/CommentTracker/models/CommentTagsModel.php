@@ -2,7 +2,7 @@
 
 /*******************************************************************************
 
-    Copyright 2017 Whole Foods Co-op
+    Copyright 2018 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -24,24 +24,17 @@
         
 
 /**
-  @class CommentsModel
+  @class CommentTagsModel
 */
-class CommentsModel extends BasicModel
+class CommentTagsModel extends BasicModel
 {
-    protected $name = "Comments";
+    protected $name = "CommentTags";
     protected $preferred_db = 'plugin::CommentDB';
 
     protected $columns = array(
-    'commentID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
-    'categoryID' => array('type'=>'INT'),
-    'publishable' => array('type'=>'TINYINT', 'default'=>0),
-    'appropriate' => array('type'=>'TINYINT', 'default'=>1),
-    'email' => array('type'=>'VARCHAR(255)'),
-    'phone' => array('type'=>'VARCHAR(255)'),
-    'comment' => array('type'=>'TEXT'),
-    'tdate' => array('type'=>'DATETIME'),
-    'fromPaper' => array('type'=>'TINYINT', 'default'=>0),
-    'posNeg' => array('type'=>'TINYINT', 'default'=>0),
+    'commentTagID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'commentID' => array('type'=>'INT','index'=>true),
+    'tag' => array('type'=>'VARCHAR(255)'),
     );
 }
 

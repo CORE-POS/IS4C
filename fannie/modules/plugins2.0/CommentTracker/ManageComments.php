@@ -25,7 +25,15 @@ class ManageComments extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('post<id><catID>', 'post<id><appropriate>', 'get<new>', 'post<new>', 'get<canned>');
+        $this->addRoute(
+            'post<id><catID>',
+            'post<id><appropriate>',
+            'post<id><pnn>',
+            'post<id><tags>',
+            'get<new>',
+            'post<new>',
+            'get<canned>'
+        );
 
         return parent::preprocess();
     }
@@ -42,6 +50,70 @@ class ManageComments extends FannieRESTfulPage
         echo 'OK';
 
         return false;
+    }
+
+    /**
+     * Save tags from a comma separated list
+     * If the list is empty, just delete all tags
+     * Otherwise:
+     *  1. Delete tags that are not in the current list
+     *  2. Add new tags if they don't exist. Intent is to
+     *     prevent PK churn from deleting all tags and
+     *     re-adding many of the same ones
+     */
+    protected function post_id_tags_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['CommentDB']);
+        $tags = trim($this->tags);
+        $tags = explode(',', $tags);
+        $tags = array_map('trim', $tags);
+        $tags = array_filter($tags, function ($t) { return $t !== ''; });
+        $tags = array_map('strtolower', $tags);
+        if (count($tags) == 0) {
+            $prep = $this->connection->prepare('DELETE FROM CommentTags WHERE commentID=?');
+            $res = $this->connection->execute($prep, array($this->id));
+        } else {
+            $this->connection->startTransaction();
+
+            list($inStr, $args) = $this->connection->safeInClause($tags);
+            $delP = $this->connection->prepare("DELETE FROM CommentTags WHERE tag NOT IN ({$inStr}) AND commentID=?");
+            $args[] = $this->id;
+            $this->connection->execute($delP, $args);
+
+            $chkP = $this->connection->prepare('SELECT commentTagID FROM CommentTags WHERE tag=? AND commentID=?');
+            $insP = $this->connection->prepare('INSERT INTO CommentTags (tag, commentID) VALUES (?, ?)');
+            foreach ($tags as $t) {
+                $args = array($t, $this->id);
+                if ($this->connection->getValue($chkP, $args) == false) {
+                    $this->connection->execute($insP, $args);
+                }
+            }
+
+            $this->connection->commitTransaction();
+        }
+
+        $tags = array_map(function($t) { return "<a href=\"ManageTags.php?tag={$t}\">{$t}</a>"; }, $tags);
+        $tags = implode(' ', $tags);
+
+        echo $tags;
+
+        return false;
+    }
+
+    protected function post_id_pnn_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['CommentDB']);
+        $comment = new CommentsModel($this->connection);
+        $comment->commentID($this->id);
+        $comment->posNeg($this->pnn);
+        $comment->save();
+
+        echo 'OK';
+
+        return false;
+
     }
 
     protected function post_id_appropriate_handler()
@@ -115,6 +187,7 @@ class ManageComments extends FannieRESTfulPage
         $comment->publishable(FormLib::get('pub') ? 1 : 0);
         $comment->appropriate(FormLib::get('appr') ? 1 : 0);
         $comment->email(FormLib::get('email'));
+        $comment->phone(FormLib::get('phone'));
         $comment->comment(FormLib::get('comment'));
         $comment->tdate(FormLib::get('tdate'));
         $comment->fromPaper(1);
@@ -170,6 +243,10 @@ class ManageComments extends FannieRESTfulPage
         <input type="text" name="email" placeholder="If known..." class="form-control" />
     </div>
     <div class="form-group">
+        <label>Or Phone Number for Response</label>
+        <input type="text" name="phone" placeholder="If known..." class="form-control" />
+    </div>
+    <div class="form-group">
         <label>Comment</label>
         <textarea name="comment" class="form-control" rows="7"></textarea>
     </div>
@@ -216,6 +293,22 @@ HTML;
                 </div>';
         }
 
+        $tagR = $this->connection->execute("SELECT tag FROM {$prefix}CommentTags GROUP BY tag");
+        $tags = array();
+        while ($tagW = $this->connection->fetchRow($tagR)) {
+            $tags[] = $tagW['tag'];
+        }
+        $tags = json_encode($tags);
+        $myTags = array();
+        $tagP = $this->connection->prepare("SELECT tag FROM {$prefix}CommentTags WHERE commentID=?");
+        $tagR = $this->connection->execute($tagP, array($this->id));
+        while ($tagW = $this->connection->fetchRow($tagR)) {
+            $myTags[] = $tagW['tag'];
+        }
+        $tagLinks = array_map(function ($t) { return "<a href=\"ManageComments.php?tag={$t}\">{$t}</a>"; }, $myTags);
+        $tagLinks = implode(', ', $tagLinks);
+        $myTags = implode(', ', $myTags);
+
         $categories = new CategoriesModel($this->connection);
         $categories->whichDB($settings['CommentDB']);
         $curCat = $comment['categoryID'];
@@ -223,21 +316,34 @@ HTML;
         $opts .= $categories->toOptions($curCat);
         $opts .= '<option value="-1" ' . ($curCat == -1 ? 'selected' : '') . '>Spam</option>';
 
+        if (is_numeric($comment['phone']) && strlen($comment['phone']) == 7) {
+            $comment['phone'] = substr($comment['phone'], 0, 3) . '-' . substr($comment['phone'], 3);
+        } elseif (is_numeric($comment['phone']) && strlen($comment['phone']) == 10) {
+            $comment['phone'] = substr($comment['phone'], 0, 3) . '-' . substr($comment['phone'], 3, 3) . '-' . substr($comment['phone'], 6);
+        }
+
         $canned = new CannedResponsesModel($this->connection);
         $canned->whichDB($settings['CommentDB']);
         $canned = $canned->toOptions();
+
+        $pnn = '';
+        foreach (array(1=>'Positive',0=>'Neutral',-1=>'Negative') as $k => $v) {
+            $pnn .= sprintf('<option %s value="%d">%s</option>',
+                $k == $comment['posNeg'] ? 'selected' : '', $k, $v);
+        }
 
         $publishAllowed = $comment['publishable'] ? 'Yes' : 'No';
         $appropriateCheck = $comment['appropriate'] ? 'checked' : '';
         $comment['comment'] = nl2br($comment['comment']);
         $source = $comment['fromPaper'] ? 'Manual entry' : 'Website';
+        $this->addScript('js/manageComments.js');
         if ($comment['email']) {
             $comment['email'] .= sprintf(' (<a href="ManageComments.php?email=%s">All Comments</a>)', $comment['email']);
             $this->addOnloadCommand("manageComments.sendMsg();");
         } else {
             $this->addOnloadCommand("manageComments.sendBtn();");
         }
-        $this->addScript('js/manageComments.js');
+        $this->addOnloadCommand("manageComments.autoTag({$tags});");
 
         return <<<HTML
 <form method="post">
@@ -258,11 +364,25 @@ HTML;
         <th>Email Address</th><td>{$comment['email']}</td>
     </tr>
     <tr>
+        <th>Phone Number</th><td>{$comment['phone']}</td>
+    </tr>
+    <tr>
         <th>Publication Allowed</th><td>{$publishAllowed}</td>
     </tr>
     <tr>
         <th>Appropriate</th><td><input type="checkbox" {$appropriateCheck}
             onchange="manageComments.saveAppropriate({$this->id}, this.checked);" /></td>
+    </tr>
+    <tr>
+        <th>Type</th>
+        <td><select class="form-control" onchange="manageComments.savePNN({$this->id}, this.value);">{$pnn}</select></td>
+    </tr>
+    <tr>
+        <th>Tags</th>
+        <td><input type="text" class="form-control" id="myTags" value="{$myTags}"
+            onchange="manageComments.saveTags({$this->id}, this.value);" />
+            <div id="tagLinks">{$tagLinks}</div>
+        </td>
     </tr>
     <tr>
         <th>Source</th><td>{$source}</td> </tr>
@@ -309,6 +429,11 @@ HTML;
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $prefix = $settings['CommentDB'] . $this->connection->sep();
 
+        $tagTable = '';
+        if (FormLib::get('tag')) {
+            $tagTable .= " INNER JOIN {$prefix}CommentTags AS g ON c.commentID=g.commentID ";
+        }
+
         $query = "
             SELECT c.commentID,
                 CASE WHEN c.categoryID=0 THEN 'n/a'
@@ -321,6 +446,7 @@ HTML;
             FROM {$prefix}Comments AS c
                 LEFT JOIN {$prefix}Categories AS t ON t.categoryID=c.categoryID
                 LEFT JOIN {$prefix}Responses AS r ON r.commentID=c.commentID
+                {$tagTable}
             WHERE 1=1 ";
         $args = array();
         if (FormLib::get('category', false)) {
@@ -337,8 +463,14 @@ HTML;
         if (FormLib::get('email', false)) {
             $query .= ' AND c.email=?';
             $args[] = FormLib::get('email');
-            $hidden = sprintf('<input type="hidden" class="filter-select" name="email" value="%s" />',
+            $hidden .= sprintf('<input type="hidden" class="filter-select" name="email" value="%s" />',
                 FormLib::get('email'));
+        }
+        if (FormLib::get('tag', false)) {
+            $query .= ' AND g.tag=?';
+            $args[] = FormLib::get('tag');
+            $hidden .= sprintf('<input type="hidden" class="filter-select" name="tag" value="%s" />',
+                FormLib::get('tag'));
         }
         $query .= ' ORDER BY c.commentID DESC, c.tdate DESC';
 
