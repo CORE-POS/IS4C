@@ -97,6 +97,12 @@ class DeptKey extends Parser
         return $ret;
     }
 
+    /**
+     * Get the SpecialDept mapping
+     * This is normally cached within the session but if not present
+     * will be loaded from the SpecialDeptMap table
+     * The format is array( department# => array('list', 'of', 'mods') )
+     */
     private function getMods()
     {
         $deptmods = $this->session->get('SpecialDeptMap');
@@ -110,6 +116,15 @@ class DeptKey extends Parser
         return $deptmods;
     }
 
+    /**
+     * Apply any relevant SpecialDept modules
+     * @param $deptmods [keyed array] department number => array of module names
+     * @param $dept [int] current department number (times 10 for historical reasons)
+     * @param $amt [int] sale amount (in cents)
+     * @param $ret [ParseResult] parser return object
+     * @return [ParseResult] parser return object as modified by any applicable
+     *                       SpecialDept modules
+     */
     private function applyMods($deptmods, $dept, $amt, $ret)
     {
         $index = (int)($dept/10);
