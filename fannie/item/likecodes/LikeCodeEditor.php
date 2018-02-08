@@ -134,7 +134,7 @@ function loadlc(id){
             <form action="LikeCodeEditor.php" method="get"
                 class="form form-horizontal">
             <select id="lcselect" name="lcselect" 
-                class="form-control"
+                class="form-control chosen"
                 size=15 onchange="loadlc(this.value);">
             <?php echo $opts; ?>
             </select><p />
@@ -176,7 +176,14 @@ function loadlc(id){
 
         $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();");
         $this->addScript('lcEditor.js');
+        if (FormLib::get('start')) {
+            $start = (int)FormLib::get('start');
+            $this->addOnloadCommand("\$('#lcselect').val({$start});");
+            $this->addOnloadCommand("loadlc({$start});");
+            $this->addOnloadCommand("\$('#lcselect').trigger('chosen:updated');");
+        }
 
         return ob_get_clean();
     }

@@ -172,7 +172,8 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         $tableBody = '';
         foreach ($map as $lc => $data) {
             $checkMulti = $vID == $data['multi'] ? 'checked' : '';
-            $tableBody .= "<tr><td class=\"rowLC\">{$lc}</td><td>{$data['name']}
+            $tableBody .= "<tr><td class=\"rowLC\"><a href=\"LikeCodeEditor.php?start={$lc}\">{$lc}</a></td>
+                <td><a href=\"LikeCodeEditor.php?start={$lc}\">{$data['name']}</a>
                 <input type=\"checkbox\" {$checkMulti} class=\"pull-right\" 
                 onchange=\"skuMap.setMulti({$lc}, this.checked);\"
                 title=\"Blend Costs\"/></td>";
