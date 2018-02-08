@@ -1625,6 +1625,20 @@ class SQLManager
         }
     }
 
+    public function getAllValues($sql, $input_array=array(), $which_connection='')
+    {
+        $res = $this->execute($sql, $input_array, $which_connection);
+        if ($res === false && $this->throw_on_fail) {
+            throw new \Exception('Record not found');
+        }
+        $ret = array();
+        while ($row = $this->fetchRow($res)) {
+            $ret[] = $row[0];
+        }
+
+        return $ret;
+    }
+
     /**
       Get a row directly from a query without verifying
       rows exist and fetching one
@@ -1649,6 +1663,20 @@ class SQLManager
                 return false;
             }
         }
+    }
+
+    public function getAllRows($sql, $input_array=array(), $which_connection='')
+    {
+        $res = $this->execute($sql, $input_array, $which_connection);
+        if ($res === false && $this->throw_on_fail) {
+            throw new \Exception('Record not found');
+        }
+        $ret = array();
+        while ($row = $this->fetchRow($res)) {
+            $ret[] = $row;
+        }
+
+        return $ret;
     }
 
     /** 
