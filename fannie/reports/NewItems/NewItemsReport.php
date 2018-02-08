@@ -36,7 +36,7 @@ class NewItemsReport extends FannieReportPage
     protected $title = "Fannie : New Items Report";
     protected $header = "New Items Report";
 
-    protected $report_headers = array('Added', 'UPC', 'Desc', 'Dept#', 'Dept');
+    protected $report_headers = array('Added', 'Brand', 'UPC', 'Desc', 'Dept#', 'Dept', 'Qty Sold', 'All Stores');
     protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
@@ -73,7 +73,7 @@ class NewItemsReport extends FannieReportPage
 
         // args/parameters differ with super
         // vs regular department
-        $args = array();
+        $args = array(FormLib::get('store'));
         $where = ' 1=1 ';
         if ($buyer !== '') {
             if ($buyer == -2) {
@@ -93,11 +93,16 @@ class NewItemsReport extends FannieReportPage
         }
         $args[] = $date1.' 00:00:00';
         $args[] = $date2.' 23:59:59';
+        $args[] = $date1.' 00:00:00';
+        $args[] = $date2.' 23:59:59';
+        $dlog = DTransactionsModel::selectDLog($date1, $date2);
 
-        $query = "SELECT MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END) AS entryDate, 
-            a.upc, p.description, p.department, d.dept_name
-            FROM products AS p INNER JOIN prodUpdate AS a ON a.upc=p.upc
-            LEFT JOIN departments AS d ON d.dept_no=p.department ";
+        $query = "SELECT MAX(p.created) AS entryDate, " . DTrans::sumQuantity('t') . " AS qty,
+            SUM(CASE WHEN p.last_sold IS NULL THEN 1 ELSE 0 END) AS allStores,
+            p.upc, p.brand, p.description, p.department, d.dept_name
+            FROM products AS p
+                LEFT JOIN {$dlog} AS t ON p.upc=t.upc AND " . DTrans::isStoreID(FormLib::get('store'), 't') . "
+                LEFT JOIN departments AS d ON d.dept_no=p.department ";
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON p.department=s.dept_ID ';
@@ -105,9 +110,9 @@ class NewItemsReport extends FannieReportPage
             $query .= 'LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID ';
         }
         $query .= "WHERE $where
-            GROUP BY a.upc,p.description,p.department, d.dept_name
-            HAVING MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END) BETWEEN ? AND ?
-            ORDER BY MIN(CASE WHEN a.modified IS NULL THEN p.modified ELSE a.modified END)";
+                AND (t.tdate IS NULL OR t.tdate BETWEEN ? AND ?)
+                AND p.created BETWEEN ? AND ?
+            GROUP BY p.upc,p.brand,p.description,p.department, d.dept_name";
 
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($query, $args);
@@ -125,9 +130,12 @@ class NewItemsReport extends FannieReportPage
         return array(
             $row['entryDate'],
             $row['upc'],
+            $row['brand'],
             $row['description'],
             $row['department'],
             $row['dept_name'],
+            sprintf('%.2f', $row['qty']),
+            $row['allStores'] ? 'No' : 'Yes',
         );
     }
 
