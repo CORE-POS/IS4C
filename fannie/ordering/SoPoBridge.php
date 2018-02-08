@@ -152,9 +152,9 @@ class SoPoBridge
 
       An item is only deleted from a PO if it has not yet been received
     */
-    public function removeItemFromPurchaseOrder($soID, $transID)
+    public function removeItemFromPurchaseOrder($orderID, $transID)
     {
-        $upc = str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT);
+        $upc = str_pad($orderID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT);
 
         $itemP = $this->dbc->prepare('SELECT * FROM ' . FannieDB::fqn('PurchaseOrderItems', 'op')
                                 . ' WHERE internalUPC=? AND orderID=?');

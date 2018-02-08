@@ -86,7 +86,7 @@ if (strlen($cwIDs) > 2){
             AND p.order_id IN {$cwIDs}";
     $itemR = $sql->query($itemQ);
     while ($itemW = $sql->fetchRow($itemR)) {
-        $bridge->removeItemFromPurchaseOrder($itemW['order_id'], $itemW['trans_id'], $itemW['storeID']);
+        $bridge->removeItemFromPurchaseOrder($itemW['order_id'], $itemW['trans_id']);
     }
 
     // make note in history table
@@ -135,7 +135,7 @@ if (strlen($allIDs) > 2){
             AND p.order_id IN {$allIDs}";
     $itemR = $sql->query($itemQ);
     while ($itemW = $sql->fetchRow($itemR)) {
-        $bridge->removeItemFromPurchaseOrder($itemW['order_id'], $itemW['trans_id'], $itemW['storeID']);
+        $bridge->removeItemFromPurchaseOrder($itemW['order_id'], $itemW['trans_id']);
     }
 
     // make note in history table
