@@ -92,7 +92,7 @@ class CpwPriceTask extends FannieTask
         $idP = $dbc->prepare('SELECT vendorID FROM vendors WHERE vendorName=\'CPW\'');
         $vendorID = $dbc->getValue($idP);
 
-        $resetP = $dbc->prepare('UPDATE vendorItems SET vendorDept=0 WHERE vendorID=? AND vendorDept < 5');
+        $resetP = $dbc->prepare('UPDATE vendorItems SET vendorDept=0 WHERE vendorID=? AND (vendorDept < 5 OR vendorDept=999999)');
         $dbc->execute($resetP, array($vendorID));
 
         $prodP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=?');
