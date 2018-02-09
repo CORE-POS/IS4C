@@ -29,7 +29,7 @@ var skuMap = (function ($) {
                 impl(vendorID + ":" + request.term, callback);
             },
             select: function(event, ui) {
-                var theLC = $(this).closest('tr').find('.rowLC').html();
+                var theLC = $(this).closest('tr').find('.rowLC a').html();
                 var theSKU = ui.item.label;
                 var popOver = $(this);
                 $.ajax({
@@ -51,7 +51,7 @@ var skuMap = (function ($) {
     mod.unlink = function(elem, vendorID) {
         $(elem).change(function (event) {
             if (this.value.trim() == '') {
-                var theLC = $(this).closest('tr').find('.rowLC').html();
+                var theLC = $(this).closest('tr').find('.rowLC a').html();
                 var popOver = $(this);
                 $.ajax({
                     url: 'LikeCodeSKUsPage.php',

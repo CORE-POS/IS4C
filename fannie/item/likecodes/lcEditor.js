@@ -36,6 +36,14 @@ var lcEditor = (function ($) {
         ajax('id='+lc+'&storeID='+sid+'&internal=flip');
     }
 
+    mod.retailCat = function(lc, cat) {
+        ajax('id='+lc+'&rcat='+cat);
+    };
+
+    mod.internalCat = function(lc, cat) {
+        ajax('id='+lc+'&icat='+cat);
+    };
+
     return mod;
 
 }(jQuery));

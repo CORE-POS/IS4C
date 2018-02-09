@@ -111,6 +111,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 AND l.inUse=1
                 AND m.superID=?
             GROUP BY l.likeCode');
+        $sortFirst = 'sortRetail';
         if ($this->id == -1) {
             $lcP = $this->connection->prepare('
                 SELECT likeCode
@@ -118,6 +119,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 WHERE storeID=?
                     AND internalUse=1
                     AND ? IS NOT NULL');
+            $sortFirst = 'sortInternal';
         }
         $lcR = $this->connection->execute($lcP, array(FormLib::get('store'), $this->id));
         $allCodes = array();
@@ -133,12 +135,13 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 v.cost,
                 v.vendorDept,
                 l.preferredVendorID,
+                {$sortFirst},
                 multiVendor
             FROM likeCodes AS l
                 LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode
                 LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
             WHERE l.likeCode IN ({$inStr})
-            ORDER BY l.likeCode, m.vendorID");
+            ORDER BY {$sortFirst}, l.likeCodeDesc, l.likeCode, m.vendorID");
         $res = $this->connection->execute($query, $args);
         $map = array();
         while ($row = $this->connection->fetchRow($res)) {
@@ -149,6 +152,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                     'name'=>$row['likeCodeDesc'],
                     'multi'=>$row['multiVendor'],
                     'vendorID'=>$row['preferredVendorID'],
+                    'cat' => $row[$sortFirst],
                 );
             }
             if ($row['sku']) {
@@ -170,14 +174,19 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             }
         }
         $tableBody = '';
+        $category = '';
         foreach ($map as $lc => $data) {
-            $checkMulti = $vID == $data['multi'] ? 'checked' : '';
+            if ($data['cat'] != $category) {
+                $tableBody .= "<tr><th class=\"text-center info\" colspan=\"8\" align=\"center\">{$data['cat']}</th></tr>";
+                $category = $data['cat'];
+            }
+            $checkMulti = $data['multi'] ? 'checked' : '';
             $tableBody .= "<tr><td class=\"rowLC\"><a href=\"LikeCodeEditor.php?start={$lc}\">{$lc}</a></td>
                 <td><a href=\"LikeCodeEditor.php?start={$lc}\">{$data['name']}</a>
                 <input type=\"checkbox\" {$checkMulti} class=\"pull-right\" 
                 onchange=\"skuMap.setMulti({$lc}, this.checked);\"
                 title=\"Blend Costs\"/></td>";
-            foreach (array(25, 28, 136) as $vID) {
+            foreach (array(28, 25, 136) as $vID) {
                 if (isset($data['skus'][$vID])) {
                     $css = '';
                     $disableRadio = '';
@@ -211,6 +220,10 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $this->addOnloadCommand("skuMap.autocomplete('.sku-field$vID', $vID);");
             $this->addOnloadCommand("skuMap.unlink('.sku-field$vID', $vID);");
         }
+        $updateP = $this->connection->prepare('SELECT MIN(modified) FROM vendorItems WHERE vendorDept=999999 AND vendorID=?');
+        $alb = $this->connection->getValue($updateP, array(28));
+        $cpw = $this->connection->getValue($updateP, array(25));
+        $rdw = $this->connection->getValue($updateP, array(136));
 
         return <<<HTML
 <table class="table table-bordered table-striped small">
@@ -218,9 +231,9 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
     <tr>
         <th class="text-center">Like Code</th>
         <th class="text-center">Like Code</th>
-        <th class="text-center" colspan="2">CPW</th>
-        <th class="text-center" colspan="2">Alberts</th>
-        <th class="text-center" colspan="2">RDW</th>
+        <th class="text-center" colspan="2">Alberts <span class="small">({$alb})</span></th>
+        <th class="text-center" colspan="2">CPW <span class="small">({$cpw})</span></th>
+        <th class="text-center" colspan="2">RDW <span class="small">({$rdw})</span></th>
     </tr>
 </thead>
     {$tableBody}

@@ -103,15 +103,18 @@ function loadlc(id){
     $.ajax({
         url: 'LikeCodeAjax.php',
         type: 'get',
-        data: 'id='+id
+        data: 'id='+id,
+        dataType: 'json'
     }).fail(function(request,error){
         console.log(request);
         console.log(error);
         $('.progress').hide();
     }).done(function(resp){
         $('.progress').hide();
-        $('#rightdiv').html(resp);
+        $('#rightdiv').html(resp.form);
         $('.v-chosen').chosen();
+        $('input.retailCat').autocomplete({source: resp.retail });
+        $('input.internalCat').autocomplete({source: resp.internal });
     });
 }
         <?php

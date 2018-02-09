@@ -37,11 +37,25 @@ class LikeCodeAjax extends FannieRESTfulPage
             'post<id><organic>',
             'post<id><multi>',
             'post<id><vendorID>',
+            'post<id><rcat>',
+            'post<id><icat>',
             'post<id><storeID><inUse>',
             'post<id><storeID><internal>'
         );
 
         return parent::preprocess();
+    }
+
+    private function getSorts($dbc, $type)
+    {
+        $col = $type == 'retail' ? 'sortRetail' : 'sortInternal';
+        $res = $dbc->query("SELECT {$col} FROM likeCodes WHERE {$col} IS NOT NULL AND {$col} <> '' GROUP BY {$col}");
+        $ret = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[] = $row[$col];
+        }
+
+        return $ret;
     }
 
     protected function get_id_handler()
@@ -110,6 +124,16 @@ class LikeCodeAjax extends FannieRESTfulPage
                         <option value="0">Select...</option>%s
                     </select>
                 </p>
+                <p>
+                    <label>Retail Category</label>
+                    <input type="text" onchange="lcEditor.retailCat(%d, this.value);"
+                        class="form-control retailCat" value="%s" />
+                </p>
+                <p>
+                    <label>Internal Category</label>
+                    <input type="text" onchange="lcEditor.internalCat(%d, this.value);" 
+                        class="form-control internalCat" value="%s" />
+                </p>
                 %s
                 <p>%s</p>
             </div>
@@ -122,10 +146,16 @@ class LikeCodeAjax extends FannieRESTfulPage
             $likeCode->likeCode(),
             $likeCode->likeCode(),
             $vOpts,
+            $likeCode->likeCode(), $likeCode->sortRetail(),
+            $likeCode->likeCode(), $likeCode->sortInternal(),
             $table,
             $ret
         );
-        echo $preamble;
+
+        $retail = $this->getSorts($dbc, 'retail');
+        $internal = $this->getSorts($dbc, 'internal');
+        $json = array('form'=>$preamble, 'retail'=>$retail, 'internal'=>$internal);
+        echo json_encode($json);
 
         return false;
     }
@@ -167,6 +197,33 @@ class LikeCodeAjax extends FannieRESTfulPage
         }
 
         $model->preferredVendorID($this->vendorID);
+        $model->save();
+
+        echo 'Done';
+        return false;
+    }
+
+    protected function post_id_rcat_handler()
+    {
+        $model = $this->getLcModel($this->id);
+        if ($model === false) {
+            return false;
+        }
+
+        $model->sortRetail($this->rcat);
+        $model->save();
+
+        echo 'Done';
+        return false;
+    }
+    protected function post_id_icat_handler()
+    {
+        $model = $this->getLcModel($this->id);
+        if ($model === false) {
+            return false;
+        }
+
+        $model->sortInternal($this->icat);
         $model->save();
 
         echo 'Done';

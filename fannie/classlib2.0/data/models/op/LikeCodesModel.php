@@ -37,6 +37,8 @@ class LikeCodesModel extends BasicModel
     'organic' => array('type'=>'TINYINT', 'default'=>0),
     'preferredVendorID' => array('type'=>'INT', 'default'=>0),
     'multiVendor' => array('type'=>'TINYINT', 'default'=>0),
+    'sortRetail' => array('type'=>'VARCHAR(255)'),
+    'sortInternal' => array('type'=>'VARCHAR(255)'),
     );
 
     public function toOptions($selected=0, $id_as_label=false)
