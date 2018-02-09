@@ -112,6 +112,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 AND m.superID=?
             GROUP BY l.likeCode');
         $sortFirst = 'sortRetail';
+        $internalDisable = '';
         if ($this->id == -1) {
             $lcP = $this->connection->prepare('
                 SELECT likeCode
@@ -120,6 +121,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                     AND internalUse=1
                     AND ? IS NOT NULL');
             $sortFirst = 'sortInternal';
+            $internalDisable = 'disabled';
         }
         $lcR = $this->connection->execute($lcP, array(FormLib::get('store'), $this->id));
         $allCodes = array();
@@ -183,7 +185,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $checkMulti = $data['multi'] ? 'checked' : '';
             $tableBody .= "<tr><td class=\"rowLC\"><a href=\"LikeCodeEditor.php?start={$lc}\">{$lc}</a></td>
                 <td><a href=\"LikeCodeEditor.php?start={$lc}\">{$data['name']}</a>
-                <input type=\"checkbox\" {$checkMulti} class=\"pull-right\" 
+                <input type=\"checkbox\" {$checkMulti} {$internalDisable} class=\"pull-right\" 
                 onchange=\"skuMap.setMulti({$lc}, this.checked);\"
                 title=\"Blend Costs\"/></td>";
             foreach (array(28, 25, 136) as $vID) {
@@ -203,7 +205,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                         class=\"form-control input-sm sku-field$vID\" /></td>
                         <td {$css}>\$<span class=\"skuCost{$vID}\">{$data['skus'][$vID]['cost']}</span>
                         <input name=\"pref{$lc}\" class=\"preferred{$vID}\" type=\"radio\" title=\"Preferred Vendor\" 
-                            onclick=\"skuMap.setVendor({$lc},{$vID});\" {$checkRadio} {$disableRadio} /></td>";
+                            onclick=\"skuMap.setVendor({$lc},{$vID});\" {$checkRadio} {$disableRadio} {$internalDisable} /></td>";
                 } else {
                     $tableBody .= '<td><input type="text" class="form-control input-sm sku-field' . $vID . '" /></td>
                         <td>$<span class="skuCost' . $vID . '"></span>
