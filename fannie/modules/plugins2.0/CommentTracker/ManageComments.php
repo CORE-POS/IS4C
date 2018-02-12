@@ -155,12 +155,13 @@ class ManageComments extends FannieRESTfulPage
             if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $response->sent(1);
                 $mail = new PHPMailer();
-                $mail->From = 'no-reply@wholefoods.coop';
+                $mail->From = 'info@wholefoods.coop';
                 $mail->FromName = 'Whole Foods Co-op';
                 $mail->addAddress($email);
                 $mail->Subject = 'WFC Comment Response';
                 $mail->CharSet = 'utf-8';
-                $mail->Body = $msg . "\n\n" . $orig;
+                $mail->Body = $msg . "\n\n" . $orig
+                    . "\n\n--\nWhole Foods Co-op\n218-728-0884\ninfo@wholefoods.coop\n";
                 $mail->send();
             }
             $response->response($msg);
