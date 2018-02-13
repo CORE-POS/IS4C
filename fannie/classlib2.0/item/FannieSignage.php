@@ -930,7 +930,7 @@ class FannieSignage
     protected static function formatOffString($price, $multiplier, $regPrice)
     {
         if ($regPrice == 0 || $multiplier == -4) {
-            return sprintf('%.2f', $price);
+            return sprintf('$%.2f', $price);
         } elseif ($multiplier == -1) {
             $off = self::dollarsOff($price, $regPrice);
             if (substr(sprintf('%.2f', $off), -2) == '00') {
