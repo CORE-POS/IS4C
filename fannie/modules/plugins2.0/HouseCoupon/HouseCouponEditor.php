@@ -572,13 +572,14 @@ class HouseCouponEditor extends FanniePage
         $result = $dbc->execute($prep, array($id));
         $ret = '';
         while ($w = $dbc->fetch_row($result)) {
+            $link = strlen($w['upc']) == 13 ? "<a href=\"../../../item/ItemEditorPage.php?searchupc={$w['upc']}\">{$w['upc']}</a>" : $w['upc'];
             $ret .= sprintf('<tr>
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
                 <td><input type="checkbox" name="del[]" value="%s" /></td>
                 </tr>',
-                $w['upc'],
+                $link,
                 $w['description'],
                 $w['type'],
                 $w['upc']);
