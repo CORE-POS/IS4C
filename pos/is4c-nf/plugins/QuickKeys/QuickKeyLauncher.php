@@ -114,16 +114,16 @@ class QuickKeyLauncher extends Parser
                 }
                 $ret .= '<div class="qkRow">';
             }
+            $action = sprintf("\$('#reginput').val(\$('#reginput').val()+'%s');pos2.submitWrapper();return false;",
+                $preInput . $my_keys[$i]->output_text);
             $ret .= sprintf('
                 <div class="qkBox">
                     <div id="qkDiv%d">
-                        <button type="button" class="quick_button pos-button coloredBorder"
-                            onclick="$(\'#reginput\').val($(\'#reginput\').val()+\'%s\');pos2.submitWrapper();">
                         %s
-                        </button>
                     </div>
                 </div>',
-                $i, $preInput . $my_keys[$i]->output_text, $my_keys[$i]->title);
+                $i, $my_keys[$i]->display('qOverlay'.$i, 'button', $action)
+            );
         }
         if (!$clearButton) {
             $ret .= '<div class="qkBox">
