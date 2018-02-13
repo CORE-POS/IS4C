@@ -38,6 +38,7 @@ class B2BInvoicePage extends FannieRESTfulPage
          *  The tender is an actual tender record.
          */
         if (FormLib::get('payFlag', 0) == 1) {
+            /*
             $amt = $dbc->prepare('SELECT amount, cardNo FROM B2BInvoices WHERE b2bInvoiceID=?');
             $info = $dbc->getRow($amt, array($this->id));
             $amt = $info['amount'];
@@ -95,9 +96,10 @@ class B2BInvoicePage extends FannieRESTfulPage
                     ({$tParam['columnString']}) VALUES ({$tParam['valueString']})");
             $dbc->execute($insD, $dParam['arguments']);
             $dbc->execute($insT, $tParam['arguments']);
-            $invoice->paidDate(date('Y-m-d H:i:s'));
-            $invoice->paidTransNum('1001-30-' . $dRecord['trans_no']);
-            $invoice->isPaid(FormLib::get('payMethod') == 'RV' ? 2 : 1);
+             */
+            $invoice->paidDate(FormLib::get('payDate'));
+            $invoice->paidTransNum(FormLib::get('payTrans'));
+            $invoice->isPaid(1);
         } elseif (FormLib::get('payFlag', 0) == 2) {
             $invoice->isPaid(2);
             $invoice->paidDate(date('Y-m-d H:i:s'));
@@ -229,11 +231,15 @@ class B2BInvoicePage extends FannieRESTfulPage
 <p class="form-inline {$finalized}">
     <label>Mark invoice as paid</label>
     <select class="form-control" name="payFlag"><option value="0">No</option><option value="1">Yes</option><option value="2">Cancel Invoice</option></select>
+    <input type="text" class="form-control date-field" name="payDate" placeholder="Date" />
+    <input type="text" class="form-control" name="payTrans" placeholder="Transaction#" />
+    <!--
     <select class="form-control" name="payMethod">
         <option value="CK">Check</option>
         <option value="CC">Credit Card</option>
         <option value="CA">Cash</option>
     </select>
+    -->
 </p>
 <p>
     <button type="submit" class="btn btn-default">Update Invoice</button>
