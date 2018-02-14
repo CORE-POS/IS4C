@@ -212,7 +212,8 @@ class MailChimpTask extends FannieTask
             $this->cronMsg(sprintf('  => %s', $email), FannieLogger::INFO);
         }
         if ($delID) {
-            $batch->execute();
+            $res = $batch->execute();
+            $this->crongMsg(print_r($res), FannieLogger::INFO);
         }
     }
 
@@ -256,7 +257,8 @@ class MailChimpTask extends FannieTask
             $addID++;
         }
         if ($addID) {
-            $batch->execute();
+            $res = $batch->execute();
+            $this->crongMsg(print_r($res), FannieLogger::INFO);
         }
     }
 
