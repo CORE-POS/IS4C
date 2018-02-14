@@ -68,12 +68,14 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $use_splits = false;
     protected $use_js = false;
 
+    private $presetID = false;
+
     protected function getVendorID()
     {
         $idP = $this->connection->prepare("SELECT vendorID FROM vendors WHERE vendorName=? ORDER BY vendorID");
         $vid = $this->connection->getValue($idP, array('ALBERTS'));
 
-        return $vid;
+        return $vid !== false ? $vid : $this->presetID;
     }
 
     private function cleanUPC($upc)
@@ -187,6 +189,19 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $ret .= '<p><a href="'.filter_input(INPUT_SERVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->results_content());
+        $phpunit->assertEquals(false, $this->process_file(array(), array()));
+        $this->presetID = 100;
+        $indexes = array('upc'=>0, 'sku'=>1, 'desc'=>2, 'cost'=>3, 'size'=>4);
+        $data = array(
+            array('1234567890123', '1', 'test import', 1.99, '3x10'),
+            array('1234567890123', '2', 'test import', 1.99, '3lb'),
+            array('1234567890123', '3', 'test import', 1.99, '3ct'),
+        );
     }
 }
 
