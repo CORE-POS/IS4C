@@ -472,7 +472,8 @@ class HouseCoupon extends SpecialUPC
             case "Q": // quantity discount
                 // discount = coupon's discountValue
                 // times the cheapeast coupon item
-                $valQ = "select unitPrice, department, trans_id
+                $valQ = "select CASE WHEN l.scale=1 OR l.upc LIKE '002%' THEN total ELSE unitPrice END as unitPrice,
+                        department, trans_id
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
