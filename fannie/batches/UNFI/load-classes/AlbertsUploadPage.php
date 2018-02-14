@@ -202,6 +202,7 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             array('1234567890123', '2', 'test import', 1.99, '3lb'),
             array('1234567890123', '3', 'test import', 1.99, '3ct'),
         );
+        $phpunit->assertEquals(true, $this->process_file($data, $indexes));
     }
 }
 
