@@ -148,7 +148,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('$1.99', $signs->formatPrice('$1.99', 1));
         $this->assertEquals('4/$2', $signs->formatPrice('4/$2', 1));
 
-        $this->assertEquals('1.99', $signs->formatPrice(1.99, -1, 0));
+        $this->assertEquals('$1.99', $signs->formatPrice(1.99, -1, 0));
         $this->assertEquals('$1 OFF', $signs->formatPrice(1.99, -1, 2.99));
         $this->assertEquals('$0.50 OFF', $signs->formatPrice(1.99, -1, 2.49));
         $this->assertEquals('SAVE 50%', $signs->formatPrice(1.00, -2, 2.00));
