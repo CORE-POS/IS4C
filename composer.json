@@ -41,7 +41,8 @@
         "corepos/class-cache": "^1.1",
         "maknz/slack": "^1.7",
         "smalot/pdfparser": "^0.11.0",
-        "spomky-labs/otphp": "^8.0"
+        "spomky-labs/otphp": "^8.0",
+        "drewm/mailchimp-api": "^2.4"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",
