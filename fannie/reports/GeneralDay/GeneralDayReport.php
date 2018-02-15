@@ -60,6 +60,22 @@ class GeneralDayReport extends FannieReportPage
         return parent::preprocess();
     }
 
+    public function report_description_content()
+    {
+        if ($this->report_format == 'html') {
+            return array(
+                "<br /><label><input type=\"checkbox\" checked class=\"hidden-print\"
+                    onchange=\"if (this.checked) \$('canvas').show(); else \$('canvas').hide();\" />
+                    Show Charts</label>",
+                "<br /><label><input type=\"checkbox\" checked class=\"hidden-print\"
+                    onchange=\"if (this.checked) \$('table').show(); else \$('table').hide();\" />
+                    Show Tables</label>",
+            );
+        }
+
+        return array();
+    }
+
     function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,
