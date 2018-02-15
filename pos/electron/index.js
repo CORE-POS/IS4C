@@ -1,5 +1,5 @@
 const electron = require('electron');
-const {app, BrowserWindow, Menu} = require('electron');
+const {app, BrowserWindow, Menu, ipcMain} = require('electron');
 const path = require('path')
 const url = require('url');
 const fs = require('fs');
@@ -94,6 +94,12 @@ app.on('ready', () => {
     }
     if (options.driver) {
         driver.start();
+    }
+});
+
+ipcMain.on('core-pos', (ev, args) => {
+    if (win.secondary) {
+        win.secondary.reload();
     }
 });
           
