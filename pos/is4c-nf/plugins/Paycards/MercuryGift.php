@@ -61,6 +61,8 @@ class MercuryGift extends BasicCCModule
     {
         if ($type == PaycardLib::PAYCARD_TYPE_GIFT) {
             return true;
+        } elseif ($type == PaycardLib::PAYCARD_TYPE_ENCRYPTED_GIFT) {
+            return true;
         }
         return false;
     }
@@ -114,8 +116,8 @@ class MercuryGift extends BasicCCModule
         } // switch mode
     
         // if we're still here, it's an error
-        $this->conf->reset();
         $json['output'] = $this->dialogs->invalidMode();
+        $this->conf->reset();
 
         return $json;
     }
@@ -301,7 +303,7 @@ class MercuryGift extends BasicCCModule
             <RefNo>$identifier</RefNo>
             <Memo>CORE POS 1.0.0</Memo>
             <Account>";
-        $msgXml .= $cardTr2 ? "<Track2>$cardTr2</Track2>" : "<AcctNo>$cardPAN</AcctNo>";
+        $msgXml .= $this->getAccount();
         $msgXml .= "</Account>
             <Amount>
             <Purchase>$amountText</Purchase>
@@ -316,7 +318,7 @@ class MercuryGift extends BasicCCModule
 
         $this->GATEWAY = "https://$domain/ws/ws.asmx";
         if ($this->conf->get("training") == 1) {
-            $this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
+            $this->GATEWAY = "https://w1.mercurycert.net/ws/ws.asmx?WSDL";
         }
 
         return $this->curlSend($soaptext,'SOAP');
@@ -430,7 +432,7 @@ class MercuryGift extends BasicCCModule
             <RefNo>$authcode</RefNo>
             <Memo>CORE POS 1.0.0</Memo>
             <Account>";
-        $msgXml .= $cardTr2 ? "<Track2>$cardTr2</Track2>" : "<AcctNo>$cardPAN</AcctNo>";
+        $msgXml .= $this->getAccount();
         $msgXml .= "</Account>
             <Amount>
             <Purchase>$amountText</Purchase>
@@ -444,7 +446,7 @@ class MercuryGift extends BasicCCModule
 
         $this->GATEWAY = "https://$domain/ws/ws.asmx";
         if ($this->conf->get("training") == 1) {
-            $this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
+            $this->GATEWAY = "https://w1.mercurycert.net/ws/ws.asmx?WSDL";
         }
 
         return $this->curlSend($soaptext,'SOAP');
@@ -470,7 +472,7 @@ class MercuryGift extends BasicCCModule
             <RefNo>$identifier</RefNo>
             <Memo>CORE POS</Memo>
             <Account>";
-        $msgXml .= $cardTr2 ? "<Track2>$cardTr2</Track2>" : "<AcctNo>$cardPAN</AcctNo>";
+        $msgXml .= $this->getAccount();
         $msgXml .= "</Account>
             </Transaction>
             </TStream>";
@@ -481,7 +483,7 @@ class MercuryGift extends BasicCCModule
 
         $this->GATEWAY = "https://$domain/ws/ws.asmx";
         if ($this->conf->get("training") == 1) {
-            $this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
+            $this->GATEWAY = "https://w1.mercurycert.net/ws/ws.asmx?WSDL";
         }
 
         return $this->curlSend($soaptext,'SOAP');
@@ -758,7 +760,7 @@ class MercuryGift extends BasicCCModule
     private function getTermID()
     {
         if ($this->conf->get("training") == 1) {
-            return "595901";
+            return '019588466313922';
         }
         return $this->conf->get('MercuryGiftID');
     }
@@ -785,6 +787,32 @@ class MercuryGift extends BasicCCModule
             return false;
         }
         return $this->conf->get("paycard_tr2");
+    }
+
+    /**
+     * @return string XML
+     *   - Encryption fields if PAN is P2PE block
+     *   - Otherwise Track 2 if present
+     *   - Otherwise PAN as account number
+     */
+    private function getAccount()
+    {
+        $pan = $this->getPAN();
+        $tr2 = $this->getTrack2();
+        if (substr($pan, 0, 8) == "02AA0080") {
+            $encBlock = new COREPOS\pos\plugins\Paycards\card\EncBlock();
+            $e2e = $encBlock->parseEncBlock($this->conf->get("paycard_PAN"));
+            return <<<XML
+<EncryptedFormat>{$e2e['Format']}</EncryptedFormat>
+<AccountSource>Swiped</AccountSource>
+<EncryptedBlock>{$e2e['Block']}</EncryptedBlock>
+<EncryptedKey>{$e2e['Key']}</EncryptedKey>
+XML;
+        } elseif ($tr2) {
+            return "<Track2>{$tr2}</Track2>";
+        }
+
+        return "<AcctNo>{$pan}</AcctNo>";
     }
 
     private function getNormalized($status)

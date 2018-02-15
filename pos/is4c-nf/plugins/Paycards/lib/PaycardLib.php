@@ -42,7 +42,8 @@ class PaycardLib {
     const PAYCARD_TYPE_CREDIT        =1;
     const PAYCARD_TYPE_GIFT          =2;
     const PAYCARD_TYPE_STORE         =3;
-    const PAYCARD_TYPE_ENCRYPTED       =4;
+    const PAYCARD_TYPE_ENCRYPTED     =4;
+    const PAYCARD_TYPE_ENCRYPTED_GIFT=5;
 
     const PAYCARD_ERR_OK             =1;
     const PAYCARD_ERR_NOSEND        =-1;
