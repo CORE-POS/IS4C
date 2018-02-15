@@ -952,7 +952,7 @@ class MercuryE2E extends BasicCCModule
     private function getWsUrl($domain)
     {
         if ($this->conf->get("training") == 1) {
-            return "https://w1.mercurydev.net/ws/ws.asmx";
+            return "https://w1.mercurycert.net/ws/ws.asmx?WSDL";
         }
         return "https://$domain/ws/ws.asmx";
     }
