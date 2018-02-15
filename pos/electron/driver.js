@@ -5,6 +5,7 @@ const { spawn } = require('child_process');
 let driver = null;
 let driverTimeStamp = Date.now() - 5000;
 let driverStatus = "stopped";
+let driverLog = [];
 
 /**
   Start pos.exe and restart it if it fails
@@ -22,9 +23,22 @@ function startDriver() {
             driverStatus = "stopped";
             startDriver();
         });
+        driver.stdout.on("data", log);
+        driver.stderr.on("data", log);
     } else if (driver == null) {
         driverStatus = "disabled";
     }
+}
+
+function log(msg) {
+    while (driverLog.length > 10) {
+        driverLog.shift();
+    }
+    driverLog.push(msg);
+}
+
+function getLog() {
+    return driverLog.reduce((acc, i) => acc + i, "");
 }
 
 function stopDriver() {
@@ -38,5 +52,5 @@ function getStatus() {
     return driverStatus;
 }
 
-module.exports = { status: getStatus, start: startDriver, stop: stopDriver };
+module.exports = { status: getStatus, start: startDriver, stop: stopDriver, log: getLog };
 

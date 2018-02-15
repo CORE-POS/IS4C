@@ -33,6 +33,16 @@ module.exports.template = [
                 click: (mi, bw, ev) => {
                     driver.stop();
                 }
+            },
+            {
+                label: "Log",
+                click: (mi, bw, ev) => {
+                    electron.dialog.showMessageBox(bw, {
+                        type: "info",
+                        title: "Driver Log",
+                        message: driver.log()
+                    });
+                }
             }
         ],
     },
