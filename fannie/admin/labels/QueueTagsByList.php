@@ -123,7 +123,7 @@ HTML;
     {
         return <<<HTML
 $('#back').click(function(){
-    window.history.go(-1);
+    window.location.href = 'ShelfTagIndex.php';
     return false;
 });
 HTML;
