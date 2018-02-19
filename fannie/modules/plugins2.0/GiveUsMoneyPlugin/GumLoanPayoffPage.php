@@ -113,12 +113,12 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $pdf->AddPage();
 
         $pdf->SetXY(0, 0);
-        $pdf->Image('img/letterhead.png', null, null, 203); // scale to 8"
+        $pdf->Image('img/new_letterhead_horizontal.png', 22, null, 165); // scale to 8"
 
         $pdf->SetFont('Arial', '', 8);
         $line_height = 3.5;
         $pdf->SetXY(6.35, 43);
-        $text = 'Pursuant to the terms of your Promissory Note with WFC, below please find a check for the principal and, as applicable, compound interest due.   A statement showing the terms of your loan and annual compounding of the interest thereon is provided. If your loan was for more than 0.00% interest, also below is an IRS form 1099-INT to be included with your ' . date('Y') . ' federal tax filing.  If you have questions regarding this payment, please contact Financial Manager Dale Maiers (dmaiers@wholefoods.coop).  Thank you very much for your support.';
+        $text = 'Pursuant to the terms of your Promissory Note with WFC, below please find a check for the principal and, as applicable, compound interest due.   A statement showing the terms of your loan and annual compounding of the interest thereon is provided. If your loan was for more than 0.00% interest, also below is an IRS form 1099-INT to be included with your ' . date('Y') . ' federal tax filing.  If you have questions regarding this payment, please contact Financial Manager Doug Welnetz (dwelnetz@wholefoods.coop).  Thank you very much for your support.';
         $pdf->Write($line_height, $text);
 
         $col_width = 40.64;
@@ -264,11 +264,11 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         );
         $this->addScript('js/loan_payoff.js');
 
-        if (file_exists('img/letterhead.png')) {
-            $ret .= '<img src="img/letterhead.png" style="width: 100%;" />';
+        if (file_exists('img/new_letterhead_horizontal.png')) {
+            $ret .= '<img src="img/new_letterhead_horizontal.png" style="width: 100%;" />';
         }
 
-        $ret .= '<p>Pursuant to the terms of your Promissory Note with WFC, below please find a check for the principal and, as applicable, compound interest due.   A statement showing the terms of your loan and annual compounding of the interest thereon is provided. If your loan was for more than 0.00% interest, also below is an IRS form 1099-INT to be included with your ' . date('Y') . ' federal tax filing.  If you have questions regarding this payment, please contact Financial Manager Dale Maiers (dmaiers@wholefoods.coop).  Thank you very much for your support.</p>';
+        $ret .= '<p>Pursuant to the terms of your Promissory Note with WFC, below please find a check for the principal and, as applicable, compound interest due.   A statement showing the terms of your loan and annual compounding of the interest thereon is provided. If your loan was for more than 0.00% interest, also below is an IRS form 1099-INT to be included with your ' . date('Y') . ' federal tax filing.  If you have questions regarding this payment, please contact Financial Manager Doug Welnetz (dwelnetz@wholefoods.coop).  Thank you very much for your support.</p>';
 
         $ret .= '<div>';
         $ret .= '<table style="border: solid 1px black; border-collapse: collapse; width: 20%; float:left;">';
