@@ -53,6 +53,7 @@ class WfcAccessFanout extends FannieTask
     private function fanout($dbc, $pushes)
     {
         foreach ($pushes as $card) {
+            echo "Fanning out {$card}\n";
             $custdata = new CustdataModel($dbc);
             $custdata->CardNo($card);
             foreach ($custdata->find() as $c) {
