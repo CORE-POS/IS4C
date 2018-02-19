@@ -599,14 +599,14 @@ class EditBatchPage extends FannieRESTfulPage
                 );
             }
             $cur = $useStores ? $data[$obj->store_id()] : $data;
-            $obj->discountType($cur['discountType']);
+            $obj->discountType(isset($cur['discountType']) ? $cur['discountType'] : 0);
             $obj->special_price($cur['salePrice']);
             $obj->start_date($cur['startDate']);
             $obj->end_date($cur['endDate']);
             $ret = $obj->save();
         }
 
-        $ret ? true : false;
+        return $ret ? true : false;
     }
 
     protected function delete_id_upc_handler()

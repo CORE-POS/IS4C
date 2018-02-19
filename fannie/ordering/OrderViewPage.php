@@ -243,7 +243,7 @@ class OrderViewPage extends FannieRESTfulPage
         $delR = $dbc->execute($delP, array($this->orderID, $this->transID));
 
         $bridge = new SoPoBridge($dbc, $this->config);
-        $bridge->removeItemFromPurchaseOrder($soID, $transID);
+        $bridge->removeItemFromPurchaseOrder($this->orderID, $this->transID);
 
         return $this->get_orderID_items_handler();
     }
