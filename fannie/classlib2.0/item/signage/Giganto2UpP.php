@@ -84,8 +84,9 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-80);
             } elseif (strstr($price, 'OFF')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
-            } elseif (strstr($price, 'SAVE')) {
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-60);
+            } 
+            if (strstr($price, 'SAVE')) {
+                $pdf->SetFont($this->font, '', $this->BIG_FONT-70);
             }
             $pdf->Cell($this->width, 50, $price, 0, 1, 'C');
 
