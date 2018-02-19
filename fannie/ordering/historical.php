@@ -65,6 +65,11 @@ echo '<html>
     </head>
     <body id="bodytag">';
 echo '<h3>'.$header.'</h3>';
+$new = 'OldSpecialOrdersPage.php';
+if (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING']) {
+    $new .= '?' . $_SERVER['QUERY_STRING'];
+}
+echo '<div style="text-align: center; background: #00aa00;" class="alert alert-info"><a style="color:#fff" href="'.$new.'">Newer Version</a></div>';
 if (isset($_REQUEST['card_no'])){
     printf('(<a href="historical.php?f1=%s&f2=%s&f3=%s&order=%s">Back to All Owners</a>)<br />',
         (isset($_REQUEST['f1'])?$_REQUEST['f1']:''),    

@@ -90,8 +90,12 @@ if (isset($_REQUEST['k']) && file_exists($cachepath.$_REQUEST['k'])){
     echo '<div style="clear:both"></div>';
 }
 
-
+$new = 'OrderViewPage.php';
+if (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING']) {
+    $new .= '?' . $_SERVER['QUERY_STRING'];
+}
 ?>
+<div style="text-align: center; background: #00aa00;" class="alert alert-info"><a style="color:#fff" href="<?php echo $new; ?>">Newer Version</a></div>
 <fieldset>
 <legend>Customer Information</legend>
 <div id="customerDiv"></div>
