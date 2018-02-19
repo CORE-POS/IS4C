@@ -264,9 +264,11 @@ class EOMReport extends FannieReportPage
             'Deli' => array(0.0225, 0),
             'County' => array(0.005, 0),
         );
+        /*
         if ($idStart >= 20171001) {
             $collectors['County'] = array(0, 0);
         }
+         */
         while ($row = $this->connection->fetchRow($res)) {
             $taxID = $row['taxID'];
             $rates[$taxID][1] = $row['ttl'];
