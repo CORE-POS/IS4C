@@ -34,6 +34,7 @@ class WfcAccessTask extends FannieTask
         $record['register_no'] = 30;
         $record['trans_no'] = DTrans::getTransNo($dbc, 1001, 30);
         $record['trans_id'] = 1;
+        $record['trans_type'] = 'I';
         $record['upc'] = 'ACCESS';
         $record['description'] = 'ACCESS SIGNUP';
         $record['quantity'] = 1;
