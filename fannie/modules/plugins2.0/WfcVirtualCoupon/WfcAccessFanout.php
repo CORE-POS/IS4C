@@ -14,8 +14,9 @@ class WfcAccessFanout extends FannieTask
         $trans = $this->config->get('TRANS_DB') . $dbc->sep();
 
         $checkP = $dbc->prepare('SELECT memType, Type FROM custdata WHERE CardNo=?');
-        $setP = $dbc->prepare('UPDATE custdata SET memType=5 WHERE CardNo=?');
+        $setP = $dbc->prepare('UPDATE custdata SET memType=5, Discount=10 WHERE CardNo=?');
         $set2P = $dbc->prepare('UPDATE CustomerAccounts SET customerTypeID=5 WHERE cardNo=?');
+        $set3P = $dbc->prepare('UPDATE Customers SET discount=10 WHERE cardNo=?');
 
         $allR = $dbc->query("SELECT card_no, trans_num FROM {$trans}dlog WHERE upc='ACCESS'");
         $pushes = array();
@@ -36,6 +37,7 @@ class WfcAccessFanout extends FannieTask
 
             $dbc->execute($setP, array($card));
             $dbc->execute($set2P, array($card));
+            $dbc->execute($set3P, array($card));
             $pushes[] = $card;
         }
         $dbc->commitTransaction();
