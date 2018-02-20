@@ -222,6 +222,10 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             return ob_get_clean();
         }
 
+        if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50500) {
+            echo '<div class="alert alert-danger">PHP version < 5.5 is not supported</div>';
+        }
+
         $this->checkComposer();
 
         /**
