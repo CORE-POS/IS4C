@@ -84,7 +84,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         );
         $insP = $dbc->prepare('
             INSERT INTO CoopDealsItems 
-                (dealSet, upc, price, abtpr, multiplier, promoDiscount)
+                (dealSet, upc, price, abtpr, multiplier, promoDiscount, skuMatch)
             VALUES
                 (?, ?, ?, ?, ?, ?)');
 
@@ -161,10 +161,15 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if ($rm_checks)
                 $upc = substr($upc,0,strlen($upc)-1);
             $upc = BarcodeLib::padUPC($upc);
+            $isSKU = 0;
 
             $lookup = $dbc->execute($upcP, array($upc));
             if ($dbc->num_rows($lookup) == 0) {
-                $upc = $this->checkSku($dbc, $upc, $data[$indexes['sku']], $skuP);
+                $sku = $this->checkSku($dbc, $upc, $data[$indexes['sku']], $skuP);
+                if ($sku != $upc) {
+                    $upc = $sku;
+                    $isSKU = 1;
+                }
             }
             $mult = 1;
             if ($indexes['mult'] !== false) {
@@ -177,12 +182,12 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $price = trim($data[$indexes['price']],"\$");
             $promo = $data[$indexes['Promo Discount']];
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo));
+                $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo,$isSKU));
             }
             $linked = $this->checkScaleItem($dbc, $upc);
             if ($linked) {
                 foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult,$promo));
+                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult,$promo,$isSKU));
                 }
             }
         }
