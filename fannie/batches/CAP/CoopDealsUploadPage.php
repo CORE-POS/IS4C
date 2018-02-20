@@ -90,7 +90,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             INSERT INTO CoopDealsItems 
                 (dealSet, upc, price, abtpr, multiplier, promoDiscount, skuMatch)
             VALUES
-                (?, ?, ?, ?, ?, ?)');
+                (?, ?, ?, ?, ?, ?, ?)');
 
         return array($upcP, $skuP, $insP);
     }
