@@ -13,7 +13,7 @@ let driverLog = [];
   dies in under a second the automatic restarts stop.
 */
 function startDriver() {
-    const exe = path.join(__dirname, '..', 'is4c-nf', 'scale-drivers', 'drivers', 'NewMagellan', 'pos.exe');
+    const exe = path.join(__dirname, '..', '..', 'is4c-nf', 'scale-drivers', 'drivers', 'NewMagellan', 'pos.exe');
     const now = Date.now();
     if (driver == null && now - driverTimeStamp > 1000) {
         driverTimeStamp = now;
@@ -34,7 +34,8 @@ function log(msg) {
     while (driverLog.length > 10) {
         driverLog.shift();
     }
-    driverLog.push(msg);
+    let now = new Date().toLocaleString();
+    driverLog.push(now + ": " + msg);
 }
 
 function getLog() {

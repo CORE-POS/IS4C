@@ -1,6 +1,9 @@
 
 const electron = require('electron');
+const { BrowserWindow } = require('electron');
+const path = require('path')
 const driver = require('./driver.js');
+const windowManager = require('./windows.js');
 
 module.exports.template = [
     {
@@ -37,11 +40,20 @@ module.exports.template = [
             {
                 label: "Log",
                 click: (mi, bw, ev) => {
-                    electron.dialog.showMessageBox(bw, {
-                        type: "info",
-                        title: "Driver Log",
-                        message: driver.log()
+                    let win = new BrowserWindow({
+                        width: 600,
+                        height: 500,
+                        parent: windowManager.get("main"),
+                        modal: true
                     });
+                    win.setMenu(null);
+                    const url = 'file://' + path.join(__dirname, '..', 'html', 'log.html');
+                    let html = [
+                        "<body>",
+                        "<pre>" + driver.log() + "</pre>",
+                        "</body>",
+                    ].join("");
+                    win.loadURL("data:text/html;charset=utf-8," + encodeURI(html));
                 }
             }
         ],
