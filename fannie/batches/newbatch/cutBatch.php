@@ -30,7 +30,7 @@ class cutBatch extends FannieRESTfulPage {
 
     public $discoverable = false;
 
-    protected function get_id_handler()
+    protected function post_id_handler()
     {
         $ret = '';
         $timeStamp = date('Y-m-d h:i:s');
@@ -73,7 +73,7 @@ class cutBatch extends FannieRESTfulPage {
     {
         $this->id = 1;
         ob_start();
-        $phpunit->assertEquals(false, $this->get_id_handler());
+        $phpunit->assertEquals(false, $this->post_id_handler());
         ob_get_clean();
     }
 }
