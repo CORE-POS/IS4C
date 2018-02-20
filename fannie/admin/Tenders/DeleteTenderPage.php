@@ -90,7 +90,7 @@ class DeleteTenderPage extends FannieRESTfulPage
     {
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $this->id = 'FOO';
-        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
     }
 }
 
