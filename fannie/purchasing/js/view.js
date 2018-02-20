@@ -127,3 +127,11 @@ function itemDec(orderID, sku, elem) {
     itemAdjust(orderID, sku, -1, elem);
 }
 
+function toggleInventory(orderID, notInv) {
+    var dstr = 'id='+orderID+'&ignore=' + (notInv ? '1' : '0');
+    $.ajax({
+        type: 'post',
+        data: dstr
+    });
+}
+

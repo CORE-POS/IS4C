@@ -38,6 +38,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     protected $must_authenticate = true;
 
     private $show_all = true;
+    protected $debug_routing = false;
 
     public function preprocess()
     {
@@ -58,11 +59,32 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'post<id><note>',
             'post<id><sku><isSO>',
             'post<id><sku><adjust>',
+            'post<id><ignore>',
             'get<merge>'
         );
         if (FormLib::get('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
+    }
+
+    protected function post_id_ignore_handler()
+    {
+        $prep = $this->connection->prepare('UPDATE PurchaseOrder SET inventoryIgnore=? WHERE orderID=?');
+        $res = $this->connection->execute($prep, array($this->ignore, $this->id));
+
+        $selfP = $this->connection->prepare('SELECT i.internalUPC AS upc, o.storeID FROM PurchaseOrderItems AS i
+            INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
+            WHERE i.orderID=?
+                AND i.isSpecialOrder=0');
+        $selfR = $this->connection->execute($selfP, array($this->id));
+        $this->connection->startTransaction();
+        $model = new InventoryCacheModel($this->connection);
+        while ($row = $this->connection->fetchRow($selfR)) {
+            $model->recalculateOrdered($row['upc'], $row['storeID']);
+        }
+        $this->connection->commitTransaction();
+
+        return false;
     }
 
     /**
@@ -627,6 +649,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $orderObj = $order->toStdClass();
         $orderObj->placedDate = $orderObj->placed ? $orderObj->placedDate : 'n/a';
         $placedCheck = $orderObj->placed ? 'checked' : '';
+        $notInv = $orderObj->inventoryIgnore ? 'checked' : '';
         $init = $orderObj->placed ? 'init=placed' : 'init=pending';
         $pendingOnlyClass = 'pending-only' . ($orderObj->placed ? ' collapse' : '');
         $placedOnlyClass = 'placed-only' . ($orderObj->placed ? '' : ' collapse');
@@ -723,8 +746,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 </td>
             {{CODING}}
             <tr>
-                <td><b>Created by</b>: {$uname}</td>
-                <td>&nbsp;</td>
+                <td colspan="2"><b>Created by</b>: {$uname}</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <label>Not Inventory
+                        <input type="checkbox" {$notInv} onchange="toggleInventory({$this->id}, this.checked);" />
+                    </label>
+                </td>
             </tr>
         </table>
     </div>
@@ -852,7 +881,7 @@ HTML;
         }
         $ret = str_replace('{{CODING}}', $coding_rows, $ret);
 
-        $this->addScript('js/view.js');
+        $this->addScript('js/view.js?date=20180220');
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");

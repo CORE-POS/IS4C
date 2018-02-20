@@ -39,7 +39,8 @@ class PurchaseOrderModel extends BasicModel
     'userID' => array('type'=>'INT'),
     'vendorOrderID' => array('type'=>'VARCHAR(25)'),
     'vendorInvoiceID' => array('type'=>'VARCHAR(25)'),
-    'standingID' => array('type'=>'INT')
+    'standingID' => array('type'=>'INT'),
+    'inventoryIgnore' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     protected $preferred_db = 'op';
