@@ -59,6 +59,10 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             'display_name' => 'Line Notes',
             'default' => 15,
         ),
+        'promoDiscount' => array(
+            'display_name' => 'Promo Discount',
+            'default' => 18,
+        ),
     );
 
     private function setupTables($dbc)
@@ -180,7 +184,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             $price = trim($data[$indexes['price']],"\$");
-            $promo = $data[$indexes['Promo Discount']];
+            $promo = $data[$indexes['promoDiscount']];
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
                 $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo,$isSKU));
             }
