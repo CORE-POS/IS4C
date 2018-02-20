@@ -418,9 +418,10 @@ class OverShortSafecountPage extends FanniePage {
         $dlogClause = str_replace(' storeID ', ' d.store_id ', $dlogClause);
         $posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ". $dlogClause . " AND d.trans_subtype IN ('CA','CK')";
         $posTotalP = $dbc->prepare($posTotalQ);   
+        $dateArgs[1] .= ' 23:59:59';
         $posTotalR = $dbc->execute($posTotalP, $dateArgs);
         $posTotalW = $dbc->fetch_row($posTotalR);
-        $posTotal = $posTotalW[0];
+        $posTotal = sprintf('%.2f', $posTotalW[0]);
 
         $ret .= "<tr class=\"color\"><th>Over/Shorts</th>";
         $ret .= "<td><i>Count total</i></td><td>".round(($osCounts['CA']+$osCounts['CK'] - $osCounts['SCA'] ),2)."</td>";
