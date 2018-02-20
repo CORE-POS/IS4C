@@ -56,6 +56,11 @@ body {
 
 <?php echo _('PHP is running as: ') . Conf::whoami(); ?><br />
 <?php
+if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50500) {
+    echo _('<div class="alert" style="color: red;"><b>Warning</b>: PHP version < 5.5 is not supported. The software probably won\'t work</div>');
+} else {
+    echo 'PHP: ' . phpversion() . '<br />';
+}
 if (!function_exists("socket_create")){
     echo _('<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right');
 }
