@@ -55,6 +55,7 @@ class PaycardDatacapParser extends Parser
         'ACDATACAPGD',
         'AVDATACAPGD',
         'DATACAPRECUR',
+        'PVDATACAP',
     );
     
     public function __construct($session)
@@ -74,7 +75,7 @@ class PaycardDatacapParser extends Parser
     public function parse($str)
     {
         $ret = $this->default_json();
-        if ($this->conf->get("ttlflag") != 1) { // must subtotal before running card
+        if ($this->conf->get("ttlflag") != 1 && $str !== 'DATACAP' && substr($str, 0, 9) !== 'PVDATACAP') { // must subtotal before running card
             $ret['output'] = PaycardLib::paycardMsgBox("No Total",
                 "Transaction must be totaled before tendering or refunding","[clear] to cancel");
             return $ret;
@@ -89,6 +90,12 @@ class PaycardDatacapParser extends Parser
         switch ($str) {
             case 'DATACAP':
                 $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvMenu.php';
+                if ($this->conf->get('ttlflag') != 1) {
+                    $ret['main_frame'] .= '?selectlist=PV';
+                }
+                break; 
+            case 'PVDATACAP':
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvMenu.php?selectlist=PV';
                 break; 
             case 'DATACAPEMV': 
                 $this->conf->set('CacheCardType', 'EMV');

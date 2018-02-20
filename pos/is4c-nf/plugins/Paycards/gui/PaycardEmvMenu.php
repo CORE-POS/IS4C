@@ -84,6 +84,14 @@ class PaycardEmvMenu extends NoInputCorePage
                     );
                     $this->clearToHome = 0;
                     break;
+                case 'PV':
+                    $this->menu = array(
+                        'PVEF' => 'Food Balance',
+                        'PVEC' => 'Cash Balance',
+                        'PVGD' => 'Gift Balance',
+                    );
+                    $this->clearToHome = 1;
+                    break;
                 case 'CL':
                 default:
                     if (FormLib::get('clear-to-home')) {
