@@ -247,6 +247,9 @@ class InvCountPage extends FannieRESTfulPage
             <a href="InvCasesPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Case Sizes</a>
             |
             <a href="InvHistoryPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Count History</a>
+            <p>
+                <button type="submit" class="btn btn-default">Save</button>
+            </p>
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
             <input type="hidden" name="store" value="' . $store . '" />
             <table class="table table-bordered table-striped small table-float">
