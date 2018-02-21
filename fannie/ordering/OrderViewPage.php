@@ -151,7 +151,8 @@ class OrderViewPage extends FannieRESTfulPage
                 mixMatch=?,
                 total=?,
                 unitPrice=?,
-                quantity=?
+                quantity=?,
+                trans_status=?
             WHERE order_id=?
                 AND trans_id=?
         ');
@@ -162,6 +163,7 @@ class OrderViewPage extends FannieRESTfulPage
             $this->actual,
             $this->unitPrice,
             $this->qty,
+            FormLib::get('sku'),
             $this->orderID,
             $this->transID,
         ));
@@ -862,7 +864,7 @@ HTML;
         $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
         $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
-            o.trans_id,o.unitPrice,o.memType,o.staff
+            o.trans_id,o.unitPrice,o.memType,o.staff,o.trans_status
             FROM {$TRANS}PendingSpecialOrder as o
                 LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
@@ -881,11 +883,15 @@ HTML;
         }
         while ($row = $dbc->fetch_row($res)) {
             if ($row['trans_id'] == $prev_id) continue;
+            if (strlen($row['trans_status']) > 0) {
+                $row['sku'] = $row['trans_status'];
+            }
             $ret .= sprintf('
                     <tbody>
                     <tr>
                     <td>%s</td>
-                    <td>%s</td>
+                    <td><input class="form-control input-sm item-field" name="sku"
+                        value="%s" /></td>
                     <td><input class="form-control input-sm item-field" name="description"
                         value="%s" /></td>
                     <td>%d</td>

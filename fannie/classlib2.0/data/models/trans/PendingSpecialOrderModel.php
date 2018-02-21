@@ -39,7 +39,7 @@ class PendingSpecialOrderModel extends BasicModel
     'description'    => array('type'=>'VARCHAR(30)'),
     'trans_type'    => array('type'=>'VARCHAR(1)','index'=>True),
     'trans_subtype'    => array('type'=>'VARCHAR(2)'),
-    'trans_status'    => array('type'=>'VARCHAR(1)'),
+    'trans_status'    => array('type'=>'VARCHAR(13)'),
     'department'    => array('type'=>'SMALLINT','index'=>True),
     'quantity'    => array('type'=>'DOUBLE'),
     'scale'        => array('type'=>'TINYINT','default'=>0.00),
