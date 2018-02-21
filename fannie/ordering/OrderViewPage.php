@@ -957,12 +957,6 @@ HTML;
             } else {
                 $supplierInput .= '</select>';
             }
-            /*
-            $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
-                    class="form-control input-sm item-field input-vendor" name="vendor"
-                    maxlength="26" 
-                    /></td>',$row['mixMatch']);
-            */
             $ret .= sprintf('<td class="form-inline"><span class="form-inline">Vendor: %s</span></td>', $supplierInput);
 
             $ret .= '<td>Discount</td>';
