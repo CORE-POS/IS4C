@@ -542,6 +542,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $upc = FormLib::get('upc');
+        $batchCheck = FormLib::get('batchCheck', false);
 
         $args = array($store_location);
         $query = $dbc->prepare('SELECT
@@ -561,18 +563,22 @@ class ProdLocationEditor extends FannieRESTfulPage
             $floor_section['none'] = 'none';
 
         $ret = '';
-        $ret .= '<div class="container"><div class="row"><div class="col-md-5">';
+        $ret .= '<div class=""><div class="row"><div class="col-md-5">';
         $ret .= '
 
-            <form class="form-inline" method="get">
+            <form method="get">
                 <input type="hidden" name="store_id" class="form-control">
                 <br><br>
                 <div class="input-group">
                     <span class="input-group-addon">UPC</span>
-                    <input type="text" class="form-control" id="upc" style="width: 175px" name="upc" autofocus required>&nbsp;&nbsp;
-                    <input type="hidden" class="btn btn-default" style="width: 300px" name="searchupc" value="Update Locations by UPC">
-                    <input type="submit" class="btn btn-default" value="Go" style="width: 50">
+                    <input type="text" class="form-control" id="upc" name="upc" value="'.$upc.'" autofocus required>
+                    <input type="hidden" name="batchCheck" value="'.$batchCheck.'">
                 </div>
+                    <input type="hidden" class="btn btn-default" name="searchupc" value="Update Locations by UPC">
+                    <div class="spacer"></div>
+                    <button type="submit" class="btn btn-default" value="Go" style="width: 50">
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                    </button>
             </form><br>
         ';
 
@@ -621,30 +627,29 @@ class ProdLocationEditor extends FannieRESTfulPage
                 }
             }
 
-            $ret .= '<div class="panel panel-default" style="width: 435px; border: none;">';
-                $ret .= '<table class="table table-striped">';
-                $ret .= '<tr><td><b>UPC: </b></td><td>' . $upc . '</td></tr>';
-                $ret .= '<tr><td><b>Brand / Description: </b></td><td>' . $brand . ' - ' . $description . '</td></tr>';
-                $ret .= '<tr><td><b>Department: </b></td><td>' . $department . ' - ' . $dept_name . '</td></tr>';
-                $ret .= '<tr><td><b>Suggested Location: </b></td><td>' . $floor_section[$sugLocation] . '</td></tr>';
-                $ret .= '</table></div>';
+            $ret .= '<div class="panel panel-default" style="max-width: 435px;">';
+                $ret .= '<div class="table-responsive"><table class="table table-striped ">';
+                $ret .= '<tr><td>' . $upc . '</td></tr>';
+                $ret .= '<tr><td>' . $brand . ' - ' . $description . '</td></tr>';
+                $ret .= '<tr><td>' . $department . ' - ' . $dept_name . '</td></tr>';
+                $ret .= '<tr><td>Suggested: ' . $floor_section[$sugLocation] . '</td></tr>';
+                $ret .= '</table></div></div>';
 
                 $ret .= '
                     <h4>Add a New Physical Location</h4>
                     <form method="post">
-                    <div class="input-group">
+                        <div class="input-group">
                             <span class="input-group-addon">Location</span>
-                            <select name="newLocation" class="form-control" style="width: 200px;">';
-                        foreach ($floor_section as $fs_key => $fs_value) {
-                            $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '">' . $fs_value . '</option>';
-                        }
-                        $ret .= '
-                            </select>&nbsp;&nbsp;
-                            <input type="submit" value="Add Location" class="btn btn-default">
-                            </form></div>
-                        ';
+                            <select name="newLocation" class="form-control">';
+                foreach ($floor_section as $fs_key => $fs_value) {
+                    $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '">' . $fs_value . '</option>';
+                }
+                $ret .= '
+                    </select></div><br>
+                    <input type="submit" value="Add Location" class="btn btn-warning">
+                    </form>
+                ';
 
-                $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
                 $ret .= '</div><div class="col-md-5">'; //end of column A
 
                 $ret .= '
@@ -655,8 +660,8 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <input type="hidden" name="upc" value="' . $upc . '">
                 ';
                 $count = 0;
-                if (count($curLocation) == 0) $ret .= '<div class="alert alert-danger"
-                    style="width: 265px;">No locations have been set for this product.</div>';
+                if (count($curLocation) == 0) $ret .= '<div class="alert alert-danger">
+                    No locations have been set for this product.</div>';
                 foreach ($curLocation as $value) {
                     $count++;
                     $name = 'section' . $primaryKey[$count-1];
@@ -666,7 +671,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     $ret .= '
                         <div class="input-group">
                             <span class="input-group-addon">Loc#' . $count . '</span>
-                            <select name="' . $name . '" class="form-control" style="width: 200px;">';
+                            <select name="' . $name . '" class="form-control">';
                         foreach ($floor_section as $fs_key => $fs_value) {
 
                             //echo $fs_key . ' :: ' . $fs_value . '<br>'; --keys and values are correct.
@@ -683,7 +688,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
                 }
             $ret .= '
-                <input type="submit" class="btn btn-default" style="width: 265px;" value="Update Locations"><br><br>
+                <input type="submit" class="btn btn-success" value="Update Locations"><br><br>
                 <input type="hidden" name="numolocations" value="' . $count . '">
                 </form>
             ';
@@ -692,6 +697,12 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         $ret .= '</div></div></div>'; //<column B><row><container>
+        if (FormLib::get('batchCheck', false)) {
+            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php?upc='.$upc.'">
+                Back to Batch Check</a><br><br>';
+        } else {
+            $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
+        }
 
         return $ret;
     }
