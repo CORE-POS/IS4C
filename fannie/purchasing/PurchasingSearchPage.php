@@ -34,6 +34,7 @@ class PurchasingSearchPage extends FannieRESTfulPage
     public $description = '[Search Purchase Orders] finds orders/invoices containing a given item.';
 
     protected $must_authenticate = true;
+    protected $enable_linea = true;
 
     public function get_id_view()
     {
@@ -129,6 +130,7 @@ class PurchasingSearchPage extends FannieRESTfulPage
         $ret .= '</form>';
 
         $this->add_onload_command("\$('.form-control:first').focus();\n");
+        $this->addOnloadCommand("enableLinea('#upcsku');");
 
         return $ret;
     }
