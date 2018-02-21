@@ -199,7 +199,7 @@ class GeneralDayReport extends FannieReportPage
         $trans = DTransactionsModel::selectDTrans($d1);
         $componentP = $dbc->prepare('SELECT description, rate FROM TaxRateComponents WHERE taxRateID=?');
         $lineItemQ = $dbc->prepare("
-            SELECT MAX(description) AS description,
+            SELECT MIN(description) AS description,
                 numflag,
                 SUM(regPrice) AS ttl
             FROM $trans AS d
@@ -216,16 +216,20 @@ class GeneralDayReport extends FannieReportPage
             if ($dbc->numRows($componentR) > 0) {
                 $lineItemW['description'] .= ' - Total';
             }
-            $record = array($lineItemW['description'] . ' (est. owed)', sprintf('%.2f', $lineItemW['ttl']));
-            $report[] = $record;
             $comp = array();
             $sum = 0;
             while ($compW = $dbc->fetchRow($componentR)) {
                 $comp[] = $compW;
                 $sum += $compW['rate'];
             }
+            $record = array(
+                sprintf('%s (est. owed)', $lineItemW['description']),
+                sprintf('%.2f', $lineItemW['ttl']),
+            );
+            $report[] = $record;
             foreach ($comp as $c) {
-                $report[] = array($baseDesc . ' - ' . $c['description']. ' (est. owed)',
+                $report[] = array(
+                    sprintf('%s - %s (%.4f%%) (est. owed)', $baseDesc, $c['description'], $c['rate']*100),
                     sprintf('%.2f', $lineItemW['ttl'] * ($c['rate']/$sum)));
             }
         }
