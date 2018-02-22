@@ -1034,6 +1034,16 @@ HTML;
         $dbc = $this->connection;
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
+        // short circuit on choosing an SPO
+        if (FormLib::get('spoSKU', '') !== '') {
+            $model->sku(FormLib::get('spoSKU'));
+            $model->load();
+            $model->receivedDate(date('Y-m-d H:i:s'));
+            $model->receivedTotalCost($model->unitCost() * $model->quantity() * $model->caseSize());
+            $model->receivedQty($model->quantity() * $model->caseSize());
+            $model->save();
+            return false;
+        }
         $model->sku($this->sku);
         $model->internalUPC(BarcodeLib::padUPC($this->upc));
         $model->brand($this->brand);
@@ -1181,20 +1191,36 @@ HTML;
             $this->id
         );
         echo '</table>';
+
+        $opts = '';
+        $prep = $dbc->prepare('SELECT sku, quantity, caseSize, brand, description 
+            FROM PurchaseOrderItems WHERE isSpecialOrder=1 AND orderID=?');
+        $res = $dbc->execute($prep, array($this->id));
+        while ($row = $dbc->fetchRow($res)) {
+            $opts .= sprintf('<option value="%s">%s %s (%sx%s)</option>',
+                $row['sku'], $row['brand'], $row['description'],
+                $row['quantity'], $row['caseSize']);
+        }
+        if ($opts !== '') {
+            echo '<p>Special Orders<br /><select name="spoSKU" class="form-control input-sm">
+                <option value="">Select...</option>'
+                . $opts
+                . '<optgroup label=""></optgroup><!-- keeps iOS from truncating option labels above -->
+                </select><br />
+                <button type="submit" class="btn btn-default">Receive Item(s)</button><p>';
+        }
     }
 
     private function receiveOrderedItem($dbc, $model)
     {
         echo '<table class="table table-bordered small">';
-        echo '<tr><th class="">SKU</th><th class="hidden-xs">UPC</th>
-            <th class="hidden-xs">Brand</th><th class="">Description</th>
-            <th>Qty Ordered</th><th class="hidden-xs">Cost (est)</th>
-            <th>Qty Received</th><th>Cost Received</th></tr>';
         $uid = FannieAuth::getUID($this->current_user);
         if (!is_array($model)) {
             $model = array($model);
         }
         foreach ($model as $m) {
+            echo '<tr><th class="">SKU</th><th class="hidden-xs">UPC</th>
+                <th class="hidden-xs">Brand</th><th class="">Description</th></tr>';
             if ($m->receivedQty() === null) {
                 $m->receivedQty($m->quantity() * $m->caseSize());
                 $m->receivedBy($uid);
@@ -1204,13 +1230,17 @@ HTML;
                 $m->receivedBy($uid);
             }
             printf('<tr %s>
-                <td class="">%s<input type="hidden" name="sku[]" value="%s" /></td>
+                <td class="small">%s<input type="hidden" name="sku[]" value="%s" /></td>
                 <td class="hidden-xs">%s</td>
                 <td class="hidden-xs">%s</td>
-                <td class="">%s</td>
-                <td>%s (%sx%s)</td>
+                <td class="small">%s</td>
+                </tr><tr>
+                <th>Qty Ordered</th><th class="hidden-xs">Cost (est)</th>
+                <th>Qty Received</th></tr>
+                <tr><td>%s (%sx%s)</td>
                 <td class="hidden-xs">%.2f</td>
                 <td><input type="text" pattern="\\d*" class="form-control" name="qty[]" value="%s" /></td>
+                </tr><tr><th>Cost Received</th></tr>
                 <td><input type="number" min="-999" max="999" step="0.01" pattern="\\d+(\\.\\d*)?" class="form-control" name="cost[]" value="%.2f" /></td>
                 <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id[]" value="%d" /></td>
                 </tr>',
