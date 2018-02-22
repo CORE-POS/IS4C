@@ -216,7 +216,7 @@ HTML;
         $hiddenFields = array('firstName','lastName','owner','phone','address');
         $storeNames = array(1=>'Hillside',2=>'Denfeld');
         $qOpr = ($mode == 'new') ? '=' : '!=';
-        $query = "SELECT * FROM CustomerServiceTracker.Tracker WHERE complete $qOpr'0000-00-00 00:00:00' ORDER BY id;";
+        $query = "SELECT * FROM CustomerServiceTracker.Tracker WHERE complete $qOpr'0000-00-00 00:00:00' ORDER BY id DESC;";
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep);
         $data = array();
