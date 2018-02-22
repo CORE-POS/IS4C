@@ -77,7 +77,14 @@ class InvCountPage extends FannieRESTfulPage
             $count = $this->form->count;
             $par = $this->form->par;
             $storeID = FormLib::get('storeID', 1);
-            $this->saveEntry($upc, $storeID, $count, $par);
+            $add = FormLib::get('addOn', false);
+            if ($add) {
+                $upP = $this->connection->prepare('UPDATE InventoryCounts SET count=count+?
+                    WHERE mostRecent=1 AND storeID=? AND upc=?');
+                $this->connection->execute($upP, array($count, $storeID, $upc));
+            } else {
+                $this->saveEntry($upc, $storeID, $count, $par);
+            }
         } catch (Exception $ex) {}
 
         return 'InvCountPage.php?id=' . $this->id . '&store=' . $storeID;
@@ -163,6 +170,8 @@ class InvCountPage extends FannieRESTfulPage
         $upc = BarcodeLib::padUPC($this->id);
         $store = FormLib::get('store', 1);
         $info = $this->getMostRecent($upc, $store);
+        $addBtn = '<button type="submit" class="btn btn-default btn-sm"
+            name="addOn" value="1">Add to Count</button>';
         $prod = new ProductsModel($this->connection);
         $prod->upc($upc);
         $prod->store_id($store);
@@ -170,7 +179,8 @@ class InvCountPage extends FannieRESTfulPage
         if ($info === false) {
             $info['countDate'] = 'n/a';
             $info['count'] = 0;
-            $info['par'] = 0;    
+            $info['par'] = 0;
+            $addBtn = '';
         }
 
         $ret = '<form method="post">
@@ -192,14 +202,15 @@ class InvCountPage extends FannieRESTfulPage
                         <button type="submit" class="btn btn-default btn-sm">Save</button>
                     </td>
                 </tr>
-            </table>
-            </form>';
+            </table>';
         $ret .= '<div class="alert alert-info">
             ' . $upc . ' - ' . $prod->brand() . ' ' . $prod->description() . '<br />
             <strong>Last Counted</strong>: ' . $info['countDate'] . '<br />
             <strong>Last Count</strong>: ' . $info['count'] . '<br />
             <strong>Current Par</strong>: ' . $info['par'] . '<br />
-            </div>';
+            ' . $addBtn . '
+            </div>
+            </form>';
         $this->addOnloadCommand("\$('#count-field').focus();\n");
 
         return $ret . '<hr />' . $this->get_view();
@@ -459,7 +470,7 @@ class InvCountPage extends FannieRESTfulPage
             <form method="get">
                 <div class="form-group">
                     <label>UPC</label>
-                    <input type="text" name="id" id="linea-field" class="form-control" />
+                    <input type="text" name="id" id="linea-field" pattern="\\d*" class="form-control" />
                 </div>
                 <div class="form-group">
                     <label>Store</label>
