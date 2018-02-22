@@ -24,6 +24,13 @@ class CustomerServiceLog extends FannieRESTfulPage
     public function css_content()
     {
         return <<<HTML
+.comment {
+    background-color: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+.sub-comment {
+    color: rgba(0,0,0,0.3);
+}
 .old-table {
     background-color: #e2e2e2;
 }
@@ -150,7 +157,7 @@ HTML;
     protected function post_save_handler()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $id = FormLib::get('id');
+        $id = FormLib::get('id', false);
         $formValues = array('store','owner','firstName','lastName','phone','address',
             'date','subject','content','complete');
         foreach ($formValues as $name) {
@@ -158,25 +165,48 @@ HTML;
         }
         $uid = FannieAuth::getUID($this->current_user);
 
+        $argsSave = array($store,$uid,$complete,$subject,
+        $firstName,$lastName,$owner,$phone,$address);
         $argsSave = array($store,$uid,$complete,$subject,$content,
-            $firstName,$lastName,$owner,$phone,$address);
+        $firstName,$lastName,$owner,$phone,$address);
         $prepSave = $dbc->prepare("INSERT INTO CustomerServiceTracker.Tracker (
-            storeID,uid,date,complete,subject,content,firstName,lastName,
-            owner,phone,address) VALUES (?,?,NOW(),?,?,?,?,?,?,?,?);");
-
-        $argsUpdate= array($complete,$subject,$content,
+                storeID,uid,date,complete,subject,content,firstName,lastName,
+                            owner,phone,address) VALUES (?,?,NOW(),?,?,?,?,?,?,?,?);");
+        $argsUpdate= array($complete,$subject,
             $firstName,$lastName,$owner,$phone,$address,$store,$id);
         $prepUpdate = $dbc->prepare("UPDATE CustomerServiceTracker.Tracker
             set complete = ?, subject = ?,
-            content = ?, firstName = ?, lastName = ?, owner = ?, phone = ?,
+            firstName = ?, lastName = ?, owner = ?, phone = ?,
             address = ?, storeID = ? WHERE id = ?");
         if ($id) {
+            //update Tracker 
             $res = $dbc->execute($prepUpdate,$argsUpdate);
+            //save comment
+            $args = array($id);
+            $prep = $dbc->prepare("SELECT max(commentID) AS maxid FROM CustomerServiceTracker.TrackerComments WHERE trackerID = ?");
+            $res = $dbc->execute($prep,$args);
+            $row = $dbc->fetchArray($res);
+            $commentID = (is_null($row['maxid'])) ? 1 : $row['maxid']+1;
+            $saveCommentA = array($id,$commentID,$content,$uid);
+            $saveCommentP = $dbc->prepare("INSERT INTO CustomerServiceTracker.TrackerComments (trackerID,commentID,date,comment,uid) VALUES (?, ?, NOW(), ?, ?)");
+            $saveCommentR = $dbc->execute($saveCommentP,$saveCommentA);
         } else {
+            //insert Tracker 
             $res = $dbc->execute($prepSave,$argsSave);
+            //save comment
+            $prep = $dbc->prepare("SELECT MAX(id) AS maxid FROM CustomerServiceTracker.Tracker");
+            $res = $dbc->execute($prep);
+            $row = $dbc->fetchArray($res);
+            $id = $row['maxid'];
+            $saveCommentA = array($id,$commentID,$content,$uid);
+            $saveCommentP = $dbc->prepare("INSERT INTO CustomerServiceTracker.TrackerComments (trackerID,commentID,date,comment,uid) VALUES (?, ?, NOW(), ?, ?)");
+            $saveCommentR = $dbc->execute($saveCommentP,$saveCommentA);
         }
 
-        return header('location: CustomerServiceLog.php');
+
+        $er = $dbc->error();
+
+        return header('location: CustomerServiceLog.php#'.$er);
 
     }
 
@@ -212,7 +242,7 @@ HTML;
         $trx = ($id) ? 'highlight' : '';
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $stores = array();
-        $fields = array('id','storeID','uid','date','subject','content','owner','firstName','lastName');
+        $fields = array('id','storeID','uid','date','subject','owner','firstName','lastName');
         $hiddenFields = array('firstName','lastName','owner','phone','address');
         $storeNames = array(1=>'Hillside',2=>'Denfeld');
         $qOpr = ($mode == 'new') ? '=' : '!=';
@@ -228,6 +258,22 @@ HTML;
                 $hiddenData[$row['id']][$hf] = $row[$hf];
             }
         }
+
+        ///get comments
+        $comments = array();
+        $prep = $dbc->prepare("SELECT comment, trackerID FROM CustomerServiceTracker.TrackerComments");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $id = $row['trackerID'];
+            $comment = $row['comment'];
+            if (!isset($comments[$id])) {
+                $comments[$id] = $comment;
+            } else {
+                $comments[$id] .= ". ".$comment;
+            }
+        }
+
+
         if ($er = $dbc->error) echo '<div class="alert alert-danger">'.$er.'</div>';
         $identify = ($mode == 'new') ? ': Pending/Current | <i><a href="CustomerServiceLog.php?old=1">See Old</i></a>'
             : ': Completed/Old | <i><a href="CustomerServiceLog.php">See Current</i></a>';
@@ -245,7 +291,7 @@ HTML;
             $table .= '<td class="store">'.$storeNames[$row['storeID']].'</td>';
             foreach (array('date','subject','content') as $field) {
                 if ($field === 'content') {
-                   $table .= '<td><b>'.$owner.'</b> <b>'.$firstName.'</b> <b>'.$lastName.'</b> '.$row[$field].'</td>' ;
+                   $table .= '<td><b>'.$owner.'</b> <b>'.$firstName.'</b> <b>'.$lastName.'</b> '.$comments[$row['id']].'</td>' ;
                 } elseif ($field == 'date') {
                    $table .= '<td>'.substr($row[$field],0,10).'</td>';
                 } else {
@@ -358,6 +404,27 @@ HTML;
         }
         $uid = FannieAuth::getName($uid);
 
+        $comments = '';
+        $getCommentsA = array($id);
+        $getCommentsP = $dbc->prepare("SELECT comment, date, uid FROM CustomerServiceTracker.TrackerComments WHERE trackerID = ? 
+            ORDER BY commentID ASC");
+        $getCommentsR = $dbc->execute($getCommentsP,$getCommentsA);
+        while ($row = $dbc->fetchRow($getCommentsR)) {
+            if (!is_null($row['comment'])) {
+                $temp = $row['date'];
+                $date = substr($temp,0,10);
+                $time = substr($temp,10);
+                $cuid = FannieAuth::getName($row['uid']);
+                if ($cuid == false) $cuid = '<i>unknown</i>';
+                $comments .= "<div class='comment'>
+                    <span class='sub-comment'>
+                        $date | $time | $cuid: 
+                    </span>{$row['comment']}
+                </div>"; 
+            }
+        }
+        $commentsLabel = (FormLib::get('new') == 1) ? '' : '<label>Comments</label>';
+
         return <<<HTML
 <p class="form-inline">
     <div id="#jax-resp"></div>
@@ -418,9 +485,11 @@ HTML;
             <label>Subject</label>
             <input type="text" class="form-control input-sm" name="subject" value="{$subject}">
         </div>
+            $commentsLabel
+            $comments
         <div class="form-group">
             <label>Comment</label>
-            <textarea class="form-control" name="content">{$content}</textarea>
+            <textarea class="form-control" name="content"></textarea>
         </div>
         <div class="form-group form-inline">
             {$newFormIn}
