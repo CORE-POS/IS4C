@@ -23,7 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\TransRecord;
-use COREPOS\pos\plugins\Paycards\xml\XmlData;
+use COREPOS\pos\plugins\Paycards\xml\BetterXmlData;
 
 /*
  * Mercury Gift Card processing module
@@ -268,7 +268,11 @@ class MercuryGift extends BasicCCModule
         $live = 0;
         $manual = ($this->conf->get("paycard_manual") ? 1 : 0);
         $cardPAN = $this->getPAN();
-        $cardTr2 = $this->getTrack2();
+        if (substr($cardPAN, 0, 8) == "02AA0080") {
+            $encBlock = new COREPOS\pos\plugins\Paycards\card\EncBlock();
+            $e2e = $encBlock->parseEncBlock($cardPAN);
+            $cardPAN = str_repeat('*', 12) . $e2e['Last4'];
+        }
         $identifier = $this->refnum($transID); 
         
         /**
@@ -455,8 +459,6 @@ class MercuryGift extends BasicCCModule
     private function sendBalance($domain="w1.mercurypay.com")
     {
         // prepare data for the request
-        $cardPAN = $this->getPAN();
-        $cardTr2 = $this->getTrack2();
         $identifier = date('mdHis'); // the balance check itself needs a unique identifier, so just use a timestamp minus the year (10 digits only)
         $termID = $this->getTermID();
         $password = $this->getPw();
@@ -507,7 +509,7 @@ class MercuryGift extends BasicCCModule
     {
         $resp = $this->desoapify("GiftTransactionResult",
             $authResult["response"]);
-        $xml = new XmlData($resp);
+        $xml = new BetterXmlData($resp);
 
         // initialize
         $dbTrans = Database::tDataConnect();
@@ -517,31 +519,16 @@ class MercuryGift extends BasicCCModule
         $transID = $this->conf->get("paycard_id");
         $identifier = $this->refnum($transID); 
 
-        $validResponse = ($xml->isValid()) ? 1 : 0;
-        $errorMsg = $xml->get_first("TEXTRESPONSE");
-        $balance = $xml->get_first("BALANCE");
-
-        if ($validResponse) {
-            // verify that echo'd fields match our request
-            if ($xml->get('TRANTYPE') && $xml->get('TRANTYPE') == "PrePaid"
-                && $xml->get('INVOICENO') && $xml->get('INVOICENO') == $identifier
-                && $xml->get('CMDSTATUS')
-            ) {
-                $validResponse = 1; // response was parsed normally, echo'd fields match, and other required fields are present
-            } elseif (!$xml->get('CMDSTATUS')) {
-                $validResponse = -2; // response was parsed as XML but fields didn't match
-            } elseif (!$xml->get('TRANTYPE')) {
-                $validResponse = -3; // response was parsed as XML but fields didn't match
-            } elseif (!$xml->get('INVOICENO')) {
-                $validResponse = -4; // response was parsed as XML but fields didn't match
-            }
-        }
-
-        $status = $xml->get_first('CMDSTATUS');
+        $validResponse = 1;
+        $errorMsg = $xml->query('/RStream/CmdResponse/TextResponse');
+        $balance = $xml->query('/RStream/TranResponse/Amount/Balance');
+        $tranType = $xml->query('/RStream/TranResponse/TranType');
+        $status = $xml->query('/RStream/CmdResponse/CmdStatus');
+        $invoice = $xml->query('/RStream/TranResponse/InvoiceNo');
         $normalized = $this->getNormalized($status);
         $resultCode = ($normalized >= 3) ? 0 : $normalized;
         $rMsg = $normalized === 3 ? substr($errorMsg, 0, 100) : $status;
-        $apprNumber = $xml->get_first('REFNO');
+        $apprNumber = $xml->query('/RStream/TranResponse/RefNo');
 
         $finishQ = sprintf("UPDATE PaycardTransactions SET
                                 responseDatetime='%s',
@@ -592,31 +579,46 @@ class MercuryGift extends BasicCCModule
         }
 
         // put the parsed response into session so the caller, receipt printer, etc can get the data they need
-        $this->conf->set("paycard_response",array());
-        $this->conf->set("paycard_response",$xml->arrayDump());
-        $temp = $this->conf->get("paycard_response");
-        $temp["Balance"] = isset($temp['BALANCE']) ? $temp["BALANCE"] : 0;
-        $this->conf->set("paycard_response",$temp);
+        $this->conf->set("paycard_response",array(
+            'Balance' => strlen($balance) > 0 ? $balance : 0,
+        ));
         /**
           Update authorized amount based on response. If
           the transaction was a refund ("Return") then the
           amount needs to be negative for POS to handle
           it correctly.
         */
-        if ($xml->get_first("AUTHORIZE")) {
-            $this->conf->set("paycard_amount",$xml->get_first("AUTHORIZE"));
-            if ($xml->get_first('TRANCODE') && $xml->get_first('TRANCODE') == 'Return') {
-                $this->conf->set("paycard_amount",-1*$xml->get_first("AUTHORIZE"));
+        if ($normalized == 1) {
+            $amt = $xml->query('/RStream/TranResponse/Amount/Authorize');
+            $tranCode = $xml->query('/RStream/TranResponse/TranCode');
+            $realAmt = $tranCode == 'Return' ? -1*$amt : $amt;
+            if ($realAmt != $this->conf->get('paycard_amount')) {
+                $correctionQ = sprintf("UPDATE PaycardTransactions SET amount=%f WHERE
+                    dateID=%s AND refNum='%s'",
+                    $amt,date("Ymd"),$identifier);
+                $dbTrans->query($correctionQ);
+                $this->conf->set('paycard_amount', $realAmt);
             }
-            $correctionQ = sprintf("UPDATE PaycardTransactions SET amount=%f WHERE
-                dateID=%s AND refNum='%s'",
-                $xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
-            $dbTrans->query($correctionQ);
         }
 
         // comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
-        if ($xml->get('CMDSTATUS') == 'Approved' && $xml->get('REFNO') != '' ) {
+        if ($status == 'Approved' && $apprNumber != '') {
             return PaycardLib::PAYCARD_ERR_OK; // authorization approved, no error
+        }
+
+        /**
+         * For strange reasons the gateway sometimes declines encrypted prepaid
+         * transactions but includes the full card number in the response. Until
+         * this gets correct, we can just re-submit the transaction using the
+         * decrypted card number. This only applies to gift (i.e., non-PCI) cards.
+         */
+        if ($status == 'Declined' && $this->conf->get('paycard_type') == PaycardLib::PAYCARD_TYPE_ENCRYPTED_GIFT) {
+            $realPAN = $xml->query('/RStream/TranResponse/AcctNo');
+            if (strlen($realPAN) == 19) {
+                $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $this->conf->set('paycard_PAN', $realPAN);
+                return $this->sendAuth();
+            }
         }
 
         // the authorizor gave us some failure code
@@ -630,7 +632,7 @@ class MercuryGift extends BasicCCModule
     {
         $resp = $this->desoapify("GiftTransactionResult",
             $vdResult["response"]);
-        $xml = new XmlData($resp);
+        $xml = new BetterXmlData($resp);
 
         // initialize
         $dbTrans = Database::tDataConnect();
@@ -638,19 +640,16 @@ class MercuryGift extends BasicCCModule
         // prepare data for the void request
         $now = date('Y-m-d H:i:s'); // full timestamp
 
-        $validResponse = -2;
-        // verify that echo'd fields match our request
-        if ($xml->get('TRANTYPE') && $xml->get('CMDSTATUS') && $xml->get('BALANCE')) {
-            // response was parsed normally, echo'd fields match, and other required fields are present
-            $validResponse = 1;
-        }
-
-        $status = $xml->get_first('CMDSTATUS');
-        $errorMsg = $xml->get_first("TEXTRESPONSE");
+        $validResponse = 1;
+        $errorMsg = $xml->query('/RStream/CmdResponse/TextResponse');
+        $balance = $xml->query('/RStream/TranResponse/Amount/Balance');
+        $tranType = $xml->query('/RStream/TranResponse/TranType');
+        $status = $xml->query('/RStream/CmdResponse/CmdStatus');
+        $invoice = $xml->query('/RStream/TranResponse/InvoiceNo');
         $normalized = $this->getNormalized($status);
         $resultCode = ($normalized >= 3) ? 0 : $normalized;
         $rMsg = $normalized === 3 ? substr($errorMsg, 0, 100) : $status;
-        $apprNumber = $xml->get_first('REFNO');
+        $apprNumber = $xml->query('/RStream/TranResponse/RefNo');
 
         $finishQ = sprintf("UPDATE PaycardTransactions SET
                                 responseDatetime='%s',
@@ -675,7 +674,7 @@ class MercuryGift extends BasicCCModule
                                 $resultCode,
                                 $rMsg,
                                 $apprNumber,
-                                $xml->get('BALANCE'),
+                                $balance,
                                 $this->last_paycard_transaction_id
         );
         $dbTrans->query($finishQ);
@@ -699,19 +698,32 @@ class MercuryGift extends BasicCCModule
         }
 
         // put the parsed response into session so the caller, receipt printer, etc can get the data they need
-        $this->conf->set("paycard_response",array());
-        $this->conf->set("paycard_response",$xml->arrayDump());
-        $temp = $this->conf->get("paycard_response");
-        $temp["Balance"] = isset($temp['BALANCE']) ? $temp["BALANCE"] : 0;
-        $this->conf->set("paycard_response",$temp);
+        $this->conf->set("paycard_response",array(
+            'Balance' => strlen($balance) > 0 ? $balance : 0,
+        ));
 
         // comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
-        if ($xml->get('CMDSTATUS') == 'Approved' && $xml->get('REFNO') != '' ) {
+        if ($status == 'Approved' && $apprNumber != '') {
             return PaycardLib::PAYCARD_ERR_OK; // void successful, no error
         }
 
+        /**
+         * For strange reasons the gateway sometimes declines encrypted prepaid
+         * transactions but includes the full card number in the response. Until
+         * this gets correct, we can just re-submit the transaction using the
+         * decrypted card number. This only applies to gift (i.e., non-PCI) cards.
+         */
+        if ($status == 'Declined' && $this->conf->get('paycard_type') == PaycardLib::PAYCARD_TYPE_ENCRYPTED_GIFT) {
+            $realPAN = $xml->query('/RStream/TranResponse/AcctNo');
+            if (strlen($realPAN) == 19) {
+                $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $this->conf->set('paycard_PAN', $realPAN);
+                return $this->sendVoid();
+            }
+        }
+
         // the authorizor gave us some failure code
-        $this->conf->set("boxMsg","PROCESSOR ERROR: ".$xml->get_first("ERRORMSG"));
+        $this->conf->set("boxMsg","PROCESSOR ERROR: " . $errorMsg);
 
         return PaycardLib::PAYCARD_ERR_PROC; 
     }
@@ -720,7 +732,7 @@ class MercuryGift extends BasicCCModule
     {
         $resp = $this->desoapify("GiftTransactionResult",
             $balResult["response"]);
-        $xml = new XmlData($resp);
+        $xml = new BetterXmlData($resp);
 
         if ($balResult['curlErr'] != CURLE_OK || $balResult['curlHTTP'] != 200) {
             if ($balResult['curlHTTP'] == '0'){
@@ -735,24 +747,37 @@ class MercuryGift extends BasicCCModule
         }
 
         $this->conf->set("paycard_response",array());
-        $this->conf->set("paycard_response",$xml->arrayDump());
-        $resp = $this->conf->get("paycard_response");
-        if (isset($resp["BALANCE"])) {
-            $resp["Balance"] = $resp["BALANCE"];
+        $resp = array();
+        $balance = $xml->query('/RStream/TranResponse/Amount/Balance');
+        if (strlen($balance) > 0) {
+            $resp["Balance"] = $balance;
             $this->conf->set("paycard_response",$resp);
         }
 
-        // there's less to verify for balance checks, just make sure all the fields are there
-        if($xml->isValid() 
-           && $xml->get('TRANTYPE') && $xml->get('TRANTYPE') == 'PrePaid'
-           && $xml->get('CMDSTATUS') && $xml->get('CMDSTATUS') == 'Approved'
-           && $xml->get('BALANCE')
-        ) {
+        $tranType = $xml->query('/RStream/TranResponse/TranType');
+        $cmdStatus = $xml->query('/RStream/CmdResponse/CmdStatus');
+        if ($tranType == 'PrePaid' && $cmdStatus == 'Approved') {
             return PaycardLib::PAYCARD_ERR_OK; // balance checked, no error
         }
 
+        /**
+         * For strange reasons the gateway sometimes declines encrypted prepaid
+         * transactions but includes the full card number in the response. Until
+         * this gets correct, we can just re-submit the transaction using the
+         * decrypted card number. This only applies to gift (i.e., non-PCI) cards.
+         */
+        if ($cmdStatus == 'Declined' && $this->conf->get('paycard_type') == PaycardLib::PAYCARD_TYPE_ENCRYPTED_GIFT) {
+            $realPAN = $xml->query('/RStream/TranResponse/AcctNo');
+            if (strlen($realPAN) == 19) {
+                $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
+                $this->conf->set('paycard_PAN', $realPAN);
+                return $this->sendBalance();
+            }
+        }
+
         // the authorizor gave us some failure code
-        $this->conf->set("boxMsg","Processor error: ".$xml->get_first("TEXTRESPONSE"));
+        $textResponse = $xml->query('/RStream/CmdResponse/TextResponse');
+        $this->conf->set("boxMsg","Processor error: ". $textResponse);
 
         return PaycardLib::PAYCARD_ERR_PROC;
     }
