@@ -119,24 +119,29 @@ class InvCountPage extends FannieRESTfulPage
         $invID = $inv->save();
        
         if ($invID !== false) {
-            $prep = $this->connection->prepare('
-                UPDATE InventoryCounts
-                SET mostRecent=0
-                WHERE upc=?
-                    AND storeID=?
-                    AND inventoryCountID <> ?');
-            $this->connection->execute($prep, array($upc, $storeID, $invID));
-            $prep = $this->connection->prepare('
-                UPDATE InventoryCache
-                SET baseCount=?,
-                    ordered=0,
-                    sold=0,
-                    shrunk=0,
-                    onHand=?
-                WHERE upc=?
-                    AND storeID=?');
-            $this->connection->execute($prep, array($count, $count, $upc, $storeID));
+            $this->updateRelatedEntries($upc, $storeID, $invID, $count);
         }
+    }
+
+    private function updateRelatedEntries($upc, $storeID, $invID, $count)
+    {
+        $prep = $this->connection->prepare('
+            UPDATE InventoryCounts
+            SET mostRecent=0
+            WHERE upc=?
+                AND storeID=?
+                AND inventoryCountID <> ?');
+        $this->connection->execute($prep, array($upc, $storeID, $invID));
+        $prep = $this->connection->prepare('
+            UPDATE InventoryCache
+            SET baseCount=?,
+                ordered=0,
+                sold=0,
+                shrunk=0,
+                onHand=?
+            WHERE upc=?
+                AND storeID=?');
+        $this->connection->execute($prep, array($count, $count, $upc, $storeID));
     }
 
     protected function post_vendor_handler()
