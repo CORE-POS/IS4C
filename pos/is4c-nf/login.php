@@ -27,11 +27,13 @@ use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 use COREPOS\pos\ajax\AjaxParser;
 use COREPOS\common\mvc\ValueContainer;
 
+/*
 $fp = fopen(__DIR__ . '/cache.php', 'w');
 if ($fp) {
     fwrite($fp, "<?php\n");
     fclose($fp);
 }
+ */
 
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 

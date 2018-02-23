@@ -83,9 +83,10 @@ class AutoLoader
             }
         }
 
-        self::loadStats($name);
+        //self::loadStats($name);
     }
 
+    /*
     static private function loadStats($class)
     {
         if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
@@ -111,6 +112,7 @@ class AutoLoader
 
         return true;
     }
+     */
 
     /**
       Map available classes. Class names should
@@ -122,11 +124,12 @@ class AutoLoader
         $searchPath = realpath(dirname(__FILE__).'/../plugins/');
         self::recursiveLoader($searchPath, $classMap);
         CoreLocal::set('ClassLookup', $classMap);
-        self::classCache();
+        //self::classCache();
 
         return $classMap;
     }
 
+    /*
     static private function classCache()
     {
         if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
@@ -144,6 +147,7 @@ class AutoLoader
 
         return true;
     }
+     */
 
     static private $classPaths = array(
         'COREPOS\pos\lib\Scanning\DiscountType' => '/Scanning/DiscountTypes',
