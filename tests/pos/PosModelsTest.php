@@ -37,10 +37,10 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
         $dbc =  Database::pDataConnect();
         foreach ($models as $class) {
             $obj = new $class($dbc);
-            if (strstr($class, 'EWic')) continue;
             // this just improves coverage; the doc method isn't
             // user-facing functionality
             $this->assertInternalType('string', $obj->doc());
+            if (strstr($class, 'EWic')) continue;
             if (substr($class, 0, 26) == 'COREPOS\\pos\\lib\\models\\op\\') {
                 $dbname = CoreLocal::get('pDatabase');
                 $dbc =  Database::pDataConnect();

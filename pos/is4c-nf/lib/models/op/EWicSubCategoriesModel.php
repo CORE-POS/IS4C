@@ -38,5 +38,16 @@ class EWicSubCategoriesModel extends \COREPOS\pos\lib\models\BasicModel
     'name' => array('type'=>'VARCHAR(255)'),
     'qtyMethod' => array('type'=>'TINYINT', 'default'=>0),
     );
+
+    public function doc()
+    {
+        return '
+EWic gives recipients benefit allocations by category and subcategory.
+This table contains the latter. The qtyMethod indicates how benefits
+are allocated. Currently:
+0 => quantity in number of items
+1 => quantity is $ value
+        ';
+    }
 }
 
