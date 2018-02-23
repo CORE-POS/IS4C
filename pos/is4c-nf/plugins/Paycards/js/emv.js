@@ -42,5 +42,23 @@ var emv = (function($){
         }).done(finishTrans).fail(errorTrans);
     };
 
+    var updateProcessing = function() {
+        var content = $('div#emvProcText').html() + '.';
+        if (content.length >= 23) {
+            content = 'Waiting for response.';
+        }
+        $('div#emvProcText').html(content);
+        setTimeout(updateProcessing, 1000);
+    }
+
+    mod.showProcessing(elem) {
+        var wrapper = '<div class="coloredArea centerOffset centeredDisplay rounded">';
+        var spinner = '<div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>';
+        var testDiv = '<div id="emvProcText">Waiting for response</div>';
+        var all = wrapper + testDiv + spinner + '</div>';
+        $(elem).html(all);
+        updateProcessing();
+    }
+
     return mod;
 }(jQuery));

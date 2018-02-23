@@ -104,7 +104,7 @@ class PaycardEmvPage extends PaycardProcessPage
         ?>
 <script type="text/javascript">
 function emvSubmit() {
-    $('div.baseHeight').html('Processing transaction');
+    emv.showProcessing('div.baseHeight');
     // POST XML request to driver using AJAX
     var xmlData = '<?php echo json_encode($e2e->prepareDataCapAuth($this->conf->get('CacheCardType'), $this->conf->get('paycard_amount'), $this->prompt)); ?>';
     if (xmlData == '"Error"') { // failed to save request info in database
