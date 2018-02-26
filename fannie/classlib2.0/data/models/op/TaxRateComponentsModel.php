@@ -36,5 +36,14 @@ class TaxRateComponentsModel extends BasicModel
     'rate' => array('type'=>'FLOAT'),
     'description' => array('type'=>'VARCHAR(50)'),
     );
+
+    public function doc()
+    {
+        return '
+            Tax rate components are individual tax rates (state, city, etc) that
+            may be combined to produce effective, aggregate tax rates. They can be
+            used to map total tax collected back to individual jurisdictions.
+            ';
+    }
 }
 
