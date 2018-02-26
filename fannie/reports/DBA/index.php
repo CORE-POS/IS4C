@@ -1,5 +1,8 @@
 <?php
 
+header('Location: ../../modules/plugins2.0/DBA/DBAReport.php');
+exit;
+
 include(dirname(__FILE__) . '/../../config.php');
 include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
