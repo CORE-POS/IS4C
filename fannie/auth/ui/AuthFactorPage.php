@@ -142,8 +142,8 @@ HTML;
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertInternalType('string', $this->enabeldMenu('http://example.com'));
-        $phpunit->assertInternalType('string', $this->notEnabeldMenu());
+        $phpunit->assertInternalType('string', $this->enabledMenu('http://example.com'));
+        $phpunit->assertInternalType('string', $this->notEnabledMenu());
         $phpunit->assertInternalType('string', $this->get_view());
         $phpunit->assertInternalType('string', $this->getLabel());
         $this->start = 1;
