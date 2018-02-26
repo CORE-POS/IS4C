@@ -107,6 +107,26 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
         return $ret;
     }
 
+    public function rowOfFlags($upc)
+    {
+        $upc = BarcodeLib::padUPC($upc);
+        $dbc = $this->db();
+        $res = $this->getFlags($upc);
+
+        $ret = '';
+        while ($row = $dbc->fetchRow($res)) {
+            $ret .= sprintf('<label><input type="checkbox" name="flags[]" value="%d" %s />
+                    %s</label>&nbsp;&nbsp;&nbsp;',
+                    $row['bit_number'], ($row['flagIsSet'] ? 'checked' : ''), $row['description']);
+            // embed flag info to avoid re-querying it on save
+            $ret .= sprintf('<input type="hidden" name="pf_attrs[]" value="%s" />
+                            <input type="hidden" name="pf_bits[]" value="%d" />',
+                            $row['description'], $row['bit_number']);
+        }
+
+        return $ret;
+    }
+
     public function saveFormData($upc)
     {
         try {
