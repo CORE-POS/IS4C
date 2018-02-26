@@ -139,6 +139,19 @@ Two factor authentication is enabled for your account.
 </p>
 HTML;
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->enabeldMenu('http://example.com'));
+        $phpunit->assertInternalType('string', $this->notEnabeldMenu());
+        $phpunit->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('string', $this->getLabel());
+        $this->start = 1;
+        $phpunit->assertInternalType('string', $this->get_start_view());
+        $this->current_user = 'test';
+        $phpunit->assertEquals('AuthFactorPage.php', $this->post_handler());
+        $phpunit->assertEquals('AuthFactorPage.php', $this->delete_handler());
+    }
 }
 
 FannieDispatch::conditionalExec();

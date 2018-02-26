@@ -17,6 +17,7 @@ class AuthTest extends PHPUnit_Framework_TestCase
             'AuthUsersPage',
             'AuthEmailAddress',
             'AuthBarcodePage',
+            'AuthFactorPage',
         );
         $conf = FannieConfig::factory();
         foreach ($pages as $page) {
