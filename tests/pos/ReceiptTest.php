@@ -248,7 +248,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testFilter()
     {
-        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\DefaultReceiptFilter');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Filter\\DefaultReceiptFilter', true);
 
         foreach($mods as $filter_class) {
             $obj = new $filter_class();
