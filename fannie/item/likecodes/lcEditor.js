@@ -37,11 +37,11 @@ var lcEditor = (function ($) {
     }
 
     mod.retailCat = function(lc, cat) {
-        ajax('id='+lc+'&rcat='+cat);
+        ajax('id='+lc+'&rcat='+encodeURIComponent(cat));
     };
 
     mod.internalCat = function(lc, cat) {
-        ajax('id='+lc+'&icat='+cat);
+        ajax('id='+lc+'&icat='+encodeURIComponent(cat));
     };
 
     return mod;

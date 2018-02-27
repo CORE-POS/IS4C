@@ -193,13 +193,13 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                     $css = '';
                     $disableRadio = '';
                     if (isset($data['skus'][$vID]['best'])) {
-                        $css = 'class="success"';
+                        $css = 'success';
                     } elseif ($data['skus'][$vID]['vendorDept'] != 999999) {
-                        $css = 'class="danger"';
+                        $css = 'danger';
                         $disableRadio = 'disabled';
                     }
                     $checkRadio = $vID == $data['vendorID'] ? 'checked' : '';
-                    $tableBody .= "<td {$css}><input type=\"text\" name=\"sku[]\" 
+                    $tableBody .= "<td class=\"skuField{$vID} {$css}\"><input type=\"text\" name=\"sku[]\" 
                         value=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
                         title=\"{$data['skus'][$vID]['sku']} {$data['skus'][$vID]['description']}\"
                         class=\"form-control input-sm sku-field$vID\" /></td>
@@ -217,7 +217,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $tableBody .= '</tr>';
         }
 
-        $this->addScript('skuMap.js');
+        $this->addScript('skuMap.js?date=20180227');
         foreach (array(25, 28, 136) as $vID) {
             $this->addOnloadCommand("skuMap.autocomplete('.sku-field$vID', $vID);");
             $this->addOnloadCommand("skuMap.unlink('.sku-field$vID', $vID);");

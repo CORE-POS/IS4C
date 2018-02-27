@@ -43,6 +43,7 @@ var skuMap = (function ($) {
                     popOver.closest('tr').find('.skuCost'+vendorID).html(cost);
                     console.log(popOver.closest('tr').find('.preferred'+vendorID));
                     popOver.closest('tr').find('.preferred'+vendorID).prop('disabled', false);
+                    popOver.closest('tr').find('.skuField'+vendorID).removeClass('danger').removeClass('success');
                 });
             },
         });
@@ -61,6 +62,7 @@ var skuMap = (function ($) {
                     showBootstrapPopover(popOver, '', '');
                     popOver.closest('tr').find('.skuCost'+vendorID).html('');
                     popOver.closest('tr').find('.preferred'+vendorID).prop('disabled', true);
+                    popOver.closest('tr').find('.skuField'+vendorID).removeClass('danger').removeClass('success');
                 });
             }
         });
