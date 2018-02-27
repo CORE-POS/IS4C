@@ -110,9 +110,9 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         return $ret;
     }
 
-    public function formRow($upc)
+    public function formRow($upc, $activeTab)
     {
-        return $this->rowOfFlags($upc);
+        return $activeTab ? $this->rowOfFlags($upc) : '';
     }
 
     private function rowOfFlags($upc)
@@ -121,9 +121,9 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         $dbc = $this->db();
         $res = $this->getFlags($upc);
 
-        $ret = '';
+        $ret = '<tr class="small"><th class="text-right">Flags</th><td colspan="9">';
         while ($row = $dbc->fetchRow($res)) {
-            $ret .= sprintf('<label><input type="checkbox" name="flags[]" value="%d" %s class="syncable-checkbox" />
+            $ret .= sprintf('<label><input type="checkbox" name="flags[]" value="%d" %s />
                     %s</label>&nbsp;&nbsp;&nbsp;',
                     $row['bit_number'], ($row['flagIsSet'] ? 'checked' : ''), $row['description']);
             // embed flag info to avoid re-querying it on save
@@ -131,6 +131,7 @@ class ItemFlagsModule extends ItemModule implements ItemRow
                             <input type="hidden" name="pf_bits[]" value="%d" />',
                             $row['description'], $row['bit_number']);
         }
+        $ret .= '</td></tr>';
 
         return $ret;
     }

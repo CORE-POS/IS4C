@@ -91,7 +91,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <br />
         <br /><b>Available Modules</b> <br />
         <?php
-        $mods = FannieAPI::ListModules('COREPOS\Fannie\API\item\ItemModule',True);
+        $mods = FannieAPI::listModules('COREPOS\Fannie\API\item\ItemModule',True);
         sort($mods);
         ?>
         <table class="table">
@@ -189,6 +189,47 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         }
         $saveStr = substr($saveStr, 0, strlen($saveStr)-1) . ')';
         confset('FANNIE_PRODUCT_MODULES', $saveStr);
+        ?>
+        </table>
+        <?php
+        $rowMods = FannieAPI::listModules('COREPOS\Fannie\API\item\ItemRow',True);
+        if (!isset($FANNIE_PRODUCT_ROWS)) {
+            $FANNIE_PRODUCT_ROWS = array();
+        }
+        $formRows = FormLib::get('_prMods', false);
+        $formPos = FormLib::get('_prPos', false);
+        if ($formRows !== false) {
+            $FANNIE_PRODUCT_ROWS = array();
+            for ($i=0; $i<count($formRows); $i++) {
+                if (is_numeric($formPos[$i])) {
+                    $FANNIE_PRODUCT_ROWS[$formRows[$i]] = $formPos[$i];
+                }
+            }
+        }
+        ?>
+        <h4 class="install">Product Row Modules</h4>
+        Row modules are smaller versions of Product Information Modules that appear
+        directly within the primary product information module (BaseModule) as an
+        additional horizontal row.
+        <table class="table">
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+        </tr>
+        <?php
+        foreach ($rowMods as $rm) {
+            printf('<tr><td>%s<input type="hidden" name="_prMods[]" value="%s" /></td>
+                    <td><input type="number" class="form-control" name="_prPos" value="%s" /></td></tr>',
+                    $rm, $rm,
+                    (isset($FANNIE_PRODUCT_ROWS[$rm]) ? $FANNIE_PRODUCT_ROWS[$rm] : '')
+            );
+        }
+        $saveStr = "array(";
+        foreach ($FANNIE_PRODUCT_ROWS as $k => $v) {
+            $saveStr .= "'{$k}'=>" . sprintf('%d', $v) . ',';
+        }
+        $saveStr = $saveStr == 'array(' ? $saveStr . ')' : substr($saveStr, 0, strlen($saveStr)-1) . ')';
+        confset('FANNIE_PRODUCT_ROWS', $saveStr);
         ?>
         </table>
         <hr />
