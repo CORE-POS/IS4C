@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 
-class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule 
+use COREPOS\Fannie\API\item\ItemModule;
+use COREPOS\Fannie\API\item\ItemRow;
+
+class ItemFlagsModule extends ItemModule implements ItemRow
 {
 
     public function width()
@@ -107,7 +110,12 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
         return $ret;
     }
 
-    public function rowOfFlags($upc)
+    public function formRow($upc)
+    {
+        return $this->rowOfFlags($upc);
+    }
+
+    private function rowOfFlags($upc)
     {
         $upc = BarcodeLib::padUPC($upc);
         $dbc = $this->db();
@@ -115,7 +123,7 @@ class ItemFlagsModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $ret = '';
         while ($row = $dbc->fetchRow($res)) {
-            $ret .= sprintf('<label><input type="checkbox" name="flags[]" value="%d" %s />
+            $ret .= sprintf('<label><input type="checkbox" name="flags[]" value="%d" %s class="syncable-checkbox" />
                     %s</label>&nbsp;&nbsp;&nbsp;',
                     $row['bit_number'], ($row['flagIsSet'] ? 'checked' : ''), $row['description']);
             // embed flag info to avoid re-querying it on save

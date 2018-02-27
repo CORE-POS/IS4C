@@ -285,6 +285,7 @@ class FannieAPI
 
         switch($base_class) {
             case 'COREPOS\Fannie\API\item\ItemModule':
+            case 'COREPOS\Fannie\API\item\ItemRow':
                 $directories[] = dirname(__FILE__).'/../item/modules/';
                 break;
             case 'COREPOS\Fannie\API\member\MemberModule':
