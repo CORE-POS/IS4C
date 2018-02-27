@@ -811,7 +811,7 @@ HTML;
             }
             if (FannieConfig::config('STRIPE_FLAGS')) {
                 $flags = new ItemFlagsModule();
-                $ret .= '<tr class="small"><th class="text-right">Flags</th><td colspan="9">' . $flags->rowOfFlags($upc) . '</td></tr>';
+                $ret .= '<tr class="small"><th class="text-right">Flags</th><td colspan="9">' . $flags->formRow($upc) . '</td></tr>';
             }
             $ret .= '</table></div>';
             if (FannieConfig::config('STORE_MODE') != 'HQ') {
