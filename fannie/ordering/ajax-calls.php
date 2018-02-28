@@ -531,8 +531,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
       Otherwise if the item is completely unknown, just copy it
       from the old order to the new one.
     */
-    $prodP = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
-    $vendP = $dbc->prepare('SELECT upc FROM vendorItems WHERE upc=?');
+    $prodP = $dbc->prepare('SELECT upc FROM products WHERE upc=? AND upc <> \'0000000000000\'');
+    $vendP = $dbc->prepare('SELECT upc FROM vendorItems WHERE upc=? AND upc <> \'0000000000000\'');
     $itemP = $dbc->prepare('
         SELECT upc,
             ItemQtty,
