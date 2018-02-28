@@ -14,10 +14,68 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
     {
         $this->addRoute('post<id><vendorID>',
             'post<id><vendorID><sku>',
-            'post<id><multiVendor>'
+            'post<id><multiVendor>',
+            'get<id><store><export>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function get_id_store_export_handler()
+    {
+        $lcP = $this->connection->prepare('
+            SELECT l.likeCode
+            FROM LikeCodeActiveMap AS l
+                INNER JOIN upcLike AS u ON l.likeCode=u.likeCode
+                INNER JOIN products AS p ON u.upc=p.upc
+                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE l.storeID=?
+                AND m.superID=?
+                AND l.inUse=1
+            GROUP BY l.likeCode');
+        $likeCodes = $this->connection->getAllValues($lcP, array($this->store, $this->id));
+        list($inStr, $args) = $this->connection->safeInClause($likeCodes);
+        $query = "SELECT l.likeCode,
+                l.likeCodeDesc,
+                m.sku,
+                v.description,
+                m.vendorID,
+                v.cost,
+                v.vendorDept,
+                l.preferredVendorID,
+                v.units,
+                v.size,
+                l.sortRetail,
+                n.vendorName,
+                l.multiVendor
+            FROM likeCodes AS l
+                LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode AND m.vendorID=l.preferredVendorID
+                LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
+                LEFT JOIN vendors AS n ON l.preferredVendorID=n.vendorID
+            WHERE l.likeCode IN ({$inStr})
+            ORDER BY l.sortRetail, l.likeCodeDesc, l.likeCode, m.vendorID";
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, $args);
+
+        header("Content-type: text/csv");
+        header("Content-Disposition: attachment; filename=lc_skus_" . date('Y-m-d') . ".csv");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+        echo "LC,LC Description,Vendor,SKU,Item,Unit Cost,Unit Size,Case Size,OOS\r\n";
+        while ($row = $this->connection->fetchRow($res)) {
+            echo $row['likeCode'] . ",";
+            echo '"' . $row['likeCodeDesc'] . '",';
+            echo '"' . $row['vendorName'] . '",';
+            echo '"' . $row['sku'] . '",';
+            echo '"' . $row['description'] . '",';
+            echo $row['cost'] . ",";
+            echo '"' . $row['size'] . '",';
+            echo '"' . $row['units'] . '",';
+            echo ($row['vendorName'] != '' && $row['vendorDept'] != 999999) ? 'OOS' : '';
+            echo "\r\n";
+        }
+
+        return false;
     }
 
     protected function post_id_multiVendor_handler()
@@ -101,6 +159,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             28 => $this->getItems(28),
             136 => $this->getItems(136),
         );
+        $store = FormLib::get('store');
         $lcP = $this->connection->prepare('
             SELECT l.likeCode
             FROM LikeCodeActiveMap AS l
@@ -108,7 +167,6 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 INNER JOIN products AS p ON u.upc=p.upc
                 INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE l.storeID=?
-                AND l.inUse=1
                 AND m.superID=?
             GROUP BY l.likeCode');
         $sortFirst = 'sortRetail';
@@ -123,12 +181,13 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $sortFirst = 'sortInternal';
             $internalDisable = 'disabled';
         }
-        $lcR = $this->connection->execute($lcP, array(FormLib::get('store'), $this->id));
+        $lcR = $this->connection->execute($lcP, array($store, $this->id));
         $allCodes = array();
         while ($lcW = $this->connection->fetchRow($lcR)) {
             $allCodes[] = $lcW['likeCode'];
         }
-        list($inStr, $args) = $this->connection->safeInClause($allCodes);
+        $args = array($store);
+        list($inStr, $args) = $this->connection->safeInClause($allCodes, $args);
         $query = $this->connection->prepare("SELECT l.likeCode,
                 l.likeCodeDesc,
                 m.sku,
@@ -137,15 +196,18 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 v.cost,
                 v.vendorDept,
                 l.preferredVendorID,
+                a.inUse,
                 {$sortFirst},
                 multiVendor
             FROM likeCodes AS l
                 LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode
                 LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
+                LEFT JOIN LikeCodeActiveMap AS a ON l.likeCode=a.likeCode AND a.storeID=?
             WHERE l.likeCode IN ({$inStr})
             ORDER BY {$sortFirst}, l.likeCodeDesc, l.likeCode, m.vendorID");
         $res = $this->connection->execute($query, $args);
         $map = array();
+        $counts = array('act'=>0, 'inact'=>0);
         while ($row = $this->connection->fetchRow($res)) {
             $code = $row['likeCode'];
             if (!isset($map[$code])) {
@@ -155,7 +217,10 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                     'multi'=>$row['multiVendor'],
                     'vendorID'=>$row['preferredVendorID'],
                     'cat' => $row[$sortFirst],
+                    'inUse' => $row['inUse'],
                 );
+                $counts['act'] += ($row['inUse'] || $this->id == -1) ? 1 : 0;
+                $counts['inact'] += (!$row['inUse'] || $this->id != -1) ? 1 : 0;
             }
             if ($row['sku']) {
                 $map[$code]['skus'][$row['vendorID']] = $row;
@@ -183,7 +248,8 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 $category = $data['cat'];
             }
             $checkMulti = $data['multi'] ? 'checked' : '';
-            $tableBody .= "<tr><td class=\"rowLC\"><a href=\"LikeCodeEditor.php?start={$lc}\">{$lc}</a></td>
+            $inactiveClass = ($this->id != -1 && $data['inUse'] == 0) ? ' collapse inactiveRow warning' : '';
+            $tableBody .= "<tr class=\"{$inactiveClass}\"><td class=\"rowLC\"><a href=\"LikeCodeEditor.php?start={$lc}\">{$lc}</a></td>
                 <td><a href=\"LikeCodeEditor.php?start={$lc}\">{$data['name']}</a>
                 <input type=\"checkbox\" {$checkMulti} {$internalDisable} class=\"pull-right\" 
                 onchange=\"skuMap.setMulti({$lc}, this.checked);\"
@@ -217,7 +283,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $tableBody .= '</tr>';
         }
 
-        $this->addScript('skuMap.js?date=20180227');
+        $this->addScript('skuMap.js?date=20180228');
         foreach (array(25, 28, 136) as $vID) {
             $this->addOnloadCommand("skuMap.autocomplete('.sku-field$vID', $vID);");
             $this->addOnloadCommand("skuMap.unlink('.sku-field$vID', $vID);");
@@ -228,6 +294,10 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         $rdw = $this->connection->getValue($updateP, array(136));
 
         return <<<HTML
+<p><label><input type="checkbox" {$internalDisable} onchange="skuMap.toggleInact(this.checked);" /> Show inactive</label>
+(Active {$counts['act']}, Inactive {$counts['inact']})
+<a href="LikeCodeSKUsPage.php?id={$this->id}&store={$store}&export=1" class="btn btn-default" $internalDisable>Export</a>
+</p>
 <table class="table table-bordered table-striped small">
 <thead> 
     <tr>

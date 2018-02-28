@@ -84,6 +84,14 @@ var skuMap = (function ($) {
         });
     };
 
+    mod.toggleInact = function(show) {
+        if (show) {
+            $('tr.inactiveRow').show();
+        } else {
+            $('tr.inactiveRow').hide();
+        }
+    };
+
     return mod;
 
 }(jQuery));
