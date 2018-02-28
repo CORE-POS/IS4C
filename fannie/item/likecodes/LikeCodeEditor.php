@@ -115,6 +115,7 @@ function loadlc(id){
         $('.v-chosen').chosen();
         $('input.retailCat').autocomplete({source: resp.retail });
         $('input.internalCat').autocomplete({source: resp.internal });
+        $('#lcCategories').html(resp.similar);
     });
 }
         <?php
@@ -161,6 +162,7 @@ function loadlc(id){
                     Delete Selected LC</button>
             </p>
             </form>
+            <div id="lcCategories"></div>
             <hr />
             <ul>
                 <li><a href="LikeCodeActivity.php">Likecode Status & Activity</a></li>

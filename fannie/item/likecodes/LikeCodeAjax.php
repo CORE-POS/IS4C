@@ -46,6 +46,24 @@ class LikeCodeAjax extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    private function getOthersInSort($dbc, $sort, $lc)
+    {
+        if (empty(trim($sort))) {
+            return '';
+        }
+        $ret = "<p class=\"small\"><strong>{$sort}</strong><br />";
+        $prep = $dbc->prepare('SELECT likeCode, likeCodeDesc FROM likeCodes 
+            WHERE sortRetail=? AND likeCode <> ? ORDER BY likeCodeDesc');
+        $res = $dbc->execute($prep, array($sort, $lc));
+        while ($row = $dbc->fetchRow($res)) {
+            $ret .= sprintf('<a href="LikeCodeEditor.php?start=%d">%d %s</a><br />',
+                $row['likeCode'], $row['likeCode'], $row['likeCodeDesc']);
+        }
+        $ret .= '</p>';
+
+        return $ret;
+    }
+
     private function getSorts($dbc, $type)
     {
         $col = $type == 'retail' ? 'sortRetail' : 'sortInternal';
@@ -154,7 +172,8 @@ class LikeCodeAjax extends FannieRESTfulPage
 
         $retail = $this->getSorts($dbc, 'retail');
         $internal = $this->getSorts($dbc, 'internal');
-        $json = array('form'=>$preamble, 'retail'=>$retail, 'internal'=>$internal);
+        $others = $this->getOthersInSort($dbc, $likeCode->sortRetail(), $this->id);
+        $json = array('form'=>$preamble, 'retail'=>$retail, 'internal'=>$internal, 'similar'=>$others);
         echo json_encode($json);
 
         return false;
