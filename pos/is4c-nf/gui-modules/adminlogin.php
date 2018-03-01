@@ -153,7 +153,7 @@ class adminlogin extends NoInputCorePage
         <?php echo $this->heading ?>
         </span><br />
         <form name="form" id="formlocal" method="post" 
-            autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            autocomplete="off" action="<?php echo AutoLoader::ownURL(); ?>">
         <input type="password" id="userPassword" name="userPassword" tabindex="0" onblur="$('#userPassword').focus();" />
         <input type="hidden" name="reginput" id="reginput" value="" />
         <input type="hidden" name="class" value="<?php echo $this->form->tryGet('class'); ?>" />

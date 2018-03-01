@@ -130,7 +130,7 @@ class suspendedlist extends NoInputCorePage
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
             ."<form id=\"selectform\" method=\"post\" action=\""
-            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">\n"
+            .AutoLoader::ownURL() . "\">\n"
             ."<select name=\"selectlist\" size=\"15\" onblur=\"\$('#selectlist').focus();\"
                 id=\"selectlist\">";
 

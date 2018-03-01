@@ -365,7 +365,7 @@ class memlist extends NoInputCorePage
     {
         echo "<div class=\"baseHeight\">"
             ."<form id=\"selectform\" method=\"post\" action=\""
-            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">";
+            .AutoLoader::ownURL() . "\">";
 
         /* for no results or a problem found in preprocess, just throw up a re-do
          * otherwise, put results in a select box

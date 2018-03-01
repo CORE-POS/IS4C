@@ -81,7 +81,7 @@ class fsTotalConfirm extends NoInputCorePage
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">
         <span class="larger"><?php _('Customer is using the'); ?></span>
-        <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+        <form id="selectform" method="post" action="<?php echo AutoLoader::ownURL(); ?>">
 
         <?php $stem = MiscLib::baseURL() . 'graphics/'; ?>
         <?php if ($this->session->get('touchscreen')) { ?>

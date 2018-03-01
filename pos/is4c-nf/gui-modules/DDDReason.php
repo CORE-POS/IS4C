@@ -83,7 +83,7 @@ class DDDReason extends NoInputCorePage
         <div class="centeredDisplay colored">
                 <span class="larger"><?php echo _('Why are these items being marked as shrink/unsellable?'); ?></span>
         <form name="selectform" method="post" 
-            id="selectform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            id="selectform" action="<?php echo AutoLoader::ownURL(); ?>">
             <select name="selectlist" id="selectlist"
                 onblur="$('#selectlist').focus();">
             <?php

@@ -61,7 +61,7 @@ class PaidOutComment extends NoInputCorePage
         <div class="centeredDisplay colored">
         <span class="larger"><?php echo 'reason for paidout'; ?></span>
         <form name="selectform" method="post" 
-            id="selectform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            id="selectform" action="<?php echo AutoLoader::ownURL(); ?>">
         <?php
         if ($this->form->tryGet('selectlist') == 'Other') {
         ?>

@@ -131,7 +131,7 @@ class SigCapturePage extends BasicCorePage
 
     function body_content()
     {
-        $this->input_header("onsubmit=\"return sigCapture.submitWrapper();\" action=\"".filter_input(INPUT_SERVER, 'PHP_SELF')."\"");
+        $this->input_header("onsubmit=\"return sigCapture.submitWrapper();\" action=\"".AutoLoader::ownURL()."\"");
         echo DisplayLib::printheaderb();
         ?>
         <div class="baseHeight">

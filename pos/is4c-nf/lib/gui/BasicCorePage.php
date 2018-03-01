@@ -26,6 +26,7 @@ use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
+use \AutoLoader;
 
 use COREPOS\common\ui\CorePage;
 
@@ -161,7 +162,7 @@ class BasicCorePage extends CorePage
     protected function input_header($action='')
     {
         if (empty($action)) {
-            $action = "action=\"". filter_input(INPUT_SERVER, 'PHP_SELF') ."\"";
+            $action = "action=\"". AutoLoader::ownURL() ."\"";
         }
         $inputType = "text";
         if ($this->mask_input) {
