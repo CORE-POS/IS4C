@@ -181,7 +181,7 @@ class PriceCheckPage extends NoInputCorePage
         <?php echo $info ?>
         </span><br />
         <form name="form" id="formlocal" method="post" 
-            autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            autocomplete="off" action="<?php echo AutoLoader::ownURL(); ?>">
         <input type="text" name="reginput" tabindex="0" 
             onblur="$('#reginput').focus();" id="reginput" />
         <input type="hidden" name="upc" value="<?php echo $this->upc; ?>" />
