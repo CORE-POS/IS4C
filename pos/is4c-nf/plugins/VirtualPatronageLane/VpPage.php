@@ -90,7 +90,7 @@ class VpPage extends NoInputCorePage
         <div class="centeredDisplay colored rounded">
         <span class="larger"><?php echo $msg; ?></span>
         <form name="selectform" method="post" id="selectform"
-            action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            action="<?php echo AutoLoader::ownURL(); ?>">
         <?php if (CoreLocal::get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">
