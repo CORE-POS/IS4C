@@ -49,7 +49,7 @@ HTML;
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == 'index.php') {
+if (basename(AutoLoader::ownURL()) == 'index.php') {
     $session = new WrappedStorage();
     $form = new FormValueContainer();
     $page = new LoggingTester($session, $form);
