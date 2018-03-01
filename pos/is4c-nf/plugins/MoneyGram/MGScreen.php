@@ -102,7 +102,7 @@ class MGScreen extends NoInputCorePage
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">
         <span class="larger"><?php echo $msg; ?></span>
-        <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+        <form id="selectform" method="post" action="<?php echo AutoLoader::ownURL(); ?>">
 
         <?php if ($this->step == 0) { ?>
             <?php if ($this->session->get('touchscreen')) { ?>
