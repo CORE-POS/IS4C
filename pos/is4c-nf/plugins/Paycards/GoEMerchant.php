@@ -345,6 +345,7 @@ class GoEMerchant extends BasicCCModule
         $refNum = $this->refnum($transID);
         $this->last_ref_num = $refNum;
         $live = 1;
+        $this->conf->set('CacheCardType', 'CREDIT');
 
         $merchantID = $this->conf->get('GoEMerchID');
         $password = $this->conf->get('GoEMerchPassword');
