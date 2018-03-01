@@ -87,7 +87,7 @@ class PaycardTransListPage extends NoInputCorePage
         <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
-            action="<?php echo $_SERVER['PHP_SELF']; ?>" >
+            action="<?php echo AutoLoader::ownURL(); ?>" >
         <select name="selectlist" size="10" id="selectlist"
             onblur="$('#selectlist').focus()" >
         <?php

@@ -138,7 +138,7 @@ class PaycardEmvMenu extends NoInputCorePage
         <div class="centeredDisplay colored rounded">
         <span class="larger">process card transaction</span>
         <form name="selectform" method="post" id="selectform"
-            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            action="<?php echo AutoLoader::ownURL(); ?>">
         <input type="hidden" name="clear-to-home" value="<?php echo $this->clearToHome; ?>" />
         <?php if ($this->conf->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
