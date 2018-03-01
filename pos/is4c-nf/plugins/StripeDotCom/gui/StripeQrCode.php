@@ -49,7 +49,7 @@ if (!class_exists('\\Endroid\\QrCode\\QrCode')) {
     include(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode/QrCode.php');
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__) && FormLib::get('data') !== '') {
+if (basename(AutoLoader::ownURL()) == basename(__FILE__) && FormLib::get('data') !== '') {
     header('Content-Type: image/png');
     $data = base64_decode(FormLib::get('data'));
     $qr_code = new \Endroid\QrCode\QrCode();
