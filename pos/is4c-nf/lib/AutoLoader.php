@@ -340,8 +340,12 @@ class AutoLoader
             $form = new FormValueContainer();
             $page = basename($_SERVER['PHP_SELF']);
             $class = substr($page,0,strlen($page)-4);
+            $class = '';
             if (CoreLocal::get('CashierNo') !== '' && $class != 'index' && class_exists($class)) {
                 $page = new $class($session, $form);
+            } elseif ($class === '') {
+                trigger_error('Your environment is not populating PHP_SELF correctly.
+                    Details: ' . print_r($_SERVER, true), E_USER_ERROR);
             } elseif ($redirect) {
                 $url = MiscLib::baseURL();
                 header('Location: ' . $url . 'login.php');
