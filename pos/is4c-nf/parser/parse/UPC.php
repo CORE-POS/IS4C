@@ -363,7 +363,7 @@ class UPC extends Parser
         $row['foodstamp'] = $foodstamp;
         $row['discount'] = $discountable;
 
-        $this->enforceSaleLimit($dbc, $row, $quantity);
+        $row = $this->enforceSaleLimit($dbc, $row, $quantity);
 
         /*
             BEGIN: figure out discounts by type
