@@ -122,7 +122,7 @@ class VirtCoupDisplay extends NoInputCorePage
         $db = $this->db;
 
         echo "<div class=\"baseHeight\">"
-            ."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
+            ."<form id=\"selectform\" method=\"post\" action=\"" . AutoLoader::ownURL() . '">';
 
         /*  No results. Just enter or CL to cancel
          */
