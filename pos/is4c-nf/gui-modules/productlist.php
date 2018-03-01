@@ -213,7 +213,7 @@ class productlist extends NoInputCorePage
             <span class="larger">
             <?php echo $strmsg;?>
             </span>
-            <form action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" method="post" autocomplete="off">
+            <form action="<?php echo AutoLoader::ownURL(); ?>" method="post" autocomplete="off">
             <p>
             <input type="text" name="search" size="15" id="search"
                 onblur="$('#search').focus();" />
