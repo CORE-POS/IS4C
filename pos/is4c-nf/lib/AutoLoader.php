@@ -322,6 +322,22 @@ class AutoLoader
         closedir($dir);
     }
 
+    public static function ownURL()
+    {
+        if (isset($_SERVER['PHP_SELF']) && !empty($_SERVER['PHP_SELF'])) {
+            return $_SERVER['PHP_SELF'];
+        } elseif (isset($_SERVER['SCRIPT_NAME']) && !empty($_SERVER['SCRIPT_NAME'])) {
+            return $_SERVER['SCRIPT_NAME'];
+        } elseif (isset($_SERVER['DOCUMENT_URI']) && !empty($_SERVER['DOCUMENT_URI'])) {
+            return $_SERVER['DOCUMENT_URI'];
+        } elseif (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
+            $tmp = explode('?', $_SERVER['REQUEST_URI'], 2);
+            return $tmp[0];
+        }
+
+        throw new Exception("Can't find my own URL");
+    }
+
     /**
       Use a dedicated dispatch function to launch
       page classes.
@@ -338,7 +354,7 @@ class AutoLoader
         if (count($stack) == 1) {
             $session = new WrappedStorage();
             $form = new FormValueContainer();
-            $page = basename($_SERVER['PHP_SELF']);
+            $page = basename(self::ownURL());
             $class = substr($page,0,strlen($page)-4);
             if (CoreLocal::get('CashierNo') !== '' && $class != 'index' && class_exists($class)) {
                 $page = new $class($session, $form);
