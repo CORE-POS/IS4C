@@ -129,7 +129,7 @@ class QKDisplay extends NoInputCorePage
         $this->add_onload_command("setSelected(7);");
 
         echo "<div class=\"baseHeight\">";
-        echo "<form action=\"" . filter_input(INPUT_SERVER,"PHP_SELF") ."\" method=\"post\">";
+        echo "<form action=\"" . AutoLoader::ownURL() ."\" method=\"post\">";
 
         $launcher = new QuickKeyLauncher($this->session);
         $my_keys = $launcher->getKeys(CoreLocal::get('qkNumber'));
