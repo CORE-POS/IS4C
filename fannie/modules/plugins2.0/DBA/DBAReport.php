@@ -43,7 +43,8 @@ class DBAReport extends FannieReportPage
             $record = array();
             foreach ($cols as $c) {
                 if (is_numeric($c)) continue;
-                $record[] = $row[$c];
+                //$record[] = $row[$c];
+                $record[] = (!is_null($row[$c])) ? $row[$c] : '';
                 if ($first) {
                     $this->report_headers[] = $c;
                 }
