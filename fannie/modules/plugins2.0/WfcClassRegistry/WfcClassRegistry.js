@@ -121,7 +121,7 @@ function checkSoldOut()
     $('#first_name').change(function(){
         $.ajax({
             type: 'post',
-            url: alertRegFull.php,
+            url: 'noauto/alertRegFull.php',
             dataType: 'json',
             data: 'upc='+$('#upc').val(),
             success: function(resp) {}

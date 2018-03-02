@@ -42,7 +42,7 @@ class WfcClassRegistryPage extends FanniePage
 
     public function preprocess()
     {
-        $this->addScript('WfcClassRegistry.js');
+        $this->addScript('WfcClassRegistry.js?date=20180302');
         if (FormLib::get('process', false) !== false) {
             $this->credits_save_handler();
         } elseif (FormLib::get('notify', false) !== false) {
