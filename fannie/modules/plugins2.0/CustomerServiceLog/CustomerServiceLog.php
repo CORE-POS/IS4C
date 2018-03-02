@@ -274,7 +274,7 @@ HTML;
         }
 
 
-        if ($er = $dbc->error) echo '<div class="alert alert-danger">'.$er.'</div>';
+        if ($er = $dbc->error()) echo '<div class="alert alert-danger">'.$er.'</div>';
         $identify = ($mode == 'new') ? ': Pending/Current | <i><a href="CustomerServiceLog.php?old=1">See Old</i></a>'
             : ': Completed/Old | <i><a href="CustomerServiceLog.php">See Current</i></a>';
         $tclass = ($mode == 'new') ? '' : 'old-table';
