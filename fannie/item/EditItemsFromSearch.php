@@ -291,6 +291,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $taxes = $this->getTaxes($dbc);
         $depts = $this->getDepts($dbc);
 
+        if (!is_array($this->u)) {
+            $this->u = array();
+        }
         $hidden = implode("\n", array_map(function ($i) { return '<input name="u[]" type="hidden" value="' .$i . '" />'; }, $this->u)); 
         $ret .= <<<HTML
 <form action="EditFieldFromSearch.php" method="post">
