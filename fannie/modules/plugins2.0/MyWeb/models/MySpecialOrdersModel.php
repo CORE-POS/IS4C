@@ -86,7 +86,7 @@ class MySpecialOrdersModel extends BasicModel
         $num = $this->connection->numRows($res);
         $count = 1;
         while ($row = $this->connection->fetchRow($res)) {
-            echo "$count/$num\r";
+            //echo "$count/$num\r";
             $this->reset();
             $this->customerID($row['card_no']);
             list($tdate,) = explode(' ', $row['datetime'], 2);
@@ -111,7 +111,7 @@ class MySpecialOrdersModel extends BasicModel
             $this->save();
             $count++;
         }
-        echo "\n";
+        //echo "\n";
         $this->connection->commitTransaction();
 
         $query = "SELECT o.quantity,
@@ -139,7 +139,7 @@ class MySpecialOrdersModel extends BasicModel
         $num = $this->connection->numRows($res);
         $count = 1;
         while ($row = $this->connection->fetchRow($res)) {
-            echo "$count/$num\r";
+            //echo "$count/$num\r";
             $this->reset();
             $this->customerID($row['card_no']);
             list($tdate,) = explode(' ', $row['datetime'], 2);
@@ -172,7 +172,7 @@ class MySpecialOrdersModel extends BasicModel
             $this->save();
             $count++;
         }
-        echo "\n";
+        //echo "\n";
         $this->connection->commitTransaction();
     }
 }

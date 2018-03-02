@@ -127,7 +127,7 @@ class MyStatsModel extends BasicModel
         $owners = array();
         $this->connection->startTransaction();
         while ($memW = $this->connection->fetchRow($memR)) {
-            echo "$count/$num\r";
+            //echo "$count/$num\r";
             $owners[] = $memW['card_no'];
             $apples = $this->connection->getValue($appleP, array_merge($appleArgs, array($memW['card_no'])));
             $oranges = $this->connection->getValue($orangeP, array_merge($orangeArgs, array($memW['card_no'])));
@@ -179,11 +179,11 @@ class MyStatsModel extends BasicModel
 
             $count++;
         }
-        echo "\n";
+        //echo "\n";
         $this->connection->commitTransaction();
 
         $maxes['coffee'] = array_sum($maxes['coffee']) / 5;
-        echo "Coffee max: {$maxes['coffee']}\n";
+        //echo "Coffee max: {$maxes['coffee']}\n";
         if ($maxes['coffee'] > 0) {
             $this->connection->startTransaction();
             $upP = $this->connection->prepare("UPDATE {$mydb}MyStats SET stat=? WHERE myStatID=?");
@@ -196,7 +196,7 @@ class MyStatsModel extends BasicModel
             $this->connection->commitTransaction();
         }
         $maxes['bacon'] = array_sum($maxes['bacon']) / 5;
-        echo "Bacon max: {$maxes['bacon']}\n";
+        //echo "Bacon max: {$maxes['bacon']}\n";
         if ($maxes['bacon'] > 0) {
             $this->connection->startTransaction();
             $upP = $this->connection->prepare("UPDATE {$mydb}MyStats SET stat=? WHERE myStatID=?");

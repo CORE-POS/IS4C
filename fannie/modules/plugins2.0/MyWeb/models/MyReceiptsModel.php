@@ -58,7 +58,7 @@ class MyReceiptsModel extends BasicModel
         if (!$maxDate) {
             $maxDate = date('Y-m-d', strtotime('90 days ago'));
         }
-        echo "$maxDate\n";
+        //echo "$maxDate\n";
 
         $insP = $this->connection->prepare("INSERT INTO {$mydb}MyReceipts
             (customerID, posReceiptID, description, quantity, price, tdate, seqID)
@@ -90,7 +90,7 @@ class MyReceiptsModel extends BasicModel
         $num = $this->connection->numRows($memR);
         $count = 1;
         while ($memW = $this->connection->fetchRow($memR)) {
-            echo "$count/$num\r";
+            //echo "$count/$num\r";
             $limiter = array();
             $res = $this->connection->execute($prep, array($memW['card_no'], $maxDate));
             while ($row = $this->connection->fetchRow($res)) {
@@ -117,7 +117,7 @@ class MyReceiptsModel extends BasicModel
             }
             $count++;
         }
-        echo "\n";
+        //echo "\n";
         $this->connection->commitTransaction();
     }
 
