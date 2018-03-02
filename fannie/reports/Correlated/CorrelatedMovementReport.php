@@ -51,6 +51,7 @@ class CorrelatedMovementReport extends FannieReportPage
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
         $filters = FormLib::get('filters', array());
+        $store = FormLib::get('store');
 
         list($dClause, $dArgs) = $dbc->safeInClause($depts);
         $where = "d.department IN ($dClause)";
@@ -61,6 +62,9 @@ class CorrelatedMovementReport extends FannieReportPage
             $inv = "d.upc <> ?";
             $dArgs = array($upc);
         }
+        $where .= ' AND ' . DTrans::isStoreID($store, 'd');
+        $inv .= ' AND ' . DTrans::isStoreID($store, 'd');
+        $dArgs[] = $store;
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
@@ -190,6 +194,7 @@ class CorrelatedMovementReport extends FannieReportPage
             $dOpts .= sprintf('<option value="%d">%d %s</option>', $row[0], $row[0], $row[1]);
         }
         $dates = FormLib::dateRangePicker();
+        $stores = FormLib::storePicker();
 
         return <<<HTML
 <form action="CorrelatedMovementReport.php" method="get">
@@ -221,6 +226,10 @@ class CorrelatedMovementReport extends FannieReportPage
         <input type="text" id="date1" name="date1" class="form-control date-field" />
         <label class="control-label">End date</label>
         <input type="text" id="date2" name="date2" class="form-control date-field" />
+        <div class="form-group">
+            <label>Store</label>
+            {$stores['html']}
+        </div>
     </div>
 </div>
 <hr />
