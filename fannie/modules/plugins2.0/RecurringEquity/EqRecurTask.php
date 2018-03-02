@@ -266,6 +266,8 @@ class EqRecurTask extends FannieTask
             SELECT *
             FROM PaycardTransactions
             WHERE dateID=?
+                AND empNo <> 9999
+                AND registerNo <> 99
                 AND transType LIKE 'R.%'
                 AND xToken IS NOT NULL
                 AND xToken <> ''
