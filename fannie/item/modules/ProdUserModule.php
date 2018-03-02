@@ -241,7 +241,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
                 $dbc->execute($delP, array($oldFloorIDs[$i], $upc));
             } elseif (isset($oldFloorIDs[$i]) && $newID != $oldFloorIDs[$i]) {
                 $dbc->execute($upP, array($newID, $oldFloorIDs[$i], $upc));
-            } else {
+            } elseif ($newID != 0 && (!isset($oldFloorIDs[$i]) || $newID != $oldFloorIDs[$i])) {
                 $dbc->execute($insP, array($newID, $upc));
             }
         }
