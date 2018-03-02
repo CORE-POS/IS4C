@@ -52,7 +52,9 @@ $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 $narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
-$locationP = $dbc->prepare('SELECT name FROM FloorSectionProductMap WHERE upc=? AND store_id = 1');
+$locationP = $dbc->prepare('SELECT s.name FROM FloorSectionProductMap AS m
+    INNER JOIN FloorSections AS s ON m.floorSectionID=s.floorSectionID 
+    WHERE m.upc=? AND s.storeID = 1');
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 $mtP = $dbc->prepare('SELECT p.auto_par
     FROM MovementTags AS m
