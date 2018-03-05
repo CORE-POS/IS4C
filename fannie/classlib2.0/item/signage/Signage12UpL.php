@@ -80,6 +80,11 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 20, strtoupper($datestr), 0, 1, 'R');
         }
 
+        // suppress "regular" price on price change batches
+        if (isset($item['discountType']) && $item['discountType'] == 0) {
+            $item['nonSalePrice'] = $item['normal_price'];
+        }
+
         if ($item['originShortName'] != '' || (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price'])) {
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 35.5));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);

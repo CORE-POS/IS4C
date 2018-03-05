@@ -337,6 +337,7 @@ class FannieSignage
                     o.shortName AS originShortName,
                     p.unitofmeasure,
                     b.batchName,
+                    b.discountType,
                     b.batchType
                  FROM batchList AS l
                     ' . DTrans::joinProducts('l', 'p', 'LEFT') . '
