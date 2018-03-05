@@ -57,6 +57,9 @@ static public function printReport($class=false){
 static public function get($session)
 {
     $trClass = $session->get("TenderReportMod");
+    if ($trClass !== '' && strpos($trClass, '\\') === false && !class_exists($trClass)) {
+        $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\' . $trClass;
+    }
     if ($trClass == '' || !class_exists($trClass)) {
         $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\DefaultTenderReport';
     }
