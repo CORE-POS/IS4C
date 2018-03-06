@@ -339,6 +339,25 @@ HTML;
 </form>
 HTML;
     }
+
+    public function helpContent()
+    {
+        return <<<HTML
+<p>Select a super department and store to get started. <strong>Internal Use</strong> is a special
+category for non-retail purchases</p>.
+<p>The list shows each like code and associated items from each vendor. By default only active like
+codes are displayed but the toggle at the top of the list will show inactive like codes, too. Inactive
+rows are shaded yellow. Within the vendor columns a green highlight indicates the best current price.
+A red highlight indicates the item was unavailable as of the most recent price file. The date of the
+most recent price file update is listed at the top of the table in parenthesis after each vendor.</p>
+<p>To add or alter an associated vendor item, just start typing and any matching items will appear.
+The cost listed here is a unit cost - either per pound or per package. The button next to the cost
+will set the preferred vendor for a given like code. A vendor can only be selected as preferred if
+it has an item associated with the like code and that item is in stock. The checkbox in the like
+code description's column enables or disables blended cost calculations.</p>
+</p>
+HTML;
+    }
 }
 
 FannieDispatch::conditionalExec();
