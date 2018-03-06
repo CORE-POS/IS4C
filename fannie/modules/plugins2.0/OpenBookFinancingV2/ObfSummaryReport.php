@@ -610,7 +610,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                 $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0);
             }
             $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $total_sales->quarterProjected / $c->salesPerLaborHourTarget();
+            $qt_proj_hours = $c->salesPerLaborHourTarget() == 0 ? 0 : $total_sales->quarterProjected / $c->salesPerLaborHourTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
@@ -625,8 +625,8 @@ class ObfSummaryReport extends ObfWeeklyReportV2
             $data[] = array(
                 'Admin SPLH',
                 '',
-                sprintf('%.2f', $org['projSales'] / $proj_hours),
-                sprintf('%.2f', $org['trendSales'] / $proj_hours),
+                sprintf('%.2f', $proj_hours == 0 ? 0 : $org['projSales'] / $proj_hours),
+                sprintf('%.2f', $proj_hours == 0 ? 0 : $org['trendSales'] / $proj_hours),
                 '',
                 number_format($labor->hours() == 0 ? 0 : ($org['sales']) / $labor->hours(), 2),
                 '',
