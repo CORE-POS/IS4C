@@ -243,6 +243,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         }
 
         $year = date('Y');
+        if (!isset($months[$this->session->month])) {
+            $months[$this->session->month] = date('m');
+        }
         $checkMoStart = $year . '-' .$months[$this->session->month] . '-01 00:00:00';
         $checkMoEnd = $year . '-' .$months[$this->session->month] . '-31 00:00:00';
 
@@ -394,7 +397,7 @@ HTML;
 
     private function navBtns()
     {
-        $ret .= '';
+        $ret = '';
         $ret .= '
             <br />
             <ul>
