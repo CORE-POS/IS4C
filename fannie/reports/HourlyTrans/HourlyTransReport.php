@@ -87,8 +87,10 @@ class HourlyTransReport extends FannieReportPage
     {
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
-        $diff = abs(strtotime($date2) - strtotime($date1));
-        $days = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24));
+        $temp1 = new DateTime($date1);
+        $temp2 = new DateTime($date2);
+        $diff = $temp1->diff($temp2, true);
+        $days = $diff->format('%a');
 
         $formContents = array('buyer','deptStart','deptEnd','store','other_dates','submit');
         foreach ($formContents as $input) {
@@ -119,10 +121,11 @@ class HourlyTransReport extends FannieReportPage
                 $newDate1 = $temp1->format('Y-m-d');
                 $newDate2 = $temp2->format('Y-m-d');
             } else {
+                // assumes we're probably looking at a month
                 $temp1->modify($row['action'].'1 Month');
-                $temp2->modify($row['action'].'1 Month');
+                $temp2->modify($row['action'].'31 Days');
                 $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-t');
             }
             ${'form'.$k} = '<form method="get" style="display: inline-block;">';
             foreach ($formContents as $input) {
