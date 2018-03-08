@@ -36,11 +36,18 @@ class StripeDotCom extends Plugin
             'description'=>'stripe.com test API public key'),
     'StripeBitCoinTender' => array('default'=>'BC','label'=>'Tender Code',
             'description'=>'Two-letter tender code for bitcoin payments.'),
+    'StripeChargeName' => array('default'=>'CORE-POS','label'=>'Charge Name',
+            'description'=>'The description that is attached to Stripe charges'),
     'StripeCurrency' => array('default'=>'USD',
             'options'=>array('US Dollars'=>'USD','Euros'=>'EUR','Bitcoin'=>'BTC')
         )
     );
 
     public $plugin_description = 'Plugin for accepting payments via stripe.com';
+
+    public function plugin_transaction_reset()
+    {
+        CoreLocal::set('StripeMode', 'Bitcoin');
+    }
 }
 
