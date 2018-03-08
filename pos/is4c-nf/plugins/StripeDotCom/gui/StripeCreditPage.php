@@ -25,14 +25,21 @@
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class StripeCreditPage extends NoInputCorePage 
 {
-    private $payment_id;
-    private $payment_url;
-    private $payment_amount;
+    /**
+     * If the charge was successful, we need to print a signature slip
+     * to faciliate that the page is drawn again but visually blank.
+     * In the background an ajax request prints the signature slip before
+     * redirecting the browser back to the main screen
+     */
+    private $done = false;
 
     private function getCurlHandle($url, $postdata)
     {
@@ -116,27 +123,31 @@ class StripeCreditPage extends NoInputCorePage
                     dateID, empNo, registerNo, transNo, transID, processor, refNum,
                     live, cardType, transType, amount, PAN, issuer, name, manual,
                     requestDatetime, responseDatetime, seconds, commErr, httpCode,
-                    validResponse, xResultCode, xApprovalNumber, xResponseCode
-                ) VALUES ?
+                    validResponse, xResultCode, xApprovalNumber, xResponseCode, xResultMessage
+                ) VALUES (
                     ?, ?, ?, ?, ?, 'Stripe', ?,
                     ?, 'Credit', ?, ?, ?, ?, 'Cardholder', 0,
                     ?, ?, ?, ?, ?,
-                    1, ?, ?, ?
+                    1, ?, ?, ?, ?
                 )");
             $args = array(
                 date('Ymd'), CoreLocal::get('CashierNo'), CoreLocal::get('laneno'),
                 CoreLocal::get('transno'), CoreLocal::get('LastID')+1, $appr,
-                $live, $transType, $amount, $pan, $issuer,
+                $live, $transType, $amt, $pan, $issuer,
                 $reqDT, $respDT, $seconds, (is_array($result) ? 0 : 1), $http,
-                $resultCode, $appr, $responseCode,
+                $resultCode, substr($appr, 0, 20), $responseCode, $resultMsg,
             );
             $dbc->execute($insP, $args);
             $ptID = $dbc->insertID();
             if ($result['paid']) {
-                TransRecord::addFlaggedTender('Credit Card', 'CC', -1*$amount, $ptID, 'PT');
-            }
-            $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php?reginput=TO&repeat=1");
+                TransRecord::addFlaggedTender('Credit Card', 'CC', -1*$amt, $ptID, 'PT');
+                $this->done = true;
+                $this->addOnloadCommand("sigAndHome();");
+                return true;
+            } 
 
+            CoreLocal::set('boxMsg', _('Payment failed') . '<br />' . $resultMsg);
+            $this->change_page(MiscLib::baseURL()."gui-modules/boxMsg2.php");
             return false;
         }
 
@@ -235,8 +246,11 @@ function initStripe() {
         });
     });
 
+    $(document).keyup(function (ev) {
+        console.log(ev.which);
+    });
+
     card.on('ready', function() {
-        console.log('set focus');
         card.focus();
     });
 }
@@ -244,25 +258,38 @@ function stripeTokenHandler(token) {
     $('#token-field').val(JSON.stringify(token));
     $('#token-form').submit();
 }
+function sigAndHome() {
+    $.ajax({url: '../../../ajax/AjaxEnd.php',
+        cache: false,
+        type: 'post',
+        data: 'receiptType='+$('#rp_type').val()+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>'
+    }).always(function(data) {
+        window.location = '../../../gui-modules/pos2.php?reginput=TO&repeat=1';
+    });
+}
 </script>
         <?php
     }
 
     function body_content()
     {
+        if ($this->done) {
+            echo '<div class="baseHeight">Finishing payment</div>';
+            return;
+        }
         $amt = FormLib::get('amount');
         echo <<<HTML
 <div class="baseHeight">
     <form action="StripeCreditPage.php" method="post" id="payment-form">
-        <div class="form-row">
-            <label for="card-element">Credit or debit card</label>
+        <div class="form-row centeredDisplay">
+            <label for="card-element" class="coloredArea rounded" style="margin: 5px; padding: 5px;">Enter credit or debit card</label>
             <div id="card-element">
             <!-- A Stripe Element will be inserted here. -->
             </div>
             <!-- Used to display form errors. -->
             <div id="card-errors" role="alert"></div>
         </div>
-        <button>Submit Payment</button>
+        <!--<button>Submit Payment</button>-->
     </form>
     <form action="StripeCreditPage.php" method="post" id="token-form">
         <input type="hidden" name="token" id="token-field" value="" />
