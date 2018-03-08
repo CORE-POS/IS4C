@@ -173,6 +173,9 @@ class ProdLocationEditor extends FannieRESTfulPage
             $ret .= '<div class="alert alert-success">Update Successful</div>';
         }
 
+        $cache = new FloorSectionsListTable($dbc);
+        $cache->refresh();
+
         $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
 
