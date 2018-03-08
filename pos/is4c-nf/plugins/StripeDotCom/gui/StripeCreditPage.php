@@ -23,6 +23,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
@@ -57,7 +58,6 @@ class StripeCreditPage extends NoInputCorePage
             . '&currency=' . CoreLocal::get('StripeCurrency')
             . '&description=' . urlencode(CoreLocal::get('StripeChargeName'))
             . '&source=' . $token;
-        var_dump(htmlentities($postdata));
         $curl_handle = $this->getCurlHandle('https://api.stripe.com/v1/charges', $postdata);
 
         return $this->curlExec($curl_handle);
@@ -68,9 +68,7 @@ class StripeCreditPage extends NoInputCorePage
         $response = curl_exec($curl_handle);
         $errNo = curl_errno($curl_handle);
         $status = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
-        var_dump($response);
-        var_dump($errNo);
-        var_dump($status);
+        $time = curl_getinfo($curl_handle, CURLINFO_TOTAL_TIME);
 
         if ($response === false) {
             return false;
@@ -79,6 +77,8 @@ class StripeCreditPage extends NoInputCorePage
             return false;
         }
         $json = json_decode($response, true);
+        $json['http'] = $status;
+        $json['seconds'] = $time;
 
         return is_array($json) ? $json : false;
     }
@@ -88,7 +88,54 @@ class StripeCreditPage extends NoInputCorePage
         if (FormLib::get('token', false)) {
             $token = json_decode(FormLib::get('token'), true);
             $amt = FormLib::get('amount');
+            $reqDT = date('Y-m-d H:i:s');
             $result = $this->createCharge($amt, $token['id']);
+            $respDT = date('Y-m-d H:i:s');
+
+            $issuer = $token['card']['brand'];
+            $pan = str_repeat('*', 12) . $token['card']['last4'];
+            $transType = $amt > 0 ? 'Sale' : 'Refund';
+            $live = CoreLocal::get('training') ? 0 : 1;
+            $responseCode = 0;
+            $resultCode = 0;
+            $resultMsg = 'Error';
+            $appr = '';
+            $seconds = is_array($result) ? $result['seconds'] : 0;
+            $http = is_array($result) ? $result['http'] : 0;
+            if ($result['paid']) {
+                $responseCode = 1;
+                $resultCode = 1;
+                $resultMsg = 'Approved';
+                $appr = $result['id'];
+            } elseif (is_array($result)) {
+                $resultMsg = substr($result['failure_message'], 0, 100);
+                $responseCode = $result['failure_code'];
+            }
+            $dbc = Database::tDataConnect();
+            $insP = $dbc->prepare("INSERT INTO PaycardTransactions (
+                    dateID, empNo, registerNo, transNo, transID, processor, refNum,
+                    live, cardType, transType, amount, PAN, issuer, name, manual,
+                    requestDatetime, responseDatetime, seconds, commErr, httpCode,
+                    validResponse, xResultCode, xApprovalNumber, xResponseCode
+                ) VALUES ?
+                    ?, ?, ?, ?, ?, 'Stripe', ?,
+                    ?, 'Credit', ?, ?, ?, ?, 'Cardholder', 0,
+                    ?, ?, ?, ?, ?,
+                    1, ?, ?, ?
+                )");
+            $args = array(
+                date('Ymd'), CoreLocal::get('CashierNo'), CoreLocal::get('laneno'),
+                CoreLocal::get('transno'), CoreLocal::get('LastID')+1, $appr,
+                $live, $transType, $amount, $pan, $issuer,
+                $reqDT, $respDT, $seconds, (is_array($result) ? 0 : 1), $http,
+                $resultCode, $appr, $responseCode,
+            );
+            $dbc->execute($insP, $args);
+            $ptID = $dbc->insertID();
+            if ($result['paid']) {
+                TransRecord::addFlaggedTender('Credit Card', 'CC', -1*$amount, $ptID, 'PT');
+            }
+            $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php?reginput=TO&repeat=1");
 
             return false;
         }
@@ -160,7 +207,6 @@ function initStripe() {
 
     // Add an instance of the card Element into the `card-element` <div>.
     card.mount('#card-element');
-    card.focus();
 
     // Handle real-time validation errors from the card Element.
     card.addEventListener('change', function(event) {
@@ -187,6 +233,11 @@ function initStripe() {
                 stripeTokenHandler(result.token);
             }
         });
+    });
+
+    card.on('ready', function() {
+        console.log('set focus');
+        card.focus();
     });
 }
 function stripeTokenHandler(token) {
