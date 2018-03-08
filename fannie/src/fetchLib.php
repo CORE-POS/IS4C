@@ -14,7 +14,7 @@ function getFailedTrans($dateStr,$hour){
         dateID=?
         AND ".$sql->hour('requestDatetime')."=?
         AND httpCode <> 200
-        AND (refNum like '%-%' OR refNum='')");
+        AND (refNum like '%-%')");
     $dateStr = date('Ymd', strtotime($dateStr));
     $response = $sql->execute($query,array($dateStr,$hour));
     while($row = $sql->fetch_row($response))
