@@ -138,7 +138,7 @@ class PaycardEmvBatch extends PaycardProcessPage
     {
         $url = MiscLib::baseURL();
         echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
-        echo '<script type="text/javascript" src="../js/emv.js"></script>';
+        echo '<script type="text/javascript" src="../js/emv.js?date=20180308"></script>';
         if (!$this->runTransaction) {
             return '';
         }

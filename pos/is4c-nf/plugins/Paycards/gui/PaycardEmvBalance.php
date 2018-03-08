@@ -67,7 +67,7 @@ class PaycardEmvBalance extends PaycardProcessPage
         }
         $e2e = new MercuryDC();
         ?>
-<script type="text/javascript" src="../js/emv.js"></script>
+<script type="text/javascript" src="../js/emv.js?date=20180308"></script>
 <script type="text/javascript">
 function emvSubmit() {
     $('div.baseHeight').html('Processing transaction');
