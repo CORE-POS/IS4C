@@ -226,6 +226,17 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
+    private function getCurrentBatches($dbc)
+    {
+        $res = $dbc->query('SELECT batchID FROM batches WHERE ' . $dbc->curdate() . ' BETWEEN startDate AND endDate');
+        $ret = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[] = $row['batchID'];
+        }
+
+        return $ret;
+    }
+
     function get_start_view()
     {
         global $FANNIE_OP_DB;
@@ -236,6 +247,13 @@ class ProdLocationEditor extends FannieRESTfulPage
         $end = FormLib::get('end');
         $store_id = FormLib::get('store_id');
         $args = array($start, $end, $store_id);
+        $where = 'b.batchID BETWEEN ? AND ?';
+        if ($start == 'CURRENT' && $end == 'CURRENT') {
+            $batches = $this->getCurrentBatches($dbc);
+            list($inStr, $args) = $dbc->safeInClause($batches);
+            $args[] = $store_id;
+            $where = "b.batchID IN ({$inStr})";
+        }
 
             $query = $dbc->prepare('
                 select
@@ -251,8 +269,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     left join batches as b on b.batchID=bl.batchID
                     left join productUser as pu on pu.upc=p.upc
                     left join departments as d on d.dept_no=p.department
-                where b.batchID >= ?
-                    and b.batchID <= ?
+                where ' . $where . '
                     and p.store_id= ?
                     and (pp.floorSectionID is NULL OR pp.floorSectionID=0)
                     AND department NOT BETWEEN 508 AND 998
@@ -544,6 +561,10 @@ class ProdLocationEditor extends FannieRESTfulPage
                 <input type="hidden" name="store_id" value="1" required>
 
                 <input type="submit" class="btn btn-default" value="Find item locations">
+
+                <button type="submit" class="btn btn-default"
+                    onclick="$(\'input.inline\').val(\'CURRENT\');">Current Batches</button>
+
             </form><br>
             <a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>
         ';
