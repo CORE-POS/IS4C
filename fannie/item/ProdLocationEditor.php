@@ -156,15 +156,16 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret = '';
         $item = array();
         foreach ($_POST as $upc => $section) {
+            if (!is_numeric($upc)) continue;
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
             if ($section > 0) $item[$upc] = $section;
         }
 
+        $prep = $dbc->prepare('
+            INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
+        ');
         foreach ($item as $upc => $section) {
             $args = array($upc, $section );
-            $prep = $dbc->prepare('
-                INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
-            ');
             $dbc->execute($prep, $args);
         }
         if (mysql_errno() > 0) {
