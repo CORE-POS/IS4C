@@ -1,7 +1,7 @@
 <?php
 
 if (!class_exists('FoodDudesUnofficial\\Client')) {
-    include(__DIR__ . '/FoodDudesUnofficial/src/Client.php');
+    include(__DIR__ . '/noauto/FoodDudesUnofficial/src/Client.php');
 }
 
 class FdTask extends FannieTask
