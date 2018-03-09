@@ -964,7 +964,7 @@ HTML;
                 $ret .= '<td class="disc-percent" id="discPercent'.$row['trans_id'].'">Sale</td>';
             } else if ($row['regPrice'] != $row['total']) {
                 $ret .= sprintf('<td class="disc-percent" id="discPercent%d">%d%%</td>',$row['upc'],
-                    round(100*(($row['regPrice']-$row['total'])/$row['regPrice'])));
+                    $row['regPrice'] == 0 ? 0 : round(100*(($row['regPrice']-$row['total'])/$row['regPrice'])));
             } else {
                 $ret .= '<td class="disc-percent" id="discPercent'.$row['upc'].'">0%</td>';
             }
