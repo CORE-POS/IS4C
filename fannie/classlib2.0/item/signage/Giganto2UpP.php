@@ -103,7 +103,7 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             }
             if ($item['originShortName'] != '') {
-                $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+                $pdf->SetXY($this->left + ($this->width), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $lower = trim(strtolower($item['originShortName']));
                 if (substr($lower, 0, 10) !== 'product of') {
