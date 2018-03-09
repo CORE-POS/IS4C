@@ -194,6 +194,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
             $ret .= '<ul style="color:green;"><li>Saved!</li></ul>';
         }
 
+        $this->u = $this->upcs;
         return $ret . $this->post_u_view();
     }
 
@@ -291,7 +292,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $taxes = $this->getTaxes($dbc);
         $depts = $this->getDepts($dbc);
 
-        if (!is_array($this->u)) {
+        if (!isset($this->u) || !is_array($this->u)) {
             $this->u = array();
         }
         $hidden = implode("\n", array_map(function ($i) { return '<input name="u[]" type="hidden" value="' .$i . '" />'; }, $this->u)); 
