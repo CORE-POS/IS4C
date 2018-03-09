@@ -501,7 +501,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
                         ';
         foreach ($floor_section as $fs_key => $fs_value) {
-            if ($fs_key == $item[$key]['sugDept']) {
+            if (isset($item[$key]) && $fs_key == $item[$key]['sugDept']) {
                 $ret .= '<option value="' . $fs_key . '" name="' . $key . '" selected>' . $fs_value . '</option>';
             } else {
                 $ret .= '<option value="' . $fs_key . '" name="' . $key . '">' . $fs_value . '</option>';
