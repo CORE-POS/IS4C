@@ -677,7 +677,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0);
             }
             $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = $total_sales->quarterProjected / $c->salesPerLaborHourTarget();
+            $qt_proj_hours = $c->salesPerLaborHourTarget() == 0 ? 0 : $total_sales->quarterProjected / $c->salesPerLaborHourTarget();
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
@@ -707,13 +707,13 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $data[] = array(
                 'Sales per Hour',
                 '',
-                sprintf('%.2f', ($total_sales->projected+$otherStore['plan']) / $proj_hours),
+                sprintf('%.2f', $proj_hours == 0 ? 0 : ($total_sales->projected+$otherStore['plan']) / $proj_hours),
                 '',
                 '',//sprintf('%.2f', $total_sales->trend / $trend_hours),
                 number_format($labor->hours() == 0 ? 0 : ($total_sales->thisYear+$otherStore['actual']) / $labor->hours(), 2),
                 '',
                 '',
-                number_format(($labor->hours() == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
+                number_format(($labor->hours() == 0 || $proj_hours == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
                 '',//number_format($quarter_actual_sph - $quarter_proj_sph, 2),
                 'meta' => FannieReportPage::META_COLOR,
                 'meta_background' => $this->colors[0],
