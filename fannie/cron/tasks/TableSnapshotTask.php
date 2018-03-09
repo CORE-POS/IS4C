@@ -84,7 +84,7 @@ class TableSnapshotTask extends FannieTask
         }
 
         try {
-            $model = new FloorSectionsListTable($sql);
+            $model = new FloorSectionsListTableModel($sql);
             $model->refresh();
         } catch (Exception $ex) {
             $this->cronMsg("Could not repopulate FloorSectionsListTable. Details: " . $ex->getMessage(),
