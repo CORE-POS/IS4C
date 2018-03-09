@@ -498,14 +498,11 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <div class="input-group">
                         <span class="input-group-addon">Change All</span>
                             <select class="form-control input-sm" onchange="updateAll(this.value, \'.locationSelect\');">
+                                <option value="">Select one...</option>
 
                         ';
         foreach ($floor_section as $fs_key => $fs_value) {
-            if (isset($item[$key]) && $fs_key == $item[$key]['sugDept']) {
-                $ret .= '<option value="' . $fs_key . '" name="' . $key . '" selected>' . $fs_value . '</option>';
-            } else {
-                $ret .= '<option value="' . $fs_key . '" name="' . $key . '">' . $fs_value . '</option>';
-            }
+            $ret .= '<option value="' . $fs_key . '">' . $fs_value . '</option>';
         }
         $ret .= '
                     </select></div>
