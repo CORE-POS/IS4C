@@ -384,8 +384,8 @@ class ProdLocationEditor extends FannieRESTfulPage
             </form>
         ';
 
+        $plus = array();
         if ($upcs = FormLib::get('upcs')) {
-            $plus = array();
             $chunks = explode("\r\n", $upcs);
             foreach ($chunks as $key => $str) {
                 $plus[] = str_pad($str, 13, '0', STR_PAD_LEFT);
@@ -435,10 +435,12 @@ class ProdLocationEditor extends FannieRESTfulPage
             p.department,
             pu.description as pudesc,
             p.brand,
-            d.dept_name
+            d.dept_name,
+            fslv.sections
             from products as p
                 left join productUser as pu on pu.upc=p.upc
                 left join departments as d on d.dept_no=p.department
+                left join FloorSectionsListView AS fslv ON fslv.upc=p.upc
             WHERE p.upc IN ('.$inClauseB.')
                 AND p.store_id = ?
             order by p.department;
@@ -546,7 +548,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
     function get_batch_view()
     {
-        $ret .= '
+        $ret = '
             <form method="get"class="form-inline">
 
             <div class="input-group" style="width:200px;">
