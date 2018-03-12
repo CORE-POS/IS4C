@@ -90,7 +90,7 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $ret = $this->backBtn()."<br/><br/>";
-        $tableA = "<table class=\"table table-striped table-bordered table-condensed\">
+        $tableA = "<table class=\"table table-bordered table-condensed\">
             <thead><th>VID</th><th>Vendor</th><th>Rate</th><th>Excluded</th></thead><tbody>";
         $prep = $dbc->prepare("SELECT s.vid,s.rate,v.vendorName,s.exclude
             FROM vendorReviewSchedule AS s
@@ -101,7 +101,8 @@ HTML;
         while ($row = $dbc->fetchRow($res)) {
             $vid = $row['vid'];
             $rate = $row['rate'];
-            $tableA .= "<tr><td>{$vid}</td>";
+            $class = ($row['exclude'])? 'alert-danger' : '';
+            $tableA .= "<tr class='$class'><td>{$vid}</td>";
             $tableA .= "<td>{$row['vendorName']}</td>";
             $tableA .= "<td>
                 <a href=\"#\" onClick=\"setRate({$vid},{$rate});\" id=\"{$vid}vid\">{$rate}</a>
