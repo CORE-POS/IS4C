@@ -362,8 +362,15 @@ class ProdLocationEditor extends FannieRESTfulPage
             }
 
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
-            <td><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br></td></table>
+            <td><br><br></td></table>
             </form>';
+
+        if (FormLib::get('batchCheck', false)) {
+            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
+                Back to Batch Check</a><br><br>';
+        } else {
+            $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
+        }
 
 
         return $ret;
