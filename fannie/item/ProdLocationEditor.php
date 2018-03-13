@@ -80,7 +80,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC">Back</a>&nbsp;&nbsp;';
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Home</a><br><br>';
         if (FormLib::get('batchCheck', false)) {
-            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php?upc='.$upc.'">
+            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
                 Back to Batch Check</a><br><br>';
         } else {
             $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
@@ -132,7 +132,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC">Back</a>&nbsp;&nbsp;';
         if (FormLib::get('batchCheck', false)) {
-            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php?upc='.$upc.'">
+            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
                 Back to Batch Check</a><br><br>';
         } else {
             $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
@@ -736,7 +736,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         $ret .= '</div></div></div>'; //<column B><row><container>
         if (FormLib::get('batchCheck', false)) {
-            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php?upc='.$upc.'">
+            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
                 Back to Batch Check</a><br><br>';
         } else {
             $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
