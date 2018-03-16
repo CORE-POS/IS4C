@@ -41,7 +41,7 @@ class SoPoBridge
     {
         $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
         $prep = $this->dbc->prepare('
-            SELECT v.sku, n.vendorID, d.salesCode
+            SELECT v.sku, n.vendorID, d.salesCode, o.trans_status AS altSKU
             FROM ' . $pending . ' AS o
                 INNER JOIN ' . FannieDB::fqn('vendors', 'op') . ' AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN ' . FannieDB::fqn('vendorItems', 'op') . ' AS v on n.vendorID=v.vendorID AND o.upc=v.upc
@@ -73,6 +73,9 @@ class SoPoBridge
         if ($vendorInfo === false) {
             return false;
         }
+        if (empty($vendorInfo['sku']) && !empty($vendorInfo['altSKU'])) {
+            $vendorInfo['sku'] = $vendorInfo['altSKU'];
+        }
         $poID = $this->getPurchaseOrderID($vendorInfo['vendorID'], $storeID);
         $porder = new PurchaseOrderModel($this->dbc);
         // init purchase order if necessary
@@ -95,7 +98,13 @@ class SoPoBridge
         $spoRow = $this->dbc->getRow($prep, array($soID, $transID));
         if ($item === false) {
             $item = $spoRow;
-            $item['sku'] = is_numeric($item['upc']) ? $item['upc'] : uniqid();
+            if ($vendorInfo['altSKU']) {
+                $item['sku'] = $vendorInfo['altSKU'];
+            } elseif (is_numeric($item['upc'])) {
+                $item['sku'] = $item['upc'];
+            } else {
+                $item['sku'] = uniqid();
+            }
         }
         $item['units'] = $spoRow['units'];
 
