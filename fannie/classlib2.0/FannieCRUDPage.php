@@ -127,6 +127,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $id_col = $this->getIdCol();
         $columns = $obj->getColumns();
         $errors = 0;
+        $this->connection->startTransaction();
         for ($i=0; $i<count($this->id); $i++) {
             $obj->reset();
             $obj->$id_col($this->id[$i]); 
@@ -144,6 +145,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
                 $errors++;
             }
         }
+        $this->connection->commitTransaction();
 
         if ($errors == 0) {
             header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=sSaved+Data');
