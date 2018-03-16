@@ -39,6 +39,18 @@ class HrMenu extends FannieRESTfulPage
         <td>Manage physical work locations (probably won't change often)</td>
     </tr>
     <tr><th colspan="2">Illness Records</th></tr>
+    <tr>
+        <td><a href="IllnessType/IllnessTypesPage.php">Illness Types</a></td>
+        <td>Manage illness categorizations</td>
+    </tr>
+    <tr>
+        <td><a href="IllnessLog/IllnessLogsPage.php">Illness Logs</a></td>
+        <td>Manage open illness log entries and create new entries</td>
+    </tr>
+    <tr>
+        <td><a href="IllnessReport/IllnessLogReport.php">Illness Log Reporting</a></td>
+        <td>Report and filter illness log entries</td>
+    </tr>
 </table>
 HTML;
     }
