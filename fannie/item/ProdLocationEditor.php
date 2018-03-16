@@ -268,20 +268,13 @@ class ProdLocationEditor extends FannieRESTfulPage
                     p.brand,
                     d.dept_name
                 from products as p
-                    left join FloorSectionProductMap as pp on pp.upc=p.upc
                     left join batchList as bl on bl.upc=p.upc
                     left join batches as b on b.batchID=bl.batchID
                     left join productUser as pu on pu.upc=p.upc
                     left join departments as d on d.dept_no=p.department
                 where ' . $where . '
                     and p.store_id= ?
-                    and (pp.floorSectionID is NULL OR pp.floorSectionID=0)
-                    AND department NOT BETWEEN 508 AND 998
-                    AND department NOT BETWEEN 250 AND 259
-                    AND department NOT BETWEEN 225 AND 234
-                    AND department NOT BETWEEN 61 AND 78
-                    AND department != 46
-                    AND department != 150
+                    AND department < 700
                     AND department != 208
                     AND department != 235
                     AND department != 240
@@ -290,7 +283,15 @@ class ProdLocationEditor extends FannieRESTfulPage
             ');
             $result = $dbc->execute($query, $args);
             $item = array();
-            while($row = $dbc->fetch_row($result)) {
+            $fsChk = $dbc->prepare('SELECT m.floorSectionID
+                FROM FloorSectionProductMap AS m
+                    INNER JOIN FloorSections AS f ON m.floorSectionID=f.floorSectionID
+                WHERE m.upc=?
+                    AND f.storeID=?
+                ORDER BY m.floorSectionID DESC');
+            while($row = $dbc->fetchRow($result)) {
+                $curFS = $dbc->getValue($fsChk, array($row['upc'], $store_id));
+                if ($curFS) continue;
                 $item[$row['upc']]['upc'] = $row['upc'];
                 $item[$row['upc']]['dept'] = $row['department'];
                 $item[$row['upc']]['desc'] = $row['pdesc'];
