@@ -22,6 +22,7 @@ class IllnessLogReport extends FannieReportPage
         $ret = array();
         if ($this->report_format == 'html') {
             $ret[] = '<p><form action="IllnessLogReport.php" id="fForm" method="get" class="form-inline">';
+            $ret[] = '<a href="../HrMenu.php" class="btn btn-default btn-small">Main Menu</a> | ';
             $store = FormLib::get('fStore', false);
             $model = new COREPOS\Fannie\Plugin\HrWeb\sql\HrStoresModel($dbc);
             $ret[] = '<label>Store</label> <select name="fStore" class="form-control input-sm" onchange="$(\'#fForm\').submit();">
@@ -30,6 +31,7 @@ class IllnessLogReport extends FannieReportPage
 
             $emp = FormLib::get('fEmp', false);
             $res = $dbc->query('SELECT i.employeeID AS id, e.firstName, e.lastName FROM IllnessLogs AS i INNER JOIN Employees AS e ON i.employeeID=e.employeeID
+                GROUP BY i.employeeID, e.firstName, e.lastName
                 ORDER BY e.lastName, e.firstName');
             $eOpts = '';
             while ($row = $dbc->fetchRow($res)) {
@@ -83,8 +85,7 @@ class IllnessLogReport extends FannieReportPage
                 <option value=""></option>'
                 . $fOpts . '</select> | ';
 
-            $ret[] = '<button type="button" class="btn btn-default btn-small" onclick="$(\'select\').val(\'\');$(\'#fForm\').submit();">Clear All</button> | ';
-            $ret[] = '<a href="../HrMenu.php" class="btn btn-default btn-small">Main Menu</a>';
+            $ret[] = '<button type="button" class="btn btn-default btn-small" onclick="$(\'select\').val(\'\');$(\'#fForm\').submit();">Clear All</button>';
 
             $ret[] = '</form></p>';
         }
@@ -114,7 +115,7 @@ class IllnessLogReport extends FannieReportPage
                 LEFT JOIN IllnessLogsIllnessTypes AS m ON i.illnessLogID=m.illnessLogID
                 LEFT JOIN IllnessTypes AS t ON m.illnessTypeID=t.illnessTypeID
                 LEFT JOIN Employees AS e ON i.employeeID = e.employeeID 
-            WHERE i.inactive=0 ';
+            WHERE 1=1 ';
         if (FormLib::get('fEmp')) {
             $openQ .= ' AND i.employeeID=? ';
             $args[] = FormLib::get('fEmp');
