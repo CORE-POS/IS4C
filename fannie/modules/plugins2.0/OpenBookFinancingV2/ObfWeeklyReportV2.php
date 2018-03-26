@@ -196,6 +196,33 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         '9,17' => 9218.78,
     );
 
+    protected $PLAN_SALES_Q4_2018 = array(
+        '1,6' => 52231.00,      // Hillside Produce
+        '2,10' => 11840.47,     // Hillside Deli
+        '2,11' => 32186.37,
+        '2,16' => 13122.16,
+        '3,1' => 25854.77,      // Hillside Grocery
+        '3,4' => 62910.11,
+        '3,5' => 23815.64,
+        '3,7' => 199.76,
+        '3,8' => 17596.82,
+        '3,9' => 2746.91,
+        '3,13' => 15123.69,
+        '3,17' => 26546.32,
+        '7,6' => 20708.00,      // Denfeld Produce
+        '8,10' => 4654.99,      // Denfeld Deli
+        '8,11' => 14037.15,
+        '8,16' => 5481.86,
+        '9,1' => 9226.50,       // Denfeld Grocery
+        '9,4' => 27735.16,
+        '9,5' => 9627.56,
+        '9,7' => 92.79,
+        '9,8' => 6468.55,
+        '9,9' => 1133.08,
+        '9,13' => 5236.49,
+        '9,17' => 9504.87,
+    );
+
     public function preprocess()
     {
         $this->addScript('../../../src/javascript/Chart.min.js');
@@ -206,7 +233,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     private function getPlanSales($weekID)
     {
-        if ($weekID >= 188) {
+        if ($weekID >= 201) {
+            return $this->PLAN_SALES_Q4_2018;
+        } elseif ($weekID >= 188) {
             return $this->PLAN_SALES_Q3_2018;
         } elseif ($weekID >= 175) {
             return $this->PLAN_SALES_Q2_2018;
