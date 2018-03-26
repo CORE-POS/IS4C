@@ -86,7 +86,7 @@ class ErrorHandler
     */
     static public function exceptionHandler($exception)
     {
-        $msg = 'Uncaught exception: ' . $exception->getMessage()
+        $msg = 'Uncaught exception: (' . get_class($exception) . ') ' . $exception->getMessage()
                 . " Line "
                 . $exception->getLine()
                 . ", "
