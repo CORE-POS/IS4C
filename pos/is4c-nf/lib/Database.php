@@ -444,12 +444,16 @@ static private function uploadtoServer()
     // new upload method makes use of SQLManager's transfer method
     // to simulate cross-server queries
     $connect = self::tDataConnect();
-    $connect->addConnection(CoreLocal::get("mServer"),
-                CoreLocal::get("mDBMS"),
-                CoreLocal::get("mDatabase"),
-                CoreLocal::get("mUser"),
-                CoreLocal::get("mPass"),
-                False);
+    try {
+        $connect->addConnection(CoreLocal::get("mServer"),
+                    CoreLocal::get("mDBMS"),
+                    CoreLocal::get("mDatabase"),
+                    CoreLocal::get("mUser"),
+                    CoreLocal::get("mPass"),
+                    False);
+    } catch (Exception $ex) {
+        $connect->connections[CoreLocal::get('mDatabase')] = false;
+    }
     if (!isset($connect->connections[CoreLocal::get("mDatabase")]) ||
         $connect->connections[CoreLocal::get("mDatabase")] === False){
         CoreLocal::set("standalone",1);
