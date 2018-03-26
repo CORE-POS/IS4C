@@ -208,7 +208,7 @@ class EmployeesPage extends FannieRESTfulPage
         $prep = $this->connection->prepare('SELECT employeeID FROM EmployeeDepartments WHERE employeeID=? AND departmentID=?');
         if ($canEdit) {
             $ret .= '<select name="dept[]" multiple class="form-control" size="5">';
-            foreach ($dept->find() as $d) {
+            foreach ($dept->find('departmentName') as $d) {
                 $selected = $this->connection->getValue($prep, array($emp->employeeID(), $d->departmentID())) ? 'selected' : '';
                 $ret .= sprintf('<option %s value="%d">%s</option>', $selected, $d->departmentID(), $d->departmentName());
             }
@@ -224,7 +224,7 @@ class EmployeesPage extends FannieRESTfulPage
         $prep = $this->connection->prepare('SELECT employeeID FROM EmployeePositions WHERE employeeID=? AND positionID=?');
         if ($canEdit) {
             $ret .= '<select name="pos[]" multiple class="form-control" size="5">';
-            foreach ($pos->find() as $p) {
+            foreach ($pos->find('positionName') as $p) {
                 $selected = $this->connection->getValue($prep, array($emp->employeeID(), $p->positionID())) ? 'selected' : '';
                 $ret .= sprintf('<option %s value="%d">%s</option>', $selected, $p->positionID(), $p->positionName());
             }
