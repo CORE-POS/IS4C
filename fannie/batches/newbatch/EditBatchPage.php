@@ -1130,6 +1130,8 @@ HTML;
 
         $colors = array('#ffffff','#ffffcc');
         $cur = 0;
+        $upcFields = '';
+        $upcs = '';
         while ($fetchW = $dbc->fetchRow($fetchR)) {
             $cur = ($cur + 1) % 2;
             $ret .= "<tr>";
@@ -1140,6 +1142,8 @@ HTML;
                 $ret .= " <a href=\"\" onclick=\"\$('.lc-item-{$likecode}').toggle(); return false;\">[+]</a>";
                 $ret .= "</td>";
             } else {
+                $upcFields .= sprintf('<input type="hidden" name="u[]" value="%s" />', $fetchW['upc']);
+                $upcs .= $fetchW['upc'] . "\n";
                 $conflict = '';
                 if ($dtype != 0) {
                     $overlapR = $dbc->execute($overlapP, array_merge(array($fetchW['upc'], $id), $overlap_args));
@@ -1220,6 +1224,13 @@ HTML;
         if ($dbc->numRows($fetchR) > 0) {
             $ret .= '<p>
                 <a href="BatchImportExportPage.php?id=' . $id . '">Export as JSON</a>
+                | <a href="" onclick="$(\'#previousPromos\').submit(); return false;">Previous Promos</a>
+                | <a href="" onclick="$(\'#searchForm\').submit(); return false;">Search These</a>
+                <form method="post" id="previousPromos" action="../../reports/from-search/PreviousPromos/PreviousPromosReport.php">
+                ' . $upcFields . '</form>
+                <form method="post" id="searchForm" action="../../item/AdvancedItemSearch.php">
+                <input type="hidden" name="extern" value="1" />
+                <input type="hidden" name="upcs" value="' . $upcs . '" />
                 </p>';
         }
 
