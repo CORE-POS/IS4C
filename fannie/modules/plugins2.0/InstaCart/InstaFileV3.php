@@ -18,8 +18,8 @@ class InstaFileV3
         $depositP = $this->dbc->prepare('SELECT normal_price FROM products WHERE upc=?');
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $instaDB = $settings['InstaCartDB'];
-        $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaCartIncludes WHERE upc=?');
-        $excludeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaCartExcludes WHERE upc=?');
+        $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaIncludes WHERE upc=?');
+        $excludeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaExcludes WHERE upc=?');
         $instaMode = $settings['InstaCartMode'];
 
         $query = "
@@ -51,7 +51,8 @@ class InstaFileV3
                 LEFT JOIN batches AS b ON p.batchID=b.batchID
                 LEFT JOIN batchType AS y on b.batchType=y.batchTypeID
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-            WHERE m.superID <> 0";
+            WHERE m.superID <> 0
+                AND p.inUse=1";
         $args = array();
         if ($this->config->get('STORE_MODE') == 'HQ') {
             $args[] = $this->config->get('STORE_ID');
@@ -161,7 +162,9 @@ class InstaFileV3
             } else {
                 fprintf($csv, '%.2f,', $row['special_price']);
                 fwrite($csv, date('m/d/Y', strtotime($row['start_date'])) . ',');
-                fwrite($csv, date('m/d/Y', strtotime($row['end_date'])) . "\r\n");
+                $ts = strtotime($row['end_date']);
+                $next = mktime(0,0,0, date('n',$ts), date('j',$ts)+1, date('Y', $ts));
+                fwrite($csv, date('m/d/Y', $next) . "\r\n");
             }
         }
         fclose($csv);
