@@ -64,9 +64,11 @@ class InventoryCacheModel extends BasicModel
                     AND storeID=?
                     AND i.isSpecialOrder = 0
                     AND o.inventoryIgnore = 0
+                    AND (placedDate >= ? OR receivedDate >= ?)');
+            /** Allow negative quantities?
                     AND (i.quantity > 0 OR (i.receivedQty IS NOT NULL AND i.receivedQty > 0))
                     AND (i.receivedQty > 0 OR i.receivedQty IS NULL)
-                    AND (placedDate >= ? OR receivedDate >= ?)');
+             */
         }
 
         return self::$orderStmt;
