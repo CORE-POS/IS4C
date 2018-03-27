@@ -21,6 +21,8 @@ class InstaFileV3
         $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaIncludes WHERE upc=?');
         $excludeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaExcludes WHERE upc=?');
         $instaMode = $settings['InstaCartMode'];
+        $sep = ',';
+        $newline = "\r\n";
 
         $query = "
             SELECT p.upc,
@@ -94,16 +96,16 @@ class InstaFileV3
                 fwrite($csv, BarcodeLib::UPCACheckDigit($upc) . ',');
             } else {
                 // probably a PLU
-                fwrite($csv, $upc . ','); 
+                fwrite($csv, $upc . $sep); 
             }
-            fprintf($csv, '%.2f,', $row['normal_price']);
-            fwrite($csv, ($row['scale'] ? 'lb' : 'each') . ',');
+            fprintf($csv, '%.2f%s', $row['normal_price'], $sep);
+            fwrite($csv, ($row['scale'] ? 'lb' : 'each') . $sep);
 
             $desc = str_replace('"', '', $row['description']);
             $desc = str_replace("\r", '', $desc);
             $desc = str_replace("\n", ' ', $desc);
             $desc = substr($desc, 0, 100);
-            fwrite($csv, '"' . $desc . '",');
+            fwrite($csv, '"' . $desc . '"' . $sep);
 
             $size = $row['size'] ? $row['size'] : 1;
             if ($row['scale']) {
@@ -130,41 +132,41 @@ class InstaFileV3
             if ($size != 'each' && $size != 'per lb' && !preg_match('/\d+/', $size)) {
                 $size = 'each';
             }
-            fwrite($csv, $size . ',');
+            fwrite($csv, $size . $sep);
 
             $brand = str_replace('"', '', $row['brand']);
-            fwrite($csv, '"' . $brand . '",');
+            fwrite($csv, '"' . $brand . '"' . $sep);
 
-            fwrite($csv, $units . ',');
+            fwrite($csv, $units . $sep);
 
             $dept = str_replace('"', '', $row['super_name']);
-            fwrite($csv, '"' . $dept . '",');
+            fwrite($csv, '"' . $dept . '"' . $sep);
 
-            fwrite($csv, ($row['inUse'] ? 'TRUE' : 'FALSE') . ',');
+            fwrite($csv, ($row['inUse'] ? 'TRUE' : 'FALSE') . $sep);
 
-            fwrite($csv, date('m/d/Y', strtotime($row['last_sold'])) . ',');
+            fwrite($csv, date('m/d/Y', strtotime($row['last_sold'])) . $sep);
 
-            fwrite($csv, ($row['idEnforced'] == 21 ? 'TRUE' : 'FALSE') . ',');
+            fwrite($csv, ($row['idEnforced'] == 21 ? 'TRUE' : 'FALSE') . $sep);
 
-            fwrite($csv, $row['upc'] . ',');
-            fwrite($csv, ($row['organic'] ? 'TRUE' : 'FALSE') . ',');
-            fwrite($csv, ($row['glutenfree'] ? 'TRUE' : 'FALSE') . ',');
+            fwrite($csv, $row['upc'] . $sep);
+            fwrite($csv, ($row['organic'] ? 'TRUE' : 'FALSE') . $sep);
+            fwrite($csv, ($row['glutenfree'] ? 'TRUE' : 'FALSE') . $sep);
 
-            fprintf($csv, '%.5f,', $row['rate']);
+            fprintf($csv, '%.5f%s', $row['rate'], $sep);
 
             if ($row['deposit'] > 0) {
                 $row['deposit'] = $this->dbc->getValue($depositP, array(BarcodeLib::padUPC($row['deposit'])));
             }
-            fprintf($csv, '%.2f,', $row['deposit']);
+            fprintf($csv, '%.2f%s', $row['deposit'], $sep);
 
             if ($row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
-                fwrite($csv, ",,\r\n");
+                fwrite($csv, $sep . $sep . $newline);
             } else {
-                fprintf($csv, '%.2f,', $row['special_price']);
-                fwrite($csv, date('m/d/Y', strtotime($row['start_date'])) . ',');
+                fprintf($csv, '%.2f%s', $row['special_price'], $sep);
+                fwrite($csv, date('m/d/Y', strtotime($row['start_date'])) . $sep);
                 $ts = strtotime($row['end_date']);
                 $next = mktime(0,0,0, date('n',$ts), date('j',$ts)+1, date('Y', $ts));
-                fwrite($csv, date('m/d/Y', $next) . "\r\n");
+                fwrite($csv, date('m/d/Y', $next) . $newline);
             }
         }
         fclose($csv);
