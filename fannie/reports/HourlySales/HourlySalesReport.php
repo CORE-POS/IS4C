@@ -78,6 +78,8 @@ class HourlySalesReport extends FannieReportPage
             ),
         );
         foreach ($actions as $k => $row) {
+            $temp1 = new DateTime($date1);
+            $temp2 = new DateTime($date2);
             if ($days == 0) {
                 $temp1->modify($row['action'].'1 Day');
                 $temp2->modify($row['action'].'1 Day');
