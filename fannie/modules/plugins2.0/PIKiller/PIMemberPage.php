@@ -482,6 +482,14 @@ class PIMemberPage extends PIKillerPage {
         echo '</td>';
 
         echo '</tr>';
+        if ($this->auth_mode == 'Full') {
+            echo '<tr>';
+            echo '<td class="yellowbg">Web Page</td>';
+            $prep = $dbc->prepare('SELECT guid FROM MyWebDB.Identifiers WHERE cardNo=?');
+            $guid = $dbc->getValue($prep, $this->card_no);
+            $url = 'http://wholefoods.coop/my/' . $guid;
+            echo '<td colspan="7">' . $url . '</td></tr>';
+        }
 
         echo "</table>";
         if (FormLib::get('edit', false) !== false) {
