@@ -63,7 +63,7 @@ class InstaFileV3
         $prep = $this->dbc->prepare($query);
         $res = $this->dbc->execute($prep, $args);
         $csv = fopen($filename, 'w');
-        fwrite($csv, "upc,price,cost_unit,item_name,size,brand_name,unit_count,department,available,last_sold,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,sale_price,sale_start_at,sale_end_at\r\n");
+        fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,available,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,sale_price,sale_start_at,sale_end_at\r\n");
         while ($row = $this->dbc->fetchRow($res)) {
             if ($row['normal_price'] <= 0.01 || $row['normal_price'] >= 500) {
                 continue;
@@ -135,6 +135,7 @@ class InstaFileV3
             fwrite($csv, $size . $sep);
 
             $brand = str_replace('"', '', $row['brand']);
+            $brand = substr($brand, 0, 100);
             fwrite($csv, '"' . $brand . '"' . $sep);
 
             fwrite($csv, $units . $sep);
@@ -143,8 +144,6 @@ class InstaFileV3
             fwrite($csv, '"' . $dept . '"' . $sep);
 
             fwrite($csv, ($row['inUse'] ? 'TRUE' : 'FALSE') . $sep);
-
-            fwrite($csv, date('m/d/Y', strtotime($row['last_sold'])) . $sep);
 
             fwrite($csv, ($row['idEnforced'] == 21 ? 'TRUE' : 'FALSE') . $sep);
 
