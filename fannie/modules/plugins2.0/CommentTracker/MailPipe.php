@@ -34,16 +34,31 @@ class MailPipe extends AttachmentEmailPipe
         $settings = \FannieConfig::config('PLUGIN_SETTINGS');
         $dbc = \FannieDB::get($settings['CommentDB']);
 
-        $catP = $dbc->prepare('SELECT categoryID FROM Categories WHERE name=?');
-        $catID = $dbc->getValue($catP, array($location));
+        $catP = $dbc->prepare('SELECT categoryID, name, notifyMethod, notifyAddress FROM Categories WHERE name=?');
+        $catW = $dbc->getRow($catP, array($location));
 
         $model = new \CommentsModel($dbc);
-        $model->categoryID($catID);
+        $model->categoryID($catW['categoryID']);
         $model->publishable(trim($publish) === 'Yes' ? 1 : 0);
         $model->email($email);
         $model->comment($comment);
         $model->tdate(date('Y-m-d H:i:s'));
-        $model->save();
+        $commentID = $model->save();
+
+        if ($catW && $catW['notifyAddress']) {
+            $mail = new \PHPMailer();
+            $mail->From = 'comments@wholefoods.coop';
+            $mail->FromName = 'Comment Tracker';
+            $mail->Subject = 'New Comment';
+            $mail->addAddress($catW['notifyAddress']);
+            $mail->isHTML(true);
+            $mail->Body = <<<HTML
+<p>New {$catW['name']} comment received from {$email}</p>
+<p>Comment: $comment</p>
+<p><a href="http://key/git/fannie/modules/plugins2.0/CommentTracker/ManageComments.php?id={$commentID}">Manage Comment</a></p>
+HTML;
+            $mail->send();
+        }
     }
 
     private function getValue($field, $str)
