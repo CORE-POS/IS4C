@@ -172,6 +172,7 @@ HTML;
         $store = FormLib::get('store', 0);
     
         $buyer = FormLib::get('buyer', '');
+        $dow = FormLib::get('dow', '');
 
         // args/parameters differ with super
         // vs regular department
@@ -188,6 +189,10 @@ HTML;
         if ($buyer != -1) {
             list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
             $where .= $conditional;
+        }
+        if ($dow) {
+            $where .= ' AND ' . $dbc->dayofweek('tdate') . ' = ? ';
+            $args[] = $dow;
         }
         $args[] = $store;
 
@@ -359,6 +364,18 @@ JAVASCRIPT;
                 Group by weekday?
                 <input type=checkbox name=weekday value=1>
             </label>
+            <div class="col-sm-4">
+                <select name="dow" class="form-control">
+                    <option value="">Filter by weekday</option>
+                    <option value="2">Mondays</option>
+                    <option value="3">Tuesdays</option>
+                    <option value="4">Wendesdays</option>
+                    <option value="5">Thursdays</option>
+                    <option value="6">Fridays</option>
+                    <option value="7">Saturdays</option>
+                    <option value="1">Sundays</option>
+                </select>
+            </div>
         </div>
         <div class="form-group">
             <label class="control-label col-sm-4">Save to Excel
