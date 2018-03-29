@@ -522,7 +522,6 @@ class MercuryDC extends MercuryE2E
                 break;
             default:
                 $this->conf->set("boxMsg","An unknown error occurred<br />at the gateway");
-                TransRecord::addcomment("");    
         }
 
         return PaycardLib::PAYCARD_ERR_PROC;
