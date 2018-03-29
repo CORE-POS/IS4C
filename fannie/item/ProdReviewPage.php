@@ -537,7 +537,7 @@ HTML;
             </form>
         </div>
         {$bData}
-        <label class="text-warning">Un-Forced Batches</label>
+        <label class="text-warning">Staged Batches</label>
         <div class="batchTable">
             {$tableA}
         </div>
@@ -1024,6 +1024,12 @@ function fadeAlerts()
     public function css_content()
     {
         return <<<HTML
+.panel-default {
+    border: none;
+}
+.alert-info {
+    background: #e0e0e0;
+}
 textarea { resize: vertical }
 .input-addon-btn {
     width: 100%;
