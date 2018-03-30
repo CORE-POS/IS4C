@@ -45,6 +45,13 @@ class ManageComments extends FannieRESTfulPage
         $comment = new CommentsModel($this->connection);
         $comment->commentID($this->id);
         $comment->categoryID($this->catID);
+        if ($this->catID > 0) {
+            $comment->primaryNotified(0);
+            $comment->ccNotified(0);
+        } else {
+            $comment->primaryNotified(1);
+            $comment->ccNotified(1);
+        }
         $comment->save();
 
         echo 'OK';
@@ -185,8 +192,9 @@ class ManageComments extends FannieRESTfulPage
         $this->connection->selectDB($settings['CommentDB']);
         $comment = new CommentsModel($this->connection);
         $comment->categoryID(FormLib::get('cat'));
-        $comment->publishable(FormLib::get('pub') ? 1 : 0);
+        $comment->publishable(1);
         $comment->appropriate(FormLib::get('appr') ? 1 : 0);
+        $comment->name(FormLib::get('name'));
         $comment->email(FormLib::get('email'));
         $comment->phone(FormLib::get('phone'));
         $comment->comment(FormLib::get('comment'));
@@ -230,14 +238,13 @@ class ManageComments extends FannieRESTfulPage
         <select name="cat" class="form-control">{$opts}</select>
     </div>
     <div class="form-group">
-        <label>Publication Allowed
-        <input type="checkbox" name="pub" value="1" checked />
-        </label>
-    </div>
-    <div class="form-group">
         <label>Appropriate
         <input type="checkbox" name="appr" value="1" checked />
         </label>
+    </div>
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" placeholder="If known..." class="form-control" />
     </div>
     <div class="form-group">
         <label>Email Address for Response</label>
@@ -270,7 +277,7 @@ HTML;
                 CASE WHEN c.categoryID=0 THEN 'n/a'
                     WHEN c.categoryID=-1 THEN 'Spam'
                     ELSE t.name 
-                END AS name
+                END AS categoryName
             FROM {$prefix}Comments AS c
                 LEFT JOIN {$prefix}Categories AS t ON t.categoryID=c.categoryID
             WHERE c.commentID=?";
@@ -333,7 +340,6 @@ HTML;
                 $k == $comment['posNeg'] ? 'selected' : '', $k, $v);
         }
 
-        $publishAllowed = $comment['publishable'] ? 'Yes' : 'No';
         $appropriateCheck = $comment['appropriate'] ? 'checked' : '';
         $comment['comment'] = nl2br($comment['comment']);
         $source = $comment['fromPaper'] ? 'Manual entry' : 'Website';
@@ -362,13 +368,13 @@ HTML;
             onchange="manageComments.saveCategory({$this->id}, this.value);" class="form-control">{$opts}</select></td>
     </tr>
     <tr>
+        <th>Name</th><td>{$comment['name']}</td>
+    </tr>
+    <tr>
         <th>Email Address</th><td>{$comment['email']}</td>
     </tr>
     <tr>
         <th>Phone Number</th><td>{$comment['phone']}</td>
-    </tr>
-    <tr>
-        <th>Publication Allowed</th><td>{$publishAllowed}</td>
     </tr>
     <tr>
         <th>Appropriate</th><td><input type="checkbox" {$appropriateCheck}

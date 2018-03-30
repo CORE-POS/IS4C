@@ -36,12 +36,15 @@ class CommentsModel extends BasicModel
     'categoryID' => array('type'=>'INT'),
     'publishable' => array('type'=>'TINYINT', 'default'=>0),
     'appropriate' => array('type'=>'TINYINT', 'default'=>1),
+    'name' => array('type'=>'VARCHAR(255)'),
     'email' => array('type'=>'VARCHAR(255)'),
     'phone' => array('type'=>'VARCHAR(255)'),
     'comment' => array('type'=>'TEXT'),
     'tdate' => array('type'=>'DATETIME'),
     'fromPaper' => array('type'=>'TINYINT', 'default'=>0),
     'posNeg' => array('type'=>'TINYINT', 'default'=>0),
+    'primaryNotified' => array('type'=>'TINYINT', 'default'=>0),
+    'ccNotified' => array('type'=>'TINYINT', 'default'=>0),
     );
 }
 

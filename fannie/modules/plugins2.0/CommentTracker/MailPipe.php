@@ -19,7 +19,6 @@ class MailPipe extends AttachmentEmailPipe
     public function processMail($msg)
     {
         $info = $this->parseEmail($msg);
-        $boundary = $this->hasAttachments($info['headers']);
         $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
         $log = new \FannieLogger();
 
@@ -27,7 +26,7 @@ class MailPipe extends AttachmentEmailPipe
 
         $location = $this->getValue('Location_', $body);
         $email = $this->getValue('Email_', $body);
-        $publish = $this->getValue('Publish', $body);
+        $name = $this->getValue('Name_', $body);
         $comment = explode('Comment_:', $body, 2);
         $comment = trim($comment[1]);
 
@@ -39,7 +38,8 @@ class MailPipe extends AttachmentEmailPipe
 
         $model = new \CommentsModel($dbc);
         $model->categoryID($catW['categoryID']);
-        $model->publishable(trim($publish) === 'Yes' ? 1 : 0);
+        $model->publishable(1);
+        $model->name($name);
         $model->email($email);
         $model->comment($comment);
         $model->tdate(date('Y-m-d H:i:s'));
@@ -47,8 +47,8 @@ class MailPipe extends AttachmentEmailPipe
 
         if ($catW && $catW['notifyAddress']) {
             $mail = new \PHPMailer();
-            $mail->From = 'comments@wholefoods.coop';
-            $mail->FromName = 'Comment Tracker';
+            $mail->addReplyTo('ff8219e9ba6148408c89232465df9e53+' . $commentID . '@wholefoods.coop');
+            $mail->setFrom('comments@wholefoods.coop', 'Comment Tracker');
             $mail->Subject = 'New Comment';
             $mail->addAddress($catW['notifyAddress']);
             $mail->isHTML(true);
@@ -57,7 +57,11 @@ class MailPipe extends AttachmentEmailPipe
 <p>Comment: $comment</p>
 <p><a href="http://key/git/fannie/modules/plugins2.0/CommentTracker/ManageComments.php?id={$commentID}">Manage Comment</a></p>
 HTML;
-            $mail->send();
+            $sent = $mail->send();
+            if ($sent) {
+                $prep = $dbc->prepare('UPDATE Comments SET primaryNotified=1 WHERE commentID=?');
+                $dbc->execute($prep, array($commentID));
+            }
         }
     }
 
