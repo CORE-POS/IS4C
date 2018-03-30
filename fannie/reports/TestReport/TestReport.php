@@ -376,15 +376,21 @@ function chartAll(totalCol) {
 }
 
 $(function(){
-    $('#depth').hide();
-    $('#compare').on('change',function(){
-        var value = $(this).val();
-        if (value == 2) {
-            $('#depth').show();
-        } else {
-            $('#depth').hide();
-        }
+    $('#addDateRange').click(function(){
+        $('.row').each(function(){
+            var visible = $(this).is(':visible');
+            if (visible == false) {
+                $(this).css('display','block').show();;
+                return false;
+            }
+        });
     });
+});
+
+$('.prevBtn').on('click',function(){
+    var fullname = $(this).attr('id');
+    var type = fullname.substring(4,fullname.length-1);
+    var start = fullname.substring(fullname.length-1);
 });
 JAVASCRIPT;
     }
@@ -401,72 +407,136 @@ JAVASCRIPT;
 </select>
 HTML;
         $nums = range('1','10');
+        $wordyNums = array(1=>'First', 2=>'Second', 3=>'Third', 4=>'Fourth', 5=>'Fifth', 6=>'Sixth');
         $depthcontent = '';
         foreach ($nums as $num) {
             $s = ($num == 1) ? 'selected' : '';
             $depthcontent .= "<option value='$num' $s>$num</option>"; 
         }
+
+        $formInput = '';
+        $d1 = 1;
+        $d2 = 2;
+        for ($i=1; $i<7; $i++) {
+            if ($i == 1) {
+                $formInput .= sprintf('
+            <div class="panel panel-default">
+                <div class="panel-heading"><i>%s</i> Date Range</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Start Date</label>
+                                <input type="text" name="date1" id="date1" class="form-control date-field" required/>
+                            </div>
+                            <div class="form-group">
+                                <label>End Date</label>
+                                <input type="text" name="date2" id="date2" class="form-control date-field" required/>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Store</label>
+                                %s
+                            </div>
+                            <div class="form-group">
+                                <label>Equity Types</label>
+                                %s
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label title="Date range must be greater than 1 month">Label Data In</label>
+                                <select name="viewBy" id="viewBy" class="form-control">
+                                    <option value="day" selected>Days</option>
+                                    <option value="month">Months</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>',
+                    $wordyNums[$i],
+                    $ret['html'],
+                    $equitypicker
+                );
+            } else {
+                $d1 += 2; $d2 += 2;
+                $hide = ($i > 1) ? 'collapse' : '';
+                $require = ($i < 2) ? 'required' : '';
+                $formInput .= sprintf ('
+            <div class="row %s">
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><i>%s</i> Date Range</div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Start Date</label>
+                                        <input type="text" name="date%d" id="date%d" class="form-control date-field" %s/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>End Date</label>
+                                        <input type="text" name="date%d" id="date%d" class="form-control date-field" %s/>
+                                    </div>
+                                    <table><tr>
+                                        <td class="btn btn-default btn-xs prevBtn" id="prevWeek%d">Previous Week</p></td>
+                                        <td class="btn btn-default btn-xs prevBtn" id="prevMonth%d">Previous Month</p></td>
+                                        <td class="btn btn-default btn-xs prevBtn" id="prevYear%d">Previous Year<p></td></tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                                <div class="col-md-12"></div>
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </div>
+                </div>',
+                    $hide, $wordyNums[$i],
+                    $d1, $d1, $d2, $d2, $require, $require, $d1, $d1, $d1
+                );
+            }
+
+        if ($i == 1) {
+            $formInput .= <<<HTML
+            <div class="col-md-6">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        $datepicker
+                    </div>
+                </div>
+            </div>
+        </div>
+HTML;
+        }
+        $formInput .= <<<HTML
+    </div>
+HTML;
+
+        }
+
+
         return <<<HTML
 <form method="get" id="form1">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>Start Date</label>
-                    <input type="text" name="date1" id="date1" class="form-control date-field" required/>
-                </div>
-                <div class="form-group">
-                    <label>End Date</label>
-                    <input type="text" name="date2" id="date2" class="form-control date-field" required/>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>Store</label>
-                    {$ret['html']}
-                </div>
-                <div class="form-group">
-                    <label>Equity Types</label>
-                    $equitypicker
-                </div>
-            </div>
-            <div class="col-md-12">
-                <div class="form-group">
-                    <label title="Date range must be greater than 1 month">X Plane Label</label>
-                    <select name="viewBy" id="viewBy" class="form-control" disabled>
-                        <option value="day" selected>Days</option>
-                        <option value="month">Months</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Compare Type</label>
-                    <select name="compare" id="compare" class="form-control">
-                        <option value="1">Previous Period | Previous Day, Week or Month</option>
-                        <option value="2">Same Dates | Previous Year</option>
-                    </select>
-                </div>
-                <div class="form-group" id="depth">
-                    <label title="Number of previous years to compare.">Depth</label>
-                    <select name="depth" class="form-control">
-                        $depthcontent
-                    </select>
-                </div>
-                <p>
-                    <button type="submit" class="btn btn-default">Generate Report</button>
-                </p>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="col-md-12">
-                <div class="form-group">
-                    $datepicker
-                </div>
-            </div>
-        </div>
-    </div>
+    $formInput
+    <a href='#' id="addDateRange"><b>+</b> Add Another Range to Compare</a>
+    <p></p>
+    <p>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </p>
 </form>
 HTML;
+    }
+
+    public function css_content()
+    {
+        return <<<CSS
+.btn-p {
+    padding-top: 10px;
+    padding-left: 20px;
+}
+CSS;
     }
 
     public function helpContent()
