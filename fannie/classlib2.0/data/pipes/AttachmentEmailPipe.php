@@ -56,6 +56,10 @@ class AttachmentEmailPipe extends NewMemberEmailPipe
             if ($test == 1) {
                 return $matches[1];
             }
+            $test = preg_match('/\s*multipart\/alternative;\s*boundary="(.*)"/', $headers['Content-Type'], $matches);
+            if ($test == 1) {
+                return $matches[1];
+            }
         }
 
         return false;
@@ -78,7 +82,7 @@ class AttachmentEmailPipe extends NewMemberEmailPipe
             if ($mime != 1) continue;
             $mime = $matches[1];
 
-            if (substr($mime, 0, 4) == 'text') {
+            if ($mime == 'text/plain') {
                 $actual_body .= $info['body'];
             } else {
                 $attachment = trim($info['body']);
