@@ -147,17 +147,15 @@ HTML;
         $maxDepth = FormLib::get('depth');
         $depth = 1;
 
-        $includeDepts = '';
         /*
             View which Equity Departments:
             1:A, 2:B, 3:A+B (total)
         */
+        $includeDepts = "SUM(d.total) AS Equity";
         if ($equityType == 1) {
             $includeDepts = "SUM(CASE WHEN d.department=992 THEN total ELSE 0 END) AS Equity";
         } elseif ($equityType == 2) {
             $includeDepts = "SUM(CASE WHEN d.department=991 THEN total ELSE 0 END) AS Equity";
-        } elseif ($equityType == 3) {
-            $includeDepts = "SUM(d.total) AS Equity";
         }
 
         $date_selector = 'year(tdate), month(tdate), day(tdate)';
