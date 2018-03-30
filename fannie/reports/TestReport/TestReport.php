@@ -35,7 +35,7 @@ class TestReport extends FannieReportPage
     protected $title = "Fannie : Test Report";
     protected $header = "Test Report";
 
-    protected $report_headers = array('Date','Selected Period','Previous Period','Selected Average','Previous Average');
+    protected $report_headers = array('Selected Date Range','Selected Range Sales');
     protected $required_fields = array('date1', 'date2');
 
     protected $sortable = false;
@@ -185,10 +185,12 @@ HTML;
             FROM $dlog AS d
             WHERE d.department IN (991,992)
                 AND d.tdate BETWEEN ? AND ?
+                AND d.emp_no <> 1001
             GROUP BY $date_selector
             ORDER BY $date_selector";
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $prep = $dbc->prepare($query);
+        var_dump($prep);
         $result = $dbc->execute($prep,$args);
         while ($row = $dbc->fetchRow($result)) {
             $data[] = $this->rowToRecord($row);
@@ -196,8 +198,12 @@ HTML;
         
         //additional query(-ies) to find comparable data
         $temp = array();
+        $tDate1 = $date1;
+        $tDate2 = $date2;
         while ($depth <= $maxDepth) {
-            list($compDate1,$compDate2) = $this->fetch_depth_data($date1,$date2,$depth);
+            unset($temp);
+            $temp = array();
+            list($compDate1,$compDate2) = $this->fetch_depth_data($tDate1,$tDate2,$depth);
             $query = "
                 SELECT
                     $date_selector,
@@ -207,6 +213,7 @@ HTML;
                 FROM $dlog AS d
                 WHERE d.department IN (991,992)
                     AND d.tdate BETWEEN ? AND ?
+                    AND d.emp_no <> 1001
                 GROUP BY $date_selector
                 ORDER BY $date_selector";
             $args = array($compDate1.' 00:00:00', $compDate2.' 23:59:59');
@@ -218,10 +225,21 @@ HTML;
 
             // plug temp values into data
             foreach ($temp as $k => $row) {
-                $data[$k][0] .= " - $row[0]";
-                $data[$k][2*$depth] = $row[1];
-                $data[$k][4*$depth] = $row[3];
+                if ($compare == 1) {
+                    $data[$k][0] .= " - $row[0]";
+                }
+                $data[$k][1+$depth] = $row[1];
+                $data[$k][3+$depth] = $row[3];
             }
+            if ($compare == 2) {
+                $today = new DateTime();
+                $today->modify("- $depth Year");
+                $this->report_headers[] = "Sales From ".$today->format('Y');
+            } else {
+                $this->report_headers[] = 'Previous Period';
+            }
+            $tDate1 = $compDate1;
+            $tDate2 = $compDate2;
             $depth++;
         }
 
@@ -264,7 +282,7 @@ HTML;
         $diff = $temp1->diff($temp2, true);
         $days = $diff->format('%a');
 
-        if ($compareType == 2) {
+        if ($compare == 2) {
             $temp1->modify("- $depth Year");
             $temp2->modify("- $depth Year");
             $newDate1 = $temp1->format('Y-m-d');
@@ -294,30 +312,48 @@ HTML;
 
     private function rowToRecord($row)
     {
-        return array(
-            sprintf('%d/%d/%d', $row[1], $row[2], $row[0]),
-            sprintf('%.2f', $row['Equity']),
-            0,
-            sprintf('%.2f', $row['avg']),
-            0, 
-        );
+        $compare = FormLib::get('compare');
+        $maxDepth = FormLib::get('depth');
+        $ret = array();
+        if ($compare == 1) {
+            $ret[] = sprintf('%d/%d/%d', $row[1], $row[2], $row[0]);
+            $ret[] = sprintf('%.2f', $row['Equity']);
+        } else {
+            $ret[] = sprintf('%d/%d/%d', $row[1], $row[2], $row[0]);
+            $ret[] = sprintf('%.2f', $row['Equity']);
+        }
+
+        return $ret;
     }
 
     public function calculate_footers($data)
     {
-        $sums = array(0, 0, 0, 0);
+        $maxDepth = FormLib::get('depth');
+        $ret = array('Total');
+        $sums = array();
+        for ($i=0; $i<=$maxDepth; $i++) {
+            $sums[] = 0;
+        }
+        //$sums = array(0, 0, 0, 0);
         $i = 0;
         foreach ($data as $row) {
-            $sums[0] += $row[1];
+            foreach ($sums as $k => $v) {
+                $sums[$k] += $row[$k+1];
+            }
+            /*$sums[0] += $row[1];
             $sums[1] += $row[2];
             $sums[2] += $row[3];
-            $sums[3] += $row[4];
+            $sums[3] += $row[4];*/
             $i++;
         }
-        $sums[2] = ($sums[2] / $i);
-        $sums[3] = ($sums[3] / $i);
+        //$sums[2] = ($sums[2] / $i);
+        //$sums[3] = ($sums[3] / $i);
 
-        return array('Total', $sums[0], $sums[1], sprintf('%.2f',$sums[2]), sprintf('%.2f',$sums[3]));
+        foreach ($sums as $k => $v) {
+            $ret[] = $sums[$k];
+        }
+
+        return $ret;
     }
 
     public function javascriptContent()
@@ -398,10 +434,16 @@ HTML;
             </div>
             <div class="col-md-12">
                 <div class="form-group">
+                    <label title="Date range must be greater than 1 month">X Plane Label</label>
+                    <select name="viewBy" id="viewBy" class="form-control" disabled>
+                        <option value="day" selected>Days</option>
+                        <option value="month">Months</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Compare Type</label>
                     <select name="compare" id="compare" class="form-control">
-                        <option value="1" 
-                            title="">Previous Period | Previous Day, Week or Month</option>
+                        <option value="1">Previous Period | Previous Day, Week or Month</option>
                         <option value="2">Same Dates | Previous Year</option>
                     </select>
                 </div>
