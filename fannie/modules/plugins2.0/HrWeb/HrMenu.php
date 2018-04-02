@@ -31,6 +31,10 @@ class HrMenu extends FannieRESTfulPage
         <td>Manage job positions in the organization</td>
     </tr>
     <tr>
+        <td><a href="Training/TrainingsPage.php">Trainings</a></td>
+        <td>Manager training classes</td>
+    </tr>
+    <tr>
         <td><a href="Status/StatusesPage.php">Statuses</a></td>
         <td>Manage employment statuses (probably won't change often)</td>
     </tr>
