@@ -80,7 +80,7 @@ class IllnessLogsPage extends FannieRESTfulPage
         $emp->employeeID($model->employeeID());
         $emp->load();
 
-        $ret .= '<p>
+        $ret = '<p>
             <a href="IllnessLogsPage.php" class="btn btn-default">Back</a>
             </p> 
             <form method="post" action="IllnessLogsPage.php">
