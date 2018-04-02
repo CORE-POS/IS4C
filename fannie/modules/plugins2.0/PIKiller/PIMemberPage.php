@@ -383,6 +383,12 @@ class PIMemberPage extends PIKillerPage {
         echo '<td>'.$this->text_or_field('phone2',$this->primary_customer['altPhone']).'</td>';
         echo "<td class=\"yellowbg\">E-mail: </td>";
         echo '<td>'.$this->text_or_field('email',$this->primary_customer['email']).'</td>';
+        echo "<td class=\"yellowbg\">Payment Plan: </td>";
+        $prep = $dbc->prepare('SELECT name FROM EquityPaymentPlanAccounts AS a
+            INNER JOIN EquityPaymentPlans AS e ON a.equityPaymentPlanID=e.equityPaymentPlanID
+            WHERE a.cardNo=?');
+        $plan = $dbc->getValue($prep, array($this->card_no));
+        echo '<td>' . ($plan ? $plan : 'n/a') . '</td>';
         echo "</tr>";
 
                 echo "<tr>";
