@@ -117,7 +117,7 @@ class MyWebSpoImport extends FannieTask
         $contactQ = "
             SELECT sendEmails
             FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . " AS p
-                INNER JOIN " . FannieDB('SpecialOrders', 'trans') . " AS s ON p.order_id=s.specialOrderID
+                INNER JOIN " . FannieDB::fqn('SpecialOrders', 'trans') . " AS s ON p.order_id=s.specialOrderID
             WHERE p.card_no=?
                 AND p.order_id <> ?
             ORDER BY p.order_id DESC";
