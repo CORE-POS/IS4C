@@ -192,6 +192,9 @@ class EpScaleLib
                         $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);
                         break;
                     case 'Price':
+                        if ($item_info['Price'] > 9999) {
+                            $item_info['Price'] = 9999;
+                        }
                         if ($item_info['Price'] != 0) {
                             $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
                         }
@@ -210,6 +213,9 @@ class EpScaleLib
                         break;
                     case 'Graphics':
                         $line .= 'GNO' . str_pad($item_info[$key],6,'0',STR_PAD_LEFT) . chr(253);
+                        break;
+                    case 'inUse':
+                        $line .= 'UF8' . ($item_info[$key] ? 1 : 0) . chr(253);
                         break;
                 }
             }

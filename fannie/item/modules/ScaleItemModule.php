@@ -220,6 +220,7 @@ STR;
         $align = FormLib::get('s_label','horizontal');
         $netWeight = FormLib::get('s_netwt', 0);
         $linkedPLU = FormLib::get('s_linkedPLU', null);
+        $inUse = FormLib::get('prod-in-use', array());
 
         $label = \COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel(
             $align,
@@ -292,6 +293,7 @@ STR;
             'ByCount' => $bycount,
             'OriginText' => $scaleItem->originText(),
             'MOSA' => $scaleItem->mosaStatement(),
+            'inUse' => count($inUse) == 0 ? 0 : 1,
         );
         if ($netWeight != 0) {
             $item_info['NetWeight'] = $netWeight;
