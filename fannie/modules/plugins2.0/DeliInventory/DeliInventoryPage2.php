@@ -7,6 +7,9 @@ if (!class_exists('FannieAPI')) {
 if (!class_exists('DeliInventoryPage')) {
     include(__DIR__ . '/DeliInventoryPage.php');
 }
+if (!class_exists('DeliInventoryCat2Model')) {
+    include(__DIR__ . '/models/DeliInventoryCat2Model.php');
+}
 
 class DeliInventoryPage2 extends DeliInventoryPage
 {

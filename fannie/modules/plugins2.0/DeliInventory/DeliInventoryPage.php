@@ -4,6 +4,9 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('DeliInventoryCatModel')) {
+    include(__DIR__ . '/models/DeliInventoryCatModel.php');
+}
 
 class DeliInventoryPage extends FanniePage
 {
