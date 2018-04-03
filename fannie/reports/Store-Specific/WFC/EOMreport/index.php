@@ -345,7 +345,7 @@ if (!$output || isset($_REQUEST['recache'])){
 }
 echo $output;
 
-    $newTaxQ = 'SELECT description,
+    $newTaxQ = 'SELECT MAX(description) AS description,
                     SUM(regPrice) AS ttl,
                     numflag AS taxID
                 FROM is4c_trans.transarchive AS t
@@ -353,7 +353,7 @@ echo $output;
                     AND ' . DTrans::isStoreID($store, 't') . '
                     AND upc=\'TAXLINEITEM\'
                     AND ' . DTrans::isNotTesting() . '
-                GROUP BY taxID, description';
+                GROUP BY taxID';
     $sql = FannieDB::get($FANNIE_OP_DB);
     $prep = $sql->prepare($newTaxQ);
     $res = $sql->execute($prep, $args);

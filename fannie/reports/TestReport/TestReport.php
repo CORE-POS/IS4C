@@ -1,4 +1,4 @@
-<?php
+r<?php
 /*******************************************************************************
 
     Copyright 2012 Whole Foods Co-op
@@ -35,7 +35,7 @@ class TestReport extends FannieReportPage
     protected $title = "Fannie : Test Report";
     protected $header = "Test Report";
 
-    protected $report_headers = array('Selected Date Range','Selected Range Sales');
+    protected $report_headers = array('Starting Dates');
     protected $required_fields = array('date1', 'date2');
 
     protected $sortable = false;
@@ -73,79 +73,25 @@ class TestReport extends FannieReportPage
     public function report_description_content()
     {
         $ret = array();
-        $ret[] = $this->fetch_adjacent_period();
+        $ret[] = "
+            <button class='btn btn-default' data-toggle='collapse' data-target='#ifc'>Run New Dates</button>
+            <div class='inner-form-contents collapse' id='ifc'>{$this->form_content()}</div>
+        ";
         return $ret;
-    }
-
-    private function fetch_adjacent_period()
-    {
-        $date1 = FormLib::get('date1');
-        $date2 = FormLib::get('date2');
-        $temp1 = new DateTime($date1);
-        $temp2 = new DateTime($date2);
-        $diff = $temp1->diff($temp2, true);
-        $days = $diff->format('%a');
-
-        $formContents = array('store','equityType','compare');
-        foreach ($formContents as $input) {
-            ${$input} = FormLib::get($input);
-        }
-
-        $actions = array(
-            'increment' => array(
-                'action' => '+',
-                'glyph' => 'right',
-            ),
-            'decrement' => array(
-                'action' => '-',
-                'glyph' => 'left',
-            ),
-        );
-        foreach ($actions as $k => $row) {
-            if ($days == 0) {
-                $temp1->modify($row['action'].'1 Day');
-                $temp2->modify($row['action'].'1 Day');
-                $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-d');
-            } elseif ($days == 6) {
-                $temp1->modify($row['action'].'1 Week');
-                $temp2->modify($row['action'].'1 Week');
-                $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-d');
-            } else {
-                // assumes user in month view
-                $temp1->modify($row['action'].'1 Month');
-                $temp2->modify($row['action'].'31 Days');
-                $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-t');
-            }
-            ${'form'.$k} = '<form method="get" style="display: inline-block;">';
-            foreach ($formContents as $input) {
-                ${'form'.$k} .= "<input type='hidden' name='$input' value='${$input}'>";
-            }
-            ${'form'.$k} .= "<input type='hidden' name='date1' value='$newDate1'>";
-            ${'form'.$k} .= "<input type='hidden' name='date2' value='$newDate2'>";
-            ${'form'.$k} .= '<button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-chevron-'.$row['glyph'].'"></span></button>';
-            ${'form'.$k} .= '</form>';
-        }
-
-        return <<<HTML
-<div><label>Change Period</label>: $formdecrement | $formincrement</div>
-<div class="text-danger">Note: previous period button does not work and I don't know why. -Corey</div>
-HTML;
     }
 
     public function fetch_report_data()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $date1 = FormLib::get('date1');
-        $date2 = FormLib::get('date2');
+        $data = array();
         $store = FormLib::get('store');
         $equityType = FormLib::get('equityType');
-        $compare = FormLib::get('compare');
         $maxDepth = FormLib::get('depth');
-        $depth = 1;
+        $depth = 2;
+        for ($i=1; $i<13; $i++) {
+            ${'date'.$i} = FormLib::get('date'.$i, false);
+        }
 
         /*
             View which Equity Departments:
@@ -173,7 +119,6 @@ HTML;
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
-        $data = array();
         $query = "
             SELECT
                 $date_selector,
@@ -188,20 +133,30 @@ HTML;
             ORDER BY $date_selector";
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $prep = $dbc->prepare($query);
-        var_dump($prep);
         $result = $dbc->execute($prep,$args);
         while ($row = $dbc->fetchRow($result)) {
             $data[] = $this->rowToRecord($row);
         }
+        $this->report_headers[] = "<span class='lightweight'>$date1 | $date2</span>";
         
-        //additional query(-ies) to find comparable data
+        //additional queries to find comparable data
         $temp = array();
-        $tDate1 = $date1;
-        $tDate2 = $date2;
+        $depthRanges = array(
+            1 => array(1,2),
+            2 => array(3,4),
+            3 => array(5,6),
+            4 => array(7,8),
+            5 => array(9,10),
+            6 => array(11,12)
+        );
+        //$this->report_headers[] = $depth;
         while ($depth <= $maxDepth) {
+            $range1 = $depthRanges[$depth][0];
+            $range2 = $depthRanges[$depth][1];
+            $tDate1 = ${"date$range1"};
+            $tDate2 = ${"date$range2"};
             unset($temp);
             $temp = array();
-            list($compDate1,$compDate2) = $this->fetch_depth_data($tDate1,$tDate2,$depth);
             $query = "
                 SELECT
                     $date_selector,
@@ -214,7 +169,7 @@ HTML;
                     AND d.emp_no <> 1001
                 GROUP BY $date_selector
                 ORDER BY $date_selector";
-            $args = array($compDate1.' 00:00:00', $compDate2.' 23:59:59');
+            $args = array($tDate1.' 00:00:00', $tDate2.' 23:59:59');
             $prep = $dbc->prepare($query);
             $result = $dbc->execute($prep,$args);
             while ($row = $dbc->fetchRow($result)) {
@@ -223,19 +178,10 @@ HTML;
 
             // plug temp values into data
             foreach ($temp as $k => $row) {
-                if ($compare == 1) {
-                    $data[$k][0] .= " - $row[0]";
-                }
-                $data[$k][1+$depth] = $row[1];
+                $data[$k][$depth] = $row[1];
                 $data[$k][3+$depth] = $row[3];
             }
-            if ($compare == 2) {
-                $today = new DateTime();
-                $today->modify("- $depth Year");
-                $this->report_headers[] = "Sales From ".$today->format('Y');
-            } else {
-                $this->report_headers[] = 'Previous Period';
-            }
+            $this->report_headers[] = "<span class='lightweight'>$tDate1 | $tDate2</span>";
             $tDate1 = $compDate1;
             $tDate2 = $compDate2;
             $depth++;
@@ -245,81 +191,13 @@ HTML;
         return $data;
     }
 
-    private function fetch_adjacent_data($date1,$date2)
-    {
-        $temp1 = new DateTime($date1);
-        $temp2 = new DateTime($date2);
-        $diff = $temp1->diff($temp2, true);
-        $days = $diff->format('%a');
-
-        if ($days == 0) {
-            $temp1->modify('- 1 Day');
-            $temp2->modify('- 1 Day');
-            $newDate1 = $temp1->format('Y-m-d');
-            $newDate2 = $temp2->format('Y-m-d');
-        } elseif ($days == 6) {
-            $temp1->modify('- 1 Week');
-            $temp2->modify('- 1 Week');
-            $newDate1 = $temp1->format('Y-m-d');
-            $newDate2 = $temp2->format('Y-m-d');
-        } else {
-            // assumes we're probably looking at a month
-            $temp1->modify('- 1 Month');
-            $temp2->modify('- 31 Days');
-            $newDate1 = $temp1->format('Y-m-d');
-            $newDate2 = $temp2->format('Y-m-t');
-        }
-
-        return array($newDate1,$newDate2);
-    }
-
-    private function fetch_depth_data($date1,$date2,$depth)
-    {
-        $temp1 = new DateTime($date1);
-        $temp2 = new DateTime($date2);
-        $diff = $temp1->diff($temp2, true);
-        $days = $diff->format('%a');
-
-        if ($compare == 2) {
-            $temp1->modify("- $depth Year");
-            $temp2->modify("- $depth Year");
-            $newDate1 = $temp1->format('Y-m-d');
-            $newDate2 = $temp2->format('Y-m-d');
-        } else {
-            if ($days == 0) {
-                $temp1->modify('- 1 Day');
-                $temp2->modify('- 1 Day');
-                $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-d');
-            } elseif ($days == 6) {
-                $temp1->modify('- 1 Week');
-                $temp2->modify('- 1 Week');
-                $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-d');
-            } else {
-                //default compare is by month
-                $temp1->modify('- 1 Month');
-                $temp2->modify('- 31 Days');
-                $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-t');
-            }
-        }
-        
-        return array($newDate1,$newDate2);
-    }
 
     private function rowToRecord($row)
     {
-        $compare = FormLib::get('compare');
         $maxDepth = FormLib::get('depth');
         $ret = array();
-        if ($compare == 1) {
-            $ret[] = sprintf('%d/%d/%d', $row[1], $row[2], $row[0]);
-            $ret[] = sprintf('%.2f', $row['Equity']);
-        } else {
-            $ret[] = sprintf('%d/%d/%d', $row[1], $row[2], $row[0]);
-            $ret[] = sprintf('%.2f', $row['Equity']);
-        }
+        $ret[] = sprintf('%d/%d/%d', $row[1], $row[2], $row[0]);
+        $ret[] = sprintf('%.2f', $row['Equity']);
 
         return $ret;
     }
@@ -329,7 +207,7 @@ HTML;
         $maxDepth = FormLib::get('depth');
         $ret = array('Total');
         $sums = array();
-        for ($i=0; $i<=$maxDepth; $i++) {
+        for ($i=1; $i<=$maxDepth; $i++) {
             $sums[] = 0;
         }
         //$sums = array(0, 0, 0, 0);
@@ -350,7 +228,6 @@ HTML;
         foreach ($sums as $k => $v) {
             $ret[] = $sums[$k];
         }
-
         return $ret;
     }
 
@@ -380,7 +257,10 @@ $(function(){
         $('.row').each(function(){
             var visible = $(this).is(':visible');
             if (visible == false) {
+                var depth = $('#depth').val();
+                $('#depth').val(parseInt(depth,10)+1);
                 $(this).css('display','block').show();;
+                //(depth);
                 return false;
             }
         });
@@ -391,6 +271,42 @@ $('.prevBtn').on('click',function(){
     var fullname = $(this).attr('id');
     var type = fullname.substring(4,fullname.length-1);
     var start = fullname.substring(fullname.length-1);
+    var date1 = $('#date'+(start-2)).val();
+    date1 = new Date(date1);
+    date2 = new Date(date1);
+    date3 = new Date(date1);
+    switch (type) {
+        case 'Week': 
+            date1.setDate(date1.getDate() - 6);
+            var d = date1.getDate();
+            var m = date1.getMonth()+1;
+            var y = date1.getFullYear();
+            var newdate = y+'-'+m+'-'+d;
+            break;
+        case 'Month': 
+            date2.setMonth(date2.getMonth() - 1);
+            var d = date2.getDate();
+            var m = date2.getMonth()+1; var y = date2.getFullYear();
+            var newdate = y+'-'+m+'-'+d;
+            break;
+        case 'Year': 
+            date3.setFullYear(date3.getFullYear() - 1);
+            var d = date3.getDate();
+            var m = date3.getMonth()+1;
+            var y = date3.getFullYear();
+            var newdate = y+'-'+m+'-'+d;
+            break;
+    }
+    var newend = $('#date'+(start-2)).val();
+    newend = new Date(newend);
+    newend.setDate(newend.getDate()-1);
+    d = newend.getDate()+1;
+    m = newend.getMonth()+1;
+    y = newend.getFullYear();
+    newend = y+'-'+m+'-'+d;
+    var end = parseInt(start,10) + 1;
+    $('#date'+start).val(newdate);
+    $('#date'+end).val(newend);
 });
 JAVASCRIPT;
     }
@@ -413,6 +329,9 @@ HTML;
             $s = ($num == 1) ? 'selected' : '';
             $depthcontent .= "<option value='$num' $s>$num</option>"; 
         }
+        foreach ($_GET as $k => $v) {
+            ${$k} = $v; 
+        }
 
         $formInput = '';
         $d1 = 1;
@@ -427,11 +346,11 @@ HTML;
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Start Date</label>
-                                <input type="text" name="date1" id="date1" class="form-control date-field" required/>
+                                <input type="text" name="date1" id="date1" class="form-control date-field" value="%s"required/>
                             </div>
                             <div class="form-group">
                                 <label>End Date</label>
-                                <input type="text" name="date2" id="date2" class="form-control date-field" required/>
+                                <input type="text" name="date2" id="date2" class="form-control date-field" value="%s" required/>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -453,8 +372,16 @@ HTML;
                                 </select>
                             </div>
                         </div>
-                    </div>',
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <a class="btn btn-default btn-xs" id="addDateRange"><b>+</b> Add Another Range to Compare</a>
+                            </div>
+                        </div>
+                    </div>
+                    ',
                     $wordyNums[$i],
+                    $date1,
+                    $date2,
                     $ret['html'],
                     $equitypicker
                 );
@@ -463,8 +390,9 @@ HTML;
                 $hide = ($i > 1) ? 'collapse' : '';
                 $require = ($i < 2) ? 'required' : '';
                 $formInput .= sprintf ('
+        <div class="box">
             <div class="row %s">
-                <div class="col-md-4">
+                <div class="col-md-12">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i>%s</i> Date Range</div>
                         <div class="row">
@@ -472,11 +400,11 @@ HTML;
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>Start Date</label>
-                                        <input type="text" name="date%d" id="date%d" class="form-control date-field" %s/>
+                                        <input type="text" name="date%d" id="date%d" value="%s" class="form-control date-field" %s/>
                                     </div>
                                     <div class="form-group">
                                         <label>End Date</label>
-                                        <input type="text" name="date%d" id="date%d" class="form-control date-field" %s/>
+                                        <input type="text" name="date%d" id="date%d" value="%s" class="form-control date-field" %s/>
                                     </div>
                                     <table><tr>
                                         <td class="btn btn-default btn-xs prevBtn" id="prevWeek%d">Previous Week</p></td>
@@ -492,9 +420,15 @@ HTML;
                             </div>
                         </div>
                     </div>
-                </div>',
-                    $hide, $wordyNums[$i],
-                    $d1, $d1, $d2, $d2, $require, $require, $d1, $d1, $d1
+                </div>
+            </div>',
+                    $hide, 
+                    $wordyNums[$i],
+                    $d1, $d1, 
+                    ${"date$d1"},
+                    $require, $d2, $d2, 
+                    ${"date$d2"},
+                    $require, $d1, $d1, $d1
                 );
             }
 
@@ -516,15 +450,17 @@ HTML;
 
         }
 
+        //$curDepth = FormLib::get('depth', 1);
 
         return <<<HTML
 <form method="get" id="form1">
+    <input type="hidden" name="depth" id="depth" value="1"/>
+    <div>
     $formInput
-    <a href='#' id="addDateRange"><b>+</b> Add Another Range to Compare</a>
-    <p></p>
-    <p>
-        <button type="submit" class="btn btn-primary">Generate Report</button>
-    </p>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Generate New Report</button>
+    </div>
 </form>
 HTML;
     }
@@ -532,6 +468,20 @@ HTML;
     public function css_content()
     {
         return <<<CSS
+.inner-form-contents {
+    border: 5px solid lightgrey;
+    display: block;
+    display: none;
+    overflow: auto;
+}
+.box {
+    max-width: 350px;
+    float: left;
+    padding-right: 15px;
+}
+span.lightweight {
+    font-weight: normal;
+}
 .btn-p {
     padding-top: 10px;
     padding-left: 20px;
