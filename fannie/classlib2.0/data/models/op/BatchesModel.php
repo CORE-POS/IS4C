@@ -242,6 +242,7 @@ those same items revert to normal pricing.
                     batchList as b on b.upc='LC'+convert(varchar,v.likecode)
                     where b.batchID=?";
             }
+
         }
 
         $forceP = $this->connection->prepare($forceQ);
@@ -261,6 +262,10 @@ those same items revert to normal pricing.
                         SELECT b.upc FROM batchList AS b WHERE b.batchID=?
                     )");
             $invR = $this->connection->execute($invP, array($id));
+        }
+
+        if ($batchInfoW['discountType'] == 0) {
+            //$this->scaleSendPrice($id);
         }
 
         $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
@@ -549,6 +554,41 @@ those same items revert to normal pricing.
         }
 
         return $upcs;
+    }
+
+    private function scaleSendPrice($batchID)
+    {
+        $prep = $this->connection->prepare("SELECT upc, salePrice FROM batchList WHERE upc LIKE '002%' AND batchID=?");
+        $rows = $this->connection->getAllRows($prep, array($batchID));
+        if (count($rows) == 0) {
+            return;
+        }
+
+        $scaleP = $this->connection->prepare('SELECT s.host, s.scaleType, s.scaleDeptName, s.serviceScaleID
+            FROM ServiceScaleItemMap AS m
+                INNER JOIN ServiceScales AS s ON s.serviceScaleID=m.serviceScaleID
+            WHERE m.upc=?');
+        foreach ($rows as $row) {
+            $items = array();
+            $items[] = array(
+                'RecordType' => 'ChangeOneItem',
+                'PLU' => COREPOS\Fannie\API\item\ServiceScaleLib::upcToPLU($row['upc']),
+                'Price' => $row['salePrice'],
+            );
+            $scales = array();
+            $scaleR = $this->connection->execute($scaleP, array($row['upc']));
+            while ($scaleW = $this->connection->fetchRow($scaleR)) {
+                $scales[] = array(
+                    'host' => $scaleW['host'],
+                    'type' => $scaleW['scaleType'],
+                    'dept' => $scaleW['scaleDeptName'],
+                    'id' => $scaleW['serviceScaleID'],
+                    'new' => false,
+                );
+                COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($items, array($scale));
+                COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($items, array($scale));
+            }
+        }
     }
 
     protected function hookAddColumnowner()
