@@ -15,7 +15,7 @@ class SatelliteDuplicateCheck extends FannieTask
                 AND trans_status NOT IN ('Z')
             GROUP BY store_id, store_row_id
             HAVING COUNT(*) > 1";
-        $res = $dbc->query($query);
+        $res = $dbc->query($query, array($myID));
         if ($dbc->numRows($res)) {
             $addr = 'andy@wholefoods.coop';
             $from = "From: automail\r\n";
