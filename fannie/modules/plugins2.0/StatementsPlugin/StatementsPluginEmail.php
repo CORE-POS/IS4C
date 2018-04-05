@@ -101,6 +101,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $mail->addAddress($primary['email']);
             $mail->addBCC('bcarlson@wholefoods.coop');
             $mail->addBCC('andy@wholefoods.coop');
+            $mail->addBCC('awade@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
         }
