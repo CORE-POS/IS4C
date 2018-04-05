@@ -192,10 +192,7 @@ class EpScaleLib
                         $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);
                         break;
                     case 'Price':
-                        if ($item_info['Price'] > 9999) {
-                            $item_info['Price'] = 9999;
-                        }
-                        if ($item_info['Price'] != 0) {
+                        if ($item_info['Price'] != 0 && $item_info['Price'] < 9999) {
                             $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
                         }
                         break;
