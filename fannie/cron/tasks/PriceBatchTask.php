@@ -120,6 +120,17 @@ class PriceBatchTask extends FannieTask
         }
         if ($success) {
             $this->cronMsg("Price change batches run successfully");
+            $model = new BatchesModel($sql);
+            $res = $sql->query("SELECT l.batchID
+                FROM batchList AS l
+                    INNER JOIN batches AS b ON l.batchID=b.batchID
+                WHERE b.discounttype=0
+                    AND l.upc LIKE '002%'
+                    AND ".$sql->datediff($sql->now(),'b.startDate')." = 0
+                GROUP BY l.batchID");
+            while ($row = $sql->fetchRow($res)) {
+                //$model->scaleSendPrice($row['batchID']);
+            }
         } else {
             $this->cronMsg("Error running price change batches");
         }

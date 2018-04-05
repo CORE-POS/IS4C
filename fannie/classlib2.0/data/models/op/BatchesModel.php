@@ -556,7 +556,7 @@ those same items revert to normal pricing.
         return $upcs;
     }
 
-    private function scaleSendPrice($batchID)
+    public function scaleSendPrice($batchID)
     {
         $prep = $this->connection->prepare("SELECT upc, salePrice FROM batchList WHERE upc LIKE '002%' AND batchID=?");
         $rows = $this->connection->getAllRows($prep, array($batchID));
