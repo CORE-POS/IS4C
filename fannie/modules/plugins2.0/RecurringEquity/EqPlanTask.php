@@ -11,6 +11,8 @@ class EqPlanTask extends FannieTask
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->getOnline($dbc);
         $this->getInStore($dbc);
+
+        $this->cronMsg('Trigger an email', FannieLogger::ALERT);
     }
 
     private function hasPlan($dbc, $card)
