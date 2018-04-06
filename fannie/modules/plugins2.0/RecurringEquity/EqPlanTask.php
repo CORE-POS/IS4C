@@ -12,7 +12,7 @@ class EqPlanTask extends FannieTask
         $this->getOnline($dbc);
         $this->getInStore($dbc);
 
-        $this->cronMsg('Trigger an email', FannieLogger::ALERT);
+        $this->unexpectedPayments($dbc);
     }
 
     private function hasPlan($dbc, $card)
@@ -83,6 +83,26 @@ class EqPlanTask extends FannieTask
             if ($card && !$this->hasPlan($dbc, $card)) {
                 $this->createPlan($dbc, $card, 2);
             }
+        }
+    }
+
+    private function unexpectedPayments($dbc)
+    {
+        $yesterday = date('Y-m-d', strtotime('yesterday'));
+        $dlog = DTransactionsModel::selectDlog($yesterday);
+
+        $res = $dbc->query("
+            SELECT d.card_no
+            FROM {$dlog} AS d
+                INNER JOIN EquityPaymentPlanAccounts AS e ON d.card_no=e.cardNo
+            WHERE emp_no <> 1001
+                AND store_id <> 50
+                AND department = 992
+            GROUP BY d.card_no
+            HAVING SUM(total) <> 0
+        ");
+        while ($row = $dbc->fetchRow($res)) {
+            $this->cronMsg('Unexpected equity payment from owner #' . $row['card_no'], FannieLogger::ALERT);
         }
     }
 }
