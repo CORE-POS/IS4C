@@ -99,6 +99,9 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $mail->Body = $html;
             $mail->AltBody = $body;
             $mail->addAddress($primary['email']);
+            if ($primary['email'] == 'carmen.lesavage@gmail.com') {
+                $mail->addCC('lesavagefamily@aol.com');
+            }
             $mail->addBCC('bcarlson@wholefoods.coop');
             $mail->addBCC('andy@wholefoods.coop');
             $mail->addBCC('awade@wholefoods.coop');
