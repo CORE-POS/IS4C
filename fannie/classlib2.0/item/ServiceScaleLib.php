@@ -47,6 +47,7 @@ class ServiceScaleLib
         'Type' => array('name'=>'Item Type', 'required'=>true, 'default'=>'Random Weight'),
         'NetWeight' => array('name'=>'Net Weight', 'required'=>false, 'default'=>'0'),
         'Graphics' => array('name'=>'Graphics Number', 'required'=>false, 'default'=>'0'),
+        'inUse' => array('name'=>'inUse', 'required'=>false, 'default'=>'1'),
     );
 
     static public function sessionKey()
