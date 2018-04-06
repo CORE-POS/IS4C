@@ -25,6 +25,9 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('SubAgreement')) {
+    include(__DIR__ . '/sub/SubAgreement.php');
+}
 
 class PISignaturePage extends FannieRESTfulPage 
 {
