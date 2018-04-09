@@ -91,16 +91,18 @@ class EqPlanTask extends FannieTask
         $yesterday = date('Y-m-d', strtotime('yesterday'));
         $dlog = DTransactionsModel::selectDlog($yesterday);
 
-        $res = $dbc->query("
+        $prep = $dbc->prepare("
             SELECT d.card_no
             FROM {$dlog} AS d
                 INNER JOIN EquityPaymentPlanAccounts AS e ON d.card_no=e.cardNo
             WHERE emp_no <> 1001
                 AND store_id <> 50
-                AND department = 992
+                AND department = 991
+                AND tdate BETWEEN ? AND ?
             GROUP BY d.card_no
             HAVING SUM(total) <> 0
         ");
+        $res = $dbc->execute($prep, array($yesterday . ' 00:00:00', $yesterday . ' 23:59:59'));
         while ($row = $dbc->fetchRow($res)) {
             $this->cronMsg('Unexpected equity payment from owner #' . $row['card_no'], FannieLogger::ALERT);
         }
