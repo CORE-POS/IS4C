@@ -49,11 +49,7 @@ class WicableByDepartment extends FannieRESTfulPage
                             ');
         $res = $dbc->execute($prep, $_GET['id']);
         $row = $dbc->fetchRow($res);
-        if (mysql_errno() > 0) {
-            echo mysql_errno() . ": " . mysql_error(). "<br>";
-        } else {
-            echo "Items for department " . $_GET['id'] . " are now wicable.";
-        }
+        return "Items for department " . $_GET['id'] . " are now wicable.";
     }
     
     public function get_id_view()

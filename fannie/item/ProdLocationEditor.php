@@ -66,9 +66,6 @@ class ProdLocationEditor extends FannieRESTfulPage
                 values (?, ?)
         ');
         $dbc->execute($prep, $args);
-        if (mysql_errno() > 0) {
-            echo mysql_errno() . ": " . mysql_error(). "<br>";
-        }
 
         $ret = '';
         if ($dbc->error()) {
@@ -118,9 +115,6 @@ class ProdLocationEditor extends FannieRESTfulPage
                     AND floorSectionProductMapID = ?;
             ');
             $dbc->execute($prep, $args);
-            if (mysql_errno() > 0) {
-                echo mysql_errno() . ": " . mysql_error(). "<br>";
-            }
         }
 
         $ret = '';
@@ -168,11 +162,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             $args = array($upc, $section );
             $dbc->execute($prep, $args);
         }
-        if (mysql_errno() > 0) {
-            echo mysql_errno() . ": " . mysql_error(). "<br>";
-        } else {
-            $ret .= '<div class="alert alert-success">Update Successful</div>';
-        }
+        $ret .= '<div class="alert alert-success">Update Successful</div>';
 
         $cache = new FloorSectionsListTableModel($dbc);
         $cache->refresh();
@@ -218,11 +208,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             ');
             $dbc->execute($prep, $args);
         }
-        if (mysql_errno() > 0) {
-            echo mysql_errno() . ": " . mysql_error(). "<br>";
-        } else {
-            $ret .= '<div class="alert alert-success">Update Successful</div>';
-        }
+        $ret .= '<div class="alert alert-success">Update Successful</div>';
 
         $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
@@ -298,9 +284,6 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $item[$row['upc']]['brand'] = $row['brand'];
                 $item[$row['upc']]['dept_name'] = $row['dept_name'];
             }
-            if (mysql_errno() > 0) {
-                echo mysql_errno() . ": " . mysql_error(). "<br>";
-            }
 
             foreach ($item as $upc => $row) {
                 $item[$upc]['sugDept'] = $this->getLocation($item[$upc]['dept'],$dbc);
@@ -317,9 +300,6 @@ class ProdLocationEditor extends FannieRESTfulPage
             $floor_section = array();
             while($row = $dbc->fetch_row($result)) {
                 $floor_section[$row['floorSectionID']] = $row['name'];
-            }
-            if (mysql_errno() > 0) {
-                echo mysql_errno() . ": " . mysql_error(). "<br>";
             }
 
             $ret = "";
@@ -602,9 +582,6 @@ class ProdLocationEditor extends FannieRESTfulPage
             $floor_section = array();
             while($row = $dbc->fetch_row($result)) {
                 $floor_section[$row['floorSectionID']] = $row['name'];
-            }
-            if (mysql_errno() > 0) {
-                echo mysql_errno() . ": " . mysql_error(). "<br>";
             }
             $floor_section['none'] = 'none';
 

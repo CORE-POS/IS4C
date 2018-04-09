@@ -1338,7 +1338,7 @@ class Spreadsheet_Excel_Writer_Worksheet extends Spreadsheet_Excel_Writer_BIFFwr
         $row     = $match[2];
 
         // Convert base26 column string to number
-        $chars = split('', $col);
+        $chars = str_split($col, 1);
         $expn  = 0;
         $col   = 0;
 

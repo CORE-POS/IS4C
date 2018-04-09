@@ -41,7 +41,7 @@ if (!function_exists('cron_msg')) {
 
 set_time_limit(0);
 
-$path = __DIR__ '/../cache/cachefiles/daily/';
+$path = __DIR__ . '/../cache/cachefiles/daily/';
 if (!file_exists($path)) {
     return;
 }
