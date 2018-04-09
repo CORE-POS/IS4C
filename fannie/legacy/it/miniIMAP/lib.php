@@ -25,7 +25,7 @@ function get_body($mb,$num,$fix_newlines=True){
 
     if(!empty($dataHtml)) return $dataHtml;    
     if ($fix_newlines)
-        $dataTxt = ereg_replace("\n","<br>",$dataTxt);
+        $dataTxt = str_replace("\n","<br>",$dataTxt);
     return $dataTxt;
 }
 

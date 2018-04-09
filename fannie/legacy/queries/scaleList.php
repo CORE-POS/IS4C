@@ -42,7 +42,7 @@ if (isset($_GET['orderby']) && $_GET['orderby'] == 'itemdesc')
     $query .= 'itemdesc';
 else
     $query .= 'plu';
-if (isset($_GET['sort']) && $_GET['sort'] == 'Desc'))
+if (isset($_GET['sort']) && $_GET['sort'] == 'Desc')
     $query .= ' DESC';
 $result = $sql->query($query);
 

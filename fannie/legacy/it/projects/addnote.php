@@ -11,7 +11,7 @@ if(isset($_POST['name'])){
   $notes = preg_replace('/\n/','<br />',$_POST['notes']);
   $date = date("y/m/d : H:i:s",time());
 
-  $q $sql->prepare("insert into project_notes values(?, ?, ?, ?)");
+  $q = $sql->prepare("insert into project_notes values(?, ?, ?, ?)");
   $r = $sql->execute($q, array($projID, $name, $notes, $date));
 
   // get the project description

@@ -25,11 +25,6 @@ function select_cols_to_table($query,$border,$bgcolor,$cols)
         //layout table header
         echo "<table border = $border bgcolor=$bgcolor>\n";
         echo "<tr align left>\n";
-        /*for($i=0; $i<5; $i++)
-        {
-                echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
-        }
-        echo "</tr>\n"; *///end table header
         //layout table body
         while($row = $sql->fetch_row($results))
         {
@@ -39,10 +34,9 @@ function select_cols_to_table($query,$border,$bgcolor,$cols)
                         {
                                 echo "NULL";
                         }elseif(isset($row[5])){
-                                 ?>
-                                 <a href="transaction.php?id=<? echo $row[5]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                             echo "<a href=\"transaction.php?id={$row[5]}\">";
+                             echo $row[0] . '</a>';
+                            echo "</td>";
                         }
             else {
                 echo $row[0]."</td>";
@@ -72,11 +66,6 @@ function select_to_table($query,$border,$bgcolor)
     //layout table header
     echo "<table border = $border bgcolor=$bgcolor>\n";
     echo "<tr align left>\n";
-    /*for($i=0; $i<5; $i++)
-    {
-        echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
-    }
-    echo "</tr>\n"; *///end table header
     //layout table body
     while($row = $sql->fetch_row($results))
     {
@@ -86,10 +75,9 @@ function select_to_table($query,$border,$bgcolor)
             {
                 echo "NULL";
             }else{
-                 ?>
-                 <a href="transaction.php?id=<? echo $row[5]; ?>">
-                 <? echo $row[0]; ?></a>
-            <? echo "</td>";
+                 echo "<a href=\"productTestLike.php?upc={$row[0]}\">";
+                 echo $row[0] . '</a>';
+                echo "</td>";
             }
         for ($i=1;$i<$number_cols-1; $i++)
         {
@@ -117,11 +105,6 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
         //layout table header
         echo "<table border = $border bgcolor=$bgcolor>\n";
         echo "<tr align left>\n";
-        /*for($i=0; $i<5; $i++)
-        {
-                echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
-        }
-        echo "</tr>\n"; *///end table header
         //layout table body
         while($row = $sql->fetch_row($results))
         {
@@ -136,10 +119,9 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
                         {
                                 echo "NULL";
                         }else{
-                                 ?>
-                                 <a href="productTestLike.php?upc=<? echo $row[0]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 echo "<a href=\"productTestLike.php?upc={$row[0]}\">";
+                                 echo $row[0] . '</a>';
+                                echo "</td>";
                         }
         echo "<td width=250>";
         if(!isset($row[1]))
@@ -174,11 +156,6 @@ function like_to_table($query,$border,$bgcolor)
         //layout table header
         echo "<table border = $border bgcolor=$bgcolor>\n";
         echo "<tr align left>\n";
-        /*for($i=0; $i<5; $i++)
-        {
-                echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
-        }
-        echo "</tr>\n"; *///end table header
         //layout table body
         while($row = $sql->fetch_row($results))
         {
@@ -188,10 +165,9 @@ function like_to_table($query,$border,$bgcolor)
                         {
                                 echo "NULL";
                         }else{
-                                 ?>
-                                 <a href="productTestLike.php?upc=<? echo $row[0]; ?>">
-                                 <? echo $row[0]; ?></a>
-                        <? echo "</td>";
+                                 echo "<a href=\"productTestLike.php?upc={$row[0]}\">";
+                                 echo $row[0] . '</a>';
+                                echo "</td>";
                         }
                 for ($i=1;$i<$number_cols-1; $i++)
                 {
@@ -206,9 +182,6 @@ function like_to_table($query,$border,$bgcolor)
                 } echo "</tr>\n";
         } echo "</table>\n";
 }
-
-
-
 
 function receipt_to_table($query,$query2,$border,$bgcolor)
 {
@@ -238,11 +211,6 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
     echo "<tr><td align=center colspan=4>Cashier:&nbsp;$row2[4]</td></tr>";
     echo "<tr><td colspan=4>&nbsp;</td></tr>";
     echo "<tr align left>\n";
-    /*for($i=0; $i<5; $i++)
-    {
-        echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
-    }
-    echo "</tr>\n"; *///end table header
     //layout table body
     while($row = $sql->fetch_row($results))
     {
@@ -252,9 +220,8 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
             {
                 echo "NULL";
             }else{
-                 ?>
-                 <? echo $row[0]; ?>
-            <? echo "</td>";
+                 echo $row[0];
+                echo "</td>";
             }
         for ($i=1;$i<$number_cols-1; $i++)
         {
@@ -278,8 +245,6 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
     echo "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
     echo "<tr><td colspan=4 align=center>Member #: $row2[1]</td</tr>";
     echo "</table>\n";
-
-
 }
 
 function edit_receipt($query,$query2,$border,$bgcolor)
@@ -308,9 +273,8 @@ function edit_receipt($query,$query2,$border,$bgcolor)
                         {
                                 echo "NULL";
                         }else{
-                                 ?>
-                                 <? echo $row[0]; ?>
-                        <? echo "</td>";
+                                 echo $row[0];
+                        echo "</td>";
                         }
                 for ($i=1;$i<$number_cols-1; $i++)
                 {

@@ -310,7 +310,7 @@ else {
            //Start laying out a label 
            $pdf->SetFont('Arial','',8);  //Set the font 
 
-           $words = split("[ ,-]",$desc);
+           $words = preg_split("/[ ,-]/",$desc);
            $limit = 13;
            $lineheight = 0;
            $curStr = "";

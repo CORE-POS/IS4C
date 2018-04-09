@@ -88,7 +88,7 @@ $row = array();
 while($t_row = $sql->fetch_row($result)){
     if ($curMem != $t_row[0]) {
         if ($curMem != -1){
-            $b = printLine($row, $stock $b);
+            $b = printLine($row, $stock, $b);
         }
         $curMem = $t_row[0];
         $row = $t_row;
@@ -102,7 +102,7 @@ while($t_row = $sql->fetch_row($result)){
         $stock += $t_row[9];
 
 }
-$b = printLine($row, $stock $b);
+$b = printLine($row, $stock, $b);
 echo "</table>";
 
 $output = ob_get_contents();
