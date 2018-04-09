@@ -96,7 +96,7 @@ class OLE extends PEAR
     * Creates a new OLE object
     * @access public
     */
-    function OLE()
+    function __construct()
     {
         $this->_list = array();
     }

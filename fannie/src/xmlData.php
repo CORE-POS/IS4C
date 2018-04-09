@@ -8,7 +8,7 @@ class xmlData {
     var $curTag;
     var $valid;
 
-    function xmlData($str){
+    function __construct($str){
         $this->valid = False;
         $this->parser = xml_parser_create();
         xml_set_object($this->parser,$this);
