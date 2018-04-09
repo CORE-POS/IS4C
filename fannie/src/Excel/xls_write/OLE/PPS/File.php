@@ -49,7 +49,7 @@ class OLE_PPS_File extends OLE_PPS
     {
         $s = new System();
         $this->_tmp_dir = $s->tmpdir();
-        $this->OLE_PPS(
+        parent::__construct(
             null, 
             $name,
             OLE_PPS_TYPE_FILE,
