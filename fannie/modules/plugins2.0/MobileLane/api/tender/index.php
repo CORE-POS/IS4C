@@ -34,7 +34,7 @@ class TenderEndPoint extends JsonEndPoint
         $tender->TenderCode($json['type']);
         $tender->load();
 
-        $due = $json['amt']Due($dbc);
+        $due = $json['amt'];
 
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc->selectDB($settings['MobileLaneDB']);
