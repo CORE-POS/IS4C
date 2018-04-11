@@ -50,7 +50,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     protected function getOuStart($weekID)
     {
-        if ($weekID >= 188) {
+        if ($weekID >= 201) {
+            return 201;
+        } elseif ($weekID >= 188) {
             return 188;
         } elseif ($weekID >= 175) { // Week of Oct 2, 2017
             return 175;
