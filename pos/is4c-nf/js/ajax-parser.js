@@ -18,7 +18,7 @@ function parserError(xhr, statusText, err)
 
 function customerWindowHtml(selector, content)
 {
-    if (CustomerDisplay) {
+    if (typeof CustomerDisplay !== "undefined") {
         CustomerDisplay.updateCustomerDisplay(selector, content);
     }
 }
