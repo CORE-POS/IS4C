@@ -448,7 +448,7 @@ if (!$specialDeptMapExists) {
 </td></tr>
 <tr>
     <td colspan=2>
-    <b><?php echo _('Variable Weight Item Mapping'); ?></b> <?php echo _('(UPC Prefix "2")'); ?>:<br />
+    <b><?php echo _('Variable Weight Item Handling'); ?></b> <?php echo _('(UPC Prefix "2")'); ?>:<br />
     <?php echo _('Variable-weight items do not have identical barcodes because the
     price is encoded in the barcode. A translator is required to map
     these different barcodes back to one logical product.'); ?>
@@ -463,6 +463,16 @@ if (!$specialDeptMapExists) {
     $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrite');
     echo $form->selectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
     ?>
+    </td>
+</tr>
+<tr>
+    <td>
+    <b><?php echo _('Apply Sale Pricing on Scan'); ?></b>:
+    <?php
+    echo $form->selectField('VariableNoSalePrice', array(1=>_('No'), 0=>_('Yes')), 0);
+    ?>
+    </td>
+    <td>
     </td>
 </tr>
 <tr><td colspan=2>

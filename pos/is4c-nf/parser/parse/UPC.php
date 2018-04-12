@@ -389,7 +389,7 @@ class UPC extends Parser
            assigned cannot calculate a proper quantity.
         */
         if ($scaleStickerItem) {
-            if ($discountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
+            if ($discountObject->isSale() && $scale == 1 && $row['normal_price'] != 0 && $this->session->get('VariableNoSalePrice') != 1) {
                 $quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
             } elseif ($scale == 1 && $row['normal_price'] != 0) {
                 $quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
