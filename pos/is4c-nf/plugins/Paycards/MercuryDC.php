@@ -493,6 +493,9 @@ class MercuryDC extends MercuryE2E
         $entryMethod = $xml->query('/RStream/TranResponse/EntryMethod');
         $name = $respName ? $respName : 'Cardholder';
         $request->updateCardInfo($pan, $name, $issuer, $entryMethod);
+        if (false && strtoupper($entryMethod) == 'CHIP' && $this->conf->get('EmvSignature')) {
+            $this->conf->set('EmvSignature', false);
+        }
 
         switch (strtoupper($xml->query('/RStream/CmdResponse/CmdStatus'))) {
             case 'APPROVED':
@@ -510,7 +513,7 @@ class MercuryDC extends MercuryE2E
                     $this->conf->set('boxMsg', sprintf('Error: %s<br />Card Balance: $%.2f', $texts, $ebtbalance));
                 }
                 $dsix = $xml->query('/RStream/CmdResponse/DSIXReturnCode');
-                if ($dsix !== '001007' || $dsix !== '003007' || $dsix !== '003010') {
+                if ($dsix !== '001007' && $dsix !== '003007' && $dsix !== '003010') {
                     /* These error codes indicate a potential connectivity
                      * error mid-transaction. Do not add a comment record to
                      * the transaction to avoid incrementing InvoiceNo
