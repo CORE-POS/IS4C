@@ -298,7 +298,7 @@ HTML;
         list($emp,$reg,$trans) = explode("-", $transNum, 3);
 
         $query = $dbc->prepare("SELECT transType AS mode, amount, PAN, 
-            CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
+            CASE WHEN manual=1 THEN 'Manual' WHEN manual=-1 THEN 'Chip' ELSE 'Swiped' END as entryMethod,
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
             refNum, processor
             FROM " . FannieDB::fqn('PaycardTransactions', 'trans') . "
