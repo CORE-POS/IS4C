@@ -38,18 +38,25 @@ class TrainingsPage extends FannieRESTfulPage
      {
          $editCSS = FannieAuth::validateUserQuiet('hr_editor') ? '' : 'collapse';
          $res = $this->connection->query('
-            Select trainingName
+            Select trainingID,
+            trainingName
             FROM ' . FannieDB::fqn('Trainings', 'plugin:HrWebDB') . '
             ORDER BY trainingName');
          $table = '';
          while ($row = $this->connection->fetchRow($res)) {
-             $table .= "<tr><td>{$row['trainingName']}</td></tr>";
+            $table .= "<tr><td>{$row['trainingName']}</td><td>
+            <a href=\"TrainingsPage.php?id={$row['trainingID']}\">Edit</a>
+            </td></tr>";
+           
          }
 
          return <<<HTML
 <p><a href="../HrMenu.php" class="btn btn-default">Main Menu</a></p>
 <table class="table table=bordered table-striped">
-    <tr><th>Name</th></tr>
+    <tr>
+    <th>Name</th>
+    <th>Edit</th>
+    </tr>
     {$table}
 </table>
 <div class="panel panel-default ($editCSS}">
