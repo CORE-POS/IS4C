@@ -47,6 +47,8 @@ class AccessProgramReceipt extends ReceiptMessage
         $msg = str_replace('only', $only, $msg);
         $msg = str_replace('annually', $annually, $msg);
 
+        $this->updateReceiptMessage();
+
         return "\n" . $msg . "\n";
     }
 
@@ -117,6 +119,21 @@ class AccessProgramReceipt extends ReceiptMessage
         }
 
         return $ret;
+    }
+
+    private function updateReceiptMessage()
+    {
+        $dbc = Database::pDataConnect();
+        $chkP = $dbc->prepare("SELECT card_no FROM custReceiptMessage
+            WHERE msg_text like 'Access Discount valid%' AND card_no=?");
+        $chk = $dbc->getValue($chkP, array(CoreLocal::get('memberID')));
+        if ($chk !== false) {
+            $upP = $dbc->prepare("UPDATE custReceiptMessage SET msg_text=?
+                WHERE msg_text like 'Access Discount valid%' AND card_no=?");
+            $date = new DateTime();
+            $date->add(new DateInterval('P1Y'));
+            $dbc->execute($upP, array($date->format('Y-m-d'), CoreLocal::get('memberID')));
+        }
     }
 }
 
