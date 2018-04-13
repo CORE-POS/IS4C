@@ -112,7 +112,7 @@ class EpScaleLib
         $line .= 'DS4' . '0' . chr(253);
         $line .= 'UPR' . (isset($item_info['Price']) ? round(100*$item_info['Price']) : '0') . chr(253);
         $line .= 'EPR' . '0' . chr(253);
-        $line .= 'FWT' . (isset($item_info['NetWeight']) ? $item_info['NetWeight'] : '0') . chr(253);
+        $line .= 'FWT' . (isset($item_info['NetWeight']) ? sprintf('%d', $item_info['NetWeight']) : '0') . chr(253);
         if ($item_info['Type'] == 'Random Weight') {
             $line .= 'UMELB' . chr(253);
         } else {
@@ -206,7 +206,7 @@ class EpScaleLib
                         }
                         break;
                     case 'NetWeight':
-                        $line .= 'FWT' . $item_info[$key] . chr(253);
+                        $line .= 'FWT' . sprintf('%d', $item_info[$key]) . chr(253);
                         break;
                     case 'Graphics':
                         $line .= 'GNO' . str_pad($item_info[$key],6,'0',STR_PAD_LEFT) . chr(253);
