@@ -25,6 +25,9 @@ include(__DIR__.'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('wfcuRegistryModel')) {
+    include(__DIR__ . '/wfcuRegistryModel.php');
+}
 
 class WfcClassRegistryPage extends FanniePage
 {
@@ -383,7 +386,7 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= 'checked="checked" ';
         }
         $ret .= ' ><i style="padding: 20;"> Don\'t show expired Classes</i> ';
-        if ($soldOut[$curPlu] == 1) {
+        if (isset($soldOut[$curPlu]) && $soldOut[$curPlu] == 1) {
             $ret .= "<span class='soldOut' title='This class has been removed from online sign-up.'>CLASS IS SOLD OUT</span>";
         }
         $ret .= '</div>';
@@ -401,8 +404,8 @@ class WfcClassRegistryPage extends FanniePage
         $ret .= '</div>';
 
         $key = FormLib::get('class_plu');
-        $plu = $classUPC[$key];
-        $this->plu = $classUPC[$key];
+        $plu = isset($classUPC[$key]) ? $classUPC[$key] : '';
+        $this->plu = $plu;
 
         //* Create table if it doesn't exist
         $prep = $dbc->prepare("CREATE TABLE IF NOT EXISTS
@@ -492,8 +495,8 @@ class WfcClassRegistryPage extends FanniePage
 
         if ($key > -1) {
             //* Class Roster
-            $ret .= "<div style='float: left'><h3>" . $className[$key] . "</h3></div>";
-            $ret .= "<h4 align=\"center\">" . $classDate[$key] . "</h4>";
+            $ret .= "<div style='float: left'><h3>" . (isset($className[$key]) ? $className[$key] : '') . "</h3></div>";
+            $ret .= "<h4 align=\"center\">" . (isset($classDate[$key]) ? $classDate[$key] : '') . "</h4>";
             $ret .= "<h5 align='center'><a href='/git/fannie/item/ItemEditorPage.php?searchupc=" . $plu . "' target='_blank'>PLU: " . $plu . "</a></h5>";
             $ret .= "<div id=\"line-div\"></div>";
 
