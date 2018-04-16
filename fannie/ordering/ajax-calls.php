@@ -540,7 +540,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
             trans_id
         FROM ' . $TRANS . $from . '
         WHERE order_id=?
-            AND trans_id > 0');
+            AND trans_id > 0
+        ORDER BY trans_id');
     $itemR = $dbc->execute($itemP, array($old_id));
     while ($itemW = $dbc->fetchRow($itemR)) {
         $prod = $dbc->execute($prodP, array($itemW['upc']));
