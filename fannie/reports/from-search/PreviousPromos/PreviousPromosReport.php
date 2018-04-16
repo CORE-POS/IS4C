@@ -50,7 +50,7 @@ class PreviousPromosReport extends FannieReportPage
                 INNER JOIN batchType AS t ON b.batchType=t.batchTypeID
             WHERE l.upc=?
                 AND t.datedSigns = 1
-                AND b.batchType = 1
+                AND b.batchType IN (1,2)
                 AND b.discountType > 0
                 AND b.endDate < " . $dbc->curdate() . "
             ORDER BY b.endDate DESC
