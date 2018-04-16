@@ -52,7 +52,7 @@ class AccessProgramParser extends Parser {
 
         if ($str == 'ACCESS') {
             if (CoreLocal::get('AccessQuickMenu') != '' && class_exists('QuickMenuLauncher')) {
-                $qm = new QuickMenuLauncher();
+                $qm = new QuickMenuLauncher($this->session);
 
                 return $qm->parse('QM' . CoreLocal::get('AccessQuickMenu'));
             } else {
