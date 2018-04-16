@@ -431,13 +431,13 @@ HTML;
                 $action = '<td class="alert alert-warning" align="center">Batch found in log</td>';
             } else {
                 $action = "<td class='btn btn-default btn-sm' style='width:100%;
-                    border: 1px solid lightgreen;' onClick='addBatch({$bid}); return false;'>
+                    border: 1px solid orange;' onClick='addBatch({$bid}); return false;'>
                     + Add to log</td>";
             }
             $bData .= "
-                <label class='text-success'>New Batch</label>
+                <label class='text-info'>New Batch</label>
                 <div class='batchTable'>
-                <table class='table table-condensed table-striped alert-success'>
+                <table class='table table-condensed table-striped alert-info'>
                     <thead><th>Name</th><th>BatchID</th><th>Owner</th><th>BatchType</th><th></td></thead>
                     <tbody>
                         <tr><td><a href=\"{$bidLn}\" target=\"_blank\">{$bid}</a></td><td>{$name}</td><td>{$owner}</td><td>{$type}</td>
@@ -451,9 +451,9 @@ HTML;
         /*
             tableA = unforced batches | tableB = forced.
         */
-        $pAllBtn = "<button class='btn btn-default btn-xs' style='border: 3px solid lightgreen;'
+        $pAllBtn = "<button class='btn btn-default btn-xs' style='border: 1px solid orange;'
             onClick='printAll(); return false;'>Print All</button>";
-        $tableA = "<table class='table table-condensed table-striped alert-warning'><thead><tr>
+        $tableA = "<table class='table table-condensed table-striped alert-info'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
             <th>Comments</th><th></th><th>{$pAllBtn}</th><tr></thead><tbody>";
         $tableB = "<table class='table table-condensed table-striped small alert-info'><thead><tr>
@@ -492,7 +492,7 @@ HTML;
                     '/>{$row['comments']}</textarea></td>";
                 $action = '';
                 if ($row['printed'] == 0) {
-                    $action = "<td class='btn btn-default btn-wide' style='border: 1px solid lightgreen;'
+                    $action = "<td class='btn btn-default btn-wide' style='border: 1px solid orange;'
                         onClick='printBatch($curBid); return false;'>Print</td>";
                 } else {
                     $action = "<td class='btn btn-default btn-wide' style='border: 1px solid tomato;'
@@ -537,7 +537,7 @@ HTML;
             </form>
         </div>
         {$bData}
-        <label class="text-warning">Staged Batches</label>
+        <label class="text-info">Staged Batches</label>
         <div class="batchTable">
             {$tableA}
         </div>
@@ -615,7 +615,7 @@ HTML;
                 $pr->reset();
                 $pr->upc($obj->upc());
                 if ($pr->load()) {
-                    $table .= '<td>'.$pr->reviewed().'</td>';
+                    $table .= '<td class="reviewed">'.$pr->reviewed().'</td>';
                 } else {
                     $table .= '<td><i class="text-danger">no review date</i></td>';
                 }
@@ -888,6 +888,24 @@ $(document).ready( function() {
     clickStar();
 });
 
+var pigeonholes = {};
+var colors = ['white','orange','tomato','purple','cyan','lightblue','yellowgreen'];
+var x = 0;
+$('td.reviewed').each(function(){
+    var date = $(this).text();
+    if (date in pigeonholes) {
+    } else {
+        pigeonholes[date] = colors[x]; 
+        x++;
+    }
+});
+$('td.reviewed').each(function(){
+    var date = $(this).text();
+    if (date in pigeonholes) {
+        $(this).css('background','linear-gradient(to right, white, 80%, '+pigeonholes[date]+')');
+    }
+});
+
 function deleteRow(id)
 {
     var url = "ProdReviewPage.php?batchLog=1&deleteRow=1&id="+id;
@@ -1027,7 +1045,9 @@ function fadeAlerts()
 .panel-default {
     border: none;
 }
-.alert-info {
+table.alert-info,
+table.alert-primary,
+table.alert-success {
     background: #e0e0e0;
 }
 textarea { resize: vertical }
