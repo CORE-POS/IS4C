@@ -323,7 +323,7 @@ JAVASCRIPT;
 </select>
 HTML;
         $nums = range('1','10');
-        $wordyNums = array(1=>'First', 2=>'Second', 3=>'Third', 4=>'Fourth', 5=>'Fifth', 6=>'Sixth');
+        $wordyNums = array(1=>'1st', 2=>'2nd', 3=>'3rd', 4=>'Fourth', 5=>'Fifth', 6=>'Sixth');
         $depthcontent = '';
         foreach ($nums as $num) {
             $s = ($num == 1) ? 'selected' : '';
@@ -340,7 +340,7 @@ HTML;
             if ($i == 1) {
                 $formInput .= sprintf('
             <div class="panel panel-default">
-                <div class="panel-heading"><i>%s</i> Date Range</div>
+                <div class="panel-heading"><b>%s</b> Date Range</div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="col-md-6">
@@ -394,7 +394,7 @@ HTML;
             <div class="row %s">
                 <div class="col-md-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><i>%s</i> Date Range</div>
+                        <div class="panel-heading"><b>%s</b> Date Range</div>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="col-md-12">
