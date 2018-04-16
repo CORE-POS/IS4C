@@ -329,8 +329,8 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
 
     private function savePhotos($model)
     {
-        if ($this->savePhoto($model->upc(), 'item')) {
-            $model->photo(ltrim($model->upc(), '0') . '.png');
+        if (($file=$this->savePhoto($model->upc(), 'item')) !== false) {
+            $model->photo($file);
         }
         if ($this->savePhoto($model->upc(), 'nf')) {
             $model->nutritionFacts(ltrim($model->upc(), '0') . '.png');
@@ -343,11 +343,14 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         if ($this->validPhoto($type)) {
             $infile = $_FILES['image_' . $type]['tmp_name'];
-            $outfile = dirname(__FILE__) . '/../' . $this->imageUrl($type) . ltrim($upc, 0) . '.png';
+            $pinfo = pathinfo($_FILES['image_'.$type]['name']);
+            $outfile = dirname(__FILE__) . '/../' . $this->imageUrl($type) . ltrim($upc, 0) . '.' . $pinfo['extension'];
             if (file_exists($outfile)) {
                 unlink($outfile);
             }
             $res = move_uploaded_file($infile, $outfile);
+
+            return $res ? basename($outfile) : false;
         }
 
         return false;
@@ -363,10 +366,12 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
             return false;
         }
 
+        /*
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         if ($finfo->file($_FILES['image_' . $type]['tmp_name']) !== 'image/png') {
             return false;
         }
+         */
 
         return true;
     }
