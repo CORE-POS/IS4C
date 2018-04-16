@@ -30,6 +30,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 {
     protected $header = 'Product Location Update';
     protected $title = 'Product Location Update';
+    protected $sortable = true;
 
     public $description = '[Product Location Update] find and update products missing
         floor section locations.';
@@ -476,7 +477,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
 
-        $ret .= '<table class="table">
+        $ret .= '<table class="table mySortableTable tablesorter tablesorter-bootstrap">
             <thead>
                 <th>UPC</th>
                 <th>Brand</th>
@@ -529,7 +530,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
             <td><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';
-
+        $this->addOnloadCommand("$('.mySortableTable').tablesorter();");
 
         return $ret;
 
