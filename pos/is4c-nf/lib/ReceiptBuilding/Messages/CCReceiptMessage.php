@@ -71,7 +71,12 @@ class CCReceiptMessage extends ReceiptMessage {
         $query = "SELECT $trans_type AS tranType,
                     CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
                     p.PAN,
-                    CASE WHEN p.manual=1 THEN 'Manual' WHEN p.manual=-1 THEN 'Chip' ELSE 'Swiped' END as entryMethod,
+                    CASE 
+                        WHEN p.manual=1 THEN 'Manual'
+                        WHEN p.manual=-1 THEN 'Chip'
+                        WHEN p.manual=-2 THEN 'NFC'
+                        ELSE 'Swiped'
+                    END as entryMethod,
                     p.issuer,
                     p.xResultMessage,
                     p.xApprovalNumber,

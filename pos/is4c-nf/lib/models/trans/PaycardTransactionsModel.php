@@ -111,7 +111,10 @@ was sent to the server.
   * name is the cardholder\'s name. This is not always 
     available and depends on what\'s on the magnetic stripe.
   * manual indicates how the card was entered. 1 means
-    keyed in, 0 means swiped.
+    * 1  => keyed
+    * 0  => swiped
+    * -1 => chip
+    * -2 => nfc
   * requestDatetime is a timestamp when the request was sent
 
 The last set of fields deal with the response. Fields
