@@ -729,6 +729,41 @@ HTML;
 
         return $ret;
     }
+
+    public function javascript_content()
+    {
+        return <<<JAVASCRIPT
+$(document).ready(function(){
+    alterTable();
+});
+$(window).on("resize", function(event){
+    alterTable();
+});
+function alterTable()
+{
+    var windowWidth = $(window).width();
+    if (windowWidth < 768) {
+        $('table').find('td').each(function(){
+            var html = $(this).html();
+            $(this).replaceWith('<div class="form-inline">'+html+'</div>');
+        });
+        $('table').find('th').each(function(){
+            var html = $(this).html();
+            $(this).replaceWith('<div class="th-alt"><strong>'+html+'</strong></div>');
+        });
+    } else {
+        $('table').find('div.form-inline').each(function(){
+            var html = $(this).html();
+            $(this).replaceWith('<td class="form-inline">'+html+'</td>');
+        });
+        $('table').find('div.th-alt').each(function(){
+            var html = $(this).html();
+            $(this).replaceWith('<th class="col-span-4">'+html+'</th>');
+        });
+   } 
+}
+JAVASCRIPT;
+    }
     
     public function unitTest($phpunit)
     {

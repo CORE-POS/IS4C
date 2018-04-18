@@ -440,7 +440,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 id="' . $tabID . '">';
 
             $ret .= '<input type="hidden" class="store-id" name="store_id[]" value="' . $store_id . '" />';
-            $ret .= '<table class="table table-bordered">';
+            $ret .= '<div id="" class=""><table id="productTable" class="table table-bordered">';
 
             $jsVendorID = $rowItem['default_vendor_id'] != 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
             $vFieldsDisabled = $jsVendorID == 'no-vendor' || !$active_tab ? 'disabled' : '';
@@ -810,7 +810,7 @@ HTML;
                 );
             }
             $ret .= $this->getRowMods($upc, $active_tab);
-            $ret .= '</table></div>';
+            $ret .= '</table></div></div>';
             if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
             }
