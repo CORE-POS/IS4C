@@ -67,6 +67,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         td.srp {
             text-decoration: underline;
         }
+        .adj-cost, .price, .cmargin {
+            border: 5px solid red;
+            background: red;
+            background-color: red;
+            color: gray;
+        }
         ';
     }
 
@@ -202,7 +208,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             p.price_rule_id AS variable_pricing,
             " . $marginCase . " AS margin,
             CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias,
-            CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded
+            CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded,
+            c.difference,
+            c.date
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN VendorAliases AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID
@@ -210,7 +218,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
-                LEFT JOIN upcLike AS l ON v.upc=l.upc ";
+                LEFT JOIN upcLike AS l ON v.upc=l.upc 
+                LEFT JOIN productCostChanges AS c ON p.upc=c.upc";
         $args = array($vendorID);
         if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
@@ -242,16 +251,13 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $vendorModel = new VendorItemsModel($dbc);
 
         $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
-        $ret .= "<thead><tr class=\"thead\"><td colspan=6 class=\"thead\">&nbsp;</td>
-            <th colspan=2  class=\"thead\">Current</th><th colspan=3  class=\"thead\">
-            Vendor</th><td colspan=3 class=\"thead\"></td></tr>";
-        $ret .= "<tr class=\"thead\"><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
-            <th class=\"thead\">Base Cost</th>
-            <th class=\"thead\">Shipping</th>
-            <th class=\"thead\">Discount%</th>
+
+        $ret .= "<thead><tr class=\"thead\"><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
             <th class=\"thead\">Adj. Cost</th>
-            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Raw</th><th class=\"thead\">SRP</th>
-            <th class=\"thead\">Margin</th><th class=\"thead\">Cat</th><th class=\"thead\">Var</th>
+            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Change</th>
+
+            <th class=\"thead\">Raw</th><th class=\"thead\">SRP</th>
+            <th class=\"thead\">Margin</th><th class=\"thead\">Var</th>
             <th class=\"thead\">Batch</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $vendorModel->reset();
@@ -269,6 +275,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $alias = $dbc->getRow($aliasP, array($row['upc']));
                 $row['vendorDept'] = $alias['vendorDept'];
                 $row['srp'] = $alias['srp'] * $alias['multiplier'];
+            }
+            if ($row['difference']) {
             }
             $background = "white";
             if (isset($batchUPCs[$row['upc']]) && !$row['likecoded']) {
@@ -306,16 +314,13 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
                 <td class=\"sub\">%s</td>
-                <td class=\"sub cost\">%.3f</td>
-                <td class=\"sub shipping\">%.2f%%</td>
-                <td class=\"sub discount\">%.2f%%</td>
                 <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
+                <td class=\"sub change\">%.2f | %s</td>
                 <td class=\"sub raw-srp\">%.2f</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
                 <td class=\"sub dmargin\">%.2f%%</td>
-                <td class=\"sub\">%d</td>
                 <td><input class=varp type=checkbox onclick=\"toggleV('%s');\" %s /></td>
                 <td class=white>
                     <a class=\"add-button %s\" href=\"\"
@@ -334,17 +339,15 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $background,
                 $this->config->URL, $row['upc'], $row['upc'],
                 $row['description'] . ' ' . $multipleVendors,
-                $row['cost'],
-                $row['shippingMarkup']*100,
-                $row['discountRate']*100,
                 $row['adjusted_cost'],
                 $row['normal_price'],
                 100*$row['current_margin'],
+                $row['difference'], 
+                $row['date'],
                 $row['rawSRP'],
                 $row['upc'],
                 $row['srp'],
                 100*$row['desired_margin'],
-                $row['vendorDept'],
                 $row['upc'],
                 ($row['variable_pricing']>=1?'checked':''),
                 (isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc'],
