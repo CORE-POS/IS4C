@@ -425,8 +425,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             p.department,
             pu.description as pudesc,
             p.brand,
-            d.dept_name,
-            fslv.sections
+            d.dept_name
             from products as p
                 left join productUser as pu on pu.upc=p.upc
                 left join departments as d on d.dept_no=p.department
