@@ -106,13 +106,40 @@ class SatelliteRedisSend extends FannieTask
                 if ($row[$column] > $max) {
                     $max = $row[$column];
                 }
-                $redis->lpush($table, json_encode($row));
+                $redis->lpush($table, $this->encode($row));
                 $redis->set($table . ':' . $column . ':' . $myID, $max);
             }
         } catch (Exception $ex) {
             // connection to redis failed. 
             // no cleanup required
         }
+    }
+
+    /**
+     * Encode row data for transmission through Redis
+     * By default the encoding is JSON. If the row cannot
+     * be JSON encoded, test each value and base64 encode
+     * any values that cannot be natively JSON encoded.
+     * Known situation where this occurs is binary data strings.
+     * @param $row [array] of values
+     * @return [string] encoded representation
+     */
+    private function encode($row)
+    {
+        $json = json_encode($row);
+        if ($json === false) {
+            $arr = array();
+            foreach (array_keys($row) as $i) {
+                if (json_encode($row[$i]) === false) {
+                    $arr[$i] = 'base64:' . base64_encode($row[$i]);
+                } else {
+                    $arr[$i] = $row[$i];
+                }
+            }
+            $json = json_encode($arr);
+        }
+
+        return $json;
     }
 
     private function localDB($dbc, $myID, $my_db)
