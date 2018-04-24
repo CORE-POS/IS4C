@@ -1162,7 +1162,7 @@ HTML;
             }
             $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['brand']}</td>";
             $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['description']}</td>";
-            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['normal_price']}</td>";
+            $ret .= "<td bgcolor=$colors[$cur] class=\"price\">{$fetchW['normal_price']}</td>";
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
             $qty = is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0 ? $fetchW['quantity'] : 1;
             $ret .= "<td bgcolor=$colors[$cur] class=\"{$noprices}\">";
