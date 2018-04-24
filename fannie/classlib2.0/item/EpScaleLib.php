@@ -47,7 +47,10 @@ class EpScaleLib
             $labelInfo = ServiceScaleLib::labelTranslate($item_info['Label'], $scale_model->scaleType());
         }
 
-        if ($item_info['RecordType'] == 'WriteOneItem') {
+        // Always requested "add" might work better. Setting description
+        // isn't reliable when "updating" an item that doens't actually
+        // exist on the other side of processing
+        if (true || $item_info['RecordType'] == 'WriteOneItem') {
             $line = self::getAddItemLine($item_info, $labelInfo) . $scale_fields;
         } else {
             $line = self::getUpdateItemLine($item_info, $labelInfo) . $scale_fields;
@@ -172,11 +175,14 @@ class EpScaleLib
                         if (strstr($item_info[$key], "\n")) {
                             list($line1, $line2) = explode("\n", $item_info[$key]);
                             $line .= 'DN1' . $line1 . chr(253);
+                            $line .= 'DS1' . '0' . chr(253);
                             $line .= 'DN2' . $line2 . chr(253);
+                            $line .= 'DS2' . '0' . chr(253);
                         } elseif (strlen($item_info[$key]) > $labelInfo['descriptionWidth'] && $labelInfo['descriptionWidth'] != 0) {
                             $line .= self::wrapDescription($item_info[$key], $labelInfo['descriptionWidth']);
                         } else {
                             $line .= 'DN1' . $item_info[$key] . chr(253);
+                            $line .= 'DS1' . '0' . chr(253);
                         }
                         break;
                     case 'ReportingClass':
@@ -223,8 +229,8 @@ class EpScaleLib
 
     static private function wrapDescription($desc, $length, $limit=2)
     {
-        $desc = wordwrap($desc, $length, "\n", true); 
-        $lines = explode("\n", $desc);
+        $wrapped = wordwrap($desc, $length, "\n", true);
+        $lines = explode("\n", $wrapped);
         if ($length == 0) {
             $lines = array($desc);
         }
