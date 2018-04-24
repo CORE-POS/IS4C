@@ -88,6 +88,12 @@ class SatelliteRedisRecv extends FannieTask
                 $row = json_decode($json, true);
                 $args = array();
                 foreach ($cols as $col) {
+                    if (substr($row[$col], 0, 7) == 'base64:') {
+                        $decoded = base64_decode(substr($row[$col], 7));
+                        if ($decoded) {
+                            $row[$col] = $decoded;
+                        }
+                    }
                     $args[] = $row[$col];
                 }
                 $dbc->execute($insP, $args);
