@@ -219,13 +219,13 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN upcLike AS l ON v.upc=l.upc 
-                LEFT JOIN productCostChanges AS c ON p.upc=c.upc";
+                LEFT JOIN productCostChanges AS c ON p.upc=c.upc ";
         $args = array($vendorID);
         if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
                 ON p.department=m.dept_ID ";
         }
-        $query .= "WHERE v.cost > 0
+        $query .= " WHERE v.cost > 0
                     AND v.vendorID=?";
         if ($superID == -2) {
             $query .= " AND m.superID<>0 ";
