@@ -758,7 +758,7 @@ function alterTable()
         });
         $('table').find('div.th-alt').each(function(){
             var html = $(this).html();
-            $(this).replaceWith('<th class="col-span-4">'+html+'</th>');
+            $(this).replaceWith('<th>'+html+'</th>');
         });
    } 
 }
