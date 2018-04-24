@@ -219,6 +219,15 @@ class PIMemberPage extends PIKillerPage {
         }
         $resp = \COREPOS\Fannie\API\member\MemberREST::post($this->card_no, $json);
 
+        $limitDiscountP = $dbc->prepare("
+            UPDATE custdata
+            SET discount=0
+            WHERE CardNo=?
+                AND memType IN (3,9)
+                AND personNum > 2
+        ");
+        //$dbc->execute($limitDiscountP, array($this->card_no));
+
         $comm = new CommissionsModel($dbc);
         $comm->cardNo($this->id);
         $comm->type('OWNERSHIP');
