@@ -229,10 +229,10 @@ class EpScaleLib
 
     static private function wrapDescription($desc, $length, $limit=2)
     {
-        $wrapped = wordwrap($desc, $length, "\n", true);
-        $lines = explode("\n", $wrapped);
-        if ($length == 0) {
-            $lines = array($desc);
+        $lines = array($desc);
+        if ($length > 0) {
+            $wrapped = wordwrap($desc, $length, "\n", true);
+            $lines = explode("\n", $wrapped);
         }
         $keys = array_filter(array_keys($lines), function($i) use ($limit) { return $i<$limit; });
         return array_reduce($keys, function($carry, $key) use ($lines) {
