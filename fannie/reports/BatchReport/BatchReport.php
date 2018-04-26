@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -127,20 +129,8 @@ class BatchReport extends FannieReportPage
         $store = FormLib::get('store', false);
         $model = new BatchesModel($dbc);
 
-        if ($store === false && is_array($this->config->get('STORE_NETS'))) {
-            $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-            $ranges = $this->config->get('STORE_NETS');
-            foreach ($ranges as $storeID => $range) {
-                if (
-                    class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
-                    && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
-                    ) {
-                    $store = $storeID;
-                }
-            }
-            if ($store === false) {
-                $store = 0;
-            }
+        if ($store === false) {
+            $store = Store::getIdByIp(0);
         }
 
         /**

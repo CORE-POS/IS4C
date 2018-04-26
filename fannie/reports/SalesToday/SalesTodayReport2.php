@@ -30,6 +30,7 @@
 */
 
 use COREPOS\Fannie\API\data\DataCache;
+use COREPOS\Fannie\API\lib\Store;
 
 include(dirname(__FILE__) . '/../../config.php');
 include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -52,18 +53,7 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
         try {
             $this->store = $this->form->store;
         } catch (Exception $ex) { 
-            $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-            $ranges = $this->config->get('STORE_NETS');
-            if (is_array($ranges)) {
-                foreach ($ranges as $storeID => $range) {
-                    if (
-                        class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
-                        && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
-                        ) {
-                        $this->store = $storeID;
-                    }
-                }
-            }
+            $this->store = Store::getIdByIp();
         }
 
 
