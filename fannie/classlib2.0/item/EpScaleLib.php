@@ -33,7 +33,7 @@ class EpScaleLib
       @param $scale_model [ServiceScaleModel]
       @return [string] CSV formatted line
     */
-    static public function getItemLine($item_info, $scale_model)
+    static public function getItemLine($item_info, $scale_model, $asNew)
     {
         $scale_fields = '';
         if ($scale_model->epStoreNo() != 0) {
@@ -50,7 +50,7 @@ class EpScaleLib
         // Always requested "add" might work better. Setting description
         // isn't reliable when "updating" an item that doens't actually
         // exist on the other side of processing
-        if (true || $item_info['RecordType'] == 'WriteOneItem') {
+        if ($asNew || $item_info['RecordType'] == 'WriteOneItem') {
             $line = self::getAddItemLine($item_info, $labelInfo) . $scale_fields;
         } else {
             $line = self::getUpdateItemLine($item_info, $labelInfo) . $scale_fields;
@@ -252,7 +252,7 @@ class EpScaleLib
         Must have keys "host", "type", and "dept". 
         May have boolean value with key "new".
     */
-    static public function writeItemsToScales($items, $scales=array())
+    static public function writeItemsToScales($items, $scales=array(), $asNew=true)
     {
         $config = \FannieConfig::factory(); 
         if (!isset($items[0])) {
@@ -291,7 +291,7 @@ class EpScaleLib
             $fptr = fopen($file_name, 'w');
             fwrite($fptr, 'BNA' . $file_prefix . '_' . $counter . chr(253) . self::$NEWLINE);
             foreach ($items as $item) {
-                $item_line = self::getItemLine($item, $scale_model);
+                $item_line = self::getItemLine($item, $scale_model, $asNew);
                 fwrite($fptr, $item_line . self::$NEWLINE);
 
                 if (isset($item['ExpandedText'])) {
