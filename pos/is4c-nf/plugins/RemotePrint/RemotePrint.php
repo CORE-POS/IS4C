@@ -39,6 +39,7 @@ class RemotePrint extends Plugin
             'default' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
             'options' => array(
                 'ESCPOS' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
+                'RAW/TCP' => 'COREPOS-pos-lib-PrintHandlers-ESCNetRawHandler',
                 'HTTP' => 'RemotePrintHandler',
             ),
         ),
@@ -142,6 +143,9 @@ class RemotePrint extends Plugin
                 $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
                 fwrite($port, $receipt);
                 fclose($port);
+            } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {
+                $driver->setTarget(CoreLocal::get('RemotePrint'));
+                $driver->writeLine($receipt);
             } else {
                 $driver->writeLine($receipt);
             }
