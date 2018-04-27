@@ -26,6 +26,7 @@ use COREPOS\pos\lib\Bitmap;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+use COREPOS\pos\lib\PrintHandlers\ESCNetRawHandler;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\StoreChargeMessage;
 use \CoreLocal;
 
@@ -56,13 +57,19 @@ static public function writeLine($text)
     if (CoreLocal::get("print") != 0) {
 
         $printerPort = CoreLocal::get('printerPort');
-        /* check fails on LTP1: in PHP4
-           suppress open errors and check result
-           instead
-        */
-        $fptr = fopen(CoreLocal::get("printerPort"), "w");
-        fwrite($fptr, $text);
-        fclose($fptr);
+        if (substr($printerPort, 0, 6) == "tcp://") {
+            $net = new ESCNetRawHandler();
+            $net->setTarget(substr($printerPort, 6));
+            $net->writeLine($text);
+        } else {
+            /* check fails on LTP1: in PHP4
+               suppress open errors and check result
+               instead
+            */
+            $fptr = fopen(CoreLocal::get("printerPort"), "w");
+            fwrite($fptr, $text);
+            fclose($fptr);
+        }
     }
 }
 
