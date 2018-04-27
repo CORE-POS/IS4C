@@ -65,13 +65,17 @@ class PreviousPromosReport extends FannieReportPage
         $args[] = $store > 0 ? $store : 1;
         $days = FormLib::get('days', 1);
 
-        $itemP = $dbc->prepare("
+        $itemQ = "
             SELECT p.upc, p.brand, p.description, auto_par, v.units, v.sku
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
             WHERE p.upc IN ({$inStr})
-                AND store_id=?"
-        );
+                AND store_id=?";
+        if (FormLib::get('v')) {
+            $itemQ .= ' AND p.default_vendor_id=?';
+            $args[] = FormLib::get('v');
+        } 
+        $itemP = $dbc->prepare($itemQ);
         $itemR = $dbc->execute($itemP, $args);
         $data = array();
         while ($itemW = $dbc->fetchRow($itemR)) {
@@ -136,6 +140,7 @@ class PreviousPromosReport extends FannieReportPage
         $url = $this->config->get('URL');
         $this->addScript($url . 'src/javascript/jquery.js');
         $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+        $upcs = array();
         foreach ($_POST as $key => $value) {
             if ($key != 'store') {
                 if (is_array($value)) {
@@ -145,7 +150,24 @@ class PreviousPromosReport extends FannieReportPage
                 } else {
                     $dates_form .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $value);
                 }
+                if ($key == 'u') {
+                    $upcs = $value;
+                }
             }
+        }
+        list($inStr, $args) = $this->connection->safeInClause($upcs);
+        $vendP = $this->connection->prepare("SELECT v.vendorID, v.vendorName
+                FROM products AS p
+                    INNER JOIN vendors AS v ON p.default_vendor_id=v.vendorID
+                WHERE p.upc IN ({$inStr})
+                GROUP BY v.vendorID, v.vendorName
+                ORDER BY v.vendorName");
+        $vendors = $this->connection->execute($vendP, $args);
+        $vOpts = '';
+        while ($row = $this->connection->fetchRow($vendors)) {
+            $vOpts .= sprintf('<option %s value="%d">%s</option>',
+                (FormLib::get('v') == $row['vendorID'] ? 'selected' : ''),
+                $row['vendorID'], $row['vendorName']);
         }
         $stores = FormLib::storePicker();
         $days = FormLib::get('days', 1);
@@ -153,8 +175,10 @@ class PreviousPromosReport extends FannieReportPage
             <input type="hidden" name="excel" value="" id="excel" />
             Days
             <input type="text" name="days" value="' . $days . '" onchange="var d=this.value; $(\'.reportColumn13\').each(function(){ var b = $(this).siblings(\'.reportColumn12\').html(); $(this).html(Math.round(d*b*100)/100); });" />
+            <select name="v"><option value="0">All Vendors</option>
+            ' . $vOpts . '</select>
             ' . $stores['html'] . '
-            <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Change Store</button>
+            <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Update Results</button>
             <button type="submit" onclick="$(\'#excel\').val(\'csv\');return true;">Download</button>
             </form>';
 
