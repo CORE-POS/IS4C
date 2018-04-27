@@ -35,8 +35,7 @@ public class SPH_Parallel_Writer : SerialPortHandler {
 
     private ParallelWrapper lp_port;
     private FileStream lp_fs;
-
-    private ManualResetEvent client_connect_signal;
+    private const int PRINT_PORT = 9100;
 
     public SPH_Parallel_Writer(string p) : base(p)
     { 
@@ -51,78 +50,32 @@ public class SPH_Parallel_Writer : SerialPortHandler {
     
     override public void Read()
     { 
-        TcpListener server = new TcpListener(System.Net.IPAddress.Parse("127.0.0.1"), 9450);
+        TcpListener server = new TcpListener(System.Net.IPAddress.Parse("127.0.0.1"), PRINT_PORT);
         server.Start();
-        client_connect_signal = new ManualResetEvent(false);
         if (verbose_mode > 0) {
             System.Console.WriteLine("Listening for print connections");
         }
 
+        byte[] buffer = new byte[1024];
         while(SPH_Running) {
-            server.BeginAcceptTcpClient(new AsyncCallback(HandleClient), server);
-
-            // Wait for client connection
-            client_connect_signal.WaitOne();
+            try {
+                using (TcpClient client = server.AcceptTcpClient()) {
+                    client.ReceiveTimeout = 100;
+                    using (NetworkStream stream = client.GetStream()) {
+                        int bytes_read = 0;
+                        do {
+                            bytes_read = stream.Read(buffer, 0, buffer.Length);
+                            lp_fs.Write(buffer, 0, bytes_read);
+                        } while (stream.DataAvailable);
+                    }
+                    client.Close();
+                }
+            } catch (Exception ex) {
+                this.LogMessage(ex.ToString());
+            }
         }
 
         server.Stop();
-    }
-
-    private void HandleClient(IAsyncResult ar)
-    {
-        TcpClient client = null;
-        try {
-            TcpListener listener = (TcpListener) ar.AsyncState;
-            client = listener.EndAcceptTcpClient(ar);
-            if (this.verbose_mode > 0) {
-                System.Console.WriteLine("Print client conencted");
-            }
-        } catch (Exception ex) {
-            if (verbose_mode > 0) {
-                System.Console.WriteLine(ex);
-            }
-        } finally {
-            // signal back client connection made
-            client_connect_signal.Set();
-        }
-
-        try {
-            NetworkStream stream = client.GetStream();
-
-            int bytes_read;
-            Byte[] bytes = new Byte[512];
-            Byte[] ack = System.Text.Encoding.ASCII.GetBytes("ACK");
-            bool etx = false;
-            while((bytes_read = stream.Read(bytes, 0, bytes.Length))!=0) {
-
-                if (bytes[bytes_read-1] == 0x3) {
-                    // exclude ETX from message content
-                    etx = true;
-                    bytes_read--;
-                }
-
-                lp_fs.Write(bytes, 0, bytes_read);
-
-                if (verbose_mode > 0) {
-                    foreach(Byte b in bytes) {
-                        System.Console.Write(b + " ");
-                    }
-                    System.Console.WriteLine();
-                }
-
-                if (etx) break;
-            }
-            
-            lp_fs.Flush();
-            stream.Write(ack, 0, ack.Length);
-
-            client.Close();
-
-        } catch (Exception ex) {
-            if (verbose_mode > 0) {
-                System.Console.WriteLine(ex);
-            }
-        }
     }
 
     override public void HandleMsg(string msg)
