@@ -74,6 +74,9 @@ class RemotePrint extends Plugin
                 LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint AS b
                     ON l.department=b.identifier AND b.type='Department'
             WHERE emp_no=? AND register_no=? AND trans_no=?
+                AND trans_status NOT IN ('V','R')
+                AND voided = 0
+                AND quantity > 0
             ORDER BY trans_id");
         $infoR = $dbc->execute($infoP, array($emp, $reg, $trans));
         $lines = array();
