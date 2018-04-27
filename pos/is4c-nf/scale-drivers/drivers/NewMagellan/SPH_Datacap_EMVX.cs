@@ -111,7 +111,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     // I assume this will through if either the ActiveX DLL
                     // was generated against an older OCX that doesn't have
                     // this method or if the DLL has the method but the
-                    // OCX does not.
+                    // OCX does not. OCX v1.22+ should have the method.
                 }
             }
         }
