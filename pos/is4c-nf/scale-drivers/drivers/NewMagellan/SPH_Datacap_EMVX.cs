@@ -57,6 +57,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private Object pdcLock = new Object();
     private bool emv_reset;
     private bool always_reset = false;
+    private bool emv_active;
     private Object emvLock = new Object();
 
     public SPH_Datacap_EMVX(string p) : base(p)
@@ -72,6 +73,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         char sep = Path.DirectorySeparatorChar;
         xml_log = my_location + sep + "log.xml";
         pdc_active = false;
+        emv_active = false;
         emv_reset = true;
 
         if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
@@ -97,6 +99,20 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 Console.WriteLine("Reset PDC");
                 pdc_ax_control.CancelRequest();
                 pdc_active = false;
+            }
+        }
+        lock (emvLock) {
+            if (emv_active) {
+                try {
+                    Console.WriteLine("Reset EMV");
+                    emv_ax_control.CancelRequest();
+                    emv_active = false;
+                } catch (Exception ex) {
+                    // I assume this will through if either the ActiveX DLL
+                    // was generated against an older OCX that doesn't have
+                    // this method or if the DLL has the method but the
+                    // OCX does not.
+                }
             }
         }
 
@@ -413,12 +429,17 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     FlaggedReset();
                 }
 
+                lock(emvLock) {
+                    emv_active = true;
+                }
+
                 request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
                 result = emv_ax_control.ProcessTransaction(request.OuterXml);
 
-                // if this is not a reset command, set the reset needed flag
-                if (autoReset) {
-                    lock(emvLock) {
+                lock(emvLock) {
+                    emv_active = false;
+                    // if this is not a reset command, set the reset needed flag
+                    if (autoReset) {
                         emv_reset = true;
                     }
                 }
