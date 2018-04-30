@@ -1113,6 +1113,8 @@ class FannieSignage
             return false;
         } elseif (substr($date,0,10) == '0000-00-00') {
             return false;
+        } elseif (substr($date,0,10) == '1900-01-01') {
+            return false;
         }
 
         return true;
