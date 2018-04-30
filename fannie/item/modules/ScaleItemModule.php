@@ -33,7 +33,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $r = $dbc->execute($p,array($upc));
         $scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
             'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0,
-            'mosaStatement'=>0, 'originText'=>'');
+            'mosaStatement'=>0, 'originText'=>'', 'price'=>0);
         $found = false;
         if ($dbc->num_rows($r) > 0) {
             $scale = $dbc->fetch_row($r);
@@ -68,6 +68,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         }
 
         $ret .= sprintf('<input type="hidden" name="s_plu" value="%s" />',$upc);
+        $ret .= sprintf('<input type="hidden" name="s_price" value="%s" />',$scale['price']);
         $ret .= "<table style=\"background:#ffffcc;\" class=\"table\">";
         $ret .= sprintf("<tr><th colspan=2>Longer description</th><td colspan=5><input size=35 
                 type=text name=s_longdesc maxlength=100 value=\"%s\" 
@@ -209,6 +210,9 @@ STR;
         $price = FormLib::get('price',0);
         if (is_array($price)) {
             $price = array_pop($price);
+        }
+        if ($price == 0) {
+            $price = FormLib::get('s_price', 0);
         }
         $tare = FormLib::get('s_tare',0);
         $shelf = FormLib::get('s_shelflife',0);
