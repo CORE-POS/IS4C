@@ -48,8 +48,8 @@ class RemotePrint extends Plugin
             'description' => 'Print debugging info instead of the normal receipt',
             'default' => 0,
             'options' => array(
-                'No' => 0,
                 'Yes' => 1,
+                'No' => 0,
             ),
         ),
     );
