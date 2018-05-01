@@ -113,9 +113,9 @@ class InventoryCacheModel extends BasicModel
     {
         $orderP = self::orderStatement($dbc);
         $ordered = $dbc->getValue($orderP, array($upc, $storeID, $date, $date));
-        //$ordered -= self::reduceUnReceived($dbc, $upc, $storeID, $date);
+        $ordered -= self::reduceUnReceived($dbc, $upc, $storeID, $date);
 
-        return $ordered ? $ordered : 0;
+        return $ordered >= 0 ? $ordered : 0;
     }
 
     public function recalculateOrdered($upc, $storeID)
