@@ -74,10 +74,46 @@ class InventoryCacheModel extends BasicModel
         return self::$orderStmt;
     }
 
+    /**
+     * Lookup un-received line items within orders that have been received
+     * The item's "ordered" quantity is incremented immediately when an order
+     * is placed so inventory is aware of in-transit orders. However, if the
+     * receiving process scans items anything that was out of stock won't
+     * get scanned. Once some items in a given order have been received it
+     * makes sense to conclude anything NOT received in the same order is
+     * not actually present and should not count toward inventory's
+     * "ordered" quantity.
+     */
+    private static function reduceUnReceived($dbc, $upc, $storeID, $date)
+    {
+        $receivedP = $dbc->prepare('SELECT receivedQty FROM PurchaseOrderItems WHERE orderID=? AND receivedQty IS NOT NULL');
+        $reduction = 0;
+        $getP = $dbc->prepare('SELECT i.orderID, SUM(caseSize*quantity) AS ordered
+                FROM PurchaseOrderItems AS i
+                    INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
+                WHERE internalUPC=?
+                    AND storeID=?
+                    AND i.isSpecialOrder = 0
+                    AND o.inventoryIgnore = 0
+                    AND i.receivedQty IS NULL
+                    AND placedDate >= ?
+                GROUP BY i.orderID');
+        $getR = $dbc->execute($getP, array($upc, $storeID, $date));
+        while ($getW = $dbc->fetchRow($getR)) {
+            $received = $dbc->getValue($receivedP, array($getW['orderID']));
+            if ($received !== false) {
+                $reduction += $getW['ordered'];
+            }
+        }
+
+        return $reduction;
+    }
+
     public static function calculateOrdered($dbc, $upc, $storeID, $date)
     {
         $orderP = self::orderStatement($dbc);
         $ordered = $dbc->getValue($orderP, array($upc, $storeID, $date, $date));
+        //$ordered -= self::reduceUnReceived($dbc, $upc, $storeID, $date);
 
         return $ordered ? $ordered : 0;
     }
