@@ -43,7 +43,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         array('Total Equity', null, null, null, null),
         array('Period', null, 'Number of Owners', 'Stock', null),
         array('New Owners', null, null, null, null),
-        array('Number', 'Date', 'Name', 'Stock', null),
+        array('Number', 'Date', 'Name', 'Stock', 'Payment Plan'),
         array('Inactives', null, null, null, null),
         array('Description', null, 'Current', 'Year to Date', 'Life to Date'),
     );
@@ -76,10 +76,13 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 c.FirstName,
                 c.LastName,
                 m.start_date,
-                n.payments
+                n.payments,
+                p.name
             FROM memDates AS m
                 INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1
                 LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS n ON m.card_no=n.memnum
+                LEFT JOIN EquityPaymentPlanAccounts AS a ON m.card_no=a.cardNo
+                LEFT JOIN EquityPaymentPlans AS p ON a.equityPaymentPlanID=p.equityPaymentPlanID
             WHERE m.start_date BETWEEN ? AND ?
                 AND c.Type=\'PC\'
             ORDER BY m.start_date
@@ -106,7 +109,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 date('Y-m-d', strtotime($row['start_date'])),    
                 $row['FirstName'] . ' ' . $row['LastName'],
                 sprintf('$%.2f', $row['payments']),
-                null,
+                ($row['name'] ? $row['name'] : ''),
             );
             $totals['new']++;
             $totals['newStock'] += $row['payments'];     
