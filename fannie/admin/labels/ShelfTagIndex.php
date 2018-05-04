@@ -48,6 +48,12 @@ class ShelfTagIndex extends FanniePage {
     function javascript_content(){
         ob_start();
         ?>
+$(function(){
+    $('#layoutselector').on('change', function(){
+        var layout = $('#layoutselector option:selected').text();
+        window.location.href = "ShelfTagIndex.php?layout=" + layout;
+    });
+});
 function goToPage(the_id){
     var offset = document.getElementById('offset').value;
     var str = "0";
@@ -84,6 +90,7 @@ function printMany(){
     function body_content()
     {
         global $FANNIE_OP_DB;
+        $sel = FormLib::get('layout');
         ob_start();
         ?>
         <div class="col-sm-8">
@@ -100,13 +107,14 @@ function printMany(){
             <label>Layout</label>: 
         <select id=layoutselector class="form-control">
         <?php
+        $tagEnabled = $this->config->get('ENABLED_SIGNAGE');
+
         $tagEnabled = $this->config->get('ENABLED_TAGS');
-        foreach($this->layouts as $l){
+        sort($this->layouts);
+        $this->layouts = array_reverse($this->layouts);
+        foreach($this->layouts as $k => $l){
             if (!in_array($l, $tagEnabled) && count($tagEnabled) > 0) continue;
-            if ($l == $this->config->get('DEFAULT_PDF'))
-                echo "<option selected>".$l."</option>";
-            else
-                echo "<option>".$l."</option>";
+            echo ($l == $sel) ? "<option selected>".$l."</option>" : "<option>".$l."</option>";
         }
         ?>
         </select>
@@ -166,18 +174,49 @@ function printMany(){
         return ob_get_clean();
     }
 
+
+    private function drawPdf()
+    {
+        if (FormLib::get('pdf') == 'Print') {
+            foreach (FormLib::get('exclude', array()) as $e) {
+                $this->signage_obj->addExclude($e);
+            }
+            $this->signage_obj->setInUseFilter(FormLib::get('store', 0));
+            $this->signage_obj->drawPDF();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     private function printRow($row)
     {
-        printf("<tr>
-        <td>%s barcodes/shelftags</td>
-        <td style='text-align:right;'>%d</td>
-        <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
-        <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
-        <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
-        <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
-        <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
-        </tr>",
-        $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
+        $layoutselected = FormLib::get('layout');
+        if ($layoutselected == "MovementTags") {
+            // call MovementTags->drawPdf() on tags in queue.
+            printf("<tr>
+            <td>%s barcodes/shelftags</td>
+            <td style='text-align:right;'>%d</td>
+            <td><a href=\"\" onclick=\"return false;\">Print</a></td>
+            <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
+            <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
+            <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
+            <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
+            </tr>",
+            $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
+
+        } else {
+            printf("<tr>
+            <td>%s barcodes/shelftags</td>
+            <td style='text-align:right;'>%d</td>
+            <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
+            <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
+            <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
+            <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
+            <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
+            </tr>",
+            $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
+        }
     }
 
     public function helpContent()
