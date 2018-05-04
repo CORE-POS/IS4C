@@ -46,6 +46,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
     public function css_content()
     {
         return '
+        span.grey {
+            color: grey;
+        }
         tr.green td.sub {
             background:#ccffcc;
         }
@@ -317,7 +320,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
-                <td class=\"sub change\">%.2f | %s</td>
+                <td class=\"sub change\">%.2f <span class='grey'>|</span> %s</td>
                 <td class=\"sub raw-srp\">%.2f</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
                 <td class=\"sub dmargin\">%.2f%%</td>
