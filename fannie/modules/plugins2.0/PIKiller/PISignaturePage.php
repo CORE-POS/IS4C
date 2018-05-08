@@ -84,7 +84,7 @@ class PISignaturePage extends FannieRESTfulPage
 
     private function outputFile()
     {
-        $dir = __DIR__ . '/docfile/' . $this->id . '/';
+        $dir = __DIR__ . '/noauto/docfile/' . $this->id . '/';
         if (!is_dir($dir)) {
             mkdir($dir);
         }

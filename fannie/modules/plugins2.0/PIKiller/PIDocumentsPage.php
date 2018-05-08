@@ -45,11 +45,11 @@ class PIDocumentsPage extends PIKillerPage {
         ob_start();
         echo '<tr><td>';
 
-        $dir = opendir(__DIR__ . '/docfile/' . $this->id);
+        $dir = opendir(__DIR__ . '/noauto/docfile/' . $this->id);
         echo '<ul style="font-size: 145%">';
         while (($file=readdir($dir)) !== false) {
             if ($file[0] == '.') continue;
-            echo '<li><a href="docfile/' . $this->id . '/' . $file . '">' . $file . '</li>';
+            echo '<li><a href="noauto/docfile/' . $this->id . '/' . $file . '">' . $file . '</li>';
         }
         echo '</ul>';
         echo '</td></tr>';
