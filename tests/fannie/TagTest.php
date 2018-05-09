@@ -36,6 +36,7 @@ class TagTest extends PHPUnit_Framework_TestCase
         );
 
         foreach ($layouts as $layout) {
+            if ($layout == 'MovementTags') continue;
             $func = str_replace(' ', '_', $layout);
             if (!function_exists($func)) {
                 include(dirname(__FILE__) . '/../../fannie/admin/labels/pdf_layouts/' . $func . '.php');
