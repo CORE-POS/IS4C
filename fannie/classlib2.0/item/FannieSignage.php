@@ -217,6 +217,7 @@ class FannieSignage
     {
         $query = 'SELECT s.upc,
                     s.description,
+                    s.description AS posDescription,
                     s.brand,
                     s.units,
                     s.size,
@@ -256,6 +257,7 @@ class FannieSignage
         $query = 'SELECT s.upc,
                     s.description,
                     s.description AS posDescription,
+                    s.normal_price,
                     s.brand,
                     s.units,
                     s.size,
