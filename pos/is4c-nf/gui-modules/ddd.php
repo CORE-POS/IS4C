@@ -52,7 +52,7 @@ $query = "UPDATE localtemptrans SET trans_status='Z', numflag=" . ((int)$shrinkR
 $db->query($query);
 
 CoreLocal::set("plainmsg","items marked as shrink/unsellable");
-CoreLocal::set("End",2);
+CoreLocal::set("End",1);
 CoreLocal::set('shrinkReason', 0);
 
 $vals = new ValueContainer();
