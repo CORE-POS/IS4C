@@ -171,6 +171,9 @@ class FormLib extends \COREPOS\common\FormLib
         $stores = new StoresModel($dbc);
         $byIP = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $current = FormLib::get($field_name, false);
+        if ($current !== false) {
+            $byIP = false;
+        }
         $ret = '<select name="' . $field_name . '" class="form-control">';
         if ($all) {
             $labels = array(0 => _('All Stores'));
