@@ -20,7 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -38,6 +37,13 @@ class ShelfTagIndex extends FanniePage {
     private $layouts = array();
 
     function preprocess(){
+        $sel = FormLib::get('layout');
+        $queue = FormLib::get('queue');
+        if (is_numeric($queue)) {
+            $obj = new COREPOS\Fannie\API\item\signage\MovementTags(array(), 'shelftags', $queue);
+            $obj->drawPDF();
+        }
+
         if (!function_exists('scan_layouts')) {
             require('scan_layouts.php');
         }
@@ -54,6 +60,11 @@ $(function(){
         window.location.href = "ShelfTagIndex.php?layout=" + layout;
     });
 });
+function getMovement(queue){
+    var layout = $('#layoutselector option:selected').text();
+    window.location.href = 'ShelfTagIndex.php?queue='+queue;
+}
+
 function goToPage(the_id){
     var offset = document.getElementById('offset').value;
     var str = "0";
@@ -90,7 +101,10 @@ function printMany(){
     function body_content()
     {
         global $FANNIE_OP_DB;
+        $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
+
         $sel = FormLib::get('layout');
+
         ob_start();
         ?>
         <div class="col-sm-8">
@@ -130,7 +144,6 @@ function printMany(){
         <table class="table table-striped">
         <?php
 
-        $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
         $query = $dbc->prepare("
             SELECT s.shelfTagQueueID, 
                 s.description, 
@@ -193,18 +206,29 @@ function printMany(){
     {
         $layoutselected = FormLib::get('layout');
         if ($layoutselected == "MovementTags") {
-            // call MovementTags->drawPdf() on tags in queue.
+            /* 
+                what needs to happen
+                . include SignFromSearch.php
+                . instantiate an object of SignFromSearch()
+                . set $this->u with upc(s) in "Print"-ed queue.
+                . call $obj->post_u_hander();
+                . that's it???
+            */
+            if (!class_exists("SignFromSearch")) {
+                require("SignFromSearch.php");
+            }
+            $sfs = new SignFromSearch();
+
             printf("<tr>
             <td>%s barcodes/shelftags</td>
             <td style='text-align:right;'>%d</td>
-            <td><a href=\"\" onclick=\"return false;\">Print</a></td>
+            <td><a href=\"\" onclick=\"getMovement('%d'); return false;\">Print</a></td>
             <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
             <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
             <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
             <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
             </tr>",
             $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
-
         } else {
             printf("<tr>
             <td>%s barcodes/shelftags</td>
