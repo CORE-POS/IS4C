@@ -285,11 +285,13 @@ HTML;
                     ";
                 $score = sprintf("%d%%",$v['score']*100);
                 $vid = $v['vid'];
-                $table .= "<tr><td class='vid'>{$vid}</td>";
-                $table .= "<td>{$v['name']}</td>";
-                $table .= "<td>{$grade}</td>";
-                $table .= "<td>{$v['total']}</td>";
-                $table .= "<td>{$score}</td>";
+                if ($v['total'] > 0) {
+                    $table .= "<tr><td class='vid'>{$vid}</td>";
+                    $table .= "<td>{$v['name']}</td>";
+                    $table .= "<td>{$grade}</td>";
+                    $table .= "<td>{$v['total']}</td>";
+                    $table .= "<td>{$score}</td>";
+                }
             }
         }
         $table .= "</tbody></table>";
