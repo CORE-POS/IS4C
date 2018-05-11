@@ -431,7 +431,7 @@ static public function printReset()
       signature slips cannot be suppressed
       and will always print.
     */
-    $default = CoreLocal::get('receiptToggleDefault') !== '' CoreLocal::get('receiptToggleDefault') : 1;
+    $default = CoreLocal::get('receiptToggleDefault') !== '' ? CoreLocal::get('receiptToggleDefault') : 1;
     CoreLocal::set("receiptToggle", $default);
 
     /**
