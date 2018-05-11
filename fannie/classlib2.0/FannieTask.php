@@ -52,14 +52,7 @@ class FannieTask
     */
     public $log_start_stop = true;
 
-    protected $error_threshold  = 99;
-
-    const TASK_NO_ERROR         = 0;
-    const TASK_TRIVIAL_ERROR    = 1;
-    const TASK_SMALL_ERROR      = 2;
-    const TASK_MEDIUM_ERROR     = 3;
-    const TASK_LARGE_ERROR      = 4;
-    const TASK_WORST_ERROR      = 5;
+    protected $error_threshold  = 0;
 
     protected $config = null;
 

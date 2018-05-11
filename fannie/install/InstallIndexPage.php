@@ -506,7 +506,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         echo '<div class="row form-group">
                 <label class="control-label col-sm-2">Task Error Severity resulting in emails</label>
-                <div class="col-sm-3">' . installSelectField('FANNIE_TASK_THRESHOLD', $FANNIE_TASK_THRESHOLD, $taskOpts, 99, false)
+                <div class="col-sm-3">' . installSelectField('FANNIE_TASK_THRESHOLD', $FANNIE_TASK_THRESHOLD, $taskOpts, 0, false)
             . '</div></div>';
 
         echo '<p>

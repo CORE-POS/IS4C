@@ -206,7 +206,7 @@ class SpecialOrdersTask extends FannieTask
                 $subject = "Incomplete SO(s)";
                 mail($to_addr,$subject,$msg_body);
             } else {
-                $this->cronMsg($msg_body, FannieTask::TASK_WORST_ERROR);
+                $this->cronMsg($msg_body, FannieLogger::EMERGENCY);
             }
         }
     }
