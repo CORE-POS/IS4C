@@ -301,6 +301,7 @@ JAVASCRIPT;
             <div id="scaleIconBox">
             <?php echo DisplayLib::drawNotifications(); ?>
             </div>
+            <div id="dynamicKeys"></div>
         </div>
         <?php
     }
