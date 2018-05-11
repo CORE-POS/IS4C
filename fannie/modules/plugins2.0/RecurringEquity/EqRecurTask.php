@@ -28,6 +28,7 @@ class EqRecurTask extends FannieTask
 
     public function run()
     {
+        $LOG = FannieLogger::ALERT;
         $this->CREDENTIALS = json_decode(file_get_contents(__DIR__ . '/credentials.json'), true);
         $dbc = FannieDB::get(FannieConfig::config('TRANS_DB'));
         $payments = $this->getTransactions($dbc);
@@ -42,13 +43,17 @@ class EqRecurTask extends FannieTask
             $card_no = $this->getMemberID($dbc, $payment);
             $balance = $this->getBalance($dbc, $card_no);
             if ($card_no === false) {
-                $this->cronMsg(sprintf("Cannot find memberID for PT %d,%d", $payment['paycardTransactionID'], $payment['storeRowId']));
+                $this->cronMsg(sprintf("Cannot find memberID for PT %d,%d", $payment['paycardTransactionID'], $payment['storeRowId']),
+                    $LOG);
                 continue;
             } elseif ($balance >= 100) {
-                $this->cronMsg(sprintf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']));
+                $this->cronMsg(sprintf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']),
+                    $LOG);
                 $this->clearToken($dbc, $payment);
                 continue;
             }
+            $this->cronMsg("Processing payment for {$card_no}.
+                Previous payment {$payment['dateID']} {$payment['empNo']}-{$payment['registerNo']}-{$payment['transNo']}", $LOG);
             $REGISTER_NO = $store == 1 ? 31 : 32;
             $TRANS_NO = DTrans::getTransNo($dbc, $EMP_NO, $REGISTER_NO);
             $amount = $balance > 80 ? 100 - $balance : 20;
@@ -132,8 +137,10 @@ class EqRecurTask extends FannieTask
             $dbc->execute($ptransP, $pcRow);
             $pcID = $dbc->insertID();
             if ($approvedAmount > 0) {
+                $this->cronMsg("Payment succeeded for {$card_no}", $LOG);
                 $this->successTransaction($dbc, $EMP_NO, $REGISTER_NO, $TRANS_NO, $approvedAmount, $card_no, $pcID);
             } else {
+                $this->cronMsg("Payment failed for {$card_no}", $LOG);
                 $this->failTransaction($dbc, $EMP_NO, $REGISTER_NO, $TRANS_NO, $card_no, $pcID);
             }
 
