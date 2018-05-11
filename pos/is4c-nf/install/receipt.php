@@ -51,6 +51,19 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     <td><?php echo $form->checkboxField('ShrinkReceipt', _('Print receipt on shrink/DDD transaction'), 1); ?></td>
 </tr>
 <tr>
+    <td><b><?php echo _('Toggle Default'); ?></b>: </td>
+    <td>
+    <?php
+    $opts = array(1 => 'On', 0 => 'Off');
+    echo $form->selectField('receiptToggleDefault', $opts, 1);
+    ?>
+    <span class="noteTxt">
+    <?php echo _('The receipt can be toggle on or off mid transaction. This
+    is the default state at the beginning of a transaction'); ?>
+    </span>
+    </td>
+</tr>
+<tr>
     <td><b><?php echo _('Receipt Type'); ?></b>: </td>
     <td>
     <?php

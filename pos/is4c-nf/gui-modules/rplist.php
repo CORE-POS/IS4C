@@ -26,6 +26,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -51,6 +52,7 @@ class rplist extends NoInputCorePage
         } elseif(!empty($receipt)) {
             $PRINT->writeLine($receipt);
         }
+        TransRecord::addLogRecord(array('upc'=>'RPREQUEST', 'description'=>'Reprint Receipt'));
     }
 
     function preprocess()
