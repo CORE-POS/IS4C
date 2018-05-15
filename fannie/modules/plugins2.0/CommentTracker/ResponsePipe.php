@@ -47,6 +47,8 @@ class ResponsePipe extends AttachmentEmailPipe
         foreach (explode("\n", $body) as $line) {
             if (strstr($reply, 'Manage Comments')) {
                 continue;
+            } elseif (strstr($reply, 'key/git')) {
+                continue;
             }
             $reply .= $line . "\n";
         }
