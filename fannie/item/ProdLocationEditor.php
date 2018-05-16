@@ -232,7 +232,6 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $start = FormLib::get('start');
         $end = FormLib::get('end');
@@ -290,7 +289,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $item[$upc]['sugDept'] = $this->getLocation($item[$upc]['dept'],$dbc);
             }
 
-            $args = array($store_location);
+            $args = array($store_id);
             $query = $dbc->prepare('SELECT
                     floorSectionID,
                     name
@@ -537,6 +536,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
     function get_batch_view()
     {
+        $stores = FormLib::storePicker('store_id', false);
         $ret = '
             <form method="get"class="form-inline">
 
@@ -548,8 +548,10 @@ class ProdLocationEditor extends FannieRESTfulPage
                 <span class="input-group-addon">to Batch#</span>
                 <input type="text" class="form-control inline" name="end" required><br>
             </div><br><br>
-
-                <input type="hidden" name="store_id" value="1" required>
+            <div class="input-group" style="width:200px;">
+                <span class="input-group-addon">Store</span>
+                ' . $stores['html'] . '
+            </div><br /><br />
 
                 <input type="submit" class="btn btn-default" value="Find item locations">
 
