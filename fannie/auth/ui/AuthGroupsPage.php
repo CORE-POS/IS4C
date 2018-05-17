@@ -150,7 +150,7 @@ class AuthGroupsPage extends FannieRESTfulPage
     {$userTable}
 </table>
 <hr />
-<strong>Users</strong>
+<strong>Authorizations</strong>
 <table class="table table-bordered">
     <tr>
         <th>Authorization</th>
