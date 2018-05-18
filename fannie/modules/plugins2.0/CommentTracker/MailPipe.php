@@ -16,6 +16,24 @@ if (!class_exists('\\CommentsModel')) {
 
 class MailPipe extends AttachmentEmailPipe
 {
+    /**
+     * Form sends text as quoted-printable.
+     * Decode it.
+     */
+    private function deQuote($str)
+    {
+        // line wrapping
+        $str = str_replace("=\n", "", $str);
+
+        // fancy apostrophe
+        $str = str_replace("=E2=80=99", "'", $str);
+
+        // non-breaking space
+        $str = str_replace("=C2=A0", " ", $str);
+
+        return $str;
+    }
+
     public function processMail($msg)
     {
         $info = $this->parseEmail($msg);
@@ -29,6 +47,7 @@ class MailPipe extends AttachmentEmailPipe
         $name = $this->getValue('Name_', $body);
         $comment = explode('Comment_:', $body, 2);
         $comment = trim($comment[1]);
+        $comment = $this->deQuote($comment);
 
         $settings = \FannieConfig::config('PLUGIN_SETTINGS');
         $dbc = \FannieDB::get($settings['CommentDB']);
@@ -52,9 +71,11 @@ class MailPipe extends AttachmentEmailPipe
             $mail->Subject = 'New Comment';
             $mail->addAddress($catW['notifyAddress']);
             $mail->isHTML(true);
+            $htmlComment = nl2br($comment);
             $mail->Body = <<<HTML
 <p>New {$catW['name']} comment received from {$email}</p>
-<p>Comment: $comment</p>
+<p>Comment:</p>
+<p>$htmlComment</p>
 <p><a href="http://key/git/fannie/modules/plugins2.0/CommentTracker/ManageComments.php?id={$commentID}">Manage Comment</a></p>
 HTML;
             $sent = $mail->send();
