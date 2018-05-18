@@ -46,7 +46,9 @@ class MovementTags extends \COREPOS\Fannie\API\item\FannieSignage
 
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $storeID = Store::getIdByIp();
-        $parP = $dbc->prepare("SELECT auto_par*7 AS weekly FROM products WHERE upc=? AND store_id=?");
+        $mult = $storeID == 1 ? 3 : 7;
+        $mult = 7; // temp back compat
+        $parP = $dbc->prepare("SELECT auto_par*{$mult} AS weekly FROM products WHERE upc=? AND store_id=?");
 
         $chkP = $dbc->prepare('SELECT upc FROM MovementTags WHERE upc=? AND storeID=?');
         $insP = $dbc->prepare('INSERT INTO MovementTags (upc, storeID, lastPar, modified) VALUES (?, ?, ?, ?)');
@@ -102,9 +104,9 @@ class MovementTags extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell(9, 4, sprintf('%.1f', $weeklySales), 1, 1, 'C');
             $mtag = $dbc->getValue($chkP, array($upc, $storeID));
             if ($mtag) {
-                $dbc->execute($upP, array($weeklySales/7.0, $now, $upc, $storeID));
+                $dbc->execute($upP, array($weeklySales/$mult, $now, $upc, $storeID));
             } else {
-                $dbc->execute($insP, array($upc, $storeID, $weeklySales/7.0, $now));
+                $dbc->execute($insP, array($upc, $storeID, $weeklySales/$mult, $now));
             }
 
             $pdf->SetXY($x,$y+12);
