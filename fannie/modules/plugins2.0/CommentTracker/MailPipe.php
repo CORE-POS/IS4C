@@ -71,12 +71,14 @@ class MailPipe extends AttachmentEmailPipe
             $mail->Subject = 'New Comment';
             $mail->addAddress($catW['notifyAddress']);
             $mail->isHTML(true);
+            $mail->CharSet = 'UTF-8';
             $htmlComment = nl2br($comment);
             $mail->Body = <<<HTML
 <p>New {$catW['name']} comment received from {$email}</p>
 <p>Comment:</p>
 <p>$htmlComment</p>
 <p><a href="http://key/git/fannie/modules/plugins2.0/CommentTracker/ManageComments.php?id={$commentID}">Manage Comment</a></p>
+<p>You can also respond by replying to this message</p>
 HTML;
             $sent = $mail->send();
             if ($sent) {
