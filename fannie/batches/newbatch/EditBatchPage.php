@@ -832,7 +832,7 @@ class EditBatchPage extends FannieRESTfulPage
     <span class="add-by-lc-fields collapse">
         <label class="control-label">Like code</label>
         <input type=text id=addItemLC name="addLC" size=4 value=1 class="form-control" disabled />
-        <select id=lcselect onchange="\$('#addItemLC').val(this.value);" class="form-control" disabled>
+        <select id=lcselect onchange="\$('#addItemLC').val(this.value);" class="form-control chosen-select" disabled>
         {$lcOpts}
         </select>
     </span>
@@ -1474,7 +1474,9 @@ HTML;
 
     public function get_id_view()
     {
-        $this->addScript('edit.js?20160105');
+        $this->addScript($this->config->get('URL') . 'src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile($this->config->get('URL') . 'src/javascript/chosen/bootstrap-chosen.css');
+        $this->addScript('edit.js?20180523');
         $this->addCssFile('index.css');
         $this->addOnloadCommand('$(\'#addItemUPC\').focus()');
         $this->addOnloadCommand("enableLinea('#addItemUPC');\n");

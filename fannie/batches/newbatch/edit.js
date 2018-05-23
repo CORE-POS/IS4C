@@ -7,6 +7,9 @@ var batchEdit = (function ($) {
         $('.add-by-' + f_on.toLowerCase() + '-fields').show();
         $('.add-by-' + f_on.toLowerCase() + '-fields :input').prop('disabled', false);
         $('#addItem' + f_on.toUpperCase()).focus();
+        if (f_on == 'lc') {
+            $('#lcselect').chosen();
+        }
     };
 
     var colorName = function(resp) {
