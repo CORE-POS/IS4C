@@ -40,9 +40,9 @@ HTML;
             $cmR = $dbc->execute($cmP, array($row['categoryID']));
             while ($cmW = $dbc->fetchRow($cmR)) {
                 $body .= '<hr />';
+                $body .= '<p>Comment from ' . $cmW['email'] . '</p>';
                 $body .= '<p>';
-                $body .= 'Comment from ' . $cmW['email'] . '<br />';
-                $body .= $cmW['comment'];
+                $body .= nl2br($cmW['comment']);
                 $body .= '</p>';
                 $resp = $dbc->getAllRows($rsP, array($cmW['commentID']));
                 if (count($resp) == 0) {
@@ -51,7 +51,7 @@ HTML;
                 } else {
                     $body .= '<p>WFC Response(s)</p>';
                     foreach ($resp as $r) {
-                        $body .= '<p>' . $r['response'] . '</p>';
+                        $body .= '<p>' . nl2br($r['response']) . '</p>';
                     }
                 }
                 $notified[] = $cmW['commentID'];
