@@ -56,6 +56,8 @@ $locationP = $dbc->prepare('SELECT s.name FROM FloorSectionProductMap AS m
     INNER JOIN FloorSections AS s ON m.floorSectionID=s.floorSectionID 
     WHERE m.upc=? AND s.storeID = 1');
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+$mtLength = $store == 1 ? 3 : 7;
+$signage = new COREPOS\Fannie\API\item\FannieSignage(array());
 $mtP = $dbc->prepare('SELECT p.auto_par
     FROM MovementTags AS m
         INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.store_id
@@ -166,8 +168,9 @@ foreach($data as $row) {
                 $pdf->EAN13($full_x+3,$full_y+4,$upc,7);  //generate barcode and place on label
             }
             $pdf->SetXY($full_x+38, $full_y+4);
-            $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*7)), 1, 1, 'C');
-            $dbc->execute($updateMT, array(($row['movementTag']*7), $row['upc'], $store));
+            $border = $mtLength == 7 ? 'TBR' : 'TBL';
+            $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
+            $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
         } else {
             //Start laying out a label
             if (strlen($upc) <= 11)
@@ -208,10 +211,13 @@ foreach($data as $row) {
 
         //Start laying out a label
         $pdf->SetFont('Arial','',8);  //Set the font
+        $signage->drawBarcode($upc, $pdf, $upcX, $upcY, array('height'=>4, 'width'=>0.25, 'fontsize'=>6.5, 'align'=>'L'));
+        /*
         if (strlen($upc) <= 11)
             $pdf->UPC_A($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
         else
             $pdf->EAN13($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
+         */
 
         $pdf->SetFont('Arial','B',18); //change font for price
         $pdf->TEXT($priceX,$priceY,$price);  //add price
