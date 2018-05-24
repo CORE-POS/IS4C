@@ -245,6 +245,31 @@ class HouseCoupon extends SpecialUPC
                     return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
+            case 'N': // Inversion of D/D+.
+            case 'N+': // Must purchase amount outside listed departments
+                $deptQ = $transDB->prepare('SELECT upc FROM ' . $this->session->get('pDatabase') . $dbc->sep()
+                    . 'houseCouponItems WHERE coupID=?');
+                $deptR = $transDB->execute($deptQ, array($coupID));
+                $depts = array();
+                while ($deptW = $transDB->fetchRow($deptR)) {
+                    $depts[] = $deptW['upc'];
+                }
+                if (count($depts) == 0) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                }
+                list($nStr, $nArgs) = $transDB->safeInClause($depts);
+                $minQ = $transDB->prepare("SELECT sum(total) FROM localtemptrans
+                    WHERE trans_type IN ('I', 'D', 'M')
+                        AND department NOT IN ({$nStr})");
+                $minR = $transDB->execute($minQ, $nArgs);
+                $minW = $transDB->fetch_row($minR);
+                $validQtty = $minW[0];
+                if ($infoW['minType'] == 'D+' && $validQtty <= $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                } elseif ($infoW['minType'] == 'D' && $validQtty < $infoW["minValue"]) {
+                    return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
+                }
+                break;
             case 'C': // must purchase at least amount in qty (count) from department
             case 'C+': // must purchase more than amount in qty (count) from department
             case 'C!':
