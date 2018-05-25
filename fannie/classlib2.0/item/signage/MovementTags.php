@@ -47,7 +47,6 @@ class MovementTags extends \COREPOS\Fannie\API\item\FannieSignage
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $storeID = Store::getIdByIp();
         $mult = $storeID == 1 ? 3 : 7;
-        $mult = 7; // temp back compat
         $parP = $dbc->prepare("SELECT auto_par*{$mult} AS weekly FROM products WHERE upc=? AND store_id=?");
 
         $chkP = $dbc->prepare('SELECT upc FROM MovementTags WHERE upc=? AND storeID=?');
@@ -101,7 +100,8 @@ class MovementTags extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetFont($this->font, '', 8);
 
             $pdf->SetXY($x+38, $y+4);
-            $pdf->Cell(9, 4, sprintf('%.1f', $weeklySales), 1, 1, 'C');
+            $border = $mult == 7 ? 'TBR' : 'TBL';
+            $pdf->Cell(9, 4, sprintf('%.1f', $weeklySales), $border, 1, 'C');
             $mtag = $dbc->getValue($chkP, array($upc, $storeID));
             if ($mtag) {
                 $dbc->execute($upP, array($weeklySales/$mult, $now, $upc, $storeID));
