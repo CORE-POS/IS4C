@@ -57,6 +57,7 @@ class EqRecurTask extends FannieTask
             $REGISTER_NO = $store == 1 ? 31 : 32;
             $TRANS_NO = DTrans::getTransNo($dbc, $EMP_NO, $REGISTER_NO);
             $amount = $balance > 80 ? 100 - $balance : 20;
+            $amount = sprintf('%.2f', $amount);
             $invoice = $this->refnum($EMP_NO, $REGISTER_NO, $TRANS_NO, 2);
 
             // beginning of PaycardTransactions record
@@ -79,9 +80,94 @@ class EqRecurTask extends FannieTask
                 $payment['manual'],
                 date('Y-m-d H:i:s'),
             );
-            $startTime = microtime(true);
 
+        $reqXML = <<<XML
+<?xml version="1.0"?>
+<TStream>
+    <Transaction>
+        <HostOrIP>127.0.0.1</HostOrIP>
+        <IpPort>9000</IpPort>
+        <MerchantID>{$this->CREDENTIALS[$store][0]}</MerchantID>
+        <OperatorID>{$EMP_NO}</OperatorID>
+        <TranType>Credit</TranType>
+        <TranCode>SaleByRecordNo</TranCode>
+        <SecureDevice>{{SecureDevice}}</SecureDevice>
+        <ComPort>{{ComPort}}</ComPort>
+        <InvoiceNo>{$invoice}</InvoiceNo>
+        <RefNo>{$payment['xTransactionID']}</RefNo>
+        <Amount>
+            <Purchase>{$amount}</Purchase>
+        </Amount>
+        <Account>
+            <AcctNo>SecureDevice</AcctNo>
+        </Account>
+        <LaneID>{$REGISTER_NO}</LaneID>
+        <SequenceNo>{{SequenceNo}}</SequenceNo>
+        <RecordNo>{$payment['xToken']}</RecordNo>
+        <Frequency>OneTime</Frequency>
+    </Transaction>
+</TStream>
+XML;
+            $startTime = microtime(true);
             $approvedAmount = 0;
+
+            /*
+            $curl = curl_init('http://' . $this->CREDENTIALS['hosts'][$storeID][0] . ':8999');
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $reqXML);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
+            $respXML = curl_exec($curl);
+            $resp = simplexml_load_string($respXML);
+            if (strlen($respXML) > 0 && $resp !== false) {
+                $elapsed = microtime(true) - $startTime;
+                $pcRow[] = date('Y-m-d H:i:s');
+                $pcRow[] = $elapsed;
+                $pcRow[] = 0;
+                $pcRow[] = 200;
+                $pcRow[] = 1; // valid response
+                $status = strtolower($resp->CmdResponse->CmdStatus[0]);
+                if ($status == 'approved') { // finish record as approved
+                    $pcRow[] = 1;
+                    $pcRow[] = $resp->TranResponse->AuthCode[0];
+                    $pcRow[] = $resp->CmdResponse->DSIXReturnCode[0];
+                    $pcRow[] = $resp->CmdResponse->TextResponse[0];
+                    $pcRow[] = $resp->TranResponse->RefNo[0];
+                    $pcRow[] = 0; // xBalance
+                    $pcRow[] = $resp->TranResponse->RecordNo[0];
+                    $pcRow[] = $resp->TranResponse->ProcessData[0];
+                    $pcRow[] = $resp->TranResponse->AcqRefData[0];
+                    $approvedAmount = $resp->TranResponse->Amount->Authorize[0];
+                } else { // finish record as declined or errored
+                    $pcRow[] = $status == 'declined' ? 2 : 3;
+                    $pcRow[] = ''; // xApprovalNumber
+                    $pcRow[] = $resp->CmdResponse->DSIXReturnCode[0];
+                    $pcRow[] = $status == 'declined' ? 'DECLINED' : $resp->CmdResponse->TextResponse[0];
+                    $pcRow[] = ''; // xTransactionID
+                    $pcRow[] = 0; // xBalance
+                    $pcRow[] = ''; // xToken
+                    $pcRow[] = ''; // xProcessorRef
+                    $pcRow[] = ''; // xAcquirerRef
+                }
+            } else {
+                $elapsed = microtime(true) - $startTime;
+                $pcRow[] = date('Y-m-d H:i:s');
+                $pcRow[] = $elapsed;
+                $pcRow[] = curl_errno($curl);
+                $pcRow[] = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+                $pcRow[] = 1; // valid response
+                $pcRow[] = 3; // xResultCode
+                $pcRow[] = ''; // xApprovalNumber
+                $pcRow[] = 0; // xResponseCode
+                $pcRow[] = curl_error($curl);
+                $pcRow[] = ''; // xTransactionID
+                $pcRow[] = 0; // xBalance
+                $pcRow[] = ''; // xToken
+                $pcRow[] = ''; // xProcessorRef
+                $pcRow[] = ''; // xAcquirerRef
+            }
+             */
+
             try {
                 // process actual transaction
                 $soap = new MSoapClient($this->CREDENTIALS[$store][0], $this->CREDENTIALS[$store][1]);
