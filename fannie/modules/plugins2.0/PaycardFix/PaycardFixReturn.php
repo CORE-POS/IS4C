@@ -151,65 +151,91 @@ class PaycardFixReturn extends FannieRESTfulPage
             return false;
         }
 
-        /**
-         * Run transaction using soap client. Regardless of whether it succeeds, fails,
-         * or throws an exception finish the necessary arguments from the new
-         * PaycardTransactions record
-         */
+        $reqXML = <<<XML
+<?xml version="1.0"?>
+<TStream>
+    <Transaction>
+        <HostOrIP>127.0.0.1</HostOrIP>
+        <IpPort>9000</IpPort>
+        <MerchantID>{$credentials[$storeID][0]}</MerchantID>
+        <OperatorID>{$EMP}</OperatorID>
+        <TranType>Credit</TranType>
+        <TranCode>ReturnByRecordNo</TranCode>
+        <SecureDevice>{{SecureDevice}}</SecureDevice>
+        <ComPort>{{ComPort}}</ComPort>
+        <InvoiceNo>{$newInvoice}</InvoiceNo>
+        <RefNo>{$ptrans['xTransactionID']}</RefNo>
+        <Amount>
+            <Purchase>{$amount}</Purchase>
+        </Amount>
+        <Account>
+            <AcctNo>SecureDevice</AcctNo>
+        </Account>
+        <LaneID>{$REG}</LaneID>
+        <SequenceNo>{{SequenceNo}}</SequenceNo>
+        <RecordNo>{$ptrans['xToken']}</RecordNo>
+        <Frequency>OneTime</Frequency>
+    </Transaction>
+</TStream>
+XML;
         $startTime = microtime(true);
         $success = false;
-        $fp =fopen(__DIR__ . '/resp.log', 'a');
-        try {
-            $soap = new MSoapClient($credentials[$storeID][0], $credentials[$storeID][1]);
-            $xml = $soap->oneReturnByRecordNo($amount, $ptrans['xToken'], $ptrans['xTransactionID'], $newInvoice);
-            fwrite($fp, print_r($xml, true) . "\n");
+
+        $curl = curl_init('http://' . $credentials['hosts'][$storeID][0] . ':8999');
+        curl_setopt($curl, CURLOPT_POST, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $reqXML);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
+        $respXML = curl_exec($curl);
+        $resp = simplexml_load_string($respXML);
+        if (strlen($respXML) > 0 && $resp !== false) {
             $elapsed = microtime(true) - $startTime;
             $pcRow[] = date('Y-m-d H:i:s');
             $pcRow[] = $elapsed;
             $pcRow[] = 0;
             $pcRow[] = 200;
             $pcRow[] = 1; // valid response
-            $status = strtolower($xml->CmdResponse->CmdStatus);
+            $status = strtolower($resp->CmdResponse->CmdStatus[0]);
             if ($status == 'approved') { // finish record as approved
                 $success = true;
                 $pcRow[] = 1;
-                $pcRow[] = $xml->TranResponse->AuthCode;
-                $pcRow[] = $xml->CmdResponse->DSIXReturnCode;
-                $pcRow[] = $xml->CmdResponse->TextResponse;
-                $pcRow[] = $xml->TranResponse->RefNo;
+                $pcRow[] = $resp->TranResponse->AuthCode[0];
+                $pcRow[] = $resp->CmdResponse->DSIXReturnCode[0];
+                $pcRow[] = $resp->CmdResponse->TextResponse[0];
+                $pcRow[] = $resp->TranResponse->RefNo[0];
                 $pcRow[] = 0; // xBalance
-                $pcRow[] = $xml->TranResponse->RecordNo;
-                $pcRow[] = $xml->TranResponse->ProcessData;
-                $pcRow[] = $xml->TranResponse->AcqRefData;
+                $pcRow[] = $resp->TranResponse->RecordNo[0];
+                $pcRow[] = $resp->TranResponse->ProcessData[0];
+                $pcRow[] = $resp->TranResponse->AcqRefData[0];
             } else { // finish record as declined or errored
                 $pcRow[] = $status == 'declined' ? 2 : 3;
                 $pcRow[] = ''; // xApprovalNumber
-                $pcRow[] = $xml->CmdResponse->DSIXReturnCode;
-                $pcRow[] = $status == 'declined' ? 'DECLINED' : $xml->CmdResponse->TextResponse;
+                $pcRow[] = $resp->CmdResponse->DSIXReturnCode[0];
+                $pcRow[] = $status == 'declined' ? 'DECLINED' : $resp->CmdResponse->TextResponse[0];
                 $pcRow[] = ''; // xTransactionID
                 $pcRow[] = 0; // xBalance
                 $pcRow[] = ''; // xToken
                 $pcRow[] = ''; // xProcessorRef
                 $pcRow[] = ''; // xAcquirerRef
             }
-        } catch (SoapFault $ex) { // also finish record as an error
-            fwrite($fp, print_r($ex, true) . "\n");
+        } else {
             $elapsed = microtime(true) - $startTime;
             $pcRow[] = date('Y-m-d H:i:s');
             $pcRow[] = $elapsed;
-            $pcRow[] = 1;
-            $pcRow[] = $ex->faultcode;
+            $pcRow[] = curl_errno($curl);
+            $pcRow[] = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
             $pcRow[] = 1; // valid response
             $pcRow[] = 3; // xResultCode
             $pcRow[] = ''; // xApprovalNumber
             $pcRow[] = 0; // xResponseCode
-            $pcRow[] = $ex->faultstring;
+            $pcRow[] = curl_error($curl);
             $pcRow[] = ''; // xTransactionID
             $pcRow[] = 0; // xBalance
             $pcRow[] = ''; // xToken
             $pcRow[] = ''; // xProcessorRef
             $pcRow[] = ''; // xAcquirerRef
         }
+
         $this->connection->execute($ptransP, $pcRow);
         $pcID = $this->connection->insertID();
 
