@@ -101,13 +101,14 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 pdc_active = false;
             }
         }
+        /*
         lock (emvLock) {
             if (emv_active) {
                 try {
                     Console.WriteLine("Reset EMV");
                     emv_ax_control.CancelRequest();
                     emv_active = false;
-                } catch (Exception ex) {
+                } catch (Exception) {
                     // I assume this will through if either the ActiveX DLL
                     // was generated against an older OCX that doesn't have
                     // this method or if the DLL has the method but the
@@ -115,6 +116,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 }
             }
         }
+        */
 
         if (emv_ax_control == null) {
             emv_ax_control = new DsiEMVX();
@@ -144,7 +146,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     public override void Read()
     { 
         ReInitDevice();
-        TcpListener http = new TcpListener(IPAddress.Loopback, LISTEN_PORT);
+        TcpListener http = new TcpListener(IPAddress.Any, LISTEN_PORT);
         http.Start();
         byte[] buffer = new byte[10];
         while (SPH_Running) {
@@ -339,6 +341,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             Show cashback selections if payment type debit or ebt cash
             is selected.
             Irrelevant if disableRBA or disableButtons is true
+        * servers [string] default "x1.mercurypay.com;x2.backuppay.com"
+            Set PDCX server list
     */
     public override void SetConfig(Dictionary<string,string> d)
     {
@@ -381,6 +385,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
         if (this.rba != null && d.ContainsKey("cashback") && (d["cashback"].ToLower() == "true" || d["cashback"].ToLower() == "false")) {
             this.rba.SetCashBack(d["cashback"].ToLower() == "true" ? true : false);
+        }
+
+        if (d.ContainsKey("servers")) {
+            this.server_list = d["servers"];
         }
     }
 

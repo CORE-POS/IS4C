@@ -112,6 +112,8 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             Show cashback selections if payment type debit or ebt cash
             is selected.
             Irrelevant if disableRBA or disableButtons is true
+        * servers [string] default "x1.mercurypay.com;x2.backuppay.com"
+            Set PDCX server list
     */
     public override void SetConfig(Dictionary<string,string> d)
     {
@@ -152,6 +154,10 @@ public class SPH_Datacap_PDCX : SerialPortHandler
 
         if (this.rba != null && d.ContainsKey("cashback") && (d["cashback"].ToLower() == "true" || d["cashback"].ToLower() == "false")) {
             this.rba.SetCashBack(d["cashback"].ToLower() == "true" ? true : false);
+        }
+
+        if (d.ContainsKey("servers")) {
+            this.server_list = d["servers"];
         }
     }
 
