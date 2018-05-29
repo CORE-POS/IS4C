@@ -111,7 +111,6 @@ XML;
             $startTime = microtime(true);
             $approvedAmount = 0;
 
-            /*
             $curl = curl_init('http://' . $this->CREDENTIALS['hosts'][$storeID][0] . ':8999');
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $reqXML);
@@ -166,8 +165,8 @@ XML;
                 $pcRow[] = ''; // xProcessorRef
                 $pcRow[] = ''; // xAcquirerRef
             }
-             */
 
+            /*
             try {
                 // process actual transaction
                 $soap = new MSoapClient($this->CREDENTIALS[$store][0], $this->CREDENTIALS[$store][1]);
@@ -219,6 +218,7 @@ XML;
                 $pcRow[] = ''; // xProcessorRef
                 $pcRow[] = ''; // xAcquirerRef
             }
+             */
 
             $dbc->execute($ptransP, $pcRow);
             $pcID = $dbc->insertID();
@@ -354,7 +354,15 @@ XML;
 
     private function getTransactions($dbc)
     {
-        $dateID = date('Ymd', strtotime('1 month ago'));
+        global $argv;
+        $dateID = date('Ymd', strtotime('31 days ago'));
+        if (isset($argv) && is_array($argv)) {
+            foreach($argv as $arg) {
+                if (is_numeric($arg) && strlen($arg) == 8) {
+                    $dateID = $arg;
+                }
+            }
+        }
         $transP = $dbc->prepare("
             SELECT *
             FROM PaycardTransactions
