@@ -104,14 +104,14 @@ class EqRecurTask extends FannieTask
         <LaneID>{$REGISTER_NO}</LaneID>
         <SequenceNo>{{SequenceNo}}</SequenceNo>
         <RecordNo>{$payment['xToken']}</RecordNo>
-        <Frequency>OneTime</Frequency>
+        <Frequency>Recurring</Frequency>
     </Transaction>
 </TStream>
 XML;
             $startTime = microtime(true);
             $approvedAmount = 0;
 
-            $curl = curl_init('http://' . $this->CREDENTIALS['hosts'][$storeID][0] . ':8999');
+            $curl = curl_init('http://' . $this->CREDENTIALS['hosts'][$store][0] . ':8999');
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $reqXML);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -302,6 +302,7 @@ XML;
     private function clearToken($dbc, $row)
     {
         $clearP = $dbc->prepare("UPDATE PaycardTransactions SET xToken='USED' WHERE paycardTransactionID=? and storeRowId=?");
+        $this->cronMsg("Clear ptID {$row['paycardTransactionID']}, srID {$row['storeRowId']}", FannieLogger::ALERT);
         $clearR = $dbc->execute($clearP, array($row['paycardTransactionID'], $row['storeRowId']));
 
         return $clearR ? true : false;
