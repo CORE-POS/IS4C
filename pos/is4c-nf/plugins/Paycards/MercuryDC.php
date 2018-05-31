@@ -15,6 +15,7 @@ class MercuryDC extends MercuryE2E
     protected $proc_name = 'MercuryE2E';
     public function __construct($name='MercuryE2E')
     {
+        parent::__construct();
         if (strlen($name) > 0) {
             $this->proc_name = $name;
         }
@@ -577,7 +578,7 @@ class MercuryDC extends MercuryE2E
     private function pickHost($hosts)
     {
         // split on any delimiter
-        $names = preg_split('/[^0-9\.]+/', $hosts, -1, PREG_SPLIT_NO_EMPTY);
+        $names = preg_split('/,/', $hosts, -1, PREG_SPLIT_NO_EMPTY);
         shuffle($names);
         if (count($names) == 0) {
             return '127.0.0.1';
