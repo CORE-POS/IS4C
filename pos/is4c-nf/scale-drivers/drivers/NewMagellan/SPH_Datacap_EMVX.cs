@@ -518,6 +518,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             xml = xml.Replace("{{SequenceNo}}", SequenceNo());
             xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
             xml = xml.Replace("{{ComPort}}", com_port);
+            if (this.terminalID.Length > 0) {
+                xml = xml.Replace("{{TerminalID}}", this.terminalID);
+            }
 
             ret = pdc_ax_control.ProcessTransaction(xml, 1, null, null);
             if (enable_xml_log) {
