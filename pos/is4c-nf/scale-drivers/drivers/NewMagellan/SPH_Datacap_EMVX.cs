@@ -59,6 +59,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private bool always_reset = false;
     private bool emv_active;
     private Object emvLock = new Object();
+    private string terminalID = "";
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -390,6 +391,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (d.ContainsKey("servers")) {
             this.server_list = d["servers"];
         }
+
+        if (d.ContainsKey("terminalID")) {
+            this.terminalID = d["terminalID"];
+        }
     }
 
     /**
@@ -417,6 +422,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
         }
         xml = xml.Replace("{{ComPort}}", com_port);
+        if (this.terminalID.Length > 0) {
+            xml = xml.Replace("{{TerminalID}}", this.terminalID);
+        }
 
         try {
             /**
@@ -584,6 +592,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "<Transaction>"
             + "<HostOrIP>127.0.0.1</HostOrIP>"
             + "<MerchantID>MerchantID</MerchantID>"
+            + (this.terminalID.Length > 0 ? "<TerminalID>" + this.terminalID + "</TerminalID>" : "")
             + "<TranCode>EMVPadReset</TranCode>"
             + "<SecureDevice>" + SecureDeviceToEmvType(this.device_identifier) + "</SecureDevice>"
             + "<ComPort>" + this.com_port + "</ComPort>"
@@ -677,6 +686,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     {
         switch (device) {
             case "VX805XPI":
+                return "EMV_VX805_RAPIDCONNECT";
             case "VX805XPI_MERCURY_E2E":
                 return "EMV_VX805_MERCURY";
             case "INGENICOISC250_MERCURY_E2E":
