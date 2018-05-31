@@ -82,7 +82,7 @@ class PaycardEmvRecurring extends PaycardProcessPage
         if (!$this->runTransaction) {
             return '';
         }
-        $e2e = new MercuryDC();
+        $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         $xmlData = $e2e->prepareDataCapAuth($this->conf->get('CacheCardType'), $this->conf->get('paycard_amount'), $this->prompt);
         $xmlData = $e2e->switchToRecurring($xmlData);
         ?>

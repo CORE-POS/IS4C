@@ -881,6 +881,11 @@ class MercuryE2E extends BasicCCModule
     protected function beginXmlRequest($request, $refNo=false, $recordNo=false)
     {
         $termID = $this->getTermID();
+        $separateID = false;
+        if (substr($termID, -2) == '::') {
+            $separateID = true;
+            $termID = substr($termID, 0, strlen($termID)-2);
+        }
         $mcTerminalID = $this->conf->get('PaycardsTerminalID');
         if ($mcTerminalID === '') {
             $mcTerminalID = $this->conf->get('laneno');
@@ -890,6 +895,7 @@ class MercuryE2E extends BasicCCModule
             <TStream>
             <Transaction>
             <MerchantID>'.$termID.'</MerchantID>
+            ' . ($separateID ? "<TerminalID>{{TerminalID}}</TerminalID>" : '') . '
             <OperatorID>'.$request->cashierNo.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
             <InvoiceNo>'.$request->refNum.'</InvoiceNo>

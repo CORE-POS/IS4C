@@ -100,7 +100,7 @@ class PaycardEmvPage extends PaycardProcessPage
         if (!$this->runTransaction) {
             return '';
         }
-        $e2e = new MercuryDC();
+        $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         ?>
 <script type="text/javascript">
 function emvSubmit() {

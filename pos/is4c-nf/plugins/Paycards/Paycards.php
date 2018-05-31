@@ -140,6 +140,11 @@ messages from POS?',
             'description' => 'Datacap server on the local network (only required for EMV)',
             'default' => '127.0.0.1',
         ),
+        'PaycardsDatacapName' => array(
+            'label' => 'Datacap Processor Name',
+            'description' => 'Card processor handling Datacap transactions',
+            'default' => 'MercuryE2E',
+        ),
         'PaycardsBlockExceptions' => array(
             'label' => 'Blocking Exceptions',
             'description' => 'Still allow these tenders with Block Other Tenders enabled',

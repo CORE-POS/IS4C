@@ -12,6 +12,14 @@ use COREPOS\pos\plugins\Paycards\xml\XmlData;
 
 class MercuryDC extends MercuryE2E
 {
+    protected $proc_name = 'MercuryE2E';
+    public function __construct($name='MercuryE2E')
+    {
+        if (strlen($name) > 0) {
+            $this->proc_name = $name;
+        }
+    }
+
     /**
       Prepare an XML request body for an PDCX
       or EMVX transaction
@@ -22,7 +30,7 @@ class MercuryDC extends MercuryE2E
     public function prepareDataCapAuth($type, $amount, $prompt=false)
     {
         $request = new PaycardRequest($this->refnum($this->conf->get('paycard_id')), PaycardLib::paycard_db());
-        $request->setProcessor('MercuryE2E');
+        $request->setProcessor($this->proc_name);
         $tranCode = $amount > 0 ? 'Sale' : 'Return';
         if ($type == 'EMV') {
             $tranCode = 'EMV' . $tranCode;
@@ -138,7 +146,7 @@ class MercuryDC extends MercuryE2E
         $this->conf->set('paycard_trans', $this->conf->get('CashierNo') . '-' . $row['registerNo'] . '-' . $row['transNo']);
 
         $request = new PaycardVoidRequest($this->refnum($this->conf->get('paycard_id')), $dbc);
-        $request->setProcessor('MercuryE2E');
+        $request->setProcessor($this->proc_name);
 
         $request->last_paycard_transaction_id = $pcID; 
         try {
@@ -325,7 +333,7 @@ class MercuryDC extends MercuryE2E
     public function prepareDataCapGift($mode, $amount, $prompt)
     {
         $request = new PaycardGiftRequest($this->refnum($this->conf->get('paycard_id')), PaycardLib::paycard_db());
-        $request->setProcessor('MercuryE2E');
+        $request->setProcessor($this->proc_name);
 
         $host = "g1.mercurypay.com";
         if ($this->conf->get("training") == 1) {
