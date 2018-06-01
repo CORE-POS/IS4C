@@ -131,7 +131,7 @@ class PaycardFixReturn extends FannieRESTfulPage
             $TRANS,
             $TRANS_ID,
             $ptrans['paycardTransactionID'],
-            'MercuryE2E',
+            $ptrans['processor'],
             $newInvoice,
             1,
             'CREDIT',
@@ -146,18 +146,27 @@ class PaycardFixReturn extends FannieRESTfulPage
 
         $credentials = json_decode(file_get_contents(__DIR__ . '/../RecurringEquity/credentials.json'), true);
         $storeID = $ptrans['registerNo'] < 10 ? 1 : 2;
+        $hostOrIP = '127.0.0.1';
         if (!is_array($credentials) || !isset($credentials[$storeID])) {
             echo 'Cannot find acct info';
             return false;
+        }
+
+        $terminalID = '';
+        if ($ptrans['processor'] == 'RapidConnect') {
+            $hostOrIP = $credentials['hosts']['RapidConnect'][1];
+            $storeID = "RapidConnect";
+            $terminalID = '<TerminalID>{{TerminalID}}</TerminalID>';
         }
 
         $reqXML = <<<XML
 <?xml version="1.0"?>
 <TStream>
     <Transaction>
-        <HostOrIP>127.0.0.1</HostOrIP>
+        <HostOrIP>{$hostOrIP}</HostOrIP>
         <IpPort>9000</IpPort>
         <MerchantID>{$credentials[$storeID][0]}</MerchantID>
+        {$terminalID}
         <OperatorID>{$EMP}</OperatorID>
         <TranType>Credit</TranType>
         <TranCode>ReturnByRecordNo</TranCode>
@@ -238,6 +247,10 @@ XML;
 
         $this->connection->execute($ptransP, $pcRow);
         $pcID = $this->connection->insertID();
+
+        if ($storeID == 'RapidConnect') {
+            return 'PaycardFixReturn.php?resultID=' . $pcID;
+        }
 
         /**
          * If the refund was successful, either flag the existing POS transaction with
