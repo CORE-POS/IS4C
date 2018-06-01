@@ -309,7 +309,7 @@ class MercuryDC extends MercuryE2E
             <RefNo>'.$refNum.'</RefNo>
             <Memo>CORE POS 1.0.0 PDCX</Memo>
             <Account>
-                <AcctNo>SecureDevice</AcctNo>
+                <AcctNo>' . ($prompt ? 'Prompt' : 'SecureDevice') . '</AcctNo>
             </Account>
             <Amount>
                 <Purchase>0.00</Purchase>
@@ -322,11 +322,6 @@ class MercuryDC extends MercuryE2E
             $msgXml .= '<IpAddress>' . $this->giftServerIP() . '</IpAddress>';
         }
         $msgXml .= '</Transaction></TStream>';
-
-        if ($prompt) {
-            $msgXml = str_replace('<AcctNo>SecureDevice</AcctNo>',
-                '<AcctNo>Prompt</AcctNo>', $msgXml);
-        }
 
         return $msgXml;
     }

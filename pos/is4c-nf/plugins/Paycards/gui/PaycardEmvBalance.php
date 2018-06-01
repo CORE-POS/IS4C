@@ -42,10 +42,10 @@ class PaycardEmvBalance extends PaycardProcessPage
                 $this->conf->reset();
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
-            } elseif ($input == "" || $input == 'MANUAL') {
+            } elseif ($input == "" || $input == 'MANUAL' || $input === 'M') {
                 $this->action = "onsubmit=\"return false;\"";    
                 $this->addOnloadCommand("emvSubmit();");
-                if ($input == 'MANUAL') {
+                if ($input == 'MANUAL' || $input == 'M') {
                     $this->prompt = true;
                 }
                 $this->runTransaction = true;
