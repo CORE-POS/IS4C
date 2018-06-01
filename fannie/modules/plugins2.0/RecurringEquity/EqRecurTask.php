@@ -68,7 +68,7 @@ class EqRecurTask extends FannieTask
                 $TRANS_NO,
                 2, // transID
                 $payment['paycardTransactionID'],
-                'MercuryE2E',
+                $payment['processor'],
                 $invoice,
                 1,
                 'CREDIT',
@@ -81,13 +81,22 @@ class EqRecurTask extends FannieTask
                 date('Y-m-d H:i:s'),
             );
 
+            $hostOrIP = '127.0.0.1';
+            $transID = '';
+            if ($payment['processor'] == 'RapidConnect') {
+                $hostOrIP = $this->CREDENTIALS['hosts']['RapidConnect'][1];
+                $store = "RapidConnect";
+                $terminalID = '<TerminalID>{{TerminalID}}</TerminalID>';
+            }
+
         $reqXML = <<<XML
 <?xml version="1.0"?>
 <TStream>
     <Transaction>
-        <HostOrIP>127.0.0.1</HostOrIP>
+        <HostOrIP>{$hostOrIP}</HostOrIP>
         <IpPort>9000</IpPort>
         <MerchantID>{$this->CREDENTIALS[$store][0]}</MerchantID>
+        {$terminalID}
         <OperatorID>{$EMP_NO}</OperatorID>
         <TranType>Credit</TranType>
         <TranCode>SaleByRecordNo</TranCode>
@@ -117,6 +126,7 @@ XML;
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
             $respXML = curl_exec($curl);
+
             $resp = simplexml_load_string($respXML);
             if (strlen($respXML) > 0 && $resp !== false) {
                 $elapsed = microtime(true) - $startTime;
