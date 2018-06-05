@@ -534,6 +534,23 @@ class HouseCoupon extends SpecialUPC
                     $freeItems++;
                 }
                 break;
+            case 'BH': // BOHO
+                $valQ = 'SELECT SUM(l.total), SUM(l.quantity) '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')";
+                $valP = $transDB->prepare($valQ);
+                $valW = $transDB->getRow($valP);
+                $value = $valW[0];
+                $qty = $valW[1];
+                if ($qty % 2 != 0) {
+                    $value -= ($value/$qty);
+                }
+                $value *= 0.5;
+                $value = MiscLib::truncate2($value/2);
+                if ($value > 0 && $value > $infoW['discountValue']) {
+                    $value = $infoW['discountValue'];
+                }
+                break;
             case "P": // discount price
                 // query to get the item's department and current value
                 // current value minus the discount price is how much to
