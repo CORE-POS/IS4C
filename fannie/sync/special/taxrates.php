@@ -7,6 +7,7 @@
   side on the lanes.
 */
 
+include(__DIR__ . '/../../config.php');
 foreach ($FANNIE_LANES as $lane) {
     $dbc->addConnection($lane['host'],$lane['type'],$lane['trans'],
             $lane['user'],$lane['pw']);
@@ -20,7 +21,7 @@ foreach ($FANNIE_LANES as $lane) {
             INSERT INTO taxrates
                 (id, rate, description)';
         $dbc->query("TRUNCATE TABLE taxrates", $lane['trans']);
-        $dbc->transfer($FANNIE_OP_DB, $selectQ, $lane['trans'], $insQ);
+        $ret = $dbc->transfer($FANNIE_OP_DB, $selectQ, $lane['trans'], $insQ);
     }
 }
 
