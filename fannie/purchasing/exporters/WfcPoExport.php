@@ -62,7 +62,7 @@ class WfcPoExport extends DefaultCsvPoExport
             echo "Whole Foods Co-op\r\n";
             echo "4426 Grand Ave\r\n";
             echo "\"Duluth, MN 55807\"\r\n";
-            echo "(218) 728-0884\r\n";
+            echo "(218) 336-0279\r\n";
         }
 
         if ($noteContent != '') {
