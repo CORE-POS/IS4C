@@ -4,15 +4,18 @@ var manageComments = (function($) {
 
     mod.sendMsg = function() {
         $('#resp-ta').keyup(function() {
-            if ($('#resp-ta').val().length > 0) {
+            if ($('#resp-ta').val().length > 0 && !$('#noEmail').prop('checked')) {
                 $('#sending-msg').html('Response will be emailed to the customer')
                     .addClass('alert-warning')
                     .removeClass('alert-info');
-                $('#send-btn').prop('disabled', false);
             } else {
                 $('#sending-msg').html('Nothing will be emailed to the customer')
                     .addClass('alert-info')
                     .removeClass('alert-warning');
+            }
+            if ($('#resp-ta').val().length > 0) {
+                $('#send-btn').prop('disabled', false);
+            } else {
                 $('#send-btn').prop('disabled', true);
             }
         });

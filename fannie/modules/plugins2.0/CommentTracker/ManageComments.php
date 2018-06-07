@@ -158,8 +158,9 @@ class ManageComments extends FannieRESTfulPage
         $response->tdate(date('Y-m-d H:i:s'));
         $response->userID(FannieAuth::getUID($this->current_user));
         $msg = trim(FormLib::get('response'));
+        $noSend = FormLib::get('noEmail', false);
         if ($msg != '') {
-            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if (!$noSend && filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $response->sent(1);
                 $mail = new PHPMailer();
                 $mail->From = 'info@wholefoods.coop';
@@ -343,7 +344,7 @@ HTML;
         $appropriateCheck = $comment['appropriate'] ? 'checked' : '';
         $comment['comment'] = nl2br($comment['comment']);
         $source = $comment['fromPaper'] ? 'Manual entry' : 'Website';
-        $this->addScript('js/manageComments.js');
+        $this->addScript('js/manageComments.js?date=20180607');
         if ($comment['email']) {
             $comment['email'] .= sprintf(' (<a href="ManageComments.php?email=%s">All Comments</a>)', $comment['email']);
             $this->addOnloadCommand("manageComments.sendMsg();");
@@ -402,6 +403,12 @@ HTML;
         <div class="panel-heading">Enter Response</div>
         <div class="panel-body">
             <div id="sending-msg" class="alert alert-info">Nothing will be emailed to the customer</div>
+            <p>
+                <label>
+                <input type="checkbox" id="noEmail" name="noEmail" value="1" />
+                Responded another way. Do not email the customer.
+                </label>
+            </p>
             <p>
                 <textarea id="resp-ta" name="response" class="form-control" rows="10"></textarea>
             </p>
