@@ -59,7 +59,7 @@ class DDDReason extends NoInputCorePage
             $input = $this->form->selectlist;
             $this->session->set("shrinkReason", 0);
             $url = $this->page_url . "gui-modules/pos2.php";
-            if ($input != "CL" && $input == '') {
+            if ($input != "CL" && $input != '') {
                 $this->session->set("shrinkReason", (int)$input);
                 $url = $this->page_url . "gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin";
             }
