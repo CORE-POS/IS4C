@@ -109,9 +109,11 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
         $inv = FormLib::get('identifier', '');
         $orderDate = FormLib::get('orderDate', date('Y-m-d H:i:s'));
         $recvDate = FormLib::get('recvDate', '');
+        $store = FormLib::get('store');
 
         $order = new PurchaseOrderModel($dbc);
         $order->vendorID($vendorID);
+        $order->storeID($store);
         $order->creationDate($orderDate);
         $order->placedDate($orderDate);
         $order->placed(1);
@@ -251,6 +253,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
             FormLib::get_form_value('orderDate'),FormLib::get_form_value('orderDate'));
         $ret .= sprintf("<b>Recv'd Date</b>: %s <input type=hidden value=\"%s\" name=recvDate /><br />",
             FormLib::get_form_value('recvDate'),FormLib::get_form_value('recvDate'));
+        $ret .= sprintf('<input type="hidden" name="store" value="%d" />', FormLib::get('store'));
 
         return $ret;
     }
@@ -274,12 +277,16 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendors = new VendorsModel($dbc);
+        $stores = FormLib::storePicker();
+        $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();\n");
         ob_start();
         ?>
         <form enctype="multipart/form-data" class="form-horizontal" action="ImportPurchaseOrder.php" id="FannieUploadForm" method="post">
         <div class="form-group col-sm-6">
             <label class="control-label col-sm-3">Vendor</label>
-            <div class="col-sm-9"><select name=vendorID class="form-control">
+            <div class="col-sm-9"><select name=vendorID class="form-control chosen">
             <?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
                 </select></div>
         </div>
@@ -298,6 +305,10 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
         <div class="form-group col-sm-6">
             <label class="control-label col-sm-3">Filename</label>
             <div class="col-sm-9"><input type="file" class="form-control" name="FannieUploadFile" id="FannieUploadFile" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Store</label>
+            <div class="col-sm-9"><?php echo $stores['html']; ?></div>
         </div>
         <div class="form-group col-sm-6">
             <button type="submit" class="btn btn-default">Upload File</button>
