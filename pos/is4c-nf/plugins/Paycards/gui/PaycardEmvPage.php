@@ -66,18 +66,17 @@ class PaycardEmvPage extends PaycardProcessPage
                 }
             } elseif ( $input != "" && substr($input,-2) != "CL") {
                 // any other input is an alternate amount
-                $this->conf->set("paycard_amount","invalid");
                 if (substr($input, -2) == 'CA' && is_numeric(substr($input, 0, strlen($input)-2))) {
                     $cashback = substr($input, 0, strlen($input)-2) / 100;
                     if ($cashback > 0 && $cashback <= 40) {
                         $this->conf->set('CacheCardCashBack', $cashback);
+                        $this->conf->set('paycard_amount', $this->conf->get('amtdue') + $cashback);
                     }
-
                 } elseif (is_numeric($input)) {
                     $this->conf->set("paycard_amount",$input/100);
-                }
-                if ($this->conf->get('CacheCardCashBack') > 0 && $this->conf->get('CacheCardCashBack') <= 40) {
-                    $this->conf->set('paycard_amount',($input/100)+$this->conf->get('CacheCardCashBack'));
+                    if ($this->conf->get('CacheCardCashBack') > 0 && $this->conf->get('CacheCardCashBack') <= 40) {
+                        $this->conf->set('paycard_amount',($input/100)+$this->conf->get('CacheCardCashBack'));
+                    }
                 }
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
