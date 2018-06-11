@@ -61,7 +61,8 @@ class rplist extends NoInputCorePage
             if (!empty($this->form->selectlist)) {
                 $this->printReceipt($this->form->selectlist);
             }
-            $this->change_page($this->page_url."gui-modules/pos2.php");
+            //$this->change_page($this->page_url."gui-modules/pos2.php");
+            echo "Done";
 
             return false;
         } elseif ($this->form->tryGet('preview') !== '') {
@@ -75,7 +76,7 @@ class rplist extends NoInputCorePage
     function head_content()
     {
         ?>
-        <script type="text/javascript" src="../js/selectSubmit.js"></script>
+        <script type="text/javascript" src="../js/selectSubmit.js?date=20180611"></script>
         <script type="text/javascript">
         function updatePreview(trans) {
             $.ajax({
@@ -84,10 +85,26 @@ class rplist extends NoInputCorePage
                 $('#receipt-preview').html(resp);
             });
         }
+        function doReprint() {
+            var current = $('#selectlist').val();
+            $('#selectlist').hide();
+            $('#loading-spinner').show();
+            $.ajax({
+                data: 'selectlist='+current,
+            }).fail(function (err, st, obj) {
+                $('#loading-spinner').hide();
+                $('#error-msg').html('Error sending job to printer');
+                $('#error-msg').show();
+                setTimeout(function() { window.location = pos2.php; }, 5000);
+            }).done(function (resp) {
+                window.location = 'pos2.php';
+            });
+        }
         </script>
         <?php
-        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform', false, false, doReprint)\n");
         $this->addOnloadCommand("\$('#selectlist').focus();\n");
+        $this->addCssFile('../css/spinner.css');
     }
 
     private function getTransactions()
@@ -172,6 +189,8 @@ class rplist extends NoInputCorePage
         }
         ?>
         </select>
+        <div id="loading-spinner" class="lds-spinner coloredArea rounded" style="display: none;"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+        <div id="error-msg" style="display: none;"></div>
         </div>
         <div class="listbox" id="receipt-preview" style="height: 15; font-size: 85%;">
             <?php echo ($first) ? $this->previewTrans($first) : ''; ?>

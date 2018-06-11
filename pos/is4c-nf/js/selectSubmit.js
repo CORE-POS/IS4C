@@ -5,10 +5,14 @@
   the form with the value blank.
   @param selector [string] valid jquery selector for the <select> element
   @param myform [string] valid jquery selector for the <form> element
-  $param filter_selector [string, optional] valid jquery selector for displaying
+  @param filter_selector [string, optional] valid jquery selector for displaying
     current filter string
+  @param leave_submit [boolean, optional] do not strip onsubmit handlers
+    from the <form> tag
+  @param custom_callback [function, optional] action to substitute for submitting
+    myform.
 */
-function selectSubmit(selector, myform, filter_selector, leave_submit) {
+function selectSubmit(selector, myform, filter_selector, leave_submit, custom_callback) {
 
     var enterDown = 0;
     var enterUp = 0;
@@ -91,7 +95,11 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
             if (leave_submit !== true) {
                 $(myform).removeAttr('onsubmit');
             }
-            $(myform).submit();
+            if (custom_callback) {
+                custom_callback();
+            } else {
+                $(myform).submit();
+            }
             $(myform).submit(function(submit_event){
                 submit_event.preventDefault();
                 submit_event.stopPropagation();
