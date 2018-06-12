@@ -393,7 +393,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $mail->send();
             $this->sent[$name] = $primary['email'];
 
-            $docfile = "/var/www/cgi-bin/docfile/docfile/" . $card_no;
+            $docfile = __DIR__ . "/noauto/docfile/" . $card_no;
             if (!file_exists($docfile)) {
                 mkdir($docfile);
             }
