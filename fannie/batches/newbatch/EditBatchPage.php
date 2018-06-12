@@ -31,7 +31,7 @@ if (!function_exists('checkLogin')) {
     include_once(__DIR__ . '/../../auth/login.php');
 }
 
-class EditBatchPage extends FannieRESTfulPage
+class EditBatchPageII extends FannieRESTfulPage
 {
     protected $must_authenticate = true;
     protected $auth_classes = array('batches','batches_audited');
@@ -955,12 +955,15 @@ HTML;
                 b.quantity,
                 b.pricemethod,
                 p.brand,
-                NULL AS locationName
+                NULL AS locationName,
+                pr.maxPrice,
+                pr.priceRuleID
             FROM batchList AS b
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes AS l ON b.upc = {$joinColumn}
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN FloorSectionsListView as f on b.upc=f.upc and f.storeID=?
+                LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
             WHERE b.batchID = ?
             $orderby";
         $fetchArgs[] = $store_location;
@@ -1155,6 +1158,15 @@ HTML;
                                                 </span></a>',
                                                 $overlap['batchID'], $overlap['batchID'],
                                                 $overlap['batchName']);
+                    }
+                }
+                if ($fetchW['priceRuleID'] != NULL) {
+                    $mp = $fetchW['maxPrice'];
+                    $sp = $fetchW['salePrice'];
+                    if ($sp > $mp) {
+                        $conflict .= '<a href="#" class="btn btn-warning btn-xs"
+                            title="Sale price falls below MAP restriction. Minimum Price: $'.$mp.'">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span></span>';
                     }
                 }
                 $ret .= "<td bgcolor=$colors[$cur]><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$fetchW['upc']}\"
