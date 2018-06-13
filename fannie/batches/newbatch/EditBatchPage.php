@@ -31,7 +31,7 @@ if (!function_exists('checkLogin')) {
     include_once(__DIR__ . '/../../auth/login.php');
 }
 
-class EditBatchPageII extends FannieRESTfulPage
+class EditBatchPage extends FannieRESTfulPage
 {
     protected $must_authenticate = true;
     protected $auth_classes = array('batches','batches_audited');
@@ -956,14 +956,14 @@ HTML;
                 b.pricemethod,
                 p.brand,
                 NULL AS locationName,
-                pr.maxPrice,
-                pr.priceRuleID
+                r.maxPrice,
+                r.priceRuleID
             FROM batchList AS b
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes AS l ON b.upc = {$joinColumn}
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN FloorSectionsListView as f on b.upc=f.upc and f.storeID=?
-                LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
+                LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
             WHERE b.batchID = ?
             $orderby";
         $fetchArgs[] = $store_location;
@@ -1177,7 +1177,7 @@ HTML;
             $ret .= "<td bgcolor=$colors[$cur] class=\"price\">{$fetchW['normal_price']}</td>";
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
             $qty = is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0 ? $fetchW['quantity'] : 1;
-            $ret .= "<td bgcolor=$colors[$cur] class=\"{$noprices}\">";
+            $ret .= "<td bgcolor=$colors[$cur] class=\"{$noprices} saleprice\">";
             $ret .= '<span id="editable-text-' . $fetchW['upc'] . '">';
             $ret .= '<span class="editable-' . $fetchW['upc'] . ($qty == 1 ? ' collapse ' : '') . '"'
                     . ' id="item-qty-' . $fetchW['upc'] . '" data-name="qty">'
