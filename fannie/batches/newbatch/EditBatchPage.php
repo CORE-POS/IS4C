@@ -1160,7 +1160,7 @@ HTML;
                                                 $overlap['batchName']);
                     }
                 }
-                if ($fetchW['priceRuleID'] != NULL) {
+                if ($fetchW['priceRuleID'] != NULL && $fetchW['maxPrice'] > 0) {
                     $mp = $fetchW['maxPrice'];
                     $sp = $fetchW['salePrice'];
                     if ($sp > $mp) {
