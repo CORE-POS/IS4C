@@ -59,7 +59,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
             $data = $this->$method($data, $this->form);
         }
 
-        if (count($data) > 3000) {
+        if (count($data) > 5000) {
             echo 'Too many results';
             return false;
         }
