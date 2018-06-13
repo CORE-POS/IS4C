@@ -20,6 +20,7 @@ class PcFailReport extends FannieReportPage
             SELECT requestDatetime, empNo, registerNo, transNo, amount
             FROM ' . FannieDB::fqn('PaycardTransactions', 'trans') . '
             WHERE dateID BETWEEN ? AND ?
+                AND processor=\'MercuryE2E\'
                 AND (xResultMessage IS NULL OR xResultMessage=\'\')');
         $args = array(
             date('Ymd', strtotime($this->form->date1)),
