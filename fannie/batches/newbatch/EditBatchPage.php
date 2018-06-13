@@ -957,7 +957,8 @@ HTML;
                 p.brand,
                 NULL AS locationName,
                 r.maxPrice,
-                r.priceRuleID
+                r.priceRuleID,
+                r.priceRuleTypeID
             FROM batchList AS b
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes AS l ON b.upc = {$joinColumn}
@@ -1163,7 +1164,7 @@ HTML;
                 if ($fetchW['priceRuleID'] != NULL && $fetchW['maxPrice'] > 0) {
                     $mp = $fetchW['maxPrice'];
                     $sp = $fetchW['salePrice'];
-                    if ($sp > $mp) {
+                    if ($sp > $mp && $fetchW['priceRuleTypeID'] == 10) {
                         $conflict .= '<a href="#" class="btn btn-warning btn-xs"
                             title="Sale price falls below MAP restriction. Minimum Price: $'.$mp.'">
                             <span class="glyphicon glyphicon-exclamation-sign"></span></span>';
