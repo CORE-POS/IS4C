@@ -1,4 +1,4 @@
-r<?php
+<?php
 /*******************************************************************************
 
     Copyright 2012 Whole Foods Co-op
@@ -26,14 +26,14 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class TestReport extends FannieReportPage
+class EquitySalesReport extends FannieReportPage
 {
-    public $description = '[Test Report] is not a "real" report.';
-    public $report_set = 'Testing';
+    public $description = '[Equity Sales Report] View or compare equity sales time range(s).';
+    public $report_set = 'Equity Sales';
     public $themed = true;
 
-    protected $title = "Fannie : Test Report";
-    protected $header = "Test Report";
+    protected $title = "Fannie : Equity Sales Report";
+    protected $header = "Equity Sales Report";
 
     protected $report_headers = array('Starting Dates');
     protected $required_fields = array('date1', 'date2');
@@ -74,7 +74,7 @@ class TestReport extends FannieReportPage
     {
         $ret = array();
         $ret[] = "
-            <button class='btn btn-default' data-toggle='collapse' data-target='#ifc'>Run New Dates</button>
+            <button class='btn btn-default RunNew' data-toggle='collapse' data-target='#ifc'>Run New Dates</button>
             <div class='inner-form-contents collapse' id='ifc'>{$this->form_content()}</div>
         ";
         return $ret;
@@ -104,7 +104,13 @@ class TestReport extends FannieReportPage
             $includeDepts = "SUM(CASE WHEN d.department=991 THEN total ELSE 0 END) AS Equity";
         }
 
-        $date_selector = 'year(tdate), month(tdate), day(tdate)';
+        $begin = new DateTime($date1); 
+        $end = new DateTime($date2);
+        $diff = $begin->diff($end);
+        $span = $diff->days;
+        $end = $end->add(new DateInterval('P1D'));
+
+        $date_selector = ($span < 60) ? 'year(tdate), month(tdate), day(tdate)' : "year(tdate), month(tdate)";
         $day_names = array();
         if ($weekday == 1) {
             $date_selector = $dbc->dayofweek('tdate');
@@ -117,11 +123,14 @@ class TestReport extends FannieReportPage
         }
         $hour = $dbc->hour('tdate');
 
+        $store_selector = ($store != 0) ? "AND d.store_id = ?" : "AND 0 = ?";
+
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
         $query = "
             SELECT
                 $date_selector,
+                CONCAT(year(tdate), '-', month(tdate), '-', day(tdate)) as date,
                 sum(d.total) AS ttl,
                 avg(d.total) AS avg,
                 $includeDepts
@@ -129,15 +138,32 @@ class TestReport extends FannieReportPage
             WHERE d.department IN (991,992)
                 AND d.tdate BETWEEN ? AND ?
                 AND d.emp_no <> 1001
+                $store_selector
             GROUP BY $date_selector
             ORDER BY $date_selector";
-        $args = array($date1.' 00:00:00', $date2.' 23:59:59');
+        $args = array($date1.' 00:00:00', $date2.' 23:59:59', $store);
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
+        $temp = array();
         while ($row = $dbc->fetchRow($result)) {
-            $data[] = $this->rowToRecord($row);
+            unset($temp);
+            $date = $row['date'];
+            $date = new DateTime($date);
+            $date = $date->format('Y-m-d');
+            $temp[] = $date;
+            $temp[] = sprintf('%.2f', $row['Equity']);
+            $data[] = $temp;
         }
-        $this->report_headers[] = "<span class='lightweight'>$date1 | $date2</span>";
+
+        if ($span < 60) {
+            $this->addMissingDates($begin, $end, $data);
+            $this->report_headers[] = "<span class='lightweight'>$date1 | $date2</span>";
+        } else {
+            $this->report_headers[0] = 'Month';
+            $hdate = new DateTime($date1);
+            $hdate = $hdate->format('Y');
+            $this->report_headers[] = "<span class='lightweight'>$hdate</span>";
+        }
         
         //additional queries to find comparable data
         $temp = array();
@@ -149,7 +175,6 @@ class TestReport extends FannieReportPage
             5 => array(9,10),
             6 => array(11,12)
         );
-        //$this->report_headers[] = $depth;
         while ($depth <= $maxDepth) {
             $range1 = $depthRanges[$depth][0];
             $range2 = $depthRanges[$depth][1];
@@ -160,6 +185,7 @@ class TestReport extends FannieReportPage
             $query = "
                 SELECT
                     $date_selector,
+                    CONCAT(year(tdate), '-', month(tdate), '-', day(tdate)) as date,
                     sum(d.total) AS ttl,
                     avg(d.total) AS avg,
                     $includeDepts
@@ -167,30 +193,86 @@ class TestReport extends FannieReportPage
                 WHERE d.department IN (991,992)
                     AND d.tdate BETWEEN ? AND ?
                     AND d.emp_no <> 1001
+                    $store_selector
                 GROUP BY $date_selector
                 ORDER BY $date_selector";
-            $args = array($tDate1.' 00:00:00', $tDate2.' 23:59:59');
+            $args = array($tDate1.' 00:00:00', $tDate2.' 23:59:59', $store);
             $prep = $dbc->prepare($query);
             $result = $dbc->execute($prep,$args);
+            $tempB = array();
+            $tempC = array();
             while ($row = $dbc->fetchRow($result)) {
-                $temp[] = $this->rowToRecord($row);
+                unset($tempB);
+                $date = $row['date'];
+                $date = new DateTime($date);
+                $date = $date->format('Y-m-d');
+                $tempB[] = $date;
+                $tempB[] = sprintf('%.2f', $row['Equity']);
+                $tempC[] = $tempB;
+            }
+            if ($span < 60) {
+                $begin = new DateTime($tDate1); 
+                $end = new DateTime($tDate2);
+                $end = $end->add(new DateInterval('P1D'));
+                $this->addMissingDates($begin, $end, $tempC);
             }
 
             // plug temp values into data
-            foreach ($temp as $k => $row) {
+            foreach ($tempC as $k => $row) {
                 $data[$k][$depth] = $row[1];
                 $data[$k][3+$depth] = $row[3];
             }
-            $this->report_headers[] = "<span class='lightweight'>$tDate1 | $tDate2</span>";
+
+            if ($span < 60) {
+                $this->report_headers[] = "<span class='lightweight'>$tDate1 | $tDate2</span>";
+            } else {
+                $hdate = new DateTime($tDate1);
+                $hdate = $hdate->format('Y');
+                $this->report_headers[] = "<span class='lightweight'>$hdate</span>";
+            }
             $tDate1 = $compDate1;
             $tDate2 = $compDate2;
             $depth++;
         }
 
+        if ($span > 60) {
+            foreach ($data as $k => $v) {
+                $x = substr($data[$k][0], 5, 2);
+                $y = new DateTime($data[$k][0]);
+                $y->format('F');
+                $data[$k][0] = $y->format('F');
+            }
+        }
 
         return $data;
     }
 
+    private function addMissingDates($begin, $end, &$array)
+    {
+        $interval = DateInterval::createFromDateString('1 day');
+        $period = new DatePeriod($begin, $interval, $end);
+        foreach ($period as $dt) {
+            $curDate = $dt->format("Y-m-d");
+            $res = $this->searchForDate($curDate, $array);
+            if ($res) $array[] = array($res, 0);
+        }
+    }
+
+    private function searchForDate($date, &$array) {
+        foreach ($array as $key => $val) {
+            if ($val[0] === $date) {
+                return null;
+            }
+        }
+        return $date;
+    }
+
+    private function usortByDates(&$array)
+    {
+        usort($array, function($a, $b) {
+            return strtotime($a[0]) - strtotime($b[0]);
+        });
+    }
 
     private function rowToRecord($row)
     {
@@ -210,20 +292,13 @@ class TestReport extends FannieReportPage
         for ($i=1; $i<=$maxDepth; $i++) {
             $sums[] = 0;
         }
-        //$sums = array(0, 0, 0, 0);
         $i = 0;
         foreach ($data as $row) {
             foreach ($sums as $k => $v) {
                 $sums[$k] += $row[$k+1];
             }
-            /*$sums[0] += $row[1];
-            $sums[1] += $row[2];
-            $sums[2] += $row[3];
-            $sums[3] += $row[4];*/
             $i++;
         }
-        //$sums[2] = ($sums[2] / $i);
-        //$sums[3] = ($sums[3] / $i);
 
         foreach ($sums as $k => $v) {
             $ret[] = $sums[$k];
@@ -313,15 +388,20 @@ JAVASCRIPT;
 
     public function form_content()
     {
-        $ret = FormLib::storePicker();
+        $storepicker = FormLib::storePicker();
+        $store = FormLib::get('store');
         $datepicker = FormLib::date_range_picker();
-        $equitypicker = <<<HTML
-<select class="form-control" name="equityType">
-    <option value="1">View Equity A</option>
-    <option value="2">View Equity B</option>
-    <option value="3">View A&B Combined</option>
-</select>
-HTML;
+        $equityType = FormLib::get('equityType');
+
+        $equityoptions = array('', 'View Equity A', 'View Equity B', 'View A&B Combined',);
+        $equitypicker = '<select class="form-control" name="equityType">';
+        for ($i=1; $i<4; $i++) {
+            $option = $equityoptions[$i];
+            $sel = ($equityType == $i) ? 'selected' : '';
+            $equitypicker .= "<option value=$i $sel>$option</option>"; 
+        }
+        $equitypicker .= "</select>";
+
         $nums = range('1','10');
         $wordyNums = array(1=>'1st', 2=>'2nd', 3=>'3rd', 4=>'Fourth', 5=>'Fifth', 6=>'Sixth');
         $depthcontent = '';
@@ -364,13 +444,6 @@ HTML;
                             </div>
                         </div>
                         <div class="col-md-12">
-                            <div class="form-group">
-                                <label title="Date range must be greater than 1 month">Label Data In</label>
-                                <select name="viewBy" id="viewBy" class="form-control">
-                                    <option value="day" selected>Days</option>
-                                    <option value="month">Months</option>
-                                </select>
-                            </div>
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
@@ -382,7 +455,7 @@ HTML;
                     $wordyNums[$i],
                     $date1,
                     $date2,
-                    $ret['html'],
+                    $storepicker['html'],
                     $equitypicker
                 );
             } else {
@@ -407,9 +480,11 @@ HTML;
                                         <input type="text" name="date%d" id="date%d" value="%s" class="form-control date-field" %s/>
                                     </div>
                                     <table><tr>
+                                        <!--
                                         <td class="btn btn-default btn-xs prevBtn" id="prevWeek%d">Previous Week</p></td>
                                         <td class="btn btn-default btn-xs prevBtn" id="prevMonth%d">Previous Month</p></td>
                                         <td class="btn btn-default btn-xs prevBtn" id="prevYear%d">Previous Year<p></td></tr>
+                                        -->
                                     </table>
                                 </div>
                                 <div class="col-md-6">
@@ -450,8 +525,6 @@ HTML;
 
         }
 
-        //$curDepth = FormLib::get('depth', 1);
-
         return <<<HTML
 <form method="get" id="form1">
     <input type="hidden" name="depth" id="depth" value="1"/>
@@ -468,8 +541,19 @@ HTML;
     public function css_content()
     {
         return <<<CSS
+.form-group  {
+    margin: 15px;
+}
+.btn-primary {
+    margin-bottom: 15px;
+}
+button.RunNew {
+    border: 5px solid lightgrey;
+    border-radius: 0px;
+}
 .inner-form-contents {
     border: 5px solid lightgrey;
+    background: lightgrey;
     display: block;
     display: none;
     overflow: auto;
@@ -491,8 +575,27 @@ CSS;
 
     public function helpContent()
     {
-        return '<p>Show Equity sales by day, week, month
-            or year and compare against selected period.';
+        return '<p>
+            Compare equity sales for <i>n</i> time periods.
+            <ul>
+                <li><strong>Start Date, End Date</strong>: Choose a 
+                    range of time with which to check sales.</li>
+                <li><strong>Store</strong>: Choose a store to report 
+                    sales for.</li>
+                <li><strong>Equity Sales</strong>: Choose which transaction 
+                    types to include.</li>
+                <li><strong>+ Add Another Range to Compare</strong>: Click 
+                    this button to add [an] additional date range(s).
+                    Ranges will line up starting by each <i>Start Date</i> chosen.
+                <li><strong>"X-Axis" Table-labels:</strong> 
+                    <ul>
+                        <li>If less than 2 months are selected, data will be
+                            displayed by date.</li> 
+                        <li>If 2 months or more are chosen, data will be 
+                            displayed by Month.</li>
+                    </ul>
+            </ul>
+        </p>';
     }
 }
 
