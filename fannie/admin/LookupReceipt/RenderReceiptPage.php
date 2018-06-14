@@ -308,6 +308,7 @@ HTML;
         $result = $dbc->execute($query,array($dateInt,$emp,$reg,$trans));
         $ret = '';
         $pRef = '';
+        $found = false;
         while ($row = $dbc->fetchRow($result)) {
             if ($pRef == $row['refNum'] || $row['mode'] == 'VOID') continue;
             $ret .= "<hr />";
@@ -321,6 +322,12 @@ HTML;
             $ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
             $ret .= ($row['processor'] == 'GoEMerchant' ? 'FAPS' : 'MERCURY') . '<br />';
             $pRef = $row['refNum'];
+            $found = true;
+        }
+        if ($found) {
+            $ret .= '<p class="hidden-print">';
+            $ret .= '<a href="RawPTrans.php?date=' . $date1 . '&trans=' . $transNum . '">Card Details</a>';
+            $ret .= '</p>';
         }
 
         return $ret;
