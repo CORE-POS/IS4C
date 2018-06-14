@@ -61,7 +61,13 @@ class rplist extends NoInputCorePage
             if (!empty($this->form->selectlist)) {
                 $this->printReceipt($this->form->selectlist);
             }
-            //$this->change_page($this->page_url."gui-modules/pos2.php");
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+
+            return false;
+        } elseif ($this->form->tryGet('ajaxprint') !== '') {
+            if (!empty($this->form->ajaxprint)) {
+                $this->printReceipt($this->form->ajaxprint);
+            }
             echo "Done";
 
             return false;
@@ -90,12 +96,13 @@ class rplist extends NoInputCorePage
             $('#selectlist').hide();
             $('#loading-spinner').show();
             $.ajax({
-                data: 'selectlist='+current,
+                data: 'ajaxprint='+current,
+                timeout: 5000
             }).fail(function (err, st, obj) {
                 $('#loading-spinner').hide();
                 $('#error-msg').html('Error sending job to printer');
                 $('#error-msg').show();
-                setTimeout(function() { window.location = pos2.php; }, 5000);
+                setTimeout(function() { window.location = 'pos2.php'; }, 5000);
             }).done(function (resp) {
                 window.location = 'pos2.php';
             });
