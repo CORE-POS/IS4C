@@ -75,6 +75,7 @@ $location = array();
 foreach ($data as $k => $row) {
     if ($dbc->getValue($narrowP, array($row['upc']))) {
         $row['full'] = false;
+        $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
         $half[] = $row;
     } else {
         $row['full'] = true;
@@ -212,6 +213,12 @@ foreach($data as $row) {
         //Start laying out a label
         $pdf->SetFont('Arial','',8);  //Set the font
         $signage->drawBarcode($upc, $pdf, $upcX, $upcY, array('height'=>4, 'width'=>0.25, 'fontsize'=>6.5, 'align'=>'L'));
+        if ($row['movementTag']) {
+            $pdf->SetXY($upcX + 18, $upcY + 5);
+            $border = $mtLength == 7 ? 'TBR' : 'TBL';
+            $pdf->Cell(7, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
+            $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
+        }
         /*
         if (strlen($upc) <= 11)
             $pdf->UPC_A($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
