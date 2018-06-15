@@ -154,6 +154,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             try {
                 using (TcpClient client = http.AcceptTcpClient()) {
                     client.ReceiveTimeout = 100;
+                    string result = "Error";
                     using (NetworkStream stream = client.GetStream()) {
                         string message = "";
                         int bytes_read = 0;
@@ -169,7 +170,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         message = GetHttpBody(message);
                         // Send EMV messages to EMVX, others
                         // to PDCX
-                        string result = "Error";
                         if (message.Contains("EMV")) {
                             result = ProcessEMV(message, true);
                         } else if (message.Contains("termSig")) {
@@ -184,6 +184,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         stream.Write(response, 0, response.Length);
                     }
                     client.Close();
+                    parent.SqlLog(result);
                 }
             } catch (Exception ex) {
                 this.LogMessage(ex.ToString());
