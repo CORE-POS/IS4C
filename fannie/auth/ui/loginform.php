@@ -228,10 +228,15 @@ HTML;
             echo '<input class="form-control" id="authPassword" name="password" type="password" />';
             echo '</div>';
             echo '</p>';
-            echo '<button type="submit" class="btn btn-default">Login</button>';
+            echo '<p><button type="submit" class="btn btn-default">Login</button></p>';
             echo "<input type=hidden value=$redirect name=redirect />";
             echo "<input type=hidden id=\"linea-in\" />";
             echo "</form>";
+            $domain = $this->config->get('TLS_DOMAIN');
+            if ($domain && !isset($_SERVER['HTTPS']) || empty($_SERVER['HTTPS'])) {
+                $url = $this->config->get('URL');
+                echo "<p><a href=\"https://{$domain}{$url}auth/ui/loginform.php?redirect=$redirect\">Switch to HTTPS</a></p>";
+            }
             $this->add_onload_command('$(\'#authUserName\').focus();');
             $this->addScript('auth.js');
             $this->addOnloadCommand("enableLinea('#linea-in', CoreAuth.linea);\n");
