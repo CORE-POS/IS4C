@@ -151,7 +151,9 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         if ($this->enable_linea) {
             $this->addScript($url . 'src/javascript/linea/cordova-2.2.0.js');
             $this->addScript($url . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
-            $this->addScript($url . 'src/javascript/linea/WebHub.js');
+            if (strpos(filter_input(INPUT_SERVER, 'HTTP_USER_AGENT'), 'iPod touch')) {
+                $this->addScript($url . 'src/javascript/linea/WebHub.js');
+            }
             $this->addScript($url . 'src/javascript/linea/core.js');
         }
 

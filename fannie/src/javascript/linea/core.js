@@ -90,7 +90,9 @@ function enableLinea(selector, callback) {
     // for webhub
     IPC_PARAMS.selector = selector;
     IPC_PARAMS.callback = callback;
-    WebHub.Settings.set({ barcodeFunction: "ipcWrapper" });
+    if (typeof WebHub != 'undefined') {
+        WebHub.Settings.set({ barcodeFunction: "ipcWrapper" });
+    }
 
     function lineaSilent() {
         if (typeof cordova.exec != 'function') {
