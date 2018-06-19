@@ -259,11 +259,11 @@ public class Magellan : DelegateForm
         }
     }
 
-    public void SqlLog(string s)
+    public void SqlLog(string k, string s)
     {
         try {
             #if CORE_MYSQL
-            this.mpipe.logValue(s);
+            this.mpipe.logValue(k, s);
             #endif
         } catch (Exception ex) {
             Magellan.LogMessage(ex.ToString());

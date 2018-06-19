@@ -49,6 +49,8 @@
     <MagellanTarget Include="ComPortLibrary" />
     <MagellanTarget Include="RabbitMqLibrary"
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
+    <MagellanTarget Include="MySqlPipe"
+        Condition=" Exists('packages\MySql.Data.6.9.12\lib\net40\MySql.Data.dll') " />
   </ItemGroup>
 
   <ItemGroup>
@@ -145,7 +147,7 @@
 
     <MySqlRef Include="MySql.Data.dll" />
   </ItemGroup>
-  <Target Name="MySqlPipe" Inputs="@(MySqlInclude)" Outputs="UDPMsgBox.dll" DependsOnTargets="MySqlLibrary">
+  <Target Name="MySqlPipe" Inputs="@(MySqlInclude)" Outputs="MySqlPipe.dll" DependsOnTargets="MySqlLibrary">
     <Csc Sources="@(MySqlInclude)" References="@(MySqlRef)" TargetType="library" OutputAssembly="MySqlPipe.dll" 
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>

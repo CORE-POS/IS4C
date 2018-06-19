@@ -151,10 +151,12 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         http.Start();
         byte[] buffer = new byte[10];
         while (SPH_Running) {
+            string result = "";
+            string keyVal = "key";
+            bool saveResult = false;
             try {
                 using (TcpClient client = http.AcceptTcpClient()) {
                     client.ReceiveTimeout = 100;
-                    string result = "Error";
                     using (NetworkStream stream = client.GetStream()) {
                         string message = "";
                         int bytes_read = 0;
@@ -168,15 +170,20 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         }
 
                         message = GetHttpBody(message);
+                        XmlDocument request = new XmlDocument();
+                        request.LoadXml(message);
+                        keyVal = request.SelectSingleNode("TStream/Transaction/InvoiceNo").InnerXml;
                         // Send EMV messages to EMVX, others
                         // to PDCX
                         if (message.Contains("EMV")) {
                             result = ProcessEMV(message, true);
+                            saveResult = true;
                         } else if (message.Contains("termSig")) {
                             FlaggedReset();
                             result = GetSignature(true);
                         } else if (message.Length > 0) {
                             result = ProcessPDC(message);
+                            saveResult = true;
                         }
                         result = WrapHttpResponse(result);
 
@@ -184,10 +191,16 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         stream.Write(response, 0, response.Length);
                     }
                     client.Close();
-                    parent.SqlLog(result);
                 }
             } catch (Exception ex) {
                 this.LogMessage(ex.ToString());
+            }
+            try {
+                if (saveResult && result.Length > 0) {
+                    parent.SqlLog(keyVal, result);
+                }
+            } catch (Exception) {
+                this.LogMessage(keyVal + ": " + result);
             }
         }
     }
