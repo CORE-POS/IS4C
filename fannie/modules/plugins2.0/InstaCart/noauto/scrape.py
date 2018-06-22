@@ -86,7 +86,7 @@ for url in args:
     if "\n" in output:
         pts = output.split("\n")
         pts[0] = pts[0].strip().replace("$", "")
-        pts[1] = pts[1].strip().replace("$", "")
+        pts[1] = pts[1].strip().replace("$", "").replace(" off", "");
         sale_price = float(pts[0])
         price = sale_price + float(pts[1])
     else:

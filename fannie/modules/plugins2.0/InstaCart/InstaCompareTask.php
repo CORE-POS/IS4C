@@ -24,14 +24,14 @@ class InstaCompareTask extends FannieTask
 
         $user = $settings['InstaCartCompUser'];
         $pass = $settings['InstaCartCompPw'];
-        $dsn = 'mysq://' 
+        $dsn = 'mysql://' 
             . $this->config->get('SERVER_USER') . ':'
             . $this->config->get('SERVER_PW') . '@'
             . $this->config->get('SERVER') . '/'
             . $settings['InstaCartDB'];
 
         $cmd = __DIR__ . '/noauto/scrape.py'
-            //. ' ' . escapeshellarg('-v')
+            . ' ' . escapeshellarg('-v')
             . ' ' . escapeshellarg('-u')
             . ' ' . escapeshellarg($user)
             . ' ' . escapeshellarg('-p')
@@ -42,10 +42,9 @@ class InstaCompareTask extends FannieTask
             $cmd .= ' ' . escapeshellarg($u);
         }
 
-        //echo $cmd . "\n";
+        echo $cmd . "\n";
         $ret = exec($cmd, $output);
-        //echo implode("\n", $output) . "\n";
-        //echo "Return: {$ret}\n";
+        echo implode("\n", $output) . "\n";
     }
 }
 

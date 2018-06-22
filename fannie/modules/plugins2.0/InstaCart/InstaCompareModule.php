@@ -19,6 +19,8 @@ class InstaCompareModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($row === false) {
             $row = array('url'=>'', 'price'=>'', 'salePrice'=>'', 'modified'=>'');
         }
+        $prep = $dbc->prepare('SELECT normal_price FROM products WHERE upc=?');
+        $ours = $dbc->getValue($prep, array($upc));
 
         $ret = '';
         $ret = '<div id="InstaCompDiv" class="panel panel-default">';
@@ -29,11 +31,12 @@ class InstaCompareModule extends \COREPOS\Fannie\API\item\ItemModule
         $css = ($expand_mode == 1) ? '' : ' collapse';
         $ret .= '<div id="InstaCompContents" class="panel-body' . $css . '">';
         $ret .= '<table class="table table-bordered">';
-        $ret .= sprintf('<tr><th>Regular Price</th><td>%.2f</td></tr>
-            <tr><th>Sale Price</th><td>%.2f</td></tr>
+        $ret .= sprintf('<tr><th>Our Regular Price</th><td>%.2f</td></tr>
+            <tr><th>Their Regular Price</th><td>%.2f</td></tr>
+            <tr><th>Their Sale Price</th><td>%.2f</td></tr>
             <tr><th>Last Checked</th><td>%s</td></tr>
             <tr><th>URL</th><td><input type="text" class="form-control" name="ic_url" value="%s" /></td></tr>',
-            $row['price'], $row['salePrice'], $row['modified'], $row['url']);
+            $ours, $row['price'], $row['salePrice'], $row['modified'], $row['url']);
         $ret .= '</table>';
         if ($row['url']) {
             $url = FannieConfig::config('URL') . 'modules/plugins2.0/InstaCart/noauto/images/' . md5($row['url']) . '.png';
@@ -47,6 +50,26 @@ class InstaCompareModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '</div>';
 
         return $ret;
+    }
+
+    public function saveFormData($upc)
+    {
+        $upc = BarcodeLib::padUPC($upc);
+        $settings = FannieConfig::config('PLUGIN_SETTINGS');
+        $dbc = $this->db();
+        $model = new InstaComparesModel($dbc);
+        $model->whichDB($settings['InstaCartDB']);
+        $model->upc($upc);
+
+        $url = FormLib::get('ic_url');
+        if (trim($url) === '') {
+            $model->delete();
+        } else {
+            $model->url($url);
+            $model->save();
+        }
+
+        return true;
     }
 }
 
