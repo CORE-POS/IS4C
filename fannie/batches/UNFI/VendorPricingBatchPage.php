@@ -198,6 +198,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $query = "SELECT p.upc,
             p.description,
+            p.brand,
             p.cost,
             b.shippingMarkup,
             b.discountRate,
@@ -314,9 +315,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                     title="Add to batch">
                     </span>';
             }
+            $brand = rtrim(substr($row['brand'], 0, 15));
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
-                <td class=\"sub\">%s</td>
+                <td class=\"sub\"><strong>%s</strong> %s</td>
                 <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
@@ -341,6 +343,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $row['upc'],
                 $background,
                 $this->config->URL, $row['upc'], $row['upc'],
+                $temp = (strlen($brand) == 10) ? "$brand~" : $brand,
                 $row['description'] . ' ' . $multipleVendors,
                 $row['adjusted_cost'],
                 $row['normal_price'],
