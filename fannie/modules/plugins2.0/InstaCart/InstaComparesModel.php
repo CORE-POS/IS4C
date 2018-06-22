@@ -36,7 +36,7 @@ class InstaComparesModel extends BasicModel
     'url' => array('type'=>'VARCHAR(255)'),
     'price' => array('type'=>'MONEY'),
     'salePrice' => array('type'=>'MONEY'),
-    'modified' => array('type'=>'DATETIME'),
+    'modified' => array('type'=>'DATETIME', 'default'=>"'1900-01-01'"),
     );
 
 }
