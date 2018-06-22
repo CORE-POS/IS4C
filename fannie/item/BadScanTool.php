@@ -107,17 +107,17 @@ class BadScanTool extends FannieRESTfulPage
 
         $ret = '';
         $ret .= '<div class="nav">';
-        $ret .= '<a href="BadScanTool.php?lastquarter=1"
+        $ret .= '<a target="_blank" href="BadScanTool.php?lastquarter=1"
                     class="btn btn-default navbar-btn'
                     . (!$this->date_restrict ? ' active' : '')
                     . '">View Last Quarter</a>';
         $ret .= ' ';
-        $ret .= '<a href="BadScanTool.php"
+        $ret .= '<a target="_blank" href="BadScanTool.php"
                     class="btn btn-default navbar-btn'
                     . ($this->date_restrict == 1? ' active' : '')
                     . '">View Last Week</a>';
         $ret .= ' ';
-        $ret .= '<a href="BadScanTool.php?today=1"
+        $ret .= '<a target="_blank" href="BadScanTool.php?today=1"
                     class="btn btn-default navbar-btn'
                     . ($this->date_restrict == 2? ' active' : '')
                     . '">View Today</a>';
@@ -162,7 +162,7 @@ class BadScanTool extends FannieRESTfulPage
                 } else {
                     $css = 'class="semiFixable alert alert-info"';
                 }
-                $fixButton = ' <a href="ItemEditorPage.php?searchupc= ' . $row['upc'] . '" target="_new' . $row['upc'] . '">ADD</a>';
+                $fixButton = ' <a target="_blank" href="ItemEditorPage.php?searchupc= ' . $row['upc'] . '" target="_new' . $row['upc'] . '">ADD</a>';
             } else if ($row['instances'] == 1) {
                 $css = 'class="loner collapse"';
             } else {
@@ -170,7 +170,7 @@ class BadScanTool extends FannieRESTfulPage
             }
             $ret .= sprintf('<tr %s><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
                             <td>%s</td><td>%s</td><td>%s</td>
-                            <td><a href="OpenRingReceipts.php?upc=%s&date1=%s&date2=%s">View Receipts</a></td>
+                            <td><a target="_blank" href="OpenRingReceipts.php?upc=%s&date1=%s&date2=%s">View Receipts</a></td>
                             </tr>',
                             $css,
                             $row['upc'], $row['instances'], $row['oldest'], $row['newest'],

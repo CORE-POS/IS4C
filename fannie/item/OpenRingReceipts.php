@@ -190,13 +190,14 @@ class OpenRingReceipts extends FannieRESTfulPage
             return '<div class="alert alert-danger">No matches found</div>';
         }
 
-        $ret = '<table class="table">';
+        $upc = FormLib::get('upc');
+        $ret = '<div id="openRings"><table class="table">';
         foreach ($this->receipts as $receipt) {
             $ret .= sprintf('<tr>
                         <th>%s</th>
                         <th>%s</th>
-                        <th><a href="../admin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s"
-                            class="btn btn-default">View Receipt</a></th>',
+                        <th><a href="#" data-href="/admin/LookupReceipt/RawReceipt.php?date=%s&trans=%s"
+                            class="btn btn-default viewReceipt">View Receipt</a></th>',
                         $receipt['date'],
                         $receipt['trans'], 
                         $receipt['date'],
@@ -217,9 +218,22 @@ class OpenRingReceipts extends FannieRESTfulPage
                 );
             }
         }
-        $ret .= '</table>';
+        $ret .= '</table></div>';
 
-        return $ret;
+        return "
+            <div class='row'>
+                <div class='col-md-4'> 
+                    <strong>Open Rings for</strong> <input class='upc' value=$upc />
+                    $ret
+                    <div id='IgnoredBarcodes'>
+                        hi
+                    </div>
+                </div>
+                <div class='col-md-8'> 
+                    <iframe class='receiptIframe' id='receiptIframe'></iframe>
+                </div>
+            </div>
+        ";
     }
     
     public function get_date1_date2_view()
@@ -273,6 +287,41 @@ class OpenRingReceipts extends FannieRESTfulPage
                 ' . FormLib::dateRangePicker() . '
             </div>
             </form>';
+    }
+
+    public function css_content()
+    {
+        return '
+            .receiptIframe {
+                width: 100%;
+                height: 75vh; 
+                border: 1px solid #EFEFEF;
+            }
+            .upc {
+                border: none;
+            }
+            #openRings {
+                height: 40vh;
+                overflow-y: auto;
+                border: 1px solid #EFEFEF;
+            }
+        ';
+    }
+
+    public function javascript_content()
+    {
+        return '
+            $(".viewReceipt").click(function(){
+                var baseUrl = getBaseUrl();
+                var src = $(this).attr("data-href");
+                src = baseUrl + ".." + src;
+                $("#receiptIframe").attr("src", src)
+            });
+            function getBaseUrl() {
+                var re = new RegExp(/^.*\//);
+                return re.exec(window.location.href);
+            }
+        ';
     }
 
     public function helpContent()
