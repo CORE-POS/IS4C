@@ -29,7 +29,7 @@ class EqPlanTask extends FannieTask
 
     private function getOnline($dbc)
     {
-        $yesterday = date('Y-m-d', strtotime('yesterday'));
+        $yesterday = date('Y-m-d', strtotime('30 days ago'));
         $dlog = DTransactionsModel::selectDlog($yesterday);
         $prep = $dbc->prepare("
             SELECT tdate, trans_num, card_no
