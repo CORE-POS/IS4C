@@ -40,6 +40,10 @@ class InstaCart extends \COREPOS\Fannie\API\FanniePlugin
     'InstaCartMode' => array('default'=>1, 'label'=>'InstaCart Mode',
             'description'=>'Configuration mechanism for sending items',
             'options'=>array('Include'=>1, 'Exclude'=>0)),
+    'InstaCartCompUser' => array('default'=>'', 'label'=>'Comp Username',
+            'description'=>'InstaCart Comparison credentials'), 
+    'InstaCartCompPw' => array('default'=>'', 'label'=>'Comp Password',
+            'description'=>'InstaCart Comparison credentials'), 
     );
 
     public $plugin_description = 'Plugin for submitting InstaCart data. You may need
