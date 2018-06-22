@@ -1164,7 +1164,7 @@ HTML;
                 if ($fetchW['priceRuleID'] != NULL && $fetchW['maxPrice'] > 0) {
                     $mp = $fetchW['maxPrice'];
                     $sp = $fetchW['salePrice'];
-                    if ($sp > $mp && $fetchW['priceRuleTypeID'] == 10) {
+                    if ($sp < $mp && $fetchW['priceRuleTypeID'] == 10) {
                         $conflict .= '<a href="#" class="btn btn-warning btn-xs"
                             title="Sale price falls below MAP restriction. Minimum Price: $'.$mp.'">
                             <span class="glyphicon glyphicon-exclamation-sign"></span></span>';
