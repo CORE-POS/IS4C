@@ -31,12 +31,16 @@ class InstaCompareModule extends \COREPOS\Fannie\API\item\ItemModule
         $css = ($expand_mode == 1) ? '' : ' collapse';
         $ret .= '<div id="InstaCompContents" class="panel-body' . $css . '">';
         $ret .= '<table class="table table-bordered">';
+        $urlLabel = 'URL';
+        if ($row['url']) {
+            $urlLabel = "<a href=\"{$row['url']}\">URL</a>";
+        }
         $ret .= sprintf('<tr><th>Our Regular Price</th><td>%.2f</td></tr>
             <tr><th>Their Regular Price</th><td>%.2f</td></tr>
             <tr><th>Their Sale Price</th><td>%.2f</td></tr>
             <tr><th>Last Checked</th><td>%s</td></tr>
-            <tr><th>URL</th><td><input type="text" class="form-control" name="ic_url" value="%s" /></td></tr>',
-            $ours, $row['price'], $row['salePrice'], $row['modified'], $row['url']);
+            <tr><th>%s</th><td><input type="text" class="form-control" name="ic_url" value="%s" /></td></tr>',
+            $ours, $row['price'], $row['salePrice'], $row['modified'], $urlLabel, $row['url']);
         $ret .= '</table>';
         if ($row['url']) {
             $url = FannieConfig::config('URL') . 'modules/plugins2.0/InstaCart/noauto/images/' . md5($row['url']) . '.png';
