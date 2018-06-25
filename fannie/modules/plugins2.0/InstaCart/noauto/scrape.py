@@ -83,7 +83,22 @@ for url in args:
     output = str(elem.text)
     price = 0.0
     sale_price = 0.0
-    if "\n" in output:
+    if output.endswith(" each"):
+        # output ending with each are usually per-lb items
+        # try to find the per-lb price but use the each
+        # price if that doesn't work
+        output = output.replace(" each", "")
+        price = float(output.strip().replace("$", ""))
+        try:
+            weight_elem = driver.find_element_by_xpath("//div[@class='item-price']/following-sibling::div")
+            perlb = weight_elem.text.replace(" per lb", "")
+            price = float(perlb.strip().replace("$", ""))
+        except:
+            pass
+    elif "\n" in output:
+        # newline usually means the item is on sale
+        # use sale price and $x.xx off info to construct
+        # regular price
         pts = output.split("\n")
         pts[0] = pts[0].strip().replace("$", "")
         pts[1] = pts[1].strip().replace("$", "").replace(" off", "");
