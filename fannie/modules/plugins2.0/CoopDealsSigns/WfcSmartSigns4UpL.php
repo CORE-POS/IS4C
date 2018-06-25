@@ -25,7 +25,7 @@ namespace COREPOS\Fannie\Plugin\CoopDealsSigns;
 use \FannieDB;
 use \FannieConfig;
 
-class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Signage4UpL 
+class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP 
 {
     public function drawPDF()
     {
