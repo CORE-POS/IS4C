@@ -112,7 +112,7 @@ class OpenRingReceipts extends FannieRESTfulPage
 
         return true;
     }
-    
+
     public function get_date1_date2_handler()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -191,15 +191,15 @@ class OpenRingReceipts extends FannieRESTfulPage
         }
 
         $upc = FormLib::get('upc');
-        $ret = '<div id="openRings"><table class="table">';
+        $ret = '<div id="openRings"><table class="table table-condensed small">';
         foreach ($this->receipts as $receipt) {
             $ret .= sprintf('<tr>
                         <th>%s</th>
                         <th>%s</th>
-                        <th><a href="#" data-href="/admin/LookupReceipt/RawReceipt.php?date=%s&trans=%s"
-                            class="btn btn-default viewReceipt">View Receipt</a></th>',
+                        <th><a href="#receipts" data-href="/admin/LookupReceipt/RawReceipt.php?date=%s&trans=%s#reportTable1"
+                            class="btn btn-default btn-xs viewReceipt">View Receipt</a></th>',
                         $receipt['date'],
-                        $receipt['trans'], 
+                        $receipt['trans'],
                         $receipt['date'],
                         $receipt['trans']
                     );
@@ -222,20 +222,48 @@ class OpenRingReceipts extends FannieRESTfulPage
 
         return "
             <div class='row'>
-                <div class='col-md-4'> 
-                    <strong>Open Rings for</strong> <input class='upc' value=$upc />
-                    $ret
+                <div class='col-md-4'>
+                    <div class='panel panel-default'>
+                        <div class='panel-heading'>
+                            <strong id='receipts'>Open Rings for</strong> <input class='upc' value=$upc />
+                        </div>
+                        $ret
+                    </div>
+                    <div class='well well-sm'>
+                        <strong>Add to Ignored Barcodes</strong>
+                    </div>
                     <div id='IgnoredBarcodes'>
-                        hi
+                    <!--
+                        <form>
+                            <div class='col-md-6'>
+                                <div class='form-group'>
+                                    <label>UPC:</label>
+                                    <input type='text' class='form-control' id='upc' name='Upc' />
+                                </div>
+                            </div>
+                            <div class='col-md-6'>
+                                <div class='form-group'>
+                                    <label>Reason:</label>
+                                    <input type='text' class='form-control' id='reason' name='Reason' />
+                                </div>
+                            </div>
+                        </form>
+                            <div class='col-md-6'>
+                                <div class='form-group'>
+                                    <button class='btn btn-default' id='submitIgnored'>Submit</button>
+                                </div>
+                            </div>
+                        -->
+                        <iframe src='http://key/git/fannie/item/IgnoredBarcodeEditor.php#form-start' class='ignoredIframe'></iframe>
                     </div>
                 </div>
-                <div class='col-md-8'> 
+                <div class='col-md-8'>
                     <iframe class='receiptIframe' id='receiptIframe'></iframe>
                 </div>
             </div>
         ";
     }
-    
+
     public function get_date1_date2_view()
     {
         $ret = '';
@@ -294,11 +322,16 @@ class OpenRingReceipts extends FannieRESTfulPage
         return '
             .receiptIframe {
                 width: 100%;
-                height: 75vh; 
+                height: 75vh;
                 border: 1px solid #EFEFEF;
+            }
+            .ignoredIframe {
+                width: 100%;
+                border: none;
             }
             .upc {
                 border: none;
+                background: rgba(0,0,0,0);
             }
             #openRings {
                 height: 40vh;
@@ -310,18 +343,39 @@ class OpenRingReceipts extends FannieRESTfulPage
 
     public function javascript_content()
     {
-        return '
-            $(".viewReceipt").click(function(){
-                var baseUrl = getBaseUrl();
-                var src = $(this).attr("data-href");
-                src = baseUrl + ".." + src;
-                $("#receiptIframe").attr("src", src)
-            });
-            function getBaseUrl() {
-                var re = new RegExp(/^.*\//);
-                return re.exec(window.location.href);
-            }
-        ';
+        return <<<JAVASCRIPT
+$(".viewReceipt").click(function(){
+    $('a').each(function(){
+        c = $(this).hasClass('btn-warning');
+        if (c == true) {
+            $(this).removeClass('btn-warning');
+        }
+    });
+    $(this).addClass('btn-warning');
+    var baseUrl = getBaseUrl();
+    var src = $(this).attr("data-href");
+    src = baseUrl + ".." + src;
+    $("#receiptIframe").attr("src", src)
+});
+function getBaseUrl() {
+    var re = new RegExp(/^.*\//);
+    return re.exec(window.location.href);
+}
+$('#submitIgnored').click(function(){
+    //alert('start');
+    var upc = $('#upc').val();
+    var reason = $('#reason').val();
+    $.ajax({
+        type: "post",
+        url: "IgnoredBarcodeEditor.php",
+        data: "upc="+upc+"&reason="+reason,
+        success: function(resp)
+        {
+            //alert('maybe worked');
+        }
+    });
+});
+JAVASCRIPT;
     }
 
     public function helpContent()
