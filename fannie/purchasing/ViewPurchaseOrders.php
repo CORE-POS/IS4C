@@ -451,12 +451,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return sprintf('<tr %s><td><a href="ViewPurchaseOrders.php?id=%d">%s <span class="hidden-xs">%s</span></a></td>
                 <td class="hidden-xs">%s</td>
                 <td class="hidden-xs">%s</td>
-                <td>%s</td><td>%d</td><td class="hidden-xs">%.2f</td>
+                <td><a href="VendorPoPage.php?id=%d">%s</a></td>
+                <td>%d</td><td class="hidden-xs">%.2f</td>
                 <td class="hidden-xs">%s</td><td class="hidden-xs">%s</td><td class="hidden-xs">%.2f</td></tr>',
                 ($row['soFlag'] ? 'class="success" title="Contains special order(s)" ' : ''),
                 $row['orderID'],
-                $date, $time, $row['vendorInvoiceID'], $row['storeName'], $row['vendorName'], $row['records'],
-                $row['estimatedCost'],
+                $date, $time, $row['vendorInvoiceID'], $row['storeName'],
+                $row['vendorID'], $row['vendorName'],
+                $row['records'], $row['estimatedCost'],
                 ($placed == 1 ? $row['placedDate'] : '&nbsp;'),
                 (!empty($row['receivedDate']) ? $row['receivedDate'] : '&nbsp;'),
                 (!empty($row['receivedCost']) ? $row['receivedCost'] : 0.00)
