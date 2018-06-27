@@ -442,7 +442,7 @@ HTML;
                 <table class='table table-condensed table-striped alert-info'>
                     <thead><th>Name</th><th>BatchID</th><th>Owner</th><th>BatchType</th><th></td></thead>
                     <tbody>
-                        <tr><td><a href=\"{$bidLn}\" target=\"_blank\">{$bid}</a></td><td>{$name}</td><td>{$owner}</td><td>{$type}</td>
+                        <tr><td><a href=\"{$bidLn}\" target=\"_blank\" class=\"bid\">{$bid}</a></td><td>{$name}</td><td>{$owner}</td><td>{$type}</td>
                         {$action}
                         </tr>
                     </tbody>
@@ -994,7 +994,7 @@ function editable()
 {
     $('.editable').change(function() {
         var path = window.location.pathname;
-        var bid = $(this).closest('tr').find('.bid').text();
+        var bid = $(this).closest('tr').find('a').text();
         var comment = $(this).closest('tr').find('.editable').val();
         $.ajax({
             type: 'post',
