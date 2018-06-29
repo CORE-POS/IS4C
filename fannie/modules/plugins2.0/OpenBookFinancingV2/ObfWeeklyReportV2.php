@@ -233,9 +233,49 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         return FannieReportPage::preprocess();
     }
 
+    private function weekToYM($weekID)
+    {
+        $prep = $this->connection->prepare('SELECT startDate
+            FROM ' . FannieDB::fqn('ObfWeeks', 'plugin:ObfDatabaseV2') . '
+            WHERE obfWeekID=?');
+        $date = $this->connection->getValue($prep, array($weekID));
+        $nowNext = array(0, 0);
+        $stamp = strtotime($date);
+        for ($i=0; $i<7; $i++) {
+            if (date('n') == date('n', $stamp)) {
+                $nowNext[0]++;
+            } else {
+                $nowNext[1]++;
+            }
+            $stamp = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp)+1, date('Y', $stamp));
+        }
+        if ($nowNext[0] > $nowNext[1]) {
+            $stamp = time();
+        } else {
+            $stamp = mktime(0, 0, 0, date('n')+1, date('j'), date('Y'));
+        }
+
+        return array(date('Y', $stamp), date('n', $stamp));
+    }
+
     private function getPlanSales($weekID)
     {
-        if ($weekID >= 201) {
+        if ($weekID >= 214) {
+            list($year, $month) = $this->weekToYM($weekID);
+            $ret = array();
+            $prep = $this->connection->prepare('SELECT c.obfCategoryID, m.superID, p.planGoal
+                FROM ' . FannieDB::fqn('ObfCategories', 'plugin:ObfDatabaseV2') . ' AS c
+                INNER JOIN ' . FannieDB::fqn('ObfCategorySuperDeptMap', 'plugin:ObfDatabaseV2') . ' AS m ON c.obfCategoryID=m.obfCategoryID
+                INNER JOIN ' . FannieDB::fqn('ObfPlans', 'plugin:ObfDatabaseV2') . ' AS p ON c.storeID=p.storeID AND m.superID=p.superID
+                WHERE c.hasSales=1 and month=? and year=?');
+            $res = $this->connection->execute($prep, array($month, $year)); 
+            $days = date('t', mktime(0,0,0,$month,1,$year));
+            while ($row = $this->connection->fetchRow($res)) {
+                $key = $row['obfCategoryID'] . ',' . $row['superID'];
+                $ret[$key] = ($row['planGoal'] / $days) * 7;
+            }
+            return $ret;
+        } elseif ($weekID >= 201) {
             return $this->PLAN_SALES_Q4_2018;
         } elseif ($weekID >= 188) {
             return $this->PLAN_SALES_Q3_2018;
