@@ -89,7 +89,7 @@ class BadScanTool extends FannieRESTfulPage
         if ($this->date_restrict) {
             $query .= ' AND datetime >= ' . date('\'Y-m-d 00:00:00\'', strtotime('-8 days'));
         }
-        $query .= "GROUP BY t.upc, p.description
+        $query .= "GROUP BY t.upc, p.description, i.upc
                 ORDER BY t.upc DESC";
         if ($this->date_restrict == 2) {
             $query = str_replace('transarchive', 'dtransactions', $query);
