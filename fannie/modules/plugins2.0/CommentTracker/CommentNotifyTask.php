@@ -25,7 +25,7 @@ class CommentNotifyTask extends FannieTask
             $mail->From = 'comments@wholefoods.coop';
             $mail->FromName = 'Comment Tracker';
             $mail->addReplyTo('ff8219e9ba6148408c89232465df9e53+' . $row['commentID'] . '@wholefoods.coop');
-            $mail->Subject = 'New ' . $row['name'] . ' Comment';
+            $mail->Subject = 'New ' . $row['name'] . ' Comment Needing Response';
             $mail->isHTML(true);
             $address = $row['notifyAddress'];
             foreach (explode(',', $address) as $a) {
@@ -42,6 +42,8 @@ class CommentNotifyTask extends FannieTask
 <p>{$row['comment']}</p>
 <p><a href="http://key/git/fannie/modules/plugins2.0/CommentTracker/ManageComments.php?id={$row['commentID']}">Manage Comment</a></p>
 <p>You can also respond by replying to this message</p>
+<p>You're receiving this because you're responsible for responding to comments in this category
+<b>or</b> re-assigning them to a more appropriate category.</p>
 HTML;
             $mail->Body = $body;
             $sent = false;

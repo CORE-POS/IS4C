@@ -56,6 +56,11 @@ HTML;
                 }
                 $notified[] = $cmW['commentID'];
             }
+            $body .= <<<HTML
+<p>This is a summary of comments from a category that someone else is responsible for
+but you might still want to be aware of. If you don't want summaries for this particular
+category please tell IT.</p> 
+HTML;
             $mail->Body = $body;
             $sent = false;
             if ($address != '') {

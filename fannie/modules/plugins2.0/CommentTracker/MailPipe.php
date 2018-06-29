@@ -79,6 +79,8 @@ class MailPipe extends AttachmentEmailPipe
 <p>$htmlComment</p>
 <p><a href="http://key/git/fannie/modules/plugins2.0/CommentTracker/ManageComments.php?id={$commentID}">Manage Comment</a></p>
 <p>You can also respond by replying to this message</p>
+<p>You're receiving this because you're responsible for responding to comments in this category
+<b>or</b> re-assigning them to a more appropriate category.</p>
 HTML;
             $sent = $mail->send();
             if ($sent) {
