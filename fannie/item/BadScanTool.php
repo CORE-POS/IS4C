@@ -75,11 +75,13 @@ class BadScanTool extends FannieRESTfulPage
                 MIN(datetime) as oldest,
                 MAX(datetime) as newest,
                 p.description as prod,
-                MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(v.srp) as srp
+                MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(v.srp) as srp,
+                i.upc AS iupc
                 FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "transarchive AS t
                     " . DTrans::joinProducts('t') . "
                     LEFT JOIN vendorItems AS v ON t.upc=v.upc
                     LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
+                    LEFT JOIN IgnoredBarcodes AS i ON i.upc=t.upc
                 WHERE t.trans_type='L' AND t.description='BADSCAN'
                 AND t.upc NOT LIKE '% %'
                 AND t.upc NOT LIKE '00000000000%'
@@ -139,6 +141,7 @@ class BadScanTool extends FannieRESTfulPage
         $ret .= '<span class="alert-info">Blue items can also be added from vendor catalogs but
                 may not be needed. All scans are within a 5 minute window. May indicate a special
                 order case scanned by mistake or a bulk purchase in a barcoded container.</span> ';
+        $ret .= '<span class="alert-warning">Yellow items have been entered into Ignored Barcodes.</span>';
         $ret .= 'Other items are not identifiable with available information';
         $ret .= '</div>';
         $ret .= '<table id="scantable" class="table"><thead>';
@@ -154,7 +157,9 @@ class BadScanTool extends FannieRESTfulPage
             $css = '';
             $fixButton = '';
             $span = strtotime($row['newest']) - strtotime($row['oldest']);
-            if (!empty($row['prod'])) {
+            if ($row['iupc']) {
+                $css = 'class="ignored alert alert-warning"';
+            } elseif (!empty($row['prod'])) {
                 $css = 'class="fixed alert alert-success collapse"'; 
             } else if (!empty($row['vend']) && !empty($row['srp'])) {
                 if ($span > 300) {

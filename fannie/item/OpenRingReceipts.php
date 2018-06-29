@@ -346,12 +346,12 @@ class OpenRingReceipts extends FannieRESTfulPage
         return <<<JAVASCRIPT
 $(".viewReceipt").click(function(){
     $('a').each(function(){
-        c = $(this).hasClass('btn-warning');
+        c = $(this).hasClass('active');
         if (c == true) {
-            $(this).removeClass('btn-warning');
+            $(this).removeClass('active');
         }
     });
-    $(this).addClass('btn-warning');
+    $(this).addClass('active');
     var baseUrl = getBaseUrl();
     var src = $(this).attr("data-href");
     src = baseUrl + ".." + src;
