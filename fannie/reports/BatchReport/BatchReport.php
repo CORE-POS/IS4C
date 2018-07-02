@@ -33,7 +33,7 @@ class BatchReport extends FannieReportPage
     protected $header = "Select batch(es)";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','SKU','Brand','Description','$','Qty','Rings','Location');
+    protected $report_headers = array('UPC','SKU','Brand','Description','$','Qty','Rings','Location', 'Lift%');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
@@ -120,6 +120,27 @@ class BatchReport extends FannieReportPage
         return $ret;
     }
 
+    private function getLifts($dbc, $batchIDs, $storeID)
+    {
+        $ret = array();
+        list($inStr, $args) = $dbc->safeInClause($batchIDs);
+        $query = "SELECT upc, SUM(saleQty) AS qty, SUM(compareQty) AS comp
+            FROM SalesLifts
+            WHERE batchID IN ({$inStr})";
+        if ($storeID) {
+            $query .= ' AND storeID=? ';
+            $args[] = $storeID;
+        }
+        $query .= ' GROUP BY upc';
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[$row['upc']] = $row['qty'] != 0 ? (($row['qty'] - $row['comp']) / $row['qty']) : 0;
+        }
+
+        return $ret;
+    }
+
     function fetch_report_data()
     {
         $dbc = $this->connection;
@@ -147,6 +168,8 @@ class BatchReport extends FannieReportPage
         }
         $upcs = array_unique($upcs);
         list($bName, $bStart, $bEnd) = $this->getNameAndDates($batchID, $bStart, $bEnd);
+
+        $lifts = $this->getLifts($dbc, $batchID, $store);
         
         $dlog = DTransactionsModel::selectDlog($bStart,$bEnd);
         $bStart .= ' 00:00:00';
@@ -188,6 +211,9 @@ class BatchReport extends FannieReportPage
         */
         $ret = array();
         while ($row = $dbc->fetchRow($salesBatchR)) {
+            $row['lift'] = isset($lifts[$row['upc']]) ? $lifts[$row['upc']] : 0;
+            $row['lift'] = sprintf('<a href="BatchLiftReport.php?upc=%s&id=%d&store=%d">%.2f</a>',
+                $row['upc'], $batchID[0], $store, 100*$row['lift']);
             $ret[] = $this->rowToRecord($row);
         }
         return $ret;
@@ -209,6 +235,7 @@ class BatchReport extends FannieReportPage
         $record[] = sprintf('%.2f',$row['quantity']);
         $record[] = $row['rings'];
         $record[] = $row['location'] === null ? '' : $row['location'];
+        $record[] = $row['lift'];
 
         return $record;
     }
@@ -227,7 +254,7 @@ class BatchReport extends FannieReportPage
             $sumRings += $row[6];
         }
 
-        return array('Total',null,null,null,$sumSales,$sumQty, $sumRings, '');
+        return array('Total',null,null,null,$sumSales,$sumQty, $sumRings, '', '');
     }
 
     private function getBatches($dbc, $filter1, $filter2)
