@@ -120,6 +120,11 @@ class BatchLiftReport extends FannieReportPage
 
         return $default;
     }
+
+    public function form_content()
+    {
+        return '<!-- Intetionally blank -->';
+    }
 }
 
 FannieDispatch::conditionalExec();
