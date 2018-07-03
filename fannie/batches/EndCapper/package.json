@@ -1,0 +1,21 @@
+{
+  "name": "end-capper",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^16.4.1",
+    "react-autocomplete": "^1.8.1",
+    "react-dnd": "^5.0.0",
+    "react-dnd-html5-backend": "^5.0.1",
+    "react-dom": "^16.4.1",
+    "react-scripts": "1.1.4",
+    "uuid": "^3.3.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "homepage": "./build"
+}
