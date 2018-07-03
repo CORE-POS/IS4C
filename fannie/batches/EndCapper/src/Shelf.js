@@ -35,10 +35,13 @@ class Shelf extends Component {
     }
 
     render() {
-        let items = this.props.items.map((i) => <Item id={i.id} name={i.name} upc={i.upc} isLine={i.isLine} />);
+        let items = this.props.items.map((i) =>
+            <Item key={i.id} id={i.id} name={i.name} upc={i.upc} isLine={i.isLine} 
+                toggle={this.props.toggle} />
+        );
         return this.props.connectDropTarget(
             <div className="shelf-wrapper">
-                <div className="shelf-items" style={{height: "75px", align: "center", textAlign: "center"}}>{items}</div>
+                <div className="shelf-items" style={{height: "125px", align: "center", textAlign: "center"}}>{items}</div>
                 <div className="shelf-ledge" style={{border: "solid 1px black", width: "100%", height: "5px"}} />
             </div>
         );

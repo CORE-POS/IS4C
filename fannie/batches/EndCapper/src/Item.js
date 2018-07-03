@@ -25,14 +25,23 @@ class Item extends Component {
             id: this.props.id,
             name: this.props.name,
             upc: this.props.upc,
-            line: this.props.isLine
+            isLine: this.props.isLine
         };
     }
 
     render() {
+        let mode = !this.state.isLine ? 'Item' : 'Product Line';
         return this.props.connectDragSource(
             <div style={{border: "solid 1px black", display: "inline" }} className="col-sm-3">
-                <span>{this.state.name}</span>
+                <p>{this.state.name}</p>
+                <p className="small" onClick={() => {
+                    this.props.toggle(this.state.id);
+                    // shouldn't be necessary but react doesn't flow
+                    // the changes from toggle down correctly...
+                    this.setState({ isLine: !this.state.isLine });
+                }}>
+                    {mode}
+                </p>
             </div>);
     }
 

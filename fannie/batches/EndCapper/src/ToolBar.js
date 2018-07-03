@@ -1,6 +1,31 @@
 import React, { Component } from 'react';
 import AutoComplete from 'react-autocomplete';
+import PropTypes from 'prop-types';
+import { DropTarget } from 'react-dnd';
 import Item from './Item.js';
+
+var penItem = function(id) {
+};
+
+const penTarget = {
+    canDrop(props) {
+        return true;
+    },
+
+    drop(props, monitor) {
+        // move the item
+        let item = monitor.getItem();
+        penItem(item.id);
+    }
+};
+
+function collect(connect, monitor) {
+    return {
+        connectDropTarget: connect.dropTarget(),
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop()
+    };
+}
 
 class ToolBar extends Component {
 
@@ -11,6 +36,7 @@ class ToolBar extends Component {
             itemSearch: "",
             acItems: []
         };
+        penItem = (id) => this.props.move(id, -1);
     }
 
     newEC() {
@@ -45,8 +71,11 @@ class ToolBar extends Component {
     }
 
     render() {
-        let items = this.props.items.map((i) => <Item id={i.id} name={i.name} upc={i.upc} isLine={i.isLine} />);
-        return (
+        let items = this.props.items.map((i) =>
+            <Item key={i.id} id={i.id} name={i.name} upc={i.upc} isLine={i.isLine} 
+                toggle={this.props.toggle} />
+        );
+        return this.props.connectDropTarget(
             <div>
                 <p>
                 <div className="form-inline">
@@ -71,13 +100,17 @@ class ToolBar extends Component {
                         onClick={() => this.addItem(this.state.itemSearch, '1234567890123')}>Add</button>
                 </div>
                 </p>
-                <p>
-                <div id="item-pen">{items}</div>
-                </p>
+                <p><div style={{"min-height": "100px"}} id="item-pen">{items}</div></p>
             </div>
         );
     }
 }
 
-export default ToolBar;
+ToolBar.propTypes = {
+    connectDropTarget: PropTypes.func.isRequired,
+    isOver: PropTypes.bool.isRequired,
+    canDrop: PropTypes.bool.isRequired
+};
+
+export default DropTarget('ITEM', penTarget, collect)(ToolBar);
 

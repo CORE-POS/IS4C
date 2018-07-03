@@ -13,6 +13,7 @@ class App extends Component {
         this.handleInit = (i) => this.init(i);
         this.penAdd = (n, u) => this.addToPen(n, u);
         this.handleMove = (i, p) => this.moveItem(i, p);
+        this.handleToggle = (i) => this.toggleLine(i);
         this.state = {
             shelves: [],
             pen: [],
@@ -53,38 +54,64 @@ class App extends Component {
         }
     }
 
-    deleteItem(id) {
-        var ret = {};
+    findItem(id) {
         var i;
         for (i=0; i<this.state.pen.length; i++) {
             if (this.state.pen[i].id === id) {
-                console.log("Found in pen");
-                ret = this.state.pen[i];
-                let newPen = this.state.pen;
-                newPen.splice(i, 1);
-                this.setState({pen: newPen});
-                return ret;
+                return { area: 'pen', index: i };
             }
         }
+
         for (i=0; i<this.state.shelves.length; i++) {
             for (var j=0; j<this.state.shelves[i].length; j++) {
                 if (this.state.shelves[i][j].id === id) {
-                    console.log("Found in shelves");
-                    ret = this.state.shelves[i][j];
-                    let newShelf = this.state.shelves[i];
-                    newShelf.splice(j, 1);
-                    let newShelves = this.state.shelves;
-                    newShelves[i] = newShelf;
-                    this.setState({shelves: newShelves});
-                    return ret;
-
+                    return { area: 'shelves', tier: i, pos: j };
                 }
             }
         }
 
-        console.log("Not found");
+        return false;
+    }
+
+    deleteItem(id) {
+        let found = this.findItem(id);
+        var ret = {};
+        if (found === false) {
+            return ret;
+        }
+
+        if (found.area === 'pen') {
+            ret = this.state.pen[found.index];
+            let newPen = this.state.pen;
+            newPen.splice(found.index, 1);
+            this.setState({pen: newPen});
+            return ret;
+        } else if (found.area === 'shelves') {
+            ret = this.state.shelves[found.tier][found.pos];
+            let newShelf = this.state.shelves[found.tier];
+            newShelf.splice(found.pos, 1);
+            let newShelves = this.state.shelves;
+            newShelves[found.tier] = newShelf;
+            this.setState({shelves: newShelves});
+            return ret;
+        }
 
         return ret;
+    }
+
+    toggleLine(id) {
+        let found = this.findItem(id);
+        if (found !== false) {
+            if (found.area === 'pen') {
+                let newPen = [...this.state.pen];
+                newPen[found.index] = { ...newPen[found.index], isLine: !(newPen[found.index].isLine) };
+                this.setState({pen: newPen});
+            } else if (found.area === 'shelves') {
+                let newShelves = this.state.shelves;
+                newShelves[found.tier][found.pos].isLine = !(newShelves[found.tier][found.pos].isLine);
+                this.setState({shelves: newShelves});
+            }
+        }
     }
 
     render() {
@@ -92,10 +119,13 @@ class App extends Component {
             <div id="ec-main" className="App container-fluid">
                 <div className="row">
                     <div id="ec-canvas" className="col-sm-8">
-                        <EndCap shelves={this.state.shelves} move={this.handleMove} />
+                        <EndCap shelves={this.state.shelves} move={this.handleMove} 
+                            toggle={this.handleToggle} />
                     </div>
                     <div id="ec-tools" className="col-sm-3">
-                        <ToolBar init={this.handleInit} add={this.penAdd} items={this.state.pen} />
+                        <ToolBar init={this.handleInit} add={this.penAdd}
+                            move={this.handleMove} items={this.state.pen} 
+                            toggle={this.handleToggle} />
                     </div>
                 </div>
             </div>
