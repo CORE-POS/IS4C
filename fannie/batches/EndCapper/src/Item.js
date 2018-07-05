@@ -45,39 +45,43 @@ class Item extends Component {
 
     render() {
         let mode = !this.state.isLine ? 'Item' : 'Product Line';
+        let modeClass = !this.state.isLine ? 'btn btn-sm btn-warning' : 'btn btn-sm btn-info';
         let widthClass = this.getClass(this.state.width);
         return this.props.connectDragSource(
             <div style={{border: "solid 1px black", display: "inline" }} className={widthClass}
                 title={this.props.upc}>
                 <p>{this.props.name}</p>
-                <p className="small" onClick={() => {
+                <p className="small"><button className={modeClass} onClick={() => {
                     this.props.manageItem.toggle(this.props.id);
                     // shouldn't be necessary but react doesn't flow
                     // the changes from toggle down correctly...
                     this.setState({ isLine: !this.state.isLine });
                 }}>
                     {mode}
-                </p>
+                </button></p>
                 <p>
-                    <span className="pull-left"
+                    <button className="btn btn-success btn-sm pull-left"
                         onClick={() => {
                             var w = this.props.manageItem.widen(this.props.id, -1);
                             if (w) {
                                 this.setState({width: w});
                             }
                         }}>
-                        -
-                    </span>
-                    <span className="pull-right"
+                        <span className="glyphicon glyphicon-resize-small"></span>
+                    </button>
+                    <button className="btn btn-success btn-sm pull-right"
                         onClick={() => {
                             var w = this.props.manageItem.widen(this.props.id, 1);
                             if (w) {
                                 this.setState({width: w});
                             }
                         }}>
-                        +
-                    </span>
-                    <span onClick={() => this.props.manageItem.trash(this.props.id)}>X</span>
+                        <span className="glyphicon glyphicon-resize-full"></span>
+                    </button>
+                    <button className="btn btn-danger btn-sm"
+                        onClick={() => this.props.manageItem.trash(this.props.id)}>
+                        <span className="glyphicon glyphicon-trash" title="Delete this item"></span>
+                    </button>
                 </p>
             </div>);
     }

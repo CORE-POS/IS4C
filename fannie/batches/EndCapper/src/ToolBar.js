@@ -88,6 +88,13 @@ class ToolBar extends Component {
         let opts = this.state.loadList.map((i) =>
             <option key={i.id} value={i.id}>{i.name}</option>
         );
+        let reportID = this.props.manageData.canReport();
+        var reportBtn = '';
+        if (reportID) {
+            let url = 'EndCapperReport.php?id='+reportID;
+            reportBtn = (<p><a href={url} className="btn btn-default">Sales Report</a></p>)
+        }
+
         return this.props.connectDropTarget(
             <div>
                 <p>
@@ -126,6 +133,7 @@ class ToolBar extends Component {
                             onChange={(ev) => this.props.manageData.end(ev.target.value)} />
                     </div>
                 </p>
+                {reportBtn}
                 <p>
                 <div className="form-inline">
                     <input type="number" className="form-control" value={this.state.numShelves} placeholder="# of shelves" 

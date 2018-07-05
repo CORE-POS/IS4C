@@ -26,3 +26,11 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.shelf-items {
+    height: 125px;
+    text-align: center;
+    border-bottom: solid 3px black;
+    margin-bottom: 15px;
+}
+

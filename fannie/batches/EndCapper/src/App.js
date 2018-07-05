@@ -26,7 +26,8 @@ class App extends Component {
             load: (i) => this.load(i),
             save: (n) => this.save(n),
             start: (d) => this.setState({startDate: d}),
-            end: (d) => this.setState({endDate: d})
+            end: (d) => this.setState({endDate: d}),
+            canReport: () => this.state.permanentID
         }
         this.defaultState = {
             name: "",
@@ -104,7 +105,7 @@ class App extends Component {
             name: name,
             upc: upc,
             isLine: false,
-            width: 1
+            width: 4
         });
         this.setState({pen: newPen});
     }
