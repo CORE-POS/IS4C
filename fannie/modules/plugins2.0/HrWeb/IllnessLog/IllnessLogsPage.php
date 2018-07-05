@@ -25,6 +25,7 @@ class IllnessLogsPage extends FannieRESTfulPage
         $dbc = FannieDB::get($settings['HrWebDB']);
         $model = new IllnessLogsModel($dbc);
         $model->illnessLogID($this->id);
+        $model->illnessDate(FormLib::get('iDate'));
         $model->exclusionary(FormLib::get('ex') ? 1 : 0);
         $model->MDHContacted(FormLib::get('mdh') ? 1 : 0);
         $model->comments(FormLib::get('comment'));
@@ -86,9 +87,13 @@ class IllnessLogsPage extends FannieRESTfulPage
             <form method="post" action="IllnessLogsPage.php">
             <input type="hidden" name="id" value="' . $this->id . '" />';
         $ret .= '<p>
+            <strong>Employee</strong>: ' . $emp->lastName() . ', ' . $emp->firstName() . '<br />
             <strong>Illness Date</strong>: ' . $model->illnessDate() . '<br />
-            <strong>Employee</strong>: ' . $emp->lastName() . ', ' . $emp->firstName() .
-            '</p>';
+            </p>';
+        $ret .= sprintf('<div class="form-group">
+            <label>Illness Date</label>
+            <input type="text" name="iDate" class="form-control date-field" value="%s" />
+            </div>', $model->illnessDate());
         $chkP = $dbc->prepare('SELECT illnessLogID FROM IllnessLogsIllnessTypes WHERE illnessLogID=? AND illnessTypeID=?');
         $type = new IllnessTypesModel($dbc);
         $ret .= '<div class="form-group">
@@ -106,7 +111,7 @@ class IllnessLogsPage extends FannieRESTfulPage
             $model->exclusionary() ? 'checked' : '');
         $ret .= sprintf('<div class="form-group">
             <label><input type="checkbox" name="mdh" value="1" %s />
-            Exclusionary</label></div>',
+            MDH</label></div>',
             $model->MDHContacted() ? 'checked' : '');
         $ret .= '<div class="form-group"><label>Comments</label>
             <textarea name="comment" class="form-control" rows="5">'
