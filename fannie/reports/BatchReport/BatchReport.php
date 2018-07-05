@@ -135,7 +135,7 @@ class BatchReport extends FannieReportPage
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetchRow($res)) {
-            $ret[$row['upc']] = $row['qty'] != 0 ? (($row['qty'] - $row['comp']) / $row['qty']) : 0;
+            $ret[$row['upc']] = $row['comp'] != 0 ? (($row['qty'] - $row['comp']) / $row['comp']) : 999.99;
         }
 
         return $ret;
