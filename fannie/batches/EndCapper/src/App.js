@@ -12,14 +12,80 @@ class App extends Component {
         super(props);
         this.handleInit = (i) => this.init(i);
         this.penAdd = (n, u) => this.addToPen(n, u);
-        this.handleMove = (i, p) => this.moveItem(i, p);
-        this.handleToggle = (i) => this.toggleLine(i);
-        this.state = {
+        this.manageItem = {
+            toggle: (i) => this.toggleLine(i),
+            move: (i, p) => this.moveItem(i, p),
+            widen: (i, w) => this.setWidth(i, w),
+            trash: (i) => this.deleteItem(i)
+        };
+        this.manageData = {
+            reset: () => {
+                clearTimeout(this.autoSaveToken);
+                this.setState(this.defaultState);
+            },
+            load: (i) => this.load(i),
+            save: (n) => this.save(n),
+            start: (d) => this.setState({startDate: d}),
+            end: (d) => this.setState({endDate: d})
+        }
+        this.defaultState = {
+            name: "",
+            startDate: "",
+            endDate: "",
             shelves: [],
             pen: [],
-            saved: false
+            permanentID: false
         };
+        this.state = this.defaultState;
+        this.saving = false;
+        this.autoSaveToken = false;
     };
+
+    autoSaveLoop() {
+        this.save(this.state.name);
+        this.autoSaveToken = setTimeout(() => this.autoSaveLoop(), 15000);
+    }
+
+    load(id) {
+        fetch('EndCapperPage.php?id=' + id)
+        .then((res) => res.json())
+        .then((res) => {
+            if (res.state) {
+                res.state.permanentID = id;
+                this.setState(res.state);
+                this.autoSaveToken = setTimeout(() => this.autoSaveLoop(), 15000);
+            }
+        });
+    }
+
+    /**
+        React onChange works a little different than browser onchange
+        and fires on every typed or deleted character.
+    */
+    save(newName) {
+        this.setState({name: newName});
+        if (!this.saving && newName.length > 0) {
+            this.saving = true; 
+            let body =  {...this.state, newName: newName };
+            console.log(this.state);
+            fetch('EndCapperPage.php', {
+                method: 'post',
+                body: JSON.stringify(body),
+                headers: { 'Content-type': 'application/json' }
+            }).then((res) => res.json())
+            .then((res) => {
+                if (res.saved) {
+                    this.setState({ permanentID: res.id });
+                    this.autoSaveToken = setTimeout(() => this.autoSaveLoop(), 15000);
+                }
+                this.saving = false;
+            })
+            .catch((err) => {
+                this.saving=false
+                console.log(err);
+            });
+        }
+    } 
 
     init(num) {
         var shelves = [];
@@ -27,14 +93,19 @@ class App extends Component {
             shelves.push([]);
         }
         this.setState({
-            shelves: shelves,
-            saved: false
+            shelves: shelves
         });
     } 
 
     addToPen(name, upc) {
         let newPen = this.state.pen;
-        newPen.push({ id: uuidv4(), name: name, upc: upc, isLine: false });
+        newPen.push({
+            id: uuidv4(),
+            name: name,
+            upc: upc,
+            isLine: false,
+            width: 1
+        });
         this.setState({pen: newPen});
     }
 
@@ -82,17 +153,19 @@ class App extends Component {
 
         if (found.area === 'pen') {
             ret = this.state.pen[found.index];
-            let newPen = this.state.pen;
+            let newPen = [...this.state.pen];
             newPen.splice(found.index, 1);
             this.setState({pen: newPen});
+            this.forceUpdate();
             return ret;
         } else if (found.area === 'shelves') {
             ret = this.state.shelves[found.tier][found.pos];
-            let newShelf = this.state.shelves[found.tier];
+            let newShelf = [...this.state.shelves[found.tier]];
             newShelf.splice(found.pos, 1);
-            let newShelves = this.state.shelves;
+            let newShelves = [...this.state.shelves];
             newShelves[found.tier] = newShelf;
             this.setState({shelves: newShelves});
+            this.forceUpdate();
             return ret;
         }
 
@@ -107,11 +180,39 @@ class App extends Component {
                 newPen[found.index] = { ...newPen[found.index], isLine: !(newPen[found.index].isLine) };
                 this.setState({pen: newPen});
             } else if (found.area === 'shelves') {
-                let newShelves = this.state.shelves;
+                let newShelves = [...this.state.shelves];
                 newShelves[found.tier][found.pos].isLine = !(newShelves[found.tier][found.pos].isLine);
                 this.setState({shelves: newShelves});
             }
         }
+    }
+
+    widen(item, change) {
+        let newWidth = item.width + change;
+        if (newWidth >= 1 && newWidth <= 4) {
+            return {...item, width: newWidth};
+        }
+
+        return item;
+    }
+
+    setWidth(id, change) {
+        let found = this.findItem(id);
+        if (found !== false) {
+            if (found.area === 'pen') {
+                let newPen = [...this.state.pen];
+                newPen[found.index] = this.widen(newPen[found.index], change);
+                this.setState({pen: newPen});
+                return newPen[found.index].width;
+            } else if (found.area === 'shelves') {
+                let newShelves = [...this.state.shelves];
+                newShelves[found.tier][found.pos] = this.widen(newShelves[found.tier][found.pos], change);
+                this.setState({shelves: newShelves});
+                return newShelves[found.tier][found.pos].width;
+            }
+        }
+
+        return 0;
     }
 
     render() {
@@ -119,13 +220,14 @@ class App extends Component {
             <div id="ec-main" className="App container-fluid">
                 <div className="row">
                     <div id="ec-canvas" className="col-sm-8">
-                        <EndCap shelves={this.state.shelves} move={this.handleMove} 
-                            toggle={this.handleToggle} />
+                        <EndCap shelves={this.state.shelves} manageItem={this.manageItem} />
                     </div>
                     <div id="ec-tools" className="col-sm-3">
                         <ToolBar init={this.handleInit} add={this.penAdd}
-                            move={this.handleMove} items={this.state.pen} 
-                            toggle={this.handleToggle} />
+                            items={this.state.pen} ecName={this.state.name}
+                            startDate={this.state.startDate} endDate={this.state.endDate}
+                            manageData={this.manageData}
+                            manageItem={this.manageItem} />
                     </div>
                 </div>
             </div>

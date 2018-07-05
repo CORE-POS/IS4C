@@ -5,8 +5,8 @@ class EndCap extends Component {
 
     render() {
         let all = this.props.shelves.map((s, i) =>
-            <Shelf move={this.props.move} items={s} pos={i} 
-                toggle={this.props.toggle} />
+            <Shelf items={s} pos={i} 
+                manageItem={this.props.manageItem} />
         );
         return (<p><div>{all}</div></p>);
     }

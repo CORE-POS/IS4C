@@ -34,9 +34,12 @@ class ToolBar extends Component {
         this.state = {
             numShelves: "",
             itemSearch: "",
+            startDate: "",
+            endDate: "",
+            loadList: [],
             acItems: []
         };
-        penItem = (id) => this.props.move(id, -1);
+        penItem = (id) => this.props.manageItem.move(id, -1);
     }
 
     newEC() {
@@ -70,13 +73,59 @@ class ToolBar extends Component {
         }
     }
 
+    componentDidMount() {
+        fetch('EndCapperPage.php?all=1')
+        .then((res) => res.json())
+        .then((res) => this.setState({loadList: res}));
+    }
+
     render() {
         let items = this.props.items.map((i) =>
-            <Item key={i.id} id={i.id} name={i.name} upc={i.upc} isLine={i.isLine} 
-                toggle={this.props.toggle} />
+            <Item key={i.id} {...i}
+                manageItem={this.props.manageItem}
+                toggle={this.props.manageItem.toggle} />
+        );
+        let opts = this.state.loadList.map((i) =>
+            <option key={i.id} value={i.id}>{i.name}</option>
         );
         return this.props.connectDropTarget(
             <div>
+                <p>
+                    <div className="input-group">
+                        <span className="input-group input-group-addon">Load</span>
+                        <select className="form-control" onChange={(ev) => {
+                            if (ev.target.value) {
+                                this.props.manageData.load(ev.target.value);
+                            } else{
+                                this.props.manageData.reset();
+                            }
+                        }}>
+                            <option value="">Select one...</option>
+                            {opts}
+                        </select>
+                    </div>
+                </p>
+                <p>
+                    <div className="input-group">
+                        <span className="input-group input-group-addon">Name</span>
+                        <input type="text" className="form-control" value={this.props.ecName}
+                            onChange={(ev) => this.props.manageData.save(ev.target.value)} />
+                    </div>
+                </p>
+                <p>
+                    <div className="input-group">
+                        <span className="input-group input-group-addon">Start Date</span>
+                        <input type="text" className="form-control date-field" value={this.props.startDate}
+                            onChange={(ev) => this.props.manageData.start(ev.target.value)} />
+                    </div>
+                </p>
+                <p>
+                    <div className="input-group">
+                        <span className="input-group input-group-addon">End Date</span>
+                        <input type="text" className="form-control date-field" value={this.props.endDate}
+                            onChange={(ev) => this.props.manageData.end(ev.target.value)} />
+                    </div>
+                </p>
                 <p>
                 <div className="form-inline">
                     <input type="number" className="form-control" value={this.state.numShelves} placeholder="# of shelves" 

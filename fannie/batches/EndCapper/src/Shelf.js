@@ -31,13 +31,14 @@ class Shelf extends Component {
 
     constructor(props) {
         super(props);
-        moveItem = (id, pos) => this.props.move(id, pos);
+        moveItem = (id, pos) => this.props.manageItem.move(id, pos);
     }
 
     render() {
         let items = this.props.items.map((i) =>
-            <Item key={i.id} id={i.id} name={i.name} upc={i.upc} isLine={i.isLine} 
-                toggle={this.props.toggle} />
+            <Item key={i.id} {...i}
+                manageItem={this.props.manageItem}
+                toggle={this.props.manageItem.toggle} />
         );
         return this.props.connectDropTarget(
             <div className="shelf-wrapper">
