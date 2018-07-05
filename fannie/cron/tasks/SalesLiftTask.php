@@ -20,7 +20,9 @@ class SalesLiftTask extends FannieTask
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
         $res = $dbc->query('SELECT batchID, startDate, endDate FROM batches WHERE discountType > 0 AND startDate > \'2018-04-01\'');
+        //$res = $dbc->query('SELECT batchID, startDate, endDate FROM batches WHERE discountType > 0 AND startDate > \'2013-01-01\' AND startDate < \'2014-01-01\'');
         $chkP = $dbc->prepare('SELECT batchID FROM SalesLifts WHERE batchID=?');
+        $lcP = $dbc->prepare("SELECT upc FROM batchList WHERE batchID=? AND upc like 'LC%'");
         $yesterday = new DateTime('2 days ago');
         while ($row = $dbc->fetchRow($res)) {
             $start = new Datetime($row['startDate']);
@@ -30,7 +32,8 @@ class SalesLiftTask extends FannieTask
                 continue;
             }
             $chk = $dbc->getValue($chkP, array($row['batchID']));
-            if ($chk == false || $end > $yesterday) {
+            $lcChk = $dbc->getValue($lcP, array($row['batchID']));
+            if ($chk == false || $lcChk !== false || $end > $yesterday) {
                 echo "Recalculating {$row['batchID']}\n";
                 $this->recalculate($dbc, $row['batchID'], $start, $end);
             }
@@ -49,10 +52,18 @@ class SalesLiftTask extends FannieTask
         $dbc->execute($delP, array($batchID));
 
         $upcs = array();
+        $lcP = $dbc->prepare('SELECT upc FROM upcLike where likeCode=?');
         $upcP = $dbc->prepare('SELECT upc FROM batchList WHERE batchID=?');
         $upcR = $dbc->execute($upcP, array($batchID));
         while ($upcW = $dbc->fetchRow($upcR)) {
-            $upcs[] = $upcW['upc'];
+            if (substr($upcW['upc'], 0, 2) == 'LC') {
+                $lcR = $dbc->execute($lcP, array(substr($upcW['upc'], 2)));
+                while ($lcW = $dbc->fetchRow($lcR)) {
+                    $upcs[] = $lcW['upc'];
+                }
+            } else {
+                $upcs[] = $upcW['upc'];
+            }
         }
 
         $storeP = $dbc->prepare('SELECT storeID FROM StoreBatchMap WHERE batchID=?');
