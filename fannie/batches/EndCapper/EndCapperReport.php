@@ -11,7 +11,7 @@ class EndCapperReport extends FannieReportPage
     protected $title = 'End Capper Report';
 
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','Brand','Description','$','Qty','Rings');
+    protected $report_headers = array('UPC','Brand','Description','$','Qty','Rings', 'Lift%');
     protected $required_fields = array('id');
 
     public $discoverable = false;
