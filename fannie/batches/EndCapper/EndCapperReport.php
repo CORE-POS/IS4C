@@ -20,6 +20,7 @@ class EndCapperReport extends FannieReportPage
 
     public function fetch_report_data()
     {
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $ecID = $this->form->id;
         $prep = $this->connection->prepare('SELECT json FROM EndCaps WHERE endCapID=?');
         $json = $this->connection->getValue($prep, array($ecID));
@@ -51,8 +52,15 @@ class EndCapperReport extends FannieReportPage
             WHERE department=?
                 AND normal_price=?
                 AND upc LIKE ?');
+        $liftP = $this->connection->prepare('
+            SELECT SUM(saleQty) as qty, SUM(compareQty) AS comp
+            FROM SalesLifts
+            WHERE batchID=?
+                AND upc=?
+                AND storeID=?');
 
         $upcs = array();
+        $lifts = array();
         foreach ($json['shelves'] as $shelf) {
             foreach ($shelf as $item) {
                 $prefix = $item['upc'];
@@ -69,6 +77,10 @@ class EndCapperReport extends FannieReportPage
                     while ($saleW = $this->connection->fetchRow($saleR)) {
                         $upcs[] = $saleW['upc'];
                         $found = true;
+                        $liftW = $this->connection->getRow($liftP, array($batchW['batchID'], $saleW['upc'], $store));
+                        $liftPercent = $liftW['comp'] != 0 ? (($liftW['qty'] - $liftW['comp']) / $liftW['comp']) : 999.99;
+                        $lifts[$saleW['upc']] = sprintf('<a href="../../reports/BatchReport/BatchLiftReport.php?upc=%s&id=%d&store=%d">%.2f</a>',
+                            $saleW['upc'], $batchW['batchID'], $store, 100*$liftPercent);
                     }
                     if ($found) {
                         break;
@@ -85,7 +97,6 @@ class EndCapperReport extends FannieReportPage
 
         list($inStr, $args) = $this->connection->safeInClause($upcs);
         $dlog = DTransactionsModel::selectDlog($json['startDate'], $json['endDate']);
-        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $prep = $this->connection->prepare("
             SELECT d.upc,
                 p.brand,
@@ -114,10 +125,23 @@ class EndCapperReport extends FannieReportPage
                 sprintf('%.2f', $row['ttl']),
                 sprintf('%.2f', $row['qty']),
                 sprintf('%.2f', $row['rings']),
+                isset($lifts[$row['upc']]) ? $lifts[$row['upc']] : 'n/a',
             );
         }
 
         return $data;
+    }
+
+    public function calculate_footers($data)
+    {
+        $sums = array(0, 0, 0);
+        foreach ($data as $row) {
+            $sums[0] += $row[3];
+            $sums[1] += $row[4];
+            $sums[2] += $row[5];
+        }
+
+        return array('Total', null, null, $sums[0], $sums[1], $sums[2]);
     }
 
     public function form_content()
