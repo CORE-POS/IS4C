@@ -58,7 +58,7 @@ class ToolBar extends Component {
                 jsonrpc: '2.0',
                 method: '\\COREPOS\\Fannie\\API\\webservices\\FannieAutoComplete',
                 id: new Date().getTime(),
-                params: { field: 'item', search: v }
+                params: { field: 'item', search: v, wide: true }
             };
             fetch('../../ws/', {
                 method: 'post',
@@ -92,7 +92,12 @@ class ToolBar extends Component {
         var reportBtn = '';
         if (reportID) {
             let url = 'EndCapperReport.php?id='+reportID;
-            reportBtn = (<p><a href={url} className="btn btn-default">Sales Report</a></p>)
+            reportBtn = (<p>
+                    <a href={url} className="btn btn-default">Sales Report</a>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <button type="btn" className="btn btn-default"
+                        onClick={() => this.props.manageData.save(this.props.ecName)}>Save</button>
+                </p>)
         }
 
         return this.props.connectDropTarget(
