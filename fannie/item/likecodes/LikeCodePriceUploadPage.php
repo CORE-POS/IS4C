@@ -42,7 +42,7 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
         'description' => array(
             'display_name' => 'Description',
-            'default' => -1,
+            'default' => 4,
         ),
         'price' => array(
             'display_name' => 'Price',
