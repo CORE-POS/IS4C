@@ -141,7 +141,7 @@ class EndCapperReport extends FannieReportPage
             $sums[2] += $row[5];
         }
 
-        return array('Total', null, null, $sums[0], $sums[1], $sums[2]);
+        return array('Total', null, null, $sums[0], $sums[1], $sums[2], '');
     }
 
     public function form_content()
