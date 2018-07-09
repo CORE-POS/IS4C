@@ -249,7 +249,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             }
 
             $desc = $data[$AD_TYPE];
-            $desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '')
+            $desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '');
 
             $searchR = $sql->execute($searchQ, array($ph, $ph, $ph, $cn));
 
