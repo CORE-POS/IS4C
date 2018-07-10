@@ -268,6 +268,7 @@ class MercuryDC extends MercuryE2E
     public function prepareDataCapBalance($type, $prompt=false)
     {
         $this->conf->set('DatacapBalanceCheck', '??');
+        $this->conf->set('EWICBalance', '??');
         $termID = $this->getTermID();
         $operatorID = $this->conf->get("CashierNo");
         $transID = $this->conf->get('paycard_id');
@@ -293,6 +294,9 @@ class MercuryDC extends MercuryE2E
             $cardType = 'Cash';
         } elseif ($type == 'GIFT') {
             $tranType = 'PrePaid';
+        } elseif ($type == 'EWIC') {
+            $tranType = 'EBT';
+            $cardType = 'EWIC';
         }
 
         $msgXml = '<?xml version="1.0"?'.'>
@@ -320,6 +324,8 @@ class MercuryDC extends MercuryE2E
         if ($type == 'GIFT') {
             $msgXml .= '<IpPort>9100</IpPort>';
             $msgXml .= '<IpAddress>' . $this->giftServerIP() . '</IpAddress>';
+        } elseif ($type == 'EWIC') {
+            $msgXml .= '<EWICBins>' . $this->conf->get('EWICBins') . '</EWICBins>';
         }
         $msgXml .= '</Transaction></TStream>';
 
@@ -541,6 +547,7 @@ class MercuryDC extends MercuryE2E
     */
     public function handleResponseDataCapBalance($xml)
     {
+        $better = new BetterXmlData($xml);
         $xml = new XmlData($xml);
         $responseCode = $xml->get("CMDSTATUS");
         $validResponse = -3;
@@ -549,6 +556,11 @@ class MercuryDC extends MercuryE2E
         }
 
         $balance = $xml->get_first('BALANCE');
+        $cardType = $better->query('/RStream/TranResponse/CardType');
+        if ($cardType == 'EWIC') {
+            $receipt = $this->eWicBalanceToString($better);
+            $this->conf->set('EWICBalance', $receipt);
+        }
 
         switch (strtoupper($xml->get_first("CMDSTATUS"))) {
             case 'APPROVED':
@@ -568,6 +580,87 @@ class MercuryDC extends MercuryE2E
         }
 
         return PaycardLib::PAYCARD_ERR_PROC;
+    }
+
+    /**
+     * Convert XML eWic balance to a 2d array
+     * @param $xml [BetterXmlData] response
+     * @return [
+     *      [ cat => [category data], subcat => [subcategory data], qty => number ],
+     *      [ cat => [category data], subcat => [subcategory data], qty => number ],
+     *      ...
+     *  ]
+     */
+    private function eWicBalanceToArray($xml)
+    {
+        $ret = array();
+        $dbc = Database::tDataConnect();
+        $catP = $dbc->prepare('SELECT * FROM ' . $this->conf->get('pDatabase') . $dbc->sep() . 'EWicCategories WHERE eWicCategoryID=?');
+        $subP = $dbc->prepare('SELECT * FROM ' . $this->conf->get('pDatabase') . $dbc->sep() . 'EWicSubCategories WHERE eWicCategoryID=? and eWicSubCategoryID=?');
+        $i = 1;
+        $cache = array(
+            'cat' => array(),
+            'subcat' => array(),
+        );
+
+        while (true) {
+            $cat = $better->query('/RStream/TranResponse/ProductData/ProductCat' . $i);
+            if ($cat === false) {
+                break; // end of data
+            }
+            $subcat = $better->query('/RStream/TranResponse/ProductData/ProductSubCat' . $i);
+            $qty = $better->query('/RStream/TranResponse/ProductData/ProductQty' . $i);
+
+            if (!isset($cache['cat'][$cat])) {
+                $row = $dbc->getRow($catP, array($cat));
+                $cache['cat'][$cat] = $row;
+            }
+
+            if ($subcat != 0) {
+                if (!isset($cache['subcat'][$subcat])) {
+                    $row = $dbc->getRow($subP, array($cat, $subcat));
+                    $cache['subcat'][$subcat] = $row;
+                }
+
+                $ret[] = array('cat' => $cache['cat'][$cat], 'subcat' => $cache['subcat'][$subcat], 'qty'=>$qty);
+            } else {
+                $ret[] = array('cat' => $cache['cat'][$cat], 'qty'=>$qty);
+            }
+
+            $i++;
+            if ($i > 1000) break; // safety check
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Convert XML eWic balance to receipt-friendly string
+     * @param $xml [BetterXmlData] balance response
+     * @return [string]
+     */
+    private function eWicBalanceToString($xml)
+    {
+        $data = $this->eWicBalanceToArray($xml);
+        foreach ($data as $row) {
+
+            if ($row['subcat']) {
+
+                $ret .= $row['cat']['name'] . ' ' . $row['subcat']['name'] . ' ';
+                if ($row['subcat']['qtyMethod']) { 
+                    $ret .= '$';
+                }
+            } else {
+                $ret .= $row['cat']['name'] . ' ';
+                if ($row['cat']['qtyMethod']) { 
+                    $ret .= '$';
+                }
+            }
+
+            $ret .= sprintf('%.2f', $row['qty']) . "\n";
+        }
+
+        return $ret;
     }
 
     private function pickHost($hosts)
