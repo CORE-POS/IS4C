@@ -31,8 +31,8 @@ class EndCapperReport extends FannieReportPage
             FROM batches AS b
                 INNER JOIN batchList AS l ON b.batchID=l.batchID
             WHERE l.upc=?
-                AND b.startDate >= ?
-                AND b.endDate <= ?
+                AND ? BETWEEN b.startDate AND b.endDate
+                AND ? BETWEEN b.startDate AND b.endDate
                 AND b.discountType > 0
                 ORDER BY l.salePrice');
 
