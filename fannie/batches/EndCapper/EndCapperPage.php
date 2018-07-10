@@ -82,7 +82,12 @@ class EndCapperPage extends FannieRESTfulPage
         $this->addScript('build/' . $manifest['main.js']);
         $this->addCssFile('build/' . $manifest['main.css']);
 
-        return '<div id="end-capper"></div>';
+        $init = '';
+        if (FormLib::get('init')) {
+            $init = sprintf('<input type="hidden" id="initializeEndCap" value="%d" />', FormLib::get('init'));
+        }
+
+        return $init . '<div id="end-capper"></div>';
     }
 }
 

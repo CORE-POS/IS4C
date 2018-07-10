@@ -40,6 +40,7 @@ class ToolBar extends Component {
             acItems: []
         };
         penItem = (id) => this.props.manageItem.move(id, -1);
+        this.listToken;
     }
 
     newEC() {
@@ -73,10 +74,24 @@ class ToolBar extends Component {
         }
     }
 
-    componentDidMount() {
+    getEcList() {
         fetch('EndCapperPage.php?all=1')
         .then((res) => res.json())
         .then((res) => this.setState({loadList: res}));
+    }
+
+    saveWrapper(name) {
+        this.props.manageData.save(name);
+/*
+        if (this.listToken) {
+            clearTimeout(this.listToken);
+        }
+        this.listToken = setTimeout(() => this.getEcList(), 3000);
+*/
+    }
+
+    componentDidMount() {
+        this.getEcList();
     }
 
     render() {
@@ -85,9 +100,12 @@ class ToolBar extends Component {
                 manageItem={this.props.manageItem}
                 toggle={this.props.manageItem.toggle} />
         );
-        let opts = this.state.loadList.map((i) =>
-            <option key={i.id} value={i.id}>{i.name}</option>
-        );
+        let opts = this.state.loadList.map((i) => {
+            if (i.id === this.props.ecID) {
+                return (<option key={i.id} selected value={i.id}>{i.name}</option>);
+            }
+            return (<option key={i.id} value={i.id}>{i.name}</option>);
+        });
         let reportID = this.props.manageData.canReport();
         var reportBtn = '';
         if (reportID) {

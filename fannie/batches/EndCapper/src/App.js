@@ -35,16 +35,19 @@ class App extends Component {
             endDate: "",
             shelves: [],
             pen: [],
-            permanentID: false
+            permanentID: false,
+            initID: false
         };
         this.state = this.defaultState;
         this.saving = false;
-        this.autoSaveToken = false;
     };
 
-    autoSaveLoop() {
-        this.save(this.state.name);
-        this.autoSaveToken = setTimeout(() => this.autoSaveLoop(), 15000);
+    componentDidMount() {
+        let initialize = document.getElementById('initializeEndCap');
+        if (initialize) {
+            this.setState({initID: initialize.value});
+            this.load(initialize.value);
+        }
     }
 
     load(id) {
@@ -54,7 +57,6 @@ class App extends Component {
             if (res.state) {
                 res.state.permanentID = id;
                 this.setState(res.state);
-                this.autoSaveToken = setTimeout(() => this.autoSaveLoop(), 15000);
             }
         });
     }
@@ -225,7 +227,7 @@ class App extends Component {
                     </div>
                     <div id="ec-tools" className="col-sm-3">
                         <ToolBar init={this.handleInit} add={this.penAdd}
-                            items={this.state.pen} ecName={this.state.name}
+                            items={this.state.pen} ecName={this.state.name} ecID={this.state.initID}
                             startDate={this.state.startDate} endDate={this.state.endDate}
                             manageData={this.manageData}
                             manageItem={this.manageItem} />
