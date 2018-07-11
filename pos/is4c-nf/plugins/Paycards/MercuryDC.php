@@ -120,6 +120,52 @@ class MercuryDC extends MercuryE2E
         return $msgXml;
     }
 
+    public function prepareDataCapWic($itemData, $tranCode, $last4)
+    {
+        $request = new PaycardRequest($this->refnum($this->conf->get('paycard_id')), PaycardLib::paycard_db());
+        $request->setProcessor($this->proc_name);
+
+        $tranType = 'EBT';
+        $cardType = 'EWIC';
+
+        $request->setManual($prompt ? 1 : 0);
+
+        try {
+            $request->saveRequest();
+        } catch (Exception $ex) {
+            // TODO: cancel request on JS side
+            $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
+            return 'Error';
+        }
+        $this->conf->set('LastEmvPcId', $request->last_paycard_transaction_id);
+        $this->conf->set('LastEmvReqType', 'normal');
+
+        // start with fields common to PDCX and EMVX
+        $msgXml = $this->beginXmlRequest($request);
+        $msgXml .= '<TranCode>' . $tranCode . '</TranCode>
+            <SecureDevice>' . ($last4 ? 'NONE' : '{{SecureDevice}}') . '</SecureDevice>
+            <ComPort>{{ComPort}}</ComPort>
+            <Account>
+                <AcctNo>SecureDevice</AcctNo>
+            </Account>
+            <TranType>EBT</TranType>
+            <CardType>EWIC</CardType>
+            <PartialAuth>Allow</PartialAuth>';
+        if ($last4) {
+            $msgXml .= '<UseLastCardID>' . $last4 . '</UseLastCardID>';
+        }
+        $msgXml .= '<EWICBins>' . $this->conf->get('EWICBins') . '</EWICBins>'
+            . $itemData
+            . '</Transaction>
+            </TStream>';
+        
+        $this->last_request = $request;
+
+        return $msgXml;
+    }
+
+
+
     public function switchToRecurring($xml)
     {
         $xml = str_replace('OneTime', 'Recurring', $xml);
@@ -286,6 +332,7 @@ class MercuryDC extends MercuryE2E
 
         $tranType = '';
         $cardType = '';
+        $tranCode = 'Balance';
         if ($type == 'EBTFOOD') {
             $tranType = 'EBT';
             $cardType = 'Foodstamp';
@@ -297,6 +344,10 @@ class MercuryDC extends MercuryE2E
         } elseif ($type == 'EWIC') {
             $tranType = 'EBT';
             $cardType = 'EWIC';
+        } elseif ($type == 'EWICVAL') {
+            $tranType = 'EBT';
+            $cardType = 'EWIC';
+            $tranCode = 'BalancePreVal';
         }
 
         $msgXml = '<?xml version="1.0"?'.'>
@@ -306,7 +357,7 @@ class MercuryDC extends MercuryE2E
             <OperatorID>'.$operatorID.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
             <TranType>' . $tranType . '</TranType>
-            <TranCode>Balance</TranCode>
+            <TranCode>' . $tranCode . '</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
             <ComPort>{{ComPort}}</ComPort>
             <InvoiceNo>'.$refNum.'</InvoiceNo>
@@ -558,8 +609,14 @@ class MercuryDC extends MercuryE2E
         $balance = $xml->get_first('BALANCE');
         $cardType = $better->query('/RStream/TranResponse/CardType');
         if ($cardType == 'EWIC') {
-            $receipt = $this->eWicBalanceToString($better);
-            $this->conf->set('EWICBalance', $receipt);
+            $wicBal = $this->eWicBalanceToArray($better);
+            $receipt = $this->eWicBalanceToString($wicBal);
+            $this->conf->set('EWicBalance', $wicBal);
+            $this->conf->set('EWicBalanceReceipt', $receipt);
+            $last4 = $better->query('/RStream/TranResponse/AcctNo');
+            if ($last4) {
+                $this->conf->set('EWicLast4', substr($last4, -4));
+            }
         }
 
         switch (strtoupper($xml->get_first("CMDSTATUS"))) {
@@ -636,28 +693,26 @@ class MercuryDC extends MercuryE2E
 
     /**
      * Convert XML eWic balance to receipt-friendly string
-     * @param $xml [BetterXmlData] balance response
+     * @param $data [array] balance response
      * @return [string]
      */
-    private function eWicBalanceToString($xml)
+    private function eWicBalanceToString($data)
     {
-        $data = $this->eWicBalanceToArray($xml);
         foreach ($data as $row) {
 
+            if ($row['subcat']['qtyMethod']) { 
+                $ret .= '$';
+            }
+            $ret .= sprintf('%.2f', $row['qty']);
+            $ret = str_pad($ret, ' ', 8, STR_PAD_RIGHT);
             if ($row['subcat']) {
 
                 $ret .= $row['cat']['name'] . ' ' . $row['subcat']['name'] . ' ';
-                if ($row['subcat']['qtyMethod']) { 
-                    $ret .= '$';
-                }
             } else {
                 $ret .= $row['cat']['name'] . ' ';
-                if ($row['cat']['qtyMethod']) { 
-                    $ret .= '$';
-                }
             }
 
-            $ret .= sprintf('%.2f', $row['qty']) . "\n";
+            $ret .= "\n";
         }
 
         return $ret;
