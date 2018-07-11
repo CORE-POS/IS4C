@@ -237,12 +237,12 @@ class MercuryDC extends MercuryE2E
                     $tranType = 'Credit';
                     break;
                 case 'Debit':
-                    $tranCode = ($prev['mode'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
+                    $tranCode = ($prev['mode'] == 'Sale') ? 'Return' : 'Sale';
                     $tranType = 'Debit';
                     break;
                 case 'EBTFOOD':
                 case 'EBTCASH':
-                    $tranCode = ($prev['mode'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
+                    $tranCode = ($prev['mode'] == 'Sale') ? 'Return' : 'Sale';
                     $tranType = 'EBT';
                     $cardType = ($prev['cardType'] === 'EBTFOOD') ? 'Foodstamp' : 'Cash';
                     break;
