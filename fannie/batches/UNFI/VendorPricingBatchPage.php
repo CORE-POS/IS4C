@@ -396,7 +396,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         ob_start();
         ?>
-        <form action=VendorPricingBatchPage.php method="get">
+        <form action=VendorPricingBatchPage.php method="get" target="_blank">
         <label>Select a Vendor</label>
         <select name="id" class="form-control">
         <?php echo $vopts; ?>
