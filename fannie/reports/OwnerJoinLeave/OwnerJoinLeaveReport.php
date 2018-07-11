@@ -184,8 +184,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Yearly Budget',
                 null,
-                '1,500',
-                '$95,000.00',
+                '700',
+                '$70,000.00',
                 null,
             ));
         }
