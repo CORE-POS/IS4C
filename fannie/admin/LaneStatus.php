@@ -14,6 +14,39 @@ class LaneStatus extends FannieRESTfulPage
     protected $title = 'Lane Status';
     public $description = '[Lane Status] shows the current up/down/offline status of all lanes';
 
+    protected function post_id_handler()
+    {
+        $offline = FormLib::get('up') ? 0 : 1;
+        $lanes = $this->config->get('LANES');
+        $i = 1;
+        $saveStr = 'array(';
+        foreach ($lanes as $lane) {
+            $saveStr .= "array('host'=>'" . $lane['host'] . "',"
+                    . "'type'=>'" . $lane['type'] . "',"
+                    . "'user'=>'" . $lane['user'] . "',"
+                    . "'pw'=>'" . $lane['pw'] . "',"
+                    . "'op'=>'" . $lane['op'] . "',"
+                    . "'trans'=>'" . $lane['trans'] . "',";
+            if ($i == $this->id) {
+                $saveStr .= "'offline'=>{$offline}),";
+            } else {
+                $saveStr .= "'offline'=>{$lane['offline']}),";
+            }
+        }
+        if ($saveStr != 'array(') {
+            $saveStr = substr($saveStr, 0, strlen($saveStr)-1);
+        }
+        $saveStr .= ')';
+        confset('FANNIE_LANES', $saveStr);
+
+        echo json_encode(array(
+            'id' => $this->id,
+            'offline' => $offline,
+        ));
+
+        return false;
+    }
+
     protected function post_handler()
     {
         $i = 1;
