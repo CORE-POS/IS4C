@@ -82,6 +82,9 @@ class ResponsePipe extends AttachmentEmailPipe
             $resp->sent(1);
             $mail = new \PHPMailer();
             $mail->From = 'info@wholefoods.coop';
+            if ($from) {
+                $mail->From = $from;
+            }
             $mail->FromName = 'Whole Foods Co-op';
             $mail->addAddress($comment['email']);
             $mail->Subject = 'WFC Comment Response';
