@@ -60,7 +60,7 @@ class LaneStatus extends FannieRESTfulPage
                     . "'op'=>'" . $lane['op'] . "',"
                     . "'trans'=>'" . $lane['trans'] . "',";
             $isOffline = in_array($i, $offline) ? 1 : 0;
-            $saveStr .= "'offline'=>{$offline}),";
+            $saveStr .= "'offline'=>{$isOffline}),";
         }
         if ($saveStr != 'array(') {
             $saveStr = substr($saveStr, 0, strlen($saveStr)-1);
