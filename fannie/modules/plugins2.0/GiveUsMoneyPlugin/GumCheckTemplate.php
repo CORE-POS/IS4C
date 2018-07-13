@@ -290,7 +290,7 @@ class GumCheckTemplate
         // here at times
         $pdf->SetXY($check_left_x + 34.5, $check_bottom_y + $line_height - 1);
         if ($this->micrShift) {
-            $pdf->SetXY($check_left_x + 37.7, $check_bottom_y + $line_height - 1);
+            $pdf->SetXY($check_left_x + 37.8, $check_bottom_y + $line_height - 1);
         }
         if (!isset($pdf->fonts['gnumicr'])) {
             $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
