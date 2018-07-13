@@ -884,5 +884,51 @@ static public function logger($msg="")
     return $ret;
 }
 
+static public function queueJob($job)
+{
+    $jobs = CoreLocal::get('QueuedRedisJobs');
+    if (!is_array($jobs)) {
+        $jobs = array();
+    }
+    $jobs[] = $job;
+    CoreLocal::set('QueuedRedisJobs', $jobs);
+}
+
+static public function flushJobs($send=true)
+{
+    $jobs = CoreLocal::get('QueuedRedisJobs');
+    CoreLocal::set('QueuedRedisJobs', array());
+    if (!is_array($jobs) || !$send) {
+        return;
+    }
+
+    foreach ($jobs as $job) {
+        self::addToRedis($job);
+    }
+}
+
+/**
+ * Push a job into Redis
+ * @param $job [array] with keys 'class' and 'data'
+ * @param $highPriority [boolean, default false]
+ * @return [boolean] success
+ */
+static private function addToRedis($job, $highPriority=false)
+{
+    $host = CoreLocal::get('redisHost');
+    if ($host && class_exists('\\Predis\\Client')) {
+        try {
+            $redis = new \Predis\Client($host);
+            $queue = $highPriority ? 'jobHigh' : 'jobLow';
+            $redis->lpush($queue, json_encode($job));
+
+            return true;
+        } catch (Exception $ex) {
+        }
+    }
+
+    return false;
+}
+
 } // end Database class
 
