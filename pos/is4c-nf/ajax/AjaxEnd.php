@@ -70,6 +70,7 @@ class AjaxEnd extends AjaxCallback
             $this->session->set('ccTermState','swipe');
             $this->uploadAndReset();
             $this->session->set("End",0);
+            Database::flushJobs();
         }
 
         // close session so if printer hangs

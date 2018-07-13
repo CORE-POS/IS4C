@@ -795,8 +795,6 @@ static public function finalizeTransaction($incomplete=false)
     $nextTransNo = Database::gettransno(CoreLocal::get('CashierNo'));
     CoreLocal::set('transno', $nextTransNo);
     Database::setglobalvalue('TransNo', $nextTransNo);
-
-    Database::flushJobs();
 }
 
 static public function debugLog($val)
