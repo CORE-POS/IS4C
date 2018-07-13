@@ -102,10 +102,12 @@ $width = 52; // tag width in mm
 $height = 31; // tag height in mm
 $left = 5; // left margin
 $top = 15; // top margin
+$bTopOff = 0;
 
 // undo margin if offset is true
 if($offset) {
     $top = 32;
+    $bTopOff = 5.5;
 }
 
 $pdf->SetTopMargin($top);  //Set top margin of the page
@@ -121,8 +123,8 @@ $full_y = $top;
 
 // half size tag settings
 $upcX = 7;  //x location of barcode
-$upcY = 15; //y locaton of barcode
-$priceY = 29; //y location of size and price on label
+$upcY = $top; //y locaton of barcode
+$priceY = 14 + $top; //y location of size and price on label
 $priceX = 8; //x location of date and price on label
 $count = 0;  //number of labels created
 $baseY = 31; // baseline Y location of label
@@ -304,7 +306,7 @@ foreach($data as $row) {
 
     // half size
     $upcX = 7;  //x location of barcode
-    $upcY = 15; //y locaton of barcode
+    $upcY = $top; //y locaton of barcode
     $priceY = 29; //y location of size and price on label
     $priceX = 8; //x location of date and price on label
     $count = 0;  //number of labels created
@@ -320,8 +322,8 @@ foreach($data as $row) {
       $upcX = 7;
       $upcY = $upcY + $down;
       $priceX = 8;
-      $priceY = $priceY + $down;
-      $baseY = $baseY + $down;
+      $priceY = $priceY + $down + $bTopOff;
+      $baseY = $baseY + $down + $bTopOff;
       $baseX = 6;
    }
 
