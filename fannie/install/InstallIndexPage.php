@@ -813,6 +813,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'PaycardTransactionsModel',
         'SpecialOrdersModel',
         'SpecialOrderDeptMapModel',
+        'SpecialOrderEditsModel',
         'SpecialOrderHistoryModel',
         'SpecialOrderMemDiscountsModel',
         'PendingSpecialOrderModel',
