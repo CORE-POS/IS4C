@@ -68,7 +68,7 @@ class MailPipe extends AttachmentEmailPipe
             $mail = new \PHPMailer();
             $mail->addReplyTo('ff8219e9ba6148408c89232465df9e53+' . $commentID . '@wholefoods.coop');
             $mail->setFrom('comments@wholefoods.coop', 'Comment Tracker');
-            $mail->Subject = 'New Comment';
+            $mail->Subject = 'New Comment Needing Response';
             $mail->addAddress($catW['notifyAddress']);
             $mail->isHTML(true);
             $mail->CharSet = 'UTF-8';
