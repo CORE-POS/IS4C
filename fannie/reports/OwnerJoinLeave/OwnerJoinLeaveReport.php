@@ -184,7 +184,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Yearly Budget',
                 null,
-                '700',
+                '780',
                 '$70,000.00',
                 null,
             ));
@@ -338,6 +338,45 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     $detailW['payments'],
                     $detailW['note'],
                 );
+            }
+
+            $this->report_headers[] = array('Transfer Requests', null, null, null, null);
+            $this->report_headers[] = array('Date', 'Owner #', 'Name', 'Equity', 'Request');
+            $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+                'meta_background'=>'#000','meta_foreground'=>'#fff');
+            $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+                'meta_background'=>'#000','meta_foreground'=>'#fff');
+            $termP = $dbc->prepare('
+                SELECT s.cardno AS card_no,
+                    c.FirstName,
+                    c.LastName,
+                    s.suspDate,
+                    n.payments
+                FROM suspensions AS s
+                    INNER JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
+                    LEFT JOIN ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'equity_live_balance AS n ON s.cardno=n.memnum
+                WHERE c.Type=\'INACT2\'
+                    AND (s.suspDate >= ?)
+                ORDER BY s.suspDate
+            ');
+            $noteP = $dbc->prepare('
+                SELECT n.note
+                FROM memberNotes AS n
+                WHERE cardno=?
+                ORDER BY stamp DESC
+            ');
+            $termR = $dbc->execute($termP, $args[0]);
+            while ($termW = $dbc->fetchRow($termR)) {
+                $note = $dbc->getValue($noteP, array($termW['card_no']));
+                if (strstr(strtoupper($note), 'TRANSFER')) {
+                    $data[] = array(
+                        $termW['suspDate'],
+                        $termW['card_no'],
+                        $termW['LastName'] . ', ' . $row['FirstName'],
+                        sprintf('%.2f', $termW['payments']),
+                        $note,
+                    );
+                }
             }
         }
 

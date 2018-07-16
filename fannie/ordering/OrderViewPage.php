@@ -72,6 +72,10 @@ class OrderViewPage extends FannieRESTfulPage
         $poID = $bridge->addItemToPurchaseOrder($this->orderID, $this->transID, $this->storeID);
         if ($poID) {
             echo json_encode(array('error'=>false, 'poID'=>$poID));
+            $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+                (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+            $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Add to PO', 
+                "SPO #{$this->orderID}, Item #{$this->transID}, PO#{$poID}"));
         } else {
             echo json_encode(array('error'=>true));
         }
@@ -136,6 +140,11 @@ class OrderViewPage extends FannieRESTfulPage
         $upR = $dbc->execute($upP, array($this->qty, $this->orderID, $this->transID));
         $this->reprice($this->orderID, $this->transID);
 
+        $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Item Quantity',
+            "Item #{$this->transID}, Qty {$this->qty}"));
+
         return $this->get_orderID_items_handler();
     }
 
@@ -173,6 +182,14 @@ class OrderViewPage extends FannieRESTfulPage
         } else {
             $info = array('regPrice' => $this->srp, 'total' => $this->actual);
         }
+
+        $uid = FannieAuth::getUID();
+        $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Edit Item',
+            "Item #{$this->transID}, {$this->description}, {$this->vendor}"));
+        $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Edit Item',
+            "Item #{$this->transID}, Unit {$this->unitPrice}, Reg {$info['regPrice']}, Total {$info['total']}"));
 
         $fetchP = $dbc->prepare("SELECT ROUND(100*((regPrice-total)/regPrice),0)
             FROM {$transDB}PendingSpecialOrder WHERE trans_id=? AND order_id=?");
@@ -247,6 +264,10 @@ class OrderViewPage extends FannieRESTfulPage
         $bridge = new SoPoBridge($dbc, $this->config);
         $bridge->removeItemFromPurchaseOrder($this->orderID, $this->transID);
 
+        $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Delete Item', "Item #{$this->transID}"));
+
         return $this->get_orderID_items_handler();
     }
 
@@ -265,6 +286,11 @@ class OrderViewPage extends FannieRESTfulPage
         } else {
             echo $this->getQtyForm($this->orderID, $result[0], $result[1], $result[2]);
         }
+
+        $dbc = $this->connection;
+        $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Add Item', "UPC {$this->upc}, Cases {$this->cases}"));
 
         return false;
     }
@@ -304,6 +330,10 @@ class OrderViewPage extends FannieRESTfulPage
         $json = array();
         $json['saved'] = $soModel->save() ? true : false;
         echo json_encode($json);
+
+        $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Update Contact Info', ""));
 
         return false;
     }
@@ -366,6 +396,10 @@ class OrderViewPage extends FannieRESTfulPage
             $prep = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET card_no=?
                 WHERE order_id=?");
             $dbc->execute($prep,array($memNum,$orderID));
+
+            $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+                (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+            $dbc->execute($audit, array($orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Set Owner', "Owner #{$memNum}"));
 
             // clear contact fields if member number changed
             // so that defaults are reloaded from meminfo
@@ -530,6 +564,9 @@ class OrderViewPage extends FannieRESTfulPage
         $extra .= '<div class="row"><div class="col-sm-6 text-left">';
         $extra .= "<b>Taken by</b>: ".$user."<br />";
         $extra .= "<b>On</b>: ".date("M j, Y g:ia",strtotime($orderDate))."<br />";
+        if ($canEdit) {
+            $extra .= '<a href="SpoEditsPage.php?id=' . $orderID . '">Edit History</a><br />';
+        }
         $extra .= '</div><div class="col-sm-6 text-right form-inline">';
         $extra .= '<b>Call to Confirm</b>: ';
         $extra .= '<select id="ctcselect" class="form-control input-sm">'; 

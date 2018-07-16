@@ -35,7 +35,7 @@ class TermPendingReport extends FannieReportPage
     protected $title = "Fannie :  Term Pending Report";
     protected $header = "Term Pending Report";
     protected $required_fields = array('date1', 'date2');
-    protected $report_headers = array('Owner #', 'Date', 'Name', 'Equity', 'Reason');
+    protected $report_headers = array('Owner #', 'Date', 'Name', 'Equity', 'Fran', 'Reason');
     protected $sort_column = 1;
 
     public function fetch_report_data()
@@ -74,17 +74,23 @@ class TermPendingReport extends FannieReportPage
 
         $data = array();
         while ($row = $dbc->fetchRow($termR)) {
+            $note = $dbc->getValue($noteP, array($row['card_no']));
+            if (strstr(strtoupper($note), 'TRANSFER')) {
+                continue;
+            }
+            $fran = $this->franAmount($dbc, $row['card_no']);
             $record = array(
                 $row['card_no'],
                 date('Y-m-d', strtotime($row['suspDate'])),    
                 $row['FirstName'] . ' ' . $row['LastName'],
-                sprintf('%.2f', $row['payments']),
+                sprintf('%.2f', $row['payments'] - $fran),
+                sprintf('%.2f', $fran),
             );
-            $noteR = $dbc->execute($noteP, array($row['card_no']));
-            if ($noteR && $dbc->num_rows($noteR) > 0) {
-                $noteW = $dbc->fetch_row($noteR);
-                $note_pts = explode("<br />", $noteW['note']);
-                $record[] = $note_pts[0];
+            if ($note !== false) {
+                if (strstr($note, '<br />')) {
+                    list($note,) = explode('<br />', $note, 2);
+                }
+                $record[] = $note;
             } else {
                 $record[] = '?';
             }
@@ -92,6 +98,60 @@ class TermPendingReport extends FannieReportPage
         }
 
         return $data;
+    }
+
+    private function franAmount($dbc, $cardno)
+    {
+        if (!isset($this->stockP)) {
+            $this->stockP = $dbc->prepare('SELECT tdate, stockPurchase, trans_num
+                FROM ' . FannieDB::fqn('stockpurchases', 'trans') . '
+                WHERE card_no=?');
+        }
+        if (!isset($this->commentP)) {
+            $this->commentP = $dbc->prepare('SELECT trans_id
+                FROM ' . FannieDB::fqn('bigArchive', 'arch') . '
+                WHERE datetime BETWEEN ? AND ?
+                    AND emp_no <> 9999
+                    AND register_no <> 99
+                    AND trans_status NOT IN (\'X\',\'Z\')
+                    AND emp_no=?
+                    AND register_no=?
+                    AND trans_no=?
+                    AND trans_type=\'C\'
+                    AND trans_subtype=\'CM\'
+                    AND description LIKE \'%31130%\'');
+        }
+        $ret = 0;
+        $stockR = $dbc->execute($this->stockP, array($cardno));
+        while ($stockW = $dbc->fetchRow($stockR)) {
+            list($date,) = explode(' ', $stockW['tdate']);
+            list($emp, $reg, $trans) = explode('-', $stockW['trans_num']);
+            $args = array(
+                $date . ' 00:00:00',
+                $date . ' 23:59:59',
+                $emp,
+                $reg,
+                $trans,
+            );
+            if ($dbc->getValue($this->commentP, $args)) {
+                $ret += $stockW['stockPurchase'];
+            }
+        }
+
+        return $ret;
+    }
+
+    public function calculate_footers($data)
+    {
+        $count = 0;
+        $sum = array(0, 0);
+        foreach ($data as $row) {
+            $count++;
+            $sum[0] += $row[3];
+            $sum[1] += $row[4];
+        }
+
+        return array("{$count} Owners", '', '', sprintf('%.2f', $sum[0]), sprintf('%.2f', $sum[1]), '');
     }
 
     public function form_content()

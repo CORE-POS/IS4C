@@ -193,6 +193,8 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $vID = 25;
                 } elseif ($abbr == 'RDW') {
                     $vID = 136;
+                } elseif ($abbr == 'UNFI') {
+                    $vID = 1;
                 } 
                 $dbc->execute($setVend, array($vID, $likecode));
             }
