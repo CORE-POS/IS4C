@@ -8,7 +8,7 @@ class MembersReport extends FannieReportPage
 {
     protected $header = 'Members Report';
     protected $title = 'Members Report';
-    protected $report_headers = array('#', 'First Name', 'Last Name', 'Start', 'End', 'Equity', 'Inactive');
+    protected $report_headers = array('#', 'First Name', 'Last Name', 'Equity A', 'Equity B', 'Start', 'End', 'Inactive');
     protected $required_fields = array('type');
     protected $no_sort_but_style = true;
 
@@ -62,14 +62,39 @@ class MembersReport extends FannieReportPage
             $args[] = $args[$i];
         }
         $r = $dbc->execute($q, $args);
+
+        $pEq = $dbc->prepare("
+            SELECT 
+                card_no AS CardNo,
+                CASE WHEN dept = 992 THEN stockPurchase ELSE 0 END as equityA,
+                CASE WHEN dept = 991 THEN stockPurchase ELSE 0 END as equityB
+            FROM is4c_trans.stockpurchases;");
+        $rEq = $dbc->execute($pEq);
+        $equitySum = array();
+        while ($w = $dbc->fetch_row($rEq)) {
+            $cardno = $w['CardNo'];
+            if (!array_key_exists($cardno, $equitySum)) {
+                $equitySum[$cardno]['equityA'] = 0;
+                $equitySum[$cardno]['equityB'] = 0;
+            }
+            if ($w['equityA'] != 0) {
+                $equitySum[$cardno]['equityA'] += $w['equityA'];
+            } elseif ($w['equityB'] != 0 ) {
+                $equitySum[$cardno]['equityB'] += $w['equityB'];
+            }
+        }
+
         $saveW = array();
         $data = array();
+        $r = $dbc->execute($q, $args);
         while ($w = $dbc->fetch_row($r)) {
             if (count($saveW) == 0 || $w['CardNo'] != $saveW['CardNo']){
                 if (count($saveW) > 0) {
                     $data[] = $this->formatRow($saveW);
                 }
                 $saveW = $w;
+                $saveW['equityA'] = $equitySum[$w['CardNo']]['equityA'];
+                $saveW['equityB'] = $equitySum[$w['CardNo']]['equityB'];
             } else {
                 $saveW['reason'] .= ", ".$w['reason'];
             }
@@ -87,6 +112,8 @@ class MembersReport extends FannieReportPage
             $arr['CardNo'],
             $arr['FirstName'],
             $arr['LastName'],
+            $arr['equityA'],
+            $arr['equityB'],
         );
         if (date('Y', strtotime($arr['startdate'])) < 1900) {
             $ret[] = '';
@@ -98,7 +125,6 @@ class MembersReport extends FannieReportPage
         } else {
             $ret[] = date('m/d/Y', strtotime($arr['enddate']));
         }
-        $ret[] = sprintf('%.2f', $arr['equity']);
         $ret[] = ($arr['isInactive'] == 1) ? $arr['reason'] : '';
 
         return $ret;
