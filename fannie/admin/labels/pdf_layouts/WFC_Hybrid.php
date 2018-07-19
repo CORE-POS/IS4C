@@ -107,7 +107,7 @@ $bTopOff = 0;
 // undo margin if offset is true
 if($offset) {
     $top = 32;
-    $bTopOff = 5.5;
+    $bTopOff = 17;
 }
 
 $pdf->SetTopMargin($top);  //Set top margin of the page
@@ -127,7 +127,7 @@ $upcY = $top; //y locaton of barcode
 $priceY = 14 + $top; //y location of size and price on label
 $priceX = 8; //x location of date and price on label
 $count = 0;  //number of labels created
-$baseY = 31; // baseline Y location of label
+$baseY = 31 + $bTopOff; // baseline Y location of label
 $baseX = 6;  // baseline X location of label
 $down = 31.0;
 
@@ -307,10 +307,10 @@ foreach($data as $row) {
     // half size
     $upcX = 7;  //x location of barcode
     $upcY = $top; //y locaton of barcode
-    $priceY = 29; //y location of size and price on label
+    $priceY = 29 + $bTopOff; //y location of size and price on label
     $priceX = 8; //x location of date and price on label
     $count = 0;  //number of labels created
-    $baseY = 31; // baseline Y location of label
+    $baseY = 31 + $bTopOff; // baseline Y location of label
     $baseX = 6;  // baseline X location of label
    }
    else if ($num % 4 == 0){
@@ -322,8 +322,8 @@ foreach($data as $row) {
       $upcX = 7;
       $upcY = $upcY + $down;
       $priceX = 8;
-      $priceY = $priceY + $down + $bTopOff;
-      $baseY = $baseY + $down + $bTopOff;
+      $priceY = $priceY + $down;
+      $baseY = $baseY + $down;
       $baseX = 6;
    }
 
