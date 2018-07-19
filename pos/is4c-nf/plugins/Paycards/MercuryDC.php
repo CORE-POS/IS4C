@@ -93,6 +93,7 @@ class MercuryDC extends MercuryE2E
             }
         } else {
             $msgXml .= '
+            <CollectData>CardholderName</CollectData>
             <Account>
                 <AcctNo>' . ($prompt ? 'Prompt' : 'SecureDevice') . '</AcctNo>
             </Account>
