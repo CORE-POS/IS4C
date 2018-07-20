@@ -57,6 +57,21 @@ class InUseTask extends FannieTask
         $start = time();
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
+        // Get a list of UPC that are currently on sale
+        $saleUpcs = array();
+        $p = $dbc->prepare("
+            SELECT bl.upc, bl.salePrice, bl.batchID, p.brand, p.description, date(b.startDate) AS startDate, date(b.endDate) AS endDate
+            FROM batchList AS bl
+                LEFT JOIN products AS p ON bl.upc=p.upc
+                LEFT JOIN batches AS b ON bl.batchID=b.batchID
+            WHERE bl.batchID IN ( SELECT batchID FROM batches WHERE NOW() BETWEEN startDate AND endDate)
+            GROUP BY bl.upc;
+        ");
+        $r = $dbc->execute($p);
+        while ($row = $dbc->fetchRow($r)) {
+            $saleUpcs[] = $row['upc'];
+        }
+
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
             $this->logger->warning('products table does not have a last_sold column');
@@ -155,10 +170,11 @@ class InUseTask extends FannieTask
         while ($row = $dbc->fetch_row($resultA)) {
             $inUseData .= '<tr>';
             foreach ($fields as $column) {
+                $class = ($column == 'upc' && in_array($row[$column], $saleUpcs)) ? 'saleitem' : '';
                 if ($column == '' || empty($column)) {
                     $column = '<i>data missing</i>';
                 }
-                $inUseData .= '<td>' . $row[$column] . '</td>';
+                $inUseData .= '<td class="'.$class.'">' . $row[$column] . '</td>';
             }
             $inUseData .= '</tr>';
             $updateUpcs[] = $row['upc'];
@@ -169,10 +185,11 @@ class InUseTask extends FannieTask
             if (!in_array($row['upc'],$exempts[$row['store_id']])) {
                 $unUseData .= '<tr>';
                 foreach ($fields as $column) {
+                    $class = ($column == 'upc' && in_array($row[$column], $saleUpcs)) ? 'saleitem' : '';
                     if ($column == '' || empty($column)) {
                         $column = '<i>no data</i>';
                     }
-                    $unUseData .= '<td>' . $row[$column] . '</td>';
+                    $unUseData .= '<td class="'.$class.'">' . $row[$column] . '</td>';
                 }
                 $unUseData .= '</tr>';
                 $updateUpcs[] = $row['upc'];
@@ -196,10 +213,23 @@ class InUseTask extends FannieTask
         $to = $this->config->get('SCANCOORD_EMAIL');
 
         if (class_exists('PHPMailer')) {
-            $msg = '<style>table, tr, td { border-collapse: collapse; border: 1px solid black;
-                padding: 5px; }</style>';
-            $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
+            $msg = '
+<style>
+    table, tr, td { 
+        border-collapse: collapse; 
+        border: 1px solid black;
+        padding: 5px; 
+    } 
+    .saleitem { 
+        background-color: lightgreen; 
+        color: black;
+    } 
+</style>';
+            $msg .= 'In Use Task (Product In-Use Management) completed on '.date('Y-m-d h:i:s');
             $msg .= ' [ Runtime: '.$runtime.' ]<br />';
+            $msg .= 'UPCs highlighted in <span class="saleitem">green</span> are currently on sale
+                and may require further attention.';
+            $msg .= '<br />';
             $msg .= '<br />';
             $msg .= 'Items removed from use' . '<br />';
             $msg .= $unUseData;
