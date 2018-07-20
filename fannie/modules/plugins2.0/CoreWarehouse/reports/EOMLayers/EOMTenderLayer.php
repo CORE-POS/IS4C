@@ -7,8 +7,8 @@ if (!class_exists('FannieAPI')) {
 
 class EOMTenderLayer extends FannieReportPage
 {
-    protected $header = 'EOM Report';
-    protected $title = 'EOM Report';
+    protected $header = 'Tender Report';
+    protected $title = 'Tender Report';
     public $discoverable = false;
     protected $required_fields = array('month', 'year', 'store', 'tender');
     protected $report_headers = array('Date', 'Tender', 'Amount', 'Qty');
@@ -29,6 +29,10 @@ class EOMTenderLayer extends FannieReportPage
         $end = date('Y-m-t', $tstamp);
         $idStart = date('Ym01', $tstamp);
         $idEnd = date('Ymt', $tstamp);
+        if (FormLib::get('date1') && FormLib::get('date2')) {
+            $idStart = date('Ymd', strtotime(FormLib::get('date1')));
+            $idEnd = date('Ymd', strtotime(FormLib::get('date2')));
+        }
         $warehouse = $this->config->get('PLUGIN_SETTINGS');
         $warehouse = $warehouse['WarehouseDatabase'];
         $warehouse .= $this->connection->sep();
@@ -59,6 +63,48 @@ class EOMTenderLayer extends FannieReportPage
         }
 
         return $data;
+    }
+
+    public function calculate_footers($data)
+    {
+        $sums = array(0, 0);
+        foreach ($data as $row) {
+            $sums[0] += $row[2];
+            $sums[1] += $row[3];
+        }
+
+        return array('Total', '', $sums[0], $sums[1]);
+    }
+
+    public function form_content()
+    {
+        $stores = FormLib::storePicker();
+        $tenders = new TendersModel($this->connection);
+        $tOpts = '';
+        foreach ($tenders->find() as $t) {
+            $tOpts .= sprintf('<option value="%s">%s</option>', $t->TenderCode(), $t->TenderName());
+        }
+        $dates = FormLib::standardDateFields();
+        return <<<HTML
+<form method="get">
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label>Store</label>
+            {$stores['html']}
+        </div>
+        <div class="form-group">
+            <label>Tender Type</label>
+            <select name="tender" class="form-control">{$tOpts}</select>
+        </div>
+        <div class="form-group">
+            <input type="hidden" name="year" value="0" />
+            <input type="hidden" name="month" value="0" />
+            <button type="submit" class="btn btn-default">Get Report</button>
+        </div>
+    </div>
+    {$dates}
+</form>
+HTML;
     }
 }
 
