@@ -57,7 +57,9 @@ class ContributionTool extends FannieRESTfulPage
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
             if ($super === false) {
-                $row['name'] = sprintf('<a href="%s&super=%d">%s</a>', $_SERVER['REQUEST_URI'], $row['superID'], $row['name']);
+                $uri = $_SERVER['REQUEST_URI'];
+                $uri .= strpos($uri, '?') ? '&super=' : '?super=';
+                $row['name'] = sprintf('<a href="%s%d">%s</a>', $uri, $row['superID'], $row['name']);
             }
             $ret .= sprintf('<tr><td>%s</td><td>%d</td><td>%.2f</td>
                             <td>%.2f</td><td>%.2f</td>',
@@ -200,7 +202,7 @@ class ContributionTool extends FannieRESTfulPage
         $ret = '<tr><th>Item</th><th>Name</th><th>Current Margin</th><th>% Store Sales</th><th>% Category Sales</th></tr>';
         while ($row = $this->connection->fetchRow($res)) {
             $ret .= sprintf('<tr><td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
-                <td>%s</td><td>%.2f</td><td>%.2f</td><td>%.2f</td>',
+                <td>%s</td><td>%.2f</td><td>%.3f</td><td>%.2f</td>',
                 $row['upc'], $row['upc'],
                 $row['brand'] . ' ' . $row['description'], $row['margin']*100, $row['store']*100,
                 ($dept ? $row['dept'] : $row['super']) * 100
