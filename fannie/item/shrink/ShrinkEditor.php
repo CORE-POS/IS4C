@@ -46,7 +46,7 @@ class ShrinkEditor extends FannieRESTfulPage
         for ($i=0; $i<count($this->id); $i++) {
             $args = array();
             $json = json_decode(base64_decode($this->id[$i]), true);
-            $query = 'UPDATE dtransactions SET '; 
+            $query = 'UPDATE ' . FannieDB::fqn('dtransactions', 'trans') . ' SET '; 
             if (isset($qty[$i])) {
                 $args[] = $qty[$i];
                 $args[] = $qty[$i];
@@ -123,7 +123,7 @@ class ShrinkEditor extends FannieRESTfulPage
                 store_id,
                 charflag,
                 numflag
-            FROM dtransactions
+            FROM ' . FannieDB::fqn('dtransactions', 'trans') . '
             WHERE trans_status=\'Z\'
                 AND trans_type IN (\'I\', \'D\')
                 AND emp_no <> 9999
