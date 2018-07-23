@@ -4,6 +4,30 @@ namespace COREPOS\Fannie\API\jobs;
 use \FannieConfig;
 use \FannieDB;
 
+/**
+ * @class SqlUpdate
+ *
+ * Push a database update into the job queue
+ *
+ * Data format:
+ * {
+ *     'table': 'Name.of.table',
+ *     'set': {
+ *         'columnName': 'columnValue',
+ *         'columnName': 'columnValue',
+ *         ...
+ *     },
+ *     'where': {
+ *         'columnName': 'columnValue',
+ *         'columnName': 'columnValue',
+ *         ...
+ *     }
+ * }
+ *
+ * Table name is required.
+ * One or more name/value pairs is required in 'set'.
+ * One or more name/value pairs is required in 'where'.
+ */
 class SqlUpdate extends Job
 {
     public function run()
@@ -44,6 +68,11 @@ class SqlUpdate extends Job
         foreach ($this->data['where'] as $col => $val) {
             $query .= ' AND ' . $dbc->identifierEscape($col) . '=?,';
             $args[] = $val;
+            if ($col == $val) {
+                echo "Skipping update. This looks dangerous\n";
+                echo "WHERE values {$col} and {$val} appear to be equal\n";
+                return false;
+            }
         }
         $query = substr($query, 0, strlen($query)-1);
 
