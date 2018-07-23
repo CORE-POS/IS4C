@@ -86,7 +86,7 @@ those same items revert to normal pricing.
         $bl_def = $this->connection->tableDefinition('batchList');
         $costChange = '';
         if (isset($batchList['cost'])) {
-            $costChange = ", p.cost = CASE WHEN IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
+            $costChange = ", p.cost = CASE WHEN l.cost IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
         }
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;

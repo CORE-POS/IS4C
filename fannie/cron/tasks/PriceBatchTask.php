@@ -72,7 +72,7 @@ class PriceBatchTask extends FannieTask
         $costChange = '';
         $batchList = $sql->tableDefinition('batchList');
         if (isset($batchList['cost'])) {
-            $costChange = ", p.cost = CASE WHEN IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
+            $costChange = ", p.cost = CASE WHEN l.cost IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
         }
         if (strstr(strtoupper($this->config->get('SERVER_DBMS')), "MYSQL")) {
             $chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
