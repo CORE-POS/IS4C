@@ -21,11 +21,22 @@ echo "Sending statements for " . date('Y-m-d', $endFY) . "\n";
 
 $url = 'http://localhost' . $FANNIE_URL . 'modules/plugins2.0/GiveUsMoneyPlugin/GumEmailPage.php';
 
+$paidP = $dbc->prepare('SELECT checkIssued
+    FROM GumLoanPayoffMap AS m
+        INNER JOIN GumPayoffs AS p ON m.gumPayoffID=p.gumPayoffID
+    WHERE m.gumLoanAccountID=?');
+
 $loans = new GumLoanAccountsModel($dbc);
 // GumLoanAccounts.loanDate < end of fiscal year
 $loans->loanDate(date('Y-m-d 00:00:00', $endFY), '<');
 foreach ($loans->find('loanDate') as $loan) {
     if ($loan->card_no() == 652 || $loan->card_no() == 6780) continue;
+
+    $paid = $dbc->getValue($paidP, array($loan->gumLoanAccountID()));
+    if ($paid) {
+        echo "SKIP " . $loan->gumLoanAccountID() . "\n";
+        continue;
+    }
     echo 'Sending account# ' .$loan->accountNumber() . ' ' .$loan->loanDate() . "\n";
     $qs = '?id=' . $loan->accountNumber() . '&loanstatement=1';
     $ch = curl_init($url . $qs);
