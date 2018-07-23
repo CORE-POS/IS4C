@@ -45,7 +45,12 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             'display_name' => 'Price',
             'default' => 1,
             'required' => true
-        )
+        ),
+        'cost' => array(
+            'display_name' => 'Cost',
+            'default' => 2,
+            'required' => false,
+        ),
     );
 
     private $results = '';
@@ -105,15 +110,19 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         $upcChk = $dbc->prepare("SELECT upc FROM products WHERE upc=?");
 
-        $model = new BatchListModel($dbc);
-        $model->batchID($batchID);
-        $model->pricemethod(0);
-        $model->quantity(0);
-        $model->active(0);
         $insP = $dbc->prepare("INSERT INTO batchList 
             (batchID, pricemethod, quantity, active, upc, salePrice, groupSalePrice)
             VALUES
             (?, 0, 0, 0, ?, ?, ?)");
+        $batchList = $dbc->tableDefinition('batchList');
+        $saveCost = false;
+        if (isset($batchList['cost'])) {
+            $insP = $dbc->prepare("INSERT INTO batchList 
+                (batchID, pricemethod, quantity, active, upc, salePrice, groupSalePrice, cost)
+                VALUES
+                (?, 0, 0, 0, ?, ?, ?, ?)");
+            $saveCost = true;
+        }
 
         $ret = '';
         $allUPCs = array();
@@ -135,6 +144,15 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 continue;
             }
 
+            $cost = 0;
+            if ($indexes['cost'] && isset($line[$indexes['cost']])) {
+                $tmp = trim($line[$indexes['cost']]);
+                $tmp = trim($tmp, '$');
+                if (is_numeric($tmp)) {
+                    $cost = $tmp;
+                }
+            }
+
             $upc = ($ftype=='UPCs') ? BarcodeLib::padUPC($upc) : 'LC'.$upc;
             if ($has_checks && $ftype=='UPCs')
                 $upc = '0'.substr($upc,0,12);
@@ -145,6 +163,9 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             }   
 
             $insArgs = array($batchID, $upc, $price, $price);
+            if ($saveCost) {
+                $insArgs[] = $cost;
+            }
             $dbc->execute($insP, $insArgs);
             $allUPCs[] = $upc;
             /** Worried about speed here. Log many?

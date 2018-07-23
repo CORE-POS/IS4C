@@ -83,6 +83,11 @@ those same items revert to normal pricing.
         $forceLCQ = "";
         // verify limit columns exist
         $p_def = $this->connection->tableDefinition('products');
+        $bl_def = $this->connection->tableDefinition('batchList');
+        $costChange = '';
+        if (isset($batchList['cost'])) {
+            $costChange = ", p.cost = CASE WHEN IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
+        }
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         if ($batchInfoW['discountType'] > 0) { // item is going on sale
@@ -191,6 +196,7 @@ those same items revert to normal pricing.
                     " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.normal_price = l.salePrice,
                     p.modified = now()
+                    {$costChange}
                 WHERE l.upc not like 'LC%'
                     AND l.batchID = ?";
 
@@ -209,13 +215,16 @@ those same items revert to normal pricing.
                     " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.normal_price = b.salePrice,
                     p.modified=now()
+                    {$costChange}
                 WHERE b.upc LIKE 'LC%'
                     AND b.batchID = ?";
 
             if ($this->connection->dbmsName() == 'mssql') {
+                $costChange = str_replace('p.cost', 'cost', $costChange);
                 $forceQ = "UPDATE products
                       SET normal_price = l.salePrice,
                       modified = getdate()
+                      {$costChange}
                       FROM products as p,
                       batches as b,
                       batchList as l
@@ -237,6 +246,7 @@ those same items revert to normal pricing.
 
                 $forceLCQ = "update products set normal_price = b.salePrice,
                     modified=getdate()
+                    {$costChange}
                     from products as p left join
                     upcLike as v on v.upc=p.upc left join
                     batchList as b on b.upc='LC'+convert(varchar,v.likecode)

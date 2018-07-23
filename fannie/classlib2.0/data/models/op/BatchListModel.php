@@ -40,6 +40,7 @@ class BatchListModel extends BasicModel
     'pricemethod' => array('type'=>'SMALLINT','default'=>0),
     'quantity' => array('type'=>'SMALLINT','default'=>0),
     'signMultiplier' => array('type'=>'TINYINT', 'default'=>1),
+    'cost' => array('type'=>'MONEY', 'default'=>0),
     );
 
     protected $unique = array('batchID','upc');
