@@ -38,7 +38,7 @@ class GumPeopleReport extends FannieReportPage
 
     protected $required_fields = array();
     protected $report_headers = array('Mem#', 'First Name', 'Last Name', 'Loan Date', 'Principal', 'Interest Rate', 'Term (Months)', 
-                                    'Maturity Date', 'MaturityAmount', 'C Shares'); 
+                                    'Maturity Date', 'MaturityAmount', 'C Shares', 'Loan Paid Date', 'Check Number'); 
 
     public function preprocess()
     {
@@ -65,7 +65,8 @@ class GumPeopleReport extends FannieReportPage
                     CASE WHEN e.shares IS NULL THEN 0 ELSE e.shares END as shares,
                     CASE WHEN l.principal IS NULL THEN 0
                         ELSE principal * POW(1+interestRate, DATEDIFF(DATE_ADD(loanDate, INTERVAL termInMonths MONTH), loanDate)/365.25)
-                    END as maturityAmount
+                    END as maturityAmount,
+                    l.gumLoanAccountID
                   FROM ' . $FANNIE_OP_DB . $dbc->sep() . 'custdata AS c
                         LEFT JOIN GumLoanAccounts AS l 
                             ON l.card_no=c.CardNo AND c.personNum=1
@@ -75,12 +76,18 @@ class GumPeopleReport extends FannieReportPage
                             GROUP BY card_no
                         ) AS e ON c.cardNo=e.card_no AND c.personNum=1
                   WHERE 
-                    (l.card_no IS NOT NULL AND l.gumLoanAccountID NOT IN (
-                        SELECT gumLoanAccountID FROM GumLoanPayoffMap AS m INNER JOIN GumPayoffs AS p ON m.gumPayoffID=p.gumPayoffID WHERE checkIssued=1
-                    ) AND l.principal > 0)
+                    (l.card_no IS NOT NULL
+                    AND l.principal > 0)
                     OR e.card_no IS NOT NULL
                   ORDER BY l.card_no, l.loanDate';
         $result = $dbc->query($query);
+
+        $payoffP = $dbc->prepare("
+            SELECT p.*
+            FROM GumLoanPayoffMap AS m
+                INNER JOIN GumPayoffs AS p ON m.gumPayoffID=p.gumPayoffID
+            WHERE m.gumLoanAccountID=?
+            ORDER BY m.gumPayoffID DESC");
 
         $data = array();
         while($row = $dbc->fetch_row($result)) {
@@ -96,6 +103,20 @@ class GumPeopleReport extends FannieReportPage
                sprintf('%.2f', $row['maturityAmount']),
                $row['shares'],
             );
+            if ($row['gumLoanAccountID']) {
+                $paid = $dbc->getRow($payoffP, array($row['gumLoanAccountID']));    
+                if ($paid && $paid['checkIssued']) {
+                    list($issue,) = explode(' ', $paid['issueDate'], 2);
+                    $record[] = $issue;
+                    $record[] = $paid['checkNumber'];
+                } else {
+                    $record[] = 'n/a';
+                    $record[] = 'n/a';
+                }
+            } else {
+                $record[] = 'n/a';
+                $record[] = 'n/a';
+            }
             $data[] = $record;
         }
 
@@ -113,7 +134,7 @@ class GumPeopleReport extends FannieReportPage
             $c += $row[9];
         }
 
-        return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', '', sprintf('%.2f', $mat), sprintf('%.2f', $c));
+        return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', '', sprintf('%.2f', $mat), sprintf('%.2f', $c), '', '');
     }
 
     public function form_content()
