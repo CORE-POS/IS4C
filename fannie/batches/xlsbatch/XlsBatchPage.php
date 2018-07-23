@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\jobs\QueueManager;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -49,6 +51,16 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         'cost' => array(
             'display_name' => 'Cost',
             'default' => 2,
+            'required' => false,
+        ),
+        'vendor' => array(
+            'display_name' => 'Vendor',
+            'default' => 3,
+            'required' => false,
+        ),
+        'name' => array(
+            'display_name' => 'Name',
+            'default' => 4,
             'required' => false,
         ),
     );
@@ -124,8 +136,9 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $saveCost = true;
         }
 
+        $queue = new QueueManager();
+
         $ret = '';
-        $allUPCs = array();
         $dbc->startTransaction();
         foreach ($linedata as $line) {
             if (!isset($line[$indexes['upc_lc']])) continue;
@@ -167,13 +180,20 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $insArgs[] = $cost;
             }
             $dbc->execute($insP, $insArgs);
-            $allUPCs[] = $upc;
             /** Worried about speed here. Log many?
             $bu = new BatchUpdateModel($dbc);
             $bu->batchID($batchID);
             $bu->upc($upc);
             $bu->logUpdate($bu::UPDATE_ADDED);
              */
+
+            if ($this->config->COOP_ID == 'WFC_Duluth' && substr($upc, 0, 2) == 'LC' && $indexes['vendor'] && $indexes['name']) {
+                $vendor = isset($line[$indexes['vendor']]) ? trim($line[$indexes['vendor']]) : '';
+                $name = isset($line[$indexes['name']]) ? trim($line[$indexes['name']]) : '';
+                if ($vendor != '' && $name != '') {
+                    $this->queueUpdate($queue, $vendor, $name);
+                }
+            }
         }
         $dbc->commitTransaction();
 
@@ -186,6 +206,35 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $this->results = $ret;
 
         return true;
+    }
+
+    private function queueUpdate($queue, $vendor, $name)
+    {
+        $vID = -1;
+        if ($vendor == 'ALBERTS') {
+            $vID = 28;
+        } elseif ($vendor == 'CPW') {
+            $vID = 25;
+        } elseif ($vendor == 'RDW') {
+            $vID = 136;
+        } elseif ($vendor == 'UNFI') {
+            $vID = 1;
+        } 
+
+        $job = array(
+            'class' => 'COREPOS\\Fannie\\API\\jobs\\SqlUpdate',
+            'data' => array(
+                'table' => 'likeCodes',
+                'set' => array(
+                    'likeCodeDesc' => $name,
+                    'preferredVendorID' => $vID,
+                ),
+                'where' => array(
+                    'likeCode' => substr($upc, 2),
+                ),
+            ),
+        );
+        $queue->add($job);
     }
 
     function results_content()
