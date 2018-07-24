@@ -170,9 +170,14 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         }
 
                         message = GetHttpBody(message);
-                        XmlDocument request = new XmlDocument();
-                        request.LoadXml(message);
-                        keyVal = request.SelectSingleNode("TStream/Transaction/InvoiceNo").InnerXml;
+                        message = message.Trim(new char[]{'"'});
+                        try {
+                            XmlDocument request = new XmlDocument();
+                            request.LoadXml(message);
+                            keyVal = request.SelectSingleNode("TStream/Transaction/InvoiceNo").InnerXml;
+                        } catch (Exception) {
+                            Console.WriteLine("Error parsing from\n" + message);
+                        }
                         // Send EMV messages to EMVX, others
                         // to PDCX
                         if (message.Contains("EMV")) {
@@ -425,7 +430,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
            as so tracking SequenceNo values is not POS'
            problem.
         */
-        xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
         if (IsCanadianDeviceType(this.device_identifier)) {
             // tag name is different in this case;
@@ -528,7 +532,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
         string ret = "";
         try {
-            xml = xml.Trim(new char[]{'"'});
             xml = xml.Replace("{{SequenceNo}}", SequenceNo());
             xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
             xml = xml.Replace("{{ComPort}}", com_port);

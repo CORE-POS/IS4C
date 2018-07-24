@@ -18,7 +18,7 @@ public class MySqlPipe {
 
     public void logValue(string key, string val) {
         var con = this.getConnection();
-        var cmd = new MySqlCommand("INSERT INTO MagellanLog (tdate, entryKey, entry) VALUES (NOW(), @key, @entry)");
+        var cmd = new MySqlCommand("INSERT INTO MagellanLog (tdate, entryKey, entry) VALUES (NOW(), @key, @entry)", con);
         cmd.Parameters.AddWithValue("@key", key);
         cmd.Parameters.AddWithValue("@entry", val);
         cmd.ExecuteNonQuery();

@@ -330,6 +330,7 @@ public class Magellan : DelegateForm
             string pass = (string)o["localPass"]; 
             string dbn = (string)o["tDatabase"]; 
             #if CORE_MYSQL
+            Console.WriteLine("Starting SQL Pipe");
             this.mpipe = new MySqlPipe.MySqlPipe(host, user, pass, dbn);
             #endif
 
