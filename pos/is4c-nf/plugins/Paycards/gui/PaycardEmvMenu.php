@@ -58,6 +58,7 @@ class PaycardEmvMenu extends NoInputCorePage
                 case 'PVEF':
                 case 'PVEC':
                 case 'PVGD':
+                case 'PVWI':
                     $json = $parser->parse('PVDATACAP' . substr($choice, -2));
                     $this->change_page($json['main_frame']);
                     return false;
@@ -70,8 +71,10 @@ class PaycardEmvMenu extends NoInputCorePage
                     $this->menu = array(
                         'EF' => 'Food Sale',
                         'EC' => 'Cash Sale',
+                        'WI' => 'eWIC Sale',
                         'PVEF' => 'Food Balance',
                         'PVEC' => 'Cash Balance',
+                        'PVWI' => 'eWIC Balance',
                     );
                     $this->clearToHome = 0;
                     break;

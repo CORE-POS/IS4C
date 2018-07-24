@@ -48,10 +48,12 @@ class PaycardDatacapParser extends Parser
         'DATACAPDC',
         'DATACAPEF',
         'DATACAPEC',
+        'DATACAPWI',
         'DATACAPGD',
         'PVDATACAPGD',
         'PVDATACAPEF',
         'PVDATACAPEC',
+        'PVDATACAPWI',
         'ACDATACAPGD',
         'AVDATACAPGD',
         'DATACAPRECUR',
@@ -156,6 +158,11 @@ class PaycardDatacapParser extends Parser
                 break;
             case 'PVDATACAPEC':
                 $this->conf->set('CacheCardType', 'EBTCASH');
+                $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvBalance.php';
+                break;
+            case 'PVDATACAPWI':
+                $this->conf->set('CacheCardType', 'EWIC');
                 $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
                 $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
