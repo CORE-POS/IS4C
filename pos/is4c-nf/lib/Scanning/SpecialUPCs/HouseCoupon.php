@@ -563,6 +563,26 @@ class HouseCoupon extends SpecialUPC
                     $value = $infoW['discountValue'];
                 }
                 break;
+            case 'BM': // BOHO - mixed item. Buy one, get a diff one half-off
+                $qualQ = 'SELECT SUM(l.total), SUM(l.quantity) '
+                    . $this->baseSQL($transDB, $coupID, 'upc') . '
+                    AND h.type in ("QUALIFIER")';
+                $qualP = $transDB->prepare($qualQ);
+                $qualW = $transDB->getRow($qualP);
+                $qualValue = $qualW[0];
+                $qualQty = $qualW[1];
+                $valQ = 'SELECT l.total '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')
+                        ORDER BY total ASC LIMIT " . $qualQty;
+                $valP = $transDB->prepare($valQ);
+                $valW = $transDB->execute($valP);
+                $value = 0;
+                while ($row = $transDB->fetchRow($valW)) {
+                    $value += $row['total'];
+                }
+                $value = MiscLib::truncate2($value/2);
+                break;
             case "P": // discount price
                 // query to get the item's department and current value
                 // current value minus the discount price is how much to
