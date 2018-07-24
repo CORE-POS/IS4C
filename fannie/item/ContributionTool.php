@@ -141,7 +141,7 @@ class ContributionTool extends FannieRESTfulPage
         return $ret;
     }
     
-    private function getAllItems($store, $limit, $super)
+    private function getAllItems($store, $limit, $super, $highlight)
     {
         $query = "SELECT superID, super_name AS name, 0 AS dept_no
             FROM MasterSuperDepts
@@ -162,7 +162,7 @@ class ContributionTool extends FannieRESTfulPage
         while ($row = $this->connection->fetchRow($res)) {
             $ret .= sprintf('<tr class="info"><th colspan="5">%s</th></tr>',
                 $row['name']);
-            $ret .= $this->getItems($store, $limit, $row['superID'], $row['dept_no']);
+            $ret .= $this->getItems($store, $limit, $row['superID'], $row['dept_no'], $highlight);
         }
         $ret .= '</table>';
 
@@ -171,7 +171,7 @@ class ContributionTool extends FannieRESTfulPage
 
 
 
-    private function getItems($store, $limit, $super, $dept)
+    private function getItems($store, $limit, $super, $dept, $highlight)
     {
         if (!isset($this->itemP)) {
             $query = "
@@ -201,9 +201,13 @@ class ContributionTool extends FannieRESTfulPage
         $res = $this->connection->execute($this->itemP, $args);
         $ret = '<tr><th>Item</th><th>Name</th><th>Current Margin</th><th>% Store Sales</th><th>% Category Sales</th></tr>';
         while ($row = $this->connection->fetchRow($res)) {
-            $ret .= sprintf('<tr><td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
+            $css = '';
+            if ($row['margin'] > 0 && ($row['margin']*100) < $highlight) {
+                $css = 'class="danger"';
+            }
+            $ret .= sprintf('<tr %s><td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
                 <td>%s</td><td>%.2f</td><td>%.3f</td><td>%.2f</td>',
-                $row['upc'], $row['upc'],
+                $css, $row['upc'], $row['upc'],
                 $row['brand'] . ' ' . $row['description'], $row['margin']*100, $row['store']*100,
                 ($dept ? $row['dept'] : $row['super']) * 100
             );
@@ -217,12 +221,13 @@ class ContributionTool extends FannieRESTfulPage
     {
         $stores = FormLib::storePicker('store', false);
         $items = FormLib::get('items', 50);
-        $vendors = FormLib::get('vendors', 25);
+        $vendors = FormLib::get('vendors', 10);
+        $highlight = FormLib::get('highlight', 0);
         $superDept = FormLib::get('super', false);
         $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
         $bTable = $this->getBasics($store, $superDept);
         $vTable = $this->getAllVendors($store, $vendors, $superDept, 0);
-        $iTable = $this->getAllItems($store, $items, $superDept, 0);
+        $iTable = $this->getAllItems($store, $items, $superDept, $highlight);
         return <<<HTML
 <p><form method="get">
 <div class="container form-inline">
@@ -238,12 +243,16 @@ class ContributionTool extends FannieRESTfulPage
         <span class="input-group-addon">Vendors</span>
         <input name="vendors" class="form-control" value="{$vendors}" />
     </div>
+    <div class="input-group">
+        <span class="input-group-addon">Highlight</span>
+        <input name="highlight" class="form-control" value="{$highlight}" />
+    </div>
     <button type="submit" class="btn btn-default">Submit</button>
 </div>
 </p></form>
 <hr />
 <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#basic" aria-controls="basic" role="tab" data-toggle="tab">Basics</a></li>
+    <li role="presentation" class="active"><a href="#basic" aria-controls="basic" role="tab" data-toggle="tab">Overview</a></li>
     <li role="presentation"><a href="#vendor" aria-controls="vendor" role="tab" data-toggle="tab">Vendors</a></li>
     <li role="presentation"><a href="#item" aria-controls="item" role="tab" data-toggle="tab">Items</a></li>
 </ul>
