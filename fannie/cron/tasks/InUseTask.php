@@ -210,7 +210,7 @@ class InUseTask extends FannieTask
         $runtime = ($end - $start);
         $runtime = $this->convert_unix_time($runtime);
 
-        $to = $this->config->get('SCANCOORD_EMAIL');
+        $to = $this->config->get('FANNIE_ADMIN_EMAIL');
 
         if (class_exists('PHPMailer')) {
             $msg = '
