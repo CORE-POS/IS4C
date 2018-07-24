@@ -159,6 +159,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         echo 'Month: ' . $this->session->month . '<br>';
         if ($this->session->cycleDate) {
             echo "<b>Switch_Cycle</b>: Alternate cycle batches loaded.<br/>";
+            $cycleB = true;
+        } else {
+            $cycleB = false;
         }
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
@@ -178,6 +181,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         echo 'UPC: ' . $upc;
 
         $month = $this->session->month;
+        $mono = new DateTime($month);
+        $mono = $mono->format('m');
         $args = array($upc, $month);
         $prep = $dbc->prepare('
             SELECT
@@ -246,8 +251,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         if (!isset($months[$this->session->month])) {
             $months[$this->session->month] = date('m');
         }
-        $checkMoStart = $year . '-' .$months[$this->session->month] . '-01 00:00:00';
-        $checkMoEnd = $year . '-' .$months[$this->session->month] . '-31 00:00:00';
+        $tmo = $months[$this->session->month] + 1;
+        $checkMoStart = $year . '-' .$tmo . '-01 00:00:00';
+        $checkMoEnd = $year . '-' .$tmo . '-31 00:00:00';
 
         if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
@@ -270,17 +276,21 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $curMonthQ = $dbc->prepare($curMonthQueryStr);
 
             $selMonthA = array($checkMoStart,$checkMoEnd);
-            $selMonthQ = $dbc->prepare('
-                select
+            $cycleStr = ($cycleB === false) ? " AND (batchName LIKE '% A %' 
+                OR batchName LIKE '% TPR %')" : " AND batchName LIKE '% B %' ";
+            $q = "
+                SELECT 
                     batchID,
                     batchName,
                     owner,
                     batchType
-                from is4c_op.batches
-                where startDate between ? and ?
-                    and batchType = 1;
-            ');
-
+                FROM is4c_op.batches
+                WHERE batchName like '%$month%'
+                    AND startDate LIKE '$year%'
+                        $cycleStr
+                    AND batchType = 1;
+            ";
+            $selMonthQ = $dbc->prepare($q);
             $curMonth = date('F');
             if ($curMonth == $this->session->month) {
                 $result = $dbc->execute($curMonthQ);
@@ -299,7 +309,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $prodInBatchR = $dbc->execute($prodInBatchP,$prodInBatchA);
             $foundIn = array();
             while ($row = $dbc->fetchRow($prodInBatchR)) {
-                echo "<br/><span style='color: grey'>Item found in batch ".$row['batchID']."</span>";
+                echo "<br/><span class='alert-success'>Item found in batch ".$row['batchID']."</span>";
                 $foundIn[] = $row['batchID'];
             }
 
