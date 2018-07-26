@@ -16,9 +16,9 @@ class ContributionTool extends FannieRESTfulPage
     {
         $query = "SELECT m.super_name AS name, MAX(m.superID) AS superID,
             SUM(percentageStoreSales) AS percentage,
-            SUM(CASE WHEN p.cost <> 0 THEN 1 ELSE 0 END) as hasCost,
+            SUM(CASE WHEN p.cost <> 0 AND normal_price <> 0 THEN 1 ELSE 0 END) as hasCost,
             SUM(
-                CASE WHEN p.cost=0 THEN 0 
+                CASE WHEN p.cost=0 OR p.normal_price=0 THEN 0 
                 ELSE ((p.normal_price-p.cost)/p.normal_price) * percentageSuperDeptSales 
             END) AS contribution,
             COUNT(q.upc) AS items
@@ -33,9 +33,9 @@ class ContributionTool extends FannieRESTfulPage
         if ($super !== false) {
             $query = "SELECT d.dept_name AS name,
                 SUM(percentageSuperDeptSales) AS percentage,
-                SUM(CASE WHEN p.cost <> 0 THEN 1 ELSE 0 END) as hasCost,
+                SUM(CASE WHEN p.cost <> 0 AND p.normal_price <> 0 THEN 1 ELSE 0 END) as hasCost,
                 SUM(
-                    CASE WHEN p.cost=0 THEN 0 
+                    CASE WHEN p.cost=0 OR p.normal_price=0 THEN 0 
                     ELSE ((p.normal_price-p.cost)/p.normal_price) * percentageDeptSales 
                 END) AS contribution,
                 COUNT(q.upc) AS items
