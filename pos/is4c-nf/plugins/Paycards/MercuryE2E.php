@@ -878,7 +878,7 @@ class MercuryE2E extends BasicCCModule
         return $normalized;
     }
 
-    protected function beginXmlRequest($request, $refNo=false, $recordNo=false)
+    protected function beginXmlRequest($request, $refNo=false, $recordNo=false, $tipped=false)
     {
         $termID = $this->getTermID();
         $separateID = false;
@@ -907,6 +907,9 @@ class MercuryE2E extends BasicCCModule
                 <Purchase>'.$request->formattedAmount().'</Purchase>';
         if ($request->cashback > 0 && ($request->type == "Debit" || $request->type == "EBTCASH")) {
                 $msgXml .= "<CashBack>" . $request->formattedCashBack() . "</CashBack>";
+        }
+        if ($tipped) {
+            $msgXml .= '<Gratuity>Prompt</Gratuity>';
         }
         $msgXml .= "</Amount>";
         if ($request->type == 'Credit' && $request->mode == 'Sale') {

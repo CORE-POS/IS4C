@@ -106,13 +106,24 @@ class PaycardEmvMenu extends NoInputCorePage
         }
         if ($choice === false || $choice === 'CL' || $choice === '') {
             if ($this->conf->get('PaycardsDatacapMode') == 1) {
-                $this->menu = array(
-                    'EMV' => 'EMV Credit/Debit',
-                    'CC' => 'Credit only',
-                    'DC' => 'Debit only',
-                    'EBT' => 'EBT',
-                    'GIFT' => 'Gift',
-                );
+                if ($this->conf->get('PaycardsTipping')) {
+                    $this->menu = array(
+                        'EMV' => 'EMV Credit/Debit',
+                        'EMVTIP' => 'EMV w/ Tipping',
+                        'CC' => 'Credit only',
+                        'DC' => 'Debit only',
+                        'EBT' => 'EBT',
+                        'GIFT' => 'Gift',
+                    );
+                } else {
+                    $this->menu = array(
+                        'EMV' => 'EMV Credit/Debit',
+                        'CC' => 'Credit only',
+                        'DC' => 'Debit only',
+                        'EBT' => 'EBT',
+                        'GIFT' => 'Gift',
+                    );
+                }
             } elseif ($this->conf->get('PaycardsDatacapMode') == 2 || $this->conf->get('PaycardsDatacapMode') == 3) {
                 $this->menu = array(
                     'EMV' => 'EMV Credit/Debit',

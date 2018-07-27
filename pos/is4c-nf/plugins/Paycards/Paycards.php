@@ -225,6 +225,20 @@ messages from POS?',
             'description' => 'Password for use with Mercury gift card processing',
             'default' => '',
         ),
+        'PaycardsTipping' => array(
+            'label' => 'Allow Tipping',
+            'description' => 'Tipping is allowed on chip transactions',
+            'default' => 0,
+            'options' => array(
+                'Yes' => 1,
+                'No' => 0
+                )
+        ),
+        'PaycardsTipDepartment' => array(
+            'label' => 'Tips Department #',
+            'description' => 'Tips are added as an open ring to the specified department',
+            'default' => '',
+        ),
     );
 
     public function plugin_transaction_reset()

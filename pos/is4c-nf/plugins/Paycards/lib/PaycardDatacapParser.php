@@ -43,6 +43,7 @@ class PaycardDatacapParser extends Parser
     private $valid = array(
         'DATACAP',
         'DATACAPEMV',
+        'DATACAPEMVTIP',
         'DATACAPCC',
         'DATACAPCCAUTO',
         'DATACAPDC',
@@ -101,6 +102,10 @@ class PaycardDatacapParser extends Parser
                 break; 
             case 'DATACAPEMV': 
                 $this->conf->set('CacheCardType', 'EMV');
+                $this->conf->set('CacheCardCashBack', 0);
+                break;
+            case 'DATACAPEMVTIP': 
+                $this->conf->set('CacheCardType', 'EMVTIP');
                 $this->conf->set('CacheCardCashBack', 0);
                 break;
             case 'DATACAPCC':

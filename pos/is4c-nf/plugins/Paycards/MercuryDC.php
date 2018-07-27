@@ -35,6 +35,14 @@ class MercuryDC extends MercuryE2E
         $request = new PaycardRequest($this->refnum($this->conf->get('paycard_id')), PaycardLib::paycard_db());
         $request->setProcessor($this->proc_name);
         $tranCode = $amount > 0 ? 'Sale' : 'Return';
+
+        $tipped = false;
+        if ($type == 'EMVTIP') {
+            $tipped = true;
+            $type = 'EMV';
+            $this->conf->set('CachedCardType', 'EMV');
+        }
+
         if ($type == 'EMV') {
             $tranCode = 'EMV' . $tranCode;
         } elseif ($type == 'GIFT') {
@@ -70,7 +78,7 @@ class MercuryDC extends MercuryE2E
         $this->conf->set('LastEmvReqType', 'normal');
 
         // start with fields common to PDCX and EMVX
-        $msgXml = $this->beginXmlRequest($request);
+        $msgXml = $this->beginXmlRequest($request, false, false, $tipped);
         $msgXml .= '<TranCode>' . $tranCode . '</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
             <ComPort>{{ComPort}}</ComPort>';
@@ -82,8 +90,10 @@ class MercuryDC extends MercuryE2E
             <HostOrIP>' . $dcHost . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>
-            <OKAmount>Disallow</OKAmount>
             <PartialAuth>Allow</PartialAuth>';
+            if (!$tipped) {
+                $msgXml .= '<OKAmount>Disallow</OKAmount>';
+            }
             $msgXml .= '
             <Account>
                 <AcctNo>' . ($prompt ? 'Prompt' : 'SecureDevice') . '</AcctNo>
@@ -550,6 +560,13 @@ class MercuryDC extends MercuryE2E
         if ($responseCode == 1) {
             $amt = $xml->query('/RStream/TranResponse/Amount/Authorize');
             $this->handlePartial($amt, $request);
+
+            $tipAmount = $xml->query('/RStream/TranResponse/Amount/Gratuity');
+            if ($tipAmount) {
+                $dept = $this->conf->get('PaycardsTipsDepartment');
+                $deptObj = new COREPOS\pos\lib\DeptLib($this->conf);
+                $deptObj->deptkey($tipAmount*100, $dept . '0');
+            }
         }
 
         $pan = $xml->query('/RStream/TranResponse/AcctNo');
