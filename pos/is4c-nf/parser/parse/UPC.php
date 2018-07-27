@@ -193,7 +193,10 @@ class UPC extends Parser
             $row['description'] = $row['formatted_name'];
         }
 
-        $this->checkInUse($row);
+        $ret = $this->checkInUse($row, $ret);
+        if ($ret['main_frame']) {
+            return $ret;
+        }
 
         /**
           Apply special department handlers
@@ -780,10 +783,11 @@ class UPC extends Parser
         return $row;
     }
 
-    private function checkInUse($row)
+    private function checkInUse($row, $ret)
     {
         /* Implementation of inUse flag
-         *   if the flag is not set, display a warning dialog noting this
+         *   if the flag is not set and it's likely a keyed item
+         *   display a warning dialog noting this
          *   and allowing the sale to be confirmed or canceled
          */
         if ($row["inUse"] == 0) {
@@ -793,7 +797,18 @@ class UPC extends Parser
                 'department' => $row['department'],
                 'charflag' => 'IU',
             ));
+            if (substr($row['upc'], 0, 6) == '000000') {
+                $this->session->set("strEntered",$row["upc"]);
+                $this->session->set("boxMsg", _("Not an active item: ") . $row['description']);
+                $this->session->set('boxMsgButtons', array(
+                    _('Confirm Sale [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
+                $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/boxMsg2.php?quiet=1";
+            }
         }
+
+        return $ret;
     }
 
     private function enforceSaleLimit($dbc, $row, $quantity)
