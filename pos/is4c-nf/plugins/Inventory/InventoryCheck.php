@@ -36,7 +36,7 @@ class InventoryCheck
     private function getInventory($upc)
     {
         $dbc = Database::mDataConnect();
-        if ($dbc === false || !$dbc->isConnect()) {
+        if ($dbc === false || !$dbc->isConnected()) {
             return DisplayLib::boxMsg(
                 _('Inventory unavailable'),
                 'Error',
