@@ -262,7 +262,7 @@ class GumLoanPayoffPage extends FannieRESTfulPage
                         ($this->check_info->checkIssued() ? 'checked disabled' : ''),
                         ($this->check_info->checkIssued() ? $this->check_info->issueDate() : '')
         );
-        $this->addScript('js/loan_payoff.js');
+        $this->addScript('js/loan_payoff.js?date=201807301');
 
         if (file_exists('img/new_letterhead_horizontal.png')) {
             $ret .= '<img src="img/new_letterhead_horizontal.png" style="width: 100%;" />';
