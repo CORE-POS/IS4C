@@ -12,6 +12,65 @@ class ContributionTool extends FannieRESTfulPage
 
     public $description = '[Contribution Tool] explores product data and margin';
 
+    public function preprocess()
+    {
+        $stores = FormLib::storePicker('store', false);
+        $items = FormLib::get('items', 50);
+        $vendors = FormLib::get('vendors', 10);
+        $highlight = FormLib::get('highlight', 0);
+        $superDept = FormLib::get('super', false);
+        $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
+        $store = 1;
+
+        if (FormLib::get('itemExcel')) {
+            $data = $this->getAllItems($store, $items, $superDept, $highlight);
+            $out = array();
+            foreach ($data as $name => $items) {
+                $out[] = array($name);
+                $out[] = array('Item', 'Name', 'Current Margin', '% Store Sales', '% Category Sales');
+                foreach ($items as $row) {
+                    $out[] = array(
+                        $row['upc'],
+                        $row['brand'] . ' ' . $row['description'],
+                        $row['margin'] * 100,
+                        $row['store'] * 100,
+                        ($row['layer'] == 'dept' ? $row['dept'] : $row['super']) * 100,
+                    );
+                }
+            }
+            $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
+            $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($out);
+            header('Content-Type: application/ms-excel');
+            header('Content-Disposition: attachment; filename="contrib-items.' . $ext . '"');
+            echo $ret;
+
+            return false;
+        } elseif (FormLib::get('basicExcel')) {
+            $data = $this->getBasics($store, $superDept);
+            $out = array();
+            $label = $superDept !== false ? 'Category' : 'Store';
+            $out[] = array('Name', '# of Items', '% of Items w/ Costs', '% of ' . $label . ' Sales', 'Expected Margin');
+            foreach ($data as $row) {
+                $out[] = array(
+                    $row['name'],
+                    $row['items'],
+                    ($row['hasCost'] / $row['items']) * 100,
+                    $row['percentage'] * 100,
+                    $row['contribution'] * 100,
+                );
+            }
+            $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
+            $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($out);
+            header('Content-Type: application/ms-excel');
+            header('Content-Disposition: attachment; filename="contrib-basics.' . $ext . '"');
+            echo $ret;
+
+            return false;
+        }
+
+        return parent::preprocess();
+    }
+
     private function getBasics($store, $super)
     {
         $query = "SELECT m.super_name AS name, MAX(m.superID) AS superID,
@@ -50,12 +109,25 @@ class ContributionTool extends FannieRESTfulPage
             $args[] = $super;
         }
 
-        $label = $super !== false ? 'Category' : 'Store';
-        $ret = '<table class="table table-bordered">
-            <tr><th>Name</th><th># of Items</th><th>% of Items w/ Costs</th><th>% of ' . $label . ' Sales</th><th>Expected Margin</th></tr>';
+        $ret = array();
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
+            $ret[] = $row;
+        }
+
+        return $ret;
+    }
+
+    private function basicsHTML($data, $super)
+    {
+        $uri = $_SERVER['REQUEST_URI'];
+        $uri .= strpos($uri, '?') ? '&basicExcel=1' : '?basicExcel=1';
+        $ret = '<p><a href="' . $uri . '">Export to Excel</a></p>';
+        $label = $super !== false ? 'Category' : 'Store';
+        $ret .= '<table class="table table-bordered">
+            <tr><th>Name</th><th># of Items</th><th>% of Items w/ Costs</th><th>% of ' . $label . ' Sales</th><th>Expected Margin</th></tr>';
+        foreach ($data as $row) {
             if ($super === false) {
                 $uri = $_SERVER['REQUEST_URI'];
                 $uri .= strpos($uri, '?') ? '&super=' : '?super=';
@@ -140,6 +212,33 @@ class ContributionTool extends FannieRESTfulPage
 
         return $ret;
     }
+
+    private function allItemsHTML($data)
+    {
+        $uri = $_SERVER['REQUEST_URI'];
+        $uri .= strpos($uri, '?') ? '&itemExcel=1' : '?itemExcel=1';
+        $ret = '<p><a href="' . $uri . '">Export to Excel</a></p>';
+        $ret .= '<table class="table table-bordered">';
+        foreach ($data as $name => $items) {
+            $ret .= sprintf('<tr class="info"><th colspan="5">%s</th></tr>', $name);
+            $ret .= '<tr><th>Item</th><th>Name</th><th>Current Margin</th><th>% Store Sales</th><th>% Category Sales</th></tr>';
+            foreach ($items as $row) {
+                $css = '';
+                if ($row['margin'] > 0 && ($row['margin']*100) < $highlight) {
+                    $css = 'class="danger"';
+                }
+                $ret .= sprintf('<tr %s><td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
+                    <td>%s</td><td>%.2f</td><td>%.3f</td><td>%.2f</td>',
+                    $css, $row['upc'], $row['upc'],
+                    $row['brand'] . ' ' . $row['description'], $row['margin']*100, $row['store']*100,
+                    ($row['layer'] == 'dept' ? $row['dept'] : $row['super']) * 100
+                );
+            }
+        }
+        $ret .= '</table>';
+
+        return $ret;
+    }
     
     private function getAllItems($store, $limit, $super, $highlight)
     {
@@ -158,13 +257,10 @@ class ContributionTool extends FannieRESTfulPage
         }
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
-        $ret = '<table class="table table-bordered">';
+        $ret = array();
         while ($row = $this->connection->fetchRow($res)) {
-            $ret .= sprintf('<tr class="info"><th colspan="5">%s</th></tr>',
-                $row['name']);
-            $ret .= $this->getItems($store, $limit, $row['superID'], $row['dept_no'], $highlight);
+            $ret[$row['name']] = $this->getItems($store, $limit, $row['superID'], $row['dept_no'], $highlight);
         }
-        $ret .= '</table>';
 
         return $ret;
     }
@@ -199,22 +295,13 @@ class ContributionTool extends FannieRESTfulPage
             $args[] = $dept;
         }
         $res = $this->connection->execute($this->itemP, $args);
-        $ret = '<tr><th>Item</th><th>Name</th><th>Current Margin</th><th>% Store Sales</th><th>% Category Sales</th></tr>';
+        $ret = array();
         while ($row = $this->connection->fetchRow($res)) {
-            $css = '';
-            if ($row['margin'] > 0 && ($row['margin']*100) < $highlight) {
-                $css = 'class="danger"';
-            }
-            $ret .= sprintf('<tr %s><td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
-                <td>%s</td><td>%.2f</td><td>%.3f</td><td>%.2f</td>',
-                $css, $row['upc'], $row['upc'],
-                $row['brand'] . ' ' . $row['description'], $row['margin']*100, $row['store']*100,
-                ($dept ? $row['dept'] : $row['super']) * 100
-            );
+            $row['layer'] = $dept ? 'dept' : 'super';
+            $ret[] = $row;
         }
 
         return $ret;
-
     }
 
     protected function get_view()
@@ -225,9 +312,10 @@ class ContributionTool extends FannieRESTfulPage
         $highlight = FormLib::get('highlight', 0);
         $superDept = FormLib::get('super', false);
         $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
-        $bTable = $this->getBasics($store, $superDept);
+        $store = 1;
+        $bTable = $this->basicsHTML($this->getBasics($store, $superDept), $superDept);
         $vTable = $this->getAllVendors($store, $vendors, $superDept, 0);
-        $iTable = $this->getAllItems($store, $items, $superDept, $highlight);
+        $iTable = $this->allItemsHTML($this->getAllItems($store, $items, $superDept, $highlight));
         return <<<HTML
 <p><form method="get">
 <div class="container form-inline">
