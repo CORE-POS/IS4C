@@ -4,7 +4,7 @@ use COREPOS\pos\parser\Parser;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 
-class InventoryCheck
+class InventoryCheck extends Parser
 {
     public function check($str)
     {
@@ -71,7 +71,7 @@ class InventoryCheck
         $inv2 = $inv2 ? $inv2 : 0;
 
         return DisplayLib::boxMsg(
-            _('Current Inventory: ') . ($inv1 + $inv2),
+            _('Current Inventory: ') . ($inv1 - $inv2),
             $upc,
             false,
             DisplayLib::standardClearButton()
