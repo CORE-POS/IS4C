@@ -20,7 +20,6 @@ class ContributionTool extends FannieRESTfulPage
         $highlight = FormLib::get('highlight', 0);
         $superDept = FormLib::get('super', false);
         $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
-        $store = 1;
 
         if (FormLib::get('itemExcel')) {
             $data = $this->getAllItems($store, $items, $superDept, $highlight);
@@ -66,6 +65,12 @@ class ContributionTool extends FannieRESTfulPage
             echo $ret;
 
             return false;
+        } elseif (FormLib::get('all')) {
+            header('Content-Type: application/ms-excel');
+            header('Content-Disposition: attachment; filename="contrib-all.csv"');
+            $this->exportAll($store);
+
+            return false;
         }
 
         return parent::preprocess();
@@ -84,7 +89,9 @@ class ContributionTool extends FannieRESTfulPage
                 p.price_rule_id,
                 t.description AS ruleType,
                 d.margin as deptMargin,
-                a.margin AS vendorMargin
+                a.margin AS vendorMargin,
+                q.percentageStoreSales,
+                q.percentageSuperDeptSales
             FROM " . FannieDB::fqn('productSummaryLastQuarter', 'arch') . " AS q
                 INNER JOIN products AS p ON q.upc=p.upc AND q.storeID=p.store_id
                 INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
@@ -92,13 +99,14 @@ class ContributionTool extends FannieRESTfulPage
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
                 LEFT JOIN PriceRuleTypes AS t ON r.priceRuleTypeID=t.priceRuleTypeID
-                LEFT JOIN vendorItems AS i ON p.upc=v.upc AND p.default_vendor_id=i.vendorID
-                LEFT JOIN vendorDepartments AS a ON i.vendorDept=a.deptID
+                LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID
+                LEFT JOIN vendorDepartments AS a ON i.vendorDept=a.deptID AND i.vendorID=a.vendorID
             WHERE q.storeID=?
                 AND p.cost <> 0
                 AND p.normal_price <> 0";
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array($store));
+        echo "UPC,Brand,Description,Vendor,Category,Department,Price,Cost,Actual Margin,Target Margin,Diff,Rule,% Store Sales,% Category Sales\n";
         while ($row = $this->connection->fetchRow($res)) {
             printf('"%s","%s","%s","%s","%s","%s",%.2f,%.3f,',
                 $row['upc'], $row['brand'], $row['description'], $row['vendorName'],
@@ -113,7 +121,7 @@ class ContributionTool extends FannieRESTfulPage
             if ($row['ruleType']) {
                 $rule = $row['ruleType'];
             }
-            printf('"%s"', $rule);
+            printf('"%s",%.3f,%.3f', $rule, $row['percentageStoreSales']*100, $row['percentageSuperDeptSales']*100);
             echo "\n";
         }
     }
@@ -170,7 +178,7 @@ class ContributionTool extends FannieRESTfulPage
     {
         $uri = $_SERVER['REQUEST_URI'];
         $uri .= strpos($uri, '?') ? '&basicExcel=1' : '?basicExcel=1';
-        $ret = '<p><a href="' . $uri . '">Export to Excel</a></p>';
+        $ret = '<p><a href="' . $uri . '">Export this to Excel</a></p>';
         $label = $super !== false ? 'Category' : 'Store';
         $ret .= '<table class="table table-bordered">
             <tr><th>Name</th><th># of Items</th><th>% of Items w/ Costs</th><th>% of ' . $label . ' Sales</th><th>Expected Margin</th></tr>';
@@ -359,10 +367,10 @@ class ContributionTool extends FannieRESTfulPage
         $highlight = FormLib::get('highlight', 0);
         $superDept = FormLib::get('super', false);
         $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
-        $store = 1;
         $bTable = $this->basicsHTML($this->getBasics($store, $superDept), $superDept);
         $vTable = $this->getAllVendors($store, $vendors, $superDept, 0);
         $iTable = $this->allItemsHTML($this->getAllItems($store, $items, $superDept, $highlight));
+        $allURI = 'ContributionTool.php?all=1&store=' . $store;
         return <<<HTML
 <p><form method="get">
 <div class="container form-inline">
@@ -393,7 +401,10 @@ class ContributionTool extends FannieRESTfulPage
 </ul>
 
 <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="basic">{$bTable}</div>
+    <div role="tabpanel" class="tab-pane active" id="basic">
+        {$bTable}
+        <p><a href="{$allURI}">Export All Items to Excel</a></p>
+    </div>
     <div role="tabpanel" class="tab-pane" id="vendor">{$vTable}</div>
     <div role="tabpanel" class="tab-pane" id="item">{$iTable}</div>
 </div>
