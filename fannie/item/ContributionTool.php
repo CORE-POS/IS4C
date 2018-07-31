@@ -54,6 +54,7 @@ class ContributionTool extends FannieRESTfulPage
                     $row['name'],
                     $row['items'],
                     ($row['hasCost'] / $row['items']) * 100,
+                    $row['promo'] * 100,
                     $row['percentage'] * 100,
                     $row['contribution'] * 100,
                 );
@@ -143,9 +144,14 @@ class ContributionTool extends FannieRESTfulPage
             LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
         WHERE q.storeID=?
         GROUP BY m.super_name";
+        $subQ = "SELECT SUM(total), SUM(saleTotal)
+            FROM " . FannieDB::fqn('productWeeklyLastQuarter', 'arch') . " AS q
+                INNER JOIN products AS p ON q.upc=p.upc AND q.storeID=p.store_id
+                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE q.storeID=? AND m.superID=?";
         $args = array($store);
         if ($super !== false) {
-            $query = "SELECT d.dept_name AS name,
+            $query = "SELECT d.dept_name AS name, MAX(p.department) AS superID,
                 SUM(percentageSuperDeptSales) AS percentage,
                 SUM(CASE WHEN p.cost <> 0 AND p.normal_price <> 0 THEN 1 ELSE 0 END) as hasCost,
                 SUM(
@@ -161,13 +167,20 @@ class ContributionTool extends FannieRESTfulPage
             WHERE q.storeID=?
                 AND m.superID=?
             GROUP BY d.dept_name";
+            $subQ = "SELECT SUM(total), SUM(saleTotal)
+                FROM " . FannieDB::fqn('productWeeklyLastQuarter', 'arch') . " AS q
+                    INNER JOIN products AS p ON q.upc=p.upc AND q.storeID=p.store_id
+                WHERE q.storeID=? AND p.department=?";
             $args[] = $super;
         }
 
         $ret = array();
+        $subP = $this->connection->prepare($subQ);
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
+            $sales = $this->connection->getRow($subQ, array($store, $row['superID']));
+            $row['promo'] = $sales[1] / $sales[0];
             $ret[] = $row;
         }
 
@@ -181,7 +194,7 @@ class ContributionTool extends FannieRESTfulPage
         $ret = '<p><a href="' . $uri . '">Export this to Excel</a></p>';
         $label = $super !== false ? 'Category' : 'Store';
         $ret .= '<table class="table table-bordered">
-            <tr><th>Name</th><th># of Items</th><th>% of Items w/ Costs</th><th>% of ' . $label . ' Sales</th><th>Expected Margin</th></tr>';
+            <tr><th>Name</th><th># of Items</th><th>% of Items w/ Costs</th><th>% of Promo Sales</th><th>% of ' . $label . ' Sales</th><th>Expected Margin</th></tr>';
         foreach ($data as $row) {
             if ($super === false) {
                 $uri = $_SERVER['REQUEST_URI'];
@@ -189,9 +202,10 @@ class ContributionTool extends FannieRESTfulPage
                 $row['name'] = sprintf('<a href="%s%d">%s</a>', $uri, $row['superID'], $row['name']);
             }
             $ret .= sprintf('<tr><td>%s</td><td>%d</td><td>%.2f</td>
-                            <td>%.2f</td><td>%.2f</td>',
+                            <td>%.2f</td><td>%.2f</td><td>%.2f</td>',
                             $row['name'], $row['items'],
                             ($row['hasCost'] / $row['items']) * 100,
+                            $row['promo'] * 100,
                             $row['percentage']*100, $row['contribution']*100
             );
         }
