@@ -38,6 +38,7 @@ class CoopDealsItemsModel extends BasicModel
     'multiplier' => array('type'=>'INT', 'default'=>1),
     'promoDiscount' => array('type'=>'VARCHAR(10)'),
     'skuMatch' => array('type'=>'TINYINT', 'default'=>0),
+    'cost' => array('type'=>'MONEY'),
     );
 
     public function doc()

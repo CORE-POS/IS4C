@@ -63,6 +63,10 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             'display_name' => 'Promo Discount',
             'default' => 18,
         ),
+        'cost' => array(
+            'display_name' => 'Promo Cost',
+            'default' => 25,
+        ),
     );
 
     private function setupTables($dbc)
@@ -88,9 +92,9 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         );
         $insP = $dbc->prepare('
             INSERT INTO CoopDealsItems 
-                (dealSet, upc, price, abtpr, multiplier, promoDiscount, skuMatch)
+                (dealSet, upc, price, abtpr, multiplier, promoDiscount, skuMatch, cost)
             VALUES
-                (?, ?, ?, ?, ?, ?, ?)');
+                (?, ?, ?, ?, ?, ?, ?, ?)');
 
         return array($upcP, $skuP, $insP);
     }
@@ -156,6 +160,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
         $col_max = max($indexes);
+        $dbc->startTransaction();
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
             if (count($data) < $col_max) continue;
@@ -184,17 +189,22 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             $price = trim($data[$indexes['price']],"\$");
+            $cost = 0;
+            if ($indexes['cost'] && isset($data[$indexes['cost']])) {
+                $cost = trim($data[$indexes['cost']],"\$");
+            }
             $promo = $data[$indexes['promoDiscount']];
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo,$isSKU));
+                $dbc->execute($insP,array($month,$upc,$price,$type,$mult,$promo,$isSKU,$cost));
             }
             $linked = $this->checkScaleItem($dbc, $upc);
             if ($linked) {
                 foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
-                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult,$promo,$isSKU));
+                    $dbc->execute($insP,array($month,$linked,$price,$type,$mult,$promo,$isSKU,$cost));
                 }
             }
         }
+        $dbc->commitTransaction();
 
         return true;
     }
