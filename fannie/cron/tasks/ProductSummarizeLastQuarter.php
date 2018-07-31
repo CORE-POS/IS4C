@@ -82,11 +82,11 @@ last thirteen weeks';
         $addP = $dbc->prepare('INSERT INTO productWeeklyLastQuarter 
                             (upc, weekLastQuarterID, quantity, total,
                             percentageStoreSales, percentageSuperDeptSales,
-                            percentageDeptSales, storeID)
+                            percentageDeptSales, storeID, saleQuantity, saleTotal)
                             VALUES
                             (?,   ?,                 ?,        ?,
                             ?,                    ?,
-                            ?,                   ?)');
+                            ?,                   ?,       ?,            ?)');
         $products = $FANNIE_OP_DB . $dbc->sep() . 'products';
         $supers = $FANNIE_OP_DB . $dbc->sep() . 'MasterSuperDepts';
         $dbc->query('TRUNCATE TABLE productWeeklyLastQuarter');
@@ -100,6 +100,12 @@ last thirteen weeks';
             $dlog = DTransactionsModel::selectDlog(date('Y-m-d', $limits[0]), date('Y-m-d', $limits[1]));
             $dataP = $dbc->prepare("SELECT d.upc, SUM(total) as ttl, "
                                 . DTrans::sumQuantity('d') . " as qty,
+                                SUM(CASE WHEN d.discounttype > 0 THEN total ELSE 0 END) AS saleTTL,
+                                SUM(CASE WHEN d.discounttype = 0 THEN 0
+                                    WHEN d.trans_status='M' THEN 0
+                                    WHEN d.trans_subtype='OG' THEN 0
+                                    WHEN d.unitPrice=0.01 THEN 1
+                                    ELSE d.quantity END) AS saleQty,
                                 d.store_id,
                                 MAX(p.department) as dept, MAX(s.superID) as superDept
                                 FROM $dlog AS d 
@@ -121,6 +127,8 @@ last thirteen weeks';
                     'qty' => $row['qty'],
                     'dept' => $row['dept'],
                     'super' => $row['superDept'],
+                    'saleTTL' => $row['saleTTL'],
+                    'saleQty' => $row['saleQty'],
                 );
 
                 if (!isset($store_sales[$row['store_id']])) {
@@ -158,6 +166,8 @@ last thirteen weeks';
                     $s_ttl == 0 ? 0.0 : $info['ttl'] / $s_ttl,
                     $d_ttl == 0 ? 0.0 : $info['ttl'] / $d_ttl,
                     $storeID,
+                    $info['saleQty'],
+                    $info['saleTTL'],
                 );
                 $dbc->execute($addP, $args);
             }
