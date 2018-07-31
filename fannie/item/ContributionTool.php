@@ -68,7 +68,7 @@ class ContributionTool extends FannieRESTfulPage
             return false;
         } elseif (FormLib::get('all')) {
             header('Content-Type: application/ms-excel');
-            header('Content-Disposition: attachment; filename="contrib-all.csv"');
+            header('Content-Disposition: attachment; filename="contrib-all-' . $store . '.csv"');
             $this->exportAll($store);
 
             return false;
@@ -79,6 +79,16 @@ class ContributionTool extends FannieRESTfulPage
 
     private function exportAll($store)
     {
+        $promoP = $this->connection->prepare('
+            SELECT q.upc, SUM(total), SUM(saleTotal)
+            FROM ' . FannieDB::fqn('productWeeklyLastQuarter', 'arch') . ' as q
+            WHERE storeID=?
+            GROUP BY upc');
+        $promoR = $this->connection->execute($promoP, array($store));
+        $promos = array();
+        while ($row = $this->connection->fetchRow($promoR)) {
+            $promos[$row['upc']] = ($row[2] / $row[1]) * 100;
+        }
         $query = "SELECT q.upc,
                 p.brand,
                 p.description,
@@ -107,7 +117,7 @@ class ContributionTool extends FannieRESTfulPage
                 AND p.normal_price <> 0";
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array($store));
-        echo "UPC,Brand,Description,Vendor,Category,Department,Price,Cost,Actual Margin,Target Margin,Diff,Rule,% Store Sales,% Category Sales\n";
+        echo "UPC,Brand,Description,Vendor,Category,Department,Price,Cost,Actual Margin,Target Margin,Diff,Rule,% Store Sales,% Category Sales,% Promo Sales\n";
         while ($row = $this->connection->fetchRow($res)) {
             printf('"%s","%s","%s","%s","%s","%s",%.2f,%.3f,',
                 $row['upc'], $row['brand'], $row['description'], $row['vendorName'],
@@ -122,7 +132,8 @@ class ContributionTool extends FannieRESTfulPage
             if ($row['ruleType']) {
                 $rule = $row['ruleType'];
             }
-            printf('"%s",%.3f,%.3f', $rule, $row['percentageStoreSales']*100, $row['percentageSuperDeptSales']*100);
+            printf('"%s",%.3f,%.3f,%.2f',
+                $rule, $row['percentageStoreSales']*100, $row['percentageSuperDeptSales']*100, $promos[$row['upc']]);
             echo "\n";
         }
     }
