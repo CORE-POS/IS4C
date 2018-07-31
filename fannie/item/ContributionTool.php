@@ -71,6 +71,53 @@ class ContributionTool extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    private function exportAll($store)
+    {
+        $query = "SELECT q.upc,
+                p.brand,
+                p.description,
+                COALESCE(v.vendorName, 'Unknown') AS vendorName,
+                p.cost,
+                p.normal_price,
+                m.super_name,
+                d.dept_name,
+                p.price_rule_id,
+                t.description AS ruleType,
+                d.margin as deptMargin,
+                a.margin AS vendorMargin
+            FROM " . FannieDB::fqn('productSummaryLastQuarter', 'arch') . " AS q
+                INNER JOIN products AS p ON q.upc=p.upc AND q.storeID=p.store_id
+                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                INNER JOIN departments AS d ON p.department=d.dept_no
+                LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
+                LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
+                LEFT JOIN PriceRuleTypes AS t ON r.priceRuleTypeID=t.priceRuleTypeID
+                LEFT JOIN vendorItems AS i ON p.upc=v.upc AND p.default_vendor_id=i.vendorID
+                LEFT JOIN vendorDepartments AS a ON i.vendorDept=a.deptID
+            WHERE q.storeID=?
+                AND p.cost <> 0
+                AND p.normal_price <> 0";
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, array($store));
+        while ($row = $this->connection->fetchRow($res)) {
+            printf('"%s","%s","%s","%s","%s","%s",%.2f,%.3f,',
+                $row['upc'], $row['brand'], $row['description'], $row['vendorName'],
+                $row['super_name'], $row['dept_name'], $row['normal_price'], $row['cost']);
+            $target = $row['vendorMargin'] ? $row['vendorMargin'] : $row['deptMargin'];
+            $actual = ($row['normal_price'] - $row['cost']) / $row['normal_price'];
+            printf('%.2f,%.2f,%.2f,', $actual*100, $target*100, ($actual-$target)*100);
+            $rule = 'n/a';
+            if ($row['price_rule_id']) {
+                $rule = 'Variable';
+            }
+            if ($row['ruleType']) {
+                $rule = $row['ruleType'];
+            }
+            printf('"%s"', $rule);
+            echo "\n";
+        }
+    }
+
     private function getBasics($store, $super)
     {
         $query = "SELECT m.super_name AS name, MAX(m.superID) AS superID,
