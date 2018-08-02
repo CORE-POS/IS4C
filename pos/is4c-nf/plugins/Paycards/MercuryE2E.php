@@ -345,6 +345,13 @@ class MercuryE2E extends BasicCCModule
                                            <p>\"rp\" to print
                                            <br>[enter] to continue</font>"
                 );
+                if ($bal == 'WIC') {
+                    $this->conf->set("boxMsg","<b>Success</b><font size=-1>
+                                               <p>" . nl2br($this->conf->get('EWicBalanceReceipt')) . "</p>
+                                               <p>\"rp\" to print
+                                               <br>[enter] to continue</font>"
+                    );
+                }
                 break;
             case PaycardLib::PAYCARD_MODE_AUTH:
                 // cast to string. tender function expects string input

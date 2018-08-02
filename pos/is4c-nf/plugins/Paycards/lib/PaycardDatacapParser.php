@@ -145,6 +145,10 @@ class PaycardDatacapParser extends Parser
                 }
                 $this->conf->set('CacheCardType', 'EBTCASH');
                 break;
+            case 'DATACAPWI':
+                $this->conf->set('CacheCardType', 'EWIC');
+                $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvWic.php';
+                break;
             case 'DATACAPGD':
                 $this->conf->set('CacheCardType', 'GIFT');
                 $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);

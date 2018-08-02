@@ -619,27 +619,27 @@ class MercuryDC extends MercuryE2E
     public function handleResponseDataCapBalance($xml)
     {
         $better = new BetterXmlData($xml);
-        $xml = new XmlData($xml);
-        $responseCode = $xml->get("CMDSTATUS");
+        $responseCode = $better->query('/RStream/CmdResponse/CmdStatus');
         $validResponse = -3;
         if ($responseCode) {
             $responseCode = $this->responseToNumber($responseCode);
         }
 
-        $balance = $xml->get_first('BALANCE');
+        $balance = $better->query('/RStream/TranResponse/Amount/Balance');
         $cardType = $better->query('/RStream/TranResponse/CardType');
         if ($cardType == 'EWIC') {
             $wicBal = $this->eWicBalanceToArray($better);
             $receipt = $this->eWicBalanceToString($wicBal);
             $this->conf->set('EWicBalance', $wicBal);
             $this->conf->set('EWicBalanceReceipt', $receipt);
+            $balance = 'WIC';
             $last4 = $better->query('/RStream/TranResponse/AcctNo');
             if ($last4) {
                 $this->conf->set('EWicLast4', substr($last4, -4));
             }
         }
 
-        switch (strtoupper($xml->get_first("CMDSTATUS"))) {
+        switch (strtoupper($better->query("/RStream/CmdResponse/CmdStatus"))) {
             case 'APPROVED':
                 $this->conf->set('DatacapBalanceCheck', $balance);
                 return PaycardLib::PAYCARD_ERR_OK;
@@ -647,7 +647,7 @@ class MercuryDC extends MercuryE2E
                 // intentional fallthrough
             case 'ERROR':
                 $this->conf->set("boxMsg","");
-                $texts = $xml->get_first("TEXTRESPONSE");
+                $texts = $better->query("/RStream/CmdResponse/TextResponse");
                 $this->conf->set("boxMsg","Error: $texts");
                 TransRecord::addcomment("");
                 break;
@@ -681,12 +681,12 @@ class MercuryDC extends MercuryE2E
         );
 
         while (true) {
-            $cat = $better->query('/RStream/TranResponse/ProductData/ProductCat' . $i);
+            $cat = $xml->query('/RStream/TranResponse/ProductData/ProductCat' . $i);
             if ($cat === false) {
                 break; // end of data
             }
-            $subcat = $better->query('/RStream/TranResponse/ProductData/ProductSubCat' . $i);
-            $qty = $better->query('/RStream/TranResponse/ProductData/ProductQty' . $i);
+            $subcat = $xml->query('/RStream/TranResponse/ProductData/ProductSubCat' . $i);
+            $qty = $xml->query('/RStream/TranResponse/ProductData/ProductQty' . $i);
 
             if (!isset($cache['cat'][$cat])) {
                 $row = $dbc->getRow($catP, array($cat));
@@ -718,14 +718,15 @@ class MercuryDC extends MercuryE2E
      */
     private function eWicBalanceToString($data)
     {
+        $ret = "";
         foreach ($data as $row) {
 
-            if ($row['subcat']['qtyMethod']) { 
+            if (isset($row['subcat']) && $row['subcat']['qtyMethod']) { 
                 $ret .= '$';
             }
-            $ret .= sprintf('%.2f', $row['qty']);
-            $ret = str_pad($ret, ' ', 8, STR_PAD_RIGHT);
-            if ($row['subcat']) {
+            $qty = sprintf('%.2f', $row['qty']);
+            $ret .= str_pad($qty, 8, ' ', STR_PAD_RIGHT);
+            if (isset($row['subcat']) && $row['subcat']) {
 
                 $ret .= $row['cat']['name'] . ' ' . $row['subcat']['name'] . ' ';
             } else {

@@ -32,16 +32,17 @@ class PaycardEmvWic extends PaycardProcessPage
     function preprocess()
     {
         if (FormLib::get('xml-resp', false) !== false) {
-            if ($this->conf->get('EWicStep') == 1) {
+            $xml = FormLib::get('xml-resp');
+            if ($this->conf->get('EWicStep') == 0) {
                 $e2e = new MercuryDC();
                 $this->conf->set('EWicLast4', false);
                 $success = $e2e->handleResponseDataCapBalance($xml);
                 if ($success === PaycardLib::PAYCARD_ERR_OK) {
-                    $this->conf->set('EWicStep', 2);
+                    $this->conf->set('EWicStep', 1);
                     $this->addOnloadCommand('balanceSubmit();');
                 } else {
-                    $this->conf->cleanup();
-                    $this->changePage(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
+                    $this->cleanup();
+                    $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
                     return false;
                 }
             } else {
@@ -49,16 +50,16 @@ class PaycardEmvWic extends PaycardProcessPage
                 $success = $e2e->handleResponseDataCap($xml);
                 if ($success === PaycardLib::PAYCARD_ERR_OK) {
                     $this->tenderResponse($xml);
-                    $this->conf->cleanup();
-                    $this->changePage(MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=TO&repeat=1');
+                    $this->cleanup();
+                    $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=TO&repeat=1');
                 } else {
-                    $this->conf->cleanup();
-                    $this->changePage(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
+                    $this->cleanup();
+                    $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
                     return false;
                 }
             }
         } else {
-            $this->conf->cleanup();
+            $this->cleanup();
             $this->addOnloadCommand('balanceSubmit();');
         }
 

@@ -55,6 +55,10 @@ class PaycardEmvMenu extends NoInputCorePage
                     $json = $parser->parse('DATACAP' . $choice);
                     $this->change_page($json['main_frame']);
                     return false;
+                case 'WI':
+                    $json = $parser->parse('DATACAPWI');
+                    $this->change_page($json['main_frame']);
+                    return false;
                 case 'PVEF':
                 case 'PVEC':
                 case 'PVGD':
