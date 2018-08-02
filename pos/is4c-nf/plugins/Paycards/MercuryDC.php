@@ -510,6 +510,21 @@ class MercuryDC extends MercuryE2E
             $issuer = 'EBT';
             $this->conf->set('EbtCaBalance', $respBalance);
             $ebtbalance = $respBalance;
+        } elseif ($issuer == 'EWIC') {
+            $wicBal = $this->eWicBalanceToArray($better);
+            $receipt = $this->eWicBalanceToString($wicBal);
+            $this->conf->set('EWicBalance', $wicBal);
+            $this->conf->set('EWicBalanceReceipt', $receipt);
+            $wicExpires = $xml->query('/RStream/TranResponse/EarliestBenefitExpDate');
+            $wicExpires = substr($wicExpires, 0, 2) . '/' . substr($wicExpires, 2, 2) . '/' . substr($wicExpires, -4);
+            $receipt .= "\n\nBenefits expire on {$wicExpires}\n";
+            $balance = 'WIC';
+            $printP = $dbc->prepare('
+                INSERT INTO EmvReceipt
+                    (dateID, tdate, empNo, registerNo, transNo, transID, content)
+                VALUES 
+                    (?, ?, ?, ?, ?, ?, ?)');
+            $dbc->execute($printP, array(date('Ymd'), date('Y-m-d H:i:s'), $this->conf->get('CashierNo'), $this->conf->get('laneno'), $this->conf->get('transno'), $transID, $receipt));
         } elseif ($xml->query('/RStream/TranResponse/TranType') == 'PrePaid' && $respBalance !== false) {
             $issuer = 'NCG';
             $ebtbalance = $respBalance;
