@@ -352,6 +352,23 @@ var batchEdit = (function ($) {
         noteToken = setTimeout(function() { mod.saveNotes(batchID); }, 2000);
     }
 
+    mod.logBatch = function(batchID) {
+        var c = confirm('Add batch no. ' + batchID + ' to Price Change Log?');
+        if (c == true) {
+            $.ajax({
+                type: 'get',
+                url: '../../item/ProdReviewPage.php',
+                data: 'bid='+batchID+'&batchLog=2&add=1'
+            }).done(function(resp) {
+                if (resp.error) {
+                    inputAreaAlert('danger', resp.error);
+                } else {
+                    inputAreaAlert('success', 'Batch no. ' + batchID + ' logged');
+                }
+            });
+        }
+    }
+
     return mod;
 
 }(jQuery));

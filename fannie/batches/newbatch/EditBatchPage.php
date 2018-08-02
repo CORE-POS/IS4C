@@ -868,6 +868,10 @@ HTML;
         $dbc = $this->connection;
         $uid = getUID($this->current_user);
         $uid = ltrim($uid,'0');
+        $authorized = false;
+        if (FannieAuth::validateUserQuiet('admin')) {
+            $authorized = true;
+        }
 
         $orderby = '';
         switch($order) {
@@ -1065,7 +1069,7 @@ HTML;
         $ret .= "<a href=\"\" onclick=\"batchEdit.cutAll($id,$uid); return false;\">Cut All</a> ";
 
         if ($dtype <= 0) {
-            $ret .= " <a href=\"\" class=\"{$noprices}\" onclick=\"batchEdit.trimPcBatch($id); return false;\">Trim Unchanged</a> ";
+            $ret .= " | <a href=\"\" class=\"{$noprices}\" onclick=\"batchEdit.trimPcBatch($id); return false;\">Trim Unchanged</a> ";
         } else {
             $ret .= " | <span id=\"edit-limit-link\"><a href=\"\"
                 onclick=\"batchEdit.editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
@@ -1074,6 +1078,10 @@ HTML;
         }
         $ret .= " | <a data-toggle='modal' data-target='#myModal'>Batch History</a>";
         $ret .= '</span>';
+        if ($authorized === true && $type == 4) {
+            $ret .= " | <a href='' onclick='batchEdit.logBatch($id); return false;'>
+                <span class='btn-info'>Admin</span>: Stage Price Change</a>";
+        }
 
         /**
           Insert extra fields to manage partial day batch
