@@ -388,7 +388,7 @@ class MercuryDC extends MercuryE2E
         if ($type == 'GIFT') {
             $msgXml .= '<IpPort>9100</IpPort>';
             $msgXml .= '<IpAddress>' . $this->giftServerIP() . '</IpAddress>';
-        } elseif ($type == 'EWIC') {
+        } elseif ($type == 'EWIC' || $type == 'EWICVAL') {
             $msgXml .= '<EWICBins>' . $this->conf->get('EWICBins') . '</EWICBins>';
         }
         $msgXml .= '</Transaction></TStream>';

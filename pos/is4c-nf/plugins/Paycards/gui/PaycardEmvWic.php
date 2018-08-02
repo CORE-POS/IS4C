@@ -22,7 +22,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use COREPOS\pos\plugins\Paycards\xml\XmlData;
+use COREPOS\pos\plugins\Paycards\xml\BetterXmlData;
 if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardEmvWic extends PaycardProcessPage 
@@ -39,7 +39,7 @@ class PaycardEmvWic extends PaycardProcessPage
                 $success = $e2e->handleResponseDataCapBalance($xml);
                 if ($success === PaycardLib::PAYCARD_ERR_OK) {
                     $this->conf->set('EWicStep', 1);
-                    $this->addOnloadCommand('balanceSubmit();');
+                    $this->addOnloadCommand('emvSubmit();');
                 } else {
                     $this->cleanup();
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
@@ -84,7 +84,7 @@ class PaycardEmvWic extends PaycardProcessPage
         $setTotal = $dbc->prepare("UPDATE localtemptrans SET total=unitPrice*quantity WHERE upc=?");
         $translateP = $dbc->prepare("SELECT * FROM " . $this->conf->get('pDatabase') . $dbc->sep() . "EWicItems WHERE upcCheck=?");
         $aliasP = $dbc->prepare("SELECT * FROM " . $this->conf->get('pDatabase') . $dbc->sep() . "EWicItems WHERE alias=?");
-        $xml = new BetterXml($xml);
+        $better = new BetterXmlData($xml);
         $i = 1;
         while (true) {
             $status = $better->query('/RStream/TranResponse/ItemData/ItemStatus' . $i);
@@ -137,9 +137,9 @@ class PaycardEmvWic extends PaycardProcessPage
         $ret = '';
         $categories = array('cat'=>array(), 'sub'=>array());
         foreach ($arr as $balanceRecord) {
-            $categories['cat'][$balanceRecord['cat']] = true;
+            $categories['cat'][$balanceRecord['cat']['eWicCategoryID']] = true;
             if ($balanceRecord['subcat']) {
-                $categories['sub'][$balanceRecord['subcat']] = true;
+                $categories['sub'][$balanceRecord['subcat']['eWicSubCategoryID']] = true;
             }
         }
 
@@ -151,6 +151,7 @@ class PaycardEmvWic extends PaycardProcessPage
             GROUP BY
             e.upc, e.upcCheck, e.alias, e.eWicCategoryID, e.eWicSubCategoryID');
         $i = 1;
+        $total = 0;
         while ($row = $dbc->fetchRow($res)) {
             $upc = $row['alias'] ? $row['alias'] : $row['upcCheck'];
             $add = false;
@@ -167,8 +168,10 @@ class PaycardEmvWic extends PaycardProcessPage
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['qty']) . "</ItemQty{$i}>";
                 $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', $row['ttl']) . "</ItemPrice{$i}>";
                 $i++;
+                $total += $row['ttl'];
             }
         }
+        $this->conf->set('paycard_amount', $total);
 
         return $ret;
     }
@@ -179,20 +182,21 @@ class PaycardEmvWic extends PaycardProcessPage
         echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
         echo '<script type="text/javascript" src="../js/emv.js?date=20180308"></script>';
         $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
+        $manual = FormLib::get('manual') ? true : false;
         ?>
 <script type="text/javascript">
 function balanceSubmit() {
     emv.setWaitingMsg('Getting balance');
     emv.showProcessing('div.baseHeight');
-    var xmlData = '<?php echo json_encode($e2e->prepareDataCapBalance('EWICVAL')); ?>';
+    var xmlData = '<?php echo json_encode($e2e->prepareDataCapBalance('EWICVAL', $manual)); ?>';
     emv.submit(xmlData);
     $(document).keyup(checkForCancel);
 }
 function emvSubmit() {
     emv.setWaitingMsg('Authorizing purchase');
     emv.showProcessing('div.baseHeight');
-    // POST XML request to driver using AJAX
     var xmlData = '<?php echo json_encode($e2e->prepareDataCapWic($this->getItemData($this->conf->get('EWicBalance')), 'Sale', $this->conf->get('EWicLast4'))); ?>';
+    // POST XML request to driver using AJAX
     if (xmlData == '"Error"') { // failed to save request info in database
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
         return false;
