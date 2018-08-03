@@ -16,7 +16,7 @@ class InventoryCheck extends Parser
         $ret = $this->default_json();
         $dbc = Database::tDataConnect();
         $getP = $dbc->prepare('SELECT upc, trans_type FROM localtemptrans WHERE trans_id=?');
-        $cur = $dbc->getRow($getP, $this->session->get('LastID'));
+        $cur = $dbc->getRow($getP, $this->session->get('currentid'));
         if (!is_array($cur) || $cur['trans_type'] != 'I') {
             $ret['output'] = DisplayLib::boxMsg(
                 _('Not an item'),
