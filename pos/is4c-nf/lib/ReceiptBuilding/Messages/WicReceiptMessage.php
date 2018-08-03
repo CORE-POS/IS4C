@@ -17,6 +17,7 @@ class WicReceiptMessage extends ReceiptMessage
         $date = date('Ymd');
         list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
 
+        $dbc = Database::tDataConnect();
         $emvP = $dbc->prepare('
             SELECT content
             FROM EmvReceipt
