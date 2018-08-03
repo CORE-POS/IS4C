@@ -151,6 +151,9 @@ class EditBatchPage extends FannieRESTfulPage
         $batch = new BatchesModel($dbc);
         $batch->batchID($id);
         $batch->load();
+        if ($batch->discountType() <= 0) {
+            return false;
+        }
         $overlapP = $dbc->prepare('
             SELECT b.batchName,
                 b.startDate,
@@ -168,15 +171,17 @@ class EditBatchPage extends FannieRESTfulPage
         $args = array(
             $id,
             $upc,
-            date('Y-m-d', strtotime($batch->startDate())),
-            date('Y-m-d', strtotime($batch->endDate())),
         );
+        $stamp = strtotime($batch->startDate());
+        $args[] = $stamp ? date('Y-m-d', $stamp) : '1900-01-01';
+        $stamp = strtotime($batch->endDate());
+        $args[] = $stamp ? date('Y-m-d', $stamp) : '1900-01-01';
         $overlapR = $dbc->execute($overlapP, $args);
-        if ($batch->discountType() > 0 && $dbc->numRows($overlapR) > 0) {
+        if ($dbc->numRows($overlapR) > 0) {
             return $dbc->fetchRow($overlapR);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     protected function post_id_addUPC_handler()
