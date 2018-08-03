@@ -33,7 +33,7 @@ class EqRecurTask extends FannieTask
         $dbc = FannieDB::get(FannieConfig::config('TRANS_DB'));
         $payments = $this->getTransactions($dbc);
         $EMP_NO = 1001;
-        $ptransP = $dbc->prepare("INSERT INTO PaycardTransactions (dateID, empNo, registerNo, transNo, transID,
+        $ptransP = $dbc->prepare("INSERT INTO " . FannieDB::fqn('PaycardTransactions', 'trans') . " (dateID, empNo, registerNo, transNo, transID,
             previousPaycardTransactionID, processor, refNum, live, cardType, transType, amount, PAN, issuer,
             name, manual, requestDatetime, responseDatetime, seconds, commErr, httpCode, validResponse,
             xResultCode, xApprovalNumber, xResponseCode, xResultMessage, xTransactionID, xBalance, xToken,
@@ -278,7 +278,7 @@ XML;
         $dtrans['regPrice'] = $amt;
         $dtrans['card_no'] = $card_no;
         $prep = DTrans::parameterize($dtrans, 'datetime', $dbc->now());
-        $insP = $dbc->prepare("INSERT INTO dtransactions ({$prep['columnString']}) VALUES ({$prep['valueString']})");
+        $insP = $dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
         $insR = $dbc->execute($insP, $prep['arguments']);
 
         $dtrans['trans_type'] = 'T';
@@ -311,7 +311,7 @@ XML;
 
     private function clearToken($dbc, $row)
     {
-        $clearP = $dbc->prepare("UPDATE PaycardTransactions SET xToken='USED' WHERE paycardTransactionID=? and storeRowId=?");
+        $clearP = $dbc->prepare("UPDATE " . FannieDB::fqn('PaycardTransactions', 'trans') . " SET xToken='USED' WHERE paycardTransactionID=? and storeRowId=?");
         $this->cronMsg("Clear ptID {$row['paycardTransactionID']}, srID {$row['storeRowId']}", FannieLogger::ALERT);
         $clearR = $dbc->execute($clearP, array($row['paycardTransactionID'], $row['storeRowId']));
 
@@ -358,7 +358,7 @@ XML;
     {
         $prep = $dbc->prepare("
             SELECT payments
-            FROM equity_live_balance
+            FROM " . FannieDB::fqn('equity_live_balance', 'trans') . "
             WHERE memnum=?");
         return $dbc->getValue($prep, array($card_no));
     }
@@ -376,7 +376,7 @@ XML;
         }
         $transP = $dbc->prepare("
             SELECT *
-            FROM PaycardTransactions
+            FROM " . FannieDB::fqn('PaycardTransactions', 'trans') . "
             WHERE dateID=?
                 AND empNo <> 9999
                 AND registerNo <> 99
