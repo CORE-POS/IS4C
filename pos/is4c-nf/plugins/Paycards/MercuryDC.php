@@ -259,6 +259,11 @@ class MercuryDC extends MercuryE2E
                     $tranType = 'EBT';
                     $cardType = ($prev['cardType'] === 'EBTFOOD') ? 'Foodstamp' : 'Cash';
                     break;
+                case 'EWIC':
+                    $tranType = 'EBT';
+                    $tranCode = 'ReverseSale';
+                    $cardType = 'EWIC';
+                    break;
             }
         }
 
@@ -285,7 +290,7 @@ class MercuryDC extends MercuryE2E
         } else { // add non-EMV fields
             $msgXml .= '
             <Account>
-                <AcctNo>SecureDevice</AcctNo>
+                <AcctNo>' . ($prev['manual'] == 0 ? 'Prompt' : 'SecureDevice') . '</AcctNo>
             </Account>
             <TranType>' . $tranType . '</TranType>';
             if ($cardType) {
@@ -307,6 +312,9 @@ class MercuryDC extends MercuryE2E
         }
         if ($prev['acqRefData']) {
             $msgXml .= '<AcqRefData>' . $prev['acqRefData'] . '</AcqRefData>';
+        }
+        if ($cardType == 'EWIC') {
+            $msgXml .= '<EWICBins>' . $this->conf->get('EWICBins') . '</EWICBins>';
         }
         $msgXml .= '
             <AuthCode>' . $prev['xApprovalNumber'] . '</AuthCode>
@@ -499,6 +507,8 @@ class MercuryDC extends MercuryE2E
             $validResponse = -3;
         }
 
+        $dbc = Database::tDataConnect();
+
         $issuer = $xml->query('/RStream/TranResponse/CardType');
         $respBalance = $xml->query('/RStream/TranResponse/Amount/Balance');
         $ebtbalance = 0;
@@ -511,7 +521,7 @@ class MercuryDC extends MercuryE2E
             $this->conf->set('EbtCaBalance', $respBalance);
             $ebtbalance = $respBalance;
         } elseif ($issuer == 'EWIC') {
-            $wicBal = $this->eWicBalanceToArray($better);
+            $wicBal = $this->eWicBalanceToArray($xml);
             $receipt = $this->eWicBalanceToString($wicBal);
             $this->conf->set('EWicBalance', $wicBal);
             $this->conf->set('EWicBalanceReceipt', $receipt);
@@ -531,8 +541,6 @@ class MercuryDC extends MercuryE2E
             $this->conf->set('GiftBalance', $respBalance);
         }
         $response->setBalance($ebtbalance);
-
-        $dbc = Database::tDataConnect();
 
         $tranCode = $xml->query('/RStream/TranResponse/TranCode');
         if (substr($tranCode, 0, 3) == 'EMV') {
@@ -618,6 +626,9 @@ class MercuryDC extends MercuryE2E
                 }
                 UdpComm::udpSend('termReset');
                 $this->conf->set('ccTermState','swipe');
+                if (method_exists($request, 'dropTransID')) {
+                    $request->dropTransID();
+                }
                 break;
             default:
                 $this->conf->set("boxMsg","An unknown error occurred<br />at the gateway");

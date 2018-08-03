@@ -51,7 +51,7 @@ class PaycardEmvWic extends PaycardProcessPage
                 if ($success === PaycardLib::PAYCARD_ERR_OK) {
                     $this->tenderResponse($xml);
                     $this->cleanup();
-                    $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=TO&repeat=1');
+                    $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php'); //?reginput=TO&repeat=1');
                 } else {
                     $this->cleanup();
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
@@ -183,19 +183,26 @@ class PaycardEmvWic extends PaycardProcessPage
         echo '<script type="text/javascript" src="../js/emv.js?date=20180308"></script>';
         $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         $manual = FormLib::get('manual') ? true : false;
+        $xml = '';
+        if ($this->conf->get('EWicStep') == 0) {
+            $xml = $e2e->prepareDataCapBalance('EWICVAL', $manual);
+        } elseif ($this->conf->get('EWicStep') == 1) {
+            $this->conf->set('paycard_id', $this->conf->get('LastID')+1);
+            $xml = $e2e->prepareDataCapWic($this->getItemData($this->conf->get('EWicBalance')), 'Sale', $this->conf->get('EWicLast4'));
+        }
         ?>
 <script type="text/javascript">
 function balanceSubmit() {
     emv.setWaitingMsg('Getting balance');
     emv.showProcessing('div.baseHeight');
-    var xmlData = '<?php echo json_encode($e2e->prepareDataCapBalance('EWICVAL', $manual)); ?>';
+    var xmlData = '<?php echo json_encode($xml); ?>';
     emv.submit(xmlData);
     $(document).keyup(checkForCancel);
 }
 function emvSubmit() {
     emv.setWaitingMsg('Authorizing purchase');
     emv.showProcessing('div.baseHeight');
-    var xmlData = '<?php echo json_encode($e2e->prepareDataCapWic($this->getItemData($this->conf->get('EWicBalance')), 'Sale', $this->conf->get('EWicLast4'))); ?>';
+    var xmlData = '<?php echo json_encode($xml); ?>';
     // POST XML request to driver using AJAX
     if (xmlData == '"Error"') { // failed to save request info in database
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
