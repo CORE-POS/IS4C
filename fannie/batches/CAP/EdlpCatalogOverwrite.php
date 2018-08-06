@@ -112,7 +112,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
         }
         $this->prepareStatements($dbc);
 
-        $this->startTransaction();
+        $dbc->startTransaction();
         foreach ($VENDOR_IDS as $VENDOR_ID) {
 
             $SKU_TO_PLU_MAP = $this->buildSkuMap($dbc, $VENDOR_ID);
@@ -180,7 +180,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
                 }
             }
         }
-        $this->commitTransaction();
+        $dbc->commitTransaction();
 
         $updateModel = new ProdUpdateModel($dbc);
         $updateModel->logManyUpdates($updated_upcs, ProdUpdateModel::UPDATE_EDIT);
