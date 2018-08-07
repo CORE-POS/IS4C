@@ -202,8 +202,9 @@ class ObfSummaryReport extends ObfWeeklyReportV2
         $date = $this->connection->getValue($prep, array($weekID));
         $nowNext = array(0, 0);
         $stamp = strtotime($date);
+        $cur = strtotime($date);
         for ($i=0; $i<7; $i++) {
-            if (date('n') == date('n', $stamp)) {
+            if (date('n', $cur) == date('n', $stamp)) {
                 $nowNext[0]++;
             } else {
                 $nowNext[1]++;
@@ -211,9 +212,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
             $stamp = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp)+1, date('Y', $stamp));
         }
         if ($nowNext[0] > $nowNext[1]) {
-            $stamp = time();
-        } else {
-            $stamp = mktime(0, 0, 0, date('n')+1, date('j'), date('Y'));
+            $stamp = $cur;
         }
 
         return array(date('Y', $stamp), date('n', $stamp));
