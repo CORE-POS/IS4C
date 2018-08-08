@@ -520,21 +520,9 @@ class MercuryDC extends MercuryE2E
             $issuer = 'EBT';
             $this->conf->set('EbtCaBalance', $respBalance);
             $ebtbalance = $respBalance;
-        } elseif ($issuer == 'EWIC') {
-            $wicBal = $this->eWicBalanceToArray($xml);
-            $receipt = $this->eWicBalanceToString($wicBal);
-            $this->conf->set('EWicBalance', $wicBal);
-            $this->conf->set('EWicBalanceReceipt', $receipt);
-            $wicExpires = $xml->query('/RStream/TranResponse/EarliestBenefitExpDate');
-            $wicExpires = substr($wicExpires, 0, 2) . '/' . substr($wicExpires, 2, 2) . '/' . substr($wicExpires, -4);
-            $receipt .= "\n\nBenefits expire on {$wicExpires}\n";
+        } elseif ($issuer == 'EWIC' && $responseCode == 1) {
+            $this->wicReceiptHandler($dbc, $xml, $transID);
             $balance = 'WIC';
-            $printP = $dbc->prepare('
-                INSERT INTO EmvReceipt
-                    (dateID, tdate, empNo, registerNo, transNo, transID, content)
-                VALUES 
-                    (?, ?, ?, ?, ?, ?, ?)');
-            $dbc->execute($printP, array(date('Ymd'), date('Y-m-d H:i:s'), $this->conf->get('CashierNo'), $this->conf->get('laneno'), $this->conf->get('transno'), $transID, $receipt));
         } elseif ($xml->query('/RStream/TranResponse/TranType') == 'PrePaid' && $respBalance !== false) {
             $issuer = 'NCG';
             $ebtbalance = $respBalance;
@@ -638,6 +626,53 @@ class MercuryDC extends MercuryE2E
     }
 
     /**
+     * Recording eWIC balances is complicated. 
+     *
+     * A sale includes a balance-check transaction followed by a sale
+     * transaction. Both responses include balance data.
+     *
+     * A reverse sale transaction *does not* include a balance in the
+     * response so if a reversal succeeds we need to remove the saved
+     * balance from the sale transaction effectively reverting to the
+     * balance from the prior balance-check transaction
+     */
+    private function wicReceiptHandler($dbc, $xml, $transID)
+    {
+        if ($xml->query('/RStream/TranResponse/TranCode') == 'ReverseSale') {
+            $clearP = $dbc->prepare('DELETE FROM EmvReceipt WHERE dateID=? AND empNo=? AND registerNo=? AND transNo=? AND transID=?');
+            $dbc->execute($clearP, array(
+                date('Ymd'),
+                $this->conf->get('CashierNo'),
+                $this->conf->get('laneno'),
+                $this->conf->get('transno'),
+                $transID));
+        } else {
+            $wicBal = $this->eWicBalanceToArray($xml);
+            $receipt = $this->eWicBalanceToString($wicBal);
+            $this->conf->set('EWicBalance', $wicBal);
+            $wicExpires = $xml->query('/RStream/TranResponse/EarliestBenefitExpDate');
+            $wicExpires = substr($wicExpires, 0, 2) . '/' . substr($wicExpires, 2, 2) . '/' . substr($wicExpires, -4);
+            $receipt .= "\n\nBenefits expire on {$wicExpires}\n";
+            $this->conf->set('EWicBalanceReceipt', $receipt);
+            if ($xml->query('/RStream/TranResponse/TranCode') != 'Balance') {
+                $printP = $dbc->prepare('
+                    INSERT INTO EmvReceipt
+                        (dateID, tdate, empNo, registerNo, transNo, transID, content)
+                    VALUES 
+                        (?, ?, ?, ?, ?, ?, ?)');
+                $dbc->execute($printP, array(
+                    date('Ymd'),
+                    date('Y-m-d H:i:s'),
+                    $this->conf->get('CashierNo'),
+                    $this->conf->get('laneno'),
+                    $this->conf->get('transno'),
+                    $transID,$receipt
+                ));
+            }
+        }
+    }
+
+    /**
       Examine XML response from Datacap transaction,
       extract balance and/or error determine next step
       @return [int] PaycardLib error code
@@ -654,10 +689,7 @@ class MercuryDC extends MercuryE2E
         $balance = $better->query('/RStream/TranResponse/Amount/Balance');
         $cardType = $better->query('/RStream/TranResponse/CardType');
         if ($cardType == 'EWIC') {
-            $wicBal = $this->eWicBalanceToArray($better);
-            $receipt = $this->eWicBalanceToString($wicBal);
-            $this->conf->set('EWicBalance', $wicBal);
-            $this->conf->set('EWicBalanceReceipt', $receipt);
+            $this->wicReceiptHandler($dbc, $better, $this->conf->get('LastID'));
             $balance = 'WIC';
             $last4 = $better->query('/RStream/TranResponse/AcctNo');
             if ($last4) {
