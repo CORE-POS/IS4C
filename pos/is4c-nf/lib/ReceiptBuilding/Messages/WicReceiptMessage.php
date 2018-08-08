@@ -85,9 +85,9 @@ class WicReceiptMessage extends ReceiptMessage
                 AND empNo=?
                 AND registerNo=?
                 AND transNo=?
-                AND transID=?
+            ORDER BY transID DESC
         ');
-        $balance = $dbc->getValue($emvP, array($date, $emp, $reg, $trans, $val));
+        $balance = $dbc->getValue($emvP, array($date, $emp, $reg, $trans));
         $slip .= $balance ? $balance : '';
 
         return $slip;
