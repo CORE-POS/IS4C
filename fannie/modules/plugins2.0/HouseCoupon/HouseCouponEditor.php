@@ -113,7 +113,7 @@ class HouseCouponEditor extends FanniePage
                 $hci->upc($upc);
                 $hci->save();
             }
-            $this->connection->finishTransaction();
+            $this->connection->commitTransaction();
             header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?edit_id=' . $hci->coupID());
             return false;
         } elseif (FormLib::get_form_value('edit_id','') !== '') {
