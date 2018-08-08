@@ -219,7 +219,7 @@ foreach($data as $row) {
             $pdf->SetXY($upcX + 18, $upcY + 5);
             $border = $mtLength == 7 ? 'TBR' : 'TBL';
             $pdf->Cell(7, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
-            $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
+            $dbc->execute($updateMT, array(($row['movementTag']), $row['upc'], $store));
         }
         /*
         if (strlen($upc) <= 11)
