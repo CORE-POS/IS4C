@@ -439,7 +439,7 @@ HTML;
             $bData .= "
                 <label class='text-info'>New Batch</label>
                 <div class='batchTable'>
-                <table class='table table-condensed table-striped alert-info'>
+                <table class='table table-condensed table-striped small'>
                     <thead><th>Name</th><th>BatchID</th><th>Owner</th><th>BatchType</th><th></td></thead>
                     <tbody>
                         <tr><td><a href=\"{$bidLn}\" target=\"_blank\" class=\"bid\">{$bid}</a></td><td>{$name}</td><td>{$owner}</td><td>{$type}</td>
@@ -455,10 +455,10 @@ HTML;
         */
         $pAllBtn = "<button class='btn btn-default btn-xs' style='border: 1px solid orange;'
             onClick='printAll(); return false;'>Print All</button>";
-        $tableA = "<table class='table table-condensed table-striped alert-info'><thead><tr>
+        $tableA = "<table class='table table-condensed table-striped small'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
             <th>Comments</th><th></th><th>{$pAllBtn}</th><tr></thead><tbody>";
-        $tableB = "<table class='table table-condensed table-striped small alert-info'><thead><tr>
+        $tableB = "<table class='table table-condensed table-striped small'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Forced On</th>
             <th>user</th><tr></thead><tbody>";
         $args = array();
@@ -530,9 +530,11 @@ HTML;
         <div class="panel-body">
             <form method="get" class="form-inline">
                 <div class="form-group">
-                    <input type="number" class="form-control" name="bid" value="{$bid}"
-                        autofocus placeholder="Enter Batch ID" style="max-width: 150px;"/>
+                    <input type="text" class="form-control" name="bid" value="{$bid}"
+                        autofocus placeholder="Enter Batch ID" />
                     <input type="hidden" name="batchLog" value="1"/>
+                </div>
+                <div class="form-group">
                     <button type="submit" class="btn btn-default" value="1" name="getBatch">Load Batch</button>
                 </div>
                 <div id="alert"><div id="resp"></div></div>
