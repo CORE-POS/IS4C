@@ -71,6 +71,7 @@ function standardFieldMarkup()
         changeYear: true,
         yearRange: "c-10:c+10",
     });
+    $('input.date-field').attr('autocomplete', 'off');
     $('input.math-field').change(function (event) {
         mathField(event.target);
     });
