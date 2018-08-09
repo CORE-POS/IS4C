@@ -31,6 +31,15 @@ class Inventory extends Plugin
             'description' => 'Name of the database w/ inventory data',
             'default'=> 'core_op',
         ),
+        'InventoryIncludeSuspended' => array(
+            'label' => 'Include Suspended Transactions',
+            'description' => 'Include suspended transactions in inventory data',
+            'default' => 0,
+            'options' => array(
+                'No' => 0,
+                'Yes' => 1,
+            ),
+        ),
     );
 
     public $plugin_description = 'Plugin for inventory integration';
