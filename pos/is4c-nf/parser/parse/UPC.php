@@ -791,13 +791,7 @@ class UPC extends Parser
          *   and allowing the sale to be confirmed or canceled
          */
         if ($row["inUse"] == 0) {
-            TransRecord::addLogRecord(array(
-                'upc' => $row['upc'],
-                'description' => $row['description'],
-                'department' => $row['department'],
-                'charflag' => 'IU',
-            ));
-            if (substr($row['upc'], 0, 6) == '000000') {
+            if (substr($row['upc'], 0, 6) == '000000' && $this->session->get('msgrepeat') == 0) {
                 $this->session->set("strEntered",$row["upc"]);
                 $this->session->set("boxMsg", _("Not an active item: ") . $row['description']);
                 $this->session->set('boxMsgButtons', array(
@@ -805,6 +799,13 @@ class UPC extends Parser
                     _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
                 ));
                 $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/boxMsg2.php?quiet=1";
+            } else {
+                TransRecord::addLogRecord(array(
+                    'upc' => $row['upc'],
+                    'description' => $row['description'],
+                    'department' => $row['department'],
+                    'charflag' => 'IU',
+                ));
             }
         }
 
