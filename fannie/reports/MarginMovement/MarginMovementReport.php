@@ -75,12 +75,13 @@ class MarginMovementReport extends FannieReportPage
         $deptMulti = FormLib::get('departments', array());
         $subs = FormLib::get('subdepts', array());
         $include_sales = FormLib::get('includeSales', 0);
+        $store = FormLib::get('store');
     
         $buyer = FormLib::get('buyer', '');
 
         // args/parameters differ with super
         // vs regular department
-        $args = array($date1.' 00:00:00', $date2.' 23:59:59');
+        $args = array($date1.' 00:00:00', $date2.' 23:59:59', $store);
         $where = ' 1=1 ';
         if ($buyer !== '') {
             if ($buyer == -2) {
@@ -124,6 +125,7 @@ class MarginMovementReport extends FannieReportPage
             $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE tdate BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND $where
             AND d.cost <> 0 ";
         if ($include_sales != 1) {

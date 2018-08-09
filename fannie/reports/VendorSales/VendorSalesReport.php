@@ -49,6 +49,7 @@ class VendorSalesReport extends FannieReportPage
         $deptMulti = FormLib::get('departments', array());
         $subs = FormLib::get('subdepts', array());
         $buyer = FormLib::get('buyer', '');
+        $store = FormLib::get('store');
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
         /**
@@ -71,8 +72,9 @@ class VendorSalesReport extends FannieReportPage
         }
         $query .= '
             WHERE t.tdate BETWEEN ? AND ?
+                AND ' . DTrans::isStoreID($store, 't') . '
                 AND t.trans_type IN (\'I\',\'D\') ';
-        $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
+        $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59', $store);
         if ($buyer !== '') {
             if ($buyer == -2) {
                 $query .= ' AND s.superID != 0 ';
