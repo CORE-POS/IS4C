@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class CoopDealsSignsPage extends FannieRESTfulPage 
+class CoopDealsSignsPage extends FannieRESTfulPage
 {
     protected $title = "Fannie - Coop Deals Signs Page";
     protected $header = "Print Coop Deals Signs";
@@ -36,7 +36,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
 
     protected $auth_classes = array('batches');
     protected $must_authenticate = true;
-    
+
 
     public function preprocess()
     {
@@ -55,12 +55,12 @@ class CoopDealsSignsPage extends FannieRESTfulPage
 
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        
-        $Qcycle = ($cycle == 'A') ? 
-            "AND (batchName like '%Deals A%' OR batchName like '%Deals TPR%') " : 
+
+        $Qcycle = ($cycle == 'A') ?
+            "AND (batchName like '%Deals A%' OR batchName like '%Deals TPR%') " :
             "AND batchName like '%Deals B%' ";
-        $Qdealset = "AND batchName like '%$month%' "; 
-        
+        $Qdealset = "AND batchName like '%$month%' ";
+
         $args = array($year);
         $query = '
             SELECT
@@ -78,12 +78,32 @@ class CoopDealsSignsPage extends FannieRESTfulPage
         ';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep,$args);
-        $url = $this->config->get('URL');
+        $url = "http://key" . $this->config->get('URL') . "/admin/labels/SignFromSearch.php?";
         $batchLists = array(
-            '16TPR' => "$url/admin/labels/SignFromSearch.php?",
-            '16CD' => "$url/admin/labels/SignFromSearch.php?",
-            '12TPR' => "$url/admin/labels/SignFromSearch.php?",
-            '12CD' => "$url/admin/labels/SignFromSearch.php?",
+            '16TPR' => array(
+                'MERCH' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
+            '16CD' => array(
+                'MERCH' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
+            '12TPR' => array(
+                'MERCH' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
+            '12CD' => array(
+                'MERCH' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
         );
         while ($row = $dbc->fetchRow($res)) {
             $batchName = $row['batchName'];
@@ -91,19 +111,41 @@ class CoopDealsSignsPage extends FannieRESTfulPage
             $id = $row['batchID'];
             if (in_array($owner, array('WELLNESS','PRODUCE'))) {
                 if (strpos($batchName,'TPR')) {
-                    $batchLists['16TPR'] .= 'batch[]='.$id.'&';
+                    if ($owner == 'PRODUCE') {
+                        $batchLists['16TPR']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    } elseif ($owner == 'WELLNESS') {
+                        $batchLists['16TPR']['WELLNESS'] .= 'batch[]='.$id.'&';
+                    }
                 } else {
-                    $batchLists['16CD'] .= 'batch[]='.$id.'&';
+                    if ($owner == 'PRODUCE') {
+                        $batchLists['16CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    } elseif ($owner == 'WELLNESS') {
+                        $batchLists['16CD']['WELLNESS'] .= 'batch[]='.$id.'&';
+                    }
                 }
             } else {
-                if (strpos($batchName,'TPR')) {
-                    $batchLists['12TPR'] .= 'batch[]='.$id.'&';
+                if ($owner == 'PRODUCE') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    }
+                } elseif ($owner == 'DELI') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['DELI'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['DELI'] .= 'batch[]='.$id.'&';
+                    }
                 } else {
-                    $batchLists['12CD'] .= 'batch[]='.$id.'&';
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['MERCH'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['MERCH'] .= 'batch[]='.$id.'&';
+                    }
                 }
             }
         }
-        
+
         return <<<HTML
 {$this->get_view()}
 <form method="get" class="form-inline">
@@ -111,19 +153,39 @@ class CoopDealsSignsPage extends FannieRESTfulPage
     <label>Print Signs for $month $cycle $year </label></br>
     <div class="form-group">
         <input type="checkbox" id="check1">
-        <a class="btn btn-success" href="{$batchLists['12CD']}" id="a1" target="_blank">12UP <b>{$cycle}</b></a>
+        <a class="btn btn-success" onclick="
+            window.open('{$batchLists["12CD"]["MERCH"]}');
+            window.open('{$batchLists["12CD"]["DELI"]}');
+            return false;
+            "
+            id="a1" target="_blank">12UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
         <input type="checkbox" id="check2">
-        <a class="btn btn-success" href="{$batchLists['16CD']}" id="a2" target="_blank">16UP <b>{$cycle}</b></a>
+        <a class="btn btn-success" onclick="
+            window.open('{$batchLists["16CD"]["WELLNESS"]}');
+            window.open('{$batchLists["16CD"]["PRODUCE"]}');
+            return false;
+            "
+            id="a2" target="_blank">16UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
         <input type="checkbox" id="check3">
-        <a class="btn btn-warning" href="{$batchLists['12TPR']}" id="a3" target="_blank">12UP <b>TPR</b></a>
+        <a class="btn btn-warning" onclick="
+            window.open('{$batchLists["12TPR"]["MERCH"]}');
+            window.open('{$batchLists["12TPR"]["DELI"]}');
+            return false;
+            "
+            id="a3" target="_blank">12UP <b>TPR</b></a>
     </div>
     <div class="form-group">
         <input type="checkbox" id="check4">
-        <a class="btn btn-warning" href="{$batchLists['16TPR']}" id="a4" target="_blank">16UP <b>TPR</b></a>
+        <a class="btn btn-warning" onclick="
+            window.open('{$batchLists["16TPR"]["WELLNESS"]}');
+            window.open('{$batchLists["16TPR"]["PRODUCE"]}');
+            return false;
+            "
+            id="a4" target="_blank">16UP <b>TPR</b></a>
     </div>
 </form>
 <br/>
