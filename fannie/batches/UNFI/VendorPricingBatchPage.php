@@ -214,7 +214,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias,
             CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded,
             c.difference,
-            c.date
+            c.date,
+            r.reviewed
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN VendorAliases AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID
@@ -223,7 +224,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN upcLike AS l ON v.upc=l.upc 
-                LEFT JOIN productCostChanges AS c ON p.upc=c.upc ";
+                LEFT JOIN productCostChanges AS c ON p.upc=c.upc 
+                LEFT JOIN prodReview AS r ON p.upc=r.upc
+                ";
         $args = array($vendorID);
         if ($superID != -1){
             $query .= " LEFT JOIN MasterSuperDepts AS m
@@ -258,8 +261,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $ret .= "<thead><tr class=\"thead\"><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
             <th class=\"thead\">Adj. Cost</th>
-            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Change</th>
-
+            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Last Change</th>
+            <th class=\"thead\">Reviewed</th>
             <th class=\"thead\">Raw</th><th class=\"thead\">SRP</th>
             <th class=\"thead\">Margin</th><th class=\"thead\">Var</th>
             <th class=\"thead\">Batch</th></tr></thead><tbody>";
@@ -316,13 +319,15 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                     </span>';
             }
             $brand = rtrim(substr($row['brand'], 0, 15));
+            $symb = ($row['difference'] > 0) ? "+" : "";
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
                 <td class=\"sub\"><strong>%s</strong> %s</td>
                 <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
-                <td class=\"sub change\">%.2f <span class='grey'>|</span> %s</td>
+                <td class=\"sub change\">%s%.2f <span class='grey'>|</span> %s</td>
+                <td class=\"sub reviewed\">%s</td>
                 <td class=\"sub raw-srp\">%.2f</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
                 <td class=\"sub dmargin\">%.2f%%</td>
@@ -348,8 +353,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $row['adjusted_cost'],
                 $row['normal_price'],
                 100*$row['current_margin'],
-                $row['difference'], 
-                $row['date'],
+                $symb, $row['difference'], $row['date'],
+                $row['reviewed'],
                 $row['rawSRP'],
                 $row['upc'],
                 $row['srp'],
