@@ -49,8 +49,8 @@ class InventoryCheck extends Parser
             FROM ' . $this->session->get('InventoryOpDB') . $dbc->sep() . 'InventoryCache AS i
                 INNER JOIN ' . $this->session->get('InventoryOpDB') . $dbc->sep() . 'InventoryCounts AS c
                     ON i.upc=c.upc AND i.storeID=c.storeID
-            WHERE upc=?
-                AND storeID=?
+            WHERE i.upc=?
+                AND i.storeID=?
                 AND c.mostRecent=1
             ORDER BY c.countDate DESC');
         $invData = $dbc->getRow($invP, array($upc, $this->session->get('store_id')));
@@ -72,7 +72,7 @@ class InventoryCheck extends Parser
                 AND trans_status <> 'X'
                 AND tdate > ?
         ");
-        $moreRecent = $dbc->getValue($moreRecent, array($upc, $this->session->store_id, $invData['countDate']));
+        $moreRecent = $dbc->getValue($moreRecent, array($upc, $this->session->get('store_id'), $invData['countDate']));
         $moreRecent = $moreRecent ? $moreRecent : 0;
 
         //Get quantity sold in suspended transactions
