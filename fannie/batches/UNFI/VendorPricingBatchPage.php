@@ -210,6 +210,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             " . $srpSQL . " AS rawSRP,
             v.vendorDept,
             p.price_rule_id AS variable_pricing,
+            prt.priceRuleTypeID,
+            prt.description AS prtDesc,
             " . $marginCase . " AS margin,
             CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias,
             CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded,
@@ -226,6 +228,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN upcLike AS l ON v.upc=l.upc 
                 LEFT JOIN productCostChanges AS c ON p.upc=c.upc 
                 LEFT JOIN prodReview AS r ON p.upc=r.upc
+                LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
+                LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 ";
         $args = array($vendorID);
         if ($superID != -1){
@@ -286,9 +290,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             if ($row['difference']) {
             }
             $background = "white";
+            $acceptPrtID = array(1, 10);
             if (isset($batchUPCs[$row['upc']]) && !$row['likecoded']) {
                 $background = 'selection';
-            } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
+            } elseif (in_array($row['priceRuleTypeID'], $acceptPrtID) || $row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
                 $background = (
                     ($row['normal_price']+0.10 < $row['rawSRP'])
                     && ($row['srp']-.14 > $row['normal_price'])
@@ -300,7 +305,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                         && ($row['rawSRP'] < $row['srp']+.10)
                     )?'yellow':'green';
                 }
-            } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
+            } elseif (in_array($row['priceRuleTypeID'], $acceptPrtID) || $row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
                 $background = ($row['normal_price'] < $row['rawSRP']
                     && $row['srp'] > $row['normal_price']) ?'red':'green';
                 if ($row['normal_price']-0.49 > $row['rawSRP']) {
@@ -320,18 +325,19 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             }
             $brand = rtrim(substr($row['brand'], 0, 15));
             $symb = ($row['difference'] > 0) ? "+" : "";
+            $row['date'] = ($row['date']) ? "<span class='grey'> <i>on</i> </span> ".$row['date'] : "";
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
                 <td class=\"sub\"><strong>%s</strong> %s</td>
                 <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
-                <td class=\"sub change\">%s%.2f <span class='grey'>|</span> %s</td>
+                <td class=\"sub change\">%s%.2f %s</td>
                 <td class=\"sub reviewed\">%s</td>
                 <td class=\"sub raw-srp\">%.2f</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
                 <td class=\"sub dmargin\">%.2f%%</td>
-                <td><input class=varp type=checkbox onclick=\"toggleV('%s');\" %s /></td>
+                <td><input class=varp type=checkbox onclick=\"toggleV('%s');\" %s /><span> %s</span></td>
                 <td class=white>
                     <a class=\"add-button %s\" href=\"\"
                         onclick=\"addToBatch('%s'); return false;\">
@@ -361,6 +367,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 100*$row['desired_margin'],
                 $row['upc'],
                 ($row['variable_pricing']>=1?'checked':''),
+                $row['prtDesc'],
                 (isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc'],
                 (!isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc']
             );
