@@ -217,7 +217,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded,
             c.difference,
             c.date,
-            r.reviewed
+            r.reviewed,
+            v.sku
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN VendorAliases AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID
@@ -263,12 +264,19 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
 
-        $ret .= "<thead><tr class=\"thead\"><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
+        $ret .= "<thead><tr class=\"thead\">
+            <th class=\"thead\">UPC</th>
+            <th class=\"thead\">SKU</th>
+            <th class=\"thead\">Our Description</th>
             <th class=\"thead\">Adj. Cost</th>
-            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Last Change</th>
+            <th class=\"thead\">Price</th>
+            <th class=\"thead\">Margin</th>
+            <th class=\"thead\">Last Change</th>
             <th class=\"thead\">Reviewed</th>
-            <th class=\"thead\">Raw</th><th class=\"thead\">SRP</th>
-            <th class=\"thead\">Margin</th><th class=\"thead\">Var</th>
+            <th class=\"thead\">Raw</th>
+            <th class=\"thead\">SRP</th>
+            <th class=\"thead\">Margin</th>
+            <th class=\"thead\">Var</th>
             <th class=\"thead\">Batch</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $vendorModel->reset();
@@ -328,6 +336,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $row['date'] = ($row['date']) ? "<span class='grey'> <i>on</i> </span> ".$row['date'] : "";
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
+                <td class=\"sub sku\">%s</td>
                 <td class=\"sub\"><strong>%s</strong> %s</td>
                 <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
@@ -354,6 +363,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $row['upc'],
                 $background,
                 $this->config->URL, $row['upc'], $row['upc'],
+                $row['sku'],
                 $temp = (strlen($brand) == 10) ? "$brand~" : $brand,
                 $row['description'] . ' ' . $multipleVendors,
                 $row['adjusted_cost'],
