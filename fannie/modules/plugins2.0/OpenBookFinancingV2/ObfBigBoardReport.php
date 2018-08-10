@@ -14,9 +14,16 @@ class ObfBigBoardReport extends FannieRESTfulPage
     protected $title = 'OBF Big Board';
 
     protected $OU_START = 162;
+    protected $PLAN_CACHE1 = null;
+    protected $PLAN_CACHE2 = null;
+
     protected function getOuStart($weekID)
     {
-        if ($weekID >= 188) {
+        if ($weekID >= 214) {
+            return 214;
+        } elseif ($weekID >= 201) {
+            return 201;
+        } elseif ($weekID >= 188) {
             return 188;
         } elseif ($weekID >= 175) {
             return 175;
@@ -175,7 +182,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
                 $key = $row['obfCategoryID'] . ',' . $row['superID'];
                 $ret[$key] = $row['plan'];
             }
-            return $ret;
+            $plan = $ret;
         } elseif ($weekID >= 214) {
             list($year, $month) = $this->weekToYM($weekID);
             $ret = array();
@@ -190,7 +197,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
                 $key = $row['obfCategoryID'] . ',' . $row['superID'];
                 $ret[$key] = ($row['planGoal'] / $days) * 7;
             }
-            return $ret;
+            $plan = $ret;
         } elseif ($weekID >= 201) {
             return $this->PLAN_SALES_Q4_2018;
         } elseif ($weekID >= 188) {

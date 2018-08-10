@@ -47,10 +47,14 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
     protected $class_lib = 'ObfLibV2';
 
     protected $OU_START = 162;
+    protected $PLAN_CACHE1 = null;
+    protected $PLAN_CACHE2 = null;
 
     protected function getOuStart($weekID)
     {
-        if ($weekID >= 201) {
+        if ($weekID >= 214) {
+            return 214;
+        } elseif ($weekID >= 201) {
             return 201;
         } elseif ($weekID >= 188) {
             return 188;
@@ -257,6 +261,36 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         return array(date('Y', $stamp), date('n', $stamp));
     }
 
+    protected function getPlanRange($startWeek, $endWeek, $categoryID, $superID)
+    {
+        $ret = 0;
+        for ($weekID = $startWeek; $weekID <= $endWeek; $weekID++) {
+            if ($weekID >= 218) {
+                if (!is_array($this->PLAN_CACHE1)) {
+                    $this->PLAN_CACHE1 = $this->getPlanSales($weekID);
+                }
+                $ret += $this->PLAN_CACHE1[$categoryID . ',' . $superID];
+            } elseif ($weekID >= 214) {
+                if (!is_array($this->PLAN_CACHE2)) {
+                    $this->PLAN_CACHE2 = $this->getPlanSales($weekID);
+                }
+                $ret += $this->PLAN_CACHE2[$categoryID . ',' . $superID];
+            } elseif ($weekID >= 201) {
+                $ret += $this->PLAN_SALES_Q4_2018[$categoryID . ',' . $superID];
+            } elseif ($weekID >= 188) {
+                $ret += $this->PLAN_SALES_Q3_2018[$categoryID . ',' . $superID];
+            } elseif ($weekID >= 175) {
+                $ret += $this->PLAN_SALES_Q2_2018[$categoryID . ',' . $superID];
+            } elseif ($weekID >= 162) {
+                $ret += $this->PLAN_SALES_Q1_2018[$categoryID . ',' . $superID];
+            } else {
+                $ret += $this->PLAN_SALES[$categoryID . ',' . $superID];
+            }
+        }
+
+        return $ret;
+    }
+
     private function getPlanSales($weekID)
     {
         if ($weekID >= 218) {
@@ -404,7 +438,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                     $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                 }
                 $ou_weeks = ($week->obfWeekID() - $this->getOuStart($week->obfWeekID())) + 1;
-                $qtd_dept_plan += ($proj * $ou_weeks);
+                $ou_plan = $this->getPlanRange($this->getOuStart($week->obfWeekID()), $week->obfWeekID(), $category->obfCategoryID(), $row['superID']);
+                //$qtd_dept_plan += ($proj * $ou_weeks);
+                $qtd_dept_plan += $ou_plan;
                 $qtd_dept_sales += $quarter['actual'];
                 $total_trans->quarterThisYear = $quarter['trans'];
                 $total_trans->quarterLastYear = $quarter['ly_trans'];
@@ -419,7 +455,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                     sprintf('%.2f%%', $this->percentGrowth($row['actualSales'], $row['lastYearSales'])),
                     number_format($row['actualSales'], 0), // converts to % of sales
                     number_format($row['actualSales'] - $proj, 0),
-                    number_format($quarter['actual'] - ($proj * $ou_weeks), 0),
+                    //number_format($quarter['actual'] - ($proj * $ou_weeks), 0),
+                    number_format($quarter['actual'] - ($ou_plan), 0),
                     'meta' => FannieReportPage::META_COLOR,
                     'meta_background' => $this->colors[0],
                     'meta_foreground' => 'black',

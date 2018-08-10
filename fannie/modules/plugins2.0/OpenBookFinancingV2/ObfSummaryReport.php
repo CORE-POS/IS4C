@@ -387,8 +387,10 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                         $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                     }
                     $ou_weeks = ($week->obfWeekID() - $this->getOuStart($week->obfWeekID())) + 1;
-                    $qtd_dept_plan += ($proj * $ou_weeks);
+                    $ou_plan = $this->getPlanRange($this->getOuStart($week->obfWeekID()), $week->obfWeekID(), $category->obfCategoryID(), $row['superID']);
+                    //$qtd_dept_plan += ($proj * $ou_weeks);
                     $qtd_dept_sales += $quarter['actual'];
+                    $qtd_dept_plan += $ou_plan;
                     $total_trans->quarterThisYear = $quarter['trans'];
                     $total_trans->quarterLastYear = $quarter['ly_trans'];
 
@@ -406,8 +408,10 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                     $dept_proj += $proj;
                     $total_sales->quarterProjected += ($proj * $ou_weeks);
                     $total_sales->quarterActual += $quarter['actual'];
-                    $qtd_sales_ou += ($quarter['actual'] - ($proj * $ou_weeks));
-                    $qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                    //$qtd_sales_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                    //$qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                    $qtd_sales_ou += ($quarter['actual'] - ($ou_plan));
+                    $qtd_dept_ou += ($quarter['actual'] - ($ou_plan));
                 }
 
                 $labor->obfCategoryID($category->obfCategoryID());
