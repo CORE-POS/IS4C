@@ -47,7 +47,7 @@ class PIDocumentsPage extends PIKillerPage {
 
         $dir = opendir(__DIR__ . '/noauto/docfile/' . $this->id);
         echo '<ul style="font-size: 145%">';
-        while (($file=readdir($dir)) !== false) {
+        while ($dir && ($file=readdir($dir)) !== false) {
             if ($file[0] == '.') continue;
             echo '<li><a href="noauto/docfile/' . $this->id . '/' . $file . '">' . $file . '</li>';
         }
