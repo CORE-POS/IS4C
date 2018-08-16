@@ -2,12 +2,9 @@
 
 class PaycardAlertTask extends FannieTask
 {
-    public $name = 'Partial Batch';
+    public $name = 'Paycard Alert';
 
-    public $description = 'Start and stop partial sales batches. Actual precision of start/stop
-times will be limited by how frequently this task runs.';
-
-    public $log_start_stop = false;
+    public $description = 'Check for odd looking card transactions & send emails';
 
     public $default_schedule = array(
         'min' => '5',
