@@ -62,7 +62,6 @@ class StockSummaryReport extends FannieReportPage
             group by card_no,LastName,FirstName,Type,m.memDesc
             order by card_no");
         $r = $dbc->execute($q, array($date . ' 23:59:59'));
-        var_dump($dbc->error());
 
         $types = array('PC'=>'Member','REG'=>'NonMember',
             'TERM'=>'Termed','INACT'=>'Inactive',
@@ -85,6 +84,18 @@ class StockSummaryReport extends FannieReportPage
         }
 
         return $data;
+    }
+
+    public function calculate_footers($data)
+    {
+        $sums = array(0, 0, 0);
+        foreach ($data as $row) {
+            $sums[0] += $row[4];
+            $sums[1] += $row[5];
+            $sums[2] += $row[6];
+        }
+
+        return array('Total', null, null, null, $sums[0], $sums[1], $sums[2]);
     }
 
     public function form_content()
