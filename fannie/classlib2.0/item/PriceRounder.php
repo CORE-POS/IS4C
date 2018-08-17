@@ -50,15 +50,15 @@ class PriceRounder
         $endings = array(
             0 => array(0.29, 0.39, 0.49, 0.69, 0.79, 0.89, 0.99),
             1 => array(0.19, 0.39, 0.49, 0.69, 0.89, 0.99),
-            3 => array(0.39, 0.69, 0.99),
-            4 => array(0.69, 0.99),
-            5 => array(0.99),
+            2 => array(0.39, 0.69, 0.99),
+            3 => array(0.69, 0.99),
+            4 => array(0.99),
         );
         $endingCaps = array(0.99, 2.99, 5.99, 9.99, 9999.00);
         $specialRound = array(
-            1 => 0.15,
-            2 => 0.15,
-            3 => 0.29,
+            1 => 0.16,
+            2 => 0.16,
+            3 => 0.30,
         );
 
         foreach ($endingCaps as $level => $cap) {
