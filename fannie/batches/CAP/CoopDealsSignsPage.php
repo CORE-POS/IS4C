@@ -51,6 +51,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
         $cycle = FormLib::get('cycle');
         $month = FormLib::get('dealSet');
         $year = FormLib::get('year');
+        $storeID = FormLib::get('store');
         $dir = __DIR__;
 
         $dbc = $this->connection;
@@ -78,7 +79,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
         ';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep,$args);
-        $url = "http://key" . $this->config->get('URL') . "/admin/labels/SignFromSearch.php?";
+        $url = "http://key" . $this->config->get('URL') . "/admin/labels/SignFromSearch.php?store=$storeID&";
         $batchLists = array(
             '16TPR' => array(
                 'MERCH' => $url,
@@ -94,12 +95,20 @@ class CoopDealsSignsPage extends FannieRESTfulPage
             ),
             '12TPR' => array(
                 'MERCH' => $url,
+                'LAMINATES' => $url,
+                'BULK' => $url,
+                'FROZEN' => $url, 
+                'GROCERY' => $url,
                 'PRODUCE' => $url,
                 'DELI' => $url,
                 'WELLNESS' => $url,
             ),
             '12CD' => array(
                 'MERCH' => $url,
+                'LAMINATES' => $url,
+                'BULK' => $url,
+                'FROZEN' => $url, 
+                'GROCERY' => $url,
                 'PRODUCE' => $url,
                 'DELI' => $url,
                 'WELLNESS' => $url,
@@ -136,6 +145,18 @@ class CoopDealsSignsPage extends FannieRESTfulPage
                     } else {
                         $batchLists['12CD']['DELI'] .= 'batch[]='.$id.'&';
                     }
+                } elseif ($owner == 'REFRIGERATED' || $owner == 'MEAT' || $owner == 'BULK') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['LAMINATES'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['LAMINATES'] .= 'batch[]='.$id.'&';
+                    }
+                } elseif ($owner == 'GROCERY') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['GROCERY'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['GROCERY'] .= 'batch[]='.$id.'&';
+                    }
                 } else {
                     if (strpos($batchName,'TPR')) {
                         $batchLists['12TPR']['MERCH'] .= 'batch[]='.$id.'&';
@@ -145,44 +166,45 @@ class CoopDealsSignsPage extends FannieRESTfulPage
                 }
             }
         }
+        $disabled = ($cycle == 'B') ? 'collapse' : '';
 
         return <<<HTML
 {$this->get_view()}
 <form method="get" class="form-inline">
     </br>
-    <label>Print Signs for $month $cycle $year </label></br>
+    <h4>Print Signs for $month $cycle $year </h4>
     <div class="form-group">
-        <input type="checkbox" id="check1">
         <a class="btn btn-success" onclick="
             window.open('{$batchLists["12CD"]["MERCH"]}');
             window.open('{$batchLists["12CD"]["DELI"]}');
+            window.open('{$batchLists["12CD"]["LAMINATES"]}');
+            window.open('{$batchLists["12CD"]["GROCERY"]}');
             return false;
             "
             id="a1" target="_blank">12UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
-        <input type="checkbox" id="check2">
         <a class="btn btn-success" onclick="
-            window.open('{$batchLists["16CD"]["WELLNESS"]}');
-            window.open('{$batchLists["16CD"]["PRODUCE"]}');
+            window.open('{$batchLists["16CD"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            window.open('{$batchLists["16CD"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
             return false;
             "
             id="a2" target="_blank">16UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
-        <input type="checkbox" id="check3">
-        <a class="btn btn-warning" onclick="
+        <a class="btn btn-warning $disabled" onclick="
             window.open('{$batchLists["12TPR"]["MERCH"]}');
             window.open('{$batchLists["12TPR"]["DELI"]}');
+            window.open('{$batchLists["12TPR"]["LAMINATES"]}');
+            window.open('{$batchLists["12TPR"]["GROCERY"]}');
             return false;
             "
             id="a3" target="_blank">12UP <b>TPR</b></a>
     </div>
     <div class="form-group">
-        <input type="checkbox" id="check4">
-        <a class="btn btn-warning" onclick="
-            window.open('{$batchLists["16TPR"]["WELLNESS"]}');
-            window.open('{$batchLists["16TPR"]["PRODUCE"]}');
+        <a class="btn btn-warning $disabled" onclick="
+            window.open('{$batchLists["16TPR"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            window.open('{$batchLists["16TPR"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
             return false;
             "
             id="a4" target="_blank">16UP <b>TPR</b></a>
@@ -218,41 +240,54 @@ HTML;
         $cycles = array('A','B');
         $cycle_opts = '';
         foreach ($cycles as $cycle) {
-            $cycle_opts .= sprintf('<option %s>%s</option>',
-                ($set == FormLib::get('cycle') ? 'selected' : ''),
-                $cycle
-            );
+            $sel = ($cycle == FormLib::get('cycle')) ? " selected " : "";
+            $cycle_opts .= "<option value='$cycle' $sel>$cycle</option>";
         }
 
         $years = '';
         $curYear = 2019;
         $curMonth = date('m');
         for ($i=2017; $i<$curYear; $i++) {
-            $years .= "<option value='$i'>$i</option>";
+            $sel = ($i == FormLib::get('year')) ? " selected " : "";
+            $years .= "<option value='$i' $sel>$i</option>";
         }
+
+        $stores = new StoresModel($this->connection);
+        $stores->hasOwnItems(1);
+        $store_opts = "";
+        $store_opts .= '<select class="form-control" name="store">
+                <option value="0">Any Store</option>';
+        foreach ($stores->find() as $s) {
+            $store_selected = (FormLib::get('store') == $s->storeID()) ? ' SELECTED ' : '';
+            $store_opts .= sprintf('<option value="%d" %s>%s</option>',
+                $s->storeID(), $store_selected, $s->description());
+        }
+        $store_opts .= '</select>';
 
         $form = sprintf('
             <form method="get" class="form-inline">
-                <div class="input-group">
+                <div class="form-group"><div class="input-group">
                     <div class="input-group-addon">Year</div>
                     <select name="year" class="form-control">%s</select>
-                </div>
-                <div class="input-group">
+                </div></div>
+                <div class="form-group"><div class="input-group">
                     <div class="input-group-addon">Month</div>
                     <select name="dealSet" class="form-control">%s</select>
-                </div>
-                <div class="input-group">
+                </div></div>
+                <div class="form-group"><div class="input-group">
                     <div class="input-group-addon">Cycle: </div>
                     <select name="cycle" class="form-control">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
+                        %s
                     </select>
-                </div>
-                <div class="input-group">
+                </div></div>
+                <div class="form-group"><div class="input-group">
+                    %s
+                </div></div>
+                <div class="form-group"><div class="input-group">
                     <button type="submit" class="btn btn-default">Load</button>
-                </div>
+                </div></div>
             </form>
-        ',$years,$deal_opts);
+        ', $years, $deal_opts, $cycle_opts, $store_opts);
         return <<<HTML
 {$form}
 HTML;
@@ -262,16 +297,16 @@ HTML;
     {
         return <<<HTML
 $('#a1').click(function(){
-    $('#check1').prop('checked', true);
+    $(this).addClass('disabled');
 });
 $('#a2').click(function(){
-    $('#check2').prop('checked', true);
+    $(this).addClass('disabled');
 });
 $('#a3').click(function(){
-    $('#check3').prop('checked', true);
+    $(this).addClass('disabled');
 });
 $('#a4').click(function(){
-    $('#check4').prop('checked', true);
+    $(this).addClass('disabled');
 });
 HTML;
     }
@@ -282,6 +317,18 @@ HTML;
 .btn-success, .btn-warning {
     width: 150px;
 }
+HTML;
+    }
+
+    public function helpContent()
+    {
+        return <<<HTML
+<label>Find and separate Co+op Deals sales signage by</label>:
+<ul>
+    <li>Department (Grocery Super Dept. is kept separate)</li>
+    <li>Signs that need to be laminated.</li>
+    <li>Signs that do not require lamination.</li>
+</ul>
 HTML;
     }
 
