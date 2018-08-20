@@ -238,7 +238,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 ON p.department=m.dept_ID ";
         }
         $query .= " WHERE v.cost > 0
-                    AND v.vendorID=?";
+                    AND v.vendorID=?
+                    AND m.SuperID IN (1, 4, 5, 8, 9, 13, 17)";
         if ($superID == -2) {
             $query .= " AND m.superID<>0 ";
         } elseif ($superID != -1) {
