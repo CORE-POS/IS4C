@@ -38,6 +38,7 @@ class PaycardAlertTask extends FannieTask
         while ($row = $dbc->fetchRow($res)) {
             $receipt = $row['empNo'] . '-' . $row['registerNo'] . '-' . $row['transNo'];
             $out .= sprintf('%s http://%s%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s',
+                $receipt,
                 $this->config->get('HTTP_HOST'),
                 $this->config->get('URL'),
                 $today,
@@ -45,7 +46,9 @@ class PaycardAlertTask extends FannieTask
             $out .= "\n";
         }
 
-        echo $out; // raise to email level
+        if ($out) {
+            $this->cronMsg($out, FannieLogger::ALERT);
+        }
     }
 }
 
