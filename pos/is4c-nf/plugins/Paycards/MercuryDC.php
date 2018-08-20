@@ -123,6 +123,9 @@ class MercuryDC extends MercuryE2E
             if ($this->conf->get("ebt_authcode") != "" && $this->conf->get("ebt_vnum") != "") {
                 $msgXml .= $this->ebtVoucherXml();
             }
+            if ($prompt && $tranType == 'Credit') {
+                $msgXml = str_replace('{{SecureDevice}}', 'NONE', $msgXml);
+            }
         }
         $msgXml .= '
             </Transaction>
