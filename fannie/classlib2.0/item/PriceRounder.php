@@ -88,7 +88,7 @@ class PriceRounder
             }
         }
 
-        return false;
+        return $price;
     }
 
 }
