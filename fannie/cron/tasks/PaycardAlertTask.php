@@ -48,6 +48,7 @@ class PaycardAlertTask extends FannieTask
 
         if ($out) {
             $this->cronMsg($out, FannieLogger::ALERT);
+            file_put_contents('php://stderr', $out, FILE_APPEND);
         }
     }
 }
