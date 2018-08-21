@@ -176,11 +176,10 @@ function printMany(){
         </div>
 
         <div class="col-sm-3">
-        <a href="CreateTagsByDept.php">Create Tags By Department</a>
-        <br />
-        <a href="CreateTagsByManu.php">Create Tags By Brand</a>
-        <br />
-        <a href="QueueTagsByList.php">Queue Tags by A List</a>
+            <div><a href="CreateTagsByDept.php">Create Tags By Department</a></div>
+            <div><a href="CreateTagsByManu.php">Create Tags By Brand</a></div>
+            <div><a href="QueueTagsByList.php">Queue Tags by A List</a></div>
+            <div><a href="MovementTagTracker.php">Movement Tag Tracker</a></div>
         </div>
         <?php
         
