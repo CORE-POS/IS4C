@@ -231,15 +231,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN prodReview AS r ON p.upc=r.upc
                 LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
-                ";
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+        WHERE v.cost > 0
+                AND v.vendorID=?
+                AND m.SuperID IN (1, 4, 5, 8, 9, 13, 17)
+        ";
         $args = array($vendorID);
-        if ($superID != -1){
-            $query .= " LEFT JOIN MasterSuperDepts AS m
-                ON p.department=m.dept_ID ";
-        }
-        $query .= " WHERE v.cost > 0
-                    AND v.vendorID=?
-                    AND m.SuperID IN (1, 4, 5, 8, 9, 13, 17)";
         if ($superID == -2) {
             $query .= " AND m.superID<>0 ";
         } elseif ($superID != -1) {
