@@ -199,13 +199,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 }
             } catch (Exception ex) {
                 this.LogMessage(ex.ToString());
-            }
-            try {
-                if (saveResult && result.Length > 0) {
-                    parent.SqlLog(keyVal, result);
+                try {
+                    if (saveResult && result.Length > 0) {
+                        parent.SqlLog(keyVal, result);
+                    }
+                } catch (Exception) {
+                    this.LogMessage(keyVal + ": " + result);
                 }
-            } catch (Exception) {
-                this.LogMessage(keyVal + ": " + result);
             }
         }
     }
