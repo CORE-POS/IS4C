@@ -33,10 +33,11 @@ class ProdReviewModel extends \COREPOS\common\BasicModel
 
     protected $columns = array(
     'id' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
-    'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
+    'upc' => array('type'=>'VARCHAR(13)', 'unique'=>true),
     'user' => array('type'=>'INT'),
     'reviewed' => array('type'=>'DATETIME'),
     );
+    protected $unique = array('upc'); 
 
 }
 
