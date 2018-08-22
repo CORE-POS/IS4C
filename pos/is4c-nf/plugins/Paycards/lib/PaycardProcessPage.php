@@ -171,6 +171,7 @@ class PaycardProcessPage extends BasicCorePage
                 $json['main_frame'] .= '?receipt=' . $json['receipt'];
             }
         } else {
+            $this->conf->reset();
             $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
         }
         $this->change_page($json['main_frame']);
