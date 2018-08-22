@@ -210,11 +210,15 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             " . $srpSQL . " AS rawSRP,
             v.vendorDept,
             p.price_rule_id AS variable_pricing,
+            prt.priceRuleTypeID,
+            prt.description AS prtDesc,
             " . $marginCase . " AS margin,
             CASE WHEN a.sku IS NULL THEN 0 ELSE 1 END as alias,
             CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded,
             c.difference,
-            c.date
+            c.date,
+            r.reviewed,
+            v.sku
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN VendorAliases AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID
@@ -223,14 +227,16 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN upcLike AS l ON v.upc=l.upc 
-                LEFT JOIN productCostChanges AS c ON p.upc=c.upc ";
+                LEFT JOIN productCostChanges AS c ON p.upc=c.upc 
+                LEFT JOIN prodReview AS r ON p.upc=r.upc
+                LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
+                LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+        WHERE v.cost > 0
+                AND v.vendorID=?
+                AND m.SuperID IN (1, 4, 5, 8, 9, 13, 17)
+        ";
         $args = array($vendorID);
-        if ($superID != -1){
-            $query .= " LEFT JOIN MasterSuperDepts AS m
-                ON p.department=m.dept_ID ";
-        }
-        $query .= " WHERE v.cost > 0
-                    AND v.vendorID=?";
         if ($superID == -2) {
             $query .= " AND m.superID<>0 ";
         } elseif ($superID != -1) {
@@ -256,12 +262,19 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
 
-        $ret .= "<thead><tr class=\"thead\"><th class=\"thead\">UPC</th><th class=\"thead\">Our Description</th>
+        $ret .= "<thead><tr class=\"thead\">
+            <th class=\"thead\">UPC</th>
+            <th class=\"thead\">SKU</th>
+            <th class=\"thead\">Our Description</th>
             <th class=\"thead\">Adj. Cost</th>
-            <th class=\"thead\">Price</th><th class=\"thead\">Margin</th><th class=\"thead\">Change</th>
-
-            <th class=\"thead\">Raw</th><th class=\"thead\">SRP</th>
-            <th class=\"thead\">Margin</th><th class=\"thead\">Var</th>
+            <th class=\"thead\">Price</th>
+            <th class=\"thead\">Margin</th>
+            <th class=\"thead\">Last Change</th>
+            <th class=\"thead\">Reviewed</th>
+            <th class=\"thead\">Raw</th>
+            <th class=\"thead\">SRP</th>
+            <th class=\"thead\">Margin</th>
+            <th class=\"thead\">Var</th>
             <th class=\"thead\">Batch</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $vendorModel->reset();
@@ -283,9 +296,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             if ($row['difference']) {
             }
             $background = "white";
+            $acceptPrtID = array(1, 10);
             if (isset($batchUPCs[$row['upc']]) && !$row['likecoded']) {
                 $background = 'selection';
-            } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
+            } elseif (in_array($row['priceRuleTypeID'], $acceptPrtID) || $row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
                 $background = (
                     ($row['normal_price']+0.10 < $row['rawSRP'])
                     && ($row['srp']-.14 > $row['normal_price'])
@@ -297,7 +311,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                         && ($row['rawSRP'] < $row['srp']+.10)
                     )?'yellow':'green';
                 }
-            } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
+            } elseif (in_array($row['priceRuleTypeID'], $acceptPrtID) || $row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
                 $background = ($row['normal_price'] < $row['rawSRP']
                     && $row['srp'] > $row['normal_price']) ?'red':'green';
                 if ($row['normal_price']-0.49 > $row['rawSRP']) {
@@ -316,17 +330,21 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                     </span>';
             }
             $brand = rtrim(substr($row['brand'], 0, 15));
+            $symb = ($row['difference'] > 0) ? "+" : "";
+            $row['date'] = ($row['date']) ? "<span class='grey'> <i>on</i> </span> ".$row['date'] : "";
             $ret .= sprintf("<tr id=row%s class=%s>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
+                <td class=\"sub sku\">%s</td>
                 <td class=\"sub\"><strong>%s</strong> %s</td>
                 <td class=\"sub adj-cost\">%.3f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
-                <td class=\"sub change\">%.2f <span class='grey'>|</span> %s</td>
+                <td class=\"sub change\">%s%.2f %s</td>
+                <td class=\"sub reviewed\">%s</td>
                 <td class=\"sub raw-srp\">%.2f</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
                 <td class=\"sub dmargin\">%.2f%%</td>
-                <td><input class=varp type=checkbox onclick=\"toggleV('%s');\" %s /></td>
+                <td><input class=varp type=checkbox onclick=\"toggleV('%s');\" %s /><span> %s</span></td>
                 <td class=white>
                     <a class=\"add-button %s\" href=\"\"
                         onclick=\"addToBatch('%s'); return false;\">
@@ -343,19 +361,21 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $row['upc'],
                 $background,
                 $this->config->URL, $row['upc'], $row['upc'],
+                $row['sku'],
                 $temp = (strlen($brand) == 10) ? "$brand~" : $brand,
                 $row['description'] . ' ' . $multipleVendors,
                 $row['adjusted_cost'],
                 $row['normal_price'],
                 100*$row['current_margin'],
-                $row['difference'], 
-                $row['date'],
+                $symb, $row['difference'], $row['date'],
+                $row['reviewed'],
                 $row['rawSRP'],
                 $row['upc'],
                 $row['srp'],
                 100*$row['desired_margin'],
                 $row['upc'],
                 ($row['variable_pricing']>=1?'checked':''),
+                $row['prtDesc'],
                 (isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc'],
                 (!isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc']
             );

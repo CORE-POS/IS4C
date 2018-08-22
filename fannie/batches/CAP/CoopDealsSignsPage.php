@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class CoopDealsSignsPage extends FannieRESTfulPage 
+class CoopDealsSignsPage extends FannieRESTfulPage
 {
     protected $title = "Fannie - Coop Deals Signs Page";
     protected $header = "Print Coop Deals Signs";
@@ -36,7 +36,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
 
     protected $auth_classes = array('batches');
     protected $must_authenticate = true;
-    
+
 
     public function preprocess()
     {
@@ -51,16 +51,17 @@ class CoopDealsSignsPage extends FannieRESTfulPage
         $cycle = FormLib::get('cycle');
         $month = FormLib::get('dealSet');
         $year = FormLib::get('year');
+        $storeID = FormLib::get('store');
         $dir = __DIR__;
 
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        
-        $Qcycle = ($cycle == 'A') ? 
-            "AND (batchName like '%Deals A%' OR batchName like '%Deals TPR%') " : 
+
+        $Qcycle = ($cycle == 'A') ?
+            "AND (batchName like '%Deals A%' OR batchName like '%Deals TPR%') " :
             "AND batchName like '%Deals B%' ";
-        $Qdealset = "AND batchName like '%$month%' "; 
-        
+        $Qdealset = "AND batchName like '%$month%' ";
+
         $args = array($year);
         $query = '
             SELECT
@@ -78,12 +79,40 @@ class CoopDealsSignsPage extends FannieRESTfulPage
         ';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep,$args);
-        $url = $this->config->get('URL');
+        $url = "http://key" . $this->config->get('URL') . "/admin/labels/SignFromSearch.php?store=$storeID&";
         $batchLists = array(
-            '16TPR' => "$url/admin/labels/SignFromSearch.php?",
-            '16CD' => "$url/admin/labels/SignFromSearch.php?",
-            '12TPR' => "$url/admin/labels/SignFromSearch.php?",
-            '12CD' => "$url/admin/labels/SignFromSearch.php?",
+            '16TPR' => array(
+                'MERCH' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
+            '16CD' => array(
+                'MERCH' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
+            '12TPR' => array(
+                'MERCH' => $url,
+                'LAMINATES' => $url,
+                'BULK' => $url,
+                'FROZEN' => $url,
+                'GROCERY' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
+            '12CD' => array(
+                'MERCH' => $url,
+                'LAMINATES' => $url,
+                'BULK' => $url,
+                'FROZEN' => $url,
+                'GROCERY' => $url,
+                'PRODUCE' => $url,
+                'DELI' => $url,
+                'WELLNESS' => $url,
+            ),
         );
         while ($row = $dbc->fetchRow($res)) {
             $batchName = $row['batchName'];
@@ -91,39 +120,94 @@ class CoopDealsSignsPage extends FannieRESTfulPage
             $id = $row['batchID'];
             if (in_array($owner, array('WELLNESS','PRODUCE'))) {
                 if (strpos($batchName,'TPR')) {
-                    $batchLists['16TPR'] .= 'batch[]='.$id.'&';
+                    if ($owner == 'PRODUCE') {
+                        $batchLists['16TPR']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    } elseif ($owner == 'WELLNESS') {
+                        $batchLists['16TPR']['WELLNESS'] .= 'batch[]='.$id.'&';
+                    }
                 } else {
-                    $batchLists['16CD'] .= 'batch[]='.$id.'&';
+                    if ($owner == 'PRODUCE') {
+                        $batchLists['16CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    } elseif ($owner == 'WELLNESS') {
+                        $batchLists['16CD']['WELLNESS'] .= 'batch[]='.$id.'&';
+                    }
                 }
             } else {
-                if (strpos($batchName,'TPR')) {
-                    $batchLists['12TPR'] .= 'batch[]='.$id.'&';
+                if ($owner == 'PRODUCE') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                    }
+                } elseif ($owner == 'DELI') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['DELI'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['DELI'] .= 'batch[]='.$id.'&';
+                    }
+                } elseif ($owner == 'REFRIGERATED' || $owner == 'MEAT' || $owner == 'BULK') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['LAMINATES'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['LAMINATES'] .= 'batch[]='.$id.'&';
+                    }
+                } elseif ($owner == 'GROCERY') {
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['GROCERY'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['GROCERY'] .= 'batch[]='.$id.'&';
+                    }
                 } else {
-                    $batchLists['12CD'] .= 'batch[]='.$id.'&';
+                    if (strpos($batchName,'TPR')) {
+                        $batchLists['12TPR']['MERCH'] .= 'batch[]='.$id.'&';
+                    } else {
+                        $batchLists['12CD']['MERCH'] .= 'batch[]='.$id.'&';
+                    }
                 }
             }
         }
-        
+        $disabled = ($cycle == 'B') ? 'collapse' : '';
+
         return <<<HTML
 {$this->get_view()}
 <form method="get" class="form-inline">
     </br>
-    <label>Print Signs for $month $cycle $year </label></br>
+    <h4>Print Signs for $month $cycle $year </h4>
     <div class="form-group">
-        <input type="checkbox" id="check1">
-        <a class="btn btn-success" href="{$batchLists['12CD']}" id="a1" target="_blank">12UP <b>{$cycle}</b></a>
+        <a class="btn btn-success" onclick="
+            window.open('{$batchLists["12CD"]["MERCH"]}');
+            window.open('{$batchLists["12CD"]["DELI"]}');
+            window.open('{$batchLists["12CD"]["LAMINATES"]}');
+            window.open('{$batchLists["12CD"]["GROCERY"]}');
+            return false;
+            "
+            id="a1" target="_blank">12UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
-        <input type="checkbox" id="check2">
-        <a class="btn btn-success" href="{$batchLists['16CD']}" id="a2" target="_blank">16UP <b>{$cycle}</b></a>
+        <a class="btn btn-success" onclick="
+            window.open('{$batchLists["16CD"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            window.open('{$batchLists["16CD"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            return false;
+            "
+            id="a2" target="_blank">16UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
-        <input type="checkbox" id="check3">
-        <a class="btn btn-warning" href="{$batchLists['12TPR']}" id="a3" target="_blank">12UP <b>TPR</b></a>
+        <a class="btn btn-warning $disabled" onclick="
+            window.open('{$batchLists["12TPR"]["MERCH"]}');
+            window.open('{$batchLists["12TPR"]["DELI"]}');
+            window.open('{$batchLists["12TPR"]["LAMINATES"]}');
+            window.open('{$batchLists["12TPR"]["GROCERY"]}');
+            return false;
+            "
+            id="a3" target="_blank">12UP <b>TPR</b></a>
     </div>
     <div class="form-group">
-        <input type="checkbox" id="check4">
-        <a class="btn btn-warning" href="{$batchLists['16TPR']}" id="a4" target="_blank">16UP <b>TPR</b></a>
+        <a class="btn btn-warning $disabled" onclick="
+            window.open('{$batchLists["16TPR"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            window.open('{$batchLists["16TPR"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            return false;
+            "
+            id="a4" target="_blank">16UP <b>TPR</b></a>
     </div>
 </form>
 <br/>
@@ -156,41 +240,54 @@ HTML;
         $cycles = array('A','B');
         $cycle_opts = '';
         foreach ($cycles as $cycle) {
-            $cycle_opts .= sprintf('<option %s>%s</option>',
-                ($set == FormLib::get('cycle') ? 'selected' : ''),
-                $cycle
-            );
+            $sel = ($cycle == FormLib::get('cycle')) ? " selected " : "";
+            $cycle_opts .= "<option value='$cycle' $sel>$cycle</option>";
         }
 
         $years = '';
         $curYear = 2019;
         $curMonth = date('m');
         for ($i=2017; $i<$curYear; $i++) {
-            $years .= "<option value='$i'>$i</option>";
+            $sel = ($i == FormLib::get('year')) ? " selected " : "";
+            $years .= "<option value='$i' $sel>$i</option>";
         }
+
+        $stores = new StoresModel($this->connection);
+        $stores->hasOwnItems(1);
+        $store_opts = "";
+        $store_opts .= '<select class="form-control" name="store">
+                <option value="0">Any Store</option>';
+        foreach ($stores->find() as $s) {
+            $store_selected = (FormLib::get('store') == $s->storeID()) ? ' SELECTED ' : '';
+            $store_opts .= sprintf('<option value="%d" %s>%s</option>',
+                $s->storeID(), $store_selected, $s->description());
+        }
+        $store_opts .= '</select>';
 
         $form = sprintf('
             <form method="get" class="form-inline">
-                <div class="input-group">
+                <div class="form-group"><div class="input-group">
                     <div class="input-group-addon">Year</div>
                     <select name="year" class="form-control">%s</select>
-                </div>
-                <div class="input-group">
+                </div></div>
+                <div class="form-group"><div class="input-group">
                     <div class="input-group-addon">Month</div>
                     <select name="dealSet" class="form-control">%s</select>
-                </div>
-                <div class="input-group">
+                </div></div>
+                <div class="form-group"><div class="input-group">
                     <div class="input-group-addon">Cycle: </div>
                     <select name="cycle" class="form-control">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
+                        %s
                     </select>
-                </div>
-                <div class="input-group">
+                </div></div>
+                <div class="form-group"><div class="input-group">
+                    %s
+                </div></div>
+                <div class="form-group"><div class="input-group">
                     <button type="submit" class="btn btn-default">Load</button>
-                </div>
+                </div></div>
             </form>
-        ',$years,$deal_opts);
+        ', $years, $deal_opts, $cycle_opts, $store_opts);
         return <<<HTML
 {$form}
 HTML;
@@ -200,16 +297,16 @@ HTML;
     {
         return <<<HTML
 $('#a1').click(function(){
-    $('#check1').prop('checked', true);
+    $(this).addClass('disabled');
 });
 $('#a2').click(function(){
-    $('#check2').prop('checked', true);
+    $(this).addClass('disabled');
 });
 $('#a3').click(function(){
-    $('#check3').prop('checked', true);
+    $(this).addClass('disabled');
 });
 $('#a4').click(function(){
-    $('#check4').prop('checked', true);
+    $(this).addClass('disabled');
 });
 HTML;
     }
@@ -220,6 +317,18 @@ HTML;
 .btn-success, .btn-warning {
     width: 150px;
 }
+HTML;
+    }
+
+    public function helpContent()
+    {
+        return <<<HTML
+<label>Find and separate Co+op Deals sales signage by</label>:
+<ul>
+    <li>Department (Grocery Super Dept. is kept separate)</li>
+    <li>Signs that need to be laminated.</li>
+    <li>Signs that do not require lamination.</li>
+</ul>
 HTML;
     }
 

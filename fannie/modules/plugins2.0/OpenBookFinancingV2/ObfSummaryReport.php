@@ -220,9 +220,23 @@ class ObfSummaryReport extends ObfWeeklyReportV2
 
     private function getPlanSales($weekID)
     {
-        if ($weekID >= 214) {
-            list($year, $month) = $this->weekToYM($weekID);
+        if ($weekID >= 218) {
+            $prep = $this->connection->prepare("
+                SELECT l.obfCategoryID, s.superID, (1+l.growthTarget)*s.lastYearSales AS plan
+                FROM " . FannieDB::fqn('ObfLabor', 'plugin:ObfDatabaseV2') . " AS l
+                    INNER JOIN " . FannieDB::fqn('ObfCategories', 'plugin:ObfDatabaseV2') . " AS c ON l.obfCategoryID=c.obfCategoryID
+                    INNER JOIN " . FannieDB::fqn('ObfSalesCache', 'plugin:ObfDatabaseV2') . " AS s
+                        ON c.obfCategoryID=s.obfCategoryID AND l.obfWeekID=s.obfWeekID
+                WHERE l.obfWeekID=?");
+            $res = $this->connection->execute($prep, array($weekID));
             $ret = array();
+            while ($row = $this->connection->fetchRow($res)) {
+                $key = $row['obfCategoryID'] . ',' . $row['superID'];
+                $ret[$key] = $row['plan'];
+            }
+            return $ret;
+        } elseif ($weekID >= 214) {
+            list($year, $month) = $this->weekToYM($weekID);
             $prep = $this->connection->prepare('SELECT c.obfCategoryID, m.superID, p.planGoal
                 FROM ' . FannieDB::fqn('ObfCategories', 'plugin:ObfDatabaseV2') . ' AS c
                 INNER JOIN ' . FannieDB::fqn('ObfCategorySuperDeptMap', 'plugin:ObfDatabaseV2') . ' AS m ON c.obfCategoryID=m.obfCategoryID
@@ -373,8 +387,10 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                         $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
                     }
                     $ou_weeks = ($week->obfWeekID() - $this->getOuStart($week->obfWeekID())) + 1;
-                    $qtd_dept_plan += ($proj * $ou_weeks);
+                    $ou_plan = $this->getPlanRange($this->getOuStart($week->obfWeekID()), $week->obfWeekID(), $category->obfCategoryID(), $row['superID']);
+                    //$qtd_dept_plan += ($proj * $ou_weeks);
                     $qtd_dept_sales += $quarter['actual'];
+                    $qtd_dept_plan += $ou_plan;
                     $total_trans->quarterThisYear = $quarter['trans'];
                     $total_trans->quarterLastYear = $quarter['ly_trans'];
 
@@ -392,8 +408,10 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                     $dept_proj += $proj;
                     $total_sales->quarterProjected += ($proj * $ou_weeks);
                     $total_sales->quarterActual += $quarter['actual'];
-                    $qtd_sales_ou += ($quarter['actual'] - ($proj * $ou_weeks));
-                    $qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                    //$qtd_sales_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                    //$qtd_dept_ou += ($quarter['actual'] - ($proj * $ou_weeks));
+                    $qtd_sales_ou += ($quarter['actual'] - ($ou_plan));
+                    $qtd_dept_ou += ($quarter['actual'] - ($ou_plan));
                 }
 
                 $labor->obfCategoryID($category->obfCategoryID());

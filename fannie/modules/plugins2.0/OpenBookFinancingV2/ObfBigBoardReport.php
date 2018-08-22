@@ -14,9 +14,16 @@ class ObfBigBoardReport extends FannieRESTfulPage
     protected $title = 'OBF Big Board';
 
     protected $OU_START = 162;
+    protected $PLAN_CACHE1 = null;
+    protected $PLAN_CACHE2 = null;
+
     protected function getOuStart($weekID)
     {
-        if ($weekID >= 188) {
+        if ($weekID >= 214) {
+            return 214;
+        } elseif ($weekID >= 201) {
+            return 201;
+        } elseif ($weekID >= 188) {
             return 188;
         } elseif ($weekID >= 175) {
             return 175;
@@ -161,7 +168,22 @@ class ObfBigBoardReport extends FannieRESTfulPage
     {
         $ttl = 0;
         $plan = $this->PLAN_SALES_Q1_2018;
-        if ($weekID >= 214) {
+        if ($weekID >= 218) {
+            $prep = $this->connection->prepare("
+                SELECT l.obfCategoryID, s.superID, (1+l.growthTarget)*s.lastYearSales AS plan
+                FROM " . FannieDB::fqn('ObfLabor', 'plugin:ObfDatabaseV2') . " AS l
+                    INNER JOIN " . FannieDB::fqn('ObfCategories', 'plugin:ObfDatabaseV2') . " AS c ON l.obfCategoryID=c.obfCategoryID
+                    INNER JOIN " . FannieDB::fqn('ObfSalesCache', 'plugin:ObfDatabaseV2') . " AS s
+                        ON c.obfCategoryID=s.obfCategoryID AND l.obfWeekID=s.obfWeekID
+                WHERE l.obfWeekID=?");
+            $res = $this->connection->execute($prep, array($weekID));
+            $ret = array();
+            while ($row = $this->connection->fetchRow($res)) {
+                $key = $row['obfCategoryID'] . ',' . $row['superID'];
+                $ret[$key] = $row['plan'];
+            }
+            $plan = $ret;
+        } elseif ($weekID >= 214) {
             list($year, $month) = $this->weekToYM($weekID);
             $ret = array();
             $prep = $this->connection->prepare('SELECT c.obfCategoryID, m.superID, p.planGoal
@@ -175,7 +197,7 @@ class ObfBigBoardReport extends FannieRESTfulPage
                 $key = $row['obfCategoryID'] . ',' . $row['superID'];
                 $ret[$key] = ($row['planGoal'] / $days) * 7;
             }
-            return $ret;
+            $plan = $ret;
         } elseif ($weekID >= 201) {
             return $this->PLAN_SALES_Q4_2018;
         } elseif ($weekID >= 188) {

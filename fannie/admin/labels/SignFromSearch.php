@@ -347,8 +347,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret .= '<select class="form-control" name="store">
                 <option value="0">Any Store</option>';
         foreach ($stores->find() as $s) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                $s->storeID(), $s->description());
+            $store_selected = (FormLib::get('store') == $s->storeID()) ? ' SELECTED ' : '';
+            $ret .= sprintf('<option value="%d" %s>%s</option>',
+                $s->storeID(), $store_selected, $s->description());
         }
         $ret .= '</select>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';

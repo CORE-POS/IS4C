@@ -1314,22 +1314,30 @@ HTML;
             $ret .= '</div></div>';
         }
 
+        ob_start();
+        $this->get_orderID_customer_handler();
+        $customerInfo = ob_get_clean();
+        $customerInfo = json_decode($customerInfo, true);
+        ob_start();
+        $this->get_orderID_items_handler();
+        $itemInfo = ob_get_clean();
+
         $ret .= <<<HTML
 <p />
 <input type=hidden id=redirectURL value="{$return_path}" />
 <div class="panel panel-default">
     <div class="panel-heading">Customer Information</div>
-    <div class="panel-body" id="customerDiv"></div>
+    <div class="panel-body" id="customerDiv">{$customerInfo['customer']}</div>
 </div>
 <div class="panel panel-default">
     <div class="panel-heading">Order Items</div>
-    <div class="panel-body" id="itemDiv"></div>
+    <div class="panel-body" id="itemDiv">{$itemInfo}</div>
 </div>
-<div id="footerDiv"></div>
+<div id="footerDiv">{$customerInfo['footer']}</div>
 <input type=hidden value="{$orderID}" id="init_oid" />
 HTML;
 
-        $this->addScript('orderview.js');
+        $this->addScript('orderview.js?date=20180809');
         $this->addScript('../item/autocomplete.js');
         $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');

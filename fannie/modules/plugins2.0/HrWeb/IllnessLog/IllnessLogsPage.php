@@ -156,6 +156,7 @@ class IllnessLogsPage extends FannieRESTfulPage
                 LEFT JOIN IllnessTypes AS t ON m.illnessTypeID=t.illnessTypeID
                 LEFT JOIN Employees AS e ON i.employeeID = e.employeeID
             WHERE i.inactive=0
+                AND i.finalFormSubmitted=0
             GROUP BY i.illnessLogID,
                 i.illnessDate,
                 e.firstName,

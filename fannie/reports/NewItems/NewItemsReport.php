@@ -68,6 +68,7 @@ class NewItemsReport extends FannieReportPage
         $deptEnd = FormLib::get('deptEnd');
         $deptMulti = FormLib::get('departments', array());
         $subs = FormLib::get('subdepts', array());
+        $store = FormLib::get('store');
     
         $buyer = FormLib::get('buyer', '');
 
@@ -95,6 +96,7 @@ class NewItemsReport extends FannieReportPage
         $args[] = $date2.' 23:59:59';
         $args[] = $date1.' 00:00:00';
         $args[] = $date2.' 23:59:59';
+        $args[] = $store;
         $dlog = DTransactionsModel::selectDLog($date1, $date2);
 
         $query = "SELECT MAX(p.created) AS entryDate, " . DTrans::sumQuantity('t') . " AS qty,
@@ -112,6 +114,7 @@ class NewItemsReport extends FannieReportPage
         $query .= "WHERE $where
                 AND (t.tdate IS NULL OR t.tdate BETWEEN ? AND ?)
                 AND p.created BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 't') . "
             GROUP BY p.upc,p.brand,p.description,p.department, d.dept_name";
 
         $prep = $dbc->prepare($query);
