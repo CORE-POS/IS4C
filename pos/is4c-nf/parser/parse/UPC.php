@@ -797,7 +797,7 @@ class UPC extends Parser
                 'department' => $row['department'],
                 'charflag' => 'IU',
             ));
-            if (substr($row['upc'], 0, 6) == '000000') {
+            if (substr($row['upc'], 0, 6) == '000000' && $this->session->get('msgrepeat') == 0) {
                 $this->session->set("strEntered",$row["upc"]);
                 $this->session->set("boxMsg", _("Not an active item: ") . $row['description']);
                 $this->session->set('boxMsgButtons', array(
