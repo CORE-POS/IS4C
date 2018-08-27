@@ -7,16 +7,16 @@ function getFailedTrans($dateStr,$hour){
     global $sql;
 
     $trans_stack = array();
+    $dateStr = date('Ymd', strtotime($dateStr));
     $query = $sql->prepare("
         SELECT refNum
         FROM PaycardTransactions
         WHERE 
-        dateID=?
-        AND ".$sql->hour('requestDatetime')."=?
+        dateID=$dateStr
+        AND ".$sql->hour('requestDatetime')."=$hour
         AND httpCode <> 200
         AND (refNum like '%-%')");
-    $dateStr = date('Ymd', strtotime($dateStr));
-    $response = $sql->execute($query,array($dateStr,$hour));
+    $response = $sql->execute($query);
     while($row = $sql->fetch_row($response))
         $trans_stack[] = $row['refNum'];
 
