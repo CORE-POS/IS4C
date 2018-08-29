@@ -264,14 +264,32 @@ those same items revert to normal pricing.
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
         if ($batchInfoW['discountType'] != 0 && $batchInfoW['exitInventory'] == 1) {
+            $storeP = $this->connection->prepare('SELECT storeID FROM StoreBatchMap WHERE batchID=?');
+            $stores = $this->connection->getAllRows($storeP, array($id));
+            $stores = array_map(function ($i) { return $i['storeID']; }, $stores);
+            list($inStr, $args) = $this->connection->safeInClause($stores);
             $invP = $this->connection->prepare("
                 UPDATE InventoryCounts AS i
                 SET i.par=0
                 WHERE i.mostRecent=1
+                    AND i.storeID IN ({$inStr})
                     AND i.upc IN (
                         SELECT b.upc FROM batchList AS b WHERE b.batchID=?
                     )");
-            $invR = $this->connection->execute($invP, array($id));
+            $args[] = $id;
+            $invR = $this->connection->execute($invP, $args);
+
+            $args = array( (1 << (20 - 1)), date('Y-m-d H:i:s'));
+            list($inStr, $args) = $this->connection->safeInClause($stores, $args);
+            $args[] = $id;
+            $prodP = $this->connection->prepare("
+                UPDATE products AS p
+                    INNER JOIN batchList AS b ON p.upc=b.upc
+                SET numflag = numflag | ?,
+                    modified = ?
+                WHERE p.store_id IN ({$inStr})
+                    AND b.batchID=?"); 
+            $this->connection->execute($prodP, $args);
         }
 
         if ($batchInfoW['discountType'] == 0) {
