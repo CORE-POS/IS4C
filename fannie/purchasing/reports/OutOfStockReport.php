@@ -33,7 +33,7 @@ class OutOfStockReport extends FannieReportPage
     public $description = '[Out of Stock Report] lists item that were ordered from vendors but not received';
     public $report_set = 'Purchasing';
 
-    protected $report_headers = array('Vendor', 'Order Date', 'Invoice#', 'SKU', 'UPC', 'Brand', 'Description', 'Qty Ordered', 'Number of Orders');
+    protected $report_headers = array('Vendor', 'Most Recent Order', 'Invoice#', 'SKU', 'UPC', 'Brand', 'Description', 'Qty Ordered', 'Consecutive', 'Last In Stock');
     protected $required_fields = array('date1', 'date2');
     public $themed = true;
     protected $sort_column = 8;
@@ -47,6 +47,7 @@ class OutOfStockReport extends FannieReportPage
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
         $vendor = FormLib::get('vendorID');
+        $store = FormLib::get('store');
 
         $query = '
             SELECT o.vendorID,
@@ -58,7 +59,8 @@ class OutOfStockReport extends FannieReportPage
                 i.brand,
                 i.description,
                 i.quantity,
-                o.placedDate
+                o.placedDate,
+                o.storeID
             FROM PurchaseOrder AS o
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
                 LEFT JOIN vendors AS v ON o.vendorID=v.vendorID
@@ -70,16 +72,22 @@ class OutOfStockReport extends FannieReportPage
             $query .= ' AND o.vendorID=? ';
             $args[] = $vendor;
         }
+        if ($store) {
+            $query .= ' AND o.storeID=? ';
+            $args[] = $store;
+        }
+        $query .= ' ORDER BY placedDate DESC';
 
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         $report = array();
         $counts = array();
         while ($w = $dbc->fetchRow($res)) {
-            if (!isset($counts[$w['sku']])) {
-                $counts[$w['sku']] = 0;
+            if (isset($counts[$w['sku']])) {
+                continue;
             }
-            $counts[$w['sku']]++;
+            $counts[$w['sku']] = $w;
+
             $report[] = array(
                 $w['vendorName'],
                 $w['placedDate'],
@@ -93,9 +101,31 @@ class OutOfStockReport extends FannieReportPage
             );
         }
 
+        $consQ = "
+            SELECT quantity, receivedQty, placedDate
+            FROM PurchaseOrder AS o
+                INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
+            WHERE o.placedDate < ?
+                AND o.storeID=?
+                AND o.vendorID=?
+                AND i.sku=?
+            ORDER BY placedDate DESC";
+        $consP = $dbc->prepare($consQ);
         for ($i=0; $i<count($report); $i++) {
             $sku = $report[$i][3];
-            $report[$i][8] = $counts[$sku];
+            $info = $counts[$sku];
+            $consecutive = 1;
+            $lastReceived = 'n/a';
+            $res = $dbc->execute($consP, array($info['placedDate'], $info['storeID'], $info['vendorID'], $sku));
+            while ($row = $dbc->fetchRow($res)) {
+                if ($row['quantity'] > 0 && $row['receivedQty'] > 0) {
+                    $lastReceived = $row['placedDate'];
+                    break;
+                }
+                $consecutive++;
+            }
+            $report[$i][8] = $consecutive;
+            $report[$i][9] = $lastReceived;
         }
 
         return $report;
@@ -104,6 +134,7 @@ class OutOfStockReport extends FannieReportPage
     function form_content()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $stores = FormLib::storePicker();
         ob_start();
         ?>
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
@@ -130,6 +161,10 @@ class OutOfStockReport extends FannieReportPage
         }
         ?>
         </select>
+    </div>
+    <div class="form-group">
+        <label>Store</label>
+        <?php echo $stores['html']; ?>
     </div>
     <p>
         <button type="submit" class="btn btn-default btn-core">Submit</button>
