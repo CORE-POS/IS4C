@@ -75,6 +75,7 @@ echo strtoupper(date("F",$stamp));
 echo " ";
 echo date("Y",$stamp);
 $dlog = "trans_archive.dlogBig";
+$dtrans = "trans_archive.bigArchive";
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
     echo "<a href=index.php?excel=xls&monthMinus=$monthMinus&store=$store>Save to Excel</a>";
@@ -168,6 +169,7 @@ if (true || !$output){
         AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY d.salesCode,d.margin, l.store_id
         ORDER BY d.salesCode");
+    $taxP = $dbc->prepare("SELECT SUM(total) FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND card_no=? AND upc='TAX' AND " . DTrans::isStoreID($store));
     foreach ($accounts as $account){
         echo "<br /><b>Total for $account</b>";
         $totalR = $dbc->execute($totalQ,array($account,$span[0],$span[1],$store));
@@ -182,6 +184,8 @@ if (true || !$output){
                 $data[$code][2] += $totalW[2];
             }
         }
+        $taxes = sprintf('%.2f', $dbc->getValue($taxP, array($span[0], $span[1], $account, $store)));
+        $data['TAX'] = array(0, $taxes, 0);
         echo tablify($data,array(0,1,2,3),array("pCode","Retail","Account","Wholesale"),
             array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_CENTER,$ALIGN_RIGHT|$TYPE_MONEY),
             2,array(1,3));
