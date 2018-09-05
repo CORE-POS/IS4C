@@ -1,6 +1,6 @@
 <?php
 use COREPOS\pos\lib\MiscLib;
-include(__DIR__ . '/../../lib/AutoLoader.php');
+include_once(__DIR__ . '/../../lib/AutoLoader.php');
 $jquery = MiscLib::jqueryFile();
 
 /**
