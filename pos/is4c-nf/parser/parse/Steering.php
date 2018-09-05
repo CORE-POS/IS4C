@@ -251,6 +251,10 @@ class Steering extends Parser
             case "PO":
                 $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-PriceOverrideAdminLogin";
                 return true;
+
+            case 'HELP':
+                $this->ret['main_frame'] = $myUrl . 'gui-modules/help/HelpPage.php';
+                return true;
         }
 
         return false;
