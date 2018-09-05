@@ -613,9 +613,9 @@ those same items revert to normal pricing.
                     'id' => $scaleW['serviceScaleID'],
                     'new' => false,
                 );
-                COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($items, array($scale));
-                COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($items, array($scale));
             }
+            COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($items, $scales);
+            COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($items, $scales);
         }
     }
 
