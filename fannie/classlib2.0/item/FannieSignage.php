@@ -714,7 +714,7 @@ class FannieSignage
         }
 
         $url = FannieConfig::factory()->get('URL');
-        $ret = '<table class="table tablesorter tablesorter-core">';
+        $ret = '<table class="table tablesorter tablesorter-core" id="printSignTable">';
         $ret .= '<thead>';
         $ret .= '<tr>
             <th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th>

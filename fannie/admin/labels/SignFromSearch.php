@@ -377,6 +377,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
         $ret .= '</form>';
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addScript('../../src/javascript/chkboxMulticlick.js');
+        $this->addOnloadCommand('allow_group_select_checkboxes("printSignTable")');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
         //$this->addOnloadCommand("$('#updateBtn').click(function(){confirm(\"hi\")});");
 
