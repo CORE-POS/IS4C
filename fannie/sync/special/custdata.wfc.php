@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../config.php');
-require_once(__DIR__ . '/generic.mysql.php');
+require(__DIR__ . '/generic.mysql.php');
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane) {
