@@ -20,6 +20,8 @@ class IllnessLogReport extends FannieReportPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
         $ret = array();
+        $year = date('Y');
+        $cutoff = ($year - 1) . '-01-01';
         if ($this->report_format == 'html') {
             $ret[] = '<p><form action="IllnessLogReport.php" id="fForm" method="get" class="form-inline">';
             $ret[] = '<a href="../HrMenu.php" class="btn btn-default btn-small">Main Menu</a> | ';
@@ -30,9 +32,13 @@ class IllnessLogReport extends FannieReportPage
                 . $model->toOptions($store) . '</select> | ';
 
             $emp = FormLib::get('fEmp', false);
-            $res = $dbc->query('SELECT i.employeeID AS id, e.firstName, e.lastName FROM IllnessLogs AS i INNER JOIN Employees AS e ON i.employeeID=e.employeeID
+            $prep = $dbc->prepare('SELECT i.employeeID AS id, e.firstName, e.lastName
+                FROM IllnessLogs AS i
+                    INNER JOIN Employees AS e ON i.employeeID=e.employeeID
+                WHERE i.illnessDate >= ?
                 GROUP BY i.employeeID, e.firstName, e.lastName
                 ORDER BY e.lastName, e.firstName');
+            $res = $dbc->execute($prep, array($cutoff));
             $eOpts = '';
             while ($row = $dbc->fetchRow($res)) {
                 $eOpts .= sprintf('<option %s value="%d">%s, %s</option>',
@@ -99,7 +105,9 @@ class IllnessLogReport extends FannieReportPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
 
-        $args = array();
+        $year = date('Y');
+        $cutoff = ($year - 1) . '-01-01';
+        $args = array($cutoff);
         $openQ = '
             SELECT i.illnessLogID,
                 i.illnessDate,
@@ -115,7 +123,7 @@ class IllnessLogReport extends FannieReportPage
                 LEFT JOIN IllnessLogsIllnessTypes AS m ON i.illnessLogID=m.illnessLogID
                 LEFT JOIN IllnessTypes AS t ON m.illnessTypeID=t.illnessTypeID
                 LEFT JOIN Employees AS e ON i.employeeID = e.employeeID 
-            WHERE 1=1 ';
+            WHERE i.illnessDate >= ? ';
         if (FormLib::get('fEmp')) {
             $openQ .= ' AND i.employeeID=? ';
             $args[] = FormLib::get('fEmp');
