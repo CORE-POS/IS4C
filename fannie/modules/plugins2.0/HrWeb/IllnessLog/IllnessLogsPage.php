@@ -138,9 +138,9 @@ class IllnessLogsPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $editCSS 'collapse';
+        $editCSS = 'collapse';
         if (FannieAuth::validateUserQuiet('hr_editor') || FannieAuth::validateUserQuiet('illness_editor')) {
-            $editCSS '';
+            $editCSS = '';
         }
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);

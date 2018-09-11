@@ -11,7 +11,7 @@ class IllnessLogReport extends FannieReportPage
     protected $title = 'Illness Logs';
     public $default_db = 'wfc_hr';
     protected $must_authenticate = true;
-    protected $auth_classes = array('hr_editor', 'hr_viewer');
+    protected $auth_classes = array('hr_editor', 'illness_editor', 'illness_viewer');
     protected $new_tablesorter = true;
     protected $report_headers = array('Illness Date', 'Employee', 'Type(s)', 'Excl.', 'MDH', 'Return Date', 'Final Form', 'Comments');
 
