@@ -22,6 +22,13 @@ class EmployeesPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('hr_editor', 'hr_viewer');
 
+    public function preprocess()
+    {
+        $this->addRoute('get<all>');
+
+        return parent::preprocess();
+    }
+
     protected function delete_handler()
     {
         $allowed = FannieAuth::validateUserQuiet('hr_editor');
@@ -249,28 +256,36 @@ class EmployeesPage extends FannieRESTfulPage
         return $ret;
     }
 
+    public function get_all_view()
+    {
+        return $this->get_view();
+    }
+
     public function get_view()
     {
         $editCSS = FannieAuth::validateUserQuiet('hr_editor') ? '' : 'collapse';
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
+        $where = isset($this->all) ? 'WHERE 1=1' : 'WHERE e.deleted=0';
         // this query does not work... 
         $res = $dbc->query("
             SELECT e.firstName,
                 e.lastName,
                 e.employeeID,
                 s.statusID,
-                s.statusName
+                s.statusName,
+                e.deleted
             FROM Employees as e
                 LEFT JOIN Statuses as s ON e.employeeStatusID=s.statusID
-            WHERE e.deleted=0
+            {$where}
             ORDER BY e.lastName, e.firstName");
         $tableBody = '';
         while ($row = $dbc->fetchRow($res)){
-            $tableBody .= sprintf('<tr><td><a href="?id=%d">%s</a></td>
+            $tableBody .= sprintf('<tr %s><td><a href="?id=%d">%s</a></td>
             <td>%s</td>
             <td class="%s"><a href="?_method=delete&employeeID=%d">%s</a></td>
             </tr>',
+            ($row['deleted'] ? 'class="danger"' : ''),
             $row['employeeID'], ($row['lastName'] . ', ' . $row['firstName']),
             $row['statusName'],
             $editCSS,$row['employeeID'], FannieUI::deleteIcon()
@@ -278,9 +293,14 @@ class EmployeesPage extends FannieRESTfulPage
         }
         $stat = new COREPOS\Fannie\Plugin\HrWeb\sql\StatusesModel($dbc);
         $stat = $stat->toOptions();
+        $allBtn = !isset($this->all) ? '<a href="EmployeesPage.php?all=1" class="btn btn-default">Show Archived</a>' 
+             : '<a href="EmployeesPage.php" class="btn btn-default">Show Only Current</a>';
 
          return <<<HTML
-<p><a href="../HrMenu.php" class="btn btn-default">Main Menu</a></p>
+<p>
+    <a href="../HrMenu.php" class="btn btn-default">Main Menu</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;{$allBtn}
+</p>
 <table class="table table-bordered table-striped">
 <tr><th>Employee Name </th><th>Employement Status</th><th>Delete</th></tr>
 {$tableBody}

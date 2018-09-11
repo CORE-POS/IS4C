@@ -13,7 +13,7 @@ class IllnessTypesPage extends FannieRESTfulPage
     protected $title = 'IllnessTypes';
     public $default_db = 'wfc_hr';
     protected $must_authenticate = true;
-    protected $auth_classes = array('hr_editor', 'hr_viewer');
+    protected $auth_classes = array('hr_editor', 'illness_editor');
 
     protected function post_handler()
     {
@@ -37,7 +37,6 @@ class IllnessTypesPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $editCSS = FannieAuth::validateUserQuiet('hr_editor') ? '' : 'collapse';
         $res = $this->connection->query('
             SELECT illnessType, exclusionary
             FROM ' . FannieDB::fqn('IllnessTypes', 'plugin:HrWebDB') . '
@@ -55,7 +54,7 @@ class IllnessTypesPage extends FannieRESTfulPage
     <tr><th>Name</th><th>Exclusionary</th></tr>
     {$table}
 </table>
-<div class="panel panel-default {$editCSS}">
+<div class="panel panel-default">
     <div class="panel-heading">Create Position</div>
     <div class="panel-body">
         <form method="post" action="IllnessTypesPage.php">

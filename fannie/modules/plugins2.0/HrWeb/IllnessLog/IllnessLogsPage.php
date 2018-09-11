@@ -17,7 +17,7 @@ class IllnessLogsPage extends FannieRESTfulPage
     protected $title = 'Illness Logs';
     public $default_db = 'wfc_hr';
     protected $must_authenticate = true;
-    protected $auth_classes = array('hr_editor', 'hr_viewer');
+    protected $auth_classes = array('hr_editor', 'illness_editor');
 
     protected function post_id_handler()
     {
@@ -138,7 +138,10 @@ class IllnessLogsPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $editCSS = FannieAuth::validateUserQuiet('hr_editor') ? '' : 'collapse';
+        $editCSS 'collapse';
+        if (FannieAuth::validateUserQuiet('hr_editor') || FannieAuth::validateUserQuiet('illness_editor')) {
+            $editCSS '';
+        }
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
 
@@ -184,7 +187,7 @@ class IllnessLogsPage extends FannieRESTfulPage
         $types = new IllnessTypesModel($dbc);
         $tOpts = $types->toOptions();
         $eOpts = '<option value="">Select one...</option>';
-        $res = $dbc->query('SELECT employeeID, firstName, lastName FROM Employees ORDER BY lastName, firstName');
+        $res = $dbc->query('SELECT employeeID, firstName, lastName FROM Employees WHERE deleted=0 ORDER BY lastName, firstName');
         while ($row = $dbc->fetchRow($res)) {
             $eOpts .= sprintf('<option value="%d">%s, %s</option>', $row['employeeID'], $row['lastName'], $row['firstName']);
         }
