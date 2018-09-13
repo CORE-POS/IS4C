@@ -178,21 +178,25 @@ class ItemEditorPage extends FanniePage
         }
         $ret = <<<HTML
 {$vars['msgs']}
-<form action="{$vars['self']}" method=get>
+<form action="{$vars['self']}" name="searchform" method=get>
     <div class="container-fluid">
         <div class="row form-group form-inline">
             <input name=searchupc type=text id=upc class="form-control" /> 
             {$vars['enter']}
-            <select name="ntype" class="form-control">
+            <select name="ntype" id="searchselect" class="form-control">
                 <option>UPC</option>
                 <option>SKU</option>
                 <option>Brand Prefix</option>
+                <option>Batch ID</option>
+                <option>Vendor ID</option>
+                <option>Product Physical Location</option>
+                <option>Owner Number</option>
             </select> 
             {$vars['orName']}
         </div>
     </div>
     <p>
-        <button name=searchBtn type=submit class="btn btn-default">Go</button>
+        <a name=searchBtn id="searchbtn" type=submit class="btn btn-default">Go</a>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <label>
             <input type="checkbox" name="inUse" value="1" />
@@ -735,6 +739,42 @@ HTML;
         return <<<JAVASCRIPT
 $(document).ready(function(){
     alterTable();
+
+    // don't use default keyup on inputs
+    $('#upc').keyup(function(e){
+        e.preventDefault();
+        if (e.keyCode == 13) {
+            $('#searchbtn').trigger('click');
+        }
+    });
+    $('#searchselect').keyup(function(e){
+        if (e.keyCode == 13) {
+            $('#searchbtn').trigger('click');
+        }
+    });
+    $('#searchbtn').on('click', function(){
+        var opt = $('#searchselect option:selected').text();
+        var val = $('#upc').val();
+        switch (opt) {
+            case 'UPC':
+            case 'SKU':
+            case 'Brand Prefix':
+                document.forms['searchform'].submit();
+                break;
+            case 'Batch ID':
+                window.location = '../batches/newbatch/EditBatchPage.php?id='+val;
+                break;
+            case 'Vendor ID':
+                window.location = 'vendors/VendorIndexPage.php?vid='+val;
+                break;
+            case 'Product Physical Location':
+                window.location = 'ProdLocationEditor.php?store_id=&upc='+val+'&batchCheck=&searchupc=Update+Locations+by+UPC';
+                break;
+            case 'Owner Number':
+                window.location = '../modules/plugins2.0/PIKiller/PIMemberPage.php?id='+val;
+                break;
+        }
+    });
 });
 $(window).on("resize", function(event){
     alterTable();
