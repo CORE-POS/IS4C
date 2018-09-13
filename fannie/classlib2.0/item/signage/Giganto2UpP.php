@@ -29,7 +29,7 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $MED_FONT = 22;
     protected $SMALL_FONT = 18;
     protected $SMALLER_FONT = 14;
-    protected $SMALLEST_FONT = 10;
+    protected $SMALLEST_FONT = 16;
 
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
@@ -110,6 +110,23 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     $item['originShortName'] = 'Product of ' . trim($item['originShortName']);
                 }
                 $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'C');
+            } elseif ($item['nonSalePrice'] > $item['normal_price']) {
+                $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+                $saved = $item['nonSalePrice'] - $item['normal_price'];
+                if (isset($item['signMultiplier']) && $item['signMultiplier'] > 1) {
+                    $saved *= $item['signMultiplier'];
+                }
+                $format = sprintf('$%.2f', $saved);
+                if (substr($format, -3) == '.00') {
+                    $format = substr($format, 0, strlen($format) - 3);
+                } elseif (substr($saved, 0, 3) == '$0.') {
+                    $format = substr($saved, 3) . chr(0xA2);
+                }
+                if (isset($item['signMultiplier']) && $item['signMultiplier'] > 1) {
+                    $format .= ' on ' . $item['signMultiplier'];
+                }
+                $pdf->Cell($effective_width, 20, 'You Save ' . $format, 0, 1, 'C');
             }
 
             $count++;
