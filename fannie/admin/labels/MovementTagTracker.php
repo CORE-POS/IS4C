@@ -56,22 +56,23 @@ class MovementTagTracker extends FannieRESTfulPage
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $args = array($storeID, $volMin, $volMax, $posLimit, $negLimit);
+        $var = ($storeID == 1) ? 3 : 7;
         $prep = $dbc->prepare("SELECT 
             p.upc, 
             brand, 
             description, 
-            ROUND(p.auto_par, 3) AS auto_par, 
+            ROUND(p.auto_par, 3) * $var AS auto_par, 
             ROUND(m.lastPar, 3) AS lastPar, 
-            ROUND((p.auto_par - m.lastPar), 3) AS diff
+            ROUND((p.auto_par * $var - m.lastPar), 3) AS diff
         FROM products AS p 
             LEFT JOIN MovementTags AS m ON p.upc=m.upc AND p.store_id = m.storeID 
             INNER JOIN MasterSuperDepts AS mast ON p.department = mast.dept_ID
         WHERE p.store_id = ? 
             AND inUse = 1 
-            AND mast.superID NOT IN (0, 1, 3, 6, 7) 
+            AND mast.superID NOT IN (0, 1, 3, 6, $var) 
             AND m.lastPar BETWEEN ? AND ?
-            AND ((p.auto_par - m.lastPar) > ?
-                OR (p.auto_par - m.lastPar) < ?
+            AND ((p.auto_par * $var - m.lastPar) > ?
+                OR (p.auto_par * $var - m.lastPar) < ?
             )
         ;");
         $res = $dbc->execute($prep, $args);
@@ -90,15 +91,15 @@ class MovementTagTracker extends FannieRESTfulPage
 
         $table = "";
         $thead = '';
-        $rowNames = array('upc', 'brand', 'description', 'lastPar', 'auto_par', 'diff');
-        foreach ($rowNames as $name)
-            $thead .= "<th>$name</th>"; 
+        $colNames = array('upc', 'brand', 'description', 'lastPar', 'auto_par', 'diff');
+        foreach ($colNames as $colName)
+            $thead .= "<th>$colName</th>"; 
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
             <table class='table table-bordered table-condensed table-striped'><thead >$thead</thead><tbody>";
         foreach ($this->item as $row => $array) {
             $table .= "<tr>";
-            foreach ($rowNames as $name) {
-                $table .= "<td>{$array[$name]}</td>";
+            foreach ($colNames as $colName) {
+                $table .= "<td>{$array[$colName]}</td>";
             }
             $table .= "</tr>";
         }
