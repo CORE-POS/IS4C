@@ -771,7 +771,7 @@ $(document).ready(function(){
                 window.location = 'ProdLocationEditor.php?store_id=&upc='+val+'&batchCheck=&searchupc=Update+Locations+by+UPC';
                 break;
             case 'Owner Number':
-                window.location = '../modules/plugins2.0/PIKiller/PIMemberPage.php?id='+val;
+                window.location = '../mem/MemRedirect.php?id='+val;
                 break;
         }
     });

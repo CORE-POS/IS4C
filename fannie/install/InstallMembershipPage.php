@@ -156,6 +156,19 @@ $modes = array(
 );
 echo installSelectField('FANNIE_CUST_SCHEMA', $FANNIE_CUST_SCHEMA, $modes, 0);
 ?>
+</div>
+<hr />
+<h4 class="install">Default Editor</h4>
+<div>
+Choose a tool for managing member data. Relative URLs are assumed to be internal
+to POS but absolute URLs will be followed, too.
+<br />
+Editor URL:
+<?php echo installTextField('FANNIE_MEMBER_URL', $FANNIE_MEMBER_URL, 'mem/MemberEditor.php'); ?>
+<br />
+URL Parameter name:
+<?php echo installTextField('FANNIE_MEMBER_PARAM', $FANNIE_MEMBER_PARAM, 'memNum'); ?>
+</div>
 <hr />
 <p>
     <button type="submit" class="btn btn-default">Save Configuration</button>
