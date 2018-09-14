@@ -82,7 +82,10 @@ class FannieAutoComplete extends FannieWebService
                 } elseif (ltrim($args->search, '0') != '') {
                     $prep = $dbc->prepare('
                         SELECT p.upc,
-                            p.upc AS description
+                            p.upc AS description,
+                            p.upc AS posDesc,
+                            \'\' AS brand,
+                            \'\' AS size
                         FROM products AS p
                         WHERE p.upc LIKE ?
                         GROUP BY p.upc');
