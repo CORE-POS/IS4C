@@ -38,12 +38,32 @@ class RawPTrans extends FannieReportPage
                 AND transNo = ?
             ORDER BY transID
         ');
-        $result = $dbc->execute($query, array($date, $emp, $reg, $trans));
+        $card = false;
+        $args = array($date, $emp, $reg, $trans);
+        if (FormLib::get('card')) {
+            $card = FormLib::get('card');
+            $stamp = strtotime($this->form->date);
+            $start = date('Ymd', mktime(0,0,0, date('n',$stamp), date('j',$stamp)-31, date('Y',$stamp)));
+            $end = date('Ymd', mktime(0,0,0, date('n',$stamp), date('j',$stamp)+31, date('Y',$stamp)));
+            $query = $dbc->prepare('
+                SELECT *
+                FROM PaycardTransactions
+                WHERE dateID BETWEEN ? AND ?
+                    AND PAN LIKE ?
+                ORDER BY transID
+            ');
+            $args = array($start, $end, '%' . $card);
+        }
+        $result = $dbc->execute($query, $args);
         $data = array();
         while ($w = $dbc->fetchRow($result)) {
             $record = array();
             foreach ($columns as $c => $info) {
-                if (isset($w[$c])) {
+                if (!$card && $c == 'PAN' && is_numeric(substr($w[$c], -4))) {
+                    $pan = substr($w[$c], -4);
+                    $record[] = sprintf('<a href="RawPTrans.php?date=%s&trans=%s&card=%d">%s</a>',
+                        $this->form->date, $this->form->trans, $pan, $w[$c]);
+                } else if (isset($w[$c])) {
                     $record[] = $w[$c];
                 } else {
                     $record[] = '';
