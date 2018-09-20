@@ -103,6 +103,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $joinR = $dbc->execute($joinP, $args);
         $totals['new'] = 0;
         $totals['newStock'] = 0.00;
+        $newCount = 0;
         while ($row = $dbc->fetch_row($joinR)) {
             $data[] = array(
                 $row['card_no'],
@@ -113,7 +114,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
             );
             $totals['new']++;
             $totals['newStock'] += $row['payments'];     
+            $newCount++;
         }
+        $this->report_headers[3][0] .= ' (' . $newCount . ')';
 
         $ytdArgs = array(
             date('Y-01-01 00:00:00', strtotime($args[0])),
@@ -231,6 +234,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $reasons = array();
         $specific_reasons = FormLib::get('reasons', array());
         $inactR = $dbc->execute($inactP, $args);
+        $inactCount = 0;
         while ($w = $dbc->fetchRow($inactR)) {
             if (!in_array($w['mask'], $specific_reasons)) {
                 $w['textStr'] = 'Other';
@@ -243,7 +247,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 );
             }
             $reasons[$w['textStr']]['current'] += $w[0];
+            $inactCount++;
         }
+        $this->report_headers[5][0] .= ' (' . $inactCount . ')';
         $inactR = $dbc->execute($inactP, $ytdArgs);
         while ($w = $dbc->fetchRow($inactR)) {
             if (!in_array($w['mask'], $specific_reasons)) {
@@ -328,6 +334,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     AND c.personNum=1
                 ORDER BY n.stamp DESC');
             $franR = $dbc->execute($franP, $args[0]);
+            $franCount = 0;
             while ($w = $dbc->fetchRow($franR)) {
                 $detailR = $dbc->execute($detailP, array($w['cardno']));
                 $detailW = $dbc->fetchRow($detailR);
@@ -338,7 +345,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     $detailW['payments'],
                     $detailW['note'],
                 );
+                $franCount++;
             }
+            $this->report_headers[7][0] .= ' (' . $franCount . ')';
 
             $this->report_headers[] = array('Transfer Requests', null, null, null, null);
             $this->report_headers[] = array('Date', 'Owner #', 'Name', 'Equity', 'Request');
@@ -366,6 +375,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 ORDER BY stamp DESC
             ');
             $termR = $dbc->execute($termP, $args[0]);
+            $termCount = 0;
             while ($termW = $dbc->fetchRow($termR)) {
                 $note = $dbc->getValue($noteP, array($termW['card_no']));
                 if (strstr(strtoupper($note), 'TRANSFER')) {
@@ -376,8 +386,10 @@ class OwnerJoinLeaveReport extends FannieReportPage
                         sprintf('%.2f', $termW['payments']),
                         $note,
                     );
+                    $termCount++;
                 }
             }
+            $this->report_headers[9][0] .= ' (' . $termCount . ')';
         }
 
         return $data;
