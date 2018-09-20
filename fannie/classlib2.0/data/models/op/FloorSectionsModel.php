@@ -26,13 +26,16 @@
 */
 class FloorSectionsModel extends BasicModel
 {
-
     protected $name = "FloorSections";
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'floorSectionID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'storeID' => array('type'=>'INT', 'default'=>1),
     'name' => array('type'=>'VARCHAR(50)'),
+    'mapX' => array('type'=>'INT', 'default'=>0),
+    'mapY' => array('type'=>'INT', 'default'=>0),
+    'mapRotate' => array('type'=>'INT', 'default'=>0),
     );
 
     public function toOptions($selected=0, $id_as_label=false)

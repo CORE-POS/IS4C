@@ -15,6 +15,57 @@ class SalePreviewReport extends FannieReportPage
     protected $new_tablesorter = true;
     protected $report_headers = array('Dept#', 'Department', '# of Items on Sale');
 
+    public function report_description_content()
+    {
+        $imageFile = __DIR__ . '/../../item/images/done/floor' . $this->form->store . '.png';
+        if (!file_exists($imageFile)) {
+            return array();
+        }
+
+        $query = "SELECT l.upc, f.floorSectionID
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+                INNER JOIN StoreBatchMap AS m ON m.batchID=l.batchID
+                INNER JOIN FloorSectionProductMap AS f ON l.upc=f.upc
+                INNER JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
+            WHERE b.discountType > 0
+                AND m.storeID=?
+                AND s.storeID=?
+                AND ? BETWEEN b.startDate AND b.endDate
+            GROUP BY l.upc";
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, array($this->form->store, $this->form->store, $this->form->date));
+        $counts = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $key = $row['floorSectionID'];
+            if (!isset($counts[$key])) {
+                $counts[$key] = 0;
+            }
+            $counts[$key]++;
+        }
+
+        $imageUrl = $this->config->get('URL') . 'item/images/done/floor' . $this->form->store . '.png';
+        $ret = '<div style="padding: 2em;">
+            <div style="position: relative;">
+                <img src="' . $imageUrl . '" style="border: solid 1px black;" />';
+        $model = new FloorSectionsModel($this->connection);
+        $model->storeID($this->form->store);
+        foreach ($model->find() as $section) {
+            $ret .= sprintf('<div class="floorlabel"
+                style="position: absolute; top: %dpx; left: %dpx;
+                transform: rotate(%ddeg); transform-origin: left top 0;">%d (%s)</div>',
+                $section->mapY(),
+                $section->mapX(),
+                $section->mapRotate(),
+                (isset($counts[$section->floorSectionID()]) ? $counts[$section->floorSectionID()] : 0),
+                $section->name()
+            );
+        }
+        $ret .= '</div></div>';
+
+        return array($ret);
+    }
+
     public function fetch_report_data()
     {
         $query = "SELECT l.upc
