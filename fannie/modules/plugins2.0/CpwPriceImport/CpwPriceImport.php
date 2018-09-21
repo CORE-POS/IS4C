@@ -35,7 +35,7 @@ class CpwPriceImport extends \COREPOS\Fannie\API\FanniePlugin
       written to ini.php
     */
     public $plugin_settings = array(
-    'CpwPriceURL' => array('default'=>'http://cpw.coop/pricelist/Pricelist-c.csv','label'=>'URL',
+    'CpwPriceURL' => array('default'=>'https://resources.cpw.coop/pricelist/Pricelist-c.csv','label'=>'URL',
             'description'=>'URL to download pricing file'),
     'CpwCostUpdates' => array('default'=>'0','label'=>'Update Costs',
             'options' => array('Product & Catalog Costs' => 1, 'Catalog Costs' => 0),
