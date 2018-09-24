@@ -345,13 +345,23 @@ class ItemStatusPage extends FannieRESTfulPage
             $this->addOnloadCommand("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-        return '<form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">
-            <div class="form-group form-inline">
-                <label>UPC</label>
-                <input type="text" name="id" id="upc" class="form-control" />
-                <button type="submit" class="btn btn-default">Check Item</button>
+        return '
+            <div class="row">
+                <div class="col-md-6">
+                    <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">
+                    <div class="form-group form-inline">
+                        <label>UPC</label>
+                        <input type="text" name="id" id="upc" class="form-control" />
+                        <button type="submit" class="btn btn-default">Check Item</button>
+                    </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <a href="../../admin/labels/ShelfTagIndex.php">Print Shelf Tags</a>
+                </div>
             </div>
-            </form>';
+                
+            ';
     }
 
     public function helpContent()
