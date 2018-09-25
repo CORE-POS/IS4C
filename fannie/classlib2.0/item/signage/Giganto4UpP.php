@@ -95,7 +95,7 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width/2, 6, 'FREE', 0, 1, 'L');
         }
 
-        if ($item['startDate'] != '' && $item['endDate'] != '') {
+        if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
             // intl would be nice
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));

@@ -90,7 +90,7 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             }
             $pdf->Cell($this->width, 50, $price, 0, 1, 'C');
 
-            if ($item['startDate'] != '' && $item['endDate'] != '') {
+            if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
                 $datestr = $this->getDateString($item['startDate'], $item['endDate']);
                 $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 19));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
