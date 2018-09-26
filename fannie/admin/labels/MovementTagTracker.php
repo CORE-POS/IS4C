@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class MovementTagTracker extends FannieRESTfulPage 
+class MovementTagTracker extends FannieRESTfulPage
 {
 
     protected $header = 'Movement Shelf-Tag Tracker';
@@ -61,21 +61,21 @@ class MovementTagTracker extends FannieRESTfulPage
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $args = array($storeID, $volMin, $volMax, $posLimit, $negLimit);
         $var = ($storeID == 1) ? 3 : 7;
-        $prep = $dbc->prepare("SELECT 
-            p.upc, 
-            brand, 
-            description, 
-            ROUND(p.auto_par, 3) * $var AS auto_par, 
-            ROUND(m.lastPar, 3) AS lastPar, 
+        $prep = $dbc->prepare("SELECT
+            p.upc,
+            brand,
+            description,
+            ROUND(p.auto_par, 3) * $var AS auto_par,
+            ROUND(m.lastPar, 3) AS lastPar,
             ROUND((p.auto_par * $var - m.lastPar), 3) AS diff,
             CONCAT(p.department, ' - ', d.dept_name) AS department
-        FROM products AS p 
-            LEFT JOIN MovementTags AS m ON p.upc=m.upc AND p.store_id = m.storeID 
+        FROM products AS p
+            LEFT JOIN MovementTags AS m ON p.upc=m.upc AND p.store_id = m.storeID
             INNER JOIN MasterSuperDepts AS mast ON p.department = mast.dept_ID
             INNER JOIN departments AS d ON p.department=d.dept_no
-        WHERE p.store_id = ? 
-            AND inUse = 1 
-            AND mast.superID NOT IN (0, 1, 3, 6, $var) 
+        WHERE p.store_id = ?
+            AND inUse = 1
+            AND mast.superID NOT IN (0, 1, 3, 6, $var)
             AND m.lastPar BETWEEN ? AND ?
             AND ((p.auto_par * $var - m.lastPar) > ?
                 OR (p.auto_par * $var - m.lastPar) < ?
@@ -87,7 +87,7 @@ class MovementTagTracker extends FannieRESTfulPage
         while ($row = $dbc->fetchRow($res)) {
             $this->item[] = $row;
         }
-        
+
         return false;
     }
 
@@ -101,7 +101,7 @@ class MovementTagTracker extends FannieRESTfulPage
         $thead = '';
         $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff');
         foreach ($colNames as $colName)
-            $thead .= "<th>$colName</th>"; 
+            $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
             <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables' id='my-table-$storeID'><thead >$thead</thead><tbody>";
         foreach ($this->item as $row => $array) {
@@ -125,7 +125,7 @@ class MovementTagTracker extends FannieRESTfulPage
     public function helpContent()
     {
         return <<<HTML
-<p>This page lists products that should have 
+<p>This page lists products that should have
 new movement tags printed for each store.</p>
 HTML;
     }
