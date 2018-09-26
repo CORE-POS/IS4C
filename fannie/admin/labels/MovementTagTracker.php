@@ -48,6 +48,10 @@ class MovementTagTracker extends FannieRESTfulPage
         foreach ($tables as $table) {
             $ret .= $table;
         }
+        $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
+        $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
+        $this->addOnloadCommand("$('#my-table-1').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
+        $this->addOnloadCommand("$('#my-table-2').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
         return $li . $ret;
     }
@@ -63,10 +67,12 @@ class MovementTagTracker extends FannieRESTfulPage
             description, 
             ROUND(p.auto_par, 3) * $var AS auto_par, 
             ROUND(m.lastPar, 3) AS lastPar, 
-            ROUND((p.auto_par * $var - m.lastPar), 3) AS diff
+            ROUND((p.auto_par * $var - m.lastPar), 3) AS diff,
+            CONCAT(p.department, ' - ', d.dept_name) AS department
         FROM products AS p 
             LEFT JOIN MovementTags AS m ON p.upc=m.upc AND p.store_id = m.storeID 
             INNER JOIN MasterSuperDepts AS mast ON p.department = mast.dept_ID
+            INNER JOIN departments AS d ON p.department=d.dept_no
         WHERE p.store_id = ? 
             AND inUse = 1 
             AND mast.superID NOT IN (0, 1, 3, 6, $var) 
@@ -76,6 +82,8 @@ class MovementTagTracker extends FannieRESTfulPage
             )
         ;");
         $res = $dbc->execute($prep, $args);
+        if ($er = $dbc->error())
+            return "<div class='alert alert-danger'>$er</div>";
         while ($row = $dbc->fetchRow($res)) {
             $this->item[] = $row;
         }
@@ -91,11 +99,11 @@ class MovementTagTracker extends FannieRESTfulPage
 
         $table = "";
         $thead = '';
-        $colNames = array('upc', 'brand', 'description', 'lastPar', 'auto_par', 'diff');
+        $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff');
         foreach ($colNames as $colName)
             $thead .= "<th>$colName</th>"; 
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
-            <table class='table table-bordered table-condensed table-striped'><thead >$thead</thead><tbody>";
+            <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables' id='my-table-$storeID'><thead >$thead</thead><tbody>";
         foreach ($this->item as $row => $array) {
             $table .= "<tr>";
             foreach ($colNames as $colName) {
