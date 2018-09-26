@@ -191,7 +191,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $vendor = isset($line[$indexes['vendor']]) ? trim($line[$indexes['vendor']]) : '';
                 $name = isset($line[$indexes['name']]) ? trim($line[$indexes['name']]) : '';
                 if ($vendor != '' && $name != '') {
-                    $this->queueUpdate($queue, $vendor, $name);
+                    $this->queueUpdate($queue, $upc, $vendor, $name);
                 }
             }
         }
@@ -208,7 +208,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return true;
     }
 
-    private function queueUpdate($queue, $vendor, $name)
+    private function queueUpdate($queue, $upc, $vendor, $name)
     {
         $vID = -1;
         if ($vendor == 'ALBERTS') {
