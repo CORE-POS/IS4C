@@ -740,7 +740,7 @@ static private $msgMods = array(
 static private function getTypeMap()
 {
     $typeMap = array();
-    foreach(self::messageMods() as $class){
+    foreach(self::messageMods(false) as $class){
         if (in_array($class, self::$msgMods)) {
             $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
         }
@@ -791,14 +791,14 @@ static private function receiptFooters($receipt, $ref)
     return $receipt;
 }
 
-static private function messageModFooters($receipt, $where, $ref, $reprint)
+static private function messageModFooters($receipt, $where, $ref, $reprint, $nth)
 {
     // check if message mods have data
     // and add them to the receipt
     $dbc = Database::tDataConnect();
     $modQ = "SELECT ";
     $selectMods = array();
-    foreach(self::messageMods() as $class){
+    foreach(self::messageMods($nth) as $class){
         if (in_array($class, self::$msgMods)) {
             $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
         }
@@ -830,10 +830,18 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
     return $receipt;
 }
 
-static private function messageMods()
+static private function messageMods($nth)
 {
     $messageMods = CoreLocal::get('ReceiptMessageMods');
     if (!is_array($messageMods)) $messageMods = array();
+    if ($nth) {
+        $add = CoreLocal::get('NthReceiptMods');
+        if (is_array($add)) {
+            foreach ($add as $a) {
+                $messageMods[] = $a;
+            }
+        }
+    }
 
     return $messageMods;
 }
@@ -870,6 +878,13 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
 
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
     $ignoreNR = array("ccSlip");
+    $nthReceipt = false;
+    if (!$reprint && $arg1 == 'full') {
+        $nthReceipt = self::nthReceipt();
+        if ($nthReceipt) {
+            $ignoreNR[] = 'full';
+        }
+    }
 
     // find receipt types, or segments, provided via modules
     $typeMap = self::getTypeMap();
@@ -919,7 +934,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     
             $receipt = self::memberFooter($receipt, $ref);
             $receipt = self::receiptFooters($receipt, $ref);
-            $receipt = self::messageModFooters($receipt, $where, $ref, $reprint);
+            $receipt = self::messageModFooters($receipt, $where, $ref, $reprint, $nthReceipt);
 
             if (CoreLocal::get('memberID') != CoreLocal::get('defaultNonMem')) {
                 $memMessages = self::memReceiptMessages(CoreLocal::get("memberID"));
@@ -1141,6 +1156,19 @@ static public function emailReceiptMod()
     }
 
     return self::$EMAIL;
+}
+
+static private function nthReceipt()
+{
+    if (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('standalone') == 0) {
+        $dbc = Database::mDataConnect();
+        $prep = $dbc->prepare('SELECT COUNT(*) FROM dlog');
+        $count = $dbc->getValue($prep);
+        
+        return ($count % CoreLocal::get('nthReceipt')) === 0;
+    }
+
+    return false;
 }
 
 }

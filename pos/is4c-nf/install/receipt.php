@@ -256,6 +256,41 @@ InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageM
 ?>
 </td></tr>
 <tr>
+    <td><b><?php echo _('Nth Receipt Message Frequency'); ?></b>:</td>
+    <td><?php echo $form->textField('nthReceipt', 0); ?></td>
+</tr>
+<tr><td>&nbsp;</td><td>
+<?php
+if (isset($_REQUEST['NTH_MODS'])){
+    $mods = array();
+    foreach($_REQUEST['NTH_MODS'] as $m){
+        if ($m != '') $mods[] = str_replace('-', '\\', $m);
+    }
+    CoreLocal::set('NthReceiptMods', $mods);
+}
+if (!is_array(CoreLocal::get('NthReceiptMods'))){
+    CoreLocal::set('NthReceiptMods', array());
+}
+$available = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\ReceiptMessage');
+$available = array_map(function($i){ return str_replace('\\', '-', $i); }, $available);
+$current = CoreLocal::get('NthReceiptMods');
+$current = array_map(function($i){ return str_replace('\\', '-', $i); }, $current);
+for($i=0;$i<=count($current);$i++){
+    $c = isset($current[$i]) ? $current[$i] : '';
+    echo '<select name="NTH_MODS[]">';
+    echo '<option value="">' . _('[None]') . '</option>';
+    foreach($available as $a) {
+        $match = false;
+        if ($a == $c) $match = true;
+        elseif (substr($a, -1*(strlen($c)+1)) == '-' . $c) $match=true;
+        printf('<option %s>%s</option>',($match?'selected':''),$a);
+    }
+    echo '</select><br />';
+}
+InstallUtilities::paramSave('NthReceiptMods',CoreLocal::get('NthReceiptMods'));
+?>
+</td></tr>
+<tr>
     <td colspan="2"><h3><?php echo _('Email Receipts'); ?></h3></td>
 </tr>
 <tr>
