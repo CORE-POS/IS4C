@@ -8,7 +8,7 @@ class SurveyReceiptMessage extends ReceiptMessage
 {
     public function select_condition()
     {
-        return "SELECT 1";
+        return "1";
     }
 
     public function message($val, $ref, $reprint=False)
