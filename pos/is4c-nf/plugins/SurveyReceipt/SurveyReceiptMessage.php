@@ -16,7 +16,7 @@ class SurveyReceiptMessage extends ReceiptMessage
             return '';
         }
         
-        $PRINT = $this->printHandler();
+        $PRINT = $this->printHandler;
         $receipt = '';
 
         $receipt .= $PRINT->TextStyle(true, false, true);
