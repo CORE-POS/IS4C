@@ -1,8 +1,7 @@
 <?php
 
-namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
 use COREPOS\pos\lib\ReceiptLib;
-use \CoreLocal;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
 
 class SurveyReceiptMessage extends ReceiptMessage
 {
