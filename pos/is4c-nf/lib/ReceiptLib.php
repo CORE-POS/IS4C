@@ -883,6 +883,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
         $nthReceipt = self::nthReceipt();
         if ($nthReceipt) {
             $ignoreNR[] = 'full';
+            $email = false;
         }
     }
 
