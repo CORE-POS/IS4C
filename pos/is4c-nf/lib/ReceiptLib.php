@@ -1160,12 +1160,10 @@ static public function emailReceiptMod()
 
 static private function nthReceipt()
 {
-    if (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('standalone') == 0) {
-        $dbc = Database::mDataConnect();
-        $prep = $dbc->prepare('SELECT COUNT(*) FROM dlog');
-        $count = $dbc->getValue($prep);
-        
-        return ($count % CoreLocal::get('nthReceipt')) === 0;
+    if (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('nthReceipt') < 1) {
+        return lcg_value() < CoreLocal::get('nthReceipt');
+    } elseif (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('standalone') == 0) {
+        return (CoreLocal::get('transno') % CoreLocal::get('nthReceipt')) === 0;
     }
 
     return false;
