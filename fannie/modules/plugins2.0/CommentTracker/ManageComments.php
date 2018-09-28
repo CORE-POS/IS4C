@@ -460,9 +460,10 @@ HTML;
             FROM {$prefix}Comments AS c
                 LEFT JOIN {$prefix}Categories AS t ON t.categoryID=c.categoryID
                 LEFT JOIN {$prefix}Responses AS r ON r.commentID=c.commentID
+                LEFT JOIN {$prefix}CategoryUserMap AS m ON c.categoryID=m.categoryID
                 {$tagTable}
-            WHERE 1=1 ";
-        $args = array();
+            WHERE m.userID=? ";
+        $args = array(FannieAuth::getUID($this->current_user));
         if (FormLib::get('category', false)) {
             $query .= ' AND c.categoryID=?';
             $args[] = FormLib::get('category');
