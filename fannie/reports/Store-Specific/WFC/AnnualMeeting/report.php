@@ -50,14 +50,15 @@ while($hereW = $fannieDB->fetch_row($hereR)){
 
 include(__DIR__ . '/../../../../src/Credentials/OutsideDB.tunneled.php');
 // online registrations
-$query = "SELECT tdate,r.card_no,name,email,
+$query = "SELECT r.tdate,r.card_no,name,email,
     phone,guest_count,child_count,
     SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as squash,
     SUM(CASE WHEN m.subtype=2 THEN 1 ELSE 0 END) as chicken,
     'website' AS source,
-    '' AS notes
+    n.notes
     FROM registrations AS r LEFT JOIN
     regMeals AS m ON r.card_no=m.card_no
+    LEFT JOIN regNotes AS n ON r.card_no=n.card_no
     GROUP BY tdate,r.card_no,name,email,
     phone,guest_count,child_count
     ORDER BY tdate";
