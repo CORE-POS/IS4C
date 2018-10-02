@@ -54,6 +54,7 @@ class wfcuRegistryModel extends BasicModel
     'id' => array('type'=>'INT(6)','primary_key'=>TRUE),
     'refund' => array('type'=>'VARCHAR(30)'),
     'amount' => array('type'=>'DECIMAL(10,2)'),
+    'email' => array('type'=>'VARCHAR(255)'),
     );
 }
 

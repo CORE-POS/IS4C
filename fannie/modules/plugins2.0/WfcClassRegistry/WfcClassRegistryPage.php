@@ -235,7 +235,7 @@ class WfcClassRegistryPage extends FanniePage
             <th style="width: 10px;"></th>
             <th style="width: 200px;">First</th>
             <th style="width: 200px;">Last</th>
-            <th style="width: 100px;">Member #</th>
+            <th style="width: 100px;">Mem #</th>
             <th style="width: 130px;">Phone Number</th>
             <th style="width: 80px;">Amount</th>
             <th>Notes</th>
@@ -258,7 +258,7 @@ class WfcClassRegistryPage extends FanniePage
             <th style="width: 10px;"></th>
             <th style="width: 200px;">First</th>
             <th style="width: 200px;">Last</th>
-            <th style="width: 100px;">Member #</th>
+            <th style="width: 100px;">Mem #</th>
             <th style="width: 130px;">Phone Number</th>
             <th style="width: 80px;">Amount</th>
             <th>Notes</th>
@@ -292,6 +292,9 @@ class WfcClassRegistryPage extends FanniePage
     public function css_content()
     {
         return '
+            .w-xs {
+                max-width: 60px;
+            }
             table td,th {
                 border-top: none !important;
             }
@@ -505,13 +508,15 @@ class WfcClassRegistryPage extends FanniePage
             $items->seatType(1);
 
             $ret .= '<div id="alert-area"></div>
-            <table class="table tablesorter" name="ClassRegistry">';
-            $ret .= '<thead><tr><th>Class Registry  </th></tr>
+            <h4>Class Registry</h4>
+            <table class="table tablesorter" name="ClassRegistry" id="table-roster">';
+            $ret .= '<thead><tr></tr>
                 <tr><th>Seat</th>
+                <th>Mem #</th>
                 <th>First</th>
                 <th>Last</th>
-                <th>Member #</th>
                 <th>Phone Number</th>
+                <th>Email Address</th>
                 <th>Payment Type</th>
                 <th>Notes</th>
                 </thead>';
@@ -526,13 +531,15 @@ class WfcClassRegistryPage extends FanniePage
 
             //* Waiting List Roster
             $ret .= '<div id="alert-area"></div>
-            <table class="table tablesorter">';
-            $ret .= '<thead><tr><th>Waiting List<th>
+            <h4>Waiting List</h4>
+            <table class="table tablesorter" id="table-waiting">';
+            $ret .= '<thead>
                 <tr><th></th>
+                <th>Mem #</th>
                 <th>First</th>
                 <th>Last</th>
-                <th>Member #</th>
                 <th>Phone Number</th>
+                <th>Email Address</th>
                 <th>Payment Type</th>
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
@@ -547,14 +554,15 @@ class WfcClassRegistryPage extends FanniePage
 
             //* Class Cancellations
             $ret .= '<div id="alert-area"></div>
-            <table class="table tablesorter">';
+            <h4>Cancellations</h4>
+            <table class="table tablesorter" id="table-cancel">';
             $ret .= '<thead><tr>
-                <th>Cancellations</th>
                 <tr><th></th>
+                <th>Mem #</th>
                 <th>First</th>
                 <th>Last</th>
-                <th>Member #</th>
                 <th>Phone Number</th>
+                <th>Email Address</th>
                 <th>Payment Type</th>
                 <th>Refund Type</th>
                 <th>Notes</th></thead>';
@@ -654,6 +662,48 @@ class WfcClassRegistryPage extends FanniePage
 
     public function javascriptContent()
     {
+        return <<<JAVASCRIPT
+$('.cardno').change(function(){
+    var ownerid = $(this).val();
+    var seat = $(this).closest('tr').find('.seat').text();
+    var tableID = $(this).closest('table').attr('id');
+    if (ownerid != 11) {
+        $.ajax ({
+            url: 'registryUpdate.php',
+            type: 'post',
+            data: 'ownerid='+ownerid+'&custdata=1',
+            dataType: 'json',
+            success: function(resp)
+            {
+                var card_no = resp['card_no'];
+                var data = ['first_name','last_name','street','city',
+                    'state','zip','email_1','email_2','phone','address'];
+                $('.seat').each(function(){
+                    var curTable = $(this).closest('table').attr('id');
+                    if ($(this).text() == seat && curTable == tableID) {
+                        var editFirst = $(this).closest('tr').find('input[name="editFirst"]');
+                        var editLast = $(this).closest('tr').find('input[name="editLast"]');
+                        var editPhone = $(this).closest('tr').find('input[name="editPhone"]');
+                        var editEmail = $(this).closest('tr').find('input[name="editEmail"]');
+                        editFirst.val(resp.first_name);
+                        editFirst.trigger('change');
+                        editLast.val(resp.last_name);
+                        editLast.trigger('change');
+                        editPhone.val(resp.phone);
+                        editPhone.trigger('change');
+                        editEmail.val(resp.email_1);
+                        editEmail.trigger('change');
+                    }
+                });
+                $.each(data, function(k,v) {
+                    // var value = resp[v];
+                    // $('#'+v).val(value);
+                });
+            }
+        });
+    }
+});
+JAVASCRIPT;
     }
 
     public function helpContent()
@@ -681,26 +731,30 @@ class WfcClassRegistryPage extends FanniePage
                 <td class="id collapse">%s</td>
                 <td class="seat">%d</td>
                 <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm w-xs editable cardno" name="editCard_no" value="%s" /></td>
+                <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" id="first_name"  name="editFirst" value="%s" /></td>
                 <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm editable" name="editCard_no" value="%s" /></td>
-                <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editEmail" value="%s" /></td>
                 <td><span class="collapse">%s</span>
                     <select class="form-control input-sm editable" name="editPayment">
                         <option value="student has not paid">*unpaid*</option>',
                 $item->id(),
                 $i,
+                $item->card_no(),
+                $item->card_no(),
                 $item->first_name(),
                 $item->first_name(),
                 $item->last_name(),
                 $item->last_name(),
-                $item->card_no(),
-                $item->card_no(),
                 $item->phone(),
                 $item->phone(),
+                $item->email(),
+                $item->email(),
                 htmlspecialchars($item->payment())
             );
             foreach (array('Cash', 'Card', 'Gift Card', 'Check', 'Other') as $tender) {
