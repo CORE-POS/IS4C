@@ -159,15 +159,16 @@ class ShrinkTool extends FannieRESTfulPage
                 <div class="col-sm-9">
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
-                        <input type="text" name="cost" class="form-control" value="{{cost}}" />
+                        <input type="number" name="cost" class="form-control" value="{{cost}}"
+                            min="0" max="9999" step="0.01" />
                     </div> 
                 </div> 
             </div> 
             <div class="row form-group">
                 <label class="col-sm-3 text-right">Quantity</label>
                 <div class="col-sm-9">
-                    <input type="text" name="qty" id="qty-field" class="form-control"
-                        value="{$this->quantity}" required />
+                    <input type="number" name="qty" id="qty-field" class="form-control"
+                        value="{$this->quantity}" min="0" max="9999" step="0.01" required />
                 </div>
             </div>
             <div class="row form-group">
@@ -186,7 +187,8 @@ class ShrinkTool extends FannieRESTfulPage
                 <div class="col-sm-9">
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
-                        <input type="text" name="price" class="form-control" value="{{price}}" />
+                        <input type="number" name="price" class="form-control" value="{{price}}"
+                            min="0" max="9999" step="0.01" />
                     </div> 
                 </div> 
             </div> 
