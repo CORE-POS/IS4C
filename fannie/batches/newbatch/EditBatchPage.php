@@ -1305,7 +1305,7 @@ HTML;
         return $ret;
     }
 
-    private function pairedTableBody($dbc, $result)
+    private function pairedTableBody($dbc, $result, $down=true)
     {
         $colors = array('#ffffff','#ffffcc');
         $cur = 0;
@@ -1324,10 +1324,12 @@ HTML;
                 $ret .= "<td bgcolor=$colors[$cur]><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
             }
             $ret .= "<td bgcolor=$colors[$cur]>$fetchW[1]</td>";
+            $showDown = $down ? '' : 'collapse';
+            $showUp = $down ? 'collapse' : '';
             $ret .= "<td bgcolor=$colors[$cur]>
-                <a href=\"\" class=\"down-arrow\" onclick=\"batchEdit.swapQualifierToDiscount(this, '$fetchW[0]'); return false;\">
+                <a href=\"\" class=\"down-arrow {$showDown}\" onclick=\"batchEdit.swapQualifierToDiscount(this, '$fetchW[0]'); return false;\">
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_down.gif\" alt=\"Make Discount Item\" /></a>
-                <a href=\"\" class=\"up-arrow collapse\" onclick=\"batchEdit.swapDiscountToQualifier(this, '$fetchW[0]'); return false;\">
+                <a href=\"\" class=\"up-arrow {$showUp}\" onclick=\"batchEdit.swapDiscountToQualifier(this, '$fetchW[0]'); return false;\">
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
                     </a>
                 </td>";
@@ -1437,7 +1439,7 @@ HTML;
 
         $ret .= '<table class="table" id="discount-table">';
         $ret .= '<tr><th colspan="4">Discount Item(s)</th></tr>';
-        $ret .= $this->pairedTableBody($dbc, $fetchR);
+        $ret .= $this->pairedTableBody($dbc, $fetchR, false);
         $ret .= "</table>";
 
         return $ret;
