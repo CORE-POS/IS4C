@@ -160,7 +160,7 @@ class ShrinkTool extends FannieRESTfulPage
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
                         <input type="number" name="cost" class="form-control" value="{{cost}}"
-                            min="0" max="9999" step="0.01" />
+                            min="0" max="9999" step="0.001" />
                     </div> 
                 </div> 
             </div> 
