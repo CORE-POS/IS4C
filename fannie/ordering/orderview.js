@@ -83,7 +83,7 @@ var orderView = (function($) {
                 data: 'id='+$('#orderID').val()+'&testNotify=1'
             }).done(function(resp){
                 if (resp.sentEmail) {
-                    alert('Emailed Test Notification');
+                    alert('Sent Test Notification');
                 } else {
                     alert('Notification Test Failed');
                 }
@@ -283,7 +283,7 @@ var orderView = (function($) {
             data: 'toggleStaff=1&orderID='+oid+'&transID='+tid
         }).done(function(resp) {
             if (resp.sentEmail) {
-                alert('Emailed Arrival Notification');
+                alert('Sent Arrival Notification');
             }
         });
     };
@@ -352,7 +352,7 @@ var orderView = (function($) {
         }).done(function(resp){
             $('#statusdate'+oid).html(resp.tdate);
             if (resp.sentEmail) {
-                alert('Emailed Arrival Notification');
+                alert('Sent Arrival Notification');
             }
         });
     };
