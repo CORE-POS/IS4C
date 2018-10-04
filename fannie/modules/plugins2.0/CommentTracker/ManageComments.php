@@ -100,7 +100,7 @@ class ManageComments extends FannieRESTfulPage
             $this->connection->commitTransaction();
         }
 
-        $tags = array_map(function($t) { return "<a href=\"ManageTags.php?tag={$t}\">{$t}</a>"; }, $tags);
+        $tags = array_map(function($t) { return "<a href=\"ManageTags.php?all=1&tag={$t}\">{$t}</a>"; }, $tags);
         $tags = implode(' ', $tags);
 
         echo $tags;
@@ -314,7 +314,7 @@ HTML;
         while ($tagW = $this->connection->fetchRow($tagR)) {
             $myTags[] = $tagW['tag'];
         }
-        $tagLinks = array_map(function ($t) { return "<a href=\"ManageComments.php?tag={$t}\">{$t}</a>"; }, $myTags);
+        $tagLinks = array_map(function ($t) { return "<a href=\"ManageComments.php?all=1&tag={$t}\">{$t}</a>"; }, $myTags);
         $tagLinks = implode(', ', $tagLinks);
         $myTags = implode(', ', $myTags);
 
