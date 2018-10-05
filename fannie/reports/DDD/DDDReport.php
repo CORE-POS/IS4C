@@ -127,7 +127,8 @@ class DDDReport extends FannieReportPage
                     d.description,
                     d.department,
                     e.dept_name,
-                    s.description";
+                    s.description
+                 HAVING SUM(d.quantity) > 0";
         
         $data = array();
         $prep = $dbc->prepare($query);
