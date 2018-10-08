@@ -266,7 +266,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
             (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Delete Item', "Item #{$this->transID}"));
+        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Delete Item', "Item #{$this->transID}"));
 
         return $this->get_orderID_items_handler();
     }
