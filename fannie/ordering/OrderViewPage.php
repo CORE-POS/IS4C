@@ -72,9 +72,9 @@ class OrderViewPage extends FannieRESTfulPage
         $poID = $bridge->addItemToPurchaseOrder($this->orderID, $this->transID, $this->storeID);
         if ($poID) {
             echo json_encode(array('error'=>false, 'poID'=>$poID));
-            $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
+            $audit = $this->connection->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
                 (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-            $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Add to PO', 
+            $this->connection->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Add to PO', 
                 "SPO #{$this->orderID}, Item #{$this->transID}, PO#{$poID}"));
         } else {
             echo json_encode(array('error'=>true));
