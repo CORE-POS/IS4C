@@ -470,7 +470,7 @@ HTML;
         } else {
             $query .= ' AND c.categoryID >= 0';
         }
-        if (!FormLib::get('all', false)) {
+        if (!FormLib::get('all', false) && !FormLib::get('tag', false)) {
             $query .= ' AND r.commentID IS NULL';
         }
         $hidden = '';
@@ -508,7 +508,7 @@ HTML;
             . (!FormLib::get('all', false) ? 'selected' : '')
             . '>Comments w/o Responses</option>'
             . '<option value="1" '
-            . (FormLib::get('all', false) ? 'selected' : '')
+            . (FormLib::get('all', false) || FormLib::get('tag', false) ? 'selected' : '')
             . '>All Comments</option>';
 
         $categories = new CategoriesModel($this->connection);
@@ -534,6 +534,8 @@ HTML;
     {$hidden}
     |
     <a href="CommentCategories.php">Manage Categories</a>
+    |
+    <a href="SearchComments.php">Search</a>
 </p>
 <table class="table table-bordered">
 <thead>
