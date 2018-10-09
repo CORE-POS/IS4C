@@ -19,6 +19,7 @@ var emv = (function($){
     var errorTrans = function(xhr, stat, err) {
         // display error to user?
         // go to dedicated error page?
+        errorLog.log(JSON.stringify({ jqstatus: stat, error: err, resp: xhr.responseText }));
         $('div.baseHeight').html('Finishing transaction');
         var f = $('<form id="js-form"></form>');
         var resp = 'error';

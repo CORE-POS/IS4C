@@ -132,7 +132,7 @@ class PaycardProcessPage extends BasicCorePage
                     window.location = destination;
                 }
             }).fail(function(jqxhr, stat, error) {
-                errorLog.log(JSON.stringify({ status: stat, err: error, resp: jqxhr.responseText }));
+                errorLog.log(JSON.stringify({ jqstatus: stat, err: error, resp: jqxhr.responseText }));
                 window.location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
             });
             return false;
