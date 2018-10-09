@@ -120,17 +120,52 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $dbc->execute($prep,$args);
 
         if ($er = $dbc->error()) {
-            return '<div class="alert alert-danger">' . $er . "</div>"
-                . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
+            return <<<HTML
+<div class="row">
+    <div class="col-md-6">
+        <div class="alert alert-danger">$msg</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php?upc={$upc}">Scan Another</a>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php">Start Over</a>
+        </div>
+    </div>
+</div>
+HTML;
         } else {
-            $msg = "Item Added to Batch";
+            $msg = "Item Added to Batch #$batchID";
             $b = new BatchesModel($dbc);
             if ($this->forceBatchOkay($batchID,$b)) {
                 $b->forceStartBatch($batchID);
                 $msg .= " & Batch #{$batchID} forced.";
             }
-            return '<div class="alert alert-success">'.$msg.'</div>'
-                . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
+
+            return <<<HTML
+<div class="row">
+    <div class="col-md-6">
+        <div class="alert alert-success">$msg</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php?upc={$upc}">Scan Another</a>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php">Start Over</a>
+        </div>
+    </div>
+</div>
+HTML;
         }
 
     }
@@ -304,12 +339,13 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             }
             list($inStr, $prodInBatchA) = $dbc->safeInClause($batchIDs);
             $prodInBatchA[] = $upc;
-            $prodInBatchQ = 'SELECT batchID from batchList WHERE batchID IN ('.$inStr.') AND upc = ?';
+            $prodInBatchQ = 'SELECT bl.batchID, batchName from batchList AS bl 
+                LEFT JOIN batches AS b ON b.batchID=bl.batchID WHERE bl.batchID IN ('.$inStr.') AND upc = ?';
             $prodInBatchP = $dbc->prepare($prodInBatchQ);
             $prodInBatchR = $dbc->execute($prodInBatchP,$prodInBatchA);
             $foundIn = array();
             while ($row = $dbc->fetchRow($prodInBatchR)) {
-                $heading .= "<br/><span class='alert-success'>Item found in batch ".$row['batchID']."</span>";
+                $heading .= "<br/><span class='alert-success'>Item found in batch {$row['batchID']} : {$row['batchName']}</span>";
                 $foundIn[] = $row['batchID'];
             }
 
@@ -324,6 +360,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
             }
+            $sel = "";
             while ($row = $dbc->fetchRow($result)) {
                 $option = "option";
                 $add = "";
@@ -332,7 +369,14 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     $option = "option style='background-color: tomato; color: white' ";
                     $add = "# ";
                 }
-                $ret .=  '<'.$option.' value="' . $batchID . '">' . $add . $row['batchName'] . '</option>';
+                if (strpos(strtolower($row['batchName']), strtolower($superName)) !== false) {
+                    if ($sel == "") {
+                        $sel = "selected";
+                    } else {
+                        $sel = " ";
+                    }
+                }
+                $ret .= "<$option value='$batchID' $sel>$add {$row['batchName']}</option>";
             }
             $ret .=  '
                     </select>
