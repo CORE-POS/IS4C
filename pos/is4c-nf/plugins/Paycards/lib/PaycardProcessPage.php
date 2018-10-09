@@ -107,6 +107,8 @@ class PaycardProcessPage extends BasicCorePage
     protected function paycardJscriptFunctions()
     {
         $pluginInfo = new Paycards();
+        $recheck = $pluginInfo->pluginUrl() . '/ajax/AjaxPaycardReCheck.php'
+            . '?current=' . $_SERVER['PHP_SELF'];
         ?>
         <script type="text/javascript">
         function paycard_submitWrapper(){
@@ -129,7 +131,8 @@ class PaycardProcessPage extends BasicCorePage
                 } else {
                     window.location = destination;
                 }
-            }).fail(function(){
+            }).fail(function(jqxhr, stat, error) {
+                errorLog.log(JSON.stringify({ status: stat, err: error, resp: jqxhr.responseText }));
                 window.location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
             });
             return false;

@@ -22,6 +22,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\UdpComm;
@@ -88,6 +89,14 @@ class PaycardEmvPage extends PaycardProcessPage
                 $log->error('javascript: ' . $err);
             }
             $this->emvResponseHandler($xml);
+            return false;
+        } elseif (FormLib::get('retry')) {
+            $ref = FormLib::get('retry');
+            $dbc = Database::tDataConnect();
+            $prep = $dbc->prepare('SELECT entry FROM MagellanLog WHERE tdate > CURDATE() AND entryKey=?');
+            $entry = $prep->getValue(array($ref));
+            list($headers, $xml) = explode('<?xml', $entry, 2);
+            $this->emvResponseHandler('<?xml' . $xml);
             return false;
         } elseif (FormLib::get('cancel') == 1) {
             UdpComm::udpSend("termReset");
