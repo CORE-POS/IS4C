@@ -14,6 +14,12 @@ class AccessTotal extends TotalAction
             return true;
         }
 
+        $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans WHERE department IN (991, 992)');
+        $ttl = $dbc->getValue($prep);
+        if ($ttl >= 100) {
+            return true;
+        }
+
         $prep = $dbc->prepare("SELECT description FROM localtemptrans WHERE description='MATCHING FUNDS'");
         $comment = $dbc->getValue($prep);
         if ($comment == 'MATCHING FUNDS') {
