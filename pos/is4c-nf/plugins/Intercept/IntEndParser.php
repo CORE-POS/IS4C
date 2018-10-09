@@ -2,7 +2,7 @@
 
 use COREPOS\pos\parser\Parser;
 
-class IntEndPreParser extends Parser
+class IntEndParser extends Parser
 {
     public function check($str)
     {
