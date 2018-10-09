@@ -236,6 +236,7 @@ static private function runTotalActions()
 */
 static public function ttl() 
 {
+    $ret = true;
     if (CoreLocal::get("memberID") == "0") {
         return MiscLib::baseURL()."gui-modules/memlist.php";
     } 
@@ -255,7 +256,7 @@ static public function ttl()
     $ttlHooks = self::runTotalActions();
     if ($ttlHooks !== true) {
         // follow redirect
-        return $ttlHooks;
+        $ret = $ttlHooks;
     }
 
     // Refresh totals after total actions
@@ -317,7 +318,7 @@ static public function ttl()
         ));
     }
 
-    return true;
+    return $ret;
 }
 
 /**
