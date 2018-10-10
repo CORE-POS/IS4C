@@ -68,7 +68,7 @@ class VendorPoPage extends FannieRESTfulPage
                     $row['orderID'],
                     $date, $time, $row['vendorInvoiceID'], $row['storeName'], $row['vendorName'], $row['records'],
                     $row['estimatedCost'],
-                    ($placed == 1 ? $row['placedDate'] : '&nbsp;'),
+                    ($row['placed'] == 1 ? $row['placedDate'] : '&nbsp;'),
                     (!empty($row['receivedDate']) ? $row['receivedDate'] : '&nbsp;'),
                     (!empty($row['receivedCost']) ? $row['receivedCost'] : 0.00)
             );
