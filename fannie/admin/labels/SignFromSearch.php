@@ -424,6 +424,26 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
     public function javascriptContent()
     {
         return <<<HTML
+    $('textarea').each(function(){
+        var text = $(this).text();
+        if (text == text.toUpperCase()) {
+            $(this).addClass('alert-danger');
+        }
+    });
+    $('textarea').on('change', function(){
+        $(this).removeClass('alert-danger');
+    });
+    $('input').on('change', function(){
+        $(this).removeClass('alert-danger');
+    });
+    $('input').each(function(){
+        var name = $(this).attr('name');
+        var text = $(this).val();
+        var place = $(this).attr('placeholder');
+        if (text == text.toUpperCase() && place != 'Custom origin...' && name != "repeats") {
+            $(this).addClass('alert-danger');
+        }
+    });
     function updateSigninfo()
     {
         var c = confirm("Permanently change sign info?");
