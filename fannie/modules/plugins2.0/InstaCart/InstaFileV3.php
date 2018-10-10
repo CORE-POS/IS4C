@@ -86,10 +86,15 @@ class InstaFileV3
                 continue;
             }
 
+            if ($this->likeCodeFilter($row['upc'])) {
+                continue;
+            }
+
             if (isset($repeats[$row['upc']])) {
                 continue;
             }
             $repeats[$row['upc']] = true;
+            echo "{$row['upc']} {$row['brand']} {$row['description']}\n";
 
             $upc = ltrim($row['upc'], '0');
             if (strlen($upc) == 13) {
@@ -114,6 +119,7 @@ class InstaFileV3
             $desc = str_replace('"', '', $row['description']);
             $desc = str_replace("\r", '', $desc);
             $desc = str_replace("\n", ' ', $desc);
+            $desc = trim($desc);
             $desc = substr($desc, 0, 100);
             fwrite($csv, '"' . $desc . '"' . $sep);
 
@@ -183,6 +189,44 @@ class InstaFileV3
         return true;
     }
 
+    /**
+      Only include one item from each *strict* like code
+      @return [boolean] skip item
+    */
+    private function likeCodeFilter($upc)
+    {
+        $prep = $this->dbc->prepare('SELECT u.likeCode, l.strict
+                FROM ' . FannieDB::fqn('upcLike', 'op') . ' AS u
+                    INNER JOIN ' . FannieDB::fqn('likeCodes', 'l') . ' AS l ON u.likeCode=l.likeCode
+                WHERE u.upc=?');
+        $info = $this->dbc->getRow($prep, array($upc));
+        if ($info == false || !$info['strict']) {
+            return false;
+        }
+
+        if (!isset($this->lcCache)) {
+            $this->lcCache = array();
+        }
+
+        if (!isset($this->lcCache[$info['likeCode']])) {
+            $this->lcCache[$info['likeCode']] = true;
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+      Skip items based on dates. Allows:
+        - Items created in the last $created days that
+          may or may not have sales
+        - Items with sales at all stores in the last $sold days
+      
+      NULL-ness is checked separately from sales. Applicable
+      UPC lists are cached for performance
+
+      @return [boolean] skip this item
+    */
     private function skipDates($upc, $created, $sold)
     {
         if ($created <= 0 && $sold <= 0) {
@@ -190,28 +234,50 @@ class InstaFileV3
         }
 
         if ($created) {
-            $cutoff = date('Y-m-d', strtotime($created . ' days ago'));
-            $prep = $this->connection->prepare("SELECT upc
-                FROM " . FannieDB::fqn('products', 'op') . "
-                WHERE created < ?");
-            if (!$this->connection->getValue($prep, array($cutoff))) {
+            if (!isset($this->cCache)) {
+                $this->cCache = array();
+                $cutoff = date('Y-m-d', strtotime($created . ' days ago'));
+                $prep = $this->dbc->prepare("SELECT upc
+                    FROM " . FannieDB::fqn('products', 'op') . "
+                    GROUP BY upc
+                    HAVING MIN(created) >= ?");
+                $res = $this->dbc->execute($prep, array($cutoff));
+                while ($row = $this->dbc->fetchRow($res)) {
+                    $this->cCache[$row['upc']] = true;
+                }
+            }
+            if (isset($this->cCache[$upc])) {
                 return false;
             }
         }
         if ($sold) {
-            $prep = $this->connection->prepare('SELECT upc
-                FROM ' . FannieDB::fqn('products', 'op') . '
-                WHERE last_sold IS NULL');
-            if ($this->connection->getValue($prep)) {
+            if (!isset($this->nCache)) {
+                $this->nCache = array();
+                $res = $this->dbc->query('SELECT upc
+                    FROM ' . FannieDB::fqn('products', 'op') . '
+                    WHERE last_sold IS NULL
+                    GROUP BY upc');
+                while ($row = $this->dbc->fetchRow($res)) {
+                    $this->nCache[$row['upc']] = true;
+                }
+            }
+            if (isset($this->nCache[$upc])) {
                 return true;
             }
-            $cutoff = date('Y-m-d', strtotime($sold . ' days ago'));
-            $prep = $this->connection->prepare('SELECT upc
-                FROM ' . FannieDB::fqn('products', 'op') . '
-                HAVING MAX(last_sold) < ?');
-            if ($this->connection->getValue($prep)) {
-                return true;
+            if (!isset($this->sCache)) {
+                $this->sCache = array();
+                $cutoff = date('Y-m-d', strtotime($sold . ' days ago'));
+                $prep = $this->dbc->prepare('SELECT upc
+                    FROM ' . FannieDB::fqn('products', 'op') . '
+                    GROUP BY upc
+                    HAVING MIN(last_sold) >= ?');
+                $res = $this->dbc->execute($prep, array($cutoff));
+                while ($row = $this->dbc->fetchRow($res)) {
+                    $this->sCache[$row['upc']] = true;
+                }
             }
+            
+            return isset($this->sCache[$upc]) ? false : true;
         }
 
         return false;

@@ -55,6 +55,7 @@ class InstaCartTask extends FannieTask
         $csvfile = tempnam(sys_get_temp_dir(), 'ICT');
         $insta = new InstaFileV3($dbc, $this->config);
         $insta->getFile($csvfile);
+        echo $csvfile . PHP_EOL; exit;
 
         /**
           Upload export via (S)FTP
