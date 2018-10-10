@@ -64,6 +64,7 @@ class InstaFileV3
         $res = $this->dbc->execute($prep, $args);
         $csv = fopen($filename, 'w');
         fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,available,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,sale_price,sale_start_at,sale_end_at\r\n");
+        $repeats = array();
         while ($row = $this->dbc->fetchRow($res)) {
             if ($row['normal_price'] <= 0.01 || $row['normal_price'] >= 500) {
                 continue;
@@ -80,6 +81,15 @@ class InstaFileV3
                     continue;
                 }
             }
+            
+            if ($this->skipDates($row['upc'], $settings['InstaCartNewCutoff'], $settings['InstaCartSalesCutoff'])) {
+                continue;
+            }
+
+            if (isset($repeats[$row['upc']])) {
+                continue;
+            }
+            $repeats[$row['upc']] = true;
 
             $upc = ltrim($row['upc'], '0');
             if (strlen($upc) == 13) {
@@ -158,7 +168,7 @@ class InstaFileV3
             }
             fprintf($csv, '%.2f%s', $row['deposit'], $sep);
 
-            if ($row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
+            if (!$settings['InstaSalePrices'] || $row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
                 fwrite($csv, $sep . $sep . $newline);
             } else {
                 fprintf($csv, '%.2f%s', $row['special_price'], $sep);
@@ -171,6 +181,40 @@ class InstaFileV3
         fclose($csv);
 
         return true;
+    }
+
+    private function skipDates($upc, $created, $sold)
+    {
+        if ($created <= 0 && $sold <= 0) {
+            return false;
+        }
+
+        if ($created) {
+            $cutoff = date('Y-m-d', strtotime($created . ' days ago'));
+            $prep = $this->connection->prepare("SELECT upc
+                FROM " . FannieDB::fqn('products', 'op') . "
+                WHERE created < ?");
+            if (!$this->connection->getValue($prep, array($cutoff))) {
+                return false;
+            }
+        }
+        if ($sold) {
+            $prep = $this->connection->prepare('SELECT upc
+                FROM ' . FannieDB::fqn('products', 'op') . '
+                WHERE last_sold IS NULL');
+            if ($this->connection->getValue($prep)) {
+                return true;
+            }
+            $cutoff = date('Y-m-d', strtotime($sold . ' days ago'));
+            $prep = $this->connection->prepare('SELECT upc
+                FROM ' . FannieDB::fqn('products', 'op') . '
+                HAVING MAX(last_sold) < ?');
+            if ($this->connection->getValue($prep)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
