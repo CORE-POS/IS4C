@@ -519,6 +519,7 @@ HTML;
         $opts .= '<option value="-1" ' . ($curCat == -1 ? 'selected' : '') . '>Spam</option>';
 
         $this->addOnloadCommand("\$('.filter-select').change(function(){ location='ManageComments.php?' + $('.filter-select').serialize(); });");
+        $admin = FannieAuth::validateUserQuiet('CommentAdmin') ? '' : 'collapse';
 
         return <<<HTML
 <p class="form-inline">
@@ -533,9 +534,15 @@ HTML;
     </select>
     {$hidden}
     |
+    <span class="{$admin}">
     <a href="CommentCategories.php">Manage Categories</a>
     |
+    </span>
     <a href="SearchComments.php">Search</a>
+    <span class="{$admin}">
+    |
+    <a href="ResponsivenessReport.php">Metrics</a>
+    </span>
 </p>
 <table class="table table-bordered">
 <thead>
