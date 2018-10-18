@@ -447,6 +447,7 @@ HTML;
         if (FormLib::get('tag')) {
             $tagTable .= " INNER JOIN {$prefix}CommentTags AS g ON c.commentID=g.commentID ";
         }
+        $admin = FannieAuth::validateUserQuiet('CommentAdmin');
 
         $query = "
             SELECT c.commentID,
@@ -462,8 +463,12 @@ HTML;
                 LEFT JOIN {$prefix}Responses AS r ON r.commentID=c.commentID
                 LEFT JOIN {$prefix}CategoryUserMap AS m ON c.categoryID=m.categoryID
                 {$tagTable}
-            WHERE m.userID=? ";
-        $args = array(FannieAuth::getUID($this->current_user));
+            WHERE 1=1 ";
+        $args = array();
+        if (!$admin) {
+            $query .= ' AND m.userID=? ';
+            $args[] = FannieAuth::getUID($this->current_user);
+        }
         if (FormLib::get('category', false)) {
             $query .= ' AND c.categoryID=?';
             $args[] = FormLib::get('category');
@@ -519,7 +524,7 @@ HTML;
         $opts .= '<option value="-1" ' . ($curCat == -1 ? 'selected' : '') . '>Spam</option>';
 
         $this->addOnloadCommand("\$('.filter-select').change(function(){ location='ManageComments.php?' + $('.filter-select').serialize(); });");
-        $admin = FannieAuth::validateUserQuiet('CommentAdmin') ? '' : 'collapse';
+        $hide = !$admin ? 'collapse' : '';
 
         return <<<HTML
 <p class="form-inline">
@@ -534,12 +539,12 @@ HTML;
     </select>
     {$hidden}
     |
-    <span class="{$admin}">
+    <span class="{$hide}">
     <a href="CommentCategories.php">Manage Categories</a>
     |
     </span>
     <a href="SearchComments.php">Search</a>
-    <span class="{$admin}">
+    <span class="{$hide}">
     |
     <a href="ResponsivenessReport.php">Metrics</a>
     </span>
