@@ -30,6 +30,7 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $SMALL_FONT = 18;
     protected $SMALLER_FONT = 14;
     protected $SMALLEST_FONT = 16;
+    protected $BOGO_FONT = 80;
 
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
@@ -84,11 +85,19 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-80);
             } elseif (strstr($price, 'OFF')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
-            } 
+            } elseif (strstr($price, 'BUY')) {
+                $pdf->SetFont($this->font, '', $this->BOGO_FONT);
+            }
             if (strstr($price, 'SAVE')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-70);
             }
-            $pdf->Cell($this->width, 50, $price, 0, 1, 'C');
+            if (!strstr($price, 'BUY')) {
+                $pdf->Cell($this->width, 50, $price, 0, 1, 'C');
+            } else {
+                $pdf->Cell($this->width, 25, 'BUY ONE', 0, 1, 'C');
+                $pdf->Cell($this->width, 25, 'GET ONE FREE', 0, 1, 'C');
+            }
+            //$pdf->MultiCell($this->width, 25, $price, 0, 1, 'K');
 
             if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
                 $datestr = $this->getDateString($item['startDate'], $item['endDate']);
