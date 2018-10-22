@@ -202,7 +202,7 @@ class FannieUploadPage extends \FanniePage
                         $lines = array();
                         for ($i=$offset; $i<count($fileData); $i++) {
                             $lines[] = $fileData[$i];
-                            if (count($lines) > $chunk_size) {
+                            if (count($lines) >= $chunk_size) {
                                 break;
                             }
                         }
