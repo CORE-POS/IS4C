@@ -25,11 +25,11 @@ function itemEditing(size)
         });
     });
 }
+var soldOut = $('#soldOut').val();
 function getNumSeats()
 {
     var upc = $('#curUpc').val();
     var notified = $('#notified').val();
-    var soldOut = $('#soldOut').val();
     var n = 0;
     var seats = 0;
     var className = $('#className').val();
@@ -79,6 +79,7 @@ function getNumSeats()
         });
     } else if (n >= seats && soldOut == 0) {
         // remove class from website and send sold-out notification.
+        soldOut = 1;
         $.ajax({
             type: 'post',
             data:
@@ -118,7 +119,9 @@ function withdraw()
 }
 function checkSoldOut()
 {
-    $('#first_name').change(function(){
+    $('.first_name').change(function(){
+        // testing 10/22 csather
+        console.log('checkSoldOut() is being called');
         $.ajax({
             type: 'post',
             url: 'noauto/alertRegFull.php',

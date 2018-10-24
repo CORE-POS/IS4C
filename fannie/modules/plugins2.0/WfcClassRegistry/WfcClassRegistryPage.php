@@ -152,7 +152,7 @@ class WfcClassRegistryPage extends FanniePage
         $msg .= "\n";
         $msg .= "$className<br/>";
         $msg .= "\n";
-        $mail->Body = $msg;
+        $mail->Body = strip_tags($msg);
         $ret = $mail->send();
 
         return $ret ? true : false;
@@ -733,7 +733,7 @@ JAVASCRIPT;
                 <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm w-xs editable cardno" name="editCard_no" value="%s" /></td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm editable" id="first_name"  name="editFirst" value="%s" /></td>
+                    <input type="text" class="form-control input-sm editable first_name" name="editFirst" value="%s" /></td>
                 <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
                 <td><span class="collapse">%s</span>
