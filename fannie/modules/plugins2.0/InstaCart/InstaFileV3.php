@@ -45,7 +45,8 @@ class InstaFileV3
                 p.specialpricemethod,
                 y.datedSigns,
                 CASE WHEN (numflag & (1<<16)) <> 0 THEN 1 ELSE 0 END AS organic,
-                CASE WHEN (numflag & (1<<17)) <> 0 THEN 1 ELSE 0 END AS glutenfree
+                CASE WHEN (numflag & (1<<17)) <> 0 THEN 1 ELSE 0 END AS glutenfree,
+                f.sections
             FROM products AS p
                 LEFT JOIN productUser AS u on p.upc=u.upc
                 LEFT JOIN taxrates AS t ON p.tax=t.id
@@ -53,6 +54,7 @@ class InstaFileV3
                 LEFT JOIN batches AS b ON p.batchID=b.batchID
                 LEFT JOIN batchType AS y on b.batchType=y.batchTypeID
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                LEFT JOIN FloorSectionsListTable AS f ON p.upc=f.upc AND p.store_id=f.storeID
             WHERE m.superID <> 0
                 AND p.inUse=1";
         $args = array();
@@ -63,34 +65,42 @@ class InstaFileV3
         $prep = $this->dbc->prepare($query);
         $res = $this->dbc->execute($prep, $args);
         $csv = fopen($filename, 'w');
-        fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,available,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,sale_price,sale_start_at,sale_end_at\r\n");
+        fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,location_data,sale_price,sale_start_at,sale_end_at\r\n");
         $repeats = array();
+        $skips = array('date'=>0, 'ex'=>0, 'lc'=>0, 'in'=>0, 'price'=>0, 'rp'=>0);
+        echo $this->dbc->numRows($res) . "\n";
         while ($row = $this->dbc->fetchRow($res)) {
             if ($row['normal_price'] <= 0.01 || $row['normal_price'] >= 500) {
+                $skips['price']++;
                 continue;
             }
 
             if ($instaMode == 1) {
                 $included = $this->dbc->getValue($includeP, array($row['upc']));
                 if ($included === false) {
+                    $skips['ex']++;
                     continue;
                 }
             } else {
                 $excluded = $this->dbc->getValue($excludeP, array($row['upc']));
                 if ($excluded == $row['upc']) {
+                    $skips['ex']++;
                     continue;
                 }
             }
             
             if ($this->skipDates($row['upc'], $settings['InstaCartNewCutoff'], $settings['InstaCartSalesCutoff'])) {
+                $skips['date']++;
                 continue;
             }
 
             if ($this->likeCodeFilter($row['upc'])) {
+                $skips['lc']++;
                 continue;
             }
 
             if (isset($repeats[$row['upc']])) {
+                $skips['rp']++;
                 continue;
             }
             $repeats[$row['upc']] = true;
@@ -152,14 +162,15 @@ class InstaFileV3
 
             $brand = str_replace('"', '', $row['brand']);
             $brand = substr($brand, 0, 100);
+            if (strtolower($brand) == 'bulk' || strtolower($brand) == 'produce') {
+                $brand = '';
+            }
             fwrite($csv, '"' . $brand . '"' . $sep);
 
             fwrite($csv, $units . $sep);
 
             $dept = str_replace('"', '', $row['super_name']);
             fwrite($csv, '"' . $dept . '"' . $sep);
-
-            fwrite($csv, ($row['inUse'] ? 'TRUE' : 'FALSE') . $sep);
 
             fwrite($csv, ($row['idEnforced'] == 21 ? 'TRUE' : 'FALSE') . $sep);
 
@@ -174,6 +185,17 @@ class InstaFileV3
             }
             fprintf($csv, '%.2f%s', $row['deposit'], $sep);
 
+            $location = "";
+            if (strlen($row['sections']) > 0) {
+                $location = $row['sections'];
+                if (strpos($location, ',')) {
+                    list($location,) = explode(',', $location, 2);
+                    $location = trim($location);
+                }
+                $location = '"{""Aisle"": ""' . $location . '""}"';
+            }
+            fprintf($csv, '%s%s', $location, $sep);
+
             if (!$settings['InstaSalePrices'] || $row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
                 fwrite($csv, $sep . $sep . $newline);
             } else {
@@ -185,6 +207,7 @@ class InstaFileV3
             }
         }
         fclose($csv);
+        print_r($skips);
 
         return true;
     }
