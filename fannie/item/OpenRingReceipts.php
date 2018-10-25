@@ -196,7 +196,7 @@ class OpenRingReceipts extends FannieRESTfulPage
             $ret .= sprintf('<tr>
                         <th>%s</th>
                         <th>%s</th>
-                        <th><a href="#receipts" data-href="/admin/LookupReceipt/RawReceipt.php?date=%s&trans=%s#reportTable1"
+                        <th><a href="#" data-href="/admin/LookupReceipt/RawReceipt.php?date=%s&trans=%s#reportTable1"
                             class="btn btn-default btn-xs viewReceipt">View Receipt</a></th>',
                         $receipt['date'],
                         $receipt['trans'],
@@ -229,9 +229,10 @@ class OpenRingReceipts extends FannieRESTfulPage
                         </div>
                         $ret
                     </div>
-                    <div class='well well-sm'>
-                        <strong>Add to Ignored Barcodes</strong>
-                    </div>
+                        <strong>
+                            Add to Ignored Barcodes: 
+                            <a data-toggle='modal' data-target='#ignorebarcode-modal'> click here </a>
+                        </strong>
                     <div id='IgnoredBarcodes'>
                     <!--
                         <form>
@@ -254,14 +255,34 @@ class OpenRingReceipts extends FannieRESTfulPage
                                 </div>
                             </div>
                         -->
-                        <iframe src='http://key/git/fannie/item/IgnoredBarcodeEditor.php#form-start' class='ignoredIframe'></iframe>
                     </div>
                 </div>
                 <div class='col-md-8'>
                     <iframe class='receiptIframe' id='receiptIframe'></iframe>
                 </div>
             </div>
+            {$this->modal()}
         ";
+    }
+
+
+    public function modal()
+    {
+        return <<<HTML
+<div class="modal" id="ignorebarcode-modal" role="modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <iframe src='http://key/git/fannie/item/IgnoredBarcodeEditor.php#form-start' class='ignoredIframe'></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default close-btn" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+HTML;
+
     }
 
     public function get_date1_date2_view()
@@ -320,13 +341,17 @@ class OpenRingReceipts extends FannieRESTfulPage
     public function css_content()
     {
         return '
+            .modal-body {
+                height: 70vh;
+            }
             .receiptIframe {
                 width: 100%;
-                height: 75vh;
+                height: 65vh;
                 border: 1px solid #EFEFEF;
             }
             .ignoredIframe {
                 width: 100%;
+                height: 100%;
                 border: none;
             }
             .upc {
@@ -334,7 +359,7 @@ class OpenRingReceipts extends FannieRESTfulPage
                 background: rgba(0,0,0,0);
             }
             #openRings {
-                height: 40vh;
+                height: 50vh;
                 overflow-y: auto;
                 border: 1px solid #EFEFEF;
             }
