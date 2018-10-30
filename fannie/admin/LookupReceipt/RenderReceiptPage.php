@@ -310,7 +310,6 @@ HTML;
         $pRef = '';
         $found = false;
         while ($row = $dbc->fetchRow($result)) {
-            if ($pRef == $row['refNum'] || $row['mode'] == 'VOID') continue;
             if (is_numeric(substr($row['PAN'], -4))) {
                 $digits = substr($row['PAN'], -4);
                 $row['PAN'] = '<a href="RawPTrans.php?date=' . $date1 . '&trans=' . $transNum . '&card=' . $digits 
