@@ -18,9 +18,29 @@ class EndCapperReport extends FannieReportPage
     public $report_set = 'Batches';
     protected $new_tablesorter = true;
 
+    function report_description_content()
+    {
+        $ret = array();
+        if ($this->report_format == 'html') {
+            $store = FormLib::storePicker();
+            $ret[] = '<p><form action="EndCapperReport.php" method="get" class="form-inline">';
+            $ret[] = "<span style=\"color:black; display:inline;\">
+                    Store: {$store['html']} 
+                    </span><button type=\"submit\" class=\"btn btn-default\">Change Store</button>";
+            $ret[] = sprintf('<input type="hidden" name="id" value="%d" />', FormLib::get('id'));
+            $ret[] = '</form></p>';
+        }
+
+        return $ret;
+    }
+
+
     public function fetch_report_data()
     {
-        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $store = FormLib::get('store', false);
+        if (!$store) {
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        }
         $ecID = $this->form->id;
         $prep = $this->connection->prepare('SELECT json FROM EndCaps WHERE endCapID=?');
         $json = $this->connection->getValue($prep, array($ecID));
