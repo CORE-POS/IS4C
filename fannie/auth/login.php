@@ -145,6 +145,8 @@ function ldap_login($name,$passwd)
     $conn = ldap_connect($config->get('LDAP_SERVER'), $config->get('LDAP_PORT'));
     if (!$conn) return false;
 
+    ldap_set_option($conn, LDAP_OPT_NETWORK_TIMEOUT, 3);
+
     $user_dn = $config->get('LDAP_SEARCH_FIELD').'='.$name.','.$config->get('LDAP_DN');
     if (!ldap_bind($conn,$user_dn,$passwd)){
         return false;
