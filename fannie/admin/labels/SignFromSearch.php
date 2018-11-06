@@ -135,6 +135,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $desc = FormLib::get('update_desc', array());
             $origin = FormLib::get('update_origin', array());
             $custom = FormLib::get('custom_origin', array());
+            $repeats = FormLib::get('update_repeat', array());
             $knownOrigins = $this->signage_obj->getOrigins();
             for ($i=0; $i<count($upc); $i++) {
                 if (isset($brand[$i])) {
@@ -147,6 +148,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     $this->signage_obj->addOverride($upc[$i], 'originName', $custom[$i]);
                 } elseif (isset($origin[$i]) && isset($knownOrigins[$origin[$i]])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $knownOrigins[$origin[$i]]);
+                }
+                if (isset($repeats[$i]) && $repeats[$i] != 1) {
+                    $this->signage_obj->addRepeat($upc[$i], $repeats[$i]);
                 }
             }
             $this->signage_obj->setRepeats(FormLib::get('repeats', 1));
@@ -209,6 +213,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $desc = FormLib::get('update_desc', array());
             $origin = FormLib::get('update_origin', array());
             $custom = FormLib::get('custom_origin', array());
+            $repeats = FormLib::get('update_repeat', array());
             $knownOrigins = $this->signage_obj->getOrigins();
             for ($i=0; $i<count($upc); $i++) {
                 if (isset($brand[$i])) {
@@ -221,6 +226,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     $this->signage_obj->addOverride($upc[$i], 'originName', $custom[$i]);
                 } elseif (isset($origin[$i]) && isset($knownOrigins[$origin[$i]])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $knownOrigins[$origin[$i]]);
+                }
+                if (isset($repeats[$i]) && $repeats[$i] != 1) {
+                    $this->signage_obj->addRepeat($upc[$i], $repeats[$i]);
                 }
             }
             $this->signage_obj->setRepeats(FormLib::get('repeats', 1));
@@ -440,7 +448,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         var name = $(this).attr('name');
         var text = $(this).val();
         var place = $(this).attr('placeholder');
-        if (text == text.toUpperCase() && place != 'Custom origin...' && name != "repeats") {
+        if (text == text.toUpperCase() && place != 'Custom origin...' && name != "repeats" && name != "update_repeat[]") {
             $(this).addClass('alert-danger');
         }
     });

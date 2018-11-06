@@ -45,6 +45,7 @@ class FannieSignage
     protected $excludes = array();
     protected $in_use_filter = 0;
     protected $repeats = 1;
+    protected $itemRepeats = array();
 
     protected $width;
     protected $height;
@@ -93,6 +94,11 @@ class FannieSignage
     public function setRepeats($repeats)
     {
         $this->repeats = $repeats;
+    }
+
+    public function addRepeat($upc, $repeats)
+    {
+        $this->itemRepeats[$upc] = $repeats;
     }
 
     protected function getDB()
@@ -202,6 +208,9 @@ class FannieSignage
 
             if (!isset($row['signCount']) || $row['signCount'] < 0) {
                 $row['signCount'] = 1;
+            }
+            if (isset($this->itemRepeats[$row['upc']])) {
+                $row['signCount'] = $this->itemRepeats[$row['upc']];
             }
             for ($i=0; $i<$row['signCount']*$this->repeats; $i++) {
                 $data[] = $row;
@@ -700,13 +709,15 @@ class FannieSignage
         $desc = FormLib::get('update_desc', array());
         $customOrigin = FormLib::get('custom_origin', array());
         $stdOrigin = FormLib::get('update_origin', array());
+        $repeats = FormLib::get('update_repeat', array());
         for ($i=0; $i<count($upc); $i++) {
             $bOver = isset($brand[$i]) ? $brand[$i] : '';
             $coOver = isset($customOrigin[$i]) ? $customOrigin[$i] : '';
             $oOver = isset($stdOrigin[$i]) ? $stdOrigin[$i] : 0;
             $dOver = '';
+            $rOver = isset($repeats[$i]) ? $repeats[$i] : 1;
             $overrides[$upc[$i]] = array('brand' => $bOver, 'desc' => $dOver,
-                'custOrigin' => $coOver, 'stdOrigin'=>$oOver);
+                'custOrigin' => $coOver, 'stdOrigin'=>$oOver, 'repeat' => $rOver);
         }
         $excludes = array();
         foreach (FormLib::get('exclude', array()) as $e) {
@@ -758,7 +769,11 @@ class FannieSignage
                             <td class="form-inline">%s<input type="text" name="custom_origin[]" 
                                 class="form-control FannieSignageField originField" placeholder="Custom origin..." value="%s" />
                             </td>
-                            <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" %s /></td>
+                            <td class="form-inline">
+                                <input type="number" size="2" style="width: 4em !important;" class="form-control input-sm"
+                                    name="update_repeat[]" value="%d" title="Number of copies" />
+                                <input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" %s />
+                            </td>
                             </tr>',
                             $url,
                             $item['upc'], $item['upc'], $item['upc'],
@@ -770,6 +785,7 @@ class FannieSignage
                             $item['normal_price'],
                             $oselect,
                             $item['custOrigin'],
+                            (isset($overrides[$item['upc']]['repeat']) ? $overrides[$item['upc']]['repeat'] : $item['signCount']),
                             $item['upc'],
                             (in_array($item['upc'], $excludes) ? 'checked' : '')
             );
