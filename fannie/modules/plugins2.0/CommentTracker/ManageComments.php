@@ -201,6 +201,7 @@ class ManageComments extends FannieRESTfulPage
         $comment->comment(FormLib::get('comment'));
         $comment->tdate(FormLib::get('tdate'));
         $comment->fromPaper(1);
+        $comment->userID(FannieAuth::getUID());
         $cID = $comment->save();
 
         return 'ManageComments.php?id=' . $cID;
@@ -274,13 +275,14 @@ HTML;
         $prefix = $settings['CommentDB'] . $this->connection->sep();
 
         $query = "
-            SELECT c.*,
+            SELECT c.*, COALESCE(u.name, 'n/a') AS username,
                 CASE WHEN c.categoryID=0 THEN 'n/a'
                     WHEN c.categoryID=-1 THEN 'Spam'
                     ELSE t.name 
                 END AS categoryName
             FROM {$prefix}Comments AS c
                 LEFT JOIN {$prefix}Categories AS t ON t.categoryID=c.categoryID
+                LEFT JOIN Users AS u ON c.userID=u.uid
             WHERE c.commentID=?";
         $prep = $this->connection->prepare($query);
         $comment = $this->connection->getRow($prep, array($this->id));
@@ -343,7 +345,7 @@ HTML;
 
         $appropriateCheck = $comment['appropriate'] ? 'checked' : '';
         $comment['comment'] = nl2br($comment['comment']);
-        $source = $comment['fromPaper'] ? 'Manual entry' : 'Website';
+        $source = $comment['fromPaper'] ? "Manual entry ({$comment['username']})" : 'Website';
         $this->addScript('js/manageComments.js?date=20180607');
         if ($comment['email']) {
             $comment['email'] .= sprintf(' (<a href="ManageComments.php?email=%s">All Comments</a>)', $comment['email']);
