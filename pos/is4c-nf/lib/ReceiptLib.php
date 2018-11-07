@@ -233,7 +233,6 @@ static public function printCabCoupon($dateTimeStamp, $ref)
     $receipt .= "qualifies you for a WFC CAB COUPON"."\n";
     $receipt .= "in the amount of $3.00";
     $receipt .= " with\n\n";
-    $receipt .= "GO GREEN TAXI (722-8090) or"."\n";
     $receipt .= "YELLOW CAB OF DULUTH (727-1515)"."\n";
     $receipt .= "from WFC toward the destination of\n";
     $receipt .= "your choice TODAY"."\n\n";

@@ -132,8 +132,8 @@ class PaycardFixVoid extends FannieRESTfulPage
 
         $terminalID = '';
         if ($ptrans['processor'] == 'RapidConnect') {
-            $hostOrIP = $credentials['hosts']['RapidConnect' . $storeID][0];
-            $storeID = "RapidConnect" . $storeID;
+            $hostOrIP = $credentials['hosts']['RapidConnect'][1];
+            $storeID = "RapidConnect";
             $terminalID = '<TerminalID>{{TerminalID}}</TerminalID>';
         }
 
@@ -237,6 +237,10 @@ XML;
 
         $this->connection->execute($ptransP, $pcRow);
         $pcID = $this->connection->insertID();
+
+        if ($storeID == 'RapidConnect') {
+            return 'PaycardFixVoid.php?resultID=' . $pcID;
+        }
 
         return 'PaycardFixVoid.php?resultID=' . $pcID;
     }

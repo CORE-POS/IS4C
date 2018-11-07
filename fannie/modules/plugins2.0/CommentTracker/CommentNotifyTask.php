@@ -20,7 +20,6 @@ class CommentNotifyTask extends FannieTask
                 AND primaryNotified=0";
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep);
-        $historyP = $dbc->prepare("INSERT INTO CommentHistory (commentID, userID, tdate, log) VALUES (?, ?, ?, ?)");
         while ($row = $dbc->fetchRow($res)) {
             $mail = new PHPMailer();
             $mail->From = 'comments@wholefoods.coop';
@@ -53,7 +52,6 @@ HTML;
             }
             if ($sent || $address == '') {
                 $dbc->execute($upP, array($row['commentID']));
-                $dbc->execute($historyP, array($row['commentID'], 0, date('Y-m-d H:i:s'), 'Email ' . $address));
             }
         }
     }

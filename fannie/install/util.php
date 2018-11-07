@@ -136,7 +136,7 @@ function db_test_connect($host,$type,$db,$user,$pw){
         $sql = new SQLManager($host,$type,$db,$user,$pw);
     }
     catch(Exception $ex) {
-        return $ex->toString();
+        return $ex->getMessage();
     }
     
     if ($sql === False || $sql->connections[$db] === False)

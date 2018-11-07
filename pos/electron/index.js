@@ -33,14 +33,8 @@ function createWindow(name, display, url, parent=null) {
     let loc = centerOnDisplay(display, 800, 600);
     let win = windowManager.get(name);
     win = new BrowserWindow({width: 800, height: 600, x: loc.x, y: loc.y, parent: parent});
-
-    // wrapping the URL in an iframe makes the page transitions
-    // go much faster.
-    var html = '<body style="margin:0px;padding:0px;overflow:hidden">';
-    html += '<iframe src="' + url + '" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%">';
-    html += '</iframe></body></html>';
           
-    win.loadURL('data:text/html;charset=UTF-8,' + encodeURIComponent(html));
+    win.loadURL(url);
     if (options.fullscreen) {
         win.maximize();
         win.setFullScreen(true);

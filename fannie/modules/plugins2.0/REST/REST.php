@@ -1,10 +1,9 @@
 <?php
-
 /*******************************************************************************
 
-    Copyright 2018 Whole Foods Co-op
+    Copyright 2017 Whole Foods Co-op
 
-    This file is part of CORE-POS.
+    This file is part of IT CORE.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,22 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-        
+
+include(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
+}
 
 /**
-  @class CommentHistoryModel
 */
-class CommentHistoryModel extends BasicModel
+class REST extends \COREPOS\Fannie\API\FanniePlugin 
 {
-    protected $name = "CommentHistory";
-    protected $preferred_db = 'plugin::CommentDB';
-
-    protected $columns = array(
-    'commentHistoryID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
-    'commentID' => array('type'=>'INT', 'index'=>true),
-    'userID' => array('type'=>'INT'),
-    'tdate' => array('type'=>'DATETIME'),
-    'log' => array('type'=>'VARCHAR(255)'),
+    public $plugin_settings = array(
     );
+
+    public $plugin_description = 'Plugin for building a REST API';
 }
 
