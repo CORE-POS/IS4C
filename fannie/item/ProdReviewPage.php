@@ -603,7 +603,7 @@ HTML;
             }
         }
 
-        $table = '<table class="table table-condensed small" id="reviewtable">';
+        $table = '<table class="table table-condensed small tablesorter tablesorter-bootstrap" id="reviewtable">';
         $table .= '<thead><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Reviewed On</th></thead><tbody><td></td><td></td><td></td><td></td><td>
             <input type="checkbox" id="checkAll" style="border: 1px solid red;"></td>';
@@ -629,6 +629,9 @@ HTML;
             $in[] = $obj->upc();
         }
         $table .= '</tbody></table>';
+        $this->addScript('../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
+        $this->addScript('../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
+        $this->addOnloadCommand("$('#reviewtable').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
         return <<<HTML
 {$this->backBtn()}<br/><br/>
