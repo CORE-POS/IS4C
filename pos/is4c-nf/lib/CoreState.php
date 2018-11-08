@@ -135,6 +135,12 @@ static public function systemInit()
     CoreLocal::set('perfLog', array());
 
     /**
+     * @var portOverrides
+     * Track port re-negotiation
+     */
+    CoreLocal::set('portOverrides', array());
+
+    /**
       Load lane and store numbers from LaneMap array
       if present
     */

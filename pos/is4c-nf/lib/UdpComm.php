@@ -18,10 +18,13 @@ class UdpComm
         if (!function_exists("socket_create")) {
             return;
         }
+        $override = CoreLocal::get('portOverrides');
+        if (isset($override['u' . $port])) {
+            $port = $override['u' . $port];
+        }
         $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         $res = socket_sendto($sock, $msg, strlen($msg), 0, '127.0.0.1',$port);
         socket_close($sock);
     }
-
 }
 
