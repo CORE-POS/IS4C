@@ -43,14 +43,32 @@ public class UDPMsgBox {
         this.My_Thread = new Thread(new ThreadStart(this.Read));
         this.running = true;
         this.port = p;
-        this.u = new UdpClient(this.port);
         this.runAsync = a;
     }
     
     public void SetParent(DelegateForm p){ parent = p; }
 
+    private UdpClient GetClient()
+    {
+        UdpClient client = null;
+        while (true) {
+            try {
+                client = new UdpClient(this.port);
+                break;
+            } catch (System.Net.Sockets.SocketException) {
+                this.port++;
+            }
+        }
+        if (client != null && this.port > 9450) {
+            parent.MsgSend("SETUDP" + this.port);
+        }
+
+        return client;
+    }
+
     public void Read()
     {
+        this.u = this.GetClient();
         if (this.runAsync) {
             Console.WriteLine("UDP is async");
             this.ReadAsync();

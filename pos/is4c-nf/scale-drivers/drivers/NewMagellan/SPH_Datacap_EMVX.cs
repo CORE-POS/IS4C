@@ -135,6 +135,26 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         return true;
     }
 
+    private TcpListener GetHTTP()
+    {
+        TcpListener http = null;
+        while (true) {
+            try {
+                http = new TcpListener(IPAddress.Any, LISTEN_PORT);
+                http.Start();
+                break;
+            } catch (System.Net.Sockets.SocketException) {
+                this.LISTEN_PORT += 2;
+            }
+        }
+
+        if (http != null && this.LISTEN_PORT > 8999) {
+            parent.MsgSend("SETTCP" + this.LISTEN_PORT);
+        }
+
+        return http;
+    }
+
     /**
       Driver listens over TCP for incoming HTTP data. Driver
       is providing a web-service style endpoint so POS behavior
@@ -147,8 +167,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     public override void Read()
     { 
         ReInitDevice();
-        TcpListener http = new TcpListener(IPAddress.Any, LISTEN_PORT);
-        http.Start();
+        TcpListener http = this.GetHTTP();
         byte[] buffer = new byte[10];
         while (SPH_Running) {
             string result = "";
