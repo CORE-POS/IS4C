@@ -116,6 +116,7 @@ class PaycardEmvPage extends PaycardProcessPage
             return '';
         }
         $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
+        $overrides = $this->conf->get('portOverrides');
         ?>
 <script type="text/javascript">
 function emvSubmit() {
@@ -128,6 +129,8 @@ function emvSubmit() {
     }
     <?php if ($this->conf->Get('training') == 1) { ?>
     emv.setURL('../ajax/AjaxPaycardTest.php');
+    <?php } elseif (isset($overrides['t8999'])) { ?>
+    emv.setURL('http://localhost:<?php echo $overrides['t8999']; ?>');
     <?php } ?>
     emv.submit(xmlData);
     $(document).keyup(checkForCancel);
