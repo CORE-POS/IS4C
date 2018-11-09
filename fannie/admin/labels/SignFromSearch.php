@@ -290,6 +290,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $authorized = false;
         if (FannieAuth::validateUserQuiet('admin')) {
             $authorized = true;
+        } elseif (FannieAuth::validateUserQuiet('signText')) {
+            $authorized = true;
         }
 
         return $authorized;
