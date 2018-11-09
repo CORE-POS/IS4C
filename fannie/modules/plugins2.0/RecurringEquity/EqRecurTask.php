@@ -84,8 +84,8 @@ class EqRecurTask extends FannieTask
             $hostOrIP = '127.0.0.1';
             $transID = '';
             if ($payment['processor'] == 'RapidConnect') {
-                $hostOrIP = $this->CREDENTIALS['hosts']['RapidConnect'][1];
-                $store = "RapidConnect";
+                $hostOrIP = $this->CREDENTIALS['hosts']['RapidConnect' . $store][0];
+                $store = "RapidConnect" . $store;
                 $terminalID = '<TerminalID>{{TerminalID}}</TerminalID>';
             }
 
