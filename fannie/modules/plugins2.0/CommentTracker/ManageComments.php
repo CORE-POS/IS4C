@@ -7,6 +7,9 @@ if (!class_exists('\\FannieAPI')) {
 if (!class_exists('CommentsModel')) {
     include(__DIR__ . '/models/CommentsModel.php');
 }
+if (!class_exists('CommentHistoryModel')) {
+    include(__DIR__ . '/models/CommentHistoryModel.php');
+}
 if (!class_exists('CategoriesModel')) {
     include(__DIR__ . '/models/CategoriesModel.php');
 }
@@ -32,7 +35,8 @@ class ManageComments extends FannieRESTfulPage
             'post<id><tags>',
             'get<new>',
             'post<new>',
-            'get<canned>'
+            'get<canned>',
+            'get<history>'
         );
 
         return parent::preprocess();
@@ -53,6 +57,22 @@ class ManageComments extends FannieRESTfulPage
             $comment->ccNotified(1);
         }
         $comment->save();
+
+        $catName = 'Spam';
+        if ($this->catID == 0) {
+            $catName = 'Uncategorized';
+        } elseif ($this->catID > 0) {
+            $category = new CategoriesModel($this->connection);
+            $category->categoryID($this->catID);
+            $category->load();
+            $catName = $category->name();
+        }
+        $history = new CommentHistoryModel($this->connection);
+        $history->commentID($this->id);
+        $history->userID(FannieAuth::getUID());
+        $history->tdate(date('Y-m-d H:i:s'));
+        $history->log('Changed category ' . $catName);
+        $history->save();
 
         echo 'OK';
 
@@ -171,6 +191,13 @@ class ManageComments extends FannieRESTfulPage
                 $mail->Body = $msg . "\n\n" . $orig
                     . "\n\n--\nWhole Foods Co-op\n218-728-0884\ninfo@wholefoods.coop\n";
                 $mail->send();
+
+                $history = new CommentHistoryModel($this->connection);
+                $history->commentID($this->id);
+                $history->tdate(date('Y-m-d H:i:s'));
+                $history->userID(FannieAuth::getUID());
+                $history->log('Email ' . $email);
+                $history->save();
             }
             $response->response($msg);
             $response->save();
@@ -204,6 +231,13 @@ class ManageComments extends FannieRESTfulPage
         $comment->userID(FannieAuth::getUID());
         $cID = $comment->save();
 
+        $history = new CommentHistoryModel($this->connection);
+        $history->commentID($cID);
+        $history->userID(FannieAuth::getUID());
+        $history->tdate(date('Y-m-d H:i:s'));
+        $history->log('Manually entered comment');
+        $history->save();
+
         return 'ManageComments.php?id=' . $cID;
     }
 
@@ -218,6 +252,30 @@ class ManageComments extends FannieRESTfulPage
         echo $resp->response();
 
         return false;
+    }
+
+    protected function get_history_view()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $prefix = $settings['CommentDB'] . $this->connection->sep();
+        $prep = $this->connection->prepare("
+            SELECT COALESCE(u.name, 'n/a') AS username,
+                tdate,
+                log
+            FROM {$prefix}CommentHistory AS c
+                LEFT JOIN Users AS u ON c.userID=u.uid
+            WHERE c.commentID=?
+            ORDER BY c.tdate, c.commentHistoryID");
+        $res = $this->connection->execute($prep, array($this->history));
+        $ret = '<table class="table table-bordered table-striped">
+            <tr><th>Date</th><th>User</th><th>Action</th></tr>';
+        while ($row = $this->connection->fetchRow($res)) {
+            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td></tr>',
+                $row['tdate'], $row['username'], $row['log']);
+        }
+        $ret .= '</table>';
+
+        return $ret;
     }
 
     protected function get_new_view()
@@ -359,6 +417,10 @@ HTML;
 <form method="post">
     <p>
         <a href="ManageComments.php" class="btn btn-default">Back to All Comments</a>
+        &nbsp;&nbsp;&nbsp;
+        |
+        &nbsp;&nbsp;&nbsp;
+        <a href="ManageComments.php?history={$this->id}" class="btn btn-default">History of this Comment</a>
     </p>
     <input type="hidden" name="id" value="{$this->id}" />
     <div id="alertArea"></div>

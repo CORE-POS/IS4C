@@ -64,6 +64,9 @@ class MailPipe extends AttachmentEmailPipe
         $model->tdate(date('Y-m-d H:i:s'));
         $commentID = $model->save();
 
+        $historyP = $dbc->prepare("INSERT INTO CommentHistory (commentID, userID, tdate, log) VALUES (?, ?, ?, ?)");
+        $dbc->execute($historyP, array($commentID, 0, date('Y-m-d H:i:s'), 'Entered from website'));
+
         if ($catW && $catW['notifyAddress']) {
             $mail = new \PHPMailer();
             $mail->addReplyTo('ff8219e9ba6148408c89232465df9e53+' . $commentID . '@wholefoods.coop');
@@ -86,6 +89,8 @@ HTML;
             if ($sent) {
                 $prep = $dbc->prepare('UPDATE Comments SET primaryNotified=1 WHERE commentID=?');
                 $dbc->execute($prep, array($commentID));
+
+                $dbc->execute($historyP, array($commentID, 0, date('Y-m-d H:i:s'), 'Email ' . $catW['notifyAddress']));
             }
         }
     }
