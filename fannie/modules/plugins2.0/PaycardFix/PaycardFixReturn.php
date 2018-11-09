@@ -154,8 +154,8 @@ class PaycardFixReturn extends FannieRESTfulPage
 
         $terminalID = '';
         if ($ptrans['processor'] == 'RapidConnect') {
-            $hostOrIP = $credentials['hosts']['RapidConnect'][1];
-            $storeID = "RapidConnect";
+            $hostOrIP = $credentials['hosts']['RapidConnect' . $storeID][0];
+            $storeID = "RapidConnect" . $storeID;
             $terminalID = '<TerminalID>{{TerminalID}}</TerminalID>';
         }
 
@@ -248,9 +248,7 @@ XML;
         $this->connection->execute($ptransP, $pcRow);
         $pcID = $this->connection->insertID();
 
-        if ($storeID == 'RapidConnect') {
-            return 'PaycardFixReturn.php?resultID=' . $pcID;
-        }
+        $storeID = str_replace('RapidConnect', '', $storeID);
 
         /**
          * If the refund was successful, either flag the existing POS transaction with
