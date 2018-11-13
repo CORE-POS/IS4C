@@ -140,16 +140,16 @@ class OverShortDepositSlips extends FanniePage
                 if ($real == 1) $j = 0;
                 $k = 6;
                 if ($real == 6) $k = 2;
-                $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
+                $pdf->SetXY(10 + ($width-0)*$j + ($width+7)*($real-1-$j),10);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
-                $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+                $pdf->SetX(10+ ($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->SetFontSize($font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
-                $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+                $pdf->SetX(10 + ($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->SetFont('Arial','B',$font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
                 $pdf->SetFont('Arial','',$font_size-1);
-                $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+                $pdf->SetX(10 + ($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
                 
                 $acc = array();
@@ -187,16 +187,16 @@ class OverShortDepositSlips extends FanniePage
             if ($real == 1) $j = 0;
             $k = 6;
             if ($real == 6) $k = 2;
-            $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
+            $pdf->SetXY(10+($width-0)*$j + ($width+7)*($real-1-$j),10);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
-            $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+            $pdf->SetX(10+($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->SetFontSize($font_size-1);
             $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
-            $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+            $pdf->SetX(10+($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->SetFont('Arial','B',$font_size);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
             $pdf->SetFont('Arial','',$font_size);
-            $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+            $pdf->SetX(10+($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
         }
 
