@@ -478,7 +478,7 @@ HTML;
             <div class="row"><div class="col-md-2">
                 <table class="table"><tbody>
                     <tr><td><a class="btn btn-default btn-xs wide" href="CoopDealsLookupPage.php">Select Month</a></td></tr>
-                    <tr><td><a class="btn btn-default btn-xs wide" href="../../../scancoord/item/SalesChange/SCScanner.php">Batch Check</a></td></tr>
+                    <tr><td><a class="btn btn-default btn-xs wide" href="../../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">Batch Check</a></td></tr>
                     <tr><td><a class="btn btn-default btn-xs wide" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Exit</a></td></tr>
                 </tbody></table>
             </div></div>
