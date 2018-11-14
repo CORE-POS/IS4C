@@ -49,6 +49,20 @@ class MailPipe extends AttachmentEmailPipe
         $comment = trim($comment[1]);
         $comment = $this->deQuote($comment);
 
+        $nameParts = explode(' ', $name);
+        $nameParts = array_map('trim', $nameParts);
+        $first = $nameParts[0];
+        $last = $nameParts[count($nameParts)-1];
+        $ownerID = null;
+        if ($first && $last) {
+            $prep = $dbc->prepare('SELECT CardNo FROM custdata WHERE FirstName LIKE ? AND LastName LIKE ?');
+            $res = $dbc->execute($prep, array($first . '%', '%' . $last . '%'));
+            if ($dbc->numRows($res) === 1) {
+                $row = $dbc->fetchRow($res);
+                $ownerID = $row['CardNo'];
+            }
+        }
+
         $settings = \FannieConfig::config('PLUGIN_SETTINGS');
         $dbc = \FannieDB::get($settings['CommentDB']);
 
@@ -66,6 +80,7 @@ class MailPipe extends AttachmentEmailPipe
 
         $historyP = $dbc->prepare("INSERT INTO CommentHistory (commentID, userID, tdate, log) VALUES (?, ?, ?, ?)");
         $dbc->execute($historyP, array($commentID, 0, date('Y-m-d H:i:s'), 'Entered from website'));
+        $dbc->execute($historyP, array($commentID, 0, date('Y-m-d H:i:s'), 'Inital category ' . $catW['name']));
 
         if ($catW && $catW['notifyAddress']) {
             $mail = new \PHPMailer();

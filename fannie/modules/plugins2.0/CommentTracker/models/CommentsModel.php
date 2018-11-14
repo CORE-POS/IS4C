@@ -46,6 +46,7 @@ class CommentsModel extends BasicModel
     'primaryNotified' => array('type'=>'TINYINT', 'default'=>0),
     'ccNotified' => array('type'=>'TINYINT', 'default'=>0),
     'userID' => array('type'=>'INT'),
+    'ownerID' => array('type'=>'INT'),
     );
 }
 
