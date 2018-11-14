@@ -324,7 +324,14 @@ HTML;
             $ret .= "Reference Number: ".$row['refNum'].'<br />';
             $ret .= "Authorization: ".$row['xResultMessage'].'<br />';
             $ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
-            $ret .= ($row['processor'] == 'GoEMerchant' ? 'FAPS' : 'MERCURY') . '<br />';
+            if ($row['processor'] == 'GoEMerchant') {
+                $ret .= 'FAPS';
+            } elseif ($row['processor'] == 'RapidConnect') {
+                $ret .= 'FIRST DATA';
+            } else {
+                $ret .= 'MERCURY';
+            }
+            $ret .= '<br />';
             $pRef = $row['refNum'];
             $found = true;
         }
