@@ -195,13 +195,19 @@ HTML;
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-
+        $upc = $this->upc;
+        $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         $heading = '';
+
         $ret = '';
         $heading .= '
-            <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="">
+            <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
                 <div class="form-group">
                     <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-default" value="go"/>
+                </div>
             </form>
         ';
         if ($this->session->cycleDate) {
@@ -211,9 +217,15 @@ HTML;
             $cycleB = false;
         }
         $heading .= '<strong>Month</strong>: ' . $this->session->month . '<br>';
-        $upc = $this->upc;
-        $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         $heading .= 'UPC: ' . $upc;
+
+        //Check if product exists
+        $args = array($upc);
+        $prep = $dbc->prepare("SELECT * FROM products WHERE upc = ?");
+        $res = $dbc->execute($prep, $args);
+        if ($dbc->numRows($res) == 0) {
+            $heading .= "<div class='alert alert-danger' align='center'>Product does not exist in POS</div>";
+        }
 
         $month = $this->session->month;
         $mono = new DateTime($month);
@@ -399,7 +411,7 @@ HTML;
         return <<<HTML
 <div class="row">
     <div class="col-md-6">
-        $heading.$ret
+        $heading$ret
     </div>
 </div>
 HTML;
