@@ -174,7 +174,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                 LEFT JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
-                LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID
+                LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID AND c.mostRecent=1
             WHERE p.upc=?';
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
