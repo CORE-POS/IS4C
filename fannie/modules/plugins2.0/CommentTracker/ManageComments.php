@@ -229,6 +229,7 @@ class ManageComments extends FannieRESTfulPage
         $comment->tdate(FormLib::get('tdate'));
         $comment->fromPaper(1);
         $comment->userID(FannieAuth::getUID());
+        $comment->ownerID(FormLib::get('cardno'));
         $cID = $comment->save();
 
         $history = new CommentHistoryModel($this->connection);
@@ -301,6 +302,10 @@ class ManageComments extends FannieRESTfulPage
         <label>Appropriate
         <input type="checkbox" name="appr" value="1" checked />
         </label>
+    </div>
+    <div class="form-group">
+        <label>Onwner #</label>
+        <input type="text" name="cardno" placeholder="If known..." class="form-control" />
     </div>
     <div class="form-group">
         <label>Name</label>
@@ -431,6 +436,9 @@ HTML;
     <tr>
         <th>Category</th><td><select 
             onchange="manageComments.saveCategory({$this->id}, this.value);" class="form-control">{$opts}</select></td>
+    </tr>
+    <tr>
+        <th>Owner #</th><td>{$comment['ownerID']}</td></tr>
     </tr>
     <tr>
         <th>Name</th><td>{$comment['name']}</td>
