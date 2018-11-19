@@ -310,6 +310,9 @@ class FannieAPI
             case 'COREPOS\Fannie\API\item\FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
                 break;
+            case 'COREPOS\Fannie\API\item\PriceRounder':
+                $directories[] = dirname(__FILE__) . '/item/';
+                break;
             case 'COREPOS\Fannie\API\monitor\Monitor':
                 $directories[] = dirname(__FILE__) . '/monitor/';
                 break;
@@ -345,6 +348,10 @@ class FannieAPI
     */
     static public function listModules($base_class, $include_base=false, $debug=false)
     {
+        // leading backslash is ignored
+        if ($base_class[0] == '\\') {
+            $base_class = substr($base_class, 1);
+        }
         $directories = self::searchDirectories($base_class);
 
         // recursive search
