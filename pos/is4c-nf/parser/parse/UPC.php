@@ -391,6 +391,7 @@ class UPC extends Parser
            quantity and items that do not have a normal_price
            assigned cannot calculate a proper quantity.
         */
+        $rawQty = false;
         if ($scaleStickerItem) {
             if ($discountObject->isSale() && $scale == 1 && $row['normal_price'] != 0 && $this->session->get('VariableNoSalePrice') != 1) {
                 $quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
@@ -428,6 +429,14 @@ class UPC extends Parser
                 DisplayLib::standardClearButton()
             );
             return $ret;
+        } elseif (false && $rawQty) { // rewrite edge-case quantities idea
+            $dbc = Database::tDataConnect();
+            $prep = $dbc->prepare('SELECT MAX(trans_id) FROM localtemptrans WHERE upc=?');
+            $tID = $dbc->getValue($prep, array($row['upc']));
+            if ($tID) {
+                $prep = $dbc->prepare('UPDATE localtemptrans SET quantity=?, ItemQtty=? WHERE trans_id=?');
+                $res = $dbc->execute($prep, array($rawQty, $rawQty, $tID));
+            }
         }
 
         /* add discount notifications lines, if applicable */
