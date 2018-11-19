@@ -399,6 +399,8 @@ class UPC extends Parser
                 if (round($scaleprice, 2) != round($quantity * $row['normal_price'], 2)) {
                     $quantity = 1.0;
                     $row['normal_price'] = $scaleprice;
+                    $rawQty = $scaleprice / $row['normal_price'];
+                    $row['cost'] = MiscLib::truncate2($row['cost'] * $rawQty);
                 } 
             } else {
                 $row['normal_price'] = $scaleprice;
