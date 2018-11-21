@@ -85,6 +85,7 @@ class MovementTagTracker extends FannieRESTfulPage
                 OR (p.auto_par * $var - m.lastPar) < ?
             )
             AND f.name IS NOT NULL 
+            AND p.auto_par <> 0
         ;");
         $res = $dbc->execute($prep, $args);
         if ($er = $dbc->error())
