@@ -68,9 +68,13 @@ class MovementTagTracker extends FannieRESTfulPage
             ROUND(p.auto_par, 3) * $var AS auto_par,
             ROUND(m.lastPar, 3) AS lastPar,
             ROUND((p.auto_par * $var - m.lastPar), 3) AS diff,
-            CONCAT(p.department, ' - ', d.dept_name) AS department
+            CONCAT(p.department, ' - ', d.dept_name) AS department,
+            f.name
         FROM products AS p
             LEFT JOIN MovementTags AS m ON p.upc=m.upc AND p.store_id = m.storeID
+            LEFT JOIN FloorSectionProductMap AS fs ON fs.upc=p.upc
+            LEFT JOIN FloorSections AS f ON f.storeID=p.store_id
+                AND f.floorSectionID=fs.floorSectionID
             INNER JOIN MasterSuperDepts AS mast ON p.department = mast.dept_ID
             INNER JOIN departments AS d ON p.department=d.dept_no
         WHERE p.store_id = ?
@@ -80,6 +84,7 @@ class MovementTagTracker extends FannieRESTfulPage
             AND ((p.auto_par * $var - m.lastPar) > ?
                 OR (p.auto_par * $var - m.lastPar) < ?
             )
+            AND f.name IS NOT NULL 
         ;");
         $res = $dbc->execute($prep, $args);
         if ($er = $dbc->error())
@@ -99,7 +104,7 @@ class MovementTagTracker extends FannieRESTfulPage
 
         $table = "";
         $thead = '';
-        $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff');
+        $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff', 'name');
         foreach ($colNames as $colName)
             $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
