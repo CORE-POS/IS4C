@@ -844,7 +844,7 @@ class FannieReportPage extends FanniePage
                     $this->addScript($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
                     $this->addScript($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
                 }
-                $this->addScript($url . 'src/javascript/jquery.floatThead.min.js');
+                $this->addScript($url . 'src/javascript/jquery.floatThead.min.js?date=20181121');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
                     if (!$this->new_tablesorter) {
