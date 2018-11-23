@@ -120,7 +120,8 @@ XML;
             $startTime = microtime(true);
             $approvedAmount = 0;
 
-            $curl = curl_init('http://' . $this->CREDENTIALS['hosts'][$store][0] . ':8999');
+            $curl = curl_init('http://' .   $this->CREDENTIALS['hosts'][$store][0] . ':8999');
+            $this->cronMsg("Processing via {$this->CREDENTIALS['hosts'][$store][0]}", $LOG);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $reqXML);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
