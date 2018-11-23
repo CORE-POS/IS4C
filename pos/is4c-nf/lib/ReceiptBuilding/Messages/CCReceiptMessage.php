@@ -203,7 +203,7 @@ class CCReceiptMessage extends ReceiptMessage {
                     $col2[] = ReceiptLib::boldFont()."Amount: ".$amt.ReceiptLib::normalFont();
                     $slip .= ReceiptLib::twoColumns($col1,$col2);
                     if (strpos($row['tranType'], ' R.')) {
-                        $slip .= ReceiptLib::boldFont() . 'This is a recurring payment' . ReceiptLib::normalizeFont() . "\n"
+                        $slip .= ReceiptLib::boldFont() . 'This is a recurring payment' . ReceiptLib::normalFont() . "\n"
                             . wordwrap(
                                 sprintf('You will be billed monthly %d additional times for $%.2f. ', $payments_left, $recurring)
                                 . 'The charges on your bank statement will be labeled "recurring". '
