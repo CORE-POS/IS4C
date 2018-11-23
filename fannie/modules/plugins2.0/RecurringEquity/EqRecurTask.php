@@ -311,6 +311,7 @@ XML;
 
     private function clearToken($dbc, $row)
     {
+        return;
         $clearP = $dbc->prepare("UPDATE " . FannieDB::fqn('PaycardTransactions', 'trans') . " SET xToken='USED' WHERE paycardTransactionID=? and storeRowId=?");
         $this->cronMsg("Clear ptID {$row['paycardTransactionID']}, srID {$row['storeRowId']}", FannieLogger::ALERT);
         $clearR = $dbc->execute($clearP, array($row['paycardTransactionID'], $row['storeRowId']));
