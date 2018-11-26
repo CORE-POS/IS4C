@@ -81,7 +81,8 @@ class EqRecurTask extends FannieTask
                 date('Y-m-d H:i:s'),
             );
 
-            $hostOrIP = '127.0.0.1';
+            // route to x1.mercurypay.com
+            $hostOrIP = '63.111.40.6';
             $transID = '';
             if ($payment['processor'] == 'RapidConnect') {
                 $hostOrIP = $this->CREDENTIALS['hosts']['RapidConnect' . $store][0];
@@ -93,7 +94,7 @@ class EqRecurTask extends FannieTask
 <?xml version="1.0"?>
 <TStream>
     <Transaction>
-        <HostOrIP>{$hostOrIP}</HostOrIP>
+        <IpAddress>{$hostOrIP}</IpAddress>
         <IpPort>9000</IpPort>
         <MerchantID>{$this->CREDENTIALS[$store][0]}</MerchantID>
         {$terminalID}
@@ -119,6 +120,7 @@ class EqRecurTask extends FannieTask
 XML;
             $startTime = microtime(true);
             $approvedAmount = 0;
+            echo $reqXML . "\n";
 
             $curl = curl_init('http://' .   $this->CREDENTIALS['hosts'][$store][0] . ':8999');
             $this->cronMsg("Processing via {$this->CREDENTIALS['hosts'][$store][0]}", $LOG);
@@ -127,6 +129,7 @@ XML;
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
             $respXML = curl_exec($curl);
+            echo $respXML . "\n";
 
             $resp = simplexml_load_string($respXML);
             if (strlen($respXML) > 0 && $resp !== false) {
