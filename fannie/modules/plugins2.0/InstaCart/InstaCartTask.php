@@ -72,6 +72,7 @@ class InstaCartTask extends FannieTask
             if (substr($path, -1) != '/') {
                 $path .= '/';
             }
+            echo "Send to $path\n";
             $success = $filesystem->put($path . date('Ymd') . '.csv', file_get_contents($csvfile));
             if ($success) echo "Upload succeeded\n";
         }
