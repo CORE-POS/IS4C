@@ -35,6 +35,8 @@ class InstaCart extends \COREPOS\Fannie\API\FanniePlugin
             'description'=>'InstaCart FTP credentials'), 
     'InstaCartFtpPw' => array('default'=>'', 'label'=>'FTP Password',
             'description'=>'InstaCart credentials'), 
+    'InstaCartFtpPath' => array('default'=>'', 'label'=>'FTP Path',
+            'description'=>'Directory path on FTP server'), 
     'InstaCartDB' => array('default'=>'InstaCart', 'label'=>'InstaCart Database',
             'description'=>'Database for InstaCart-specific information'), 
     'InstaCartMode' => array('default'=>1, 'label'=>'InstaCart Mode',
