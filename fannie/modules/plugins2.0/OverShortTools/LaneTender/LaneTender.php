@@ -98,7 +98,7 @@ class LaneTender extends FannieReportPage
                 AND d.tdate BETWEEN ? AND ?
         ';
         if ($emp_no) {
-            $query .= ' AND emp_no=' . $emp_no;
+            $query .= ' AND d.emp_no=' . $emp_no;
         }
         $query .= ' GROUP BY d.emp_no, d.trans_subtype
             ORDER BY d.emp_no
