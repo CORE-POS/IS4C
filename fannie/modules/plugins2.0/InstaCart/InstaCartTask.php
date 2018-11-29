@@ -70,7 +70,7 @@ class InstaCartTask extends FannieTask
             $filesystem = new Filesystem($adapter);
             $path = $settings['InstaCartFtpPath'];
             if (substr($path, -1) != '/') {
-                $path . '/';
+                $path .= '/';
             }
             $success = $filesystem->put($path . date('Ymd') . '.csv', file_get_contents($csvfile));
             if ($success) echo "Upload succeeded\n";
