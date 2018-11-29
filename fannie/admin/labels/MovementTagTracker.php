@@ -86,6 +86,8 @@ class MovementTagTracker extends FannieRESTfulPage
             )
             AND f.name IS NOT NULL 
             AND p.auto_par <> 0
+            AND p.numflag & (1 << 19) = 0
+            AND not numflag & (1 << 1)
         ;");
         $res = $dbc->execute($prep, $args);
         if ($er = $dbc->error())
