@@ -72,8 +72,10 @@ those same items revert to normal pricing.
     public function forceStartBatch($id)
     {
         $b_def = $this->connection->tableDefinition($this->name);
-        $exit = isset($b_def['exitInventory']) ? 'exitInventory' : '0 AS exitInventory';
-        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType,{$exit} FROM batches WHERE batchID = ?");
+        $bt_def = $this->connection->tableDefinition('batchType');
+        $exit = isset($bt_def['exitInventory']) ? 'exitInventory' : '0 AS exitInventory';
+        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType,{$exit} FROM batches AS b
+            LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID WHERE batchID = ?");
         $batchInfoW = $this->connection->getRow($batchInfoQ,array($id));
         if ($batchInfoW['discountType'] < 0) {
             return;
