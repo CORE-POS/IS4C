@@ -809,7 +809,7 @@ HTML;
                     $store_id
                 );
             }
-            $ret .= $this->getRowMods($upc, $active_tab);
+            $ret .= $this->getRowMods($upc, $active_tab, $store_id);
             $ret .= '</table></div></div>';
             if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
@@ -846,7 +846,7 @@ HTML;
         return $ret;
     }
 
-    private function getRowMods($upc, $active_tab)
+    private function getRowMods($upc, $active_tab, $store_id)
     {
         $mods = FannieConfig::config('PRODUCT_ROWS');
         asort($mods);
@@ -856,7 +856,7 @@ HTML;
                 include(__DIR__ . '/' . $mod . '.php');
             }
             $obj = new $mod();
-            $ret .= $obj->formRow($upc, $active_tab);
+            $ret .= $obj->formRow($upc, $active_tab, $store_id);
         }
 
         return $ret;

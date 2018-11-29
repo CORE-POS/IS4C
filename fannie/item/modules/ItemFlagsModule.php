@@ -32,7 +32,7 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         return self::META_WIDTH_FULL;
     }
 
-    private function getFlags($upc)
+    private function getFlags($upc, $storeID=false)
     {
         $dbc = $this->db();
         $query = "
@@ -42,11 +42,11 @@ class ItemFlagsModule extends ItemModule implements ItemRow
             FROM products AS p, 
                 prodFlags AS f
             WHERE p.upc=?
-                " . (FannieConfig::config('STORE_MODE') == 'HQ' ? ' AND p.store_id=? ' : '') . "
+                " . ($storeID ? ' AND p.store_id=? ' : '') . "
                 AND f.active=1";
         $args = array($upc);
-        if (FannieConfig::config('STORE_MODE') == 'HQ') {
-            $args[] = FannieConfig::config('STORE_ID');
+        if ($storeID) {
+            $args[] = $storeID;
         }
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep,$args);
@@ -110,38 +110,65 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         return $ret;
     }
 
-    public function formRow($upc, $activeTab)
+    public function formRow($upc, $activeTab, $storeID)
     {
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            return $this->rowOfFlags($upc, $storeID);
+        }
+
         return $activeTab ? $this->rowOfFlags($upc) : '';
     }
 
-    private function rowOfFlags($upc)
+    private function rowOfFlags($upc, $storeID=false)
     {
         $upc = BarcodeLib::padUPC($upc);
         $dbc = $this->db();
-        $res = $this->getFlags($upc);
+        $res = $this->getFlags($upc, $storeID);
 
         $ret = '<tr class="small"><th class="text-right">Flags</th><td colspan="9">';
         while ($row = $dbc->fetchRow($res)) {
-            $ret .= sprintf('<label><input type="checkbox" name="flags[]" value="%d" %s />
+            $ret .= sprintf('<label><input type="checkbox" name="flags%s[]" value="%d" %s />
                     %s</label>&nbsp;&nbsp;&nbsp;',
+                    ($storeID ? $storeID : ''),
                     $row['bit_number'], ($row['flagIsSet'] ? 'checked' : ''), $row['description']);
             // embed flag info to avoid re-querying it on save
-            $ret .= sprintf('<input type="hidden" name="pf_attrs[]" value="%s" />
-                            <input type="hidden" name="pf_bits[]" value="%d" />',
-                            $row['description'], $row['bit_number']);
+            $ret .= sprintf('<input type="hidden" name="pf_attrs%s[]" value="%s" />
+                            <input type="hidden" name="pf_bits%s[]" value="%d" />',
+                            ($storeID ? $storeID : ''), $row['description'],
+                            ($storeID ? $storeID : ''), $row['bit_number']);
         }
         $ret .= '</td></tr>';
+        if ($storeID) {
+            $ret .= '<input type="hidden" name="flagStores[]" value="' . $storeID . '" />';
+        }
 
         return $ret;
     }
 
     public function saveFormData($upc)
     {
+        $multi = FormLib::get('flagStores');
+        if (is_array($multi)) {
+            $ret = true;
+            foreach ($multi as $store) {
+                $ret = $this->realSave($upc, $store);
+            }
+
+            return $ret;
+        }
+
+        return $this->realSave($upc, '');
+    }
+
+    private function realSave($upc, $suffix)
+    {
         try {
-            $flags = $this->form->flags;
-            $attrs = $this->form->pf_attrs;
-            $bits = $this->form->pf_bits;
+            $fName = 'flags' . $suffix;
+            $flags = $this->form->{$fName};
+            $aName = 'pf_attrs' . $suffix;
+            $attrs = $this->form->{$aName};
+            $bName = 'pf_bits' . $suffix;
+            $bits = $this->form->{$bName};
         } catch (Exception $ex) {
             $flags = array();
             $attrs = array();
@@ -179,31 +206,28 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         $model = new ProductsModel($dbc);
         $model->upc($upc);
         $model->numflag($numflag);
-        $model->enableLogging(false);
-        if (FannieConfig::config('STORE_MODE') === 'HQ') {
-            $stores = FormLib::get('store_id');
-            foreach ($stores as $s) {
-                $model->store_id($s);
-                $saved = $model->save();
-            }
-        } else {
-            $saved = $model->save();
+        if ($suffix) {
+            $model->store_id($suffix);
         }
+        $model->enableLogging(false);
+        $saved = $model->save();
 
         /**
           Only add attributes entry if it changed
         */
-        $curQ = 'SELECT attributes FROM ProductAttributes WHERE upc=? ORDER BY modified DESC';
-        $curQ = $dbc->addSelectLimit($curQ, 1);
-        $curP = $dbc->prepare($curQ);
-        $current = $dbc->getValue($curP, array($upc));
-        $curJSON = json_decode($current, true);
-        if ($current === false || $curJSON != $json) {
-            $model = new ProductAttributesModel($dbc);
-            $model->upc($upc);
-            $model->modified(date('Y-m-d H:i:s'));
-            $model->attributes(json_encode($json));
-            $model->save();
+        if ($suffix === '' || $suffix = FannieConfig::config('STORE_ID')) {
+            $curQ = 'SELECT attributes FROM ProductAttributes WHERE upc=? ORDER BY modified DESC';
+            $curQ = $dbc->addSelectLimit($curQ, 1);
+            $curP = $dbc->prepare($curQ);
+            $current = $dbc->getValue($curP, array($upc));
+            $curJSON = json_decode($current, true);
+            if ($current === false || $curJSON != $json) {
+                $model = new ProductAttributesModel($dbc);
+                $model->upc($upc);
+                $model->modified(date('Y-m-d H:i:s'));
+                $model->attributes(json_encode($json));
+                $model->save();
+            }
         }
 
         return $saved ? true : false;
