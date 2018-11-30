@@ -80,7 +80,10 @@ class ProdReviewPage extends FannieRESTfulPage
     public function backBtn()
     {
         return <<<HTML
-<button class="btn btn-xs btn-primary backBtn"><span class="glyphicon glyphicon-chevron-left"></span></button>
+<form name="backbutton">
+<button class="btn btn-xs btn-primary backBtn" type="submit">
+    <span class="glyphicon glyphicon-chevron-left"></span></button>
+</form>
 HTML;
     }
 
@@ -438,7 +441,7 @@ HTML;
             }
             $bData .= "
                 <label class='text-info'>New Batch</label>
-                <div class='batchTable'>
+                <div class='batchTable table-responsive'>
                 <table class='table table-condensed table-striped small'>
                     <thead><th>Name</th><th>BatchID</th><th>Owner</th><th>BatchType</th><th></td></thead>
                     <tbody>
@@ -455,10 +458,10 @@ HTML;
         */
         $pAllBtn = "<button class='btn btn-default btn-xs' style='border: 1px solid orange;'
             onClick='printAll(); return false;'>Print All</button>";
-        $tableA = "<table class='table table-condensed table-striped small'><thead><tr>
+        $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
             <th>Comments</th><th></th><th>{$pAllBtn}</th><tr></thead><tbody>";
-        $tableB = "<table class='table table-condensed table-striped small'><thead><tr>
+        $tableB = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Forced On</th>
             <th>user</th><tr></thead><tbody>";
         $args = array();
@@ -515,19 +518,16 @@ HTML;
                 $tableB .= "</tr>";
             }
         }
-        $tableA .= '</tbody></table>';
-        $tableB .= '</tbody></table>';
+        $tableA .= '</tbody></table></div>';
+        $tableB .= '</tbody></table></div>';
 
         return <<<HTML
-<div align="center">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <span class="panel-header">Batch Review Log</span>
-            <div style="position:relative;"><div style="position: absolute; top:-20px; left: 0px">
-                {$this->backBtn()}
-            </div></div>
+<div align="">
+        <div class="">
+            <div>{$this->backBtn()}</div>
+            <h4>Review Batch Log</h4>
         </div>
-        <div class="panel-body">
+        <div class="">
             <form method="get" class="form-inline">
                 <div class="form-group">
                     <input type="text" class="form-control" name="bid" value="{$bid}"
@@ -535,21 +535,20 @@ HTML;
                     <input type="hidden" name="batchLog" value="1"/>
                 </div>
                 <div class="form-group">
-                    <button type="submit" class="btn btn-default" value="1" name="getBatch">Load Batch</button>
+                    <button type="submit" class="btn btn-default" value="1" name="getBatch">Stage Batch</button>
                 </div>
                 <div id="alert"><div id="resp"></div></div>
             </form>
         </div>
         {$bData}
-        <label class="text-info">Staged Batches</label>
+        <h4 align="center">Staged Batches</h4>
         <div class="batchTable">
             {$tableA}
         </div>
-        <label class="text-info">Forced Batches</label>
+        <h4 align="center">Forced Batches</h4>
         <div class="batchTable">
             {$tableB}
         </div>
-    </div>
 </div>
 HTML;
     }
@@ -633,8 +632,37 @@ HTML;
         $this->addScript('../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
         $this->addOnloadCommand("$('#reviewtable').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
+        $model = new VendorsModel($dbc);
+        $vselect = '';
+        $exclude = array(-1,1,2);
+        $curVendor = FormLib::get('vendor');
+        foreach ($model->find('vendorName') as $obj) {
+            if (!in_array($obj->vendorID(),$exclude)) {
+                $vid = $obj->vendorID();
+                $vname = $obj->vendorName();
+                $sel = ($curVendor == $vid) ? ' selected' : '' ;
+                $vselect .= '<option value="'.$vid.'" '.$sel.'>'.$vname.'</option>';
+            }
+        }
+        $this->addOnloadCommand("
+            $('#vselect').on('change', function(){
+                document.forms['vform'].submit();
+            });
+        ");
+
         return <<<HTML
-{$this->backBtn()}<br/><br/>
+{$this->backBtn()}
+<form class="form" method="get" name="vform">
+    <div class="form-group">
+    </div>
+    <div class="form-group">
+        <label>Review Products by Vendor</label>
+        <select class="form-control" name="vendor" id="vselect">
+            <option value="1">Select a Vendor</option>
+            {$vselect}
+        </select>
+    </div>
+</form>
 <form class="form-inline" method="get">
     {$table}
     <input type="hidden" name="vendor" value="1">
@@ -828,8 +856,7 @@ HTML;
                         <div class="input-group">
                             <input type="text" class="form-control" name="upc" value="" autofocus>
                             <span class="input-group-addon">
-                                <button class="input-addon-btn" type="submit">
-                                    <span class="glyphicon glyphicon-chevron-right"></span>
+                                <button class="input-addon-btn glyphicon glyphicon-chevron-right" type="submit">
                                 </button>
                             </span>
                         </div>
@@ -891,7 +918,6 @@ $(document).ready( function() {
        checkAll();
     });
     editable();
-    backBtn();
     clickStar();
 });
 
@@ -987,14 +1013,6 @@ function checkAll()
     }
 }
 
-function backBtn()
-{
-    $('.backBtn').click(function(){
-        var path = window.location.pathname;
-        window.location.href = path;
-    });
-}
-
 function editable()
 {
     $('.editable').change(function() {
@@ -1023,9 +1041,12 @@ function forceBatch(bid)
 }
 function printBatch(bid)
 {
+    var signUrl = "../admin/labels/SignFromSearch.php";
+    var data = "?batch[]="+bid;
     var conf = confirm("Print batch "+bid+"?");
     if (conf) {
         var path = window.location.pathname;
+        window.open(signUrl+data, '_blank');
         window.location.href=path+"?bid="+bid+"&batchLog=1&print=1";
     }
 }
@@ -1049,8 +1070,11 @@ function fadeAlerts()
     public function css_content()
     {
         return <<<HTML
+button:focus {
+    color: lightblue;
+}
 .panel-default {
-    border: none;
+    //border: none;
 }
 table.alert-info,
 table.alert-primary,
