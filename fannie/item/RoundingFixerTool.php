@@ -46,13 +46,13 @@ class RoundingFixerTool extends FannieRESTfulPage
     }
 
     function get_view() {
-        
+
         return <<<HTML
-<p>Use this page to create a price-change batch for a set of 
-    products ending in \$x.x5 and updating them to \$x.x9 to follow 
+<p>Use this page to create a price-change batch for a set of
+    products ending in \$x.x5 and updating them to \$x.x9 to follow
     WFC price-rounding-rules.</p>
 <ul>
-    <li><div class="form-group"><a class="btn btn-default" 
+    <li><div class="form-group"><a class="btn btn-default"
         href="{$_SERVER['PHP_SELF']}?createBatch=true&i=1">Create A</a> Update x.x5 to x.x9.</div></li>
     <li><div class="form-group"><a class="btn btn-default"
         href="{$_SERVER['PHP_SELF']}?createBatchAdv=true&i=1">Create B</a> Correct invalid price endings.</div></li>
@@ -85,22 +85,22 @@ HTML;
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE d.tdate BETWEEN ? AND ?
                 AND (RIGHT(normal_price, 2) NOT IN (
-                    29, 39, 49, 69, 79, 89, 99) 
+                    29, 39, 49, 69, 79, 89, 99)
                 AND normal_price BETWEEN 0 AND 1)
                 OR (RIGHT(normal_price, 2) NOT IN (
-                    19, 39, 49, 69, 89, 99) 
+                    19, 39, 49, 69, 89, 99)
                 AND normal_price BETWEEN 1 AND 3)
                 OR (RIGHT(normal_price, 2) NOT IN (
-                   39, 69, 99) 
+                   39, 69, 99)
                 AND normal_price BETWEEN 3 AND 6)
                 OR (RIGHT(normal_price, 2) NOT IN (
-                   99) 
+                   99)
                 AND normal_price BETWEEN 6 AND 1
                 )
                 AND p.default_vendor_id = 1
                 AND p.price_rule_id = 0
                 AND p.upc NOT IN (
-                    SELECT upc 
+                    SELECT upc
                     FROM batchList AS bl
                     LEFT JOIN batches AS b ON bl.batchID=b.batchID
                     WHERE batchName like 'UNFI ROUNDING FIXER%'
@@ -119,12 +119,12 @@ HTML;
             $data[$row['upc']]['dept'] = $row['super_name'];
             $this->upcs[$row['upc']] = $rounder->round($row['normal_price']);
         }
-        
+
         $table = "<div class='table-responsive'><table class='table table-condensed small'>
             <thead><th>upc</th><th>Brand</th><th>Description</th><th>Department</th>
             <th>Current Price</th><th>New Price</th></thead>";
         foreach ($upcs as $upc => $price) {
-            $table .= "<tr>"; 
+            $table .= "<tr>";
             $newprice = $rounder->round($price);
             $table .= "<td>$upc</td><td>{$data[$upc]['brand']}</td>
                 <td>{$data[$upc]['description']}</td><td>{$data[$upc]['dept']}</td>
@@ -186,7 +186,7 @@ HTML;
                 AND p.default_vendor_id = 1
                 AND p.price_rule_id = 0
                 AND p.upc NOT IN (
-                    SELECT upc 
+                    SELECT upc
                     FROM batchList AS bl
                     LEFT JOIN batches AS b ON bl.batchID=b.batchID
                     WHERE batchName like 'UNFI ROUNDING FIXER%'
@@ -205,12 +205,12 @@ HTML;
             $data[$row['upc']]['dept'] = $row['super_name'];
             $this->upcs[$row['upc']] = $row['normal_price'] + .04;;
         }
-        
+
         $table = "<div class='table-responsive'><table class='table table-condensed small'>
             <thead><th>upc</th><th>Brand</th><th>Description</th><th>Department</th>
             <th>Current Price</th><th>New Price</th></thead>";
         foreach ($upcs as $upc => $price) {
-            $table .= "<tr>"; 
+            $table .= "<tr>";
             $curprice = $price - 0.04;
             $table .= "<td>$upc</td><td>{$data[$upc]['brand']}</td>
                 <td>{$data[$upc]['description']}</td><td>{$data[$upc]['dept']}</td>
@@ -299,7 +299,7 @@ HTML;
     public function helpContent()
     {
         return <<<HTML
-<p>Click the <strong>create</strong> button to make a price-change batch to 
+<p>Click the <strong>create</strong> button to make a price-change batch to
     update the ending digit of 32 products from x.x5 to x.x9</p>
 <label>Conditions for eligible products</label>
 <ul>
