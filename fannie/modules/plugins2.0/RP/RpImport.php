@@ -109,6 +109,15 @@ HTML;
     }
 }
 
+/**
+ * Locate the appropriate file, exract all its data,
+ * pull out the piece that's needed, run update through the page
+ * class, then finally clean up files that were created
+ *
+ * jxl is a java tool to more efficiently pull data out of
+ * large-ish excel files
+ * https://github.com/gohanman/JXL
+ */
 if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
     $config = FannieConfig::factory();
     $settings = $config->get('PLUGIN_SETTINGS');
