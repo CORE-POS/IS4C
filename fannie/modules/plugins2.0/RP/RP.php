@@ -21,11 +21,9 @@
 
 *********************************************************************************/
 
-use COREPOS\Fannie\API\FanniePlugin;
-
 /**
 */
-class RP extends FanniePlugin 
+class RP extends \COREPOS\Fannie\API\FanniePlugin
 {
     /**
       Desired settings. These are automatically exposed
@@ -33,6 +31,8 @@ class RP extends FanniePlugin
       written to ini.php
     */
     public $plugin_settings = array(
+    'RpDirectory' => array('default'=>'', 'label'=>'RP Directory',
+            'description'=>'Directory that holds RP files'),
     );
 
     public $plugin_description = 'WFC RP Integration';

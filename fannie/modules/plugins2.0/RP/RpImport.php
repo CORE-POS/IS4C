@@ -10,10 +10,15 @@ class RpImport extends FannieRESTfulPage
     protected $header = 'RP Import';
     protected $title = 'RP Import';
 
+    public function cliWrapper()
+    {
+        echo $this->post_view();
+    }
+
     protected function post_view()
     {
         $items = array();
-        foreach (explode("\n", FormLib::get('in')) as $line) {
+        foreach (explode("\n", $this->form->in) as $line) {
             if (preg_match('/(\d+)\](.)\[(.+){(.+)}(.+)\|(.+)_/', $line, $matches)) {
                 list($type,$origin) = explode('\\', $matches[5]);
                 $items[] = array(
@@ -102,6 +107,57 @@ class RpImport extends FannieRESTfulPage
 </form>
 HTML;
     }
+}
+
+if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+    $config = FannieConfig::factory();
+    $settings = $config->get('PLUGIN_SETTINGS');
+    $path = $settings['RpDirectory'];
+    $dir = opendir($path);
+    $found = false;
+    while (($file=readdir($dir)) !== false) {
+        if (substr($file, 0, 2) == 'RP') {
+            $found = $path . $file;
+        }
+    }
+    if ($found) {
+        copy($found, '/tmp/RP.xlsm');
+        $cmd = 'java -cp jxl-1.0-SNAPSHOT-jar-with-dependencies.jar coop.wholefoods.jxl.App -i /tmp/RP.xlsm -o /tmp/';
+        exec($cmd);
+        $dir = opendir('/tmp/');
+        while (($file=readdir($dir)) !== false) {
+            if ($file == 'Comparison.tsv') {
+                $fp = fopen('/tmp/Comparison.tsv', 'r');
+                $input = '';
+                while (!feof($fp)) {
+                    $line = fgets($fp);
+                    $data = explode("\t", $line);
+
+                    $info = isset($data[107]) ? $data[107] : '';
+                    if (strstr($info, ']')) {
+                        $input .= $info . "\n";
+                    }
+
+                }
+                $page = new RpImport();
+                $logger = FannieLogger::factory();
+                $dbc = FannieDB::get($config->get('OP_DB'));
+                $page->setConfig($config);
+                $page->setLogger($logger);
+                $page->setConnection($dbc);
+                $form = new COREPOS\common\mvc\ValueContainer();
+                $form->in = $input;
+                $page->setForm($form);
+                $page->cliWrapper();
+            }
+
+            if (substr($file, -4) == '.tsv') {
+                unlink('/tmp/' . $file);
+            }
+        }
+        unlink('/tmp/RP.xlsm');
+    }
+    exit(0);
 }
 
 FannieDispatch::conditionalExec();
