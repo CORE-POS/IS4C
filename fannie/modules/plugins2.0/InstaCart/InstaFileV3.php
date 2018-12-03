@@ -130,6 +130,11 @@ class InstaFileV3
             $desc = str_replace("\r", '', $desc);
             $desc = str_replace("\n", ' ', $desc);
             $desc = trim($desc);
+            if ($row['organic']) {
+                if (!stristr($row['brand'], 'organic') && !stristr($desc, 'organic')) {
+                    $desc = 'Organic ' . $desc;
+                }
+            }
             $desc = substr($desc, 0, 100);
             fwrite($csv, '"' . $desc . '"' . $sep);
 
