@@ -399,10 +399,11 @@ class FannieAPI
                 continue;
             }
 
+
             // if the file is part of a plugin, make sure
             // the plugin is enabled. The exception is when requesting
             // a list of plugin classes
-            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin' && $base_class != '\COREPOS\Fannie\API\FanniePlugin') {
+            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin' && $base_class != 'COREPOS\Fannie\API\FanniePlugin') {
                 $parent = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
                 if ($parent === false || !\COREPOS\Fannie\API\FanniePlugin::isEnabled($parent)) {
                     continue;
