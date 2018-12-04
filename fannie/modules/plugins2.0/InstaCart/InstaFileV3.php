@@ -46,7 +46,10 @@ class InstaFileV3
                 y.datedSigns,
                 CASE WHEN (numflag & (1<<16)) <> 0 THEN 1 ELSE 0 END AS organic,
                 CASE WHEN (numflag & (1<<17)) <> 0 THEN 1 ELSE 0 END AS glutenfree,
-                f.sections
+                f.sections,
+                m.superID,
+                p.department,
+                p.subdept
             FROM products AS p
                 LEFT JOIN productUser AS u on p.upc=u.upc
                 LEFT JOIN taxrates AS t ON p.tax=t.id
@@ -84,6 +87,11 @@ class InstaFileV3
             } else {
                 $excluded = $this->dbc->getValue($excludeP, array($row['upc']));
                 if ($excluded == $row['upc']) {
+                    $skips['ex']++;
+                    continue;
+                }
+                $deptEx = $this->departmentFilter($row);
+                if ($deptEx) {
                     $skips['ex']++;
                     continue;
                 }
@@ -215,6 +223,39 @@ class InstaFileV3
         print_r($skips);
 
         return true;
+    }
+
+    private function departmentFilter($row)
+    {
+        if (!isset($this->dFilter)) {
+            $this->dFilter = array(
+                'super' => array(),
+                'dept' => array(),
+                'sub' => array(),
+            );
+            $res = $this->dbc->query('SELECT instaSuperID FROM ' . FannieDB::fqn('InstaSupers', 'plugin:InstaCartDB'));
+            while ($row = $this->dbc->fetchRow($res)) {
+                $this->dFilter['super'][$row['instaSuperID']] = true;
+            }
+            $res = $this->dbc->query('SELECT instaDeptID FROM ' . FannieDB::fqn('InstaDepts', 'plugin:InstaCartDB'));
+            while ($row = $this->dbc->fetchRow($res)) {
+                $this->dFilter['dept'][$row['instaDeptID']] = true;
+            }
+            $res = $this->dbc->query('SELECT instaSubID FROM ' . FannieDB::fqn('InstaSubs', 'plugin:InstaCartDB'));
+            while ($row = $this->dbc->fetchRow($res)) {
+                $this->dFilter['sub'][$row['instaSubID']] = true;
+            }
+        }
+
+        if (isset($this->dFilter['super'][$row['superID']])) {
+            return true;
+        } elseif (isset($this->dFilter['dept'][$row['department']])) {
+            return true;
+        } elseif (isset($this->dFilter['sub'][$row['subdept']])) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
