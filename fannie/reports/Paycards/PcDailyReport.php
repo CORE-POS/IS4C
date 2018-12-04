@@ -78,15 +78,15 @@ class PcDailyReport extends FannieReportPage
             FROM PaycardTransactions
             WHERE dateID=?
                 AND httpCode=200
-                AND (xResultMessage LIKE '%approve%' OR xResultMessage LIKE '%PENDING%')
+                AND (xResultMessage LIKE '%approve%' OR xResultMessage LIKE '%PENDING%' OR xResultMessage='AP')
                 AND xResultMessage not like '%declined%'
                 AND empNo <> 9999
                 AND registerNo <> 99
                 AND processor=?";
         if ($store == 1) {
-            $mercuryQ .= ' AND registerNo BETWEEN 1 AND 10 ';
+            $mercuryQ .= ' AND (registerNo BETWEEN 1 AND 10 OR registerNo=31) ';
         } elseif ($store == 2) {
-            $mercuryQ .= ' AND registerNo BETWEEN 11 AND 20 ';
+            $mercuryQ .= ' AND (registerNo BETWEEN 11 AND 20 OR registerNo=32) ';
         }
         $mercuryP = $this->connection->prepare($mercuryQ);
         $mercuryR = $this->connection->execute($mercuryP, array($date_id, $processor));
@@ -170,6 +170,9 @@ class PcDailyReport extends FannieReportPage
 
         $proc = $this->getTransactions($date_id, $store, 'MercuryE2E');
         $dataset = $this->procToDataset($dataset, $proc, 'Mercury');
+
+        $proc = $this->getTransactions($date_id, $store, 'RapidConnect');
+        $dataset = $this->procToDataset($dataset, $proc, 'First Data');
 
         $proc = $this->getTransactions($date_id, $store, 'GoEMerchant', true);
         $dataset = $this->procToDataset($dataset, $proc, 'FAPS');
