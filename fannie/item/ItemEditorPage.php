@@ -601,7 +601,9 @@ HTML;
         }
 
         $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\',\'titlePosition\':\'inside\'});');
-        $this->add_onload_command('$(\'.price-input:visible:first\').focus();');
+        if ($this->mode == 'new') {
+            $this->add_onload_command('$(\'.descript-input:visible:first\').focus();');
+        }
         
         return $ret;
     }
