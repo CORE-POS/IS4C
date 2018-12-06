@@ -62,6 +62,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         'searchSignage',
         'searchOrigin',
         'searchLikeCode',
+        'searchFlags',
     );
 
     /**
@@ -634,6 +635,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
         return $search;
     }
 
+    private function searchFlags($search, $form)
+    {
+        try {
+            foreach ($this->form->flags as $bit) {
+                $digit = 1 << ($bit - 1);
+                $search->where .= ' AND (p.numflag & ?) <> 0 ';
+                $search->args[] = $digit;
+            }
+        } catch (Exception $ex) {
+        }
+
+        return $search;
+    }
+
     /**
       Filters item list based on whether or not they
       are in a sale batch
@@ -1045,6 +1060,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
         $this->addOnloadCommand("\$('select.chosen').chosen();\n");
+
+        $flagsR = $dbc->query("SELECT bit_number, description FROM prodFlags WHERE active=1");
+        $flags = '';
+        $flagClass = 'collapse';
+        while ($row = $dbc->fetchRow($flagsR)) {
+            $flags .= sprintf('<label><input type="checkbox" name="flags[]" value="%d" /> %s</label> | ',
+                $row['bit_number'], $row['description']);
+            $flagClass = '';
+        }
 
         return include(__DIR__ . '/search.template.html');
     }
