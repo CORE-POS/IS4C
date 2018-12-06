@@ -836,6 +836,13 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID';
         $search->where = '1=1';
         $search->args = array();
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            if ($store) {
+                $search->where .= ' AND p.store_id=? ';
+                $search->args[] = $store;
+            }
+        }
         foreach ($this->search_methods as $method) {
             try {
                 $search = $this->$method($search, $form);
