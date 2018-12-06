@@ -1,10 +1,12 @@
+var EXTRA_AUTO_COMPLETE_PARAMS = {};
+
 function genericAutoComplete(ws_url, field_name, search_term, callback)
 {
     var req = {
         jsonrpc: '2.0',
         method: '\\COREPOS\\Fannie\\API\\webservices\\FannieAutoComplete',
         id: new Date().getTime(),
-        params: { field: field_name, search: search_term }
+        params: Object.assign({ field: field_name, search: search_term }, EXTRA_AUTO_COMPLETE_PARAMS)
     };
 
     $.ajax({

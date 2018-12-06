@@ -63,6 +63,13 @@ class FannieAutoComplete extends FannieWebService
             case 'item':
                 $res = false;
                 if (!is_numeric($args->search)) {
+                    $term = '%' . $args->search . '%';
+                    $queryArgs = array($term, $term, $term, $term);
+                    $also = "";
+                    if (property_exists($args, 'superID')) {
+                        $also = " AND m.superID=? ";
+                        $queryArgs[] = $args->superID;
+                    }
                     $prep = $dbc->prepare('SELECT p.upc,
                                             p.description AS posDesc,
                                             p.size,
@@ -70,15 +77,16 @@ class FannieAutoComplete extends FannieWebService
                                             ' . ItemText::longDescriptionSQL() . '
                                            FROM products AS p
                                             LEFT JOIN productUser AS u ON u.upc=p.upc
-                                           WHERE p.description LIKE ?
+                                            LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                                           WHERE (p.description LIKE ?
                                             OR p.brand LIKE ?
                                             OR u.description LIKE ?
-                                            OR u.brand LIKE ?
+                                            OR u.brand LIKE ?)
+                                            ' . $also . '
                                            GROUP BY p.upc,
                                             p.description
                                            ORDER BY p.description');
-                    $term = '%' . $args->search . '%';
-                    $res = $dbc->execute($prep, array($term, $term, $term, $term));
+                    $res = $dbc->execute($prep, $queryArgs);
                 } elseif (ltrim($args->search, '0') != '') {
                     $prep = $dbc->prepare('
                         SELECT p.upc,
