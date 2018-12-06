@@ -83,7 +83,6 @@ class OutOfStocksTask extends FannieTask
                     $row['storeID'],
                     $row['vendorID'],
                 ));
-                echo $row['internalUPC'] . "\n";
             }
         }
     }
