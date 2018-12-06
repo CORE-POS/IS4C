@@ -47,17 +47,36 @@ class RoundingFixerTool extends FannieRESTfulPage
 
     function get_view() {
 
+        $vendors = new VendorsModel($this->connection);
+        $vOpts = $vendors->toOptions();
+        $supers = new MasterSuperDeptsModel($this->connection);
+        $sOpts = $supers->toOptions(-999);
         return <<<HTML
 <p>Use this page to create a price-change batch for a set of
     products ending in \$x.x5 and updating them to \$x.x9 to follow
     WFC price-rounding-rules.</p>
+<form method="get" action="RoundingFixerTool.php">
+<div class="form-group">
+    <label>Vendor</label>
+    <select name="vendor" class="form-control">
+        <option value="">Optional</option>
+        {$vOpts}
+    </select>
+</div>
+<div class="form-group">
+    <label>Super Department</label>
+    <select name="super" class="form-control">
+        <option value="">Optional</option>
+        {$sOpts}
+    </select>
+</div>
+<input type="hidden" name="i" value="1" />
 <ul>
-    <li><div class="form-group"><a class="btn btn-default"
-        href="{$_SERVER['PHP_SELF']}?createBatch=true&i=1">Create A</a> Update x.x5 to x.x9.</div></li>
-    <li><div class="form-group"><a class="btn btn-default"
-        href="{$_SERVER['PHP_SELF']}?createBatchAdv=true&i=1">Create B</a> Correct invalid price endings.</div></li>
+    <li><div class="form-group"><button type="submit" name="createBatch"
+        value="true" class="btn btn-default">Create A</button> Update x.x5 to x.x9</div></li>
+    <li><div class="form-group"><button type="submit" name="createBatchAdv"
+        value="true" class="btn btn-default">Create B</button> Correct invalid price endings</div></li>
 </ul>
-</table>
 HTML;
     }
 
@@ -71,12 +90,23 @@ HTML;
         $dlog = DTransactionsModel::selectDlog(
             $date2->format('Y-m-d 00:00:00'), $date1->format('Y-m-d 00:00:00'));
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $vendor = FormLib::get('vendor');
+        $super = FormLib::get('super');
         $ret = "";
 
         $args = array(
             $date2->format('Y-m-d H:i:s'),
             $date1->format('Y-m-d H:i:s'),
         );
+        $extraWhere = '';
+        if ($vendor) {
+            $extraWhere .= ' AND p.default_vendor_id=? ';
+            $args[] = $vendor;
+        }
+        if ($super) {
+            $extraWhere .= ' AND m.superID=? ';
+            $args[] = $super;
+        }
         $prep = $dbc->prepare("
             SELECT p.upc, p.brand, p.description, p.normal_price, p.department,
                 m.super_name
@@ -97,8 +127,8 @@ HTML;
                    99)
                 AND normal_price BETWEEN 6 AND 1
                 )
-                AND p.default_vendor_id = 1
                 AND p.price_rule_id = 0
+                " . $extraWhere . "
                 AND p.upc NOT IN (
                     SELECT upc
                     FROM batchList AS bl
@@ -169,12 +199,23 @@ HTML;
         $dlog = DTransactionsModel::selectDlog(
             $date2->format('Y-m-d 00:00:00'), $date1->format('Y-m-d 00:00:00'));
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $vendor = FormLib::get('vendor');
+        $super = FormLib::get('super');
         $ret = "";
 
         $args = array(
             $date2->format('Y-m-d H:i:s'),
             $date1->format('Y-m-d H:i:s'),
         );
+        $extraWhere = '';
+        if ($vendor) {
+            $extraWhere .= ' AND p.default_vendor_id=? ';
+            $args[] = $vendor;
+        }
+        if ($super) {
+            $extraWhere .= ' AND m.superID=? ';
+            $args[] = $super;
+        }
         $prep = $dbc->prepare("
             SELECT p.upc, p.brand, p.description, p.normal_price, p.department,
                 m.super_name
@@ -183,8 +224,7 @@ HTML;
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE d.tdate BETWEEN ? AND ?
                 AND RIGHT(p.normal_price, 1) = 5
-                AND p.default_vendor_id = 1
-                AND p.price_rule_id = 0
+                " . $extraWhere . "
                 AND p.upc NOT IN (
                     SELECT upc
                     FROM batchList AS bl
