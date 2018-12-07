@@ -83,7 +83,7 @@ class EqRecurTask extends FannieTask
 
             // route to x1.mercurypay.com
             $hostOrIP = '63.111.40.6';
-            $transID = '';
+            $terminalID = '';
             if ($payment['processor'] == 'RapidConnect') {
                 $hostOrIP = $this->CREDENTIALS['hosts']['RapidConnect' . $store][0];
                 $store = "RapidConnect" . $store;
