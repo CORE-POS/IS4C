@@ -7,13 +7,15 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
 
+$SOURCE_DIR = "new";
+
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $p1 = $dbc->prepare("SELECT photo FROM productUser where upc=?");
 $p2 = $dbc->prepare("SELECT upc FROM products WHERE upc=?");
 $upP = $dbc->prepare("UPDATE productUser SET photo=? WHERE upc=?");
-$dh = opendir('new');
+$dh = opendir($SOURCE_DIR);
 while( ($file = readdir($dh)) !== False){
     $exts = explode(".",$file);
     
@@ -34,7 +36,7 @@ while( ($file = readdir($dh)) !== False){
         } else {
             echo "UPC $upc found in productUser\n";
             $upR = $dbc->execute($upP,array($file,$upc));
-            rename('new/'.$file,'done/'.$file);
+            rename($SOURCE_DIR.'/'.$file,'done/'.$file);
         }
     } else {
         $r2 = $dbc->execute($p2,array($upc));
