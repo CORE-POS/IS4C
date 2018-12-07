@@ -68,7 +68,7 @@ class PriceRounder
                         foreach ($endArray as $end) {
                             if ($fractionP < $end) {
                                 if ($wholeP >= 10) {
-                                    if ($wholeP % 10 == 0) {
+                                    if ($wholeP % 10 == 0 || $fractionP == 0) {
                                         $wholeP--;
                                         $end = 0.99;
                                     } else {
@@ -92,4 +92,3 @@ class PriceRounder
     }
 
 }
-
