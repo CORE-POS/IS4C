@@ -32,14 +32,19 @@ class SaFullPage extends FannieRESTfulPage
                 AND section=?
                 AND clear=0");
         $chk = $dbc->getValue($chkP, array(BarcodeLib::padUPC($this->id), $section));
-        if ($chk) {
+        if ($chk && $realQty == 0) {
+            $prep = $dbc->prepare("DELETE FROM " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
+                WHERE upc=?
+                    AND section=?");
+            $dbc->execute($prep, array(BarcodeLib::padUPC($this->id), $section));
+        } elseif ($chk) {
             $prep = $dbc->prepare("UPDATE " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
                 SET quantity=?,
                     datetime=" . $dbc->now() . "
                 WHERE upc=?
                     AND section=?");
             $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $section));
-        } else {
+        } elseif ($realQty != 0) {
             $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
                 (datetime, upc, clear, quantity, section) VALUES (?, ?, 0, ?, ?)");
             $dbc->execute($prep, array(date('Y-m-d H:i:s'), BarcodeLib::padUPC($this->id), $realQty, $section));
@@ -99,6 +104,10 @@ class SaFullPage extends FannieRESTfulPage
             WHERE p.store_id=1
                 AND p.upc=?");
         $row = $dbc->getRow($prep, array($section, BarcodeLib::padUPC($this->id)));
+        if ($row === false) {
+            echo '<div class="alert alert-danger">Item not found</div>';
+            return false;
+        }
         $item = $row['upc'] . ' ' . $row['description'];
         if ($row['likeCode']) {
             $item = 'LC ' . $row['likeCode'] . ' ' . $row['description'];
@@ -117,7 +126,8 @@ class SaFullPage extends FannieRESTfulPage
     <div class="col-sm-3">
         <div class="input-group">
             <span class="input-group-addon">Quantity</span>
-            <input type="number" name="qty" id="newQty" class="form-control" onkeyup="full.keybind(event);" 
+            <input type="number" name="qty" id="newQty" class="form-control" 
+                onkeyup="full.keybind(event);" onkeydown="full.tab(event);"
                 min="-999" max="999" step="1" />
         </div> 
     </div>
@@ -128,6 +138,15 @@ class SaFullPage extends FannieRESTfulPage
 HTML;
 
         return false;
+    }
+
+    function css_content()
+    {
+        return <<<CSS
+input.focused {
+    background: #ffeebb;
+}
+CSS;
     }
 
     protected function get_view()
@@ -160,9 +179,9 @@ HTML;
     <p>
         <div class="input-group">
             <span class="input-group-addon">Search</span>
-            <input type="text" name="id" id="upc" class="form-control" />
+            <input type="text" name="id" id="upc" class="form-control focused" />
             <span class="input-group-btn">
-                <button type="submit" class="btn btn-default">Go</button>
+                <button type="submit" class="btn btn-default" tabindex="-1">Go</button>
             </span>
         </div>
     </p>
