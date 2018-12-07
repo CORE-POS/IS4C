@@ -641,7 +641,7 @@ HTML;
                 $vid = $obj->vendorID();
                 $vname = $obj->vendorName();
                 $sel = ($curVendor == $vid) ? ' selected' : '' ;
-                $vselect .= '<option value="'.$vid.'" '.$sel.'>'.$vname.'</option>';
+                $vselect .= '<option value="'.$vid.'" '.$sel.'>'.$vname.' - '.$vid.'</option>';
             }
         }
         $this->addOnloadCommand("
