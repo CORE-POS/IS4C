@@ -59,7 +59,10 @@ class MovementTagTracker extends FannieRESTfulPage
     private function get_replacetags($storeID, $volMin, $volMax, $posLimit, $negLimit)
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $args = array($storeID, $volMin, $volMax, $posLimit, $negLimit);
+        $date = new DateTime();
+        $date->sub(new DateInterval('P1M'));
+        $prevMonth = $date->format('Y-m-d 00:00:00') . '<br/>';
+        $args = array($storeID, $volMin, $volMax, $posLimit, $negLimit, $prevMonth);
         $var = ($storeID == 1) ? 3 : 7;
         $prep = $dbc->prepare("SELECT
             p.upc,
@@ -88,6 +91,7 @@ class MovementTagTracker extends FannieRESTfulPage
             AND p.auto_par <> 0
             AND p.numflag & (1 << 19) = 0
             AND not numflag & (1 << 1)
+            AND p.created < ?
         ;");
         $res = $dbc->execute($prep, $args);
         if ($er = $dbc->error())
