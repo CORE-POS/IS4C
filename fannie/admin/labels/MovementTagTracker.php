@@ -115,7 +115,13 @@ class MovementTagTracker extends FannieRESTfulPage
         foreach ($this->item as $row => $array) {
             $table .= "<tr>";
             foreach ($colNames as $colName) {
-                $table .= "<td>{$array[$colName]}</td>";
+                if ($colName == 'upc') {
+                    $table .= "<td>
+                        <a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}' 
+                        target='_blank'>{$array[$colName]}</a></td>";
+                } else {
+                    $table .= "<td>{$array[$colName]}</td>";
+                }
             }
             $table .= "</tr>";
         }
