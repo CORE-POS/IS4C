@@ -167,9 +167,11 @@ class SuperDeptEditor extends FanniePage {
         if (!is_array($depts)) {
             $depts = array();
         }
+        $dbc->startTransaction();
         foreach ($depts as $d) {
             $dbc->execute($deptP,array($id,$d));
         }
+        $dbc->commitTransaction();
 
         $delP = $dbc->prepare("DELETE FROM superDeptNames WHERE superID=?");
         $dbc->execute($delP,array($id));
