@@ -158,7 +158,7 @@ CSS;
         $model = new MasterSuperDeptsModel($this->connection);
         $opts = $model->toOptions($super);
         $this->addScript('js/full.js');
-        $this->addScript('../../../item/autocomplete.js');
+        $this->addScript('../../../item/autocomplete.js?date=20181211');
         $ws = $FANNIE_URL . '../../../ws/';
         $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->addOnloadCommand("\$('#upc').focus();");
