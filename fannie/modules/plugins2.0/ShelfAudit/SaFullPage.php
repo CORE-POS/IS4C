@@ -25,29 +25,33 @@ class SaFullPage extends FannieRESTfulPage
         $section = FormLib::get('section');
         $realQty = FormLib::get('real');
         $dbc = $this->connection;
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $chkP = $dbc->prepare("SELECT upc
             FROM " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
             WHERE upc=?
                 AND section=?
+                AND storeID=?
                 AND clear=0");
-        $chk = $dbc->getValue($chkP, array(BarcodeLib::padUPC($this->id), $section));
+        $chk = $dbc->getValue($chkP, array(BarcodeLib::padUPC($this->id), $section, $store));
         if ($chk && $realQty == 0) {
             $prep = $dbc->prepare("DELETE FROM " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
                 WHERE upc=?
-                    AND section=?");
-            $dbc->execute($prep, array(BarcodeLib::padUPC($this->id), $section));
+                    AND section=?
+                    AND storeID=?");
+            $dbc->execute($prep, array(BarcodeLib::padUPC($this->id), $section, $store));
         } elseif ($chk) {
             $prep = $dbc->prepare("UPDATE " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
                 SET quantity=?,
                     datetime=" . $dbc->now() . "
                 WHERE upc=?
-                    AND section=?");
-            $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $section));
+                    AND section=?
+                    AND store=?");
+            $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $section, $store));
         } elseif ($realQty != 0) {
             $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
-                (datetime, upc, clear, quantity, section) VALUES (?, ?, 0, ?, ?)");
-            $dbc->execute($prep, array(date('Y-m-d H:i:s'), BarcodeLib::padUPC($this->id), $realQty, $section));
+                (datetime, upc, clear, quantity, section, storeID) VALUES (?, ?, 0, ?, ?, ?)");
+            $dbc->execute($prep, array(date('Y-m-d H:i:s'), BarcodeLib::padUPC($this->id), $realQty, $section, $store));
         }
 
         echo $this->getRecent($dbc, $section, FormLib::get('super'));
