@@ -17,6 +17,7 @@ class InstaFileV3
     {
         $depositP = $this->dbc->prepare('SELECT normal_price FROM products WHERE upc=?');
         $settings = $this->config->get('PLUGIN_SETTINGS');
+        $PHOTOS = $settings['InstaCartImgLocal'];
         $instaDB = $settings['InstaCartDB'];
         $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaIncludes WHERE upc=?');
         $excludeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaExcludes WHERE upc=?');
@@ -49,7 +50,8 @@ class InstaFileV3
                 f.sections,
                 m.superID,
                 p.department,
-                p.subdept
+                p.subdept,
+                u.photo
             FROM products AS p
                 LEFT JOIN productUser AS u on p.upc=u.upc
                 LEFT JOIN taxrates AS t ON p.tax=t.id
@@ -68,7 +70,7 @@ class InstaFileV3
         $prep = $this->dbc->prepare($query);
         $res = $this->dbc->execute($prep, $args);
         $csv = fopen($filename, 'w');
-        fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,location_data,sale_price,sale_start_at,sale_end_at\r\n");
+        fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,location_data,remote_image_URL,sale_price,sale_start_at,sale_end_at\r\n");
         $repeats = array();
         $skips = array('date'=>0, 'ex'=>0, 'lc'=>0, 'in'=>0, 'price'=>0, 'rp'=>0);
         echo $this->dbc->numRows($res) . "\n";
@@ -208,6 +210,9 @@ class InstaFileV3
                 $location = '"{""Aisle"": ""' . $location . '""}"';
             }
             fprintf($csv, '%s%s', $location, $sep);
+            if ($row['photo'] && file_exists($PHOTOS . $row['photo'])) {
+                fprintf($csv, '%s%s,', $settings['InstaCartImgRemote'], $row['photo']);
+            }
 
             if (!$settings['InstaSalePrices'] || $row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
                 fwrite($csv, $sep . $sep . $newline);
