@@ -69,6 +69,12 @@ var full = (function ($) {
         }
     };
 
+    mod.autosubmit = function(ev, ui) {
+        $('#upc').val(ui.item.value);
+        mod.search();
+        console.log("Current: " + $('#upc').val());
+    };
+
     return mod;
 
 })(jQuery);

@@ -27,6 +27,11 @@ class SaFullPage extends FannieRESTfulPage
         $dbc = $this->connection;
         $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
+        $currentLC = $this->isLikeCode($dbc, $this->id, $store, $section);
+        if ($currentLC) {
+            $this->id = $currentLC;
+        }
+
         $chkP = $dbc->prepare("SELECT upc
             FROM " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
             WHERE upc=?
@@ -46,7 +51,7 @@ class SaFullPage extends FannieRESTfulPage
                     datetime=" . $dbc->now() . "
                 WHERE upc=?
                     AND section=?
-                    AND store=?");
+                    AND storeID=?");
             $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $section, $store));
         } elseif ($realQty != 0) {
             $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
@@ -61,6 +66,7 @@ class SaFullPage extends FannieRESTfulPage
 
     private function getRecent($dbc, $section, $super)
     {
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $query = "SELECT p.upc, p.description,
                 s.quantity, s.datetime,
                 u.likeCode
@@ -69,8 +75,9 @@ class SaFullPage extends FannieRESTfulPage
                 LEFT JOIN upcLike AS u ON p.upc=u.upc
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE s.section=?
+                AND s.storeID=?
                 AND clear=0 ";
-        $args = array($section);
+        $args = array($section, $store);
         if ($super) {
             $query .= " AND m.superID=? ";
             $args[] = $super;
@@ -92,22 +99,42 @@ class SaFullPage extends FannieRESTfulPage
         return $ret;
     }
 
+    private function isLikeCode($dbc, $upc, $store, $section)
+    {
+        $prep = $dbc->prepare("
+            SELECT s.upc
+            FROM " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . " AS s
+                INNER JOIN upcLike AS u ON s.upc=u.upc
+            WHERE u.likeCode IN (SELECT likeCode FROM upcLike WHERE upc=?)
+                AND s.section=?
+                AND s.storeID=?
+                AND s.clear=0
+        ");
+
+        return $dbc->getValue($prep, array(BarcodeLib::padUPC($upc), $section, $store));
+    }
+
     protected function post_id_handler()
     {
         $section = FormLib::get('section');
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $super = FormLib::get('super');
         $dbc = $this->connection;
+        $currentLC = $this->isLikeCode($dbc, $this->id, $store, $section);
+        if ($currentLC) {
+            $this->id = $currentLC;
+        }
         $prep = $dbc->prepare("
             SELECT p.upc, p.description,
                 s.quantity, s.datetime,
                 u.likeCode
             FROM products AS p
                 LEFT JOIN " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . " AS s
-                    ON p.upc=s.upc AND s.clear=0 AND s.section=?
+                    ON p.upc=s.upc AND s.clear=0 AND s.section=? AND s.storeID=?
                 LEFT JOIN upcLike AS u ON p.upc=u.upc
             WHERE p.store_id=1
                 AND p.upc=?");
-        $row = $dbc->getRow($prep, array($section, BarcodeLib::padUPC($this->id)));
+        $row = $dbc->getRow($prep, array($section, $store, BarcodeLib::padUPC($this->id)));
         if ($row === false) {
             echo '<div class="alert alert-danger">Item not found</div>';
             return false;
@@ -161,10 +188,11 @@ CSS;
         $floor = $section ? 'checked' : 0;
         $model = new MasterSuperDeptsModel($this->connection);
         $opts = $model->toOptions($super);
-        $this->addScript('js/full.js');
+        $this->addScript('js/full.js?date=20181211');
         $this->addScript('../../../item/autocomplete.js?date=20181211');
         $ws = $FANNIE_URL . '../../../ws/';
         $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
+        $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { full.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");
 
         return <<<HTML
