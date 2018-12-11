@@ -85,7 +85,7 @@ class FannieAutoComplete extends FannieWebService
                                             ' . $also . '
                                            GROUP BY p.upc,
                                             p.description
-                                           ORDER BY p.description');
+                                           ORDER BY p.inUse DESC, p.description');
                     $res = $dbc->execute($prep, $queryArgs);
                 } elseif (ltrim($args->search, '0') != '') {
                     $prep = $dbc->prepare('
