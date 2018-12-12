@@ -70,7 +70,7 @@ class InstaFileV3
         $prep = $this->dbc->prepare($query);
         $res = $this->dbc->execute($prep, $args);
         $csv = fopen($filename, 'w');
-        fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,alcoholic,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,location_data,remote_image_URL,sale_price,sale_start_at,sale_end_at\r\n");
+        fwrite($csv, "lookup_code,price,cost_unit,item_name,size,brand_name,unit_count,department,retailer_reference_code,organic,gluten_free,tax_rate,bottle_deposit,location_data,remote_image_URL,sale_price,sale_start_at,sale_end_at,alcoholic\r\n");
         $repeats = array();
         $skips = array('date'=>0, 'ex'=>0, 'lc'=>0, 'in'=>0, 'price'=>0, 'rp'=>0);
         echo $this->dbc->numRows($res) . "\n";
@@ -114,7 +114,9 @@ class InstaFileV3
                 continue;
             }
             $repeats[$row['upc']] = true;
-            echo "{$row['upc']} {$row['brand']} {$row['description']}\n";
+            if ($row['description'] == strtoupper($row['description'])) {
+                echo "{$row['upc']} {$row['brand']} {$row['description']}\n";
+            }
 
             $upc = ltrim($row['upc'], '0');
             if (strlen($upc) == 13) {
@@ -145,8 +147,9 @@ class InstaFileV3
                     $desc = 'Organic ' . $desc;
                 }
             }
+            $desc = str_replace(',', '', $desc);
             $desc = substr($desc, 0, 100);
-            fwrite($csv, '"' . $desc . '"' . $sep);
+            fwrite($csv, $desc . $sep);
 
             $size = $row['size'] ? $row['size'] : 1;
             if ($row['scale']) {
@@ -176,18 +179,19 @@ class InstaFileV3
             fwrite($csv, $size . $sep);
 
             $brand = str_replace('"', '', $row['brand']);
+            $brand = str_replace(',', '', $brand);
+            $brand = trim($brand);
             $brand = substr($brand, 0, 100);
             if (strtolower($brand) == 'bulk' || strtolower($brand) == 'produce') {
                 $brand = '';
             }
-            fwrite($csv, '"' . $brand . '"' . $sep);
+            fwrite($csv, $brand . $sep);
 
             fwrite($csv, $units . $sep);
 
             $dept = str_replace('"', '', $row['super_name']);
-            fwrite($csv, '"' . $dept . '"' . $sep);
-
-            fwrite($csv, ($row['idEnforced'] == 21 ? 'TRUE' : 'FALSE') . $sep);
+            $dept = str_replace(',', '', $dept);
+            fwrite($csv, $dept . $sep);
 
             fwrite($csv, $row['upc'] . $sep);
             fwrite($csv, ($row['organic'] ? 'TRUE' : 'FALSE') . $sep);
@@ -212,17 +216,21 @@ class InstaFileV3
             fprintf($csv, '%s%s', $location, $sep);
             if ($row['photo'] && file_exists($PHOTOS . $row['photo'])) {
                 fprintf($csv, '%s%s,', $settings['InstaCartImgRemote'], $row['photo']);
+            } else {
+                fprintf($csv, $sep);
             }
 
             if (!$settings['InstaSalePrices'] || $row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
-                fwrite($csv, $sep . $sep . $newline);
+                fwrite($csv, $sep . $sep . $sep);
             } else {
                 fprintf($csv, '%.2f%s', $row['special_price'], $sep);
                 fwrite($csv, date('m/d/Y', strtotime($row['start_date'])) . $sep);
                 $ts = strtotime($row['end_date']);
                 $next = mktime(0,0,0, date('n',$ts), date('j',$ts)+1, date('Y', $ts));
-                fwrite($csv, date('m/d/Y', $next) . $newline);
+                fwrite($csv, date('m/d/Y', $next) . $sep);
             }
+
+            fwrite($csv, ($row['idEnforced'] == 21 ? 'TRUE' : 'FALSE') . $newline);
         }
         fclose($csv);
         print_r($skips);
