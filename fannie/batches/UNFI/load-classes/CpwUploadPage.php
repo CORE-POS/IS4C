@@ -37,27 +37,27 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     protected $preview_opts = array(
         'upc' => array(
             'display_name' => 'UPC *',
-            'default' => 6,
+            'default' => 7,
             'required' => true
         ),
         'desc' => array(
             'display_name' => 'Description *',
-            'default' => 1,
+            'default' => 4,
             'required' => true
         ),
         'sku' => array(
             'display_name' => 'SKU *',
-            'default' => 2,
+            'default' => 8,
             'required' => true
         ),
         'qty' => array(
             'display_name' => 'Case+Unit Size',
-            'default' => 3,
+            'default' => 5,
             'required' => true
         ),
         'cost' => array(
             'display_name' => 'Case Cost (Reg) *',
-            'default' => 4,
+            'default' => 15,
             'required' => true
         ),
     );
@@ -88,15 +88,18 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare('SELECT sku, upc FROM VendorAliases WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc, multiplier FROM VendorAliases WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
             if (!isset($SKU_TO_PLU_MAP[$skusW['sku']])) {
                 $SKU_TO_PLU_MAP[$skusW['sku']] = array();
             }
-            $SKU_TO_PLU_MAP[$skusW['sku']][] = $skusW['upc'];
+            $SKU_TO_PLU_MAP[$skusW['sku']][] = array('upc'=>$skusW['upc'], 'multiplier'=>$skusW['multiplier']);
         }
 
+        $cruftP = $dbc->prepare("DELETE FROM vendorItems 
+            WHERE upc IN ('0000000000000','0000000000BUL','0000000000UNI')
+                AND vendorID=? AND sku=?");
         $itemP = $dbc->prepare("
             INSERT INTO vendorItems 
                 (brand, sku, size, upc, units, cost, description,
@@ -108,7 +111,7 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ");
         $updated_upcs = array();
         $prodP = $dbc->prepare('UPDATE products SET modified=?, cost=? WHERE upc=?');
-        $existsP = $dbc->prepare('SELECT 1 FROM vendorItems WHERE upc=? AND vendorID=?');
+        $existsP = $dbc->prepare('SELECT \'truthy\' FROM vendorItems WHERE upc=? AND vendorID=?');
         $updateP = $dbc->prepare("
             UPDATE vendorItems
             SET description=?,
@@ -134,9 +137,10 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $upc = str_replace('-', '', $upc);
             $upc = substr($upc, 0, strlen($upc)-1);
             $upc = BarcodeLib::padUPC($upc);
-            $aliases = array($upc);
+            $aliases = array(array('upc'=>$upc, 'multiplier'=>1));
             if (isset($SKU_TO_PLU_MAP[$sku])) {
-                $aliases = array_merge($aliases, $SKU_TO_TO_PLU_MAP[$sku]);
+                $aliases = $SKU_TO_PLU_MAP[$sku];
+                $upc = $aliases[0]['upc'];
             }
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000" || !preg_match('/^[0-9]+$/', $upc))
@@ -159,6 +163,15 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             } elseif (strstr($sizeInfo, 'ct')) {
                 $qty = trim(str_replace('ct', '', $sizeInfo));
                 $size = '1 ct';
+            } else {
+                $qty = 1;
+                $size = $sizeInfo;
+            }
+
+            if ($upc == '0025109000000') {
+                $this->logger->debug('SKU: ' . $sku);
+                $this->logger->debug('Size: ' . $size);
+                $this->logger->debug('Qty: ' . $qty);
             }
 
             // syntax fixes. 
@@ -178,11 +191,17 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $reg_unit = $reg / $qty;
 
             foreach ($aliases as $alias) {
-                $dbc->execute($prodP, array(date('Y-m-d H:i:s'), $reg_unit, $alias));
-                $updated_upcs[] = $alias;
+                if ($alias['upc'] == '0025109000000') {
+                    $this->logger->debug('Unit: ' . $reg_unit);
+                    $this->logger->debug('Mult: ' . $alias['multiplier']);
+                }
+                $dbc->execute($prodP, array(date('Y-m-d H:i:s'), $reg_unit*$alias['multiplier'], $alias['upc']));
+                $updated_upcs[] = $alias['upc'];
             }
 
-            if ($dbc->getValue($existsP, array($upc, $VENDOR_ID))) {
+            $exists = $dbc->getValue($existsP, array($upc, $VENDOR_ID));
+            if ($exists) {
+                $dbc->execute($cruftP, array($VENDOR_ID, $sku));
                 $args = array(
                     $description,
                     $sku,
@@ -193,7 +212,11 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $upc,
                     $VENDOR_ID);
                 $dbc->execute($updateP, $args);
+                if ($upc == '0025109000000') {
+                    $this->logger->debug('error: ' . $dbc->error());
+                }
             } else {
+                $dbc->execute($cruftP, array($VENDOR_ID, $sku));
                 $args = array(
                     $sku,
                     $size,
@@ -224,7 +247,7 @@ class CpwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     function results_content()
     {
         $ret = "<p>Price data import complete</p>";
-        $ret .= '<p><a href="'.filter_input(INPUT_SEVER, 'PHP_SELF').'">Upload Another</a></p>';
+        $ret .= '<p><a href="'.filter_input(INPUT_SERVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
     }
