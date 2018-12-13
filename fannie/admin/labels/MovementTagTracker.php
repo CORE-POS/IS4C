@@ -34,16 +34,85 @@ class MovementTagTracker extends FannieRESTfulPage
         on change in sales volume.';
     private $item = array();
 
+    public function preprocess()
+    {
+        $this->__routes[] = "get<addRange>";
+        $this->__routes[] = "get<delete>";
+        
+        return parent::preprocess();
+    }
+
+    public function get_delete_handler()
+    {
+        $id = FormLib::get('delete');
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+        $args = array($id);
+        $query = "DELETE FROM MovementTrackerParams WHERE parID = ?";
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $args);
+        $alerts = "";
+        if ($er = $dbc->error()) {
+            $alerts .= "<div class='alert alert-danger'>$er</div>";
+            return header('location: ?id=config?save=danger');
+        } else {
+            return header('location: ?id=config&save=success');
+
+        }
+    }
+
+    public function get_addRange_handler()
+    {
+        // change to handler, send back to get_id_view() 
+        $start = FormLib::get('start');
+        $end = FormLib::get('end');
+        $change = FormLib::get('change');
+        $store = FormLib::get('store');
+
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $prep = $dbc->prepare("SELECT MAX(parID) AS parID FROM MovementTrackerParams");
+        $res = $dbc->execute($prep);
+        $parID = $dbc->fetchRow($res);
+        $parID = $parID['parID'] + 1;
+
+        $mArgs = array(
+            array($parID, 'start', $start),
+            array($parID, 'end', $end),
+            array($parID, 'change', $change),
+            array($parID, 'type', 'range'),
+            array($parID, 'store', $store),
+        );
+        $query = "INSERT INTO MovementTrackerParams (parID, parameter, value) VALUES(?, ?, ?);";
+        $dbc->startTransaction();
+        foreach ($mArgs as $args) {
+            $prep = $dbc->prepare($query);
+            $res = $dbc->execute($prep, $args);    
+        }
+        $dbc->commitTransaction();
+        $alerts = "";
+        if ($er = $dbc->error()) {
+            $alerts .= "<div class='alert alert-danger'>$er</div>";
+            return header('location: ?id=config?save=danger');
+        } else {
+            return header('location: ?id=config&save=success');
+
+        }
+
+        return false;
+    }
+
     public function get_view()
     {
         $ret = "";
         $li = "<ul>";
         $tables = array();
         $stores = array(1=>'Hillside', 2=>'Denfeld');
+        $li .= "<li><a href='ShelfTagIndex.php'>Back to Shelftags Index</a></li>";
         foreach ($stores as $id => $name) {
             $tables[] = $this->draw_table($name, $id);
             $li .= "<li><a href='#$name'>$name</a></li>";
         }
+        $li .= "<li><a href='?id=config'>Settings</a></li>";
         $li .= "</ul>";
         foreach ($tables as $table) {
             $ret .= $table;
@@ -54,6 +123,87 @@ class MovementTagTracker extends FannieRESTfulPage
         $this->addOnloadCommand("$('#my-table-2').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
         return $li . $ret;
+    }
+
+    public function get_id_view()
+    {
+        $storepicker = FormLib::storePicker();
+        $save = FormLib::get('save');
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $params = array();
+        $prep = $dbc->prepare("SELECT * FROM MovementTrackerParams");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $id = $row['parID'];
+            $param = $row['parameter'];
+            $params[$id][$param] = $row['value'];
+        }
+        $keyTable = "<h4>Key</h4>
+            <table class='table table-condensed table-bordered'> 
+            <thead><th>Column</th><th>Description</th><tbody>
+            <tr><td>Start</td><td>Check items with pars within a range starting from this number</td></tr> 
+            <tr><td>End</td><td>Check items with pars within range ending at this number</td></tr> 
+            <tr><td>Change At</td><td>Reprint shelftag if par deviates from the last printed par by this amount</td></tr></tbody></table>
+            ";
+        $table = "<h4>List of Active Ranges</h4>
+            <table class='table table-condensed table-bordered'> 
+            <thead><th>Store</th><th>Start</th><th>End</th><th>Change At</th><tbody>";
+        foreach ($params as $id => $row) {
+            $table .= "<tr>";
+            if ($params[$id]['type'] == 'range') {
+                $storeName = $storepicker['names'][$row['store']];
+                $param = key($params[$id]);
+                $table .= "<td>$storeName</td>";
+                $table .= "<td data-pid='$id' data-param='$param' class='editable'>{$row['start']}</td>";
+                $table .= "<td>{$row['end']}</td>";
+                $table .= "<td>{$row['change']}</td>";
+                $table .= "<td style='width: 20px'> 
+                    <a href='?delete=$id' class='btn btn-danger btn-sm glyphicon glyphicon-trash'></a></td>";
+            }
+            $table .= "</tr>";
+        }
+        $table .= "</tbody></table>";
+
+        $alert = "";
+        if ($save == "success") {
+            $alert = "<div class='alert alert-success'>Saved</div>";
+        } elseif ($alert == "danger") {
+            $alert = "<div class='alert alert-danger'>Changes could not be saved</div>";
+        }
+
+
+        return <<<HTML
+<div class="row">
+    <div class="col-md-6">
+        $alert
+        <form>
+            <div class="form-group">
+                <ul>
+                    <li><a href='ShelfTagIndex.php'>Back to Shelftags Index</a></li>
+                    <li><a href="?page=main" >Back to Tracker</a></li>
+                    <li><a href="#" data-target="#rangeForm" data-toggle="collapse">Add New Range</a></li>
+                </ul>
+            </div>
+            <div id="rangeForm" class="collapse">
+                <table class="table table-condensed table-bordered"><thead>
+                    <th>Store</th><th>Start</th><th>End</th><th>Change At</th></thead><tbody>
+                <td>{$storepicker['html']}</td>
+                <td><input class="form-control" type="text" name="start" id="start"/></td>
+                <td><input class="form-control" type="text" name="end" id="end"/></td>
+                <td><input class="form-control" type="text" name="change" id="change"/></td>
+                <td><input class="btn btn-default" type="submit" name="submit" id="submit" value="Save"/></td>
+                <input type="hidden" name="addRange" value="config"/>
+                </tbody></table>
+            </div>
+        </form>
+        $keyTable
+        $table 
+    </div>
+    <div class="col-md-6">
+        <!-- future idea: add utility to exclude brands, individual items, etc -->
+    </div>
+</div>
+HTML;
     }
 
     private function get_replacetags($storeID, $volMin, $volMax, $posLimit, $negLimit)
@@ -105,9 +255,24 @@ class MovementTagTracker extends FannieRESTfulPage
 
     private function draw_table($storeName, $storeID)
     {
-        $this->get_replacetags($storeID, 0, 2.99, 1, -1);
-        $this->get_replacetags($storeID, 3, 4.99, 2, -2);
-        $this->get_replacetags($storeID, 4.99, 999.99, 3, -3);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $params = array();
+        $prep = $dbc->prepare("SELECT * FROM MovementTrackerParams");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $id = $row['parID'];
+            $param = $row['parameter'];
+            $params[$id][$param] = $row['value'];
+        }
+        foreach ($params as $id => $row) {
+            if ($params[$id]['type'] == 'range' 
+            && $params[$id]['store'] == $storeID) {
+                $start = $row['start'];
+                $end = $row['end'];
+                $change = $row['change'];
+                $this->get_replacetags($storeID, $start, $end, $change, -$change);
+            }
+        }
 
         $table = "";
         $thead = '';
