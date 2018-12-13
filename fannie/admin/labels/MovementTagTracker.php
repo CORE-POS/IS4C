@@ -38,7 +38,7 @@ class MovementTagTracker extends FannieRESTfulPage
     {
         $this->__routes[] = "get<addRange>";
         $this->__routes[] = "get<delete>";
-        
+
         return parent::preprocess();
     }
 
@@ -63,7 +63,7 @@ class MovementTagTracker extends FannieRESTfulPage
 
     public function get_addRange_handler()
     {
-        // change to handler, send back to get_id_view() 
+        // change to handler, send back to get_id_view()
         $start = FormLib::get('start');
         $end = FormLib::get('end');
         $change = FormLib::get('change');
@@ -86,7 +86,7 @@ class MovementTagTracker extends FannieRESTfulPage
         $dbc->startTransaction();
         foreach ($mArgs as $args) {
             $prep = $dbc->prepare($query);
-            $res = $dbc->execute($prep, $args);    
+            $res = $dbc->execute($prep, $args);
         }
         $dbc->commitTransaction();
         $alerts = "";
@@ -139,14 +139,14 @@ class MovementTagTracker extends FannieRESTfulPage
             $params[$id][$param] = $row['value'];
         }
         $keyTable = "<h4>Key</h4>
-            <table class='table table-condensed table-bordered'> 
+            <table class='table table-condensed table-bordered'>
             <thead><th>Column</th><th>Description</th><tbody>
-            <tr><td>Start</td><td>Check items with pars within a range starting from this number</td></tr> 
-            <tr><td>End</td><td>Check items with pars within range ending at this number</td></tr> 
+            <tr><td>Start</td><td>Check items with pars within a range starting from this number</td></tr>
+            <tr><td>End</td><td>Check items with pars within range ending at this number</td></tr>
             <tr><td>Change At</td><td>Reprint shelftag if par deviates from the last printed par by this amount</td></tr></tbody></table>
             ";
         $table = "<h4>List of Active Ranges</h4>
-            <table class='table table-condensed table-bordered'> 
+            <table class='table table-condensed table-bordered'>
             <thead><th>Store</th><th>Start</th><th>End</th><th>Change At</th><tbody>";
         foreach ($params as $id => $row) {
             $table .= "<tr>";
@@ -157,7 +157,7 @@ class MovementTagTracker extends FannieRESTfulPage
                 $table .= "<td data-pid='$id' data-param='$param' class='editable'>{$row['start']}</td>";
                 $table .= "<td>{$row['end']}</td>";
                 $table .= "<td>{$row['change']}</td>";
-                $table .= "<td style='width: 20px'> 
+                $table .= "<td style='width: 20px'>
                     <a href='?delete=$id' class='btn btn-danger btn-sm glyphicon glyphicon-trash'></a></td>";
             }
             $table .= "</tr>";
@@ -197,7 +197,7 @@ class MovementTagTracker extends FannieRESTfulPage
             </div>
         </form>
         $keyTable
-        $table 
+        $table
     </div>
     <div class="col-md-6">
         <!-- future idea: add utility to exclude brands, individual items, etc -->
@@ -237,7 +237,7 @@ HTML;
             AND ((p.auto_par * $var - m.lastPar) > ?
                 OR (p.auto_par * $var - m.lastPar) < ?
             )
-            AND f.name IS NOT NULL 
+            AND f.name IS NOT NULL
             AND p.auto_par <> 0
             AND p.numflag & (1 << 19) = 0
             AND not numflag & (1 << 1)
@@ -265,7 +265,7 @@ HTML;
             $params[$id][$param] = $row['value'];
         }
         foreach ($params as $id => $row) {
-            if ($params[$id]['type'] == 'range' 
+            if ($params[$id]['type'] == 'range'
             && $params[$id]['store'] == $storeID) {
                 $start = $row['start'];
                 $end = $row['end'];
@@ -286,7 +286,7 @@ HTML;
             foreach ($colNames as $colName) {
                 if ($colName == 'upc') {
                     $table .= "<td>
-                        <a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}' 
+                        <a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
                         target='_blank'>{$array[$colName]}</a></td>";
                 } else {
                     $table .= "<td>{$array[$colName]}</td>";
