@@ -10,6 +10,26 @@ class RpImport extends FannieRESTfulPage
     protected $header = 'RP Import';
     protected $title = 'RP Import';
 
+    public function changeCosts($changes)
+    {
+        $actual = array();
+        $prodP = $this->connection->prepare("SELECT cost FROM products WHERE upc=?");
+        $lcP = $this->connection->prepare("SELECT upc FROM upcLike WHERE likeCode=?");
+        $upP = $this->connection->prepare("UPDATE products SET cost=? WHERE upc=?");
+        foreach ($changes as $lc => $cost) {
+            $upcs = $this->connection->getAllValues($lcP, array($lc));
+            foreach ($upcs as $upc) {
+                $current = $this->connection->getValue($prodP, array($upc));
+                if ($current === false) {
+                    continue; // no such product
+                } elseif (abs($cost - $current) > 0.005) {
+                    $actual[] = $upc;
+                    echo "$lc: $upc changed from $current to $cost\n";
+                }
+            }
+        }
+    }
+
     public function cliWrapper()
     {
         echo $this->post_view();
@@ -124,9 +144,14 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
     $path = $settings['RpDirectory'];
     $dir = opendir($path);
     $found = false;
+    $oldest = PHP_INT_MAX;
     while (($file=readdir($dir)) !== false) {
         if (substr($file, 0, 2) == 'RP') {
-            $found = $path . $file;
+            $mtime = filemtime($path . $file);
+            if ($mtime < $oldest) {
+                $found = $path . $file;
+                $oldest = $mtime;
+            }
         }
     }
     if ($found) {
@@ -138,6 +163,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
             if ($file == 'Comparison.tsv') {
                 $fp = fopen('/tmp/Comparison.tsv', 'r');
                 $input = '';
+                $costUpdates = array();
                 while (!feof($fp)) {
                     $line = fgets($fp);
                     $data = explode("\t", $line);
@@ -145,6 +171,12 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                     $info = isset($data[107]) ? $data[107] : '';
                     if (strstr($info, ']')) {
                         $input .= $info . "\n";
+                    }
+
+                    $cost = isset($data[66]) ? $data[66] : '';
+                    $lc = isset($data[57]) ? $data[57] : '';
+                    if (is_numeric($lc) && $lc > 0 && is_numeric($cost) && $cost > 0) {
+                        $costUpdates[$lc] = $cost;
                     }
 
                 }
@@ -158,6 +190,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                 $form->in = $input;
                 $page->setForm($form);
                 $page->cliWrapper();
+                $page->changeCosts($costUpdates);
             }
 
             if (substr($file, -4) == '.tsv') {
