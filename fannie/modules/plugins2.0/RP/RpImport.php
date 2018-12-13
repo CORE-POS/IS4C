@@ -24,7 +24,7 @@ class RpImport extends FannieRESTfulPage
                     continue; // no such product
                 } elseif (abs($cost - $current) > 0.005) {
                     $actual[] = $upc;
-                    echo "$lc: $upc changed from $current to $cost\n";
+                    //echo "$lc: $upc changed from $current to $cost\n";
                 }
             }
         }
@@ -32,7 +32,17 @@ class RpImport extends FannieRESTfulPage
 
     public function cliWrapper()
     {
-        echo $this->post_view();
+        $out = $this->post_view();
+        $out = str_replace('<tr>', '', $out);
+        $out = str_replace('<td>', '', $out);
+        $out = str_replace('<th>', '', $out);
+        $out = str_replace('<table class="table table-bordered">', '', $out);
+        $out = str_replace('</table>', '', $out);
+        $out = str_replace('</tr>', "\n", $out);
+        $out = str_replace("</td>", "\t", $out);
+        $out = str_replace("</th>", "\t", $out);
+
+        echo $out;
     }
 
     protected function post_view()
