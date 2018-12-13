@@ -679,6 +679,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'MemContactPrefsModel',
         'MetaProductRulesModel',
         'MovementTagsModel',
+        'MovementTrackerParamsModel',
         'NarrowTagsModel',
         'OriginsModel',
         'OriginCountryModel',
