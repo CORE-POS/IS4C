@@ -51,7 +51,7 @@ class SaReportPage extends FanniePage {
             return True;
         }
         if (FormLib::get_form_value('delete') == 'yes'){
-            $query=$dbc->prepare('delete from sa_inventory where id=?');
+            $query=$dbc->prepare('update sa_inventory set clear=1 where id=?');
             $result=$dbc->execute($query,array(FormLib::get_form_value('id')));
             if ($result) {
                 $this->sql_actions='Deleted record.';
@@ -117,7 +117,14 @@ class SaReportPage extends FanniePage {
         $soP2 = $dbc->prepare(str_replace('PendingSpecialOrder', 'CompleteSpecialOrder', $soQ));
 
             $OPDB = $this->config->get('OP_DB') . $dbc->sep();
-            $q= $dbc->prepare("SELECT
+        $args = array($this->store);
+        $super = FormLib::get('super', -1);
+        $superAnd = '';
+        if ($super >= 0) {
+            $superAnd = ' AND m.superID=? ';
+            $args[] = $super;
+        }
+        $q= $dbc->prepare("SELECT
             s.id,
             s.datetime,
             s.upc,
@@ -157,19 +164,21 @@ class SaReportPage extends FanniePage {
             COALESCE(b.vendorName,'n/a') AS vendor,
             COALESCE(c.margin, d.margin, 0) AS margin
 
-            FROM sa_inventory AS s 
-                LEFT JOIN {$OPDB}products AS p ON s.upc=p.upc AND p.store_id=1 
-                LEFT JOIN {$OPDB}departments AS d ON p.department=d.dept_no
-                LEFT JOIN {$OPDB}vendorItems AS v ON s.upc=v.upc AND v.vendorID=1
-                LEFT JOIN {$OPDB}vendorDepartments AS y ON v.vendorDept=y.deptID AND v.vendorID=y.vendorID
-                LEFT JOIN {$OPDB}departments AS z ON y.posDeptID=z.dept_no
-                LEFT JOIN {$OPDB}vendorItems AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID 
-                LEFT JOIN {$OPDB}vendors AS b ON a.vendorID=b.vendorID
-                LEFT JOIN {$OPDB}vendorDepartments AS c ON a.vendorID=c.vendorID AND a.vendorDept=c.deptID
-            WHERE clear!=1
-                AND s.storeID=?
-            ORDER BY ".$order);
-        $r=$dbc->execute($q, array($this->store));
+        FROM sa_inventory AS s 
+            LEFT JOIN {$OPDB}products AS p ON s.upc=p.upc AND p.store_id=1 
+            LEFT JOIN {$OPDB}departments AS d ON p.department=d.dept_no
+            LEFT JOIN {$OPDB}MasterSuperDepts AS m ON p.department=m.dept_ID
+            LEFT JOIN {$OPDB}vendorItems AS v ON s.upc=v.upc AND v.vendorID=1
+            LEFT JOIN {$OPDB}vendorDepartments AS y ON v.vendorDept=y.deptID AND v.vendorID=y.vendorID
+            LEFT JOIN {$OPDB}departments AS z ON y.posDeptID=z.dept_no
+            LEFT JOIN {$OPDB}vendorItems AS a ON p.upc=a.upc AND p.default_vendor_id=a.vendorID 
+            LEFT JOIN {$OPDB}vendors AS b ON a.vendorID=b.vendorID
+            LEFT JOIN {$OPDB}vendorDepartments AS c ON a.vendorID=c.vendorID AND a.vendorDept=c.deptID
+        WHERE clear!=1
+            AND s.storeID=?
+            {$superAnd}
+        ORDER BY ".$order);
+        $r=$dbc->execute($q, $args);
         $upcs = array();
         if ($r) {
             $this->status = 'Good - Connected';
@@ -328,14 +337,28 @@ table.shelf-audit tr:hover {
     function body_content(){
         ob_start();
         $stores = FormLib::storePicker();
-        $stores['html'] = str_replace('<select', '<select onchange="location=\'?store=\'+this.value;" ', $stores['html']);
+        $model = new MasterSuperDeptsModel($this->connection);
+        $model->whichDB($this->config->get('OP_DB'));
+        $super = FormLib::get('super', -1);
+        $mOpts = $model->toOptions($super);
+        $stores['html'] = str_replace('<select', '<select onchange="refilter();" ', $stores['html']);
         ?>
+        <script type="text/javascript">
+        function refilter() {
+            var store = $('select[name=store]').val();
+            console.log(store);
+            var superID = $('#super').val();
+            location = '?store='+store+'&super='+superID;
+        }
+        </script>
         <div id="bdiv">
             <p><a href="#" onclick="window.open('SaScanningPage.php','scan','width=320, height=200, location=no, menubar=no, status=no, toolbar=no, scrollbars=no, resizable=no');">Enter a new scan</a></p>
             <p><a href="SaHandheldPage.php">Alternate Scan Page</a></p>
             <p><?php echo($this->sql_actions); ?></p>
             <p><?php echo($this->status); ?></p>
             <p><?php echo $stores['html']; ?></p>
+            <p><select class="form-control" name="super" id="super" onchange="refilter();">
+                <option value="-1">All</option><?php echo $mOpts; ?></select></p>
             <p><a href="?excel=yes&store=<?php echo $this->store; ?>">download as csv</a></p>
         <?php
         if ($this->scans) {
