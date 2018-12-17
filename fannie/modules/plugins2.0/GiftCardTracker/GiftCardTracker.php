@@ -86,22 +86,38 @@ class GiftCardTracker extends FannieRESTfulPage
     public function get_newgc_view()
     {
         $json = FormLib::get('json');
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+
         $json = (json_decode(base64_decode($json)));
+        $owner = ($o = $json->owner) ? $o : 11;
+
+        //$address = $json->address;
+        if ($owner != 11) {
+            $a = array($owner);
+            $p = $prepare("SELECT addressFirstLine AS addr FROM CustomerAccounts WHERE cardNo = ?");
+            $r = $dbc->execute($p, $a);
+            $address = $dbc->fetchRow($r);
+            $address = $address['addr'];
+        } else {
+            $address = 'n/a';
+        }
+
         $name = $json->name;
-        $sname = $json->sname;
         $addr1 = $json->addr1;
         $ph = $json->ph;
-        $owner = $json->owner;
+        $formattedPh = preg_replace("/^(\d{3})(\d{3})(\d{4})$/", "$1-$2-$3", $ph);
+        if (strpos($ph, '-') == false) {
+            $ph = $formattedPh;
+        }
         $amt = $json->amt;
-        $notes = $json->notes;
+        $sname = "This card should be mailed to: \n" . $json->sname;
         $city = $json->city;
         $state = $json->state;
         $zip = $json->zip;
-        $notes = $json->notes;
+        $notes = ($n = $json->notes) ? $n : "\nnone specified.";
         $email = $json->email;
 
         $gcid = FormLib::get('newgc');
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $args = array($gcid);
         $prep = $dbc->prepare("SELECT uniqid FROM onlineGiftcard WHERE uniqid = ?");
         $res = $dbc->execute($prep, $args);
@@ -122,19 +138,9 @@ $used
         <div class="form-group">
             <input type="text" class="form-control" name="cardNo" value="$owner"/>
         </div>
-        <div class="row">
-            <div class="col-md-6">
-                <label>First Name</label>
-                <div class="form-group">
-                    <input type="text" class="form-control" name="firstName" value="$name"/>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <label>Last Name</label>
-                <div class="form-group">
-                    <input type="text" class="form-control" name="lastName" value="$sname"/>
-                </div>
-            </div>
+        <label>Card From</label>
+        <div class="form-group">
+            <input type="text" class="form-control" name="firstName" value="$name"/>
         </div>
         <div class="row">
             <div class="col-md-6">
@@ -161,9 +167,10 @@ $used
         <input type="hidden" name="gcid" value="$gcid"/>
     </div>
     <div class="col-md-6">
-        <label>Street Address</label>
+        <!--
+        <label>Owner's Address</label>
         <div class="form-group">
-            <input type="text" class="form-control" name="addr1" value="$addr1"/>
+            <input type="text" class="form-control" name="address" value="$address"/>
         </div>
         <div class="row">
             <div class="col-md-3">
@@ -185,9 +192,15 @@ $used
                 </div>
             </div>
         </div>
+        -->
         <label>Notes</label>
         <div class="form-group">
-            <textarea class="form-control" name="notes" />$notes</textarea>
+            <textarea class="form-control" rows=10 name="notes" spellcheck="falsespellcheck="false""/>
+$sname
+$addr1
+$city
+\nAdditional Customer Notes: $notes
+            </textarea>
         </div>
     </div>
 </form>
@@ -205,12 +218,7 @@ HTML;
         $table = "<table class='table table-bordered table-condensed'>
             <thead>
                 <th>Owner #</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Address</th>
-                <th>City</th>
-                <th>State</th>
-                <th>Zipcode</th>
+                <th>Purchaser(s)</th>
                 <th>Phone Number</th>
                 <th>Email Address</th>
                 <th>Amount</th>
@@ -228,11 +236,11 @@ HTML;
             $table .= "<tr>";
             $table .= "<td>{$row['cardNo']}</td>";
             $table .= "<td>{$row['firstName']}</td>";
-            $table .= "<td>{$row['lastName']}</td>";
-            $table .= "<td>{$row['addr1']}</td>";
-            $table .= "<td>{$row['city']}</td>";
-            $table .= "<td>{$row['state']}</td>";
-            $table .= "<td>{$row['zip']}</td>";
+            //$table .= "<td>{$row['lastName']}</td>";
+            //$table .= "<td>{$row['addr1']}</td>";
+            //$table .= "<td>{$row['city']}</td>";
+            //$table .= "<td>{$row['state']}</td>";
+            //$table .= "<td>{$row['zip']}</td>";
             $table .= "<td>{$row['phone']}</td>";
             $table .= "<td>{$row['email']}</td>";
             $table .= "<td>{$row['amount']}</td>";
