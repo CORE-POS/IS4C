@@ -86,6 +86,12 @@ class MemberLookup {
       Find member by last name.
       @param $num the search string.
       @return array. See default_value().
+
+      There's a workaround here for leading whitespace in names.
+      We want to find matches that start with the specified $text
+      but we need to get all possible matches from the database
+      and compare them against $text after stripping off any leading
+      whitespace.
     */
     public function lookup_by_text($text){
         $dbc = Database::pDataConnect();
@@ -94,9 +100,19 @@ class MemberLookup {
             WHERE LastName LIKE ? 
             AND Type IN (\'PC\',\'REG\')
             ORDER BY LastName, FirstName');
-        $result = $dbc->execute($query, array($text.'%'));    
+        $result = $dbc->execute($query, array('%'.$text.'%'));
+        $prefix = strtoupper(trim($text));
+        $prefixLen = strlen($prefix);
+        $ret = $this->default_value();
+        while ($row = $dbc->fetchRow($result)) {
+            if (substr(strtoupper(trim($row['LastName'])), 0, $prefixLen) == $prefix) {
+                $key = $row['CardNo'].'::'.$row['personNum'];
+                $val = $row['CardNo'].' '.$row['LastName'].', '.$row['FirstName'];
+                $ret['results'][$key] = $val;
+            }
+        }
 
-        return $this->listToArray($dbc, $result);
+        return $ret;
     }
 
     protected function listToArray($dbc, $result)
