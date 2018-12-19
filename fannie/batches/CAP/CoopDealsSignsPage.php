@@ -245,7 +245,7 @@ HTML;
         }
 
         $years = '';
-        $curYear = 2019;
+        $curYear = 2020;
         $curMonth = date('m');
         for ($i=2017; $i<$curYear; $i++) {
             $sel = ($i == FormLib::get('year')) ? " selected " : "";
