@@ -234,9 +234,9 @@ class HouseCouponEditor extends FanniePage
         $this->addOnloadCommand('$(\'.fancybox-btn\').fancybox();');
         $ret .= '</p>';
         $ret .= '</form>';
-        $ret .= '<table class="table">';
-        $ret .= '<tr><th>ID</th><th>Name</th><th>Value</th>';
-        $ret .= '<th>Begins</th><th>Expires</th></tr>';
+        $ret .= '<table class="table tablesorter">';
+        $ret .= '<thead><tr><th>ID</th><th>Name</th><th>Value</th>';
+        $ret .= '<th>Begins</th><th>Expires</th><th>&nbsp;</th></tr></thead><tbody>';
         $model = new HouseCouponsModel($dbc);
         foreach($model->find('coupID', true) as $obj) {
             if (strstr($obj->startDate(), ' ')) {
@@ -290,7 +290,10 @@ class HouseCouponEditor extends FanniePage
                     (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoreWarehouse') ? '' : 'collapse')
                 );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
+        
+        $this->addScript($FANNIE_URL . 'src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
         
         $dbc->close();
 
