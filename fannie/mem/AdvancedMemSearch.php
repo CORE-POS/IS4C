@@ -446,6 +446,9 @@ class AdvancedMemSearch extends FannieRESTfulPage
     <br /><br />
     <button class="btn btn-default btn-sm" type="button" 
         onclick="sendTo('../reports/from-search/AccountNames/AccountNamesFromSearch.php');">All Names</button>
+    <br /><br />
+    <button class="btn btn-default btn-sm" type="button" 
+        onclick="sendTo('../reports/from-search/CustomerSales/CustomerSalesReport.php');">Sales</button>
 </div>
 </div>
 <p>
