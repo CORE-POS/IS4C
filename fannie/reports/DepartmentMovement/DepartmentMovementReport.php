@@ -119,7 +119,7 @@ class DepartmentMovementReport extends FannieReportPage
             case 'PLU':
                 $query = "SELECT t.upc,
                       p.brand,
-                      CASE WHEN p.description IS NULL THEN t.description ELSE p.description END as description, 
+                      CASE WHEN t.description IS NULL THEN p.description ELSE t.description END as description, 
                       SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
                       . DTrans::sumQuantity('t')." as qty,
                       SUM(t.total) AS total,
@@ -137,7 +137,7 @@ class DepartmentMovementReport extends FannieReportPage
                       AND " . DTrans::isStoreID($store, 't') . "
                       GROUP BY t.upc,
                           p.brand,
-                          CASE WHEN p.description IS NULL THEN t.description ELSE p.description END,
+                          CASE WHEN t.description IS NULL THEN p.description ELSE t.description END,
                           CASE WHEN t.trans_status = 'R' THEN 'Refund' ELSE 'Sale' END,
                       d.dept_no,d.dept_name,s.superID,v.vendorName ORDER BY SUM(t.total) DESC";
                 break;
