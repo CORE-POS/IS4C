@@ -31,9 +31,9 @@ class PaycardFixReturn extends FannieRESTfulPage
             WHERE dateID=?
                 AND refNum=?
                 AND xResultCode=1
-                AND xResultMessage LIKE '%approve%'
+                AND (xResultMessage LIKE '%approve%' OR xResultMessage = 'AP')
                 AND xResultMessage NOT LIKE '%decline%'
-                AND transType='Sale'
+                AND transType IN ('Sale', 'R.Sale')
                 AND xToken <> ''
                 AND xToken IS NOT NULL
         ");
