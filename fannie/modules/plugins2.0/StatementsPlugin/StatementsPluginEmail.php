@@ -199,12 +199,15 @@ class StatementsPluginEmail extends FannieRESTfulPage
             SELECT card_no,
                 description,
                 department,
+                quantity,
+                total,
                 trans_num
             FROM ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'dlogBig
             WHERE tdate BETWEEN ? AND ?
                 AND trans_num=?
                 AND card_no=?
-                AND trans_type IN (\'I\', \'D\')
+                AND trans_type IN (\'I\', \'D\', \'A\')
+                AND total <> 0
         ';         
         $todayQ = str_replace($FANNIE_ARCHIVE_DB . $dbc->sep() . 'dlogBig', $FANNIE_TRANS_DB . $dbc->sep() . 'dlog', $detailsQ);
         $detailsP = $dbc->prepare($detailsQ);
@@ -237,7 +240,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
                     if (!isset($details[$row['card_no']][$trans_num])) {
                         $details[$row['card_no']][$trans_num] = array();
                     }
-                    $details[$row['card_no']][$trans_num][] = $row['description'];
+                    $details[$row['card_no']][$trans_num][] = sprintf('$%.2f %s', $row['total'], $row['description']);
                 }
             }
             if ($found_charge) {
@@ -349,9 +352,12 @@ class StatementsPluginEmail extends FannieRESTfulPage
 
                 $lineitem = (count($detail)==1) ? $detail[0] : '(multiple items)';
                 foreach ($detail as $line) {
-                    if ($line == 'ARPAYMEN') {
+                    if (substr($line, -8) == 'ARPAYMEN') {
                         $lineitem = 'Payment Received - Thank You';
                     }
+                }
+                if ($lineitem != 'Payment Received - Thank You') {
+                    $lineitem = implode('<br />', $detail);
                 }
 
                 $body .= str_pad($date, 20) . str_pad($trans, 15);
