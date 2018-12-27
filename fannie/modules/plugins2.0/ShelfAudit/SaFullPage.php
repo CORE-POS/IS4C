@@ -188,7 +188,7 @@ CSS;
         $floor = $section ? 'checked' : 0;
         $model = new MasterSuperDeptsModel($this->connection);
         $opts = $model->toOptions($super);
-        $this->addScript('js/full.js?date=20181211');
+        $this->addScript('js/full.js?date=20181227');
         $this->addScript('../../../item/autocomplete.js?date=20181211');
         $ws = $FANNIE_URL . '../../../ws/';
         $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");

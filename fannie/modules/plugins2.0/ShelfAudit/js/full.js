@@ -10,9 +10,9 @@ var full = (function ($) {
 
     mod.setFilter = function(f) {
         if (f == "") {
-            EXTRA_AUTO_COMPLETE_PARAMS = {};
+            EXTRA_AUTO_COMPLETE_PARAMS = { lc: true };
         } else {
-            EXTRA_AUTO_COMPLETE_PARAMS = { superID: f };
+            EXTRA_AUTO_COMPLETE_PARAMS = { lc: true, superID: f };
         }
     };
 
