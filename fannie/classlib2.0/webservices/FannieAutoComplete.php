@@ -74,10 +74,13 @@ class FannieAutoComplete extends FannieWebService
                                             p.description AS posDesc,
                                             p.size,
                                             ' . ItemText::longBrandSQL() . ',
-                                            ' . ItemText::longDescriptionSQL() . '
+                                            ' . ItemText::longDescriptionSQL() . ',
+                                            l.likeCode,
+                                            p.scale
                                            FROM products AS p
                                             LEFT JOIN productUser AS u ON u.upc=p.upc
                                             LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                                            LEFT JOIN upcLike AS l ON p.upc=l.upc
                                            WHERE (p.description LIKE ?
                                             OR p.brand LIKE ?
                                             OR u.description LIKE ?
@@ -94,17 +97,29 @@ class FannieAutoComplete extends FannieWebService
                             p.upc AS description,
                             p.upc AS posDesc,
                             \'\' AS brand,
-                            \'\' AS size
+                            \'\' AS size,
+                            \'\' AS likeCode,
+                            p.scale
                         FROM products AS p
                         WHERE p.upc LIKE ?
                         GROUP BY p.upc');
                     $res = $dbc->execute($prep, array('%'.$args->search . '%'));
                 }
                 $wide = (isset($args->wide) && $args->wide) ? true : false;
+                $lc = (isset($args->lc) && $args->lc) ? true : false;
                 while ($res && $row = $dbc->fetch_row($res)) {
                     $bigLabel = (!empty($row['brand']) ? $row['brand'] . ' ' : '') . $row['description'];
                     if ($row['size']) {
                         $bigLabel .= ' (' . $row['size'] . ')';
+                    }
+                    if ($lc && $row['likeCode']) {
+                        $bigLabel .= ' LC' . $row['likeCode'];
+                        $row['posDesc'] = ' LC' . $row['likeCode'] . ' ' . $row['posDesc'];
+                    } elseif ($lc) {
+                        continue;
+                    }
+                    if ($lc) {
+                        $row['posDesc'] .= ' ' . ($row['scale'] ? '(lb)' : '(ea)');
                     }
                     $ret[] = array(
                         'label' => $wide ? $bigLabel : $row['posDesc'],
