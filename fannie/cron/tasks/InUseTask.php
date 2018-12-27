@@ -125,6 +125,7 @@ class InUseTask extends FannieTask
                     OR (UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.created) > i.time AND p.last_sold IS NULL)
             )
             AND p.inUse = 1
+            AND (i.superID <> 6 OR p.upc NOT LIKE '000000%')
             ORDER BY p.store_id;
         ");
         $resultA = $dbc->execute($reportInUse);
@@ -144,6 +145,7 @@ class InUseTask extends FannieTask
                     )
                     AND p.store_id = ?
                     AND p.inUse = 1
+                    AND (i.superID <> 6 OR p.upc NOT LIKE \'000000%\')
                     AND p.upc NOT IN ('.$inClause.')
                 ';
             $updateUnuse = $dbc->prepare($updateQunuse);
