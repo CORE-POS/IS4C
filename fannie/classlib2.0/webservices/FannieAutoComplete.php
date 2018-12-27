@@ -83,6 +83,7 @@ class FannieAutoComplete extends FannieWebService
                                             OR u.description LIKE ?
                                             OR u.brand LIKE ?)
                                             ' . $also . '
+                                            AND p.inUse=1
                                            GROUP BY p.upc,
                                             p.description
                                            ORDER BY p.inUse DESC, p.description');
