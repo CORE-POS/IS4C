@@ -10,9 +10,44 @@ class RpImport extends FannieRESTfulPage
     protected $header = 'RP Import';
     protected $title = 'RP Import';
 
+    public function changeCosts($changes)
+    {
+        $actual = array();
+        $prodP = $this->connection->prepare("SELECT cost FROM products WHERE upc=?");
+        $lcP = $this->connection->prepare("SELECT upc FROM upcLike WHERE likeCode=?");
+        $upP = $this->connection->prepare("UPDATE products SET cost=? WHERE upc=?");
+        foreach ($changes as $lc => $cost) {
+            $upcs = $this->connection->getAllValues($lcP, array($lc));
+            foreach ($upcs as $upc) {
+                $current = $this->connection->getValue($prodP, array($upc));
+                if ($current === false) {
+                    continue; // no such product
+                } elseif (abs($cost - $current) > 0.005) {
+                    $actual[] = $upc;
+                    echo "$lc: $upc changed from $current to $cost\n";
+                    //$this->connection->execute($upP, array($cost, $upc));
+                }
+            }
+        }
+        /*
+        $model = new ProdUpdateModel($this->connection);
+        $model->logManyUpdates($actual, 'EDIT');
+         */
+    }
+
     public function cliWrapper()
     {
-        echo $this->post_view();
+        $out = $this->post_view();
+        $out = str_replace('<tr>', '', $out);
+        $out = str_replace('<td>', '', $out);
+        $out = str_replace('<th>', '', $out);
+        $out = str_replace('<table class="table table-bordered">', '', $out);
+        $out = str_replace('</table>', '', $out);
+        $out = str_replace('</tr>', "\n", $out);
+        $out = str_replace("</td>", "\t", $out);
+        $out = str_replace("</th>", "\t", $out);
+
+        echo $out;
     }
 
     protected function post_view()
