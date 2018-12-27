@@ -86,7 +86,7 @@ class FannieAutoComplete extends FannieWebService
                                             AND p.inUse=1
                                            GROUP BY p.upc,
                                             p.description
-                                           ORDER BY p.inUse DESC, p.description');
+                                           ORDER BY MAX(p.last_sold) DESC, p.description');
                     $res = $dbc->execute($prep, $queryArgs);
                 } elseif (ltrim($args->search, '0') != '') {
                     $prep = $dbc->prepare('
