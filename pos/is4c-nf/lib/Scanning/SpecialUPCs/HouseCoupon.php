@@ -377,6 +377,15 @@ class HouseCoupon extends SpecialUPC
             return $this->errorOrQuiet(_('coupon not found'), false);
         }
 
+        /* limit types 
+            0 => total coupons used, 
+            1 => total coupons used today, 
+         */
+        $limitType = 0;
+        if ($infoW['limit'] > 100 && $infoW['limit'] < 1000) {
+            $limitType = 1;
+        }
+
         $prefix = $this->session->get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
@@ -421,15 +430,13 @@ class HouseCoupon extends SpecialUPC
             }
 
             $mDB = Database::mDataConnect();
+            $tDB = Database::tDataConnect();
             if ($mDB === false) {
                 return true;
             }
             $mAlt = Database::mAltName();
 
-            // Future idea: lookup usage of this coupon by this member
-            // Subquery is to combine today (dlog)
-            // with previous days (dlog_90_view)
-            // Potential replacement for houseCouponThisMonth
+            // Find qty of coupons applied in past 90 days
             $altQ = "SELECT upc, card_no, SUM(quantity) AS quantity, MAX(tdate) AS tdate
                     FROM {$mAlt}dlog_90_view
                     WHERE trans_type='T'
@@ -438,18 +445,40 @@ class HouseCoupon extends SpecialUPC
                             AND card_no=" . ((int)$this->session->get('memberID')) . "
                             AND tdate BETWEEN '{$infoW['startDate']}' AND '{$infoW['endDate']}'
                      GROUP BY upc, card_no";
-            /*
-            $mRes = $mDB->query("SELECT quantity 
-                               FROM {$mAlt}houseCouponThisMonth
-                               WHERE card_no=" . $this->session->get("memberID") . " and
-                               upc='$upc'");
-            */
-            $mRes = $mDB->query($altQ);
-            if ($mDB->num_rows($mRes) > 0) {
-                $mRow = $mDB->fetch_row($mRes);
-                $uses = $mRow['quantity'];
-                if ($uses >= $infoW["limit"]) {
-                    return $this->errorOrQuiet(_('coupon already used<br />on this membership'), false);
+            // find qty of coupon applied today
+            $lim1Qm  = "SELECT upc, card_no, SUM(quantity) AS quantity, MAX(tdate) AS tdate
+                    FROM {$mAlt}dlog
+                    WHERE trans_type='T'
+                        AND trans_subtype='IC'
+                            AND upc='$upc'
+                            AND card_no=" . ((int)$this->session->get('memberID')) . "
+                     GROUP BY upc, card_no";
+            $lim1Qt = "SELECT SUM(quantity) AS quantity 
+                    FROM localtemptrans 
+                    WHERE trans_subtype = 'IC' 
+                        AND upc = '$upc'";
+
+            if ($limitType == 1) {
+                // limit = qty of coupons used today
+                $mRes = $mDB->query($lim1Qm);
+                $tRes = $tDB->query($lim1Qt);
+                if ($mDB->num_rows($mRes) > 0 || $tDB->num_rows($tRes) > 0) {
+                    $mRow = $mDB->fetch_row($mRes);
+                    $tRow = $tDB->fetch_row($tRes);
+                    $uses = $mRow['quantity'] + $tRow['quantity'];
+                    if ($uses >= $infoW["limit"] - 100) {
+                        return $this->errorOrQuiet(_('daily coupon limit already reached<br />on this membership'), false);
+                    }
+                }
+            } else {
+                // limit = qty of coupons used in last 90 days
+                $mRes = $mDB->query($altQ);
+                if ($mDB->num_rows($mRes) > 0) {
+                    $mRow = $mDB->fetch_row($mRes);
+                    $uses = $mRow['quantity'];
+                    if ($uses >= $infoW["limit"]) {
+                        return $this->errorOrQuiet(_('coupon already used<br />on this membership'), false);
+                    }
                 }
             }
         }
@@ -698,8 +727,12 @@ class HouseCoupon extends SpecialUPC
                 $giftW = $transDB->fetchRow($giftR);
                 $freeCards = floor($giftW['ttl'] / $infoW['minValue']);
                 $value = $infoW['discountValue'] * $freeCards;
+                if ($value > 100) {
+                    $value = 100;
+                }
                 $discountable = 0;
                 TransRecord::addtender('Store Credit', 'SC', $value);
+                \CoreLocal::set("receiptToggle",1);
                 break;
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
