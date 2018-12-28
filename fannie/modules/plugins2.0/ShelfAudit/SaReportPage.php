@@ -359,7 +359,7 @@ table.shelf-audit tr:hover {
             <p><?php echo $stores['html']; ?></p>
             <p><select class="form-control" name="super" id="super" onchange="refilter();">
                 <option value="-1">All</option><?php echo $mOpts; ?></select></p>
-            <p><a href="?excel=yes&store=<?php echo $this->store; ?>">download as csv</a></p>
+            <p><a href="?excel=yes&store=<?php echo $this->store; ?>&super=<?php echo $super; ?>">download as csv</a></p>
         <?php
         if ($this->scans) {
             $clear = '<div><a href="SaReportPage.php?clear=yes">Clear Old</a></div>';
