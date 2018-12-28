@@ -52,11 +52,10 @@ class SigCapture
         // If:
         //   a) enabled
         //   b) a Credit transaction
-        //   c) Over limit threshold OR a return OR a recurring charge
+        //   c) Over limit threshold OR a recurring charge
         $isCredit = $this->isCredit();
         $needSig = (
             $this->conf->get('paycard_amount') > $this->conf->get('CCSigLimit') 
-            || $this->conf->get('paycard_amount') < 0
             || $this->conf->get('paycard_recurring')
             ) ? true : false;
         $isVoid = ($this->conf->get('paycard_mode') == PaycardLib::PAYCARD_MODE_VOID) ? true : false;
