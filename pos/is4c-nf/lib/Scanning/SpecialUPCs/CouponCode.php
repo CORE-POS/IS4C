@@ -234,7 +234,7 @@ class CouponCode extends SpecialUPC
         }
         $query .= ") and t.trans_status <> 'C'
             group by t.trans_id
-            order by t.unitPrice desc";
+            order by MAX(t.unitPrice) desc";
         $result = $dbc->query($query);
         $numRows = $dbc->numRows($result);
 
