@@ -47,7 +47,7 @@ class ProdReviewPage extends FannieRESTfulPage
         $this->__routes[] = 'get<vendor><checked>';
         $this->__routes[] = 'get<batchLog>';
         $this->__routes[] = 'get<batchLog><add>';
-        $this->__routes[] = 'get<batchLog><force>';
+        $this->__routes[] = 'post<batchLog><force>';
         $this->__routes[] = 'get<batchLog><print>';
         $this->__routes[] = 'get<batchLog><printAll>';
         $this->__routes[] = 'get<batchLog><deleteRow><id>';
@@ -346,7 +346,7 @@ HTML;
         return header('location: '.$_SERVER['PHP_SELF'].'?batchLog=1');
     }
 
-    public function get_batchLog_force_handler()
+    public function post_batchLog_force_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -362,8 +362,15 @@ HTML;
         $args = array($user,$bid);
         $prep = $dbc->prepare("UPDATE batchReviewLog SET forced = NOW(), user = ? WHERE bid = ?");
         $dbc->execute($prep,$args);
+        $json = array('error'=>false, 'success'=>false);
+        if ($er = $dbc->error()) {
+            $json['error'] = $er;
+        } else {
+            $json['success'] = true;
+        }
+        echo json_encode($json);
 
-        return header('location: '.$_SERVER['PHP_SELF'].'?batchLog=1');
+        return false;
     }
 
     public function get_batchLog_print_handler()
@@ -433,12 +440,13 @@ HTML;
         /*
             tableA = unforced batches | tableB = forced.
         */
-        $pAllBtn = "<button class='btn btn-default btn-xs' style='border: 1px solid orange;'
-            onClick='printAll(); return false;'>Print All</button>";
+        $pAllBtn = "<button class='btn btn-default btn-xs' 
+            onClick='printAll(); return false;'><span class='glyphicon glyphicon-print'></span></button>";
         $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
+            <th>{$pAllBtn}</th>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
-            <th>Comments</th><th></th><th>{$pAllBtn}</th><tr></thead><tbody>";
-        $tableB = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
+            <th>Comments</th><th></th><th></th><tr></thead><tbody>";
+        $tableB = "<div class='table-responsive'><table class='table table-condensed table-striped small' id='forcedBatchesTable'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Forced On</th>
             <th>user</th><tr></thead><tbody>";
         $args = array();
@@ -458,6 +466,7 @@ HTML;
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $tableA .= "<tr>";
+                $tableA .= "<td><input type='checkbox' id='check$curBid'></td>";
                 $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
                 $batchName = $row['batchName'];
                 $tableA .= "<td>{$batchName}</td>";
@@ -473,13 +482,8 @@ HTML;
                 $tableA .= "<td><textarea name='comments' class='batchLogInput editable'
                     '/>{$row['comments']}</textarea></td>";
                 $action = '';
-                if ($row['printed'] == 0) {
-                    $action = "<td class='btn btn-default btn-wide' style='border: 1px solid orange;'
-                        onClick='printBatch($curBid); return false;'>Print</td>";
-                } else {
-                    $action = "<td class='btn btn-default btn-wide' style='border: 1px solid tomato;'
-                        onClick='forceBatch($curBid); return false;'>Force</td>";
-                }
+                $action = "<td class='btn btn-default btn-wide' style='border: 1px solid tomato;'
+                    onClick='forceBatch($curBid, \"$batchName\"); return false;' id='force$curBid'>Force</td>";
                 $tableA .= "<td><span class='glyphicon glyphicon-trash' onClick='deleteRow($curBid)'></span></td>";
                 $tableA .= $action;
                 $tableA .= "</tr>";
@@ -499,6 +503,7 @@ HTML;
         $tableB .= '</tbody></table></div>';
 
         return <<<HTML
+<div id="ajax-processing" style=" text-align: center; position: fixed; top: 48vh; left: 40vw; background: rgba(255, 100, 100, 0.8); border: 3px solid pink; display: none;">BATCH BEING FORCED, PLEASE WAIT</div>
 <div align="">
         <div class="">
             <div>{$this->backBtn()}</div>
@@ -523,7 +528,7 @@ HTML;
             {$tableA}
         </div>
         <h4 align="center">Forced Batches</h4>
-        <div class="batchTable">
+        <div class="batchTable" >
             {$tableB}
         </div>
 </div>
@@ -936,25 +941,21 @@ function printAll()
 {
     var signUrl = "../admin/labels/SignFromSearch.php";
     var bids = [];
-    $c = confirm("Print All Batches?");
-    if ($c == true) {
-        var data = '?';
-        $('td').each(function() {
+    var data = '?';
+    var i = 0;
+    $('input[type=checkbox]').each(function(){
+        if ($(this).prop('checked')) {
+            id = $(this).attr('id').substr(5);
+            bids.push(id);
+            console.log('checked: '+id);
+        }
+    });
+    $.each(bids, function(k,v) {
+        data = data.concat("batch[]="+v+"&");
+    });
+    data = data.slice(0,-1);
+    window.open(signUrl+data, '_blank');
 
-            if ($(this).hasClass('biduf')) {
-                var bid = $(this).text();
-                bids.push(bid);
-            }
-        });
-        $.each(bids, function(k,v) {
-            data = data.concat("batch[]="+v+"&");
-        });
-        data = data.slice(0,-1);
-        window.open(signUrl+data, '_blank');
-
-        var path = window.location.pathname;
-        window.location.href = path + "?batchLog=1&printAll=1";
-    }
 }
 
 function checkAll()
@@ -991,14 +992,44 @@ function editable()
     });
 }
 
-function forceBatch(bid)
+function forceBatch(bid, bname)
 {
+    buttonid = 'force'+bid;
+    html = $('#'+buttonid).closest('tr').html();
     var conf = confirm("Force Batch "+bid+"?");
     if (conf) {
-        var path = window.location.pathname;
-        window.location.href=path+"?bid="+bid+"&batchLog=1&force=1";
+        $.ajax({
+            type: 'post',
+            data: 'bid='+bid+'&batchLog=1&force=1',
+            dataType: 'json',
+            beforeSend: function()
+            {
+                console.log('beforeSend successful');
+                $('#ajax-processing').show();
+            },
+            success: function(json)
+            {
+                if (json.success == true) {
+                    $('#'+buttonid).closest('tr').hide();
+                    $('#forcedBatchesTable > tbody')
+                        .prepend('<tr><td>'+bid+'</td><td>'+bname+'</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>');
+                } else {
+                    alert('Error: '+json.error);
+                }
+            },
+            error: function(e)
+            {
+                alert('Request unsuccessful, see console.log for details.');
+                console.log(e);
+            },
+            complete: function()
+            {
+                $('#ajax-processing').hide();
+            }
+        });
     }
 }
+
 function printBatch(bid)
 {
     var signUrl = "../admin/labels/SignFromSearch.php";
