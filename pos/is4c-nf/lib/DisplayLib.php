@@ -296,7 +296,6 @@ static public function printheaderb()
             <span class="smaller">
             '.CoreLocal::get("cashier").'
             </span>
-            <button class="btn btn-default btn-xs" onclick="logout(); return false;">Log Cashier Out</button>
         </div>
         <div class="clear"></div>
     </div>
