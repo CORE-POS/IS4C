@@ -38,15 +38,15 @@ class PriceRounder
         if pricing rules are extremely complex
       @return [decimal] rounded price
 
-      This function will always round UP so the return price
-      ends in a 5 or a 9. Values ending in 05 and 09 are excluded
-      so a price $x.00 through $x.14 will round up to $x.15.
+      This function will always round so the return price
+      ends in a 9.
     */
     public function round($price, $extra_parameters=array())
     {
         $wholeP = floor($price);
         $fractionP = $price - $wholeP;
 
+        // acceptible price endings by $endingCaps
         $endings = array(
             0 => array(0.29, 0.39, 0.49, 0.69, 0.79, 0.89, 0.99),
             1 => array(0.19, 0.39, 0.49, 0.69, 0.89, 0.99),
@@ -55,6 +55,7 @@ class PriceRounder
             4 => array(0.99),
         );
         $endingCaps = array(0.99, 2.99, 5.99, 9.99, 9999.00);
+        // special round defines when to round down by $endingCaps
         $specialRound = array(
             1 => 0.16,
             2 => 0.16,
@@ -68,13 +69,17 @@ class PriceRounder
                         foreach ($endArray as $end) {
                             if ($fractionP < $end) {
                                 if ($wholeP >= 10) {
+                                    // whole >= 10
                                     if ($wholeP % 10 == 0 || $fractionP == 0) {
+                                        // whole == 10, round down to 9.99
                                         $wholeP--;
                                         $end = 0.99;
                                     } else {
+                                        // whole >= 11, round up to whole.99
                                         $end = 0.99;
                                     }
                                 } elseif ($fractionP <= $specialRound[$level]) {
+                                    // special round down to nearest whole.99
                                     $wholeP--;
                                     $end = 0.99;
                                 }
@@ -87,7 +92,10 @@ class PriceRounder
                 }
             }
         }
-
+        // special case: if price == 10.99, round down to 9.99
+        if ($price == 10.99) {
+            $price = 9.99;
+        }
         return $price;
     }
 
