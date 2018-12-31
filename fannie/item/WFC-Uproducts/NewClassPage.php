@@ -85,7 +85,7 @@ class NewClassPage extends FannieRESTfulPage
             if ($k === 5) {
                 $p->store_id(1);
             }
-            if (!$saved[] = $p->save()) {
+            if (!$saved[] = $p->saveAllStores()) {
                 $error+=$k;
             }
             
