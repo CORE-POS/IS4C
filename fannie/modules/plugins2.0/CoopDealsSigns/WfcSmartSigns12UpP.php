@@ -41,6 +41,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
         $pdf = $this->createPDF();
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $basicP = $dbc->prepare("SELECT MAX(price_rule_id) FROM products WHERE upc=?");
+        $organicP = $dbc->prepare("SELECT 'true' FROM products WHERE numflag & (1<<16) != 0 AND upc = ?");
 
         $data = $this->loadItems();
         $count = 0;
@@ -89,6 +90,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             $pdf = $this->drawItem($pdf, $item, $row, $column);
 
             $item['basic'] = $dbc->getValue($basicP, $item['upc']);
+            $item['organic'] = $dbc->getValue($organicP, $item['upc']);
 
             $pdf->Image($this->getTopImage($item), ($left-1) + ($width*$column), ($top-19) + ($row*$height), 62.67);
             $pdf->Image($this->getBottomImage($item), ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-4), 62.67);
@@ -108,6 +110,8 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             return __DIR__ . '/noauto/images/chaching_top_12.png';
         } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_top_12.png';
+        } elseif ($item['organic']) {
+            return __DIR__ . '/noauto/images/organic_top_12.png';
         }
 
         return __DIR__ . '/noauto/images/standard_top_12.png';
@@ -121,7 +125,10 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             return __DIR__ . '/noauto/images/chaching_bottom_12.png';
         } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_bottom_12.png';
+        } elseif ($item['organic']) {
+            return __DIR__ . '/noauto/images/organic_bottom_12.png';
         }
+
 
         return __DIR__ . '/noauto/images/standard_bottom_12.png';
     }
