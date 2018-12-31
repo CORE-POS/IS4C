@@ -185,7 +185,7 @@ HTML;
                 <input type="radio" name="likeCode" value="7006"/> 7006 <span style="color: grey">| </span>$60 -> $40<br/>
             </div>
             -->
-            <input type="hidden" name="likeCode" value="" /> 
+            <input type="hidden" name="likeCode" value="" selected/> None <br/>
             <div class="form-group">
                 <label for="expires">Expires</label>
                 <input type="text" class="form-control date-field len-md" name="expires" id="expires" value="" required/>
