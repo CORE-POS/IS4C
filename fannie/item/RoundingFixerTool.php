@@ -263,6 +263,7 @@ HTML;
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE d.tdate BETWEEN ? AND ?
                 AND RIGHT(p.normal_price, 1) = 5
+                AND p.price_rule_id = 0
                 " . $extraWhere . "
                 AND p.upc NOT IN (
                     SELECT upc
@@ -288,6 +289,7 @@ HTML;
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
             WHERE d.tdate BETWEEN ? AND ?
                 AND RIGHT(p.normal_price, 1) = 5
+                AND p.price_rule_id = 0
                 " . $extraWhere . "
                 AND p.upc NOT IN (
                     SELECT upc
