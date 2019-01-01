@@ -100,6 +100,7 @@ class ShrinkTool extends FannieRESTfulPage
         $product = new ProductsModel($dbc);
         $product->upc($upc);
         $product->store_id($this->config->get('STORE_ID'));
+        $superP = $dbc->prepare("SELECT superID FROM MasterSuperDepts WHERE dept_ID=?");
         if (!$product->load()) {
             if (substr($upc, 0, 3) == '002') {
                 $price = substr($upc, -4) / 100;
@@ -111,6 +112,7 @@ class ShrinkTool extends FannieRESTfulPage
                     $this->cost = $product->cost();
                     $this->price = $product->normal_price();
                     $this->department = $product->department();
+                    $this->superID = $dbc->getValue($superP, array($this->department));
                     $this->upc = $upc;
                     if ($product->scale() && $product->normal_price() > 0 && $price > 0) {
                         $this->quantity = sprintf('%.2f', $price / $product->normal_price());
@@ -125,10 +127,36 @@ class ShrinkTool extends FannieRESTfulPage
             $this->cost = $product->cost();
             $this->price = $product->normal_price();
             $this->department = $product->department();
+            $this->superID = $dbc->getValue($superP, array($this->department));
             $this->upc = $upc;
         }
 
         return true;
+    }
+
+    private function getLossContribute($dbc)
+    {
+        $deptP = $dbc->prepare("SELECT lossContribute FROM ShrinkDefaults WHERE deptID=?");
+        $dDefault = $dbc->getValue($deptP, array($this->department));
+        if ($dDefault && $dDefault == 'L') {
+            return array('', 'selected', '');
+        } elseif ($dDefault && $dDefault == 'C') {
+            return array('', '', 'selected');
+        } elseif ($dDefault) {
+            return array('selected', '', '');
+        }
+
+        $superP = $dbc->prepare("SELECT lossContribute FROM ShrinkDefaults WHERE superID=?");
+        $sDefault = $dbc->getValue($superP, array($this->superID));
+        if ($sDefault && $sDefault == 'L') {
+            return array('', 'selected', '');
+        } elseif ($sDefault && $sDefault == 'C') {
+            return array('', '', 'selected');
+        } elseif ($sDefault) {
+            return array('selected', '', '');
+        }
+
+        return array('', 'selected', '');
     }
 
     public function get_id_view()
@@ -143,6 +171,7 @@ class ShrinkTool extends FannieRESTfulPage
             $shrink_opts .= sprintf('<option value="%d">%s</option>',
                 $reason->shrinkReasonID(), $reason->description());
         }
+        list($choose,$loss,$contrib) = $this->getLossContribute($dbc);
 
         $ret = <<<HTML
 <form method="post">
@@ -174,9 +203,10 @@ class ShrinkTool extends FannieRESTfulPage
             <div class="row form-group">
                 <label class="col-sm-3 text-right">Type</label>
                 <div class="col-sm-9">
-                    <select name="type" class="form-control">
-                        <option>Loss</option>
-                        <option>Contribute</option>
+                    <select name="type" required class="form-control">
+                        <option value="" {$choose}>Select one...</option>
+                        <option {$loss}>Loss</option>
+                        <option {$contrib}>Contribute</option>
                     </select>
                 </div> 
             </div> 
