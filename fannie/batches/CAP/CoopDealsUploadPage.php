@@ -88,7 +88,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             SELECT s.upc 
             FROM VendorAliases AS s
                 INNER JOIN products AS p ON s.vendorID=p.default_vendor_id AND s.upc=p.upc
-            WHERE s.sku=?'
+            WHERE s.sku=? AND s.default_vendor_id=1'
         );
         $insP = $dbc->prepare('
             INSERT INTO CoopDealsItems 
