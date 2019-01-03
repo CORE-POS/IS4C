@@ -46,6 +46,14 @@ if (isset($_GET['action'])){
         $category = $this->strim($_GET['category']);
         $category = preg_replace("/_/"," ",$category);
 
+        $catP = $sql->prepare("SELECT deliCategoryID FROM DeliCategories WHERE name=? AND storeID=1");
+        $catID = $sql->getValue($catP, array($category));
+        if (!$catID) {
+            $prep = $sql->prepare("INSERT INTO DeliCategories (name, storeID) VALUES (?, 1)");
+            $res = $sql->execute($prep, array($category));
+            $catID = $sql->insertID();
+        }
+
         if (empty($price))
             $price = 0;
         if (empty($cases))
@@ -79,6 +87,8 @@ if (isset($_GET['action'])){
         $model->total($total);
         $model->size($size);
         $model->category($category);
+        $model->categoryID($catID);
+        $model->storeID(1);
         $model->save();
         
         $out = $this->gettable();
@@ -213,10 +223,14 @@ if (isset($_GET['action'])){
         $id = $_GET['id'];
         $newcat = $_GET['newcat'];
 
+        $catP = $sql->prepare("SELECT deliCategoryID FROM DeliCategories WHERE name=? AND storeID=1");
+        $catID = $sql->getValue($catP, array($newcat));
+
         $class = $this->model_class;
         $model = new $class($sql);
         $model->id($id);
         $model->category($newcat);
+        $model->categoryID($catID);
         $model->save();
 
         $model->reset();
@@ -265,7 +279,7 @@ if (isset($_GET['action'])){
                case when totalstock='0' then NULL else totalstock end as totalstock,
                price,total,category,id
                    from " . $this->table_name . "
-               WHERE 1=1 ";
+               WHERE 1=1 AND storeID=1 ";
         $args = array();
         if ($limit){
             $fetchQ .= ' AND category=? ';
