@@ -84,6 +84,9 @@ class DIPage extends FannieRESTfulPage
             WHERE categoryID=? ORDER BY item");
         $catR = $this->connection->execute($catP, array($storeID));
         $ret = '';
+        $ret = '<a href="" onclick="di.showSourcing(); return false;">Show Sourcing</a>
+            |
+            <a href="" onclick="di.hideSourcing(); return false;">Hide Sourcing</a><br /><br />';
         while ($catW = $this->connection->fetchRow($catR)) {
             $tag = str_replace(' ', '-', strtolower($catW['name']));
             $ret .= sprintf('<a href="#%s">%s</a><br />', $tag, $catW['name']);
@@ -99,7 +102,7 @@ class DIPage extends FannieRESTfulPage
                 </h3>', $tag, $catW['name'], $catW['deliCategoryID'], $catW['deliCategoryID']);
             $ret .= '<table class="table table-bordered table-striped small">';
             $ret .= '<tr><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th><th>Price/Case</th>
-                     <th>Total</th><th>UPC</th><th>SKU</th><th>Source</th></tr>';
+                     <th>Total</th><th class="upc">UPC</th><th class="sku">SKU</th><th class="vendor">Source</th></tr>';
             $itemR = $this->connection->execute($itemP, array($catW['deliCategoryID']));
             $sum = 0;
             while ($itemW = $this->connection->fetchRow($itemR)) {

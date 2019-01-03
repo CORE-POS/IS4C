@@ -104,6 +104,18 @@ var di = (function ($) {
         });
     }
 
+    mod.showSourcing = function() {
+        $('.upc').show();
+        $('.sku').show();
+        $('.vendor').show();
+    };
+
+    mod.hideSourcing = function() {
+        $('.upc').hide();
+        $('.sku').hide();
+        $('.vendor').hide();
+    };
+
     return mod;
 
 })(jQuery);
