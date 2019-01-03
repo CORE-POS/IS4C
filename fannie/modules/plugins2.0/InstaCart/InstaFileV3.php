@@ -133,6 +133,9 @@ class InstaFileV3
                 fwrite($csv, BarcodeLib::UPCACheckDigit($upc) . ',');
             } else {
                 // probably a PLU
+                if ($row['organic'] && strlen($upc) == 4 && (substr($upc, 0, 1) =='4' || substr($upc, 0, 1) == '3')) {
+                    $upc = '9' . $upc;
+                }
                 fwrite($csv, $upc . $sep); 
             }
             fprintf($csv, '%.2f%s', $row['normal_price'], $sep);
