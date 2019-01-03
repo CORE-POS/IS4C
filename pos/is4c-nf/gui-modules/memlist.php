@@ -97,7 +97,9 @@ class memlist extends NoInputCorePage
             throw new Exception('page change requested');
         }
         foreach ($chk['results'] as $key=>$val) {
-            $results[$key] = $val;
+            if (!isset($results[$key])) {
+                $results[$key] = $val;
+            }
         }
 
         return $results;
