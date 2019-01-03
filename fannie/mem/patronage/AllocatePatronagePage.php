@@ -99,8 +99,9 @@ class AllocatePatronagePage extends FannieRESTfulPage
         $workingP = $dbc->prepare('SELECT FY FROM patronage_workingcopy');
         $workingFY = $dbc->getValue($workingP);
         if (FormLib::get('overwrite', false)) {
-            $clearP = $dbc->prepare("UPDATE patronage SET FY = -1*FY WHERE FY=?");
-            $dbc->execute($clearP, array($workingFY));
+            $offset = rand(0, 99999);
+            $clearP = $dbc->prepare("UPDATE patronage SET FY = (-1*FY) - ? WHERE FY=?");
+            $dbc->execute($clearP, array($offset, $workingFY));
         }
 
         $netQ = '
