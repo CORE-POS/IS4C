@@ -108,6 +108,7 @@ class PatronageChecksReport extends FannieReportPage
         $q = '
             SELECT FY
             FROM patronage
+            WHERE FY > 0
             GROUP BY FY
             ORDER BY FY DESC';
         $r = $dbc->query($q);

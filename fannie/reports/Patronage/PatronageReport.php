@@ -53,7 +53,7 @@ class PatronageReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $fyearQ = $dbc->prepare("SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC");
+        $fyearQ = $dbc->prepare("SELECT FY FROM patronage WHERE FY > 0 GROUP BY FY ORDER BY FY DESC");
         $fyearR = $dbc->execute($fyearQ);
         $fyear = FormLib::get('fy');
 

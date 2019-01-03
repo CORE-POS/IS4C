@@ -90,6 +90,7 @@ HTML;
                 0 as ttl 
             FROM patronage as p
             WHERE p.cardno=? 
+                AND FY > 0
             ORDER BY FY");
         $pR = $dbc->execute($pQ,array($id));
 

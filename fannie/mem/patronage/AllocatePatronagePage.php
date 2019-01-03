@@ -32,6 +32,7 @@ class AllocatePatronagePage extends FannieRESTfulPage
     public $description = '[Allocate Patronage] divies up calculated patronage amounts amongst
         qualifiying members';
     public $themed = true;
+    private $message = '';
 
     public function helpContent()
     {
@@ -95,6 +96,13 @@ class AllocatePatronagePage extends FannieRESTfulPage
                 break;
         }
 
+        $workingP = $dbc->prepare('SELECT FY FROM patronage_workingcopy');
+        $workingFY = $dbc->getValue($workingP);
+        if (FormLib::get('overwrite', false)) {
+            $clearP = $dbc->prepare("UPDATE patronage SET FY = -1*FY WHERE FY=?");
+            $dbc->execute($clearP, array($workingFY));
+        }
+
         $netQ = '
             SELECT SUM(p.net_purch) AS ttl
             FROM patronage_workingcopy AS p
@@ -121,7 +129,21 @@ class AllocatePatronagePage extends FannieRESTfulPage
             FROM patronage_workingcopy AS p
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
             WHERE ' . $typeClause;
-        $dbc->query($finishQ);
+        $success = $dbc->query($finishQ);
+        if (!$success) {
+            $this->message = 'Error allocating patronage';
+            $existsP = $dbc->prepare("SELECT cardno FROM patronage WHERE FY=?");
+            $exists = $dbc->getValue($existsP, array($workingFY));
+            if ($exists) {
+                $this->message = "
+                    <div class=\"alert alert-warning\">
+                    Patronage has already been allocated for fiscal year {$workingFY}.
+                    Please check this box to confirm you want to overwrite that data.
+                    <input type=\"checkbox\" name=\"overwrite\" value=\"1\" />
+                    </div>";
+                $this->__route_stem = 'get';
+            }
+        }
 
         return true;
     }
@@ -146,12 +168,16 @@ class AllocatePatronagePage extends FannieRESTfulPage
 
     public function post_view()
     {
+        if ($this->message != '') {
+            return '<div class="alert alert-danger">' . $this->message . '</div>';
+        }
         return '<div class="alert alert-success">Patronage Allocated to Owners</div>';
     }
 
     public function get_view()
     {
         return '<form method="post">
+            ' . $this->message . '
             <div class="form-group">
                 <label>Total Amount Allocated</label>
                 <div class="input-group">
