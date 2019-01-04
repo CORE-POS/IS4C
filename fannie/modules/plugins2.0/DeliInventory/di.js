@@ -3,9 +3,14 @@ var di = (function ($) {
 
     var openInput = false;
     var openVendor = false;
+    var autoCloseTimeout = false;
     var vendors = [];
     mod.setVendors = function(v) {
         vendors = v;
+    }
+
+    mod.debug = function() {
+        return openInput;
     }
 
     function vendorSelect(elem) {
@@ -45,11 +50,48 @@ var di = (function ($) {
         });
     }
 
+    function keyNav(ev) {
+        switch (ev.which) {
+            case 9:
+                ev.preventDefault();
+                if (ev.shiftKey) {
+                    var next = $(openInput).prev('td.editable').get(0);
+                    if (!next) {
+                        var next = $(openInput).closest('tr').prev('tr').find('td.cost').get(0);
+                    }
+                    swapOut(openInput);
+                    if (next) {
+                        mod.editRow(next);
+                    }
+                } else {
+                    var next = $(openInput).next('td.editable').get(0);
+                    if (!next) {
+                        var next = $(openInput).closest('tr').next('tr').find('td.editable').get(0);
+                    }
+                    swapOut(openInput);
+                    if (next) {
+                        mod.editRow(next);
+                    }
+                }
+                break;
+            case 13:
+                ev.preventDefault();
+                var columnName = $(openInput).find('input').attr('name');
+                var next = $(openInput).closest('tr').next('tr').find('td.' + columnName).get(0);
+                swapOut(openInput);
+                if (next) {
+                    mod.editRow(next);
+                }
+                break;
+        }
+    }
+
     function swapIn(elem) {
         var name = $(elem).attr('class').replace(' editable', '');
         var input = '<input name="' + name + '" class="form-control input-sm" value="' + $(elem).html() + '" />';
         $(elem).html(input);
         $(elem).find('input').focus();
+        $(elem).find('input').keydown(keyNav);
     };
 
     function swapOut(elem) {
@@ -92,7 +134,10 @@ var di = (function ($) {
         }
         openInput = elem;
         swapIn(openInput);
-        setTimeout(autoClose, 10000);
+        if (autoCloseTimeout) {
+            clearTimeout(autoCloseTimeout);
+        }
+        autoCloseTimeout = setTimeout(autoClose, 10000);
     };
 
     mod.initRows = function() {
