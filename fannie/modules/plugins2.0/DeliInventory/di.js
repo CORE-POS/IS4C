@@ -90,7 +90,7 @@ var di = (function ($) {
         var name = $(elem).attr('class').replace(' editable', '');
         var input = '<input name="' + name + '" class="form-control input-sm" value="' + $(elem).html() + '" />';
         $(elem).html(input);
-        $(elem).find('input').focus();
+        $(elem).find('input').focus().select();
         $(elem).find('input').keydown(keyNav);
     };
 
