@@ -95,7 +95,8 @@ class PriceCheckPage extends NoInputCorePage
             $info['regPrice'],($row['scale']>0?' /lb':''));
         if ($info['memDiscount'] > 0) {
             $this->pricing['memPrice'] = sprintf('$%.2f%s',
-                ($info['unitPrice']-$info['memDiscount']),
+                ($info['unitPrice'] -
+                 (($this->session->get('isMember') == 1) ? 0 : $info['memDiscount'])),
                 ($row['scale']>0?' /lb':''));
         }
     }
@@ -108,12 +109,14 @@ class PriceCheckPage extends NoInputCorePage
     private function getItem()
     {
         $dbc = Database::pDataConnect();
-        $query = "select inUse,upc,description,normal_price,scale,deposit,
+        $query = "SELECT inUse,upc,description,normal_price,scale,deposit,
             qttyEnforced,department,local,cost,tax,foodstamp,discount,
             discounttype,specialpricemethod,special_price,groupprice,
             pricemethod,quantity,specialgroupprice,specialquantity,
-            mixmatchcode,idEnforced,tareweight,d.dept_name
-            from products, departments d where department = d.dept_no
+            mixmatchcode,idEnforced,tareweight,line_item_discountable,
+            d.dept_name
+            FROM products, departments d
+            WHERE department = d.dept_no
             AND upc = ?";
         $prep = $dbc->prepare($query);
         $result = $dbc->getRow($prep, array($this->upc));
