@@ -266,10 +266,10 @@ HTML;
         $storeP = $this->connection->prepare("SELECT description FROM Stores WHERE storeID=?");
         $storeName = $this->connection->getValue($storeP, array($storeID));
         $ret = "<h3>{$storeName}</h3>";
-        $ret .= '<a href="" onclick="di.showSourcing(); return false;">Show Sourcing</a>
+        $ret .= '<div class="hidden-print"><a href="" onclick="di.showSourcing(); return false;">Show Sourcing</a>
             |
-            <a href="" onclick="di.hideSourcing(); return false;">Hide Sourcing</a><br /><br />';
-        $ret .= '<div class="row"><div class="col-sm-4">';
+            <a href="" onclick="di.hideSourcing(); return false;">Hide Sourcing</a></div>';
+        $ret .= '<div class="row hidden-print"><div class="col-sm-4">';
         while ($catW = $this->connection->fetchRow($catR)) {
             $tag = str_replace(' ', '-', strtolower($catW['name']));
             $ret .= sprintf('<a href="#%s">%s</a><br />', $tag, $catW['name']);
@@ -295,7 +295,8 @@ HTML;
                     $catW['deliCategoryID']);
                 continue;
             }
-            $ret .= '<table class="table table-bordered table-striped small inventory-table" data-cat-id="' . $catW['deliCategoryID'] . '">';
+            $ret .= '<table class="table table-bordered table-striped small inventory-table"
+                        data-cat-id="' . $catW['deliCategoryID'] . '" style="page-break-after: always;">';
             $ret .= '<tr><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th><th>Price/Case</th>
                      <th>Total</th><th class="upc">UPC</th><th class="sku">SKU</th><th class="vendor">Source</th></tr>';
             $sum = 0;
