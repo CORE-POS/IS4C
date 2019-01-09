@@ -147,6 +147,23 @@ var di = (function ($) {
         $('td.vendor').click(function() {
             vendorSelect(this);
         });
+        $('table.inventory-table').sortable({
+            items: 'tr',
+            connectWith: 'table.inventory-table',
+            stop: function (ev, ui) {
+                var catID = $(ui.item).closest('table').attr('data-cat-id');
+                var dstr = 'catID=' + catID;
+                $(ui.item).closest('table').find('tr').each(function() {
+                    if ($(this).attr('data-item-id')) {
+                        dstr += '&seq[]=' + $(this).attr('data-item-id');
+                    }
+                });
+                $.ajax({
+                    type: 'post',
+                    data: dstr
+                });
+            }
+        });
     }
 
     mod.showSourcing = function() {

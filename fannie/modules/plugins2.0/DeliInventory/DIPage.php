@@ -10,15 +10,33 @@ if (!class_exists('FannieAPI')) {
 
 class DIPage extends FannieRESTfulPage
 {
-
     protected $header = 'Deli Inventory';
     protected $title = 'Deli Inventory';
 
     public function preprocess()
     {
-        $this->addRoute('get<catUp>', 'get<catDown>', 'post<newItem>', 'post<newCat>', 'delete<catID>', 'post<oldCat><renameCat>');
+        $this->addRoute('get<catUp>', 'get<catDown>', 'post<newItem>',
+            'post<newCat>', 'delete<catID>', 'post<oldCat><renameCat>',
+            'post<seq><catID>');
 
         return parent::preprocess();
+    }
+
+    protected function post_seq_catID_handler()
+    {
+        $catP = $this->connection->prepare("SELECT name FROM DeliCategories WHERE deliCategoryID=?");
+        $catName = $this->connection->getValue($catP, array($this->catID));
+        $upP = $this->connection->prepare("UPDATE deliInventoryCat SET seq=?, categoryID=?, category=? WHERE id=?");
+        $i = 0;
+        $this->connection->startTransaction();
+        foreach ($this->seq as $itemID) {
+            $args = array($i, $this->catID, $catName, $itemID);
+            $this->connection->execute($upP, $args);
+            $i++;
+        }
+        $this->connection->commitTransaction();
+
+        return false;
     }
 
     protected function post_oldCat_renameCat_handler()
@@ -32,6 +50,7 @@ class DIPage extends FannieRESTfulPage
     protected function post_newCat_handler()
     {
         $storeID = Store::getIdByIp();
+        $storeID=1;
         $prep = $this->connection->prepare("INSERT INTO DeliCategories (name, storeID) VALUES (?, ?)");
         $this->connection->execute($prep, array($this->newCat, $storeID));
 
@@ -57,6 +76,7 @@ class DIPage extends FannieRESTfulPage
     protected function post_newItem_handler()
     {
         $storeID = Store::getIdByIp();
+        $storeID=1;
         $catP = $this->connection->prepare("SELECT name FROM DeliCategories WHERE deliCategoryID=?");
         $catID = FormLib::get('newCatID');
         $catName = $this->connection->getValue($catP, array($catID));
@@ -236,11 +256,12 @@ HTML;
     protected function get_view()
     {
         $storeID = Store::getIdByIp();
+        $storeID=1;
         $catP = $this->connection->prepare("SELECT deliCategoryID, name FROM DeliCategories WHERE storeID=? ORDER BY seq, name");
         $itemP = $this->connection->prepare("SELECT i.*, v.vendorName
             FROM deliInventoryCat AS i
                 LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-            WHERE categoryID=? ORDER BY item");
+            WHERE categoryID=? ORDER BY seq, item");
         $catR = $this->connection->execute($catP, array($storeID));
         $storeP = $this->connection->prepare("SELECT description FROM Stores WHERE storeID=?");
         $storeName = $this->connection->getValue($storeP, array($storeID));
@@ -274,7 +295,7 @@ HTML;
                     $catW['deliCategoryID']);
                 continue;
             }
-            $ret .= '<table class="table table-bordered table-striped small">';
+            $ret .= '<table class="table table-bordered table-striped small inventory-table" data-cat-id="' . $catW['deliCategoryID'] . '">';
             $ret .= '<tr><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th><th>Price/Case</th>
                      <th>Total</th><th class="upc">UPC</th><th class="sku">SKU</th><th class="vendor">Source</th></tr>';
             $sum = 0;

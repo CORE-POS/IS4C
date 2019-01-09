@@ -45,6 +45,7 @@ class DeliInventoryCatModel extends BasicModel
     'vendorID' => array('type'=>'INT'),
     'storeID' => array('type'=>'INT'),
     'categoryID' => array('type'=>'INT'),
+    'seq' => array('type'=>'INT', 'default'=>0),
     );
 }
 
