@@ -319,7 +319,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                         System.Console.Write(buffer[i] + " ");
                     }
                     if (Choice(enc.GetString(buffer))) {
-                        WriteMessageToDevice(SimpleMessageScreen("Insert, tap, or swipe card when prompted"));
+                        WriteMessageToDevice(SimpleMessageScreen("Please Wait"));
                         this.ReadAndAck();
                         // input is done; no need to keep the read thread alive
                         // and rely on cross-thread signaling to end it later

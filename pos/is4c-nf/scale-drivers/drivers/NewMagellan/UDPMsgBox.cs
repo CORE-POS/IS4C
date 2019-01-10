@@ -55,8 +55,9 @@ public class UDPMsgBox {
             try {
                 client = new UdpClient(this.port);
                 break;
-            } catch (System.Net.Sockets.SocketException) {
-                this.port++;
+            } catch (System.Net.Sockets.SocketException ex) {
+                //this.port++;
+                throw ex;
             }
         }
         if (client != null && this.port > 9450) {

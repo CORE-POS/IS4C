@@ -143,8 +143,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 http = new TcpListener(IPAddress.Any, LISTEN_PORT);
                 http.Start();
                 break;
-            } catch (System.Net.Sockets.SocketException) {
-                this.LISTEN_PORT += 2;
+            } catch (System.Net.Sockets.SocketException ex) {
+                //this.LISTEN_PORT += 2;
+                throw ex;
             }
         }
 
@@ -512,10 +513,15 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     XmlNode return_code = doc.SelectSingleNode("RStream/CmdResponse/DSIXReturnCode");
                     XmlNode origin = doc.SelectSingleNode("RStream/CmdResponse/ResponseOrigin");
                     /**
-                      On anything that is not a local connectivity failure, exit the
-                      loop and return the result without trying any further IPs.
+                      On a client/3006 error or server/4003 error keep trying IPs.
+                      Both indicate a network connectivity error that may just be
+                      transient.
                     */
-                    if (origin.InnerXml != "Client" || return_code.InnerXml != "003006") {
+                    if (origin.InnerXml == "Client" && return_code.InnerXml == "003006") {
+                        this.LogMessage("Retry on client 3006 (epay: " + IP + ")");
+                    } else if (origin.InnerXml == "Server" && return_code.InnerXml == "004003") {
+                        this.LogMessage("Retry on server 4003 (epay: " + IP + ")");
+                    } else {
                         break;
                     }
                 } catch (Exception ex) {
@@ -613,6 +619,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         string ret = "";
         lock(emvLock) {
             if (emv_reset) {
+                Console.WriteLine("resetting");
                 ret  = PadReset();
                 emv_reset = false;
             }
