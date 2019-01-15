@@ -3,6 +3,7 @@
 class CommentNotifyTask extends FannieTask
 {
     public $name = 'Comment Tracker Notifications';
+    public $log_start_stop = false;
 
     public $description = 'Sends notifications to primary responders';
 
