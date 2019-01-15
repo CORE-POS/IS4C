@@ -130,6 +130,14 @@ if (is_array($output) && isset($output['error'])) {
     $response['result'] = $output;
 }
 if ($send_reply) {
-    echo json_encode($response);
+    $encoded = json_encode($response);
+    if ($encoded === false) {
+        unset($response['result']);
+        unset($response['error']);
+        $response['error'] = json_last_error_msg();
+        echo json_encode($response);
+    } else {
+        echo $encoded;
+    }
 }
 
