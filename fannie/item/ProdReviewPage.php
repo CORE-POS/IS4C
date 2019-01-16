@@ -503,7 +503,7 @@ HTML;
         $tableB .= '</tbody></table></div>';
 
         return <<<HTML
-<div id="ajax-processing" style=" text-align: center; position: fixed; top: 48vh; left: 40vw; background: rgba(255, 100, 100, 0.8); border: 3px solid pink; display: none;">BATCH BEING FORCED, PLEASE WAIT</div>
+<div id="ajax-processing" style="text-align: center; position: fixed; top: 48vh; left: 40vw; font-weight: bold; background: rgba(255, 100, 100, 0.8); border: 3px solid pink; display: none;">BATCH BEING FORCED, PLEASE WAIT</div>
 <div align="">
         <div class="">
             <div>{$this->backBtn()}</div>
