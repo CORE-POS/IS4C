@@ -63,9 +63,25 @@ class CustomerSalesReport extends FannieReportPage
             foreach(FormLib::get('id', array()) as $id) {
                 $ret[] = sprintf('<input type="hidden" name="id[]" value="%d" />', $id);
             }
+            $ret[] = '</form></p>';
             $this->addOnloadCommand("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});");
             $this->addOnloadCommand("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});");
-            $ret[] = '</form></p>';
+            $ids = FormLib::get('id', array());
+            $whTable = FannieDB::fqn('transactionSummary', 'plugin:WarehouseDatabase');
+            if ($this->connection->tableExists($whTable)) {
+                list($inStr, $args) = $this->connection->safeInClause($ids);
+                $args[] = date('Ymd', strtotime($date1));
+                $args[] = date('Ymd', strtotime($date2));
+                $prep = $this->connection->prepare("
+                    SELECT COUNT(*) AS visits,
+                        AVG(retailTotal) AS basket
+                    FROM {$whTable}
+                    WHERE card_no IN ({$inStr})
+                        AND date_id BETWEEN ? AND ?");
+                $info = $this->connection->getRow($prep, $args);
+                $ret[] = '<h3># of Visits: ' . $info['visits'] . '</h3>';
+                $ret[] = '<h3>Avg. Basket: $' . round($info['basket'], 2) . '</h3>';
+            }
             $ret[] = '<div class="row">
                 <div class="col-sm-5"><h3 id="hQty">Quantity Distribution</h3><canvas id="canvas1"></canvas></div>
                 <div class="col-sm-5"><h3 id="hSales">Sales Distribution</h3><canvas id="canvas2"></canvas></div>
