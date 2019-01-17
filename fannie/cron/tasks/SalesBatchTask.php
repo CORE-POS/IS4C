@@ -43,6 +43,7 @@ class SalesBatchTask extends FannieTask
     {
         $b_def = $dbc->tableDefinition('batches');
         $t_def = $dbc->tableDefinition('batchList');
+        $y_def = $dbc->tableDefinition('batchType');
 
         $query = 'SELECT l.upc, 
                     l.batchID, 
@@ -53,9 +54,11 @@ class SalesBatchTask extends FannieTask
                     b.startDate, 
                     b.endDate, 
                     b.discounttype
-                    ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . '
+                    ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . ',
+                    ' . (isset($t_def['exitInventory']) ? ',t.exitInventory' : ',0 AS exitInventory') . '
                   FROM batches AS b
                     INNER JOIN batchList AS l ON b.batchID = l.batchID
+                    LEFT JOIN batchType AS t ON b.batchType = t.batchTypeID
                   WHERE b.discounttype > 0
                     AND b.startDate <= ?
                     AND b.endDate >= ?
@@ -82,6 +85,7 @@ class SalesBatchTask extends FannieTask
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $now = date('Y-m-d 00:00:00');
         $sale_upcs = array();
+        $disco_items = array();
 
         // ensure likecode items are mixmatch-able
         $this->setLikeCodeMixMatch($dbc);
@@ -169,6 +173,12 @@ class SalesBatchTask extends FannieTask
                 }
                 // list of UPCs that should be on sale
                 $sale_upcs = $this->addSaleUPC($sale_upcs, $upc, $product->store_id());
+                if ($row['exitInventory'] && $row['storeID']) {
+                    if (!isset($disco_items[$row['storeID']])) {
+                        $disco_items[$row['storeID']] = array();
+                    }
+                    $disco_items[$row['storeID']][] = $upc;
+                }
 
                 // for qtyEnforcedGroupPM the salePrice is the whole group price
                 if ($specialpricemethod == 2 && $special_price == $specialgroupprice) {
@@ -262,6 +272,34 @@ class SalesBatchTask extends FannieTask
             if ($this->test_mode) {
                 break;
             }
+        }
+
+        $this->discoItems($dbc, $disco_items);
+    }
+
+    private function discoItems($dbc, $items)
+    {
+        foreach ($item as $storeID => $upcs) {
+            $this->cronMsg('Discoing ' . count($upcs) . ' for store #' . $storeID, FannieLogger::INFO);
+            $args = array( (1 << (20 - 1)) );
+            list($inStr, $args) = $dbc->safeInClause($upcs);
+            $args[] = $storeID;
+            $prep = $dbc->prepare("
+                UPDATE products AS p
+                SET numflag = numflag | ?
+                WHERE p.upc IN ({$inStr})
+                    AND p.storeID=?");
+            $dbc->execute($prep, $args);
+
+            list($inStr, $args) = $dbc->safeInClause($upcs);
+            $args[] = $storeID;
+            $prep = $dbc->prepare("
+                UPDATE InventoryCounts AS i
+                SET i.par=0
+                WHERE i.mostRecent=1
+                    AND i.upc IN ({$inStr})
+                    AND i.storeID=?");
+            $dbc->execute($prep, $args);
         }
     }
 
