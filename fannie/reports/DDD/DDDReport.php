@@ -159,6 +159,25 @@ class DDDReport extends FannieReportPage
         );
     }
     
+    public function calculate_footers($data)
+    {
+        $sumQty = 0.0;
+        $sumCost = 0.0;
+        $sumRetail = 0.0;
+        foreach($data as $row) {
+            $sumQty += $row[8];
+            $sumCost += $row[9];
+            $sumRetail += $row[10];
+        }
+
+        return array(_('Total'),
+            null,null,null,null,null,null,null,
+            sprintf('%s', number_format($sumQty,2)),
+            sprintf('$ %s', number_format($sumCost,2)),
+            sprintf('$ %s', number_format($sumRetail,2)),
+            '', null
+        );
+    }
     public function form_content()
     {
         return FormLib::dateAndDepartmentForm();
