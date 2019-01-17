@@ -172,8 +172,28 @@ class ShrinkTool extends FannieRESTfulPage
                 $reason->shrinkReasonID(), $reason->description());
         }
         list($choose,$loss,$contrib) = $this->getLossContribute($dbc);
+        $this->addOnloadCommand("\$(document).keyup(keyToType);");
 
         $ret = <<<HTML
+<script type="text/javascript">
+function keyToType(e) {
+    console.log(e.which);
+    if (e.which == 32) {
+        if ($('#select-type').val() == 'Loss') {
+            $('#select-type').val('Contribute');
+        } else {
+            $('#select-type').val('Loss');
+        } 
+    } else if (e.which == 17) {
+        console.log(cur);
+        console.log(next);
+        if (next.length == 0) {
+            next = $('#select-reason option:first');
+        }
+        $('#select-reason').val(next.val());
+    }
+}
+</script>
 <form method="post">
     <div class="form-group">
         <label>UPC</label> {{upc}} {{description}}
@@ -203,7 +223,7 @@ class ShrinkTool extends FannieRESTfulPage
             <div class="row form-group">
                 <label class="col-sm-3 text-right">Type</label>
                 <div class="col-sm-9">
-                    <select name="type" required class="form-control">
+                    <select name="type" required id="select-type" class="form-control">
                         <option value="" {$choose}>Select one...</option>
                         <option {$loss}>Loss</option>
                         <option {$contrib}>Contribute</option>
@@ -225,7 +245,7 @@ class ShrinkTool extends FannieRESTfulPage
             <div class="row form-group">
                 <label class="col-sm-3 text-right">Reason</label>
                 <div class="col-sm-9">
-                    <select name="reason" class="form-control">';
+                    <select name="reason" id="select-reason" class="form-control">';
                         {{shrink_opts}}
                     </select>
                 </div>
