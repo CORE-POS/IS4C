@@ -54,7 +54,7 @@ class SalesBatchTask extends FannieTask
                     b.startDate, 
                     b.endDate, 
                     b.discounttype
-                    ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . ',
+                    ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . '
                     ' . (isset($t_def['exitInventory']) ? ',t.exitInventory' : ',0 AS exitInventory') . '
                   FROM batches AS b
                     INNER JOIN batchList AS l ON b.batchID = l.batchID
@@ -279,7 +279,7 @@ class SalesBatchTask extends FannieTask
 
     private function discoItems($dbc, $items)
     {
-        foreach ($item as $storeID => $upcs) {
+        foreach ($items as $storeID => $upcs) {
             $this->cronMsg('Discoing ' . count($upcs) . ' for store #' . $storeID, FannieLogger::INFO);
             $args = array( (1 << (20 - 1)) );
             list($inStr, $args) = $dbc->safeInClause($upcs);
