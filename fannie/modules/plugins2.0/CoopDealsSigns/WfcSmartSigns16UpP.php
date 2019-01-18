@@ -25,6 +25,7 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP
         $pdf = $this->createPDF();
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $basicP = $dbc->prepare("SELECT MAX(price_rule_id) FROM products WHERE upc=?");
+        $organicLocalP = $dbc->prepare("SELECT 'true' FROM products WHERE numflag & (1<<16) != 0 AND upc = ? AND local > 0");
         $organicP = $dbc->prepare("SELECT 'true' FROM products WHERE numflag & (1<<16) != 0 AND upc = ?");
 
         $data = $this->loadItems();
@@ -62,6 +63,7 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP
             $pdf = $this->drawItem($pdf, $item, $row, $column);
 
             $item['basic'] = $dbc->getValue($basicP, $item['upc']);
+            $item['organicLocal'] = $dbc->getValue($organicLocalP, $item['upc']);
             $item['organic'] = $dbc->getValue($organicP, $item['upc']);
 
             $pdf->Image($this->getTopImage($item), ($left-2) + ($width*$column), ($top-17) + ($row*$height), $width-6);
@@ -82,6 +84,8 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP
             return __DIR__ . '/noauto/images/chaching_top_12.png';
         } elseif ($item['basic'] > 1) {
             return __DIR__ . '/noauto/images/basics_top_12.png';
+        } elseif ($item['organicLocal']) {
+            return __DIR__ . '/noauto/images/local_og_top.png';
         } elseif ($item['organic']) {
             return __DIR__ . '/noauto/images/organic_top_12.png';
         }
@@ -98,6 +102,8 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP
             return __DIR__ . '/noauto/images/chaching_bottom_12.png';
         } elseif ($item['basic'] > 1) {
             return __DIR__ . '/noauto/images/basics_bottom_12.png';
+        } elseif ($item['organicLocal']) {
+            return __DIR__ . '/noauto/images/local_og_bottom.png';
         } elseif ($item['organic']) {
             return __DIR__ . '/noauto/images/organic_bottom_12.png';
         }
