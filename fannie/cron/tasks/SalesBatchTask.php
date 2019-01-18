@@ -282,24 +282,24 @@ class SalesBatchTask extends FannieTask
         foreach ($items as $storeID => $upcs) {
             $this->cronMsg('Discoing ' . count($upcs) . ' for store #' . $storeID, FannieLogger::INFO);
             $args = array( (1 << (20 - 1)) );
-            list($inStr, $args) = $dbc->safeInClause($upcs);
+            list($inStr, $args) = $dbc->safeInClause($upcs, $args);
             $args[] = $storeID;
             $prep = $dbc->prepare("
                 UPDATE products AS p
                 SET numflag = numflag | ?
                 WHERE p.upc IN ({$inStr})
-                    AND p.storeID=?");
-            $dbc->execute($prep, $args);
+                    AND p.store_id=?");
+            $res = $dbc->execute($prep, $args);
 
-            list($inStr, $args) = $dbc->safeInClause($upcs);
-            $args[] = $storeID;
+            list($inStr2, $args2) = $dbc->safeInClause($upcs);
+            $args2[] = $storeID;
             $prep = $dbc->prepare("
                 UPDATE InventoryCounts AS i
                 SET i.par=0
                 WHERE i.mostRecent=1
-                    AND i.upc IN ({$inStr})
+                    AND i.upc IN ({$inStr2})
                     AND i.storeID=?");
-            $dbc->execute($prep, $args);
+            $res = $dbc->execute($prep, $args2);
         }
     }
 
