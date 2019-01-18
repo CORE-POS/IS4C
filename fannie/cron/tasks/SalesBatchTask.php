@@ -55,7 +55,7 @@ class SalesBatchTask extends FannieTask
                     b.endDate, 
                     b.discounttype
                     ' . (isset($b_def['transLimit']) ? ',b.transLimit' : ',0 AS transLimit') . '
-                    ' . (isset($t_def['exitInventory']) ? ',t.exitInventory' : ',0 AS exitInventory') . '
+                    ' . (isset($y_def['exitInventory']) ? ',t.exitInventory' : ',0 AS exitInventory') . '
                   FROM batches AS b
                     INNER JOIN batchList AS l ON b.batchID = l.batchID
                     LEFT JOIN batchType AS t ON b.batchType = t.batchTypeID
