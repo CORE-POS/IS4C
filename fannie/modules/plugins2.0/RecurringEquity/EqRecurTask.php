@@ -28,7 +28,6 @@ class EqRecurTask extends FannieTask
 
     public function run()
     {
-        $LOG = FannieLogger::ALERT;
         $this->CREDENTIALS = json_decode(file_get_contents(__DIR__ . '/credentials.json'), true);
         $dbc = FannieDB::get(FannieConfig::config('TRANS_DB'));
         $payments = $this->getTransactions($dbc);
@@ -44,16 +43,15 @@ class EqRecurTask extends FannieTask
             $balance = $this->getBalance($dbc, $card_no);
             if ($card_no === false) {
                 $this->cronMsg(sprintf("Cannot find memberID for PT %d,%d", $payment['paycardTransactionID'], $payment['storeRowId']),
-                    $LOG);
+                    FannieLogger::ALERT);
                 continue;
             } elseif ($balance >= 100) {
-                $this->cronMsg(sprintf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']),
-                    $LOG);
+                $this->cronMsg(sprintf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']));
                 $this->clearToken($dbc, $payment);
                 continue;
             }
             $this->cronMsg("Processing payment for {$card_no}.
-                Previous payment {$payment['dateID']} {$payment['empNo']}-{$payment['registerNo']}-{$payment['transNo']}", $LOG);
+                Previous payment {$payment['dateID']} {$payment['empNo']}-{$payment['registerNo']}-{$payment['transNo']}");
             $REGISTER_NO = $store == 1 ? 31 : 32;
             $TRANS_NO = DTrans::getTransNo($dbc, $EMP_NO, $REGISTER_NO);
             $amount = $balance > 80 ? 100 - $balance : 20;
@@ -123,7 +121,7 @@ XML;
             echo $reqXML . "\n";
 
             $curl = curl_init('http://' .   $this->CREDENTIALS['hosts'][$store][0] . ':8999');
-            $this->cronMsg("Processing via {$this->CREDENTIALS['hosts'][$store][0]}", $LOG);
+            $this->cronMsg("Processing via {$this->CREDENTIALS['hosts'][$store][0]}");
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $reqXML);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -237,10 +235,10 @@ XML;
             $dbc->execute($ptransP, $pcRow);
             $pcID = $dbc->insertID();
             if ($approvedAmount > 0) {
-                $this->cronMsg("Payment succeeded for {$card_no}", $LOG);
+                $this->cronMsg("Payment succeeded for {$card_no}");
                 $this->successTransaction($dbc, $EMP_NO, $REGISTER_NO, $TRANS_NO, $approvedAmount, $card_no, $pcID);
             } else {
-                $this->cronMsg("Payment failed for {$card_no}", $LOG);
+                $this->cronMsg("Payment failed for {$card_no}", FannieLogger::ALERT);
                 $this->failTransaction($dbc, $EMP_NO, $REGISTER_NO, $TRANS_NO, $card_no, $pcID);
             }
 
@@ -317,7 +315,6 @@ XML;
     {
         return;
         $clearP = $dbc->prepare("UPDATE " . FannieDB::fqn('PaycardTransactions', 'trans') . " SET xToken='USED' WHERE paycardTransactionID=? and storeRowId=?");
-        $this->cronMsg("Clear ptID {$row['paycardTransactionID']}, srID {$row['storeRowId']}", FannieLogger::ALERT);
         $clearR = $dbc->execute($clearP, array($row['paycardTransactionID'], $row['storeRowId']));
 
         return $clearR ? true : false;
