@@ -32,6 +32,7 @@ class LaneStatus extends FannieRESTfulPage
             } else {
                 $saveStr .= "'offline'=>{$lane['offline']}),";
             }
+            $i++;
         }
         if ($saveStr != 'array(') {
             $saveStr = substr($saveStr, 0, strlen($saveStr)-1);
@@ -61,6 +62,7 @@ class LaneStatus extends FannieRESTfulPage
                     . "'trans'=>'" . $lane['trans'] . "',";
             $isOffline = in_array($i, $offline) ? 1 : 0;
             $saveStr .= "'offline'=>{$isOffline}),";
+            $i++;
         }
         if ($saveStr != 'array(') {
             $saveStr = substr($saveStr, 0, strlen($saveStr)-1);
@@ -116,4 +118,5 @@ HTML;
 }
 
 FannieDispatch::conditionalExec();
+
 
