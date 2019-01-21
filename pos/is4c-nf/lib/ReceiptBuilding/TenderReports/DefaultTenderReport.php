@@ -63,15 +63,18 @@ static public function get($session)
     $ref = ReceiptLib::centerString(trim($session->get("CashierNo"))." ".trim($session->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
     $receipt = "";
 
-    foreach ($DESIRED_TENDERS as $tender_code => $titleStr) { 
-        $query = "SELECT datetime AS tdate,
-                    register_no,
-                    trans_no,
+/*
                     CASE
                         WHEN trans_subtype='CA' AND total >= 0 THEN total
                         WHEN trans_subtype='CA' AND total < 0 THEN 0
                         ELSE -1*total
                     END AS tender
+*/
+    foreach ($DESIRED_TENDERS as $tender_code => $titleStr) { 
+        $query = "SELECT datetime AS tdate,
+                    register_no,
+                    trans_no,
+		   -1*total AS tender
                   FROM dtransactions 
                   WHERE emp_no=".$session->get("CashierNo")."
                     AND trans_subtype = '".$tender_code."' 
