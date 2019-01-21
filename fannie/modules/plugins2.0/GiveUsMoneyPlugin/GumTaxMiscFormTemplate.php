@@ -342,8 +342,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((165.1-127), $small_height, '4. Federal income tax withheld');
         $pdf->SetXY($top_left_x + 127.0, $start_y + 19.05 + $small_height);
         $text = '$';
-        if (isset($this->fields[3])) {
-            $text .= number_format($this->fields[3], 2);
+        if (isset($this->fields[4])) {
+            $text .= number_format($this->fields[4], 2);
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $med_height, $text);
@@ -378,8 +378,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell(165.1-127, $small_height, '6. Medical and health care payments');
         $pdf->SetXY($top_left_x + 127, $start_y + 26.9875 + $small_height);
         $text = '$';
-        if (isset($this->fields[5])) {
-            $text .= number_format($this->fields[5], 2);
+        if (isset($this->fields[6])) {
+            $text .= number_format($this->fields[6], 2);
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $small_height, $text);
@@ -389,8 +389,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '7. Nonemployee compensation');
         $pdf->SetXY($top_left_x + 89, $start_y + 36.1 + $small_height);
         $text = '$';
-        if (isset($this->fields[4])) {
-            $text .= number_format($this->fields[4], 2);
+        if (isset($this->fields[7])) {
+            $text .= number_format($this->fields[7], 2);
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((127-88.9), $small_height, $text);
@@ -400,8 +400,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->MultiCell((127-88.9), $small_height, "8. Substitute payments in lieu of\ndividends or interest");
         $pdf->SetXY($top_left_x + 127, $start_y + 36.1 + $small_height + $small_height);
         $text = '$';
-        if (isset($this->fields[5])) {
-            $text .= number_format($this->fields[5], 2);
+        if (isset($this->fields[8])) {
+            $text .= number_format($this->fields[8], 2);
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $small_height, $text);
@@ -414,8 +414,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '10. Crop Insurance Proceeds');
         $pdf->SetXY($top_left_x + 127, $start_y + 48.0375 + $small_height);
         $text = '$';
-        if (isset($this->fields[7])) {
-            $text .= number_format($this->fields[7], 2);
+        if (isset($this->fields[10])) {
+            $text .= number_format($this->fields[10], 2);
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $small_height, $text);
@@ -425,8 +425,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '11');
         $pdf->SetXY($top_left_x + 89, $start_y + 59.9625 + $small_height);
         $text = '$';
-        if (isset($this->fields[8])) {
-            $text .= number_format($this->fields[8], 2);
+        if (isset($this->fields[11])) {
+            $text .= number_format($this->fields[11], 2);
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((127-88.9), $small_height, $text);
@@ -436,8 +436,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '12');
         $pdf->SetXY($top_left_x + 127, $start_y + 59.9625 + $small_height);
         $text = '$';
-        if (isset($this->fields[9])) {
-            $text .= number_format($this->fields[9], 2);
+        if (isset($this->fields[12])) {
+            $text .= number_format($this->fields[12], 2);
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $small_height, $text);
@@ -482,8 +482,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '13. Excess golden parachute payments');
         $pdf->SetXY($top_left_x + 89, $start_y + 66.9875 + $small_height);
         $text = '$';
-        if (isset($this->fields[11])) {
-            $text .= $this->fields[11];
+        if (isset($this->fields[13])) {
+            $text .= $this->fields[13];
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((127-88.9), $med_height, $text, 0, 0, 'L');
@@ -493,8 +493,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((165.1-127), $small_height, '14. Gross proceeds paid to an attorney');
         $pdf->SetXY($top_left_x + 127, $start_y + 66.9875 + $small_height);
         $text = '$';
-        if (isset($this->fields[11])) {
-            $text .= $this->fields[11];
+        if (isset($this->fields[14])) {
+            $text .= $this->fields[14];
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $med_height, $text, 0, 0, 'L');
@@ -504,8 +504,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '15a. Section 409 deferrals');
         $pdf->SetXY($top_left_x + 0, $start_y + 76.3 + $small_height);
         $text = '$';
-        if (isset($this->fields[11])) {
-            $text .= $this->fields[11];
+        if (isset($this->fields['15a'])) {
+            $text .= $this->fields['15a'];
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((127-88.9), $med_height, $text, 0, 0, 'L');
@@ -515,8 +515,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '15b. Section 409 income');
         $pdf->SetXY($top_left_x + 44, $start_y + 76.3 + $small_height);
         $text = '$';
-        if (isset($this->fields[11])) {
-            $text .= $this->fields[11];
+        if (isset($this->fields['15b'])) {
+            $text .= $this->fields['15b'];
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((127-88.9), $med_height, $text, 0, 0, 'L');
@@ -526,8 +526,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '16. State tax withheld');
         $pdf->SetXY($top_left_x + 89, $start_y + 76.3 + $small_height);
         $text = '$';
-        if (isset($this->fields[11])) {
-            $text .= $this->fields[11];
+        if (isset($this->fields[16])) {
+            $text .= $this->fields[16];
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((127-88.9), $med_height, $text, 0, 0, 'L');
@@ -542,8 +542,8 @@ class GumTaxMiscFormTemplate extends GumTaxFormTemplate
         $pdf->Cell((127-88.9), $small_height, '18. State income');
         $pdf->SetXY($top_left_x + 165, $start_y + 76.3 + $small_height);
         $text = '$';
-        if (isset($this->fields[11])) {
-            $text .= $this->fields[11];
+        if (isset($this->fields[18])) {
+            $text .= $this->fields[18];
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((127-88.9), $med_height, $text, 0, 0, 'L');

@@ -29,15 +29,23 @@ class Gum1099 extends FannieRESTfulPage
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->AddPage();
         $class = 'GumTaxMiscFormTemplate';
+        $fields = array();
+        $amount = FormLib::get('amount');
         switch (FormLib::get('type')) {
             case 'DIV':
                 $class = 'GumTaxDividendFormTemplate';
+                $fields[1] = $amount;
                 break;
             case 'INT':
                 $class = 'GumTaxFormTemplate';
+                $fields[1] = $amount;
+                break;
+            default:
+                $fields[3] = $amount;
+                $fields[18] = $amount;
                 break;
         }
-        $form = new $class($custdata, $meminfo, '', FormLib::get('year'), array());
+        $form = new $class($custdata, $meminfo, FormLib::get('tid'), FormLib::get('year'), $fields);
         $form->renderAsPDF($pdf, 5);
         $form->renderAsPDF($pdf, 90);
         $form->renderAsPDF($pdf, 175);
@@ -82,6 +90,14 @@ class Gum1099 extends FannieRESTfulPage
             <option>DIV</option>
             <option>INT</option>
         </select>
+    </div>
+    <div class="form-group">
+        <label>Amount</label>
+        <input type="text" class="form-control" name="amount"  />
+    </div>
+    <div class="form-group">
+        <label>Tax ID</label>
+        <input type="text" class="form-control" name="tid"  />
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-default">Generate Form</button>
