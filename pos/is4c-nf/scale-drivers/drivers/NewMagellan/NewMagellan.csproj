@@ -46,7 +46,7 @@
     <MagellanTarget Include="SPHLibrary" />
     <MagellanTarget Include="JsonLibrary" />
     <MagellanTarget Include="Discover" />
-    <MagellanTarget Include="ComPortLibrary" />
+    <MagellanTarget Include="ComPortLibrary" Condition=" '$(OS)' != 'Unix' " />
     <MagellanTarget Include="RabbitMqLibrary"
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
     <MagellanTarget Include="MySqlPipe"
@@ -168,6 +168,7 @@
     <SPH Include="SPH_IngenicoRBA_USB.cs" />
     <SPH Include="RBA_Stub.cs" />
     <SPH Include="SPH_Parallel_Writer.cs" />
+    <SPH Include="SPH_SMA_Scale.cs" />
     <SPH Include="SPH_Datacap_IPTran.cs" />
     <SPH Include="SPH_Datacap_PDCX.cs" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
     <SPH Include="SPH_Datacap_EMVX.cs" 
