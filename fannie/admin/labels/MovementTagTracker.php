@@ -38,17 +38,57 @@ class MovementTagTracker extends FannieRESTfulPage
     {
         $this->__routes[] = "get<addRange>";
         $this->__routes[] = "get<delete>";
+        $this->__routes[] = "get<exclusionName>";
 
         return parent::preprocess();
+    }
+
+    public function get_exclusionName_handler()
+    {
+        $dbc = fanniedb::get($this->config->get('op_db'));
+        $name = FormLib::get('exclusionName');
+        $dept = FormLib::get('addDepartment');
+        $brand = FormLib::get('addBrand');
+        $upc = FormLib::get('addProduct');
+        $upc = BarcodeLib::padUPC($upc);
+        $args = array();
+        switch ($name) {
+            case 'Product':
+                $args[] = $name;
+                $args[] = $upc;
+                break;
+            case 'Dept':
+                $args[] = $name;
+                $args[] = $dept;
+                break;
+            case 'Brand':
+                $args[] = $name;
+                $args[] = $brand;
+                break;
+        }
+        $prep = $dbc->prepare("
+            INSERT INTO MovementTrackerParams (parameter, value) VALUES (?, ?)");
+        $res = $dbc->execute($prep, $args);
+        
+        $alerts = "";
+        if ($er = $dbc->error()) {
+            $alerts .= "<div class='alert alert-danger'>$er</div>";
+            return header('location: ?id=config&save=danger');
+        } else {
+            return header('location: ?id=config&save=success');
+
+        }
     }
 
     public function get_delete_handler()
     {
         $id = FormLib::get('delete');
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $uid = FormLib::get('uid');
+        $dbc = fanniedb::get($this->config->get('op_db'));
 
         $args = array($id);
-        $query = "DELETE FROM MovementTrackerParams WHERE parID = ?";
+        $idType = ($uid > 0) ? 'id' : 'parID';
+        $query = "DELETE FROM MovementTrackerParams WHERE $idType = ?";
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         $alerts = "";
@@ -63,7 +103,6 @@ class MovementTagTracker extends FannieRESTfulPage
 
     public function get_addRange_handler()
     {
-        // change to handler, send back to get_id_view()
         $start = FormLib::get('start');
         $end = FormLib::get('end');
         $change = FormLib::get('change');
@@ -147,7 +186,8 @@ class MovementTagTracker extends FannieRESTfulPage
             ";
         $table = "<h4>List of Active Ranges</h4>
             <table class='table table-condensed table-bordered'>
-            <thead><th>Store</th><th>Start</th><th>End</th><th>Change At</th><tbody>";
+            <thead><th>Store</th><th>Start</th><th>End</th><th>Change At</th>
+            <th><span class='glyphicon glyphicon-trash'></span></th><tbody>";
         foreach ($params as $id => $row) {
             $table .= "<tr>";
             if ($params[$id]['type'] == 'range') {
@@ -166,24 +206,130 @@ class MovementTagTracker extends FannieRESTfulPage
 
         $alert = "";
         if ($save == "success") {
-            $alert = "<div class='alert alert-success'>Saved</div>";
+            $alert = "<div class='alert alert-success'>Saved!</div>";
         } elseif ($alert == "danger") {
             $alert = "<div class='alert alert-danger'>Changes could not be saved</div>";
         }
 
+        $deptP = $dbc->prepare("SELECT dept_no, dept_name FROM departments ORDER BY dept_no");
+        $deptR = $dbc->execute($deptP);
+        $depts = "";
+        $departments = array();
+        while ($row = $dbc->fetchRow($deptR)) {
+            $no = $row['dept_no'];
+            $name = $row['dept_name'];
+            $depts .= "<option value=$no>$name [$no]</option>";
+            $departments[$no] = $name;
+        }
+
+        $brandP = $dbc->prepare("SELECT brand FROM products GROUP BY brand");
+        $brandR = $dbc->execute($brandP);
+        $brands = "";
+        while ($row = $dbc->fetchRow($brandR)) {
+            $brand = $row['brand'];
+            $brands .= "<option val='$brand'>$brand</option>";
+        }
+
+        $tableB = "<h4>Products, Brands & Departments<br/> to Exclude</h4>";
+        $tableB .= "
+                <form name='addProductForm'>
+                <input type='hidden' name='exclusionName' value='Product'/>
+                <ul class='list-group'>
+                    <li  class='list-group-item' >Exclude <strong>Product</strong></li>
+                    <ul class='list-group'>
+                        <li  class='list-group-item' class='collapse' id='addProductForm'>
+                            <div class='form-group'>
+                                <input type='text' class='form-control' name='addProduct' placeholder='Enter UPC'/>
+                            </div>
+                            <div class='form-group'>
+                                <button type='submit' class='form-control btn btn-default'>Submit Product</button>
+                            </div>
+                        </li>
+                    </ul>
+                </ul>
+                </form>
+                <form name='addBrandForm'>
+                <input type='hidden' name='exclusionName' value='Brand'/>
+                <ul class='list-group'>
+                    <li  class='list-group-item' >Exclude <strong>Brand</strong></li>
+                    <ul class='list-group'>
+                        <li  class='list-group-item' class='collapse' id='addBrandForm'>
+                            <div class='form-group'>
+                                <select class='form-control' name='addBrand'>
+                                    <option value='null'> </option>
+                                    $brands
+                                </select>
+                            </div>
+                            <div class='form-group'>
+                                <button type='submit' class='form-control btn btn-default'>Submit Brand</button>
+                            </div>
+                        </li>
+                    </ul>
+                </ul>
+                </form>
+                <ul class='list-group'>
+                <form name='addDeptForm'>
+                    <input type='hidden' name='exclusionName' value='Dept'/>
+                    <li  class='list-group-item' >Exclude <strong>Department</strong></li>
+                    <ul class='list-group'>
+                        <li  class='list-group-item' class='collapse' id='addDepartmentForm'>
+                            <div class='form-group'>
+                                <select class='form-control' name='addDepartment'>
+                                    <option value='null'> </option>
+                                    $depts
+                                </select>
+                            </div>
+                            <div class='form-group'>
+                                <button type='submit' class='form-control btn btn-default'>Submit Dept.</button>
+                            </div>
+                        </li>
+                    </ul>
+                </ul>
+                </form>
+        ";
+
+        $tableC = "
+            <div align='center'>
+                <ul class='list-group'>
+                    <li class='list-group-item'>Back to <a href='ShelfTagIndex.php'>Shelftags Index</a></li>
+                    <li class='list-group-item'>Back to <a href='?page=main' >Tracker</a></li>
+                </ul>
+            </div>
+            <h4>List of Excluded items</h4>
+            <div>
+            <table class='table table-small table-bordered'>
+            <thead><th>Exclusion Type</th><th>Value</th><th>
+            <span class='glyphicon glyphicon-trash'></span></th></thead><tbody>";
+        $exclP = $dbc->prepare("SELECT * FROM MovementTrackerParams 
+            WHERE parameter IN ('Product', 'Brand', 'Dept') ORDER BY parameter, value;");
+        $exclR = $dbc->execute($exclP);
+        while ($row = $dbc->fetchRow($exclR)) {
+            $v = $row['value'];
+            $p = $row['parameter'];
+            $id = $row['id'];
+            if ($p == 'Dept') {
+                $v = $v .  " - " . $departments[$v];
+            }
+            $tableC .= "<tr><td>$p</td><td>{$v}</td>
+                <td><a href='?delete=$id&uid=$id' class='btn btn-danger btn-sm glyphicon glyphicon-trash'></a>
+                </td></tr>";
+        }
+        $tableC .= "</tbody></table></div>";
 
         return <<<HTML
 <div class="row">
-    <div class="col-md-6">
-        $alert
+    <div class="col-md-12">$alert</div>
+    <div class="col-md-5">
+        $tableC
+    </div>
+    <div class="col-md-2 middle-col">
+        $tableB
+    </div>
+    <div class="col-md-5">
+        <ul class='list-group'>
+            <li class='list-group-item'><a href='#' data-target='#rangeForm' data-toggle='collapse'>Add New Range</a></li>
+        </ul>
         <form>
-            <div class="form-group">
-                <ul>
-                    <li><a href='ShelfTagIndex.php'>Back to Shelftags Index</a></li>
-                    <li><a href="?page=main" >Back to Tracker</a></li>
-                    <li><a href="#" data-target="#rangeForm" data-toggle="collapse">Add New Range</a></li>
-                </ul>
-            </div>
             <div id="rangeForm" class="collapse">
                 <table class="table table-condensed table-bordered"><thead>
                     <th>Store</th><th>Start</th><th>End</th><th>Change At</th></thead><tbody>
@@ -198,9 +344,6 @@ class MovementTagTracker extends FannieRESTfulPage
         </form>
         $keyTable
         $table
-    </div>
-    <div class="col-md-6">
-        <!-- future idea: add utility to exclude brands, individual items, etc -->
     </div>
 </div>
 HTML;
@@ -242,6 +385,9 @@ HTML;
             AND p.numflag & (1 << 19) = 0
             AND not numflag & (1 << 1)
             AND p.created < ?
+            AND p.upc NOT IN (SELECT value FROM MovementTrackerParams WHERE parameter = 'Product')
+            AND p.department NOT IN (SELECT value FROM MovementTrackerParams WHERE parameter = 'Dept')
+            AND p.brand NOT IN (SELECT value FROM MovementTrackerParams WHERE parameter = 'Brand')
         ;");
         $res = $dbc->execute($prep, $args);
         if ($er = $dbc->error())
@@ -303,6 +449,32 @@ HTML;
             unset($this->item);
             return "<h2>$storeName</h2><div class='well'>No shelf-tags to print at this time.</div>";
         }
+    }
+
+    public function css_content()
+    {
+        return <<<HTML
+.middle-col {
+    background: #fafafa;
+    background: linear-gradient(#F2F2F2, #FAFAFA);
+    border-radius: 5px;
+}
+HTML;
+    }
+
+    public function javascript_content()
+    {
+        return <<<JAVASCRIPT
+$('.glyphicon').click(function()
+{
+    var c = confirm("Delete row?");
+    if (c == true) {
+        return true;
+    } else {
+        return false;
+    }
+});
+JAVASCRIPT;
     }
 
     public function helpContent()
