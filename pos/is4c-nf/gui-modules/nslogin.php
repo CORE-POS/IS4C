@@ -57,6 +57,10 @@ class nslogin extends NoInputCorePage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif (Authenticate::checkPassword($passwd)) {
+                TransRecord::addLogRecord(array(
+                    'upc' => 'NOSALE',
+                    'description' => 'No Sale Emp#' . $this->session->get('CashierNo'),
+                ));
                 $drawers = new Drawers($this->session, null);
                 $drawers->kick();
                 if ($this->session->get('LoudLogins') == 1) {
