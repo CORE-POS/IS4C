@@ -49,7 +49,7 @@ class Gum1099 extends FannieRESTfulPage
         $form->renderAsPDF($pdf, 5);
         $form->renderAsPDF($pdf, 90);
         $form->renderAsPDF($pdf, 175);
-        $pdf->Output('doc.pdf', 'I');
+        $pdf->Output('1099.pdf', 'I');
 
         return false;
     }
