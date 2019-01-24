@@ -37,6 +37,14 @@ class ShelfTagIndex extends FanniePage {
     private $layouts = array();
 
     function preprocess(){
+        if (php_sapi_name() !== 'cli') {
+            /* this page requires a session to pass some extra
+               state information through multiple requests */
+            if (session_id() == '') {
+                session_start();
+            }
+        }
+
         $sel = FormLib::get('layout');
         $queue = FormLib::get('queue');
         if (is_numeric($queue)) {
@@ -205,6 +213,11 @@ function printMany(){
     private function printRow($row)
     {
         $layoutselected = FormLib::get('layout');
+        $lastTagQueue = false;
+        if (isset($this->session->LastTagQueue) && is_numeric($this->session->LastTagQueue)) {
+            $lastTagQueue = $this->session->LastTagQueue;
+        }
+        $trc = ($lastTagQueue == $row[0]) ? "alert-warning" : "";
         if ($layoutselected == "MovementTags") {
             /* 
                 what needs to happen
@@ -219,7 +232,7 @@ function printMany(){
             }
             $sfs = new SignFromSearch();
 
-            printf("<tr>
+            printf("<tr class=\"%s\">
             <td>%s barcodes/shelftags</td>
             <td style='text-align:right;'>%d</td>
             <td><a href=\"\" onclick=\"getMovement('%d'); return false;\">Print</a></td>
@@ -228,9 +241,9 @@ function printMany(){
             <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
             <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
             </tr>",
-            $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
+            $trc,$row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
         } else {
-            printf("<tr>
+            printf("<tr class=\"%s\">
             <td>%s barcodes/shelftags</td>
             <td style='text-align:right;'>%d</td>
             <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
@@ -239,7 +252,7 @@ function printMany(){
             <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
             <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
             </tr>",
-            $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
+            $trc, $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
         }
     }
 

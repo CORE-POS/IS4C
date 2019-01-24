@@ -69,6 +69,7 @@ class QueueTagsByList extends FannieRESTfulPage
             $tag = new ShelftagsModel($dbc);
             $tag->upc($upc);
             $tag->id($tagID);
+            $this->session->LastTagQueue = $tagID;
             $tag->description($info['description']);
             $tag->brand($info['brand']);
             $tag->normal_price($info['normal_price']);
@@ -107,7 +108,11 @@ HTML;
 
         $queues = new ShelfTagQueuesModel($dbc); 
         $queues->load();
-        $options = $queues->toOptions();
+        $master = false;
+        if (isset($this->session->LastTagQueue) && is_numeric($this->session->LastTagQueue)) {
+            $master = $this->session->LastTagQueue;
+        }
+        $options = $queues->toOptions($master);
         
         return <<<HTML
 <p><button class="glyphicon glyphicon-chevron-left btn btn-default" id="back"></button></p>
