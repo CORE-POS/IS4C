@@ -72,8 +72,8 @@ class BadScanTool extends FannieRESTfulPage
         */
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $query = "SELECT t.upc, COUNT(t.upc) AS instances,
-                MIN(datetime) as oldest,
-                MAX(datetime) as newest,
+                DATE(MIN(datetime)) as oldest,
+                DATE(MAX(datetime)) as newest,
                 p.description as prod,
                 MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(v.srp) as srp,
                 i.upc AS iupc
