@@ -214,8 +214,10 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 SELECT cardno
                 FROM memberNotes AS n
                     LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
+                    LEFT JOIN memDates AS d ON n.cardno=d.card_no
                 WHERE note LIKE \'%FUNDS REQ%\'
-                    AND stamp >= ?
+                    AND n.stamp >= ?
+                    AND d.start_date < ?
                     AND e.payments <= 100
                 GROUP BY cardno
                 ORDER BY cardno');
@@ -232,7 +234,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 WHERE c.CardNo=?
                     AND c.personNum=1
                 ORDER BY n.stamp DESC');
-            $franR = $dbc->execute($franP, $args[0]);
+            $franR = $dbc->execute($franP, $args);
             $franCount = 0;
             while ($w = $dbc->fetchRow($franR)) {
                 $detailR = $dbc->execute($detailP, array($w['cardno']));
