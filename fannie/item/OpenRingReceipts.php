@@ -83,7 +83,8 @@ class OpenRingReceipts extends FannieRESTfulPage
                 AND emp_no=?
                 AND register_no=?
                 AND trans_no=?
-                AND trans_type = 'D'
+                AND (trans_type = 'D' OR trans_type='C')
+                AND description != 'DONATIONS'
             GROUP BY d.upc,
                 d.description,
                 d.department,
