@@ -27,7 +27,7 @@
 */
 class OnlineGiftcardModel extends BasicModel
 {
-    protected $name = "onlineGifcard";
+    protected $name = "onlineGiftcard";
     protected $preferred_db = 'op';
 
     protected $columns = array(
