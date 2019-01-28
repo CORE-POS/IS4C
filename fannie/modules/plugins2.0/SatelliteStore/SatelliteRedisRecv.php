@@ -39,20 +39,31 @@ class SatelliteRedisRecv extends FannieTask
     
     public function run()
     {
+        if ($this->isLocked()) {
+            return false;
+        }
+        $this->lock();
+
         $conf = $this->config->get('PLUGIN_SETTINGS');
         $redis_host = $conf['SatelliteRedis'];
 
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
         if (!$dbc->isConnected()) {
             echo "No connection";
+            $this->unlock();
             return false;
         }
 
-        $redis = new Predis\Client($redis_host);
+        try {
+            $redis = new Predis\Client($redis_host);
 
-        $this->getTrans($dbc, $redis, new DTransactionsModel(null));
-        $this->getTrans($dbc, $redis, new PaycardTransactionsModel(null));
-        $this->getTrans($dbc, $redis, new CapturedSignatureModel(null), array('capturedSignatureID'));
+            $this->getTrans($dbc, $redis, new DTransactionsModel(null));
+            $this->getTrans($dbc, $redis, new PaycardTransactionsModel(null));
+            $this->getTrans($dbc, $redis, new CapturedSignatureModel(null), array('capturedSignatureID'));
+        } catch (Exception $ex) {
+        }
+
+        $this->unlock();
     }
 
     private function getTrans($dbc, $redis, $model, $skip_columns=array())
@@ -77,6 +88,12 @@ class SatelliteRedisRecv extends FannieTask
                 $row = json_decode($json, true);
                 $args = array();
                 foreach ($cols as $col) {
+                    if (substr($row[$col], 0, 7) == 'base64:') {
+                        $decoded = base64_decode(substr($row[$col], 7));
+                        if ($decoded) {
+                            $row[$col] = $decoded;
+                        }
+                    }
                     $args[] = $row[$col];
                 }
                 $dbc->execute($insP, $args);

@@ -38,5 +38,14 @@ class VendorLikeCodeMapModel extends BasicModel
     'sku' => array('type'=>'VARCHAR(13)'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Maintain mapping between likecodes and vendor SKUs instead of UPC items and
+vendor SKUs.
+            ';
+    }
+
 }
 

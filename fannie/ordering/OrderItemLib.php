@@ -424,6 +424,9 @@ class OrderItemLib
     */
     public static function manualQuantityRequired($item)
     {
+        if (isset($item['stocked']) && isset($item['caseSize'])) {
+            return $item['stocked'] && $item['caseSize'] == 1;
+        }
         $dbc = self::dbc(); 
         $table = FannieConfig::config('TRANS_DB') . $dbc->sep() . 'SpecialOrderDeptMap';
         $superP = $dbc->prepare("

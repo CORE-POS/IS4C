@@ -199,42 +199,34 @@ class WfcVcTask extends FannieTask
         $res = $dbc->query('SELECT DISTINCT c.CardNo FROM custdata AS c WHERE Type=\'PC\' AND c.CardNo NOT IN (
             SELECT cardNo FROM CustomerNotifications WHERE source=\'WFC.OAM\'
         )');
+        $dbc->startTransaction();
         $insP = $dbc->prepare('INSERT INTO CustomerNotifications (cardNo, source, type, message) VALUES (?, \'WFC.OAM\', \'blueline\', \'\')');
         while ($row = $dbc->fetchRow($res)) {
             $dbc->execute($insP, array($row['CardNo']));
         }
+        $dbc->commitTransaction();
 
-        $coupons = array(
-            '0049999900142' => array('2017-10-01', '2017-10-15'),
-            '0049999900143' => array('2017-10-16', '2017-10-31'),
-            '0049999900144' => array('2017-11-01', '2017-11-15'),
-            '0049999900145' => array('2017-11-16', '2017-11-30'),
-            '0049999900146' => array('2017-12-01', '2017-12-15'),
-            '0049999900147' => array('2017-12-16', '2017-12-31'),
-        );
-        $today = new DateTime(date('Y-m-d'));
-        $currentUPC = false;
-        foreach ($coupons as $upc => $dates) {
-            $start = new DateTime($dates[0]);
-            $end = new DateTime($dates[1]);
-            if ($today >= $start && $today <= $end) {
-                $currentUPC = $upc;
-                break;
-            }
-        }
+        $curP = $dbc->prepare('SELECT * FROM WfcOamSchedule WHERE ? BETWEEN startDate AND endDate');
+        $curRow = $dbc->getRow($curP, array(date('Y-m-d')));
 
-        if ($currentUPC) {
-            $dbc->query("UPDATE CustomerNotifications SET message='OAM' WHERE source='WFC.OAM'");
+        if ($curRow) {
+            $setP = $dbc->prepare("UPDATE CustomerNotifications SET message=? WHERE source='WFC.OAM'");
+            $dbc->execute($setP, array($curRow['msg']));
             // lookup OAM usage in the last month
             $usageP = $dbc->prepare("SELECT card_no 
-                                    FROM is4c_trans.houseCouponThisMonth
+                                    FROM trans_archive.dlogBig
                                     WHERE upc = ?
-                                        AND quantity <> 0");
-            $usageR = $dbc->execute($usageP, array($currentUPC));
+                                        AND tdate BETWEEN ? AND ?
+                                    GROUP BY card_no, upc
+                                    HAVING SUM(quantity) <> 0");
+            $usageArgs = array($curRow['upc'], $curRow['startDate'], str_replace('00:00:00', '23:59:59', $curRow['endDate']));
+            $usageR = $dbc->execute($usageP, $usageArgs);
+            $dbc->startTransaction();
             $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
             while ($row = $dbc->fetchRow($usageR)) {
                 $dbc->execute($upP, array($row['card_no']));
             }
+            $dbc->commitTransaction();
 
             // remove coupon from non-owner accounts
             $dbc->query("UPDATE CustomerNotifications AS n
@@ -242,6 +234,8 @@ class WfcVcTask extends FannieTask
                 SET n.message=''
                 WHERE n.source='WFC.OAM'
                     AND c.Type <> 'PC'");
+        } else {
+            $dbc->query("UPDATE CustomerNotifications SET message='' WHERE source='WFC.OAM'");
         }
 
         /** friend coupon

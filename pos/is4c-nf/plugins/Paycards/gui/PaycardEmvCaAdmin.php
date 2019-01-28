@@ -158,7 +158,7 @@ function emvSubmit() {
         <div class="centeredDisplay colored rounded">
         <span class="larger">process admin transaction</span>
         <form name="selectform" method="post" id="selectform"
-            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            action="<?php echo AutoLoader::ownURL(); ?>">
         <?php if ($this->conf->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">

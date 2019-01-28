@@ -71,6 +71,7 @@ class PaycardVoidRequest extends PaycardRequest
                     xAcquirerRef AS acqRefData,
                     xApprovalNumber,
                     transType AS mode,
+                    manual,
                     cardType
                 FROM PaycardTransactions
                 WHERE dateID=' . $this->today . '
@@ -84,6 +85,20 @@ class PaycardVoidRequest extends PaycardRequest
         }
 
         return $this->dbTrans->fetchRow($res);
+    }
+
+    /**
+      On an unsuccessful void attempt zero out the transID field
+
+      Normally the PaycardTransactions record for the original transaction and the
+      reversal have the same transID. This prevents "re-voiding" a transaction (the
+      processor should, too, but better safe than sorry). If the void attempt fails
+      zeroing this record out allows for another attempt
+    */
+    public function dropTransID()
+    {
+        $prep = $this->dbTrans->prepare('UPDATE PaycardTransactions SET transID=0 WHERE paycardTransactionID=?');
+        $this->dbTrans->execute($prep, array($this->last_paycard_transaction_id));
     }
 }
 

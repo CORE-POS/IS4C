@@ -26,7 +26,6 @@
 */
 class UserPrivsModel extends BasicModel
 {
-
     protected $name = "userPrivs";
     protected $preferred_db = 'op';
 
@@ -36,5 +35,14 @@ class UserPrivsModel extends BasicModel
     'sub_start' => array('type'=>'VARCHAR(50)'),
     'sub_end' => array('type'=>'VARCHAR(50)'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Authentication system. Stores authorizations associated with
+a specific user.
+            ';
+    }
 }
 

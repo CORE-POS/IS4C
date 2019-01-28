@@ -23,7 +23,7 @@ class MySQLSync extends SyncSpecial
         exec($cmd, $output, $exitCode);
         
         if ($exitCode > 0) {
-            $ret['details'] = 'mysqldump failed';
+            $ret['details'] = 'mysqldump failed. Ran as ' . $cmd;
             if (file_exists($tempfile . '.err')) {
                 $ret['details'] .= ': ' . file_get_contents($tempfile . '.err');
                 unlink($tempfile . '.err');
@@ -32,8 +32,14 @@ class MySQLSync extends SyncSpecial
             return $ret;
         }
 
-        $laneNumber = 1;
         $ret['success'] = true;
+
+        return $this->sendDumpToLanes($ret, $dbName, $tempfile, $includeOffline);
+    }
+
+    protected function sendDumpToLanes($ret, $dbName, $tempfile, $includeOffline)
+    {
+        $laneNumber = 1;
         foreach ($this->config->get('LANES') as $lane) {
             if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
                 continue;
@@ -81,7 +87,7 @@ class MySQLSync extends SyncSpecial
         }
         $laneCmd = 'mysql --connect-timeout 15 '
             . ' -u ' . escapeshellarg($lane['user'])
-            . ' -p' . escapeshellarg($lane['pw'])
+            . (empty($lane['pw']) ? '' : ' -p' . escapeshellarg($lane['pw']))
             . ' -h ' . escapeshellarg($lane_host)
             . ' -P ' . escapeshellarg($lane_port)
             . ' ' . escapeshellarg($lane['op'])

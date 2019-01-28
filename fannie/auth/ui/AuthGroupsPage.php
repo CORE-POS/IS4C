@@ -119,7 +119,7 @@ class AuthGroupsPage extends FannieRESTfulPage
         $self = filter_input(INPUT_SERVER, 'PHP_SELF');
 
         $userTable = '';
-        $delUsers = count($group['users'] > 1) ? true : false;
+        $delUsers = (count($group['users']) > 1) ? true : false;
         foreach ($group['users'] as $user) {
             $link = sprintf('<a href="?_method=delete&id=%s&name=%s">%s</a>',
                 $group['name'], $user,
@@ -150,7 +150,7 @@ class AuthGroupsPage extends FannieRESTfulPage
     {$userTable}
 </table>
 <hr />
-<strong>Users</strong>
+<strong>Authorizations</strong>
 <table class="table table-bordered">
     <tr>
         <th>Authorization</th>

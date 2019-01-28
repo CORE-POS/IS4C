@@ -113,7 +113,7 @@ class HouseCouponEditor extends FanniePage
                 $hci->upc($upc);
                 $hci->save();
             }
-            $this->connection->finishTransaction();
+            $this->connection->commitTransaction();
             header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?edit_id=' . $hci->coupID());
             return false;
         } elseif (FormLib::get_form_value('edit_id','') !== '') {
@@ -220,8 +220,8 @@ class HouseCouponEditor extends FanniePage
     {
         $FANNIE_URL = $this->config->get('URL');
 
-        $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
-        $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
+        $this->addScript($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->addCssFile($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $ret = '<form action="HouseCouponEditor.php" method="get">';
@@ -231,12 +231,12 @@ class HouseCouponEditor extends FanniePage
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="button" class="fancybox-btn btn btn-default"
             href="explainify.html">Explanation of Settings</button>';
-        $this->add_onload_command('$(\'.fancybox-btn\').fancybox();');
+        $this->addOnloadCommand('$(\'.fancybox-btn\').fancybox();');
         $ret .= '</p>';
         $ret .= '</form>';
-        $ret .= '<table class="table">';
-        $ret .= '<tr><th>ID</th><th>Name</th><th>Value</th>';
-        $ret .= '<th>Begins</th><th>Expires</th></tr>';
+        $ret .= '<table class="table tablesorter">';
+        $ret .= '<thead><tr><th>ID</th><th>Name</th><th>Value</th>';
+        $ret .= '<th>Begins</th><th>Expires</th><th>&nbsp;</th></tr></thead><tbody>';
         $model = new HouseCouponsModel($dbc);
         foreach($model->find('coupID', true) as $obj) {
             if (strstr($obj->startDate(), ' ')) {
@@ -290,7 +290,10 @@ class HouseCouponEditor extends FanniePage
                     (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoreWarehouse') ? '' : 'collapse')
                 );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
+        
+        $this->addScript($FANNIE_URL . 'src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
         
         $dbc->close();
 
@@ -432,6 +435,8 @@ class HouseCouponEditor extends FanniePage
             'PS'=>'Per-Set Discount',
             'BG'=>'BOGO (Buy one get one)',
             'BQ'=>'BOGO (Qty limited)',
+            'BH'=>'BOHO (Buy one get one 1/2 off)',
+            'BM'=>'BOHO (Buy one get one 1/2 off, mixed items)',
             '%'=>'Percent Discount (End of transaction)',
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
             '%I'=>'Percent Discount (Specific Items)',
@@ -572,13 +577,14 @@ class HouseCouponEditor extends FanniePage
         $result = $dbc->execute($prep, array($id));
         $ret = '';
         while ($w = $dbc->fetch_row($result)) {
+            $link = strlen($w['upc']) == 13 ? "<a href=\"../../../item/ItemEditorPage.php?searchupc={$w['upc']}\">{$w['upc']}</a>" : $w['upc'];
             $ret .= sprintf('<tr>
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
                 <td><input type="checkbox" name="del[]" value="%s" /></td>
                 </tr>',
-                $w['upc'],
+                $link,
                 $w['description'],
                 $w['type'],
                 $w['upc']);

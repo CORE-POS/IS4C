@@ -21,12 +21,15 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__).'/../../../config.php');
+include(__DIR__.'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('wfcuRegistryModel')) {
+    include(__DIR__ . '/wfcuRegistryModel.php');
+}
 
-class WfcClassRegistryPage extends FanniePage 
+class WfcClassRegistryPage extends FanniePage
 {
     public $description = "[Module] for managing WFC-U Class Sign-In";
     public $themed = true;
@@ -42,12 +45,20 @@ class WfcClassRegistryPage extends FanniePage
 
     public function preprocess()
     {
+        $this->addScript('WfcClassRegistry.js?date=20180302');
         if (FormLib::get('process', false) !== false) {
             $this->credits_save_handler();
+        } elseif (FormLib::get('notify', false) !== false) {
+            $this->notify_handler();
+        } elseif (FormLib::get('sellOut', false) !== false) {
+            $this->sellOut_handler();
+        } elseif (FormLib::get('newDate', false) !== false) {
+            $this->newDate_handler();
         }
-        
+
+
         $this->display_function = 'listClasses';
-        
+
         if (FormLib::get('cancel', false) !== false) {
             $this->display_function = 'cancel_vew';
         } elseif (FormLib::get('sign_pay', false) !== false) {
@@ -55,17 +66,106 @@ class WfcClassRegistryPage extends FanniePage
         } elseif (FormLib::get('credits', false) !== false) {
             $this->display_function = 'credits_view';
         }
-        
+
         return true;
     }
-    
+
+    public function newDate_handler()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $localDB = $dbc;
+        include(__DIR__.'/../../../src/Credentials/OutsideDB.tunneled.php');
+        $remoteDB = $dbc;
+        $upc = FormLib::get('upc');
+        $newDate = FormLib::get('newDate');
+
+        $args = array($newDate,$upc);
+        $prep = $dbc->prepare("UPDATE productExpires SET expires = ? WHERE upc = ?");
+        $localDB->execute($prep,$args);
+        $remoteDB->execute($prep,$args);
+
+        return true;
+    }
+
+    public function notify_handler()
+    {
+        $upc = FormLib::get('upc');
+        $class = FormLib::get('className');
+
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $args = array($upc);
+        $prep = $dbc->prepare("UPDATE productExpires SET notified = 1 WHERE upc = ?");
+        $dbc->execute($prep,$args);
+
+        $to = array();
+        $to[] = 'brand@wholefoods.coop';
+        $msg = "This class is almost full - ";
+        $this->send($msg,$to);
+
+        return true;
+    }
+
+    private function sellOut_handler()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $localDB = $dbc;
+        include(__DIR__.'/../../../src/Credentials/OutsideDB.tunneled.php');
+        $remoteDB = $dbc;
+        $upc = FormLib::get('upc');
+        $class = FormLib::get('className');
+
+        $args = array($upc);
+        $prep = $dbc->prepare("UPDATE productUser SET soldOut = 1 WHERE upc = ?");
+        $localDB->execute($prep,$args);
+        $remoteDB->execute($prep,$args);
+
+        $to = array();
+        $to[] = $this->config->get('ADMIN_EMAIL');
+        $to[] = 'brand@wholefoods.coop';
+        $msg = "This class is full and has been removed from the online store.";
+        $this->send($msg,$to);
+
+        return true;
+    }
+
+    public function send($msg,$to)
+    {
+        $seats = FormLib::get('seats');
+        $registered = FormLib::get('n');
+        $upc = FormLib::get('upc');
+        $className = FormLib::get('className');
+        if (!class_exists('PHPMailer')) {
+            // can't send
+            return false;
+        }
+        $mail = new PHPMailer();
+        $mail->From = 'automail@wholefoods.coop';
+        $mail->FromName = 'WFC-U Class Registration Alerts';
+        foreach ($to as $address) {
+            $mail->addAddress($address);
+        }
+        $mail->Subject = 'WFC-U Class Registration Alert';
+        $msg .= "\n";
+        $msg .= "$registered/$seats seats have been filled.";
+        $msg .= "\n";
+        $msg .= "UPC for this class: $upc";
+        $msg .= "\n";
+        $msg .= "$className<br/>";
+        $msg .= "\n";
+        $mail->Body = strip_tags($msg);
+        $ret = $mail->send();
+
+        return $ret ? true : false;
+    }
+
+
     private function credits_save_handler()
     {
         $credits = array();
         $credits = FormLib::get('processCredit');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $items = new wfcuRegistryModel($dbc);
-        
+
         foreach ($credits as $id) {
             $items->id($id);
             $items->seatType(99);
@@ -75,19 +175,19 @@ class WfcClassRegistryPage extends FanniePage
                 $resp = '<span class="text-danger">There was an error saving.</span>';
             }
         }
-        
+
         return $resp;
     }
-    
+
     private function credits_view()
     {
-        
+
         $ret = '';
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $ret .= '<div align="center"><h2>WFC-U Credits</h2><a href="?class_plu=0">Return to Registry</a></div>';
         $items = new wfcuRegistryModel($dbc);
-        
-        //  Create a new empty credit pending row if there is no empty row. 
+
+        //  Create a new empty credit pending row if there is no empty row.
         $prep = $dbc->prepare("SELECT id, first_name FROM wfcuRegistry WHERE seatType=4 AND upc='99999999';");
         $resp = $dbc->execute($prep);
         while ($row = $dbc->fetch_row($resp)) {
@@ -106,14 +206,14 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
         }
         $nextId = ($maxID + 1);
-        if (isset($name)) { 
+        if (isset($name)) {
             $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ('99999999', ?, 4);");
             $dbc->execute($prep,$nextId);
             if ($dbc->error()) {
                 $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
             }
         }
-        
+
         // Create the first row if there are no rows
         $prepA = $dbc->prepare("SELECT count(*) AS count FROM wfcuRegistry WHERE seatType=4;");
         $resA = $dbc->execute($prepA);
@@ -127,8 +227,7 @@ class WfcClassRegistryPage extends FanniePage
                 $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
             }
         }
-        
-        
+
         $items->seatType(4);
         $ret .= '<div id="alert-area"></div><table class="table tablesorter">';
         $ret .= '<thead><label>Pending Credits</label></tr>
@@ -136,21 +235,21 @@ class WfcClassRegistryPage extends FanniePage
             <th style="width: 10px;"></th>
             <th style="width: 200px;">First</th>
             <th style="width: 200px;">Last</th>
-            <th style="width: 100px;">Member #</th>
+            <th style="width: 100px;">Mem #</th>
             <th style="width: 130px;">Phone Number</th>
             <th style="width: 80px;">Amount</th>
             <th>Notes</th>
             <th style="width: 20px;"></th>
             </thead>';
-        $ret .= '<tbody>';        
+        $ret .= '<tbody>';
         $ret .= '<form method="post"><input type="hidden" class="upc" id="upc" name="upc" value="99999999" /></form>';
         $ret .= $this->printCredits($items);
         $ret .= '</tbody></table>';
-        
+
         $items->reset();
         $items->upc(99999999);
         $items->seatType(99);
-        
+
         //  Processed Credits
         $ret .= '<br /><br />';
         $ret .= '<div id="alert-area"></div><table class="table tablesorter table-condensed table-stripped small">';
@@ -159,13 +258,13 @@ class WfcClassRegistryPage extends FanniePage
             <th style="width: 10px;"></th>
             <th style="width: 200px;">First</th>
             <th style="width: 200px;">Last</th>
-            <th style="width: 100px;">Member #</th>
+            <th style="width: 100px;">Mem #</th>
             <th style="width: 130px;">Phone Number</th>
             <th style="width: 80px;">Amount</th>
             <th>Notes</th>
             <th style="width: 200px;">Processed On</th>
             </thead>';
-        $ret .= '<tbody>';      
+        $ret .= '<tbody>';
         foreach ($items->find('modified') as $data) {
             $ret .= sprintf(
                 '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
@@ -180,21 +279,28 @@ class WfcClassRegistryPage extends FanniePage
             );
         }
         $ret .= '</tbody></table>';
-        
+
         $this->add_onload_command('itemEditing(' . $classSize . ');');
         //$this->add_onload_command('withdraw();');
-        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
-        $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
-        
-        return $ret; 
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
+
+        return $ret;
     }
-    
+
     public function css_content()
     {
         return '
+            .w-xs {
+                max-width: 60px;
+            }
             table td,th {
                 border-top: none !important;
+            }
+            .soldOut {
+                color: tomato;
+                text-shadow: 1px 0 0 rgba(255,165,0,0.3), 0 -1px 0 rgba(255,165,0,0.3), 0 1px 0 rgba(255,165,0,0.3), -1px 0 0 rgba(255,165,0,0.3);
             }
        ';
     }
@@ -210,19 +316,21 @@ class WfcClassRegistryPage extends FanniePage
     {
         $FANNIE_URL = $this->config->get('URL');
         echo "<div id=\"line-div\"></div>";
-        
+
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        
+
         $query = $dbc->prepare("
-            SELECT 
-                pu.description, 
+            SELECT
+                pu.description,
                 p.upc,
                 p.size,
-                pe.expires
-            FROM products AS p 
-                LEFT JOIN productUser AS pu ON pu.upc=p.upc 
+                pe.expires,
+                pe.notified,
+                pu.soldOut
+            FROM products AS p
+                LEFT JOIN productUser AS pu ON pu.upc=p.upc
                 LEFT JOIN productExpires AS pe ON pe.upc=p.upc
-            WHERE p.description LIKE 'class -%' 
+            WHERE p.description LIKE 'class -%'
                     AND p.inUse=1
             GROUP BY pu.description
             ORDER BY substr(pu.description,9,2),pu.description ASC;
@@ -234,24 +342,37 @@ class WfcClassRegistryPage extends FanniePage
             $classDate[] = substr($row['description'], 0, 10);
             $classSize[] = $row['size'];
             $classExp[] = $row['expires'];
+            $notified[] = $row['notified'];
+            $soldOut[] = $row['soldOut'];
         }
-       
+
+        $ret = '';
         $curPlu = FormLib::get('class_plu');
-        $ret = '<form method=\'get\' class=\'form-inline\'>
-            <select class=\'form-control\' name=\'class_plu\' style=\'border: 2px solid #38ACEC;\'>';
+        if (is_numeric($curPlu)) {
+            $upc = BarcodeLib::padUPC($classUPC[$curPlu]);
+            $ret .= '<input type="hidden" id="curUpc" value="'.$upc.'">';
+            $ret .= '<input type="hidden" id="notified" value="'.$notified[$curPlu].'">';
+            $ret .= '<input type="hidden" id="soldOut" value="'.$soldOut[$curPlu].'">';
+            $ret .= '<input type="hidden" id="className" value="'.$className[$curPlu].'">';
+            $ret .= '<input type="hidden" id="classExpires" value="'.$classExp[$curPlu].'">';
+            $newExpires = new DateTime($classExp[$curPlu]);
+            $newExpires->modify('-2 days');
+            $ret .= '<input type="hidden" id="newDate" value="'.$newExpires->format('Y-m-d h:i:s').'">';
+        }
+        $ret .= '<form method=\'get\' class=\'form-inline\' name=\'classSelector\'>
+            <select class=\'form-control\' name=\'class_plu\' id=\'classSelector\' style=\'border: 2px solid #38ACEC;\'>';
         $ret .= '<option value=\'1\'>Choose a class...</option>';
-        
+
         $date = date('m/d/y');
         $date = strtotime($date);
-        
-       
+
         foreach ($className as $key => $name) {
             $tempDate = substr($classExp[$key], 0, 7);
             if ($key == $curPlu) {
                 $sel = 'selected';
             } else {
                 $sel = '';
-            } 
+            }
             $expirationDate = strtotime($tempDate);
             if (FormLib::get('expired') === '') {
                 $ret .= '<option value=\'' . $key . '\'' . $sel . '>' . $classDate[$key] . " :: " . $name . '</option>';
@@ -263,12 +384,15 @@ class WfcClassRegistryPage extends FanniePage
         }
         $ret .= '</select>';
         $ret .= '<span class="hidden-xs hidden-sm">&nbsp;&nbsp;</span>';
-        $ret .= '<input class=\'btn btn-default\' type=\'submit\' value=\'Select Class\' style=\'border: 2px solid #38ACEC;\'><br/>';
         $ret .= '<div style="padding: 5px;"><input type="checkbox" class="checkbox" name="expired" value="1" ';
         if ($expired = FormLib::get('expired')) {
             $ret .= 'checked="checked" ';
         }
-        $ret .= ' ><i style="padding: 20;"> Don\'t show expired Classes</i></div>';
+        $ret .= ' ><i style="padding: 20;"> Don\'t show expired Classes</i> ';
+        if (isset($soldOut[$curPlu]) && $soldOut[$curPlu] == 1) {
+            $ret .= "<span class='soldOut' title='This class has been removed from online sign-up.'>CLASS IS SOLD OUT</span>";
+        }
+        $ret .= '</div>';
         $ret .= '</form>';
         $vNext = $curPlu+1;
         $vPrev = $curPlu - 1 > 0 ? $curPlu - 1 : 0;
@@ -283,14 +407,14 @@ class WfcClassRegistryPage extends FanniePage
         $ret .= '</div>';
 
         $key = FormLib::get('class_plu');
-        $plu = $classUPC[$key];
-        $this->plu = $classUPC[$key];
-        
+        $plu = isset($classUPC[$key]) ? $classUPC[$key] : '';
+        $this->plu = $plu;
+
         //* Create table if it doesn't exist
         $prep = $dbc->prepare("CREATE TABLE IF NOT EXISTS
             wfcuRegistry (
                 id INT(6) PRIMARY KEY AUTO_INCREMENT,
-                upc VARCHAR(13), 
+                upc VARCHAR(13),
                 first_name VARCHAR(30),
                 last_name VARCHAR(30),
                 phone VARCHAR(30),
@@ -301,13 +425,13 @@ class WfcClassRegistryPage extends FanniePage
                 seat INT(50),
                 seatType INT(5),
                 details TEXT
-            );   
+            );
         ");
         $res = $dbc->execute($prep);
         if (!$res) {
             echo $dbc->error() . '<br />';
         }
-        
+
         if($plu) {
             //* Insert IDs into Rows based on class size
             $pCheck = $dbc->prepare("
@@ -329,7 +453,7 @@ class WfcClassRegistryPage extends FanniePage
             while ($row = $dbc->fetch_row($rCheck)) {
                 $classSize = $row['size'];
             }
-            
+
             $sAddSeat = "INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ";
             for ($i=$numSeats; $i<$classSize; $i++) {
                         $sAddSeat .= " ( " . $plu . ", " . ($i+1) . ", 1) ";
@@ -338,10 +462,10 @@ class WfcClassRegistryPage extends FanniePage
                         }
             }
             if ($numSeats != $classSize) {
-                $pAddSeat = $dbc->prepare("{$sAddSeat}");  
+                $pAddSeat = $dbc->prepare("{$sAddSeat}");
                 $rAddSeat = $dbc->execute($pAddSeat);
             }
-            
+
             $prep = $dbc->prepare("SELECT count(id) FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
             $resp = $dbc->execute($prep);
             while ($row = $dbc->fetch_row($resp)) {
@@ -351,8 +475,8 @@ class WfcClassRegistryPage extends FanniePage
                 $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ({$plu}, 1, 0);");
                 $resp = $dbc->execute($prep);
             }
-            
-            //  Create a new (blank) 'Waiting List' row if the previous row no longer NULL. 
+
+            //  Create a new (blank) 'Waiting List' row if the previous row no longer NULL.
             $prep = $dbc->prepare("SELECT id, first_name FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
             $resp = $dbc->execute($prep);
             while ($row = $dbc->fetch_row($resp)) {
@@ -365,76 +489,34 @@ class WfcClassRegistryPage extends FanniePage
                 $maxID = $row['id'];
             }
             $nextId = ($maxID + 1);
-            if (isset($name)) { 
+            if (isset($name)) {
                 $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ({$plu}, {$nextId}, 0);");
                 $resp = $dbc->execute($prep);
             }
-        
+
         }
-        
+
         if ($key > -1) {
-            
-            
-            //  Send email if class is almost filled and email hasn't been sent.
-            $query = $dbc->prepare('
-                SELECT count(seat) 
-                FROM wfcuRegistry 
-                WHERE upc = ?
-                    AND first_name != "NULL" 
-                    AND seatType = 1
-            
-            ');
-            $result = $dbc->execute($query, $plu);
-            $curClassSize = $dbc->fetch_row($result);
-            if (!is_array($classSize) && $curClassSize[0] >= ($classSize - 3)) {
-                $query = $dbc->prepare('
-                    SELECT details 
-                    FROM wfcuRegistry
-                    WHERE upc = ?
-                        AND details = "email_sent"
-                ');
-                $result = $dbc->execute($query, $plu);
-                $row = $dbc->fetch_row($result);
-                if (!isset($row)) {
-                    $to = 'it@wholefoods.coop; brand@wholefoods.coop';
-                    $sub = 'WFC-U Class Near Capacity';
-                    $adhd = 'From: automail@wholefoods.coop';
-                    $msg = 'WFC-U class ';
-                    $msg .= $className[$key];
-                    $msg .= ' is almost full.';
-                    $msg .= "\n";
-                    $msg .= 'IT - please mark class as Sold Out : 
-                        <a href="http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=' . $plu . '>' . $plu . '</a>';
-                    $msg .= "\n";
-                    mail($to,$sub,$msg,$adhd);
-                    
-                    $query = $dbc->prepare('
-                        INSERT INTO wfcuRegistry (details, upc)
-                        VALUES ("email_sent", ?)
-                    ');
-                    $dbc->execute($query, $plu);
-                }
-            }
-            
             //* Class Roster
-            $ret .= "<div style='float: left'><h3>" . $className[$key] . "</h3></div>";
-            $ret .= "<h4 align=\"center\">" . $classDate[$key] . "</h4>";
-            //$ret .= "<h5 align=\"center\"> <i>Plu</i>: " . $plu . "</h5>";
+            $ret .= "<div style='float: left'><h3>" . (isset($className[$key]) ? $className[$key] : '') . "</h3></div>";
+            $ret .= "<h4 align=\"center\">" . (isset($classDate[$key]) ? $classDate[$key] : '') . "</h4>";
             $ret .= "<h5 align='center'><a href='/git/fannie/item/ItemEditorPage.php?searchupc=" . $plu . "' target='_blank'>PLU: " . $plu . "</a></h5>";
             $ret .= "<div id=\"line-div\"></div>";
-            
+
             $items = new wfcuRegistryModel($dbc);
             $items->upc($this->plu);
             $items->seatType(1);
-            
+
             $ret .= '<div id="alert-area"></div>
-            <table class="table tablesorter">';
-            $ret .= '<thead><tr><th>Class Registry  </th></tr>
+            <h4>Class Registry</h4>
+            <table class="table tablesorter" name="ClassRegistry" id="table-roster">';
+            $ret .= '<thead><tr></tr>
                 <tr><th>Seat</th>
+                <th>Mem #</th>
                 <th>First</th>
                 <th>Last</th>
-                <th>Member #</th>
                 <th>Phone Number</th>
+                <th>Email Address</th>
                 <th>Payment Type</th>
                 <th>Notes</th>
                 </thead>';
@@ -442,20 +524,22 @@ class WfcClassRegistryPage extends FanniePage
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
             $ret .= $this->printItems($items);
             $ret .= '</tr></tbody></table>';
-            
+
             $items->reset();
             $items->upc($this->plu);
             $items->seatType(0);
-            
+
             //* Waiting List Roster
             $ret .= '<div id="alert-area"></div>
-            <table class="table tablesorter">';
-            $ret .= '<thead><tr><th>Waiting List<th>
+            <h4>Waiting List</h4>
+            <table class="table tablesorter" id="table-waiting">';
+            $ret .= '<thead>
                 <tr><th></th>
+                <th>Mem #</th>
                 <th>First</th>
                 <th>Last</th>
-                <th>Member #</th>
                 <th>Phone Number</th>
+                <th>Email Address</th>
                 <th>Payment Type</th>
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
@@ -463,21 +547,22 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= $this->printItems($items);
             $ret.= '<tr><td><button type="button" class="btn btn-default" onclick="window.location.reload();">Add Row</button></tr>';
             $ret .= '</tbody></table>';
-            
+
             $items->reset();
             $items->upc($this->plu);
             $items->seatType(3);
-            
+
             //* Class Cancellations
             $ret .= '<div id="alert-area"></div>
-            <table class="table tablesorter">';
+            <h4>Cancellations</h4>
+            <table class="table tablesorter" id="table-cancel">';
             $ret .= '<thead><tr>
-                <th>Cancellations</th>
                 <tr><th></th>
+                <th>Mem #</th>
                 <th>First</th>
                 <th>Last</th>
-                <th>Member #</th>
                 <th>Phone Number</th>
+                <th>Email Address</th>
                 <th>Payment Type</th>
                 <th>Refund Type</th>
                 <th>Notes</th></thead>';
@@ -487,18 +572,18 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '</tbody></table></div>';
         }
 
-        $this->add_onload_command('itemEditing(' . $classSize . ');');
-        $this->add_onload_command('withdraw();');
-        $this->add_onload_command('checkSoldOut();');
-        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand('itemEditing(' . $classSize . ');');
+        $this->addOnloadCommand('withdraw();');
+        $this->addOnloadCommand('checkSoldOut();');
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
-        $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
-        
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
+
         $dbc->close();
-        
+
         return $ret;
     }
-    
+
     private function cancel_vew()
     {
         $key = FormLib::get('key');
@@ -507,14 +592,14 @@ class WfcClassRegistryPage extends FanniePage
         $move = new wfcuRegistryModel($dbc);
         $info->upc(FormLib::get('class_plu'));
         $info->id(FormLib::get('id'));
-        
+
         $ret .= '<p class="bg-success" align="center"> <b>';
-        
+
         foreach ($info->find() as $info) {
             $ret .= $info->first_name() . " ";
             $ret .= $info->last_name() . " Owner#: ";
             $ret .= $info->card_no() . " </b> has been removed from the class registry</p>";
-            
+
             $move->upc($info->upc());
             $move->first_name($info->first_name());
             $move->last_name($info->last_name());
@@ -528,12 +613,12 @@ class WfcClassRegistryPage extends FanniePage
         $ret .= '<a class="btn btn-default" href=' . '?class_plu=' . $key . '>Return to Registry</a>';
         return $ret;
     }
-    
+
     private function sign_pay_view()
     {
         $key = FormLib::get('key');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        
+
         $locateEmptySeat = new wfcuRegistryModel($dbc);
         $locateEmptySeat->seatType(1);
         $locateEmptySeat->upc(FormLib::get('class_plu'));
@@ -543,13 +628,13 @@ class WfcClassRegistryPage extends FanniePage
                     continue;
             }
         }
-        
+
         $info = new wfcuRegistryModel($dbc);
         $info->upc(FormLib::get('class_plu'));
         $info->seatType(0);
         $info->id(FormLib::get('id'));
         $move = new wfcuRegistryModel($dbc);
-        
+
         if ($id) {
             foreach ($info->find() as $info) {
                 $move->upc($info->upc());
@@ -570,73 +655,57 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '<p class="bg-danger" align="center"> <b>';
             $ret .= "There are no available seats in this class.</p>";
         }
-        
+
         $ret .= '<a class="btn btn-default" href=' . '?class_plu=' . $key . '>Return to Registry</a>';
         return $ret;
     }
-    
+
     public function javascriptContent()
     {
-        ob_start();
-        ?>
-function itemEditing(size)
-{
-    $('.editable').change(function(){
-        var current_seat = $(this).closest('tr').find('.id').html();
-        $(this).prev('span.collapse').html($(this).val());
-        $('.tablesorter').trigger('update');
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type: 'post',
+        return <<<JAVASCRIPT
+$('.cardno').change(function(){
+    var ownerid = $(this).val();
+    var seat = $(this).closest('tr').find('.seat').text();
+    var tableID = $(this).closest('table').attr('id');
+    if (ownerid != 11) {
+        $.ajax ({
             url: 'registryUpdate.php',
+            type: 'post',
+            data: 'ownerid='+ownerid+'&custdata=1',
             dataType: 'json',
-            data: 'upc='+$('#upc').val()+'&seat='+current_seat+'&field='+$(this).attr('name')+'&value='+$(this).val()+'&size='+size,
-            success: function(resp) {
-                if (resp.error) {
-                    showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
-                } else {
-                    showBootstrapPopover(elem, orig, '');
-                }
+            success: function(resp)
+            {
+                var card_no = resp['card_no'];
+                var data = ['first_name','last_name','street','city',
+                    'state','zip','email_1','email_2','phone','address'];
+                $('.seat').each(function(){
+                    var curTable = $(this).closest('table').attr('id');
+                    if ($(this).text() == seat && curTable == tableID) {
+                        var editFirst = $(this).closest('tr').find('input[name="editFirst"]');
+                        var editLast = $(this).closest('tr').find('input[name="editLast"]');
+                        var editPhone = $(this).closest('tr').find('input[name="editPhone"]');
+                        var editEmail = $(this).closest('tr').find('input[name="editEmail"]');
+                        editFirst.val(resp.first_name);
+                        editFirst.trigger('change');
+                        editLast.val(resp.last_name);
+                        editLast.trigger('change');
+                        editPhone.val(resp.phone);
+                        editPhone.trigger('change');
+                        editEmail.val(resp.email_1);
+                        editEmail.trigger('change');
+                    }
+                });
+                $.each(data, function(k,v) {
+                    // var value = resp[v];
+                    // $('#'+v).val(value);
+                });
             }
         });
-    });
-}
-function withdraw()
-{
-    $('.withdraw').change(function(){
-        var current_seat = $(this).closest('tr').find('.seat').html();
-        $.ajax({
-            type: 'post',
-            url: 'registryUpdate.php',
-            dataType: 'json',
-            data: 'upc='+$('#upc').val()+'&seat='+current_seat+'&field='+$(this).attr('name')+'&value='+$(this).val(),
-            success: function(resp) {
-                    if (resp.error) {
-                        showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
-                    } else {
-                        showBootstrapPopover(elem, orig, '');
-                    }
-                }
-        });
-    });    
-}
-function checkSoldOut()
-{
-    $('#first_name').change(function(){
-        $.ajax({
-            type: 'post',
-            url: alertRegFull.php,
-            dataType: 'json',
-            data: 'upc='+$('#upc').val(),
-            success: function(resp) {}
-        });
-    });
-}
-        <?php
-        return ob_get_clean();
     }
-    
+});
+JAVASCRIPT;
+    }
+
     public function helpContent()
     {
         return '<p>
@@ -644,7 +713,7 @@ function checkSoldOut()
             <ul>
                 <li>Select a Class Registry to edit</li>
                 <li>Enter new students who have paid to the Class Registry list</li>
-                <li>Enter unpaid students information under Waiting List. <i>Students who 
+                <li>Enter unpaid students information under Waiting List. <i>Students who
                     are moved from the Waiting List to the Paid Registry will appear at the
                     bottom of the List.</i></li>
                 <li>Students who have cancelled their seat in class will appear in Cancellation list</li>
@@ -662,26 +731,30 @@ function checkSoldOut()
                 <td class="id collapse">%s</td>
                 <td class="seat">%d</td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm editable" id="first_name"  name="editFirst" value="%s" /></td>
+                    <input type="text" class="form-control input-sm w-xs editable cardno" name="editCard_no" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable first_name" name="editFirst" value="%s" /></td>
                 <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm editable" name="editCard_no" value="%s" /></td>
-                <td><span class="collapse">%s</span>
                     <input type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editEmail" value="%s" /></td>
                 <td><span class="collapse">%s</span>
                     <select class="form-control input-sm editable" name="editPayment">
                         <option value="student has not paid">*unpaid*</option>',
                 $item->id(),
                 $i,
+                $item->card_no(),
+                $item->card_no(),
                 $item->first_name(),
                 $item->first_name(),
                 $item->last_name(),
                 $item->last_name(),
-                $item->card_no(),
-                $item->card_no(),
                 $item->phone(),
                 $item->phone(),
+                $item->email(),
+                $item->email(),
                 htmlspecialchars($item->payment())
             );
             foreach (array('Cash', 'Card', 'Gift Card', 'Check', 'Other') as $tender) {
@@ -696,11 +769,11 @@ function checkSoldOut()
                 htmlspecialchars($item->payment()),
                 $item->details(),
                 $item->details()
-            );  
-            
+            );
+
             if ($withCancel && $item->first_name()) {
                 $ret .= sprintf('
-                    <td><a class="btn btn-default" href="?class_plu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',                
+                    <td><a class="btn btn-default" href="?class_plu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',
                     $item->upc(),
                     $item->id(),
                     $item->upc()
@@ -710,7 +783,7 @@ function checkSoldOut()
 
         return $ret;
     }
-    
+
     private function printCredits($items)
     {
         $ret = '';
@@ -744,9 +817,9 @@ function checkSoldOut()
                 $item->phone(),
                 $item->amount(),
                 $item->amount()
-                
+
             );
-            
+
             $ret .= sprintf('
                 <td><span class="collapse">%s</span>
                     <textarea class="form-control editable" name="editNotes" value="%s" rows="1" cols="30" style="height: 30px; "/>%s</textarea></td>
@@ -758,9 +831,9 @@ function checkSoldOut()
                 $item->details(),
                 $item->id(),
                 $item->id()
-                
-            );  
-            
+
+            );
+
         }
         $ret .= '</tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><button type="submit" class="btn btn-warning btn-xs" name="process" value="1">Completed</button></td></tr>';
         $ret .= '<input type="hidden" name="credit" value="1">';
@@ -768,7 +841,7 @@ function checkSoldOut()
 
         return $ret;
     }
-    
+
 }
 
 FannieDispatch::conditionalExec();

@@ -6,33 +6,6 @@ if (!class_exists('FannieAPI')) {
 
 class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
-    private $BILLING_NONMEMBER = array(
-        // 1/20 = A or B
-        "1/20B/W" => 70,
-        // 1/15 = C
-        "1/15B/W" => 95,
-        // 1/10 = D
-        "1/10B/W" => 140,
-        // 1/5 = E
-        "1/5B/W" => 290,
-        "1/ 5B/W" => 290,
-        // 1/2 = F
-        "1/2B/W" => 630,
-        "1/ 2B/W" => 630,
-        // 1/20 = A or B
-        "1/20FULL" => 100,
-        // 1/15 = C
-        "1/15FULL" => 115,
-        // 1/10 = D
-        "1/10FULL"  => 175,
-        // 1/5 = E
-        "1/5FULL" => 345,
-        "1/ 5FULL" => 345,
-        // 1/2 = F
-        "1/2FULL" => 860,
-        "1/ 2FULL" => 860
-    );
-
     public $page_set = 'Plugin :: WfcGazetteBilling';
     public $description = '[Import Billing Data] to generate AR transactions with appropriate balances.';
     public $themed = true;
@@ -49,13 +22,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             'required' => true
         ),
         'size' => array(
-            'display_name' => 'Ad Size#',
+            'display_name' => 'Ad Size/Color',
             'default' => 4,
-            'required' => true
-        ),
-        'color' => array(
-            'display_name' => 'Color/B&W',
-            'default' => 5,
             'required' => true
         ),
         'amount' => array(
@@ -72,26 +40,6 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $header = 'Gazette Billing';
     protected $title = 'Gazette Billing';
-
-    private function letterToSize($letter)
-    {
-        switch (strtoupper($letter)) {
-            case 'A':
-                return '1/20';
-            case 'B':
-                return '1/20';
-            case 'C':
-                return '1/15';
-            case 'D':
-                return '1/10';
-            case 'E':
-                return '1/5';
-            case 'F':
-                return '1/2';
-            default:
-                return $letter;
-        }
-    }
 
     function preprocess(){
         $posted_info = FormLib::get_form_value('cardnos');
@@ -245,11 +193,9 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
     public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
-        $BILLING_NONMEMBER = $this->BILLING_NONMEMBER;
         $PHONE = $this->get_column_index('phone');
         $CONTACT = $this->get_column_index('name');
-        $SIZE = $this->get_column_index('size');
-        $COLOR = $this->get_column_index('color');
+        $AD_TYPE = $this->get_column_index('size');
         $MEMBER = $this->get_column_index('card_no');
         $AMOUNT = $this->get_column_index('amount');
 
@@ -286,18 +232,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $cn = $data[$CONTACT];
             $amount = trim($data[$AMOUNT]);
             $amount = trim($amount, '$');
-            $sz = trim(strtoupper($data[$SIZE]));
-            $clr = trim(strtoupper($data[$COLOR]));
             $data[$MEMBER] = trim(strtoupper($data[$MEMBER])); // match on YES
-            if (isset($clr[0]) && $clr[0] == "B") $clr = "B/W";
-            elseif($clr == "COLOR") $clr = "FULL";
-            elseif($clr == 'FC') $clr = 'FULL';
-            if (!strstr($sz, '/')) {
-                $sz = $this->decimal_to_fraction($sz);
-                if (!strstr($sz, '/')) {
-                    $sz = $this->letterToSize(trim($sz, ' *'));
-                }
-            }
 
             if (strstr($cn,'STAR CREATIVE')){
                 if (strstr($cn,'TYCOONS'))
@@ -313,8 +248,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 }
             }
 
-            $desc = "($sz, ".($clr=="FULL" ? "color" : "b&w");
-            $desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '').")";
+            $desc = $data[$AD_TYPE];
+            $desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '');
 
             $searchR = $sql->execute($searchQ, array($ph, $ph, $ph, $cn));
 
@@ -342,14 +277,10 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $warnings .= sprintf("<i>Warning: multiple memberships found for %s (%s)</i><br />",
                     $data[$CONTACT],$ph);
             }
-            elseif (!isset($BILLING_NONMEMBER[$sz.$clr])){
-                $warnings .= sprintf('<i>Warning: size/color "%s" unknown</i><br />',
-                        $sz.$clr);
-            }
             else {
                     $row = $sql->fetch_row($searchR);
                     $ret .= sprintf("<tr><td>%d</td><td>%s</td>
-                    <td>%s %s (%s)</td>
+                    <td>%s (%s)</td>
                     <td><div class=\"input-group\">
                         <span class=\"input-group-addon\">\$</span>
                         <input type=text class=\"form-control\" name=billable[] 
@@ -357,8 +288,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     </div></td></tr>
                     <input type=hidden name=desc[] value=\"%s\" />
                     <input type=hidden name=cardnos[] value=%d />",
-                    $row[0],$row[1],$sz,
-                    $data[$COLOR],
+                    $row[0],$row[1],$data[$AD_TYPE],
                     (substr($data[$MEMBER],0,3)=="YES")? 'MEMBER':'NON-MEMBER',
                     $amount,
                     $desc,$row[0]);
@@ -371,7 +301,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 </div>
                 <div class="form-group">
                 <label>Coding</label>
-                <input type="text" required name="coding" class="form-control" />
+                <input type="text" required name="coding" class="form-control" value="65520" />
                 </div>
                 <div class="form-group">
                 <label>Notes for Customers</label>
@@ -386,21 +316,6 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
 
         return true;
-    }
-
-    function decimal_to_fraction($num){
-        $vals = array(
-                '1/20' => 0.05,
-                '1/15' => 1.0/15.0,
-                "1/10" => 0.1,
-                "1/5" => 0.2,
-                "1/2" => 0.5
-        );
-        foreach($vals as $frac => $dec){
-            if (abs($num - $dec) < 0.001)
-                return $frac;
-        }
-        return $num;
     }
 
     function results_content(){

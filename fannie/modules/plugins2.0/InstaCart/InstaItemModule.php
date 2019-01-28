@@ -47,13 +47,13 @@ class InstaItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $dbc = $this->db();
         $dbName = $settings['InstaCartDB'] . $dbc->sep();
         if ($settings['InstaCartMode'] == 1) {
-            $prep = $dbc->prepare("SELECT upc FROM {$dbName}InstaCartIncludes WHERE upc=?");
+            $prep = $dbc->prepare("SELECT upc FROM {$dbName}InstaIncludes WHERE upc=?");
             $val = $dbc->getValue($prep, array($upc));
             $ret .= sprintf('<label><input type="checkbox" name="instaI" value="1" %s />
                         Include this item on InstaCart</label>',
                         ($val ? 'checked' : ''));
         } else {
-            $prep = $dbc->prepare("SELECT upc FROM {$dbName}InstaCartExcludes WHERE upc=?");
+            $prep = $dbc->prepare("SELECT upc FROM {$dbName}InstaExcludes WHERE upc=?");
             $val = $dbc->getValue($prep, array($upc));
             $ret .= sprintf('<label><input type="checkbox" name="instaE" value="1" %s />
                         Exclude this item from InstaCart</label>',

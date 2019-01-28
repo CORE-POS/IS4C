@@ -102,6 +102,11 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
         }
         $dbc = $this->db();
 
+        // need a better solution for a catch-all or anti-strict like code
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $likecode == 999) {
+            return true;
+        }
+
         $delP = $dbc->prepare('DELETE FROM upcLike WHERE upc=?'); 
         $delR = $dbc->execute($delP,array($upc));
         if ($likecode == -1){
@@ -110,6 +115,37 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $insP = 'INSERT INTO upcLike (upc,likeCode) VALUES (?,?)';
         $insR = $dbc->execute($insP,array($upc,$likecode));
+
+        $lcP = $dbc->prepare('SELECT * FROM likeCodes WHERE likeCode=?');
+        $lcRow = $dbc->getRow($lcP, array($likecode));
+
+        $upQ = 'UPDATE products SET mixmatchcode=?';
+        $upArgs = array($likecode+500);
+        if (isset($lcRow['preferredVendorID']) && $lcRow['preferredVendorID']) {
+            $upQ .= ', default_vendor_id=?';
+            $upArgs[] = $lcRow['preferredVendorID'];
+        }
+        if (isset($lcRow['organic']) && $lcRow['organic']) {
+            $upQ .= ', numflag = numflag | ?';
+            $upArgs[] = (1 << (17 - 1));
+        }
+        if (isset($lcRow['strict']) && $lcRow['strict']) {
+            $descP = $dbc->prepare('SELECT p.description FROM upcLike AS u
+                INNER JOIN products AS p ON p.upc=u.upc
+                WHERE u.upc <> ?
+                    AND u.likeCode=?
+                GROUP BY p.description
+                ORDER BY COUNT(*) DESC');
+            $desc = $dbc->getValue($descP, array($upc, $likecode));
+            if ($desc) {
+                $upQ .= ', description=?';
+                $upArgs[] = $desc;
+            }
+        }
+
+        $upP = $dbc->prepare($upQ . ' WHERE upc=?');
+        $upArgs[] = $upc;
+        $upR = $dbc->execute($upP, $upArgs);
         
         if (FormLib::get('LikeCodeNoUpdate') == 'noupdate'){
             return ($insR === False) ? False : True;
@@ -123,16 +159,6 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($values === false) {
             return false;
         }
-
-        $stores = new StoresModel($dbc);
-        $stores = array_map(
-            function($obj){ return $obj->storeID(); },
-            array_filter($stores->find(), function($obj){ return $obj->hasOwnItems(); }));
-
-        $model = new ProductsModel($dbc);
-        $model->upc($upc);
-        $model->mixmatchcode($likecode+500);
-        $this->saveModelToStores($model, $stores);
 
         /* apply current values to other other items
            in the like code */
@@ -194,19 +220,6 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
             $upc
         );
         return $dbc->execute($upP, $args);
-    }
-
-    private function saveModelToStores($model, $stores)
-    {
-        $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
-        if ($isHQ) {
-            foreach ($stores as $store_id) {
-                $model->store_id($store_id);
-                $model->save();
-            }
-        } else {
-            $model->save();
-        }
     }
 
     public function getFormJavascript($upc)

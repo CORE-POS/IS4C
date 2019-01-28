@@ -7,16 +7,40 @@ use COREPOS\pos\lib\Database;
  */
 class PosModelsTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * Name collisions w/ Office model classes screw up
+     * auto discovery via AutoLoader::listModules
+     *
+     * Manually add full namespaced classes by file
+     */
+    private function addByFile($models, $path, $ns)
+    {
+        $dir = opendir($path);
+        while (($file=readdir($dir)) !== false) {
+            if ($file[0] == '.' || substr($file, -4) != '.php') {
+                continue;
+            }
+            $class = $ns . substr($file, 0, strlen($file)-4);
+            if (!in_array($class, $models)) {
+                $models[] = $class;
+            }
+        }
+
+        return $models;
+    }
+
     public function testModels()
     {
         $models = AutoLoader::listModules('COREPOS\pos\lib\models\BasicModel');
+        $models = $this->addByFile($models, __DIR__ . '/../../pos/is4c-nf/lib/models/op', 'COREPOS\\pos\\lib\\models\\op\\');
+        $models = $this->addByFile($models, __DIR__ . '/../../pos/is4c-nf/lib/models/trans', 'COREPOS\\pos\\lib\\models\\trans\\');
         $dbc =  Database::pDataConnect();
         foreach ($models as $class) {
             $obj = new $class($dbc);
-            if (strstr($class, 'EWic')) continue;
             // this just improves coverage; the doc method isn't
             // user-facing functionality
             $this->assertInternalType('string', $obj->doc());
+            if (strstr($class, 'EWic')) continue;
             if (substr($class, 0, 26) == 'COREPOS\\pos\\lib\\models\\op\\') {
                 $dbname = CoreLocal::get('pDatabase');
                 $dbc =  Database::pDataConnect();

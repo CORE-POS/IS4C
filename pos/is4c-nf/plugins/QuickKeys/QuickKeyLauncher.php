@@ -78,14 +78,17 @@ class QuickKeyLauncher extends Parser
         $my_keys = array();
         if (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('QuickLookups')) {
             $prep = $dbc->prepare('
-                SELECT label,
-                    action
+                SELECT *
                 FROM QuickLookups
                 WHERE lookupSet = ?
                 ORDER BY sequence');
             $res = $dbc->execute($prep, array($number));
             while ($row = $dbc->fetch_row($res)) {
-                $my_keys[] = new quickkey($row['label'], $row['action']);
+                if (isset($row['imageType']) && $row['imageType']) {
+                    $my_keys[] = new quickkey($row['label'], $row['action'], $row['quickLookupID']);
+                } else {
+                    $my_keys[] = new quickkey($row['label'], $row['action']);
+                }
             }
         }
         if (count($my_keys) == 0) {
@@ -99,7 +102,7 @@ class QuickKeyLauncher extends Parser
     {
         $my_keys = $this->getKeys($number);
         if (count($my_keys) == 0) {
-            return DisplayLib::boxMsg('Menu not found', '', false, DisplayLib::standardClearButton());
+            return DisplayLib::boxMsg(_('Menu not found') . ' (#' . $number . ')', '', false, DisplayLib::standardClearButton());
         }
 
         $clearButton = false;
@@ -111,16 +114,16 @@ class QuickKeyLauncher extends Parser
                 }
                 $ret .= '<div class="qkRow">';
             }
+            $action = sprintf("\$('#reginput').val(\$('#reginput').val()+'%s');pos2.submitWrapper();return false;",
+                $preInput . $my_keys[$i]->output_text);
             $ret .= sprintf('
                 <div class="qkBox">
                     <div id="qkDiv%d">
-                        <button type="button" class="quick_button pos-button coloredBorder"
-                            onclick="$(\'#reginput\').val($(\'#reginput\').val()+\'%s\');pos2.submitWrapper();">
                         %s
-                        </button>
                     </div>
                 </div>',
-                $i, $preInput . $my_keys[$i]->output_text, $my_keys[$i]->title);
+                $i, $my_keys[$i]->display('qOverlay'.$i, 'button', $action)
+            );
         }
         if (!$clearButton) {
             $ret .= '<div class="qkBox">

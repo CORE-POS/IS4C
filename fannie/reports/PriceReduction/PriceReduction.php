@@ -72,10 +72,10 @@ class PriceReduction extends FannieReportPage
                     LEFT JOIN vendorItems as V ON P.upc = V.upc AND P.default_vendor_id = V.vendorID
                     LEFT JOIN vendorDepartments as D ON (V.vendorID = D.vendorID) AND (D.deptID = V.vendorDept) 
                     LEFT JOIN departments as S ON (P.department = S.dept_no)
-                WHERE P.inUse = 1 AND P.price_rule_id = 0
+                WHERE P.store_id=1
                     AND P.cost <> 0 
                     AND m.superID=? 
-                GROUP BY P.upc 
+                    AND P.upc IN (SELECT upc FROM products WHERE inUse=1 GROUP BY upc)
                 ORDER BY P.modified
                 ; ";
                     

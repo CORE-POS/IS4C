@@ -35,12 +35,17 @@ class StockSummaryReport extends FannieReportPage
 
     protected $report_headers = array('Mem#', 'Name', 'Effective Status', 'Status', 'A', 'B', 'Unknown');
     protected $report_cache = 'none';
+    protected $required_fields = array('date');
 
     public function fetch_report_data()
     {
         global $FANNIE_TRANS_DB;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+        $date = FormLib::get('date');
+        if ($date == '') {
+            $date = date('Y-m-d', strtotime('tomorrow'));
+        }
 
         $q = $dbc->prepare("select 
             card_no,
@@ -53,9 +58,10 @@ class StockSummaryReport extends FannieReportPage
                 left join custdata as c on s.card_no=c.CardNo and c.personNum=1
                 LEFT JOIN memtype AS m ON c.memType=m.memtype
             where card_no > 0
-            group by card_no,LastName,FirstName,Type
+                AND s.tdate <= ?
+            group by card_no,LastName,FirstName,Type,m.memDesc
             order by card_no");
-        $r = $dbc->execute($q);
+        $r = $dbc->execute($q, array($date . ' 23:59:59'));
 
         $types = array('PC'=>'Member','REG'=>'NonMember',
             'TERM'=>'Termed','INACT'=>'Inactive',
@@ -80,9 +86,30 @@ class StockSummaryReport extends FannieReportPage
         return $data;
     }
 
+    public function calculate_footers($data)
+    {
+        $sums = array(0, 0, 0);
+        foreach ($data as $row) {
+            $sums[0] += $row[4];
+            $sums[1] += $row[5];
+            $sums[2] += $row[6];
+        }
+
+        return array('Total', null, null, null, $sums[0], $sums[1], $sums[2]);
+    }
+
     public function form_content()
     {
-        return 'Direct input not allowed on this report';
+        return <<<HTML
+<form method="get">
+    <div class="form-group">
+        <label>As of</label>
+        <input type="text" name="date" class="form-control date-field" placeholder="Leave blank for current" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default btn-core">Get Report</button>
+    </div>
+HTML;
     }
 }
 

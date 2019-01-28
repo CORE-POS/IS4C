@@ -36,6 +36,7 @@ class CategoriesModel extends BasicModel
     'name' => array('type'=>'VARCHAR(255)'),
     'notifyMethod' => array('type'=>'VARCHAR(255)'),
     'notifyAddress' => array('type'=>'VARCHAR(255)'),
+    'ccAddress' => array('type'=>'VARCHAR(255)'),
     );
 }
 

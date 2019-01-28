@@ -29,7 +29,8 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $MED_FONT = 22;
     protected $SMALL_FONT = 18;
     protected $SMALLER_FONT = 14;
-    protected $SMALLEST_FONT = 10;
+    protected $SMALLEST_FONT = 16;
+    protected $BOGO_FONT = 80;
 
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
@@ -84,12 +85,21 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-80);
             } elseif (strstr($price, 'OFF')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
-            } elseif (strstr($price, 'SAVE')) {
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-60);
+            } elseif (strstr($price, 'BUY')) {
+                $pdf->SetFont($this->font, '', $this->BOGO_FONT);
             }
-            $pdf->Cell($this->width, 50, $price, 0, 1, 'C');
+            if (strstr($price, 'SAVE')) {
+                $pdf->SetFont($this->font, '', $this->BIG_FONT-70);
+            }
+            if (!strstr($price, 'BUY')) {
+                $pdf->Cell($this->width, 50, $price, 0, 1, 'C');
+            } else {
+                $pdf->Cell($this->width, 25, 'BUY ONE', 0, 1, 'C');
+                $pdf->Cell($this->width, 25, 'GET ONE FREE', 0, 1, 'C');
+            }
+            //$pdf->MultiCell($this->width, 25, $price, 0, 1, 'K');
 
-            if ($item['startDate'] != '' && $item['endDate'] != '') {
+            if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
                 $datestr = $this->getDateString($item['startDate'], $item['endDate']);
                 $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 19));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
@@ -102,13 +112,30 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             }
             if ($item['originShortName'] != '') {
-                $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+                $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $lower = trim(strtolower($item['originShortName']));
                 if (substr($lower, 0, 10) !== 'product of') {
                     $item['originShortName'] = 'Product of ' . trim($item['originShortName']);
                 }
                 $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'C');
+            } elseif ($item['nonSalePrice'] > $item['normal_price']) {
+                $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+                $saved = $item['nonSalePrice'] - $item['normal_price'];
+                if (isset($item['signMultiplier']) && $item['signMultiplier'] > 1) {
+                    $saved *= $item['signMultiplier'];
+                }
+                $format = sprintf('$%.2f', $saved);
+                if (substr($format, -3) == '.00') {
+                    $format = substr($format, 0, strlen($format) - 3);
+                } elseif (substr($saved, 0, 3) == '$0.') {
+                    $format = substr($saved, 3) . chr(0xA2);
+                }
+                if (isset($item['signMultiplier']) && $item['signMultiplier'] > 1) {
+                    $format .= ' on ' . $item['signMultiplier'];
+                }
+                $pdf->Cell($effective_width, 20, 'You Save ' . $format, 0, 1, 'C');
             }
 
             $count++;

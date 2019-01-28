@@ -159,7 +159,7 @@ class productlist extends NoInputCorePage
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
             ."<form name=\"selectform\" method=\"post\" action=\""
-            . filter_input(INPUT_SERVER, 'PHP_SELF') . "\""
+            . AutoLoader::ownURL() . "\""
             ." id=\"selectform\">"
             ."<select name=\"search\" id=\"search\" "
             .' style="min-height: 200px; min-width: 220px;'
@@ -213,7 +213,7 @@ class productlist extends NoInputCorePage
             <span class="larger">
             <?php echo $strmsg;?>
             </span>
-            <form action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" method="post" autocomplete="off">
+            <form action="<?php echo AutoLoader::ownURL(); ?>" method="post" autocomplete="off">
             <p>
             <input type="text" name="search" size="15" id="search"
                 onblur="$('#search').focus();" />

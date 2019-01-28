@@ -59,7 +59,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
             $data = $this->$method($data, $this->form);
         }
 
-        if (count($data) > 3000) {
+        if (count($data) > 5000) {
             echo 'Too many results';
             return false;
         }
@@ -121,11 +121,11 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function searchStatus($search, $form)
     {
-        if ($form->status != '') {
+        if ($form->tryGet('status') != '') {
             $search->where .= ' AND c.Type=? ';
             $search->args[] = $form->status;
         }
-        if ($form->type != '') {
+        if ($form->tryGet('type') != '') {
             $search->where .= ' AND c.memType=? ';
             $search->args[] = $form->type;
         }
@@ -135,7 +135,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function searchEquity($search, $form)
     {
-        $eOp = $this->form->equityOp;
+        $eOp = $form->tryGet('equityOp');
         switch ($eOp) {
             case '=':
             case '<':
@@ -145,10 +145,10 @@ class AdvancedMemSearch extends FannieRESTfulPage
                 return $search;
         }
 
-        if (trim($this->form->equity) !== '') {
+        if (trim($form->tryGet('equity')) !== '') {
             $search = $this->addTable($search, FannieDB::fqn('equity_live_balance', 'trans'), 'e', 'memnum');
             $search->where .= " AND e.payments {$eOp} ? ";
-            $search->args[] = $this->form->equity;
+            $search->args[] = $form->equity;
         }
 
         return $search;
@@ -156,13 +156,13 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function searchNames($search, $form)
     {
-        if (trim($this->form->fn) != '') {
+        if (trim($form->tryGet('fn')) != '') {
             $search->where .= ' AND c.FirstName LIKE ? ';
-            $search->args[] = '%' . str_replace('*', '%', trim($this->form->fn)) . '%';
+            $search->args[] = '%' . str_replace('*', '%', trim($form->fn)) . '%';
         }
-        if (trim($this->form->ln) != '') {
+        if (trim($form->tryGet('ln')) != '') {
             $search->where .= ' AND c.LastName LIKE ? ';
-            $search->args[] = '%' . str_replace('*', '%', trim($this->form->ln)) . '%';
+            $search->args[] = '%' . str_replace('*', '%', trim($form->ln)) . '%';
         }
 
         return $search;
@@ -170,17 +170,17 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function searchContact($search, $form)
     {
-        if (trim($this->form->phone) != '') {
+        if (trim($form->tryGet('phone')) != '') {
             $search = $this->addTable($search, FannieDB::fqn('meminfo', 'op'), 'm', 'card_no');
             $search->where .= ' AND (m.phone LIKE ? OR m.email_2 LIKE ?) ';
-            $phone = '%' . str_replace('*', '%', trim($this->form->phone)) . '%';
+            $phone = '%' . str_replace('*', '%', trim($form->phone)) . '%';
             $search->args[] = $phone;
             $search->args[] = $phone;
         }
-        if (trim($this->form->email) != '') {
+        if (trim($form->tryGet('email')) != '') {
             $search = $this->addTable($search, FannieDB::fqn('meminfo', 'op'), 'm', 'card_no');
             $search->where .= ' AND m.email_1 LIKE ? ';
-            $search->args[] = '%' . str_replace('*', '%', trim($this->form->email)) . '%';
+            $search->args[] = '%' . str_replace('*', '%', trim($form->email)) . '%';
         }
 
         return $search;
@@ -188,25 +188,25 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function searchAddress($search, $form)
     {
-        if (trim($this->form->addr) != '') {
+        if (trim($form->tryGet('addr')) != '') {
             $search = $this->addTable($search, FannieDB::fqn('meminfo', 'op'), 'm', 'card_no');
             $search->where .= ' AND m.street LIKE ? ';
-            $search->args[] = '%' . str_replace('*', '%', trim($this->form->addr)) . '%';
+            $search->args[] = '%' . str_replace('*', '%', trim($form->addr)) . '%';
         }
-        if (trim($this->form->city) != '') {
+        if (trim($form->tryGet('city')) != '') {
             $search = $this->addTable($search, FannieDB::fqn('meminfo', 'op'), 'm', 'card_no');
             $search->where .= ' AND m.city LIKE ? ';
-            $search->args[] = '%' . str_replace('*', '%', trim($this->form->city)) . '%';
+            $search->args[] = '%' . str_replace('*', '%', trim($form->city)) . '%';
         }
-        if (trim($this->form->state) != '') {
+        if (trim($form->tryGet('state')) != '') {
             $search = $this->addTable($search, FannieDB::fqn('meminfo', 'op'), 'm', 'card_no');
             $search->where .= ' AND m.state LIKE ? ';
-            $search->args[] = '%' . str_replace('*', '%', trim($this->form->state)) . '%';
+            $search->args[] = '%' . str_replace('*', '%', trim($form->state)) . '%';
         }
-        if (trim($this->form->zip) != '') {
+        if (trim($form->tryGet('zip')) != '') {
             $search = $this->addTable($search, FannieDB::fqn('meminfo', 'op'), 'm', 'card_no');
             $search->where .= ' AND m.zip LIKE ? ';
-            $search->args[] = '%' . str_replace('*', '%', trim($this->form->zip)) . '%';
+            $search->args[] = '%' . str_replace('*', '%', trim($form->zip)) . '%';
         }
 
         return $search;
@@ -214,9 +214,9 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function searchJoin($search, $form)
     {
-        if (trim($this->form->join1) != '') {
-            $start = trim($this->form->join1);
-            $end = trim($this->form->join2) != '' ? trim($this->form->join2) : $start;
+        if (trim($form->tryGet('join1')) != '') {
+            $start = trim($form->join1);
+            $end = trim($form->tryGet('join2')) != '' ? trim($form->join2) : $start;
             $search = $this->addTable($search, FannieDB::fqn('memDates', 'op'), 'd', 'card_no');
             $search->where .= ' AND d.start_date BETWEEN ? AND ? ';
             $search->args[] = $start . ' 00:00:00';
@@ -229,7 +229,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
     private function searchPrimary($search, $form)
     {
         try {
-            $isPrimary = $this->form->isPrimary;
+            $isPrimary = $form->isPrimary;
             if ($isPrimary) {
                 $search->where .= ' AND c.personNum=1 ';
             }
@@ -241,7 +241,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function filterUsedCoupon($data, $form)
     {
-        if (is_numeric($form->usedCoupon)) {
+        if (is_numeric($form->tryGet('usedCoupon'))) {
             $couponP = $this->connection->prepare("SELECT * FROM houseCoupons WHERE coupID=?");
             $coupon = $this->connection->getRow($couponP, array($form->usedCoupon));
             $dlog = DTransactionsModel::selectDlog($coupon['startDate'], $coupon['endDate']);
@@ -251,7 +251,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
                     AND tdate BETWEEN ? AND ?
                 GROUP BY card_no");
             $args = array(
-                '00499999' . str_pad($this->form->usedCoupon, 5, '0', STR_PAD_LEFT),
+                '00499999' . str_pad($form->usedCoupon, 5, '0', STR_PAD_LEFT),
                 $coupon['startDate'],
                 str_replace('00:00:00', '23:59:59', $coupon['endDate']),
             );
@@ -273,7 +273,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function filterHasShopped($data, $form)
     {
-        if (is_numeric($form->hasShopped)) {
+        if (is_numeric($form->tryGet('hasShopped'))) {
             $start = date('Y-m-d', strtotime($form->hasShopped . ' days ago'));
             $end = date('Y-m-d');
             $dlog = DTransactionsModel::selectDlog($start, $end);
@@ -309,7 +309,7 @@ class AdvancedMemSearch extends FannieRESTfulPage
 
     private function filterHasNotShopped($data, $form)
     {
-        if (is_numeric($form->hasntShopped)) {
+        if (is_numeric($form->tryGet('hasntShopped'))) {
             $start = date('Y-m-d', strtotime($form->hasntShopped . ' days ago'));
             $end = date('Y-m-d');
             $dlog = DTransactionsModel::selectDlog($start, $end);
@@ -357,51 +357,8 @@ class AdvancedMemSearch extends FannieRESTfulPage
         while ($couponW = $this->connection->fetchRow($couponR)) {
             $coupons .= sprintf('<option value="%s">%s</option>', $couponW['coupID'], $couponW['description']);
         }
+        $this->addScript('search.js');
         return <<<HTML
-<script type="text/javascript">
-function runSearch() {
-    var dstr = $('#memSearchForm').serialize();
-    $('#resultsArea').html('');
-    $('#progressBar').show();
-    $.ajax({
-        data: dstr,
-        method: 'post',
-    }).error(function (e1, e2, e3) {
-        $('#progressBar').hide();
-        $('#resultsArea').html(JSON.stringify(e1) + ", " + e2 + ", " + e3);
-    }).done(function (resp) {
-        $('#progressBar').hide();
-        $('#resultsArea').html(resp);   
-    });
-}
-function checkedCount(output_selector, checked_selector) {
-    var count = $(checked_selector + ':checked').length;
-    if (count == 0) {
-        $(output_selector).html('');
-    } else {
-        $(output_selector).html(count + ' items selected. These items will be retained in the next search.');
-    }
-}
-function toggleAll(elem, selector) {
-    if (elem.checked) {
-        $(selector).prop('checked', true);
-    } else {
-        $(selector).prop('checked', false);
-    }
-    checkedCount('#selection-counter', selector);
-}
-function sendTo(url) {
-    $('#sendForm').html('');
-    $('#sendForm').attr('action', url);
-    var checks = $('.savedCB:checked');
-    if (checks.length > 0) {
-        $.each(checks, function (i, o) {
-            $('#sendForm').append('<input type="hidden" name="id[]" value="' + o.value + '" />');
-        });
-        $('#sendForm').submit();
-    }
-}
-</script>
 <form method="post" id="memSearchForm" onsubmit="runSearch(); return false;">
 <div class="row">
 <div class="col-sm-11">
@@ -489,6 +446,9 @@ function sendTo(url) {
     <br /><br />
     <button class="btn btn-default btn-sm" type="button" 
         onclick="sendTo('../reports/from-search/AccountNames/AccountNamesFromSearch.php');">All Names</button>
+    <br /><br />
+    <button class="btn btn-default btn-sm" type="button" 
+        onclick="sendTo('../reports/from-search/CustomerSales/CustomerSalesReport.php');">Sales</button>
 </div>
 </div>
 <p>
@@ -508,6 +468,37 @@ function sendTo(url) {
 </form>
 <form id="sendForm" method="post" target="_new"></form>
 HTML;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->get_view());
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_handler());
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->setMany(array(
+            'card_no' => 1,
+            'status' => 'PC',
+            'type' => 1,
+            'equityOp' => '>',
+            'equity' => 0,
+            'fn' => 'a',
+            'ln' => 'a',
+            'phone' => '1',
+            'email' => '@',
+            'addr' => '1',
+            'city' => 'a',
+            'state' => 'm',
+            'zip' => '1',
+            'join1' => '2000-01-01',
+            'isPrimary' => 1,
+            'usedCoupon' => 1,
+            'hasShopped' => 90,
+            'hasntShopped' => 30,
+        ));
+        $this->setForm($form);
+        $phpunit->assertEquals(false, $this->post_handler());
+        ob_end_clean();
     }
 }
 

@@ -57,8 +57,10 @@ class HourlySalesReport extends FannieReportPage
     {
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
-        $diff = abs(strtotime($date2) - strtotime($date1));
-        $days = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24));
+        $temp1 = new DateTime($date1);
+        $temp2 = new DateTime($date2);
+        $diff = $temp1->diff($temp2, true);
+        $days = $diff->format('%a');
 
         $formContents = array('buyer','deptStart','deptEnd','store','other_dates');
         foreach ($formContents as $input) {
@@ -89,10 +91,11 @@ class HourlySalesReport extends FannieReportPage
                 $newDate1 = $temp1->format('Y-m-d');
                 $newDate2 = $temp2->format('Y-m-d');
             } else {
+                // assumes we're probably looking at a month
                 $temp1->modify($row['action'].'1 Month');
-                $temp2->modify($row['action'].'1 Month');
+                $temp2->modify($row['action'].'31 Days');
                 $newDate1 = $temp1->format('Y-m-d');
-                $newDate2 = $temp2->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-t');
             }
             ${'form'.$k} = '<form method="get" style="display: inline-block;">';
             foreach ($formContents as $input) {
@@ -171,6 +174,7 @@ HTML;
         $store = FormLib::get('store', 0);
     
         $buyer = FormLib::get('buyer', '');
+        $dow = FormLib::get('dow', '');
 
         // args/parameters differ with super
         // vs regular department
@@ -187,6 +191,10 @@ HTML;
         if ($buyer != -1) {
             list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
             $where .= $conditional;
+        }
+        if ($dow) {
+            $where .= ' AND ' . $dbc->dayofweek('tdate') . ' = ? ';
+            $args[] = $dow;
         }
         $args[] = $store;
 
@@ -363,6 +371,18 @@ JAVASCRIPT;
                 Group by weekday?
                 <input type=checkbox name=weekday value=1>
             </label>
+            <div class="col-sm-4">
+                <select name="dow" class="form-control">
+                    <option value="">Filter by weekday</option>
+                    <option value="2">Mondays</option>
+                    <option value="3">Tuesdays</option>
+                    <option value="4">Wendesdays</option>
+                    <option value="5">Thursdays</option>
+                    <option value="6">Fridays</option>
+                    <option value="7">Saturdays</option>
+                    <option value="1">Sundays</option>
+                </select>
+            </div>
         </div>
         <div class="form-group">
             <label class="control-label col-sm-4">Save to Excel

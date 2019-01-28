@@ -52,13 +52,13 @@ class DTrans
         'trans_type'=>'',
         'trans_subtype'=>'',
         'trans_status'=>'',
-        'department'=>'',
+        'department'=>0,
         'quantity'=>0,
         'scale'=>0,
         'cost'=>0,
-        'unitPrice'=>'',
-        'total'=>'',
-        'regPrice'=>'',
+        'unitPrice'=>0,
+        'total'=>0,
+        'regPrice'=>0,
         'tax'=>0,
         'foodstamp'=>0,
         'discount'=>0,
@@ -73,8 +73,8 @@ class DTrans
         'VolSpecial'=>0,
         'mixMatch'=>'',
         'matched'=>0,
-        'memType'=>'',
-        'staff'=>'',
+        'memType'=>0,
+        'staff'=>0,
         'numflag'=>0,
         'charflag'=>'',
         'card_no'=>0,
@@ -360,16 +360,22 @@ class DTrans
             $model->trans_id($last->trans_id() + 1);
         }
 
+        $model->memType(0);
+        $model->staff(0);
         if (isset($params['card_no'])) {
             $account = \COREPOS\Fannie\API\member\MemberREST::get($params['card_no']);
             if ($account) {
-                $model->memType($account['customerTypeID']);
-                $model->staff($account['customers'][0]['staff']);
+                if (is_numeric($account['customerTypeID'])) {
+                    $model->memType($account['customerTypeID']);
+                }
+                if (is_numeric($account['customers'][0]['staff'])) {
+                    $model->staff($account['customers'][0]['staff']);
+                }
             }
         }
 
         $defaults = self::defaults();
-        $skip = array('datetime', 'emp_no', 'register_no', 'trans_no', 'trans_id');
+        $skip = array('datetime', 'emp_no', 'register_no', 'trans_no', 'trans_id', 'memType');
         foreach ($defaults as $name => $value) {
             if (in_array($name, $skip)) {
                 continue;

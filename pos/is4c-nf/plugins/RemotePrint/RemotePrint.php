@@ -39,6 +39,7 @@ class RemotePrint extends Plugin
             'default' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
             'options' => array(
                 'ESCPOS' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
+                'RAW/TCP' => 'COREPOS-pos-lib-PrintHandlers-ESCNetRawHandler',
                 'HTTP' => 'RemotePrintHandler',
             ),
         ),
@@ -47,8 +48,8 @@ class RemotePrint extends Plugin
             'description' => 'Print debugging info instead of the normal receipt',
             'default' => 0,
             'options' => array(
-                'No' => 0,
                 'Yes' => 1,
+                'No' => 0,
             ),
         ),
     );
@@ -74,6 +75,9 @@ class RemotePrint extends Plugin
                 LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint AS b
                     ON l.department=b.identifier AND b.type='Department'
             WHERE emp_no=? AND register_no=? AND trans_no=?
+                AND trans_status NOT IN ('V','R')
+                AND voided = 0
+                AND quantity > 0
             ORDER BY trans_id");
         $infoR = $dbc->execute($infoP, array($emp, $reg, $trans));
         $lines = array();
@@ -133,12 +137,15 @@ class RemotePrint extends Plugin
             }
 
             $receipt .= $stars . "\n\n";
-            $receipt = ReceiptLib::cutReceipt($receipt);
+            $receipt = ReceiptLib::cutReceipt($receipt, false);
             
             if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
                 $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
                 fwrite($port, $receipt);
                 fclose($port);
+            } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {
+                $driver->setTarget(CoreLocal::get('RemotePrint'));
+                $driver->writeLine($receipt);
             } else {
                 $driver->writeLine($receipt);
             }

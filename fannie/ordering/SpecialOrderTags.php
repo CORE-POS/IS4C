@@ -37,6 +37,9 @@ class SpecialOrderTags extends FannieRESTfulPage
     public function preprocess()
     {
         $this->__routes[] = 'get<toIDs>';
+        $this->__routes[] = 'get<custom>';
+        $this->__routes[] = 'post<custom>';
+
         return parent::preprocess();
     }
 
@@ -186,6 +189,148 @@ class SpecialOrderTags extends FannieRESTfulPage
         return false;
     }
 
+    protected function post_custom_handler()
+    {
+        $row = array(
+            'ItemQtty' => FormLib::get('cases'),
+            'total' => FormLib::get('price'),
+            'regPrice' => FormLib::get('regPrice'),
+            'card_no' => '',
+            'description' => FormLib::get('item'),
+            'department' => FormLib::get('dept'),
+            'phone' => '',
+            'quantity' => FormLib::get('caseSize'),
+            'vendorName' => '',
+            'discountType' => 0,
+            'orderCount' => 1,
+            'partCount' => 1,
+            'upc' => FormLib::get('upc'),
+        );
+        list($first,$rest) = explode(' ', FormLib::get('name'), 2);
+        if ($rest == '') {
+            $row['name'] = $first;
+            $row['fname'] = '';
+        } else {
+            $row['name'] = $rest;
+            $row['fname'] = $first;
+        }
+        $tags = array($row, $row, $row, $row);
+        $this->printTags($tags);
+
+        return false;
+    }
+
+    private function printTags($tags)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
+
+        if (!defined('FPDF_FONTPATH')) {
+            define('FPDF_FONTPATH','font/');
+        }
+        if (!class_exists('FPDF')) {
+            include(dirname(__FILE__) . '/../src/fpdf/fpdf.php');
+        }
+
+        $pdf=new FPDF('P','mm','Letter'); //start new instance of PDF
+        $pdf->Open(); //open new PDF Document
+
+        $count = 0;
+        $posX = 0;
+        $posY = 0;
+        $date = date("m/d/Y");
+        $prevOID = false;
+
+        $signage = new \COREPOS\Fannie\API\item\FannieSignage(array());
+        foreach ($tags as $row) {
+            if ($count % 4 == 0){ 
+                $pdf->AddPage();
+                $pdf->SetDrawColor(0,0,0);
+                $pdf->Line(108,0,108,279);
+                $pdf->Line(0,135,215,135);
+            }
+
+            $posX = $count % 2 == 0 ? 5 : 115;
+            $posY = ($count/2) % 2 == 0 ? 10 : 145;
+            $pdf->SetXY($posX,$posY);
+
+            $pdf->SetFont('Arial','','12');
+            $pdf->Text($posX+85,$posY,"{$row['partCount']} / {$row['orderCount']}");
+
+            $pdf->SetFont('Arial','B','24');
+            $pdf->Cell(100,10,$row['name'],0,1,'C');
+            $pdf->SetFont('Arial','','12');
+            $pdf->SetX($posX);
+            $pdf->Cell(100,8,$row['fname'],0,1,'C');
+            $pdf->SetX($posX);
+            if ($row['card_no'] != 0){
+                $pdf->Cell(100,8,"Owner #".$row['card_no'],0,1,'C');
+                $pdf->SetX($posX);
+            }
+
+            $pdf->SetFont('Arial','','16');
+            $pdf->Cell(100,9,$row['description'],0,1,'C');
+            $pdf->SetX($posX);
+            $pdf->Cell(100,9,"Cases: ".$row['ItemQtty'].' - '.$row['quantity'],0,1,'C');
+            $pdf->SetX($posX);
+            $pdf->SetFont('Arial','B','16');
+            $pdf->Cell(100,9,sprintf("Total: \$%.2f",$row['total']),0,1,'C');
+            $pdf->SetFont('Arial','','12');
+            $pdf->SetX($posX);
+            if ($row['discounttype'] == 1 || $row['discounttype'] == 2){
+                $pdf->Cell(100,9,'Sale Price',0,1,'C');
+                $pdf->SetX($posX);
+
+            } elseif ($row['regPrice']-$row['total'] > 0){
+                $percent = round(100 * (($row['regPrice']-$row['total'])/$row['regPrice']));
+                $pdf->Cell(100,9,sprintf("Owner Savings: \$%.2f (%d%%)",
+                        $row['regPrice'] - $row['total'],$percent),0,1,'C');
+                $pdf->SetX($posX);
+            }
+            $pdf->Cell(100,6,"Tag Date: ".$date,0,1,'C');
+            $pdf->SetX($posX);
+            $pdf->Cell(50,6,"Dept #".$row['department'],0,0,'R');
+            $pdf->SetFont('Arial','B','12');
+            $pdf->SetX($posX+50);
+            $pdf->Cell(50,6,$row['vendorName'],0,1,'L');
+            $pdf->SetFont('Arial','','12');
+            $pdf->SetX($posX);
+            $pdf->Cell(100,6,"Ph: ".$row['phone'],0,1,'C');
+            $pdf->SetXY($posX,$posY+85);
+            $pdf->Cell(160,10,"Notes: _________________________________");  
+            $pdf->SetX($posX);
+            
+            $pdf = $signage->drawBarcode($row['upc'], $pdf, $posX+10, $posY+95, array('height'=>14,'fontsize'=>8));
+
+            /*
+            $reorder_url = 'http://wholefoods.coop/reorder/' . $oid . '-' . $tid;
+            if (class_exists('Endroid\\QrCode\\QrCode')) {
+                $qrImg = tempnam(sys_get_temp_dir(), 'qrc') . '.png';
+                $qrCode = new QrCode();
+                $qrCode->setText($reorder_url)
+                    ->setSize(60)
+                    ->setPadding(2)
+                    ->setErrorCorrection('high')
+                    ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
+                    ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
+                    ->setLabelFontSize(6)
+                    ->render($qrImg);
+
+                $pdf->Image($qrImg, $posX+60, $posY+93);
+                unlink($qrImg);
+            }
+
+            $pdf->SetXY($posX,$posY+115);
+            $pdf->Cell(90,10,"Re-Order: $reorder_url", 0, 0, 'C');
+            */
+
+            $count++;
+        }
+
+        $pdf->Output();
+    }
+
     public function javascript_content()
     {
         ob_start();
@@ -224,6 +369,50 @@ class SpecialOrderTags extends FannieRESTfulPage
         } else {
             return $this->formTable($oids);
         }
+    }
+
+    protected function get_custom_view()
+    {
+        return <<<HTML
+<form method="post" action="SpecialOrderTags.php">
+    <input type="hidden" name="custom" value="1" />
+    <div class="form-group">
+        <label>Item</label>
+        <input type="text" name="item" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Department</label>
+        <input type="text" name="dept" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Regular Price</label>
+        <input type="text" name="regPrice" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Actual Price</label>
+        <input type="text" name="price" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label># of Cases</label>
+        <input type="text" name="cases" class="form-control" value="1" required />
+    </div>
+    <div class="form-group">
+        <label>Case Size</label>
+        <input type="text" name="caseSize" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>UPC</label>
+        <input type="text" name="upc" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-default">Print</button>
+    </div>
+</form>
+HTML;
     }
 
     private function formTable($oids)

@@ -57,6 +57,21 @@ class InUseTask extends FannieTask
         $start = time();
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
+        // Get a list of UPC that are currently on sale
+        $saleUpcs = array();
+        $p = $dbc->prepare("
+            SELECT bl.upc, bl.salePrice, bl.batchID, p.brand, p.description, date(b.startDate) AS startDate, date(b.endDate) AS endDate
+            FROM batchList AS bl
+                LEFT JOIN products AS p ON bl.upc=p.upc
+                LEFT JOIN batches AS b ON bl.batchID=b.batchID
+            WHERE bl.batchID IN ( SELECT batchID FROM batches WHERE NOW() BETWEEN startDate AND endDate)
+            GROUP BY bl.upc;
+        ");
+        $r = $dbc->execute($p);
+        while ($row = $dbc->fetchRow($r)) {
+            $saleUpcs[] = $row['upc'];
+        }
+
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
             $this->logger->warning('products table does not have a last_sold column');
@@ -75,19 +90,17 @@ class InUseTask extends FannieTask
         $d = date('d');
         $checkDate = $y.'-'.$m.'-'.$d;
 
-        $exempts1 = array();
-        $exempts2 = array();
+        $exempts = array();
         foreach ($upcs as $upc) {
             $stores = array(1,2);
             foreach ($stores as $store) {
+                $exempts[$store] = array();
                 $args = array($store,$upc,$checkDate);
                 $prepA = $dbc->prepare("SELECT upc, modified, inUse FROM products WHERE store_id = ? AND upc = ? AND modified >= ? ORDER BY modified DESC LIMIT 1;");
                 $resA = $dbc->execute($prepA,$args);
                 while ($row = $dbc->fetchRow($resA)) {
-                    if($row['inUse'] == 1 && $store == 1) {
-                        $exempts1[] = $row['upc'];
-                    } elseif ($row['inUse'] == 1 && $store == 2) {
-                        $exempts2[] = $row['upc'];
+                    if ($row['inUse'] == 1) {
+                        $exempts[$store][] = $row['upc'];
                     }
                 }
             }
@@ -107,50 +120,46 @@ class InUseTask extends FannieTask
                 FROM products AS p
                 INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
                 INNER JOIN inUseTask AS i ON s.superID = i.superID
-            WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
+            WHERE (
+                    UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
+                    OR (UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.created) > i.time AND p.last_sold IS NULL)
+            )
             AND p.inUse = 1
             ORDER BY p.store_id;
         ");
         $resultA = $dbc->execute($reportInUse);
         $resultB = $dbc->execute($reportUnUse);
 
-        list($inClause1,$args1) = $dbc->safeInClause($exempts1);
-        list($inClause2,$args2) = $dbc->safeInClause($exempts2);
-        array_unshift($args1,1);
-        array_unshift($args2,2);
-        $updateQunuse1 = '
-            UPDATE products p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
-                INNER JOIN inUseTask AS i ON s.superID = i.superID
-            SET p.inUse = 0, p.modified = '.$dbc->now().'
-            WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
-                AND p.store_id = ?
-                AND p.upc NOT IN ('.$inClause1.')
-            ';
-        $updateQunuse2 = '
-            UPDATE products p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
-                INNER JOIN inUseTask AS i ON s.superID = i.superID
-            SET p.inUse = 0, p.modified = '.$dbc->now().'
-            WHERE UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
-                AND p.store_id = ?
-                AND p.upc NOT IN ('.$inClause2.')
-            ';
-        $updateUnuse1 = $dbc->prepare($updateQunuse1);
-        $updateUnuse2 = $dbc->prepare($updateQunuse2);
+        foreach (array(1, 2) as $store) {
+            list($inClause,$argsUnuse) = $dbc->safeInClause($exempts[$store]);
+            array_unshift($argsUnuse, $store);
+            $updateQunuse = '
+                UPDATE products p
+                    INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
+                    INNER JOIN inUseTask AS i ON s.superID = i.superID
+                SET p.inUse = 0, p.modified = '.$dbc->now().'
+                WHERE (
+                    UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
+                    OR (UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.created) > i.time AND p.last_sold IS NULL)
+                    )
+                    AND p.store_id = ?
+                    AND p.inUse = 1
+                    AND p.upc NOT IN ('.$inClause.')
+                ';
+            $updateUnuse = $dbc->prepare($updateQunuse);
+            $dbc->execute($updateUnuse,$argsUnuse);
 
-        $updateUse = $dbc->prepare('
-            UPDATE products p
-                INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
-            SET p.inUse = 1, p.modified = '.$dbc->now().'
-            WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
-                AND p.store_id = ?;
-        ');
-        $dbc->execute($updateUnuse1,$args1);
-        $dbc->execute($updateUnuse2,$args2);
+            $updateUse = $dbc->prepare('
+                UPDATE products p
+                    INNER JOIN MasterSuperDepts AS s ON s.dept_ID = p.department
+                SET p.inUse = 1, p.modified = '.$dbc->now().'
+                WHERE UNIX_TIMESTAMP(p.last_sold) >= (UNIX_TIMESTAMP(CURDATE()) - 84600)
+                    AND p.store_id = ?
+                    AND p.inUse = 0
+            ');
 
-        $dbc->execute($updateUse,1);
-        $dbc->execute($updateUse,2);
+            $dbc->execute($updateUse, $store);
+        }
 
         $data = '';
         $inUseData = '<table><thead><th>UPC</th><th>Brand</th><th>Description</th><th>Last Sold On</th><th>Store ID</th></thead><tbody>';
@@ -161,10 +170,11 @@ class InUseTask extends FannieTask
         while ($row = $dbc->fetch_row($resultA)) {
             $inUseData .= '<tr>';
             foreach ($fields as $column) {
+                $class = ($column == 'upc' && in_array($row[$column], $saleUpcs)) ? 'saleitem' : '';
                 if ($column == '' || empty($column)) {
                     $column = '<i>data missing</i>';
                 }
-                $inUseData .= '<td>' . $row[$column] . '</td>';
+                $inUseData .= '<td class="'.$class.'">' . $row[$column] . '</td>';
             }
             $inUseData .= '</tr>';
             $updateUpcs[] = $row['upc'];
@@ -172,30 +182,17 @@ class InUseTask extends FannieTask
         $inUseData .= '</tbody></table>';
 
         while ($row = $dbc->fetch_row($resultB)) {
-            if ($row['store_id'] == 1) {
-                if (!in_array($row['upc'],$exempts1)) {
-                    $unUseData .= '<tr>';
-                    foreach ($fields as $column) {
-                        if ($column == '' || empty($column)) {
-                            $column = '<i>no data</i>';
-                        }
-                        $unUseData .= '<td>' . $row[$column] . '</td>';
+            if (!in_array($row['upc'],$exempts[$row['store_id']])) {
+                $unUseData .= '<tr>';
+                foreach ($fields as $column) {
+                    $class = ($column == 'upc' && in_array($row[$column], $saleUpcs)) ? 'saleitem' : '';
+                    if ($column == '' || empty($column)) {
+                        $column = '<i>no data</i>';
                     }
-                    $unUseData .= '</tr>';
-                    $updateUpcs[] = $row['upc'];
+                    $unUseData .= '<td class="'.$class.'">' . $row[$column] . '</td>';
                 }
-            } elseif ($row['store_id'] == 2) {
-                if (!in_array($row['upc'],$exempts2)) {
-                    $unUseData .= '<tr>';
-                    foreach ($fields as $column) {
-                        if ($column == '' || empty($column)) {
-                            $column = '<i>no data</i>';
-                        }
-                        $unUseData .= '<td>' . $row[$column] . '</td>';
-                    }
-                    $unUseData .= '</tr>';
-                    $updateUpcs[] = $row['upc'];
-                }
+                $unUseData .= '</tr>';
+                $updateUpcs[] = $row['upc'];
             }
         }
         $unUseData .= '</tbody></table>';
@@ -213,13 +210,26 @@ class InUseTask extends FannieTask
         $runtime = ($end - $start);
         $runtime = $this->convert_unix_time($runtime);
 
-        $to = $this->config->get('SCANCOORD_EMAIL');
+        $to = $this->config->get('FANNIE_ADMIN_EMAIL');
 
         if (class_exists('PHPMailer')) {
-            $msg = '<style>table, tr, td { border-collapse: collapse; border: 1px solid black;
-                padding: 5px; }</style>';
-            $msg .= 'In Use Task (Product In-Use Management) completed at '.date('Y-m-d');
+            $msg = '
+<style>
+    table, tr, td { 
+        border-collapse: collapse; 
+        border: 1px solid black;
+        padding: 5px; 
+    } 
+    .saleitem { 
+        background-color: lightgreen; 
+        color: black;
+    } 
+</style>';
+            $msg .= 'In Use Task (Product In-Use Management) completed on '.date('Y-m-d h:i:s');
             $msg .= ' [ Runtime: '.$runtime.' ]<br />';
+            $msg .= 'UPCs highlighted in <span class="saleitem">green</span> are currently on sale
+                and may require further attention.';
+            $msg .= '<br />';
             $msg .= '<br />';
             $msg .= 'Items removed from use' . '<br />';
             $msg .= $unUseData;

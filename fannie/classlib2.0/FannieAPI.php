@@ -285,6 +285,7 @@ class FannieAPI
 
         switch($base_class) {
             case 'COREPOS\Fannie\API\item\ItemModule':
+            case 'COREPOS\Fannie\API\item\ItemRow':
                 $directories[] = dirname(__FILE__).'/../item/modules/';
                 break;
             case 'COREPOS\Fannie\API\member\MemberModule':
@@ -296,7 +297,6 @@ class FannieAPI
             case 'BasicModel':
                 $directories[] = dirname(__FILE__).'/data/models/';
                 break;
-            case 'BasicModelHook':
             case 'COREPOS\Fannie\API\data\hooks\BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;
@@ -309,6 +309,9 @@ class FannieAPI
                 break;
             case 'COREPOS\Fannie\API\item\FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
+                break;
+            case 'COREPOS\Fannie\API\item\PriceRounder':
+                $directories[] = dirname(__FILE__) . '/item/';
                 break;
             case 'COREPOS\Fannie\API\monitor\Monitor':
                 $directories[] = dirname(__FILE__) . '/monitor/';
@@ -345,6 +348,10 @@ class FannieAPI
     */
     static public function listModules($base_class, $include_base=false, $debug=false)
     {
+        // leading backslash is ignored
+        if ($base_class[0] == '\\') {
+            $base_class = substr($base_class, 1);
+        }
         $directories = self::searchDirectories($base_class);
 
         // recursive search
@@ -392,10 +399,11 @@ class FannieAPI
                 continue;
             }
 
+
             // if the file is part of a plugin, make sure
             // the plugin is enabled. The exception is when requesting
             // a list of plugin classes
-            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin' && $base_class != '\COREPOS\Fannie\API\FanniePlugin') {
+            if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin' && $base_class != 'COREPOS\Fannie\API\FanniePlugin') {
                 $parent = \COREPOS\Fannie\API\FanniePlugin::memberOf($file);
                 if ($parent === false || !\COREPOS\Fannie\API\FanniePlugin::isEnabled($parent)) {
                     continue;

@@ -37,6 +37,8 @@ class ProductWeeklyLastQuarterModel extends BasicModel
     'weekLastQuarterID' => array('type'=>'INT', 'primary_key'=>true),
     'quantity' => array('type'=>'DECIMAL(10,2)'),
     'total' => array('type'=>'MONEY'),
+    'saleQuantity' => array('type'=>'DECIMAL(10,2)'),
+    'saleTotal' => array('type'=>'MONEY'),
     'percentageStoreSales' => array('type'=>'DECIMAL(10,5)'),
     'percentageSuperDeptSales' => array('type'=>'DECIMAL(10,5)'),
     'percentageDeptSales' => array('type'=>'DECIMAL(10,5)'),

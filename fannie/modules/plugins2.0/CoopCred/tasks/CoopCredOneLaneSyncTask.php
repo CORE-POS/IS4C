@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\FanniePlugin;
+
 /* Version for command line use WITH lane# argument.
  * This version will go away when FannieTask can pass arguments.
  */

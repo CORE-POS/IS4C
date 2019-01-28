@@ -33,7 +33,7 @@ class PayrollARReport extends FannieReportPage {
         */
         $this->header = "Payroll AR Report";
         $this->content_function = "report_content";
-        $this->has_menus(False);
+        $this->hasMenus(False);
         $this->report_headers = array('Owner#','First','Last','Limit','Deducted',
             'Household #1','Household #1','Household #2','Household #2',
             'Household #3','Household #3');

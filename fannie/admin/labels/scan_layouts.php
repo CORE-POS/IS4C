@@ -29,7 +29,22 @@ function scan_layouts(){
         if (substr(strtolower($file),-4) == ".php")
             $layouts[] = str_replace("_"," ",substr($file,0,strlen($file)-4));
     }
+        
+    unset($dh);
+    $dh = opendir(dirname(__FILE__).'/../../classlib2.0/item/signage/');
+    while( ($file=readdir($dh)) !== False){
+        if ($file[0] == ".") continue;
+        if (substr(strtolower($file),-4) == ".php")
+            if (str_replace("_"," ",substr($file,0,strlen($file)-4)) == 'MovementTags') {
+                $layouts[] = str_replace("_"," ",substr($file,0,strlen($file)-4));
+            }
+    }
     sort($layouts);
+    
+    /*
+    foreach($layouts as $l) {
+        echo "$l<br/>";
+    }*/
 
     return $layouts;
 }

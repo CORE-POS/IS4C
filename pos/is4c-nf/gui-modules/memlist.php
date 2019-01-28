@@ -146,7 +146,7 @@ class memlist extends NoInputCorePage
             if ($memberID == $this->session->get('defaultNonMem')) {
                 $personNum = 1;
             }
-            COREPOS\pos\lib\MemberLib::setMember($memberID, $personNum);
+            $redirect = COREPOS\pos\lib\MemberLib::setMember($memberID, $personNum);
 
             if ($this->session->get('store') == "WEFC_Toronto") {
                 $errorMsg = $this->wefcCardCheck($memberID);
@@ -164,6 +164,8 @@ class memlist extends NoInputCorePage
                 if ($unpaid) {
                     $url = $this->page_url."gui-modules/UnpaidAR.php";
                 }
+            } elseif ($redirect !== true) {
+                $url = $redirect;
             }
             $this->change_page($url);
 
@@ -365,7 +367,7 @@ class memlist extends NoInputCorePage
     {
         echo "<div class=\"baseHeight\">"
             ."<form id=\"selectform\" method=\"post\" action=\""
-            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">";
+            .AutoLoader::ownURL() . "\">";
 
         /* for no results or a problem found in preprocess, just throw up a re-do
          * otherwise, put results in a select box

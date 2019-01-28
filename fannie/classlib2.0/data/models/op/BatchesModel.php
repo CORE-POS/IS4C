@@ -72,8 +72,10 @@ those same items revert to normal pricing.
     public function forceStartBatch($id)
     {
         $b_def = $this->connection->tableDefinition($this->name);
-        $exit = isset($b_def['exitInventory']) ? 'exitInventory' : '0 AS exitInventory';
-        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType,{$exit} FROM batches WHERE batchID = ?");
+        $bt_def = $this->connection->tableDefinition('batchType');
+        $exit = isset($bt_def['exitInventory']) ? 'exitInventory' : '0 AS exitInventory';
+        $batchInfoQ = $this->connection->prepare("SELECT batchType,discountType,{$exit} FROM batches AS b
+            LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID WHERE batchID = ?");
         $batchInfoW = $this->connection->getRow($batchInfoQ,array($id));
         if ($batchInfoW['discountType'] < 0) {
             return;
@@ -83,6 +85,11 @@ those same items revert to normal pricing.
         $forceLCQ = "";
         // verify limit columns exist
         $p_def = $this->connection->tableDefinition('products');
+        $bl_def = $this->connection->tableDefinition('batchList');
+        $costChange = '';
+        if (isset($batchList['cost'])) {
+            $costChange = ", p.cost = CASE WHEN l.cost IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
+        }
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         if ($batchInfoW['discountType'] > 0) { // item is going on sale
@@ -191,6 +198,7 @@ those same items revert to normal pricing.
                     " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.normal_price = l.salePrice,
                     p.modified = now()
+                    {$costChange}
                 WHERE l.upc not like 'LC%'
                     AND l.batchID = ?";
 
@@ -209,13 +217,16 @@ those same items revert to normal pricing.
                     " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.normal_price = b.salePrice,
                     p.modified=now()
+                    {$costChange}
                 WHERE b.upc LIKE 'LC%'
                     AND b.batchID = ?";
 
             if ($this->connection->dbmsName() == 'mssql') {
+                $costChange = str_replace('p.cost', 'cost', $costChange);
                 $forceQ = "UPDATE products
                       SET normal_price = l.salePrice,
                       modified = getdate()
+                      {$costChange}
                       FROM products as p,
                       batches as b,
                       batchList as l
@@ -237,11 +248,13 @@ those same items revert to normal pricing.
 
                 $forceLCQ = "update products set normal_price = b.salePrice,
                     modified=getdate()
+                    {$costChange}
                     from products as p left join
                     upcLike as v on v.upc=p.upc left join
                     batchList as b on b.upc='LC'+convert(varchar,v.likecode)
                     where b.batchID=?";
             }
+
         }
 
         $forceP = $this->connection->prepare($forceQ);
@@ -253,14 +266,36 @@ those same items revert to normal pricing.
         $forceLCP = $this->connection->prepare($forceLCQ);
         $forceR = $this->connection->execute($forceLCP,array($id));
         if ($batchInfoW['discountType'] != 0 && $batchInfoW['exitInventory'] == 1) {
+            $storeP = $this->connection->prepare('SELECT storeID FROM StoreBatchMap WHERE batchID=?');
+            $stores = $this->connection->getAllRows($storeP, array($id));
+            $stores = array_map(function ($i) { return $i['storeID']; }, $stores);
+            list($inStr, $args) = $this->connection->safeInClause($stores);
             $invP = $this->connection->prepare("
                 UPDATE InventoryCounts AS i
                 SET i.par=0
                 WHERE i.mostRecent=1
+                    AND i.storeID IN ({$inStr})
                     AND i.upc IN (
                         SELECT b.upc FROM batchList AS b WHERE b.batchID=?
                     )");
-            $invR = $this->connection->execute($invP, array($id));
+            $args[] = $id;
+            $invR = $this->connection->execute($invP, $args);
+
+            $args = array( (1 << (20 - 1)), date('Y-m-d H:i:s'));
+            list($inStr, $args) = $this->connection->safeInClause($stores, $args);
+            $args[] = $id;
+            $prodP = $this->connection->prepare("
+                UPDATE products AS p
+                    INNER JOIN batchList AS b ON p.upc=b.upc
+                SET numflag = numflag | ?,
+                    modified = ?
+                WHERE p.store_id IN ({$inStr})
+                    AND b.batchID=?"); 
+            $this->connection->execute($prodP, $args);
+        }
+
+        if ($batchInfoW['discountType'] == 0) {
+            //$this->scaleSendPrice($id);
         }
 
         $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
@@ -549,6 +584,41 @@ those same items revert to normal pricing.
         }
 
         return $upcs;
+    }
+
+    public function scaleSendPrice($batchID)
+    {
+        $prep = $this->connection->prepare("SELECT upc, salePrice FROM batchList WHERE upc LIKE '002%' AND batchID=?");
+        $rows = $this->connection->getAllRows($prep, array($batchID));
+        if (count($rows) == 0) {
+            return;
+        }
+
+        $scaleP = $this->connection->prepare('SELECT s.host, s.scaleType, s.scaleDeptName, s.serviceScaleID
+            FROM ServiceScaleItemMap AS m
+                INNER JOIN ServiceScales AS s ON s.serviceScaleID=m.serviceScaleID
+            WHERE m.upc=?');
+        foreach ($rows as $row) {
+            $items = array();
+            $items[] = array(
+                'RecordType' => 'ChangeOneItem',
+                'PLU' => COREPOS\Fannie\API\item\ServiceScaleLib::upcToPLU($row['upc']),
+                'Price' => $row['salePrice'],
+            );
+            $scales = array();
+            $scaleR = $this->connection->execute($scaleP, array($row['upc']));
+            while ($scaleW = $this->connection->fetchRow($scaleR)) {
+                $scales[] = array(
+                    'host' => $scaleW['host'],
+                    'type' => $scaleW['scaleType'],
+                    'dept' => $scaleW['scaleDeptName'],
+                    'id' => $scaleW['serviceScaleID'],
+                    'new' => false,
+                );
+            }
+            COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($items, $scales);
+            COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($items, $scales);
+        }
     }
 
     protected function hookAddColumnowner()

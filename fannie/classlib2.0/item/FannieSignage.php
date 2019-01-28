@@ -45,6 +45,7 @@ class FannieSignage
     protected $excludes = array();
     protected $in_use_filter = 0;
     protected $repeats = 1;
+    protected $itemRepeats = array();
 
     protected $width;
     protected $height;
@@ -93,6 +94,11 @@ class FannieSignage
     public function setRepeats($repeats)
     {
         $this->repeats = $repeats;
+    }
+
+    public function addRepeat($upc, $repeats)
+    {
+        $this->itemRepeats[$upc] = $repeats;
     }
 
     protected function getDB()
@@ -203,6 +209,9 @@ class FannieSignage
             if (!isset($row['signCount']) || $row['signCount'] < 0) {
                 $row['signCount'] = 1;
             }
+            if (isset($this->itemRepeats[$row['upc']])) {
+                $row['signCount'] = $this->itemRepeats[$row['upc']];
+            }
             for ($i=0; $i<$row['signCount']*$this->repeats; $i++) {
                 $data[] = $row;
             }
@@ -217,6 +226,8 @@ class FannieSignage
     {
         $query = 'SELECT s.upc,
                     s.description,
+                    s.description AS posDescription,
+                    s.normal_price,
                     s.brand,
                     s.units,
                     s.size,
@@ -337,6 +348,7 @@ class FannieSignage
                     o.shortName AS originShortName,
                     p.unitofmeasure,
                     b.batchName,
+                    b.discountType,
                     b.batchType
                  FROM batchList AS l
                     ' . DTrans::joinProducts('l', 'p', 'LEFT') . '
@@ -697,13 +709,15 @@ class FannieSignage
         $desc = FormLib::get('update_desc', array());
         $customOrigin = FormLib::get('custom_origin', array());
         $stdOrigin = FormLib::get('update_origin', array());
+        $repeats = FormLib::get('update_repeat', array());
         for ($i=0; $i<count($upc); $i++) {
             $bOver = isset($brand[$i]) ? $brand[$i] : '';
             $coOver = isset($customOrigin[$i]) ? $customOrigin[$i] : '';
             $oOver = isset($stdOrigin[$i]) ? $stdOrigin[$i] : 0;
             $dOver = '';
+            $rOver = isset($repeats[$i]) ? $repeats[$i] : 1;
             $overrides[$upc[$i]] = array('brand' => $bOver, 'desc' => $dOver,
-                'custOrigin' => $coOver, 'stdOrigin'=>$oOver);
+                'custOrigin' => $coOver, 'stdOrigin'=>$oOver, 'repeat' => $rOver);
         }
         $excludes = array();
         foreach (FormLib::get('exclude', array()) as $e) {
@@ -711,7 +725,7 @@ class FannieSignage
         }
 
         $url = FannieConfig::factory()->get('URL');
-        $ret = '<table class="table tablesorter tablesorter-core">';
+        $ret = '<table class="table tablesorter tablesorter-core" id="printSignTable">';
         $ret .= '<thead>';
         $ret .= '<tr>
             <th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th>
@@ -755,7 +769,11 @@ class FannieSignage
                             <td class="form-inline">%s<input type="text" name="custom_origin[]" 
                                 class="form-control FannieSignageField originField" placeholder="Custom origin..." value="%s" />
                             </td>
-                            <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" %s /></td>
+                            <td class="form-inline">
+                                <input type="number" size="2" style="width: 4em !important;" class="form-control input-sm"
+                                    name="update_repeat[]" value="%d" title="Number of copies" />
+                                <input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" %s />
+                            </td>
                             </tr>',
                             $url,
                             $item['upc'], $item['upc'], $item['upc'],
@@ -767,6 +785,7 @@ class FannieSignage
                             $item['normal_price'],
                             $oselect,
                             $item['custOrigin'],
+                            (isset($overrides[$item['upc']]['repeat']) ? $overrides[$item['upc']]['repeat'] : $item['signCount']),
                             $item['upc'],
                             (in_array($item['upc'], $excludes) ? 'checked' : '')
             );
@@ -900,7 +919,7 @@ class FannieSignage
             return '5/$5';
         } elseif ($price > 0 && substr($price, -3) == '.00' && $price <= 5.00) {
             $mult = 2;
-            while (($mult+1)*$price <= 10) {
+            while (substr(sprintf('%.2f', $mult*$price), -3) != '.00') {
                 $mult++;
             }
             return sprintf('%d/$%d', $mult, round($mult*$price));
@@ -930,7 +949,7 @@ class FannieSignage
     protected static function formatOffString($price, $multiplier, $regPrice)
     {
         if ($regPrice == 0 || $multiplier == -4) {
-            return sprintf('%.2f', $price);
+            return sprintf('$%.2f', $price);
         } elseif ($multiplier == -1) {
             $off = self::dollarsOff($price, $regPrice);
             if (substr(sprintf('%.2f', $off), -2) == '00') {
@@ -1111,6 +1130,8 @@ class FannieSignage
         if ($date == '') {
             return false;
         } elseif (substr($date,0,10) == '0000-00-00') {
+            return false;
+        } elseif (substr($date,0,10) == '1900-01-01') {
             return false;
         }
 

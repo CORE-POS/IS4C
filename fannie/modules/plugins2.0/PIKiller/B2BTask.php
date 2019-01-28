@@ -25,14 +25,15 @@ class B2BTask extends FannieTask
                 DAY(tdate) AS day,
                 trans_num,
                 MAX(tdate) as rdate,
-                MAX(numflag) AS b2bID
+                numflag AS b2bID
             FROM dlog_15
             WHERE charflag='B2'
                 AND trans_type='D'
             GROUP BY YEAR(tdate),
                 MONTH(tdate),
                 DAY(tdate),
-                trans_num
+                trans_num,
+                numflag
             HAVING SUM(total) <> 0";
         $res = $dbc->query($query);
 

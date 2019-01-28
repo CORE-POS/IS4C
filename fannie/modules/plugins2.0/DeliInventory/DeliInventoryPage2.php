@@ -7,6 +7,9 @@ if (!class_exists('FannieAPI')) {
 if (!class_exists('DeliInventoryPage')) {
     include(__DIR__ . '/DeliInventoryPage.php');
 }
+if (!class_exists('DeliInventoryCat2Model')) {
+    include(__DIR__ . '/models/DeliInventoryCat2Model.php');
+}
 
 class DeliInventoryPage2 extends DeliInventoryPage
 {
@@ -23,8 +26,7 @@ class DeliInventoryPage2 extends DeliInventoryPage
     public function body_content()
     {
         $ret = parent::body_content();
-        $ret = str_replace('send.js', 'send2.js', $ret);
-        $ret = str_replace('index.js', 'index2.js', $ret);
+        $ret = str_replace('index.js', 'index3.js', $ret);
 
         return $ret;
     }

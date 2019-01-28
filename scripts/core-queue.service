@@ -1,0 +1,15 @@
+# systemd unit file for running the queue manager script
+
+[Unit]
+Description=CORE-POS Work Queue
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/php /var/www/html/IS4C/fannie/classlib2.0/jobs/QueueManager.php
+RestartSec=5
+Restart=always
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target

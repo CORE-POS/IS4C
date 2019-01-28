@@ -26,7 +26,6 @@
 */
 class ShrinkReasonsModel extends BasicModel
 {
-
     protected $name = "ShrinkReasons";
 
     protected $columns = array(
@@ -34,5 +33,9 @@ class ShrinkReasonsModel extends BasicModel
     'description' => array('type'=>'VARCHAR(30)'),
     );
 
+    public function doc()
+    {
+        return 'Reasons for entering shrink';
+    }
 }
 

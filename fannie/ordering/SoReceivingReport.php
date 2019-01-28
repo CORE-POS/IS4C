@@ -37,7 +37,7 @@ class SoReceivingReport extends FanniePage
 function refilter(f){
     var o = $('#orderSetting').val();
     var s = $('#sS').val();
-    location = "receivingReport.php?f="+f+"&s="+s+"&order="+o;
+    location = "SoReceivingReport.php?f="+f+"&s="+s+"&order="+o;
 }
 function resort(o){
     var f= $('#sF').val();

@@ -57,7 +57,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private Object pdcLock = new Object();
     private bool emv_reset;
     private bool always_reset = false;
+    private bool emv_active;
     private Object emvLock = new Object();
+    private string terminalID = "";
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -72,6 +74,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         char sep = Path.DirectorySeparatorChar;
         xml_log = my_location + sep + "log.xml";
         pdc_active = false;
+        emv_active = false;
         emv_reset = true;
 
         if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
@@ -99,6 +102,22 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 pdc_active = false;
             }
         }
+        /*
+        lock (emvLock) {
+            if (emv_active) {
+                try {
+                    Console.WriteLine("Reset EMV");
+                    emv_ax_control.CancelRequest();
+                    emv_active = false;
+                } catch (Exception) {
+                    // I assume this will through if either the ActiveX DLL
+                    // was generated against an older OCX that doesn't have
+                    // this method or if the DLL has the method but the
+                    // OCX does not. OCX v1.22+ should have the method.
+                }
+            }
+        }
+        */
 
         if (emv_ax_control == null) {
             emv_ax_control = new DsiEMVX();
@@ -128,10 +147,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     public override void Read()
     { 
         ReInitDevice();
-        TcpListener http = new TcpListener(IPAddress.Loopback, LISTEN_PORT);
+        TcpListener http = new TcpListener(IPAddress.Any, LISTEN_PORT);
         http.Start();
         byte[] buffer = new byte[10];
         while (SPH_Running) {
+            string result = "";
+            string keyVal = "key";
+            bool saveResult = false;
             try {
                 using (TcpClient client = http.AcceptTcpClient()) {
                     client.ReceiveTimeout = 100;
@@ -148,16 +170,25 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         }
 
                         message = GetHttpBody(message);
+                        message = message.Trim(new char[]{'"'});
+                        try {
+                            XmlDocument request = new XmlDocument();
+                            request.LoadXml(message);
+                            keyVal = request.SelectSingleNode("TStream/Transaction/InvoiceNo").InnerXml;
+                        } catch (Exception) {
+                            Console.WriteLine("Error parsing from\n" + message);
+                        }
                         // Send EMV messages to EMVX, others
                         // to PDCX
-                        string result = "Error";
                         if (message.Contains("EMV")) {
                             result = ProcessEMV(message, true);
+                            saveResult = true;
                         } else if (message.Contains("termSig")) {
                             FlaggedReset();
                             result = GetSignature(true);
                         } else if (message.Length > 0) {
                             result = ProcessPDC(message);
+                            saveResult = true;
                         }
                         result = WrapHttpResponse(result);
 
@@ -168,6 +199,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 }
             } catch (Exception ex) {
                 this.LogMessage(ex.ToString());
+                try {
+                    if (saveResult && result.Length > 0) {
+                        parent.SqlLog(keyVal, result);
+                    }
+                } catch (Exception) {
+                    this.LogMessage(keyVal + ": " + result);
+                }
             }
         }
     }
@@ -323,6 +361,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             Show cashback selections if payment type debit or ebt cash
             is selected.
             Irrelevant if disableRBA or disableButtons is true
+        * servers [string] default "x1.mercurypay.com;x2.backuppay.com"
+            Set PDCX server list
     */
     public override void SetConfig(Dictionary<string,string> d)
     {
@@ -366,6 +406,14 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (this.rba != null && d.ContainsKey("cashback") && (d["cashback"].ToLower() == "true" || d["cashback"].ToLower() == "false")) {
             this.rba.SetCashBack(d["cashback"].ToLower() == "true" ? true : false);
         }
+
+        if (d.ContainsKey("servers")) {
+            this.server_list = d["servers"];
+        }
+
+        if (d.ContainsKey("terminalID")) {
+            this.terminalID = d["terminalID"];
+        }
     }
 
     /**
@@ -382,7 +430,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
            as so tracking SequenceNo values is not POS'
            problem.
         */
-        xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
         if (IsCanadianDeviceType(this.device_identifier)) {
             // tag name is different in this case;
@@ -393,6 +440,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
         }
         xml = xml.Replace("{{ComPort}}", com_port);
+        if (this.terminalID.Length > 0) {
+            xml = xml.Replace("{{TerminalID}}", this.terminalID);
+        }
 
         try {
             /**
@@ -413,12 +463,17 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     FlaggedReset();
                 }
 
+                lock(emvLock) {
+                    emv_active = true;
+                }
+
                 request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
                 result = emv_ax_control.ProcessTransaction(request.OuterXml);
 
-                // if this is not a reset command, set the reset needed flag
-                if (autoReset) {
-                    lock(emvLock) {
+                lock(emvLock) {
+                    emv_active = false;
+                    // if this is not a reset command, set the reset needed flag
+                    if (autoReset) {
                         emv_reset = true;
                     }
                 }
@@ -477,10 +532,12 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         }
         string ret = "";
         try {
-            xml = xml.Trim(new char[]{'"'});
             xml = xml.Replace("{{SequenceNo}}", SequenceNo());
             xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
             xml = xml.Replace("{{ComPort}}", com_port);
+            if (this.terminalID.Length > 0) {
+                xml = xml.Replace("{{TerminalID}}", this.terminalID);
+            }
 
             ret = pdc_ax_control.ProcessTransaction(xml, 1, null, null);
             if (enable_xml_log) {
@@ -555,6 +612,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "<Transaction>"
             + "<HostOrIP>127.0.0.1</HostOrIP>"
             + "<MerchantID>MerchantID</MerchantID>"
+            + (this.terminalID.Length > 0 ? "<TerminalID>" + this.terminalID + "</TerminalID>" : "")
             + "<TranCode>EMVPadReset</TranCode>"
             + "<SecureDevice>" + SecureDeviceToEmvType(this.device_identifier) + "</SecureDevice>"
             + "<ComPort>" + this.com_port + "</ComPort>"
@@ -648,10 +706,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     {
         switch (device) {
             case "VX805XPI":
+                return "EMV_VX805_RAPIDCONNECT";
             case "VX805XPI_MERCURY_E2E":
                 return "EMV_VX805_MERCURY";
             case "INGENICOISC250_MERCURY_E2E":
                 return "EMV_ISC250_MERCURY";
+            case "INGENICOISC250_RAPIDCONNECT_E2E":
+                return "EMV_ISC250_RAPIDCONNECT_E2E";
             default:
                 return "EMV_" + device;
         }

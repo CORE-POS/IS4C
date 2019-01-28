@@ -36,5 +36,12 @@ class PurchaseOrderNotesModel extends BasicModel
     'notes' => array('type'=>'TEXT'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Attached arbitrary notes to a purchase order.
+            ';
+    }
 }
 

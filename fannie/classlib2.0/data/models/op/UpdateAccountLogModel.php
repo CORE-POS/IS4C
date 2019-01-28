@@ -72,5 +72,14 @@ class UpdateAccountLogModel extends BasicModel
 
         return $this->save();
     }
+
+    public function doc()
+    {
+        return '
+Use:
+Logs changes to customer accounts. This log contains fields
+that apply to the entire account.
+            ';
+    }
 }
 

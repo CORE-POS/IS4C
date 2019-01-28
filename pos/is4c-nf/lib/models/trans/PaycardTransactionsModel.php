@@ -63,9 +63,9 @@ class PaycardTransactionsModel extends BasicModel
     'xResultMessage' => array('type'=>'VARCHAR(100)'),
     'xTransactionID' => array('type'=>'VARCHAR(12)'),
     'xBalance' => array('type'=>'VARCHAR(8)'),
-    'xToken' => array('type'=>'VARCHAR(64)'),
-    'xProcessorRef' => array('type'=>'VARCHAR(24)'),
-    'xAcquirerRef' => array('type'=>'VARCHAR(100)'),
+    'xToken' => array('type'=>'VARCHAR(255)'),
+    'xProcessorRef' => array('type'=>'VARCHAR(255)'),
+    'xAcquirerRef' => array('type'=>'VARCHAR(255)'),
     );
 
     public function doc()
@@ -110,8 +110,11 @@ was sent to the server.
   * issuer is Visa, MasterCard, etc
   * name is the cardholder\'s name. This is not always 
     available and depends on what\'s on the magnetic stripe.
-  * manual indicates how the card was entered. 1 means
-    keyed in, 0 means swiped.
+  * manual indicates how the card was entered.
+    * 1  => keyed
+    * 0  => swiped
+    * -1 => chip
+    * -2 => nfc
   * requestDatetime is a timestamp when the request was sent
 
 The last set of fields deal with the response. Fields

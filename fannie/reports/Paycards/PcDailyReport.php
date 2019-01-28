@@ -58,24 +58,10 @@ class PcDailyReport extends FannieReportPage
         return $ret;
     }
 
-    public function fetch_report_data()
+    protected function getTransactions($date_id, $store, $processor, $invertReturns=false)
     {
-        $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
-        $date_str = date('Y-m-d', strtotime(FormLib::get('date', date('Y-m-d'))));
-        $store = FormLib::get('store', false);
-        if ($store === false) {
-            $store = Store::getIdByIp();
-        }
-
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
-
-        $dataset = array();
-        $integrated_trans_ids = array();
-        $pt_ids = array();
-
-        /** get mercury transactions **/
         // voids have trans_id from original dtrans record, not void dtrans record
+        $invert = $invertReturns ? "'VOID','Return'" : "'VOID'";
         $mercuryQ = "
             SELECT cardType,
                 CASE 
@@ -85,7 +71,7 @@ class PcDailyReport extends FannieReportPage
                     ELSE 'Unknown'
                 END AS transType,
                 issuer AS cardIssuer,
-                CASE WHEN transType IN ('VOID') THEN -amount ELSE amount END AS ttl,
+                CASE WHEN transType IN ({$invert}) THEN -amount ELSE amount END AS ttl,
                 CASE WHEN transType='VOID' THEN -1 ELSE 1 END AS num,
                 empNo AS emp,
                 registerNo AS reg,
@@ -95,24 +81,24 @@ class PcDailyReport extends FannieReportPage
             FROM PaycardTransactions
             WHERE dateID=?
                 AND httpCode=200
-                AND xResultMessage LIKE '%approve%'
+                AND (xResultMessage LIKE '%approve%' OR xResultMessage LIKE '%PENDING%' OR xResultMessage='AP')
                 AND xResultMessage not like '%declined%'
                 AND empNo <> 9999
                 AND registerNo <> 99
-                AND processor='MercuryE2E'";
+                AND processor=?";
         if ($store == 1) {
-            $mercuryQ .= ' AND registerNo BETWEEN 1 AND 10 ';
+            $mercuryQ .= ' AND (registerNo BETWEEN 1 AND 10 OR registerNo=31) ';
         } elseif ($store == 2) {
-            $mercuryQ .= ' AND registerNo BETWEEN 11 AND 20 ';
+            $mercuryQ .= ' AND (registerNo BETWEEN 11 AND 20 OR registerNo=32) ';
         }
-        $mercuryP = $dbc->prepare($mercuryQ);
-        $mercuryR = $dbc->execute($mercuryP, array($date_id));
+        $mercuryP = $this->connection->prepare($mercuryQ);
+        $mercuryR = $this->connection->execute($mercuryP, array($date_id, $processor));
         $proc = array();
-        while($mercuryW = $dbc->fetch_row($mercuryR)) {
+        while($mercuryW = $this->connection->fetchRow($mercuryR)) {
             $pos_trans_id = $mercuryW['emp'].'-'.$mercuryW['reg'].'-'.$mercuryW['trans'].'-'.$mercuryW['tid'];
-            $integrated_trans_ids[$pos_trans_id] = true;
+            $this->integratedIDs[$pos_trans_id] = true;
             $pt_id = $mercuryW['reg'] . '-' . $mercuryW['paycardTransactionID'];
-            $pt_ids[$pt_id] = true;
+            $this->ptIDs[$pt_id] = true;
             $cardType = $mercuryW['cardType'];
             if (!isset($proc[$cardType])) {
                 $proc[$cardType] = array(
@@ -134,8 +120,14 @@ class PcDailyReport extends FannieReportPage
             $proc[$cardType]['Details'][$issuer][$transType]['amt'] += $mercuryW['ttl'];
             $proc[$cardType]['Details'][$issuer][$transType]['num'] += $mercuryW['num'];
         }
-        foreach($proc as $type => $info) {
-            $record = array('MERCURY', 
+
+        return $proc;
+    }
+
+    protected function procToDataset($dataset, $proc, $name)
+    {
+        foreach ($proc as $type => $info) {
+            $record = array($name, 
                         $type, 
                         $info['Sales']['num'],
                             sprintf('%.2f', $info['Sales']['amt']),
@@ -159,89 +151,34 @@ class PcDailyReport extends FannieReportPage
                 $dataset[] = $record;
             }
         }
-        /** end mercury transactions **/
 
-        /** get GoE / FAPS transactions **/
-        // voids have trans_id from original dtrans record, not void dtrans record
-        $fapsQ = "
-            SELECT cardType,
-                CASE 
-                    WHEN transType='Sale' THEN 'Sales'
-                    WHEN transType='Return' THEN 'Returns'
-                    WHEN transType='VOID' THEN 'Sales'
-                    ELSE 'Unknown'
-                END AS transType,
-                issuer AS cardIssuer,
-                CASE WHEN transType IN ('Return', 'VOID') THEN -amount ELSE amount END AS ttl,
-                CASE WHEN transType='VOID' THEN -1 ELSE 1 END AS num,
-                empNo AS emp,
-                registerNo AS reg,
-                transNo AS trans,
-                CASE WHEN transType='VOID' THEN transID+1 ELSE transID END AS tid,
-                paycardTransactionID
-            FROM PaycardTransactions
-            WHERE dateID=?
-                AND httpCode=200
-                AND (xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
-                AND xResultMessage not like '%declined%'
-                AND empNo <> 9999
-                AND registerNo <> 99
-                AND processor='GoEMerchant'";
-        if ($store == 1) {
-            $fapsQ .= ' AND registerNo BETWEEN 1 AND 6 ';
-        } elseif ($store == 2) {
-            $fapsQ .= ' AND registerNo BETWEEN 11 AND 15 ';
-        }
-        $fapsP = $dbc->prepare($fapsQ);
-        $fapsR = $dbc->execute($fapsP, array($date_id));
-        $proc = array(
-            'Sales' => array('amt'=>0.0, 'num'=>0),
-            'Returns' => array('amt'=>0.0, 'num'=>0),
-            'Details' => array(),
-        );
-        while ($fapsW = $dbc->fetch_row($fapsR)) {
-            $pos_trans_id = $fapsW['emp'].'-'.$fapsW['reg'].'-'.$fapsW['trans'].'-'.$fapsW['tid'];
-            $integrated_trans_ids[$pos_trans_id] = true;
-            $pt_id = $fapsW['reg'] . '-' . $fapsW['paycardTransactionID'];
-            $pt_ids[$pt_id] = true;
-            $transType = $fapsW['transType']; 
-            $issuer = $fapsW['cardIssuer'];
-            $proc[$transType]['amt'] += $fapsW['ttl'];
-            $proc[$transType]['num'] += $fapsW['num'];
-            if (!isset($proc['Details'][$issuer])) {
-                $proc['Details'][$issuer] = array(
-                    'Sales' => array('amt'=>0.0, 'num'=>0),
-                    'Returns' => array('amt'=>0.0, 'num'=>0),
-                );
-            }
-            $proc['Details'][$issuer][$transType]['amt'] += $fapsW['ttl'];
-            $proc['Details'][$issuer][$transType]['num'] += $fapsW['num'];
+        return $dataset;
+    }
+
+    public function fetch_report_data()
+    {
+        $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
+        $date_str = date('Y-m-d', strtotime(FormLib::get('date', date('Y-m-d'))));
+        $store = FormLib::get('store', false);
+        if ($store === false) {
+            $store = Store::getIdByIp();
         }
 
-        $record = array('FAPS', 
-                        'Credit', 
-                        $proc['Sales']['num'],
-                        sprintf('%.2f', $proc['Sales']['amt']),
-                        $proc['Returns']['num'],
-                        sprintf('%.2f', $proc['Returns']['amt']),
-                        $proc['Sales']['num'] + $proc['Returns']['num'],
-                        sprintf('%.2f', $proc['Sales']['amt'] + $proc['Returns']['amt']),
-        );
-        $record['meta'] = FannieReportPage::META_BOLD;
-        $dataset[] = $record;
-        foreach($proc['Details'] as $issuer => $info) {
-            $record = array('', 
-                            $issuer, 
-                            $info['Sales']['num'],
-                            sprintf('%.2f', $info['Sales']['amt']),
-                            $info['Returns']['num'],
-                            sprintf('%.2f', $info['Returns']['amt']),
-                            $info['Sales']['num'] + $info['Returns']['num'],
-                            sprintf('%.2f', $info['Sales']['amt'] + $info['Returns']['amt']),
-            );
-            $dataset[] = $record;
-        }
-        /** end get FAPS / goE **/
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+
+        $dataset = array();
+        $this->integratedIDs = array();
+        $this->ptIDs = array();
+
+        $proc = $this->getTransactions($date_id, $store, 'MercuryE2E');
+        $dataset = $this->procToDataset($dataset, $proc, 'Mercury');
+
+        $proc = $this->getTransactions($date_id, $store, 'RapidConnect');
+        $dataset = $this->procToDataset($dataset, $proc, 'First Data');
+
+        $proc = $this->getTransactions($date_id, $store, 'GoEMerchant', true);
+        $dataset = $this->procToDataset($dataset, $proc, 'FAPS');
 
         $doubleCheckP = $dbc->prepare("
             SELECT transID
@@ -313,14 +250,14 @@ class PcDailyReport extends FannieReportPage
                 $pos_trans_id = $row['trans_num'].'-'. ($row['trans_id']-1);
             }
             $pt_id = $row['register_no'] . '-' . $row['numflag'];
-            if ($row['charflag'] == 'PT' && isset($pt_ids[$pt_id])) {
+            if ($row['charflag'] == 'PT' && isset($this->ptIDs[$pt_id])) {
                 $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                 $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
-                $integrated_trans_ids[$pos_trans_id] = 'found';
-            } elseif (isset($integrated_trans_ids[$pos_trans_id])) {
+                $this->integratedIDs[$pos_trans_id] = 'found';
+            } elseif (isset($this->integratedIDs[$pos_trans_id])) {
                 $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                 $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
-                $integrated_trans_ids[$pos_trans_id] = 'found';
+                $this->integratedIDs[$pos_trans_id] = 'found';
             } else {
                 $dcR = $dbc->execute($doubleCheckP, array($date_id, $row['register_no'], $row['emp_no'], $row['trans_no'], $row['ttl']));
                 if ($dbc->numRows($dcR) === 1 && $row['charflag'] == 'PT') {
@@ -328,7 +265,7 @@ class PcDailyReport extends FannieReportPage
                     $pos_trans_id = $row['trans_num'] . '-' . $dcW['transID'];
                     $proc[$cardType]['Integrated'][$transType]['amt'] += $row['ttl'];
                     $proc[$cardType]['Integrated'][$transType]['num'] += $row['num'];
-                    $integrated_trans_ids[$pos_trans_id] = 'found';
+                    $this->integratedIDs[$pos_trans_id] = 'found';
                 } else {
                     $proc[$cardType]['Non'][$transType]['amt'] += $row['ttl'];
                     $proc[$cardType]['Non'][$transType]['num'] += $row['num'];
@@ -354,7 +291,7 @@ class PcDailyReport extends FannieReportPage
         }
 
         $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
-        foreach ($integrated_trans_ids as $pos_trans_id => $found) {
+        foreach ($this->integratedIDs as $pos_trans_id => $found) {
             if ($found === true) {
                 $trans = rtrim($pos_trans_id, '0123456789');
                 $trans = rtrim($trans, '-');

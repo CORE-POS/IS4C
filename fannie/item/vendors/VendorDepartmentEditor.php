@@ -151,7 +151,7 @@ class VendorDepartmentEditor extends FanniePage {
         <input type="hidden" id="vendorID" value="<?php echo $vid; ?>" />
         <?php
 
-        $this->add_script('vdepts.js');
+        $this->addScript('vdepts.js');
 
         return ob_get_clean();
     }

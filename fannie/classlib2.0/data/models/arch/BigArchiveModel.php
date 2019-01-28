@@ -206,5 +206,14 @@ class BigArchiveModel extends DTransactionsModel
 
         return false;
     }
+
+    public function doc()
+    {
+        return '
+Use:
+Long-term transaction storage. Uses same schema as other transaction
+tables but is partitioned by month.
+            ';
+    }
 }
 

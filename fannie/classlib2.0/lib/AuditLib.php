@@ -65,12 +65,8 @@ class AuditLib
         $message = "Item $upc ($desc) has been changed\n";  
         $message .= "Price: " . $product->normal_price() . "\n";
         $taxQ = $dbc->prepare('SELECT description FROM taxrates WHERE id=?');
-        $taxR = $dbc->execute($taxQ, array($product->tax()));
-        $taxname = 'No Tax';
-        if ($dbc->num_rows($taxR) > 0) {
-            $taxW = $dbc->fetch_row($taxR);
-            $taxname = $taxW['description'];
-        }
+        $taxname = $dbc->getValue($taxQ, array($product->tax()));
+        $taxname = $taxname ? $taxname : 'No Tax';
         $message .= "Tax: " . $taxname . "\n";
         $message .= "Foodstampable: " . ($product->foodstamp()==1 ? "Yes" : "No") . "\n";
         $message .= "Scale: " . ($product->scale()==1 ? "Yes" :"No") . "\n";
@@ -213,17 +209,15 @@ class AuditLib
         $conf = FannieConfig::factory();
         $dbc = FannieDB::getReadOnly($conf->get('OP_DB'));
         
-        $query = 'SELECT superID from superdepts WHERE dept_ID=? GROUP BY superID';
+        $query = 'SELECT e.emailAddress
+            FROM superdepts AS s
+                INNER JOIN superDeptEmails AS e ON s.superID=e.superID
+            WHERE s.dept_ID=?';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($dept));
         $emails = '';
-        while ($row = $dbc->fetch_row($res)) {
-            $model = new \SuperDeptEmailsModel($dbc);
-            $model->superID($row['superID']);
-            if (!$model->load()) {
-                continue;
-            }
-            $addr = $model->emailAddress();
+        while ($row = $dbc->fetchRow($res)) {
+            $addr = trim($row['emailAddress']);
             if ($addr && !strstr($emails, $addr)) {
                 if ($emails !== '') {
                     $emails .= ', ';

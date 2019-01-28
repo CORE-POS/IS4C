@@ -99,9 +99,6 @@ class VariableItems extends FannieReportPage
                 $deptMarg[] = $uMarg;
             }
         }     
-        if (mysql_errno() > 0) {
-            echo mysql_errno() . ": " . mysql_error(). "<br>";
-        }
         
         for ($i=0; $i<count($upc); $i++){
             $margDiff[] = $marg[$i] - $deptMarg[$i];

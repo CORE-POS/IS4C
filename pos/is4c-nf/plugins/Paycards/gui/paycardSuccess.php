@@ -119,7 +119,7 @@ class paycardSuccess extends BasicCorePage
         function submitWrapper(){
             var str = $('#reginput').val();
             if (str.toUpperCase() == 'RP'){
-                $.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
+                $.ajax({url: '<?php echo $this->page_url; ?>ajax/AjaxEnd.php',
                     cache: false,
                     type: 'post',
                     data: 'receiptType='+$('#rp_type').val()+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>'
@@ -178,7 +178,7 @@ class paycardSuccess extends BasicCorePage
 
     function body_content()
     {
-        $this->input_header("onsubmit=\"return submitWrapper();\" action=\"".filter_input(INPUT_SERVER,'PHP_SELF')."\"");
+        $this->input_header("onsubmit=\"return submitWrapper();\" action=\"".AutoLoader::ownURL()."\"");
         echo '<div class="baseHeight">';
         if ($this->capture->required()) {
             $reginput = FormLib::get('reginput');

@@ -417,7 +417,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$balance),0,0,'L');
             $copy->Cell(25,8,'$ ' . sprintf("%.2f",$balance),0,0,'L');
 
-            $docfile = "/var/www/cgi-bin/docfile/docfile/" . $card_no;
+            $docfile = __DIR__ . "/noauto/docfile/" . $card_no;
             if (!file_exists($docfile)) {
                 mkdir($docfile);
             }

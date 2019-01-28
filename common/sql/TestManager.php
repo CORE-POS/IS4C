@@ -31,6 +31,10 @@ class TestManager extends \COREPOS\common\SQLManager
     private $test_data = array();
     private $test_counter = 0;
 
+    public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
+    {
+    }
+
     /**
       Test data is for faking queries.
       Setting the test data then running

@@ -48,12 +48,12 @@ class DepartmentEditor extends FannieRESTfulPage
             $margin = $dept->margin();
             if (empty($margin) && $dbc->tableExists('deptMargin')) {
                 $prep = $dbc->prepare('SELECT margin FROM deptMargin WHERE dept_ID=?');
-                $dept->margin($dbc->getValue($prep, array($id)));
+                $dept->margin($dbc->getValue($prep, array($deptID)));
             }
             $pcode = $dept->salesCode();
             if (empty($pcode) && $dbc->tableExists('deptSalesCodes')) {
                 $prep = $dbc->prepare('SELECT salesCode FROM deptSalesCodes WHERE dept_ID=?');
-                $dept->salesCode($dbc->getValue($prep, array($id)));
+                $dept->salesCode($dbc->getValue($prep, array($deptID)));
             }
         }
 
@@ -138,6 +138,7 @@ class DepartmentEditor extends FannieRESTfulPage
         $dbc = $this->connection;
 
         $deptID = FormLib::get('did',0);
+        $name = FormLib::get('name');
         $margin = FormLib::get('margin',0);
         $margin = ((float)$margin) / 100.0; 
         $pcode = FormLib::get('pcode',$deptID);
@@ -238,9 +239,9 @@ class DepartmentEditor extends FannieRESTfulPage
         <div id="infodiv" class="deptFields"></div>
         <?php
     
-        $this->add_script('dept.js');
+        $this->addScript('dept.js');
         if ($selectedDID !== '') {
-            $this->add_onload_command('deptEdit.deptchange();'); 
+            $this->addOnloadCommand('deptEdit.deptchange();'); 
         }
 
         return ob_get_clean();

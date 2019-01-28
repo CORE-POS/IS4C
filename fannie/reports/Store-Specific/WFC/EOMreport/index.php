@@ -345,7 +345,7 @@ if (!$output || isset($_REQUEST['recache'])){
 }
 echo $output;
 
-    $newTaxQ = 'SELECT description,
+    $newTaxQ = 'SELECT MAX(description) AS description,
                     SUM(regPrice) AS ttl,
                     numflag AS taxID
                 FROM is4c_trans.transarchive AS t
@@ -353,7 +353,7 @@ echo $output;
                     AND ' . DTrans::isStoreID($store, 't') . '
                     AND upc=\'TAXLINEITEM\'
                     AND ' . DTrans::isNotTesting() . '
-                GROUP BY taxID, description';
+                GROUP BY taxID';
     $sql = FannieDB::get($FANNIE_OP_DB);
     $prep = $sql->prepare($newTaxQ);
     $res = $sql->execute($prep, $args);
@@ -365,6 +365,11 @@ echo $output;
     $city = 0.01;
     $deli = 0.0225;
     $county = 0.005;
+    $startDT = new DateTime($start);
+    $noCounty = new DateTime('2017-10-01');
+    if ($startDT >= $noCount) {
+        //$county = 0;
+    }
     echo '<table border="1" cellspacing="0" cellpadding="4">';
     echo '<tr><th>Tax Collected on Regular rate items</th>
             <th>' . sprintf('%.2f', $collected[1]) . '</th>

@@ -99,15 +99,23 @@ class LikeCodeEditor extends FanniePage {
         ob_start();
         ?>
 function loadlc(id){
+    $('.progress').show();
     $.ajax({
         url: 'LikeCodeAjax.php',
         type: 'get',
-        data: 'id='+id
+        data: 'id='+id,
+        dataType: 'json'
     }).fail(function(request,error){
         console.log(request);
         console.log(error);
+        $('.progress').hide();
     }).done(function(resp){
-        $('#rightdiv').html(resp);
+        $('.progress').hide();
+        $('#rightdiv').html(resp.form);
+        $('.v-chosen').chosen();
+        $('input.retailCat').autocomplete({source: resp.retail });
+        $('input.internalCat').autocomplete({source: resp.internal });
+        $('#lcCategories').html(resp.similar);
     });
 }
         <?php
@@ -130,7 +138,7 @@ function loadlc(id){
             <form action="LikeCodeEditor.php" method="get"
                 class="form form-horizontal">
             <select id="lcselect" name="lcselect" 
-                class="form-control"
+                class="form-control chosen"
                 size=15 onchange="loadlc(this.value);">
             <?php echo $opts; ?>
             </select><p />
@@ -154,10 +162,33 @@ function loadlc(id){
                     Delete Selected LC</button>
             </p>
             </form>
+            <div id="lcCategories"></div>
+            <hr />
+            <ul>
+                <li><a href="LikeCodeActivity.php">Likecode Status & Activity</a></li>
+                <li><a href="LikeCodeSKUsPage.php">Likecode Vendor SKUs & Pricing</a></li>
+            </ul>
         </div>
         <div id="rightdiv" class="col-sm-6">
+            <div class="progress collapse">
+                <div class="progress-bar progress-bar-striped active"  role="progressbar" 
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                    <span class="sr-only">Searching</span>
+                </div>
+            </div>
         </div>
         <?php
+
+        $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();");
+        $this->addScript('lcEditor.js');
+        if (FormLib::get('start')) {
+            $start = (int)FormLib::get('start');
+            $this->addOnloadCommand("\$('#lcselect').val({$start});");
+            $this->addOnloadCommand("loadlc({$start});");
+            $this->addOnloadCommand("\$('#lcselect').trigger('chosen:updated');");
+        }
 
         return ob_get_clean();
     }
@@ -174,7 +205,23 @@ function loadlc(id){
             to all items in the like code.</p>
             <p>This tool is just for creating, renaming, and deleting
             like codes. Use the item editor to assign a particular item
-            to a like code.</p>';
+            to a like code.</p>
+            <p>A <strong>Strict</strong> likecode enforces a greater
+            degree of consistency across items. In particular all items
+            in a strict likecode will have identical descriptions.</p>
+            <p>An <strong>Organic</strong> likecode is a flag used
+            to create appropriate signage.</p>
+            <p>A <strong>Multi-Vendor</strong> likecode is an item that
+            can be purchased from more than one vendor and is routinely
+            comparison shopped. The <strong>Preferred Vendor</strong>
+            is the source currently in use. Preferred vendor can be
+            assigned for single-source likecodes but assigning the vendor
+            directly to the item may work better.</p>
+            <p>For each store the <strong>Active</strong> flag indicates
+            whether the likecode is currently being sold to customers.
+            The <strong>Internal</strong> flag indicates the likecode is
+            purchased for internal use as well as (or instead of) for
+            retail sales.</p>';
     }
 
     public function unitTest($phpunit)

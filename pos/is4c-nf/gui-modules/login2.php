@@ -53,6 +53,8 @@ class login2 extends BasicCorePage
 
     public function preprocess()
     {
+        $this->addScript('js/login2.js');
+        $this->addCssFile('../css/spinner.css');
         $this->boxCSS = 'coloredArea';
         $this->msg = _('please enter your password');
         $this->body_class = '';
@@ -75,11 +77,11 @@ class login2 extends BasicCorePage
                 ));
                 $this->kick($drawer);
 
+                $destination = $this->page_url."gui-modules/pos2.php";
                 if ($drawer->current() == 0) {
-                    $this->change_page($this->page_url."gui-modules/drawerPage.php");
-                } else {
-                    $this->change_page($this->page_url."gui-modules/pos2.php");
+                    $destination = $this->page_url."gui-modules/drawerPage.php";
                 }
+                $this->change_page($destination);
 
                 return false;
             }
@@ -125,14 +127,15 @@ class login2 extends BasicCorePage
             </div><?php echo $logging; ?>
         </div>
         <div id="loginCenter">
-        <div class="box <?php echo $this->boxCSS; ?> rounded">
+        <div id="loginBox" class="box <?php echo $this->boxCSS; ?> rounded">
                 <b><?php echo _("log in"); ?></b>
                 <form id="formlocal" name="form" method="post" autocomplete="off" 
-                    action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+                    onsubmit="login2.tryLogin(); return false;"
+                    action="<?php echo AutoLoader::ownURL(); ?>">
                 <input type="password" name="userPassword" size="20" tabindex="0" 
                     onblur="$('#userPassword').focus();" id="userPassword" >
                 <input type="hidden" name="reginput" id="reginput" value="" />
-                <p>
+                <p id="loginMsg">
                 <?php echo $this->msg ?>
                 </p>
                 </form>

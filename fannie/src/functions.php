@@ -36,7 +36,6 @@ if (!class_exists('FannieAPI')) {
 
 // -----------------------------------------------------------------
 
-
 function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
 {
     global $FANNIE_OP_DB;
@@ -44,38 +43,12 @@ function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
     $prep = $dbc->prepare($query);
     $results = $dbc->execute($prep,$args); 
     $number_cols = $dbc->numFields($results);
-    //display query
-    //echo "<b>query: $query</b>";
     //layout table header
     echo "<font size = 2>";
     echo "<table border = $border bgcolor=$bgcolor cellspacing=0 cellpadding=3>\n";
-    /*
-    echo "<tr align left>\n";
-    for($i=0; $i<$number_cols; $i++)
-    {
-        echo "<th><font size =2>" . $dbc->fieldName($results,$i). "</font></th>\n";
-    }
-    echo "</tr>\n"; //end table header
-    */
     //layout table body
-    while($row = $dbc->fetch_row($results))
-    {
-        echo "<tr align left>\n";
-        for ($i=0;$i<$number_cols; $i++) {
-            echo "<td width=";
-            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "89";} else { echo "170";} 
-            echo " align=";
-            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "right";} else { echo "left";} 
-            echo "><font size = 2>";
-            if(!isset($row[$i])) {//test for null value
-                echo "0.00";
-            }elseif (is_numeric($row[$i]) && strstr($row[$i],".")){
-                printf("%.2f",$row[$i]);
-            }else{
-                echo $row[$i];
-            }
-            echo "</font></td>\n";
-        } echo "</tr>\n";
+    while($row = $dbc->fetch_row($results)) {
+        select_to_table_row($row, $number_cols);
     } 
     if (!$no_end) {
         echo "</table>\n";
@@ -142,24 +115,8 @@ function select_to_table3($arr,$number_cols,$border,$bgcolor, $no_end=false)
     echo "<font size = 2>";
     echo "<table border = $border bgcolor=$bgcolor cellspacing=0 cellpadding=3>\n";
     //layout table body
-    foreach ($arr as $row)
-    {
-        echo "<tr align left>\n";
-        for ($i=0;$i<$number_cols; $i++) {
-            echo "<td width=";
-            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "89";} else { echo "170";} 
-            echo " align=";
-            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "right";} else { echo "left";} 
-            echo "><font size = 2>";
-            if(!isset($row[$i])) {//test for null value
-                echo "0.00";
-            }elseif (is_numeric($row[$i]) && strstr($row[$i],".")){
-                printf("%.2f",$row[$i]);
-            }else{
-                echo $row[$i];
-            }
-            echo "</font></td>\n";
-        } echo "</tr>\n";
+    foreach ($arr as $row) {
+        select_to_table_row($row, $number_cols);
     } 
     if (!$no_end) {
         echo "</table>\n";
@@ -167,45 +124,23 @@ function select_to_table3($arr,$number_cols,$border,$bgcolor, $no_end=false)
     }
 }
 
-/* pads upc with zeroes to make $upc into IT CORE compliant upc*/
-
-function str_pad_upc($upc)
+function select_to_table_row($row, $number_cols)
 {
-    if (!class_exists('BarcodeLib')) {
-        include(dirname(__FILE__).'/../classlib2.0/lib/BarcodeLib.php');
-    }
-    return BarcodeLib::padUPC($upc);
+    echo "<tr align left>\n";
+    for ($i=0;$i<$number_cols; $i++) {
+        echo "<td width=";
+        echo (is_numeric($row[$i]) || !isset($row[$i])) ? "89" : "170"; 
+        echo " align=";
+        echo (is_numeric($row[$i]) || !isset($row[$i])) ? "right" : "left";
+        echo "><font size = 2>";
+        if(!isset($row[$i])) {//test for null value
+            echo "0.00";
+        }elseif (is_numeric($row[$i]) && strstr($row[$i],".")){
+            printf("%.2f",$row[$i]);
+        }else{
+            echo $row[$i];
+        }
+        echo "</font></td>\n";
+    } echo "</tr>\n";
 }
-
-function test_upc($upc){
-   if(is_numeric($upc)){
-      $upc=str_pad_upc($upc);
-   }else{
-      echo "not a number";
-   }
-}
-
-/* create an array from the results of a POSTed form */
-
-function get_post_data($int){
-    foreach ($_POST AS $key => $value) {
-    $$key = $value;
-    if($int == 1){
-        echo $key .": " .  $$key . "<br>";
-    }
-    }
-}
-
-/* create an array from the results of GETed information */
-
-function get_get_data($int){
-    foreach ($_GET AS $key => $value) {
-    $$key = $value;
-    if($int == 1){
-        echo $key .": " .  $$key . "<br>";
-    }
-    }
-}
-
-/* rounding function to create 'non-stupid' pricing */
 

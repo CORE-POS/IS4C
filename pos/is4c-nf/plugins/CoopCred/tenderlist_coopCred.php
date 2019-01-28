@@ -100,7 +100,7 @@ class tenderlist_coopCred extends NoInputCorePage
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">";
         echo "<form name=\"selectform\" method=\"post\" " .
-            "action=\"{$_SERVER['PHP_SELF']}\" " .
+            "action=\"" . AutoLoader::ownURL() . '"' .
             "id=\"selectform\">";
 
         if ($db->num_rows($r) > 0) {

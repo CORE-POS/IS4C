@@ -34,6 +34,7 @@ class PosIncident extends AlertIncident
         $model->incidentSubTypeID(FormLib::get('subtype'));
         $model->incidentLocationID(FormLib::get('location'));
         $model->tdate(FormLib::get('iDate') ? FormLib::get('iDate') : date('Y-m-d H:i:s'));
+        $model->modified(FormLib::get('iDate') ? FormLib::get('iDate') : date('Y-m-d H:i:s'));
         $model->details(FormLib::get('details'));
         $model->uid($uid);
         $model->storeID(FormLib::get('store'));

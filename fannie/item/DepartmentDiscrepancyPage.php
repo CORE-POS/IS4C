@@ -105,7 +105,7 @@ class DepartmentDiscrepancyPage extends FannieRESTfulPage {
         }
         
         //  Get list of Departments
-        $query = $dbc->prepare('SELECT dept_no, dept_name FROM departments GROUP BY dept_no ORDER BY dept_no;');
+        $query = $dbc->prepare('SELECT dept_no, dept_name FROM departments GROUP BY dept_no, dept_name ORDER BY dept_no;');
         $result = $dbc->query($query);
         $dept = array();
         while ($row = $dbc->fetch_row($result)) {
@@ -278,7 +278,7 @@ class DepartmentDiscrepancyPage extends FannieRESTfulPage {
         $query = $dbc->prepare('
             SELECT dept_no, dept_name 
             FROM departments 
-            GROUP BY dept_no ORDER BY dept_no;
+            GROUP BY dept_no, dept_name ORDER BY dept_no;
         ');
         $result = $dbc->query($query);
         $ret .= '
@@ -482,6 +482,11 @@ class DepartmentDiscrepancyPage extends FannieRESTfulPage {
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->css_content());
+        $phpunit->assertInternalType('string', $this->get_view());
+    }
 }
 
 FannieDispatch::conditionalExec();

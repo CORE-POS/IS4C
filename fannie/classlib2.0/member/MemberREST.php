@@ -219,8 +219,8 @@ class MemberREST
             'chargeLimit' => $row['ChargeLimit'],
             'chargeBalance' => $row['Balance'],
             'idCardUPC' => $row['upc'] === null ? '' : $row['upc'],
-            'startDate' => $row['start_date'] === null ? '0000-00-00 00:00:00' : $row['start_date'],
-            'endDate' => $row['end_date'] === null ? '0000-00-00 00:00:00' : $row['end_date'],
+            'startDate' => $row['start_date'] === null ? '1900-01-01 00:00:00' : $row['start_date'],
+            'endDate' => $row['end_date'] === null ? '1900-01-01 00:00:00' : $row['end_date'],
             'city' => $row['city'] === null ? '' : $row['city'],
             'state' => $row['state'] === null ? '' : $row['state'],
             'zip' => $row['zip'] === null ? '' : $row['zip'],
@@ -421,8 +421,8 @@ class MemberREST
                     'chargeLimit' => $row['ChargeLimit'],
                     'chargeBalance' => $row['Balance'],
                     'idCardUPC' => $row['upc'] === null ? '' : $row['upc'],
-                    'startDate' => $row['start_date'] === null ? '0000-00-00 00:00:00' : $row['start_date'],
-                    'endDate' => $row['end_date'] === null ? '0000-00-00 00:00:00' : $row['end_date'],
+                    'startDate' => $row['start_date'] === null ? '1900-01-01 00:00:00' : $row['start_date'],
+                    'endDate' => $row['end_date'] === null ? '1900-01-01 00:00:00' : $row['end_date'],
                     'city' => $row['city'] === null ? '' : $row['city'],
                     'state' => $row['state'] === null ? '' : $row['state'],
                     'zip' => $row['zip'] === null ? '' : $row['zip'],
@@ -579,6 +579,9 @@ class MemberREST
                 foreach ($columns as $col_name => $info) {
                     if ($col_name == 'cardNo') continue;
                     if ($col_name == 'modified') continue;
+                    if ($col_name == 'lastName' || $col_name == 'firstName') {
+                        $c_json[$col_name] = trim($c_json[$col_name]);
+                    }
 
                     if (isset($c_json[$col_name])) {
                         $customers->$col_name($c_json[$col_name]);
@@ -718,11 +721,11 @@ class MemberREST
                     $personNum++;
                 }
                 if (isset($c_json['firstName'])) {
-                    $loopCD->FirstName($c_json['firstName']);
+                    $loopCD->FirstName(trim($c_json['firstName']));
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['lastName'])) {
-                    $loopCD->LastName($c_json['lastName']);
+                    $loopCD->LastName(trim($c_json['lastName']));
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['chargeAllowed'])) {

@@ -10,7 +10,7 @@ class PayrollDetail extends FanniePage {
     protected $header = 'Payroll Detail';
 
     function preprocess(){
-        $this->add_css_file('includes/style.css');
+        $this->addCssFile('includes/style.css');
         return True;
     }   
 

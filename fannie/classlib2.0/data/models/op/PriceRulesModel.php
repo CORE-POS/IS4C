@@ -26,7 +26,6 @@
 */
 class PriceRulesModel extends BasicModel
 {
-
     protected $name = "PriceRules";
 
     protected $columns = array(
@@ -38,5 +37,14 @@ class PriceRulesModel extends BasicModel
     'details' => array('type'=>'TEXT'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Price Rules define reasons for making exceptions to normal margin. A price rule
+type might be "loss leader" or "competitor match". Attaching a reason to a given
+item provides more information why the margin is so low (or high).
+            ';
+    }
 }
 

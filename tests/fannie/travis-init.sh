@@ -4,11 +4,15 @@ set -e
 mysql -u root -e "DROP DATABASE IF EXISTS unit_test_op;"
 mysql -u root -e "DROP DATABASE IF EXISTS unit_test_trans;"
 mysql -u root -e "DROP DATABASE IF EXISTS unit_test_archive;"
+mysql -u root -e "DROP DATABASE IF EXISTS unit_test_laneop;"
+mysql -u root -e "DROP DATABASE IF EXISTS unit_test_lanetrans;"
 
 # create Fannie databases
 mysql -u root -e "CREATE DATABASE unit_test_op;"
 mysql -u root -e "CREATE DATABASE unit_test_trans;"
 mysql -u root -e "CREATE DATABASE unit_test_archive;"
+mysql -u root -e "CREATE DATABASE unit_test_laneop;"
+mysql -u root -e "CREATE DATABASE unit_test_lanetrans;"
 # create default configuration file
 cp fannie/config.php.dist fannie/config.php
 # add path options
@@ -26,3 +30,5 @@ echo "\$FANNIE_LANES = array();" >> fannie/config.php
 # set database driver based on environment variable
 echo "\$FANNIE_SERVER_DBMS = '$DB_DRIVER';" >> fannie/config.php
 echo "\$FANNIE_STORE_ID = '1';" >> fannie/config.php
+echo "\$FANNIE_LANES = array(array('host'=>'127.0.0.1','type'=>'$DB_DRIVER','user'=>'root','pw'=>'','op'=>'unit_test_laneop','trans'=>'unit_test_lanetrans','offline'=>0));" >> fannie/config.php
+

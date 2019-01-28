@@ -99,7 +99,7 @@ class NewMemberTool extends FanniePage
         <div class="form-group">
             <label class="col-sm-2">How Many</label>
             <div class="col-sm-4">
-                <input type="number" name="num" value="40" class="form-control" required />
+                <input type="number" name="num" value="80" class="form-control" required />
             </div>
         </div>
         <div class="form-group">

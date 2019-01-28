@@ -40,13 +40,13 @@ class ReverseTransPage extends FannieRESTfulPage
     public $themed = true;
 
     function preprocess(){
-        $this->__routes[] = 'get<date><trans>';
-        $this->__routes[] = 'post<date><trans>';
-        $this->__routes[] = 'get<d><t>';
+        $this->__routes[] = 'get<date><trans><store>';
+        $this->__routes[] = 'post<date><trans><store>';
         return parent::preprocess();
     }
 
-    function get_date_trans_handler(){
+    function get_date_trans_store_handler()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $dlog = DTransactionsModel::selectDlog($this->date);
@@ -58,9 +58,10 @@ class ReverseTransPage extends FannieRESTfulPage
               left join tenders AS t ON d.trans_subtype=t.TenderCode
               where tdate BETWEEN ? AND ?
               and trans_num=?
+              AND " . DTrans::isStoreID($this->store, 'd') . "
               order by d.trans_id";
         $prep = $dbc->prepare($query);
-        $args = array($this->date.' 00:00:00', $this->date.' 23:59:59', $this->trans);
+        $args = array($this->date.' 00:00:00', $this->date.' 23:59:59', $this->trans, $this->store);
         $result = $dbc->execute($prep, $args);
 
         if ($dbc->num_rows($result) == 0){
@@ -107,19 +108,14 @@ class ReverseTransPage extends FannieRESTfulPage
         $ret .= "<b>Date</b>: ".$this->date." <b>Trans #</b>: ".$this->trans."<br />";
         $ret .= "<b>Member number</b>: ".$cardno."<br /><br />";
 
-        $ret .= "<a href=\"\" onclick=\"doVoid('{$this->date}','{$this->trans}'); return false;\">";
+        $ret .= "<a href=\"\" onclick=\"doVoid('{$this->date}','{$this->trans}', {$this->store}); return false;\">";
         $ret .= "Void this receipt</a><br />";
         echo $ret;
         return False;
     }
 
-    function get_d_t_handler(){
-        $this->date = $this->d;
-        $this->trans = $this->t;
-        return $this->post_date_trans_handler();
-    }
-
-    function post_date_trans_handler(){
+    function post_date_trans_store_handler()
+    {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $dlog = DTransactionsModel::selectDtrans($this->date);
@@ -145,16 +141,18 @@ class ReverseTransPage extends FannieRESTfulPage
             trans_id, store_id
             from $dlog where register_no = ?
             and emp_no = ? and trans_no = ?
+            and store_id = ?
             and datetime BETWEEN ? AND ?
             and trans_status <> 'X'
             order by trans_id";
-        $args = array($old_reg, $old_emp, $old_trans,
+        $args = array($old_reg, $old_emp, $old_trans, $this->store,
                 $this->date.' 00:00:00', $this->date.' 23:59:59');
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
         $trans_id = 1;
         $record = DTrans::defaults();
+        $record['store_id'] = $this->store;
         $record['emp_no'] = $emp_no;
         $record['register_no'] = $register_no;
         $record['trans_no'] = $trans_no;
@@ -219,12 +217,13 @@ class ReverseTransPage extends FannieRESTfulPage
         // return a listing of the new, reversal transaction
         $this->trans = $emp_no.'-'.$register_no.'-'.$trans_no;
         $this->date = date('Y-m-d');
-        return $this->get_date_trans_handler();
+        return $this->get_date_trans_store_handler();
     }
 
-    function get_view(){
-        global $FANNIE_URL;
-        $this->add_script('js/reverse.js');
+    function get_view()
+    {
+        $this->addScript('js/reverse.js?date=20180202');
+        $store = FormLib::storePicker();
         ob_start();
         ?>
         <form onsubmit="loadReceipt(); return false;">
@@ -238,6 +237,12 @@ class ReverseTransPage extends FannieRESTfulPage
             <label class="col-sm-1">Trans #</label>
             <div class="col-sm-5">
                 <input type="text" id="rtrans_num" class="form-control" required />
+            </div>
+        </div>
+        <div class="row form-group form-horizontal">
+            <label class="col-sm-1">Store</label>
+            <div class="col-sm-5">
+                <?php echo $store['html']; ?>
             </div>
         </div>
         <p>

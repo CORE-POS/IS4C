@@ -52,15 +52,12 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
 
     private function rewriteUpc($curUpc)
     {
-        if (strstr($curUpc, '-')) {
-            $curUpc = str_replace('-', '', $curUpc);
-            if (strlen($curUpc) == 12) {
-                $curUpc = substr($curUpc, 0, 11);
-            }
-        } elseif (strstr($curUpc, ' ')) {
-            $curUpc = str_replace(' ', '', $curUpc);
-            if (strlen($curUpc) == 12) {
-                $curUpc = substr($curUpc, 0, 11);
+        foreach (array('-', ' ') as $sep) {
+            if (strstr($curUpc, $sep)) {
+                $curUpc = str_replace($sep, '', $curUpc);
+                if (strlen($curUpc) == 12) {
+                    $curUpc = substr($curUpc, 0, 11);
+                }
             }
         }
 
@@ -119,10 +116,11 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
     public function unitTest($phpunit)
     {
         $data = array(
-            array('foo', 'bar'),
+            array('upc', 'bar', 'baz'),
             array(1, 2, 3),
-            array(1),
+            array('1-12345-67890-1', 3.5),
         );
+        $this->preview_selections['upc'] = 0;
         $phpunit->assertEquals(true, $this->process_file($data, array()));
     }
 }

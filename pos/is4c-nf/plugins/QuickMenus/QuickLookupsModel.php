@@ -39,6 +39,8 @@ class QuickLookupsModel extends \COREPOS\pos\lib\models\BasicModel
     'label' => array('type'=>'VARCHAR(100)'),
     'action' => array('type'=>'VARCHAR(25)'),
     'sequence' => array('type'=>'SMALLINT', 'default'=>0),
+    'imageType' => array('type'=>'VARCHAR(25)'),
+    'image' => array('type'=>'BLOB'),
     );
 }
 

@@ -26,7 +26,6 @@
 */
 class SpecialDeptMapModel extends BasicModel
 {
-
     protected $name = "SpecialDeptMap";
 
     protected $columns = array(
@@ -59,6 +58,15 @@ class SpecialDeptMapModel extends BasicModel
                 $this->save();
             }
         }
+    }
+
+    public function doc()
+    {
+        return '
+Use:
+Maps SpecialDept classes to department numbers. This is used mainly
+on lanes. It exists on the server for centralized pushing of changes.
+            ';
     }
 }
 

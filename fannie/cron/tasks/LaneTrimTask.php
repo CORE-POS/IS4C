@@ -40,13 +40,24 @@ Deprecates lanes.clean.php.';
         'weekday' => '*',
     );
 
+    private function laneConnect($ln)
+    {
+        try {
+            $sql = new SQLManager($ln['host'],$ln['type'],$ln['trans'],$ln['user'],$ln['pw']);
+        } catch (Exception $ex) {
+            $sql = false;
+        }
+
+        return $sql;
+    }
+
     public function run()
     {
         set_time_limit(0);
 
         foreach ($this->config->get('LANES') as $ln) {
 
-            $sql = new SQLManager($ln['host'],$ln['type'],$ln['trans'],$ln['user'],$ln['pw']);
+            $sql = $this->laneConnect($ln);
             if ($sql === false || !$sql->isConnected()) {
                 $this->cronMsg("Could not connect to lane: ".$ln['host']);
                 continue;

@@ -19,100 +19,48 @@ var tenderEditor = (function($) {
         setTimeout(function(){elem.popover('destroy'); }, timeout);
     };
 
-    mod.saveCode = function(val,t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
+    var _saveField = function(f_name, val, t_id, ths) {
+        var elem = $(ths);
+        var orig = ths.defaultValue;
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveCode='+val+'&id='+t_id
+            data: f_name+'='+val+'&id='+t_id
         }).done(function(data){
             _popover(data, elem, orig);
         });
+    };
+
+    mod.saveCode = function(val,t_id){
+        _saveField('saveCode', val, t_id, this);
     };
 
     mod.saveName = function(val,t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type:'post',
-            url: ajax_url,
-            data: 'saveName='+val+'&id='+t_id
-        }).done(function(data){
-            _popover(data, elem, orig);
-        });
+        _saveField('saveName', val, t_id, this);
     };
 
     mod.saveType = function(val,t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type:'post',
-            url: ajax_url,
-            data: 'saveType='+val+'&id='+t_id
-        }).done(function(data){
-            _popover(data, elem, orig);
-        });
+        _saveField('saveType', val, t_id, this);
     };
 
     mod.saveCMsg = function(val,t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type:'post',
-            url: ajax_url,
-            data: 'saveCMsg='+val+'&id='+t_id
-        }).done(function(data){
-            _popover(data, elem, orig);
-        });
+        _saveField('saveCMsg', val, t_id, this);
     };
 
     mod.saveMin = function(val,t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type:'post',
-            url: ajax_url,
-            data: 'saveMin='+val+'&id='+t_id
-        }).done(function(data){
-            _popover(data, elem, orig);
-        });
+        _saveField('saveMin', val, t_id, this);
     };
 
     mod.saveMax = function(val,t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type:'post',
-            url: ajax_url,
-            data: 'saveMax='+val+'&id='+t_id
-        }).done(function(data){
-            _popover(data, elem, orig);
-        });
+        _saveField('saveMax', val, t_id, this);
     };
 
     mod.saveRLimit = function(val,t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type:'post',
-            url: ajax_url,
-            data: 'saveRLimit='+val+'&id='+t_id
-        }).done(function(data){
-            _popover(data, elem, orig);
-        });
+        _saveField('saveRLimit', val, t_id, this);
     };
 
     mod.saveSalesCode = function(val, t_id){
-        var elem = $(this);
-        var orig = this.defaultValue;
-        $.ajax({
-            type:'post',
-            url: ajax_url,
-            data: 'saveSalesCode='+val+'&id='+t_id
-        }).done(function(data){
-            _popover(data, elem, orig);
-        });
+        _saveField('saveSalesCode', val, t_id, this);
     };
 
     mod.addTender = function(){

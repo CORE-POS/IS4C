@@ -40,5 +40,17 @@ class EWicItemsModel extends \COREPOS\pos\lib\models\BasicModel
     'eWicCategoryID' => array('type'=>'INT'),
     'eWicSubCategoryID' => array('type'=>'INT'),
     );
+
+    public function doc()
+    {
+        return '
+Maps UPC items to EWic categories. The check digit is stored in upcCheck
+in case the processor side expects check digits to be included in submissions.
+The alias field is an alternate UPC for cases where it\'s permissible for the
+system to send a UPC that differs from what the customer is actually purchasing.
+This is most likely to occur with produce where UPCs and PLUs change frequently
+and the issuing state/entity may not have 100% of valid UPCs on their list.
+            ';
+    }
 }
 

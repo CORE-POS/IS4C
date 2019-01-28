@@ -84,6 +84,14 @@ class TableSnapshotTask extends FannieTask
         }
 
         try {
+            $model = new FloorSectionsListTableModel($sql);
+            $model->refresh();
+        } catch (Exception $ex) {
+            $this->cronMsg("Could not repopulate FloorSectionsListTable. Details: " . $ex->getMessage(),
+                    FannieLogger::NOTICE);
+        }
+
+        try {
             if ($sql->dbmsName() == "mssql") {
                 $sql->query("SELECT * INTO custdataBackup FROM custdata");
             } else {

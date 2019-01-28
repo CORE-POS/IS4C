@@ -72,5 +72,5 @@ class posCustDisplay extends BasicCorePage
     }
 }
 
-AutoLoader::dispatch();
+AutoLoader::dispatch(false);
 

@@ -140,16 +140,16 @@ class OverShortDepositSlips extends FanniePage
                 if ($real == 1) $j = 0;
                 $k = 6;
                 if ($real == 6) $k = 2;
-                $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
+                $pdf->SetXY(10 + ($width-0)*$j + ($width+7)*($real-1-$j),10);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
-                $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+                $pdf->SetX(10+ ($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->SetFontSize($font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
-                $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+                $pdf->SetX(10 + ($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->SetFont('Arial','B',$font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
                 $pdf->SetFont('Arial','',$font_size-1);
-                $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+                $pdf->SetX(10 + ($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
                 
                 $acc = array();
@@ -187,16 +187,16 @@ class OverShortDepositSlips extends FanniePage
             if ($real == 1) $j = 0;
             $k = 6;
             if ($real == 6) $k = 2;
-            $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
+            $pdf->SetXY(10+($width-0)*$j + ($width+7)*($real-1-$j),10);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
-            $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+            $pdf->SetX(10+($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->SetFontSize($font_size-1);
             $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
-            $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+            $pdf->SetX(10+($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->SetFont('Arial','B',$font_size);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
             $pdf->SetFont('Arial','',$font_size);
-            $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
+            $pdf->SetX(10+($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
         }
 
@@ -214,7 +214,7 @@ class OverShortDepositSlips extends FanniePage
         $pdf->SetFillColor(0,0,0);
         $pdf->SetTextColor(0,0,0);
         $pdf->SetFontSize(12);
-        $str = "Whole Foods Community\nCO-OP Deposit Slip\n";
+        $str = "Whole Foods Community\nCO-OP Deposit Slip\nChecking\n";
         $str .= trim(file_get_contents("acct"),"\r\n")."\n\n";
         $str .= "Date\t".date("m/d/y")."\n";
         $pdf->MultiCell(55,8,$str,1,'C');
@@ -300,7 +300,7 @@ class OverShortDepositSlips extends FanniePage
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->add_script('js/count.js');
+        $this->addScript('js/count.js');
         ob_start();
         ?>
         <form action=OverShortDepositSlips.php method=get>

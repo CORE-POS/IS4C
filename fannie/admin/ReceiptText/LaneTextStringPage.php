@@ -67,15 +67,9 @@ class LaneTextStringPage extends FannieRESTfulPage
         $this->connection->selectDB($this->config->get('OP_DB'));
         $model = new CustomReceiptModel($this->connection);
         $model->type($this->type);
-        
-        $ret = '<table class="table table-bordered">
-            <tr>
-                <th>Line #</th>
-                <th>Text</th>
-                <th>' . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</th>
-            </tr>';
+        $table = '';
         foreach ($model->find('seq') as $obj) {
-            $ret .= sprintf('<tr>
+            $table .= sprintf('<tr>
                 <td>%d<input type="hidden" name="id[]" value="%d" /></td>
                 <td><input type="text" maxlength="55" name="line[]" class="form-control" value="%s" /></td>
                 <td><input type="checkbox" name="del[]" value="%d" /></td>
@@ -85,10 +79,20 @@ class LaneTextStringPage extends FannieRESTfulPage
                 $obj->seq()
             );
         }
-        $ret .= '<tr><td>NEW</td><td><input type="text" name="newLine" class="form-control" /></td>
-            <td>&nbsp;</td></tr>';
-        $ret .= '</table>';
-        echo $ret;
+        $delIcon = \COREPOS\Fannie\API\lib\FannieUI::deleteIcon();
+        
+        echo <<<HTML
+<table class="table table-bordered">
+    <tr>
+        <th>Line #</th>
+        <th>Text</th>
+        <th>{$delIcon}</th>
+    </tr>
+    {$table}
+    <tr><td>NEW</td><td><input type="text" name="newLine" class="form-control" /></td>
+        <td>&nbsp;</td></tr>
+</table>
+HTML;
 
         return false;
     }
@@ -146,13 +150,16 @@ class LaneTextStringPage extends FannieRESTfulPage
     protected function get_view()
     {
         $this->addScript('lane-text.js');
-        ob_start();
-?>
-<form action=LaneTextStringPage.php onsubmit="laneText.saveString(this); return false;">
+        $opts = '';
+        foreach ($this->TRANSLATE as $short=>$long) {
+            $opts .= sprintf('<option value="%s">%s</option>', $short, $long);
+        }
 
+        return <<<HTML
+<form action=LaneTextStringPage.php onsubmit="laneText.saveString(this); return false;">
 <p class="ichunk">Use this utility to enter and edit the lines of text that appear on
-receipts, the lane Welcome screen, and elsewhere.
-<br />If your receipts have no headers or footers or they are wrong this is the place to fix that.
+    receipts, the lane Welcome screen, and elsewhere.
+    <br />If your receipts have no headers or footers or they are wrong this is the place to fix that.
 </p>
 <hr />
 <h4 class="install">Select Type of Text</h4>
@@ -161,18 +168,14 @@ receipts, the lane Welcome screen, and elsewhere.
 <div class="form-group">
     <select class="form-control" name="type" class="form-control" 
         onchange="laneText.loadStrings(this.value);">
-    <option value="">Choose...</option>
-<?php
-foreach ($this->TRANSLATE as $short=>$long) {
-    printf('<option value="%s">%s</option>', $short, $long);
-}
-?>
-</select>
+        <option value="">Choose...</option>
+        {$opts}
+    </select>
 </div>
 <p id="instructions-p">
-<br />To add an additional line fill out the last row marked NEW.
-<br />To delete a line check the box in the right-hand column (trash).
-<br />The maximum length of a line is 55 characters.
+    <br />To add an additional line fill out the last row marked NEW.
+    <br />To delete a line check the box in the right-hand column (trash).
+    <br />The maximum length of a line is 55 characters.
 </p>
 <div id="line-div">
 </div>
@@ -180,10 +183,7 @@ foreach ($this->TRANSLATE as $short=>$long) {
     <button type="submit" class="btn btn-default">Save Changes</button>
 </p>
 </form>
-
-<?php
-
-        return ob_get_clean();
+HTML;
     }
 
     public function helpContent()

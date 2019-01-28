@@ -85,7 +85,7 @@ div .listbox {float: left; padding: 10px 10px 0 0; }
 div .listboxText {float: left; font-weight: bold; }
 div .farewellMsg {text-align: center; font-weight: bold; 
 		  font-size: 120%; line-height: 1.4em;}
-button.pos-button {
+button.pos-button, input.pos-button {
     -moz-user-select: none;
     background-image: none;
     border: 1px solid transparent;
@@ -147,6 +147,11 @@ div.qkBox div { width: 100px; padding: 5px 0 5px 0; margin-left:auto; margin-rig
 div.qkArrowBox { width: 20px; float: left; padding-top: 25px;}
 button.qkArrow { width: 50px; height: 30px; border: outset 3px #004080;
 	color: #004080; background-color: #ffffff; }
+input.quickButtonImage {
+    font-size: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 
 /*********************************************
  * NumPad Notifier

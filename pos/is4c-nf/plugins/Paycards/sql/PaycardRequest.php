@@ -182,6 +182,8 @@ class PaycardRequest
         switch (strtoupper($entryMethod)) {
             case 'CHIP':
                 return -1;
+            case 'CONTACTLESS':
+                return -2;
             case 'SWIPED':
                 return 0;
             default:

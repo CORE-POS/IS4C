@@ -29,7 +29,7 @@
     Uses extension .inc in sync/special instead of .php to avoid API scanning.
 */
 
-class SyncLanesForPlugin extends SyncLanes
+class SyncLanesForPlugin extends COREPOS\Fannie\API\data\SyncLanes
 {
 
     /**

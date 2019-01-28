@@ -26,12 +26,19 @@
 */
 class IgnoredBarcodesModel extends BasicModel
 {
-
     protected $name = "IgnoredBarcodes";
 
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'reason' => array('type'=>'VARCHAR(50)', 'default'=>"'PLU Item'"),
     );
+
+    public function doc()
+    {
+        return '
+Ignored Barcodes are UPC values that the lane should
+simply disregard when scanned.
+            ';
+    }
 }
 

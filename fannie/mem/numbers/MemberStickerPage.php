@@ -41,7 +41,9 @@ class MemberStickerPage extends FanniePage {
     for use with membership paperwork.';
     public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
+        $pairs = FormLib::get('pairs', false);
         if (FormLib::get_form_value('start',False) !== False){
             $pdf = new FPDF('P','in','Letter');
             $pdf->SetMargins(0.5,0.5,0.5);
@@ -54,10 +56,13 @@ class MemberStickerPage extends FanniePage {
             $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
             $pdf->SetFont('Gill','',16);
             for($i=0;$i<40;$i++){
-                $current = $start+$i;   
                 $pdf->SetXY($x,$y);
-                $pdf->Cell(1.75,0.5,$current,0,0,'C');
-                $pdf->Cell(1.75,0.5,$current,0,0,'C');
+                $pdf->Cell(1.75,0.5,$start,0,0,'C');
+                if (!$pairs) {
+                    $start += 1;
+                }
+                $pdf->Cell(1.75,0.5,$start,0,0,'C');
+                $start += 1;
                 if ($i % 2 == 0) $x += (1.75*2)+0.5;
                 else {
                     $x = 0.5;
@@ -78,8 +83,16 @@ class MemberStickerPage extends FanniePage {
         <p>
         Generate a sheet of member stickers<br />
         Format: Avery 5267<br />
-        <label>Starting member number</label>
-        <input type="number" name="start" class="form-control" required />
+        <div class="form-group">
+            <label>Starting member number</label>
+            <input type="number" name="start" class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="pairs" value="1" />
+                Print pairs of numbers
+            </label>
+        </div>
         </p>
         <p>
         <button type="submit" class="btn btn-default">Get PDF</button>

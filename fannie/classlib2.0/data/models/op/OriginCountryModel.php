@@ -26,7 +26,6 @@
 */
 class OriginCountryModel extends BasicModel
 {
-
     protected $name = "originCountry";
     protected $preferred_db = 'op';
 

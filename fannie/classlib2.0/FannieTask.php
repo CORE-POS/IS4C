@@ -52,14 +52,7 @@ class FannieTask
     */
     public $log_start_stop = true;
 
-    protected $error_threshold  = 99;
-
-    const TASK_NO_ERROR         = 0;
-    const TASK_TRIVIAL_ERROR    = 1;
-    const TASK_SMALL_ERROR      = 2;
-    const TASK_MEDIUM_ERROR     = 3;
-    const TASK_LARGE_ERROR      = 4;
-    const TASK_WORST_ERROR      = 5;
+    protected $error_threshold  = 0;
 
     protected $config = null;
 
@@ -223,6 +216,33 @@ class FannieTask
         $parts = explode('=', $opt, 2);
 
         return $parts[1];
+    }
+
+    protected function getLockFile()
+    {
+        $dir = sys_get_temp_dir();
+        $class = str_replace('\\', '_', get_class($this));
+
+        return $dir . DIRECTORY_SEPARATOR . $class . '.lock';
+    }
+
+    protected function isLocked()
+    {
+        return file_exists($this->getLockFile());
+    }
+
+    protected function lock()
+    {
+        $file = $this->getLockFile();
+        $lock = fopen($file, 'w');
+        fwrite($lock, date('Y-m-d H:i:s'));
+        fclose($lock);
+        chmod($file, 0666);
+    }
+
+    protected function unlock()
+    {
+        unlink($this->getLockFile());
     }
 }
 

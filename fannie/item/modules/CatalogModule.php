@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\FannieUI;
+
 /**
   @class CatalogModule
   This is a non-editing module to provide greater visibility into
@@ -38,16 +40,28 @@ class CatalogModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         $upc = BarcodeLib::padUPC($upc);
         $dbc = $this->db();
-        $listP = $dbc->prepare('SELECT vendorName, COUNT(*) AS num
+        $listP = $dbc->prepare('SELECT i.vendorID, v.vendorName, i.sku, i.units, i.description
             FROM vendorItems AS i 
                 INNER JOIN vendors AS v ON i.vendorID=v.vendorID
             WHERE i.upc=?
-            GROUP BY vendorName');
+            ');
         $vendors = array();
         $listR = $dbc->execute($listP, array($upc));
+        $disabled = $dbc->numRows($listR) <= 1 ? 'disabled' : '';
+        $table = '';
         while ($listW = $dbc->fetchRow($listR)) {
-            $vendors[] = $listW['vendorName'] . '(' . $listW['num'] . ')';
+            $vID = $listW['vendorID'];
+            if (!isset($vendors[$vID])) {
+                $vendors[$vID] = array('name' => $listW['vendorName'], 'count' => 0);
+            }
+            $vendors[$vID]['count']++;
+            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
+                    <td><input type="checkbox" name="catalogDel[]" value="%d:%s" %s 
+                    title="Delete this catalog entry" /></td></tr>',
+                    $listW['vendorName'], $listW['sku'], $listW['description'], $listW['units'],
+                    $vID, $listW['sku'], $disabled);
         }
+        $vendors = array_map(function ($i) { return $i['name'] . ' (' . $i['count'] . ')'; }, $vendors);
         $vendors = count($vendors) == 0 ? 'None' : implode(',', $vendors);
 
         $parentP = $dbc->prepare('
@@ -89,6 +103,9 @@ class CatalogModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '<div id="CatalogContents" class="panel-body' . $css . '">';
 
         $ret .= 'In Vendor catalog(s): ' . $vendors . '<br />'
+            . '<table class="table small table-bordered"><tr><th>Vendor</th><th>SKU</th><th>Item</th><th>Case Size</th>
+                <th><button class="btn btn-danger btn-xs" type="button">' . FannieUI::deleteIcon() . '</button></td></tr>'
+            . $table . '</table><br />'
             . $mapped
             . $parent
             . $child; 
@@ -97,6 +114,25 @@ class CatalogModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '</div>' . '<!-- /#CatalogFieldset -->';
 
         return $ret;
+    }
+
+    function SaveFormData($upc)
+    {
+        $upc = BarcodeLib::padUPC($upc);
+        $dbc = $this->db();
+        try {
+            $prep = $dbc->prepare('DELETE FROM vendorItems WHERE vendorID=? AND sku=?');
+            foreach ($this->form->catalogDel as $entry) {
+                list($vID, $sku) = explode(':', $entry, 2);
+                if ($vID && $sku) {
+                    $dbc->execute($prep, array($vID, $sku));
+                }
+            }
+        } catch (Exception $ex) {
+            return false;
+        }
+
+        return true;
     }
 }
 

@@ -146,7 +146,7 @@ class PITermCheck extends FannieRESTfulPage
 
         $checkDateP = $dbc->prepare("
             UPDATE " . $checkDB . $dbc->sep() . "GumPayoffs 
-            SET checkIssued=NOW()
+            SET issueDate=NOW(), amount=?
             WHERE checkNumber=?");
 
         $custdata = new CustdataModel($dbc);
@@ -162,7 +162,7 @@ class PITermCheck extends FannieRESTfulPage
         if ($number === false) {
             $number = GumLib::allocateCheck($custdata, false, 'EQ REFUND', 'eqr' . $this->id);
         }
-        $dbc->execute($checkDateP, array($number));
+        $res = $dbc->execute($checkDateP, array($equity, $number));
 
         $pdf->SetXY(0, 0);
         $pdf->Image('../GiveUsMoneyPlugin/img/new_letterhead.png', 10, 10, 35);

@@ -52,6 +52,7 @@ class DeptTransactionsReport extends FannieReportPage
         $deptMulti = FormLib::get('departments', array());
     
         $buyer = FormLib::get('buyer', '');
+        $store = FormLib::get('store', 0);
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
@@ -59,9 +60,10 @@ class DeptTransactionsReport extends FannieReportPage
             COUNT(DISTINCT trans_num) as trans_count
             FROM $dlog AS d 
             WHERE tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd') . "
             GROUP BY YEAR(tdate), MONTH(tdate), DAY(tdate)
             ORDER BY YEAR(tdate), MONTH(tdate), DAY(tdate)";
-        $argsAll = array($date1.' 00:00:00',$date2.' 23:59:59');
+        $argsAll = array($date1.' 00:00:00',$date2.' 23:59:59', $store);
 
         $querySelected = "SELECT YEAR(tdate) AS year, MONTH(tdate) AS month, DAY(tdate) AS day,
             COUNT(DISTINCT trans_num) as trans_count
@@ -71,7 +73,8 @@ class DeptTransactionsReport extends FannieReportPage
         } elseif ($buyer !== '' && $buyer == -2) {
             $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
-        $querySelected .= " WHERE tdate BETWEEN ? AND ? ";
+        $querySelected .= " WHERE tdate BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd');
         $argsSel = $argsAll;
         if ($buyer !== '') {
             if ($buyer == -2) {

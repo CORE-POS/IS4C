@@ -52,7 +52,7 @@ class MasterSuperDeptsModel extends ViewModel
     {
         $res = $this->connection->query('
             SELECT superID, super_name
-            FROM MasterSuperDepts
+            FROM ' . $this->fq_name . '
             GROUP BY superID, super_name');
         $ret = '';
         while ($row = $this->connection->fetchRow($res)) {

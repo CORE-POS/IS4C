@@ -33,6 +33,7 @@ class SumMemSalesByDayModel extends CoreWarehouseModel {
     protected $columns = array(
     'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
     'card_no' => array('type'=>'INT','primary_key'=>True),
+    'store_id' => array('type'=>'INT','primary_key'=>True),
     'total' => array('type'=>'MONEY','default'=>0.00),
     'quantity' => array('type'=>'DOUBLE','default'=>0.00),
     'retailTotal' => array('type'=>'MONEY','default'=>0.00),
@@ -56,6 +57,7 @@ class SumMemSalesByDayModel extends CoreWarehouseModel {
         $sql = "INSERT INTO ".$this->name."
             SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
             card_no,
+            t.store_id,
             CONVERT(SUM(total),DECIMAL(10,2)) as total,
             CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
                 WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity,
@@ -68,7 +70,7 @@ class SumMemSalesByDayModel extends CoreWarehouseModel {
             WHERE tdate BETWEEN ? AND ? AND
             trans_type IN ('I','D') 
             AND card_no <> 0
-            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), card_no";
+            GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), card_no, t.store_id";
         $prep = $this->connection->prepare($sql);
         $result = $this->connection->execute($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
     }

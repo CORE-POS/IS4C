@@ -24,8 +24,8 @@
         
 
 /**
-  @class AutoOrderMapModel
-*/
+ * @class AutoOrderMapModel
+ */
 class AutoOrderMapModel extends BasicModel
 {
 
@@ -40,5 +40,15 @@ class AutoOrderMapModel extends BasicModel
     'active' => array('type'=>'TINYINT', 'default'=>0),
     );
 
+    public function doc()
+    {
+        return '
+AutoOrderMap controls which vendors should have purchase
+orders automatically generated **and** submitted. This can
+be assigned per-store. The active flag enables the automatic
+behavior. The AutoOrderTask must also be enabled for this
+to really do anything.
+        ';
+    }
 }
 

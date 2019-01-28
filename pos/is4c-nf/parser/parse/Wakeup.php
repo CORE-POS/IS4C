@@ -23,13 +23,14 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\parser\Parser;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\TransRecord;
 
 class Wakeup extends Parser 
 {
     function check($str)
     {
-        if ($str == "WAKEUP" || $str == 'WAKEUP2'){
+        if ($str == "WAKEUP" || $str == 'WAKEUP2' || $str == 'PROFILE') {
             return True;
         }
         return False;
@@ -38,8 +39,34 @@ class Wakeup extends Parser
     function parse($str)
     {
         $ret = $this->default_json();
+        if ($str == 'PROFILE') {
+            return $this->perfLog($ret);
+        }
         $ret['udpmsg'] = $str == 'WAKEUP' ? 'wakeup' : 'reBoot';
         TransRecord::addLogRecord(array('upc'=>$str));
+        return $ret;
+    }
+
+    private function perfLog($ret)
+    {
+        $perf = $this->session->get('perfLog');
+        $msg = '';
+        if (is_array($perf) || count($perf) > 0) {
+            $msg .= '<table>';
+            foreach ($perf as $p) {
+                if (strpos($p['action'], '\\')) {
+                    $tmp = explode('\\', $p['action']);
+                    $p['action'] = $tmp[count($tmp) - 1];
+                }
+                $msg .= "<tr><td>{$p['action']}</td><td>{$p['time']}</td><td>{$p['input']}</td></tr>";
+            }
+            $msg .= '</table>';
+        }
+        if ($msg === '') {
+            $msg = _('No data available');
+        }
+        $ret['output'] = DisplayLib::boxMsg($msg, '', true, DisplayLib::standardClearButton());
+
         return $ret;
     }
 

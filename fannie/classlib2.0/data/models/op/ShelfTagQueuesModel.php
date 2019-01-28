@@ -26,7 +26,6 @@
 */
 class ShelfTagQueuesModel extends BasicModel
 {
-
     protected $name = "ShelfTagQueues";
     protected $preferred_db = 'op';
 
@@ -70,5 +69,14 @@ class ShelfTagQueuesModel extends BasicModel
         return $ret;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+A shelf tag queue is a set of items that will have tags printed later.
+Out-of-the-box queues are aligned with MasterSuperDepts and an item\'s
+default queue will be it\'s primary super department.
+            ';
+    }
 }
 

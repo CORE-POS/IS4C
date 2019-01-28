@@ -15,7 +15,7 @@ class ProductsInUseSync extends MySQLSync
         $cmd = $this->dumpCommand()
             . ' -w ' . escapeshellarg('inUse=1')
             . ' '   . escapeshellarg($dbName)
-            . ' '   . escapeshellarg($table)
+            . ' '   . escapeshellarg($tableName)
             . ' > ' . escapeshellarg($tempfile)
             . ' 2> ' . escapeshellarg($tempfile . '.err');
 
@@ -31,27 +31,9 @@ class ProductsInUseSync extends MySQLSync
             return $ret;
         }
 
-        $laneNumber = 1;
         $ret['success'] = true;
-        foreach ($this->config->get('LANES') as $lane) {
-            if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
-                continue;
-            }
-            $laneCmd = $this->laneConnect($lane, $dbName, $tempfile); 
-            exec($laneCmd, $output, $exitCode);
-            if ($exitCode == 0) {
-                $ret['details'] .= "Lane {$laneNumber} ({$lane['host']}) completed successfully\n";
-            } else {
-                $ret['details'] .= "Lane {$laneNumber} ({$lane['host']}) failed, returned: " . implode(', ', $output) . "\n";
-                $ret['success'] = false;
-            }
-            unset($output);
-            unset($exitCode);
-            $laneNumber++;
-        }
-        unlink($tempfile);
 
-        return $ret;
+        return $this->sendDumpToLanes($ret, $dbName, $tempfile, $includeOffline);
     }
 }
 

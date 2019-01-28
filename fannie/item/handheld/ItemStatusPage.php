@@ -339,19 +339,29 @@ class ItemStatusPage extends FannieRESTfulPage
 
     public function get_view()
     {
-        $this->add_script('../autocomplete.js');
-        $this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
+        $this->addScript('../autocomplete.js');
+        $this->addOnloadCommand("bindAutoComplete('#upc', '../../ws/', 'item');\n");
         if (FormLib::get('linea') != 1) {
-            $this->add_onload_command("\$('#upc').focus();\n");
+            $this->addOnloadCommand("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-        return '<form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">
-            <div class="form-group form-inline">
-                <label>UPC</label>
-                <input type="text" name="id" id="upc" class="form-control" />
-                <button type="submit" class="btn btn-default">Check Item</button>
+        return '
+            <div class="row">
+                <div class="col-md-6">
+                    <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">
+                    <div class="form-group form-inline">
+                        <label>UPC</label>
+                        <input type="text" name="id" id="upc" class="form-control" />
+                        <button type="submit" class="btn btn-default">Check Item</button>
+                    </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <a href="../../admin/labels/ShelfTagIndex.php">Print Shelf Tags</a>
+                </div>
             </div>
-            </form>';
+                
+            ';
     }
 
     public function helpContent()

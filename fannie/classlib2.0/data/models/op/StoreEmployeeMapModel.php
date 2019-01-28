@@ -34,5 +34,14 @@ class StoreEmployeeMapModel extends BasicModel
     'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'empNo' => array('type'=>'INT', 'primary_key'=>true),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Designate which employee (cashier) logins are valid at a given store.
+Not in active use yet.
+            ';
+    }
 }
 

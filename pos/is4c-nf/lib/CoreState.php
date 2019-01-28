@@ -129,6 +129,12 @@ static public function systemInit()
     CoreLocal::set("plainmsg","");
 
     /**
+     * @var perfLog
+     * Logging for performance metrics
+     */
+    CoreLocal::set('perfLog', array());
+
+    /**
       Load lane and store numbers from LaneMap array
       if present
     */
@@ -425,7 +431,8 @@ static public function printReset()
       signature slips cannot be suppressed
       and will always print.
     */
-    CoreLocal::set("receiptToggle",1);
+    $default = CoreLocal::get('receiptToggleDefault') !== '' ? CoreLocal::get('receiptToggleDefault') : 1;
+    CoreLocal::set("receiptToggle", $default);
 
     /**
       @var autoReprint

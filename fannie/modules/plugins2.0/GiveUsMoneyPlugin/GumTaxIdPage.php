@@ -177,7 +177,7 @@ class GumTaxIdPage extends FannieRESTfulPage
         $ret .= '</div></div>';
         $ret .= '<div style="clear:left;"></div>';
 
-        $this->add_script('js/tax.js');
+        $this->addScript('js/tax.js');
 
         return $ret;
     }

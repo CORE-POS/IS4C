@@ -17,6 +17,8 @@
     <MonoDefine Include="MONO" Condition=" '$(OS)' == 'Unix' " />
     <RabbitDefine Include="CORE_RABBIT"
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
+    <RabbitDefine Include="CORE_MYSQL"
+        Condition=" Exists('packages\MySql.Data.6.9.12\lib\net40\MySql.Data.dll') " />
     <JsonDefine Include="NEWTONSOFT_JSON" />
   </ItemGroup>
 
@@ -33,6 +35,10 @@
     <MagellanRef Include="Newtonsoft.Json.dll" />
     <MagellanRef Include="RabbitMQ.Client.dll"
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
+    <MagellanRef Include="MySql.Data.dll"
+        Condition=" Exists('packages\MySql.Data.6.9.12\lib\net40\MySql.Data.dll') " />
+    <MagellanRef Include="MySqlPipe.dll"
+        Condition=" Exists('packages\MySql.Data.6.9.12\lib\net40\MySql.Data.dll') " />
     <MagellanRef Include="Discover.dll" />
 
     <MagellanTarget Include="DelegateFormLibrary" />
@@ -40,8 +46,11 @@
     <MagellanTarget Include="SPHLibrary" />
     <MagellanTarget Include="JsonLibrary" />
     <MagellanTarget Include="Discover" />
+    <MagellanTarget Include="ComPortLibrary" />
     <MagellanTarget Include="RabbitMqLibrary"
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
+    <MagellanTarget Include="MySqlPipe"
+        Condition=" Exists('packages\MySql.Data.6.9.12\lib\net40\MySql.Data.dll') " />
   </ItemGroup>
 
   <ItemGroup>
@@ -133,6 +142,16 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 
+  <ItemGroup>
+    <MySqlInclude Include="MySqlPipe.cs" />
+
+    <MySqlRef Include="MySql.Data.dll" />
+  </ItemGroup>
+  <Target Name="MySqlPipe" Inputs="@(MySqlInclude)" Outputs="MySqlPipe.dll" DependsOnTargets="MySqlLibrary">
+    <Csc Sources="@(MySqlInclude)" References="@(MySqlRef)" TargetType="library" OutputAssembly="MySqlPipe.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
   <!-- Build SPH.dll -->
   <ItemGroup>
     <SPH Include="SerialPortHandler.cs" />
@@ -193,10 +212,14 @@
         Condition=" Exists('packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll') " />
   </Target>
 
-  <!-- just grab nuget-provided package if it exists instead of building Newtonsoft.Json -->
   <Target Name="RabbitMqLibrary" Returns="RabbitMQ.Client.dll">
     <Copy SourceFiles="packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll" DestinationFolder=".\"
         Condition=" Exists('packages\RabbitMQ.Client.2.8.7\lib\net30\RabbitMQ.Client.dll') " />
+  </Target>
+  
+  <Target Name="MySqlLibrary" Returns="MySql.Data.dll">
+    <Copy SourceFiles="packages\MySql.Data.6.9.12\lib\net40\MySql.Data.dll" DestinationFolder=".\"
+        Condition=" Exists('packages\MySql.Data.6.9.12\lib\net40\MySql.Data.dll') " />
   </Target>
 
   <ItemGroup>

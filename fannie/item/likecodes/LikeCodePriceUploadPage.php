@@ -42,36 +42,40 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
         'description' => array(
             'display_name' => 'Description',
-            'default' => 1,
+            'default' => 4,
         ),
         'price' => array(
             'display_name' => 'Price',
-            'default' => 2,
+            'default' => 1,
             'required' => true
         ),
         'cost' => array(
             'display_name' => 'Cost (Unit)',
-            'default' => 3,
+            'default' => 2,
         ),
         'scale' => array(
             'display_name' => 'LB / EA',
-            'default' => 4,
+            'default' => -1,
         ),
         'department' => array(
             'display_name' => 'Department',
-            'default' => 5,
+            'default' => -1,
         ),
         'wicable' => array(
             'display_name' => 'WIC',
-            'default' => 6,
+            'default' => -1,
         ),
         'numflag' => array(
             'display_name' => 'Organic',
-            'default' => 7,
+            'default' => -1,
         ),
         'local' => array(
             'display_name' => 'Local',
-            'default' => 8,
+            'default' => -1,
+        ),
+        'vendor' => array(
+            'display_name' => 'Preferred Vendor',
+            'default' => 3,
         ),
     );
 
@@ -85,6 +89,8 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $getItem = $dbc->prepare('SELECT description, normal_price, cost, department, numflag, scale, wicable, local FROM products WHERE upc=?');
         $getAttr = $dbc->prepare('SELECT attributes FROM ProductAttributes WHERE upc=? ORDER BY modified DESC');
         $setAttr = $dbc->prepare('INSERT INTO ProductAttributes (upc, modified, attributes) VALUES (?, ?, ?)');
+        $setVend = $dbc->prepare('UPDATE likeCodes SET preferredVendorID=? WHERE likeCode=?');
+        $setDesc = $dbc->prepare('UPDATE likeCodes SET likeCodeDesc=? WHERE likeCode=?');
 
         // build update query based on selected columns
         $update = "UPDATE products SET normal_price=?";
@@ -105,10 +111,6 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         if ($indexes['wicable'] !== false) {
             $update .= ', wicable=?';
             $updateCols[] = 'wic';
-        }
-        if ($indexes['description'] !== false) {
-            $update .= ', description=?';
-            $updateCols[] = 'description';
         }
         if ($indexes['local'] !== false) {
             $update .= ', local=?';
@@ -180,6 +182,26 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 if ($changed) {
                     $upcs[] = $upcW['upc'];
                     $sets[] = array($price, $upcW['upc']);
+                }
+            }
+            if ($indexes['vendor'] !== false) {
+                $abbr = strtoupper(trim($line[$indexes['vendor']]));
+                $vID = -1;
+                if ($abbr == 'ALBERTS') {
+                    $vID = 28;
+                } elseif ($abbr == 'CPW') {
+                    $vID = 25;
+                } elseif ($abbr == 'RDW') {
+                    $vID = 136;
+                } elseif ($abbr == 'UNFI') {
+                    $vID = 1;
+                } 
+                $dbc->execute($setVend, array($vID, $likecode));
+            }
+            if ($indexes['description'] !== false) {
+                $desc = trim($line[$indexes['description']]);
+                if ($desc != '') {
+                    $dbc->execute($setDesc, array($desc, $likecode));
                 }
             }
             $this->stats['done']++;

@@ -33,6 +33,7 @@ class ShrinkTool extends FannieRESTfulPage
     public $themed = true;
     public $description = '[Shrink Entry] adds items to shrink counts. Duplicates lane functionality to allow backend entry.';
     public $enable_linea = true;
+    private $quantity = 1;
 
     public function preprocess()
     {
@@ -100,6 +101,23 @@ class ShrinkTool extends FannieRESTfulPage
         $product->upc($upc);
         $product->store_id($this->config->get('STORE_ID'));
         if (!$product->load()) {
+            if (substr($upc, 0, 3) == '002') {
+                $price = substr($upc, -4) / 100;
+                $upc = substr($upc, 0, 8) . '00000';
+                $product->upc($upc);
+                if ($product->load()) {
+                    $this->id = $upc;
+                    $this->description = $product->description();
+                    $this->cost = $product->cost();
+                    $this->price = $product->normal_price();
+                    $this->department = $product->department();
+                    $this->upc = $upc;
+                    if ($product->scale() && $product->normal_price() > 0 && $price > 0) {
+                        $this->quantity = sprintf('%.2f', $price / $product->normal_price());
+                    }
+                    return true; 
+                }
+            }
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'Item not found');\n");
             $this->__route_stem = 'get';
         } else {
@@ -141,14 +159,16 @@ class ShrinkTool extends FannieRESTfulPage
                 <div class="col-sm-9">
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
-                        <input type="text" name="cost" class="form-control" value="{{cost}}" />
+                        <input type="number" name="cost" class="form-control" value="{{cost}}"
+                            min="0" max="9999" step="0.001" />
                     </div> 
                 </div> 
             </div> 
             <div class="row form-group">
                 <label class="col-sm-3 text-right">Quantity</label>
                 <div class="col-sm-9">
-                    <input type="text" name="qty" id="qty-field" class="form-control" required />
+                    <input type="number" name="qty" id="qty-field" class="form-control"
+                        value="{$this->quantity}" min="0" max="9999" step="0.01" required />
                 </div>
             </div>
             <div class="row form-group">
@@ -167,7 +187,8 @@ class ShrinkTool extends FannieRESTfulPage
                 <div class="col-sm-9">
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
-                        <input type="text" name="price" class="form-control" value="{{price}}" />
+                        <input type="number" name="price" class="form-control" value="{{price}}"
+                            min="0" max="9999" step="0.01" />
                     </div> 
                 </div> 
             </div> 
@@ -213,10 +234,10 @@ HTML;
     public function get_view()
     {
         global $FANNIE_URL;
-        $this->add_script('../autocomplete.js');
+        $this->addScript('../autocomplete.js');
         $ws = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#upc-field', '$ws', 'item');\n");
-        $this->add_onload_command("\$('#upc-field').focus();");
+        $this->addOnloadCommand("bindAutoComplete('#upc-field', '$ws', 'item');\n");
+        $this->addOnloadCommand("\$('#upc-field').focus();");
         $this->addOnloadCommand("enableLinea('#upc-field');\n");
 
         return '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">

@@ -37,15 +37,13 @@ class PaycardCleanTask extends FannieTask
         'weekday' => '*',
     );
 
-    public function run()
+    /**
+      Change year-old tokens to 'EXP'
+      This saves a few bytes since actual tokens are longer
+      and complies with processor recommendations
+    */
+    private function expireTokens($dbc)
     {
-        $dbc = FannieDB::get(FannieConfig::config('TRANS_DB'));
-
-        /**
-          Change year-old tokens to 'EXP'
-          This saves a few bytes since actual tokens are longer
-          and complies with processor recommendations
-        */
         $expires = new DateTime();
         $expires->sub(new DateInterval('P1Y'));
         $tokenP = $dbc->prepare("
@@ -56,47 +54,67 @@ class PaycardCleanTask extends FannieTask
                 AND xToken <> ''
         ");
         $dbc->execute($tokenP, array($expires->format('Ymd')));
+    }
 
+    /**
+     * Create new PNG file witn given bitmap content
+     * @param $content [string] bitmap file content
+     * @return [string png file name] or [boolean false]
+     */
+    private function bmp2png($content)
+    {
+        $tmpBMP = tempnam(sys_get_temp_dir(), 'bmp');
+        $tmpPNG = tempnam(sys_get_temp_dir(), 'png');
+        if (!file_put_contents($tmpBMP, $content)) {
+            return false;
+        }
+
+        $img = \Itgalaxy\Bmp2Image::make($tmpBMP);
+        $saved = imagepng($img, $tmpPNG);
+        unlink($tmpBMP);
+
+        return $saved ? $tmpPNG : false;
+    }
+
+    public function run()
+    {
         if (class_exists('Itgalaxy\\Bmp2Image')) {
-            /**
-              Convert signature images from BMPs to PNGs
-              This makes the data stored about 5x smaller
-            */
-            $saveP = $dbc->prepare("UPDATE CapturedSignature SET filetype='PNG',filecontents=? WHERE capturedSignatureID=?");
-            $cutoff = new DateTime();
-            $cutoff->sub(new DateInterval('P1D'));
-            $all = false;
-            if (in_array('all', $this->arguments)) {
-                $all = true;
-                $cutoff->sub(new DateInterval('P25Y'));
-                echo "ALL MODE triggered. This will probably take awhile" . PHP_EOL;
-            }
-            $sigP = $dbc->prepare("
-                SELECT capturedSignatureID, filecontents
-                FROM CapturedSignature
-                WHERE filetype='BMP'
-                    AND tdate >= ?
-                    AND tdate < " . $dbc->curdate()
-            ); 
-            $sigR = $dbc->execute($sigP, array($cutoff->format('Y-m-d')));
-            while ($sigW = $dbc->fetchRow($sigR)) {
-                $tmpBMP = tempnam(sys_get_temp_dir(), 'bmp');
-                $tmpPNG = tempnam(sys_get_temp_dir(), 'png');
-                if (!file_put_contents($tmpBMP, $sigW['filecontents'])) {
-                    continue;
-                }
+            return false;
+        }
 
-                $img = \Itgalaxy\Bmp2Image::make($tmpBMP);
-                $saved = imagepng($img, $tmpPNG);
-                if ($saved) {
-                    $png = file_get_contents($tmpPNG);
-                    $dbc->execute($saveP, array($png, $sigW['capturedSignatureID']));
-                    unlink($tmpPNG);
-                    if ($all) {
-                        echo $sigW['capturedSignatureID'] . PHP_EOL;
-                    }
+        $dbc = FannieDB::get(FannieConfig::config('TRANS_DB'));
+        $this->expireTokens($dbc);
+
+        /**
+          Convert signature images from BMPs to PNGs
+          This makes the data stored about 5x smaller
+        */
+        $saveP = $dbc->prepare("UPDATE CapturedSignature SET filetype='PNG',filecontents=? WHERE capturedSignatureID=?");
+        $cutoff = new DateTime();
+        $cutoff->sub(new DateInterval('P1D'));
+        $all = false;
+        if (in_array('all', $this->arguments)) {
+            $all = true;
+            $cutoff->sub(new DateInterval('P25Y'));
+            echo "ALL MODE triggered. This will probably take awhile" . PHP_EOL;
+        }
+        $sigP = $dbc->prepare("
+            SELECT capturedSignatureID, filecontents
+            FROM CapturedSignature
+            WHERE filetype='BMP'
+                AND tdate >= ?
+                AND tdate < " . $dbc->curdate()
+        ); 
+        $sigR = $dbc->execute($sigP, array($cutoff->format('Y-m-d')));
+        while ($sigW = $dbc->fetchRow($sigR)) {
+            $tmpPNG = $this->bmp2png($sigW['filecontents']);
+            if ($tmpPNG) {
+                $png = file_get_contents($tmpPNG);
+                $dbc->execute($saveP, array($png, $sigW['capturedSignatureID']));
+                unlink($tmpPNG);
+                if ($all) {
+                    echo $sigW['capturedSignatureID'] . PHP_EOL;
                 }
-                unlink($tmpBMP);
             }
         }
     }

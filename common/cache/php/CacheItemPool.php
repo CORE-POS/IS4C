@@ -52,7 +52,7 @@ class CacheItemPool extends FilePool
         }
         $cache = include($file);
 
-        return $cache;
+        return is_array($cache) ? $cache : array();
     }
 
     protected function saveToFile($file, $items)

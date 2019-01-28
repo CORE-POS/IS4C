@@ -77,7 +77,14 @@ class InvCountPage extends FannieRESTfulPage
             $count = $this->form->count;
             $par = $this->form->par;
             $storeID = FormLib::get('storeID', 1);
-            $this->saveEntry($upc, $storeID, $count, $par);
+            $add = FormLib::get('addOn', false);
+            if ($add) {
+                $upP = $this->connection->prepare('UPDATE InventoryCounts SET count=count+?
+                    WHERE mostRecent=1 AND storeID=? AND upc=?');
+                $this->connection->execute($upP, array($count, $storeID, $upc));
+            } else {
+                $this->saveEntry($upc, $storeID, $count, $par);
+            }
         } catch (Exception $ex) {}
 
         return 'InvCountPage.php?id=' . $this->id . '&store=' . $storeID;
@@ -112,24 +119,29 @@ class InvCountPage extends FannieRESTfulPage
         $invID = $inv->save();
        
         if ($invID !== false) {
-            $prep = $this->connection->prepare('
-                UPDATE InventoryCounts
-                SET mostRecent=0
-                WHERE upc=?
-                    AND storeID=?
-                    AND inventoryCountID <> ?');
-            $this->connection->execute($prep, array($upc, $storeID, $invID));
-            $prep = $this->connection->prepare('
-                UPDATE InventoryCache
-                SET baseCount=?,
-                    ordered=0,
-                    sold=0,
-                    shrunk=0,
-                    onHand=?
-                WHERE upc=?
-                    AND storeID=?');
-            $this->connection->execute($prep, array($count, $count, $upc, $storeID));
+            $this->updateRelatedEntries($upc, $storeID, $invID, $count);
         }
+    }
+
+    private function updateRelatedEntries($upc, $storeID, $invID, $count)
+    {
+        $prep = $this->connection->prepare('
+            UPDATE InventoryCounts
+            SET mostRecent=0
+            WHERE upc=?
+                AND storeID=?
+                AND inventoryCountID <> ?');
+        $this->connection->execute($prep, array($upc, $storeID, $invID));
+        $prep = $this->connection->prepare('
+            UPDATE InventoryCache
+            SET baseCount=?,
+                ordered=0,
+                sold=0,
+                shrunk=0,
+                onHand=?
+            WHERE upc=?
+                AND storeID=?');
+        $this->connection->execute($prep, array($count, $count, $upc, $storeID));
     }
 
     protected function post_vendor_handler()
@@ -163,6 +175,8 @@ class InvCountPage extends FannieRESTfulPage
         $upc = BarcodeLib::padUPC($this->id);
         $store = FormLib::get('store', 1);
         $info = $this->getMostRecent($upc, $store);
+        $addBtn = '<button type="submit" class="btn btn-default btn-sm"
+            name="addOn" value="1">Add to Count</button>';
         $prod = new ProductsModel($this->connection);
         $prod->upc($upc);
         $prod->store_id($store);
@@ -170,7 +184,8 @@ class InvCountPage extends FannieRESTfulPage
         if ($info === false) {
             $info['countDate'] = 'n/a';
             $info['count'] = 0;
-            $info['par'] = 0;    
+            $info['par'] = 0;
+            $addBtn = '';
         }
 
         $ret = '<form method="post">
@@ -186,21 +201,21 @@ class InvCountPage extends FannieRESTfulPage
                     <td>
                         <input type="text" pattern="\\d*" class="form-control" 
                             id="count-field" required name="count" />
-                    </td><td>
-                        <input type="text" pattern="\\d*" class="form-control" required name="par" value="' . round($info['par'], 2) . '" />
+                        <input type="hidden" name="par" value="' . round($info['par'], 2) . '" />
                     </td>
                     <td>
                         <button type="submit" class="btn btn-default btn-sm">Save</button>
                     </td>
                 </tr>
-            </table>
-            </form>';
+            </table>';
         $ret .= '<div class="alert alert-info">
             ' . $upc . ' - ' . $prod->brand() . ' ' . $prod->description() . '<br />
             <strong>Last Counted</strong>: ' . $info['countDate'] . '<br />
             <strong>Last Count</strong>: ' . $info['count'] . '<br />
             <strong>Current Par</strong>: ' . $info['par'] . '<br />
-            </div>';
+            ' . $addBtn . '
+            </div>
+            </form>';
         $this->addOnloadCommand("\$('#count-field').focus();\n");
 
         return $ret . '<hr />' . $this->get_view();
@@ -248,6 +263,9 @@ class InvCountPage extends FannieRESTfulPage
             <a href="InvCasesPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Case Sizes</a>
             |
             <a href="InvHistoryPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Count History</a>
+            <p>
+                <button type="submit" class="btn btn-default">Save</button>
+            </p>
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
             <input type="hidden" name="store" value="' . $store . '" />
             <table class="table table-bordered table-striped small table-float">
@@ -457,7 +475,7 @@ class InvCountPage extends FannieRESTfulPage
             <form method="get">
                 <div class="form-group">
                     <label>UPC</label>
-                    <input type="text" name="id" id="linea-field" class="form-control" />
+                    <input type="text" name="id" id="linea-field" pattern="\\d*" class="form-control" />
                 </div>
                 <div class="form-group">
                     <label>Store</label>

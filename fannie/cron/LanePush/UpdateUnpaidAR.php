@@ -68,7 +68,7 @@ $errors = False;
 // connect to each lane and update payments
 foreach($FANNIE_LANES as $lane){
     if (isset($lane['offline']) && $lane['offline']) {
-	continue;
+        continue;
     }
     try {
         $db = new SQLManager($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);

@@ -20,7 +20,7 @@ class TimesheetExport extends FannieReportPage {
               set up headers
             */
             $this->content_function = "report_content";
-            $this->has_menus(False);
+            $this->hasMenus(False);
 
             /**
               Check if a non-html format has been requested

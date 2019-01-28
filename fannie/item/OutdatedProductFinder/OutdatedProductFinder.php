@@ -45,7 +45,7 @@ class OutdatedProductFinder extends FanniePage
         $datetime = date('Y-m-d', strtotime('1 year ago'));
    
         // Find Items not in use in past 12 months
-        $query = "SELECT upc, last_sold 
+        $query = "SELECT upc, MAX(last_sold) AS last_sold
                 FROM products 
                 WHERE last_sold < '{$datetime}' and inUse =1
                 GROUP BY upc;
@@ -69,7 +69,7 @@ class OutdatedProductFinder extends FanniePage
             }
             
             // Check to see if the script made changes
-            $query = "SELECT upc, last_sold 
+            $query = "SELECT upc, MAX(last_sold) AS last_sold
                     FROM products 
                     WHERE last_sold < '{$datetime}' and inUse = 1
                     GROUP BY upc;

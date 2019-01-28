@@ -183,11 +183,13 @@ class CWCouponReport extends FannieReportPage
             $post += $row[18];
         }
 
-        return array('Uses', count($data), '', sprintf('%.2f', $ttl/count($data)), sprintf('%.2f', $ttl), '',
+        return array('Uses', count($data), '',
+            sprintf('%.2f', count($data)==0 ? 0 : $ttl/count($data)),
+            sprintf('%.2f', $ttl), '',
             '', '', '', '', '',
-            sprintf('%.2f', $pre / count($data)), '', 
+            sprintf('%.2f', count($data)==0 ? 0 : $pre / count($data)), '', 
             '', '', '', '', '',
-            sprintf('%.2f', $post / count($data))
+            sprintf('%.2f', count($data)==0 ? 0 : $post / count($data))
         );
     }
 

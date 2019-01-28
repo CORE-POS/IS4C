@@ -1,0 +1,7 @@
+{
+    "url": "http://localhost/IS4C/pos/is4c-nf/",
+    "fullscreen": false,
+    "driver": false,
+    "dualDisplay": false,
+    "secondaryURL": "http://localhost/IS4C/pos/is4c-nf/gui-modules/posCustDisplay.php"
+}

@@ -70,7 +70,7 @@ if (isset($_GET["appID"]) || isset($_POST["appID"])){
         $deptStr = substr($deptStr,0,strlen($deptStr)-1);
 
         if ($appID == "-1"){
-            $insQ = "INSERT INTO applicants (first_name,last_name,app_date,postcard_date,internal,
+            $insQ = $sql->prepare("INSERT INTO applicants (first_name,last_name,app_date,postcard_date,internal,
                 best_practices,positions,openings,sent_to,referral,hired) VALUES (?, ?,
                 ?,?,?,?,?,?,?,?,?)");
             $sql->execute($insQ, array($fname, $lname, $today, $pc_date, $internal, $bestpractices, $applyStr, $openStr, $deptStr, $referral, $hired));

@@ -61,6 +61,10 @@ echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 ?>
 <hr />
 <p class="ichunk" style="margin-top: 1.0em;">
+<b>HTTPS Domain Name</b>
+<?php echo installTextField('FANNIE_TLS_DOMAIN', $FANNIE_TLS_DOMAIN, ''); ?>
+</p>
+<p class="ichunk" style="margin-top: 1.0em;">
 <b>Authentication enabled</b>
 <?php echo installSelectField('FANNIE_AUTH_ENABLED', $FANNIE_AUTH_ENABLED,
                        array(1 => 'Yes', 0 => 'No'), false, false); ?>

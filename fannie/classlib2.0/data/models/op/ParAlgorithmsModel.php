@@ -39,5 +39,10 @@ class ParAlgorithmsModel extends BasicModel
     'algorithm' => array('type'=>'VARCHAR(255)'),
     'parameters' => array('type'=>'TEXT'),
     );
+
+    public function doc()
+    {
+        return 'Relates to experiment with algorithmically calculated/predictive pars';
+    }
 }
 

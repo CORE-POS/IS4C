@@ -100,8 +100,10 @@ class PaycardDialogs
 
     public function invalidMode()
     {
+        $mode = $this->conf->get('paycard_mode');
+        $type = $this->conf->get('paycard_type');
         return PaycardLib::paycardErrBox("Invalid Mode",
-                                         "This card type does not support that processing mode",
+                                         "This card type does not support that processing mode ({$mode},{$type})",
                                          "[clear] to cancel"
         );
     }

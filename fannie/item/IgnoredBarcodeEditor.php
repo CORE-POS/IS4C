@@ -35,8 +35,6 @@ class IgnoredBarcodeEditor extends FannieRESTfulPage
     at the lanes. It is used primarily to suppress unexpected accidental scans on produce
     stickers or packaging when items are intended to be entered by PLU.';
 
-    public $themed = true;
-    
     protected $model_name = 'IgnoredBarcodesModel';
 
     public function put_handler()
@@ -124,6 +122,7 @@ class IgnoredBarcodeEditor extends FannieRESTfulPage
         foreach ($model->getColumns() as $name => $info) {
             $ret .= sprintf('
                 <div class="form-group">
+                    <span id="form-start"></span>
                     <label class="control-label">%s</label>
                     <input type="text" class="form-control" name="%s" %s />
                 </div> ',

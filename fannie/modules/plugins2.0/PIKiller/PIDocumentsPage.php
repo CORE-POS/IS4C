@@ -40,15 +40,18 @@ class PIDocumentsPage extends PIKillerPage {
         return True;
     }
 
-    protected function get_id_view(){
+    protected function get_id_view()
+    {
         ob_start();
         echo '<tr><td>';
 
-        echo '<iframe width="90%" height="300"
-            src="http://key:8888/cgi-bin/docfile/index.cgi?memID='.$this->id.'"
-            style="border: 0px;">
-        </iframe>';
-
+        $dir = opendir(__DIR__ . '/noauto/docfile/' . $this->id);
+        echo '<ul style="font-size: 145%">';
+        while ($dir && ($file=readdir($dir)) !== false) {
+            if ($file[0] == '.') continue;
+            echo '<li><a href="noauto/docfile/' . $this->id . '/' . $file . '">' . $file . '</li>';
+        }
+        echo '</ul>';
         echo '</td></tr>';
         echo '<tr><td style="padding-left: 20px;">
             <button type="button" onclick="window.location=\'PISignaturePage.php?id=' . $this->id . '\';">Sign</button>

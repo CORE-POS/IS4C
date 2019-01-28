@@ -53,12 +53,42 @@ class SpecialOrderLib
 
     public function genericRow($orderID)
     {
-        return array(
-        'order_id'=>$orderID,
-        'datetime'=>date('Y-m-d H:i:s'),
+        $ret = $this->defaultRow;
+        $ret['order_id'] = $orderID;
+        $ret['trans_no'] = $orderID;
+        $ret['datetime'] = date('Y-m-d H:i:s');
+
+        return $ret;
+    }
+
+    public function createContactRow($orderID)
+    {
+        $dbc = $this->dbc;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
+
+        $so_order = new SpecialOrdersModel($dbc);
+        $so_order->specialOrderID($orderID);
+        $so_order->firstName('');
+        $so_order->lastName('');
+        $so_order->street('');
+        $so_order->city('');
+        $so_order->state('');
+        $so_order->zip('');
+        $so_order->phone('');
+        $so_order->altPhone('');
+        $so_order->email('');
+        $so_order->save();
+
+        $dbc->selectDB($this->config->get('OP_DB'));
+    }
+
+    private $defaultRow = array(
+        'order_id'=>0,
+        'datetime'=>'1900-01-01',
         'emp_no'=>1001,
         'register_no'=>30,
-        'trans_no'=>$orderID,
+        'trans_no'=>0,
         'upc'=>'0',
         'description'=>"SPECIAL ORDER",
         'trans_type'=>"C",
@@ -90,30 +120,7 @@ class SpecialOrderLib
         'numflag'=>0,
         'charflag'=>"",   
         'card_no'=>0,
-        'trans_id'=>0
-        );
-    }
-
-    private function createContactRow($orderID)
-    {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
-        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
-
-        $so_order = new SpecialOrdersModel($dbc);
-        $so_order->specialOrderID($orderID);
-        $so_order->firstName('');
-        $so_order->lastName('');
-        $so_order->street('');
-        $so_order->city('');
-        $so_order->state('');
-        $so_order->zip('');
-        $so_order->phone('');
-        $so_order->altPhone('');
-        $so_order->email('');
-        $so_order->save();
-
-        $dbc->selectDB($this->config->get('OP_DB'));
-    }
+        'trans_id'=>0,
+    );
 }
 

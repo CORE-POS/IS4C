@@ -168,11 +168,12 @@ class FormLib extends \COREPOS\common\FormLib
         $op_db = FannieConfig::config('OP_DB');
         $dbc = FannieDB::getReadOnly($op_db);
 
-        $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-        $ranges = FannieConfig::config('STORE_NETS');
-
         $stores = new StoresModel($dbc);
+        $byIP = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $current = FormLib::get($field_name, false);
+        if ($current !== false) {
+            $byIP = false;
+        }
         $ret = '<select name="' . $field_name . '" class="form-control">';
         if ($all) {
             $labels = array(0 => _('All Stores'));
@@ -184,12 +185,7 @@ class FormLib extends \COREPOS\common\FormLib
             $selected = '';
             if ($store->storeID() == $current) {
                 $selected = 'selected';
-            } elseif (
-                $current === false
-                && isset($ranges[$store->storeID()]) 
-                && class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
-                && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $ranges[$store->storeID()])
-                ) {
+            } elseif ($byIP !== false && $byIP == $store->storeID()) {
                 $selected = 'selected';
             }
             $ret .= sprintf('<option %s value="%d">%s</option>',
@@ -523,13 +519,15 @@ HTML;
             <div class="form-group">
                 <label class="col-sm-4 control-label">Start Date</label>
                 <div class="col-sm-8">
-                    <input type="text" id="date1" name="date1" class="form-control date-field" required />
+                    <input type="text" id="date1" name="date1" class="form-control date-field" 
+                        autocomplete="off" required />
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-sm-4 control-label">End Date</label>
                 <div class="col-sm-8">
-                    <input type="text" id="date2" name="date2" class="form-control date-field" required />
+                    <input type="text" id="date2" name="date2" class="form-control date-field"
+                        autocomplete="off" required />
                 </div>
             </div>
             <div class="form-group">

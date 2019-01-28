@@ -151,7 +151,9 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         if ($this->enable_linea) {
             $this->addScript($url . 'src/javascript/linea/cordova-2.2.0.js');
             $this->addScript($url . 'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
-            $this->addScript($url . 'src/javascript/linea/WebHub.js');
+            if (strpos(filter_input(INPUT_SERVER, 'HTTP_USER_AGENT'), 'iPod touch')) {
+                $this->addScript($url . 'src/javascript/linea/WebHub.js');
+            }
             $this->addScript($url . 'src/javascript/linea/core.js');
         }
 
@@ -206,11 +208,6 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         return true;
     }
 
-    public function get_header()
-    {
-        return $this->getHeader();
-    }
-
     /**
       Get the standard footer
       @return An HTML string
@@ -232,10 +229,6 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         }
 
         return ob_get_clean();
-    }
-    public function get_footer()
-    {
-        return $this->getFooter();
     }
 
     protected function lineaJS()

@@ -10,7 +10,7 @@ class ParamConf
         list($value, $save_as_array) = self::paramValueToArray($value);
 
         $saved = false;
-        if ($sql !== false && $sql !== null) {
+        if (is_object($sql)) {
             $table = \CoreLocal::get('pDatabase') . $sql->sep() . 'parameters';
             $prep = $sql->prepare("SELECT param_value FROM {$table}
                                         WHERE param_key=? AND lane_id=?");

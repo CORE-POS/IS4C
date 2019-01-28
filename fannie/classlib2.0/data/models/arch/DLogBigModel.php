@@ -42,5 +42,13 @@ class DLogBigModel extends DLogModel
             return false;
         }
     }
+
+    public function doc()
+    {
+        return '
+Use:
+Same as other dlog views (see DLogModel) but over bigArchive.
+            ';
+    }
 }
 

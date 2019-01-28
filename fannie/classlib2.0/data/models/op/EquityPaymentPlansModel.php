@@ -41,5 +41,26 @@ class EquityPaymentPlansModel extends BasicModel
     'overDueLimit' => array('type'=>'SMALLINT', 'default'=>31),
     'reasonMask' => array('type'=>'INT', 'default'=>1),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Provides a structured way for calculated ownership billing cycles.
+* initialPayment is the amount due immediately at sign-up
+* recurringPayment is the amount due for each billing cycle. Each
+  such payment is expected to be the same.
+* finalBalance is the total equity due. Once the owner owns this
+  amount of equity billing ceases.
+* Billing cycle is a number and letter such as 1Y (payment due every
+  one year) or 6M (payment due every 6 months)
+* dueDateBasis determines if the next payment due date is calculated
+  based on the date the owner originally joined (0) or the date they
+  last made an equity payment (1)
+* overDueLimit is time, in days, that a payment can be overdue before
+  the account should be deactivated
+* reasonMask is the reason used when deactivating an account
+            ';
+    }
 }
 

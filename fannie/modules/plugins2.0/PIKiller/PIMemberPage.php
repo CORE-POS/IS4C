@@ -219,6 +219,15 @@ class PIMemberPage extends PIKillerPage {
         }
         $resp = \COREPOS\Fannie\API\member\MemberREST::post($this->card_no, $json);
 
+        $limitDiscountP = $dbc->prepare("
+            UPDATE custdata
+            SET discount=0
+            WHERE CardNo=?
+                AND memType IN (3,9)
+                AND personNum > 2
+        ");
+        //$dbc->execute($limitDiscountP, array($this->card_no));
+
         $comm = new CommissionsModel($dbc);
         $comm->cardNo($this->id);
         $comm->type('OWNERSHIP');
@@ -349,6 +358,10 @@ class PIMemberPage extends PIKillerPage {
         echo '<td>'.$this->text_or_field('address2',$this->account['addressSecondLine']).'</td>';
         echo "<td class=\"yellowbg\">UPC: </td>";
         echo '<td colspan=\"2\">'.$this->text_or_field('upc',$this->account['idCardUPC']).'</td>';
+        echo "<td class=\"yellowbg\">Election Password: </td>";
+        $prep = $this->connection->prepare('SELECT password FROM Voters where cardNo=?');
+        $pass = $this->connection->getValue($prep, array($this->card_no));
+        echo '<td>' . $pass . '</td>';
         echo "</tr>";
 
         echo "<tr>";
@@ -383,6 +396,12 @@ class PIMemberPage extends PIKillerPage {
         echo '<td>'.$this->text_or_field('phone2',$this->primary_customer['altPhone']).'</td>';
         echo "<td class=\"yellowbg\">E-mail: </td>";
         echo '<td>'.$this->text_or_field('email',$this->primary_customer['email']).'</td>';
+        echo "<td class=\"yellowbg\">Payment Plan: </td>";
+        $prep = $dbc->prepare('SELECT name FROM EquityPaymentPlanAccounts AS a
+            INNER JOIN EquityPaymentPlans AS e ON a.equityPaymentPlanID=e.equityPaymentPlanID
+            WHERE a.cardNo=?');
+        $plan = $dbc->getValue($prep, array($this->card_no));
+        echo '<td>' . ($plan ? $plan : 'n/a') . '</td>';
         echo "</tr>";
 
                 echo "<tr>";
@@ -482,6 +501,14 @@ class PIMemberPage extends PIKillerPage {
         echo '</td>';
 
         echo '</tr>';
+        if ($this->auth_mode == 'Full') {
+            echo '<tr>';
+            echo '<td class="yellowbg">Web Page</td>';
+            $prep = $dbc->prepare('SELECT guid FROM MyWebDB.Identifiers WHERE cardNo=?');
+            $guid = $dbc->getValue($prep, $this->card_no);
+            $url = 'http://wholefoods.coop/my/' . $guid;
+            echo '<td colspan="7">' . $url . '</td></tr>';
+        }
 
         echo "</table>";
         if (FormLib::get('edit', false) !== false) {

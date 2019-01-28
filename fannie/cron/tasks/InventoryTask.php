@@ -99,7 +99,7 @@ class InventoryTask extends FannieTask
             GROUP BY upc, storeID
             HAVING COUNT(*) > 1');
         while ($row = $dbc->fetchRow($res)) {
-            $keepID = $dbc->getValue(array($row['upc'], $row['storeID']));
+            $keepID = $dbc->getValue($keepP, array($row['upc'], $row['storeID']));
             if ($keepID) {
                 $dbc->execute($cleanP, array($row['upc'], $row['storeID'], $keepID));
             }
@@ -145,7 +145,7 @@ class InventoryTask extends FannieTask
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->clearEntries($dbc, $this->store_id, $this->vendor_id);
-        //$this->deepClean($dbc, $this->store_id, $this->vendor_id);
+        $this->deepClean($dbc, $this->store_id, $this->vendor_id);
 
         $dbc->startTransaction();
         $insP = $dbc->prepare('

@@ -83,9 +83,10 @@ class AutoLoader
             }
         }
 
-        self::loadStats($name);
+        //self::loadStats($name);
     }
 
+    /*
     static private function loadStats($class)
     {
         if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
@@ -111,6 +112,7 @@ class AutoLoader
 
         return true;
     }
+     */
 
     /**
       Map available classes. Class names should
@@ -122,11 +124,12 @@ class AutoLoader
         $searchPath = realpath(dirname(__FILE__).'/../plugins/');
         self::recursiveLoader($searchPath, $classMap);
         CoreLocal::set('ClassLookup', $classMap);
-        self::classCache();
+        //self::classCache();
 
         return $classMap;
     }
 
+    /*
     static private function classCache()
     {
         if (!class_exists('COREPOS\\ClassCache\\ClassCache')) {
@@ -144,6 +147,7 @@ class AutoLoader
 
         return true;
     }
+     */
 
     static private $classPaths = array(
         'COREPOS\pos\lib\Scanning\DiscountType' => '/Scanning/DiscountTypes',
@@ -318,6 +322,22 @@ class AutoLoader
         closedir($dir);
     }
 
+    public static function ownURL()
+    {
+        if (isset($_SERVER['PHP_SELF']) && !empty($_SERVER['PHP_SELF'])) {
+            return $_SERVER['PHP_SELF'];
+        } elseif (isset($_SERVER['SCRIPT_NAME']) && !empty($_SERVER['SCRIPT_NAME'])) {
+            return $_SERVER['SCRIPT_NAME'];
+        } elseif (isset($_SERVER['DOCUMENT_URI']) && !empty($_SERVER['DOCUMENT_URI'])) {
+            return $_SERVER['DOCUMENT_URI'];
+        } elseif (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
+            $tmp = explode('?', $_SERVER['REQUEST_URI'], 2);
+            return $tmp[0];
+        }
+
+        throw new Exception("Can't find my own URL");
+    }
+
     /**
       Use a dedicated dispatch function to launch
       page classes.
@@ -334,10 +354,13 @@ class AutoLoader
         if (count($stack) == 1) {
             $session = new WrappedStorage();
             $form = new FormValueContainer();
-            $page = basename($_SERVER['PHP_SELF']);
+            $page = basename(self::ownURL());
             $class = substr($page,0,strlen($page)-4);
             if (CoreLocal::get('CashierNo') !== '' && $class != 'index' && class_exists($class)) {
                 $page = new $class($session, $form);
+            } elseif ($class === '') {
+                trigger_error('Your environment is not populating PHP_SELF correctly.
+                    Details: ' . print_r($_SERVER, true), E_USER_ERROR);
             } elseif ($redirect) {
                 $url = MiscLib::baseURL();
                 header('Location: ' . $url . 'login.php');
@@ -352,9 +375,6 @@ spl_autoload_register(array('AutoLoader','loadClass'), true, true);
 // add composer classes if present
 if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
     include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
-}
-if (is_array(CoreLocal::get('ClassLookup')) && file_exists(__DIR__ . '/../cache.php')) {
-    include_once(__DIR__ . '/../cache.php');
 }
 
 COREPOS\common\ErrorHandler::setLogger(new \COREPOS\pos\lib\LaneLogger());

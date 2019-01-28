@@ -28,11 +28,12 @@ class EqRecurTask extends FannieTask
 
     public function run()
     {
+        $LOG = FannieLogger::ALERT;
         $this->CREDENTIALS = json_decode(file_get_contents(__DIR__ . '/credentials.json'), true);
         $dbc = FannieDB::get(FannieConfig::config('TRANS_DB'));
         $payments = $this->getTransactions($dbc);
         $EMP_NO = 1001;
-        $ptransP = $dbc->prepare("INSERT INTO PaycardTransactions (dateID, empNo, registerNo, transNo, transID,
+        $ptransP = $dbc->prepare("INSERT INTO " . FannieDB::fqn('PaycardTransactions', 'trans') . " (dateID, empNo, registerNo, transNo, transID,
             previousPaycardTransactionID, processor, refNum, live, cardType, transType, amount, PAN, issuer,
             name, manual, requestDatetime, responseDatetime, seconds, commErr, httpCode, validResponse,
             xResultCode, xApprovalNumber, xResponseCode, xResultMessage, xTransactionID, xBalance, xToken,
@@ -42,16 +43,21 @@ class EqRecurTask extends FannieTask
             $card_no = $this->getMemberID($dbc, $payment);
             $balance = $this->getBalance($dbc, $card_no);
             if ($card_no === false) {
-                $this->cronMsg(sprintf("Cannot find memberID for PT %d,%d", $payment['paycardTransactionID'], $payment['storeRowId']));
+                $this->cronMsg(sprintf("Cannot find memberID for PT %d,%d", $payment['paycardTransactionID'], $payment['storeRowId']),
+                    $LOG);
                 continue;
             } elseif ($balance >= 100) {
-                $this->cronMsg(sprintf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']));
+                $this->cronMsg(sprintf("Payments complete member %d, PT %d,%d", $card_no, $payment['paycardTransactionID'], $payment['storeRowId']),
+                    $LOG);
                 $this->clearToken($dbc, $payment);
                 continue;
             }
+            $this->cronMsg("Processing payment for {$card_no}.
+                Previous payment {$payment['dateID']} {$payment['empNo']}-{$payment['registerNo']}-{$payment['transNo']}", $LOG);
             $REGISTER_NO = $store == 1 ? 31 : 32;
             $TRANS_NO = DTrans::getTransNo($dbc, $EMP_NO, $REGISTER_NO);
             $amount = $balance > 80 ? 100 - $balance : 20;
+            $amount = sprintf('%.2f', $amount);
             $invoice = $this->refnum($EMP_NO, $REGISTER_NO, $TRANS_NO, 2);
 
             // beginning of PaycardTransactions record
@@ -62,7 +68,7 @@ class EqRecurTask extends FannieTask
                 $TRANS_NO,
                 2, // transID
                 $payment['paycardTransactionID'],
-                'MercuryE2E',
+                $payment['processor'],
                 $invoice,
                 1,
                 'CREDIT',
@@ -74,9 +80,107 @@ class EqRecurTask extends FannieTask
                 $payment['manual'],
                 date('Y-m-d H:i:s'),
             );
-            $startTime = microtime(true);
 
+            // route to x1.mercurypay.com
+            $hostOrIP = '63.111.40.6';
+            $terminalID = '';
+            if ($payment['processor'] == 'RapidConnect') {
+                $hostOrIP = $this->CREDENTIALS['hosts']['RapidConnect' . $store][0];
+                $store = "RapidConnect" . $store;
+                $terminalID = '<TerminalID>{{TerminalID}}</TerminalID>';
+            }
+
+        $reqXML = <<<XML
+<?xml version="1.0"?>
+<TStream>
+    <Transaction>
+        <IpAddress>{$hostOrIP}</IpAddress>
+        <IpPort>9000</IpPort>
+        <MerchantID>{$this->CREDENTIALS[$store][0]}</MerchantID>
+        {$terminalID}
+        <OperatorID>{$EMP_NO}</OperatorID>
+        <TranType>Credit</TranType>
+        <TranCode>SaleByRecordNo</TranCode>
+        <SecureDevice>{{SecureDevice}}</SecureDevice>
+        <ComPort>{{ComPort}}</ComPort>
+        <InvoiceNo>{$invoice}</InvoiceNo>
+        <RefNo>{$payment['xTransactionID']}</RefNo>
+        <Amount>
+            <Purchase>{$amount}</Purchase>
+        </Amount>
+        <Account>
+            <AcctNo>SecureDevice</AcctNo>
+        </Account>
+        <LaneID>{$REGISTER_NO}</LaneID>
+        <SequenceNo>{{SequenceNo}}</SequenceNo>
+        <RecordNo>{$payment['xToken']}</RecordNo>
+        <Frequency>Recurring</Frequency>
+    </Transaction>
+</TStream>
+XML;
+            $startTime = microtime(true);
             $approvedAmount = 0;
+            echo $reqXML . "\n";
+
+            $curl = curl_init('http://' .   $this->CREDENTIALS['hosts'][$store][0] . ':8999');
+            $this->cronMsg("Processing via {$this->CREDENTIALS['hosts'][$store][0]}", $LOG);
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $reqXML);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
+            $respXML = curl_exec($curl);
+            echo $respXML . "\n";
+
+            $resp = simplexml_load_string($respXML);
+            if (strlen($respXML) > 0 && $resp !== false) {
+                $elapsed = microtime(true) - $startTime;
+                $pcRow[] = date('Y-m-d H:i:s');
+                $pcRow[] = $elapsed;
+                $pcRow[] = 0;
+                $pcRow[] = 200;
+                $pcRow[] = 1; // valid response
+                $status = strtolower($resp->CmdResponse->CmdStatus[0]);
+                if ($status == 'approved') { // finish record as approved
+                    $pcRow[] = 1;
+                    $pcRow[] = $resp->TranResponse->AuthCode[0];
+                    $pcRow[] = $resp->CmdResponse->DSIXReturnCode[0];
+                    $pcRow[] = $resp->CmdResponse->TextResponse[0];
+                    $pcRow[] = $resp->TranResponse->RefNo[0];
+                    $pcRow[] = 0; // xBalance
+                    $pcRow[] = $resp->TranResponse->RecordNo[0];
+                    $pcRow[] = $resp->TranResponse->ProcessData[0];
+                    $pcRow[] = $resp->TranResponse->AcqRefData[0];
+                    $approvedAmount = $resp->TranResponse->Amount->Authorize[0];
+                } else { // finish record as declined or errored
+                    $pcRow[] = $status == 'declined' ? 2 : 3;
+                    $pcRow[] = ''; // xApprovalNumber
+                    $pcRow[] = $resp->CmdResponse->DSIXReturnCode[0];
+                    $pcRow[] = $status == 'declined' ? 'DECLINED' : $resp->CmdResponse->TextResponse[0];
+                    $pcRow[] = ''; // xTransactionID
+                    $pcRow[] = 0; // xBalance
+                    $pcRow[] = ''; // xToken
+                    $pcRow[] = ''; // xProcessorRef
+                    $pcRow[] = ''; // xAcquirerRef
+                }
+            } else {
+                $elapsed = microtime(true) - $startTime;
+                $pcRow[] = date('Y-m-d H:i:s');
+                $pcRow[] = $elapsed;
+                $pcRow[] = curl_errno($curl);
+                $pcRow[] = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+                $pcRow[] = 1; // valid response
+                $pcRow[] = 3; // xResultCode
+                $pcRow[] = ''; // xApprovalNumber
+                $pcRow[] = 0; // xResponseCode
+                $pcRow[] = curl_error($curl);
+                $pcRow[] = ''; // xTransactionID
+                $pcRow[] = 0; // xBalance
+                $pcRow[] = ''; // xToken
+                $pcRow[] = ''; // xProcessorRef
+                $pcRow[] = ''; // xAcquirerRef
+            }
+
+            /*
             try {
                 // process actual transaction
                 $soap = new MSoapClient($this->CREDENTIALS[$store][0], $this->CREDENTIALS[$store][1]);
@@ -128,12 +232,15 @@ class EqRecurTask extends FannieTask
                 $pcRow[] = ''; // xProcessorRef
                 $pcRow[] = ''; // xAcquirerRef
             }
+             */
 
             $dbc->execute($ptransP, $pcRow);
             $pcID = $dbc->insertID();
             if ($approvedAmount > 0) {
+                $this->cronMsg("Payment succeeded for {$card_no}", $LOG);
                 $this->successTransaction($dbc, $EMP_NO, $REGISTER_NO, $TRANS_NO, $approvedAmount, $card_no, $pcID);
             } else {
+                $this->cronMsg("Payment failed for {$card_no}", $LOG);
                 $this->failTransaction($dbc, $EMP_NO, $REGISTER_NO, $TRANS_NO, $card_no, $pcID);
             }
 
@@ -164,9 +271,9 @@ class EqRecurTask extends FannieTask
         $dtrans['register_no'] = $reg;
         $dtrans['trans_no'] = $trans;
         $dtrans['trans_type'] = 'D';
-        $dtrans['department'] = 992;
+        $dtrans['department'] = 991;
         $dtrans['description'] = 'Class B Equity';
-        $dtrans['upc'] = $amt . 'DP992';
+        $dtrans['upc'] = $amt . 'DP991';
         $dtrans['quantity'] = 1;
         $dtrans['ItemQtty'] = 1;
         $dtrans['trans_id'] = 1;
@@ -175,7 +282,7 @@ class EqRecurTask extends FannieTask
         $dtrans['regPrice'] = $amt;
         $dtrans['card_no'] = $card_no;
         $prep = DTrans::parameterize($dtrans, 'datetime', $dbc->now());
-        $insP = $dbc->prepare("INSERT INTO dtransactions ({$prep['columnString']}) VALUES ({$prep['valueString']})");
+        $insP = $dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
         $insR = $dbc->execute($insP, $prep['arguments']);
 
         $dtrans['trans_type'] = 'T';
@@ -208,7 +315,9 @@ class EqRecurTask extends FannieTask
 
     private function clearToken($dbc, $row)
     {
-        $clearP = $dbc->prepare("UPDATE PaycardTransactions SET xToken='USED' WHERE paycardTransactionID=? and storeRowId=?");
+        return;
+        $clearP = $dbc->prepare("UPDATE " . FannieDB::fqn('PaycardTransactions', 'trans') . " SET xToken='USED' WHERE paycardTransactionID=? and storeRowId=?");
+        $this->cronMsg("Clear ptID {$row['paycardTransactionID']}, srID {$row['storeRowId']}", FannieLogger::ALERT);
         $clearR = $dbc->execute($clearP, array($row['paycardTransactionID'], $row['storeRowId']));
 
         return $clearR ? true : false;
@@ -254,18 +363,28 @@ class EqRecurTask extends FannieTask
     {
         $prep = $dbc->prepare("
             SELECT payments
-            FROM equity_live_balance
+            FROM " . FannieDB::fqn('equity_live_balance', 'trans') . "
             WHERE memnum=?");
         return $dbc->getValue($prep, array($card_no));
     }
 
     private function getTransactions($dbc)
     {
-        $dateID = date('Ymd', strtotime('1 month ago'));
+        global $argv;
+        $dateID = date('Ymd', strtotime('31 days ago'));
+        if (isset($argv) && is_array($argv)) {
+            foreach($argv as $arg) {
+                if (is_numeric($arg) && strlen($arg) == 8) {
+                    $dateID = $arg;
+                }
+            }
+        }
         $transP = $dbc->prepare("
             SELECT *
-            FROM PaycardTransactions
+            FROM " . FannieDB::fqn('PaycardTransactions', 'trans') . "
             WHERE dateID=?
+                AND empNo <> 9999
+                AND registerNo <> 99
                 AND transType LIKE 'R.%'
                 AND xToken IS NOT NULL
                 AND xToken <> ''

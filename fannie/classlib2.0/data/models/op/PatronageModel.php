@@ -26,7 +26,6 @@
 */
 class PatronageModel extends BasicModel 
 {
-
     protected $name = "patronage";
 
     protected $preferred_db = 'op';
@@ -49,6 +48,27 @@ class PatronageModel extends BasicModel
     public function gumPayoffID($id)
     {
         // stub function so I can call GumLib::allocateCheck
+    }
+
+    public function doc()
+    {
+        return '
+Use:
+The patronage table records patronage distributions to owners. There is
+one entry per-owner per-fiscal year.
+* purchase is total, gross spending on eligible items
+* discounts are owner benefits paid out during the fiscal year, typically
+  via a percentage discount on transactions
+* rewards are also owner benefits paid out during the fiscal year, typically
+  by some other mechanism like owner-only coupons
+* net_purch is purchase minus discounts minus rewards
+* tot_pat is the total patronage distribution to the owner
+* cash_pat is the cash portion of the distribution
+* equit_pat is the retained equity portion of the distribution
+
+Check number and cashing info are only relevant when patronage is distributed
+via check.
+            ';
     }
 }
 

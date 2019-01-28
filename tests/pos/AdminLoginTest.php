@@ -49,5 +49,12 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, is_numeric($level));
         CoreLocal::set('msgrepeat', 0);
     }
+
+    public function testRequestInfo()
+    {
+        $c = 'COREPOS\\pos\\lib\\adminlogin\\HumanReadableIdRequest';
+        $this->assertEquals(true, $c::requestInfoCallback('CL'));
+        $this->assertEquals(true, $c::requestInfoCallback('TEST'));
+    }
 }
 

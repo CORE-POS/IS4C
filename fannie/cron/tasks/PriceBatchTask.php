@@ -69,17 +69,25 @@ class PriceBatchTask extends FannieTask
 
         /* change prices
         */
+        $costChange = '';
+        $batchList = $sql->tableDefinition('batchList');
+        if (isset($batchList['cost'])) {
+            $costChange = ", p.cost = CASE WHEN l.cost IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
+        }
         if (strstr(strtoupper($this->config->get('SERVER_DBMS')), "MYSQL")) {
             $chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
                 batchList AS l ON l.upc=p.upc LEFT JOIN
                 batches AS b ON b.batchID=l.batchID
                 SET p.normal_price = l.salePrice
+                {$costChange}
                 WHERE l.batchID=b.batchID AND l.upc=p.upc
                 AND l.upc NOT LIKE 'LC%'
                 AND b.discounttype = 0
                 AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
         } else {
+            $costChange = str_replace('p.cost', 'cost', $costChange);
             $chk_vital[] = $sql->query("UPDATE products SET
+                {$costChange}
                 normal_price = l.salePrice
                 FROM products AS p, batches AS b, batchList AS l
                 WHERE l.batchID=b.batchID AND l.upc=p.upc
@@ -97,11 +105,14 @@ class PriceBatchTask extends FannieTask
                 batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
                 LEFT JOIN batches AS b ON b.batchID = l.batchID
                 SET p.normal_price = l.salePrice
+                {$costChange}
                 WHERE l.upc LIKE 'LC%'
                 AND b.discounttype = 0
                 AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
         } else {
+            $costChange = str_replace('p.cost', 'cost', $costChange);
             $chk_vital[] = $sql->query("UPDATE products SET normal_price = l.salePrice
+                {$costChange}
                 FROM products AS p LEFT JOIN
                 upcLike AS v ON v.upc=p.upc LEFT JOIN
                 batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
@@ -120,6 +131,17 @@ class PriceBatchTask extends FannieTask
         }
         if ($success) {
             $this->cronMsg("Price change batches run successfully");
+            $model = new BatchesModel($sql);
+            $res = $sql->query("SELECT l.batchID
+                FROM batchList AS l
+                    INNER JOIN batches AS b ON l.batchID=b.batchID
+                WHERE b.discounttype=0
+                    AND l.upc LIKE '002%'
+                    AND ".$sql->datediff($sql->now(),'b.startDate')." = 0
+                GROUP BY l.batchID");
+            while ($row = $sql->fetchRow($res)) {
+                //$model->scaleSendPrice($row['batchID']);
+            }
         } else {
             $this->cronMsg("Error running price change batches");
         }

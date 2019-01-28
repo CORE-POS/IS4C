@@ -119,7 +119,7 @@ class DepartmentMovementReport extends FannieReportPage
             case 'PLU':
                 $query = "SELECT t.upc,
                       p.brand,
-                      CASE WHEN p.description IS NULL THEN t.description ELSE p.description END as description, 
+                      CASE WHEN t.description IS NULL THEN p.description ELSE t.description END as description, 
                       SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
                       . DTrans::sumQuantity('t')." as qty,
                       SUM(t.total) AS total,
@@ -136,9 +136,10 @@ class DepartmentMovementReport extends FannieReportPage
                       AND $filter_transactions
                       AND " . DTrans::isStoreID($store, 't') . "
                       GROUP BY t.upc,
-                          CASE WHEN p.description IS NULL THEN t.description ELSE p.description END,
+                          p.brand,
+                          CASE WHEN t.description IS NULL THEN p.description ELSE t.description END,
                           CASE WHEN t.trans_status = 'R' THEN 'Refund' ELSE 'Sale' END,
-                      d.dept_no,d.dept_name,s.superID,distributor ORDER BY SUM(t.total) DESC";
+                      d.dept_no,d.dept_name,s.superID,v.vendorName ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':
                 $query =  "SELECT t.department,d.dept_name,"
@@ -201,8 +202,13 @@ class DepartmentMovementReport extends FannieReportPage
           special case to combine year, month, and day into
           a single field
         */
-        $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep,$args);
+        try {
+            $prep = $dbc->prepare($query);
+            $result = $dbc->execute($prep,$args);
+        } catch (Exception $ex) {
+            // MySQL 5.6 doesn't handle correctly
+            return array();
+        }
         $ret = array();
         while ($row = $dbc->fetchRow($result)) {
             $record = array();

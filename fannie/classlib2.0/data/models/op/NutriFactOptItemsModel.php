@@ -26,7 +26,6 @@
 */
 class NutriFactOptItemsModel extends BasicModel
 {
-
     protected $name = "NutriFactOptItems";
     protected $preferred_db = 'op';
 
@@ -38,5 +37,11 @@ class NutriFactOptItemsModel extends BasicModel
     'percentDV' => array('type'=>'TINYINT'),
     );
 
+    public function doc()
+    {
+        return '
+            Relates to an alpha feature for generating printable
+            nutrition facts labels';
+    }
 }
 

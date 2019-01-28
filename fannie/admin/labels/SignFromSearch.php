@@ -135,6 +135,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $desc = FormLib::get('update_desc', array());
             $origin = FormLib::get('update_origin', array());
             $custom = FormLib::get('custom_origin', array());
+            $repeats = FormLib::get('update_repeat', array());
             $knownOrigins = $this->signage_obj->getOrigins();
             for ($i=0; $i<count($upc); $i++) {
                 if (isset($brand[$i])) {
@@ -147,6 +148,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     $this->signage_obj->addOverride($upc[$i], 'originName', $custom[$i]);
                 } elseif (isset($origin[$i]) && isset($knownOrigins[$origin[$i]])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $knownOrigins[$origin[$i]]);
+                }
+                if (isset($repeats[$i]) && $repeats[$i] != 1) {
+                    $this->signage_obj->addRepeat($upc[$i], $repeats[$i]);
                 }
             }
             $this->signage_obj->setRepeats(FormLib::get('repeats', 1));
@@ -209,6 +213,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $desc = FormLib::get('update_desc', array());
             $origin = FormLib::get('update_origin', array());
             $custom = FormLib::get('custom_origin', array());
+            $repeats = FormLib::get('update_repeat', array());
             $knownOrigins = $this->signage_obj->getOrigins();
             for ($i=0; $i<count($upc); $i++) {
                 if (isset($brand[$i])) {
@@ -221,6 +226,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                     $this->signage_obj->addOverride($upc[$i], 'originName', $custom[$i]);
                 } elseif (isset($origin[$i]) && isset($knownOrigins[$origin[$i]])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $knownOrigins[$origin[$i]]);
+                }
+                if (isset($repeats[$i]) && $repeats[$i] != 1) {
+                    $this->signage_obj->addRepeat($upc[$i], $repeats[$i]);
                 }
             }
             $this->signage_obj->setRepeats(FormLib::get('repeats', 1));
@@ -281,6 +289,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $authorized = false;
         if (FannieAuth::validateUserQuiet('admin')) {
+            $authorized = true;
+        } elseif (FannieAuth::validateUserQuiet('signText')) {
             $authorized = true;
         }
 
@@ -347,8 +357,9 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret .= '<select class="form-control" name="store">
                 <option value="0">Any Store</option>';
         foreach ($stores->find() as $s) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                $s->storeID(), $s->description());
+            $store_selected = (FormLib::get('store') == $s->storeID()) ? ' SELECTED ' : '';
+            $ret .= sprintf('<option value="%d" %s>%s</option>',
+                $s->storeID(), $store_selected, $s->description());
         }
         $ret .= '</select>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -376,6 +387,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
         $ret .= '</form>';
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addScript('../../src/javascript/chkboxMulticlick.js');
+        $this->addOnloadCommand('allow_group_select_checkboxes("printSignTable")');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
         //$this->addOnloadCommand("$('#updateBtn').click(function(){confirm(\"hi\")});");
 
@@ -421,6 +434,26 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
     public function javascriptContent()
     {
         return <<<HTML
+    $('textarea').each(function(){
+        var text = $(this).text();
+        if (text == text.toUpperCase()) {
+            $(this).addClass('alert-danger');
+        }
+    });
+    $('textarea').on('change', function(){
+        $(this).removeClass('alert-danger');
+    });
+    $('input').on('change', function(){
+        $(this).removeClass('alert-danger');
+    });
+    $('input').each(function(){
+        var name = $(this).attr('name');
+        var text = $(this).val();
+        var place = $(this).attr('placeholder');
+        if (text == text.toUpperCase() && place != 'Custom origin...' && name != "repeats" && name != "update_repeat[]") {
+            $(this).addClass('alert-danger');
+        }
+    });
     function updateSigninfo()
     {
         var c = confirm("Permanently change sign info?");

@@ -36,29 +36,29 @@ class MultiStoreProductDiscrepancyTask extends FannieTask
         'weekday' => '*',
     );
 
+    private $fields = array(
+        'normal_price',
+        'cost',
+        'tax',
+        'foodstamp',
+        'wicable',
+        'discount',
+        'scale',
+        'department', 
+        'description',
+        'brand',
+        'local',
+        'price_rule_id',
+    );
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $url = $this->config->get('URL');
-        $host = $this->config->get('HTTP_HOST');
         
         $msg = "";
-        $fields = array(
-            'normal_price',
-            'cost',
-            'tax',
-            'foodstamp',
-            'wicable',
-            'discount',
-            'scale',
-            'department', 
-            'description',
-            'brand',
-            'local',
-            'price_rule_id',
-        );
-        
-        foreach ($fields as $field) $msg .= self::getDiscrepancies($dbc,$field);
+        foreach ($this->fields as $field) {
+            $msg .= self::getDiscrepancies($dbc,$field);
+        }
         
         if ($msg != "") {
             $to = $this->config->get('ADMIN_EMAIL');

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use DrewM\MailChimp\MailChimp as MailChimpV3;
+
 include_once(dirname(__FILE__) . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__) . '/../../../classlib2.0/FannieAPI.php');
@@ -28,6 +30,8 @@ if (!class_exists('FannieAPI')) {
 
 class MailChimpTask extends FannieTask
 {
+    private $requiredMergeFields = array();
+
     protected function getSettings()
     {
         $FANNIE_PLUGIN_SETTINGS = $this->config->get('PLUGIN_SETTINGS');
@@ -39,34 +43,37 @@ class MailChimpTask extends FannieTask
         return array($APIKEY, $LISTID);
     }
 
-    protected function initMergeVars($chimp, $LISTID)
+    protected function readMergeFields($chimp, $LISTID)
     {
-        $vars = $chimp->lists->mergeVars(array($LISTID));
+        $vars = $chimp->get("lists/{$LISTID}/merge-fields");
         $field_id = false;
-        if ($vars['data']) {
-            $current = array_pop($vars['data']);
-            foreach ($current['merge_vars'] as $index => $info) {
-                if ($info['tag'] == 'CARDNO') {
-                    $field_id = $info['id'];
-                    break;
-                }
+        foreach ($vars['merge_fields'] as $mf) {
+            if ($mf['tag'] == 'CARDNO') {
+                $field_id = $mf['merge_id'];
             }
+            if ($mf['required']) {
+                $this->requiredMergeFields[$mf['tag']] = $mf['default_value'];
+            }
+        }
 
-            if ($field_id !== false) {
-                echo 'Found member# field' . "\n";
-            } else {
-                echo 'Adding member# field' . "\n";
-                $new = $chimp->lists->mergeVarAdd($LISTID, 'CARDNO', 'Owner Number', array('field_type'=>'number','public'=>false));
-                $field_id = $new['id'];
-            }
+        if ($field_id === false) {
+            echo 'Adding member# field' . "\n";
+            $new = $chimp->post("lists/{$LISTID}/merge_fields", array(
+                'tag' => 'CARDNO',
+                'name' => 'Owner Number',
+                'type' => 'number',
+                'required' => false,
+                'public' => false,
+            ));
+            $field_id = $new['merge_id'];
         }
 
         if ($field_id === false) {
             $this->cronMsg('Error: could not locate / create owner number field!', FannieLogger::NOTICE);
             return false;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     public function run()
@@ -85,10 +92,14 @@ class MailChimpTask extends FannieTask
         if (!class_exists('Mailchimp')) {
             $this->cronMsg('MailChimp library is not installed', FannieLogger::NOTICE);
             return false;
+        } elseif (!class_exists('DrewM\\MailChimp\\MailChimp')) {
+            $this->cronMsg('MailChimp API v3 library is not installed', FannieLogger::NOTICE);
+            return false;
         }
-        $chimp = new MailChimpEx($APIKEY);
+        $chimpEX = new MailChimpEx($APIKEY);
+        $chimp3 = new MailChimpV3($APIKEY);
 
-        if ($FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarField'] != 1 && $this->initMergeVars($chimp, $LISTID) === false) {
+        if ($this->readMergeFields($chimp3, $LISTID) === false) {
             return false;
         } // end create owner number field if needed
 
@@ -102,7 +113,7 @@ class MailChimpTask extends FannieTask
 
             $this->cronMsg('==== Checking ' . $status . ' emails ====', FannieLogger::INFO);
 
-            $full_list = $chimp->lists->export($LISTID, $status);
+            $full_list = $chimpEX->lists->export($LISTID, $status);
             $headers = array_shift($full_list);
             $columns = array();
             foreach ($headers as $index => $name) {
@@ -128,13 +139,13 @@ class MailChimpTask extends FannieTask
                           for both. If email disagrees, use MailChimp value for both.
                         */
                         case 'subscribed':
-                            $memlist = $this->isSubscribed($record, $columns, $chimp, $LISTID, $memlist);
+                            $memlist = $this->isSubscribed($record, $columns, $chimp3, $LISTID, $memlist);
                             break;
                         /**
                           Just track the number to avoid re-adding them to the list
                         */
                         case 'unsubscribed':
-                            $memlist = $this->isUnsubscribed($record, $columns, $chimp, $memlist);
+                            $memlist = $this->isUnsubscribed($record, $columns, $memlist);
                             break;
                         /**
                           Cleaned in MailChimp means the address isn't deliverable
@@ -143,7 +154,7 @@ class MailChimpTask extends FannieTask
                           re-added when a correct email is entered into POS.
                         */
                         case 'cleaned':
-                            $memlist = $this->isCleaned($record, $columns, $chimp, $memlist);
+                            $memlist = $this->isCleaned($record, $columns, $memlist);
                             $cleans[] = $record;
                             break;
                     }
@@ -158,7 +169,7 @@ class MailChimpTask extends FannieTask
                     switch ($status) {
                         // subscribed users can be updated easily
                         case 'subscribed':
-                            $memlist = $this->unknownSubscribed($record, $columns, $chimp, $LISTID, $memlist);
+                            $memlist = $this->unknownSubscribed($record, $columns, $chimp3, $LISTID, $memlist);
                             break;
                         /**
                           Unsubscribed are currently ignored. The can't be updated as is.
@@ -168,14 +179,14 @@ class MailChimpTask extends FannieTask
                           to prevent re-adding it.
                         */
                         case 'unsubscribed':
-                            $memlist = $this->unknownUnsubscribed($record, $columns, $chimp, $memlist);
+                            $memlist = $this->unknownUnsubscribed($record, $columns, $memlist);
                             break;
                         /**
                           Cleaned are bad addresses. Delete them from POS database
                           then from Mail Chimp.
                         */
                         case 'cleaned':
-                            $memlist = $this->unknownClean($record, $columns, $chimp, $memlist);
+                            $memlist = $this->unknownClean($record, $columns, $memlist);
                             $cleans[] = $record;
                             break;
                     }
@@ -184,40 +195,30 @@ class MailChimpTask extends FannieTask
 
         } // foreach list status
 
-        $this->removeBounces($chimp, $LISTID, $this->removalBatch($cleans, $columns));
+        $this->removeBounces($chimp3, $LISTID, $cleans, $columns);
 
-        $this->addNew($chimp, $LISTID, $dbc, $memlist);
+        $this->addNew($chimp3, $LISTID, $dbc, $memlist);
 
         return true;
     }
 
-    protected function removalBatch($cleans, $columns) 
+    protected function removeBounces($chimp, $LISTID, $cleans, $columns)
     {
-        $removal_batch = array();
+        $this->cronMsg(sprintf('Removing %d addresses with status "cleaned"', count($cleans)), FannieLogger::INFO);
+        $delID = 0;
+        $batch = $chimp->new_batch();
         foreach ($cleans as $record) {
             if (empty($record[$columns['EMAIL ADDRESS']])) {
                 continue;
             }
-            $email_struct = array(
-                'email' => $record[$columns['EMAIL ADDRESS']],
-                'euid' => $record[$columns['EUID']],
-                'leid' => $record[$columns['LEID']],
-            );
-            $removal_batch[] = $email_struct;
+            $email = $record[$columns['EMAIL ADDRESS']];
+            $hash = $chimp->subscriberHash($email);
+            $batch->delete("del{$delID}", "lists/{$LISTID}/members/{$hash}");
+            $delID++;
+            $this->cronMsg(sprintf('  => %s', $email), FannieLogger::INFO);
         }
-
-        return $removal_batch;
-    }
-
-    protected function removeBounces($chimp, $LISTID, $removal_batch)
-    {
-        /**
-          Removed bounced from the MailChimp list now that
-          POS has been updated
-        */
-        if (count($removal_batch) > 0) {
-            $this->cronMsg(sprintf('Removing %d addresses with status "cleaned"', count($removal_batch)), FannieLogger::INFO);
-            $result = $chimp->lists->batchUnsubscribe($LISTID, $removal_batch, true, false, false);
+        if ($delID) {
+            $res = $batch->execute();
         }
     }
 
@@ -241,27 +242,33 @@ class MailChimpTask extends FannieTask
                     AND m.email_1 <> \'\'
                     AND m.card_no NOT IN (' . $memlist . ')';
         $result = $dbc->query($query);
-        $add_batch = array();
+        $this->cronMsg(sprintf('Adding %d new members', $dbc->numRows($result)), FannieLogger::INFO);
+        $batch = $chimp->new_batch();
+        $addID = 0;
         while ($row = $dbc->fetch_row($result)) {
             if (!filter_var($row['email_1'], FILTER_VALIDATE_EMAIL)) {
                 continue;
             }
-            $new = array(
-                'email' => array(
-                    'email' => $row['email_1'],
-                ),
-                'email_type' => 'html',
-                'merge_vars' => array(
+            $this->cronMsg(sprintf(' => %s (%s)', $row['email_1'], $row['card_no']), FannieLogger::INFO);
+            $req = array(
+                'email_address' => $row['email_1'],
+                'status' => 'subscribed',
+                'merge_fields' => array(
+                    'CARDNO' => $row['card_no'],
                     'FNAME' => $row['FirstName'],
                     'LNAME' => $row['LastName'],
-                    'CARDNO' => $row['card_no'],
                 ),
             );
-            $add_batch[] = $new;
+            foreach ($this->requiredMergeFields as $tag => $default) {
+                if (!isset($req['merge_fields'][$tag])) {
+                    $req['merge_fields'][$tag] = $default;
+                }
+            }
+            $batch->post("add{$addID}", "lists/{$LISTID}/members", $req);
+            $addID++;
         }
-        if (count($add_batch) > 0) {
-            $this->cronMsg(sprintf('Adding %d new members', count($add_batch)), FannieLogger::INFO);
-            $added = $chimp->lists->batchSubscribe($LISTID, $add_batch, false, true);
+        if ($addID) {
+            $res = $batch->execute();
         }
     }
 
@@ -319,7 +326,21 @@ class MailChimpTask extends FannieTask
             );
             $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no), FannieLogger::INFO);
             try {
-                $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
+                $hash = $chimp->subscriberHash($email);
+                $req = array();
+                if (isset($update['EMAIL'])) {
+                    $req['email'] = $update['EMAIL'];
+                }
+                if (isset($update['FNAME']) || isset($update['LNAME'])) {
+                    $req['merge_fields'] = array();
+                    if (isset($update['FNAME'])) {
+                        $req['merge_fields']['FNAME'] = $update['FNAME'];
+                    }
+                    if (isset($update['LNAME'])) {
+                        $req['merge_fields']['LNAME'] = $update['LNAME'];
+                    }
+                }
+                $chimp->patch("list/{$LISTID}/members/{$hash}", $req);
             } catch (Exception $ex) {
                 echo $ex->getMessage();
             }
@@ -333,7 +354,7 @@ class MailChimpTask extends FannieTask
       Callback when list includes an unsubuscribed entry
       with a member number
     */
-    protected function isUnsubscribed($record, $columns, $chimp, $memlist)
+    protected function isUnsubscribed($record, $columns, $memlist)
     {
         list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
         $memlist .= sprintf('%d,', $card_no);
@@ -345,7 +366,7 @@ class MailChimpTask extends FannieTask
       Callback when list includes a cleaned [invalid address] entry
       with a member number
     */
-    protected function isCleaned($record, $columns, $chimp, $memlist)
+    protected function isCleaned($record, $columns, $memlist)
     {
         list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
         $this->meminfo->reset();
@@ -383,13 +404,11 @@ class MailChimpTask extends FannieTask
         }
 
         if (isset($update['CARDNO'])) {
-            $email_struct = array(
-                'email' => $email,
-                'euid' => $record[$columns['EUID']],
-                'leid' => $record[$columns['LEID']],
-            );
             $this->cronMsg("Assigning member # to account " . $email, FannieLogger::INFO);
-            $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
+            $hash = $chimp->subscriberHash($email);
+            $chimp->patch("lists/{$LISTID}/members/{$hash}", array(
+                'merge_fields' => array('CARDNO' => $update['CARDNO']),
+            ));
             sleep(1);
             $memlist .= sprintf('%d,', $update['CARDNO']);
         }
@@ -401,7 +420,7 @@ class MailChimpTask extends FannieTask
       Callback when list includes an unsubscribed entry
       without a member number
     */
-    protected function unknownUnsubscribed($record, $columns, $chimp, $memlist)
+    protected function unknownUnsubscribed($record, $columns, $memlist)
     {
         list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
         $this->meminfo->reset();
@@ -420,7 +439,7 @@ class MailChimpTask extends FannieTask
       Callback when list includes a cleaned [invalid address] entry
       without a member number
     */
-    protected function unknownClean($record, $columns, $chimp, $memlist)
+    protected function unknownClean($record, $columns, $memlist)
     {
         list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
         $this->meminfo->reset();

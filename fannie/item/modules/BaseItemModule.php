@@ -174,7 +174,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                 LEFT JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
-                LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID
+                LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID AND c.mostRecent=1
             WHERE p.upc=?';
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
@@ -440,7 +440,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 id="' . $tabID . '">';
 
             $ret .= '<input type="hidden" class="store-id" name="store_id[]" value="' . $store_id . '" />';
-            $ret .= '<table class="table table-bordered">';
+            $ret .= '<div id="" class=""><table id="productTable" class="table table-bordered">';
 
             $jsVendorID = $rowItem['default_vendor_id'] != 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
             $vFieldsDisabled = $jsVendorID == 'no-vendor' || !$active_tab ? 'disabled' : '';
@@ -453,8 +453,8 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
     <th class="text-right">Description</th>
     <td colspan="5">
         <div class="input-group" style="width:100%;">
-            <input type="text" maxlength="30" class="form-control syncable-input" required
-                name="descript[]" id="descript" value="{$rowItem['description']}"
+            <input type="text" maxlength="30" class="form-control syncable-input descript-input" required
+                name="descript[]" id="descript" value="{$rowItem['description']}" 
                 onkeyup="$(this).next().html(30-(this.value.length));" />
             <span class="input-group-addon">{$limit}</span>
         </div>
@@ -502,7 +502,7 @@ HTML;
                 <tr>
                     <th class="text-right">Brand</th>
                     <td colspan="5">
-                        <input type="text" name="manufacturer[]" 
+                        <input type="text" name="manufacturer[]"
                             class="form-control input-sm brand-field syncable-input"
                             value="' . $rowItem['manufacturer'] . '" />
                     </td>';
@@ -809,7 +809,8 @@ HTML;
                     $store_id
                 );
             }
-            $ret .= '</table></div>';
+            $ret .= $this->getRowMods($upc, $active_tab, $store_id);
+            $ret .= '</table></div></div>';
             if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
             }
@@ -845,6 +846,38 @@ HTML;
         return $ret;
     }
 
+    private function getRowMods($upc, $active_tab, $store_id)
+    {
+        $mods = FannieConfig::config('PRODUCT_ROWS');
+        asort($mods);
+        $ret = '';
+        foreach (array_keys($mods) as $mod) {
+            if (!class_exists($mod, false)) {
+                include(__DIR__ . '/' . $mod . '.php');
+            }
+            $obj = new $mod();
+            $ret .= $obj->formRow($upc, $active_tab, $store_id);
+        }
+
+        return $ret;
+    }
+
+    private function saveRowMods($upc)
+    {
+        $mods = FannieConfig::config('PRODUCT_ROWS');
+        asort($mods);
+        foreach (array_keys($mods) as $mod) {
+            if (!class_exists($mod, false)) {
+                include(__DIR__ . '/' . $mod . '.php');
+            }
+            $obj = new $mod();
+            $obj->setConfig($this->config);
+            $obj->setForm($this->form);
+            $obj->setConnection($this->connection);
+            $obj->saveFormData($upc);
+        }
+    }
+
     public function getFormJavascript($upc)
     {
         return file_get_contents(__DIR__ . '/baseItem.js');
@@ -859,7 +892,7 @@ HTML;
         }
     }
 
-    function SaveFormData($upc)
+    function saveFormData($upc)
     {
         $FANNIE_PRODUCT_MODULES = FannieConfig::config('PRODUCT_MODULES', array());
         $upc = BarcodeLib::padUPC($upc);
@@ -1007,6 +1040,7 @@ HTML;
         if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule']) && $dbc->tableExists('productUser')) {
             $this->saveProdUser($upc);
         }
+        $this->saveRowMods($upc);
     }
 
     private function getVendorID($name)

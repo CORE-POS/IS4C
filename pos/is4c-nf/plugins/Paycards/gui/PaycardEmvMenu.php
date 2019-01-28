@@ -55,9 +55,18 @@ class PaycardEmvMenu extends NoInputCorePage
                     $json = $parser->parse('DATACAP' . $choice);
                     $this->change_page($json['main_frame']);
                     return false;
+                case 'WI':
+                    $json = $parser->parse('DATACAPWI');
+                    $this->change_page($json['main_frame']);
+                    return false;
+                case 'WIM':
+                    $json = $parser->parse('DATACAPWI');
+                    $this->change_page($json['main_frame'] . '?manual=1');
+                    return false;
                 case 'PVEF':
                 case 'PVEC':
                 case 'PVGD':
+                case 'PVWI':
                     $json = $parser->parse('PVDATACAP' . substr($choice, -2));
                     $this->change_page($json['main_frame']);
                     return false;
@@ -70,8 +79,11 @@ class PaycardEmvMenu extends NoInputCorePage
                     $this->menu = array(
                         'EF' => 'Food Sale',
                         'EC' => 'Cash Sale',
+                        'WI' => 'eWIC Sale',
                         'PVEF' => 'Food Balance',
                         'PVEC' => 'Cash Balance',
+                        'PVWI' => 'eWIC Balance',
+                        'WIM' => 'eWIC Sale (Manual)',
                     );
                     $this->clearToHome = 0;
                     break;
@@ -84,6 +96,14 @@ class PaycardEmvMenu extends NoInputCorePage
                     );
                     $this->clearToHome = 0;
                     break;
+                case 'PV':
+                    $this->menu = array(
+                        'PVEF' => 'Food Balance',
+                        'PVEC' => 'Cash Balance',
+                        'PVGD' => 'Gift Balance',
+                    );
+                    $this->clearToHome = 1;
+                    break;
                 case 'CL':
                 default:
                     if (FormLib::get('clear-to-home')) {
@@ -95,13 +115,24 @@ class PaycardEmvMenu extends NoInputCorePage
         }
         if ($choice === false || $choice === 'CL' || $choice === '') {
             if ($this->conf->get('PaycardsDatacapMode') == 1) {
-                $this->menu = array(
-                    'EMV' => 'EMV Credit/Debit',
-                    'CC' => 'Credit only',
-                    'DC' => 'Debit only',
-                    'EBT' => 'EBT',
-                    'GIFT' => 'Gift',
-                );
+                if ($this->conf->get('PaycardsTipping')) {
+                    $this->menu = array(
+                        'EMV' => 'EMV Credit/Debit',
+                        'EMVTIP' => 'EMV w/ Tipping',
+                        'CC' => 'Credit only',
+                        'DC' => 'Debit only',
+                        'EBT' => 'EBT',
+                        'GIFT' => 'Gift',
+                    );
+                } else {
+                    $this->menu = array(
+                        'EMV' => 'EMV Credit/Debit',
+                        'CC' => 'Credit only',
+                        'DC' => 'Debit only',
+                        'EBT' => 'EBT',
+                        'GIFT' => 'Gift',
+                    );
+                }
             } elseif ($this->conf->get('PaycardsDatacapMode') == 2 || $this->conf->get('PaycardsDatacapMode') == 3) {
                 $this->menu = array(
                     'EMV' => 'EMV Credit/Debit',
@@ -130,7 +161,7 @@ class PaycardEmvMenu extends NoInputCorePage
         <div class="centeredDisplay colored rounded">
         <span class="larger">process card transaction</span>
         <form name="selectform" method="post" id="selectform"
-            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            action="<?php echo AutoLoader::ownURL(); ?>">
         <input type="hidden" name="clear-to-home" value="<?php echo $this->clearToHome; ?>" />
         <?php if ($this->conf->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"

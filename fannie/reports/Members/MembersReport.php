@@ -8,7 +8,7 @@ class MembersReport extends FannieReportPage
 {
     protected $header = 'Members Report';
     protected $title = 'Members Report';
-    protected $report_headers = array('#', 'First Name', 'Last Name', 'Start', 'End', 'Equity', 'Inactive');
+    protected $report_headers = array('#', 'First Name', 'Last Name', 'Total Equity', 'Start', 'End', 'Inactive');
     protected $required_fields = array('type');
     protected $no_sort_but_style = true;
 
@@ -62,20 +62,57 @@ class MembersReport extends FannieReportPage
             $args[] = $args[$i];
         }
         $r = $dbc->execute($q, $args);
-        $saveW = array();
-        $data = array();
-        while ($w = $dbc->fetch_row($r)) {
-            if (count($saveW) == 0 || $w['CardNo'] != $saveW['CardNo']){
-                if (count($saveW) > 0) {
-                    $data[] = $this->formatRow($saveW);
-                }
-                $saveW = $w;
-            } else {
-                $saveW['reason'] .= ", ".$w['reason'];
+
+        $candidateDepts = array();
+        if (preg_match_all("/[0-9]+/",$this->config->get('EQUITY_DEPARTMENTS'),$matches)) {
+            $candidateDepts = array_pop($matches);
+        }
+        list($inDept, $deptArgs) = $dbc->safeInClause($candidateDepts);
+        $pEq = $dbc->prepare("
+            SELECT 
+                card_no AS CardNo,
+                dept,
+                dept_name,
+                SUM(stockPurchase) AS ttl
+            FROM " . FannieDB::fqn('stockpurchases', 'trans') . " AS s
+                INNER JOIN departments AS d ON s.dept=d.dept_no
+            WHERE dept IN ($inDept)
+            GROUP BY card_no, dept, dept_name
+            ORDER BY dept");
+        $rEq = $dbc->execute($pEq, $deptArgs);
+        $equitySum = array();
+        $depts = array();
+        while ($w = $dbc->fetch_row($rEq)) {
+            $cardno = $w['CardNo'];
+            if (!isset($equitySum[$cardno])) {
+                $equitySum[$cardno] = array();
+            }
+            $equitySum[$cardno][$w['dept']] = $w['ttl'];
+            if (!isset($depts[$w['dept']])) {
+                $depts[$w['dept']] = $w['dept_name'];
             }
         }
-        if (count($saveW) > 0) {
-            $data[] = $this->formatRow($saveW);
+        if (count($depts) > 1) {
+            foreach ($depts as $id=>$name) {
+                $this->report_headers[] = $name;
+            }
+        }
+
+        $saveW = array();
+        $data = array();
+        $r = $dbc->execute($q, $args);
+        while ($w = $dbc->fetch_row($r)) {
+            $record = $this->formatRow($w);
+            if (count($depts) > 1) {
+                foreach ($depts as $id=>$name) {
+                    if (isset($equitySum[$w['CardNo']]) && isset($equitySum[$w['CardNo']][$id])) {
+                        $record[] = sprintf('%.2f', $equitySum[$w['CardNo']][$id]);
+                    } else {
+                        $record[] = 0;
+                    }
+                }
+            }
+            $data[] = $record;
         }
 
         return $data;
@@ -87,6 +124,7 @@ class MembersReport extends FannieReportPage
             $arr['CardNo'],
             $arr['FirstName'],
             $arr['LastName'],
+            $arr['equity'],
         );
         if (date('Y', strtotime($arr['startdate'])) < 1900) {
             $ret[] = '';
@@ -98,7 +136,6 @@ class MembersReport extends FannieReportPage
         } else {
             $ret[] = date('m/d/Y', strtotime($arr['enddate']));
         }
-        $ret[] = sprintf('%.2f', $arr['equity']);
         $ret[] = ($arr['isInactive'] == 1) ? $arr['reason'] : '';
 
         return $ret;

@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API {
+namespace COREPOS\Fannie\API;
 
 /**
   FanniePlugin class
@@ -60,11 +60,8 @@ class FanniePlugin extends \COREPOS\common\CorePlugin
         }
 
         $result = $db->query($PLUGIN_CREATE[$struct_name], $db_name);
-        if ($result) {
-            return true;
-        } else {
-            return $db->error($db_name);
-        }
+
+        return $result ? true : $db->error($db_name);
     }
     
     /**
@@ -82,20 +79,14 @@ class FanniePlugin extends \COREPOS\common\CorePlugin
         $plugin_list = \FannieConfig::factory()->get('PLUGIN_LIST');
         if (is_array($plugin_list)) {
             return $plugin_list;
-        } else {
-            return array();
         }
+
+        return array();
     }
 
     protected static function defaultSearchDir()
     {
-        return realpath(dirname(__FILE__).'/../modules/plugins2.0');
+        return realpath(__DIR__ . '/../modules/plugins2.0');
     }
-}
-
-}
-
-namespace {
-    class FanniePlugin extends \COREPOS\Fannie\API\FanniePlugin {}
 }
 

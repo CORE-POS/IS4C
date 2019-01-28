@@ -67,9 +67,12 @@ class WfcHtEvalView extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB('HoursTracking');
 
+        $score = sprintf('%.2f', $this->score);
+        $score = str_replace('.', '', $score);
+
         $q = $dbc->prepare("INSERT INTO evalScores (empID,evalType,evalScore,month,year,pos)
             VALUES (?,?,?,?,?,?)");
-        $r = $dbc->execute($q, array($this->id, $this->type, $this->score, $this->month, $this->year, $this->pos));
+        $r = $dbc->execute($q, array($this->id, $this->type, $score, $this->month, $this->year, $this->pos));
 
         echo $this->getHistory($dbc, $this->id);
 
@@ -250,7 +253,7 @@ class WfcHtEvalView extends FannieRESTfulPage
 
     protected function get_id_view()
     {
-        $this->addScript('view.js');
+        $this->addScript('view.js?date=20180117');
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = $this->connection;
         $dbc->selectDB('HoursTracking');

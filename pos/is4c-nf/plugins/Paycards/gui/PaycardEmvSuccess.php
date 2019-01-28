@@ -173,7 +173,7 @@ class PaycardEmvSuccess extends BasicCorePage
 
     function body_content()
     {
-        $this->input_header("onsubmit=\"return submitWrapper();\" action=\"".filter_input(INPUT_SERVER, 'PHP_SELF')."\"");
+        $this->input_header("onsubmit=\"return submitWrapper();\" action=\"".AutoLoader::ownURL()."\"");
         echo '<div class="baseHeight">';
         if ($this->capture->required()) {
             $reginput = FormLib::get('reginput', false);

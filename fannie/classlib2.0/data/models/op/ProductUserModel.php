@@ -52,7 +52,8 @@ Depends on:
 
 Use:
 Longer product descriptions for use in
-online webstore
+sale signage. In some edge case it\'s also
+for an online webstore
         ';
     }
 

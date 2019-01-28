@@ -40,7 +40,7 @@ class VendorAliasesModel extends BasicModel
     'isPrimary' => array('type'=>'TINYINT', 'default'=>0),
     );
 
-    public function help()
+    public function doc()
     {
         return '
 VendorAliases maps one or more items in products to a single

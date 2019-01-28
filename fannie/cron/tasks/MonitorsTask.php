@@ -63,27 +63,27 @@ to assess conditions, generate reports, and populate the dashboard.';
     {
         if (!class_exists('PHPMailer')) {
             $this->logger->error('Cannot send notifications without PHPMailer');
-        } else {
-            $mail = new PHPMailer();
-            $mail->isSMTP();
-            $mail->Host = $this->config->get('MON_SMTP_HOST');
-            $mail->Port = $this->config->get('MON_SMTP_PORT');
-            if ($this->config->get('MON_SMTP_AUTH') === 'Yes') {
-                $mail->SMTPAuth = true;
-                $mail->Username = $this->config->get('MON_SMTP_USER');
-                $mail->Password = $this->config->get('MON_SMTP_PW');
-            }
-            if ($this->config->get('MON_SMTP_ENC') !== 'None') {
-                $mail->SMTPSecure = $this->config->get('MON_SMTP_ENC');
-            }
-            $mail->From = 'corepos@localhost';
-            $mail->FromName = 'CORE POS Monitoring';
-            $mail->addAddress($this->config->get('MON_SMTP_ADDR'));
-            $mail->Subject = 'CORE POS Alert';
-            $mail->Body = $msg;
-            if (!$mail->send()) {
-                $this->logger->error('Error emailing monitoring notification');
-            }
+            return;
+        }
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->Host = $this->config->get('MON_SMTP_HOST');
+        $mail->Port = $this->config->get('MON_SMTP_PORT');
+        if ($this->config->get('MON_SMTP_AUTH') === 'Yes') {
+            $mail->SMTPAuth = true;
+            $mail->Username = $this->config->get('MON_SMTP_USER');
+            $mail->Password = $this->config->get('MON_SMTP_PW');
+        }
+        if ($this->config->get('MON_SMTP_ENC') !== 'None') {
+            $mail->SMTPSecure = $this->config->get('MON_SMTP_ENC');
+        }
+        $mail->From = 'corepos@localhost';
+        $mail->FromName = 'CORE POS Monitoring';
+        $mail->addAddress($this->config->get('MON_SMTP_ADDR'));
+        $mail->Subject = 'CORE POS Alert';
+        $mail->Body = $msg;
+        if (!$mail->send()) {
+            $this->logger->error('Error emailing monitoring notification');
         }
     }
 

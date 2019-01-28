@@ -71,7 +71,12 @@ class CCReceiptMessage extends ReceiptMessage {
         $query = "SELECT $trans_type AS tranType,
                     CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
                     p.PAN,
-                    CASE WHEN p.manual=1 THEN 'Manual' WHEN p.manual=-1 THEN 'Chip' ELSE 'Swiped' END as entryMethod,
+                    CASE 
+                        WHEN p.manual=1 THEN 'Manual'
+                        WHEN p.manual=-1 THEN 'Chip'
+                        WHEN p.manual=-2 THEN 'NFC'
+                        ELSE 'Swiped'
+                    END as entryMethod,
                     p.issuer,
                     p.xResultMessage,
                     p.xApprovalNumber,
@@ -164,9 +169,9 @@ class CCReceiptMessage extends ReceiptMessage {
                         $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
                     }
                     if (strpos($row['tranType'], ' R.')) {
-                        $para1 = 'Whole Foods Co-op (WFC) will charge four (4) additional $20 payments to your card. Payments will occur monthly starting one month from today. Each payment will purchase four (4) shares of class B equity in WFC. Entries on your bank statement may be labeled recurring.';
+                        $para1 = 'Whole Foods Co-op (WFC) will charge four (4) additional $20 payments to your card. Payments will occur monthly starting one month from today. Each $20 payment will purchase four (4) shares of class B equity in WFC. Entries on your bank statement may be labeled recurring.';
                         $para2 = 'To cancel this arrangement at any point, contact WFC by phone at 218-728-0884 or by email at equity@wholefoods.coop.';
-                        $para3 = 'If a monthly payment fails or is declined, no future monthly charges will be made. You will retain ownership of all equity purchased up to that point and may pay the remaining balance any time before the due date, one year from today.';
+                        $para3 = 'WFC does not keep any credit card information on file. As such if a monthly payment fails or is declined, no future monthly charges will be made. You will retain ownership of all equity purchased up to that point and may pay the remaining balance any time before the due date, one year from today.';
                         $slip .= wordwrap($para1, 55) . "\n\n";
                         $slip .= wordwrap($para2, 55) . "\n\n";
                         $slip .= wordwrap($para3, 55) . "\n\n";
@@ -198,7 +203,7 @@ class CCReceiptMessage extends ReceiptMessage {
                     $col2[] = ReceiptLib::boldFont()."Amount: ".$amt.ReceiptLib::normalFont();
                     $slip .= ReceiptLib::twoColumns($col1,$col2);
                     if (strpos($row['tranType'], ' R.')) {
-                        $slip .= ReceiptLib::boldFont() . 'This is a recurring payment' . ReceiptLib::normalizeFont() . "\n"
+                        $slip .= ReceiptLib::boldFont() . 'This is a recurring payment' . ReceiptLib::normalFont() . "\n"
                             . wordwrap(
                                 sprintf('You will be billed monthly %d additional times for $%.2f. ', $payments_left, $recurring)
                                 . 'The charges on your bank statement will be labeled "recurring". '

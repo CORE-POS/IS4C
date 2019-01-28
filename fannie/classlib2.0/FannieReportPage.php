@@ -192,10 +192,10 @@ class FannieReportPage extends FanniePage
             $this->form = new \COREPOS\common\mvc\FormValueContainer();
             $this->content_function = 'report_content'; 
             if ($this->config->get('WINDOW_DRESSING')) {
-                $this->has_menus(true);
+                $this->hasMenus(true);
                 $this->new_tablesorter = true;
             } else {
-                $this->has_menus(false);
+                $this->hasMenus(false);
             }
             $this->formatCheck();
         } else {
@@ -636,14 +636,14 @@ class FannieReportPage extends FanniePage
                     if (!$this->new_tablesorter) {
                         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                             // windows has trouble with symlinks
-                            $this->add_css_file($url . 'src/javascript/tablesorter-2.0.5b/themes/blue/style.css');
-                            $this->add_css_file($url . 'src/css/print.css');
+                            $this->addCssFile($url . 'src/javascript/tablesorter-2.0.5b/themes/blue/style.css');
+                            $this->addCssFile($url . 'src/css/print.css');
                         } else {
-                            $this->add_css_file($url . 'src/javascript/tablesorter/themes/blue/style.css');
-                            $this->add_css_file($url . 'src/css/print.css');
+                            $this->addCssFile($url . 'src/javascript/tablesorter/themes/blue/style.css');
+                            $this->addCssFile($url . 'src/css/print.css');
                         }
                     } else {
-                        $this->add_css_file($url . 'src/javascript/tablesorter-2.22.1/css/theme.bootstrap.css');
+                        $this->addCssFile($url . 'src/javascript/tablesorter-2.22.1/css/theme.bootstrap.css');
                     }
                     if (!$this->window_dressing) {
                         $ret .= '<!DOCTYPE html><html><head>' .
@@ -828,32 +828,32 @@ class FannieReportPage extends FanniePage
                 if (!$this->no_jquery && !$this->new_tablesorter) {
                     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                         // windows has trouble with symlinks
-                        $this->add_script($url . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
+                        $this->addScript($url . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
                     } else {
-                        $this->add_script($url . 'src/javascript/jquery.js');
+                        $this->addScript($url . 'src/javascript/jquery.js');
                     }
                 }
                 if (!$this->new_tablesorter) {
                     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                         // windows has trouble with symlinks
-                        $this->add_script($url . 'src/javascript/tablesorter-2.0.5b/jquery.tablesorter.js');
+                        $this->addScript($url . 'src/javascript/tablesorter-2.0.5b/jquery.tablesorter.js');
                     } else {
-                        $this->add_script($url . 'src/javascript/tablesorter/jquery.tablesorter.js');
+                        $this->addScript($url . 'src/javascript/tablesorter/jquery.tablesorter.js');
                     }
                 } else {
-                    $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
-                    $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
+                    $this->addScript($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
+                    $this->addScript($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
                 }
-                $this->addScript($url . 'src/javascript/jquery.floatThead.min.js');
+                $this->addScript($url . 'src/javascript/jquery.floatThead.min.js?date=20181121');
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
                     if (!$this->new_tablesorter) {
-                        $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
+                        $this->addOnloadCommand("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
                     } else {
-                        $this->add_onload_command("\$.tablesorter.themes.bootstrap['active'] = 'info';");
-                        $this->add_onload_command("\$.tablesorter.themes.bootstrap['table'] += ' tablesorter-core table-condensed small';");
-                        $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
-                        $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
+                        $this->addOnloadCommand("\$.tablesorter.themes.bootstrap['active'] = 'info';");
+                        $this->addOnloadCommand("\$.tablesorter.themes.bootstrap['table'] += ' tablesorter-core table-condensed small';");
+                        $this->addOnloadCommand("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
+                        $this->addOnloadCommand("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                     }
                     $this->addOnloadCommand("\$('.mySortableTable').floatThead();\n");
                 } elseif ($this->new_tablesorter) {
@@ -861,11 +861,11 @@ class FannieReportPage extends FanniePage
                       New bootstrap-themed tablesorter requires more setup to style correctly
                       even when sorting isn't used. Simply including a CSS file is not sufficient.
                     */
-                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['active'] = 'info';");
-                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['table'] += ' tablesorter-core table-condensed small';");
-                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
-                    $this->add_onload_command("\$('.mySortableTable thead th').data('sorter', false);\n");
-                    $this->add_onload_command("\$('.mySortableTable').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
+                    $this->addOnloadCommand("\$.tablesorter.themes.bootstrap['active'] = 'info';");
+                    $this->addOnloadCommand("\$.tablesorter.themes.bootstrap['table'] += ' tablesorter-core table-condensed small';");
+                    $this->addOnloadCommand("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
+                    $this->addOnloadCommand("\$('.mySortableTable thead th').data('sorter', false);\n");
+                    $this->addOnloadCommand("\$('.mySortableTable').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                 }
                 break;
             case 'csv':

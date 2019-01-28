@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\data {
+namespace COREPOS\Fannie\API\data;
 
 /**
   @class DataCache
@@ -229,8 +229,3 @@ class DataCache
     }
 }
 
-}
-
-namespace {
-    class DataCache extends \COREPOS\Fannie\API\data\DataCache {}
-}

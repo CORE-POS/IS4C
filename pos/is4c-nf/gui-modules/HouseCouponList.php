@@ -76,7 +76,7 @@ class HouseCouponList extends NoInputCorePage
         <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
-            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" >
+            action="<?php echo AutoLoader::ownURL(); ?>" >
         <select name="selectlist" size="15" id="selectlist"
             style="min-width: 200px;"
             onblur="$('#selectlist').focus()" >

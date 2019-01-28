@@ -130,7 +130,7 @@ class requestInfo extends NoInputCorePage
         <?php echo $this->requestHeader; ?>
         </span>
         <form name="form" method="post" autocomplete="off" 
-            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+            action="<?php echo AutoLoader::ownURL(); ?>">
         <input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
         <input type="hidden" name="class" value="<?php echo $this->form->tryGet('class'); ?>" />
         </form>

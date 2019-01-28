@@ -55,12 +55,12 @@ class SaPriceChangePage extends FannieRESTfulPage {
     function preprocess(){
         global $FANNIE_URL;
 
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+        $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
 
         $this->linea_ios_mode = $this->linea_support_available();
         if ($this->linea_ios_mode){
-            $this->add_script($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
-            $this->add_script($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+            $this->addScript($FANNIE_URL.'src/javascript/linea/cordova-2.2.0.js');
+            $this->addScript($FANNIE_URL.'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
         }
 
         $this->__routes[] = 'post<upc><price>';

@@ -12,6 +12,15 @@ done
 
 find ./fannie -type f -name '*.js' | while read file
 do
+    # don't rescan vendor'd files
+    if [ "${file#*node_modules}" != "$file" ]; then
+        continue;
+    fi
+    # EndCapper has jsx that will fail
+    if [ "${file#*EndCapper}" != "$file" ]; then
+        continue;
+    fi
+    echo $file;
     emsg=`node_modules/.bin/acorn --silent "$file"`;
     exit=$?
     if [ "$exit" != "0" ]; then

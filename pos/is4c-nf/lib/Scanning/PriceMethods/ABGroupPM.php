@@ -120,7 +120,7 @@ class ABGroupPM extends PriceMethod
             $discs = round($rowd[0]);
             $dept2 = $rowd[1];
             $tax2 = $rowd['tax'];
-            $fs2 = $rowd['foodstamp'];
+            $fs2 = $rowd['fs'];
             if ($rowd[2]==1) $discountIsScale = true;
             $scaleDiscMax = $rowd[3];
             $discountScaleQty = $rowd[4];

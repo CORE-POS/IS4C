@@ -52,8 +52,12 @@ $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 $narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
-$locationP = $dbc->prepare('SELECT name FROM FloorSectionProductMap WHERE upc=? AND store_id = 1');
+$locationP = $dbc->prepare('SELECT s.name FROM FloorSectionProductMap AS m
+    INNER JOIN FloorSections AS s ON m.floorSectionID=s.floorSectionID 
+    WHERE m.upc=? AND s.storeID = 1');
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+$mtLength = $store == 1 ? 3 : 7;
+$signage = new COREPOS\Fannie\API\item\FannieSignage(array());
 $mtP = $dbc->prepare('SELECT p.auto_par
     FROM MovementTags AS m
         INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.store_id
@@ -71,6 +75,7 @@ $location = array();
 foreach ($data as $k => $row) {
     if ($dbc->getValue($narrowP, array($row['upc']))) {
         $row['full'] = false;
+        $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
         $half[] = $row;
     } else {
         $row['full'] = true;
@@ -97,10 +102,12 @@ $width = 52; // tag width in mm
 $height = 31; // tag height in mm
 $left = 5; // left margin
 $top = 15; // top margin
+$bTopOff = 0;
 
 // undo margin if offset is true
 if($offset) {
     $top = 32;
+    $bTopOff = 17;
 }
 
 $pdf->SetTopMargin($top);  //Set top margin of the page
@@ -116,11 +123,11 @@ $full_y = $top;
 
 // half size tag settings
 $upcX = 7;  //x location of barcode
-$upcY = 15; //y locaton of barcode
-$priceY = 29; //y location of size and price on label
+$upcY = $top; //y locaton of barcode
+$priceY = 14 + $top; //y location of size and price on label
 $priceX = 8; //x location of date and price on label
 $count = 0;  //number of labels created
-$baseY = 31; // baseline Y location of label
+$baseY = 31 + $bTopOff; // baseline Y location of label
 $baseX = 6;  // baseline X location of label
 $down = 31.0;
 
@@ -164,8 +171,9 @@ foreach($data as $row) {
                 $pdf->EAN13($full_x+3,$full_y+4,$upc,7);  //generate barcode and place on label
             }
             $pdf->SetXY($full_x+38, $full_y+4);
-            $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*7)), 1, 1, 'C');
-            $dbc->execute($updateMT, array(($row['movementTag']*7), $row['upc'], $store));
+            $border = $mtLength == 7 ? 'TBR' : 'TBL';
+            $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
+            $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
         } else {
             //Start laying out a label
             if (strlen($upc) <= 11)
@@ -206,10 +214,19 @@ foreach($data as $row) {
 
         //Start laying out a label
         $pdf->SetFont('Arial','',8);  //Set the font
+        $signage->drawBarcode($upc, $pdf, $upcX, $upcY, array('height'=>4, 'width'=>0.25, 'fontsize'=>6.5, 'align'=>'L'));
+        if ($row['movementTag']) {
+            $pdf->SetXY($upcX + 18, $upcY + 5);
+            $border = $mtLength == 7 ? 'TBR' : 'TBL';
+            $pdf->Cell(7, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
+            $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
+        }
+        /*
         if (strlen($upc) <= 11)
             $pdf->UPC_A($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
         else
             $pdf->EAN13($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
+         */
 
         $pdf->SetFont('Arial','B',18); //change font for price
         $pdf->TEXT($priceX,$priceY,$price);  //add price
@@ -289,11 +306,11 @@ foreach($data as $row) {
 
     // half size
     $upcX = 7;  //x location of barcode
-    $upcY = 15; //y locaton of barcode
-    $priceY = 29; //y location of size and price on label
+    $upcY = $top; //y locaton of barcode
+    $priceY = 29 + $bTopOff; //y location of size and price on label
     $priceX = 8; //x location of date and price on label
     $count = 0;  //number of labels created
-    $baseY = 31; // baseline Y location of label
+    $baseY = 31 + $bTopOff; // baseline Y location of label
     $baseX = 6;  // baseline X location of label
    }
    else if ($num % 4 == 0){

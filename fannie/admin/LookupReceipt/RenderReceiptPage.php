@@ -298,7 +298,7 @@ HTML;
         list($emp,$reg,$trans) = explode("-", $transNum, 3);
 
         $query = $dbc->prepare("SELECT transType AS mode, amount, PAN, 
-            CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
+            CASE WHEN manual=1 THEN 'Manual' WHEN manual=-1 THEN 'Chip' ELSE 'Swiped' END as entryMethod,
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
             refNum, processor
             FROM " . FannieDB::fqn('PaycardTransactions', 'trans') . "
@@ -308,8 +308,13 @@ HTML;
         $result = $dbc->execute($query,array($dateInt,$emp,$reg,$trans));
         $ret = '';
         $pRef = '';
+        $found = false;
         while ($row = $dbc->fetchRow($result)) {
-            if ($pRef == $row['refNum'] || $row['mode'] == 'VOID') continue;
+            if (is_numeric(substr($row['PAN'], -4))) {
+                $digits = substr($row['PAN'], -4);
+                $row['PAN'] = '<a href="RawPTrans.php?date=' . $date1 . '&trans=' . $transNum . '&card=' . $digits 
+                    . '">' . $row['PAN'] . '</a>';
+            }
             $ret .= "<hr />";
             $ret .= 'Mode: '.$row['mode'].'<br />';
             $ret .= "Card: ".$row['issuer'].' '.$row['PAN'].'<br />';
@@ -319,8 +324,21 @@ HTML;
             $ret .= "Reference Number: ".$row['refNum'].'<br />';
             $ret .= "Authorization: ".$row['xResultMessage'].'<br />';
             $ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
-            $ret .= ($row['processor'] == 'GoEMerchant' ? 'FAPS' : 'MERCURY') . '<br />';
+            if ($row['processor'] == 'GoEMerchant') {
+                $ret .= 'FAPS';
+            } elseif ($row['processor'] == 'RapidConnect') {
+                $ret .= 'FIRST DATA';
+            } else {
+                $ret .= 'MERCURY';
+            }
+            $ret .= '<br />';
             $pRef = $row['refNum'];
+            $found = true;
+        }
+        if ($found) {
+            $ret .= '<p class="hidden-print">';
+            $ret .= '<a href="RawPTrans.php?date=' . $date1 . '&trans=' . $transNum . '">Card Details</a>';
+            $ret .= '</p>';
         }
 
         return $ret;

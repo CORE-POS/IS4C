@@ -19,6 +19,7 @@
             <file>tests/fannie/OrdersTest.php</file>
             <file>tests/fannie/PagesFannieTest.php</file>
             <file>tests/fannie/PluginFannieTest.php</file>
+            <file>tests/fannie/SyncTest.php</file>
             <file>tests/fannie/TagTest.php</file>
             <file>tests/fannie/TasksTest.php</file>
             <file>tests/fannie/WebServicesTest.php</file>

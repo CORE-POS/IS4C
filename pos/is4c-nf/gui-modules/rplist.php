@@ -26,6 +26,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -51,6 +52,7 @@ class rplist extends NoInputCorePage
         } elseif(!empty($receipt)) {
             $PRINT->writeLine($receipt);
         }
+        TransRecord::addLogRecord(array('upc'=>'RPREQUEST', 'description'=>'Reprint Receipt'));
     }
 
     function preprocess()
@@ -60,6 +62,13 @@ class rplist extends NoInputCorePage
                 $this->printReceipt($this->form->selectlist);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php");
+
+            return false;
+        } elseif ($this->form->tryGet('ajaxprint') !== '') {
+            if (!empty($this->form->ajaxprint)) {
+                $this->printReceipt($this->form->ajaxprint);
+            }
+            echo "Done";
 
             return false;
         } elseif ($this->form->tryGet('preview') !== '') {
@@ -73,7 +82,7 @@ class rplist extends NoInputCorePage
     function head_content()
     {
         ?>
-        <script type="text/javascript" src="../js/selectSubmit.js"></script>
+        <script type="text/javascript" src="../js/selectSubmit.js?date=20180611"></script>
         <script type="text/javascript">
         function updatePreview(trans) {
             $.ajax({
@@ -82,10 +91,27 @@ class rplist extends NoInputCorePage
                 $('#receipt-preview').html(resp);
             });
         }
+        function doReprint() {
+            var current = $('#selectlist').val();
+            $('#selectlist').hide();
+            $('#loading-spinner').show();
+            $.ajax({
+                data: 'ajaxprint='+current,
+                timeout: 5000
+            }).fail(function (err, st, obj) {
+                $('#loading-spinner').hide();
+                $('#error-msg').html('Error sending job to printer');
+                $('#error-msg').show();
+                setTimeout(function() { window.location = 'pos2.php'; }, 5000);
+            }).done(function (resp) {
+                window.location = 'pos2.php';
+            });
+        }
         </script>
         <?php
-        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform')\n");
+        $this->addOnloadCommand("selectSubmit('#selectlist', '#selectform', false, false, doReprint)\n");
         $this->addOnloadCommand("\$('#selectlist').focus();\n");
+        $this->addCssFile('../css/spinner.css');
     }
 
     private function getTransactions()
@@ -150,7 +176,7 @@ class rplist extends NoInputCorePage
         <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
-            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" >
+            action="<?php echo AutoLoader::ownURL(); ?>" >
         <select name="selectlist" size="15" id="selectlist"
             onblur="$('#selectlist').focus()" onchange="updatePreview(this.value);" >
 
@@ -170,6 +196,8 @@ class rplist extends NoInputCorePage
         }
         ?>
         </select>
+        <div id="loading-spinner" class="lds-spinner coloredArea rounded" style="display: none;"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+        <div id="error-msg" style="display: none;"></div>
         </div>
         <div class="listbox" id="receipt-preview" style="height: 15; font-size: 85%;">
             <?php echo ($first) ? $this->previewTrans($first) : ''; ?>

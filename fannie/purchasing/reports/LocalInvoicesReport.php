@@ -59,7 +59,7 @@ class LocalInvoicesReport extends FannieReportPage
             $codingQ .= ' AND i.vendorID=? ';
             $args[] = $vendorID;
         }
-        $codingQ .= 'GROUP BY o.orderID, i.vendorInvoiceID, g.name
+        $codingQ .= 'GROUP BY o.orderID, i.vendorInvoiceID, g.name, v.vendorName
                     ORDER BY rdate, i.vendorInvoiceID, g.name';
         return array($dbc->prepare($codingQ), $args);
     }

@@ -42,12 +42,21 @@ class VendorAliasesPage extends FannieRESTfulPage
     public function preprocess()
     {
         $this->__routes[] = 'get<id><print>';
+        $this->__routes[] = 'post<id><print>';
 
         return parent::preprocess();
     }
 
+    protected function post_id_print_handler()
+    {
+        return $this->get_id_print_handler();
+    }
+
     protected function get_id_print_handler()
     {
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $mtLength = $store == 1 ? 3 : 7;
+
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->AddPage();
         $pdf->SetMargins(10,10,10);
@@ -55,14 +64,15 @@ class VendorAliasesPage extends FannieRESTfulPage
         $dbc = $this->connection;
         $upcs = FormLib::get('printUPCs', array());
         $upcs = array_map(function ($i) { return BarcodeLib::padUPC($i); }, $upcs);
-        $args = array($this->id);
+        $args = array($this->id, $store);
         list($inStr, $args) = $dbc->safeInClause($upcs, $args);
         $prep = $dbc->prepare('
-            SELECT p.description, v.sku, n.vendorName, p.brand
+            SELECT p.description, v.sku, n.vendorName, p.brand, MAX(p.auto_par) AS auto_par
             FROM products AS p
                 INNER JOIN VendorAliases AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 INNER JOIN vendors AS n ON p.default_vendor_id=n.vendorID
             WHERE v.vendorID=? 
+                AND p.store_id=?
                 AND p.upc IN (' . $inStr . ')
             GROUP BY p.description, v.sku, n.vendorName'); 
         $res = $dbc->execute($prep, $args);
@@ -86,6 +96,9 @@ class VendorAliasesPage extends FannieRESTfulPage
             unlink($file);
             $pdf->SetXY($posX+3, $posY+16);
             $pdf->Cell(0, 5, $tagSize['unitSize'] . ' / ' . $tagSize['caseSize'] . ' - ' . $tagSize['brand']);
+            $pdf->SetXY($posX+35, $posY+17.5);
+            $border = $mtLength == 7 ? 'TBR' : 'TBL';
+            $pdf->Cell(8, 4, sprintf('%.1f', $mtLength * $row['auto_par']), $border, 0, 'C');
             $posX += 52;
             if ($posX > 170) {
                 $posX = 5;
@@ -112,8 +125,6 @@ class VendorAliasesPage extends FannieRESTfulPage
                 AND sku=?
                 AND upc=?');
         $delR = $dbc->execute($delP, array($this->id, $sku, $upc));
-
-        $resp = array('error'=>($delR === false ? 1 : 0));
 
         return 'VendorAliasesPage.php?id=' . $this->id;
     }
@@ -198,7 +209,7 @@ class VendorAliasesPage extends FannieRESTfulPage
                 <th>Unit Size</th>
                 <th>Multiplier</th>
                 <th>&nbsp;</th>
-                <th><span class="glyphicon glyphicon-print"></span></th>
+                <th><span class="glyphicon glyphicon-print" onclick="$(\'.printUPCs\').prop(\'checked\', true);"></span></th>
             </thead><tbody>';
         $res = $dbc->execute($prep, array($this->id));
         while ($row = $dbc->fetchRow($res)) {
@@ -222,14 +233,40 @@ class VendorAliasesPage extends FannieRESTfulPage
             );
         }
         $ret .= '</tbody></table>';
-        $ret .= '<form>
-            <button type="submit" class="btn btn-default"
-                onclick="var dstr = $(\'.printUPCs\').serialize(); dstr += \'&print=1&id=\' + ' . $this->id . ';
-                location=\'?\' + dstr; return false;"
+        $ret .= '<form id="tagForm" method="post">
+            <input type="hidden" name="print" value="1" />
+            <input type="hidden" name="id" value="' . $this->id . '" />
+            <button type="button" class="btn btn-default"
+                onclick="$(\'.printUPCs:checked\').each(function (i) {
+                    console.log($(this).val());
+                    $(\'#tagForm\').append(\'<input type=hidden name=printUPCs[] value=\' + $(this).val() + \' />\');
+                }); $(\'#tagForm\').submit();"
             >Print Scan Tags</button>
             </form>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Aliases are items that are sold under alternate UPCs or PLUs. Aliases supplant
+            both SKU maps and Breakdown items. A given vendor SKU may have multiple aliases
+            but only one primary alias. The primary alias is shown with the actual vendor SKU
+            associated and is the unit that is counted for inventory purposes. The multiplier
+            is a conversion factor between a given alias and the primary alias. If the primary
+            alias is a single item and there\'s a secondary alias that\'s a four-pack the multiplier
+            on the latter alias will be four.
+            </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $phpunit->assertInternalType('string', $this->get_id_view());
+        $phpunit->assertInternalType('string', $this->post_id_view());
+        $phpunit->assertInternalType('string', $this->delete_id_handler());
+        $phpunit->assertEquals(true, $this->post_id_handler());
     }
 }
 

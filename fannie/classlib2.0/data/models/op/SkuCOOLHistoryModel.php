@@ -60,5 +60,13 @@ class SkuCOOLHistoryModel extends BasicModel
 
         return $ret ? true : false;
     }
+
+    public function doc()
+    {
+        return '
+Use:
+Track country of origin (COOL) for a given vendor SKU.
+            ';
+    }
 }
 

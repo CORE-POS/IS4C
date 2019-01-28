@@ -55,7 +55,7 @@ class giftcardlist extends NoInputCorePage
         <div class="centeredDisplay colored rounded">
         <span class="larger"><?php echo _('gift card transaction'); ?></span>
         <form name="selectform" method="post" id="selectform"
-            action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            action="<?php echo AutoLoader::ownURL(); ?>">
         <?php if ($this->session->get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">

@@ -64,7 +64,7 @@ based on expiration and/or use.';
             WHERE start_date >= ?
         ");
         $yesterday = date('Y-m-d', strtotime('yesterday'));
-        $currentR = $dbc->execute($currentQ, array($yesterday));
+        $currentR = $dbc->execute($currentP, array($yesterday));
         while ($row = $dbc->fetchRow($currentR)) {
             $dlog = DTransactionsModel::selectDlog($row['start_date'], $row['end_date']);
             $upc = '00499999' . str_pad($row['coupID'], 5, '0', STR_PAD_LEFT);

@@ -26,12 +26,20 @@
 */
 class PriceRuleTypesModel extends BasicModel
 {
-
     protected $name = "PriceRuleTypes";
 
     protected $columns = array(
     'priceRuleTypeID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(50)'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Price Rules define reasons for making exceptions to normal margin. A price rule
+type might be "loss leader" or "competitor match".
+            ';
+    }
 }
 

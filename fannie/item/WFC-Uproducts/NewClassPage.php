@@ -85,7 +85,7 @@ class NewClassPage extends FannieRESTfulPage
             if ($k === 5) {
                 $p->store_id(1);
             }
-            if (!$saved[] = $p->save()) {
+            if (!$saved[] = $p->saveAllStores()) {
                 $error+=$k;
             }
             
@@ -170,12 +170,13 @@ HTML;
                 <input type="radio" name="price" value="15.00"/> $15 <br/>
                 <input type="radio" name="price" value="20.00"/> $20 <span style="color: grey">| </span>
                 <input type="radio" name="price" value="25.00"/> $25 <span style="color: grey">| </span>
+                <input type="radio" name="price" value="30.00"/> $30 <span style="color: grey">| </span>
                 <input type="radio" name="price" value="40.00"/> $40 <br/>
                 <input type="radio" name="price" value="60.00"/> $60 
             </div>
+            <!--
             <div class="form-group">
                 <label for="likeCode">Like Code</label><br/>
-                <input type="radio" name="likeCode" value="" selected/> None <br/>
                 <input type="radio" name="likeCode" value="7001"/> 7001 <span style="color: grey">| </span>$15 -> $12<br/>
                 <input type="radio" name="likeCode" value="7004"/> 7004 <span style="color: grey">| </span>$15 -> $10<br/>
                 <input type="radio" name="likeCode" value="7003"/> 7003 <span style="color: grey">| </span>$20 -> $15<br/>
@@ -183,6 +184,8 @@ HTML;
                 <input type="radio" name="likeCode" value="7005"/> 7005 <span style="color: grey">| </span>$40 -> $30<br/>
                 <input type="radio" name="likeCode" value="7006"/> 7006 <span style="color: grey">| </span>$60 -> $40<br/>
             </div>
+            -->
+            <input type="hidden" name="likeCode" value="" selected/> None <br/>
             <div class="form-group">
                 <label for="expires">Expires</label>
                 <input type="text" class="form-control date-field len-md" name="expires" id="expires" value="" required/>

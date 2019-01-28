@@ -130,7 +130,7 @@ class drawerPage extends NoInputCorePage
         <div class="centeredDisplay colored">
             <span class="larger"><?php echo $msg; ?></span>
             <br />
-        <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
+        <form id="selectform" method="post" action="<?php echo AutoLoader::ownURL(); ?>">
         <select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
         <option value=''>
         <?php 

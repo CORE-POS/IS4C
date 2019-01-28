@@ -193,7 +193,10 @@ class UPC extends Parser
             $row['description'] = $row['formatted_name'];
         }
 
-        $this->checkInUse($row);
+        $ret = $this->checkInUse($row, $ret);
+        if ($ret['main_frame']) {
+            return $ret;
+        }
 
         /**
           Apply special department handlers
@@ -363,7 +366,7 @@ class UPC extends Parser
         $row['foodstamp'] = $foodstamp;
         $row['discount'] = $discountable;
 
-        $this->enforceSaleLimit($dbc, $row, $quantity);
+        $row = $this->enforceSaleLimit($dbc, $row, $quantity);
 
         /*
             BEGIN: figure out discounts by type
@@ -388,14 +391,17 @@ class UPC extends Parser
            quantity and items that do not have a normal_price
            assigned cannot calculate a proper quantity.
         */
+        $rawQty = false;
         if ($scaleStickerItem) {
-            if ($discountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
+            if ($discountObject->isSale() && $scale == 1 && $row['normal_price'] != 0 && $this->session->get('VariableNoSalePrice') != 1) {
                 $quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
             } elseif ($scale == 1 && $row['normal_price'] != 0) {
                 $quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
                 if (round($scaleprice, 2) != round($quantity * $row['normal_price'], 2)) {
                     $quantity = 1.0;
                     $row['normal_price'] = $scaleprice;
+                    $rawQty = $scaleprice / $row['normal_price'];
+                    $row['cost'] = MiscLib::truncate2($row['cost'] * $rawQty);
                 } 
             } else {
                 $row['normal_price'] = $scaleprice;
@@ -423,6 +429,14 @@ class UPC extends Parser
                 DisplayLib::standardClearButton()
             );
             return $ret;
+        } elseif (false && $rawQty) { // rewrite edge-case quantities idea
+            $dbc = Database::tDataConnect();
+            $prep = $dbc->prepare('SELECT MAX(trans_id) FROM localtemptrans WHERE upc=?');
+            $tID = $dbc->getValue($prep, array($row['upc']));
+            if ($tID) {
+                $prep = $dbc->prepare('UPDATE localtemptrans SET quantity=?, ItemQtty=? WHERE trans_id=?');
+                $res = $dbc->execute($prep, array($rawQty, $rawQty, $tID));
+            }
         }
 
         /* add discount notifications lines, if applicable */
@@ -780,20 +794,33 @@ class UPC extends Parser
         return $row;
     }
 
-    private function checkInUse($row)
+    private function checkInUse($row, $ret)
     {
         /* Implementation of inUse flag
-         *   if the flag is not set, display a warning dialog noting this
+         *   if the flag is not set and it's likely a keyed item
+         *   display a warning dialog noting this
          *   and allowing the sale to be confirmed or canceled
          */
         if ($row["inUse"] == 0) {
-            TransRecord::addLogRecord(array(
-                'upc' => $row['upc'],
-                'description' => $row['description'],
-                'department' => $row['department'],
-                'charflag' => 'IU',
-            ));
+            if (substr($row['upc'], 0, 6) == '000000' && $this->session->get('msgrepeat') == 0) {
+                $this->session->set("strEntered",$row["upc"]);
+                $this->session->set("boxMsg", _("Not an active item: ") . $row['description']);
+                $this->session->set('boxMsgButtons', array(
+                    _('Confirm Sale [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
+                $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/boxMsg2.php?quiet=1";
+            } else {
+                TransRecord::addLogRecord(array(
+                    'upc' => $row['upc'],
+                    'description' => $row['description'],
+                    'department' => $row['department'],
+                    'charflag' => 'IU',
+                ));
+            }
         }
+
+        return $ret;
     }
 
     private function enforceSaleLimit($dbc, $row, $quantity)

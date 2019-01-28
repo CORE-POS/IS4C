@@ -120,7 +120,7 @@ class PriceMovementReport extends FannieReportPage
             WHERE tdate BETWEEN ? AND ?
                 AND $where
                 AND " . DTrans::isStoreID($store, 'd') . "
-            GROUP BY d.upc,p.description,price,d.department,t.dept_name
+            GROUP BY d.upc,p.brand,p.description,price,d.department,t.dept_name
             ORDER BY d.upc";
         $args[] = $store;
 

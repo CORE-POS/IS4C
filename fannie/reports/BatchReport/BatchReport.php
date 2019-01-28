@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -31,7 +33,7 @@ class BatchReport extends FannieReportPage
     protected $header = "Select batch(es)";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','SKU','Brand','Description','$','Qty','Rings','Location');
+    protected $report_headers = array('UPC','SKU','Brand','Description','$','Qty','Rings','Location', 'Lift%');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
@@ -118,6 +120,27 @@ class BatchReport extends FannieReportPage
         return $ret;
     }
 
+    private function getLifts($dbc, $batchIDs, $storeID)
+    {
+        $ret = array();
+        list($inStr, $args) = $dbc->safeInClause($batchIDs);
+        $query = "SELECT upc, SUM(saleQty) AS qty, SUM(compareQty) AS comp
+            FROM SalesLifts
+            WHERE batchID IN ({$inStr})";
+        if ($storeID) {
+            $query .= ' AND storeID=? ';
+            $args[] = $storeID;
+        }
+        $query .= ' GROUP BY upc';
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[$row['upc']] = $row['comp'] != 0 ? (($row['qty'] - $row['comp']) / $row['comp']) : 999.99;
+        }
+
+        return $ret;
+    }
+
     function fetch_report_data()
     {
         $dbc = $this->connection;
@@ -127,20 +150,8 @@ class BatchReport extends FannieReportPage
         $store = FormLib::get('store', false);
         $model = new BatchesModel($dbc);
 
-        if ($store === false && is_array($this->config->get('STORE_NETS'))) {
-            $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-            $ranges = $this->config->get('STORE_NETS');
-            foreach ($ranges as $storeID => $range) {
-                if (
-                    class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
-                    && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
-                    ) {
-                    $store = $storeID;
-                }
-            }
-            if ($store === false) {
-                $store = 0;
-            }
+        if ($store === false) {
+            $store = Store::getIdByIp(0);
         }
 
         /**
@@ -157,6 +168,8 @@ class BatchReport extends FannieReportPage
         }
         $upcs = array_unique($upcs);
         list($bName, $bStart, $bEnd) = $this->getNameAndDates($batchID, $bStart, $bEnd);
+
+        $lifts = $this->getLifts($dbc, $batchID, $store);
         
         $dlog = DTransactionsModel::selectDlog($bStart,$bEnd);
         $bStart .= ' 00:00:00';
@@ -170,21 +183,23 @@ class BatchReport extends FannieReportPage
                 p.brand,
                 p.description, 
                 p.default_vendor_id,
-                lv.sections AS location,
-                vi.sku,
+                MAX(l.sections) AS location,
+                MAX(v.sku) AS sku,
                 SUM(d.total) AS sales, "
                 . DTrans::sumQuantity('d') . " AS quantity, 
                 SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
-                LEFT JOIN FloorSectionsListView as lv on d.upc=lv.upc AND lv.storeID=d.store_id
-                LEFT JOIN vendorItems AS vi ON (p.upc = vi.upc AND p.default_vendor_id = vi.vendorID)
+                LEFT JOIN FloorSectionsListTable as l on d.upc=l.upc AND l.storeID=d.store_id
+                LEFT JOIN vendorItems AS v ON (p.upc = v.upc AND p.default_vendor_id = v.vendorID)
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
                 AND " . DTrans::isStoreID($store, 'd') . "
                 AND d.charflag <> 'SO'
             GROUP BY d.upc, 
-                p.description
+                p.brand,
+                p.description,
+                p.default_vendor_id
             ORDER BY d.upc";
         $salesBatchP = $dbc->prepare($salesBatchQ);
         $salesBatchR = $dbc->execute($salesBatchP, $reportArgs);
@@ -196,6 +211,9 @@ class BatchReport extends FannieReportPage
         */
         $ret = array();
         while ($row = $dbc->fetchRow($salesBatchR)) {
+            $row['lift'] = isset($lifts[$row['upc']]) ? $lifts[$row['upc']] : 0;
+            $row['lift'] = sprintf('<a href="BatchLiftReport.php?upc=%s&id=%d&store=%d">%.2f</a>',
+                $row['upc'], $batchID[0], $store, 100*$row['lift']);
             $ret[] = $this->rowToRecord($row);
         }
         return $ret;
@@ -217,6 +235,7 @@ class BatchReport extends FannieReportPage
         $record[] = sprintf('%.2f',$row['quantity']);
         $record[] = $row['rings'];
         $record[] = $row['location'] === null ? '' : $row['location'];
+        $record[] = $row['lift'];
 
         return $record;
     }
@@ -235,7 +254,7 @@ class BatchReport extends FannieReportPage
             $sumRings += $row[6];
         }
 
-        return array('Total',null,null,null,$sumSales,$sumQty, $sumRings, '');
+        return array('Total',null,null,null,$sumSales,$sumQty, $sumRings, '', '');
     }
 
     private function getBatches($dbc, $filter1, $filter2)

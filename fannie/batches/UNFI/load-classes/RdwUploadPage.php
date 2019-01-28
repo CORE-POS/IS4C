@@ -61,6 +61,8 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $use_splits = false;
     protected $use_js = false;
 
+    protected $skip_first = 18;
+
     protected function getVendorID()
     {
         $idP = $this->connection->prepare("SELECT vendorID FROM vendors WHERE vendorName LIKE ? ORDER BY vendorID");
@@ -78,7 +80,7 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $upc = str_replace('-', '', $upc);
         }
         if (strstr($upc, ' ')) {
-            $upc = str_replace('-', '', $upc);
+            $upc = str_replace(' ', '', $upc);
         }
 
         return BarcodeLib::padUPC(substr($upc, 0, strlen($upc)-1));
@@ -95,6 +97,8 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
 
         $dbc->startTransaction();
+        $resetP = $dbc->prepare('UPDATE vendorItems SET vendorDept=1 WHERE vendorID=?');
+        $dbc->execute($resetP, array($VENDOR_ID));
         $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products
@@ -109,7 +113,7 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 vendorID, saleCost, modified, srp
             ) VALUES (
                 '', ?, ?, ?,
-                ?, ?, ?, 0,
+                ?, ?, ?, 999999,
                 ?, 0, ?, 0
             )");
         $delP = $dbc->prepare('DELETE FROM vendorItems WHERE sku=? AND vendorID=?');
@@ -154,6 +158,15 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $ret .= '<p><a href="'.filter_input(INPUT_SERVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertEquals(false, $this->getVendorID());
+        $phpunit->assertEquals(false, $this->process_file(array(), array()));
+        $phpunit->assertEquals('1234', $this->cleanUPC('91234'));
+        $phpunit->assertEquals('0001234512345', $this->cleanUPC('12345 12345-0'));
+        $phpunit->assertInternalType('string', $this->results_content());
     }
 }
 

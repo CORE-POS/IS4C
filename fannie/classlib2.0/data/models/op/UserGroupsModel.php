@@ -26,7 +26,6 @@
 */
 class UserGroupsModel extends BasicModel
 {
-
     protected $name = "userGroups";
     protected $preferred_db = 'op';
 
@@ -35,5 +34,15 @@ class UserGroupsModel extends BasicModel
     'name' => array('type'=>'VARCHAR(50)'),
     'username' => array('type'=>'VARCHAR(50)'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Authentication system. Stores group names and users within
+the groups. Because they\'re store together a group cannot
+be empty and needs at least one user.
+            ';
+    }
 }
 

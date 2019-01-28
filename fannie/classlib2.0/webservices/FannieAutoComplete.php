@@ -24,6 +24,7 @@
 namespace COREPOS\Fannie\API\webservices; 
 use COREPOS\Fannie\API\data\DataCache;
 use COREPOS\Fannie\API\member\MemberREST;
+use COREPOS\Fannie\API\item\ItemText;
 use \FannieDB;
 use \FannieConfig;
 
@@ -62,34 +63,55 @@ class FannieAutoComplete extends FannieWebService
             case 'item':
                 $res = false;
                 if (!is_numeric($args->search)) {
+                    $term = '%' . $args->search . '%';
+                    $queryArgs = array($term, $term, $term, $term);
+                    $also = "";
+                    if (property_exists($args, 'superID')) {
+                        $also = " AND m.superID=? ";
+                        $queryArgs[] = $args->superID;
+                    }
                     $prep = $dbc->prepare('SELECT p.upc,
-                                            p.description
+                                            p.description AS posDesc,
+                                            p.size,
+                                            ' . ItemText::longBrandSQL() . ',
+                                            ' . ItemText::longDescriptionSQL() . '
                                            FROM products AS p
                                             LEFT JOIN productUser AS u ON u.upc=p.upc
-                                           WHERE p.description LIKE ?
+                                            LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                                           WHERE (p.description LIKE ?
                                             OR p.brand LIKE ?
                                             OR u.description LIKE ?
-                                            OR u.brand LIKE ?
+                                            OR u.brand LIKE ?)
+                                            ' . $also . '
                                            GROUP BY p.upc,
                                             p.description
-                                           ORDER BY p.description');
-                    $term = '%' . $args->search . '%';
-                    $res = $dbc->execute($prep, array($term, $term, $term, $term));
+                                           ORDER BY p.inUse DESC, p.description');
+                    $res = $dbc->execute($prep, $queryArgs);
                 } elseif (ltrim($args->search, '0') != '') {
                     $prep = $dbc->prepare('
                         SELECT p.upc,
-                            p.upc AS description
+                            p.upc AS description,
+                            p.upc AS posDesc,
+                            \'\' AS brand,
+                            \'\' AS size
                         FROM products AS p
                         WHERE p.upc LIKE ?
                         GROUP BY p.upc');
                     $res = $dbc->execute($prep, array('%'.$args->search . '%'));
                 }
+                $wide = (isset($args->wide) && $args->wide) ? true : false;
                 while ($res && $row = $dbc->fetch_row($res)) {
+                    $bigLabel = (!empty($row['brand']) ? $row['brand'] . ' ' : '') . $row['description'];
+                    if ($row['size']) {
+                        $bigLabel .= ' (' . $row['size'] . ')';
+                    }
                     $ret[] = array(
-                        'label' => $row['description'],
+                        'label' => $wide ? $bigLabel : $row['posDesc'],
                         'value' => $row['upc'],
                     );
                 }
+
+                return $ret;
 
             case 'brand':
                 $prep = $dbc->prepare('SELECT brand
@@ -134,17 +156,19 @@ class FannieAutoComplete extends FannieWebService
 
             case 'catalog':
                 list($vID,$search) = explode(':', $args->search);
-                $prep = $dbc->prepare('SELECT sku, description
+                $prep = $dbc->prepare('SELECT sku, description, cost, size, units
                                        FROM vendorItems
                                        WHERE vendorID=?
+                                        AND vendorDept > 1
                                         AND (sku LIKE ? OR description LIKE ?)
                                        ORDER BY description');
                 $search = '%' . $search . '%';
                 $res = $dbc->execute($prep, array($vID, $search, $search));
                 while ($row = $dbc->fetch_row($res)) {
+                    $str = "{$row['sku']} {$row['description']} {$row['size']}/{$row['units']} \${$row['cost']}";
                     $ret[] = array(
-                        'label' => $row['sku'] . ' ' . $row['description'],
-                        'value' => $row['sku'] . ' ' . $row['description'],
+                        'label' => $str,
+                        'value' => $str,
                     );
                 }
                 return $ret;

@@ -649,9 +649,9 @@ class CoopCredConfigEditor extends FanniePage {
         ?>
         </div>
         <?php
-        //$this->add_script($FANNIE_URL . 'src/CalendarControl.js');
-        $this->add_script('coopcred_config.js');
-        $this->add_css_file('coopcred_form.css');
+        //$this->addScript($FANNIE_URL . 'src/CalendarControl.js');
+        $this->addScript('coopcred_config.js');
+        $this->addCssFile('coopcred_form.css');
         /* Does this run programChange()?
          * To display an, i.e. the, initial config.
          *   If so might be a better way than what I did.

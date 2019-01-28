@@ -36,5 +36,13 @@ class SpecialOrderMemDiscountsModel extends BasicModel
     'amount' => array('type'=>'DOUBLE', 'default'=>0),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Defines special order discounts based on member type. Amount is a percentage
+and type should be markdown (from retail) or markup (from cost).
+            ';
+    }
 }
 

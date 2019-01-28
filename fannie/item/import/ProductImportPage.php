@@ -101,6 +101,10 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $defaults_table = $this->deptDefaults($dbc);
 
+        $stores = new StoresModel($dbc);
+        $stores->hasOwnItems(1);
+        $stores = $stores->find();
+
         $ret = true;
         $linecount = 0;
         $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
@@ -160,6 +164,14 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $model->created(date('Y-m-d H:i:s'));
             }
             $try = $model->save();
+
+            foreach ($stores as $s) {
+                if ($s->storeID() != 1) {
+                    $model->store_id($s->storeID());
+                    $model->save();
+                }
+            }
+            
 
             if ($try) {
                 $this->stats['imported']++;

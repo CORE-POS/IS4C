@@ -80,7 +80,7 @@ class B2BListPage extends NoInputCorePage
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
             ."<form name=\"selectform\" method=\"post\" action=\""
-            . filter_input(INPUT_SERVER, 'PHP_SELF') . "\""
+            . AutoLoader::ownURL() . "\""
             ." id=\"selectform\">"
             ."<select name=\"search\" id=\"search\" "
             .' style="min-height: 200px; min-width: 220px;'

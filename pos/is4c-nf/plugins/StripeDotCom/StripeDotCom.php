@@ -26,21 +26,30 @@ use COREPOS\pos\plugins\Plugin;
 class StripeDotCom extends Plugin 
 {
     public $plugin_settings = array(
-    'StripeLiveKey' => array('default'=>'','label'=>'API Secret Key (Live)',
-            'description'=>'stripe.com live API private key'),
-    'StripeLivePublic' => array('default'=>'','label'=>'API Publishable Key (Live)',
-            'description'=>'stripe.com live API public key'),
-    'StripeTestKey' => array('default'=>'','label'=>'API Secret Key (Test)',
-            'description'=>'stripe.com testing API private key'),
-    'StripeTestPublic' => array('default'=>'','label'=>'API Publishable Key (Test)',
-            'description'=>'stripe.com test API public key'),
-    'StripeBitCoinTender' => array('default'=>'BC','label'=>'Tender Code',
-            'description'=>'Two-letter tender code for bitcoin payments.'),
     'StripeCurrency' => array('default'=>'USD',
             'options'=>array('US Dollars'=>'USD','Euros'=>'EUR','Bitcoin'=>'BTC')
-        )
+        ),
+    'StripeLiveKey' => array('default'=>'','label'=>'API Secret Key (Live)',
+            'description'=>'stripe.com live API private key'),
+    'StripeTestKey' => array('default'=>'','label'=>'API Secret Key (Test)',
+            'description'=>'stripe.com testing API private key'),
+    'StripeChargeName' => array('default'=>'CORE-POS','label'=>'Charge Name',
+            'description'=>'The description that is attached to Stripe charges'),
+    'StripeCreditTender' => array('default'=>'CC','label'=>'Tender Code',
+            'description'=>'Two-letter tender code for credit payments.'),
+    'StripeBitCoinTender' => array('default'=>'BC','label'=>'Tender Code',
+            'description'=>'Two-letter tender code for bitcoin payments.'),
+    'StripeLivePublic' => array('default'=>'','label'=>'API Publishable Key (Live)',
+            'description'=>'stripe.com live API public key (only needed for bitcoin)'),
+    'StripeTestPublic' => array('default'=>'','label'=>'API Publishable Key (Test)',
+            'description'=>'stripe.com test API public key (only needed for bitcoin)'),
     );
 
     public $plugin_description = 'Plugin for accepting payments via stripe.com';
+
+    public function plugin_transaction_reset()
+    {
+        CoreLocal::set('StripeMode', 'Bitcoin');
+    }
 }
 

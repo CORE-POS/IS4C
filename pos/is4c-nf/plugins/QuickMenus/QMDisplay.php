@@ -128,7 +128,7 @@ class QMDisplay extends NoInputCorePage
         $this->add_onload_command('$(\'#ddQKselect\').focus()');
 
         echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
-        echo "<form id=\"qmform\" action=\"" . filter_input(INPUT_SERVER, "PHP_SELF") ."\" 
+        echo "<form id=\"qmform\" action=\"" . AutoLoader::ownURL() ."\" 
             method=\"post\" onsubmit=\"return false;\">";
 
         $my_menu = $this->getMenu();

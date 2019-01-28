@@ -345,6 +345,13 @@ class MercuryE2E extends BasicCCModule
                                            <p>\"rp\" to print
                                            <br>[enter] to continue</font>"
                 );
+                if ($bal == 'WIC') {
+                    $this->conf->set("boxMsg","<b>Success</b><font size=-1>
+                                               <p>" . nl2br($this->conf->get('EWicBalanceReceipt')) . "</p>
+                                               <p>\"rp\" to print
+                                               <br>[enter] to continue</font>"
+                    );
+                }
                 break;
             case PaycardLib::PAYCARD_MODE_AUTH:
                 // cast to string. tender function expects string input
@@ -878,9 +885,14 @@ class MercuryE2E extends BasicCCModule
         return $normalized;
     }
 
-    protected function beginXmlRequest($request, $refNo=false, $recordNo=false)
+    protected function beginXmlRequest($request, $refNo=false, $recordNo=false, $tipped=false)
     {
         $termID = $this->getTermID();
+        $separateID = false;
+        if (substr($termID, -2) == '::') {
+            $separateID = true;
+            $termID = substr($termID, 0, strlen($termID)-2);
+        }
         $mcTerminalID = $this->conf->get('PaycardsTerminalID');
         if ($mcTerminalID === '') {
             $mcTerminalID = $this->conf->get('laneno');
@@ -890,6 +902,7 @@ class MercuryE2E extends BasicCCModule
             <TStream>
             <Transaction>
             <MerchantID>'.$termID.'</MerchantID>
+            ' . ($separateID ? "<TerminalID>{{TerminalID}}</TerminalID>" : '') . '
             <OperatorID>'.$request->cashierNo.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
             <InvoiceNo>'.$request->refNum.'</InvoiceNo>
@@ -901,6 +914,9 @@ class MercuryE2E extends BasicCCModule
                 <Purchase>'.$request->formattedAmount().'</Purchase>';
         if ($request->cashback > 0 && ($request->type == "Debit" || $request->type == "EBTCASH")) {
                 $msgXml .= "<CashBack>" . $request->formattedCashBack() . "</CashBack>";
+        }
+        if ($tipped) {
+            $msgXml .= '<Gratuity>Prompt</Gratuity>';
         }
         $msgXml .= "</Amount>";
         if ($request->type == 'Credit' && $request->mode == 'Sale') {
@@ -952,7 +968,7 @@ class MercuryE2E extends BasicCCModule
     private function getWsUrl($domain)
     {
         if ($this->conf->get("training") == 1) {
-            return "https://w1.mercurydev.net/ws/ws.asmx";
+            return "https://w1.mercurycert.net/ws/ws.asmx?WSDL";
         }
         return "https://$domain/ws/ws.asmx";
     }

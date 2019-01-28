@@ -234,7 +234,7 @@ class OverShortDayPage extends FanniePage
                 foreach ($tender_info as $code => $info) {
                     $posAmt = 0;    
                     if (isset($info['perEmp'][$emp_no]))
-                        $posAmt = $info['perEmp'][$emp_no];
+                        $posAmt = sprintf('%.2f', $info['perEmp'][$emp_no]);
                     $output .= "<tr><td>&nbsp;</td><td>".$info['name']."</td>
                         <td id=dlog$code$row[1]>$posAmt</td>";
                     $output .= "<input type=\"hidden\" class=\"tcode$emp_no\" value=\"$code\" />";

@@ -166,8 +166,8 @@ class SubDeptEditor extends FanniePage
         </div>
         <?php
 
-        $this->add_script('sub.js');
-        $this->add_onload_command('showSubsForDept('.$firstID.');');
+        $this->addScript('sub.js');
+        $this->addOnloadCommand('showSubsForDept('.$firstID.');');
         
         return ob_get_clean();
     }

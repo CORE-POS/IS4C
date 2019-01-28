@@ -77,6 +77,11 @@ class AuthReport extends FannieReportPage
 
         return $data;
     }
+
+    public function form_content()
+    {
+        return '<div class="alert alert-danger">Who did you get here?</div>';
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -146,6 +146,9 @@ class CommonTest extends PHPUnit_Framework_TestCase
         include(dirname(__FILE__) . '/../../fannie/config.php');
         $dbc = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
         $dbc->throwOnFailure(true);
+        if (strstr($FANNIE_SERVER_DBMS, 'mysql')) {
+            $dbc->query("SET SESSION sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+        }
         $this->assertEquals($FANNIE_OP_DB, $dbc->defaultDatabase());
 
         $this->assertEquals(true, $dbc->addConnection($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW));

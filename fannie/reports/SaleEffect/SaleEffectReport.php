@@ -63,6 +63,7 @@ class SaleEffectReport extends FannieReportPage
                 AND trans_status <> 'R'
                 AND charflag <> 'SO'
             GROUP BY t.upc,
+                t.store_id,
                 p.brand,
                 p.description,
                 t.department,

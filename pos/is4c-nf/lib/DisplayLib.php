@@ -300,6 +300,26 @@ static public function printheaderb()
         <div class="clear"></div>
     </div>
     ';
+
+    if (CoreLocal::get('store') == 'wfc' && CoreLocal::get('laneno') == 99) {
+        $logOutBtn = '
+    <script type="text/javascript">
+        function logout()
+        {
+            $.ajax({
+                type: "post",
+                url: "LogoutBtn.php",    
+                success: function(resp) {
+                    alert("User logged out");
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
+        ';
+        $ret .= $logOutBtn;
+    }
+
     return $ret;
 }
 

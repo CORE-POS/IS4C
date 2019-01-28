@@ -44,21 +44,21 @@ class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
                 for ($i=0; $i<$val; $i+=20) {
                     if (empty($slip)) $slip = "\n";
                     $slip = ReceiptLib::cutReceipt($slip, false);
-                    $slip .= $this->slipBody(20);
+                    $slip .= $this->slipBody(20, $ref . '-' . ($i+1));
                 }
             } else {
-                $slip .= $this->slipBody($val);
+                $slip .= $this->slipBody($val, $ref . '-1');
             }
         }
 
         return $slip;
     }
 
-    private function slipBody($val)
+    private function slipBody($val, $ref)
     {
         $slip = ReceiptLib::centerString("................................................")."\n\n";
         $slip .= ReceiptLib::centerString("( C U S T O M E R   C O P Y )")."\n";
-        $slip .= ReceiptLib::biggerFont("Bonus voucher issued")."\n\n";
+        $slip .= ReceiptLib::biggerFont("Co-op Cash issued")."\n\n";
         $slip .= ReceiptLib::biggerFont(sprintf("Amount \$%.2f",$val))."\n\n";
 
         if ( CoreLocal::get("fname") != "" && CoreLocal::get("lname") != ""){
@@ -72,9 +72,10 @@ class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
         $code39 = floor(100*$val) . 'SC';
         $slip .= ReceiptLib::code39($code39, true) . "\n\n";
 
-        $slip .= " * no cash back on bonus voucher purchases\n";
-        $slip .= " * change amount is not transferable to\n   another voucher\n";
-        $slip .= " * expires Dec 31, 2017\n";
+        $slip .= " * no cash back on Co-op Cash purchases\n";
+        $slip .= " * change amount is not transferable to\n   another ticket\n";
+        $slip .= " * valid Dec 1 through Dec 31, 2018\n";
+        $slip .= " * " . $ref . "\n";
         $slip .= ReceiptLib::centerString("................................................")."\n";
 
         return $slip;

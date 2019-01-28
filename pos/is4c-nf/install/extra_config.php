@@ -511,6 +511,11 @@ while($row = $db->fetch_row($res)){
 </table>
 
 </td></tr>
+<tr><td colspan=2 class="tblHeader"><h3><?php echo _('Job Queue'); ?></h3></td></tr>
+<tr>
+    <td><b><?php echo _('Redis Host'); ?></b>:</td>
+    <td><?php echo $form->textField('redistHost', CoreLocal::get('mServer')); ?></td>
+</tr>
 <!--
 <tr><td colspan=2 class="tblHeader">
 <h3>Various</h3>

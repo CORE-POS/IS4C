@@ -24,6 +24,7 @@
 namespace COREPOS\pos\lib\Scanning\SpecialDepts;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Database;
 
 class ArWarnDept extends SpecialDept 
 {
@@ -39,6 +40,11 @@ class ArWarnDept extends SpecialDept
                 _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
             ));
             $json['main_frame'] = MiscLib::baseURL().'gui-modules/boxMsg2.php?quiet=1';
+        } elseif ($this->session->get('memberID') != 0) {
+            Database::queueJob(array(
+                'class' => 'COREPOS\\Fannie\\API\\jobs\\ArUpdate',
+                'data' => array('id' => $this->session->get('memberID')),
+            ));
         }
 
         return $json;

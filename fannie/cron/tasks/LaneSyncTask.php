@@ -39,49 +39,40 @@ Replaces nightly.lanesync.php and/or lanesync.api.php';
         'weekday' => '*',
     );
 
+    private $regularPushTables = array(
+        'products',
+        'custdata',
+        'memberCards',
+        'custReceiptMessage',
+        'CustomerNotifications',
+        'employees',
+        'departments',
+        'houseCoupons',
+        'houseCouponItems',
+        'houseVirtualCoupons',
+        'custPreferences',
+        'taxrates',
+    );
+
     public function run()
     {
-        global $FANNIE_COOP_ID, $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION;
-
         set_time_limit(0);
 
-        $regularPushTables = array(
-            'products',
-            'custdata',
-            'memberCards',
-            'custReceiptMessage',
-            'CustomerNotifications',
-            'employees',
-            'departments',
-            'houseCoupons',
-            'houseCouponItems',
-            'houseVirtualCoupons',
-            'custPreferences',
-        );
-        foreach ($regularPushTables as $table) {
+        if ($this->config->get('COMPOSE_LONG_PRODUCT_DESCRIPTION') == true) {
+            $this->regularPushTables[] = 'productUser';
+        }
+        if ($this->config->get('COOP_ID') == 'WEFC_Toronto') {
+            $this->regularPushTables[] = 'tenders';
+        }
+        if ($this->test_mode) {
+            $this->regularPushTables = array('houseCoupons');
+        }
+        foreach ($this->regularPushTables as $table) {
             $result = SyncLanes::pushTable("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
             /**
             @severity: error message may indicate lane down or connectivity problem
             */
-            $severity = strstr($result['messages'], 'Error:') ? FannieTask::TASK_LARGE_ERROR : FannieTask::TASK_NO_ERROR;
-            $this->cronMsg($result['messages'], $severity);
-        }
-
-        if (isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION == true) {
-            $result = SyncLanes::pushTable('productUser', 'op', SyncLanes::TRUNCATE_DESTINATION);
-            /**
-            @severity: error message may indicate lane down or connectivity problem
-            */
-            $severity = strstr($result['messages'], 'Error:') ? FannieTask::TASK_LARGE_ERROR : FannieTask::TASK_NO_ERROR;
-            $this->cronMsg($result['messages'], $severity);
-        }
-
-        if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
-            $result = SyncLanes::pushTable('tenders', 'op', SyncLanes::TRUNCATE_DESTINATION);
-            /**
-            @severity: error message may indicate lane down or connectivity problem
-            */
-            $severity = strstr($result['messages'], 'Error:') ? FannieTask::TASK_LARGE_ERROR : FannieTask::TASK_NO_ERROR;
+            $severity = strstr($result['messages'], 'Error:') ? FannieLogger::CRITICAL : FannieLogger::INFO;
             $this->cronMsg($result['messages'], $severity);
         }
     }

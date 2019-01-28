@@ -48,5 +48,13 @@ class StoreBatchMapModel extends BasicModel
             $dbc->execute($saveP, array($row['storeID'], $batchID));
         }
     }
+
+    public function doc()
+    {
+        return '
+Use:
+Specify which store(s) a given batch applies to.
+            ';
+    }
 }
 

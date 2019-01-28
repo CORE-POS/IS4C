@@ -47,8 +47,8 @@ class UIGLib
         $create = $dbc->prepare('INSERT INTO PurchaseOrder (vendorID, creationDate, placed,
                             placedDate, userID, vendorOrderID, vendorInvoiceID, storeID) VALUES
                             (?, ?, 1, ?, 0, ?, ?, ?)');
-        $find = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorInvoiceID=?');
-        $findPO = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorOrderID=?');
+        $find = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND storeID=? AND vendorInvoiceID=?');
+        $findPO = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND storeID=? AND vendorOrderID=?');
         $plu = $dbc->prepare('SELECT upc FROM VendorAliases WHERE isPrimary=1 AND vendorID=? AND sku LIKE ?');
         $clear = $dbc->prepare('DELETE FROM PurchaseOrderItems WHERE orderID=?');
         $storeID = FannieConfig::config('STORE_ID');
@@ -79,13 +79,13 @@ class UIGLib
             if (count($item_info) > 0) {
                 $id = false;
                 // check whether order already exists
-                $idR = $dbc->execute($find, array($vendorID, $header_info['vendorInvoiceID']));
+                $idR = $dbc->execute($find, array($vendorID, $storeID, $header_info['vendorInvoiceID']));
                 if ($dbc->num_rows($idR) > 0) {
                     $idW = $dbc->fetch_row($idR);
                     $id = $idW['orderID'];
                     $dbc->execute($clear, array($id));
                 } elseif (!empty($header_info['vendorOrderID'])) {
-                    $id = $dbc->getValue($findPO, array($vendorID, $header_info['vendorOrderID']));
+                    $id = $dbc->getValue($findPO, array($vendorID, $storeID, $header_info['vendorOrderID']));
                 }
                 if (!$id) {
                     // date has not been downloaded before OR

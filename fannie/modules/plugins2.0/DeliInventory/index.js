@@ -1,55 +1,3 @@
-/* ajax request */
-function createRequestObject() {
-    var ro;
-    var browser = navigator.appName;
-    if(browser == "Microsoft Internet Explorer"){
-        ro = new ActiveXObject("Microsoft.XMLHTTP");
-    }else{
-        ro = new XMLHttpRequest();
-    }
-    return ro;
-}
-
-/* global request object */
-var http = createRequestObject();
-var busy = false;
-
-/* ajax callback function 
-   by convention, results return [actionname]`[data]
-   splitting on backtick separates, then switch on action name
-   allows different actions to be handled differently
-*/
-function handleResponse() {
-    if(http.readyState == 4){
-	busy = false;
-        var response = http.responseText;
-        //alert(response);
-        var array = response.split('`');
-        switch(array[0]){
-		case 'additem':
-			document.getElementById('tablearea').innerHTML = array[1];
-			break;
-		case 'saveCategory':
-		case 'clearAll':
-		case 'refresh':
-			document.getElementById('tablearea').innerHTML = array[1];
-			break;
-		case 'catList':
-			document.getElementById('changecat'+array[1]).innerHTML = array[2];
-			break;
-		case 'saveitem':
-			saveCount--;
-			if (saveCount <= 0)
-				phpSend('refresh');
-			break;
-		default:
-			alert(response);
-			alert("There was an error processing your request");
-        }
-    }
-}
-
-/********************* END AJAX BASICS ******************/
 
 function additem(category){
 	var item = escape(document.getElementById('newitem'+category).value);
@@ -67,7 +15,14 @@ function additem(category){
 	if (category == "__new__")
 		sendcat = document.getElementById('category__new__').value;
 	
-	phpSend('additem&item='+item+'&orderno='+orderno+'&units='+units+'&cases='+'&price='+price+'&size='+size+'&cases='+cases+'&fraction='+fraction+'&category='+sendcat);
+	var dstr = 'action=additem&item='+item+'&orderno='+orderno+'&units='+units+'&cases='+'&price='+price+'&size='+size+'&cases='+cases+'&fraction='+fraction+'&category='+sendcat;
+    $.ajax({
+		url: 'DeliInventoryPage.php',
+		data: dstr,
+		type: 'get'
+    }).done(function (resp) {
+        $('#tablearea').html(resp);
+    });
 	
 	document.getElementById('newform'+category).reset();
 	document.getElementById('newitem'+category).focus();
@@ -179,11 +134,26 @@ function renameCategory(category){
 
 function saveCategory(category){
 	var newcat = document.getElementById('renameCategory'+category).value;
-	phpSend('saveCategory&oldcat='+category+'&newcat='+newcat);
+	var dstr = 'action=saveCategory&oldcat='+category+'&newcat='+newcat;
+    $.ajax({
+		url: 'DeliInventoryPage.php',
+		type: 'get',
+        data: dstr
+    }).done(function (resp) {
+        $('#tablearea').html(resp);
+    });
 }
 
 function catList(id,category){
-	phpSend('catList&id='+id+'&category='+category);
+    var dstr = 'action=catList&id='+id+'&category='+category;
+    $.ajax({
+		url: 'DeliInventoryPage.php',
+		type: 'get',
+        data: dstr,
+        dataType: 'json'
+    }).done(function (resp) {
+        $('#changecat' + resp.id).html(resp.html);
+    });
 }
 
 function saveCat(id){
@@ -203,8 +173,14 @@ function saveCat(id){
 }
 
 function clearAll(){
-	if (confirm("Are you sure you want to clear all totals?"))
-		phpSend('clearAll');
+    $.ajax({
+		url: 'DeliInventoryPage.php',
+		type: 'get',
+        data: 'action=clearAll',
+        dataType: 'json'
+    }).done(function (resp) {
+        $('#changecat' + resp.id).html(resp.html);
+    });
 }
 
 // UTILITY

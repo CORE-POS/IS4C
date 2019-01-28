@@ -28,7 +28,6 @@
 */
 class QueuedReportsModel extends BasicModel
 {
-
     protected $name = "QueuedReports";
 
     protected $columns = array(
@@ -38,5 +37,10 @@ class QueuedReportsModel extends BasicModel
     'reportFile' => array('type'=>'VARCHAR(255)'),
     'formData' => array('type'=>'VARCHAR(255)'),
     );
+
+    public function doc()
+    {
+        return 'Relates to an idea for reports thant can be scheduled & run by a background task';
+    }
 }
 

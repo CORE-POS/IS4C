@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 
 class ProductMovementModular extends FannieReportPage 
 {
-
     protected $title = "Fannie : Product Movement";
     protected $header = "Product Movement Report";
     protected $report_headers = array('Date','UPC','Brand','Description','Qty','$');
@@ -65,21 +64,18 @@ class ProductMovementModular extends FannieReportPage
         return $default;
     }
 
-    function fetch_report_data()
+    private function getTransTable($upc, $date1, $date2)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $date1 = $this->form->date1;
-        $date2 = $this->form->date2;
-        $upc = $this->form->upc;
-        if (is_numeric($upc)) {
-            $upc = BarcodeLib::padUPC($upc);
+        if (!is_numeric($upc) || $upc == "0000000000052") {
+            return DTransactionsModel::selectDTrans($date1, $date2);
         }
-        $store = FormLib::get('store', 0);
 
-        $dlog = DTransactionsModel::selectDlog($date1,$date2);
+        return DTransactionsModel::selectDlog($date1, $date2);
+    }
 
-        $query = "SELECT 
+    private function defaultQuery($dlog, $store)
+    {
+        return "SELECT 
                     MONTH(t.tdate),
                     DAY(t.tdate),
                     YEAR(t.tdate),
@@ -100,45 +96,67 @@ class ProductMovementModular extends FannieReportPage
                     t.upc,
                     p.description
                   ORDER BY year(t.tdate),month(t.tdate),day(t.tdate)";
+    }
+
+    private function wfcRrrQuery($dlog, $store)
+    {
+        return "select MONTH(datetime),DAY(datetime),YEAR(datetime),
+            upc,'' AS brand,'RRR' AS description,
+            sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
+            sum(t.total) AS total from
+            $dlog as t
+            where upc = ?
+            AND datetime BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 't') . "
+            and emp_no <> 9999 and register_no <> 99
+            and trans_status <> 'X'
+            GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
+            ORDER BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+    }
+
+    private function nonNumericQuery($dlog, $store)
+    {
+        return "select MONTH(datetime),DAY(datetime),YEAR(datetime),
+            upc,'' AS brand, description,
+            sum(CASE WHEN quantity=0 THEN 1 ELSE quantity END) as qty,
+            sum(t.total) AS total from
+            $dlog as t
+            where upc = ?
+            AND datetime BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 't') . "
+            and emp_no <> 9999 and register_no <> 99
+            and (trans_status <> 'X' || trans_type='L')
+            GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+    }
+
+    function fetch_report_data()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
+        $upc = $this->form->upc;
+        if (is_numeric($upc)) {
+            $upc = BarcodeLib::padUPC($upc);
+        }
+        $store = FormLib::get('store', 0);
+
+        $dlog = $this->getTransTable($upc, $date1, $date2);
+
+        $query = $this->defaultQuery($dlog, $store);
         $args = array($upc,$date1.' 00:00:00',$date2.' 23:59:59', $store);
-    
         if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
-            if ($dlog == "dlog_90_view" || $dlog=="dlog_15")
-                $dlog = "transarchive";
-            else {
-                $dlog = "trans_archive.bigArchive";
-            }
-
-            $query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-                upc,'' AS brand,'RRR' AS description,
-                sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
-                sum(t.total) AS total from
-                $dlog as t
-                where upc = ?
-                AND datetime BETWEEN ? AND ?
-                AND " . DTrans::isStoreID($store, 't') . "
-                and emp_no <> 9999 and register_no <> 99
-                and trans_status <> 'X'
-                GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
-                ORDER BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
-            
-        } else if (!is_numeric($upc)) {
-            $dlog = DTransactionsModel::selectDTrans($date1, $date2);
-
-            $query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-                upc,'' AS brand, description,
-                sum(CASE WHEN quantity=0 THEN 1 ELSE quantity END) as qty,
-                sum(t.total) AS total from
-                $dlog as t
-                where upc = ?
-                AND datetime BETWEEN ? AND ?
-                AND " . DTrans::isStoreID($store, 't') . "
-                and emp_no <> 9999 and register_no <> 99
-                and (trans_status <> 'X' || trans_type='L')
-                GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+            $query = $this->wfcRrrQuery($dlog, $store);
+        } elseif (!is_numeric($upc)) {
+            $this->nonNumericQuery($dlog, $store);
         }
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep,$args);
+        try {
+            $result = $dbc->execute($prep,$args);
+        } catch (Exception $ex) {
+            // MySQL 5.6 GROUP BY issue
+            return array();
+        }
 
         /**
           Simple report
@@ -201,11 +219,15 @@ function showGraph() {
 
     function form_content()
     {
-        global $FANNIE_URL;
         $stores = FormLib::storePicker();
-        ob_start();
-?>
-<form method = "get" action="ProductMovementModular.php" class="form-horizontal">
+        $dates = FormLib::standardDateFields();
+        $this->addScript($this->config->get('URL') . 'item/autocomplete.js');
+        $ws = $this->config->get('URL') . 'ws/';
+        $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
+        $this->addOnloadCommand('$(\'#upc\').focus();');
+
+        return <<<HTML
+<form method="get" action="ProductMovementModular.php" class="form-horizontal">
     <div class="col-sm-5">
         <div class="form-group"> 
             <label class="control-label col-sm-4">UPC</label>
@@ -216,7 +238,7 @@ function showGraph() {
         <div class="form-group"> 
             <label class="control-label col-sm-4">Store</label>
             <div class="col-sm-8">
-                <?php echo $stores['html']; ?>
+                {$stores['html']}
             </div>
         </div>
         <div class="form-group"> 
@@ -229,31 +251,9 @@ function showGraph() {
             <button type=reset name=reset class="btn btn-default btn-reset">Start Over</button>
         </div>
     </div>
-    <div class="col-sm-5">
-        <div class="form-group">
-            <label class="col-sm-4 control-label">Start Date</label>
-            <div class="col-sm-8">
-                <input type=text id=date1 name=date1 class="form-control date-field" required />
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-4 control-label">End Date</label>
-            <div class="col-sm-8">
-                <input type=text id=date2 name=date2 class="form-control date-field" required />
-            </div>
-        </div>
-        <div class="form-group">
-            <?php echo FormLib::date_range_picker(); ?>
-        </div>
-    </div>
+    {$dates}
 </form>
-<?php
-        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
-        $ws = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
-        $this->add_onload_command('$(\'#upc\').focus();');
-
-        return ob_get_clean();
+HTML;
     }
 
     public function helpContent()
@@ -268,6 +268,15 @@ function showGraph() {
         $data = array(0=>1, 1=>1, 2=>2000, 'upc'=>'4011', 'brand'=>'test',
             'description'=>'test', 'qty'=>1, 'total'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $this->form = new COREPOS\common\mvc\ValueContainer();
+        $this->form->date1 = date('Y-m-d');
+        $this->form->date2 = date('Y-m-d');
+        $this->form->upc = '4011';
+        $phpunit->assertInternalType('array', $this->fetch_report_data());
+        $this->form->upc = 'rrr';
+        $phpunit->assertInternalType('array', $this->fetch_report_data());
+        $this->form->upc = 'asdf';
+        $phpunit->assertInternalType('array', $this->fetch_report_data());
     }
 }
 

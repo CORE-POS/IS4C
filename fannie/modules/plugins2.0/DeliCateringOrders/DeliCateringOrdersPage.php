@@ -43,105 +43,9 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
         $this->__routes[] = 'get<id>';
         $this->__routes[] = 'get<review>';
         $this->__routes[] = 'get<complete>';
+        $this->addCssFile('dco.css');
+        $this->addScript('dco.js');
         return parent::preprocess();
-    }
-    
-    public function css_content()
-    {
-        return '
-                table td,th {
-                    border-top: none !important;
-                }
-                .descbox {
-                    height: 200px;
-                    width: 550px;
-                    position: relative;
-                    padding: 5px;
-                    
-                }
-                .longdescbox {
-                    height: 200px;
-                    width: 650px;
-                    position: relative;
-                    padding: 5px;
-                    
-                }
-                .longerdescbox {
-                    height: 200px;
-                    width: 850px;
-                    position: relative;
-                    padding: 5px;
-                }
-                .enchiladadescbox {
-                    height: 200px;
-                    width: 770px;
-                    position: relative;
-                    padding: 5px;
-                }
-                .title {
-                    font-size: 20px;
-                    
-                    position: relative;
-                    text-align: left;
-                }
-                .desc {
-                    font-size: 16px;
-                    position: relative;
-                    float: left;
-                    width: 400px;
-                    padding: 10px;
-                    
-                }
-                .quantbox {
-                    height: 100px;
-                    width: 280;
-                    position: relative;
-                    float: right;
-                    padding: 10px;
-                    text-align: right;
-                    
-                }
-                p {
-                    
-                    font-size: 18px;
-                }
-                .form-qty {
-                    width: 90px;
-                }
-                .form-up-btn {
-                    height: 12px;
-                    width: 20px;
-                    background-image: url(src/up.png);   
-                }
-                .form-down-btn {
-                    height: 12px;
-                    width: 20px;
-                    background-image: url(src/down.png);   
-                }
-                fieldset {
-                    border: 1px solid black;
-                }
-                .menu {
-                    background-color: lightgrey;
-                    padding: 20px;
-                }
-                .grey {
-                    color: grey;
-                }
-                .noborder {
-                    border: 0;
-                }
-                .options {
-                    position: relative; 
-                    float: left; 
-                    width: 210px; 
-                    height: 125px; 
-                }
-                .smpanel {
-                    width: 850px;
-                }
-                
-        ';
     }
     
     public function get_complete_view()
@@ -1508,47 +1412,6 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
         
         return $ret;
     }
-    
-    public function javascriptContent()
-    {
-        ob_start();
-        ?>
-function autoFill()
-{
-    var x = document.getElementById("orderform");
-    var card_no = x.elements[4].value;
-    $.ajax({
-        type: 'get',
-        url: 'DeliCateringAjax.php',
-        dataType: 'json',
-        data: 'card_no='+card_no,
-        error: function(xhr, status, error)
-        { 
-            alert('error:' + status + ':' + error + ':' + xhr.responseText) 
-        },
-        success: function(response)
-        {
-        }
-    })
-    .done(function(data){
-        if (data.name) {
-            $('#name').val(data.name);
-        }
-        if (data.phone) {
-            $('#phone').val(data.phone);
-        }
-        if (data.altPhone) {
-            $('#altPhone').val(data.altPhone);
-        }
-        if (data.email) {
-            $('#email').val(data.email);
-        }
-    })
-}
-        <?php
-        return ob_get_clean();
-    }
-   
 }
 
 FannieDispatch::conditionalExec();

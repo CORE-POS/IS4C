@@ -335,5 +335,134 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
         ob_end_clean();
     }
+
+    private function initTask($task)
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        return $task;
+    }
+
+    public function testLaneSyncTask()
+    {
+        $task = new LaneSyncTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testLikeCodes()
+    {
+        $task = new LikeCodeTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testMonitors()
+    {
+        $task = new MonitorsTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testPaycards()
+    {
+        $task = new PaycardCleanTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testLaneTrim()
+    {
+        $task = new LaneTrimTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testPartial()
+    {
+        $task = new PartialBatchTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testRemote()
+    {
+        $task = new PullRemoteTransactionsTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testMultiDisrep()
+    {
+        $task = new MultiStoreProductDiscrepancyTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testVirtCoup()
+    {
+        $task = new VirtualCouponTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testRecvCost()
+    {
+        $task = new ReceivedCostTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testAutoOrder()
+    {
+        $task = new AutoOrderTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testInUse()
+    {
+        $task = new InUseTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testOneTime()
+    {
+        foreach (array('InitProductCreated', 'InitLastSold', 'InitProductAttributes') as $class) {
+            $task = new $class();
+            $task = $this->initTask($task);
+            ob_start();
+            $task->run();
+            ob_end_clean();
+        }
+    }
 }
 

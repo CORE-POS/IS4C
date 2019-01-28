@@ -38,7 +38,7 @@ class undo extends NoInputCorePage
         <span class="larger">
         <?php echo $this->msg ?>
         </span><br />
-        <form name="form" method='post' autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, "PHP_SELF"); ?>">
+        <form name="form" method='post' autocomplete="off" action="<?php echo AutoLoader::ownURL(); ?>">
         <input type="text" name="reginput" id="reginput" tabindex="0" onblur="$('#reginput').focus();" >
         </form>
         <p>

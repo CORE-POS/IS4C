@@ -83,8 +83,8 @@ function delEntry(id){
     if (!confirm("Delete this eval score")) return false;
 
     $.ajax({
-        type: 'delete',
-        data: 'eval='+id+'&id='+$('#empID').val(),
+        type: 'get',
+        data: '_method=delete&eval='+id+'&id='+$('#empID').val(),
         success: function(data){
             $('#historyfs').html(data);
         }

@@ -73,6 +73,17 @@ var numpad = (function ($) {
         elem.focus();
     };
 
+    mod.backspace = function() {
+        var elem = getInput();
+        var cur = elem.val();
+        var next = '';
+        if (cur.length > 1) {
+            next = cur.substring(0, cur.length - 1);
+        }
+        elem.val(next);
+        elem.focus();
+    };
+
     mod.enter = function() {
         if (typeof 'pos2.submitWrapper' == 'function') {
             pos2.submitWrapper();
@@ -104,6 +115,11 @@ $(document).ready(function() {
 });
 </script>
 <div class="numpad">
+    <div class="numpad-row">
+        <button class="pos-button numpad-btn" onclick="numpad.write('TW');numpad.enter();">TW</button>
+        <button class="pos-button numpad-btn" onclick="numpad.write('*');">*</button>
+        <button class="pos-button numpad-btn" onclick="numpad.backspace();">&lt;-</button>
+    </div>
     <div class="numpad-row">
         <button class="pos-button numpad-btn" onclick="numpad.write('7');">7</button>
         <button class="pos-button numpad-btn" onclick="numpad.write('8');">8</button>

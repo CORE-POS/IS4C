@@ -34,6 +34,7 @@ class PurchasingSearchPage extends FannieRESTfulPage
     public $description = '[Search Purchase Orders] finds orders/invoices containing a given item.';
 
     protected $must_authenticate = true;
+    protected $enable_linea = true;
 
     public function get_id_view()
     {
@@ -64,20 +65,22 @@ class PurchasingSearchPage extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
 
-        $ret = '<table class="table">';
-        $ret .= '<tr><th>Date</th><th>Invoice</th><th>Vendor</th>
-                <th>UPC</th><th>SKU</th><th>Brand</th><th>Desc</th>
-                <th>Qty</th></tr>';
+        $ret = '<p><a href="PurchasingSearchPage.php" class="btn btn-default">Back</a></p>
+                <table class="table">';
+        $ret .= '<tr><th>Date</th><th class="hidden-xs">Invoice</th><th>Vendor</th>
+                <th class="hidden-xs">UPC</th><th class="hidden-xs">SKU</th>
+                <th class="hidden-xs">Brand</th><th>Desc</th>
+                <th class="hidden-xs">Qty</th></tr>';
         while($row = $dbc->fetch_row($res)) {
             $ret .= sprintf('<tr>
                             <td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
-                            <td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
+                            <td class="hidden-xs"><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                             <td>%s</td>
-                            <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
+                            <td class="hidden-xs"><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
+                            <td class="hidden-xs">%s</td>
+                            <td class="hidden-xs">%s</td>
                             <td>%s</td>
-                            <td>%s</td>
-                            <td>%s</td>
-                            <td>%d</td>
+                            <td class="hidden-xs">%d</td>
                             </tr>',
                             $row['orderID'], date('Y-m-d', strtotime($row['placedDate'])),
                             $row['orderID'], $row['vendorInvoiceID'],
@@ -129,6 +132,7 @@ class PurchasingSearchPage extends FannieRESTfulPage
         $ret .= '</form>';
 
         $this->add_onload_command("\$('.form-control:first').focus();\n");
+        $this->addOnloadCommand("enableLinea('#upcsku');");
 
         return $ret;
     }

@@ -39,5 +39,12 @@ class IgnoredBarcodesModel extends BasicModel
     'reason' => array('type'=>'VARCHAR(50)', 'default'=>"'PLU Item'"),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Specify barcode values that should be ignored as inputs.
+            ';
+    }
 }
 

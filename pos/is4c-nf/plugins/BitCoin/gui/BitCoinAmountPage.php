@@ -29,5 +29,5 @@ class BitCoinAmountPage extends StripeAmountPage
     protected $pay_page = 'BitCoinPaymentPage.php';
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new BitCoinAmountPage();
+AutoLoader::dispatch();
+

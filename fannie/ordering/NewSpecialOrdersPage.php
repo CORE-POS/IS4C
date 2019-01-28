@@ -475,8 +475,8 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             </p>
             </form>';
 
-        $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.js');
-        $this->add_onload_command("\$('.tablesorter').tablesorter();");
+        $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
         
         return $ret;
     }

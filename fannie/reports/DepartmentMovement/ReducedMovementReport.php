@@ -45,9 +45,9 @@ class ReducedMovementReport extends FannieReportPage
         }
 
         $url = $this->config->get('URL');
-        $this->add_script($url . 'src/javascript/jquery.js');
-        $this->add_script($url . 'src/javascript/jquery-ui.js');
-        $this->add_css_file($url . 'src/javascript/jquery-ui.css');
+        $this->addScript($url . 'src/javascript/jquery.js');
+        $this->addScript($url . 'src/javascript/jquery-ui.js');
+        $this->addCssFile($url . 'src/javascript/jquery-ui.css');
 
         $dates_form = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
         foreach ($_GET as $key => $value) {
@@ -122,7 +122,12 @@ class ReducedMovementReport extends FannieReportPage
             ORDER BY SUM(CASE WHEN charflag='RD' THEN total ELSE 0 END) DESC";
 
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $from_where['args']);
+        try {
+            $result = $dbc->execute($prep, $from_where['args']);
+        } catch (Exception $ex) {
+            // MySQL 5.6 doesn't GROUP BY correctly
+            return array();
+        }
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
             if ($onlyRD && $row['reducedQty'] == 0 && $row['reducedTTL'] == 0) {

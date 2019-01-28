@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\parser\Parser;
@@ -33,6 +34,7 @@ class paycardEntered extends Parser
 {
     private $swipetype;
     private $manual = false;
+    private $interceptVoid = false;
 
     public function __construct($session)
     {
@@ -45,14 +47,52 @@ class paycardEntered extends Parser
         $this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
         if (substr($str,-1,1) == "?"){
             return true;
-        } elseif (substr($str,0,8) == "02E60080" || substr($str,0,7)=="2E60080" || substr($str, 0, 5) == "23.0%" || substr($str, 0, 5) == "23.0;") {
-            $this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
-            return true;
-        } elseif (substr($str, 0, 2) === "02" && substr($str, -2) === "03" && strstr($str, '***')) {
+        } elseif ($this->isE2E($str) || $this->isE2E(substr($str, 2))) {
             $this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
             return true;
         } elseif ((is_numeric($str) && strlen($str) >= 16) || (is_numeric(substr($str,2)) && strlen($str) >= 18)) {
             $this->manual = true;
+            return true;
+        } elseif ($str === 'VD') {
+            return $this->checkVoid();
+        }
+
+        return false;
+    }
+
+    private function checkVoid()
+    {
+        $transID = $this->session->get('currentid');
+        $dbc = Database::tDataConnect();
+        $prep = $dbc->prepare('SELECT charflag, numflag FROM localtemptrans WHERE trans_id=?');
+        $trans = $dbc->getRow($prep, array($transID));
+
+        if ($trans['charflag'] === 'PT') {
+            $this->conf->set('paycard_id', $transID);
+            $ptP = $dbc->prepare('SELECT processor, transID FROM PaycardTransactions WHERE paycardTransactionID=?');
+            $ptW = $dbc->getRow($ptP, array($trans['numflag']));
+
+            $pluginInfo = new Paycards();
+            $url = $pluginInfo->pluginUrl() . '/gui/';
+            $url .= $ptW['processor'] == 'GoEMerchant' ? 'paycardboxMsgAuth.php' : 'PaycardEmvVoid.php';
+            $this->interceptVoid = $url;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isE2E($str)
+    {
+        if (substr($str,0,8) == "02E60080" || substr($str,0,7)=="2E60080") {
+            // ID Tech Sign&Pay
+            return true;
+        } elseif (substr($str, 0, 5) == "23.0%" || substr($str, 0, 5) == "23.0;") {
+            // Ingenico
+            return true;
+        } elseif (substr($str, 0, 2) === "02" && substr($str, -2) === "03" && strstr($str, '***')) {
+            // ID Tech SecureMag
             return true;
         }
 
@@ -62,6 +102,11 @@ class paycardEntered extends Parser
     function parse($str)
     {
         $ret = array();
+        if ($this->interceptVoid) {
+            $ret['main_frame'] = $this->interceptVoid;
+            return $ret;
+        }
+
         if( substr($str,0,2) == "PV") {
             $ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_BALANCE, substr($str,2), $this->manual, $this->swipetype);
         } elseif( substr($str,0,2) == "AV") {
@@ -197,7 +242,6 @@ class paycardEntered extends Parser
             $ret['output'] = $ex->getMessage();
             return $ret;
         }
-    
 
         foreach($this->conf->get("RegisteredPaycardClasses") as $rpc){
             if (!class_exists($rpc)) continue;

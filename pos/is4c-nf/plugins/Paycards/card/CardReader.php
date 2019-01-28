@@ -77,7 +77,7 @@ class CardReader
     private $bin19s = array(
         array('min'=>7019208, 'max'=>7019208,  'issuer'=>"Co-op Gift", 'accepted'=>true), // NCGA gift cards
         array('min'=>7018525, 'max'=>7018525,  'issuer'=>"Valutec Gift", 'accepted'=>false), // valutec test cards (linked to test merchant/terminal ID)
-        array('min'=>6050110, 'max'=>6050110,  'issuer'=>"Co-Plus Gift Card", 'accepted'=>true),
+        array('min'=>6050000, 'max'=>6050110,  'issuer'=>"Co-Plus Gift Card", 'accepted'=>true),
         array('min'=>6014530, 'max'=>6014539,  'issuer'=>"EBT (IL)",   'accepted'=>'ebt'),
         array('min'=>6274850, 'max'=>6274859,  'issuer'=>"EBT (IA)",   'accepted'=>'ebt'),
         array('min'=>5077030, 'max'=>5077039,  'issuer'=>"EBT (ME)",   'accepted'=>'ebt'),
@@ -153,7 +153,7 @@ class CardReader
             $type = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
             $accepted = true;
         } elseif (substr($pan,0,2) === '02' && substr($pan,-2) === '03' && strstr($pan, '***')) {
-            $type = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
+            $type = strpos($pan, ';6050****') ? PaycardLib::PAYCARD_TYPE_ENCRYPTED_GIFT : PaycardLib::PAYCARD_TYPE_ENCRYPTED;
             $accepted = true;
         }
         return array('type'=>$type, 'issuer'=>$issuer, 'accepted'=>$accepted, 'test'=>$test);

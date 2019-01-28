@@ -140,7 +140,7 @@ class ChartOfAccountsReport extends FannieReportPage
             WHERE datetime BETWEEN ? AND ?
                 AND d.upc='TAXLINEITEM'
                 AND " . DTrans::isNotTesting('d') . "
-            GROUP BY d.description
+            GROUP BY d.description, t.salesCode
         ");
         $lineItemR = $dbc->execute($lineItemQ, $dates);
         while ($lineItemW = $dbc->fetch_row($lineItemR)) {

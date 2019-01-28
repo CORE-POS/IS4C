@@ -45,6 +45,10 @@ using Newtonsoft.Json.Linq;
 using RabbitMQ.Client;
 #endif
 
+#if CORE_MYSQL
+using MySqlPipe;
+#endif
+
 using CustomForms;
 using CustomUDP;
 using SPH;
@@ -74,6 +78,10 @@ public class Magellan : DelegateForm
     IModel rabbit_channel;
     #else
     private bool mq_available = false;
+    #endif
+
+    #if CORE_MYSQL
+    private MySqlPipe.MySqlPipe mpipe;
     #endif
 
     // read deisred modules from config file
@@ -251,6 +259,17 @@ public class Magellan : DelegateForm
         }
     }
 
+    public void SqlLog(string k, string s)
+    {
+        try {
+            #if CORE_MYSQL
+            this.mpipe.logValue(k, s);
+            #endif
+        } catch (Exception ex) {
+            Magellan.LogMessage(ex.ToString());
+        }
+    }
+
     public void ShutDown()
     {
         try {
@@ -305,6 +324,16 @@ public class Magellan : DelegateForm
                 Console.WriteLine("Missing the \"module\" setting. JSON:");
                 Console.WriteLine(p);
             });
+
+            string host = (string)o["localhost"]; 
+            string user = (string)o["localUser"]; 
+            string pass = (string)o["localPass"]; 
+            string dbn = (string)o["tDatabase"]; 
+            #if CORE_MYSQL
+            Console.WriteLine("Starting SQL Pipe");
+            this.mpipe = new MySqlPipe.MySqlPipe(host, user, pass, dbn);
+            #endif
+
         } catch (NullReferenceException) {
             // probably means no NewMagellanPorts key in ini.json
             // not a fatal problem

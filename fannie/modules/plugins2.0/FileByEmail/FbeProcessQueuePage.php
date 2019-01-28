@@ -129,8 +129,8 @@ class FbeProcessQueuePage extends FannieRESTfulPage
             $ret .= '<input type="hidden" id="curName" value="' . base64_encode($next) . '" />';
         }
 
-        $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-        $this->add_script('js/process.js');
+        $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
+        $this->addScript('js/process.js');
 
         return $ret;
     }

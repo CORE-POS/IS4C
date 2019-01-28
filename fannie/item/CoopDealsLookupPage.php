@@ -120,17 +120,52 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $dbc->execute($prep,$args);
 
         if ($er = $dbc->error()) {
-            return '<div class="alert alert-danger">' . $er . "</div>"
-                . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
+            return <<<HTML
+<div class="row">
+    <div class="col-md-6">
+        <div class="alert alert-danger">$msg</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php?upc={$upc}">Scan Another</a>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php">Start Over</a>
+        </div>
+    </div>
+</div>
+HTML;
         } else {
-            $msg = "Item Added to Batch";
+            $msg = "Item Added to Batch #$batchID";
             $b = new BatchesModel($dbc);
             if ($this->forceBatchOkay($batchID,$b)) {
                 $b->forceStartBatch($batchID);
                 $msg .= " & Batch #{$batchID} forced.";
             }
-            return '<div class="alert alert-success">'.$msg.'</div>'
-                . '<a class="btn btn-default" href="CoopDealsLookupPage.php">Return</a>';
+
+            return <<<HTML
+<div class="row">
+    <div class="col-md-6">
+        <div class="alert alert-success">$msg</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php?upc={$upc}">Scan Another</a>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php">Start Over</a>
+        </div>
+    </div>
+</div>
+HTML;
         }
 
     }
@@ -154,30 +189,47 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
     function get_upc_view()
     {
-
-        $ret = '';
-        echo 'Month: ' . $this->session->month . '<br>';
-        if ($this->session->cycleDate) {
-            echo "<b>Switch_Cycle</b>: Alternate cycle batches loaded.<br/>";
-        }
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
+        $upc = $this->upc;
+        $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
+        $heading = '';
 
-        $ret .= '
+        $ret = '';
+        $heading .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
-                <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
-                <input type="submit" class="btn btn-default" value="go">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-default" value="go"/>
+                </div>
             </form>
         ';
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upc = FormLib::get('upc');
-        $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
-        echo 'UPC: ' . $upc;
+        if ($this->session->cycleDate) {
+            $heading .= "<b>Switch_Cycle</b>: Alternate cycle batches loaded.<br/>";
+            $cycleB = true;
+        } else {
+            $cycleB = false;
+        }
+        $heading .= '<strong>Month</strong>: ' . $this->session->month . '<br>';
+        $heading .= 'UPC: ' . $upc;
+
+        //Check if product exists
+        $args = array($upc);
+        $prep = $dbc->prepare("SELECT * FROM products WHERE upc = ?");
+        $res = $dbc->execute($prep, $args);
+        if ($dbc->numRows($res) == 0) {
+            $heading .= "<div class='alert alert-danger' align='center'>Product does not exist in POS</div>";
+        }
 
         $month = $this->session->month;
+        $mono = new DateTime($month);
+        $mono = $mono->format('m');
         $args = array($upc, $month);
         $prep = $dbc->prepare('
             SELECT
@@ -201,12 +253,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 c.abtpr AS flyerPeriod,
                 c.price AS srp
             FROM CoopDealsItems AS c
-                INNER JOIN products AS p ON c.upc=p.upc
-                INNER JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
-                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE c.upc = ?
                 AND c.dealSet = ?
-            GROUP BY c.abtpr;
         ');
         $pRes = $dbc->execute($pPrep, $args);
         $flyerPeriod = ' ';
@@ -216,7 +264,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $flyerPeriod = substr_replace($flyerPeriod, "", -1);
 
         $res = $dbc->execute($prep, $args);
-        $ret .=  "<table class='table'  align='center' width='100%'>";
+        $ret .=  "<table class='table table-bordered'  align='center' width='100%'>";
         $check = '';
         while ($row = $dbc->fetch_row($res)) {
             $upc = $row['upc'];
@@ -247,11 +295,15 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         }
 
         $year = date('Y');
-        $checkMoStart = $year . '-' .$months[$this->session->month] . '-01 00:00:00';
-        $checkMoEnd = $year . '-' .$months[$this->session->month] . '-31 00:00:00';
+        if (!isset($months[$this->session->month])) {
+            $months[$this->session->month] = date('m');
+        }
+        $tmo = $months[$this->session->month] + 1;
+        $checkMoStart = $year . '-' .$tmo . '-01 00:00:00';
+        $checkMoEnd = $year . '-' .$tmo . '-31 00:00:00';
 
         if ($check == '') {
-            echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
+            $heading .= '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
         } else {
             if ($date = $this->session->cycleDate) {
                 $datePicker = '"'.$date.'"';
@@ -271,17 +323,21 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $curMonthQ = $dbc->prepare($curMonthQueryStr);
 
             $selMonthA = array($checkMoStart,$checkMoEnd);
-            $selMonthQ = $dbc->prepare('
-                select
+            $cycleStr = ($cycleB === false) ? " AND (batchName LIKE '% A %'
+                OR batchName LIKE '% TPR %')" : " AND batchName LIKE '% B %' ";
+            $q = "
+                SELECT
                     batchID,
                     batchName,
                     owner,
                     batchType
-                from is4c_op.batches
-                where startDate between ? and ?
-                    and batchType = 1;
-            ');
-
+                FROM is4c_op.batches
+                WHERE batchName like '%$month%'
+                    AND startDate LIKE '$year%'
+                        $cycleStr
+                    AND batchType = 1;
+            ";
+            $selMonthQ = $dbc->prepare($q);
             $curMonth = date('F');
             if ($curMonth == $this->session->month) {
                 $result = $dbc->execute($curMonthQ);
@@ -295,25 +351,28 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             }
             list($inStr, $prodInBatchA) = $dbc->safeInClause($batchIDs);
             $prodInBatchA[] = $upc;
-            $prodInBatchQ = 'SELECT batchID from batchList WHERE batchID IN ('.$inStr.') AND upc = ?';
+            $prodInBatchQ = 'SELECT bl.batchID, batchName from batchList AS bl 
+                LEFT JOIN batches AS b ON b.batchID=bl.batchID WHERE bl.batchID IN ('.$inStr.') AND upc = ?';
             $prodInBatchP = $dbc->prepare($prodInBatchQ);
             $prodInBatchR = $dbc->execute($prodInBatchP,$prodInBatchA);
             $foundIn = array();
             while ($row = $dbc->fetchRow($prodInBatchR)) {
-                echo "<br/><span style='color: grey'>Item found in batch ".$row['batchID']."</span>";
+                $heading .= "<br/><span class='alert-success'>Item found in batch {$row['batchID']} : {$row['batchName']}</span>";
                 $foundIn[] = $row['batchID'];
             }
 
             $ret .=  '
-                <form method="get" class="form-inline">
-                    Sales Batches<br>
-                    <select class="form-control" name="batches">
+                <form method="get" class="">
+                    <label>Sales Batches</label>
+                    <div class="form-group">
+                        <select class="form-control" name="batches">
             ';
             if ($curMonth == $this->session->month) {
                 $result = $dbc->execute($curMonthQ);
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
             }
+            $sel = "";
             while ($row = $dbc->fetchRow($result)) {
                 $option = "option";
                 $add = "";
@@ -322,12 +381,24 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                     $option = "option style='background-color: tomato; color: white' ";
                     $add = "# ";
                 }
-                $ret .=  '<'.$option.' value="' . $batchID . '">' . $add . $row['batchName'] . '</option>';
+                if (strpos(strtolower($row['batchName']), strtolower($superName)) !== false) {
+                    if ($sel == "") {
+                        $sel = "selected";
+                    } else {
+                        $sel = " ";
+                    }
+                }
+                $ret .= "<$option value='$batchID' $sel>$add {$row['batchName']}</option>";
             }
             $ret .=  '
-                <input type="submit" name="cycle" value="Switch_Cycle" class="btn btn-default">
-                </select><br>
-                    <input type="submit" class="btn btn-danger" value="Add this item to batch">
+                    </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" name="cycle" value="Switch_Cycle" class="btn btn-default form-control">
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-danger form-control" value="Add this item to batch">
+                    </div>
                     <input type="hidden" name="insert" value="1">
                     <input type="hidden" name="upc" value="' . $upc . '">
                     <input type="hidden" name="salePrice" value="' . $srp . '">
@@ -337,25 +408,30 @@ class CoopDealsLookupPage extends FannieRESTfulPage
 
         $ret .= $this->navBtns();
 
-        return $ret;
-
+        return <<<HTML
+<div class="row">
+    <div class="col-md-6">
+        $heading$ret
+    </div>
+</div>
+HTML;
     }
 
     function get_month_view()
     {
         $this->session->month = FormLib::get('month');
-        //$this->add_script('../autocomplete.js');
-        //$this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
+        //$this->addScript('../autocomplete.js');
+        //$this->addOnloadCommand("bindAutoComplete('#upc', '../../ws/', 'item');\n");
         if (FormLib::get('linea') != 1) {
-            $this->add_onload_command("\$('#upc').focus();\n");
+            $this->addOnloadCommand("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
 
         $ret = '';
-        echo 'Month: ' . $this->session->month . '<br>';
+        echo '<strong>Month</strong>: ' . $this->session->month . '<br>';
 
         $ret .= '
-            <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="form-inline">
+            <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
                 <input type="submit" class="btn btn-default" value="go">
             </form>
@@ -379,18 +455,29 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         }
 
         return <<<HTML
-<form method="get" name="useCurMo" class="form-inline">
-    <input type="hidden" name="month" value="{$curMonth}">
-    <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
-</form><br>
-
-<form method="get" name="id-form" class="form-inline">
-    or <label>Select a Month</label><br>
-    <select name="month" class="form-control" style="text-align: center;">
-    {$dealSets}
-    </select>&nbsp;
-    <button type="submit" class="form-control btn btn-default">Submit</button><br>
-</form>
+<div class="row">
+    <div class="col-md-3">
+        <form method="get" name="useCurMo" class="">
+            <div class="form-group">
+                <input type="hidden" name="month" value="{$curMonth}">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
+            </div>
+        </form>
+        <form method="get" name="id-form" class="">
+            or <label>Select a Month</label><br>
+            <div class="form-group">
+                <select name="month" id="month" class="form-control" style="text-align: center">
+                {$dealSets}
+                </select>&nbsp;
+            </div>
+            <div class="form-group">
+                <button type="submit" class="form-control btn btn-default">Submit</button><br>
+            </div>
+        </form>
+    </div>
+</div>
 {$this->navBtns()}
 HTML;
 
@@ -398,18 +485,44 @@ HTML;
 
     private function navBtns()
     {
-        $ret .= '';
+        $ret = '';
         $ret .= '
-            <br />
-            <ul>
-                <li><a class="" href="CoopDealsLookupPage.php">Select Month</a></li>
-                <li><a class="" href="../../../scancoord/item/SalesChange/SCScanner.php">Batch Check</a></li>
-                <li><a class="" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Exit</a></li>
-            </ul>
+            <div class="row"><div class="col-md-2">
+                <table class="table"><tbody>
+                    <tr><td><a class="btn btn-default btn-xs wide" href="CoopDealsLookupPage.php">Select Month</a></td></tr>
+                    <tr><td><a class="btn btn-default btn-xs wide" href="../../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">Batch Check</a></td></tr>
+                    <tr><td><a class="btn btn-default btn-xs wide" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Exit</a></td></tr>
+                </tbody></table>
+            </div></div>
         ';
         return $ret;
     }
 
+    public function javascript_content()
+    {
+        return <<<JAVASCRIPT
+$('#month').on('change', function(){
+    document.forms['id-form'].submit();
+});
+JAVASCRIPT;
+    }
+
+    public function css_content()
+    {
+        return <<<CSS
+.wide {
+    width: 150px;
+}
+CSS;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->get_view());
+        $phpunit->assertInternalType('string', $this->get_month_view());
+        $this->upc = '0000000000111';
+        $phpunit->assertInternalType('string', $this->get_upc_view());
+    }
 }
 
 FannieDispatch::conditionalExec();

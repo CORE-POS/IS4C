@@ -50,7 +50,7 @@ equity reaches final required balance';
 
         $accounts = \COREPOS\Fannie\API\member\MemberREST::get();
         foreach ($accounts as $account) {
-            if ($account['startDate'] != '' && $account['startDate'] != '0000-00-00 00:00:00') {
+            if ($account['startDate'] != '' && $account['startDate'] != '0000-00-00 00:00:00' && $account['startDate'] != '1900-01-01 00:00:00') {
                 // date has been assigned already
                 continue;
             }
@@ -67,8 +67,11 @@ equity reaches final required balance';
               date one year in the future.
             */
             if ($equity['payments'] > 0) {
-                if ($account['startDate'] == '' || $account['startDate'] == '0000-00-00 00:00:00') {
+                if ($account['startDate'] == '' || $account['startDate'] == '0000-00-00 00:00:00' || $account['startDate'] == '1900-01-01 00:00:00') {
                     $account['startDate'] = $equity['startdate'];
+                }
+                if ($account['startDate'] == '' || $account['startDate'] == '0000-00-00 00:00:00' || $account['startDate'] == '1900-01-01 00:00:00') {
+                    continue; // equity date was bad, too
                 }
                 if ($equity['payments'] < 100) {
                     $ts = strtotime($equity['startdate']);
@@ -100,12 +103,13 @@ equity reaches final required balance';
             $dbc->query('DELETE FROM CustomerNotifications WHERE source=\'SetMemDatesTask\'');
             $new_table = true;
         }
+        $dbc->startTransaction();
         foreach ($accounts as $account) {
-            if ($account['endDate'] == '' || $account['endDate'] == '0000-00-00 00:00:00') {
+            if ($account['endDate'] == '' || $account['endDate'] == '0000-00-00 00:00:00' || $account['endDate'] == '1900-01-01 00:00:00') {
                 // no due date
                 continue;
             }
-            if ($account['memberStatus'] != 'PC') {
+            if ($account['memberStatus'] != 'PC' || $account['activeStatus'] != '') {
                 // not a member
                 continue;
             }
@@ -117,7 +121,7 @@ equity reaches final required balance';
             $equity = $dbc->fetchRow($equityR);
             if ($equity['payments'] >= 100) {
                 // clear end date from paid-in-full
-                $account['endDate'] = '0000-00-00 00:00:00';
+                $account['endDate'] = '1900-01-01';
                 $resp = \COREPOS\Fannie\API\member\MemberREST::post($account['cardNo'], $account);
                 continue;
             }
@@ -143,6 +147,7 @@ equity reaches final required balance';
                 $model->save();
             }
         }
+        $dbc->commitTransaction();
     }
 }
 

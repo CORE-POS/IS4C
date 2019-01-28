@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 /**
-  @class AutoCouponsModel
-*/
+ * @class AutoCouponsModel
+ */
 class AutoCouponsModel extends BasicModel
 {
 

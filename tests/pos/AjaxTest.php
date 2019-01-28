@@ -149,5 +149,25 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $ajax = new COREPOS\pos\ajax\AjaxPollScale(new WrappedStorage(), new ValueContainer());
         $this->assertEquals('{}', $ajax->ajax());
     }
+
+    public function testLogin()
+    {
+        $form = new ValueContainer();
+        $session = new WrappedStorage();
+        $ajax = new COREPOS\pos\ajax\AjaxLogin($session, $form);
+        $json = json_decode($ajax->ajax(), true);
+        $this->assertEquals(false, $json['success']);
+        $form->userPassword = '56';
+        $ajax = new COREPOS\pos\ajax\AjaxLogin($session, $form);
+        $this->assertEquals('', $ajax->ajax());
+    }
+
+    public function testJsError()
+    {
+        $form = new ValueContainer();
+        $form->data = 'log this error';
+        $ajax = new COREPOS\pos\ajax\AjaxJsError(new WrappedStorage(), $form);
+        $this->assertEquals('Done', $ajax->ajax());
+    }
 }
 

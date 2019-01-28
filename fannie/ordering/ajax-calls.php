@@ -215,6 +215,57 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
     global $FANNIE_OP_DB,$TRANS;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 
+    $ins_array = genericRow($orderID);
+    $ins_array['upc'] = "$upc";
+    $ins_array['card_no'] = "$memNum";
+    $ins_array['trans_type'] = "I";
+    $ins_array['ItemQtty'] = $num_cases;
+
+    if (!class_exists('OrderItemLib')) {
+        include(dirname(__FILE__) . '/OrderItemLib.php');
+    }
+
+    $mempricing = OrderItemLib::memPricing($memNum);
+
+    $item = OrderItemLib::getItem($upc);
+    $qtyReq = OrderItemLib::manualQuantityRequired($item);
+    $item['department'] = OrderItemLib::mapDepartment($item['department']);
+    if ($qtyReq !== false) {
+        $item['caseSize'] = $qtyReq;
+    }
+    $unitPrice = OrderItemLib::getUnitPrice($item, $mempricing);
+    $casePrice = OrderItemLib::getCasePrice($item, $mempricing);
+    if ($unitPrice == $item['normal_price'] && !OrderItemLib::useSalePrice($item, $mempricing)) {
+        $item['discounttype'] = 0;
+    }
+
+    $ins_array['upc'] = $item['upc'];
+    $ins_array['quantity'] = $item['caseSize'];
+    $ins_array['mixMatch'] = $item['vendorName'];
+    $ins_array['description'] = substr($item['description'], 0, 32) . ' SO';
+    $ins_array['department'] = $item['department'];
+    $ins_array['discountable'] = $item['discountable'];
+    $ins_array['discounttype'] = $item['discounttype'];
+    $ins_array['cost'] = $item['cost'];
+    $ins_array['unitPrice'] = $unitPrice;
+    $ins_array['total'] = $casePrice * $num_cases;
+    $ins_array['regPrice'] = $item['normal_price'] * $item['caseSize'] * $num_cases;
+
+    $tidP = $dbc->prepare("SELECT MAX(trans_id),MAX(voided),MAX(numflag) 
+            FROM {$TRANS}PendingSpecialOrder WHERE order_id=?");
+    $tidR = $dbc->execute($tidP,array($orderID));
+    $tidW = $dbc->fetch_row($tidR);
+    $ins_array['trans_id'] = $tidW[0]+1;
+    $ins_array['voided'] = $tidW[1];
+    $ins_array['numflag'] = $tidW[2];
+
+    $dbc->smartInsert("{$TRANS}PendingSpecialOrder",$ins_array);
+
+    return array($qtyReq,$ins_array['trans_id'],$ins_array['description']);
+    /*
+    global $FANNIE_OP_DB,$TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
+
     $sku = str_pad($upc,6,'0',STR_PAD_LEFT);
     if (is_numeric($upc)) {
         $upc = BarcodeLib::padUPC($upc);
@@ -338,10 +389,8 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
                 $ins_array['discountable'] = 0;
             }
             if ($pdW['discounttype'] == 1) {
-                /**
-                  Only apply sale pricing from non-closeout batches
-                  At WFC closeout happens to be batch type #11
-                */
+                // Only apply sale pricing from non-closeout batches
+                // At WFC closeout happens to be batch type #11
                 $closeoutP = $dbc->prepare('
                     SELECT l.upc
                     FROM batchList AS l
@@ -376,10 +425,8 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             }
         }
         $ins_array['description'] = substr($pdW['description'],0,32);
-        /**
-          If product has a default vendor, lookup
-          vendor name and add it
-        */
+        // If product has a default vendor, lookup
+        // vendor name and add it
         if ($pdW['default_vendor_id'] != 0) {
             $v = new VendorsModel($dbc);
             $v->vendorID($pdW['default_vendor_id']);
@@ -408,6 +455,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
     $dbc->smartInsert("{$TRANS}PendingSpecialOrder",$ins_array);
     
     return array($qtyReq,$ins_array['trans_id'],$ins_array['description']);
+     */
 }
 
 function createContactRow($orderID)
@@ -483,8 +531,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
       Otherwise if the item is completely unknown, just copy it
       from the old order to the new one.
     */
-    $prodP = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
-    $vendP = $dbc->prepare('SELECT upc FROM vendorItems WHERE upc=?');
+    $prodP = $dbc->prepare('SELECT upc FROM products WHERE upc=? AND upc <> \'0000000000000\'');
+    $vendP = $dbc->prepare('SELECT upc FROM vendorItems WHERE upc=? AND upc <> \'0000000000000\'');
     $itemP = $dbc->prepare('
         SELECT upc,
             ItemQtty,
@@ -492,7 +540,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
             trans_id
         FROM ' . $TRANS . $from . '
         WHERE order_id=?
-            AND trans_id > 0');
+            AND trans_id > 0
+        ORDER BY trans_id');
     $itemR = $dbc->execute($itemP, array($old_id));
     while ($itemW = $dbc->fetchRow($itemR)) {
         $prod = $dbc->execute($prodP, array($itemW['upc']));

@@ -33,5 +33,13 @@ class ConsistentProductRulesModel extends BasicModel
     'column' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
     'variable' => array('type'=>'TINYINT', 'default'=>0),
     );
+
+    public function doc()
+    {
+        return '
+Enforcement idea for products column consistency
+across stores. Not used yet.
+            ';
+    }
 }
 

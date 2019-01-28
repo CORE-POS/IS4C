@@ -91,17 +91,22 @@ class CashierEditor extends FannieRESTfulPage
     private function saveStoreMapping($dbc, $emp_no)
     {
         $map = new StoreEmployeeMapModel($dbc);
-        $map->empNo($emp_no);
         $stores = $this->form->tryGet('store', array());
-        foreach ($stores as $s) {
-            $map->storeID($s);
-            $map->save();
-        }
-        $map->reset();
         $map->empNo($emp_no);
+        $exists = array();
         foreach ($map->find() as $obj) {
             if (!in_array($obj->storeID(), $stores)) {
                 $obj->delete();
+            } else {
+                $exists[] = $obj->storeID();
+            }
+        }
+        $map->reset();
+        $map->empNo($emp_no);
+        foreach ($stores as $s) {
+            if (!in_array($s, $exists)) {
+                $map->storeID($s);
+                $map->save();
             }
         }
     }

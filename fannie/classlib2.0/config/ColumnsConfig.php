@@ -24,11 +24,13 @@ class ColumnsConfig implements PageConfig
             $ret .= sprintf('<label><input type="checkbox" name="config%s[]" %s value="%s" />%s</label><br />',
                 $this->name, (in_array($val, $current) ? 'checked' : ''), $val, $key);
         }
+
+        return $ret;
     }
 
     public function update($form)
     {
-        $newValue = $this->form->tryGet('config' . $this->name);
+        $newValue = $form->tryGet('config' . $this->name);
         if (!is_array($newValue) || count($newValue) == 0) {
             $formatted = 'array()';
         } else {

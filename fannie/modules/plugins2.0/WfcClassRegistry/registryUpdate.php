@@ -36,6 +36,42 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
     $timeStamp = date('Y-m-d h:i:s');
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $item = new wfcuRegistryModel($dbc);    
+
+    function post_custdata_handler($dbc)
+    {
+        $id = FormLib::get('ownerid');
+        $json = array();
+        $args = array($id);
+        $prep = $dbc->prepare("
+            SELECT
+                m.city, m.zip, m.phone, m.email_1, m.email_2,
+                c.FirstName as first_name, c.LastName as last_name, m.card_no
+            FROM custdata AS c
+                LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
+            WHERE c.CardNo = ?
+                AND personNum = 1
+            LIMIT 1
+        ");
+        $res = $dbc->execute($prep,$args);
+        $fields = array('card_no','first_name','last_name','street','city',
+            'state','zip','email_1','email_2','phone');
+        while ($row = $dbc->fetchRow($res)) {
+            $address = $row['city'].', '.$row['zip'];
+            $json['address'] = $address;
+            foreach($fields as $field) {
+                $json[$field] = $row[$field];
+            }
+        }
+
+        echo json_encode($json);
+        return false;
+    }
+
+    if ($_POST['custdata'] == 1) {
+        post_custdata_handler($dbc);
+        die();
+    }
+
     $ret = array('error'=>0);
     if (strlen($_POST['upc']) == 8) {
         $item->upc($_POST['upc']);
@@ -74,6 +110,9 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         $item->modified($timeStamp);
     } elseif ($_POST['field'] === 'editAmount') {
         $item->amount($_POST['value']);
+        $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editEmail') {
+        $item->email($_POST['value']);
         $item->modified($timeStamp);
     } else {
         $ret['error'] = 1;

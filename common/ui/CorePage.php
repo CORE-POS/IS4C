@@ -101,11 +101,6 @@ class CorePage
         $this->window_dressing = ($menus) ? true : false;
     }
 
-    protected function has_menus($menus)
-    {
-        $this->hasMenus($menus);
-    }
-
     /**
       preFlight is the very first method
       called when drawing a page - even
@@ -141,11 +136,6 @@ class CorePage
         return '<!doctype html><html>';
     }
 
-    protected function get_header()
-    {
-        return $this->getHeader();
-    }
-
     /**
       Get the standard footer
       @return An HTML string
@@ -153,11 +143,6 @@ class CorePage
     protected function getFooter()
     {
         return '</html>';
-    }
-
-    protected function get_footer()
-    {
-        return $this->getFooter();
     }
 
     /**
@@ -225,19 +210,9 @@ class CorePage
         $this->scripts = $new;
     }
 
-    protected function add_script($file_url,$type="text/javascript")
-    {
-        $this->addScript($file_url, $type);
-    }
-
-    protected function add_css_file($file_url)
-    {
-        $this->css_files[] = $file_url;
-    }
-
     protected function addCssFile($file_url)
     {
-        $this->add_css_file($file_url);
+        $this->css_files[] = $file_url;
     }
 
     /**
@@ -258,12 +233,12 @@ class CorePage
     */
     protected function add_onload_command($str)
     {
-        $this->onload_commands[] = $str;    
+        $this->addOnloadCommand($str);
     }
 
     protected function addOnloadCommand($str)
     {
-        $this->add_onload_command($str);
+        $this->onload_commands[] = $str;    
     }
 
     /**
@@ -412,8 +387,8 @@ class CorePage
 
     public function baseTest($phpunit)
     {
-        $phpunit->assertEquals($this->getHeader(), $this->get_header());
-        $phpunit->assertEquals($this->getFooter(), $this->get_footer());
+        $phpunit->assertNotEquals(0, strlen($this->getHeader()));
+        $phpunit->assertNotEquals(0, strlen($this->getFooter()));
         $this->addCssFile('/url.css');
         $this->addScript('/url.css');
         ob_start();

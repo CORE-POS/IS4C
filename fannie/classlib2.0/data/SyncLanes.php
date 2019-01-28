@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\data {
+namespace COREPOS\Fannie\API\data;
 use \Exception;
 
 /**
@@ -200,9 +200,9 @@ class SyncLanes
             $ret['sending'] = False;
             $ret['messages'] = 'Error: No table given';
             return $ret;
-        } elseif (!preg_match('/^[A-Za-z0-9_]$/',$table)) {
+        } elseif (!preg_match('/^[A-Za-z0-9_]+$/',$table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'Error: Illegal table name: '.$table;
+            $ret['messages'] = 'Error: Illegal table name: "' . $table . '"';
             return $ret;
         }
 
@@ -273,11 +273,5 @@ class SyncLanes
 
         return substr($colstr, 0, strlen($colstr)-1);
     }
-}
-
-}
-
-namespace {
-    class SyncLanes extends \COREPOS\Fannie\API\data\SyncLanes {}
 }
 

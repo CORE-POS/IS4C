@@ -81,6 +81,7 @@ class WicSalesReport extends FannieReportPage
                 WHERE $type_condition
                     AND t.tdate BETWEEN ? AND ?
                 GROUP BY t.upc,
+                    p.brand,
                     p.description,
                     d.dept_no,
                     d.dept_name,
@@ -236,10 +237,10 @@ class WicSalesReport extends FannieReportPage
     </div>
 </form>
 <?php
-        $this->add_script($this->config->get('URL') . 'item/autocomplete.js');
+        $this->addScript($this->config->get('URL') . 'item/autocomplete.js');
         $ws = $this->config->get('URL') . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
-        $this->add_onload_command('$(\'#manu\').focus();');
+        $this->addOnloadCommand("bindAutoComplete('#manu', '$ws', 'brand');\n");
+        $this->addOnloadCommand('$(\'#manu\').focus();');
 
         return ob_get_clean();
     }

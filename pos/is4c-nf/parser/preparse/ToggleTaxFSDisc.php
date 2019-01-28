@@ -41,6 +41,8 @@ class ToggleTaxFSDisc extends PreParser
         // random character cominations
         if (substr($str, 0, 2) == "CM") {
             return false;
+        } elseif (substr($str, -2) == "ID") {
+            return false;
         }
         $this->tfd = 0;
         $this->remainder = '';

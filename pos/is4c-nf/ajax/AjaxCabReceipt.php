@@ -39,8 +39,11 @@ class AjaxCabReceipt extends AjaxCallback
     {
         try {
             $this->session->set("cabReference",$this->form->input);
+            $cur = $this->session->get('receiptToggle');
+            $this->session->set('receiptToggle', 1);
             $receipt = ReceiptLib::printReceipt('cab', $this->session->get('cabReference'));
             ReceiptLib::writeLine($receipt);
+            $this->session->set('receiptToggle', $cur);
         } catch (Exception $ex) {}
 
         return 'Done';

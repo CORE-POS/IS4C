@@ -352,7 +352,7 @@ class OverShortCashierPage extends FanniePage {
     function body_content()
     {
         ob_start();
-        $this->add_script('js/cashier.js'); 
+        $this->addScript('js/cashier.js'); 
         if (!$this->window_dressing) {
             echo "<html>";
             echo "<head><title>{$this->title}</title>";

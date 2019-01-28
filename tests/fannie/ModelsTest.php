@@ -5,6 +5,13 @@
  */
 class ModelsTest extends PHPUnit_Framework_TestCase
 {
+    public function testHooks()
+    {
+        $hook = new COREPOS\Fannie\API\data\hooks\BasicModelHook();
+        $this->assertEquals(false, $hook->operatesOnTAble('products'));
+        $this->assertEquals(null, $hook->onSave('products', null));
+    }
+
     public function testModels()
     {
         $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
@@ -58,6 +65,41 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
         $pair = $model->getSplit('NonSense');
         $this->assertEquals($pair, array(false, ''));
+    }
+
+    public function testVendorItems()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $model = new VendorItemsModel($dbc);
+        $this->assertEquals(null, $model->createIfMissing('0000000000111', 99));
+        $this->assertEquals(null, $model->updateCostByUPC('0000000000111', 1.00, 99));
+    }
+
+    public function testParameters()
+    {
+        $param = new ParametersModel(null);
+        $param->is_array(0);
+        $param->param_value('true');
+        $this->assertEquals(true, $param->materializeValue());
+        $param->param_value('false');
+        $this->assertEquals(false, $param->materializeValue());
+        $param->param_value('foo');
+        $this->assertEquals('foo', $param->materializeValue());
+        $param->param_value('');
+        $param->is_array(1);
+        $this->assertEquals(array(), $param->materializeValue());
+        $param->param_value('foo=>bar,bar=>foo');
+        $this->assertEquals(array('foo'=>'bar','bar'=>'foo'), $param->materializeValue());
+    }
+
+    public function testDeliveries()
+    {
+        $del = new VendorDeliveriesModel();
+        $del->frequency('weekly');
+        $del->monday(1);
+        $del->autoNext();
+        $this->assertNotEquals('', $del->nextDelivery());
+        $this->assertNotEquals('', $del->nextNextDelivery());
     }
 
 }

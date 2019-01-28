@@ -47,9 +47,12 @@ class PaycardEmvVoid extends PaycardProcessPage
             $this->id = $row[0];
         }
         if (!$this->id) {
-            $this->conf->set('boxMsg', 'Cannot locate transaction to void');
+            $this->conf->set('boxMsg', 'Cannot locate transaction to void' . $this->conf->get('paycard_id'));
             $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
             return false;
+        } elseif ($this->conf->get('paycard_amount') == 0) {
+            $prep = $dbc->prepare('SELECT amount FROM PaycardTransactions WHERE paycardTransactionID=?');
+            $this->conf->set('paycard_amount', $dbc->getValue($prep, array($this->id)));
         }
         $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_VOID);
 
@@ -83,9 +86,9 @@ class PaycardEmvVoid extends PaycardProcessPage
         if (!$this->runTransaction) {
             return '';
         }
-        $e2e = new MercuryDC();
+        $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         ?>
-<script type="text/javascript" src="../js/emv.js"></script>
+<script type="text/javascript" src="../js/emv.js?date=20180308"></script>
 <script type="text/javascript">
 function emvSubmit()
 {

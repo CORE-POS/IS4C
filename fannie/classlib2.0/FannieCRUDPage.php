@@ -127,6 +127,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $id_col = $this->getIdCol();
         $columns = $obj->getColumns();
         $errors = 0;
+        $this->connection->startTransaction();
         for ($i=0; $i<count($this->id); $i++) {
             $obj->reset();
             $obj->$id_col($this->id[$i]); 
@@ -144,6 +145,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
                 $errors++;
             }
         }
+        $this->connection->commitTransaction();
 
         if ($errors == 0) {
             header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=sSaved+Data');
@@ -258,7 +260,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
             foreach ($columns as $col_name => $c) {
                 if ($col_name == $id_col) {
                     $ret .= '<input type="hidden" class="crudID" name="id[]" value="' . $o->$id_col() . '" />';    
-                } else {
+                } elseif ($c['type'] != 'BLOB') {
                     $css = 'form-control';
                     if (strtoupper($c['type'] == 'DATETIME')) {
                         $css .= ' date-field';

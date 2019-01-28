@@ -97,7 +97,7 @@ class tenderlist extends NoInputCorePage
 
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
-            ."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
+            ."<form name=\"selectform\" method=\"post\" action=\"" . AutoLoader::ownURL() . '"'
             ." id=\"selectform\">"
             ."<select name=\"search\" id=\"search\" "
             ."size=\"15\" onblur=\"\$('#search').focus();\">";

@@ -39,6 +39,8 @@ class VendorSKUtoPLUModel extends BasicModel
     public function doc()
     {
         return '
+Deprecated. Handled by Vendor Aliases.
+
 Depends on:
 * vendors (table)
 * vendorItems (table)

@@ -90,7 +90,7 @@ class TarePromptInputPage extends NoInputCorePage
         <span class="larger">
         Enter Tare
         </span>
-        <form name="form" method="post" autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <form name="form" method="post" autocomplete="off" action="<?php AutoLoader::ownURL(); ?>">
         <input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
         <input type="hidden" name="item" value="<?php echo FormLib::get('item'); ?>" />
         </form>

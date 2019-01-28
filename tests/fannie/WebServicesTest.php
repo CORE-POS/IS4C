@@ -136,5 +136,22 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $args->field = 'foo';
         $ret = $ws->run($args);
     }
+
+    public function testJEP()
+    {
+        $mock = new MockJEP();
+        $mock->setConfig(FannieConfig::factory());
+        $mock->setLogger(new FannieLogger());
+        $mock->setConnection(null);
+        $this->assertEquals(null, MockJEP::dispatch());
+        ob_start();
+        $mock->draw_page();
+        ob_end_clean();
+    }
+}
+
+class MockJEP extends COREPOS\Fannie\API\webservices\JsonEndPoint
+{
+
 }
 

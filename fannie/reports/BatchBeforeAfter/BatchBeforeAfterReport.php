@@ -92,7 +92,8 @@ class BatchBeforeAfterReport extends FannieReportPage
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
             GROUP BY d.upc, 
-                p.description
+                p.description,
+                f.sections
             ORDER BY d.upc";
         $salesBatchP = $dbc->prepare($salesBatchQ);
         $inArgs[] = $bStart;

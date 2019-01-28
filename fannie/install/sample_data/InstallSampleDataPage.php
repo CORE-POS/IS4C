@@ -47,7 +47,7 @@ class InstallSampleDataPage extends \COREPOS\Fannie\API\InstallPage {
 
     // If chunks of CSS are going to be added the function has to be
     //  redefined to return them.
-    // If this is to override x.css draw_page() needs to load it after the add_css_file
+    // If this is to override x.css draw_page() needs to load it after the addCssFile
     /**
       Define any CSS needed
       @return A CSS string

@@ -253,6 +253,9 @@ return <<<HTML
                 </div>
             </td>
         </tr>
+        <tr class="{$flagClass} small">
+            <td colspan="6"><label>Flags</label>: {$flags}</td>
+        </tr>
     </table>
     <button type="submit" class="btn btn-default btn-core">Find Items</button>
     <button type="reset" class="btn btn-default btn-reset">Clear Settings</button>
@@ -288,7 +291,7 @@ return <<<HTML
             <p><button class="btn btn-default btn-xs" type="submit" 
                 onclick="goToPage('../admin/labels/PickTagsPage.php');">Pick Tags</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToMargins('MarginToolFromSearch.php');">Margins</button></p>
+                onclick="goToPage('MarginToolFromSearch.php');">Margins</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
                 onclick="goToPage('../modules/plugins2.0/HouseCoupon/HouseCouponEditor.php');">Store Coupons</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
@@ -311,6 +314,8 @@ return <<<HTML
                     % of Sales</option>
                 <option value="{$url}reports/from-search/PreviousPromos/PreviousPromosReport.php">
                     Previous Promos</option>
+                <option value="{$url}reports/from-search/SearchCheckList/SearchCheckList.php">
+                    Checklist</option>
             </select>
             <p><button class="btn btn-default btn-xs" type="submit" 
                 onclick="goToReport();">Get Report</button></p>

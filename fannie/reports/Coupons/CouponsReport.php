@@ -64,7 +64,7 @@ class CouponsReport extends FannieReportPage {
             sum(-total) as ttl FROM $dlog
             WHERE trans_subtype='CP'
             AND tdate BETWEEN ? AND ?
-            GROUP BY upc
+            GROUP BY CASE WHEN upc='0' THEN 'NOT SCANNED' ELSE upc END
             ORDER BY upc");
         $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 

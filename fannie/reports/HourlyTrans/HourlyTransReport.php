@@ -77,8 +77,69 @@ class HourlyTransReport extends FannieReportPage
             $ret[] = sprintf(' <a href="../HourlySales/HourlySalesReport.php?%s">Sales for Same Period</a>', 
                             filter_input(INPUT_SERVER, 'QUERY_STRING'));
         }
+    
+        $ret[] = $this->fetch_adjacent_period();
 
         return $ret;
+    }
+
+    private function fetch_adjacent_period()
+    {
+        $date1 = FormLib::get('date1');
+        $date2 = FormLib::get('date2');
+        $temp1 = new DateTime($date1);
+        $temp2 = new DateTime($date2);
+        $diff = $temp1->diff($temp2, true);
+        $days = $diff->format('%a');
+
+        $formContents = array('buyer','deptStart','deptEnd','store','other_dates','submit');
+        foreach ($formContents as $input) {
+            ${$input} = FormLib::get($input);
+        }
+
+        $actions = array(
+            'increment' => array(
+                'action' => '+',
+                'glyph' => 'right',
+            ),
+            'decrement' => array(
+                'action' => '-',
+                'glyph' => 'left',
+            ),
+        );
+        foreach ($actions as $k => $row) {
+            $temp1 = new DateTime($date1);
+            $temp2 = new DateTime($date2);
+            if ($days == 0) {
+                $temp1->modify($row['action'].'1 Day');
+                $temp2->modify($row['action'].'1 Day');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            } elseif ($days == 6) {
+                $temp1->modify($row['action'].'1 Week');
+                $temp2->modify($row['action'].'1 Week');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-d');
+            } else {
+                // assumes we're probably looking at a month
+                $temp1->modify($row['action'].'1 Month');
+                $temp2->modify($row['action'].'31 Days');
+                $newDate1 = $temp1->format('Y-m-d');
+                $newDate2 = $temp2->format('Y-m-t');
+            }
+            ${'form'.$k} = '<form method="get" style="display: inline-block;">';
+            foreach ($formContents as $input) {
+                ${'form'.$k} .= "<input type='hidden' name='$input' value='${$input}'>";
+            }
+            ${'form'.$k} .= "<input type='hidden' name='date1' value='$newDate1'>";
+            ${'form'.$k} .= "<input type='hidden' name='date2' value='$newDate2'>";
+            ${'form'.$k} .= '<button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-chevron-'.$row['glyph'].'"></span></button>';
+            ${'form'.$k} .= '</form>';
+        }
+
+        return <<<HTML
+<div><label>Change Period</label>: $formdecrement | $formincrement</div>
+HTML;
     }
 
     public function report_content() {
@@ -111,6 +172,7 @@ class HourlyTransReport extends FannieReportPage
         $store = FormLib::get('store', 0);
     
         $buyer = FormLib::get('buyer', '');
+        $dow = FormLib::get('dow', '');
 
         // args/parameters differ with super
         // vs regular department
@@ -127,6 +189,10 @@ class HourlyTransReport extends FannieReportPage
         if ($buyer != -1) {
             list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
             $where .= $conditional;
+        }
+        if ($dow) {
+            $where .= ' AND ' . $dbc->dayofweek('tdate') . ' = ? ';
+            $args[] = $dow;
         }
         $args[] = $store;
 
@@ -298,6 +364,18 @@ JAVASCRIPT;
                 Group by weekday?
                 <input type=checkbox name=weekday value=1>
             </label>
+            <div class="col-sm-4">
+                <select name="dow" class="form-control">
+                    <option value="">Filter by weekday</option>
+                    <option value="2">Mondays</option>
+                    <option value="3">Tuesdays</option>
+                    <option value="4">Wendesdays</option>
+                    <option value="5">Thursdays</option>
+                    <option value="6">Fridays</option>
+                    <option value="7">Saturdays</option>
+                    <option value="1">Sundays</option>
+                </select>
+            </div>
         </div>
         <div class="form-group">
             <label class="control-label col-sm-4">Save to Excel

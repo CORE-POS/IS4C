@@ -69,8 +69,9 @@ class ProductPerCashier extends FannieReportPage
                   GROUP BY 
                     e.FirstName,
                     t.upc,
+                    p.brand,
                     p.description
-                  ORDER BY year(t.tdate),month(t.tdate),day(t.tdate)";
+                  ORDER BY e.FirstName";
         $args = array($upc,$date1.' 00:00:00',$date2.' 23:59:59', $store);
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
@@ -162,10 +163,10 @@ class ProductPerCashier extends FannieReportPage
     </div>
 </form>
 <?php
-        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $this->addScript($FANNIE_URL . 'item/autocomplete.js');
         $ws = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
-        $this->add_onload_command('$(\'#upc\').focus();');
+        $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
+        $this->addOnloadCommand('$(\'#upc\').focus();');
 
         return ob_get_clean();
     }

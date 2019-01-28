@@ -58,12 +58,14 @@ class SaHandheldPage extends FannieRESTfulPage
         if ($this->id !== '') {
             $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
             $upc = BarcodeLib::padUPC($this->id);
+            $scalePrice = false;
             if (substr($upc, 0, 3) == '002') {
+                $scalePrice = substr($upc, -4) / 100;
                 $upc = substr($upc, 0, 7) . '000000';
             }
             $ret['upc'] = $upc;     
             $store = FormLib::get('store', 0);
-            $q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
+            $q = 'SELECT p.description,v.brand,s.quantity,v.units,p.normal_price FROM
                 products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                 LEFT JOIN '.$settings['ShelfAuditDB'].$dbc->sep().
                 'sa_inventory AS s ON p.upc=s.upc AND s.clear=0 AND s.storeID=?
@@ -85,6 +87,11 @@ class SaHandheldPage extends FannieRESTfulPage
                 $args = array($upc, $store, $this->section, $orderID, $transID);
                 $p = $dbc->prepare($q);
                 $r = $dbc->execute($p, $args);
+                if ($dbc->numRows($r) == 0) {
+                    $q2 = str_replace('PendingSpecialOrder', 'CompleteSpecialOrder', $q);
+                    $p = $dbc->prepare($q2);
+                    $r = $dbc->execute($p, $args);
+                }
             } elseif ($dbc->numRows($r)==0) {
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
@@ -107,6 +114,9 @@ class SaHandheldPage extends FannieRESTfulPage
                 }
                 if (!isset($this->current_item_data['case_sizes'])){
                     $ret['case_sizes'] = array();
+                }
+                if ($scalePrice && $w['normal_price']) {
+                    $ret['case_sizes'][] = sprintf('%.2f', $scalePrice / $w['normal_price']);
                 }
                 if ($w['units'] > 0) {
                     $ret['case_sizes'][] = $w['units'];
@@ -187,8 +197,8 @@ class SaHandheldPage extends FannieRESTfulPage
 
         $this->linea_ios_mode = $this->linea_support_available();
         if ($this->linea_ios_mode){
-            $this->add_script($this->config->get('URL').'src/javascript/linea/cordova-2.2.0.js');
-            $this->add_script($this->config->get('URL').'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
+            $this->addScript($this->config->get('URL').'src/javascript/linea/cordova-2.2.0.js');
+            $this->addScript($this->config->get('URL').'src/javascript/linea/ScannerLib-Linea-2.0.0.js');
         }
         
         return parent::preprocess();
@@ -299,8 +309,8 @@ document.addEventListener("BarcodeScanned", function (ev) {
         $cases = '';
         foreach($data['case_sizes'] as $s){
             if (isset($used[$s])) continue;
-            $cases.= sprintf('<button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-success btn-lg">+%d</button>
-                <button type="button" tabindex="-1" onclick="handheld.updateQty(%d)" class="btn btn-danger btn-lg">-%d</button>',
+            $cases.= sprintf('<button type="button" tabindex="-1" onclick="handheld.updateQty(%s)" class="btn btn-success btn-lg">+%s</button>
+                <button type="button" tabindex="-1" onclick="handheld.updateQty(%s)" class="btn btn-danger btn-lg">-%s</button>',
                 $s,$s,-1*$s,$s);
         }
         echo <<<HTML

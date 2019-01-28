@@ -243,7 +243,7 @@ class memlist_cards extends NoInputCorePage
         $message = $this->temp_message;
 
         echo "<div class=\"baseHeight\">"
-            ."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
+            ."<form id=\"selectform\" method=\"post\" action=\"" . AutoLoader::ownURL() . '">';
 
         // First check for a problem found in preprocess.
         if ( $message != "" ) {

@@ -34,6 +34,7 @@ https://github.com/ghinda/css-toggle-switch
 		z-index: 3;
 		
 		display: block;
+        left: 15%;
 		width: 100%;
 		padding: 3px 0;				
 		cursor: pointer;
@@ -92,7 +93,7 @@ https://github.com/ghinda/css-toggle-switch
 	.toggle span {
 		display: block;
 		position: absolute;
-		right: -1px;
+		right: -75px;
 		top: -2px;
 		z-index: 4;
 		width: 40px;
@@ -117,7 +118,7 @@ https://github.com/ghinda/css-toggle-switch
 	}
 
 	.toggle input:checked ~ span {
-		right: 45px;
+		right: -45px;
 	}
 	
 	.toggle input:checked + label:after {

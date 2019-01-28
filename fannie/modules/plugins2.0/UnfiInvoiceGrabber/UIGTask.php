@@ -279,7 +279,7 @@ class UIGTask extends FannieTask
                 if (UIGLib::import($filename, $this->vendor_id, $repeat) === true) {
                     unlink($filename);
                 } else {
-                    $this->cronMsg("ERROR: IMPORT FAILED!", FannieLogger::ERROR);
+                    $this->cronMsg("ERROR: IMPORT FAILED! {$filename}", FannieLogger::ERROR);
                 }
             
                 // only download one day for now

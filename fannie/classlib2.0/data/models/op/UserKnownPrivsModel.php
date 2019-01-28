@@ -26,7 +26,6 @@
 */
 class UserKnownPrivsModel extends BasicModel
 {
-
     protected $name = "userKnownPrivs";
     protected $preferred_db = 'op';
 
@@ -34,5 +33,14 @@ class UserKnownPrivsModel extends BasicModel
     'auth_class' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
     'notes' => array('type'=>'TEXT'),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Authentication system. Stores known authorizations. Strictly
+here to present a UI of available options.
+            ';
+    }
 }
 

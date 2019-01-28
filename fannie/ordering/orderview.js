@@ -83,7 +83,7 @@ var orderView = (function($) {
                 data: 'id='+$('#orderID').val()+'&testNotify=1'
             }).done(function(resp){
                 if (resp.sentEmail) {
-                    alert('Emailed Test Notification');
+                    alert('Sent Test Notification');
                 } else {
                     alert('Notification Test Failed');
                 }
@@ -283,7 +283,7 @@ var orderView = (function($) {
             data: 'toggleStaff=1&orderID='+oid+'&transID='+tid
         }).done(function(resp) {
             if (resp.sentEmail) {
-                alert('Emailed Arrival Notification');
+                alert('Sent Arrival Notification');
             }
         });
     };
@@ -352,7 +352,7 @@ var orderView = (function($) {
         }).done(function(resp){
             $('#statusdate'+oid).html(resp.tdate);
             if (resp.sentEmail) {
-                alert('Emailed Arrival Notification');
+                alert('Sent Arrival Notification');
             }
         });
     };
@@ -371,42 +371,19 @@ var orderView = (function($) {
 
 $(document).ready(function(){
 	var initoid = $('#init_oid').val();
-	$.ajax({
-        type: 'get',
-        data: 'customer=1&orderID='+initoid,
-        dataType: 'json'
-	}).done(function(resp){
-        if (resp.customer) {
-            $('#customerDiv').html(resp.customer);
-            orderView.afterLoadCustomer();
-        }
-        if (resp.footer) {
-            $('#footerDiv').html(resp.footer);
-            $('#confirm-date').change(function(e) {
-                orderView.saveConfirmDate(e.target.checked, $('#orderID').val());
-            });
-            $('#ctcselect').change(function() {
-                orderView.saveCtC($(this).val(), $('#orderID').val());
-            });
-            $('.done-btn').click(function(e) {
-                orderView.validateAndHome();
-                e.preventDefault();
-                return false;
-            });
-        }
-		var oid = $('#orderID').val();
-		$.ajax({
-            type: 'get',
-            data: 'items=1&orderID='+oid
-		}).done(function(resp){
-			$('#itemDiv').html(resp);
-            orderView.afterLoadItems();
-		});
-	}).fail(function(e,s,x) {
-        console.log(e);
-        console.log(s);
-        console.log(x);
+    orderView.afterLoadCustomer();
+    $('#ctcselect').change(function() {
+        orderView.saveCtC($(this).val(), $('#orderID').val());
     });
+    $('.done-btn').click(function(e) {
+        orderView.validateAndHome();
+        e.preventDefault();
+        return false;
+    });
+    $('#confirm-date').change(function(e) {
+        orderView.saveConfirmDate(e.target.checked, $('#orderID').val());
+    });
+    orderView.afterLoadItems();
 });
 
 $(window).unload(function() {

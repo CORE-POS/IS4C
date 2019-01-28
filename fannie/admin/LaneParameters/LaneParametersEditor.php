@@ -71,6 +71,7 @@ class LaneParametersEditor extends FannieRESTfulPage
         $keys = $this->form->tryGet('key', array());
         $vals = $this->form->tryGet('val', array());
         $arrays = $this->form->tryGet('array', array());
+        $this->connection->startTransaction();
         for ($i=0; $i<count($lanes); $i++) {
             $parameters->lane_id($lanes[$i]);
             $parameters->store_id($stores[$i]);
@@ -79,6 +80,7 @@ class LaneParametersEditor extends FannieRESTfulPage
             $parameters->is_array(in_array($keys[$i], $arrays) ? 1 : 0);
             $parameters->save();
         }
+        $this->connection->commitTransaction();
 
         return 'LaneParametersEditor.php';
     }
@@ -117,7 +119,7 @@ class LaneParametersEditor extends FannieRESTfulPage
             $ret .= sprintf('<tr class="%s">
                 <td>%s</td>
                 <td><input type="hidden" value="%d" name="lane[]" />%d</td>
-                <td><input type="hidden" value="%d" name="store[]" />%d</td>
+                <td><input type="hidden" value="%d" name="stores[]" />%d</td>
                 <td><input type="text" class="form-control input-sm" value="%s" name="key[]" /></td>
                 <td><input type="text" class="form-control input-sm" value="%s" name="val[]" /></td>
                 <td><input type="checkbox" %s name="array[]" value="%s" /></td>

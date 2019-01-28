@@ -41,7 +41,7 @@ class SoPoBridge
     {
         $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
         $prep = $this->dbc->prepare('
-            SELECT v.sku, n.vendorID, d.salesCode
+            SELECT v.sku, n.vendorID, d.salesCode, o.trans_status AS altSKU
             FROM ' . $pending . ' AS o
                 INNER JOIN ' . FannieDB::fqn('vendors', 'op') . ' AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN ' . FannieDB::fqn('vendorItems', 'op') . ' AS v on n.vendorID=v.vendorID AND o.upc=v.upc
@@ -73,6 +73,9 @@ class SoPoBridge
         if ($vendorInfo === false) {
             return false;
         }
+        if (empty($vendorInfo['sku']) && !empty($vendorInfo['altSKU'])) {
+            $vendorInfo['sku'] = $vendorInfo['altSKU'];
+        }
         $poID = $this->getPurchaseOrderID($vendorInfo['vendorID'], $storeID);
         $porder = new PurchaseOrderModel($this->dbc);
         // init purchase order if necessary
@@ -95,7 +98,13 @@ class SoPoBridge
         $spoRow = $this->dbc->getRow($prep, array($soID, $transID));
         if ($item === false) {
             $item = $spoRow;
-            $item['sku'] = is_numeric($item['upc']) ? $item['upc'] : uniqid();
+            if ($vendorInfo['altSKU']) {
+                $item['sku'] = $vendorInfo['altSKU'];
+            } elseif (is_numeric($item['upc'])) {
+                $item['sku'] = $item['upc'];
+            } else {
+                $item['sku'] = uniqid();
+            }
         }
         $item['units'] = $spoRow['units'];
 
@@ -127,7 +136,6 @@ class SoPoBridge
         if ($vendorInfo === false) {
             return false;
         }
-        $cases = $this->numCases($soID, $transID);
 
         $prep = $this->dbc->prepare('
             SELECT o.orderID
@@ -135,14 +143,12 @@ class SoPoBridge
                 INNER JOIN ' . FannieDB::fqn('PurchaseOrderItems', 'op') . ' AS i ON o.orderID=i.orderID
             WHERE o.vendorID=?
                 AND o.storeID=?
-                AND i.quantity=?
                 AND i.isSpecialOrder=1
                 AND i.internalUPC=?
         ');
         return $this->dbc->getValue($prep, array(
             $vendorInfo['vendorID'],
             $storeID,
-            $cases,
             str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT),
         ));
     }
@@ -151,18 +157,13 @@ class SoPoBridge
       Delete a SPO item from a PO
       @param $soID [int] special order ID
       @param $transID [int] special order line item ID
-      @param $storeID [int] store ID
       @return [bool] success
 
       An item is only deleted from a PO if it has not yet been received
     */
-    public function removeItemFromPurchaseOrder($soID, $transID, $storeID)
+    public function removeItemFromPurchaseOrder($orderID, $transID)
     {
-        $orderID = $this->findPurchaseOrder($soID, $transID, $storeID);
-        if (!$orderID) {
-            return false;
-        }
-        $upc = str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT);
+        $upc = str_pad($orderID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT);
 
         $itemP = $this->dbc->prepare('SELECT * FROM ' . FannieDB::fqn('PurchaseOrderItems', 'op')
                                 . ' WHERE internalUPC=? AND orderID=?');
@@ -192,7 +193,7 @@ class SoPoBridge
         $this->dbc->execute($itemP, array($soID, $transID));
 
         $all = $this->dbc->prepare('SELECT MIN(memType) FROM ' . $table . ' WHERE order_id=? AND trans_id > 0');
-        $min = $this->dbc->execute($all, array($soID));
+        $min = $this->dbc->getValue($all, array($soID));
         if ($min == 1) {
             $table = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'SpecialOrders';
             $upP = $this->dbc->prepare('UPDATE ' . $table . ' SET statusFlag=?, subStatus=? WHERE specialOrderID=?');

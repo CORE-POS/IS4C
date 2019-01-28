@@ -380,8 +380,10 @@ class MemberLib
           on member_subtotal setting.
         */
         if (\CoreLocal::get('member_subtotal') !== 0 && \CoreLocal::get('member_subtotal') !== '0') {
-            PrehLib::ttl();
+            return PrehLib::ttl();
         } 
+
+        return true;
     }
 
     /**

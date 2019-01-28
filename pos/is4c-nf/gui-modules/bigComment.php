@@ -110,7 +110,7 @@ class bigComment extends NoInputCorePage
     {
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
-            ."<form name=\"selectform\" method=\"post\" action=\"" . filter_input(INPUT_SERVER, 'PHP_SELF') . "\""
+            ."<form name=\"selectform\" method=\"post\" action=\"" . AutoLoader::ownURL() . "\""
             ." id=\"selectform\">"
             ."<textarea name=\"comment\" id=\"comment\" "
             ." cols=\"35\" rows=\"15\" onblur=\"\$('#comment').focus();\">";

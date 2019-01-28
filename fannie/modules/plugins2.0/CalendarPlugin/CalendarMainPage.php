@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FanniePage')) {
-    include(__DIR__ . '/../../../classlib2.0/FanniePage.php');
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('CalendarPlugin')) {
     include(dirname(__FILE__).'/CalendarPlugin.php');
@@ -52,10 +52,10 @@ class CalendarMainPage extends FanniePage {
         $this->header = "Calendars";
         
         $plugin = new CalendarPlugin(); 
-        $this->add_script($FANNIE_URL . 'src/javascript/jquery.js');
-        $this->add_script($FANNIE_URL . 'src/javascript/jquery-ui.js');
-        $this->add_script($plugin->pluginURL().'/javascript/calendar.js');
-        $this->add_script($plugin->pluginURL().'/javascript/ajax.js');
+        $this->addScript($FANNIE_URL . 'src/javascript/jquery.js');
+        $this->addScript($FANNIE_URL . 'src/javascript/jquery-ui.js');
+        $this->addScript($plugin->pluginURL().'/javascript/calendar.js');
+        $this->addScript($plugin->pluginURL().'/javascript/ajax.js');
 
         $view = FormLib::get_form_value('view','index');
         if (FormLib::get('calID') === '') {
@@ -64,10 +64,10 @@ class CalendarMainPage extends FanniePage {
         if ($view == 'month') 
             $this->window_dressing = False;
         else
-            $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+            $this->addCssFile($FANNIE_URL.'src/javascript/jquery-ui.css');
 
         if (file_exists(dirname(__FILE__).'/css/'.$view.'.css'))
-            $this->add_css_file($plugin->pluginURL().'/css/'.$view.'.css');
+            $this->addCssFile($plugin->pluginURL().'/css/'.$view.'.css');
 
         return True;
     }

@@ -89,13 +89,13 @@ class LocalMovementReport extends FannieReportPage
         */
         $query = "SELECT
                     d.upc,
-                    COALESCE(p.brand, '') AS brand,
+                    MAX(COALESCE(p.brand, '')) AS brand,
                     d.description,
                     d.department,
                     e.dept_name,
                     " . DTrans::sumQuantity('d') . " AS qty,
                     SUM(d.total) AS total,
-                    o.name AS local_name
+                    MAX(o.name) AS local_name
                   FROM {$dlog} AS d
                     LEFT JOIN departments AS e ON d.department=e.dept_no
                     LEFT JOIN {$superTable} AS m ON d.department=m.dept_ID

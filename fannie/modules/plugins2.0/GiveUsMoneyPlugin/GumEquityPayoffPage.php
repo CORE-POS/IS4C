@@ -201,7 +201,7 @@ class GumEquityPayoffPage extends FannieRESTfulPage
                         ($this->check_info->checkIssued() ? 'checked disabled' : ''),
                         ($this->check_info->checkIssued() ? $this->check_info->issueDate() : '')
         );
-        $this->add_script('js/equity_payoff.js');
+        $this->addScript('js/equity_payoff.js');
 
         if (file_exists('img/letterhead.png')) {
             $ret .= '<img src="img/letterhead.png" style="width: 100%;" />';

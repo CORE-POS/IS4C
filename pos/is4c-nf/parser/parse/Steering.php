@@ -138,9 +138,13 @@ class Steering extends Parser
                 }
                 return true;
             case 'RESUME':
-                $this->ret['main_frame'] = $myUrl."gui-modules/suspendedlist.php";
-                if ($this->session->get("SecuritySR") > 20) {
-                    $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
+                if ($this->session->get("LastID") != "0") {
+                    $this->ret['output'] = $in_progress_msg;
+                } else {
+                    $this->ret['main_frame'] = $myUrl."gui-modules/suspendedlist.php";
+                    if ($this->session->get("SecuritySR") > 20) {
+                        $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
+                    }
                 }
                 return true;
             case 'SUSPEND':
@@ -246,6 +250,10 @@ class Steering extends Parser
 
             case "PO":
                 $this->ret['main_frame'] = $myUrl."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-PriceOverrideAdminLogin";
+                return true;
+
+            case 'HELP':
+                $this->ret['main_frame'] = $myUrl . 'gui-modules/help/HelpPage.php';
                 return true;
         }
 

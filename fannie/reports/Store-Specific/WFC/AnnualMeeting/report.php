@@ -24,13 +24,14 @@ $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
     m.phone, m.email_1 as email,
     SUM(CASE WHEN charflag IN ('S','C','T') THEN quantity ELSE 0 END)-1 as guest_count,
     SUM(CASE WHEN charflag IN ('K') THEN quantity ELSE 0 END) as child_count,
-    SUM(CASE WHEN charflag = 'S' THEN quantity ELSE 0 END) as salmon,
+    SUM(CASE WHEN charflag = 'S' THEN quantity ELSE 0 END) as squash,
     SUM(CASE WHEN charflag = 'C' THEN quantity ELSE 0 END) as chicken,
-    SUM(CASE WHEN charflag = 'T' THEN quantity ELSE 0 END) as tempeh,
-    'pos' AS source
+    'pos' AS source,
+    n.note AS notes
     FROM ".$FANNIE_TRANS_DB.$fannieDB->sep()."dlog AS d
     LEFT JOIN custdata AS c ON c.CardNo=d.card_no AND c.personNum=1
     LEFT JOIN meminfo AS m ON d.card_no=m.card_no
+    LEFT JOIN regNotes AS n ON d.card_no=n.card_no
     WHERE upc IN ('0000000001041','0000000001042')
     GROUP BY d.card_no
     ORDER BY MIN(tdate)";
@@ -49,14 +50,15 @@ while($hereW = $fannieDB->fetch_row($hereR)){
 
 include(__DIR__ . '/../../../../src/Credentials/OutsideDB.tunneled.php');
 // online registrations
-$query = "SELECT tdate,r.card_no,name,email,
+$query = "SELECT r.tdate,r.card_no,name,email,
     phone,guest_count,child_count,
-    SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as salmon,
+    SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as squash,
     SUM(CASE WHEN m.subtype=2 THEN 1 ELSE 0 END) as chicken,
-    SUM(CASE WHEN m.subtype=3 THEN 1 ELSE 0 END) as tempeh,
-    'website' AS source
+    'website' AS source,
+    n.notes
     FROM registrations AS r LEFT JOIN
     regMeals AS m ON r.card_no=m.card_no
+    LEFT JOIN regNotes AS n ON r.card_no=n.card_no
     GROUP BY tdate,r.card_no,name,email,
     phone,guest_count,child_count
     ORDER BY tdate";
@@ -67,13 +69,12 @@ while($row = $dbc->fetch_row($res)){
 echo '<table cellspacing="0" cellpadding="4" border="1">
     <tr>
     <th>Reg. Date</th><th>Owner#</th><th>Last Name</th><th>First Name</th>
-    <th>Email</th><th>Ph.</th><th>Adults</th><th>Salmon</th><th>Chicken</th><th>Tempeh</th>
-    <th>Kids</th><th>Source</th>
+    <th>Email</th><th>Ph.</th><th>Adults</th><th>Squash</th><th>Chicken</th>
+    <th>Kids</th><th>Source</th><th>Notes</th>
     </tr>';
 $sum = array(
-    'salmon' => 0,
+    'squash' => 0,
     'chicken' => 0,
-    'tempeh' => 0,
     'kids' => 0,
     'adults' => 0,
 );
@@ -83,23 +84,22 @@ foreach($records as $w){
     printf('<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
         <td>%s</td><td>%s</td><td>%d</td><td>%d</td>
         <td>%d</td><td>%d</td>
-        <td>%d</td><td>%s</td></tr>',
+        <td>%s</td><td>%s</td></tr>',
         $w['tdate'],$w['card_no'],$lname,$fname,$w['email'],
-        $w['phone'],$w['guest_count']+1,$w['salmon'],$w['chicken'],
-        $w['tempeh'], $w['child_count'],
-        $w['source']
+        $w['phone'],$w['guest_count']+1,$w['squash'],$w['chicken'],
+        $w['child_count'],
+        $w['source'], $w['notes']
     );
     $sum['adults'] += ($w['guest_count']+1);
     $sum['kids'] += $w['child_count'];
     $sum['salmon'] += $w['salmon'];
     $sum['chicken'] += $w['chicken'];
-    $sum['tempeh'] += $w['tempeh'];
+    $sum['squash'] += $w['squash'];
 }
 echo '<tr><th colspan="6" align="right">Totals</th>';
 echo '<td>'.$sum['adults'].'</td>';
-echo '<td>'.$sum['salmon'].'</td>';
+echo '<td>'.$sum['squash'].'</td>';
 echo '<td>'.$sum['chicken'].'</td>';
-echo '<td>'.$sum['tempeh'].'</td>';
 echo '<td>'.$sum['kids'].'</td>';
 echo '<td>&nbsp;</td>';
 echo '</table>';

@@ -26,7 +26,6 @@
 */
 class CoopDealsItemsModel extends BasicModel
 {
-
     protected $name = "CoopDealsItems";
     protected $preferred_db = 'op';
 
@@ -38,6 +37,17 @@ class CoopDealsItemsModel extends BasicModel
     'abtpr' => array('type'=>'VARCHAR(3)'),
     'multiplier' => array('type'=>'INT', 'default'=>1),
     'promoDiscount' => array('type'=>'VARCHAR(10)'),
+    'skuMatch' => array('type'=>'TINYINT', 'default'=>0),
+    'cost' => array('type'=>'MONEY'),
     );
+
+    public function doc()
+    {
+        return '
+Table for storing Co+op Deals promo information. The dealSet is
+typically the name of a month. promoDiscount is taken direct from
+the spreadsheet for later reference.
+            ';
+    }
 }
 

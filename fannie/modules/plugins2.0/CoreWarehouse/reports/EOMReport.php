@@ -244,7 +244,7 @@ class EOMReport extends FannieReportPage
         $reports[] = $misc;
 
         $dtrans = DTransactionsModel::selectDTrans($start, $end);
-        $newTaxQ = $this->connection->prepare("SELECT description,
+        $newTaxQ = $this->connection->prepare("SELECT MAX(description) AS description,
                         SUM(regPrice) AS ttl,
                         numflag AS taxID
                     FROM {$dtrans} AS t
@@ -252,7 +252,7 @@ class EOMReport extends FannieReportPage
                         AND " . DTrans::isStoreID($store, 't') . "
                         AND upc='TAXLINEITEM'
                         AND " . DTrans::isNotTesting() . "
-                    GROUP BY taxID, description");
+                    GROUP BY taxID");
         $res = $this->connection->execute($newTaxQ, array($start . ' 00:00:00', $end . ' 23:59:59', $store));
         $rates = array(
             1 => array('Regular', 0, 'includes'=>array('State', 'City', 'County')),
@@ -264,9 +264,11 @@ class EOMReport extends FannieReportPage
             'Deli' => array(0.0225, 0),
             'County' => array(0.005, 0),
         );
+        /*
         if ($idStart >= 20171001) {
             $collectors['County'] = array(0, 0);
         }
+         */
         while ($row = $this->connection->fetchRow($res)) {
             $taxID = $row['taxID'];
             $rates[$taxID][1] = $row['ttl'];

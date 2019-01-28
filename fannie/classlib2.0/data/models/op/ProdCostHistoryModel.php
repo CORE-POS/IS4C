@@ -26,7 +26,6 @@
 */
 class ProdCostHistoryModel extends BasicModel
 {
-
     protected $name = "ProdCostHistory";
     protected $preferred_db = 'op';
 
@@ -39,5 +38,14 @@ class ProdCostHistoryModel extends BasicModel
     'uid' => array('type'=>'INT'),
     'prodUpdateID' => array('type'=>'BIGINT UNSIGNED','index'=>true),
     );
+
+    public function doc()
+    {
+        return '
+Use:
+Store a condensed history of product updates that lists
+only updates where the csot changed.
+            ';
+    }
 }
 

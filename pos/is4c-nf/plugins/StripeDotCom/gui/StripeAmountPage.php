@@ -23,6 +23,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
@@ -33,6 +34,9 @@ class StripeAmountPage extends BasicCorePage
 
     function preprocess()
     {
+        if (CoreLocal::get('StripeMode') == 'Credit') {
+            $this->pay_page = 'StripeCreditPage.php';
+        }
         // check for posts before drawing anything, so we can redirect
         if (isset($_REQUEST['reginput'])) {
             $input = strtoupper(trim($_REQUEST['reginput']));
@@ -97,10 +101,10 @@ class StripeAmountPage extends BasicCorePage
             echo DisplayLib::boxMsg("Invalid Amount",
                 "Enter a positive amount");
         } elseif ($amt > 0) {
-            $msg = "Tender " . sprintf('$%.2f', $amt) . ' using Bitcoin';
+            $msg = "Tender " . sprintf('$%.2f', $amt) . ' using ' . CoreLocal::get('StripeMode');
             echo DisplayLib::boxMsg("[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel", $msg, true);
         } elseif ($amt < 0) {
-            $msg = "Refund " . sprintf('$%.2f', $amt) . ' using Bitcoin';
+            $msg = "Refund " . sprintf('$%.2f', -1*$amt) . ' using ' . CoreLocal::get('StripeMode');
             echo DisplayLib::boxMsg("[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel", $msg, true);
         } else {
             echo DisplayLib::boxMsg(

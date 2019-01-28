@@ -64,8 +64,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         // To set authentication.
         FanniePage::__construct();
 
-        $this->add_script('../src/javascript/syntax-highlighter/scripts/jquery.syntaxhighlighter.min.js');
-        $this->add_onload_command('
+        $this->addScript('../src/javascript/syntax-highlighter/scripts/jquery.syntaxhighlighter.min.js');
+        $this->addOnloadCommand('
             $.SyntaxHighlighter.init({
                 baseUrl: \'../src/javascript/syntax-highlighter\',
                 prettifyBaseUrl: \'../src/javascript/syntax-highlighter/prettify\',
@@ -220,6 +220,10 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         if (!$this->canSave($FANNIE_ROOT, $FANNIE_URL)) {
             return ob_get_clean();
+        }
+
+        if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50500) {
+            echo '<div class="alert alert-danger">PHP version < 5.5 is not supported</div>';
         }
 
         $this->checkComposer();
@@ -502,7 +506,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         echo '<div class="row form-group">
                 <label class="control-label col-sm-2">Task Error Severity resulting in emails</label>
-                <div class="col-sm-3">' . installSelectField('FANNIE_TASK_THRESHOLD', $FANNIE_TASK_THRESHOLD, $taskOpts, 99, false)
+                <div class="col-sm-3">' . installSelectField('FANNIE_TASK_THRESHOLD', $FANNIE_TASK_THRESHOLD, $taskOpts, 0, false)
             . '</div></div>';
 
         echo '<p>
@@ -655,14 +659,17 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'FloorSectionsModel',
         'FloorSectionProductMapModel',
         'FloorSectionsListViewModel',
+        'FloorSectionsListTableModel',
         'HouseCouponsModel',
         'HouseCouponItemsModel',
         'HouseVirtualCouponsModel',
         'IgnoredBarcodesModel',
         'InventoryCacheModel',
         'InventoryCountsModel',
+        'InUseTaskModel',
         'LikeCodesModel',
         'UpcLikeModel',
+        'LikeCodeActiveMapModel',
         'MemberCardsModel',
         'MemberNotesModel',
         'MemDatesModel',
@@ -671,12 +678,15 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'MemContactModel',
         'MemContactPrefsModel',
         'MetaProductRulesModel',
+        'MovementTagsModel',
+        'MovementTrackerParamsModel',
         'NarrowTagsModel',
         'OriginsModel',
         'OriginCountryModel',
         'OriginStateProvModel',
         'OriginCustomRegionModel',
         'PagePermissionsModel',
+        'PartialBatchesModel',
         'ParametersModel',
         'PatronageModel',
         'PriceRulesModel',
@@ -688,7 +698,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'ProdExtraModel',
         'ProdFlagsModel',
         'ProductAttributesModel',
+        'ProductCostChangesModel',
         'ProdPhysicalLocationModel',
+        'ProdReviewModel',
         'ProdUpdateModel',
         'ProdDepartmentHistoryModel',
         'ProdCostHistoryModel',
@@ -696,8 +708,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'PurchaseOrderModel',
         'PurchaseOrderItemsModel',
         'PurchaseOrderNotesModel',
-        'PurchaseOrderSummaryModel',
         'ReasoncodesModel',
+        'SalesLiftsModel',
         'ScaleItemsModel',
         'ScaleLabelsModel',
         'ServiceScalesModel',
@@ -717,6 +729,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'SuspensionHistoryModel',
         'TableSyncRulesModel',
         'TaxRatesModel',
+        'TaxRateComponentsModel',
         'TendersModel',
         'VendorsModel',
         'VendorContactModel',
@@ -729,6 +742,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'VendorDepartmentsModel',
         'VendorAliasesModel',
         'VendorLikeCodeMapModel',
+        'VendorReviewScheduleModel',
         'SkuCOOLHistoryModel',
         'UpdateAccountLogModel',
         'UpdateCustomerLogModel',
@@ -802,6 +816,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'PaycardTransactionsModel',
         'SpecialOrdersModel',
         'SpecialOrderDeptMapModel',
+        'SpecialOrderEditsModel',
         'SpecialOrderHistoryModel',
         'SpecialOrderMemDiscountsModel',
         'PendingSpecialOrderModel',

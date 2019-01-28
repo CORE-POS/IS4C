@@ -37,5 +37,10 @@ class UserMessagesModel extends BasicModel
     'message' => array('type'=>'VARCHAR(255)'),
     'url' => array('type'=>'VARCHAR(255)'),
     );
+
+    public function doc()
+    {
+        return 'Idea to display urgent messages to the logged in user';
+    }
 }
 

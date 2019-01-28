@@ -94,7 +94,7 @@ class deptlist extends NoInputCorePage
         $input = $this->form->tryGet('in');
         $dbc = Database::pDataConnect();
         $res = $dbc->query("SELECT dept_no,dept_name FROM departments ORDER BY dept_name");
-        $action = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $action = AutoLoader::ownURL();
 
         $selected = "selected";
         $options = '';

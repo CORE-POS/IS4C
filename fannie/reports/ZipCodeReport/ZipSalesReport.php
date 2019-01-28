@@ -58,7 +58,12 @@ class ZipSalesReport extends FannieReportPage
                 AND d.trans_type IN ('I', 'D')
             GROUP BY CASE WHEN m.zip='' OR m.zip IS NULL THEN 'none' ELSE LEFT(m.zip, 5) END";
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, array($date1 . ' 00:00:00', $date2 . ' 23:59:59'));
+        try {
+            $result = $dbc->execute($prep, array($date1 . ' 00:00:00', $date2 . ' 23:59:59'));
+        } catch (Exception $ex) {
+            // MySQL 5.6 GROUP BY
+            return array();
+        }
         $ttl = array(0, 0);
         while ($row = $dbc->fetchRow($result)) {
             $ret[] = array(

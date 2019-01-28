@@ -33,7 +33,7 @@ class EpScaleLib
       @param $scale_model [ServiceScaleModel]
       @return [string] CSV formatted line
     */
-    static public function getItemLine($item_info, $scale_model)
+    static public function getItemLine($item_info, $scale_model, $asNew)
     {
         $scale_fields = '';
         if ($scale_model->epStoreNo() != 0) {
@@ -47,7 +47,10 @@ class EpScaleLib
             $labelInfo = ServiceScaleLib::labelTranslate($item_info['Label'], $scale_model->scaleType());
         }
 
-        if ($item_info['RecordType'] == 'WriteOneItem') {
+        // Always requested "add" might work better. Setting description
+        // isn't reliable when "updating" an item that doens't actually
+        // exist on the other side of processing
+        if ($asNew || $item_info['RecordType'] == 'WriteOneItem') {
             $line = self::getAddItemLine($item_info, $labelInfo) . $scale_fields;
         } else {
             $line = self::getUpdateItemLine($item_info, $labelInfo) . $scale_fields;
@@ -112,7 +115,7 @@ class EpScaleLib
         $line .= 'DS4' . '0' . chr(253);
         $line .= 'UPR' . (isset($item_info['Price']) ? round(100*$item_info['Price']) : '0') . chr(253);
         $line .= 'EPR' . '0' . chr(253);
-        $line .= 'FWT' . (isset($item_info['NetWeight']) ? $item_info['NetWeight'] : '0') . chr(253);
+        $line .= 'FWT' . (isset($item_info['NetWeight']) ? sprintf('%d', $item_info['NetWeight']) : '0') . chr(253);
         if ($item_info['Type'] == 'Random Weight') {
             $line .= 'UMELB' . chr(253);
         } else {
@@ -172,11 +175,14 @@ class EpScaleLib
                         if (strstr($item_info[$key], "\n")) {
                             list($line1, $line2) = explode("\n", $item_info[$key]);
                             $line .= 'DN1' . $line1 . chr(253);
+                            $line .= 'DS1' . '0' . chr(253);
                             $line .= 'DN2' . $line2 . chr(253);
+                            $line .= 'DS2' . '0' . chr(253);
                         } elseif (strlen($item_info[$key]) > $labelInfo['descriptionWidth'] && $labelInfo['descriptionWidth'] != 0) {
                             $line .= self::wrapDescription($item_info[$key], $labelInfo['descriptionWidth']);
                         } else {
                             $line .= 'DN1' . $item_info[$key] . chr(253);
+                            $line .= 'DS1' . '0' . chr(253);
                         }
                         break;
                     case 'ReportingClass':
@@ -192,7 +198,7 @@ class EpScaleLib
                         $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);
                         break;
                     case 'Price':
-                        if ($item_info['Price'] != 0) {
+                        if ($item_info['Price'] != 0 && $item_info['Price'] < 9999) {
                             $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
                         }
                         break;
@@ -206,10 +212,13 @@ class EpScaleLib
                         }
                         break;
                     case 'NetWeight':
-                        $line .= 'FWT' . $item_info[$key] . chr(253);
+                        $line .= 'FWT' . sprintf('%d', $item_info[$key]) . chr(253);
                         break;
                     case 'Graphics':
                         $line .= 'GNO' . str_pad($item_info[$key],6,'0',STR_PAD_LEFT) . chr(253);
+                        break;
+                    case 'inUse':
+                        $line .= 'UF8' . ($item_info[$key] ? 1 : 0) . chr(253);
                         break;
                 }
             }
@@ -220,10 +229,10 @@ class EpScaleLib
 
     static private function wrapDescription($desc, $length, $limit=2)
     {
-        $desc = wordwrap($desc, $length, "\n", true); 
-        $lines = explode("\n", $desc);
-        if ($length == 0) {
-            $lines = array($desc);
+        $lines = array($desc);
+        if ($length > 0) {
+            $wrapped = wordwrap($desc, $length, "\n", true);
+            $lines = explode("\n", $wrapped);
         }
         $keys = array_filter(array_keys($lines), function($i) use ($limit) { return $i<$limit; });
         return array_reduce($keys, function($carry, $key) use ($lines) {
@@ -243,7 +252,7 @@ class EpScaleLib
         Must have keys "host", "type", and "dept". 
         May have boolean value with key "new".
     */
-    static public function writeItemsToScales($items, $scales=array())
+    static public function writeItemsToScales($items, $scales=array(), $asNew=true)
     {
         $config = \FannieConfig::factory(); 
         if (!isset($items[0])) {
@@ -282,7 +291,7 @@ class EpScaleLib
             $fptr = fopen($file_name, 'w');
             fwrite($fptr, 'BNA' . $file_prefix . '_' . $counter . chr(253) . self::$NEWLINE);
             foreach ($items as $item) {
-                $item_line = self::getItemLine($item, $scale_model);
+                $item_line = self::getItemLine($item, $scale_model, $asNew);
                 fwrite($fptr, $item_line . self::$NEWLINE);
 
                 if (isset($item['ExpandedText'])) {

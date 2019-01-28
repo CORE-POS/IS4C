@@ -4,6 +4,13 @@ include('../../../../config.php');
 include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
+$month = FormLib::get('month', date('n')-1);
+$year = FormLib::get('year', date('Y'));
+if ($month == 0) {
+    $month = 12;
+    $year -= 1;
+}
+
 if (isset($_GET['excel'])){
     header('Content-Type: application/ms-excel');
     header('Content-Disposition: attachment; filename="dailyReport.xls"');
@@ -11,7 +18,9 @@ if (isset($_GET['excel'])){
     $storeInfo = FormLib::storePicker();
     echo '<form action="index.php" method="get">'
         . $storeInfo['html'] . 
-        '<input type="submit" value="Change" />
+        ' Month <input type="text" name="month" value="' . $month . '" />
+        Year <input type="text" name="year" value="' . $year . '" />
+        <input type="submit" value="Change" />
         </form>';
 }
 
@@ -61,21 +70,19 @@ td.center {
 <?php
 
 echo "<b>";
-$monthMinus = 1;
-if (isset($_GET["monthMinus"])) $monthMinus = $_GET["monthMinus"];
-$stamp = strtotime("-$monthMinus month");
+$stamp = mktime(0, 0, 0, $month, 1, $year);
 echo strtoupper(date("F",$stamp));
 echo " ";
 echo date("Y",$stamp);
-$dlog = "is4c_trans.dlog_90_view";
 $dlog = "trans_archive.dlogBig";
+$dtrans = "trans_archive.bigArchive";
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
     echo "<a href=index.php?excel=xls&monthMinus=$monthMinus&store=$store>Save to Excel</a>";
 echo "<p />";
 
 $output = \COREPOS\Fannie\API\data\DataCache::getFile('monthly');
-if (!$output){
+if (true || !$output){
     ob_start();
 
     $start = date("Y-m-01",$stamp);
@@ -162,6 +169,7 @@ if (!$output){
         AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY d.salesCode,d.margin, l.store_id
         ORDER BY d.salesCode");
+    $taxP = $dbc->prepare("SELECT SUM(total) FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND card_no=? AND upc='TAX' AND " . DTrans::isStoreID($store));
     foreach ($accounts as $account){
         echo "<br /><b>Total for $account</b>";
         $totalR = $dbc->execute($totalQ,array($account,$span[0],$span[1],$store));
@@ -176,6 +184,8 @@ if (!$output){
                 $data[$code][2] += $totalW[2];
             }
         }
+        $taxes = sprintf('%.2f', $dbc->getValue($taxP, array($span[0], $span[1], $account, $store)));
+        $data['TAX'] = array(0, $taxes, 0);
         echo tablify($data,array(0,1,2,3),array("pCode","Retail","Account","Wholesale"),
             array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_CENTER,$ALIGN_RIGHT|$TYPE_MONEY),
             2,array(1,3));

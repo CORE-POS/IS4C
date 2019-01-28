@@ -775,9 +775,10 @@ static public function finalizeTransaction($incomplete=false)
             if (CoreLocal::get('TaxExempt') == 1) {
                 $tax['amount'] = 0.00;
             }
+            $rate = sprintf('%.5f%%', 100*$tax['rate']);
             self::addLogRecord(array(
                 'upc' => 'TAXLINEITEM',
-                'description' => $tax['description'],
+                'description' => $rate . ' ' . $tax['description'],
                 'numflag' => $tax['rate_id'],
                 'amount2' => $tax['amount'],
             ));

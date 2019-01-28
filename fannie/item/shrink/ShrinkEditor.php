@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -44,7 +46,7 @@ class ShrinkEditor extends FannieRESTfulPage
         for ($i=0; $i<count($this->id); $i++) {
             $args = array();
             $json = json_decode(base64_decode($this->id[$i]), true);
-            $query = 'UPDATE dtransactions SET '; 
+            $query = 'UPDATE ' . FannieDB::fqn('dtransactions', 'trans') . ' SET '; 
             if (isset($qty[$i])) {
                 $args[] = $qty[$i];
                 $args[] = $qty[$i];
@@ -106,6 +108,7 @@ class ShrinkEditor extends FannieRESTfulPage
         }
 
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
+        $store = Store::getIdByIp();
 
         $query = '
             SELECT upc,
@@ -120,13 +123,15 @@ class ShrinkEditor extends FannieRESTfulPage
                 store_id,
                 charflag,
                 numflag
-            FROM dtransactions
+            FROM ' . FannieDB::fqn('dtransactions', 'trans') . '
             WHERE trans_status=\'Z\'
                 AND trans_type IN (\'I\', \'D\')
                 AND emp_no <> 9999
                 AND register_no <> 99
+                AND ' . DTrans::isStoreID($store) . '
                 AND ' . $dbc->datediff('datetime', $dbc->now()) . ' = 0';
-        $result = $dbc->query($query);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, array($store));
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<table class="table">';
         $ret .= '<tr><th>UPC</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th>

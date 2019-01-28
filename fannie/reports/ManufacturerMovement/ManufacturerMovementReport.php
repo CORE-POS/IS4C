@@ -63,6 +63,7 @@ class ManufacturerMovementReport extends FannieReportPage
                 AND t.tdate BETWEEN ? AND ?
                 AND " . DTrans::isStoreID($store, 't') . "
             GROUP BY t.upc,
+                p.brand,
                 p.description,
                 d.dept_no,
                 d.dept_name,
@@ -281,10 +282,10 @@ class ManufacturerMovementReport extends FannieReportPage
     </div>
 </form>
 <?php
-        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $this->addScript($FANNIE_URL . 'item/autocomplete.js');
         $ws = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
-        $this->add_onload_command('$(\'#manu\').focus();');
+        $this->addOnloadCommand("bindAutoComplete('#manu', '$ws', 'brand');\n");
+        $this->addOnloadCommand('$(\'#manu\').focus();');
 
         return ob_get_clean();
     }

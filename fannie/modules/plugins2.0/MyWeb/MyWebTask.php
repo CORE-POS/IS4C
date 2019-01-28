@@ -27,6 +27,11 @@ if (!class_exists('FannieAPI')) {
 }
 
 /**
+ * @class MyWebTask
+ *
+ * Gather local data that will be uploaded to & displayed on
+ * the personalized web site. Actual work is deferred to the
+ * underlying models.
 */
 class MyWebTask extends FannieTask 
 {
@@ -48,6 +53,12 @@ class MyWebTask extends FannieTask
         $model->etl($this->config);
 
         $model = new MyReceiptsModel($dbc);
+        $model->etl($this->config);
+
+        $model = new MyRoundUpsModel($dbc);
+        $model->etl($this->config);
+
+        $model = new MyEquityModel($dbc);
         $model->etl($this->config);
     }
 }

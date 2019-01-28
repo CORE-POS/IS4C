@@ -41,6 +41,7 @@ class SessionStorage extends LocalStorage
 {
     public function __construct(){
         if (php_sapi_name() !== 'cli' && session_id() === '') {
+            ini_set('session.gc_probability', 0);
             @session_start();
         }
     }

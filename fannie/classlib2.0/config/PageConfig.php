@@ -4,6 +4,7 @@ namespace COREPOS\Fannie\API\config;
 
 /**
  * Interface for building page-specific configuration options
+ * @codeCoverageIgnore
  */
 interface PageConfig
 {

@@ -48,5 +48,12 @@ class NutriFactReqItemsModel extends BasicModel
     'protein' => array('type'=>'VARCHAR(15)'),
     );
 
+    public function doc()
+    {
+        return '
+            Relates to an alpha feature for generating printable
+            nutrition facts labels';
+    }
+
 }
 

@@ -33,6 +33,12 @@ class LikeCodesModel extends BasicModel
     protected $columns = array(
     'likeCode' => array('type'=>'INT', 'primary_key'=>true),
     'likeCodeDesc' => array('type'=>'VARCHAR(50)'),
+    'strict' => array('type'=>'TINYINT', 'default'=>0),
+    'organic' => array('type'=>'TINYINT', 'default'=>0),
+    'preferredVendorID' => array('type'=>'INT', 'default'=>0),
+    'multiVendor' => array('type'=>'TINYINT', 'default'=>0),
+    'sortRetail' => array('type'=>'VARCHAR(255)'),
+    'sortInternal' => array('type'=>'VARCHAR(255)'),
     );
 
     public function toOptions($selected=0, $id_as_label=false)

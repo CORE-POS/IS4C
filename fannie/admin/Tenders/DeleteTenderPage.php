@@ -36,7 +36,7 @@ class DeleteTenderPage extends FannieRESTfulPage
     public $description = '[Delete Tender] gets rid of a tender type.';
     public $themed = true;
 
-    protected function get_id_view()
+    protected function post_id_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -90,7 +90,7 @@ class DeleteTenderPage extends FannieRESTfulPage
     {
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $this->id = 'FOO';
-        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
     }
 }
 

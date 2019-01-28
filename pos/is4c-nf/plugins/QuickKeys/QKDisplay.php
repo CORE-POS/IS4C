@@ -96,7 +96,7 @@ class QKDisplay extends NoInputCorePage
 
         $this->offset = FormLib::get('offset', 0);
 
-        if (FormLib::get('quickkey_submit', false) !== false) {
+        if (FormLib::get('quickkey_submit', false) !== false || FormLib::get('clear') == 1) {
             $output = "";
             $qstr = '';
             if (FormLib::get("clear") == 0) {
@@ -116,9 +116,9 @@ class QKDisplay extends NoInputCorePage
                 CoreLocal::set("qkNumber",substr($output,2));
 
                 return true;
-            } else {
-                $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             }
+
+            $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             return false;
         }
         return true;
@@ -129,9 +129,9 @@ class QKDisplay extends NoInputCorePage
         $this->add_onload_command("setSelected(7);");
 
         echo "<div class=\"baseHeight\">";
-        echo "<form action=\"" . filter_input(INPUT_SERVER,"PHP_SELF") ."\" method=\"post\">";
+        echo "<form action=\"" . AutoLoader::ownURL() ."\" method=\"post\">";
 
-        $launcher = new QuickKeysLauncher();
+        $launcher = new QuickKeyLauncher($this->session);
         $my_keys = $launcher->getKeys(CoreLocal::get('qkNumber'));
 
         $num_pages = ceil(count($my_keys)/9.0);

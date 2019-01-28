@@ -78,11 +78,11 @@ class PaycardEmvRecurring extends PaycardProcessPage
     {
         $url = MiscLib::baseURL();
         echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
-        echo '<script type="text/javascript" src="../js/emv.js"></script>';
+        echo '<script type="text/javascript" src="../js/emv.js?date=20180308"></script>';
         if (!$this->runTransaction) {
             return '';
         }
-        $e2e = new MercuryDC();
+        $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         $xmlData = $e2e->prepareDataCapAuth($this->conf->get('CacheCardType'), $this->conf->get('paycard_amount'), $this->prompt);
         $xmlData = $e2e->switchToRecurring($xmlData);
         ?>
@@ -95,6 +95,9 @@ function emvSubmit() {
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
         return false;
     }
+    <?php if ($this->conf->Get('training') == 1) { ?>
+    emv.setURL('../ajax/AjaxPaycardTest.php');
+    <?php } ?>
     emv.submit(xmlData);
 }
 </script>

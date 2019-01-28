@@ -1401,10 +1401,10 @@ class CoopCredProgramEditor extends FanniePage {
         <!-- infodiv is filled with the editing form. -->
         <div id="infodiv"></div>
         <?php
-        $this->add_script('CalendarControl.js');
-        $this->add_css_file('CalendarControl.css');
-        $this->add_script('coopcred_program.js');
-        $this->add_css_file('coopcred_form.css');
+        $this->addScript('CalendarControl.js');
+        $this->addCssFile('CalendarControl.css');
+        $this->addScript('coopcred_program.js');
+        $this->addCssFile('coopcred_form.css');
         /* Does this run JS programChange()? To display an initial Program?
         if ($selectedPID !== '') {
             //  It seems to get the programID from the page, not passed as arg.

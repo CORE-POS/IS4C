@@ -360,7 +360,8 @@ static public function lineItemTaxes()
             'rate_id' => $tr['id'],
             'description' => $tr['description'],
             'amount' => $tr['taxTotal'],
-            'exempt' => $tr['fsExempt']
+            'exempt' => $tr['fsExempt'],
+            'rate' => $tr['taxrate'],
         );
     }
     return $ret;
@@ -443,12 +444,16 @@ static private function uploadtoServer()
     // new upload method makes use of SQLManager's transfer method
     // to simulate cross-server queries
     $connect = self::tDataConnect();
-    $connect->addConnection(CoreLocal::get("mServer"),
-                CoreLocal::get("mDBMS"),
-                CoreLocal::get("mDatabase"),
-                CoreLocal::get("mUser"),
-                CoreLocal::get("mPass"),
-                False);
+    try {
+        $connect->addConnection(CoreLocal::get("mServer"),
+                    CoreLocal::get("mDBMS"),
+                    CoreLocal::get("mDatabase"),
+                    CoreLocal::get("mUser"),
+                    CoreLocal::get("mPass"),
+                    False);
+    } catch (Exception $ex) {
+        $connect->connections[CoreLocal::get('mDatabase')] = false;
+    }
     if (!isset($connect->connections[CoreLocal::get("mDatabase")]) ||
         $connect->connections[CoreLocal::get("mDatabase")] === False){
         CoreLocal::set("standalone",1);
@@ -877,6 +882,52 @@ static public function logger($msg="")
     }
 
     return $ret;
+}
+
+static public function queueJob($job)
+{
+    $jobs = CoreLocal::get('QueuedRedisJobs');
+    if (!is_array($jobs)) {
+        $jobs = array();
+    }
+    $jobs[] = $job;
+    CoreLocal::set('QueuedRedisJobs', $jobs);
+}
+
+static public function flushJobs($send=true)
+{
+    $jobs = CoreLocal::get('QueuedRedisJobs');
+    CoreLocal::set('QueuedRedisJobs', array());
+    if (!is_array($jobs) || !$send) {
+        return;
+    }
+
+    foreach ($jobs as $job) {
+        self::addToRedis($job);
+    }
+}
+
+/**
+ * Push a job into Redis
+ * @param $job [array] with keys 'class' and 'data'
+ * @param $highPriority [boolean, default false]
+ * @return [boolean] success
+ */
+static private function addToRedis($job, $highPriority=false)
+{
+    $host = CoreLocal::get('redisHost');
+    if ($host && class_exists('\\Predis\\Client')) {
+        try {
+            $redis = new \Predis\Client($host);
+            $queue = $highPriority ? 'jobHigh' : 'jobLow';
+            $redis->lpush($queue, json_encode($job));
+
+            return true;
+        } catch (Exception $ex) {
+        }
+    }
+
+    return false;
 }
 
 } // end Database class

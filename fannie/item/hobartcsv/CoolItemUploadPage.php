@@ -114,7 +114,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $scales = $this->getScales(FormLib::get('scales', array()));
         \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($scale_items, $scales);
-        \COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($scale_items, $scales);
+        \COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($scale_items, $scales, false);
 
         return true;
     }
