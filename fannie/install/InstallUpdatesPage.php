@@ -52,7 +52,7 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
             return $this->config->get('OP_DB');
         } elseif ($name == 'trans') {
             return $this->config->get('TRANS_DB');
-        } elseif ($name == 'archive') {
+        } elseif ($name == 'arch') {
             return $this->config->get('ARCHIVE_DB');
         } elseif (substr($name, 0, 7) == 'plugin:') {
             $settings = $this->config->get('PLUGIN_SETTINGS');
