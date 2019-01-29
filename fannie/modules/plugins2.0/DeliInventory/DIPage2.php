@@ -8,7 +8,7 @@ if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
-class DIPage extends FannieRESTfulPage
+class DIPage2 extends FannieRESTfulPage
 {
     protected $header = 'Deli Inventory';
     protected $title = 'Deli Inventory';
@@ -44,17 +44,17 @@ class DIPage extends FannieRESTfulPage
         $prep = $this->connection->prepare("UPDATE DeliCategories SET name=? WHERE deliCategoryID=?");
         $this->connection->execute($prep, array($this->renameCat, $this->oldCat));
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function post_newCat_handler()
     {
         $storeID = Store::getIdByIp();
-        $storeID=1;
+        $storeID=2;
         $prep = $this->connection->prepare("INSERT INTO DeliCategories (name, storeID) VALUES (?, ?)");
         $this->connection->execute($prep, array($this->newCat, $storeID));
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function delete_catID_handler()
@@ -62,7 +62,7 @@ class DIPage extends FannieRESTfulPage
         $prep = $this->connection->prepare('DELETE FROM DeliCategories WHERE deliCategoryID=?');
         $this->connection->execute($prep, array($this->catID));
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function delete_id_handler()
@@ -70,13 +70,13 @@ class DIPage extends FannieRESTfulPage
         $prep = $this->connection->prepare('DELETE FROM deliInventoryCat WHERE id=?');
         $this->connection->execute($prep, array($this->id));
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function post_newItem_handler()
     {
         $storeID = Store::getIdByIp();
-        $storeID=1;
+        $storeID=2;
         $catP = $this->connection->prepare("SELECT name FROM DeliCategories WHERE deliCategoryID=?");
         $catID = FormLib::get('newCatID');
         $catName = $this->connection->getValue($catP, array($catID));
@@ -95,7 +95,7 @@ class DIPage extends FannieRESTfulPage
         );
         $this->connection->execute($insP, $args);
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function get_catUp_handler()
@@ -106,7 +106,7 @@ class DIPage extends FannieRESTfulPage
         $name = $this->connection->getValue($nameP, array($this->catUp));
         $tag = str_replace(' ', '-', strtolower($name));
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function get_catDown_handler()
@@ -117,7 +117,7 @@ class DIPage extends FannieRESTfulPage
         $name = $this->connection->getValue($nameP, array($this->catDown));
         $tag = str_replace(' ', '-', strtolower($name));
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function post_id_handler()
@@ -159,7 +159,7 @@ class DIPage extends FannieRESTfulPage
         return <<<HTML
 <div class="panel panel-default">
     <div class="panel panel-heading">Add Category</div>
-    <div class="panel panel-body"><form method="post" action="DIPage.php">
+    <div class="panel panel-body"><form method="post" action="DIPage2.php">
         <div class="form-group">
             <div class="input-group">
                 <span class="input-group-addon">Name</span>
@@ -173,7 +173,7 @@ class DIPage extends FannieRESTfulPage
 </div>
 <div class="panel panel-default">
     <div class="panel panel-heading">Rename Category</div>
-    <div class="panel panel-body"><form method="post" action="DIPage.php">
+    <div class="panel panel-body"><form method="post" action="DIPage2.php">
         <div class="form-group">
             <select name="oldCat" class="form-control input-sm">
                 <option value="Select category">
@@ -208,7 +208,7 @@ HTML;
         return <<<HTML
 <div class="panel panel-default">
     <div class="panel panel-heading">Add Item</div>
-    <div class="panel panel-body"><form method="post" action="DIPage.php">
+    <div class="panel panel-body"><form method="post" action="DIPage2.php">
         <div class="form-group">
             <div class="input-group">
                 <span class="input-group-addon">Item</span>
@@ -256,7 +256,7 @@ HTML;
     protected function get_view()
     {
         $storeID = Store::getIdByIp();
-        $storeID=1;
+        $storeID=2;
         $catP = $this->connection->prepare("SELECT deliCategoryID, name FROM DeliCategories WHERE storeID=? ORDER BY seq, name");
         $itemP = $this->connection->prepare("SELECT i.*, v.vendorName
             FROM deliInventoryCat AS i
@@ -286,11 +286,11 @@ HTML;
             $tag = str_replace(' ', '-', strtolower($catW['name']));
             $ret .= sprintf('<a name="%s"></a>
                 <h3>%s
-                <a href="DIPage.php?catUp=%d"><span class="glyphicon glyphicon-arrow-up"></span></a>
-                <a href="DIPage.php?catDown=%d"><span class="glyphicon glyphicon-arrow-down"></span></a>
+                <a href="DIPage2.php?catUp=%d"><span class="glyphicon glyphicon-arrow-up"></span></a>
+                <a href="DIPage2.php?catDown=%d"><span class="glyphicon glyphicon-arrow-down"></span></a>
                 </h3>', $tag, $catW['name'], $catW['deliCategoryID'], $catW['deliCategoryID']);
             if ($this->connection->numRows($itemR) == 0) {
-                $ret .= sprintf('<a href="DIPage.php?_method=delete&catID=%d"
+                $ret .= sprintf('<a href="DIPage2.php?_method=delete&catID=%d"
                     class="btn btn-default btn-danger">Delete this category</a>',
                     $catW['deliCategoryID']);
                 continue;
@@ -319,7 +319,7 @@ HTML;
                     <td class="upc editable">%s</td>
                     <td class="sku editable">%s</td>
                     <td class="vendor">%s</td>
-                    <td class="trash"><a href="DIPage.php?_method=delete&id=%d">%s</a></td>
+                    <td class="trash"><a href="DIPage2.php?_method=delete&id=%d">%s</a></td>
                     </tr>',
                     $itemW['id'],
                     $itemW['item'],

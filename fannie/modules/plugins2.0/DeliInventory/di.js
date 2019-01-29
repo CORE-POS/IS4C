@@ -170,12 +170,18 @@ var di = (function ($) {
         $('.upc').show();
         $('.sku').show();
         $('.vendor').show();
+        $('.trash').show();
+        $('.cases').css({opacity: 1});
+        $('.fractions').css({opacity: 1});
     };
 
     mod.hideSourcing = function() {
         $('.upc').hide();
         $('.sku').hide();
         $('.vendor').hide();
+        $('.trash').hide();
+        $('.cases').css({opacity: 0});
+        $('.fractions').css({opacity: 0});
     };
 
     return mod;

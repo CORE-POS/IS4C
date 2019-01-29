@@ -15,8 +15,9 @@ class DeliInventoryPage2 extends DeliInventoryPage
 {
     public $page_set = 'Plugin :: DeliInventory';
     protected $window_dressing = false;
-    protected $model_class = 'DeliInventoryCat2Model';
-    protected $table_name = 'deliInventoryCat2';
+    protected $model_class = 'DeliInventoryCatModel';
+    protected $STORE = 2;
+    protected $table_name = 'deliInventoryCat';
 
     protected function currentlyLine()
     {
