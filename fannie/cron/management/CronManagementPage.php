@@ -138,8 +138,8 @@ class CronManagementPage extends FanniePage
         $ret .= '</p>';
 
         $ret .= '<p>';
-        $fannie_path = realpath(__DIR__ . '/../');
-        if (!is_writable(__DIR__ . '/../logs/fannie.log')) {
+        $fannie_path = realpath(__DIR__ . '/../../');
+        if (!is_writable($fannie_path . '/logs/fannie.log')) {
             $ret .= "<i>Warning: fannie.log ({$fannie_path}/logs/fannie.log)
                 is not writable. Logging task results may
                 not work</i>";
