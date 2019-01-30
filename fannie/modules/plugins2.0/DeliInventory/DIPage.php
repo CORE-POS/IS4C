@@ -139,7 +139,7 @@ class DIPage extends FannieRESTfulPage
             $this->connection->execute($upP, array(FormLib::get('fraction'), $this->id));
         } elseif (FormLib::get('cost', false) !== false) {
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET price=? WHERE id=?");
-            $this->connection->execute($upP, array(FormLib::get('price'), $this->id));
+            $this->connection->execute($upP, array(FormLib::get('cost'), $this->id));
         } elseif (FormLib::get('upc', false) !== false) {
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET upc=? WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('upc'), $this->id));
@@ -296,7 +296,8 @@ HTML;
                 continue;
             }
             $ret .= '<table class="table table-bordered table-striped small inventory-table"
-                        data-cat-id="' . $catW['deliCategoryID'] . '" style="page-break-after: always;">';
+                        data-cat-id="' . $catW['deliCategoryID'] . '">';
+                        //data-cat-id="' . $catW['deliCategoryID'] . '" style="page-break-after: always;">';
             $ret .= '<tr><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th><th>Price/Case</th>
                      <th>Total</th><th class="upc">UPC</th><th class="sku">SKU</th><th class="vendor">Source</th></tr>';
             $sum = 0;
