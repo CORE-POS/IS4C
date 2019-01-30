@@ -261,10 +261,20 @@ HTML;
             FROM deliInventoryCat AS i
                 LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
             WHERE categoryID=? ORDER BY seq, item");
-        $ret = '<h4>' . $name . '</h4>';
-        $ret .= '<div class="col-sm-8">';
-        $ret .= '<table class="table table-bordered table-striped small inventory-table">';
-        $ret .= '<tr><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th></tr>';
+        $ret = '<div class="row">
+            <div class="col-sm-4">
+                <h4>' . $name . '</h4>
+            </div>
+            <div class="col-sm-4" style="font-size:75%;">
+                <div style="min-width: 150; border-bottom: solid black 1px;">Name:</div>
+                <br />
+                <div style="min-width: 150; border-bottom: solid black 1px;">Date:</div>
+                <br />
+            </div>
+        </div>';
+        $ret .= '<table class="table table-bordered table-striped small inventory-table"
+            style="font-size: 75%">';
+        $ret .= '<tr><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th><th>Notes</th></tr>';
         $itemR = $this->connection->execute($itemP, array($this->print));
         while ($itemW = $this->connection->fetchRow($itemR)) {
             $ret .= sprintf('<tr data-item-id="%d">
@@ -273,6 +283,7 @@ HTML;
                 <td class="caseSize editable">%d</td>
                 <td class="cases editable"></td>
                 <td class="fractions editable"></td>
+                <td style="min-width: 300px !important;">&nbsp;</td>
                 </tr>',
                 $itemW['id'],
                 $itemW['item'],
@@ -280,7 +291,7 @@ HTML;
                 $itemW['units']
             );
         }
-        $ret .= '</table></div>';
+        $ret .= '</table>';
 
         return $ret;
     }
