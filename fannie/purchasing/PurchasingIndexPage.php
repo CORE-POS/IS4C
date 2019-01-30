@@ -139,6 +139,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 <li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
                 <li><a href="EditManyPurchaseOrders.php">By Item</a></li>
                 <li><a href="?_method=put">Generate Orders</a></li>
+                <li><a href="OrderGuidePage.php">Order Guides</a></li>
                 <li><a href="ScanTransferPage.php">Store Transfer</a></li>
                 </ul>
             </li>
