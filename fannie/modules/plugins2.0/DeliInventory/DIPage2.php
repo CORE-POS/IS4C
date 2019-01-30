@@ -17,7 +17,7 @@ class DIPage2 extends FannieRESTfulPage
     {
         $this->addRoute('get<catUp>', 'get<catDown>', 'post<newItem>',
             'post<newCat>', 'delete<catID>', 'post<oldCat><renameCat>',
-            'post<seq><catID>');
+            'post<seq><catID>', 'get<print>');
 
         return parent::preprocess();
     }
@@ -253,6 +253,38 @@ HTML;
 HTML;
     }
 
+    protected function get_print_view()
+    {
+        $catP = $this->connection->prepare("SELECT name FROM DeliCategories WHERE deliCategoryID=?");
+        $name = $this->connection->getValue($catP, array($this->print));
+        $itemP = $this->connection->prepare("SELECT i.*, v.vendorName
+            FROM deliInventoryCat AS i
+                LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
+            WHERE categoryID=? ORDER BY seq, item");
+        $ret = '<h4>' . $name . '</h4>';
+        $ret .= '<div class="col-sm-8">';
+        $ret .= '<table class="table table-bordered table-striped small inventory-table">';
+        $ret .= '<tr><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th></tr>';
+        $itemR = $this->connection->execute($itemP, array($this->print));
+        while ($itemW = $this->connection->fetchRow($itemR)) {
+            $ret .= sprintf('<tr data-item-id="%d">
+                <td class="name editable">%s</td>
+                <td class="size editable">%s</td>
+                <td class="caseSize editable">%d</td>
+                <td class="cases editable"></td>
+                <td class="fractions editable"></td>
+                </tr>',
+                $itemW['id'],
+                $itemW['item'],
+                $itemW['size'],
+                $itemW['units']
+            );
+        }
+        $ret .= '</table></div>';
+
+        return $ret;
+    }
+
     protected function get_view()
     {
         $storeID = Store::getIdByIp();
@@ -288,7 +320,9 @@ HTML;
                 <h3>%s
                 <a href="DIPage2.php?catUp=%d"><span class="glyphicon glyphicon-arrow-up"></span></a>
                 <a href="DIPage2.php?catDown=%d"><span class="glyphicon glyphicon-arrow-down"></span></a>
-                </h3>', $tag, $catW['name'], $catW['deliCategoryID'], $catW['deliCategoryID']);
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="DIPage2.php?print=%d"><span class="glyphicon glyphicon-print"></span></a>
+                </h3>', $tag, $catW['name'], $catW['deliCategoryID'], $catW['deliCategoryID'], $catW['deliCategoryID']);
             if ($this->connection->numRows($itemR) == 0) {
                 $ret .= sprintf('<a href="DIPage2.php?_method=delete&catID=%d"
                     class="btn btn-default btn-danger">Delete this category</a>',
