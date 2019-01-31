@@ -695,7 +695,7 @@ HTML;
             {$deptOpts}
         </select>
         <select name="subdept[]" id="subdept{$store_id}" 
-            class="form-control chosen-select syncable-input">
+            class="form-control chosen-select chosen-subdept syncable-input">
             <option {$subZero} value="0">None</option>
             {$subOpts}
         </select>

@@ -41,6 +41,13 @@ var baseItem = (function() {
                             $('#discount-select'+store_id).val(3);
                         }
                     });
+                    var opts = $('#subdept'+store_id).html();
+                    $('.chosen-subdept').each(function(i, e) {
+                        if (e.id != 'subdept'+store_id) {
+                            $(e).html(opts);
+                            $(e).trigger('chosen:updated');
+                        }
+                    });
                 }
             }
         );
