@@ -12,7 +12,7 @@ class OrderGuidePage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<new>', 'post<new>', 'get<order>', 'post<order>');
+        $this->addRoute('get<new>', 'post<new>', 'get<order>', 'post<order>', 'get<edit>', 'post<edit>');
 
         return parent::preprocess();
     }
@@ -73,6 +73,51 @@ class OrderGuidePage extends FannieRESTfulPage
         return 'ViewPurchaseOrders.php?id=' . $orderID;
     }
 
+    protected function post_edit_handler()
+    {
+        $vendor = FormLib::get('vendor');
+        $store = FormLib::get('store');
+        $ids = FormLib::get('guide');
+        $upcs = FormLib::get('upc');
+        $items = FormLib::get('item');
+        $pars = FormLib::get('par');
+
+        $upP = $this->connection->prepare("
+            UPDATE OrderGuides
+            SET upc=?,
+                description=?,
+                par=?,
+                seq=?
+            WHERE orderGuideID=?");
+        $delP = $this->connection->prepare("DELETE FROM OrderGuides WHERE orderGuideID=?");
+        $insP = $this->connection->prepare("
+            INSERT INTO OrderGuides (vendorID, storeID, upc, description, par, seq)
+                VALUES (?, ?, ?, ?, ?, ?)");
+        $seq = 0;
+        for ($i=0; $i<count($ids); $i++) {
+            $orderID = $ids[$i];
+            $upc = trim($upcs[$i]);
+            $item = trim($items[$i]);
+            $par = trim($pars[$i]);
+            if ($upc == '' && $item == '') {
+                if ($orderID) {
+                    $this->connection->execute($delP, array($orderID));
+                }
+            } else {
+                if ($orderID) {
+                    $this->connection->execute($upP, array(
+                        $upc, $item, $par, $seq, $orderID));
+                } else {
+                    $this->connection->execute($insP, array(
+                        $vendor, $store, $upc, $item, $par, $seq));
+                }
+                $seq++;
+            }
+        }
+
+        return 'OrderGuidePage.php';
+    }
+
     protected function post_new_handler()
     {
         $model = new OrderGuidesModel($this->connection);
@@ -97,6 +142,47 @@ class OrderGuidePage extends FannieRESTfulPage
         }
 
         return 'OrderGuidePage.php';
+    }
+
+    protected function get_edit_view()
+    {
+        list($vendorID, $storeID) = explode(',', $this->edit);
+        $prep = $this->connection->prepare("SELECT * FROM OrderGuides WHERE vendorID=? AND storeID=? ORDER BY seq");
+        $guide = $this->connection->getAllRows($prep, array($vendorID, $storeID));
+        $rows = '';
+        for ($i=0; $i<20; $i++) {
+            $guideID = isset($guide[$i]) ? $guide[$i]['orderGuideID'] : '';
+            $upc = isset($guide[$i]) ? $guide[$i]['upc'] : '';
+            $item = isset($guide[$i]) ? $guide[$i]['description'] : '';
+            $par = isset($guide[$i]) ? $guide[$i]['par'] : '';
+            $rows .= <<<HTML
+<tr>
+    <td>
+        <input type="hidden" name="guide[]" value="{$guideID}" />
+        <input type="text" class="form-control upc" name="upc[]" value="{$upc}" />
+    </td>
+    <td><input type="text" class="form-control" name="item[]" value="{$item}" /></td>
+    <td><input type="text" class="form-control" name="par[]" value="{$par}" /></td>
+</tr>
+HTML;
+        }
+        $this->addScript('../item/autocomplete.js');
+        $this->addOnloadCommand("bindAutoComplete('.upc', '../ws/', 'item');");
+
+        return <<<HTML
+<form method="post" action="OrderGuidePage.php">
+<table class="table table-bordered table-striped">
+    <tr><th>UPC</th><th>Item</th><th>Par</th></tr>
+    {$rows}
+</table>
+<p>
+    <button type="submit" class="btn btn-default">Update Guide</button>
+    <input type="hidden" name="edit" value="1" />
+    <input type="hidden" name="vendor" value="{$vendorID}" />
+    <input type="hidden" name="store" value="{$storeID}" />
+</p>
+</form>
+HTML;
     }
 
     protected function get_new_view()
@@ -222,9 +308,11 @@ HTML;
         $res = $this->connection->execute($prep, array($storeID));
         $table = '';
         while ($row = $this->connection->fetchRow($res)) {
-            $table .= sprintf('<tr><td>%s</td><td>EDIT</td>
+            $table .= sprintf('<tr><td>%s</td>
+                <td><a href="OrderGuidePage.php?edit=%d,%d" class="btn btn-default">Edit</a></td>
                 <td><a href="OrderGuidePage.php?order=%d,%d" class="btn btn-default">Order</a></td></tr>',
                 $row['vendorName'],
+                $row['vendorID'], $storeID,
                 $row['vendorID'], $storeID
             );
         }
