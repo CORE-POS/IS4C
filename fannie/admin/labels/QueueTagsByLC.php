@@ -105,7 +105,6 @@ HTML;
 
     public function get_view()
     {
-        var_dump($this->__route_stem);
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
