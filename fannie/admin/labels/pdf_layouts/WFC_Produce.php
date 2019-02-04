@@ -94,6 +94,13 @@ $names = array();
 while ($row = $dbc->fetchRow($res)) {
     $names[$row['upc']] = $row['description'];
 }
+$prep = $dbc->prepare("SELECT upc, origin FROM upcLike AS u left join likeCodes AS l ON u.likeCode=l.likeCode
+    WHERE upc IN ({$inStr}) and origin <> '' AND origin IS NOT NULL");
+$res = $dbc->execute($prep, $args);
+$origins = array();
+while ($row = $dbc->fetchRow($res)) {
+    $origins[$row['upc']] = $row['origin'];
+}
 
 //cycle through result array of query
 foreach($data as $row) {
@@ -114,6 +121,10 @@ foreach($data as $row) {
     $pdf->MultiCell($width,4,$desc,0,1,'L');
     $pdf->SetX($full_x);
     $pdf->Cell($width,4,$size,0,1,'L');
+    if (isset($origins[$row['upc']])) {
+        $pdf->SetX($full_x);
+        $pdf->Cell($width,4,strtoupper($origins[$row['upc']]),0,1,'L');
+    }
     $pdf->SetX($full_x);
 
     $pdf->SetFont('Arial','B',24);  //change font size
