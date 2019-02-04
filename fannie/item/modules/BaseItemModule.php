@@ -676,6 +676,9 @@ HTML;
                 dept_start:'#department{$store_id}', 
                 callback:function(){
                     \$('#department{$store_id}').trigger('chosen:updated');
+                    if ($('#store-sync').prop('checked') === false) {
+                        return;
+                    }
                     baseItem.chainSubs({$store_id});
                     var opts = $('#department{$store_id}').html();
                     $('.chosen-dept').each(function(i, e) {
