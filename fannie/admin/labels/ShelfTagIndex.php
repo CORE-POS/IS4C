@@ -111,7 +111,7 @@ function printMany(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
 
-        $sel = FormLib::get('layout');
+        $sel = FormLib::get('layout', $this->config->get('DEFAULT_PDF'));
 
         ob_start();
         ?>
