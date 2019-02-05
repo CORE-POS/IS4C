@@ -90,7 +90,7 @@ a[type="submit"] {
     href="../../../item/CoopDealsLookupPage.php" />C+D Check Sale</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
-    href="http://192.168.1.2/scancoord/item/AuditScanner.php" />Audie</a>
+    href="http://192.168.1.2/scancoord/ScannieV2/content/Scanning/AuditScanner/AuditScanner.php" />Audie</a>
 <hr />
 {$wfcTools[1]}
 </p>
