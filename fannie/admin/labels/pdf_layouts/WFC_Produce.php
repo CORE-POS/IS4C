@@ -1,6 +1,10 @@
 <?php
+use COREPOS\Fannie\API\FanniePlugin;
 if (!class_exists('FpdfWithBarcode')) {
     include(dirname(__FILE__) . '/../FpdfWithBarcode.php');
+}
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 /*
     Using layouts
@@ -52,9 +56,17 @@ $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 
-$width = 52.1; // tag width in mm
+$font = 'Arial';
+if (FanniePlugin::isEnabled('CoopDealsSigns')) {
+    $font = 'Gill';
+    define('FPDF_FONTPATH', dirname(__FILE__) . '/../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+    $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+}
+
+$width = 52; // tag width in mm
 $height = 31; // tag height in mm
-$left = 5; // left margin
+$left = 5.5; // left margin
 $top = 15; // top margin
 $bTopOff = 0;
 
@@ -107,30 +119,31 @@ foreach($data as $row) {
     // extract & format data
 
     $price = $row['normal_price'];
-    $desc = strtoupper($row['description']);
+    $desc = $row['description'];
     if (isset($names[$row['upc']])) {
-        $desc = strtoupper($names[$row['upc']]);
+        $desc = $names[$row['upc']];
     }
-    if (($row['numflag'] & $organicFlag) != 0 && !stristr($desc, 'organic')) {
-        $desc = 'ORGANIC ' . $desc;
-    }
-    $size = $row['scale'] ? 'per lb.' : 'per ea';
 
     // writing data
     // basically just set cursor position
     // then write text w/ Cell
-    $pdf->SetFont('Arial','',12);  //Set the font
     $pdf->SetXY($full_x,$full_y+5);
-    $pdf->MultiCell($width,4,$desc,0,1,'L');
-    $pdf->SetFont('Arial','',8);  //Set the font
+    if (($row['numflag'] & $organicFlag) != 0) {
+        $pdf->SetFont($font,'B',10);  //Set the font
+        $pdf->Cell($width,4,'ORGANIC',0,1,'L');
+    }
+    $pdf->SetX($full_x);
+    $pdf->SetFont($font,'',12);  //Set the font
+    $pdf->MultiCell($width,5,$desc,0,1,'L');
+    $pdf->SetFont($font,'',8);  //Set the font
     if (isset($origins[$row['upc']])) {
         $pdf->SetXY($full_x,$full_y+24);
         $pdf->Cell($width,4,strtoupper($origins[$row['upc']]),0,1,'L');
     }
 
-    $pdf->SetFont('Arial','B',30);  //change font size
+    $pdf->SetFont($font,'B',30);  //change font size
     $pdf->SetXY($full_x,$full_y+16);
-    $pdf->Cell($width-5,8,$price . ($row['scale'] ? ' / lb' : ' / ea'),0,0,'R');
+    $pdf->Cell($width-5,8,$price . ($row['scale'] ? '/lb' : '/ea'),0,0,'R');
 
     // move right by tag width
 
