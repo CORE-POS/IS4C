@@ -51,7 +51,7 @@ class WFC_Produce_PDF extends FpdfWithBarcode
 
 function WFC_Produce($data,$offset=0){
 
-$pdf=new WFC_Produce('P','mm','Letter'); //start new instance of PDF
+$pdf=new WFC_Produce_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
