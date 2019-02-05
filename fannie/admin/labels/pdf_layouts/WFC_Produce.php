@@ -30,7 +30,7 @@ if (!class_exists('FannieAPI')) {
 
     Name matching is important
 */
-class WFC_Produce extends FpdfWithBarcode
+class WFC_Produce_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     function setTagDate($str){
