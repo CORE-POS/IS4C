@@ -52,7 +52,7 @@ $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 
-$width = 52; // tag width in mm
+$width = 52.1; // tag width in mm
 $height = 31; // tag height in mm
 $left = 5; // left margin
 $top = 15; // top margin
@@ -111,25 +111,26 @@ foreach($data as $row) {
     if (isset($names[$row['upc']])) {
         $desc = strtoupper($names[$row['upc']]);
     }
+    if (($row['numflag'] & $organicFlag) != 0 && !stristr($desc, 'organic')) {
+        $desc = 'ORGANIC ' . $desc;
+    }
     $size = $row['scale'] ? 'per lb.' : 'per ea';
 
     // writing data
     // basically just set cursor position
     // then write text w/ Cell
-    $pdf->SetFont('Arial','',8);  //Set the font
-    $pdf->SetXY($full_x,$full_y+12);
+    $pdf->SetFont('Arial','',12);  //Set the font
+    $pdf->SetXY($full_x,$full_y+5);
     $pdf->MultiCell($width,4,$desc,0,1,'L');
-    $pdf->SetX($full_x);
-    $pdf->Cell($width,4,$size,0,1,'L');
+    $pdf->SetFont('Arial','',8);  //Set the font
     if (isset($origins[$row['upc']])) {
-        $pdf->SetX($full_x);
+        $pdf->SetXY($full_x,$full_y+24);
         $pdf->Cell($width,4,strtoupper($origins[$row['upc']]),0,1,'L');
     }
-    $pdf->SetX($full_x);
 
-    $pdf->SetFont('Arial','B',24);  //change font size
+    $pdf->SetFont('Arial','B',30);  //change font size
     $pdf->SetXY($full_x,$full_y+16);
-    $pdf->Cell($width-5,8,$price,0,0,'R');
+    $pdf->Cell($width-5,8,$price . ($row['scale'] ? ' / lb' : ' / ea'),0,0,'R');
 
     // move right by tag width
 
