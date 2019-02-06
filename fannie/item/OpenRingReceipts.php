@@ -274,7 +274,7 @@ class OpenRingReceipts extends FannieRESTfulPage
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
-                <iframe src='http://key/git/fannie/item/IgnoredBarcodeEditor.php#form-start' class='ignoredIframe'></iframe>
+                <iframe src='IgnoredBarcodeEditor.php#form-start' class='ignoredIframe'></iframe>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default close-btn" data-dismiss="modal">Close</button>
