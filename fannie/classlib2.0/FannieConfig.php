@@ -78,6 +78,18 @@ class FannieConfig
         return $this->get($name);
     }
 
+    public function override($values)
+    {
+        foreach ($values as $key => $val) {
+            if (isset($this->vars[$key])) {
+                $this->vars[$key] = $val;
+            }
+            if (isset($this->vars['FANNIE_' . $key])) {
+                $this->vars['FANNIE_' . $key] = $val;
+            }
+        }
+    }
+
     public static function config($name, $default='')
     {
         $obj = self::factory();
