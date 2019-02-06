@@ -128,13 +128,33 @@ foreach($data as $row) {
     // basically just set cursor position
     // then write text w/ Cell
     $pdf->SetXY($full_x,$full_y+5);
+    $descY = $full_y+5;
+    $maxLines = 2;
     if (($row['numflag'] & $organicFlag) != 0) {
         $pdf->SetFont($font,'B',10);  //Set the font
         $pdf->Cell($width,4,'ORGANIC',0,1,'L');
+        $descY += 4;
+        $maxLines = 1;
     }
-    $pdf->SetX($full_x);
-    $pdf->SetFont($font,'',12);  //Set the font
-    $pdf->MultiCell($width,5,$desc,0,1,'L');
+    $trySize = 12;
+    $pdf->SetFillColor(0xff, 0xff, 0xff);
+    while ($trySize > 0) {
+        $pdf->SetXY($full_x,$descY);
+        $pdf->SetFont($font,'',$trySize);  //Set the font
+        $pdf->MultiCell($width,5,$desc,0,'L');
+        $newY = $pdf->GetY();
+        if ($newY > (5*$maxLines + $descY)) {
+            $trySize--;
+            $pdf->Rect($full_x, $descY, $width, ($newY - $descY), 'F');
+        } else {
+            break;
+        }
+    }
+    if ($trySize == 0) {
+        $pdf->SetXY($full_x,$descY);
+        $pdf->SetFont($font,'',12);  //Set the font
+        $pdf->MultiCell($width,5,$desc,0,'L');
+    }
     $pdf->SetFont($font,'',8);  //Set the font
     if (isset($origins[$row['upc']])) {
         $pdf->SetXY($full_x,$full_y+24);
