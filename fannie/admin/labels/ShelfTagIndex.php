@@ -29,8 +29,6 @@ class ShelfTagIndex extends FanniePage {
 
     protected $title = 'Fannie - Shelf Tags';
     protected $header = 'Shelf Tags';
-    protected $must_authenticate = True;
-    protected $auth_classes = array('barcodes');
     public $description = '[Shelf Tag Menu] lists shelf tag related pages.';
     public $themed = true;
 

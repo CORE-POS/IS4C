@@ -110,7 +110,7 @@ HTML;
 
         $queues = new ShelfTagQueuesModel($dbc); 
         $queues->load();
-        $options = $queues->toOptions();
+        $options = $queues->toOptions(6);
 
         $likeCodes = new LikeCodesModel($dbc);
         $lOpts = $likeCodes->toOptions();
