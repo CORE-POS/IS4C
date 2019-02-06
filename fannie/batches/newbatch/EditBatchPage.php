@@ -789,7 +789,7 @@ class EditBatchPage extends FannieRESTfulPage
             $bu->upc($w['upc']);
             $bu->logUpdate($bu::UPDATE_REMOVED);
         }
-        $dbc->endTransaction();
+        $dbc->commitTransaction();
 
         $query = "SELECT upc, salePrice FROM batchList WHERE batchID=? AND upc like 'LC%'";
         $prep = $dbc->prepare($query);
@@ -805,7 +805,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $dbc->execute($delP, array($this->id, $row['upc']));
             }
         }
-        $dbc->endTransaction();
+        $dbc->commitTransaction();
 
         $ret['display'] = $this->showBatchDisplay($this->id);
         echo $this->debugJSON($ret);
