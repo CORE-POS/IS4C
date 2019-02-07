@@ -108,14 +108,25 @@ class ProdLocationEditor extends FannieRESTfulPage
             $newSection[] = FormLib::get($curName);
         }
         foreach ($secID as $mapID => $sectionID) {
-            $args = array($sectionID, $upc, $mapID);
-            $prep = $dbc->prepare('
-                UPDATE FloorSectionProductMap
-                SET floorSectionID = ?
-                WHERE upc = ?
-                    AND floorSectionProductMapID = ?;
-            ');
-            $dbc->execute($prep, $args);
+            if ($sectionID != 999) {
+                $args = array($sectionID, $upc, $mapID);
+                $prep = $dbc->prepare('
+                    UPDATE FloorSectionProductMap
+                    SET floorSectionID = ?
+                    WHERE upc = ?
+                        AND floorSectionProductMapID = ?;
+                ');
+                $dbc->execute($prep, $args);
+            } else {
+                $args = array($upc, $mapID);
+                $prep = $dbc->prepare('
+                    DELETE FROM FloorSectionProductMap
+                    WHERE upc = ?
+                        AND floorSectionProductMapID = ?;
+                ');
+                $dbc->execute($prep, $args);
+
+            }
         }
 
         $ret = '';
@@ -690,24 +701,25 @@ class ProdLocationEditor extends FannieRESTfulPage
                 foreach ($curLocation as $value) {
                     $count++;
                     $name = 'section' . $primaryKey[$count-1];
-                    //$name = 'mapid' . $primaryKey;
                     $oldName = 'mapID' . ($primaryKey[$count-1]);
                     $ret .= '<input type="hidden" name="' . $oldName . '" value="' . $value . '">';
                     $ret .= '
                         <div class="input-group">
                             <span class="input-group-addon">Loc#' . $count . '</span>
                             <select name="' . $name . '" class="form-control">';
+                        $i=0;
                         foreach ($floor_section as $fs_key => $fs_value) {
-
                             //echo $fs_key . ' :: ' . $fs_value . '<br>'; --keys and values are correct.
-
+                            $ret .= ($i==0) ? '<option value="999">Remove this location</option>' : "";
+                            $i++;
                             $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '"';
                             if ($value == $fs_key) {
                                 $ret .= ' selected';
                             }
                             $ret .= '>' . $fs_value . '</option>';
                         }
-                        $ret .= '</select></div><br>';
+                        $ret .= '</select></div>
+                            <br>';
 
                         if ($count == 0) $ret .= '<span class="alert-warning">There is currently no location set for this product.</span>';
 
