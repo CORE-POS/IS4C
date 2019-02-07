@@ -602,7 +602,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '<div class=""><div class="row"><div class="col-md-5">';
         $ret .= '
 
-            <form method="get">
+            <form method="get" class="form-inline">
                 <input type="hidden" name="store_id" class="form-control">
                 <br><br>
                 <div class="input-group">
@@ -610,11 +610,11 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <input type="text" class="form-control" id="upc" name="upc" value="'.$upc.'" autofocus required>
                     <input type="hidden" name="batchCheck" value="'.$batchCheck.'">
                 </div>
-                    <input type="hidden" class="btn btn-default" name="searchupc" value="Update Locations by UPC">
-                    <div class="spacer"></div>
                     <button type="submit" class="btn btn-default" value="Go" style="width: 50">
                         <span class="glyphicon glyphicon-chevron-right"></span>
                     </button>
+                    <input type="hidden" class="btn btn-default" name="searchupc" value="Update Locations by UPC">
+                    <div class="spacer"></div>
             </form><br>
         ';
 
