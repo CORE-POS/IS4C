@@ -167,18 +167,18 @@ class SpecialOrderTags extends FannieRESTfulPage
 
             $pdf->SetFont('Arial','','6');
             //$pdf->Rect($posX+50, $posY+97, 4, 4);
-            $pdf->Line($posX+50, $posY+101, $posX+90, $posY+101);
-            $pdf->SetXY($posX+49, $posY+94);
+            $pdf->Line($posX+50, $posY+98, $posX+90, $posY+98);
+            $pdf->SetXY($posX+49, $posY+91);
             $pdf->Cell(0, 10, 'C / VM / T / E');
             //$pdf->Rect($posX+50, $posY+107, 4, 4);
-            $pdf->SetXY($posX+49, $posY+97.5);
+            $pdf->SetXY($posX+49, $posY+94.5);
             $pdf->SetFont('Arial','','5');
             $pdf->Cell(0, 10, 'Circle, Date, Initial');
             $pdf->SetFont('Arial','','6');
-            $pdf->SetXY($posX+49, $posY+104);
+            $pdf->SetXY($posX+49, $posY+100);
             $pdf->Cell(0, 10, 'C / VM / T / E');
-            $pdf->Line($posX+50, $posY+111, $posX+90, $posY+111);
-            $pdf->SetXY($posX+49, $posY+107.5);
+            $pdf->Line($posX+50, $posY+107, $posX+90, $posY+107);
+            $pdf->SetXY($posX+49, $posY+103.5);
             $pdf->SetFont('Arial','','5');
             $pdf->Cell(0, 10, 'Circle, Date, Initial');
 
