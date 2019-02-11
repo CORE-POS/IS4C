@@ -259,7 +259,10 @@ if (isset($_GET['action'])){
 
     protected function currentlyLine()
     {
-        return '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a></h3>';
+        return '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="DIPage.php">Alternate</a>
+            </h3>';
     }
 
     private function gettable($limit=false,$limitCat="ALL")
