@@ -110,7 +110,7 @@ class AutoCoupon extends TotalAction
                 continue;
             }
 
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $description);
+            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $description, $add['discountable']);
         }
 
         CoreLocal::set('msgrepeat', $repeat);

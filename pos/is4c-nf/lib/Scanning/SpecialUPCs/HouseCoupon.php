@@ -494,6 +494,7 @@ class HouseCoupon extends SpecialUPC
         value => [float] coupon value
         department => [int] department number for the coupon
         description => [string] description for coupon
+        discountable => [int] whether the coupon should be included in discountable total
     */
     public function getValue($coupID)
     {
@@ -760,6 +761,7 @@ class HouseCoupon extends SpecialUPC
                     $this->session->set('percentDiscount', 0);
                     $transDB->query('UPDATE localtemptrans SET percentDiscount=0');
                 }
+                $discountable = 0;
                 break;
             case "%I": // percent discount on all relevant items
                 $valQ = "select sum(total) 
