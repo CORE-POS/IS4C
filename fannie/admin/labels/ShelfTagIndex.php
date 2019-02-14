@@ -187,6 +187,8 @@ function printMany(){
             <div><a href="QueueTagsByList.php">Queue Tags by A List</a></div>
             <div><a href="QueueTagsByLC.php">Queue Tags by Like Code</a></div>
             <div><a href="MovementTagTracker.php">Movement Tag Tracker</a></div>
+            <div><a href="MovementTagTracker.php">Movement Tag Tracker</a>
+                | <a href="MovementTagTracker.php?id=config">Settings</a></div>
             <div><a href="../../item/handheld/ItemStatusPage.php">Scan a Single Item</a></div>
         </div>
         <?php
