@@ -122,32 +122,33 @@ class DIPage2 extends FannieRESTfulPage
 
     protected function post_id_handler()
     {
+        $now = $dbc->now();
         if (FormLib::get('name', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET item=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET item=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('name'), $this->id));
         } elseif (FormLib::get('size', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET size=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET size=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('size'), $this->id));
         } elseif (FormLib::get('caseSize', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET units=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET units=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('caseSize'), $this->id));
         } elseif (FormLib::get('cases', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET cases=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET cases=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('cases'), $this->id));
         } elseif (FormLib::get('fractions', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET fraction=? WHERE id=?");
-            $this->connection->execute($upP, array(FormLib::get('fraction'), $this->id));
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET fraction=?, modified={$now} WHERE id=?");
+            $res = $this->connection->execute($upP, array(FormLib::get('fractions'), $this->id));
         } elseif (FormLib::get('cost', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET price=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET price=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('cost'), $this->id));
         } elseif (FormLib::get('upc', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET upc=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET upc=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('upc'), $this->id));
         } elseif (FormLib::get('sku', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET orderno=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET orderno=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('sku'), $this->id));
         } elseif (FormLib::get('vendor', false) !== false) {
-            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET vendorID=? WHERE id=?");
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET vendorID=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('vendor'), $this->id));
         }
 

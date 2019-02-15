@@ -46,17 +46,30 @@ class DIScanner extends FannieRESTfulPage
 
     protected function post_id_qty_handler()
     {
-        $realQty = FormLib::get('real');
+        $realQty = FormLib::get('realQty', false);
+        $realCases = FormLib::get('realCases', false);
         $dbc = $this->connection;
         $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
-        $prep = $dbc->prepare("
-            UPDATE deliInventoryCat
-            SET fraction=?
-            WHERE upc=?
-                AND storeID=?");
-        $res = $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $store));
-        echo $this->getRecent($dbc);
+        if ($realQty !== false) {
+            $prep = $dbc->prepare("
+                UPDATE deliInventoryCat
+                SET fraction=?,
+                    modified=" . $dbc->now() . "
+                WHERE upc=?
+                    AND storeID=?");
+            $res = $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $store));
+            echo $this->getRecent($dbc);
+        } elseif ($realCases !== false) {
+            $prep = $dbc->prepare("
+                UPDATE deliInventoryCat
+                SET cases=?,
+                    modified=" . $dbc->now() . "
+                WHERE upc=?
+                    AND storeID=?");
+            $res = $dbc->execute($prep, array($realCases, BarcodeLib::padUPC($this->id), $store));
+            echo $this->getRecent($dbc);
+        } 
 
         return false;
     }
@@ -65,9 +78,10 @@ class DIScanner extends FannieRESTfulPage
     {
         $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $query = "SELECT d.upc, d.item,
-                d.fraction
-            FROM dleiInventoryCat AS d
-            WHERE d.storeID=?";
+                d.fraction, d.cases
+            FROM deliInventoryCat AS d
+            WHERE d.storeID=?
+            ORDER BY modified DESC";
         $args = array($store);
         $query = $dbc->addSelectLimit($query, 15);
         $prep = $dbc->prepare($query);
@@ -75,7 +89,7 @@ class DIScanner extends FannieRESTfulPage
         $ret = '<table class="table table-bordered tabled-striped">';
         while ($row = $dbc->fetchRow($res)) {
             $item = $row['upc'] . ' ' . $row['item'];
-            $ret .= sprintf('<tr><td>%.2f</td><td>%s</td></tr>', $row['fraction'], $item);
+            $ret .= sprintf('<tr><td>%.2f</td><td>%.2f</td><td>%s</td></tr>', $row['cases'], $row['fraction'], $item);
         }
         $ret .= '</table>';
 
@@ -88,7 +102,7 @@ class DIScanner extends FannieRESTfulPage
         $dbc = $this->connection;
         $prep = $dbc->prepare("
             SELECT d.upc, d.item,
-                d.fraction
+                d.fraction, d.cases, d.units
             FROM deliInventoryCat AS d
             WHERE d.storeID=?
                 AND d.upc=?");
@@ -105,19 +119,34 @@ class DIScanner extends FannieRESTfulPage
         if (!$row['fraction']) {
             $row['fraction'] = 0;
         }
+        $row['fraction'] = sprintf('%.2f', $row['fraction']);
 
         echo <<<HTML
 <h3>{$item}</h3>
 <div class="row lead">
     <div class="col-sm-3">
-        Current quantity: <span id="curQty">{$row['fraction']}</span>
+        Current eaches: <span id="curQty">{$row['fraction']}</span>
         <input type="hidden" id="lastQty" value="{$row['fraction']}" />
     </div>
     <div class="col-sm-3">
         <div class="input-group">
-            <span class="input-group-addon">Quantity</span>
+            <span class="input-group-addon">Eaches</span>
             <input type="number" name="qty" id="newQty" class="form-control" 
-                onkeyup="scanner.keybind(event);" onkeydown="scanner.tab(event);"
+                onkeyup="scanner.keybindQty(event);" onkeydown="scanner.tabQty(event);"
+                min="-999" max="999" step="1" />
+        </div> 
+    </div>
+</div>
+<div class="row lead">
+    <div class="col-sm-3">
+        Current cases ({$row['units']}): <span id="curCases">{$row['cases']}</span>
+        <input type="hidden" id="lastCases" value="{$row['cases']}" />
+    </div>
+    <div class="col-sm-3">
+        <div class="input-group">
+            <span class="input-group-addon">Cases</span>
+            <input type="number" name="cases" id="newCases" class="form-control" 
+                onkeyup="scanner.keybindCases(event);" onkeydown="scanner.tabCases(event);"
                 min="-999" max="999" step="1" />
         </div> 
     </div>
@@ -139,7 +168,7 @@ CSS;
 
     protected function get_view()
     {
-        $this->addScript('scanner.js');
+        $this->addScript('scanner.js?date=20190415');
         $this->addOnloadCommand("scanner.autocomplete('#upc');");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { scanner.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");

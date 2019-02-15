@@ -3,9 +3,10 @@ var scanner = (function ($) {
 
     var lastSearch = 0;
 
-    var repaint = function(a, b) {
+    var repaint = function(a, b, c) {
         $(a).addClass('focused');
         $(b).removeClass('focused');
+        $(c).removeClass('focused');
     };
 
     mod.setFilter = function(f) {
@@ -31,7 +32,7 @@ var scanner = (function ($) {
                 $('#upc').val('');
                 if ($('#newQty').length > 0) {
                     $('#newQty').focus();
-                    repaint('#newQty', '#upc');
+                    repaint('#newQty', '#upc', '#newCases');
                 }
             });
         } else {
@@ -39,22 +40,28 @@ var scanner = (function ($) {
         }
     };
 
-    mod.tab = function(ev) {
+    mod.tabQty = function(ev) {
+        if (ev.which == 9) {
+            ev.preventDefault();
+            $('#newCases').focus();
+            repaint('#newCases', '#newQty', '#upc');
+        }
+    };
+
+    mod.tabCases = function(ev) {
         if (ev.which == 9) {
             ev.preventDefault();
             $('#upc').focus();
-            repaint('#upc', '#newQty');
+            repaint('#upc', '#newQty', '#newCases');
         }
     };
 
 
-    mod.keybind = function(ev) {
-        repaint('#newQty', '#upc');
+    mod.keybindQty = function(ev) {
         if (new Date().getTime() > (100 + lastSearch)) {
-            console.log(ev.which);
             if (ev.which == 13) {
                 $('#upc').focus();
-                repaint('#upc', '#newQty');
+                repaint('#upc', '#newQty', '#newCases');
             }
             var cur = $('#lastQty').val();
             var qty = $('#newQty').val();
@@ -62,7 +69,26 @@ var scanner = (function ($) {
             $('#curQty').html(next);
             $.ajax({
                 type: 'post', 
-                data: $('#results input').serialize()+"&real="+next
+                data: $('#results input').serialize()+"&realQty="+next
+            }).done(function (resp) {
+                $('#recent').html(resp);
+            });
+        }
+    };
+
+    mod.keybindCases = function(ev) {
+        if (new Date().getTime() > (100 + lastSearch)) {
+            if (ev.which == 13) {
+                $('#upc').focus();
+                repaint('#upc', '#newQty', '#newCases');
+            }
+            var cur = $('#lastCases').val();
+            var qty = $('#newCases').val();
+            var next = (cur*1) + (qty*1);
+            $('#curCases').html(next);
+            $.ajax({
+                type: 'post', 
+                data: $('#results input').serialize()+"&realCases="+next
             }).done(function (resp) {
                 $('#recent').html(resp);
             });
