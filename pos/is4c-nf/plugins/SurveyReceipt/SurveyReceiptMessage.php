@@ -12,7 +12,7 @@ class SurveyReceiptMessage extends ReceiptMessage
 
     public function message($val, $ref, $reprint=False)
     {
-        if ($reprint) {
+        if ($reprint || CoreLocal::get('isStaff') || CoreLocal::get('memType') == 4) {
             return '';
         }
         
