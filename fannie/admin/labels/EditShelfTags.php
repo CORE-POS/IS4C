@@ -222,7 +222,7 @@ class EditShelfTags extends FannieRESTfulPage
 <div class="panel panel-default">
     <div class="panel-heading">Selected Tag</div>
     <div class="panel-body">
-        {$this->upc} - {$tag->brand} {$tab->description}
+        {$this->upc} - {$tag->brand} {$tag->description}
     </div>
 </div>
 <div class="panel panel-default">
