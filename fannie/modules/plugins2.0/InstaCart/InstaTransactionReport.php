@@ -11,7 +11,7 @@ class InstaTransactionReport extends FannieReportPage
     protected $header = 'InstaCart Transaction Report';
     public $description = '[InstaCart Transaction Report] displays transaction data for a given date range';
     protected $required_fields = array('date1', 'date2');
-    protected $report_headers = array('Order ID', '$ Total', '# Items', 'Store', 'Ordered', 'Delivered', 'User ID', 'Owner #', 'Original Zip', 'Order Zip', 'Platform');
+    protected $report_headers = array('Order ID', '$ Total', '# Items', 'Store', 'Ordered', 'Delivered', 'User ID', 'Owner #', 'Name', 'Original Zip', 'Order Zip', 'Platform');
 
     public function fetch_report_data()
     {
@@ -22,13 +22,16 @@ class InstaTransactionReport extends FannieReportPage
                 MAX(deliveryDate) AS deliveryDate,
                 SUM(quantity) AS qty,
                 SUM(total) AS total,
-                MAX(cardNo) AS owner,
+                MAX(i.cardNo) AS owner,
                 MAX(signupZip) AS signupZip,
                 MAX(deliveryZip) AS deliveryZip,
                 MAX(platform) AS platform,
-                MAX(s.description) AS store
+                MAX(s.description) AS store,
+                MAX(c.LastName) AS ln,
+                MAX(c.FirstName) AS fn
             FROM " . FannieDB::fqn('InstaTransactions', 'plugin:InstaCartDB') . " AS i
                 LEFT JOIN Stores AS s ON i.storeID=s.storeID
+                LEFT JOIN custdata AS c ON i.cardNo=c.CardNo AND c.personNum=1
             WHERE i.orderDate BETWEEN ? AND ?
             GROUP BY i.deliveryID");
             
@@ -46,6 +49,7 @@ class InstaTransactionReport extends FannieReportPage
                 $row['deliveryDate'],
                 $row['userID'],
                 $row['owner'],
+                $row['fn'] . ' ' . $row['ln'],
                 $row['signupZip'],
                 $row['deliveryZip'],
                 $row['platform'],
@@ -61,15 +65,17 @@ class InstaTransactionReport extends FannieReportPage
         $orders = 0;
         $qty = 0;
         $owners = 0;
+        $userMap = array();
         foreach ($data as $row) {
             $total += $row[1];
             $qty += $row[2];
             $orders++;
             $owners += ($row[7] != 11 ? 1 : 0);
+            $userMap[$row[6]] = true;
         }
 
-        $totals = array('Total', sprintf('%.2f', $total), sprintf('%.2f', $qty), '', '', '', '', $owners, '', '', '');
-        $avg = array('Average', sprintf('%.2f', $orders ? $total/$orders : 0), sprintf('%.2f', $orders ? $qty/$orders : 0), '', '', '', '', '', '', '', '');
+        $totals = array('Total', sprintf('%.2f', $total), sprintf('%.2f', $qty), '', '', '', count($userMap), $owners, '', '', '', '');
+        $avg = array('Average', sprintf('%.2f', $orders ? $total/$orders : 0), sprintf('%.2f', $orders ? $qty/$orders : 0), '', '', '', '', '', '', '', '', '');
 
         return array($totals, $avg);
     }

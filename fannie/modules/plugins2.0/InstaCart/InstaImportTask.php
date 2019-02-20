@@ -56,7 +56,7 @@ class InstaImportTask extends FannieTask
                         $model->deposit($data[17] ? $data[17] : 0);
                         $model->bagFee($data[18] ? $data[18] : 0);
                         $model->total($data[19]);
-                        $model->cardNo($data[22] ? $data[22] : 11);
+                        $model->cardNo($data[22] ? $this->findOwner($dbc, $data[22]) : 11);
                         $model->storeID($data[24]);
                         $model->signupZip($data[1]);
                         $model->deliveryZip($data[23]);
@@ -69,6 +69,32 @@ class InstaImportTask extends FannieTask
                 }
             }
         }
+    }
+
+    private $cardP = false;
+    private function findOwner($dbc, $card)
+    {
+        if (!$this->cardP) {
+            $this->cardP = $dbc->prepare("SELECT card_no FROM " . FannieDB::fqn('memberCards', 'op') . " WHERE upc LIKE ?");
+        }
+        if (strlen($card) < 10) {
+            return $card;
+        }
+        echo "Checking against $card\n";
+        $suffix = $dbc->getValue($this->cardP, array('%' . $card));
+        if ($suffix !== false) {
+            var_dump($suffix);
+            return $suffix;
+        }
+        $nocheck = substr($card, 0, strlen($card) - 1);
+        echo "Also checking $nocheck\n";
+        $suffix = $dbc->getValue($this->cardP, array('%' . $nocheck));
+        if ($suffix !== false) {
+            var_dump($suffix);
+            return $suffix;
+        }
+
+        return $card;
     }
 
     private function dateToLocal($str)
