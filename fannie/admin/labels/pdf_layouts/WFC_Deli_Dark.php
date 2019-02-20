@@ -1,6 +1,10 @@
 <?php
+use COREPOS\Fannie\API\FanniePlugin;
 if (!class_exists('FpdfWithBarcode')) {
     include(dirname(__FILE__) . '/../FpdfWithBarcode.php');
+}
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 /*
     Using layouts
@@ -48,6 +52,15 @@ $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $pdf->SetFillColor(0, 0, 0);
 $pdf->SetTextColor(255, 255, 255);
+$dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+
+$font = 'Arial';
+if (FanniePlugin::isEnabled('CoopDealsSigns')) {
+    $font = 'Gill';
+    define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+    $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+}
 
 $width = 69; // tag width in mm
 $height = 41; // tag height in mm
@@ -97,7 +110,7 @@ foreach($data as $row){
    // extract & format data
    $price = $row['normal_price'];
    $desc = strtoupper(substr($row['description'],0,27));
-   $brand = ucwords(strtolower(substr($row['brand'],0,13)));
+   $brand = ucwords(strtolower($row['brand']));
    $pak = $row['units'];
    $size = $row['units'] . "-" . $row['size'];
    $sku = $row['sku'];
@@ -141,15 +154,22 @@ foreach($data as $row){
                 // do nothing
             }
         }
+        $descFontSize = 14;
+        if ($splitpos > 25) 
+            $descFontSize = 12;
 
         $desc = substr($desc,0,$splitpos);
         $desc2 = substr($temp,$splitpos);;
    }
+   $brandFontSize = 18;
+   if (strlen($brand) > 18) 
+        $brandFontSize = 16;
+    
    if ($desc == '') {
         $desc = $temp;
         $desc2 = '';
    }
-   $pdf->SetFont('Arial','B',18);  //Set the font 
+   $pdf->SetFont($font,'B',$brandFontSize);  //Set the brand font
    $pdf->SetXY($x,$y);
    $pdf->Cell($width,5,'',0,1,'C',true);
    $pdf->SetX($x);
@@ -157,12 +177,12 @@ foreach($data as $row){
    $pdf->SetX($x);
    $pdf->Cell($width,1,'',0,1,'C',true);
    $pdf->SetX($x);
-   $pdf->SetFont('Arial','',14);  //Set the font 
+   $pdf->SetFont($font,'',$descFontSize);  //Set the description font 
    $pdf->Cell($width,5,$desc,0,1,'C',true);
    $pdf->SetX($x);
    $pdf->Cell($width,7,$desc2,0,1,'C',true);
 
-   $pdf->SetFont('Arial','B',20);  //change font size
+   $pdf->SetFont($font,'B',20);  //change font size
    $pdf->SetXY($x,$y+24);
    $pdf->Cell($width,12,$price,0,0,'C',true);
    $pdf->SetXY($x,$y+36);
@@ -194,7 +214,7 @@ foreach($data as $row){
    // one and reset x/y top left margins
    // otherwise if it's the end of a line,
    // reset x and move y down by tag height
-   if ($num % 32 == 0){
+   if ($num % 20 == 0){
     $pdf->AddPage('L');
     $x = $left;
     $y = $top;
