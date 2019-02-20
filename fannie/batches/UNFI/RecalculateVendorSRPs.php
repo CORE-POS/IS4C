@@ -57,6 +57,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
                 v.sku,
                 v.cost,
                 CASE
+                    WHEN c.margin IS NOT NULL THEN c.margin 
                     WHEN a.margin IS NOT NULL THEN a.margin
                     WHEN b.margin IS NOT NULL THEN b.margin
                     ELSE 0 
@@ -68,6 +69,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
                 INNER JOIN vendors AS n ON v.vendorID=n.vendorID
                 LEFT JOIN products as p ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
                 LEFT JOIN departments AS b ON p.department=b.dept_no
+                LEFT JOIN VendorSpecificMargins AS c ON c.vendorID=n.vendorID AND p.department=c.deptID
             WHERE v.vendorID=?
                 AND (a.margin IS NOT NULL OR b.margin IS NOT NULL)';
         $fetchP = $dbc->prepare($query);
