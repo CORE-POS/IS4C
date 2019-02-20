@@ -334,6 +334,8 @@ HTML;
                 <a href="DIPage2.php?catDown=%d"><span class="glyphicon glyphicon-arrow-down"></span></a>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="DIPage2.php?print=%d"><span class="glyphicon glyphicon-print"></span></a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="DIScanner.php"><span class="glyphicon glyphicon-barcode"></span></a>
                 </h3>', $tag, $catW['name'], $catW['deliCategoryID'], $catW['deliCategoryID'], $catW['deliCategoryID']);
             if ($this->connection->numRows($itemR) == 0) {
                 $ret .= sprintf('<a href="DIPage2.php?_method=delete&catID=%d"

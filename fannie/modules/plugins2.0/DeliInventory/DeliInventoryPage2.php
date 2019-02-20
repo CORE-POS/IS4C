@@ -21,7 +21,10 @@ class DeliInventoryPage2 extends DeliInventoryPage
 
     protected function currentlyLine()
     {
-        return '<h3>Currently Denfeld - <a href="DeliInventoryPage.php">Switch</a></h3>';
+        return '<h3>Currently Denfeld - <a href="DeliInventoryPage.php">Switch</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="DIPage2.php">Alternate</a>
+            </h3>';
     }
 
     public function body_content()
