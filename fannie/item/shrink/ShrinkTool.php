@@ -217,7 +217,7 @@ function keyToType(e) {
                 <label class="col-sm-3 text-right">Quantity</label>
                 <div class="col-sm-9">
                     <input type="number" name="qty" id="qty-field" class="form-control"
-                        value="{$this->quantity}" min="0" max="9999" step="0.01" required />
+                        value="{$this->quantity}" min="-9999" max="9999" step="0.01" required />
                 </div>
             </div>
             <div class="row form-group">
