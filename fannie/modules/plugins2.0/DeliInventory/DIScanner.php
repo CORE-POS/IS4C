@@ -63,7 +63,7 @@ class DIScanner extends FannieRESTfulPage
                     modified=" . $dbc->now() . "
                 WHERE upc=?
                     AND storeID=?");
-            $res = $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $store));
+            $res = $dbc->execute($prep, array($realQty, $this->getUPC($this->id), $store));
             echo $this->getRecent($dbc);
         } elseif ($realCases !== false) {
             $prep = $dbc->prepare("
@@ -72,7 +72,7 @@ class DIScanner extends FannieRESTfulPage
                     modified=" . $dbc->now() . "
                 WHERE upc=?
                     AND storeID=?");
-            $res = $dbc->execute($prep, array($realCases, BarcodeLib::padUPC($this->id), $store));
+            $res = $dbc->execute($prep, array($realCases, $this->getUPC($this->id), $store));
             echo $this->getRecent($dbc);
         } 
 
@@ -111,13 +111,10 @@ class DIScanner extends FannieRESTfulPage
             FROM deliInventoryCat AS d
             WHERE d.storeID=?
                 AND d.upc=?");
-        $this->id = BarcodeLib::padUPC($this->id);
-        if (substr($this->id, 0, 3) == "002") {
-            $this->id = substr($this->id, 0, 7) . '000000';
-        }
+        $this->id = $this->getUPC($this->id);
         $row = $dbc->getRow($prep, array($store, $this->id));
         if ($row === false) {
-            $nocheck = '0' . substr($this->id, 0, strlen($this->id) - 1);
+            $nocheck = $this->getUPC(substr($this->id, 0, strlen($this->id) - 1));
             $row = $dbc->getRow($prep, array($store, $nocheck));
             if ($row !== false) $this->id = $nocheck;
         }
@@ -167,6 +164,19 @@ HTML;
         return false;
     }
 
+    private function getUPC($str)
+    {
+        if (substr($str, 0, 2) == 'LC') {
+            return $str;
+        }
+        $str = BarcodeLib::padUPC($str);
+        if (substr($this->id, 0, 3) == "002") {
+            $str = substr($this->id, 0, 7) . '000000';
+        }
+
+        return $str;
+    }
+
     function css_content()
     {
         return <<<CSS
@@ -189,7 +199,7 @@ CSS;
     <hr />
     <p>
         <div class="input-group">
-            <span class="input-group-addon">Search</span>
+            <span class="input-group-addon hidden-xs">Search</span>
             <input type="text" name="id" id="upc" class="form-control focused" />
             <span class="input-group-btn">
                 <button type="submit" class="btn btn-default" tabindex="-1">Go</button>
