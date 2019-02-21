@@ -116,7 +116,7 @@ class DIScanner extends FannieRESTfulPage
         if ($row === false) {
             $nocheck = $this->getUPC(substr($this->id, 0, strlen($this->id) - 1));
             $row = $dbc->getRow($prep, array($store, $nocheck));
-            if ($row !== false) $this->id = $nocheck;
+            $this->id .= '||' . $nocheck;
         }
         if ($row === false) {
             echo '<div class="alert alert-danger">Item not found' . $this->id . '</div>' . 'err:' . $dbc->error();
@@ -170,8 +170,8 @@ HTML;
             return $str;
         }
         $str = BarcodeLib::padUPC($str);
-        if (substr($this->id, 0, 3) == "002") {
-            $str = substr($this->id, 0, 7) . '000000';
+        if (substr($str, 0, 3) == "002") {
+            $str = substr($str, 0, 7) . '000000';
         }
 
         return $str;
