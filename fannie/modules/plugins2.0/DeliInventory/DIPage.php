@@ -122,7 +122,7 @@ class DIPage extends FannieRESTfulPage
 
     protected function post_id_handler()
     {
-        $now = $dbc->now();
+        $now = $this->connection->now();
         if (FormLib::get('name', false) !== false) {
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET item=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('name'), $this->id));

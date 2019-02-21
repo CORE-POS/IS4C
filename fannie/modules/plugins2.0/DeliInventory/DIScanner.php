@@ -11,6 +11,7 @@ class DIScanner extends FannieRESTfulPage
     public $description = '[Deli Inventory Scanner] is a tool for entering deli inventory';
     protected $title = 'Deli Inventory';
     protected $header = '';
+    protected $enable_linea = true;
 
     public function preprocess()
     {
@@ -112,6 +113,11 @@ class DIScanner extends FannieRESTfulPage
         }
         $row = $dbc->getRow($prep, array($store, $this->id));
         if ($row === false) {
+            $nocheck = '0' . substr($this->id, 0, strlen($this->id) - 1);
+            $row = $dbc->getRow($prep, array($store, $nocheck));
+            if ($row !== false) $this->id = $nocheck;
+        }
+        if ($row === false) {
             echo '<div class="alert alert-danger">Item not found' . $this->id . '</div>' . 'err:' . $dbc->error();
             return false;
         }
@@ -168,10 +174,11 @@ CSS;
 
     protected function get_view()
     {
-        $this->addScript('scanner.js?date=20190415');
+        $this->addScript('scanner.js?date=20190220');
         $this->addOnloadCommand("scanner.autocomplete('#upc');");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { scanner.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");
+        $this->addOnloadCommand("enableLinea('#upc');");
 
         return <<<HTML
 <form method="post" id="searchform" onsubmit="scanner.search(); return false;">
