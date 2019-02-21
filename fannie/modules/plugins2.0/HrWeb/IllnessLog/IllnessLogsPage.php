@@ -17,7 +17,7 @@ class IllnessLogsPage extends FannieRESTfulPage
     protected $title = 'Illness Logs';
     public $default_db = 'wfc_hr';
     protected $must_authenticate = true;
-    protected $auth_classes = array('hr_editor', 'illness_editor');
+    protected $auth_classes = array('hr_editor', 'illness_editor', 'illness_entry');
 
     protected function post_id_handler()
     {
@@ -70,6 +70,9 @@ class IllnessLogsPage extends FannieRESTfulPage
 
     protected function get_id_view()
     {
+        if (!FannieAuth::validateUserQuiet('hr_editor') && !FannieAuth::validateUserQuiet('illness_editor')) {
+            return '<div class="alert alert-danger">You do not have access to this</div>';
+        }
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
         $model = new IllnessLogsModel($dbc);
@@ -136,12 +139,47 @@ class IllnessLogsPage extends FannieRESTfulPage
         return $ret;
     }
 
+    private function getAccess()
+    {
+        $uid = FannieAuth::getUID($this->current_user);
+        $prep = $this->connection->prepare("SELECT * FROM AccessIllness WHERE userId=?");
+        $res = $this->connection->execute($prep, array($uid));
+        $perms = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $key = $row['storeID'] . ':' . $row['deptID'];
+            $perms[$key] = array('edit' => $row['canEdit'], 'view' => $row['canView']);
+        }
+
+        return $perms;
+    }
+
+    private function getEmployeeAreas($empID)
+    {
+        $prep = $this->connection->prepare("SELECT storeID FROM EmployeeStores WHERE employeeID=?");
+        $stores = $this->connection->getAllValues($prep, array($empID));
+
+        $prep = $this->connection->prepare("SELECT departmentID FROM EmployeeDepartments WHERE employeeID=?");
+        $depts = $this->connection->getAllValues($prep, array($empID));
+
+        $ret = array();
+        foreach ($stores as $sID) {
+            foreach ($depts as $dID) {
+                $ret[$sID . ':' . $dID] = true;
+            }
+        }
+
+        return $ret;
+    }
+
     protected function get_view()
     {
         $editCSS = 'collapse';
+        $includeList = false;
         if (FannieAuth::validateUserQuiet('hr_editor') || FannieAuth::validateUserQuiet('illness_editor')) {
             $editCSS = '';
+            $includeList = true;
         }
+        $access = $this->getAccess();
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
 
@@ -150,6 +188,7 @@ class IllnessLogsPage extends FannieRESTfulPage
                 i.illnessDate,
                 e.firstName,
                 e.lastName,
+                e.employeeID,
                 i.exclusionary,
                 i.MDHContacted,
                 MAX(i.comments) AS comments,
@@ -168,7 +207,23 @@ class IllnessLogsPage extends FannieRESTfulPage
                 i.MDHContacted
             ORDER BY i.illnessDate DESC');
         $open = '';
+        $empAreas = array();
         while ($row = $dbc->fetchRow($openR)) {
+            $eID = $row['employeeID'];
+            if (!isset($empAreas[$eID])) {
+                $empAreas[$eID] = $this->getEmployeeAreas($eID);
+            }
+            $hasAccess = false;
+            $userEditCSS = 'collapse';
+            foreach ($access as $area => $type) {
+                if (isset($empAreas[$eID][$area])) {
+                    $hasAccess = true;
+                    if ($type['edit']) {
+                        $userEditCSS = '';
+                    }
+                }
+            }
+            if (!$hasAccess) continue;
             $open .= sprintf('<tr><td>%s</td>
                 <td>%s, %s</td><td>%s</td>
                 <td>%s</td><td>%s</td>
@@ -180,8 +235,11 @@ class IllnessLogsPage extends FannieRESTfulPage
                 ($row['exclusionary'] ? 'Yes' : 'No'),
                 ($row['MDHContacted'] ? 'Yes' : 'n/a'),
                 htmlentities($row['comments']),
-                $editCSS, $row['illnessLogID'], FannieUI::editIcon()
+                $userEditCSS, $row['illnessLogID'], FannieUI::editIcon()
             );
+        }
+        if (!$includeList) {
+            $open = '<tr><td colspan="7">Greater access required</td></tr>';
         }
 
         $types = new IllnessTypesModel($dbc);
