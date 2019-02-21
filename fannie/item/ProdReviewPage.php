@@ -573,7 +573,7 @@ HTML;
         $p->default_vendor_id($vid);
         $p->inUse(1);
 
-        $masterDepts = array(1,4,5,8,9,13,17);
+        $masterDepts = array(1,3,4,5,8,9,13,17);
         $curDepts = array();
         $m = new MasterSuperDeptsModel($dbc);
         foreach ($masterDepts as $mDept) {
@@ -583,6 +583,27 @@ HTML;
                 $curDepts[] = $obj->dept_ID();
             }
         }
+
+        $superNames = array();
+        $superStrings = array();
+        $prep = $dbc->prepare("
+            SELECT super_name, dept_ID FROM MasterSuperDepts 
+        ");
+        $r = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($r)) {
+            $superNames[$row['dept_ID']] = $row['super_name'];
+        }
+
+        foreach ($p->find() as $obj) {
+            $dept = $obj->department();
+            $name = $superNames[$dept];
+            if (!in_array($name, $superStrings)) $superStrings[] = $name;
+        }
+        $vdepts = '<label>Super Departments</label><ul>';
+        foreach ($superStrings as $name) {
+            $vdepts .= "<li>$name</li>";
+        }
+        $vdepts .= '</ul>';
 
         $table = '<table class="table table-condensed small tablesorter tablesorter-bootstrap" id="reviewtable">';
         $table .= '<thead><th>UPC</th><th>Brand</th><th>Description</th>
@@ -645,6 +666,7 @@ HTML;
         </select>
     </div>
 </form>
+$vdepts
 <form class="form-inline" method="get">
     {$table}
     <input type="hidden" name="vendor" value="1">
