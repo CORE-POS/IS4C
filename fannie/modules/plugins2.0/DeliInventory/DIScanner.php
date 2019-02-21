@@ -24,16 +24,20 @@ class DIScanner extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
-        $prep = $dbc->prepare("SELECT upc, item
-            FROM deliInventoryCat
+        $prep = $dbc->prepare("SELECT upc, item, c.name
+            FROM deliInventoryCat AS d
+                LEFT JOIN DeliCategories AS c ON d.categoryID=c.deliCategoryID
             WHERE upc is not null
                 AND upc <> ''
-                AND storeID=?
+                AND d.storeID=?
                 AND item LIKE ?
             ORDER BY item");
         $res = $dbc->execute($prep, array($store, '%' . $this->search . '%'));
         $ret = array();
         while ($row = $dbc->fetchRow($res)) {
+            if ($row['name']) {
+                $row['item'] .= ' (' . $row['name'] . ')';
+            }
             $ret[] = array(
                 'label' => $row['item'],
                 'value' => $row['upc'],
