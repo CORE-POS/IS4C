@@ -343,7 +343,10 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         
         $week = $class_lib::getWeek($dbc);
         $week->obfWeekID($this->form->weekID);
-        $week->load();
+        $exists = $week->load();
+        if (!$exists) {
+            return array(array('Week does not exist', null));
+        }
 
         $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());

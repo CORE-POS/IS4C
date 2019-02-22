@@ -44,6 +44,10 @@ class HrMenu extends FannieRESTfulPage
             <tr>
                 <td><a href="Store/StoresPage.php">Stores</a></td>
                 <td>Manage physical work locations (probably won\'t change often)</td>
+            </tr>
+            <tr>
+                <td><a href="Permissions/PermissionsPage.php">Permissions</a></td>
+                <td>Manage user access levels</td>
             </tr>';
         }
         $ret .= '<tr><th colspan="2">Illness Records</th></tr>';

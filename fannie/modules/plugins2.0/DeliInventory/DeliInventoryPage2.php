@@ -15,12 +15,16 @@ class DeliInventoryPage2 extends DeliInventoryPage
 {
     public $page_set = 'Plugin :: DeliInventory';
     protected $window_dressing = false;
-    protected $model_class = 'DeliInventoryCat2Model';
-    protected $table_name = 'deliInventoryCat2';
+    protected $model_class = 'DeliInventoryCatModel';
+    protected $STORE = 2;
+    protected $table_name = 'deliInventoryCat';
 
     protected function currentlyLine()
     {
-        return '<h3>Currently Denfeld - <a href="DeliInventoryPage.php">Switch</a></h3>';
+        return '<h3>Currently Denfeld - <a href="DeliInventoryPage.php">Switch</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="DIPage2.php">Alternate</a>
+            </h3>';
     }
 
     public function body_content()

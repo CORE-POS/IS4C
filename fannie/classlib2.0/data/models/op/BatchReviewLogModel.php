@@ -1,7 +1,8 @@
 <?php
+
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2019 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -20,33 +21,25 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+        
 
 /**
-  @class DeliInventoryCatModel
+  @class BatchReviewLogModel
 */
-class DeliInventoryCatModel extends BasicModel
+class BatchReviewLogModel extends BasicModel
 {
-    protected $name = "deliInventoryCat";
+    protected $name = "batchReviewLog";
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'id' => array('type'=>'INT', 'primary_key' => True, 'increment'=>True),
-    'item' => array('type'=>'VARCHAR(50)'),
-    'orderno' => array('type'=>'VARCHAR(15)'),
-    'units' => array('type'=>'VARCHAR(10)'),
-    'cases' => array('type'=>'FLOAT'),
-    'fraction' => array('type'=>'VARCHAR(10)'),
-    'totalstock' => array('type'=>'FLOAT'),
-    'price' => array('type'=>'MONEY'),
-    'total' => array('type'=>'MONEY'),
-    'size' => array('type'=>'VARCHAR(20)'),
-    'category' => array('type'=>'VARCHAR(50)', 'index'=>True),
-    'upc' => array('type'=>'VARCHAR(13)'),
-    'vendorID' => array('type'=>'INT'),
-    'storeID' => array('type'=>'INT'),
-    'categoryID' => array('type'=>'INT'),
-    'seq' => array('type'=>'INT', 'default'=>0),
-    'modified' => array('type'=>'DATETIME'),
+    'bid' => array('type'=>'INT', 'primary_key'=>true),
+    'vid' => array('type'=>'INT'),
+    'printed' => array('type'=>'TINYINT', 'default'=>0),
+    'user' => array('type'=>'VARCHAR(30)'),
+    'created' => array('type'=>'DATETIME'),
+    'forced' => array('type'=>'DATETIME'),
+    'notes' => array('type'=>'TEXT'),
     );
+
 }
 

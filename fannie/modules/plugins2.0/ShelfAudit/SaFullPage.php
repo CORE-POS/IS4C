@@ -134,9 +134,13 @@ class SaFullPage extends FannieRESTfulPage
                 LEFT JOIN upcLike AS u ON p.upc=u.upc
             WHERE p.store_id=1
                 AND p.upc=?");
-        $row = $dbc->getRow($prep, array($section, $store, BarcodeLib::padUPC($this->id)));
+        $this->id = BarcodeLib::padUPC($this->id);
+        if (substr($this->id, 0, 3) == "002") {
+            $this->id = substr($this->id, 0, 7) . '000000';
+        }
+        $row = $dbc->getRow($prep, array($section, $store, $this->id));
         if ($row === false) {
-            echo '<div class="alert alert-danger">Item not found</div>';
+            echo '<div class="alert alert-danger">Item not found' . $this->id . '</div>';
             return false;
         }
         $item = $row['upc'] . ' ' . $row['description'];

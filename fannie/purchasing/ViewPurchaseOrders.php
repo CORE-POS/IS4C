@@ -270,7 +270,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mail->FromName = $this->config->get('PO_EMAIL_NAME');
         $mail->isHTML = true;
         $mail->addAddress($vendor->email());
-        if ($userEmail && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $mail->From = 'dbuyers@wholefoods.coop';
+            $mail->FromName = 'Whole Foods Co-op Denfeld';
+            $mail->addCC('dbuyers@wholefoods.coop');
+        } elseif ($userEmail && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
             $mail->addCC($userEmail);
             $mail->addReplyTo($userEmail);
             $mail->From = $userEmail;

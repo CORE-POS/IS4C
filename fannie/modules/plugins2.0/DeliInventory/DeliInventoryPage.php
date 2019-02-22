@@ -15,6 +15,7 @@ class DeliInventoryPage extends FanniePage
 
     protected $model_class = 'DeliInventoryCatModel';
     protected $table_name = 'deliInventoryCat';
+    protected $STORE = 1;
 
     public function preprocess()
     {
@@ -46,11 +47,11 @@ if (isset($_GET['action'])){
         $category = $this->strim($_GET['category']);
         $category = preg_replace("/_/"," ",$category);
 
-        $catP = $sql->prepare("SELECT deliCategoryID FROM DeliCategories WHERE name=? AND storeID=1");
-        $catID = $sql->getValue($catP, array($category));
+        $catP = $sql->prepare("SELECT deliCategoryID FROM DeliCategories WHERE name=? AND storeID=?");
+        $catID = $sql->getValue($catP, array($category, $this->STORE));
         if (!$catID) {
-            $prep = $sql->prepare("INSERT INTO DeliCategories (name, storeID) VALUES (?, 1)");
-            $res = $sql->execute($prep, array($category));
+            $prep = $sql->prepare("INSERT INTO DeliCategories (name, storeID) VALUES (?, ?)");
+            $res = $sql->execute($prep, array($category, $this->STORE));
             $catID = $sql->insertID();
         }
 
@@ -88,7 +89,7 @@ if (isset($_GET['action'])){
         $model->size($size);
         $model->category($category);
         $model->categoryID($catID);
-        $model->storeID(1);
+        $model->storeID($this->STORE);
         $model->save();
         
         $out = $this->gettable();
@@ -223,8 +224,8 @@ if (isset($_GET['action'])){
         $id = $_GET['id'];
         $newcat = $_GET['newcat'];
 
-        $catP = $sql->prepare("SELECT deliCategoryID FROM DeliCategories WHERE name=? AND storeID=1");
-        $catID = $sql->getValue($catP, array($newcat));
+        $catP = $sql->prepare("SELECT deliCategoryID FROM DeliCategories WHERE name=? AND storeID=?");
+        $catID = $sql->getValue($catP, array($newcat, $this->STORE));
 
         $class = $this->model_class;
         $model = new $class($sql);
@@ -258,7 +259,10 @@ if (isset($_GET['action'])){
 
     protected function currentlyLine()
     {
-        return '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a></h3>';
+        return '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="DIPage.php">Alternate</a>
+            </h3>';
     }
 
     private function gettable($limit=false,$limitCat="ALL")
@@ -279,8 +283,8 @@ if (isset($_GET['action'])){
                case when totalstock='0' then NULL else totalstock end as totalstock,
                price,total,category,id
                    from " . $this->table_name . "
-               WHERE 1=1 AND storeID=1 ";
-        $args = array();
+               WHERE 1=1 AND storeID=? ";
+        $args = array($this->STORE);
         if ($limit){
             $fetchQ .= ' AND category=? ';
             $args[] = $limitCat;

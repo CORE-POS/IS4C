@@ -780,6 +780,7 @@ class EditBatchPage extends FannieRESTfulPage
             DELETE FROM batchList
             WHERE batchID=?
                 AND upc=?');
+        $dbc->startTransaction();
         $bu = new BatchUpdateModel($dbc);
         while ($w = $dbc->fetchRow($res)) {
             $dbc->execute($delP, array($this->id, $w['upc']));
@@ -788,6 +789,23 @@ class EditBatchPage extends FannieRESTfulPage
             $bu->upc($w['upc']);
             $bu->logUpdate($bu::UPDATE_REMOVED);
         }
+        $dbc->commitTransaction();
+
+        $query = "SELECT upc, salePrice FROM batchList WHERE batchID=? AND upc like 'LC%'";
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, array($this->id));
+        $priceP = $dbc->prepare("SELECT MIN(normal_price), MAX(normal_price)
+            FROM upcLike AS u INNER JOIN products AS p ON p.upc=u.upc
+            WHERE u.likeCode=?");
+        $dbc->startTransaction();
+        while ($row = $dbc->fetchRow($res)) {
+            $price = $row['salePrice'];
+            $minMax = $dbc->getRow($priceP, array(substr($row['upc'], 2)));
+            if (abs($price - $minMax[0]) < 0.005 && abs($price - $minMax[1]) < 0.005) {
+                $dbc->execute($delP, array($this->id, $row['upc']));
+            }
+        }
+        $dbc->commitTransaction();
 
         $ret['display'] = $this->showBatchDisplay($this->id);
         echo $this->debugJSON($ret);
@@ -1162,7 +1180,7 @@ HTML;
                 $upcFields .= sprintf('<input type="hidden" name="u[]" value="%s" />', $fetchW['upc']);
                 $upcs .= $fetchW['upc'] . "\n";
                 $conflict = '';
-                if ($dtype != 0) {
+                if ($dtype > 0) {
                     $overlapR = $dbc->execute($overlapP, array_merge(array($fetchW['upc'], $id), $overlap_args));
                     if ($overlapR && $dbc->numRows($overlapR)) {
                         $overlap = $dbc->fetchRow($overlapR);

@@ -105,5 +105,16 @@ function enableLinea(selector, callback) {
         }
     }
     lineaSilent();
+
+    var socketm = document.createElement("input");
+    socketm.id = 'socketm';
+    socketm.type = "hidden";
+    Object.defineProperty(socketm, "value", {
+        get: function() { return this._value; },
+        set: function(v) {
+            lineaBarcode(v, selector, callback);
+        }
+    });
+    document.body.appendChild(socketm);
 }
 

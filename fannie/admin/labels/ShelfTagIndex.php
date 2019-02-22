@@ -29,8 +29,6 @@ class ShelfTagIndex extends FanniePage {
 
     protected $title = 'Fannie - Shelf Tags';
     protected $header = 'Shelf Tags';
-    protected $must_authenticate = True;
-    protected $auth_classes = array('barcodes');
     public $description = '[Shelf Tag Menu] lists shelf tag related pages.';
     public $themed = true;
 
@@ -111,7 +109,7 @@ function printMany(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
 
-        $sel = FormLib::get('layout');
+        $sel = FormLib::get('layout', $this->config->get('DEFAULT_PDF'));
 
         ob_start();
         ?>
@@ -187,6 +185,7 @@ function printMany(){
             <div><a href="CreateTagsByDept.php">Create Tags By Department</a></div>
             <div><a href="CreateTagsByManu.php">Create Tags By Brand</a></div>
             <div><a href="QueueTagsByList.php">Queue Tags by A List</a></div>
+            <div><a href="QueueTagsByLC.php">Queue Tags by Like Code</a></div>
             <div><a href="MovementTagTracker.php">Movement Tag Tracker</a>
                 | <a href="MovementTagTracker.php?id=config">Settings</a></div>
             <div><a href="../../item/handheld/ItemStatusPage.php">Scan a Single Item</a></div>

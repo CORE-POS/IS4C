@@ -124,12 +124,16 @@ class DepartmentMovementReport extends FannieReportPage
                       . DTrans::sumQuantity('t')." as qty,
                       SUM(t.total) AS total,
                       d.dept_no,d.dept_name,s.superID,
-                      v.vendorName AS distributor
+                      v.vendorName AS distributor,
+                      l.likeCode,
+                      l.likeCodeDesc
                       FROM $dlog as t "
                       . DTrans::joinProducts()
                       . DTrans::joinDepartments()
                       . "LEFT JOIN $superTable AS s ON t.department = s.dept_ID
                       LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
+                      LEFT JOIN upcLike AS u ON t.upc=u.upc
+                      LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
                       WHERE $filter_condition
                       AND t.trans_type IN ('I', 'D')
                       AND tdate BETWEEN ? AND ?
@@ -209,6 +213,7 @@ class DepartmentMovementReport extends FannieReportPage
             // MySQL 5.6 doesn't handle correctly
             return array();
         }
+        $likeCodes = FormLib::get('lc') ? array() : false;
         $ret = array();
         while ($row = $dbc->fetchRow($result)) {
             $record = array();
@@ -217,6 +222,40 @@ class DepartmentMovementReport extends FannieReportPage
                 $record[] = date('l', strtotime($record[0]));
                 $record[] = sprintf('%.2f', $row[3]);
                 $record[] = sprintf('%.2f', $row[4]);
+            } elseif ($groupby == 'PLU') {
+                if ($likeCodes !== false && $row['likeCode']) {
+                    $lc = $row['likeCode'];
+                    if (isset($likeCodes[$lc])) {
+                        $likeCodes[$lc][3] += $row['rings'];
+                        $likeCodes[$lc][4] += $row['qty'];
+                        $likeCodes[$lc][5] += $row['total'];
+                    } else {
+                        $likeCodes[$lc] = array(
+                            'LC' . $row['likeCode'],
+                            '', // brand
+                            $row['likeCodeDesc'],
+                            $row['rings'],
+                            $row['qty'],
+                            $row['total'],
+                            $row['dept_no'],
+                            $row['dept_name'],
+                            $row['superID'],
+                            $row['distributor'] == null ? '' : $row['distributor'],
+                        );
+                    }
+                    continue;
+                } else {
+                    $record[] = $row['upc'];
+                    $record[] = $row['brand'];
+                    $record[] = $row['description'];
+                    $record[] = sprintf('%.2f', $row['rings']);
+                    $record[] = sprintf('%.2f', $row['qty']);
+                    $record[] = sprintf('%.2f', $row['total']);
+                    $record[] = $row['dept_no'];
+                    $record[] = $row['dept_name'];
+                    $record[] = $row['superID'];
+                    $record[] = $row['distributor'] == null ? '' : $row['distributor'];
+                }
             } else {
                 for($i=0;$i<$dbc->numFields($result);$i++) {
                     if (preg_match('/^\d+\.\d+$/', $row[$i])) {
@@ -226,6 +265,13 @@ class DepartmentMovementReport extends FannieReportPage
                 }
             }
             $ret[] = $record;
+        }
+        $likeCodes = $this->dekey_array($likeCodes);
+        foreach ($likeCodes as $row) {
+            $row[3] = sprintf('%.2f', $row[3]);
+            $row[4] = sprintf('%.2f', $row[4]);
+            $row[5] = sprintf('%.2f', $row[5]);
+            $ret[] = $row;
         }
 
         return $ret;
@@ -332,12 +378,16 @@ class DepartmentMovementReport extends FannieReportPage
         <div class="form-group">
             <label class="col-sm-4 control-label">Sum movement by?</label>
             <div class="col-sm-8">
-                <select name="sort" class="form-control">
+                <select name="sort" class="form-control"
+                    onchange="if (this.value=='PLU') $('#rollup').show(); else $('#rollup').hide();">
                     <option>PLU</option>
                     <option>Date</option>
                     <option>Department</option>
                 <option>Weekday</option>
                 </select> 
+                <label class="control-label" id="rollup">Rollup Likecodes
+                    <input type=checkbox name=lc id=lc value=1>
+                </label>
             </div>
         </div>
         <div class="form-group">

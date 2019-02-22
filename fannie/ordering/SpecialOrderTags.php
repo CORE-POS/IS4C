@@ -67,7 +67,7 @@ class SpecialOrderTags extends FannieRESTfulPage
             CASE WHEN p.card_no=0 THEN o.lastName ELSE c.LastName END as name,
             CASE WHEN p.card_no=0 THEN o.firstName ELSE c.FirstName END as fname,
             CASE WHEN o.phone is NULL THEN m.phone ELSE o.phone END as phone,
-            discounttype,quantity,
+            discounttype,quantity,o.sendEmails,
             p.mixMatch AS vendorName
             FROM {$TRANS}PendingSpecialOrder AS p
             LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
@@ -150,7 +150,13 @@ class SpecialOrderTags extends FannieRESTfulPage
             $pdf->Cell(50,6,$row['vendorName'],0,1,'L');
             $pdf->SetFont('Arial','','12');
             $pdf->SetX($posX);
-            $pdf->Cell(100,6,"Ph: ".$row['phone'],0,1,'C');
+            $contactType = 'Ph';
+            if ($row['sendEmails'] == 1) {
+                $contactType = 'Email';
+            } elseif ($row['sendEmails'] > 0) {
+                $contactType = 'Text';
+            }
+            $pdf->Cell(100,6,$contactType.": ".$row['phone'],0,1,'C');
             $pdf->SetXY($posX,$posY+85);
             $pdf->Cell(160,10,"Notes: _________________________________");  
             $pdf->SetX($posX);
@@ -158,6 +164,23 @@ class SpecialOrderTags extends FannieRESTfulPage
             $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 
             $pdf = $signage->drawBarcode($upc, $pdf, $posX+10, $posY+95, array('height'=>14,'fontsize'=>8));
+
+            $pdf->SetFont('Arial','','6');
+            //$pdf->Rect($posX+50, $posY+97, 4, 4);
+            $pdf->Line($posX+50, $posY+98, $posX+90, $posY+98);
+            $pdf->SetXY($posX+49, $posY+91);
+            $pdf->Cell(0, 10, 'C / VM / T / E');
+            //$pdf->Rect($posX+50, $posY+107, 4, 4);
+            $pdf->SetXY($posX+49, $posY+94.5);
+            $pdf->SetFont('Arial','','5');
+            $pdf->Cell(0, 10, 'Circle, Date, Initial');
+            $pdf->SetFont('Arial','','6');
+            $pdf->SetXY($posX+49, $posY+100);
+            $pdf->Cell(0, 10, 'C / VM / T / E');
+            $pdf->Line($posX+50, $posY+107, $posX+90, $posY+107);
+            $pdf->SetXY($posX+49, $posY+103.5);
+            $pdf->SetFont('Arial','','5');
+            $pdf->Cell(0, 10, 'Circle, Date, Initial');
 
             /*
             $reorder_url = 'http://wholefoods.coop/reorder/' . $oid . '-' . $tid;
