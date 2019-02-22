@@ -109,7 +109,7 @@ foreach($data as $row){
 */
    // extract & format data
    $price = $row['normal_price'];
-   $desc = strtoupper(substr($row['description'],0,27));
+   //$desc = strtoupper(substr($row['description'],0,27));
    $brand = ucwords(strtolower($row['brand']));
    $pak = $row['units'];
    $size = $row['units'] . "-" . $row['size'];
@@ -132,6 +132,8 @@ foreach($data as $row){
    $res = $dbc->execute($prep, $args);
    $row = $dbc->fetchRow($res);
    $desc = $row['description'];
+   $desc = str_replace("\n", "", $desc);
+   $desc = str_replace("\r", "", $desc);
    $scale = $row['scale'];
    $price = ($scale == 0) ? "$".$price : "";
 
