@@ -181,6 +181,7 @@ class InvCountPage extends FannieRESTfulPage
         $prod->upc($upc);
         $prod->store_id($store);
         $prod->load();
+        $pattern = $prod->scale() ? '\\d*(\\.\\d*)?' : '\\d*';
         if ($info === false) {
             $info['countDate'] = 'n/a';
             $info['count'] = 0;
@@ -199,7 +200,7 @@ class InvCountPage extends FannieRESTfulPage
                     <td>&nbsp;</td>
                 </tr><tr>
                     <td>
-                        <input type="text" pattern="\\d*" class="form-control" 
+                        <input type="text" pattern="' . $pattern . '" class="form-control" 
                             id="count-field" required name="count" />
                         <input type="hidden" name="par" value="' . round($info['par'], 2) . '" />
                     </td>
