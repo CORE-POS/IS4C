@@ -35,6 +35,52 @@ class RpImport extends FannieRESTfulPage
          */
     }
 
+    /**
+     * Assign active status to likecodes based on incoming
+     * Excel data
+     */
+    public function updateActive($data)
+    {
+        $this->connection->query("UPDATE LikeCodeActiveMap SET inUse=0 WHERE likeCode <= 999"); 
+        $upP = $this->connection->prepare("UPDATE LikeCodeActiveMap SET inUse=1 WHERE likeCode=? AND storeID=?");
+        $this->connection->startTransaction();
+        $map = new LikeCodeActiveMapModel($this->connection);
+        foreach ($data as $lc => $info) {
+            switch (strtoupper(trim($info['active']))) {
+                case 'ACTIVEHD':
+                    $map->likeCode($lc);
+                    $map->storeID(1);
+                    $map->inUse(1);
+                    $map->save();
+                    $map->storeID(2);
+                    $map->save();
+                    break;
+                case 'ACTIVEH':
+                    $map->likeCode($lc);
+                    $map->storeID(1);
+                    $map->inUse(1);
+                    $map->save();
+                    break;
+                case 'ACTIVED':
+                    $map->likeCode($lc);
+                    $map->storeID(2);
+                    $map->inUse(1);
+                    $map->save();
+                    break;
+                case '0': // normal disabled status
+                    break;
+                default:
+                    echo "Unknown status: " . $info['active'] . "\n";
+            }
+        }
+        $this->connection->commitTransaction();
+    }
+
+    public function updateSkuMap($data)
+    {
+
+    }
+
     public function cliWrapper()
     {
         $out = $this->post_view();
@@ -170,6 +216,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
         $cmd = 'java -cp jxl-1.0-SNAPSHOT-jar-with-dependencies.jar coop.wholefoods.jxl.App -i /tmp/RP.xlsm -o /tmp/';
         exec($cmd);
         $dir = opendir('/tmp/');
+        $otherData = array();
         while (($file=readdir($dir)) !== false) {
             if ($file == 'Comparison.tsv') {
                 $fp = fopen('/tmp/Comparison.tsv', 'r');
@@ -183,6 +230,20 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                         $input .= $info . "\n";
                     }
 
+                    $lc = isset($data[8]) && is_numeric($data[8]) && $data[8] ? $data[8] : false;
+                    if ($lc) {
+                        if (!isset($otherData[$lc])) {
+                            $otherData[$lc] = array();
+                        }
+                        $otherData[$lc]['active'] = $data[10];
+                        $otherData[$lc]['primary'] = $data[34];
+                        $otherData[$lc]['alberts'] = $data[12];
+                        $otherData[$lc]['cpw'] = $data[13];
+                        $otherData[$lc]['rdw'] = $data[14];
+                        $otherData[$lc]['unfi'] = $data[15];
+                        $otherData[$lc]['rdwSKU'] = (int)$data[23];
+                    }
+
                 }
                 $page = new RpImport();
                 $logger = FannieLogger::factory();
@@ -194,6 +255,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                 $form->in = $input;
                 $page->setForm($form);
                 $page->cliWrapper();
+                $page->updateActive($otherData);
             }
 
             if (substr($file, -4) == '.tsv') {
