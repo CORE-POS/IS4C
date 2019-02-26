@@ -112,8 +112,19 @@ HTML;
         $queues->load();
         $options = $queues->toOptions(6);
 
-        $likeCodes = new LikeCodesModel($dbc);
-        $lOpts = $likeCodes->toOptions();
+        $likeR = $dbc->query("SELECT l.likeCode, l.likeCodeDesc, MAX(m.inUse) AS inUse
+            FROM likeCodes AS l
+                LEFT JOIN LikeCodeActiveMap AS m ON l.likeCode=m.likeCode
+            GROUP BY l.likeCode, l.likeCodeDesc
+            ORDER BY l.likeCode");
+        $lOpts = '';
+        while ($row = $dbc->fetchRow($likeR)) {
+            $lOpts .= sprintf('<option value="%d">%d %s</option>',
+                $row['likeCode'],
+                $row['likeCode'],
+                $row['likeCodeDesc'] . (!($row['inUse']) ? ' (inactive)' : '')
+            );
+        }
 
         $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
