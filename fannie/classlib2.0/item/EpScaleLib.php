@@ -48,8 +48,25 @@ class EpScaleLib
         }
 
         // Always requested "add" might work better. Setting description
-        // isn't reliable when "updating" an item that doens't actually
+        // isn't reliable when "updating" an item that doesn't actually
         // exist on the other side of processing
+        /* ePlum nominally supports both an "add" and an "update"
+         * operation but the latter is not always reliable.
+         * Specifically, ePlum stores multiple descriptions where
+         * 'Description 1' is the first line of text, 'Description 2'
+         * is the second line, etc. Specifying two descriptions
+         * in an "add" command always works but specifying two
+         * descriptions in an "update" command sometimes ends
+         * up ignoring the second description.
+         *
+         * CORE doesn't only support ePlum; it also still supports
+         * Hobart's Data GateWeigh which also has separate
+         * "add and "update" operations. The goal of the current
+         * setup is to make it so you can feed the same '$items'
+         * data into both scale communication layers and generally
+         * have ePlum almost always use "add" operations but have
+         * Hobart switch appropriately between the two operations.
+         */
         if ($asNew || $item_info['RecordType'] == 'WriteOneItem') {
             $line = self::getAddItemLine($item_info, $labelInfo) . $scale_fields;
         } else {
@@ -257,10 +274,6 @@ class EpScaleLib
         $config = \FannieConfig::factory(); 
         if (!isset($items[0])) {
             $items = array($items);
-        }
-        $new_item = false;
-        if (isset($items[0]['RecordType']) && $items[0]['RecordType'] == 'WriteOneItem') {
-            $new_item = true;
         }
         $header_line = '';
         $file_prefix = ServiceScaleLib::sessionKey();
