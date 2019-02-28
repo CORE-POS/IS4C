@@ -31,7 +31,7 @@ if (!class_exists('FannieAPI')) {
     Name matching is important
 */
 
-class WFC_Deli_Narrow extends FpdfWithBarcode
+class WFC_Deli_Narrow_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     function setTagDate($str){
@@ -47,7 +47,7 @@ class WFC_Deli_Narrow extends FpdfWithBarcode
 
 function WFC_Deli_Narrow($data,$offset=0){
 
-$pdf=new WFC_Deli_Narrow('P','mm','Letter'); //start new instance of PDF
+$pdf=new WFC_Deli_Narrow_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $pdf->SetFillColor(0, 0, 0);
