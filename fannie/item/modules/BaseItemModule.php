@@ -924,6 +924,7 @@ HTML;
                 $model->scaleprice(0);
                 $model->inUse(1);
                 $model->created(date('Y-m-d H:i:s'));
+                $model->last_sold(null);
             }
 
             $taxes = $this->formNoEx('tax', array());
