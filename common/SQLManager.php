@@ -1858,6 +1858,7 @@ class SQLManager
         'pdo_mysql' => 'COREPOS\common\sql\MysqlAdapter',
         'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
         'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
+        'mssqlnative' => 'COREPOS\common\sql\MssqlAdapter',
         'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
         'postgres9' => 'COREPOS\common\sql\PgsqlAdapter',
         'pdo_pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
@@ -1872,6 +1873,7 @@ class SQLManager
         if (isset($this->adapter_map[$type])) {
             $class = $this->adapter_map[$type];
             $this->adapters[$type] = new $class();
+            return $this->adapters[$type];
         }
 
         return $this->getAdapter('mysqli');
