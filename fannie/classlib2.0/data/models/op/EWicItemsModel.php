@@ -33,7 +33,7 @@ class EWicItemsModel extends BasicModel
     protected $columns = array(
     'eWicItemID' => array('type'=>'INT', 'index'=>true, 'increment'=>true),
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
-    'upcCheck' => array('type'=>'VARCHAR(13)'),
+    'upcCheck' => array('type'=>'VARCHAR(17)'),
     'alias' => array('type'=>'VARCHAR(13)'),
     'eWicCategoryID' => array('type'=>'INT'),
     'eWicSubCategoryID' => array('type'=>'INT'),
