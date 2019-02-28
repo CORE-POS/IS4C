@@ -170,7 +170,7 @@ class DIPage2 extends FannieRESTfulPage
         <div class="form-group">
             <button class="btn btn-default" type="submit">Add Category</button>
         </div>
-    </div>
+    </form></div>
 </div>
 <div class="panel panel-default">
     <div class="panel panel-heading">Rename Category</div>
@@ -190,7 +190,7 @@ class DIPage2 extends FannieRESTfulPage
         <div class="form-group">
             <button class="btn btn-default" type="submit">Rename Category</button>
         </div>
-    </div>
+    </form></div>
 </div>
 HTML;
     }

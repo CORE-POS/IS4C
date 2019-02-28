@@ -93,7 +93,7 @@ a[type="submit"] {
     href="http://192.168.1.2/scancoord/ScannieV2/content/Scanning/AuditScanner/AuditScanner.php" />Audie</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
-    href="../DeliInventory/DIScanner.php" />Deli Inventory</a>
+    href="../DeliInventory/DIScanner.php" />Prepared Inventory</a>
 <hr />
 {$wfcTools[1]}
 </p>
