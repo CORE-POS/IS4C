@@ -26,7 +26,9 @@ use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\SuspendLib;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use COREPOS\pos\lib\ReceiptBuilding\TenderReports\TenderReport;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -79,6 +81,15 @@ class adminlist extends NoInputCorePage
                     return false;
                 }
                 return true;
+            case 'SURVEY':
+                $receipt = ReceiptLib::printReceiptHeader(date('Y-m-d H:i:s'), '1-2-3');
+                $mod = new SurveyReceiptMessage();
+                $mod->setPrintHandler(PrintHandler::factory(CoreLocal::get('ReceiptDriver')));
+                $receipt .= $mod->message(1, '1-2-3');
+                $receipt = ReceiptLib::cutReceipt($receipt, false);
+                ReceiptLib::writeLine($receipt);
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return false;
             default:
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
@@ -158,6 +169,9 @@ class adminlist extends NoInputCorePage
         <?php if ($this->security >= 30){ ?>
             <option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
             <option value='UNDO'><?php echo _('Undo Transaction'); ?>
+        <?php if (class_exists('SurveyReceiptMessage')) { ?>
+            <option value='SURVEY'><?php echo _('Print Survey Receipt'); ?>
+        <?php } ?>
         <?php } ?>
         <?php if ($this->session->get('store') == 'wfc') { ?>
             <option value="EOD">End of Day Report</option>
