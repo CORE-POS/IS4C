@@ -24,7 +24,7 @@ class SurveyReceiptMessage extends ReceiptMessage
         $receipt .= $PRINT->TextStyle(true);
         $receipt .= $PRINT->centerString("Tell us about today's shopping trip.") . "\n";
         $receipt .= $PRINT->centerString('Visit '
-                . $PRINT->TextStyle(true, true)
+                . $PRINT->TextStyle(false, true)
                 . 'coopslisten.smg.com'
                 . $PRINT->TextStyle(true, false)
         ) . "\n";
