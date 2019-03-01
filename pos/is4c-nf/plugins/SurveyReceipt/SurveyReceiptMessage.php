@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
 
 class SurveyReceiptMessage extends ReceiptMessage
@@ -67,6 +68,8 @@ class SurveyReceiptMessage extends ReceiptMessage
             $img = $PRINT->RenderBitmapFromFile($qrBMP);
             $receipt .= "\n" . $img . "\n\n";
         }
+
+        TransRecord::addLogRecord(array('upc'=>'CXSURVEY', 'description'=>$ref));
 
         return $receipt;
     }
