@@ -43,6 +43,7 @@ class PurchasingSearchPage extends FannieRESTfulPage
 
         $start = FormLib::get('date1');
         $end = FormLib::get('date2');
+        $store = FormLib::get('store');
 
         $query = 'SELECT o.placedDate, o.orderID, o.vendorInvoiceID,
                 v.vendorName, i.sku, i.internalUPC, i.description,
@@ -54,12 +55,18 @@ class PurchasingSearchPage extends FannieRESTfulPage
         if ($start !== '' && $end !== '') {
             $query .= ' AND o.placedDate BETWEEN ? AND ? ';
         }
+        if ($store) {
+            $query .= ' AND o.storeID=? ';
+        }
         $query .= 'ORDER BY o.placedDate DESC';
 
         $args = array(BarcodeLib::padUPC($this->id), '%'.$this->id);
         if ($start !== '' && $end !== '') {
             $args[] = $start . ' 00:00:00';
             $args[] = $end . ' 23:59:59';
+        }
+        if ($store) {
+            $args[] = $store;
         }
 
         $prep = $dbc->prepare($query);
@@ -99,6 +106,7 @@ class PurchasingSearchPage extends FannieRESTfulPage
 
     public function get_view()
     {
+        $stores = FormLib::storePicker();
         $ret = '<form class="form-horizontal" action="PurchasingSearchPage.php" method="get">';
         $ret .= '<div class="row">';
         $ret .= '<div class="col-sm-6">';
@@ -106,6 +114,11 @@ class PurchasingSearchPage extends FannieRESTfulPage
         $ret .= '<div class="form-group">';
         $ret .= '<label for="upcsku" class="col-sm-3 control-label">UPC or SKU</label>';
         $ret .= '<div class="col-sm-9"><input class="form-control" type="text" id="upcsku" name="id" /></div>';
+        $ret .= '</div>';
+
+        $ret .= '<div class="form-group">';
+        $ret .= '<label class="col-sm-3 control-label">Store</label>';
+        $ret .= '<div class="col-sm-9">' . $stores['html'] . '</div>';
         $ret .= '</div>';
 
         $ret .= '<div class="form-group">';
