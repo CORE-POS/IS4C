@@ -143,6 +143,7 @@ foreach($data as $row){
    // basically just set cursor position
    // then write text w/ Cell
    $desc2 = "";
+   $descFontSize = 13;
    if (strlen($desc) > 25) {
         $temp = $desc;
         // find the end of the current word
@@ -158,7 +159,7 @@ foreach($data as $row){
                 // do nothing
             }
         }
-        $descFontSize = 14;
+        $descFontSize = 13;
         if ($splitpos > 25) 
             $descFontSize = 12;
 
@@ -196,18 +197,18 @@ foreach($data as $row){
    $pdf->SetFillColor(155, 155, 155);
    // horizontal lines
    $pdf->SetXY($x+5,$y+30);
-   $pdf->Cell(5,0.1,'',0,0,'C',true);
+   $pdf->Cell(5,0.2,'',0,0,'C',true);
    $pdf->SetXY($x+60,$y+30);
-   $pdf->Cell(5,0.1,'',0,0,'C',true);
+   $pdf->Cell(5,0.2,'',0,0,'C',true);
    $pdf->SetXY($x,$y);
-   $pdf->Cell(5,0.1,'',0,0,'C',true);
+   $pdf->Cell(5,0.2,'',0,0,'C',true);
    $pdf->SetXY($x+60,$y);
-   $pdf->Cell(5,0.1,'',0,0,'C',true);
+   $pdf->Cell(5,0.2,'',0,0,'C',true);
    // vertical lines
    $pdf->SetXY($x,$y);
-   $pdf->Cell(0.1,5,'',0,0,'C',true);
+   $pdf->Cell(0.2,5,'',0,0,'C',true);
    $pdf->SetXY($x,$y+64);
-   $pdf->Cell(0.1,5,'',0,0,'C',true);
+   $pdf->Cell(0.2,5,'',0,0,'C',true);
 
    $pdf->SetFillColor(0, 0, 0);
 
