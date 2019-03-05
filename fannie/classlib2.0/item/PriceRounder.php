@@ -57,6 +57,7 @@ class PriceRounder
         $endingCaps = array(0.99, 2.99, 5.99, 9.99, 9999.00);
         // special round defines when to round down by $endingCaps
         $specialRound = array(
+            0 => 0,
             1 => 0.16,
             2 => 0.16,
             3 => 0.30,
@@ -96,7 +97,7 @@ class PriceRounder
         if ($price == 10.99) {
             $price = 9.99;
         }
-        return $price;
+        return substr($price, 0, 5);
     }
 
 }
