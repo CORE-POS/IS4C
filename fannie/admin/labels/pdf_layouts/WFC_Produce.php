@@ -120,7 +120,7 @@ foreach($data as $row) {
 
     $price = $row['normal_price'];
     $desc = $row['description'];
-    if (isset($names[$row['upc']])) {
+    if (!isset($row['signCount']) && isset($names[$row['upc']])) {
         $desc = $names[$row['upc']];
     }
 
