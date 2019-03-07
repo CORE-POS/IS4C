@@ -31,7 +31,7 @@ class RoundUpReport extends FannieReportPage
     public $description = '[Round Up Report] shows donation totals from round-up events';
     public $report_set = 'Cashiering';
 
-    protected $report_headers = array('Emp#', 'Name', '# of Donations', '$ Total');
+    protected $report_headers = array('Emp#', 'Name', '# of Donations', '$ Total', '# of Transactions', '%');
     protected $title = "Fannie : Round Up Report";
     protected $header = "Round Up Report";
     protected $required_fields = array('date1', 'date2');
@@ -50,6 +50,17 @@ class RoundUpReport extends FannieReportPage
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
+        $transP = $dbc->prepare("
+            SELECT COUNT(*) AS transactions
+            FROM " . FannieDB::fqn('transactionSummary', 'plugin:WarehouseDatabase') . " AS d
+            WHERE date_id BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 'd') . "
+                AND emp_no=?
+                AND retailTotal > 0
+                AND memType <> 4");
+        $id1 = date('Ymd', strtotime($date1));
+        $id2 = date('Ymd', strtotime($date2));
+
         $query = $dbc->prepare("
             SELECT d.emp_no,
                 e.FirstName,
@@ -66,11 +77,14 @@ class RoundUpReport extends FannieReportPage
         $res = $dbc->execute($query, array($date1 . ' 00:00:00', $date2 . ' 23:59:59', $store));
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
+            $transactions = $dbc->getValue($transP, array($id1, $id2, $store, $row['emp_no']));
             $data[] = array(
                 $row['emp_no'],
                 $row['FirstName'],
                 $row['qty'],
                 sprintf('%.2f', $row['ttl']),
+                $transactions,
+                sprintf('%.2f', ($row['qty'] / $transactions) * 100),
             );
         }
 
@@ -79,13 +93,14 @@ class RoundUpReport extends FannieReportPage
 
     public function calculate_footers($data)
     {
-        $sums = array(0, 0);
+        $sums = array(0, 0, 0);
         foreach ($data as $row) {
             $sums[0] += $row[2];
             $sums[1] += $row[3];
+            $sums[2] += $row[4];
         }
 
-        return array('Total', '', $sums[0], number_format($sums[1], 2));
+        return array('Total', '', $sums[0], number_format($sums[1], 2), number_format($sums[2], 2), sprintf('%.2f', ($sums[0] / $sums[2]) * 100));
     }
 
     public function form_content()
