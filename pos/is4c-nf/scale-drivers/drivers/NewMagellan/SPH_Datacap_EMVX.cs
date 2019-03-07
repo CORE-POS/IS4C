@@ -58,6 +58,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private bool emv_reset;
     private bool always_reset = false;
     private bool emv_active;
+    private bool reverse_servers = false;
     private Object emvLock = new Object();
     private string terminalID = "";
 
@@ -472,6 +473,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             XmlDocument request = new XmlDocument();
             request.LoadXml(xml);
             var IPs = request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml.Split(new Char[]{','}, StringSplitOptions.RemoveEmptyEntries);
+            if (this.reverse_servers) {
+                Array.Reverse(IPs);
+            }
             string result = "";
             foreach (string IP in IPs) {
                 // try request with an IP
@@ -519,6 +523,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     */
                     if (origin.InnerXml == "Client" && return_code.InnerXml == "003006") {
                         this.LogMessage("Retry on client 3006 (epay: " + IP + ")");
+                        this.reverse_servers = !this.reverse_servers;
                     } else if (origin.InnerXml == "Server" && return_code.InnerXml == "004003") {
                         this.LogMessage("Retry on server 4003 (epay: " + IP + ")");
                     } else {
