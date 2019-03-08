@@ -85,7 +85,7 @@ class NewClassPage extends FannieRESTfulPage
             if ($k === 5) {
                 $p->store_id(1);
             }
-            if (!$saved[] = $p->saveAllStores()) {
+            if (!$saved[] = $p->save()) {
                 $error+=$k;
             }
             
@@ -219,7 +219,7 @@ HTML;
             </div>
             <div class="form-group">
                 <label for="sellonline">Sell Online</label>
-                <input type="checkbox" name="sellonline" value="1" checked="checked"/>
+                <input type="checkbox" name="sellonline" value="1" checked=""/>
             </div>
         </div>
        
