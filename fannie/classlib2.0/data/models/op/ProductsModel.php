@@ -385,7 +385,7 @@ it won\'t *do* anything.
             return false;
         }
 
-        $stores = new StoresModel($dbc);
+        $stores = new StoresModel($this->connection);
         $ret = true;
         foreach ($stores->find() as $store) {
             $this->store_id($store->storeID());
