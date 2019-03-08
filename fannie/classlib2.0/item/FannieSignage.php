@@ -723,6 +723,7 @@ class FannieSignage
         foreach (FormLib::get('exclude', array()) as $e) {
             $excludes[] = $e;
         }
+        $hasExcludes = FormLib::get('exclude', false) !== false ? true : false;
 
         $url = FannieConfig::factory()->get('URL');
         $ret = '<table class="table tablesorter tablesorter-core" id="printSignTable">';
@@ -746,6 +747,9 @@ class FannieSignage
             }
             if (isset($overrides[$item['upc']]) && $overrides[$item['upc']]['stdOrigin'] != '') {
                 $item['originID'] = $overrides[$item['upc']]['stdOrigin'];
+            }
+            if (!$hasExcludes && isset($item['discountType']) && $item['discountType'] == 0 && $item['normal_price'] == $item['nonSalePrice']) {
+                $excludes[] = $item['upc'];
             }
             $item['custOrigin'] = isset($overrides[$item['upc']]['custOrigin']) ? $overrides[$item['upc']]['custOrigin'] : '';
             $oselect = '<select name="update_origin[]" class="FannieSignageField form-control originField"><option value="0"></option>'; 
