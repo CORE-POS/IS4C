@@ -58,6 +58,10 @@ var full = (function ($) {
             }
             var cur = $('#lastQty').val();
             var qty = $('#newQty').val();
+            if (qty.length > 5) {
+                $('#newQty').val('');
+                return;
+            }
             var next = (cur*1) + (qty*1);
             $('#curQty').html(next);
             $.ajax({
