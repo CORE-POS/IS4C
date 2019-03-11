@@ -135,6 +135,11 @@ foreach($data as $row) {
         $pdf->Cell($width,4,'ORGANIC',0,1,'L');
         $descY += 4;
         $maxLines = 1;
+    } else if ($row['upc'] === '' && strtolower($row['brand']) == 'organic') {
+        $pdf->SetFont($font,'B',10);  //Set the font
+        $pdf->Cell($width,4,'ORGANIC',0,1,'L');
+        $descY += 4;
+        $maxLines = 1;
     }
     $trySize = 12;
     $pdf->SetFillColor(0xff, 0xff, 0xff);
@@ -159,6 +164,9 @@ foreach($data as $row) {
     if (isset($origins[$row['upc']])) {
         $pdf->SetXY($full_x,$full_y+24);
         $pdf->Cell($width,4,strtoupper($origins[$row['upc']]),0,1,'L');
+    } else if ($row['upc'] === '' && isset($row['originName']) && strlen($row['originName']) > 0) {
+        $pdf->SetXY($full_x,$full_y+24);
+        $pdf->Cell($width,4,strtoupper($row['originName']),0,1,'L');
     }
 
     $pdf->SetFont($font,'B',30);  //change font size

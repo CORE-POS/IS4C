@@ -101,6 +101,10 @@ class ManualSignsPage extends FannieRESTfulPage
         }
 
         $class = FormLib::get('signmod');
+        if (substr($class, 0, 7) == "Legacy:") {
+            COREPOS\Fannie\API\item\signage\LegacyWrapper::setWrapped(substr($class, 7));
+            $class = 'COREPOS\\Fannie\\API\\item\\signage\\LegacyWrapper';
+        }
         $obj = new $class($items, 'provided');
         $obj->drawPDF();
 
@@ -117,7 +121,19 @@ class ManualSignsPage extends FannieRESTfulPage
         $ret = '';
         $ret .= '<form target="_blank" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        $enabled = $this->config->get('ENABLED_SIGNAGE');
+        if (count($enabled) > 0) {
+            $mods = array_filter($mods, function ($i) use ($enabled) {
+                return in_array($i, $enabled) || in_array(str_replace('\\', '-', $i), $enabled);
+            });
+        }
         sort($mods);
+        $tagEnabled = $this->config->get('ENABLED_TAGS');
+        foreach (COREPOS\Fannie\API\item\signage\LegacyWrapper::getLayouts() as $l) {
+            if (in_array($l, $tagEnabled) && count($tagEnabled) > 0) {
+                $mods[] = 'Legacy:' . $l;
+            }
+        }
 
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<label>Layout</label>: 
