@@ -75,6 +75,18 @@ var full = (function ($) {
         console.log("Current: " + $('#upc').val());
     };
 
+    mod.incDec = function(amt) {
+        var cur = $('#newQty').val();
+        var next = (cur*1) + amt;
+        $('#newQty').val(next);
+        $('#newQty').trigger('keyup');
+    };
+
+    mod.resetQty = function() {
+        $('#newQty').val('');
+        $('#newQty').trigger('keyup');
+    };
+
     return mod;
 
 })(jQuery);

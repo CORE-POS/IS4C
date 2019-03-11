@@ -127,11 +127,12 @@ class SaFullPage extends FannieRESTfulPage
         $prep = $dbc->prepare("
             SELECT p.upc, p.description,
                 s.quantity, s.datetime,
-                u.likeCode
+                u.likeCode, v.units
             FROM products AS p
                 LEFT JOIN " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . " AS s
                     ON p.upc=s.upc AND s.clear=0 AND s.section=? AND s.storeID=?
                 LEFT JOIN upcLike AS u ON p.upc=u.upc
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
             WHERE p.store_id=1
                 AND p.upc=?");
         $this->id = BarcodeLib::padUPC($this->id);
@@ -149,6 +150,19 @@ class SaFullPage extends FannieRESTfulPage
         }
         if (!$row['quantity']) {
             $row['quantity'] = 0;
+        }
+        $buttons = '';
+        if ($row['units'] > 1) {
+            $buttons = sprintf('<div class="buttons">
+               <button type="button" onclick="full.incDec(%d);" class="btn btn-lg btn-success">+%d</button> 
+               <button type="button" onclick="full.incDec(%d);" class="btn btn-lg btn-danger">-%d</button> 
+               <button type="button" onclick="full.incDec(1);" class="btn btn-lg btn-success">+1</button> 
+               <button type="button" onclick="full.incDec(-1);" class="btn btn-lg btn-danger">-1</button> 
+                <button type="button" onclick="full.resetQty();" class="btn btn-lg btn-info">Reset</button>
+                </div>',
+                $row['units'], $row['units'],
+                $row['units'] * -1, $row['units']
+            );
         }
 
         echo <<<HTML
@@ -170,6 +184,7 @@ class SaFullPage extends FannieRESTfulPage
     <input type="hidden" name="section" value="{$section}" />
     <input type="hidden" name="super" value="{$super}" />
 </div>
+{$buttons}
 HTML;
 
         return false;
@@ -192,7 +207,7 @@ CSS;
         $floor = $section ? 'checked' : 0;
         $model = new MasterSuperDeptsModel($this->connection);
         $opts = $model->toOptions($super);
-        $this->addScript('js/full.js?date=20181227');
+        $this->addScript('js/full.js?date=20190311');
         $this->addScript('../../../item/autocomplete.js?date=20181211');
         $ws = $FANNIE_URL . '../../../ws/';
         $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
