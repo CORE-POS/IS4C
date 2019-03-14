@@ -239,6 +239,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
         $con = FannieDB::get($FANNIE_PLUGIN_SETTINGS['WarehouseDatabase']);
         foreach($models as $class){
             if ($all === 1 && $class == "MemberSummaryModel") continue;
+            if ($all === 1 && $class == "SmoothedModel") continue;
             echo "Reloading data for $class\n";
             if (!class_exists($class))
                 include(dirname(__FILE__).'/models/'.$class.'.php');
