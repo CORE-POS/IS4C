@@ -118,3 +118,26 @@ function enableLinea(selector, callback) {
     document.body.appendChild(socketm);
 }
 
+function lineaBeep() {
+
+    if (typeof WebBarcode != 'undefined') {
+        WebBarcode.emitTones([{ "tone": 2000, "duration": 500 }]);
+    }
+
+    if (typeof WebHub != 'undefined') {
+        WebHub.Notify.beep();
+    }
+}
+
+function lineaVibrate() {
+    
+    if (typeof WebBarcode != 'undefined') {
+        WebBarcode.vibrateDevice();
+    }
+
+    if (typeof WebHub != 'undefined') {
+        WebHub.Notify.vibrate();
+    }
+}
+
+
