@@ -307,7 +307,7 @@ class MailChimpTask extends FannieTask
         } elseif ($this->meminfo->email_1() != $email) {
             $update['EMAIL'] = $this->meminfo->email_1();
             $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
-            $this->meminfo->email_1(), $email), FannieLogger::INFO);
+                $this->meminfo->email_1(), $email), FannieLogger::ALERT);
         }
         if (strtoupper(trim($this->custdata->FirstName())) != strtoupper($fname)) {
             $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
