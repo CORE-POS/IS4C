@@ -28,11 +28,11 @@ if (!class_exists('FannieAPI')) {
 
 class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
-    public $title = "Fannie - Alberts Prices";
-    public $header = "Upload Alberts price file";
+    public $title = "Fannie - Alberts Produce Prices";
+    public $header = "Upload Alberts Produce price file";
     public $themed = true;
 
-    public $description = '[Alberts Catalog Import] specialized vendor import tool. Column choices
+    public $description = '[Alberts Produce Catalog Import] specialized vendor import tool. Column choices
     default to Alberts price file layout.';
 
     protected $preview_opts = array(
@@ -63,7 +63,7 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         ),
     );
 
-    protected $skip_first = 26;
+    protected $skip_first = 31;
 
     protected $use_splits = false;
     protected $use_js = false;
@@ -74,7 +74,7 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected function getVendorID()
     {
         $idP = $this->connection->prepare("SELECT vendorID FROM vendors WHERE vendorName=? ORDER BY vendorID");
-        $vid = $this->connection->getValue($idP, array('ALBERTS'));
+        $vid = $this->connection->getValue($idP, array('Alberts (Produce)'));
 
         return $vid !== false ? $vid : $this->presetID;
     }
@@ -183,6 +183,9 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             }
         }
         $dbc->commitTransaction();
+
+        $clearP = $dbc->prepare("DELETE FROM vendorItems WHERE vendorID=? AND modified < ?");
+        $dbc->execute($clearP, array($VENDOR_ID, date('Y-m-d')));
 
         $updateModel = new ProdUpdateModel($dbc);
         $updateModel->logManyUpdates($updated_upcs, ProdUpdateModel::UPDATE_EDIT);
