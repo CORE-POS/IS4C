@@ -155,8 +155,8 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
     protected function get_id_view()
     {
         $items = array(
-            25 => $this->getItems(25),
-            28 => $this->getItems(28),
+            293 => $this->getItems(293),
+            292 => $this->getItems(292),
             136 => $this->getItems(136),
         );
         $store = FormLib::get('store');
@@ -231,7 +231,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $bestID = false;
             $skus = $map[$lc]['skus'];
             foreach (array_keys($map[$lc]['skus']) as $vendor) {
-                if ($skus[$vendor]['cost'] < $best && $skus[$vendor]['vendorDept'] == 999999) {
+                if ($skus[$vendor]['cost'] < $best) {
                     $best = $skus[$vendor]['cost'];
                     $bestID = $vendor;
                 }
@@ -254,15 +254,12 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 <input type=\"checkbox\" {$checkMulti} {$internalDisable} class=\"pull-right\" 
                 onchange=\"skuMap.setMulti({$lc}, this.checked);\"
                 title=\"Blend Costs\"/></td>";
-            foreach (array(28, 25, 136) as $vID) {
+            foreach (array(292, 293, 136) as $vID) {
                 if (isset($data['skus'][$vID])) {
                     $css = '';
                     $disableRadio = '';
                     if (isset($data['skus'][$vID]['best'])) {
                         $css = 'success';
-                    } elseif ($data['skus'][$vID]['vendorDept'] != 999999) {
-                        $css = 'danger';
-                        $disableRadio = 'disabled';
                     }
                     $checkRadio = $vID == $data['vendorID'] ? 'checked' : '';
                     $tableBody .= "<td class=\"skuField{$vID} {$css}\"><input type=\"text\" name=\"sku[]\" 
@@ -284,13 +281,13 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         }
 
         $this->addScript('skuMap.js?date=20180228');
-        foreach (array(25, 28, 136) as $vID) {
+        foreach (array(292, 293, 136) as $vID) {
             $this->addOnloadCommand("skuMap.autocomplete('.sku-field$vID', $vID);");
             $this->addOnloadCommand("skuMap.unlink('.sku-field$vID', $vID);");
         }
-        $updateP = $this->connection->prepare('SELECT MIN(modified) FROM vendorItems WHERE vendorDept=999999 AND vendorID=?');
-        $alb = $this->connection->getValue($updateP, array(28));
-        $cpw = $this->connection->getValue($updateP, array(25));
+        $updateP = $this->connection->prepare('SELECT MIN(modified) FROM vendorItems WHERE vendorID=?');
+        $alb = $this->connection->getValue($updateP, array(292));
+        $cpw = $this->connection->getValue($updateP, array(293));
         $rdw = $this->connection->getValue($updateP, array(136));
 
         return <<<HTML
