@@ -363,11 +363,12 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         }
         $ret .= '</select>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="number" title="Number of copies" name="repeats" class="form-control" value="1" />';
+        $ret .= '<input type="number" title="Number of copies" style="width: 6em;" name="repeats" class="form-control" value="1" />';
 
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="submit" name="pdf" value="Print"
                     class="btn btn-default">Print</button>';
+        $ret .= '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="offset" value="1" /> Offset</label>';
         $ret .= '</div>';
         $ret .= '<hr />';
 
