@@ -34,7 +34,7 @@ class DDDReport extends FannieReportPage
 
     protected $title = "Fannie : DDD Report";
     protected $header = "DDD Report";
-    protected $report_headers = array('Date','UPC','Brand','Item','Dept#','Dept Name','Account#', 'Super Dept', 'Qty','Cost $','Retail $','Reason', 'Loss');
+    protected $report_headers = array('Date','UPC','LC','Brand','Item','Dept#','Dept Name','Account#', 'Super Dept', 'Qty','Cost $','Retail $','Reason', 'Loss');
     protected $required_fields = array('date1', 'date2');
 
     protected $sort_direction = 1;
@@ -105,11 +105,13 @@ class DDDReport extends FannieReportPage
                     s.description AS shrinkReason,
                     MAX(" . ($superTable == 'MasterSuperDepts' ? 'm.super_name' : "''") . ") AS super_name,
                     MAX(e.salesCode) AS salesCode,
-                    MAX(d.charflag) AS charflag
+                    MAX(d.charflag) AS charflag,
+                    MAX(u.likeCode) AS lc
                   FROM {$dtrans} AS d
                     LEFT JOIN departments AS e ON d.department=e.dept_no
                     LEFT JOIN ShrinkReasons AS s ON d.numflag=s.shrinkReasonID
                     LEFT JOIN {$superTable} AS m ON d.department=m.dept_ID
+                    LEFT JOIN upcLike AS u ON d.upc=u.upc
                     " . DTrans::joinProducts('d') . "
                   WHERE trans_status = 'Z'
                     AND trans_type IN ('D', 'I')
@@ -145,6 +147,7 @@ class DDDReport extends FannieReportPage
         return array(
             date('Y-m-d', mktime(0, 0, 0, $row['month'], $row['day'], $row['year'])),
             $row['upc'],
+            $row['lc'] ? $row['lc'] : '',
             $row['brand'],
             $row['description'],
             $row['department'],
@@ -175,7 +178,7 @@ class DDDReport extends FannieReportPage
             sprintf('%s', number_format($sumQty,2)),
             sprintf('$ %s', number_format($sumCost,2)),
             sprintf('$ %s', number_format($sumRetail,2)),
-            '', null
+            '', null, null
         );
     }
     public function form_content()
