@@ -76,9 +76,146 @@ class RpImport extends FannieRESTfulPage
         $this->connection->commitTransaction();
     }
 
-    public function updateSkuMap($data)
+    public function updateVendors($data)
     {
+        $vendLC = new VendorLikeCodeMapModel($this->connection);
+        $activeP = $this->connection->prepare("SELECT storeID FROM LikeCodeActiveMap WHERE inUse=1 AND likeCode=?");
+        $catP = $this->connection->prepare("
+            SELECT rpOrderCategoryID
+            FROM likeCodes AS l
+                LEFT JOIN RpOrderCategories AS c ON l.sortRetail=c.name
+            WHERE l.likeCode=?");
+        $catP2 = $this->connection->prepare("SELECT rpOrderCategoryID FROM RpOrderCategories WHERE name=?");
+        $lcSortP = $this->connection->prepare("UPDATE likeCodes SET sortRetail=? WHERE likeCode=?");
+        $makeP = $this->connection->prepare("INSERT INTO RpOrderCategories (name) VALUES (?)");
+        $insP = $this->connection->prepare("INSERT INTO RpOrderItems
+            (upc, storeID, categoryID, vendorID, vendorSKU, vendorItem, backupID, backupSKU, backupItem, caseSize)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $this->connection->query('TRUNCATE TABLE RpOrderItems');
+        $this->connection->startTransaction();
+        foreach ($data as $lc => $info) {
+            $stores = $this->connection->getAllValues($activeP, array($lc));
+            if (count($stores) == 0) {
+                continue;
+            }
+            $catID = $this->connection->getValue($catP, array($lc));
+            if (!$catID) {
+                $catID = $this->connection->getValue($catP2, array($info['sort']));
+                if (!$catID) {
+                    $this->connection->execute($makeP, array($info['sort']));
+                    $catID = $this->connection->insertID();
+                }
+                $this->connection->execute($lcSortP, array($info['sort'], $lc));
+            }
+            $vendorID = $this->vendorToID($info['primary']);
+            $name = $this->getItemName($vendorID, $info);
+            $mainCatalog = false;
+            if ($vendorID) {
+                $mainCatalog = $this->findItem($vendorID, $name);
+                if ($mainCatalog && $vendorID > 0) {
+                    $vendLC->likeCode($lc);
+                    $vendLC->vendorID($vendorID);
+                    $mapped = $vendLC->find();
+                    if (count($mapped)) {
+                        $obj = array_pop($mapped);
+                        $obj->sku($mainCatalog['sku']);
+                        $obj->save();
+                    } else {
+                        $vendLC->sku($mainCatalog['sku']);
+                        $vendLC->save();
+                    }
+                }
+            }
+            $backupID = $this->vendorToID($info['secondary']);
+            $backupName = $this->getItemName($backupID, $info);
+            $backupCatalog = false;
+            if ($backupID) {
+                $backupCatalog = $this->findItem($backupID, $backupName);
+            }
+            foreach ($stores as $storeID) {
+                $args = array(
+                    'LC' . $lc,
+                    $storeID,
+                    $catID,
+                    $vendorID,
+                    ($mainCatalog ? $mainCatalog['sku'] : null),
+                    ($mainCatalog ? $mainCatalog['description'] : $name),
+                    $backupID,
+                    ($backupCatalog ? $backupCatalog['sku'] : null),
+                    ($backupCatalog ? $backupCatalog['description'] : $backupName),
+                    $info['units'],
+                );
+                $this->connection->execute($insP, $args);
+            }
+        }
+        $this->connection->commitTransaction();
+    }
 
+    private function findItem($vendorID, $name)
+    {
+        switch ($vendorID) {
+            case -2:
+                return array('sku' => 'DIRECT', 'description' => $name);
+            case 292: // Alberts
+                list($realName, $size) = explode('\\', $name, 2);
+                $realName = substr(trim($realName), 0, 50);
+                if (strstr($size, 'x')) {
+                    list($caseSize, $unitSize) = explode('x', $size, 2);
+                } elseif (strstr($size, ' ')) {
+                    list($caseSize, $unitSize) = explode(' ', $size, 2);
+                    $unitSize = trim($unitSize);
+                    if (substr($unitSize, 0, 2) == 'lb') {
+                        $unitSize = 'lb';
+                    } elseif (substr($unitSize, 0, 2) == 'ct') {
+                        $unitSize = 'ea';
+                    }
+                } else {
+                    $caseSize = $size;
+                    $unitSize = '';
+                }
+                $albP = $this->connection->prepare("SELECT sku, description FROM vendorItems
+                    WHERE vendorID=?
+                        AND description LIKE ?
+                        AND units=?
+                        AND size LIKE ?");
+                return $this->connection->getRow($albP, array(
+                    $vendorID,
+                    '%' . $realName . '%',
+                    $caseSize,
+                    '%' . $unitSize . '%',
+                ));
+            case 136:
+                if (strstr($name, ':')) {
+                    list($sku, $realName) = explode(':', $name, 2);
+                    $rdwP = $this->connection->prepare("SELECT sku, description FROM vendorItems WHERE vendorID=? AND sku=?");
+                    return $this->connection->getRow($rdwP, array($vendorID, $sku));
+
+                }
+                // intentional fallthrough
+                
+            default:
+                $name = substr(trim($name), 0, 50);
+                $defaultP = $this->connection->prepare('SELECT sku, description FROM vendorItems WHERE vendorID=? AND description LIKE ?');
+                return $this->connection->getRow($defaultP, array($vendorID, '%' . trim($name) . '%'));
+        }
+    }
+
+    private function getItemName($vendorID, $info)
+    {
+        switch ($vendorID) {
+            case 292:
+                return $info['alberts'];
+            case 293:
+                return $info['cpw'];
+            case 136:
+                return $info['rdwSKU'] . ':' . $info['rdw'];
+            case 1:
+                return $info['unfi'];
+            case -2:
+                return $info['direct'];
+        }
+
+        return 'Unknown';
     }
 
     public function cliWrapper()
@@ -161,9 +298,9 @@ class RpImport extends FannieRESTfulPage
     {
         switch (strtolower($vendor)) {
             case 'alberts':
-                return 28;
+                return 292;
             case 'cpw':
-                return 25;
+                return 293;
             case 'rdw':
                 return 136;
             case 'unfi':
@@ -237,11 +374,15 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                         }
                         $otherData[$lc]['active'] = $data[10];
                         $otherData[$lc]['primary'] = $data[34];
+                        $otherData[$lc]['secondary'] = $data[35];
                         $otherData[$lc]['alberts'] = $data[12];
                         $otherData[$lc]['cpw'] = $data[13];
                         $otherData[$lc]['rdw'] = $data[14];
                         $otherData[$lc]['unfi'] = $data[15];
+                        $otherData[$lc]['direct'] = $data[16];
                         $otherData[$lc]['rdwSKU'] = (int)$data[23];
+                        $otherData[$lc]['sort'] = $data[11];
+                        $otherData[$lc]['units'] = $data[42];
                     }
 
                 }
@@ -256,6 +397,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                 $page->setForm($form);
                 $page->cliWrapper();
                 $page->updateActive($otherData);
+                $page->updateVendors($otherData);
             }
 
             if (substr($file, -4) == '.tsv') {
