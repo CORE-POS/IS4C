@@ -4,11 +4,76 @@ include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('RpOrderCategoriesModel')) {
+    include(__DIR__ . '/RpOrderCategoriesModel.php');
+}
+if (!class_exists('RpOrderItemsModel')) {
+    include(__DIR__ . '/RpOrderItemsModel.php');
+}
 
 class RpOrderPage extends FannieRESTfulPage
 {
     protected $header = 'RP Order Guide';
     protected $title = 'RP Order Guide';
+
+    public function preprocess()
+    {
+        $this->addRoute('get<searchVendor>', 'get<searchLC>');
+
+        return parent::preprocess();
+    }
+    
+    protected function get_searchLC_handler()
+    {
+        $prep = $this->connection->prepare("SELECT * FROM likeCodes WHERE likeCodeDesc LIKE ?");
+        $res = $this->connection->getAllRows($prep, array('%' . $this->searchLC . '%'));
+        $ret = array();
+        foreach ($res as $row) {
+            $ret[] = array(
+                'label' => $row['likeCodeDesc'],
+                'value' => $row['likeCode'],
+            );
+        }
+
+        echo json_encode($ret);
+
+        return false;
+    }
+
+    protected function get_searchVendor_handler()
+    {
+        $query = "SELECT * FROM vendorItems WHERE (description LIKE ? OR brand LIKE ?)";
+        $args = array('%' . $this->searchVendor . '%', '%' . $this->searchVendor . '%');
+        if (FormLib::get('vendorID')) {
+            $args[] = FormLib::get('vendorID');
+            $query .= ' AND vendorID=?';
+        } else {
+            $query .= ' AND vendorID IN (292, 293, 136)';
+        }
+
+        $ret = array();
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, $args);
+        while ($row = $this->connection->fetchRow($res)) {
+            $label = $row['description'] . ' ' . $row['units'] . '/' . $row['size'] . ' ($' . $row['cost'] . ')';
+            $value = array(
+                'vendorID' => $row['vendorID'],
+                'caseSize' => $row['units'],
+                'sku' => $row['sku'],
+                'upc' => $row['upc'],
+                'item' => $row['description'],
+            );
+            $value = json_encode($value);
+            $ret[] = array(
+                'label' => $label,
+                'value' => $value,
+            );
+        }
+
+        echo json_encode($ret);
+
+        return false;
+    }
 
     protected function delete_id_handler()
     {
@@ -80,9 +145,44 @@ class RpOrderPage extends FannieRESTfulPage
         return false;
     }
 
+    protected function post_view()
+    {
+        $model = new RpOrderItemsModel($this->connection);
+        $model->storeID(FormLib::get('store'));
+        $model->categoryID(FormLib::get('catID'));
+        $model->addedBy(1);
+        $model->caseSize(FormLib::get('newCase'));
+        $model->vendorID(FormLib::get('newVendor'));
+        $model->vendorSKU(FormLib::get('newSKU'));
+        $model->vendorItem(FormLib::get('newItem'));
+
+        $lc = FormLib::get('newLC');
+        $upc = BarcodeLib::padUPC(FormLib::get('newUPC'));
+        if ($lc) {
+            $model->upc('LC' . $lc);
+        } elseif ($upc != '0000000000000') {
+            $model->upc($upc);
+        } elseif (FormLib::get('newSKU')) {
+            $model->upc(FormLib::get('newSKU'));
+        } else {
+            $model->upc(uniqid());
+        }
+
+        $saved = $model->save();
+        $ret = '';
+        if ($saved) {
+            $ret .= '<div class="alert alert-success">Added item</div>';
+        } else {
+            $ret .= '<div class="alert alert-danger">Error adding item</div>';
+        }
+
+        return $ret . $this->get_view();
+    }
+
     protected function get_view()
     {
         $this->addScript('rpOrder.js?date=20190319');
+        $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
             $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
@@ -238,7 +338,12 @@ class RpOrderPage extends FannieRESTfulPage
             $days = array_map(function ($i) { return sprintf('%.2f%%', $i*100); }, $days);
         }
 
+        $cats = new RpOrderCategoriesModel($this->connection);
+        $catOpts = $cats->toOptions();
+
         return <<<HTML
+<div class="row">
+<div class="col-sm-6">
 <p class="form-inline">
     <label>Store</label>: {$sSelect['html']}
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -270,6 +375,64 @@ class RpOrderPage extends FannieRESTfulPage
     <span id="adjDiff">0</span>
     <ul id="openOrders">{$orderLinks}</ul>
 </p>
+</div>
+<div class="col-sm-6">
+<div class="panel panel-default">
+<div class="panel-heading">Add Item</div>
+<div class="panel-body">
+<form method="post">
+    <input type="hidden" name="store" value="{$store}" />
+    <div class="form-group input-group">
+        <span class="input-group-addon">Vendor</span>
+        <select name="vendor" class="form-control input-sm" required
+            id="newVendor" onchange="rpOrder.setSearchVendor(this.value);">
+            <option value=""></option>
+            <option value="292">Alberts</option>
+            <option value="293">CPW</option>
+            <option value="136">RDW</option>
+            <option value="1">UNFI</option>
+            <option value="-2">Direct</option>
+        </select>
+    </div>
+    <div class="form-group input-group">
+        <span class="input-group-addon">Item</span>
+        <input type="text" class="form-control input-sm" name="item" required id="newItem" />
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group input-group">
+            <span class="input-group-addon">Likecode</span>
+            <input type="text" class="form-control input-sm" name="lc" id="newLC" />
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group input-group">
+            <span class="input-group-addon">or UPC</span>
+            <input type="text" class="form-control input-sm" name="upc" id="newUPC" />
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group input-group">
+            <span class="input-group-addon">SKU</span>
+            <input type="text" class="form-control input-sm" name="sku" id="newSKU" />
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group input-group">
+            <span class="input-group-addon">Case Size</span>
+            <input type="text" class="form-control input-sm" name="caseSize" required id="newCase" />
+        </div>
+    </div>
+    <div class="form-group input-group">
+        <span class="input-group-addon">Category</span>
+        <select name="catID" class="form-control input-sm" required>{$catOpts}</select>
+    </div>
+    <button type="submit" class="btn btn-default">Add Item</button>
+    <button type="reset" class="btn btn-default btn-reset">Clear</button>
+</form>
+</div>
+</div>
+</div>
+</div>
 {$tables}
 HTML;
     }

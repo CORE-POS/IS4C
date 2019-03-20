@@ -1,5 +1,54 @@
 var rpOrder = (function ($) {
     var mod = {};
+    var searchVendor = 0;
+
+    mod.setSearchVendor = function(v) {
+        searchVendor = v;
+    }
+
+    mod.initAutoCompletes = function() {
+        $('input#newItem').autocomplete({
+            source: vendorAutoComplete,
+            select: function (ev, ui) {
+                ev.preventDefault();
+                var data = JSON.parse(ui.item.value);
+                $('input#newItem').val(data.item);
+                $('select#newVendor').val(data.vendorID);
+                $('input#newUPC').val(data.upc);
+                $('input#newSKU').val(data.sku);
+                $('input#newCase').val(data.caseSize);
+            },
+            minLength: 3
+        });
+
+        $('input#newLC').autocomplete({
+            source: lcAutoComplete,
+            minLength: 3
+        });
+    };
+
+    function ajaxAutoComplete(dstr, callback) {
+        $.ajax({
+            type: 'get',
+            data: dstr,
+            dataType: 'json'
+        }).fail(function () {
+            callback([]);
+        }).done(function (resp) {
+            callback(resp)
+        });
+    };
+
+    function vendorAutoComplete(req, callback) {
+        var dstr = 'searchVendor=' + encodeURIComponent(req.term);
+        dstr += '&vendorID=' + searchVendor;
+        ajaxAutoComplete(dstr, callback);
+    };
+
+    function lcAutoComplete(req, callback) {
+        var dstr = 'searchLC=' + encodeURIComponent(req.term);
+        ajaxAutoComplete(dstr, callback);
+    }
 
     mod.updateDays = function() {
         var week = $('#projSales').html().replace(',', '');
