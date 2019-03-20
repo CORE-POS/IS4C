@@ -66,7 +66,7 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected function getVendorID()
     {
         $idP = $this->connection->prepare("SELECT vendorID FROM vendors WHERE vendorName LIKE ? ORDER BY vendorID");
-        $vid = $this->connection->getValue($idP, array('%RUSS DAVIS%'));
+        $vid = $this->connection->getValue($idP, array('RDW'));
 
         return $vid;
     }
