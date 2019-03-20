@@ -59,6 +59,24 @@ class CashierPerformanceReport extends FannieReportPage
             WHERE proc_date BETWEEN ? AND ?
                 AND emp_no = ?
         ');
+        $dt1 = $date1;
+        $dt2 = $date2 . ' 23:59:59';
+
+        $chkQ = $dbc->addSelectLimit("SELECT transInterval FROM " . FannieDB::fqn('CashPerformDay', 'trans') .
+                    " WHERE proc_date BETWEEN ? AND ?", 1);
+        $chkP = $dbc->prepare($chkQ);
+        $chk = $dbc->getValue($chkP, array($date1, $date1 . ' 23:59:59'));
+        if ($chk === false) {
+            $detailP = $dbc->prepare('
+                SELECT SUM(CASE WHEN transInterval > 600 THEN 600 ELSE transInterval END) AS seconds,
+                    COUNT(*) AS numTrans
+                FROM ' . FannieDB::fqn('CashierByDay', 'plugin:WarehouseDatabase') . '
+                WHERE date_id BETWEEN ? AND ?
+                    AND emp_no = ?
+            ');
+            $dt1 = date('Ymd', strtotime($date1));
+            $dt2 = date('Ymd', strtotime($date2));
+        }
 
         $basicQ = '
             SELECT d.emp_no,
@@ -113,8 +131,7 @@ class CashierPerformanceReport extends FannieReportPage
                 sprintf('%.2f%%', $this->safeDivide($row['cancelRings'], $row['rings']) * 100.00),
                 sprintf('$%.2f', $this->safeDivide($row['cancelTotal'], $row['cancelRings'])),
             );
-            $args[2] = $row['emp_no'];
-            $detailR = $dbc->execute($detailP, $args);
+            $detailR = $dbc->execute($detailP, array($dt1, $dt2, $row['emp_no']));
             $detailW = $dbc->fetch_row($detailR);
             $time = $detailW['seconds'];
             $trans = $detailW['numTrans'];
