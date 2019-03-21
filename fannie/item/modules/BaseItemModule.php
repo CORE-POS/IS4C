@@ -404,8 +404,15 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         }
         $ret .= ' <label style="color:darkmagenta;">Modified</label>
                 <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>';
-        $ret .= ' | <label style="color:darkmagenta;">Last Sold</label>
-                <span style="color:darkmagenta;">'. (empty($rowItem['last_sold']) ? 'n/a' : $rowItem['last_sold']) . '</span>';
+        $ret .= ' | <label style="color:darkmagenta;">Last Sold</label> ';
+        $netStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        foreach ($items as $store_id => $item) {
+            $ret .= sprintf('<span style="color:darkmagenta;" class="last-sold %s" id="last-sold%d">%s</span>',
+                ($store_id == $netStore ? '' : 'collapse'),
+                $store_id,
+                (!empty($item['last_sold']) ? $item['last_sold'] : 'n/a')
+            );
+        }
         $ret .= '</div>'; // end panel-heading
 
         $ret .= '<div class="panel-body">';
@@ -420,7 +427,6 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $nav_tabs = '<ul id="store-tabs" class="nav nav-tabs small" role="tablist">';
         $ret .= '{{nav_tabs}}<div class="tab-content">';
-        $netStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         foreach ($items as $store_id => $rowItem) {
             $active_tab = false;
             if (FannieConfig::config('STORE_MODE') !== 'HQ' || $netStore == $store_id || ($netStore == false && $store_id == FannieConfig::config('STORE_ID'))) {
@@ -433,7 +439,8 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             }
             $nav_tabs .= '<li role="presentation" ' . ($active_tab ? 'class="active"' : '') . '>'
                 . '<a href="#' . $tabID . '" aria-controls="' . $tabID . '" '
-                . 'onclick="$(\'.tab-content .chosen-select:visible\').chosen();"'
+                . 'onclick="$(\'.tab-content .chosen-select:visible\').chosen();
+                    $(\'.last-sold\').hide(); $(\'#last-sold' . $store_id . '\').show();"'
                 . 'role="tab" data-toggle="tab">'
                 . $store_description . '</a></li>';
             $ret .= '<div role="tabpanel" class="tab-pane' . ($active_tab ? ' active' : '') . '"
