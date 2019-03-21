@@ -131,9 +131,63 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
             $cache[$this->store] = array('avg'=>$avg, 'lastweek'=>$lastWeek);
             DataCache::freshen($cache, 'day', 'SameWeekdaySales');
         }
+        include(__DIR__ . '/feed.php');
+        $feedCache = '/tmp/feed.ics';
+        if (!file_exists($feedCache) || (time() - filemtime($feedCache)) > (60*60)) {
+            $fp = fopen($feedCache, 'w');
+            $ch = curl_init($feed);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $success = curl_exec($ch);
+            curl_close($ch);
+            fclose($fp);
+        }
+        $fp = fopen($feedCache, 'r');
+        $document = Sabre\VObject\Reader::read($fp, Sabre\VObject\Reader::OPTION_FORGIVING);
+        $events = $document->getBaseComponents('VEvent');
+        $todayDT = new DateTime(date('Y-m-d'));
+        $counter = 0;
+        $cal = '';
+        foreach ($events as $event) {
+            $start = $event->DTSTART->getDateTime();
+            if ($start < $todayDT) continue;
+            $end = $event->DTEND->getDateTime();
+
+            $highlight = '';
+            if ($startDay == $todayDT->format('D M jS')) {
+                $highlight = 'class="alert-info"';
+            }
+
+            $cal .= '<p ' . $highlight . '>';
+            $event->SUMMARY = str_replace('Copy: ', '', $event->SUMMARY);
+            $cal .= '<strong>' . $event->SUMMARY . '</strong><br />';
+
+            $startDay = $start->format('D M jS');
+            $startTime = $start->format('g:ia');
+            $endDay = $end->format('D M jS');
+            $endTime = $end->format('g:ia');
+            if ($startDay == $endDay) {
+                $cal .= $startDay . ' ' . $startTime . ' - ' . $endTime . '<br />';
+            } else {
+                $cal .= $startDay . ' ' . $startTime . ' - ' . $endDay . ' ' . $endTime . '<br />';
+            }
+            if ($event->LOCATION) {
+                $cal .= 'Location: ' . $event->LOCATION . '<br />';
+            }
+            if ($event->DESCRIPTION) {
+                $cal .= nl2br(trim($event->DESCRIPTION)) . '<br />';
+            }
+            $cal .= '</p>';
+
+            $counter++;
+            if ($counter >= 3) break;
+        }
 
         ob_start();
-        echo "<div class=\"text-center container\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales!</h1>";
+        echo '<div class="row">';
+        echo '<div class="col-sm-6">';
+        echo "<div class=\"text-center \"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales!</h1>";
         echo "<table class=\"table table-bordered no-bs-table\">"; 
         echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";
         $sum = 0;
@@ -150,6 +204,15 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
         echo '<div class="form-group form-inline">For: '
             . $stores['html'] . 
             '</div>';
+        echo '</div>';
+        echo '</div>';
+        echo '<div class="col-sm-5">';
+        if ($cal) {
+            $cal = '<h2>Upcoming Events</h2>' . $cal;
+        }
+        echo $cal;
+        echo '</div>';
+        echo '</div>';
 
         echo '<div id="chartDiv"><canvas id="chartCanvas"></canvas></div>';
 
