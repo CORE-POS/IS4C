@@ -126,10 +126,15 @@ class ManufacturerMovementReport extends FannieReportPage
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
-        $type_condition = "p.brand LIKE ?";
-        $args = array('%'.$manu.'%');
-        if ($type == 'prefix')
-            $type_condition = 't.upc LIKE ?';
+        $type_condition = "brand LIKE ?";
+        $upcArgs = array('%'.$manu.'%');
+        if ($type == 'prefix') {
+            $type_condition = 'upc LIKE ?';
+        }
+        $upcP = $dbc->prepare("SELECT upc FROM products WHERE {$type_condition} GROUP BY upc");
+        $upcs = $dbc->getAllValues($upcP, $upcArgs);
+        list($inStr, $args) = $dbc->safeInClause($upcs);
+        $type_condition = "t.upc IN ({$inStr})";
 
         $query = "";
         $args[] = $date1.' 00:00:00';
