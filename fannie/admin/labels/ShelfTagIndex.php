@@ -71,8 +71,14 @@ function getMovement(queue){
     window.location.href = 'ShelfTagIndex.php?queue='+queue;
 }
 
+
 function goToPage(the_id){
-    var offset = document.getElementById('offset').value;
+    var offsetCheckbox = $('#offset');
+    if (offsetCheckbox.prop('checked')) {
+        var offset = document.getElementById('offset').value;
+    } else {
+        var offset = 0;
+    }
     var str = "0";
     if (!isNaN(parseInt(offset)))
         str = parseInt(offset);
@@ -122,7 +128,7 @@ function printMany(){
         <p>
         <div class="form-group form-inline">
             <label>Offset</label>: 
-            <input type="number" class="price-field form-control" id=offset value=0 />
+            <input type="checkbox" class="price-field form-control" id=offset name="offset" value=1 />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <label>Layout</label>: 
         <select id=layoutselector class="form-control">
