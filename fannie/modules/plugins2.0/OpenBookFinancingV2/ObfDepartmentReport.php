@@ -335,6 +335,9 @@ class ObfDepartmentReport extends FannieRESTfulPage
         $hoursData = $this->jsonify($hours);
         $lyHoursData = $this->jsonify($lyHours);
         $splhData = json_encode($splhData);
+        if ($splhData === false) {
+            $splhData = '[]';
+        }
         $lySplhData = json_encode($lySplhData);
         $bestLabels = json_encode(array_map(function ($i) { return $i['saleDesc']; }, $best));
         $bestData = json_encode(array_map(function($i) { return $i['ttl']; }, $best));
@@ -421,7 +424,7 @@ function drawCharts() {
                     pointBackgroundColor: "#dc3912",
                     pointBorderColor: "#dc3912",
                     borderColor: "#dc3912"
-                },
+                }
             ],
             labels: {$lineLabels}
         }
