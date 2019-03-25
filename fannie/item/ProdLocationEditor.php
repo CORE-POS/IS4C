@@ -39,7 +39,7 @@ class ProdLocationEditor extends FannieRESTfulPage
     private $date_restrict = 1;
     private $data = array();
 
-    function preprocess()
+    public function preprocess()
     {
         $this->__routes[] = 'get<start>';
         $this->__routes[] = 'get<batch>';
@@ -50,10 +50,11 @@ class ProdLocationEditor extends FannieRESTfulPage
         $this->__routes[] = 'get<searchupc>';
         $this->__routes[] = 'post<newLocation>';
         $this->__routes[] = 'get<list>';
+        $this->__routes[] = 'get<sectionView>';
         return parent::preprocess();
     }
 
-    function post_newLocation_view()
+    public function post_newLocation_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -87,7 +88,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    function post_upc_save_view()
+    public function post_upc_save_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -149,7 +150,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    function post_batch_save_view()
+    public function post_batch_save_view()
     {
 
         global $FANNIE_OP_DB;
@@ -185,7 +186,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    function post_list_save_view()
+    public function post_list_save_view()
     {
 
         global $FANNIE_OP_DB;
@@ -239,7 +240,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    function get_start_view()
+    public function get_start_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -368,7 +369,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    function get_list_view()
+    public function get_list_view()
     {
 
         global $FANNIE_OP_DB;
@@ -545,7 +546,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
     }
 
-    function get_batch_view()
+    public function get_batch_view()
     {
         $stores = FormLib::storePicker('store_id', false);
         $ret = '
@@ -576,7 +577,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    function get_searchupc_view()
+    public function get_searchupc_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -744,17 +745,88 @@ class ProdLocationEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    function get_view()
+    public function get_view()
     {
+
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $args = array($store_location);
+        $query = $dbc->prepare('SELECT
+                floorSectionID,
+                name
+            FROM FloorSections
+            WHERE storeID = ?
+            ORDER BY name;');
+        $result = $dbc->execute($query,$args);
+        $floorSects = "";
+        while($row = $dbc->fetch_row($result)) {
+            $floorSects .= "<option value=\"{$row['floorSectionID']}\" name=\"{$row['name']}\"/>{$row['name']}</option>";
+        }
+        if ($er = $dbc->error()) {
+            echo '<div class="alert alert-danger">'.$er.'</div>';
+        }
+
         return '
-            <div class="container pull-left">
-            <form class="form-inline" method="get">
-                <input type="submit" class="btn btn-default" style="width: 300px" name="searchupc" value="Single UPC Update"><br><br>
-                <input type="submit" class="btn btn-default" style="width: 300px" name="list" value="List of UPCs Update"><br><br>
-                <input type="submit" class="btn btn-default" style="width: 300px" name="batch" value="Locations by BATCH"><br><br>
-            </form>
+        <div class="container-fluid">
+            <div class="row">
+                <form class="" method="get">
+                    <div class="col-lg-4">
+                        <div class="panel panel-default">
+                            <h4>Single UPC</h4>
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="upc" name="upc" autofocus>
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" class="btn btn-default form-control" name="searchupc" value="Submit">
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <h4>List of UPCs</h4>
+                            <div class="form-group">
+                                <textarea class="form-control" name="upcs"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" class="btn btn-default form-control" name="list" value="Submit">
+                            </div>
+                        </div>
+
+
+                        <div class="panel panel-default">
+                            <h4>Batch IDs <span class="text-sm">(missing locations only)</span></h4>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Batch #</span>
+                                    <input type="text" class="form-control inline" name="start">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">to Batch</span>
+                                    <input type="text" class="form-control inline" name="end">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" class="btn btn-default form-control" name="batch" value="Submit">
+                                </div>
+                            </div>
+                        </div>
+                <div class="col-lg-4">
+                </div>
+                </form>
             </div>
+        </div>
         ';
+    }
+
+    public function css_content()
+    {
+        return <<<HTML
+.panel {
+    padding: 25px;
+}
+HTML;
     }
 
     private function arrayToOpts($arr, $selected=-999, $id_label=false)
