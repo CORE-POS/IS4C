@@ -48,6 +48,7 @@ class IncidentsModel extends BasicModel
     'deleted' => array('type'=>'TINYINT', 'default'=>0),
     'json' => array('type'=>'TEXT'),
     'modified' => array('type'=>'DATETIME'),
+    'escalate' => array('type'=>'TINYINT', 'default'=>0),
     );
 }
 

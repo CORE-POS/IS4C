@@ -22,8 +22,44 @@ class AlertIncident extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<new>', 'get<search>');
+        $this->addRoute('get<new>', 'get<search>', 'post<escalate>');
         return parent::preprocess();
+    }
+
+    protected function post_escalate_handler()
+    {
+        $msg = "Alert needing attention\n";
+        $msg .= 'http://key/git/fannie/modules/plugins2.0/IncidentTracker/AlertIncident.php?id=' . $this->escalate . "\n\n";
+
+        $row = $this->getIncident($this->escalate);
+        $comments =  $this->getComments($this->escalate);
+        
+        $msg .= "Date {$row['tdate']}\n";
+        $msg .= "Store {$row['storeName']}\n";
+        $msg .= "Type {$row['incidentSubType']}\n";
+        $msg .= "Location {$row['incidentLocation']}\n";
+        $msg .= "Reported by {$row['reportedBy']}\n";
+        $msg .= "Summary: " . $row['details'] . "\n\n";
+        foreach ($comments as $c) {
+            if ($c['comment']) {
+                $msg .= "Additional comment by {$c['userName']}\n";
+                $msg .= $c['tdate'] . "\n";
+                $msg .= $c['comment'] . "\n\n";
+            }
+        }
+
+        $subject = 'Alert Needing Attention';
+        $to = 'andy@wholefoods.coop,sbroome@wholefoods.coop,michael@wholefoods.coop,shannigan@wholefoods.coop';
+
+        $upP = $this->connection->prepare("
+            UPDATE " . FannieDB::fqn('Incidents', 'plugin:IncidentDB') . "
+            SET escalate=1
+            WHERE incidentID=?");
+        $this->connection->execute($upP, array($this->escalate));
+
+        mail($to, $subject, $msg, "From: alerts@wholefoods.coop\r\n");
+
+        return false;
     }
 
     protected function get_search_view()
@@ -258,6 +294,7 @@ class AlertIncident extends FannieRESTfulPage
 
         $deleteURL = "?_method=delete&id={$this->id}&undo=" . ($row['deleted'] ? '1' : '0');
         $deleteVerb = $row['deleted'] ? 'Undelete' : 'Delete';
+        $escalated = $row['escalate'] ? 'checked' : '';
 
         return <<<HTML
 <p>
@@ -287,6 +324,10 @@ class AlertIncident extends FannieRESTfulPage
 </tr>
 <tr>
     <th>Requested trespass</th><td>{$row['trespass']}</td>
+</tr>
+<tr>
+    <th>Escalate to Store Managers</th>
+    <td><input type="checkbox" onchange="\$.ajax({type:'post',data:'escalate={$this->id}'});" {$escalated} /></td>
 </tr>
 </table>
 <div class="panel panel-default">
