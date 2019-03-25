@@ -114,7 +114,6 @@ class CpwPriceTask extends FannieTask
         $seenSKUs = array();
         while (!feof($file)) {
             $data = fgetcsv($file);
-            print_r($data);
             $item = $this->validateLine($data);
             if (!$item['valid']) {
                 continue;
