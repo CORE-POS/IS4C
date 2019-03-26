@@ -57,7 +57,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
                 v.sku,
                 v.cost,
                 CASE
-                    WHEN c.margin IS NOT NULL THEN c.margin 
+                    WHEN c.margin IS NOT NULL AND c.margin <> 0 THEN c.margin 
                     WHEN a.margin IS NOT NULL THEN a.margin
                     WHEN b.margin IS NOT NULL THEN b.margin
                     ELSE 0 
