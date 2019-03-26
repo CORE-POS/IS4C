@@ -154,6 +154,11 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
             if ($start < $todayDT) continue;
             $end = $event->DTEND->getDateTime();
 
+            $startDay = $start->format('D M jS');
+            $startTime = $start->format('g:ia');
+            $endDay = $end->format('D M jS');
+            $endTime = $end->format('g:ia');
+
             $highlight = '';
             if ($startDay == $todayDT->format('D M jS')) {
                 $highlight = 'class="alert-info"';
@@ -163,10 +168,6 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
             $event->SUMMARY = str_replace('Copy: ', '', $event->SUMMARY);
             $cal .= '<strong>' . $event->SUMMARY . '</strong><br />';
 
-            $startDay = $start->format('D M jS');
-            $startTime = $start->format('g:ia');
-            $endDay = $end->format('D M jS');
-            $endTime = $end->format('g:ia');
             if ($startDay == $endDay) {
                 $cal .= $startDay . ' ' . $startTime . ' - ' . $endTime . '<br />';
             } else {
