@@ -101,17 +101,26 @@ for ($ocount=0;$ocount<$offset;$ocount++){
     $num++;
 }
 */
-
-foreach($data as $row){
-/*
-    if (strlen(ltrim($row['upc'], '0')) <= 4) continue;
-    elseif (substr($row['upc'], -6) == '000000') continue;
-*/
-   // extract & format data
+$str = '';
+$f = fopen('coreydeleteme.txt', 'w');
+fwrite($f, $json, 100);
+$tagcount = count($data);
+if ($tagcount < 20) {
+    for ($tagcount; $tagcount < 20; $tagcount++) {
+        $data[]['upc'] = "0000000001234";
+    }
+}
+$i = 0;
+foreach($data as $k => $row){
+    $i++;
+    if ($i > $tagcount+1) {
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->SetTextColor(0, 0, 0);
+    } 
    $price = $row['normal_price'];
-   $desc = strtoupper(substr($row['description'],0,27));
-   $desc = str_replace("\n", "", $desc);
-   $desc = str_replace("\r", "", $desc);
+   //$desc = strtoupper(substr($row['description'],0,27));
+   //$desc = str_replace("\n", "", $desc);
+   //$desc = str_replace("\r", "", $desc);
    $brand = ucwords(strtolower($row['brand']));
    $pak = $row['units'];
    $size = $row['units'] . "-" . $row['size'];
@@ -122,9 +131,6 @@ foreach($data as $row){
    $vendor = substr($row['vendor'],0,7);
 
    //get fancy description
-   global $FANNIE_OP_DB;
-   $dbc = FannieDB::get($FANNIE_OP_DB);
-
    $args = array($row['upc']);
    $prep = $dbc->prepare("
         SELECT pu.description, p.scale
@@ -134,6 +140,7 @@ foreach($data as $row){
    $res = $dbc->execute($prep, $args);
    $row = $dbc->fetchRow($res);
    $desc = $row['description'];
+       
    $desc = str_replace("\n", "", $desc);
    $desc = str_replace("\r", "", $desc);
    $scale = $row['scale'];
@@ -142,38 +149,19 @@ foreach($data as $row){
    // writing data
    // basically just set cursor position
    // then write text w/ Cell
-   $desc2 = "";
+   $wrp = wordwrap($desc, 35, "*", false);
+   $dscripts = explode('*', $wrp);
    $descFontSize = 13;
-   if (strlen($desc) > 25) {
-        $temp = $desc;
-        // find the end of the current word
-        $arr = str_split($temp);
-        $splitpos = 0;
-        for ($i=0; $i<15; $i++){
-            next($arr);
-        }
-        while ($curstr = next($arr)) {
-            if (ctype_space($curstr)) {
-                $splitpos = key($arr);
-            } else {
-                // do nothing
-            }
-        }
-        $descFontSize = 13;
-        if ($splitpos > 25) 
-            $descFontSize = 12;
-
-        $desc = substr($desc,0,$splitpos);
-        $desc2 = substr($temp,$splitpos);;
+   if (count($dscripts) == 1) {
+       $descHeight = 10;
+   } else {
+       $descHeight = 5;
    }
+    
    $brandFontSize = 18;
    if (strlen($brand) > 18) 
         $brandFontSize = 16;
     
-   if ($desc == '') {
-        $desc = $temp;
-        $desc2 = '';
-   }
    $pdf->SetFont($font,'B',$brandFontSize);  //Set the font 
    $pdf->SetXY($x,$y);
    $pdf->Cell($width,3,'',0,1,'C',true);
@@ -182,10 +170,15 @@ foreach($data as $row){
    $pdf->SetX($x);
    $pdf->Cell($width,1,'',0,1,'C',true);
    $pdf->SetX($x);
+
    $pdf->SetFont($font,'',$descFontSize);  //Set the font 
-   $pdf->Cell($width,5,$desc,0,1,'C',true);
-   $pdf->SetX($x);
-   $pdf->Cell($width,4,$desc2,0,1,'C',true);
+   foreach ($dscripts as $desc) {
+       $pdf->Cell($width,$descHeight,$desc,0,1,'C',true);
+       $pdf->SetX($x);
+   }
+   //$pdf->Cell($width,5,$desc,0,1,'C',true);
+   //$pdf->SetX($x);
+   //$pdf->Cell($width,4,$desc2,0,1,'C',true);
 
    $pdf->SetFont($font,'B',18);  //change font size
    $pdf->SetXY($x,$y+20);
