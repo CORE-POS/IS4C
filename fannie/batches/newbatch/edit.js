@@ -1,6 +1,10 @@
 var batchEdit = (function ($) {
     var mod = {};
 
+    var alerthi = function() {
+        alert('hi');
+    }
+
     var showFields = function(f_on, f_off) {
         $('.add-by-' + f_off.toLowerCase() + '-fields').hide();
         $('.add-by-' + f_off.toLowerCase() + '-fields :input').prop('disabled', true);
@@ -366,6 +370,52 @@ var batchEdit = (function ($) {
                     inputAreaAlert('success', 'Batch no. ' + batchID + ' logged');
                 }
             });
+        }
+    }
+
+    mod.renameBatch = function(oldname)
+    {
+        var name = $('#batchName').val();
+        var id = $('#batchID').val();
+        var c = confirm('Change batch name to '+name+ '?');
+        if (c == true) {
+            $.ajax({
+                type: 'post',
+                url: 'EditBatchPage.php',
+                data: 'editBatch=1&name='+name+'&id='+id,
+            }).done(function(resp) {
+                if (resp.error) {
+                    inputAreaAlert('danger', resp.error);
+                } else {
+                    inputAreaAlert('success', resp);
+                }
+            });
+        } else {
+            $('#batchName').val(oldname);
+        }
+    }
+
+    mod.editBatchDate = function(olddate, action)
+    {
+        //alert(olddate);
+        var start = $('#startDate').val();
+        var end = $('#endDate').val();
+        var id = $('#batchID').val();
+        var c = confirm('Change '+action+' date?');
+        if (c == true) {
+            $.ajax({
+                type: 'post',
+                url: 'EditBatchPage.php',
+                data: 'editDate=1&startDate='+start+'&endDate='+end+'&id='+id+'&action='+action,
+            }).done(function(resp) {
+                if (resp.error) {
+                    inputAreaAlert('danger', resp.error);
+                } else {
+                    inputAreaAlert('success', resp);
+                }
+            });
+        } else {
+            $('#'+action+'Date').val(olddate);
         }
     }
 
