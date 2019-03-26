@@ -119,6 +119,15 @@ var scanner = (function ($) {
         });
     };
 
+    mod.attn = function(id, elem) {
+        var dstr = 'itemID=' + id;
+        dstr += '&flag=' + ($(elem).prop('checked') ? '1' : '0');
+        $.ajax({
+            type: 'post',
+            data: dstr
+        });
+    };
+
     return mod;
 
 })(jQuery);

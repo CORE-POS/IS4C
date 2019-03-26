@@ -15,9 +15,17 @@ class DIScanner extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('post<id><qty>', 'get<search>');
+        $this->addRoute('post<id><qty>', 'get<search>', 'post<itemID><flag>');
 
         return parent::preprocess();
+    }
+
+    protected function post_itemID_flag_handler()
+    {
+        $prep = $this->connection->prepare("UPDATE deliInventoryCat SET attnFlag=? WHERE id=?");
+        $this->connection->execute($prep, array($this->flag, $this->itemID));
+
+        return false;
     }
 
     protected function get_search_handler()
@@ -106,7 +114,7 @@ class DIScanner extends FannieRESTfulPage
         $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $dbc = $this->connection;
         $prep = $dbc->prepare("
-            SELECT d.upc, d.item,
+            SELECT d.upc, d.item, d.attnFlag, d.id,
                 d.fraction, d.cases, d.units
             FROM deliInventoryCat AS d
             WHERE d.storeID=?
@@ -127,9 +135,10 @@ class DIScanner extends FannieRESTfulPage
             $row['fraction'] = 0;
         }
         $row['fraction'] = sprintf('%.2f', $row['fraction']);
+        $attn = $row['attnFlag'] ? 'checked' : '';
 
         echo <<<HTML
-<h3>{$item}</h3>
+<h3><input type="checkbox" onchange="scanner.attn({$row['id']}, this);" title="Needs further attention" {$attn} /> {$item}</h3>
 <div class="row lead">
     <div class="col-sm-3">
         Current eaches: <span id="curQty">{$row['fraction']}</span>
@@ -188,7 +197,7 @@ CSS;
 
     protected function get_view()
     {
-        $this->addScript('scanner.js?date=20190220');
+        $this->addScript('scanner.js?date=20190326');
         $this->addOnloadCommand("scanner.autocomplete('#upc');");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { scanner.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");

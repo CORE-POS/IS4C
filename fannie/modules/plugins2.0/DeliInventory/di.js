@@ -184,6 +184,23 @@ var di = (function ($) {
         $('.fractions').css({opacity: 0});
     };
 
+    mod.attention = function(elem) {
+        var row = $(elem).closest('tr');
+        var itemID = row.attr('data-item-id');
+        var dstr = 'id=' + itemID;
+        if ($(elem).prop('checked')) {
+            row.addClass('danger');
+            dstr += '&flag=1';
+        } else {
+            row.removeClass('danger');
+            dstr += '&flag=0';
+        }
+        $.ajax({
+            type: 'post',
+            data: dstr
+        });
+    };
+
     return mod;
 
 })(jQuery);

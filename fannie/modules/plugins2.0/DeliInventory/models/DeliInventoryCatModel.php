@@ -47,6 +47,7 @@ class DeliInventoryCatModel extends BasicModel
     'categoryID' => array('type'=>'INT'),
     'seq' => array('type'=>'INT', 'default'=>0),
     'modified' => array('type'=>'DATETIME'),
+    'attnFlag' => array('type'=>'TINYINT', 'default'=>0),
     );
 }
 
