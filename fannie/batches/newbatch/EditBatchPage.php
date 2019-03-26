@@ -87,7 +87,7 @@ class EditBatchPage extends FannieRESTfulPage
 
     protected function post_editDate_handler()
     {
-        $id = FormLib::get('id'); 
+        $id = FormLib::get('id');
         $start = FormLib::get('startDate');
         $end = FormLib::get('endDate');
         $action = FormLib::get('action');
@@ -103,21 +103,21 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $model->save();
         echo 'Saved';
-        
+
         return false;
     }
 
 
     protected function post_editBatch_handler()
     {
-        $id = FormLib::get('id'); 
+        $id = FormLib::get('id');
         $name = FormLib::get('name');
         $model = new BatchesModel($this->connection);
         $model->batchID($id);
         $model->batchName($name);
         $model->save();
         echo 'Saved';
-        
+
         return false;
     }
 
@@ -1068,18 +1068,18 @@ HTML;
         $this->addOnloadCommand("$('.be-editable-date').datepicker();");
         //$this->addOnloadCommand("$('#batchName').removeAttribute('tabIndex');");
 
-        $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: <input type=\"text\" class=\"be-editable form-control wide\" 
+        $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: <input type=\"text\" class=\"be-editable form-control wide\"
             value=\"$name\" name=\"batchName\" id=\"batchName\" onchange=\"batchEdit.renameBatch('$name'); return false;\" /></span> | ";
-        
+
         $start = date('Y-m-d', strtotime($model->startDate()));
         $end = date('Y-m-d', strtotime($model->endDate()));
         $ret .= "<input type=\"hidden\" id=\"batchStartDate\" value=\"$start\"/>";
         $ret .= "<input type=\"hidden\" id=\"batchEndDate\" value=\"$end\"/>";
-        $ret .= '<b>Sale Dates</b>: <input type="text" class="be-editable be-editable-date form-control" 
+        $ret .= '<b>Sale Dates</b>: <input type="text" class="be-editable be-editable-date form-control"
             onchange="batchEdit.editBatchDate(\''.$start.'\', \'start\'); return false;"
             name="startDate" id="startDate" value="'
             . date('Y-m-d', strtotime($model->startDate()))
-            . '"/> - <input type="text" class="be-editable be-editable-date form-control" 
+            . '"/> - <input type="text" class="be-editable be-editable-date form-control"
             onchange="batchEdit.editBatchDate(\''.$end.'\', \'end\'); return false;"
             name="startDate" id="endDate" value="'
             . date('Y-m-d', strtotime($model->endDate()))
@@ -1424,7 +1424,7 @@ HTML;
 
         $ret = "";
         $ret .= sprintf('<input type="hidden" id="currentBatchID" value="%d" />',$id);
-        $ret .= "<b>Batch name</b>: <input type=\"text\" class=\"editable\" value=\"$name\" 
+        $ret .= "<b>Batch name</b>: <input type=\"text\" class=\"editable\" value=\"$name\"
             name=\"batchName\" /><br />";
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
         $ret .= "<a href=\"\" onclick=\"batchEdit.forceNow($id); return false;\">Force batch</a>";
