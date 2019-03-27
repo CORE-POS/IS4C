@@ -12,6 +12,7 @@ class SaFullPage extends FannieRESTfulPage
     hand using a device with a large display.';
     protected $title = 'ShelfAudit Inventory';
     protected $header = '';
+    protected $enable_linea = true;
 
     public function preprocess()
     {
@@ -45,7 +46,7 @@ class SaFullPage extends FannieRESTfulPage
                     AND section=?
                     AND storeID=?");
             $dbc->execute($prep, array(BarcodeLib::padUPC($this->id), $section, $store));
-        } elseif ($chk) {
+        } elseif ($chk && $realQty < 9999) {
             $prep = $dbc->prepare("UPDATE " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
                 SET quantity=?,
                     datetime=" . $dbc->now() . "
@@ -53,10 +54,12 @@ class SaFullPage extends FannieRESTfulPage
                     AND section=?
                     AND storeID=?");
             $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $section, $store));
-        } elseif ($realQty != 0) {
+        } elseif ($realQty < 9999) {
             $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
                 (datetime, upc, clear, quantity, section, storeID) VALUES (?, ?, 0, ?, ?, ?)");
             $dbc->execute($prep, array(date('Y-m-d H:i:s'), BarcodeLib::padUPC($this->id), $realQty, $section, $store));
+        } elseif ($realQty > 999) {
+            echo '<div class="alert alert-danger">Ignoring barcode scan</div>';
         }
 
         echo $this->getRecent($dbc, $section, FormLib::get('super'));
@@ -141,6 +144,13 @@ class SaFullPage extends FannieRESTfulPage
         }
         $row = $dbc->getRow($prep, array($section, $store, $this->id));
         if ($row === false) {
+            $this->id = '0' . substr($this->id, 0, 12);
+            if (substr($this->id, 0, 3) == "002") {
+                $this->id = substr($this->id, 0, 7) . '000000';
+            }
+            $row = $dbc->getRow($prep, array($section, $store, $this->id));
+        }
+        if ($row === false) {
             echo '<div class="alert alert-danger">Item not found' . $this->id . '</div>';
             return false;
         }
@@ -176,8 +186,7 @@ class SaFullPage extends FannieRESTfulPage
         <div class="input-group">
             <span class="input-group-addon">Quantity</span>
             <input type="number" name="qty" id="newQty" class="form-control" 
-                onkeyup="full.keybind(event);" onkeydown="full.tab(event);"
-                min="-999" max="999" step="1" />
+                onkeyup="full.keybind(event);" onkeydown="full.tab(event);" />
         </div> 
     </div>
     <input type="hidden" name="id" value="{$this->id}" />
@@ -207,12 +216,13 @@ CSS;
         $floor = $section ? 'checked' : 0;
         $model = new MasterSuperDeptsModel($this->connection);
         $opts = $model->toOptions($super);
-        $this->addScript('js/full.js?date=20190311');
+        $this->addScript('js/full.js?date=20190327');
         $this->addScript('../../../item/autocomplete.js?date=20181211');
         $ws = $FANNIE_URL . '../../../ws/';
         $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { full.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");
+        $this->addOnloadCommand("enableLinea('#upc', full.search);");
 
         return <<<HTML
 <form method="post" id="searchform" onsubmit="full.search(); return false;">

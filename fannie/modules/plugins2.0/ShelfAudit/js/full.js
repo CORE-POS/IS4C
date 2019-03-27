@@ -47,29 +47,30 @@ var full = (function ($) {
         }
     };
 
+    var saveDelay = 0;
 
     mod.keybind = function(ev) {
         repaint('#newQty', '#upc');
         if (new Date().getTime() > (100 + lastSearch)) {
-            console.log(ev.which);
             if (ev.which == 13) {
                 $('#upc').focus();
                 repaint('#upc', '#newQty');
             }
             var cur = $('#lastQty').val();
             var qty = $('#newQty').val();
-            if (qty.length > 5) {
-                $('#newQty').val('');
-                return;
-            }
             var next = (cur*1) + (qty*1);
             $('#curQty').html(next);
-            $.ajax({
-                type: 'post', 
-                data: $('#results input').serialize()+"&real="+next
-            }).done(function (resp) {
-                $('#recent').html(resp);
-            });
+            if (saveDelay) {
+                clearTimeout(saveDelay);
+            }
+            saveDelay = setTimeout(function() {
+                $.ajax({
+                    type: 'post', 
+                    data: $('#results input').serialize()+"&real="+next
+                }).done(function (resp) {
+                    $('#recent').html(resp);
+                });
+            }, 50);
         }
     };
 
