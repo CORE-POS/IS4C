@@ -1578,6 +1578,26 @@ HTML;
         $this->addCssFile('index.css');
         $this->addOnloadCommand('$(\'#addItemUPC\').focus()');
         $this->addOnloadCommand("enableLinea('#addItemUPC');\n");
+        $cmd = <<<JAVASCRIPT
+function resizeInput()
+{
+    $('.be-editable').each(function(){
+        var elm = $(this);
+        var newWidth = (parseInt(elm.val().length, 10) + 1) * 10;
+        newWidth = newWidth.toString() + "px";
+        elm.css('width', newWidth);
+    });
+    $('.be-editable').on('keyup', function(){
+        var elm = $(this);
+        var newWidth = (parseInt(elm.val().length, 10) + 1) * 10;
+        newWidth = newWidth.toString() + "px";
+        elm.css('width', newWidth);
+    });
+
+}
+resizeInput();
+JAVASCRIPT;
+        $this->addOnloadCommand($cmd);
 
         $url = $this->config->get('URL');
         $sort = FormLib::get('sort', 'natural');
