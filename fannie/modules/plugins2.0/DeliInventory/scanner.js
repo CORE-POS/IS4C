@@ -128,6 +128,13 @@ var scanner = (function ($) {
         });
     };
 
+    mod.incDec = function(selector, inc) {
+        var cur = $(selector).val() * 1;
+        var next = cur + inc;
+        $(selector).val(next);
+        $(selector).trigger('keyup');
+    };
+
     return mod;
 
 })(jQuery);

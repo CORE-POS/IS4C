@@ -136,6 +136,17 @@ class DIScanner extends FannieRESTfulPage
         }
         $row['fraction'] = sprintf('%.2f', $row['fraction']);
         $attn = $row['attnFlag'] ? 'checked' : '';
+        $caseBtns = '
+           <button type="button" onclick="scanner.incDec(\'#newQty\', 1);" class="btn btn-lg btn-success">+1</button> 
+           <button type="button" onclick="scanner.incDec(\'#newQty\', -1);" class="btn btn-lg btn-danger">-1</button>';
+        if (is_numeric($row['units'])) {
+            $caseBtns = sprintf('
+               <button type="button" onclick="scanner.incDec(\'#newQty\', %d);" class="btn btn-lg btn-success">+%d</button> 
+               <button type="button" onclick="scanner.incDec(\'#newQty\', -%d);" class="btn btn-lg btn-danger">-%d</button>%s',
+                $row['units'], $row['units'],
+                $row['units'], $row['units'],
+                $caseBtns);
+        }
 
         echo <<<HTML
 <h3><input type="checkbox" onchange="scanner.attn({$row['id']}, this);" title="Needs further attention" {$attn} /> {$item}</h3>
@@ -151,6 +162,9 @@ class DIScanner extends FannieRESTfulPage
                 onkeyup="scanner.keybindQty(event);" onkeydown="scanner.tabQty(event);"
                 min="-999" max="999" step="1" />
         </div> 
+        <div class="buttons">
+            {$caseBtns}
+        </div> 
     </div>
 </div>
 <div class="row lead">
@@ -165,6 +179,10 @@ class DIScanner extends FannieRESTfulPage
                 onkeyup="scanner.keybindCases(event);" onkeydown="scanner.tabCases(event);"
                 min="-999" max="999" step="1" />
         </div> 
+        <div class="buttons">
+           <button type="button" onclick="scanner.incDec('#newCases', 1);" class="btn btn-lg btn-success">+1</button> 
+           <button type="button" onclick="scanner.incDec('#newCases', -1);" class="btn btn-lg btn-danger">-1</button> 
+        </div>
     </div>
     <input type="hidden" name="id" value="{$this->id}" />
 </div>
@@ -197,7 +215,7 @@ CSS;
 
     protected function get_view()
     {
-        $this->addScript('scanner.js?date=20190326');
+        $this->addScript('scanner.js?date=20190327');
         $this->addOnloadCommand("scanner.autocomplete('#upc');");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { scanner.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");
