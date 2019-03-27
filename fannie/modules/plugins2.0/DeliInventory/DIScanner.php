@@ -119,10 +119,11 @@ class DIScanner extends FannieRESTfulPage
             FROM deliInventoryCat AS d
             WHERE d.storeID=?
                 AND d.upc=?");
+        $original = $this->id;
         $this->id = $this->getUPC($this->id);
         $row = $dbc->getRow($prep, array($store, $this->id));
         if ($row === false) {
-            $nocheck = $this->getUPC(substr($this->id, 0, strlen($this->id) - 1));
+            $nocheck = $this->getUPC(substr($original, 0, strlen($original) - 1));
             $row = $dbc->getRow($prep, array($store, $nocheck));
             $this->id .= '||' . $nocheck;
         }
@@ -219,7 +220,7 @@ CSS;
         $this->addOnloadCommand("scanner.autocomplete('#upc');");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { scanner.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");
-        $this->addOnloadCommand("enableLinea('#upc');");
+        $this->addOnloadCommand("enableLinea('#upc', scanner.search);");
 
         return <<<HTML
 <form method="post" id="searchform" onsubmit="scanner.search(); return false;">
