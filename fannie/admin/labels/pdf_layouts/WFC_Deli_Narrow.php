@@ -149,7 +149,7 @@ foreach($data as $k => $row){
    // writing data
    // basically just set cursor position
    // then write text w/ Cell
-   $wrp = wordwrap($desc, 35, "*", false);
+   $wrp = wordwrap($desc, 25, "*", false);
    $dscripts = explode('*', $wrp);
    $descFontSize = 13;
    if (count($dscripts) == 1) {
@@ -158,9 +158,15 @@ foreach($data as $k => $row){
        $descHeight = 5;
    }
     
-   $brandFontSize = 18;
-   if (strlen($brand) > 18) 
+   if (strlen($brand) >25) {
+        $brandFontSize = 12;
+   } elseif (strlen($brand) > 20) {
+        $brandFontSize = 14;
+   } elseif (strlen($brand) > 18) {
         $brandFontSize = 16;
+   } else {
+       $brandFontSize = 18;
+   }
     
    $pdf->SetFont($font,'B',$brandFontSize);  //Set the font 
    $pdf->SetXY($x,$y);
@@ -172,7 +178,7 @@ foreach($data as $k => $row){
    $pdf->SetX($x);
 
    $pdf->SetFont($font,'',$descFontSize);  //Set the font 
-   foreach ($dscripts as $desc) {
+   foreach ($dscripts as $i => $desc) {
        $pdf->Cell($width,$descHeight,$desc,0,1,'C',true);
        $pdf->SetX($x);
    }
@@ -182,7 +188,7 @@ foreach($data as $k => $row){
 
    $pdf->SetFont($font,'B',18);  //change font size
    $pdf->SetXY($x,$y+20);
-   $pdf->Cell($width,12,$price,0,0,'C',true);
+   $pdf->Cell($width,10,$price,0,0,'C',true);
    $pdf->SetXY($x,$y+30);
    $pdf->Cell($width,12,'',0,0,'C',true);
 
