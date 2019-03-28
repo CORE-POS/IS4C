@@ -112,7 +112,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
     {
         if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/noauto/images/codeals_top_12.png';
-        } elseif (!empty($item['batchName'])) {
+        } elseif (!empty($item['batchName']) && $item['batchType'] != 4) {
             return __DIR__ . '/noauto/images/chaching_top_12.png';
         } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_top_12.png';
@@ -129,7 +129,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
     {
         if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/cd_line_16.png';
-        } elseif (!empty($item['batchName'])) {
+        } elseif (!empty($item['batchName']) && $item['batchType'] != 4) {
             return __DIR__ . '/noauto/images/chaching_bottom_12.png';
         } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_bottom_12.png';
