@@ -204,16 +204,12 @@ class PITermCheck extends FannieRESTfulPage
         $pdf->Cell($width, $line_height, 'Thank you,', 0, 1);
         $pdf->Ln(2*$line_height);
         $pdf->SetX($left);
-        $pdf->Cell($width, $line_height, 'Amanda Borgren', 0, 1);
-        $pdf->SetX($left);
-        $pdf->Cell($width, $line_height, 'Finance Coordinator', 0, 1);
-        $pdf->SetX($left);
         $pdf->Cell($width, $line_height, 'Finance Department', 0, 1);
         $pdf->Ln(2*$line_height);
         $pdf->SetX($left);
-        $pdf->Cell($width, $line_height, '218.728.0884 | ext. 453', 0, 1);
+        $pdf->Cell($width, $line_height, '218.728.0884', 0, 1);
         $pdf->SetX($left);
-        $pdf->Cell($width, $line_height, 'os@wholefoods.coop', 0, 1);
+        $pdf->Cell($width, $line_height, 'finance@wholefoods.coop', 0, 1);
 
         $check = new GumCheckTemplate($custdata, $meminfo, $equity, 'Equity Refund', $number);
         $check->shiftMICR(true);
