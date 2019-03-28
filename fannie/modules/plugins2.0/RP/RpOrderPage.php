@@ -233,6 +233,31 @@ class RpOrderPage extends FannieRESTfulPage
         $costP = $this->connection->prepare("SELECT cost, units FROM vendorItems WHERE vendorID=? and sku=?");
         $mapP = $this->connection->prepare("SELECT * FROM RpFixedMaps WHERE likeCode=?");
 
+        $saleP = $this->connection->prepare("SELECT endDate
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+                INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
+            WHERE l.upc=? AND m.storeID=?
+                AND " . $this->connection->curdate() . " BETWEEN startDate AND endDate
+                AND b.discountType > 0");
+
+        $ago = date('Y-m-d', strtotime('-3 days'));
+        $ahead = date('Y-m-d', strtotime('+3 days'));
+        $startingP = $this->connection->prepare("SELECT startDate
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+                INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
+            WHERE l.upc=? AND m.storeID=?
+                AND b.startDate BETWEEN '{$ago}' AND '{$ahead}'
+                AND b.discountType > 0");
+        $endingP = $this->connection->prepare("SELECT endDate
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+                INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
+            WHERE l.upc=? AND m.storeID=?
+                AND b.endDate BETWEEN '{$ago}' AND '{$ahead}'
+                AND b.discountType > 0");
+
         $prep = $this->connection->prepare("
             SELECT r.upc,
                 r.categoryID,
@@ -279,6 +304,19 @@ class RpOrderPage extends FannieRESTfulPage
             if ($cost['units'] > 1 && $cost['units'] != $row['caseSize']) {
                 $cost['cost'] /= $cost['units'];
             }
+            $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
+            $startIcon = '';
+            $starting = $this->connection->getValue($startingP, array($row['upc'], $store));
+            if ($starting) {
+                $startIcon = sprintf('<span class="glyphicon glyphicon-arrow-up" title="%s" />',
+                    'Sale ' . ($onSale ? 'started' : 'starting') . ' on ' . $starting);
+            }
+            $endIcon = '';
+            $ending = $this->connection->getValue($endingP, array($row['upc'], $store));
+            if ($ending) {
+                $endIcon = sprintf('<span class="glyphicon glyphicon-arrow-down" title="%s" />',
+                    'Sale ' . ($onSale ? 'ending' : 'ended') . ' on ' . $ending);
+            }
             $upc = $row['upc'];
             if (substr($row['upc'], 0, 2) == 'LC') {
                 $row['upc'] = sprintf('<a href="../../../item/likecodes/LikeCodeEditor.php?start=%d">%s</a>',
@@ -304,7 +342,7 @@ class RpOrderPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
-                <td>$%.2f %s %s</td>
+                <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td class="caseSize">%s</td>
                 <td><input type="text" class="form-control input-sm onHand" value="0" 
                     style="width: 5em;"
@@ -325,9 +363,12 @@ class RpOrderPage extends FannieRESTfulPage
                 $row['upc'],
                 $row['vendorName'],
                 $row['backupVendor'],
+                ($onSale ? 'success' : ''),
+                ($onSale ? "On sale through {$onSale}" : ''),
                 $cost['cost'] * $row['caseSize'],
                 ($row['vendorSKU'] ? '(' . $row['vendorSKU'] . ')' : ''),
                 $row['vendorItem'],
+                $startIcon, $endIcon,
                 $row['caseSize'],
                 $price,
                 $par,
