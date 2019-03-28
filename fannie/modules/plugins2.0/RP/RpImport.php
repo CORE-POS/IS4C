@@ -45,7 +45,14 @@ class RpImport extends FannieRESTfulPage
         $upP = $this->connection->prepare("UPDATE LikeCodeActiveMap SET inUse=1 WHERE likeCode=? AND storeID=?");
         $this->connection->startTransaction();
         $map = new LikeCodeActiveMapModel($this->connection);
+        $activated = array();
         foreach ($data as $lc => $info) {
+            if (strpos($lc, '-')) {
+                list($lc, $rest) = explode('-', $lc, 2);
+            }
+            if (isset($activated[$lc])) {
+                continue;
+            }
             switch (strtoupper(trim($info['active']))) {
                 case 'ACTIVEHD':
                     $map->likeCode($lc);
@@ -54,18 +61,21 @@ class RpImport extends FannieRESTfulPage
                     $map->save();
                     $map->storeID(2);
                     $map->save();
+                    $activated[$lc] = true;
                     break;
                 case 'ACTIVEH':
                     $map->likeCode($lc);
                     $map->storeID(1);
                     $map->inUse(1);
                     $map->save();
+                    $activated[$lc] = true;
                     break;
                 case 'ACTIVED':
                     $map->likeCode($lc);
                     $map->storeID(2);
                     $map->inUse(1);
                     $map->save();
+                    $activated[$lc] = true;
                     break;
                 case '0': // normal disabled status
                     break;
@@ -76,6 +86,21 @@ class RpImport extends FannieRESTfulPage
         $this->connection->commitTransaction();
     }
 
+    /**
+     * Build out order guide tables
+     * @param $data - likecode keyed array of RP data
+     *
+     * Some likecodes occur multiple times in the source
+     * data so for key-uniqueness subsequent data is keyed
+     * by likecode plus a random unique string. Often only
+     * one of the entries for a likecode is actually active
+     * so there's some juggling of this extra random string
+     * to try and use the actual likecode in the order guide
+     * record for the one entry in the dataset that's active.
+     * However, if more than one entry for a given likecode
+     * is active the random appended strings will bleed into
+     * the order guide.
+     */
     public function updateVendors($data)
     {
         $vendLC = new VendorLikeCodeMapModel($this->connection);
@@ -93,11 +118,23 @@ class RpImport extends FannieRESTfulPage
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $this->connection->query('TRUNCATE TABLE RpOrderItems');
         $this->connection->startTransaction();
+        $added = array();
         foreach ($data as $lc => $info) {
+            if (!$info['active']) {
+                continue;
+            }
             $stores = $this->connection->getAllValues($activeP, array($lc));
             if (count($stores) == 0) {
                 continue;
             }
+            $realLC = $lc;
+            if (strpos($lc, '-')) {
+                list($lc, $rest) = explode('-', $lc, 2);
+                if (!isset($added[$lc])) {
+                    $realLC = $lc;
+                }
+            }
+            $added[$lc] = true;
             $catID = $this->connection->getValue($catP, array($lc));
             if (!$catID) {
                 $catID = $this->connection->getValue($catP2, array($info['sort']));
@@ -109,6 +146,10 @@ class RpImport extends FannieRESTfulPage
             }
             $vendorID = $this->vendorToID($info['primary']);
             $name = $this->getItemName($vendorID, $info);
+            if ($name === 'Unknown') {
+                echo $lc . ":\n";
+                var_dump($info);
+            }
             $mainCatalog = false;
             if ($vendorID) {
                 $mainCatalog = $this->findItem($vendorID, $name);
@@ -134,7 +175,7 @@ class RpImport extends FannieRESTfulPage
             }
             foreach ($stores as $storeID) {
                 $args = array(
-                    'LC' . $lc,
+                    'LC' . $realLC,
                     $storeID,
                     $catID,
                     $vendorID,
@@ -358,6 +399,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
             if ($file == 'Comparison.tsv') {
                 $fp = fopen('/tmp/Comparison.tsv', 'r');
                 $input = '';
+                $dupes = array();
                 while (!feof($fp)) {
                     $line = fgets($fp);
                     $data = explode("\t", $line);
@@ -370,6 +412,12 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                     $lc = isset($data[8]) && is_numeric($data[8]) && $data[8] ? $data[8] : false;
                     if ($lc) {
                         if (!isset($otherData[$lc])) {
+                            $otherData[$lc] = array();
+                        } else { 
+                            if (!in_array($lc, $dupes)) {
+                                $dupes[] = $lc;
+                            }
+                            $lc .= '-' . uniqid();
                             $otherData[$lc] = array();
                         }
                         $otherData[$lc]['active'] = $data[10];
