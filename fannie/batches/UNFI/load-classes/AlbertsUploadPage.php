@@ -145,6 +145,8 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             )");
         $delP = $dbc->prepare('DELETE FROM vendorItems WHERE sku=? AND vendorID=?');
         $mapP = $dbc->prepare('UPDATE VendorLikeCodeMap SET sku=? WHERE vendorID=? AND sku=?');
+        $rpP1 = $dbc->prepare('UPDATE RpOrderItems SET vendorSKU=? WHERE vendorID=? AND vendorSKU=?');
+        $rpP2 = $dbc->prepare('UPDATE RpOrderItems SET backupSKU=? WHERE backupID=? AND backupSKU=?');
         $updated_upcs = array();
 
         foreach ($linedata as $data) {
@@ -179,6 +181,8 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $oldSKU = $this->sameItem($VENDOR_ID, $description, $case, $unit);
             if ($oldSKU) {
                 $dbc->execute($mapP, array($sku, $VENDOR_ID, $oldSKU));
+                $dbc->execute($rpP1, array($sku, $VENDOR_ID, $oldSKU));
+                $dbc->execute($rpP2, array($sku, $VENDOR_ID, $oldSKU));
                 $this->remaps .= "$oldSKU => $sku<br />";
             }
         }
