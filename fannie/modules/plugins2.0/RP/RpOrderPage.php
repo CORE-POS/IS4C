@@ -127,6 +127,12 @@ class RpOrderPage extends FannieRESTfulPage
         if ($mapped) {
             $item['vendorSKU'] = $mapped;
         }
+        if (!$item['vendorSKU']) {
+            $item['vendorSKU'] = $upc;
+        }
+        if (!$item['backupSKU']) {
+            $item['backupSKU'] = $upc;
+        }
 
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($orderID);
