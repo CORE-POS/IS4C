@@ -122,6 +122,11 @@ class RpOrderPage extends FannieRESTfulPage
             $prodP = $this->connection->prepare("SELECT brand, size, cost FROM products WHERE upc=?");
             $prod = $this->connection->getRow($prodP, array($upc));
         }
+        $mapP = $this->connection->prepare("SELECT sku FROM RpFixedMaps WHERE likeCode=?");
+        $mapped = $this->connection->getValue($mapP, array(str_replace('LC', '', $upc)));
+        if ($mapped) {
+            $item['vendorSKU'] = $mapped;
+        }
 
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($orderID);
@@ -181,7 +186,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20190319');
+        $this->addScript('rpOrder.js?date=20190328');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -205,6 +210,10 @@ class RpOrderPage extends FannieRESTfulPage
             $orderLinks .= sprintf('<li id="link%d"><a href="../../../purchasing/ViewPurchaseOrders.php?id=%d">%s</a></li>',
                 $o['orderID'], $o['orderID'], $o['vendorName']);
         }
+        $printLink = '';
+        if (count($orderIDs) > 0) {
+            $printLink = '<a href="RpPrintOrders.php?id=' . implode(',', $orderIDs) . '">Print these</a>';
+        }
         list($ioStr, $ioArgs) = $this->connection->safeInClause($orderIDs);
         $inOrderP = $this->connection->prepare("SELECT vendorID, quantity FROM PurchaseOrder AS o
             INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
@@ -221,6 +230,8 @@ class RpOrderPage extends FannieRESTfulPage
             FROM upcLike AS u
                 INNER JOIN products AS p ON p.upc=u.upc
             WHERE u.likeCode=?");
+        $costP = $this->connection->prepare("SELECT cost, units FROM vendorItems WHERE vendorID=? and sku=?");
+        $mapP = $this->connection->prepare("SELECT * FROM RpFixedMaps WHERE likeCode=?");
 
         $prep = $this->connection->prepare("
             SELECT r.upc,
@@ -240,7 +251,7 @@ class RpOrderPage extends FannieRESTfulPage
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
                 LEFT JOIN vendors AS b ON r.backupID=b.vendorID
             WHERE r.storeID=?
-            ORDER BY c.name, r.vendorItem");
+            ORDER BY c.seq, c.name, r.vendorItem");
         $res = $this->connection->execute($prep, array($store));
         $tables = '';
         $category = false;
@@ -256,8 +267,18 @@ class RpOrderPage extends FannieRESTfulPage
                     <tr><th>LC</th><th>Primary</th><th>Secondary</th><th>Item</th><th>Case Size</th>
                     <th>On Hand</th><th>Par</th><th>Order</th></tr>';
             }
+            $mapped = $this->connection->getRow($mapP, array(str_replace('LC', '', $row['upc'])));
+            if ($mapped) {
+                $row['vendorSKU'] = $mapped['sku'];
+                $row['lookupID'] = $mapped['vendorID'];
+            }
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
+            $cost = $this->connection->getRow($costP,
+                array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
+            if ($cost['units'] > 1 && $cost['units'] != $row['caseSize']) {
+                $cost['cost'] /= $cost['units'];
+            }
             $upc = $row['upc'];
             if (substr($row['upc'], 0, 2) == 'LC') {
                 $row['upc'] = sprintf('<a href="../../../item/likecodes/LikeCodeEditor.php?start=%d">%s</a>',
@@ -268,6 +289,10 @@ class RpOrderPage extends FannieRESTfulPage
             while ($start > (0.25 * $row['caseSize'])) {
                 $orderAmt++;
                 $start -= $row['caseSize'];
+                if ($orderAmt > 100) {
+                    echo $row['upc'] . ": $par, {$row['caseSize']}<br />";
+                    break;
+                }
             }
             $inOrder = $this->connection->getRow($inOrderP, array_merge($ioArgs, array($upc)));
             if ($inOrder) {
@@ -279,31 +304,34 @@ class RpOrderPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
-                <td>%s %s</td>
+                <td>$%.2f %s %s</td>
                 <td class="caseSize">%s</td>
-                <td><input type="number" class="form-control input-sm onHand" value="0" 
+                <td><input type="text" class="form-control input-sm onHand" value="0" 
                     style="width: 5em;"
                     onchange="rpOrder.reCalcRow($(this).closest(\'tr\'));"
-                    onfocus="this.select();" onkeyup="rpOrder.keybind(event);" /></td>
+                    onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
                 <input type="hidden" class="price" value="%.2f" />
                 <input type="hidden" class="basePar" value="%.2f" />
                 <td class="parCell">%.2f</td>
-                <td class="form-inline %s"><input type="number" style="width: 5em;" class="form-control input-sm orderAmt" value="%d" />
+                <td class="form-inline %s">
+                    <input type="text" style="width: 5em;"class="form-control input-sm orderAmt"
+                        onkeyup="rpOrder.orderKey(event);" onfocus="this.select();" value="%d" />
                     <button class="btn btn-success btn-sm" onclick="rpOrder.inc(this, 1);">+</button>
                     <button class="btn btn-danger btn-sm" onclick="rpOrder.inc(this, -1);">-</button>
-                    <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Pri</label>
+                    <label><input type="checkbox" class="orderPri" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Pri</label>
                     <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s %s /> Sec</label>
                 </td>
                 </tr>',
                 $row['upc'],
                 $row['vendorName'],
                 $row['backupVendor'],
+                $cost['cost'] * $row['caseSize'],
                 ($row['vendorSKU'] ? '(' . $row['vendorSKU'] . ')' : ''),
                 $row['vendorItem'],
                 $row['caseSize'],
                 $price,
                 $par,
-                $par,
+                $par / $row['caseSize'],
                 ($inOrder ? 'info' : ''),
                 $orderAmt,
                 $upc, $store, $row['vendorID'],
@@ -373,7 +401,17 @@ class RpOrderPage extends FannieRESTfulPage
     <br />
     <label>Adjustment</label>:
     <span id="adjDiff">0</span>
-    <ul id="openOrders">{$orderLinks}</ul>
+    <div class="form-inline">
+    <div class="input-group">
+        <span class="input-group-addon">Retention</span>
+        <input type="number" value="60" id="retention" class="form-control input-sm" />
+        <span class="input-group-addon">%</span>
+    </div> 
+    </div> 
+    <p>
+        <ul id="openOrders">{$orderLinks}</ul>
+        <span id="printLink">{$printLink}</span>
+    </p>
 </p>
 </div>
 <div class="col-sm-6">
@@ -433,7 +471,25 @@ class RpOrderPage extends FannieRESTfulPage
 </div>
 </div>
 </div>
+<p>
+    <button class="btn btn-default orderAll" onclick="rpOrder.orderAll();">Order All</button>
+    <div class="progress collapse">
+        <div class="progress-bar progress-bar-striped active"  role="progressbar" 
+            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+            <span class="sr-only">Searching</span>
+        </div>
+    </div>
+</p>
 {$tables}
+<p>
+    <button class="btn btn-default orderAll" onclick="rpOrder.orderAll();">Order All</button>
+    <div class="progress collapse">
+        <div class="progress-bar progress-bar-striped active"  role="progressbar" 
+            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+            <span class="sr-only">Searching</span>
+        </div>
+    </div>
+</p>
 HTML;
     }
 }

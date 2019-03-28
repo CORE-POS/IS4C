@@ -1,6 +1,7 @@
 var rpOrder = (function ($) {
     var mod = {};
     var searchVendor = 0;
+    var retainElem = false;
 
     mod.setSearchVendor = function(v) {
         searchVendor = v;
@@ -77,10 +78,12 @@ var rpOrder = (function ($) {
 
         $('input.basePar').each(function () {
             var adj = $(this).val() * 1 * scaler * numDays;
-            var adj = Math.round(adj * 100) / 100;
             if (isNaN(scaler)) {
                 adj = $(this).val();
             }
+            var caseSize = $(this).closest('tr').find('td.caseSize').html();
+            adj = adj / caseSize;
+            var adj = Math.round(adj * 100) / 100;
             $(this).next('td.parCell').html(adj);
 
             mod.reCalcRow($(this).closest('tr'));
@@ -91,8 +94,12 @@ var rpOrder = (function ($) {
         var caseSize = $(elem).find('td.caseSize').html();
         var adj = $(elem).find('td.parCell').html();
         var onHand = $(elem).find('input.onHand').val();
+        if (!retainElem) {
+            retainElem = $('#retention');
+        }
+        onHand = onHand * (retainElem.val() / 100);
 
-        var start = (adj*1) - (onHand * 1);
+        var start = (adj * 1 * caseSize) - (onHand * 1 * caseSize);
         var cases = 0;
         while (start > (0.25 * caseSize)) {
             cases += 1;
@@ -103,7 +110,6 @@ var rpOrder = (function ($) {
 
     mod.inc = function(btn, amt) {
         var elem = $(btn).parent().find('input.orderAmt');
-        console.log(elem);
         var next = ($(elem).val() * 1) + amt;
         if (next < 0) {
             next = 0;
@@ -127,14 +133,57 @@ var rpOrder = (function ($) {
         return false;
     };
 
-    mod.keybind = function(ev) {
-        if (ev.which == 13 || ev.which == 9) {
+    function prevRow(elem) {
+        var myRow = $(elem).closest('tr');
+        var prev = $(myRow).prev('tr');
+        if ($(prev).find('td').length > 0) {
+            return prev.get(0);
+        }
+        var myTable = $(elem).closest('table');
+        var prevTable = $(myTable).prev().prev('table');
+        prev = $(prevTable).find('td').last().parent();
+        if (prev.length > 0) {
+            return prev.get(0);
+        }
+
+        return false;
+    }
+
+    mod.onHandKey = function(ev) {
+        if (ev.which == 13 || ev.which == 40) {
             ev.preventDefault();
             var next = nextRow(ev.target);
             if (next) {
-                console.log(next);
                 $(next).find('input.onHand').focus();
             }
+        } else if (ev.which == 38) {
+            ev.preventDefault();
+            var prev = prevRow(ev.target);
+            if (prev) {
+                $(prev).find('input.onHand').focus();
+            }
+        } else if (ev.which == 39) {
+            ev.preventDefault();
+            $(ev.target).closest('tr').find('input.orderAmt').focus();
+        }
+    };
+
+    mod.orderKey = function(ev) {
+        if (ev.which == 13 || ev.which == 40) {
+            ev.preventDefault();
+            var next = nextRow(ev.target);
+            if (next) {
+                $(next).find('input.orderAmt').focus();
+            }
+        } else if (ev.which == 38) {
+            ev.preventDefault();
+            var prev = prevRow(ev.target);
+            if (prev) {
+                $(prev).find('input.orderAmt').focus();
+            }
+        } else if (ev.which == 37) {
+            ev.preventDefault();
+            $(ev.target).closest('tr').find('input.onHand').focus();
         }
     };
 
@@ -154,6 +203,14 @@ var rpOrder = (function ($) {
                     newlink += resp.name + '</a></li>';
                     $('#openOrders').append(newlink);
                 }
+                var orderIDs = "";
+                $('#openOrders li').each(function () {
+                    orderIDs += $(this).attr('id').replace('link', '') + ",";
+                });
+                if (orderIDs) {
+                    var printLink = '<a href="RpPrintOrders.php?id=' + orderIDs + '">Print these</a>';
+                    $('#printLink').html(printLink);
+                }
             });
         } else {
             $.ajax({
@@ -166,6 +223,23 @@ var rpOrder = (function ($) {
         }
     };
 
+    mod.orderAll = function() {
+        var buttons = $('button.orderAll');
+        var meters = $('.progress');
+        buttons.prop('disabled', true);
+        meters.show();
+
+        $('input.orderPri').each(function () {
+            var qty = $(this).closest('tr').find('input.orderAmt').val();
+            if (qty > 0 && !$(this).prop('checked')) {
+                $(this).prop('checked', true);
+                mod.placeOrder(this);
+            }
+        });
+
+        meters.hide();
+        buttons.prop('disabled', false);
+    };
 
     return mod;
 })(jQuery);

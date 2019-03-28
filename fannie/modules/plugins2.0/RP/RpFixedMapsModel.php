@@ -24,17 +24,18 @@
         
 
 /**
-  @class RpOrderCategoriesModel
+  @class RpFixedMapsModel
 */
-class RpOrderCategoriesModel extends BasicModel
+class RpFixedMapsModel extends BasicModel
 {
+    protected $name = "RpFixedMaps";
     protected $preferred_db = 'op';
-    protected $name = "RpOrderCategories";
 
     protected $columns = array(
-    'rpOrderCategoryID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
-    'name' => array('type'=>'VARCHAR(255)'),
-    'seq' => array('type'=>'INT', 'default'=>0),
+    'rpFixedMapID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
+    'vendorID' => array('type'=>'INT'),
+    'sku' => array('type'=>'INT'),
+    'likeCode' => array('type'=>'INT'),
     );
 }
 
