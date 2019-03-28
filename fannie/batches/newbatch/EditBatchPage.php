@@ -1071,16 +1071,16 @@ HTML;
         $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: <input type=\"text\" class=\"be-editable form-control wide\"
             value=\"$name\" name=\"batchName\" id=\"batchName\" onchange=\"batchEdit.renameBatch('$name'); return false;\" /></span> | ";
 
-        $start = date('Y-m-d', strtotime($model->startDate()));
-        $end = date('Y-m-d', strtotime($model->endDate()));
-        $ret .= "<input type=\"hidden\" id=\"batchStartDate\" value=\"$start\"/>";
-        $ret .= "<input type=\"hidden\" id=\"batchEndDate\" value=\"$end\"/>";
+        $startYMD = date('Y-m-d', strtotime($model->startDate()));
+        $endYMD = date('Y-m-d', strtotime($model->endDate()));
+        $ret .= "<input type=\"hidden\" id=\"batchStartDate\" value=\"$startYMD\"/>";
+        $ret .= "<input type=\"hidden\" id=\"batchEndDate\" value=\"$endYMD\"/>";
         $ret .= '<b>Sale Dates</b>: <input type="text" class="be-editable be-editable-date form-control"
-            onchange="batchEdit.editBatchDate(\''.$start.'\', \'start\'); return false;"
+            onchange="batchEdit.editBatchDate(\''.$startYMD.'\', \'start\'); return false;"
             name="startDate" id="startDate" value="'
             . date('Y-m-d', strtotime($model->startDate()))
             . '"/> - <input type="text" class="be-editable be-editable-date form-control"
-            onchange="batchEdit.editBatchDate(\''.$end.'\', \'end\'); return false;"
+            onchange="batchEdit.editBatchDate(\''.$endYMD.'\', \'end\'); return false;"
             name="startDate" id="endDate" value="'
             . date('Y-m-d', strtotime($model->endDate()))
             . '"/> | ' . '<a href="batchReport.php?batchID=' . $id . '">Report</a><br />';
@@ -1128,6 +1128,7 @@ HTML;
         if ($cpCount > 0) {
             $ret .= "<a href=\"EditBatchPage.php?id=$id&paste=1\">Paste Items ($cpCount)</a> | ";
         }
+
         if ($dtype == 0 || (time() >= $start && time() <= $end)) {
             $ret .= "<a href=\"\" class=\"{$noprices}\" onclick=\"batchEdit.forceNow($id); return false;\">Force batch</a> | ";
         }
