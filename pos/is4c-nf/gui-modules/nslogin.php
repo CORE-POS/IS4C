@@ -27,7 +27,7 @@ use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class nslogin extends NoInputCorePage 
+class nslogin extends NoInputCorePage
 {
     private $color;
     private $heading;
@@ -57,6 +57,10 @@ class nslogin extends NoInputCorePage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif (Authenticate::checkPassword($passwd)) {
+                TransRecord::addLogRecord(array(
+                   'upc' => 'NOSALE',
+                   'description' => 'No Sale Emp#' . $this->session->get('CashierNo'),
+                ));
                 $drawers = new Drawers($this->session, null);
                 $drawers->kick();
                 if ($this->session->get('LoudLogins') == 1) {
@@ -92,9 +96,9 @@ class nslogin extends NoInputCorePage
         <span class="larger">
         <?php echo $this->heading ?>
         </span><br />
-        <form name="form" id="nsform" method="post" autocomplete="off" 
+        <form name="form" id="nsform" method="post" autocomplete="off"
             action="<?php echo AutoLoader::ownURL(); ?>">
-        <input type="password" name="userPassword" tabindex="0" 
+        <input type="password" name="userPassword" tabindex="0"
             onblur="$('#userPassword').focus();" id="userPassword" />
         <input type="hidden" id="reginput" name="reginput" value="" />
         </form>
@@ -110,4 +114,3 @@ class nslogin extends NoInputCorePage
 }
 
 AutoLoader::dispatch();
-
