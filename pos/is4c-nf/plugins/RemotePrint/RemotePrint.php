@@ -75,24 +75,21 @@ class RemotePrint extends Plugin
                 LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint AS b
                     ON l.department=b.identifier AND b.type='Department'
             WHERE emp_no=? AND register_no=? AND trans_no=?
-                AND trans_status NOT IN ('V','R')
-                AND voided = 0
-                AND quantity > 0
             ORDER BY trans_id");
         $infoR = $dbc->execute($infoP, array($emp, $reg, $trans));
         $lines = array();
         $comments = array();
-        $hri = array();
+        $hri = false;
         while ($row = $dbc->fetchRow($infoR)) {
-            if (CoreLocal::get('RemotePrintDebug')) {
+/*            if (CoreLocal::get('RemotePrintDebug')) {
                 $lines[] = array(
                     'qty'=>1, 
                     'upc'=>'', 
                     'description'=>"{$row['upc']} | {$row['charflag']} | {$row['trans_status']} | {$row['trans_subtype']}",
                 );
                 continue;
-            }
-            if ($row['trans_status'] == 'X' && $row['charflag'] != 'S' && $row['charflag'] != 'HR') {
+            } */
+            if ($row['trans_status'] == 'X' && $row['charflag'] != 'S') {
                 // This is a canceled line. Skip it.
                 continue;
             }
@@ -101,43 +98,43 @@ class RemotePrint extends Plugin
                 $lines = array();
                 $comments = array();
             }
-            if ($row['remote']) {
+            if ($row['remote'] || ($row['trans_subtype'] == 'CM' && $row['charflag'] != 'HR')) {
                 $lines[] = array('upc'=>$row['upc'], 'description'=>$row['description'], 'qty'=>$row['quantity']);
-            } elseif ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
-                $hri[] = $row['description'];
-            } elseif ($row['trans_subtype'] == 'CM') {
-                $lines[] = $row['description'];
+            } 
+			if ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
+                $hri = $row['description'];
             }
         }
 
         if (count($lines) > 0) {
-            $stars = str_repeat('*', 40);
-            $receipt = $stars . "\n\n";
-            $receipt .= date('Y-m-d h:i:sA') . ' ' . $emp . '-' . $reg . '-' . $trans . "\n\n";
-            if (count($hri) > 0) {
-                $receipt = $stars . "\n\n";
-                $receipt .= date('Y-m-d h:i:sA') . "\n" . implode("\n", $hri) . "\n";
-            }
-            $receipt .= $stars . "\n\n";
-
-            $prevWasItem = true;
+			$receipt = "\n";
+			/***********/
+			//Our Table specific
+			$receipt .= str_repeat("*",10) . " EXPO  STATION " . str_repeat("*",10) . "\n\n";
+			//Original: $receipt .= str_repeat("*",35) . "\n\n";
+			if ($hri) {
+				$receipt .= chr(29).chr(33).chr(17);	/* big font */
+                $receipt .= $hri;
+				$receipt .= chr(29).chr(33).chr(00);	/* normal font */
+				$receipt .= "\n\n";
+            }			
+			$receipt .= date('Y-m-d h:i:sA') . "\n\n";
+            $receipt .= str_repeat("*",35) . "\n\n";
+			$receipt .= $emp . '-' . $reg . '-' . $trans . "\n\n";
+            
             foreach ($lines as $line) {
-                if (is_array($line)) {
-                    $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
-                        . str_pad($line['quantity'], 5, ' ', STR_PAD_LEFT)
-                        . "\n";
-                    $prevWasItem = true;
-                } else {
-                    $receipt .= $line . "\n";
-                    $prevWasItem = false;
-                }
-                if ($prevWasItem) {
-                    $receipt .= "\n";
-                }
+				if ($line['qty'] == 0) {
+					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT) . "\n\n";
+				} else {
+					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
+						. str_pad($line['qty'], 5, ' ', STR_PAD_LEFT)
+						. "\n";
+				}
             }
-
-            $receipt .= $stars . "\n\n";
-            $receipt = ReceiptLib::cutReceipt($receipt, false);
+            $receipt .= "\n\n";
+            //$receipt .= implode("\n", $comments);
+            $receipt .= "\n\n";
+            $receipt = ReceiptLib::cutReceipt($receipt,false);
             
             if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
                 $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
