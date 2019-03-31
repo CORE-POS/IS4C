@@ -25,7 +25,7 @@ use COREPOS\pos\plugins\Plugin;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
 
-class RemotePrint2 extends Plugin 
+class RemotePrint2 extends Plugin
 {
     public $plugin_settings = array(
         'RemotePrintDevice2' => array(
@@ -83,8 +83,8 @@ class RemotePrint2 extends Plugin
         while ($row = $dbc->fetchRow($infoR)) {
 /*            if (CoreLocal::get('RemotePrintDebug2')) {
                 $lines[] = array(
-                    'qty'=>1, 
-                    'upc'=>'', 
+                    'qty'=>1,
+                    'upc'=>'',
                     'description'=>"{$row['upc']} | {$row['charflag']} | {$row['trans_status']} | {$row['trans_subtype']}",
                 );
                 continue;
@@ -100,7 +100,7 @@ class RemotePrint2 extends Plugin
             }
             if ($row['remote'] || ($row['trans_subtype'] == 'CM' && $row['charflag'] != 'HR')) {
                 $lines[] = array('upc'=>$row['upc'], 'description'=>$row['description'], 'qty'=>$row['quantity']);
-            } 
+            }
 			if ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
                 $hri = $row['description'];
             }
@@ -110,18 +110,18 @@ class RemotePrint2 extends Plugin
 			$receipt = "\n";
 			/***********/
 			//Our Table specific
-			$receipt .= str_repeat("*",10) . " EXPO  STATION " . str_repeat("*",10) . "\n\n";
+			$receipt .= str_repeat("*",10) . " PIZZA  STATION " . str_repeat("*",10) . "\n\n";
 			//Original: $receipt .= str_repeat("*",35) . "\n\n";
 			if ($hri) {
 				$receipt .= chr(29).chr(33).chr(17);	/* big font */
                 $receipt .= $hri;
 				$receipt .= chr(29).chr(33).chr(00);	/* normal font */
 				$receipt .= "\n\n";
-            }			
+            }
 			$receipt .= date('Y-m-d h:i:sA') . "\n\n";
             $receipt .= str_repeat("*",35) . "\n\n";
 			$receipt .= $emp . '-' . $reg . '-' . $trans . "\n\n";
-            
+
             foreach ($lines as $line) {
 				if ($line['qty'] == 0) {
 					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT) . "\n\n";
@@ -135,7 +135,7 @@ class RemotePrint2 extends Plugin
             //$receipt .= implode("\n", $comments);
             $receipt .= "\n\n";
             $receipt = ReceiptLib::cutReceipt($receipt,false);
-            
+
             if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
                 $port = fopen(CoreLocal::get('RemotePrintDevice2'), 'w');
                 fwrite($port, $receipt);
@@ -149,4 +149,3 @@ class RemotePrint2 extends Plugin
         }
     }
 }
-
