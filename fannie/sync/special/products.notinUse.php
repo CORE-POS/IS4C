@@ -26,6 +26,9 @@ require_once(dirname(__FILE__) . '/generic.mysql.php');
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane) {
+    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+        continue;
+    }
     $dbc = new SQLManager($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['op']] !== False) {

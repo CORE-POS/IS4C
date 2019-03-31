@@ -9,6 +9,9 @@ foreach ($tenders as $t) {
 }
 list($idIn, $idArgs) = $dbc->safeInClause($ids);
 foreach ($FANNIE_LANES as $lane) {
+    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+        continue;
+    }
     $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->isConnected($lane['op'])) {
@@ -33,4 +36,3 @@ foreach ($FANNIE_LANES as $lane) {
 }
 
 echo "<li>Tender table synched</li>";
-

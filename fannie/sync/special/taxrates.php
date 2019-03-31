@@ -9,6 +9,9 @@
 
 include(__DIR__ . '/../../config.php');
 foreach ($FANNIE_LANES as $lane) {
+    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+        continue;
+    }
     $dbc->addConnection($lane['host'],$lane['type'],$lane['trans'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['trans']] !== false) {
@@ -26,4 +29,3 @@ foreach ($FANNIE_LANES as $lane) {
 }
 
 echo "<li>Tax rates table synched</li>";
-
