@@ -25,7 +25,7 @@ use COREPOS\pos\plugins\Plugin;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
 
-class RemotePrintOTC extends Plugin 
+class RemotePrintOTC extends Plugin
 {
     public $plugin_settings = array(
         'RemotePrintDeviceOTC-1' => array(
@@ -88,8 +88,8 @@ class RemotePrintOTC extends Plugin
         while ($row = $dbc->fetchRow($infoR)) {
 /*            if (CoreLocal::get('RemotePrintDebugOTC')) {
                 $lines[] = array(
-                    'qty'=>1, 
-                    'upc'=>'', 
+                    'qty'=>1,
+                    'upc'=>'',
                     'description'=>"{$row['upc']} | {$row['charflag']} | {$row['trans_status']} | {$row['trans_subtype']}",
                 );
                 continue;
@@ -105,7 +105,7 @@ class RemotePrintOTC extends Plugin
             }
             if ($row['remote'] || ($row['trans_subtype'] == 'CM' && $row['charflag'] != 'HR')) {
                 $lines[] = array('upc'=>$row['upc'], 'description'=>$row['description'], 'qty'=>$row['quantity']);
-            } 
+            }
 			if ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
                 $hri = $row['description'];
             }
@@ -115,18 +115,18 @@ class RemotePrintOTC extends Plugin
 			$receipt = "\n";
 			/***********/
 			//Our Table specific
-			$receipt .= str_repeat("*",10) . " EXPO  STATION " . str_repeat("*",10) . "\n\n";
+			$receipt .= str_repeat("*",10) . " OTC KITCHEN " . str_repeat("*",10) . "\n\n";
 			//Original: $receipt .= str_repeat("*",35) . "\n\n";
 			if ($hri) {
 				$receipt .= chr(29).chr(33).chr(17);	/* big font */
                 $receipt .= $hri;
 				$receipt .= chr(29).chr(33).chr(00);	/* normal font */
 				$receipt .= "\n\n";
-            }			
+            }
 			$receipt .= date('Y-m-d h:i:sA') . "\n\n";
             $receipt .= str_repeat("*",35) . "\n\n";
 			$receipt .= $emp . '-' . $reg . '-' . $trans . "\n\n";
-            
+
             foreach ($lines as $line) {
 				if ($line['qty'] == 0) {
 					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT) . "\n\n";
@@ -152,7 +152,7 @@ class RemotePrintOTC extends Plugin
                 fclose($port);
             } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {
                 $driver->setTarget(CoreLocal::get('RemotePrint'));
-                $driver->writeLine($receipt);				
+                $driver->writeLine($receipt);
 			} else {
                 $driver->writeLine($receipt);
             }
