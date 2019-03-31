@@ -48,8 +48,8 @@ class AutoCoupon extends TotalAction
         if (isset($hc_table['description']) && isset($hc_table['auto'])) {
             $today = date('Y-m-d');
             $autoR = $dbc->query("
-                SELECT coupID, description 
-                FROM houseCoupons 
+                SELECT coupID, description
+                FROM houseCoupons
                 WHERE auto=1
                     AND '$today' BETWEEN startDate AND endDate");
             while($autoW = $dbc->fetch_row($autoR)) {
@@ -84,7 +84,7 @@ class AutoCoupon extends TotalAction
 
             if ($hcoup->checkQualifications($id, true) !== true) {
                 // member or transaction does not meet requirements
-                // for auto-coupon purposes, this isn't really an 
+                // for auto-coupon purposes, this isn't really an
                 // error. no feedback necessary
                 continue;
             }
@@ -104,13 +104,13 @@ class AutoCoupon extends TotalAction
             }
 
             $next_val = $add['value'] - $val;
-            if ($next_val == 0) {
+            if (abs($next_val) < 0.005) {
                 // no need to add another line item
                 // previous one(s) sum to correct total
                 continue;
             }
 
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $description);
+            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $description, $add['discountable']);
         }
 
         CoreLocal::set('msgrepeat', $repeat);
@@ -118,4 +118,3 @@ class AutoCoupon extends TotalAction
         return true;
     }
 }
-
