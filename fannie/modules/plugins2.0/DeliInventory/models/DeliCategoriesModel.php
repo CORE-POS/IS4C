@@ -35,6 +35,7 @@ class DeliCategoriesModel extends BasicModel
     'storeID' => array('type'=>'INT'),
     'name' => array('type'=>'VARCHAR(255)'),
     'seq' => array('type'=>'INT', 'default'=>0),
+    'salesCode' => array('type'=>'VARCHAR(255)'),
     );
 
 }

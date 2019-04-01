@@ -304,7 +304,7 @@ HTML;
     {
         $storeID = Store::getIdByIp();
         $storeID=1;
-        $catP = $this->connection->prepare("SELECT deliCategoryID, name FROM DeliCategories WHERE storeID=? ORDER BY seq, name");
+        $catP = $this->connection->prepare("SELECT deliCategoryID, name, salesCode FROM DeliCategories WHERE storeID=? ORDER BY seq, name");
         $itemP = $this->connection->prepare("SELECT i.*, v.vendorName
             FROM deliInventoryCat AS i
                 LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
@@ -327,6 +327,11 @@ HTML;
         $ret .= $this->addCategoryForm();
         $ret .= '</div></div>';
 
+        $summary = array(
+            41201 => 0,
+            41205 => 0,
+            41600 => 0,
+        );
         $catR = $this->connection->execute($catP, array($storeID));
         while ($catW = $this->connection->fetchRow($catR)) {
             $itemR = $this->connection->execute($itemP, array($catW['deliCategoryID']));
@@ -360,7 +365,7 @@ HTML;
                 if ($total == INF) {
                     $total = 0;
                 }
-                $ret .= sprintf('<tr data-item-id="%d" class="%s">
+                $ret .= sprintf('<tr data-item-id="%d" class="%s %s">
                     <td><input type="checkbox" title="Flag needing attention" onchange="di.attention(this);" %s /></td>
                     <td class="name editable">%s</td>
                     <td class="size editable">%s</td>
@@ -376,6 +381,7 @@ HTML;
                     </tr>',
                     $itemW['id'],
                     ($itemW['attnFlag'] ? 'danger' : ''),
+                    ($total > 500 ? 'warning' : ''),
                     ($itemW['attnFlag'] ? 'checked' : ''),
                     $itemW['item'],
                     $itemW['size'],
@@ -390,10 +396,19 @@ HTML;
                     $itemW['id'], FannieUI::deleteIcon()
                 );
                 $sum += $total;
+
+                $summary[$catW['salesCode']] += $total;
             }
             $ret .= sprintf('<tr><th colspan="6">Grand Total</th><th>$%.2f</th><th class="trash" colspan="3"></tr>', $sum);
             $ret .= '</table>';
         }
+
+        $ret .= '<h3>Totals by Account</h3>';
+        $ret .= '<table class="table table-bordered">';
+        foreach ($summary as $code => $ttl) {
+            $ret .= sprintf('<tr><td>%s</td><td>%s</td></tr>', $code, number_format($ttl));
+        }
+        $ret .= '</table>';
 
         $vendR = $this->connection->query("SELECT vendorID, vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName");
         $vendors = array();
