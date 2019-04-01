@@ -29,10 +29,10 @@ class RpSegmentation extends FannieRESTfulPage
         $sales = FormLib::get('sales');
         $sales = str_replace(',', '', $sales);
 
-        $existP = $this->connection->prepare("SELECT rpSegmentID FROM RpSegments WHERE storeID=? AND startDate=?");
+        $existsP = $this->connection->prepare("SELECT rpSegementID FROM RpSegments WHERE storeID=? AND startDate=?");
         $exists = $this->connection->getValue($existsP, array($this->store, $this->segID));
         if ($exists) {
-            $prep = $this->connection->prepare("UPDATE RpSegments SET sales=?, segmentation=? WHERE rpSegmentID=?");
+            $prep = $this->connection->prepare("UPDATE RpSegments SET sales=?, segmentation=? WHERE rpSegementID=?");
             $saved = $this->connection->execute($prep, array($sales, json_encode($segment), $exists));
         } else {
             $prep = $this->connection->prepare("INSERT INTO RpSegments
