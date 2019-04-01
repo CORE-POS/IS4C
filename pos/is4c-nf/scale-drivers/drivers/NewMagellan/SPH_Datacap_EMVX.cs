@@ -215,6 +215,11 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
+                        stream.Close();
+                        Console.WriteLine("Wrote response");
+                        if (message.Contains("EMV")) {
+                            FlaggedReset();
+                        }
                     }
                     client.Close();
                 }
