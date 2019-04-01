@@ -86,6 +86,7 @@ static public function center($text, $linewidth) {
 // -------------------------------------------------------------
 static public function printReceiptHeader($dateTimeStamp, $ref) 
 {
+    self::initDriver();
     $receipt = self::$PRINT->TextStyle(True);
     $imgCache = CoreLocal::get('ImageCache');
     if (!is_array($imgCache)) $imgCache = array();
