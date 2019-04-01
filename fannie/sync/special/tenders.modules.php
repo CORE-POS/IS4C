@@ -20,7 +20,7 @@ foreach ($FANNIE_LANES as $lane) {
         $chkP = $dbc->prepare("SELECT TenderID FROM tenders WHERE TenderID=?", $lane['op']);
         $insP = $dbc->prepare("INSERT INTO tenders (TenderID, TenderCode, TenderName, TenderType,
                     ChangeMessage, MinAmount, MaxAmount, MaxRefund, TenderModule, SalesCode)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'TenderModule', ?", $lane['op']);
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'TenderModule', ?)", $lane['op']);
         $upP = $dbc->prepare("UPDATE tenders SET TenderCode=?, TenderName=?, TenderType=?, ChangeMessage=?,
                     MinAmount=?, MaxAmount=?, MaxRefund=?, SalesCode=? WHERE TenderID=?", $lane['op']);
         foreach ($tenders as $t) {
