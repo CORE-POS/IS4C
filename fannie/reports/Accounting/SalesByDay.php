@@ -31,7 +31,7 @@ class SalesByDay extends FannieReportPage
     public $description = '[Sales by Day] lists daily totals for account(s)';
     public $report_set = 'Accounting';
 
-    protected $report_headers = array('Date', 'Coding', 'Quantity', 'Amount ($)');
+    protected $report_headers = array('Date', 'Coding', 'Quantity', 'Cost ($)', 'Retail ($)', 'Est. Margin');
     protected $title = "Fannie : Sales by Day";
     protected $header = "Sales by Day";
     protected $required_fields = array('date1', 'date2');
@@ -54,6 +54,7 @@ class SalesByDay extends FannieReportPage
                 DAY(tdate) AS day,
                 t.salesCode,
                 " . DTrans::sumQuantity('d') . " AS qty,
+                SUM(CASE WHEN d.cost <> 0 THEN d.cost ELSE (1 - t.margin)*d.total END) AS cost,
                 SUM(total) AS ttl
             FROM {$dlog} AS d
                 LEFT JOIN departments AS t ON d.department=t.dept_no
@@ -83,11 +84,25 @@ class SalesByDay extends FannieReportPage
                 $date,
                 $row['salesCode'],
                 sprintf('%.2f', $row['qty']),
+                sprintf('%.2f', $row['cost']),
                 sprintf('%.2f', $row['ttl']),
+                sprintf('%.2f', ($row['ttl'] - $row['cost']) / $row['ttl'] * 100),
             );
         }
 
         return $data;
+    }
+
+    public function calculate_footers($data)
+    {
+        $sums = array(0, 0, 0);
+        foreach ($data as $d) {
+            $sums[0] += $d[2];
+            $sums[1] += $d[3];
+            $sums[2] += $d[4];
+        }
+
+        return array('Total', '', $sums[0], $sums[1], $sums[2], sprintf('%.2f', 100 * ($sums[2] - $sums[1]) / $sums[2]));
     }
 
     public function form_content()
