@@ -160,7 +160,7 @@ class SaHandheldPage extends FannieRESTfulPage
         $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section,storeID)
                 VALUES ('.$dbc->now().',?,0,?,?,?)');
         $dbc->execute($delP, array($upc, $this->section, $store));
-        if ($qty > 0){
+        if ($qty > 0 || strlen(ltrim($upc, '0')) == 5){
             $dbc->execute($insP, array($upc, $qty, $this->section, $store));
         }
         $ret['qty'] = $qty;
