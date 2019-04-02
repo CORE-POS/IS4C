@@ -287,6 +287,9 @@ table.shelf-audit tr:hover {
         $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Status,Normal Retail Total\r\n";
         $totals = array();
         $vendors = array();
+        $manuals = array();
+        $adjustUp = array();
+        $adjustDown = array();
         foreach($this->scans as $row) {
             if ($row['cost'] == 0 && $row['margin'] != 0) {
                 $row['cost'] = $row['normal_retail'] - ($row['margin'] * $row['normal_retail']);
@@ -299,9 +302,49 @@ table.shelf-audit tr:hover {
                 $row['retailstatus'],
                 ($row['quantity']*$row['normal_retail'])
             );
-            if (!isset($totals[$row['salesCode']]))
+
+            /**
+             * Deal with special behavior PLUs first since
+             * they include invalid quantites that should be 
+             * carried into the other totals
+             */
+            $plu = ltrim($row['upc'], '0');
+            $goodQty = true;
+            if (strlen($plu) == 5) {
+                if (strpos($row['description'], ' @ COST')) {
+                    if (!isset($manuals[$row['salesCode']])) {
+                        $manuals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
+                    }
+                    $manuals[$row['salesCode']]['qty'] += $row['quantity'];
+                    $manuals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+                    $manuals[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
+                    $manuals[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
+                    $goodQty = false;
+                } elseif (strpos($row['description'], 'ADJ SALES')) {
+                    if (!isset($adjustDown[$row['salesCode']])) {
+                        $adjustDown[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
+                    }
+                    $adjustDown[$row['salesCode']]['qty'] += $row['quantity'];
+                    $adjustDown[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+                    $adjustDown[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
+                    $adjustDown[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
+                    $goodQty = false;
+                } elseif (strpos($row['description'], ' RECV ')) {
+                    if (!isset($adjustUp[$row['salesCode']])) {
+                        $adjustUp[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
+                    }
+                    $adjustUp[$row['salesCode']]['qty'] += $row['quantity'];
+                    $adjustUp[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+                    $adjustUp[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
+                    $adjustUp[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
+                    $goodQty = false;
+                }
+            }
+
+            if (!isset($totals[$row['salesCode']])) {
                 $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
-            $totals[$row['salesCode']]['qty'] += $row['quantity'];
+            }
+            $totals[$row['salesCode']]['qty'] += $goodQty ? $row['quantity'] : 0;
             $totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
             $totals[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
             $totals[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
@@ -314,10 +357,11 @@ table.shelf-audit tr:hover {
             if (!isset($vendors[$row['vendor']][$row['salesCode']])) {
                 $vendors[$row['vendor']][$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
             }
-            $vendors[$row['vendor']][$row['salesCode']]['qty'] += $row['quantity'];
+            $vendors[$row['vendor']][$row['salesCode']]['qty'] += $goodQty ? $row['quantity']: 0;
             $vendors[$row['vendor']][$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
             $vendors[$row['vendor']][$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
             $vendors[$row['vendor']][$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
+
         }
         $ret .= ",,,,,,,,\r\n";
         foreach($totals as $code => $info){
@@ -330,6 +374,34 @@ table.shelf-audit tr:hover {
                 $ret .= sprintf(",,%s,%s,,,%.2f,,%.2f,,,%.2f,\r\n",
                         $vendor,$code, $info['qty'], $info['costTtl'], $info['normalTtl']);
             }
+        }
+        $ret .= ",,,,,,,,\r\n";
+        foreach($manuals as $code => $info){
+            $ret .= sprintf(",,MANUAL,%s,,,,,%.2f,,,%.2f,\r\n",
+                    $code, $info['costTtl'], $info['normalTtl']);
+        }
+        $ret .= ",,,,,,,,\r\n";
+        foreach($adjustUp as $code => $info){
+            $ret .= sprintf(",,RECEIVE ADJUSTMENT,%s,,,,,%.2f,,,%.2f,\r\n",
+                    $code, $info['costTtl'], $info['normalTtl']);
+        }
+        $ret .= ",,,,,,,,\r\n";
+        foreach($adjustDown as $code => $info){
+            $ret .= sprintf(",,SALES ADJUSTMENT,%s,,,,,%.2f,,,%.2f,\r\n",
+                    $code, $info['costTtl'], $info['normalTtl']);
+        }
+        $ret .= ",,,,,,,,\r\n";
+        foreach($totals as $code => $info){
+            if (isset($adjustDown[$code])) {
+                $info['costTtl'] -= $adjustDown[$code]['costTtl'];
+                $info['normalTtl'] -= $adjustDown[$code]['normalTtl'];
+            }
+            if (isset($adjustUp[$code])) {
+                $info['costTtl'] -= $adjustUp[$code]['costTtl'];
+                $info['normalTtl'] -= $adjustUp[$code]['normalTtl'];
+            }
+            $ret .= sprintf(",,PRE ADJUSTMENTS,%s,,,%.2f,,%.2f,,,%.2f,\r\n",
+                    $code, $info['qty'], $info['costTtl'], $info['normalTtl']);
         }
         return $ret;
     }
