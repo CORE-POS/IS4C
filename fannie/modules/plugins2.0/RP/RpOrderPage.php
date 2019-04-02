@@ -162,19 +162,19 @@ class RpOrderPage extends FannieRESTfulPage
         $model->storeID(FormLib::get('store'));
         $model->categoryID(FormLib::get('catID'));
         $model->addedBy(1);
-        $model->caseSize(FormLib::get('newCase'));
-        $model->vendorID(FormLib::get('newVendor'));
-        $model->vendorSKU(FormLib::get('newSKU'));
-        $model->vendorItem(FormLib::get('newItem'));
+        $model->caseSize(FormLib::get('caseSize'));
+        $model->vendorID(FormLib::get('vendor'));
+        $model->vendorSKU(FormLib::get('sku'));
+        $model->vendorItem(FormLib::get('item'));
 
-        $lc = FormLib::get('newLC');
-        $upc = BarcodeLib::padUPC(FormLib::get('newUPC'));
+        $lc = FormLib::get('lc');
+        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
         if ($lc) {
             $model->upc('LC' . $lc);
         } elseif ($upc != '0000000000000') {
             $model->upc($upc);
-        } elseif (FormLib::get('newSKU')) {
-            $model->upc(FormLib::get('newSKU'));
+        } elseif (FormLib::get('sku')) {
+            $model->upc(FormLib::get('sku'));
         } else {
             $model->upc(uniqid());
         }
