@@ -283,25 +283,41 @@ table.shelf-audit tr:hover {
         return ob_get_clean();
     }
 
+    private function estimateMargin($scans, $code)
+    {
+        $retail = 0;
+        $cost = 0;
+        $match = 0;
+        $noMatch = 0;
+        foreach ($scans as $row) {
+            if ($row['salesCode'] != $code) {
+                continue;
+            }
+            if ($row['cost'] == 0 || $row['cost'] == $row['normal_retail']) {
+                $noMatch++;
+            } else {
+                $match++;
+                $retail += ($row['quantity'] * $row['normal_retail']);
+                $cost += ($row['quantity'] * $row['cost']);
+            }
+        }
+
+        if ($noMatch > $match || $retail <= 0 || $cost <= 0) {
+            return 0;
+        }
+
+        return ($retail - $cost) / $retail;
+    }
+
     function csv_content(){
         $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Status,Normal Retail Total\r\n";
         $totals = array();
         $vendors = array();
         $manuals = array();
+        $services = array();
         $adjustUp = array();
         $adjustDown = array();
         foreach($this->scans as $row) {
-            if ($row['cost'] == 0 && $row['margin'] != 0) {
-                $row['cost'] = $row['normal_retail'] - ($row['margin'] * $row['normal_retail']);
-                $row['retailstatus'] .= '*';
-            }
-            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.2f,\r\n",
-                $row['upc'],$row['description'],$row['vendor'],$row['salesCode'],$row['dept_no'],
-                $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
-                $row['normal_retail'],
-                $row['retailstatus'],
-                ($row['quantity']*$row['normal_retail'])
-            );
 
             /**
              * Deal with special behavior PLUs first since
@@ -311,7 +327,16 @@ table.shelf-audit tr:hover {
             $plu = ltrim($row['upc'], '0');
             $goodQty = true;
             if (strlen($plu) == 5) {
-                if (strpos($row['description'], ' @ COST')) {
+                if (strpos($row['description'], 'INV SERVICE') !== false) {
+                    $estMargin = $this->estMargin($this->scans, $row['salesCode']);
+                    $row['cost'] = $row['normal_retail'] - ($estMargin * $row['normal_retail']);
+                    $row['retailstatus'] .= '*';
+                    $services[$row['salesCode']]['qty'] += $row['quantity'];
+                    $services[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+                    $services[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
+                    $services[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
+                    $goodQty = false;
+                } elseif (strpos($row['description'], ' @ COST')) {
                     if (!isset($manuals[$row['salesCode']])) {
                         $manuals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
                     }
@@ -340,6 +365,18 @@ table.shelf-audit tr:hover {
                     $goodQty = false;
                 }
             }
+
+            if ($row['cost'] == 0 && $row['margin'] != 0) {
+                $row['cost'] = $row['normal_retail'] - ($row['margin'] * $row['normal_retail']);
+                $row['retailstatus'] .= '*';
+            }
+            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.2f,\r\n",
+                $row['upc'],$row['description'],$row['vendor'],$row['salesCode'],$row['dept_no'],
+                $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
+                $row['normal_retail'],
+                $row['retailstatus'],
+                ($row['quantity']*$row['normal_retail'])
+            );
 
             if (!isset($totals[$row['salesCode']])) {
                 $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
@@ -375,20 +412,33 @@ table.shelf-audit tr:hover {
                         $vendor,$code, $info['qty'], $info['costTtl'], $info['normalTtl']);
             }
         }
-        $ret .= ",,,,,,,,\r\n";
-        foreach($manuals as $code => $info){
-            $ret .= sprintf(",,MANUAL,%s,,,,,%.2f,,,%.2f,\r\n",
-                    $code, $info['costTtl'], $info['normalTtl']);
+        if (count($manuals) > 0) {
+            $ret .= ",,,,,,,,\r\n";
+            foreach($manuals as $code => $info){
+                $ret .= sprintf(",,MANUAL,%s,,,,,%.2f,,,%.2f,\r\n",
+                        $code, $info['costTtl'], $info['normalTtl']);
+            }
         }
-        $ret .= ",,,,,,,,\r\n";
-        foreach($adjustUp as $code => $info){
-            $ret .= sprintf(",,RECEIVE ADJUSTMENT,%s,,,,,%.2f,,,%.2f,\r\n",
-                    $code, $info['costTtl'], $info['normalTtl']);
+        if (count($services) > 0) {
+            $ret .= ",,,,,,,,\r\n";
+            foreach($services as $code => $info){
+                $ret .= sprintf(",,SERVICE,%s,,,,,%.2f,,,%.2f,\r\n",
+                        $code, $info['costTtl'], $info['normalTtl']);
+            }
         }
-        $ret .= ",,,,,,,,\r\n";
-        foreach($adjustDown as $code => $info){
-            $ret .= sprintf(",,SALES ADJUSTMENT,%s,,,,,%.2f,,,%.2f,\r\n",
-                    $code, $info['costTtl'], $info['normalTtl']);
+        if (count($adjustUp) > 0) {
+            $ret .= ",,,,,,,,\r\n";
+            foreach($adjustUp as $code => $info){
+                $ret .= sprintf(",,RECEIVE ADJUSTMENT,%s,,,,,%.2f,,,%.2f,\r\n",
+                        $code, $info['costTtl'], $info['normalTtl']);
+            }
+        }
+        if (count($adjustDown) > 0) {
+            $ret .= ",,,,,,,,\r\n";
+            foreach($adjustDown as $code => $info){
+                $ret .= sprintf(",,SALES ADJUSTMENT,%s,,,,,%.2f,,,%.2f,\r\n",
+                        $code, $info['costTtl'], $info['normalTtl']);
+            }
         }
         $ret .= ",,,,,,,,\r\n";
         foreach($totals as $code => $info){
