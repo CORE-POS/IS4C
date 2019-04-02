@@ -120,6 +120,9 @@ class CoopDealsReviewPage extends FanniePage
         if (isset($blDef['signMultiplier'])) {
             $insQ .= ", signMultiplier";
         }
+        if (isset($blDef['cost'])) {
+            $insQ .= ", cost";
+        }
         $insQ .= ") VALUES (?, ?, ?, 0";
         if (isset($blDef['signMultiplier'])) {
             $insQ .= ", ?";
