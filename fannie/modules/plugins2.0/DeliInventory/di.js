@@ -47,6 +47,8 @@ var di = (function ($) {
         $.ajax({
             type: 'POST',
             data: dataStr
+        }).error(function () {
+            alert('Error! may have lost connection');
         });
     }
 
@@ -105,6 +107,8 @@ var di = (function ($) {
         $.ajax({
             type: 'POST',
             data: dataStr
+        }).error(function () {
+            alert('Error! may have lost connection');
         });
     }
 
@@ -161,6 +165,8 @@ var di = (function ($) {
                 $.ajax({
                     type: 'post',
                     data: dstr
+                }).error(function () {
+                    alert('Error! may have lost connection');
                 });
             }
         });
@@ -198,6 +204,8 @@ var di = (function ($) {
         $.ajax({
             type: 'post',
             data: dstr
+        }).error(function () {
+            alert('Error! may have lost connection');
         });
     };
 
