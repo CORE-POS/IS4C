@@ -83,7 +83,7 @@ class DefaultReceiptSort
         $returnset = array();
     
         // first add uncategorized item records
-        if (count($items['_uncategorized'] > 0)) {
+        if ((count($items['_uncategorized']) > 0)) {
             usort($items['_uncategorized'],array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','recordCompare'));
             foreach($items['_uncategorized'] as $row) {
                 $returnset[] = $row;
