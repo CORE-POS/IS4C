@@ -56,6 +56,10 @@ Deprecates lanes.clean.php.';
         set_time_limit(0);
 
         foreach ($this->config->get('LANES') as $ln) {
+            //Ignore if lane is offline
+            if (isset($ln['offline']) && $ln['offline'] && !$includeOffline) {
+                continue;
+            }
 
             $sql = $this->laneConnect($ln);
             if ($sql === false || !$sql->isConnected()) {

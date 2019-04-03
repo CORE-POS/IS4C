@@ -121,7 +121,8 @@ class SyncLanes
             $server_def = $dbc->tableDefinition($table, $server_db);
             $laneNumber=1;
             foreach ($lanes as $lane) {
-                if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
+                //Ignore if lane is offline
+                if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
                     continue;
                 }
                 try {
@@ -215,6 +216,10 @@ class SyncLanes
         }
         $laneNumber=1;
         foreach($lanes as $lane) {
+            //Ignore if lane is offline
+            if (isset($lane['offline']) && $lane['offline']) {
+                continue;
+            }          
             try {
                 $dbc->addConnection($lane['host'],$lane['type'],
                     $lane[$db],$lane['user'],$lane['pw']);
