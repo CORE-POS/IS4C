@@ -289,6 +289,13 @@ class AlertIncident extends FannieRESTfulPage
         return array($prev, $next);
     }
 
+    protected function get_id_handler()
+    {
+        $this->header .= ' #' . $this->id;
+
+        return true;
+    }
+
     protected function get_id_view()
     {
         $row = $this->getIncident($this->id);
