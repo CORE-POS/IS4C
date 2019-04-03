@@ -574,7 +574,7 @@ class MercuryDC extends MercuryE2E
 
             $tipAmount = $xml->query('/RStream/TranResponse/Amount/Gratuity');
             if ($tipAmount) {
-                $dept = $this->conf->get('PaycardsTipsDepartment');
+                $dept = $this->conf->get('PaycardsTipDepartment');
                 $deptObj = new COREPOS\pos\lib\DeptLib($this->conf);
                 $deptObj->deptkey($tipAmount*100, $dept . '0');
             }
