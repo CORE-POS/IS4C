@@ -44,9 +44,9 @@ class DefaultReceiptThanks
     */
     public function message($trans_num)
     {
-        $thanks = _('thank you');
+        $thanks = _('Thank You!');
         if (trim(CoreLocal::get("memberID")) != CoreLocal::get("defaultNonMem")) {
-            $thanks .= _(' - owner ') . trim(CoreLocal::get('memberID'));
+            $thanks .= _(' - Owner ') . trim(CoreLocal::get('memberID'));
         }
         $ret  = $this->printHandler->TextStyle(true,false,true);
         $ret .= $this->printHandler->centerString($thanks);
