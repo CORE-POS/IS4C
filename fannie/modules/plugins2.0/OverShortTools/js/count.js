@@ -124,6 +124,7 @@ function updateChangeOrder(d){
 	resumRow('cashInTills');
 
 	updateDepositAmount(d);
+    updateCloseAmount(d);
 
 	updateAAVariance();
 }
@@ -142,6 +143,7 @@ function updateOpenSafeCount(d){
 	resumRow('cashInTills');
 
 	updateDepositAmount(d);
+    updateCloseAmount(d);
 
 	updateAAVariance();
 }
@@ -161,6 +163,7 @@ function updateDropAmount(d){
 	document.getElementById('dropAmount1.00').innerHTML = Math.round(ones*100)/100;
 
 	updateDepositAmount(d);
+    updateCloseAmount(d);
 }
 
 function updateAAVariance(){
@@ -211,6 +214,33 @@ function resumRow(rowname){
         }
 	});
 	$('#'+rowname+'Total').html(Math.round(sum*100) / 100);
+}
+
+function updateCloseAmount(d) {
+    var fields = ['changeOrder', 'safeCount1', 'dropAmount']; 
+    var sum = 0;
+    for (var i = 0; i < fields.length; i++) {
+        var id = fields[i] + "" + d;
+        var elem = document.getElementById(id);
+        if (elem) {
+            var inc = Number(elem.value);
+            console.log(inc);
+            if (!isNaN(inc)) {
+                sum += inc;
+            }
+        }
+    }
+
+    var deposit = document.getElementById('depositAmount' + d);
+    if (deposit) {
+        deposit = deposit.innerHTML;
+        deposit = Number(deposit);
+        if (!isNaN(deposit)) {
+            sum -= deposit;
+        }
+    }
+
+    document.getElementById('safeCount2' + d).value = sum;
 }
 
 function updateDepositAmount(d){

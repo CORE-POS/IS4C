@@ -516,7 +516,7 @@ class OverShortSafecountPage extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/count.js');
+        $this->addScript('js/count.js?date=20190404');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');
@@ -534,7 +534,7 @@ class OverShortSafecountPage extends FanniePage {
         <div id=input>
         <table>
         <tr>
-            <th>Start Date</th><td><input type=text id=startDate /></td>
+            <th>Start Date</th><td><input type=text id=startDate autocomplete=off /></td>
             <td>
             <input type=submit Value=Load onclick="loader();" />
             </td>
@@ -555,7 +555,7 @@ class OverShortSafecountPage extends FanniePage {
             </td>
         </tr>
         <tr>
-            <th>End Date</th><td><input type=text id=endDate /></td>
+            <th>End Date</th><td><input type=text id=endDate autocomplete=off /></td>
             <td>Store</td>
             <td>
             <?php
