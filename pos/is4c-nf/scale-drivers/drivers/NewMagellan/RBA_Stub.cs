@@ -76,7 +76,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private Object syncLock;
 
     private bool allowDebitCB = true;
-    private string defaultMsg = "Welcome";
+    private string defaultMsg = "Our Table";
     private string bufferedCardType = "";
 
     public RBA_Stub(string p)
