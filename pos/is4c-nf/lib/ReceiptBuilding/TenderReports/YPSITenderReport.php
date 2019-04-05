@@ -51,8 +51,8 @@ static public function get($session)
 
     $cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),e.Lastname) as cashier
-        FROM dlog d, is4c_op.employees e
-        WHERE d.emp_no = e.emp_no AND d.register_no = ". $session->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
+        FROM dlog d, opdata.employees e
+        WHERE d.emp_no = e.emp_no AND d.register_no = ". $session->get('laneno')." AND d.emp_no <> 99999 AND d.trans_type <> 'L' 
         AND d.tdate >= '".$shiftCutoff."'
         GROUP BY d.emp_no ORDER BY d.tdate";
         
