@@ -173,7 +173,7 @@ function trTotal($session,$k, $label,$i=False)
         if ($row[0] != '') $shiftCutoff = $row[0];
     }
 
-    if (is_array($k)) $k = "'" . implode(",'", $k) . "'";
+    if (is_array($k)) $k = implode("','", $k);
     if (!is_numeric($k)) { 
         if ($k[0] == '#') {
             $k = substr($k,1);
