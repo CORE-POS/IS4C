@@ -181,7 +181,7 @@ class PriceCheckPage extends NoInputCorePage
 
         //Get quantity sold in suspended transactions
         $suspended = 0;
-        if ($this->session->get('InventoryIncludeSuspended')) {
+        if ($this->session->get('InventoryCheckIncludeSuspended')) {
             $invP = $dbc->prepare("SELECT SUM(quantity) AS qty
                 FROM suspended
                 WHERE upc=?
