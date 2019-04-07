@@ -40,7 +40,7 @@ class RemotePrint2 extends Plugin
             'options' => array(
                 'ESCPOS' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
                 'RAW/TCP' => 'COREPOS-pos-lib-PrintHandlers-ESCNetRawHandler',
-                'HTTP' => 'RemotePrintHandler',
+                'HTTP' => 'RemotePrinterHTTP2',
             ),
         ),
         'RemotePrintDebug2' => array(
@@ -54,7 +54,7 @@ class RemotePrint2 extends Plugin
         ),
     );
 
-    public $plugin_description = 'Send some info to a second remote printer';
+    public $plugin_description = 'Send some info to a remote printer';
 
     public function plugin_transaction_reset()
     {
@@ -70,9 +70,9 @@ class RemotePrint2 extends Plugin
             SELECT upc, description, quantity, charflag, trans_status, trans_subtype,
                 CASE WHEN a.identifier IS NOT NULL OR b.identifier IS NOT NULL THEN 1 ELSE 0 END as remote
             FROM localtranstoday AS l
-                LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint2 AS a
+                LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint AS a
                     ON l.upc=a.identifier AND a.type='UPC'
-                LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint2 AS b
+                LEFT JOIN " . CoreLocal::get('pDatabase') . $dbc->sep() . "RemotePrint AS b
                     ON l.department=b.identifier AND b.type='Department'
             WHERE emp_no=? AND register_no=? AND trans_no=?
             ORDER BY trans_id");
@@ -81,14 +81,17 @@ class RemotePrint2 extends Plugin
         $comments = array();
         $hri = false;
         while ($row = $dbc->fetchRow($infoR)) {
-/*            if (CoreLocal::get('RemotePrintDebug2')) {
+            if (CoreLocal::get('RemotePrintDebug2')) {
                 $lines[] = array(
                     'qty'=>1,
                     'upc'=>'',
                     'description'=>"{$row['upc']} | {$row['charflag']} | {$row['trans_status']} | {$row['trans_subtype']}",
                 );
                 continue;
-            } */
+            }
+            if ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
+                $hri = $row['description'];
+            }
             if ($row['trans_status'] == 'X' && $row['charflag'] != 'S') {
                 // This is a canceled line. Skip it.
                 continue;
@@ -101,51 +104,50 @@ class RemotePrint2 extends Plugin
             if ($row['remote'] || ($row['trans_subtype'] == 'CM' && $row['charflag'] != 'HR')) {
                 $lines[] = array('upc'=>$row['upc'], 'description'=>$row['description'], 'qty'=>$row['quantity']);
             }
-			if ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
-                $hri = $row['description'];
-            }
         }
 
         if (count($lines) > 0) {
-			$receipt = "\n";
-			/***********/
-			//Our Table specific
-			$receipt .= str_repeat("*",10) . " PIZZA  STATION " . str_repeat("*",10) . "\n\n";
-			//Original: $receipt .= str_repeat("*",35) . "\n\n";
-			if ($hri) {
-				$receipt .= chr(29).chr(33).chr(17);	/* big font */
-                $receipt .= $hri;
-				$receipt .= chr(29).chr(33).chr(00);	/* normal font */
-				$receipt .= "\n\n";
-            }
-			$receipt .= date('Y-m-d h:i:sA') . "\n\n";
+          $receipt = "\n";
+          if (CoreLocal::get("store")=="OurTable") {
+            //Our Table specific header
+            $receipt .= str_repeat("*",11) . " OTC   PIZZA " . str_repeat("*",11) . "\n\n";
+          } else {
             $receipt .= str_repeat("*",35) . "\n\n";
-			$receipt .= $emp . '-' . $reg . '-' . $trans . "\n\n";
+          }
+          if ($hri) {
+              $receipt .= chr(29).chr(33).chr(17);	/* big font */
+              $receipt .= $hri;
+              $receipt .= chr(29).chr(33).chr(00);	/* normal font */
+              $receipt .= "\n\n";
+          }
+          $receipt .= date('Y-m-d h:i:sA') . "\n\n";
+          $receipt .= str_repeat("*",35) . "\n\n";
+          $receipt .= $emp . '-' . $reg . '-' . $trans . "\n\n";
 
-            foreach ($lines as $line) {
-				if ($line['qty'] == 0) {
-					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT) . "\n\n";
-				} else {
-					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
-						. str_pad($line['qty'], 5, ' ', STR_PAD_LEFT)
-						. "\n";
-				}
-            }
-            $receipt .= "\n\n";
-            //$receipt .= implode("\n", $comments);
-            $receipt .= "\n\n";
-            $receipt = ReceiptLib::cutReceipt($receipt,false);
-
-            if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
-                $port = fopen(CoreLocal::get('RemotePrintDevice2'), 'w');
-                fwrite($port, $receipt);
-                fclose($port);
-            } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {
-                $driver->setTarget(CoreLocal::get('RemotePrint'));
-                $driver->writeLine($receipt);
+          foreach ($lines as $line) {
+            if ($line['qty'] == 0) {
+              $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT) . "\n\n";
             } else {
-                $driver->writeLine($receipt);
+              $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
+                . str_pad($line['qty'], 5, ' ', STR_PAD_LEFT)
+                . "\n";
             }
-        }
-    }
-}
+          }
+          $receipt .= "\n\n";
+          //$receipt .= implode("\n", $comments);
+          $receipt .= "\n\n";
+          $receipt = ReceiptLib::cutReceipt($receipt,false);
+          if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
+            //Write to printer
+            $port = fopen(CoreLocal::get('RemotePrintDevice2'), 'w');
+            fwrite($port, $receipt);
+            fclose($port);
+          } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {
+              $driver->setTarget(CoreLocal::get('RemotePrint'));
+              $driver->writeLine($receipt);
+          } else {
+              $driver->writeLine($receipt);
+          }
+        } //if (count($lines) > 0)
+    } //public function plugin_transaction_reset()
+} //class

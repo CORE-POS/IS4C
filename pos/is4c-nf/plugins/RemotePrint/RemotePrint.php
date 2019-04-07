@@ -25,7 +25,7 @@ use COREPOS\pos\plugins\Plugin;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
 
-class RemotePrint extends Plugin 
+class RemotePrint extends Plugin
 {
     public $plugin_settings = array(
         'RemotePrintDevice' => array(
@@ -40,7 +40,7 @@ class RemotePrint extends Plugin
             'options' => array(
                 'ESCPOS' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
                 'RAW/TCP' => 'COREPOS-pos-lib-PrintHandlers-ESCNetRawHandler',
-                'HTTP' => 'RemotePrintHandler',
+                'HTTP' => 'RemotePrinterHTTP',
             ),
         ),
         'RemotePrintDebug' => array(
@@ -81,14 +81,17 @@ class RemotePrint extends Plugin
         $comments = array();
         $hri = false;
         while ($row = $dbc->fetchRow($infoR)) {
-/*            if (CoreLocal::get('RemotePrintDebug')) {
+            if (CoreLocal::get('RemotePrintDebug')) {
                 $lines[] = array(
-                    'qty'=>1, 
-                    'upc'=>'', 
+                    'qty'=>1,
+                    'upc'=>'',
                     'description'=>"{$row['upc']} | {$row['charflag']} | {$row['trans_status']} | {$row['trans_subtype']}",
                 );
                 continue;
-            } */
+            }
+            if ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
+                $hri = $row['description'];
+            }
             if ($row['trans_status'] == 'X' && $row['charflag'] != 'S') {
                 // This is a canceled line. Skip it.
                 continue;
@@ -100,53 +103,51 @@ class RemotePrint extends Plugin
             }
             if ($row['remote'] || ($row['trans_subtype'] == 'CM' && $row['charflag'] != 'HR')) {
                 $lines[] = array('upc'=>$row['upc'], 'description'=>$row['description'], 'qty'=>$row['quantity']);
-            } 
-			if ($row['trans_subtype'] == 'CM' && $row['charflag'] == 'HR') {
-                $hri = $row['description'];
             }
         }
 
         if (count($lines) > 0) {
-			$receipt = "\n";
-			/***********/
-			//Our Table specific
-			$receipt .= str_repeat("*",10) . " EXPO  STATION " . str_repeat("*",10) . "\n\n";
-			//Original: $receipt .= str_repeat("*",35) . "\n\n";
-			if ($hri) {
-				$receipt .= chr(29).chr(33).chr(17);	/* big font */
-                $receipt .= $hri;
-				$receipt .= chr(29).chr(33).chr(00);	/* normal font */
-				$receipt .= "\n\n";
-            }			
-			$receipt .= date('Y-m-d h:i:sA') . "\n\n";
+          $receipt = "\n";
+          if (CoreLocal::get("store")=="OurTable") {
+            //Our Table specific header
+            $receipt .= str_repeat("*",12) . " OTC  EXPO " . str_repeat("*",12) . "\n\n";
+          } else {
             $receipt .= str_repeat("*",35) . "\n\n";
-			$receipt .= $emp . '-' . $reg . '-' . $trans . "\n\n";
-            
-            foreach ($lines as $line) {
-				if ($line['qty'] == 0) {
-					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT) . "\n\n";
-				} else {
-					$receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
-						. str_pad($line['qty'], 5, ' ', STR_PAD_LEFT)
-						. "\n";
-				}
-            }
-            $receipt .= "\n\n";
-            //$receipt .= implode("\n", $comments);
-            $receipt .= "\n\n";
-            $receipt = ReceiptLib::cutReceipt($receipt,false);
-            
-            if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
-                $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
-                fwrite($port, $receipt);
-                fclose($port);
-            } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {
-                $driver->setTarget(CoreLocal::get('RemotePrint'));
-                $driver->writeLine($receipt);
-            } else {
-                $driver->writeLine($receipt);
-            }
-        }
-    }
-}
+          }
+          if ($hri) {
+              $receipt .= chr(29).chr(33).chr(17);	/* big font */
+              $receipt .= $hri;
+              $receipt .= chr(29).chr(33).chr(00);	/* normal font */
+              $receipt .= "\n\n";
+          }
+          $receipt .= date('Y-m-d h:i:sA') . "\n\n";
+          $receipt .= str_repeat("*",35) . "\n\n";
+          $receipt .= $emp . '-' . $reg . '-' . $trans . "\n\n";
 
+          foreach ($lines as $line) {
+            if ($line['qty'] == 0) {
+              $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT) . "\n\n";
+            } else {
+              $receipt .= str_pad($line['description'], 35, ' ', STR_PAD_RIGHT)
+                . str_pad($line['qty'], 5, ' ', STR_PAD_LEFT)
+                . "\n";
+            }
+          }
+          $receipt .= "\n\n";
+          //$receipt .= implode("\n", $comments);
+          $receipt .= "\n\n";
+          $receipt = ReceiptLib::cutReceipt($receipt,false);
+          if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
+            //Write to printer
+            $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
+            fwrite($port, $receipt);
+            fclose($port);
+          } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {
+              $driver->setTarget(CoreLocal::get('RemotePrint'));
+              $driver->writeLine($receipt);
+          } else {
+              $driver->writeLine($receipt);
+          }
+        } //if (count($lines) > 0)
+    } //public function plugin_transaction_reset()
+} //class

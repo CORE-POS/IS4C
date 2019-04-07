@@ -12,7 +12,7 @@ use COREPOS\pos\lib\PrintHandlers\PrintHandler;
  * The remote web server has to be able to parse this request
  * and write the appropriate string to the printer device file.
  */
-class RemotePrinterHTTP extends PrintHandler
+class RemotePrinterHTTP2 extends PrintHandler
 {
     public function writeLine($text)
     {
@@ -41,4 +41,3 @@ class RemotePrinterHTTP extends PrintHandler
         return $result ? true : false;
     }
 }
-
