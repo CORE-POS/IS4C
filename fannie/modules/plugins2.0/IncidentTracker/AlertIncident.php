@@ -263,9 +263,36 @@ class AlertIncident extends FannieRESTfulPage
         return $row;
     }
 
+    private function getPrevNext($modified)
+    {
+        $prevQ = $this->connection->addSelectLimit("
+            SELECT incidentID
+            FROM " . FannieDB::fqn('Incidents', 'plugin:IncidentDB') . "
+            WHERE modified > ?
+            ORDER BY modified", 1); 
+        $prevP = $this->connection->prepare($prevQ);
+        $prev = $this->connection->getValue($prevP, array($modified));
+
+        $nextQ = $this->connection->addSelectLimit("
+            SELECT incidentID
+            FROM " . FannieDB::fqn('Incidents', 'plugin:IncidentDB') . "
+            WHERE modified < ?
+            ORDER BY modified DESC", 1); 
+        $nextP = $this->connection->prepare($nextQ);
+        $next = $this->connection->getValue($nextP, array($modified));
+
+        $next = sprintf('<a href="AlertIncident.php?id=%d" class="btn btn-default" %s>Next</a>',
+            $next, (!$next ? 'disabled' : ''));
+        $prev = sprintf('<a href="AlertIncident.php?id=%d" class="btn btn-default" %s>Prev</a>',
+            $prev, (!$prev ? 'disabled' : ''));
+
+        return array($prev, $next);
+    }
+
     protected function get_id_view()
     {
         $row = $this->getIncident($this->id);
+        list($prev, $next) = $this->getPrevNext($row['modified']);
         $row['details'] = nl2br($row['details']);
         $img1 = $row['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image1']}\" />" : '';
         $img2 = $row['image2'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image2']}\" />" : '';
@@ -299,6 +326,8 @@ class AlertIncident extends FannieRESTfulPage
         return <<<HTML
 <p>
     <a href="AlertIncident.php" class="btn btn-default">Home</a>
+    {$prev}
+    {$next}
 </p>
 <table class="table table-bordered">
 <tr>
