@@ -20,6 +20,7 @@ function addToBatch(upc)
         $('#row'+upc).find('.add-button').hide();
         $('#row'+upc).find('.remove-button').show();
     });
+    window.scrollBy(0,39);
 }
 function removeFromBatch(upc)
 {

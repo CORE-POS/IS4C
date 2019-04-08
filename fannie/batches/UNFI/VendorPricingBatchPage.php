@@ -275,7 +275,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <th class=\"thead\">SRP</th>
             <th class=\"thead\">Margin</th>
             <th class=\"thead\">Var</th>
-            <th class=\"thead\">Batch</th></tr></thead><tbody>";
+            <th class=\"thead\">Batch</th>
+            <th class=\"thead\">Ignore</th></tr></thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $vendorModel->reset();
             $vendorModel->upc($row['upc']);
@@ -357,6 +358,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                             title=\"Remove item from batch\"></span>
                     </a>
                 </td>
+                <td class=\"clickIgnore\"><input type=\"checkbox\"/></td>
                 </tr>",
                 $row['upc'],
                 $background,
@@ -463,6 +465,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $(this).closest('tr').show();
             });
         }
+       $('.clickIgnore').on('click', function(){
+           $(this).closest('tr').hide();
+       });
         <?php
         return ob_get_clean();
     }
