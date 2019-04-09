@@ -190,6 +190,7 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
                         $rule->reviewDate($this->form->rule_review_date);
                         $rule->details($this->form->rule_details);
                         $rule->priceRuleTypeID($this->form->price_rule_type);
+                        $rule->maxPrice(preg_replace("/[^0-9.]/", "", $this->form->rule_details));
                     } catch (Exception $ex) {}
                     if ($old_rule > 1) {
                         $rule->priceRuleID($old_rule);
