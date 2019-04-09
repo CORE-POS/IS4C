@@ -18,7 +18,7 @@ class UdpComm
         if (!function_exists("socket_create")) {
             return;
         }
-        $override = CoreLocal::get('portOverrides');
+        $override = \CoreLocal::get('portOverrides');
         if (isset($override['u' . $port])) {
             $port = $override['u' . $port];
         }
