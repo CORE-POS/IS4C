@@ -749,6 +749,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return "EMV_ISC250_MERCURY";
             case "INGENICOISC250_RAPIDCONNECT_E2E":
                 return "EMV_ISC250_RAPIDCONNECT_E2E";
+            case "INGENICOISC480_RAPIDCONNECT_E2E":
+                return "EMV_ISC480_RAPIDCONNECT_E2E";
             default:
                 return "EMV_" + device;
         }
