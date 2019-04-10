@@ -299,13 +299,14 @@ class MailChimpTask extends FannieTask
         $this->meminfo->reset();
         $this->meminfo->card_no($card_no);
         $this->meminfo->load();
-        if ($this->meminfo->email_1() != $email && (strtotime($changed) > strtotime($this->meminfo->modified()) || $this->meminfo->email_1() == '')) {
+        $email = strtolower($email);
+        if (strtolower($this->meminfo->email_1()) != $email && (strtotime($changed) > strtotime($this->meminfo->modified()) || $this->meminfo->email_1() == '')) {
             $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, Mailchimp is newer",
             $this->meminfo->email_1(), $email), FannieLogger::INFO);
             $this->meminfo->email_1($email);
             $this->meminfo->save();
-        } elseif ($this->meminfo->email_1() != $email) {
-            $update['EMAIL'] = $this->meminfo->email_1();
+        } elseif (strtolower($this->meminfo->email_1()) != $email) {
+            $update['EMAIL'] = strtolower($this->meminfo->email_1());
             $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
                 $this->meminfo->email_1(), $email), FannieLogger::ALERT);
         }
