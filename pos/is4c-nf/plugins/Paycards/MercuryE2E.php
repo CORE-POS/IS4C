@@ -924,7 +924,8 @@ class MercuryE2E extends BasicCCModule
                   ',15%:' . $request->formattedTipAmount(0.15) .
                   ',20%:' . $request->formattedTipAmount(0.2) .
                   ',25%:' . $request->formattedTipAmount(0.25) . '</GratuitySuggestions>';
-            else {
+            }
+			else {
                 //Prompt for gratuity amount
                 $msgXml .= '<Gratuity>Prompt</Gratuity>';
             }
