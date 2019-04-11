@@ -283,7 +283,7 @@ table.shelf-audit tr:hover {
         return ob_get_clean();
     }
 
-    private function estimateMargin($scans, $code)
+    private function estMargin($scans, $code)
     {
         $retail = 0;
         $cost = 0;
@@ -303,7 +303,9 @@ table.shelf-audit tr:hover {
         }
 
         if ($noMatch > $match || $retail <= 0 || $cost <= 0) {
-            return 0;
+            $prep = $this->connection->prepare("SELECT margin FROM " . FannieDB::fqn('departments', 'op') . " WHERE salesCode=? AND margin <> 0");
+            $margin = $this->connection->getValue($prep, array($code));
+            return $margin !== false ? $margin : 0;
         }
 
         return ($retail - $cost) / $retail;
@@ -331,6 +333,9 @@ table.shelf-audit tr:hover {
                     $estMargin = $this->estMargin($this->scans, $row['salesCode']);
                     $row['cost'] = $row['normal_retail'] - ($estMargin * $row['normal_retail']);
                     $row['retailstatus'] .= '*';
+                    if (!isset($services[$row['salesCode']])) {
+                        $services[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
+                    }
                     $services[$row['salesCode']]['qty'] += $row['quantity'];
                     $services[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
                     $services[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
