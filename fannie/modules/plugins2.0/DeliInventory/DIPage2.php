@@ -153,6 +153,9 @@ class DIPage2 extends FannieRESTfulPage
         } elseif (FormLib::get('flag', false) !== false) {
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET attnFlag=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('flag'), $this->id));
+        } elseif (FormLib::get('catID', false) !== false) {
+            $upP = $this->connection->prepare("UPDATE deliInventoryCat SET categoryID=?, category=?, modified={$now} WHERE id=?");
+            $this->connection->execute($upP, array(FormLib::get('catID'), FormLib::get('category'), $this->id));
         }
 
         return false;
@@ -333,7 +336,12 @@ HTML;
             41600 => 0,
         );
         $catR = $this->connection->execute($catP, array($storeID));
+        $categories = array();
         while ($catW = $this->connection->fetchRow($catR)) {
+            $categories[] = array(
+                'id' => $catW['deliCategoryID'],
+                'name' => $catW['name'],
+            );
             $itemR = $this->connection->execute($itemP, array($catW['deliCategoryID']));
             $tag = str_replace(' ', '-', strtolower($catW['name']));
             $ret .= sprintf('<a name="%s"></a>
@@ -354,7 +362,7 @@ HTML;
             $ret .= '<table class="table table-bordered table-striped small inventory-table"
                         data-cat-id="' . $catW['deliCategoryID'] . '">';
                         //data-cat-id="' . $catW['deliCategoryID'] . '" style="page-break-after: always;">';
-            $ret .= '<tr><th></th><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th><th>Price/Case</th>
+            $ret .= '<tr><th></th><th>Cat</th><th>Item</th><th>Size</th><th>Units/Case</th><th>Cases</th><th>#/Each</th><th>Price/Case</th>
                      <th>Total</th><th class="upc">UPC</th><th class="sku">SKU</th><th class="vendor">Source</th></tr>';
             $sum = 0;
             while ($itemW = $this->connection->fetchRow($itemR)) {
@@ -367,6 +375,7 @@ HTML;
                 }
                 $ret .= sprintf('<tr data-item-id="%d" class="%s %s">
                     <td><input type="checkbox" title="Flag needing attention" onchange="di.attention(this);" %s /></td>
+                    <td class="category">%s</td>
                     <td class="name editable">%s</td>
                     <td class="size editable">%s</td>
                     <td class="caseSize editable">%d</td>
@@ -383,6 +392,7 @@ HTML;
                     ($itemW['attnFlag'] ? 'danger' : ''),
                     ($total > 500 ? 'warning' : ''),
                     ($itemW['attnFlag'] ? 'checked' : ''),
+                    $catW['name'],
                     $itemW['item'],
                     $itemW['size'],
                     $itemW['units'],
@@ -419,12 +429,14 @@ HTML;
             );
         }
         $vendors = json_encode($vendors);
+        $categories = json_encode($categories);
 
         $this->addScript('../../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../../src/javascript/chosen/bootstrap-chosen.css');
-        $this->addScript('di.js?date=20190403');
+        $this->addScript('di.js?date=20190412');
         $this->addOnloadCommand('di.initRows();');
         $this->addOnloadCommand("di.setVendors({$vendors});");
+        $this->addOnloadCommand("di.setCategories({$categories});");
 
         return $ret;
     }
