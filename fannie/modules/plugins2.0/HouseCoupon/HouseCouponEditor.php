@@ -252,11 +252,15 @@ class HouseCouponEditor extends FanniePage
                 date('Y-m-d', strtotime($obj->endDate())),
             );
             /**
-              If coupon period is more than 45 days, use the current month
-              as a reporting period
+              If coupon period is more than 365 days, use a narrower
+              90 day reporting period
             */
-            if (strtotime($report_dates[1]) - strtotime($report_dates[0]) > (86400 * 45)) {
-                $report_dates = array(date('Y-m-01'), date('Y-m-t'));
+            if (strtotime($report_dates[1]) - strtotime($report_dates[0]) > (86400 * 365)) {
+                $ts = strtotime($obj->startDate());
+                $report_dates = array(
+                    date('Y-m-d', $ts),
+                    date('Y-m-t', mktime(0, 0, 0, date('n',$ts), date('j',$ts)+90, date('Y',$ts))),
+                );
             }
             $ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
                     <td>%s</td><td>%.2f%s</td><td>%s</td><td>%s</td>
