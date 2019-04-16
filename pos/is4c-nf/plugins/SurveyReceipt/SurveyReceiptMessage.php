@@ -6,6 +6,8 @@ use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
 
 class SurveyReceiptMessage extends ReceiptMessage
 {
+    public $standalone_receipt_type = 'survey';
+
     public function select_condition()
     {
         return "1";
@@ -70,6 +72,14 @@ class SurveyReceiptMessage extends ReceiptMessage
         }
 
         TransRecord::addLogRecord(array('upc'=>'CXSURVEY', 'description'=>$ref));
+
+        return $receipt;
+    }
+
+    public function standalone_receipt($ref, $reprint=false)
+    {
+        $receipt = ReceiptLib::printReceiptHeader(date('Y-m-d H:i:s'), '1-2-3');
+        $receipt .= $this->message(1, $ref, false);
 
         return $receipt;
     }
