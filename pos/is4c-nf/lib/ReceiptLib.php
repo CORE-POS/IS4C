@@ -740,7 +740,7 @@ static private $msgMods = array(
 static private function getTypeMap()
 {
     $typeMap = array();
-    foreach(self::messageMods(false) as $class){
+    foreach(self::messageMods(true) as $class){
         if (in_array($class, self::$msgMods)) {
             $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
         }
@@ -748,8 +748,10 @@ static private function getTypeMap()
             continue;
         }
         $obj = new $class();
-        if ($obj->standalone_receipt_type != '')
+        if ($obj->standalone_receipt_type != '') {
+            $obj->setPrintHandler(self::$PRINT);
             $typeMap[$obj->standalone_receipt_type] = $obj;
+        }
     }
 
     return $typeMap;
@@ -877,7 +879,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     $receipt = "";
 
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
-    $ignoreNR = array("ccSlip");
+    $ignoreNR = array("ccSlip", "survey");
     $nthReceipt = false;
     if (!$reprint && $arg1 == 'full') {
         $nthReceipt = self::nthReceipt();
