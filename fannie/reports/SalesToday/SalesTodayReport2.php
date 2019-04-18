@@ -177,7 +177,7 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
                 $cal .= 'Location: ' . $event->LOCATION . '<br />';
             }
             if ($event->DESCRIPTION) {
-                $cal .= nl2br(trim($event->DESCRIPTION)) . '<br />';
+                //$cal .= nl2br(trim($event->DESCRIPTION)) . '<br />';
             }
             $cal .= '</p>';
 
