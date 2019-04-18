@@ -424,6 +424,8 @@ class RpOrderPage extends FannieRESTfulPage
     &nbsp;&nbsp;&nbsp;&nbsp;
     <label>Projected Sales this Week</label>:
     <a href="RpSegmentation.php" id="projSales">{$projected}</a>
+    |
+    <a href="RpFileManager.php">RP Data</a>
     <fieldset>
         <label title="{$days['Mon']}"><input type="checkbox" class="daycheck"
             onchange="rpOrder.updateDays();" value="{$days['Mon']}" /> Monday</label>

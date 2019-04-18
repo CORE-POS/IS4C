@@ -145,6 +145,9 @@ class RpImport extends FannieRESTfulPage
                 $this->connection->execute($lcSortP, array($info['sort'], $lc));
             }
             $vendorID = $this->vendorToID($info['primary']);
+            if (!$vendorID) {
+                $vendorID = $this->guessVendor($info);
+            }
             $name = $this->getItemName($vendorID, $info);
             if ($name === 'Unknown') {
                 echo $lc . ":\n";
@@ -353,6 +356,23 @@ class RpImport extends FannieRESTfulPage
         }
     }
 
+    private function guessVendor($info)
+    {
+        if (isset($info['alberts']) && !empty($info['alberts'])) {
+            return 292;
+        } elseif (isset($info['cpw']) && !empty($info['cpw'])) {
+            return 293;
+        } elseif (isset($info['rdw']) && !empty($info['rdw'])) {
+            return 136;
+        } elseif (isset($info['unfi']) && !empty($info['unfi'])) {
+            return 1;
+        } elseif (isset($info['direct']) && !empty($info['direct'])) {
+            return -2;
+        }
+
+        return 0;
+    }
+
     protected function get_view()
     {
         return <<<HTML
@@ -389,9 +409,13 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
             $found = $path . $file;
         }
     }
+    if (isset($argv[1])) {
+        $found = file_exists($argv[1]) ? $argv[1] : false;
+    }
     if ($found) {
-        copy($found, '/tmp/RP.xlsm');
-        $cmd = 'java -cp jxl-1.0-SNAPSHOT-jar-with-dependencies.jar coop.wholefoods.jxl.App -i /tmp/RP.xlsm -o /tmp/';
+        $tempfile = tempnam('rpx', sys_get_temp_dir());
+        copy($found, $tempfile);
+        $cmd = 'java -cp jxl-1.0-SNAPSHOT-jar-with-dependencies.jar coop.wholefoods.jxl.App -i ' . $tempfile . ' -o /tmp/';
         exec($cmd);
         $dir = opendir('/tmp/');
         $otherData = array();
@@ -452,7 +476,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                 unlink('/tmp/' . $file);
             }
         }
-        unlink('/tmp/RP.xlsm');
+        unlink($tempfile);
     }
     exit(0);
 }
