@@ -102,9 +102,9 @@ class StatementsPluginEmail extends FannieRESTfulPage
             if ($primary['email'] == 'carmen.lesavage@gmail.com') {
                 $mail->addCC('lesavagefamily@aol.com');
             }
-            $mail->addBCC('aborgren@wholefoods.coop');
+            $mail->addBCC('jlepak@wholefoods.coop');
             $mail->addBCC('andy@wholefoods.coop');
-            $mail->addBCC('awade@wholefoods.coop');
+            $mail->addBCC('hheinz@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
         }
@@ -394,7 +394,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $mail->Body = $html;
             $mail->AltBody = $body;
             $mail->addAddress($primary['email']);
-            $mail->addBCC('aborgren@wholefoods.coop');
+            $mail->addBCC('jlepak@wholefoods.coop');
             $mail->addBCC('andy@wholefoods.coop');
             $mail->send();
             $this->sent[$name] = $primary['email'];
