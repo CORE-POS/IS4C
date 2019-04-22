@@ -85,6 +85,7 @@ class WicReceiptMessage extends ReceiptMessage
                 AND empNo=?
                 AND registerNo=?
                 AND transNo=?
+                AND content LIKE \'%Benefits expire%\'
             ORDER BY transID DESC
         ');
         $balance = $dbc->getValue($emvP, array($date, $emp, $reg, $trans));
