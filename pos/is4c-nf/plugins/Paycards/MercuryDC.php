@@ -133,7 +133,7 @@ class MercuryDC extends MercuryE2E
         return $msgXml;
     }
 
-    public function prepareDataCapWic($itemData, $tranCode, $last4)
+    public function prepareDataCapWic($itemData, $tranCode, $last4, $prompt=false)
     {
         $request = new PaycardRequest($this->refnum($this->conf->get('paycard_id')), PaycardLib::paycard_db());
         $request->setProcessor($this->proc_name);
@@ -685,6 +685,8 @@ class MercuryDC extends MercuryE2E
         if ($responseCode) {
             $responseCode = $this->responseToNumber($responseCode);
         }
+
+        $dbc = Database::tDataConnect();
 
         $balance = $better->query('/RStream/TranResponse/Amount/Balance');
         $cardType = $better->query('/RStream/TranResponse/CardType');

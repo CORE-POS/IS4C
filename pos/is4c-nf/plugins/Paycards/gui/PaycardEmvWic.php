@@ -19,6 +19,7 @@
  */
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
@@ -31,6 +32,10 @@ class PaycardEmvWic extends PaycardProcessPage
 
     function preprocess()
     {
+        // I haven't tracked down the cause but some mechanisms for getting here
+        // do NOT unset msgrepeat which leads to an approval immediately triggering
+        // into another ewic transaction
+        $this->conf->set('msgrepeat', 0);
         if (FormLib::get('xml-resp', false) !== false) {
             $xml = FormLib::get('xml-resp');
             if ($this->conf->get('EWicStep') == 0) {
@@ -39,28 +44,35 @@ class PaycardEmvWic extends PaycardProcessPage
                 $success = $e2e->handleResponseDataCapBalance($xml);
                 if ($success === PaycardLib::PAYCARD_ERR_OK) {
                     $this->conf->set('EWicStep', 1);
-                    $this->addOnloadCommand('emvSubmit();');
                 } else {
                     $this->cleanup();
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
                     return false;
                 }
-            } else {
+            } elseif ($this->conf->get('EWicStep') == 1) {
                 $e2e = new MercuryDC();
                 $success = $e2e->handleResponseDataCap($xml);
                 if ($success === PaycardLib::PAYCARD_ERR_OK) {
                     $this->tenderResponse($xml);
-                    $this->cleanup();
-                    $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php'); //?reginput=TO&repeat=1');
+                    $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=TO&repeat=1');
                 } else {
-                    $this->cleanup();
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
-                    return false;
                 }
+                $this->cleanup();
+                return false;
             }
-        } else {
+        } elseif (FormLib::get('reginput', false) === false) {
             $this->cleanup();
             $this->addOnloadCommand('balanceSubmit();');
+        } else {
+            $input = FormLib::get('reginput', false);
+            if (strtoupper($input) == 'CL') {
+                $this->cleanup();
+                $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
+                return false;
+            } elseif ($input === '' && $this->conf->get('EWicStep') == 1) {
+                $this->addOnloadCommand('emvSubmit();');
+            }
         }
 
         return true;
@@ -138,7 +150,7 @@ class PaycardEmvWic extends PaycardProcessPage
         $categories = array('cat'=>array(), 'sub'=>array());
         foreach ($arr as $balanceRecord) {
             $categories['cat'][$balanceRecord['cat']['eWicCategoryID']] = true;
-            if ($balanceRecord['subcat']) {
+            if (isset($balanceRecord['subcat'])) {
                 $categories['sub'][$balanceRecord['subcat']['eWicSubCategoryID']] = true;
             }
         }
@@ -196,6 +208,9 @@ function balanceSubmit() {
     emv.setWaitingMsg('Getting balance');
     emv.showProcessing('div.baseHeight');
     var xmlData = '<?php echo json_encode($xml); ?>';
+    <?php if ($this->conf->Get('training') == 1) { ?>
+    emv.setURL('../ajax/AjaxPaycardTest.php');
+    <?php } ?>
     emv.submit(xmlData);
     $(document).keyup(checkForCancel);
 }
@@ -208,6 +223,9 @@ function emvSubmit() {
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
         return false;
     }
+    <?php if ($this->conf->Get('training') == 1) { ?>
+    emv.setURL('../ajax/AjaxPaycardTest.php');
+    <?php } ?>
     emv.submit(xmlData);
     $(document).keyup(checkForCancel);
 }
@@ -232,6 +250,13 @@ function checkForCancel(ev) {
     function body_content()
     {
         echo '<div class="baseHeight">';
+        if ($this->conf->get('EWicStep') == 1) {
+            $msg = '';
+            foreach ($this->conf->get('EWicBalance') as $line) {
+                $msg .= $line['qty'] . ' ' . $line['cat']['name'] . '<br />';
+            }
+            echo PaycardLib::paycardMsgBox('Current Balance', $msg, '[enter] to continue, [clear] to cancel');
+        }
         echo '</div>';
     }
 }

@@ -68,6 +68,168 @@ class AjaxPaycardTest extends AjaxCallback
             </PrintData>
         </RStream>';
 
+    protected $WIC_BALANCE = '
+        <RStream>
+            <CmdResponse>
+                <ResponseOrigin>Processor</ResponseOrigin>
+                <DSIXReturnCode>000000</DSIXReturnCode>
+                <CmdStatus>{STATUS}</CmdStatus>
+                <TextResponse>{TEXT}</TextResponse>
+                <UserTraceData></UserTraceData>
+            </CmdResponse>
+            <TranResponse>
+                <MerchantID>2108927001</MerchantID>
+                <AcctNo>610349XXXXXX5777</AcctNo>
+                <ExpDate>XXXX</ExpDate>
+                <CardType>EWIC</CardType>
+                <TranCode>BalancePreVal</TranCode>
+                <AuthCode>000194</AuthCode>
+                <CaptureStatus>Captured</CaptureStatus>
+                <RefNo>0803005699015000</RefNo>
+                <InvoiceNo>0803005699015000</InvoiceNo>
+                <OperatorID>56</OperatorID>
+                <Memo>CORE POS 1.0.0 PDCX</Memo>
+                <Amount></Amount>
+                <AcqRefData>K</AcqRefData>
+                <EarliestBenefitExpDate>12312025</EarliestBenefitExpDate>
+                <ProductData>
+                    <ProductCat1>02</ProductCat1>
+                    <ProductSubCat1>000</ProductSubCat1>
+                    <ProductQty1>32.00</ProductQty1>
+                    <ProductCat2>03</ProductCat2>
+                    <ProductSubCat2>000</ProductSubCat2>
+                    <ProductQty2>72.00</ProductQty2>
+                    <ProductCat3>05</ProductCat3>
+                    <ProductSubCat3>000</ProductSubCat3>
+                    <ProductQty3>108.00</ProductQty3>
+                    <ProductCat4>06</ProductCat4>
+                    <ProductSubCat4>000</ProductSubCat4>
+                    <ProductQty4>36.00</ProductQty4>
+                    <ProductCat5>09</ProductCat5>
+                    <ProductSubCat5>000</ProductSubCat5>
+                    <ProductQty5>24.00</ProductQty5>
+                    <ProductCat6>12</ProductCat6>
+                    <ProductSubCat6>000</ProductSubCat6>
+                    <ProductQty6>32.00</ProductQty6>
+                    <ProductCat7>16</ProductCat7>
+                    <ProductSubCat7>000</ProductSubCat7>
+                    <ProductQty7>30.00</ProductQty7>
+                    <ProductCat8>19</ProductCat8>
+                    <ProductSubCat8>000</ProductSubCat8>
+                    <ProductQty8>19.75</ProductQty8>
+                    <ProductCat9>21</ProductCat9>
+                    <ProductSubCat9>018</ProductSubCat9>
+                    <ProductQty9>24.00</ProductQty9>
+                    <ProductCat10>50</ProductCat10>
+                    <ProductSubCat10>000</ProductSubCat10>
+                    <ProductQty10>18.00</ProductQty10>
+                    <ProductCat11>51</ProductCat11>
+                    <ProductSubCat11>000</ProductSubCat11>
+                    <ProductQty11>192.00</ProductQty11>
+                    <ProductCat12>52</ProductCat12>
+                    <ProductSubCat12>000</ProductSubCat12>
+                    <ProductQty12>192.00</ProductQty12>
+                    <ProductCat13>52</ProductCat13>
+                    <ProductSubCat13>004</ProductSubCat13>
+                    <ProductQty13>32.00</ProductQty13>
+                    <ProductCat14>52</ProductCat14>
+                    <ProductSubCat14>006</ProductSubCat14>
+                    <ProductQty14>16.00</ProductQty14>
+                    <ProductCat15>53</ProductCat15>
+                    <ProductSubCat15>000</ProductSubCat15>
+                    <ProductQty15>96.00</ProductQty15>
+                    <ProductCat16>54</ProductCat16>
+                    <ProductSubCat16>000</ProductSubCat16>
+                    <ProductQty16>72.00</ProductQty16>
+                </ProductData>
+            </TranResponse>
+        </RStream>
+';
+
+    protected $WIC_AUTH = '
+        <RStream>
+            <CmdResponse>
+                <ResponseOrigin>Processor</ResponseOrigin>
+                <DSIXReturnCode>000000</DSIXReturnCode>
+                <CmdStatus>{STATUS}</CmdStatus>
+                <TextResponse>{TEXT}</TextResponse>
+                <UserTraceData></UserTraceData>
+            </CmdResponse>
+            <TranResponse>
+                <MerchantID>2108927001</MerchantID>
+                <AcctNo>610349XXXXXX5777</AcctNo>
+                <ExpDate>XXXX</ExpDate>
+                <CardType>EWIC</CardType>
+                <TranCode>Sale</TranCode>
+                <AuthCode>000195</AuthCode>
+                <CaptureStatus>Captured</CaptureStatus>
+                <RefNo>1003</RefNo>
+                <InvoiceNo>0803005699015004</InvoiceNo>
+                <OperatorID>56</OperatorID>
+                <Memo>CORE POS 1.0.0</Memo>
+                <Amount>
+                    <Purchase>2.89</Purchase>
+                    <Authorize>2.89</Authorize>
+                </Amount>
+                <AcqRefData>K</AcqRefData>
+                <ItemData>
+                    <UPCItem1>074873000047</UPCItem1>
+                    <ItemPrice1>2.89</ItemPrice1>
+                    <ItemQty1>1.00</ItemQty1>
+                    <ItemStatus1>Approved</ItemStatus1>
+                </ItemData>
+                <EarliestBenefitExpDate>12312016</EarliestBenefitExpDate>
+                <ProductData>
+                    <ProductCat1>02</ProductCat1>
+                    <ProductSubCat1>000</ProductSubCat1>
+                    <ProductQty1>32.00</ProductQty1>
+                    <ProductCat2>03</ProductCat2>
+                    <ProductSubCat2>000</ProductSubCat2>
+                    <ProductQty2>72.00</ProductQty2>
+                    <ProductCat3>05</ProductCat3>
+                    <ProductSubCat3>000</ProductSubCat3>
+                    <ProductQty3>108.00</ProductQty3>
+                    <ProductCat4>06</ProductCat4>
+                    <ProductSubCat4>000</ProductSubCat4>
+                    <ProductQty4>36.00</ProductQty4>
+                    <ProductCat5>09</ProductCat5>
+                    <ProductSubCat5>000</ProductSubCat5>
+                    <ProductQty5>24.00</ProductQty5>
+                    <ProductCat6>12</ProductCat6>
+                    <ProductSubCat6>000</ProductSubCat6>
+                    <ProductQty6>32.00</ProductQty6>
+                    <ProductCat7>16</ProductCat7>
+                    <ProductSubCat7>000</ProductSubCat7>
+                    <ProductQty7>30.00</ProductQty7>
+                    <ProductCat8>19</ProductCat8>
+                    <ProductSubCat8>000</ProductSubCat8>
+                    <ProductQty8>0.75</ProductQty8>
+                    <ProductCat9>21</ProductCat9>
+                    <ProductSubCat9>018</ProductSubCat9>
+                    <ProductQty9>24.00</ProductQty9>
+                    <ProductCat10>50</ProductCat10>
+                    <ProductSubCat10>000</ProductSubCat10>
+                    <ProductQty10>18.00</ProductQty10>
+                    <ProductCat11>51</ProductCat11>
+                    <ProductSubCat11>000</ProductSubCat11>
+                    <ProductQty11>192.00</ProductQty11>
+                    <ProductCat12>52</ProductCat12>
+                    <ProductSubCat12>000</ProductSubCat12>
+                    <ProductQty12>192.00</ProductQty12>
+                    <ProductCat13>52</ProductCat13>
+                    <ProductSubCat13>004</ProductSubCat13>
+                    <ProductQty13>32.00</ProductQty13>
+                    <ProductCat14>52</ProductCat14>
+                    <ProductSubCat14>006</ProductSubCat14>
+                    <ProductQty14>16.00</ProductQty14>
+                    <ProductCat15>53</ProductCat15>
+                    <ProductSubCat15>000</ProductSubCat15>
+                    <ProductQty15>96.00</ProductQty15>
+                </ProductData>
+            </TranResponse>
+        </RStream>
+';
+
     public function ajax($input=array())
     {
         $post = trim(file_get_contents('php://input'));
@@ -78,12 +240,12 @@ class AjaxPaycardTest extends AjaxCallback
         $invoice = $xml->query('/TStream/Transaction/RefNo');
         $code = $xml->query('/TStream/Transaction/TranCode');
         $type = $xml->query('/TStream/Transaction/TranType');
-        $card = $xml->query('/TStream/Transaction/TranType');
+        $card = $xml->query('/TStream/Transaction/CardType');
 
         // always decline if not the training cashier
         // approve training cashier unless special amounts
         $responseType = 'DECLINE';
-        if ($empNo == '9999') {
+        if ($empNo == '9999' || $empNo === 'test') {
             $responseType = 'APPROVE';
             if ($amount == 50) {
                 $responseType = 'DECLINE';
@@ -102,6 +264,11 @@ class AjaxPaycardTest extends AjaxCallback
         $out = str_replace('{CardType}', $card, $out);
         $out = str_replace('{REF}', $invoice, $out);
         $out = str_replace('{AMOUNT}', $amount, $out);
+        if ($code === '<TranCode>BalancePreVal</TranCode>') {
+            $out = $this->WIC_BALANCE;
+        } elseif ($code === '<TranCode>Sale</TranCode>' && $card === '<CardType>EWIC</CardType>') {
+            $out = $this->WIC_AUTH;
+        }
         switch ($responseType) {
             case 'APPROVE':
             case 'PARTIAL':
