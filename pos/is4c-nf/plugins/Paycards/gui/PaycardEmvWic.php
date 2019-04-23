@@ -251,10 +251,11 @@ function checkForCancel(ev) {
     {
         echo '<div class="baseHeight">';
         if ($this->conf->get('EWicStep') == 1) {
-            $msg = '';
+            $msg = '<div style="font-size: 85%">';
             foreach ($this->conf->get('EWicBalance') as $line) {
                 $msg .= $line['qty'] . ' ' . $line['cat']['name'] . '<br />';
             }
+            $msg .= '</div>';
             echo PaycardLib::paycardMsgBox('Current Balance', $msg, '[enter] to continue, [clear] to cancel');
         }
         echo '</div>';
