@@ -22,6 +22,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\plugins\Paycards\xml\BetterXmlData;
 if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
@@ -70,6 +71,10 @@ class PaycardEmvWic extends PaycardProcessPage
                 $this->cleanup();
                 $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
                 return false;
+            } elseif (strtoupper($input) == 'RP') {
+                $receipt = ReceiptLib::printReceipt('wicSlip', ReceiptLib::receiptNumber());
+                ReceiptLib::writeLine($receipt);
+                return true;
             } elseif ($input === '' && $this->conf->get('EWicStep') == 1) {
                 $this->addOnloadCommand('emvSubmit();');
             }

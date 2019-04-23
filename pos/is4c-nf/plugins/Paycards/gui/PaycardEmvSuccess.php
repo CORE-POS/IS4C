@@ -225,7 +225,6 @@ class PaycardEmvSuccess extends BasicCorePage
             $this->addOnloadCommand("\$('#reginput').val('RP');\n");
             $this->addOnloadCommand("submitWrapper();\n");
         }
-        $rpType = $this->rpType($this->conf->get('paycard_type'));
         printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rpType);
     }
 

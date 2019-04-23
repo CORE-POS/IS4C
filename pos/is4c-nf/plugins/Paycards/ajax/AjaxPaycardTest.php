@@ -266,6 +266,8 @@ class AjaxPaycardTest extends AjaxCallback
         $out = str_replace('{AMOUNT}', $amount, $out);
         if ($code === '<TranCode>BalancePreVal</TranCode>') {
             $out = $this->WIC_BALANCE;
+        } elseif ($code === '<TranCode>Balance</TranCode>' && $card === '<CardType>EWIC</CardType>') {
+            $out = $this->WIC_BALANCE;
         } elseif ($code === '<TranCode>Sale</TranCode>' && $card === '<CardType>EWIC</CardType>') {
             $out = $this->WIC_AUTH;
         }

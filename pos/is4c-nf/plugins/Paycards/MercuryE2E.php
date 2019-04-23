@@ -351,6 +351,7 @@ class MercuryE2E extends BasicCCModule
                                                <p>\"rp\" to print
                                                <br>[enter] to continue</font>"
                     );
+                    $json['receipt'] = 'wicSlip';
                 }
                 break;
             case PaycardLib::PAYCARD_MODE_AUTH:
