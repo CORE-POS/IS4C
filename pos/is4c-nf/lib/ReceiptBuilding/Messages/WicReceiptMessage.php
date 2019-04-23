@@ -11,7 +11,12 @@ class WicReceiptMessage extends ReceiptMessage
 
     public function standalone_receipt($ref, $reprint=False)
     {
-        return $this->message(1, $ref, $reprint);
+        return 
+            ReceiptLib::centerString("................................................")."\n"
+            . ReceiptLib::centerString("B A L A N C E") . "\n"
+            . ReceiptLib::centerString("................................................")."\n"
+            . $this->message(1, $ref, $reprint)
+            . ReceiptLib::centerString("................................................")."\n";
     }
 
     public function select_condition()
