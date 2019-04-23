@@ -735,6 +735,7 @@ static private $msgMods = array(
     'GenericSigSlipMessage',
     'ReceiptMessage',
     'StoreCreditIssuedReceiptMessage',
+    'WicReceiptMessage',
 );
 
 static private function getTypeMap()
@@ -879,7 +880,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     $receipt = "";
 
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
-    $ignoreNR = array("ccSlip", "survey");
+    $ignoreNR = array("ccSlip", "accessSignupSlip", "survey");
     $nthReceipt = false;
     if (!$reprint && $arg1 == 'full') {
         $nthReceipt = self::nthReceipt();
@@ -1164,6 +1165,9 @@ static public function emailReceiptMod()
 static private function nthReceipt()
 {
     if (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('nthReceipt') < 1) {
+        if (function_exists('random_int')) { // php 7+
+            return (random_int(0, PHP_INT_MAX-1)/PHP_INT_MAX) < CoreLocal::get('nthReceipt');
+        }
         return lcg_value() < CoreLocal::get('nthReceipt');
     } elseif (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('standalone') == 0) {
         return (CoreLocal::get('transno') % CoreLocal::get('nthReceipt')) === 0;
