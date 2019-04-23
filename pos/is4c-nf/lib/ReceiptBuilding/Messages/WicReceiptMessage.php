@@ -7,6 +7,13 @@ use \CoreLocal;
 
 class WicReceiptMessage extends ReceiptMessage
 {
+    public $standalone_receipt_type = 'wicSlip';
+
+    public function standalone_receipt($ref, $reprint=False)
+    {
+        return $this->message(1, $ref, $reprint);
+    }
+
     public function select_condition()
     {
         return "MAX(CASE WHEN trans_subtype IN ('EW') THEN trans_id ELSE 0 END)";
