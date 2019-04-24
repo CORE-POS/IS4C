@@ -238,6 +238,7 @@ class RpOrderPage extends FannieRESTfulPage
             WHERE u.likeCode=?");
         $costP = $this->connection->prepare("SELECT cost, units FROM vendorItems WHERE vendorID=? and sku=?");
         $mapP = $this->connection->prepare("SELECT * FROM RpFixedMaps WHERE likeCode=?");
+        $lcnameP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
 
         $saleP = $this->connection->prepare("SELECT endDate
             FROM batchList AS l
@@ -303,7 +304,11 @@ class RpOrderPage extends FannieRESTfulPage
                 $row['vendorSKU'] = $mapped['sku'];
                 $row['lookupID'] = $mapped['vendorID'];
             }
+            $lcName = $this->connection->getValue($lcnameP, array(str_replace('LC', '', $row['upc'])));
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
+            if (($par / $row['caseSize']) < 0.1) {
+                $par = 0.1 * $row['caseSize'];
+            }
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
@@ -345,7 +350,7 @@ class RpOrderPage extends FannieRESTfulPage
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
             $tables .= sprintf('<tr>
-                <td>%s</td>
+                <td>%s %s</td>
                 <td>%s</td>
                 <td>%s</td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
@@ -366,7 +371,7 @@ class RpOrderPage extends FannieRESTfulPage
                     <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s %s /> Sec</label>
                 </td>
                 </tr>',
-                $row['upc'],
+                $row['upc'], $lcName,
                 $row['vendorName'],
                 $row['backupVendor'],
                 ($onSale ? 'success' : ''),
