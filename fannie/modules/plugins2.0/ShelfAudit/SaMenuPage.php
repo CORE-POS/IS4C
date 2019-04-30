@@ -84,13 +84,13 @@ a[type="submit"] {
 <hr />
 {$wfcTools[0]}
 <a class="btn btn-default btn-lg" type="submit"
-    href="http://192.168.1.2/scancoord/item/SalesChange/SalesChangeIndex.php" />Batch Check</a>
+    href="../../../../../Scannie/content/Scanning/BatchCheck/SCS.php" />Batch Check</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../item/CoopDealsLookupPage.php" />C+D Check Sale</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
-    href="http://192.168.1.2/scancoord/ScannieV2/content/Scanning/AuditScanner/AuditScanner.php" />Audie</a>
+    href="../../../../../Scannie/content/Scanning/AuditScanner/AuditScanner.php" />Audie</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../DeliInventory/DIScanner.php" />Prepared Inventory</a>
