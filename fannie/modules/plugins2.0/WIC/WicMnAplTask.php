@@ -74,6 +74,12 @@ class WicMnAplTask extends FannieTask
             $this->cronMsg('Problems encountered updating APL; rolling back to previous', FannieLogger::ALERT);
             $dbc->query("TRUNCATE TABLE EWicItems");
             $dbc->query("INSERT INTO EWicItems SELECT * FROM EWicBackup");
+        } else {
+            $dbc->query("INSERT INTO EWicItems
+                (upc, upcCheck, alias, eWicCategoryID, eWicSubCategoryID)
+                SELECT a.upc, i.upcCheck, i.upc, i.eWicCategoryID, i.eWicSubCategoryID
+                FROM EWicAliases AS a
+                    INNER JOIN EWicItems AS i ON a.aliasedUPC=i.upc");
         }
         $dbc->query("DROP TABLE IF EXISTS EWicBackup");
 
