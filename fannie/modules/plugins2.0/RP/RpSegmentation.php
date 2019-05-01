@@ -82,6 +82,14 @@ class RpSegmentation extends FannieRESTfulPage
         $ret .= sprintf('<tr><td></td><td id="sumPercents">%.2f%%</td></tr>', $sum*100);
         $ret .= '</table></p>';
         $ret .= '<p><button type="submit" class="btn btn-default">Save</button></p>';
+        $ret .= '<p><textarea id="copyPaste" placeholder="paste here" onchange="
+            var arr = $(this).val().split(\'\n\');
+            console.log(arr);
+            $(\'input.plan-day\').each(function () {
+                $(this).val(arr.shift().replace(\'%\',\'\'));
+                $(this).trigger(\'change\');
+            });
+            "></textarea></p>';
 
         echo $ret;
 
