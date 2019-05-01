@@ -280,6 +280,26 @@ class FannieAutoComplete extends FannieWebService
                 }
                 return $ret;
 
+            case 'ewic':
+                $query = '
+                    SELECT p.upc, p.description
+                    FROM products AS p
+                        INNER JOIN EWicItems AS e ON p.upc=e.upc
+                    WHERE e.alias IS NULL
+                        AND p.description LIKE ?
+                    ORDER BY p.last_sold';
+                $param = array('%' . $args->search . '%');
+                $prep = $dbc->prepare($query);
+                $res = $dbc->execute($prep, $param);
+                while ($row = $dbc->fetchRow($res)) {
+                    $ret[] = array(
+                        'label' => $row['description'],
+                        'value' => $row['upc'],
+                    );
+                }
+
+                return $ret;
+
             default:
                 return $ret;
         }
