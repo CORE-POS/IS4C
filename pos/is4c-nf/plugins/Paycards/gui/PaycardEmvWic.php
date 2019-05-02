@@ -64,6 +64,7 @@ class PaycardEmvWic extends PaycardProcessPage
             }
         } elseif (FormLib::get('reginput', false) === false) {
             $this->cleanup();
+            $this->runTransaction = true;
             $this->addOnloadCommand('balanceSubmit();');
         } else {
             $input = FormLib::get('reginput', false);
@@ -76,6 +77,7 @@ class PaycardEmvWic extends PaycardProcessPage
                 ReceiptLib::writeLine($receipt);
                 return true;
             } elseif ($input === '' && $this->conf->get('EWicStep') == 1) {
+                $this->runTransaction = true;
                 $this->addOnloadCommand('emvSubmit();');
             }
         }
@@ -198,6 +200,9 @@ class PaycardEmvWic extends PaycardProcessPage
         $url = MiscLib::baseURL();
         echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
         echo '<script type="text/javascript" src="../js/emv.js?date=20180308"></script>';
+        if (!$this->runTransaction) {
+            return '';
+        }
         $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         $manual = FormLib::get('manual') ? true : false;
         $xml = '';

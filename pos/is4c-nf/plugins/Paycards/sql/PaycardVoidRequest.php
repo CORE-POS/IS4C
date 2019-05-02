@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\plugins\Paycards\sql;
+use COREPOS\pos\lib\Database;
 use \Exception;
 
 class PaycardVoidRequest extends PaycardRequest
@@ -81,7 +82,12 @@ class PaycardVoidRequest extends PaycardRequest
                     AND transID=' . $this->transID;
         $res = $this->dbTrans->query($sql);
         if ($res === false || $this->dbTrans->numRows($res) != 1) {
-            throw new Exception('Could not locate original transaction');
+            $server = Database::mDataConnect();
+            $res2 = $server->query($sql);
+            if ($res2 === false || $server->numRows($res2) != 1) {
+                throw new Exception('Could not locate original transaction');
+            }
+            return $server->fetchRow($res2);
         }
 
         return $this->dbTrans->fetchRow($res);

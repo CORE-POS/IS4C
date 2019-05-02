@@ -203,6 +203,11 @@ class MercuryDC extends MercuryE2E
         $dbc = Database::tDataConnect();
         $prep = $dbc->prepare('SELECT transNo, registerNo FROM PaycardTransactions WHERE paycardTransactionID=?');
         $row = $dbc->getRow($prep, $pcID);
+        if ($row == false || count($row) == 0) {
+            $server = Database::mDataConnect();
+            $prep = $server->prepare('SELECT transNo, registerNo FROM PaycardTransactions WHERE paycardTransactionID=? AND registerNo=?');
+            $row = $server->getRow($prep, array($pcID, $this->conf->get('laneno')));
+        }
         $this->conf->set('paycard_trans', $this->conf->get('CashierNo') . '-' . $row['registerNo'] . '-' . $row['transNo']);
 
         $request = new PaycardVoidRequest($this->refnum($this->conf->get('paycard_id')), $dbc);

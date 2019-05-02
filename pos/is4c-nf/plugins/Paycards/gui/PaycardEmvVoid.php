@@ -47,6 +47,28 @@ class PaycardEmvVoid extends PaycardProcessPage
             $this->id = $row[0];
         }
         if (!$this->id) {
+            $dbc = Database::mDataConnect();
+            $query = '
+                SELECT MAX(paycardTransactionID) 
+                FROM PaycardTransactions
+                WHERE transID=' . ((int)$this->conf->get('paycard_id'))
+                    . " AND dateID=" . date('Ymd')
+                    . " AND registerNo=" . ((int)$this->conf->get('laneno'));
+            $res = $dbc->query($query);
+            if ($res && $dbc->numRows($res)) {
+                $row = $dbc->fetchRow($res);
+                $this->id = $row[0];
+                $query = $dbc->prepare('
+                    SELECT amount
+                    FROM PaycardTransactions
+                    WHERE transID=' . ((int)$this->conf->get('paycard_id'))
+                        . " AND dateID=" . date('Ymd')
+                        . " AND registerNo=" . ((int)$this->conf->get('laneno'))
+                        . " AND paycardTransactionID=" . $this->id);
+                $this->conf->set('paycard_amount', $dbc->getValue($query));
+            }
+        }
+        if (!$this->id) {
             $this->conf->set('boxMsg', 'Cannot locate transaction to void' . $this->conf->get('paycard_id'));
             $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
             return false;
@@ -88,7 +110,7 @@ class PaycardEmvVoid extends PaycardProcessPage
         }
         $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         ?>
-<script type="text/javascript" src="../js/emv.js?date=20180308"></script>
+<script type="text/javascript" src="../js/emv.js?date=20180502"></script>
 <script type="text/javascript">
 function emvSubmit()
 {
