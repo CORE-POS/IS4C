@@ -21,6 +21,7 @@
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\LaneLogger;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\TransRecord;
@@ -39,6 +40,8 @@ class PaycardEmvWic extends PaycardProcessPage
         $this->conf->set('msgrepeat', 0);
         if (FormLib::get('xml-resp', false) !== false) {
             $xml = FormLib::get('xml-resp');
+            $log = new LaneLogger();
+            $log->debug("WIC RESPONSE: " . $xml);
             if ($this->conf->get('EWicStep') == 0) {
                 $e2e = new MercuryDC();
                 $this->conf->set('EWicLast4', false);
@@ -73,7 +76,10 @@ class PaycardEmvWic extends PaycardProcessPage
                 $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
                 return false;
             } elseif (strtoupper($input) == 'RP') {
+                $cur = $this->session->get('receiptToggle');
+                $this->conf->set('receiptToggle', 1);
                 $receipt = ReceiptLib::printReceipt('wicSlip', ReceiptLib::receiptNumber());
+                $this->conf->set('receiptToggle', $cur);
                 ReceiptLib::writeLine($receipt);
                 return true;
             } elseif ($input === '' && $this->conf->get('EWicStep') == 1) {
@@ -164,24 +170,21 @@ class PaycardEmvWic extends PaycardProcessPage
 
         $dbc = Database::tDataConnect();
         $res = $dbc->query('SELECT SUM(t.quantity) AS qty, SUM(t.total) AS ttl,
-            e.upc, e.upcCheck, e.alias, e.eWicCategoryID, e.eWicSubCategoryID
+            CASE WHEN e.alias IS NOT NULL THEN e.alias ELSE e.upc END AS upc,
+            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID
             FROM localtemptrans AS t
                 INNER JOIN ' . $this->conf->get('pDatabase') . $dbc->sep() . 'EWicItems AS e ON t.upc=e.upc
             GROUP BY
-            e.upc, e.upcCheck, e.alias, e.eWicCategoryID, e.eWicSubCategoryID');
+            CASE WHEN e.alias IS NOT NULL THEN e.alias ELSE e.upc END,
+            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID');
         $i = 1;
         $total = 0;
         while ($row = $dbc->fetchRow($res)) {
-            $upc = $row['alias'] ? $row['alias'] : $row['upcCheck'];
+            $upc = $row['upcCheck'];
             $add = false;
             if ($row['eWicCategoryID'] && isset($categories['cat'][$row['eWicCategoryID']])) {
-                if ($row['eWicSubCategoryID'] && isset($categories['sub'][$row['eWicSubCategoryID']])) {
-                    $ret .= "<UPCItem{$i}>{$upc}</UPCItem{$i}>";
-                    $add = true;
-                } elseif (!$row['eWicSubCategoryID']) {
-                    $ret .= "<UPCItem{$i}>{$upc}</UPCItem{$i}>";
-                    $add = true;
-                }
+                $ret .= "<UPCItem{$i}>{$upc}</UPCItem{$i}>";
+                $add = true;
             }
             if ($add) {
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['qty']) . "</ItemQty{$i}>";
@@ -212,6 +215,8 @@ class PaycardEmvWic extends PaycardProcessPage
             $this->conf->set('paycard_id', $this->conf->get('LastID')+1);
             $xml = $e2e->prepareDataCapWic($this->getItemData($this->conf->get('EWicBalance')), 'Sale', $this->conf->get('EWicLast4'));
         }
+        $log = new LaneLogger();
+        $log->debug("WIC REQUEST: " . $xml);
         ?>
 <script type="text/javascript">
 function balanceSubmit() {
