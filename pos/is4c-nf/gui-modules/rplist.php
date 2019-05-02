@@ -146,7 +146,7 @@ class rplist extends NoInputCorePage
 
     private function previewTrans($trans)
     {
-        list($reg, $emp, $tID) = explode('::', $trans);
+        list($emp, $reg, $tID) = explode('::', $trans);
         $dbc = Database::tDataConnect();
         $previewP = $dbc->prepare("
             SELECT description
