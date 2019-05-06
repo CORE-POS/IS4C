@@ -16,7 +16,36 @@ class WicReceiptMessage extends ReceiptMessage
             . ReceiptLib::centerString("B A L A N C E") . "\n"
             . ReceiptLib::centerString("................................................")."\n"
             . $this->message(1, $ref, $reprint)
+            . ReceiptLib::centerString("................................................")."\n"
+            . ReceiptLib::centerString("E L I G I B L E    I T E M S") . "\n"
+            . ReceiptLib::centerString("................................................")."\n"
+            . $this->potentialItems(CoreLocal::get('EWicBalance'))
             . ReceiptLib::centerString("................................................")."\n";
+    }
+
+    private function potentialItems($wicData)
+    {
+        $ret = "";
+        $categories = array('cat'=>array(), 'sub'=>array());
+        foreach ($wicData as $balanceRecord) {
+            $categories['cat'][$balanceRecord['cat']['eWicCategoryID']] = true;
+            if (isset($balanceRecord['subcat'])) {
+                $categories['sub'][$balanceRecord['subcat']['eWicSubCategoryID']] = true;
+            }
+        }
+
+        $dbc = Database::tDataConnect();
+        $res = $dbc->query('SELECT *
+            FROM localtemptrans AS t
+                INNER JOIN ' . CoreLocal::get('pDatabase') . $dbc->sep() . 'EWicItems AS e ON t.upc=e.upc
+            ORDER BY t.trans_id');
+        while ($row = $dbc->fetchRow($res)) {
+            if ($row['eWicCategoryID'] && isset($categories['cat'][$row['eWicCategoryID']])) {
+                $ret .= $row['description'] . "\n";
+            }
+        }
+
+        return $ret;
     }
 
     public function select_condition()
