@@ -880,7 +880,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     $receipt = "";
 
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
-    $ignoreNR = array("ccSlip", "accessSignupSlip", "survey");
+    $ignoreNR = array("ccSlip", "accessSignupSlip", "survey", "wicSlip");
     $nthReceipt = false;
     if (!$reprint && $arg1 == 'full') {
         $nthReceipt = self::nthReceipt();
