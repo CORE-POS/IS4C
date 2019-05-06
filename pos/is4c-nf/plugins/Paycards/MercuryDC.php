@@ -696,7 +696,6 @@ class MercuryDC extends MercuryE2E
         $balance = $better->query('/RStream/TranResponse/Amount/Balance');
         $cardType = $better->query('/RStream/TranResponse/CardType');
         if ($cardType == 'EWIC') {
-            $dbc = Database::tDataConnect();
             $this->wicReceiptHandler($dbc, $better, $this->conf->get('LastID'));
             $balance = 'WIC';
             $last4 = $better->query('/RStream/TranResponse/AcctNo');
