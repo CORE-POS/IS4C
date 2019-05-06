@@ -20,7 +20,7 @@ class MercuryDC extends MercuryE2E
             $this->proc_name = $name;
         }
         // testing temp; needs config setting later
-        $this->conf->set('EWICBins', '610349:7112913');
+        $this->conf->set('EWICBins', '61072700,610727');
     }
 
     /**
