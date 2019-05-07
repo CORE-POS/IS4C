@@ -187,6 +187,36 @@ class DIScanner extends FannieRESTfulPage
     </div>
     <input type="hidden" name="id" value="{$this->id}" />
 </div>
+<div class="row lead">
+    <div class="col-sm-3">
+        <div class="input-group">
+            <div class="input-group-addon">[T]are</div>
+            <select id="tareSelect" class="form-control">
+                <option value="0">Pick container...</option>
+                <option value="0.64">Cambro 2QT</option>
+                <option value="1.00">Cambro 4QT</option>
+                <option value="1.30">Cambro 6QT</option>
+                <option value="1.60">Cambro 8QT</option>
+                <option value="2.63">Cambro 12QT</option>
+                <option value="3.75">Cambro 22QT</option>
+                <option value="5.75">Rice/Flour/Salt Bins</option>
+                <option value="0.14">Spice Container</option>
+                <option value="3.40">Full Sheet Tray</option>
+                <option value="1.45">2" Half-Wide Hotel</option>
+                <option value="1.59">2" Half-Long</option>
+                <option value="2.80">2" Full Hotel</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="buttons">
+           <button type="button"
+                onclick="scanner.addRemoveTare(-1);" class="btn btn-lg btn-success">[A]dd</button> 
+           <button type="button" onclick="scanner.addRemoveTare(1);" class="btn btn-lg btn-danger">[R]emove</button> 
+        </div>
+        <span id="numTares">0</span>
+    </div>
+</div>
 HTML;
 
         return false;
@@ -216,7 +246,7 @@ CSS;
 
     protected function get_view()
     {
-        $this->addScript('scanner.js?date=20190327');
+        $this->addScript('scanner.js?date=20190507');
         $this->addOnloadCommand("scanner.autocomplete('#upc');");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { scanner.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");

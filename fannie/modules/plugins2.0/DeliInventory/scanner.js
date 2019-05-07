@@ -56,9 +56,31 @@ var scanner = (function ($) {
         }
     };
 
+    mod.addRemoveTare = function(inc) {
+        mod.incDec('#newQty', $('#tareSelect').val() * inc);
+        $('#numTares').html($('#numTares').html()*1 + (-1 * inc));
+    };
 
     mod.keybindQty = function(ev) {
         if (new Date().getTime() > (100 + lastSearch)) {
+            if (ev.which == 84) {
+                ev.preventDefault();
+                var next = $('#tareSelect option:selected').next();
+                if (next.length == 0) {
+                    next = $('#tareSelect option:first');
+                }
+                $('#tareSelect').val(next.val());
+                $('#numTares').html("0");
+                return;
+            } else if (ev.which == 65) {
+                ev.preventDefault();
+                mod.addRemoveTare(-1);
+                return;
+            } else if (ev.which == 82) {
+                ev.preventDefault();
+                mod.addRemoveTare(1);
+                return;
+            }
             if (ev.which == 13) {
                 $('#upc').focus();
                 repaint('#upc', '#newQty', '#newCases');
