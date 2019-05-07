@@ -660,6 +660,31 @@ class MercuryDC extends MercuryE2E
             $receipt .= "\n\nBenefits expire on {$wicExpires}\n";
             $this->conf->set('EWicBalanceReceipt', $receipt);
             if ($xml->query('/RStream/TranResponse/TranCode') != 'Balance') {
+                $i = 1;
+                $wicUPCs = array();
+                while (true) {
+                    $status = $xml->query('/RStream/TranResponse/ItemData/ItemStatus' . $i);
+                    if (empty($status)) break;
+                    $status = strtolower($status);
+                    if (strpos($status, 'approved') !== false) {
+                        $wicUPCs[] = $xml->query('/RStream/TranResponse/ItemData/UPCItem' . $i);
+                    }
+                    $i++;
+                    if ($i > 1000) break;
+                }
+                if (count($wicUPCs) > 0) {
+                    list($inStr, $args) = $dbc->safeInClause($wicUPCs);
+                    $itemP = $dbc->prepare("SELECT description
+                        FROM localtemptrans AS l
+                            INNER JOIN " . $this->conf->get('pDatabase') . $dbc->sep() . "EWicItems AS e ON l.upc=e.upc
+                        WHERE e.upcCheck IN ({$inStr})");
+                    $itemR = $dbc->execute($itemP, $args);
+                    $items = 'APPROVED ITEMS' . "\n";
+                    while ($itemW = $dbc->fetchRow($itemR)) {
+                        $items .= $itemW['description'] . "\n";
+                    }
+                    $receipt = $items . "\n" . "BALANCE\n" . $receipt;
+                }
                 $printP = $dbc->prepare('
                     INSERT INTO EmvReceipt
                         (dateID, tdate, empNo, registerNo, transNo, transID, content)

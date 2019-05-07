@@ -168,13 +168,13 @@ class AjaxPaycardTest extends AjaxCallback
                 <OperatorID>56</OperatorID>
                 <Memo>CORE POS 1.0.0</Memo>
                 <Amount>
-                    <Purchase>2.89</Purchase>
-                    <Authorize>2.89</Authorize>
+                    <Purchase>1.19</Purchase>
+                    <Authorize>1.19</Authorize>
                 </Amount>
                 <AcqRefData>K</AcqRefData>
                 <ItemData>
-                    <UPCItem1>074873000047</UPCItem1>
-                    <ItemPrice1>2.89</ItemPrice1>
+                    <UPCItem1>10000000000040112</UPCItem1>
+                    <ItemPrice1>1.19</ItemPrice1>
                     <ItemQty1>1.00</ItemQty1>
                     <ItemStatus1>Approved</ItemStatus1>
                 </ItemData>

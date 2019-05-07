@@ -117,7 +117,7 @@ class PaycardEmvWic extends PaycardProcessPage
             if ($status === 'approved for lower price') {
                 $price = $better->query('/RStream/TranResponse/ItemData/ItemPrice' . $i);
                 $qty = $better->query('/RStream/TranResponse/ItemData/ItemQty' . $i);
-                $wicUPC = $better->query('/RStream/TranResponse/ItemData/ItemUPC' . $i);
+                $wicUPC = $better->query('/RStream/TranResponse/ItemData/UPCItem' . $i);
                 $unit = $price / $qty;
                 $ours = $dbc->getRow($translateP, array($wicUPC));
                 if ($ours === false) {
