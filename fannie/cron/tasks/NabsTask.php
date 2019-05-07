@@ -58,7 +58,10 @@ monthly.nabs.php.';
         $todayP = $dbc->prepare("
             SELECT SUM(CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END)
                 - SUM(CASE WHEN department=990 THEN total ELSE 0 END) AS today
-            FROM dlog WHERE (trans_subtype='MI' OR department=990)
+            FROM dtransactions WHERE (trans_subtype='MI' OR department=990)
+                AND emp_no <> 9999
+                AND register_no <> 99
+                AND trans_status NOT IN ('X','Z')
                 AND card_no=?");
 
         $balQ = 'SELECT balance FROM ar_live_balance where card_no=?';
