@@ -40,7 +40,12 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
     {
         $pdf = $this->createPDF();
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-        $basicP = $dbc->prepare("SELECT MAX(price_rule_id) FROM products WHERE upc=?");
+        //$basicP = $dbc->prepare("SELECT MAX(price_rule_id) FROM products WHERE upc=?");
+        $basicP = $dbc->prepare("SELECT
+            CASE WHEN pr.priceRuleTypeID = 6 THEN 1 ELSE 0 END
+            FROM products AS p
+                LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
+            WHERE upc = ?;");
         $organicLocalP = $dbc->prepare("SELECT 'true' FROM products WHERE numflag & (1<<16) != 0 AND upc = ? AND local > 0");
         $organicP = $dbc->prepare("SELECT 'true' FROM products WHERE numflag & (1<<16) != 0 AND upc = ?");
 
