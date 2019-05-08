@@ -86,7 +86,7 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP
             return __DIR__ . '/noauto/images/codeals_top_12.png';
         } elseif (!empty($item['batchName'])) {
             return __DIR__ . '/noauto/images/chaching_top_12.png';
-        } elseif ($item['basic'] > 1) {
+        } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_top_12.png';
         } elseif ($item['organicLocal']) {
             return __DIR__ . '/noauto/images/local_og_top.png';
@@ -104,7 +104,7 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP
             return __DIR__ . '/cd_line_16.png';
         } elseif (!empty($item['batchName'])) {
             return __DIR__ . '/noauto/images/chaching_bottom_12.png';
-        } elseif ($item['basic'] > 1) {
+        } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_bottom_12.png';
         } elseif ($item['organicLocal']) {
             return __DIR__ . '/noauto/images/local_og_bottom.png';
