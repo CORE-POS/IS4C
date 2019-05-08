@@ -177,7 +177,7 @@ foreach($data as $k => $row){
    $pdf->Cell($width,1,'',0,1,'C',true);
    $pdf->SetX($x);
 
-   $pdf->SetFont($font,'',$descFontSize);  //Set the font 
+   $pdf->SetFont($font,'B',$descFontSize);  //Set the font 
    foreach ($dscripts as $i => $desc) {
        $pdf->Cell($width,$descHeight,$desc,0,1,'C',true);
        $pdf->SetX($x);
