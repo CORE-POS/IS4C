@@ -1,5 +1,12 @@
 var rpOrder = (function ($) {
+
     var mod = {};
+    var state = {
+        'retention': 60,
+        'days': [false, false, false, false, false, false, false],
+        'onHand': {},
+        'orderAmt': {}
+    };
     var searchVendor = 0;
     var retainElem = false;
 
@@ -51,6 +58,76 @@ var rpOrder = (function ($) {
         ajaxAutoComplete(dstr, callback);
     }
 
+    function updateState() {
+        state['retention'] = $('#retention').val();
+        state['days'] = [];
+        $('.daycheck').each(function () {
+            state['days'].push($(this).prop('checked') ? true : false);
+        });
+    };
+
+    function saveLoop() {
+        $.ajax({
+            type: 'get',
+            data: 'json=' + encodeURIComponent(JSON.stringify(state))
+        }).always(function() {
+            setTimeout(saveLoop, 10000);
+        });
+    };
+
+
+    mod.initState = function(s) {
+        if (s) {
+            state = s;
+            if (state['onHand'].__proto__ == Array.prototype) {
+                state['onHand'] = {};
+            }
+            if (state['orderAmt'].__proto__ == Array.prototype) {
+                state['orderAmt'] = {};
+            }
+            $('#retention').val(state['retention']);
+            var i = 0;
+            $('.daycheck').each(function() {
+                if (state['days'][i]) {
+                    $(this).prop('checked', true);
+                }
+                i++;
+            });
+            mod.updateDays();
+
+            var oIDs = Object.keys(state['orderAmt']);
+            for (i=0; i<oIDs.length; i++) {
+                var elemID = oIDs[i];
+                document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+            }
+
+            var hIDs = Object.keys(state['onHand']);
+            for (i=0; i<hIDs.length; i++) {
+                var elemID = hIDs[i];
+                var elem = $('#'+elemID);
+                $(elem).val(state['onHand'][elemID]);
+                mod.reCalcRow($(elem).closest('tr'));
+            }
+
+            var oIDs = Object.keys(state['orderAmt']);
+            for (i=0; i<oIDs.length; i++) {
+                var elemID = oIDs[i];
+                document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+            }
+        }
+        saveLoop();
+    };
+
+    mod.updateOnHand = function(elem) {
+        var onHand = state['onHand'];
+        onHand[elem.id] = elem.value;
+        state['onHand'] = onHand;
+    };
+
+    mod.updateOrder = function(elem) {
+        state['orderAmt'][elem.id] = elem.value;
+    };
+
     mod.updateDays = function() {
         var week = $('#projSales').html().replace(',', '');
         var selectedDays = 0;
@@ -88,6 +165,7 @@ var rpOrder = (function ($) {
 
             mod.reCalcRow($(this).closest('tr'));
         });
+        updateState();
     };
 
     mod.reCalcRow = function(elem) {
@@ -115,6 +193,7 @@ var rpOrder = (function ($) {
             next = 0;
         }
         $(elem).val(next);
+        mod.updateOrder(elem);
     };
 
     function nextRow(elem) {

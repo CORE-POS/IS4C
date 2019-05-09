@@ -18,9 +18,18 @@ class RpOrderPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<searchVendor>', 'get<searchLC>');
+        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>');
 
         return parent::preprocess();
+    }
+
+    protected function get_json_handler()
+    {
+        $_SESSION['rpState'] = json_decode($this->json, true);
+        var_dump($_SESSION['rpState']);
+        echo 'OK';
+
+        return false;
     }
     
     protected function get_searchLC_handler()
@@ -192,7 +201,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20190328');
+        $this->addScript('rpOrder.js?date=20190509');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -200,6 +209,8 @@ class RpOrderPage extends FannieRESTfulPage
         }
         $sSelect = FormLib::storePicker();
         $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpOrderPage.php?store=\' + this.value;"', $sSelect['html']);
+        $jsState = isset($_SESSION['rpState']) ? json_encode($_SESSION['rpState']) : "false";
+        $this->addOnloadCommand("rpOrder.initState({$jsState});");
 
         $ordersP = $this->connection->prepare("
             SELECT o.orderID, v.vendorName
@@ -356,15 +367,16 @@ class RpOrderPage extends FannieRESTfulPage
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td class="caseSize">%s</td>
                 <td><input type="text" class="form-control input-sm onHand" value="0" 
-                    style="width: 5em;"
-                    onchange="rpOrder.reCalcRow($(this).closest(\'tr\'));"
+                    style="width: 5em;" id="onHand%s"
+                    onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
                     onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
                 <input type="hidden" class="price" value="%.2f" />
                 <input type="hidden" class="basePar" value="%.2f" />
                 <td class="parCell">%.2f</td>
                 <td class="form-inline %s">
                     <input type="text" style="width: 5em;"class="form-control input-sm orderAmt"
-                        onkeyup="rpOrder.orderKey(event);" onfocus="this.select();" value="%d" />
+                        id="orderAmt%s" onkeyup="rpOrder.orderKey(event); rpOrder.updateOrder(this);"
+                        onfocus="this.select();" value="%d" />
                     <button class="btn btn-success btn-sm" onclick="rpOrder.inc(this, 1);">+</button>
                     <button class="btn btn-danger btn-sm" onclick="rpOrder.inc(this, -1);">-</button>
                     <label><input type="checkbox" class="orderPri" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Pri</label>
@@ -381,10 +393,12 @@ class RpOrderPage extends FannieRESTfulPage
                 $row['vendorItem'],
                 $startIcon, $endIcon,
                 $row['caseSize'],
+                $upc,
                 $price,
                 $par,
                 $par / $row['caseSize'],
                 ($inOrder ? 'info' : ''),
+                $upc,
                 $orderAmt,
                 $upc, $store, $row['vendorID'],
                 ($inOrder['vendorID'] == $row['vendorID'] ? 'checked' : ''),
