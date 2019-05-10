@@ -48,7 +48,7 @@ class CashierByDayModel extends CoreWarehouseModel
 
         $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
-        $prep = $this->connection->prepare("DELETE FROM " . $this->name . " WHERE dateID BETWEEN ? AND ?");
+        $prep = $this->connection->prepare("DELETE FROM " . $this->name . " WHERE date_id BETWEEN ? AND ?");
         $this->connection->execute($prep, array($start_id, $end_id));
 
         $cashierPerformanceSQL = "
