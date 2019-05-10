@@ -190,6 +190,15 @@ class Steering extends Parser
             case 'DDM':
                 $this->ret['main_frame'] = $myUrl.'gui-modules/drawerPage.php';
                 return true;
+                
+            case 'RO':
+                if ($this->session->get("LastID") != 0) {
+                    $this->ret['output'] = $in_progress_msg;
+                } else {
+                    $this->ret['main_frame'] = $myUrl."gui-modules/TransList.php";
+                }
+                return true;
+
             case 'SS':
             case 'SO':
                 // sign off and suspend shift are identical except for
