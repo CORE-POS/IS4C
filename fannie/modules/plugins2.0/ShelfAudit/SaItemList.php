@@ -393,6 +393,26 @@ HTML;
 
         return $ret;
     }
+
+    public function helpContent()
+    {
+        return <<<HTML
+<p>This a tool for recording lists of POS items. It's normally used as the first half of a process -
+recording a list of items on the sales floor and then putting them on sale or reporting their movement
+or making signage.</p>
+<p>You can record up to three lists as <b>Set 1</b>, <b>Set 2</b>, and <b>Set 3</b>. To add an item to
+the list select the appropriate set and then scan the item's UPC (or key in the UPC). Every user has
+their own lists so make sure you're logged in as yourself.</p>
+<p>Checking the box for <b>Enter Dates</b> will enable recording expiration dates. After scanning an item
+you'll be prompted specify an expiration date. Each UPC will only appear in the list once so you can only
+record one expiration date for each item.</p>
+<p>You can view other users' lists via the dropdown containing user names. This only shows the other
+person's items. Scanning additional items will still go onto your own list.</p>
+<p>When you've recorded all the relevant items you can run an advanced search on them via
+<b>Search These</b> (or by copy/pasting the UPCs). <b>Export List</b> downloads the list as an Excel
+spreadsheet. Finally, <b>Clear List</b> will remove all the items from your list.</p>
+HTML;
+    }
 }
 
 FannieDispatch::conditionalExec();
