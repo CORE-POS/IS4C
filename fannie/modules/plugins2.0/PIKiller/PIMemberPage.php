@@ -345,12 +345,17 @@ class PIMemberPage extends PIKillerPage {
         echo '<td>'.$this->text_or_field('LastName',$this->primary_customer['lastName']).'</td>';
         echo '</tr>';
 
+        $whP = $this->connection->prepare('SELECT * FROM ' . FannieDB::fqn('MemberSummary','plugin:WarehouseDatabase') . ' WHERE card_no=?');
+        $whData = $this->connection->getRow($whP, array($this->id));
+
         echo "<tr>";
         echo "<td class=\"yellowbg\">Address1: </td>";
         echo '<td>'.$this->text_or_field('address1',$this->account['addressFirstLine']).'</td>';
         echo "<td class=\"yellowbg\">Gets mailings: </td>";
         echo '<td>'.$this->text_or_select('mailflag',$this->account['contactAllowed'],
                     array(1,0), array('Yes','No')).'</td>';
+        echo "<td class=\"yellowbg\">Avg Basket: </td>";
+        printf('<td>$%.2f</td>', $whData['yearAverageSpending']);
         echo "</tr>";
 
         echo "<tr>";
@@ -358,10 +363,8 @@ class PIMemberPage extends PIKillerPage {
         echo '<td>'.$this->text_or_field('address2',$this->account['addressSecondLine']).'</td>';
         echo "<td class=\"yellowbg\">UPC: </td>";
         echo '<td colspan=\"2\">'.$this->text_or_field('upc',$this->account['idCardUPC']).'</td>';
-        echo "<td class=\"yellowbg\">Election Password: </td>";
-        $prep = $this->connection->prepare('SELECT password FROM Voters where cardNo=?');
-        $pass = $this->connection->getValue($prep, array($this->card_no));
-        echo '<td>' . $pass . '</td>';
+        echo "<td class=\"yellowbg\">Shop Rate: </td>";
+        printf('<td>%.2f</td>', $whData['yearTotalVisits'] / 12);
         echo "</tr>";
 
         echo "<tr>";
