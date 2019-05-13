@@ -318,6 +318,14 @@ static public function ttl()
         ));
     }
 
+    if (CoreLocal::get('lotterySpin') === false) {
+        if (function_exists('random_int')) { // php 7+
+            CoreLocal::set('lotterySpin', (random_int(0, PHP_INT_MAX-1)/PHP_INT_MAX));
+        } else {
+            CoreLocal::set('lotterySpin', lcg_value());
+        }
+    }
+
     return $ret;
 }
 

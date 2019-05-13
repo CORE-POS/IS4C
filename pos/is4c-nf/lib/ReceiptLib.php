@@ -1164,7 +1164,9 @@ static public function emailReceiptMod()
 
 static private function nthReceipt()
 {
-    if (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('nthReceipt') < 1) {
+    if (CoreLocal::get('lotterySpin') !== false && CoreLocal::get('lotterySpin') !== '') {
+        return CoreLocal::get('lotterySpin') < CoreLocal::get('nthReceipt');
+    } elseif (CoreLocal::get('nthReceipt') > 0 && CoreLocal::get('nthReceipt') < 1) {
         if (function_exists('random_int')) { // php 7+
             return (random_int(0, PHP_INT_MAX-1)/PHP_INT_MAX) < CoreLocal::get('nthReceipt');
         }

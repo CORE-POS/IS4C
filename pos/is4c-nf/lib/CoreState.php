@@ -395,6 +395,14 @@ static public function transReset()
     */
     CoreLocal::set("lastWeight",0.00);
 
+    /**
+     * @var lotterySpin
+     * Set to a random value between 0 and 1 once per transaction
+     * Doing one "spin" per transaction allow for UI cues about
+     * the result before the end of the transaction
+     */
+    CoreLocal::set('lotterySpin', false);
+
     if (!is_array(CoreLocal::get('PluginList'))) {
         CoreLocal::set('PluginList', array());
     }
