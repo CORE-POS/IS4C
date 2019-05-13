@@ -61,6 +61,9 @@ class adminlist extends NoInputCorePage
                 $url = $this->resumeTransaction();
                 $this->change_page($url);
                 return false;
+            case 'REOPEN':
+                $this->change_page($this->page_url . 'gui-modules/TransList.php');
+                return false;
             case 'TR':
                 TenderReport::printReport();
                 $this->change_page($this->page_url."gui-modules/pos2.php");
@@ -173,6 +176,7 @@ class adminlist extends NoInputCorePage
             <option value='SURVEY'><?php echo _('Print Survey Receipt'); ?>
         <?php } ?>
         <?php } ?>
+        <option value="REOPEN">Re-Open Transaction</option>
         <?php if ($this->session->get('store') == 'wfc') { ?>
             <option value="EOD">End of Day Report</option>
         <?php } ?>
