@@ -35,6 +35,10 @@ class WicMenuPage extends NoInputCorePage
                     CoreLocal::set('WicMode', true);
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
                     return false;
+                case 'eWICON':
+                    CoreLocal::set('WicMode', 2);
+                    $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
+                    return false;
                 case 'WICOFF':
                     CoreLocal::set('WicMode', false);
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
@@ -90,6 +94,7 @@ class WicMenuPage extends NoInputCorePage
             echo '<option value="WICOFF" selected>Exit WIC Mode</option>';
         } else {
             echo '<option value="WICON" selected>Enter WIC Mode</option>';
+            echo '<option value="eWICON">Enter eWIC Mode</option>';
         }
         ?>
             <option value="WICT">Tender WIC</option>

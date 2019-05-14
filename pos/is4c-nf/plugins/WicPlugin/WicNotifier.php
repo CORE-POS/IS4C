@@ -38,6 +38,10 @@ class WicNotifier extends Notifier
         $box = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">
                 W</div>';
 
+        if (CoreLocal::get('WicMode') === 2) {
+            $box = str_replace('W', 'eW', $box);
+        }
+
         return CoreLocal::get('WicMode') ? $box : '';
     }
 }
