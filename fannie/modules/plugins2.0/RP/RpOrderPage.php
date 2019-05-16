@@ -10,15 +10,20 @@ if (!class_exists('RpOrderCategoriesModel')) {
 if (!class_exists('RpOrderItemsModel')) {
     include(__DIR__ . '/RpOrderItemsModel.php');
 }
+if (!class_exists('RpSessionsModel')) {
+    include(__DIR__ . '/RpSessionsModel.php');
+}
 
 class RpOrderPage extends FannieRESTfulPage
 {
     protected $header = 'RP Order Guide';
     protected $title = 'RP Order Guide';
+    protected $must_authenticate = true;
 
     public function preprocess()
     {
         $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>');
+        $this->userID = FannieAuth::getUID($this->current_user);
 
         return parent::preprocess();
     }
@@ -26,6 +31,10 @@ class RpOrderPage extends FannieRESTfulPage
     protected function get_json_handler()
     {
         $_SESSION['rpState'] = json_decode($this->json, true);
+        $model = new RpSessionsModel($this->connection);
+        $model->userID($this->userID);
+        $model->data($this->json);
+        $model->save();
         var_dump($_SESSION['rpState']);
         echo 'OK';
 
@@ -210,6 +219,14 @@ class RpOrderPage extends FannieRESTfulPage
         $sSelect = FormLib::storePicker();
         $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpOrderPage.php?store=\' + this.value;"', $sSelect['html']);
         $jsState = isset($_SESSION['rpState']) ? json_encode($_SESSION['rpState']) : "false";
+        if ($jsState === "false") {
+            $sModel = new RpSessionsModel($this->connection);
+            $sModel->userID($this->userID);
+            if ($sModel->load()) {
+                $jsState = $sModel->data();
+                $_SESSION['rpState'] = json_decode($sModel->data(), true);
+            }
+        }
         $this->addOnloadCommand("rpOrder.initState({$jsState});");
 
         $ordersP = $this->connection->prepare("
