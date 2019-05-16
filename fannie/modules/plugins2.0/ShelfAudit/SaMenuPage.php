@@ -95,6 +95,9 @@ a[type="submit"] {
 <a class="btn btn-default btn-lg" type="submit"
     href="../DeliInventory/DIScanner.php" />Prepared Inventory</a>
 <hr />
+<a class="btn btn-default btn-lg" type="submit"
+    href="SaOutOfStock.php" />Out of Stocks</a>
+<hr />
 {$wfcTools[1]}
 </p>
 </body>
