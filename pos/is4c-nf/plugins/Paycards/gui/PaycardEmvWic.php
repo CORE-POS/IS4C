@@ -48,6 +48,11 @@ class PaycardEmvWic extends PaycardProcessPage
                 $success = $e2e->handleResponseDataCapBalance($xml);
                 if ($success === PaycardLib::PAYCARD_ERR_OK) {
                     $this->conf->set('EWicStep', 1);
+                    $cur = $this->session->get('receiptToggle');
+                    $this->conf->set('receiptToggle', 1);
+                    $receipt = ReceiptLib::printReceipt('wicSlip', ReceiptLib::receiptNumber());
+                    $this->conf->set('receiptToggle', $cur);
+                    ReceiptLib::writeLine($receipt);
                 } else {
                     $this->cleanup();
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
@@ -210,10 +215,12 @@ class PaycardEmvWic extends PaycardProcessPage
         $manual = FormLib::get('manual') ? true : false;
         $xml = '';
         if ($this->conf->get('EWicStep') == 0) {
+            $this->conf->set('paycard_id', $this->conf->get('LastID')+1);
+            $this->conf->set('EWicAcAcq', false);
             $xml = $e2e->prepareDataCapBalance('EWICVAL', $manual);
         } elseif ($this->conf->get('EWicStep') == 1) {
             $this->conf->set('paycard_id', $this->conf->get('LastID')+1);
-            $xml = $e2e->prepareDataCapWic($this->getItemData($this->conf->get('EWicBalance')), 'Sale', $this->conf->get('EWicLast4'));
+            $xml = $e2e->prepareDataCapWic($this->getItemData($this->conf->get('EWicBalance')), 'PreAuthCapture', $this->conf->get('EWicLast4'));
         }
         $log = new LaneLogger();
         $log->debug("WIC REQUEST: " . $xml);

@@ -20,7 +20,7 @@ class MercuryDC extends MercuryE2E
             $this->proc_name = $name;
         }
         // testing temp; needs config setting later
-        $this->conf->set('EWICBins', '61072700,610727');
+        $this->conf->set('EWICBins', '610727');
     }
 
     /**
@@ -155,7 +155,7 @@ class MercuryDC extends MercuryE2E
 
         // start with fields common to PDCX and EMVX
         $msgXml = $this->beginXmlRequest($request);
-        $msgXml .= '<TranCode>' . $tranCode . '</TranCode>
+        $msgXml .= "\n" . '
             <SecureDevice>' . ($last4 ? 'NONE' : '{{SecureDevice}}') . '</SecureDevice>
             <ComPort>{{ComPort}}</ComPort>
             <Account>
@@ -163,7 +163,15 @@ class MercuryDC extends MercuryE2E
             </Account>
             <TranType>EBT</TranType>
             <CardType>EWIC</CardType>
+            <TranCode>' . $tranCode . '</TranCode>
             <PartialAuth>Allow</PartialAuth>';
+        if ($tranCode == 'PreAuthCapture') {
+            $AcAcq = $this->conf->get('EWicAcAcq');
+            $msgXml .= '<TranInfo>
+                <AuthCode>' . $AcAcq[0] . '</AuthCode>
+                <AcqRefData>' . $AcAcq[1] . '</AcqRefData>
+            </TranInfo>';
+        }
         if ($last4) {
             $msgXml .= '<UseLastCardID>' . $last4 . '</UseLastCardID>';
         }
@@ -342,6 +350,11 @@ class MercuryDC extends MercuryE2E
         $this->conf->set('DatacapBalanceCheck', '??');
         $this->conf->set('EWICBalance', '??');
         $termID = $this->getTermID();
+        $separateID = false;
+        if (substr($termID, -2) == '::') {
+            $separateID = true;
+            $termID = substr($termID, 0, strlen($termID)-2);
+        }
         $operatorID = $this->conf->get("CashierNo");
         $transID = $this->conf->get('paycard_id');
         $mcTerminalID = $this->conf->get('PaycardsTerminalID');
@@ -380,6 +393,7 @@ class MercuryDC extends MercuryE2E
             <TStream>
             <Transaction>
             <MerchantID>'.$termID.'</MerchantID>
+            ' . ($separateID ? "<TerminalID>{{TerminalID}}</TerminalID>" : '') . '
             <OperatorID>'.$operatorID.'</OperatorID>
             <LaneID>'.$mcTerminalID.'</LaneID>
             <TranType>' . $tranType . '</TranType>
@@ -685,20 +699,20 @@ class MercuryDC extends MercuryE2E
                     }
                     $receipt = $items . "\n" . "BALANCE\n" . $receipt;
                 }
-                $printP = $dbc->prepare('
-                    INSERT INTO EmvReceipt
-                        (dateID, tdate, empNo, registerNo, transNo, transID, content)
-                    VALUES 
-                        (?, ?, ?, ?, ?, ?, ?)');
-                $dbc->execute($printP, array(
-                    date('Ymd'),
-                    date('Y-m-d H:i:s'),
-                    $this->conf->get('CashierNo'),
-                    $this->conf->get('laneno'),
-                    $this->conf->get('transno'),
-                    $transID,$receipt
-                ));
             }
+            $printP = $dbc->prepare('
+                INSERT INTO EmvReceipt
+                    (dateID, tdate, empNo, registerNo, transNo, transID, content)
+                VALUES 
+                    (?, ?, ?, ?, ?, ?, ?)');
+            $dbc->execute($printP, array(
+                date('Ymd'),
+                date('Y-m-d H:i:s'),
+                $this->conf->get('CashierNo'),
+                $this->conf->get('laneno'),
+                $this->conf->get('transno'),
+                $transID,$receipt
+            ));
         }
     }
 
@@ -726,6 +740,11 @@ class MercuryDC extends MercuryE2E
             $last4 = $better->query('/RStream/TranResponse/AcctNo');
             if ($last4) {
                 $this->conf->set('EWicLast4', substr($last4, -4));
+            }
+            $wicAC = $better->query('/RStream/TranResponse/AuthCode');
+            $wicACQ = $better->query('/RStream/TranResponse/AcqRefData');
+            if ($wicAC && $wicACQ) {
+                $this->conf->set('EWicAcAcq', array($wicAC, $wicACQ));
             }
         }
 
