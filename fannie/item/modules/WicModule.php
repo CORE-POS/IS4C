@@ -6,23 +6,27 @@ class WicModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         $upc = BarcodeLib::padUPC($upc);
         $dbc = $this->db();
+        $panelBody = '';
+        $collapse = '';
+        $official = $this->officialItem($dbc, $upc);
+        if ($official) {
+            $panelBody = $official;
+        } else {
+            $alias = $this->aliasItem($dbc, $upc);
+            if ($alias) {
+                $panelBody = $alias;
+            } else {
+                $panelBody = $this->nonWic();
+                $collapse = 'collapse';
+            }
+        }
         $ret = '<div id="WicFieldset" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
                 <a href=\"\" onclick=\"\$('#WicFieldsetContent').toggle();return false;\">
                 EWic Status</a>
                 </div>";
-        $ret .= '<div id="WicFieldsetContent" class="panel-body ">';
-        $official = $this->officialItem($dbc, $upc);
-        if ($official) {
-            $ret .= $official;
-        } else {
-            $alias = $this->aliasItem($dbc, $upc);
-            if ($alias) {
-                $ret .= $alias;
-            } else {
-                $ret .= $this->nonWic();
-            }
-        }
+        $ret .= '<div id="WicFieldsetContent" class="panel-body ' . $collapse . '">';
+        $ret .= $panelBody;
         $ret .= '</div></div>';
 
         return $ret;
@@ -39,7 +43,7 @@ class WicModule extends \COREPOS\Fannie\API\item\ItemModule
                 AND alias IS NULL");
         $row = $dbc->getRow($prep, array($upc));
         if ($row) {
-            return 'This item is on the official list'
+            return 'This item is on the <a href="../modules/plugins2.0/WIC/WicAplReport.php">official list</a>'
                 . '<br />'
                 . 'Category: ' . $row['cat']
                 . '<br />'
@@ -61,7 +65,7 @@ class WicModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($row) {
             $otherP = $dbc->prepare("SELECT description FROM products WHERE upc=?");
             $other = $dbc->getValue($otherP, array($row['alias']));
-            return 'This item is mapped onto another item'
+            return 'This item is <a href="../modules/plugins2.0/WIC/WicAplReport.php">mapped</a> onto another item'
                 . '<br />'
                 . $row['alias'] . ' ' . $other
                 . '<br />'
