@@ -12,7 +12,7 @@ class SaOOSReport extends FannieReportPage
 
     protected $title = "Fannie : Out of Stocks Report";
     protected $header = "Out of Stocks Report";
-    protected $report_headers = array('Vendor','UPC','Brand','Item','# Times');
+    protected $report_headers = array('Vendor','Super','UPC','Brand','Item','# Times');
     protected $required_fields = array('date1', 'date2');
     protected $new_tablesorter = true;
 
@@ -32,11 +32,11 @@ class SaOOSReport extends FannieReportPage
         $parts['query'] = str_replace('t.tdate', 't.datetime', $parts['query']);
 
         $query = "SELECT t.upc, t.description, SUM(t.quantity) AS qty,
-                p.brand, v.vendorName
+                p.brand, v.vendorName, m.super_name
             " . $parts['query'] . "
                 AND trans_status='X'
                 AND mixMatch='OOS'
-            GROUP BY t.upc, t.description, p.brand";
+            GROUP BY t.upc, t.description, p.brand, m.super_name";
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $parts['args']);
 
@@ -44,6 +44,7 @@ class SaOOSReport extends FannieReportPage
         while ($row = $dbc->fetchRow($res)) {
             $data[] = array(
                 $row['vendorName'] ? $row['vendorName'] : '',
+                $row['super_name'],
                 sprintf('<a href="SaOOSItemReport.php?upc=%s&store=%d">%s</a>',
                     $row['upc'], $store, $row['upc']),
                 $row['brand'] ? $row['brand'] : '',
