@@ -67,6 +67,10 @@ Replaces nightly.lanesync.php and/or lanesync.api.php';
         if ($this->test_mode) {
             $this->regularPushTables = array('houseCoupons');
         }
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        if ($dbc->tableExists('EWicItems')) {
+            $this->regularPushTables[] = 'EWicItems';
+        }
         foreach ($this->regularPushTables as $table) {
             $result = SyncLanes::pushTable("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
             /**
