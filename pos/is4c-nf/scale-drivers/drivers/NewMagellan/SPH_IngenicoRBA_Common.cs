@@ -1100,6 +1100,42 @@ public abstract class SPH_IngenicoRBA_Common : SerialPortHandler
 
         return msg;
     }
+    
+    protected byte[] GetEmailAddress()
+    {
+        System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+        byte[] encode = enc.GetBytes("alphaNew.K3Z");
+
+        byte[] msg = new byte[14 + encode.Length];
+
+        msg[0] = 0x2;
+        msg[1] = 0x32;
+        msg[2] = 0x31;
+        msg[3] = 0x2e;
+
+        msg[4] = 0x30;
+
+        msg[5] = 0x30;
+        msg[6] = 0x31;
+
+        msg[7] = 0x34;
+        msg[8] = 0x30;
+
+        msg[9] = 0x31;
+        msg[10] = 0x1c;
+        msg[11] = 0x31;
+        msg[12] = 0x1c;
+
+        int pos = 13;
+        foreach (byte b in encode) {
+            msg[pos] = b;
+            pos++;
+        }
+
+        msg[pos] = 0x3;
+
+        return msg;
+    }
 
     protected void ParseSigLengthMessage(int status, byte[] msg)
     {

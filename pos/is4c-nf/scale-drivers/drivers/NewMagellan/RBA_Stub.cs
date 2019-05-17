@@ -184,6 +184,52 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         } catch (Exception) { }
     }
 
+    public string getEmailSync()
+    {
+        string ret = "";
+        try {
+            initPort();
+            sp.Open();
+            WriteMessageToDevice(GetEmailAddress());
+            ArrayList bytes = new ArrayList();
+            while (true) {
+                try {
+                    int b = sp.ReadByte();
+                    if (bytes.Count == 0 && b == 0x06) {
+                        // ACK
+                    } else if (bytes.Count == 0 && b == 0x15) {
+                        // NAK
+                        break;
+                    } else {
+                        bytes.Add(b & 0xff); 
+                    }
+                } catch (TimeoutException) {
+                    // expected; not an issue
+                } catch (Exception ex) {
+                    break;
+                }
+                if (bytes.Count > 2 && (int)bytes[bytes.Count-2] == 0x3) {
+                    // end of message, send ACK
+                    ByteWrite(new byte[1]{0x6}); 
+                    byte[] buffer = new byte[bytes.Count];
+                    for (int i=0; i<bytes.Count; i++) {
+                        buffer[i] = (byte)((int)bytes[i] & 0xff);
+                    }
+                    System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+                    string response = enc.GetString(buffer);
+                    int end = response.IndexOf((char)3);
+                    ret = response.Substring(5, end - 5);
+                    break;
+                }
+            }
+            sp.Close();
+        } catch (Exception ex) {
+            Console.WriteLine(ex);
+        }
+
+        return ret;
+    }
+
     /**
       Simple wrapper to write an array of bytes
     */

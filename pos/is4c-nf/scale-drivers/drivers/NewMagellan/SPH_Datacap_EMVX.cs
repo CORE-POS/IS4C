@@ -169,6 +169,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     public override void Read()
     { 
         ReInitDevice();
+        RBA_Stub emailRBA = new RBA_Stub("COM"+com_port);
+        emailRBA.SetParent(this.parent);
+        emailRBA.SetVerbose(this.verbose_mode);
         TcpListener http = this.GetHTTP();
         byte[] buffer = new byte[10];
         while (SPH_Running) {
@@ -207,6 +210,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                         } else if (message.Contains("termSig")) {
                             FlaggedReset();
                             result = GetSignature(true);
+                        } else if (message.Contains("termEmail")) {
+                            result = emailRBA.getEmailSync();
                         } else if (message.Length > 0) {
                             result = ProcessPDC(message);
                             saveResult = true;
