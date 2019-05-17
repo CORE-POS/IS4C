@@ -34,6 +34,7 @@ class EWicCategoriesModel extends BasicModel
     'eWicCategoryID' => array('type'=>'INT', 'primary_key'=>true),
     'name' => array('type'=>'VARCHAR(255)'),
     'qtyMethod' => array('type'=>'TINYINT', 'default'=>0),
+    'units' => array('type'=>'CHAR(3)'),
     );
 
     public function doc()
