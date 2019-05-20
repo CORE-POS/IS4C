@@ -52,7 +52,13 @@ class EmailPage extends BasicCorePage
                 dataType: 'text'
             }).done(function (resp) {
                 var email = encodeURIComponent(resp);
-                location = 'EmailPage.php?email=' + email;
+                if (resp.includes("@")) {
+                    location = 'EmailPage.php?email=' + email;
+                } else {
+                    var curText = $('.textArea').html();
+                    var newText = '<b>Error</b>: invalid email<br />' + curText;
+                    $('.textArea').html(newText);
+                }
             }).fail(function () {
                 var curText = $('.textArea').html();
                 var newText = '<b>Error</b>: could not get email<br />' + curText;
