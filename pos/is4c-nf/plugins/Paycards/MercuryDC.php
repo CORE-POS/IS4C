@@ -213,8 +213,8 @@ class MercuryDC extends MercuryE2E
         $row = $dbc->getRow($prep, $pcID);
         if ($row == false || count($row) == 0) {
             $server = Database::mDataConnect();
-            $prep = $server->prepare('SELECT transNo, registerNo FROM PaycardTransactions WHERE paycardTransactionID=? AND registerNo=?');
-            $row = $server->getRow($prep, array($pcID, $this->conf->get('laneno')));
+            $prep = $server->prepare('SELECT transNo, registerNo FROM PaycardTransactions WHERE paycardTransactionID=? AND registerNo=? AND dateID=?');
+            $row = $server->getRow($prep, array($pcID, $this->conf->get('laneno'), date('Ymd')));
         }
         $this->conf->set('paycard_trans', $this->conf->get('CashierNo') . '-' . $row['registerNo'] . '-' . $row['transNo']);
 
@@ -675,28 +675,36 @@ class MercuryDC extends MercuryE2E
             $this->conf->set('EWicBalanceReceipt', $receipt);
             if ($xml->query('/RStream/TranResponse/TranCode') != 'Balance') {
                 $i = 1;
-                $wicUPCs = array();
+                $items = '';
+                $itemP = $dbc->prepare("SELECT description
+                    FROM localtemptrans AS l
+                        INNER JOIN " . $this->conf->get('pDatabase') . $dbc->sep() . "EWicItems AS e ON l.upc=e.upc
+                    WHERE e.upcCheck=? AND l.trans_type='I'");
                 while (true) {
                     $status = $xml->query('/RStream/TranResponse/ItemData/ItemStatus' . $i);
                     if (empty($status)) break;
                     $status = strtolower($status);
                     if (strpos($status, 'approved') !== false) {
-                        $wicUPCs[] = $xml->query('/RStream/TranResponse/ItemData/UPCItem' . $i);
+                        $upc = $xml->query('/RStream/TranResponse/ItemData/UPCItem' . $i);
+                        $plu = $xml->query('/RStream/TranResponse/ItemData/PLUItem' . $i);
+                        if ($upc) {
+                            $itemName = $dbc->getValue($itemP, array($upc));
+                        } elseif ($plu) {
+                            $plu = '1' . str_pad($plu, 16, '0', STR_PAD_LEFT);
+                            $itemName = $dbc->getValue($itemP, array($plu));
+                        }
+                        $qty = $xml->query('/RStream/TranResponse/ItemData/ItemQty' . $i);
+                        $price = $xml->query('/RStream/TranResponse/ItemData/ItemPrice' . $i);
+                        $items .= str_pad($itemName, 40, ' ', STR_PAD_RIGHT)
+                            . str_pad('x' . $qty, 8, ' ', STR_PAD_LEFT)
+                            . str_pad($price, 8, ' ', STR_PAD_LEFT)
+                            . "\n";
                     }
                     $i++;
                     if ($i > 1000) break;
                 }
-                if (count($wicUPCs) > 0) {
-                    list($inStr, $args) = $dbc->safeInClause($wicUPCs);
-                    $itemP = $dbc->prepare("SELECT description
-                        FROM localtemptrans AS l
-                            INNER JOIN " . $this->conf->get('pDatabase') . $dbc->sep() . "EWicItems AS e ON l.upc=e.upc
-                        WHERE e.upcCheck IN ({$inStr})");
-                    $itemR = $dbc->execute($itemP, $args);
-                    $items = 'APPROVED ITEMS' . "\n";
-                    while ($itemW = $dbc->fetchRow($itemR)) {
-                        $items .= $itemW['description'] . "\n";
-                    }
+                if (strlen($items) > 0) {
+                    $items = 'APPROVED ITEMS' . "\n" . $items;
                     $receipt = $items . "\n" . "BALANCE\n" . $receipt;
                 }
             }

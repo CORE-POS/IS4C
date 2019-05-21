@@ -123,6 +123,13 @@ class PaycardEmvWic extends PaycardProcessPage
                 $price = $better->query('/RStream/TranResponse/ItemData/ItemPrice' . $i);
                 $qty = $better->query('/RStream/TranResponse/ItemData/ItemQty' . $i);
                 $wicUPC = $better->query('/RStream/TranResponse/ItemData/UPCItem' . $i);
+                $wicPLU = $better->query('/RStream/TranResponse/ItemData/PLUItem' . $i);
+                if ($wicPLU) {
+                    $wicPLU = '1' . str_pad($wicPLU, 16, '0', STR_PAD_LEFT);
+                }
+                if (!$wicUPC && $wicPLU) {
+                    $wicUPC = $wicPLU;
+                }
                 $unit = $price / $qty;
                 $ours = $dbc->getRow($translateP, array($wicUPC));
                 if ($ours === false) {
@@ -174,6 +181,12 @@ class PaycardEmvWic extends PaycardProcessPage
         }
 
         $dbc = Database::tDataConnect();
+        $appliedP = $dbc->prepare("
+            SELECT c.trans_id
+            FROM couponApplied AS c
+                INNER JOIN localtemptrans AS t ON c.trans_id=t.trans_id
+            WHERE t.upc=?");
+        $couponP = $dbc->prepare("SELECT SUM(total) FROM localtemptrans WHERE upc LIKE ?");
         $res = $dbc->query('SELECT SUM(t.quantity) AS qty, SUM(t.total) AS ttl,
             CASE WHEN e.alias IS NOT NULL THEN e.alias ELSE e.upc END AS upc,
             e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID
@@ -184,14 +197,34 @@ class PaycardEmvWic extends PaycardProcessPage
             e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID');
         $i = 1;
         $total = 0;
+        $couponCache = array();
         while ($row = $dbc->fetchRow($res)) {
             $upc = $row['upcCheck'];
+            $tag = 'UPCItem';
+            if (strlen($upc) > 16) {
+                $upc = substr($upc, -5);
+                $tag = 'PLUItem';
+            }
+            $manu = substr($row['upc'], 3, 5);
+            if ($manu != '00000' && !isset($couponCache[$manu])) {
+                $couponApplied = $dbc->getValue($appliedP, array($row['upc']));
+                if ($couponApplied) {
+                    $couponValue = $dbc->getValue($appliedP, array('005' . $manu . '%'));
+                    $row['ttl'] += $couponValue; // coupons are negative
+                    $couponCache[$manu] = true;
+                }
+            }
             $add = false;
             if ($row['eWicCategoryID'] && isset($categories['cat'][$row['eWicCategoryID']])) {
-                $ret .= "<UPCItem{$i}>{$upc}</UPCItem{$i}>";
+                $ret .= "<{$tag}{$i}>{$upc}</{$tag}{$i}>";
                 $add = true;
             }
-            if ($add) {
+            if ($add && $row['eWicCategoryID'] == 19) {
+                $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['ttl']) . "</ItemQty{$i}>";
+                $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', 1) . "</ItemPrice{$i}>";
+                $i++;
+                $total += $row['ttl'];
+            } elseif ($add) {
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['qty']) . "</ItemQty{$i}>";
                 $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', $row['ttl']) . "</ItemPrice{$i}>";
                 $i++;
