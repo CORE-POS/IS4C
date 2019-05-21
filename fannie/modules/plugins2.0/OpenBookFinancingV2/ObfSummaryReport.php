@@ -296,8 +296,11 @@ class ObfSummaryReport extends ObfWeeklyReportV2
           Use the entire month from the previous calendar year
           as the time period for year-over-year comparisons
         */
-        $start_ly = mktime(0, 0, 0, $month, 1, $year-1);
-        $end_ly = mktime(0, 0, 0, $month, date('t', $start_ly), $year-1);
+        $start_ly = mktime(0, 0, 0, date('n',$start_ts), date('j', $start_ts), $year-1);
+        while (date('N', $start_ly) != 1) {
+            $start_ly = mktime(0,0,0, date('n', $start_ly), date('j', $start_ly)+1, date('Y', $start_ly));
+        }
+        $end_ly = mktime(0, 0, 0, date('n', $start_ly), date('j', $start_ly)+6, date('Y', $start_ly));
 
         $future = $end_ts >= strtotime(date('Y-m-d')) ? true: false;
 
