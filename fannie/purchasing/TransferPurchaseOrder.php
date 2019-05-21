@@ -140,18 +140,19 @@ class TransferPurchaseOrder extends FannieRESTfulPage
         $order1->placedDate(date('Y-m-d H:i:s'));
         $order1->creationDate(date('Y-m-d H:i:s'));
         $fromID = $order1->save();
-        $order1->vendorInvoiceID('XFER-OUT-' . $fromID);
-        $order1->orderID($fromID);
-        $order1->save();
 
         $order2 = new PurchaseOrderModel($dbc);
-        $order1->vendorID($this->getStoreVendor($dbc, $from));
+        $order2->vendorID($this->getStoreVendor($dbc, $from));
         $order2->storeID($dest);
         $order2->placed($original->placed());
         $order2->placedDate(date('Y-m-d H:i:s'));
-        $order1->creationDate(date('Y-m-d H:i:s'));
+        $order2->creationDate(date('Y-m-d H:i:s'));
         $order2->vendorInvoiceID('XFER-IN-' . $fromID);
         $destID = $order2->save();
+
+        $order1->vendorInvoiceID('XFER-OUT-' . $destID);
+        $order1->orderID($fromID);
+        $order1->save();
 
         $poi = new PurchaseOrderItemsModel($dbc);
         $poi->orderID($this->id);
