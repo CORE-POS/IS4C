@@ -1141,7 +1141,15 @@ HTML;
             if ($alias) {
                 return true;
             }
-            if (!empty($sku) && $sku != $upc) {
+            if (count($vitem->find()) > 0 && $sku != '') {
+                $editP = $dbc->prepare('
+                    UPDATE vendorItems
+                    SET sku=?
+                    WHERE upc=?
+                        AND vendorID=? 
+                '); 
+                $editR = $dbc->execute($editP, array($sku, $upc, $vendorID));
+            } elseif (!empty($sku) && $sku != $upc) {
                 /**
                   If a SKU is provided, update any
                   old record that used the UPC as a
