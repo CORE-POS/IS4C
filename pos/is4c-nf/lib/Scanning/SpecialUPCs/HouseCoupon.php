@@ -73,6 +73,11 @@ class HouseCoupon extends SpecialUPC
             return $json;
         }
 
+        if ($coupID == 321) {
+            $json['main_frame'] = MiscLib::baseURL() . 'gui-modules/EmailPage.php';
+            return $json;
+        }
+
         $add = $this->getValue($coupID);
         TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description'], $add['discountable']);
 

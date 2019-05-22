@@ -25,6 +25,8 @@ use COREPOS\pos\lib\gui\BasicCorePage;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class EmailPage extends BasicCorePage 
@@ -39,6 +41,8 @@ class EmailPage extends BasicCorePage
             var inp = $('#reginput').val().toUpperCase();
             if (inp === 'CL') {
                 window.location = 'pos2.php';
+            } else if (inp == 'CP' || inp == 'IC') {
+                window.location="EmailPage.php?email=override";
             } else {
                 window.location = 'EmailPage.php';
             }
@@ -77,6 +81,9 @@ class EmailPage extends BasicCorePage
             TransRecord::addcomment("EMAIL ENTERED");
             TransRecord::addLogRecord(array('upc'=>'EMAIL', 'description'=>$email));
             // todo: add coupon
+            $hcoup = new HouseCoupon(new WrappedStorage());
+            $add = $hcoup->getValue(321);
+            TransRecord::addhousecoupon('0049999900321', $add['department'], -1 * $add['value'], $add['description'], $add['discountable']);
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         }
