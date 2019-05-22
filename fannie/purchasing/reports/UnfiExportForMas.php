@@ -38,6 +38,9 @@ class UnfiExportForMas extends FannieReportPage
     protected $required_fields = array('date1', 'date2');
     public $discoverable = false;
 
+    protected $header = 'Invoice Export for MAS';
+    protected $title = 'Invoice Export for MAS';
+
     /**
       Lots of options on this report.
     */
@@ -78,11 +81,12 @@ class UnfiExportForMas extends FannieReportPage
                         i.vendorInvoiceID, 
                         SUM(o.receivedTotalCost) as rtc,
                         MAX(o.receivedDate) AS rdate,
-                        MAX(i.storeID) AS storeID
+                        MAX(i.storeID) AS storeID,
+                        MAX(n.vendorName) AS vendor
                     FROM PurchaseOrderItems AS o
                         LEFT JOIN PurchaseOrder as i ON o.orderID=i.orderID 
+                        LEFT JOIN vendors AS n ON n.vendorID=i.vendorID
                     WHERE i.vendorID=? 
-                        AND i.userID=0
                         AND o.receivedDate BETWEEN ? AND ?
                     GROUP BY o.orderID, o.salesCode, i.vendorInvoiceID, i.vendorOrderID
                     ORDER BY rdate, i.vendorInvoiceID, o.salesCode';
@@ -104,9 +108,9 @@ class UnfiExportForMas extends FannieReportPage
                 $code = 'n/a';
             }
             $record = array(
-                'UNFI',
+                $codingW['vendor'],
                 '<a href="../ViewPurchaseOrders.php?id=' . $codingW['orderID'] . '">' . $codingW['vendorInvoiceID'] . '</a>',
-                $codingW['vendorOrderID'],
+                $codingW['vendorOrderID'] ? $codingW['vendorOrderID'] : $codingW['orderID'],
                 $codingW['rdate'],
                 0.00,
                 sprintf('%.2f', $codingW['rtc']),

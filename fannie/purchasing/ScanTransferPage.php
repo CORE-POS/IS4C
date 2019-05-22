@@ -76,6 +76,9 @@ class ScanTransferPage extends FannieRESTfulPage
                 $item->unitCost($data['cost']);  
                 $item->salesCode($data['codeTo']);
                 $item->caseSize(1);
+                $item->receivedDate(date('Y-m-d H:i:s'));
+                $item->receivedQty($data['qty']);
+                $item->receivedTotalCost($data['qty'] * $data['cost']);
                 
                 $item->quantity($data['qty']);
                 $item->orderID($inID);
@@ -83,6 +86,8 @@ class ScanTransferPage extends FannieRESTfulPage
 
                 $item->salesCode($data['codeFrom']);
                 $item->quantity(-1*$data['qty']);
+                $item->receivedQty(-1*$data['qty']);
+                $item->receivedTotalCost(-1 * $data['qty'] * $data['cost']);
                 $item->orderID($outID);
                 $item->save();
             }
