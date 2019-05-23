@@ -46,6 +46,7 @@ class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
         $config = FannieConfig::factory();
         $settings = $config->get('PLUGIN_SETTINGS');
         $sql = FannieDB::get($settings['WarehouseDatabase']);
+        $this->connection->selectDB($settings['WarehouseDatabase']);
         $supers = $config->get('OP_DB') . $sql->sep() . 'MasterSuperDepts';
 
         $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
