@@ -33,6 +33,13 @@ class WfcPdfExport extends DefaultPdfPoExport
 
     public function export_order($id)
     {
+        $pdf = $this->prepOrder($id);
+
+        $pdf->Output('order_export.pdf', 'D');
+    }
+
+    public function prepOrder($id)
+    {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $order = new PurchaseOrderModel($dbc);
         $order->orderID($id);
@@ -68,7 +75,7 @@ class WfcPdfExport extends DefaultPdfPoExport
         }
         $pdf->Cell(50, 5, 'PO #: ' . $id, 0, 1);
 
-        $pdf->Output('order_export.pdf', 'D');
+        return $pdf;
     }
 }
 
