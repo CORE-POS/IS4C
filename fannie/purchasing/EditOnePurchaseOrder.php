@@ -64,6 +64,28 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $ret = array(); 
         $orderID = FormLib::get('orderID');
 
+        // search by UPC
+        $upcQ = 'SELECT brand, description, size, units, cost, sku
+            FROM vendorItems WHERE upc = ? AND vendorID=?';
+        $upcP = $dbc->prepare($upcQ);
+        $upcR = $dbc->execute($upcP, array(BarcodeLib::padUPC($this->search), $this->id));
+        while($w = $dbc->fetch_row($upcR)){
+            $result = array(
+            'sku' => $w['sku'],
+            'title' => $this->asciiFilter($w['brand']).' - '. $this->asciiFilter($w['description']),
+            'unitSize' => $w['size'],   
+            'caseSize' => $w['units'],
+            'unitCost' => sprintf('%.2f',$w['cost']),
+            'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
+            'cases' => 1,
+            );
+            $ret[] = $result;
+        }
+        if (count($ret) > 0){
+            $this->mergeSearchResult($ret, $orderID, $dbc);
+            return False;
+        }
+
         // search by vendor SKU
         $skuQ = 'SELECT v.brand, v.description, v.size, v.units, v.cost, v.sku
                  FROM vendorItems AS v
@@ -85,28 +107,6 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         if (count($ret) > 0){
             $this->mergeSearchResult($ret, $orderID, $dbc);
             return false;
-        }
-
-        // search by UPC
-        $upcQ = 'SELECT brand, description, size, units, cost, sku
-            FROM vendorItems WHERE upc = ? AND vendorID=?';
-        $upcP = $dbc->prepare($upcQ);
-        $upcR = $dbc->execute($upcP, array(BarcodeLib::padUPC($this->search), $this->id));
-        while($w = $dbc->fetch_row($upcR)){
-            $result = array(
-            'sku' => $w['sku'],
-            'title' => $this->asciiFilter($w['brand']).' - '. $this->asciiFilter($w['description']),
-            'unitSize' => $w['size'],   
-            'caseSize' => $w['units'],
-            'unitCost' => sprintf('%.2f',$w['cost']),
-            'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
-            'cases' => 1,
-            );
-            $ret[] = $result;
-        }
-        if (count($ret) > 0){
-            $this->mergeSearchResult($ret, $orderID, $dbc);
-            return False;
         }
 
         echo '[]';
