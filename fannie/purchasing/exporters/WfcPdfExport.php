@@ -31,6 +31,12 @@ class WfcPdfExport extends DefaultPdfPoExport
     public $extension = 'pdf';
     public $mime_type = 'application/pdf';
 
+    public function exportString($id)
+    {
+        $pdf = $this->prepOrder($id);
+        return $pdf->Output('string', 'S');
+    }
+
     public function export_order($id)
     {
         $pdf = $this->prepOrder($id);

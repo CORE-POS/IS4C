@@ -35,6 +35,13 @@ class DefaultCsvPoExport
         header("Expires: 0");
     }
 
+    public function exportString($id)
+    {
+        ob_start();
+        $this->export_order($id);
+        return ob_get_clean();
+    }
+
     public function export_order($id)
     {
         global $FANNIE_OP_DB;

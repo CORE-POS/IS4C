@@ -31,6 +31,13 @@ class WfcPoExport extends DefaultCsvPoExport
     public $extension = 'csv';
     public $mime_type = 'text/csv';
 
+    public function exportString($id)
+    {
+        ob_start();
+        $this->export_order($id);
+        return ob_get_clean();
+    }
+
     public function export_order($id)
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));

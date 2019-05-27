@@ -35,6 +35,13 @@ class Unfi7DigitCsvExport
         header("Expires: 0");
     }
 
+    public function exportString($id)
+    {
+        ob_start();
+        $this->export_order($id);
+        return ob_get_clean();
+    }
+
     public function export_order($id)
     {
         $config = FannieConfig::factory();

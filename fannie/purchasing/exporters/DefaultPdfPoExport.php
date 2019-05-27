@@ -30,6 +30,12 @@ class DefaultPdfPoExport {
     function send_headers(){
     }
 
+    public function exportString($id)
+    {
+        $pdf = $this->buildPDF($id);
+        return $pdf->Output('string', 'S');
+    }
+
     function export_order($id){
         $pdf = $this->buildPDF($id);
         $pdf->Output('order_export.pdf', 'D');
