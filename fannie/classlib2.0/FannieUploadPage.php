@@ -82,6 +82,11 @@ class FannieUploadPage extends \FanniePage
         data columns. This skipping only applies to the preview
         screen. The lines are still present when the whole
         file is processed.
+
+        Using a negative value here enables "automatic line skipping".
+        In this case all lines containing fewer than the number of 
+        columns defined in $preview_opts are skipped. This can be useful
+        if the information preceding the data varies in size.
      */
     protected $skip_first = 0;
 
@@ -588,18 +593,26 @@ class FannieUploadPage extends \FanniePage
         $fp = fopen($this->upload_file_name,'r');
         $width = 0;
         $table = "";
-        $linedata = $this->fileToArray(5 + $this->skip_first);
+        $previewLength = 5 + $this->skip_first;
+        if ($this->skip_first < 0) {
+            $previewLength = 100;
+        }
+        $linedata = $this->fileToArray($previewLength);
         $row = -1;
+        $shown = 0;
         foreach ($linedata as $data) {
             $j=0;
             $row++;
-            if ($row < $this->skip_first) continue;
+            if ($row < $this->skip_first && $this->skip_first > 0) continue;
+            if ($this->skip_first < 0 && count($data) < count($this->preview_opts)) continue;
             foreach($data as $d) {
                 $table .='<td>'.$d.'</td>';
                 $j++;
             }
             if ($j > $width) $width = $j;
             $table .= '</tr>';
+            $shown++;
+            if ($shown > 6) break;
         }
         fclose($fp);
 
