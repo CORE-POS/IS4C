@@ -231,6 +231,14 @@ class LikeCodeAjax extends FannieRESTfulPage
 
         $model->sortRetail($this->rcat);
         $model->save();
+        if ($this->connection->tableExists('RpOrderItems')) {
+            $catP = $this->connection->prepare("SELECT rpOrderCategoryID FROM RpOrderCategories WHERE name=?");
+            $cat = $this->connection->getValue($catP, array($this->rcat));
+            if ($cat) {
+                $upP = $this->connection->prepare("UPDATE RpOrderItems SET categoryID=? WHERE upc=?");
+                $this->connection->execute($upP, array($cat, 'LC' . $this->id));
+            }
+        }
 
         echo 'Done';
         return false;
