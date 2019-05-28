@@ -215,6 +215,7 @@ class DepartmentMovementReport extends FannieReportPage
         }
         $likeCodes = FormLib::get('lc') ? array() : false;
         $ret = array();
+        $dateSum = 0;
         while ($row = $dbc->fetchRow($result)) {
             $record = array();
             if ($groupby == "Date") {
@@ -222,6 +223,8 @@ class DepartmentMovementReport extends FannieReportPage
                 $record[] = date('l', strtotime($record[0]));
                 $record[] = sprintf('%.2f', $row[3]);
                 $record[] = sprintf('%.2f', $row[4]);
+                $record[] = 0; // percent placeholder
+                $dateSum += $row[4];
             } elseif ($groupby == 'PLU') {
                 if ($likeCodes !== false && $row['likeCode']) {
                     $lc = $row['likeCode'];
@@ -273,6 +276,11 @@ class DepartmentMovementReport extends FannieReportPage
             $row[5] = sprintf('%.2f', $row[5]);
             $ret[] = $row;
         }
+        if ($groupby == 'Date') {
+            for ($i=0; $i<count($ret); $i++) {
+                $ret[$i][4] = sprintf('%.2f', $ret[$i][3] / $dateSum * 100);
+            }
+        }
 
         return $ret;
     }
@@ -298,6 +306,11 @@ class DepartmentMovementReport extends FannieReportPage
         switch(count($data[0])) {
             case 10:
                 return $this->upcFooter($data);
+            case 5:
+                $this->nonUpcHeaders();
+                $ret = $this->nonUpcFooter($data);
+                $ret[] = '';
+                return $ret;
             case 4:
                 /**
                   The Department and Weekday datasets are both four
@@ -333,7 +346,7 @@ class DepartmentMovementReport extends FannieReportPage
             $this->sort_column = 0;
             $this->sort_direction = 0;
         } elseif (FormLib::get_form_value('sort')=='Date') {
-            $this->report_headers = array('Date','Day','Qty','$');
+            $this->report_headers = array('Date','Day','Qty','$', '%');
             $this->sort_column = 0;
             $this->sort_direction = 0;
         } else {
