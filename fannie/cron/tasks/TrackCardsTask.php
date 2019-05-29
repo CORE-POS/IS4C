@@ -72,28 +72,55 @@ class TrackCardsTask extends FannieTask
             . $dbc->monthdiff($dbc->now(), 'firstSeen') . " <= times
             AND times > 5
             AND cardNo IS NULL
-            ORDER BY times ASC");
+            ORDER BY times DESC");
         $whMonths = array();
         while ($row = $dbc->fetchRow($res)) {
             $whMonths = $this->trackUser($dbc, $row['name'], $row['PAN'], $row['hash'], $row['firstSeen'], $whMonths);
             break;
         }
-        foreach ($whMonths as $dm => $set) {
-            $year = substr($dm, 0, 4);
-            $month = ltrim(substr($dm, -2), '0');
-            echo "Reloading warehouse $year-$month (1/2)\n";
+        foreach ($whMonths as $ymd => $set) {
+            $stamp = strtotime($ymd);
+            $month = date('n', $stamp);
+            $year = date('Y', $stamp);
+            $day = date('j', $stamp);
+            echo "Reloading warehouse $ymd (1/3)\n";
             $model = new SumMemSalesByDayModel($dbc);
-            $model->refresh_data($this->config->get('TRANS_DB'), $month, $year);
-            echo "Reloading warehouse $year-$month (2/2)\n";
+            $model->refresh_data($this->config->get('TRANS_DB'), $month, $year, $day);
+            echo "Reloading warehouse $ymd (2/3)\n";
             $model = new SumMemTypeSalesByDayModel($dbc);
-            $model->refresh_data($this->config->get('TRANS_DB'), $month, $year);
+            $model->refresh_data($this->config->get('TRANS_DB'), $month, $year, $day);
+            echo "Reloading warehouse $ymd (3/3)\n";
+            $model = new TransactionSummaryModel($dbc);
+            $model->refresh_data($this->config->get('TRANS_DB'), $month, $year, $day);
         }
+    }
+
+    private function getCardNo($dbc)
+    {
+        $maxP = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
+        $max = $dbc->getValue($maxP);
+
+        //return $max + 1;
+
+        $try = $max - 1;
+        $existP = $dbc->prepare("SELECT CardNo FROM custdata WHERE CardNo=?");
+        while ($try > 0) {
+            $exists = $dbc->getValue($existP, array($try));
+            if (!$exists) {
+                return $try;
+            }
+
+            $try--;
+        }
+
+        $this->cronMsg('No card numbers available!');
+        exit;
     }
 
     private function trackUser($dbc, $name, $pan, $hash, $startDate, $whMonths)
     {
-        $maxP = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
-        $max = $dbc->getValue($maxP) + 1;
+        $max = $this->getCardNo($dbc);
+        echo "$hash will be $max\n";
         $fn = '';
         $ln = $name;
         if (strstr($name, '/')) {
@@ -138,9 +165,9 @@ class TrackCardsTask extends FannieTask
             $ptArgs = array(date('Ymd', $startTS), date('Ymt', $startTS), '%' . $name . '%', $pan);
             $ptRows = $dbc->getAllRows($ptP, $ptArgs);
             if (count($ptRows) > 0) {
-                $whMonths[date('Ym', $startTS)] = true;
                 foreach ($ptRows as $ptRow) {
                     $date = date('Y-m-d', strtotime($ptRow['requestDatetime']));
+                    $whMonths[$date] = true;
                     $args = array(
                         $max,
                         $date,
