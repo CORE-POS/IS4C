@@ -6,6 +6,8 @@ class TrackCardsLiveTask extends FannieTask
 
     public $description = 'Monitors current activity for known payment cards and re-numbers transactions with the appropriate customer';
 
+    public $log_start_stop = false;
+
     public $default_schedule = array(
         'min' => 10,
         'hour' => '*',
