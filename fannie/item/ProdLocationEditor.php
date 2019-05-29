@@ -735,7 +735,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         $ret .= '</div></div></div>'; //<column B><row><container>
         if (FormLib::get('batchCheck', false)) {
-            $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
+            $ret .= '<br><a class="btn btn-default" href="../../../Scannie/content/Scanning/BatchCheck/SCS.php">
                 Back to Batch Check</a><br><br>';
         } else {
             $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
