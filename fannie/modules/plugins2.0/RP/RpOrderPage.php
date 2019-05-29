@@ -152,9 +152,14 @@ class RpOrderPage extends FannieRESTfulPage
             $item['backupSKU'] = $upc;
         }
 
+        $sku = $vendor == $item['backupID'] ? $item['backupSKU'] : $item['vendorSKU'];
+        if ($sku == 'DIRECT') {
+            $sku = $upc;
+        }
+
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($orderID);
-        $poi->sku($vendor == $item['backupID'] ? $item['backupSKU'] : $item['vendorSKU']);
+        $poi->sku($sku);
         $poi->quantity(FormLib::get('qty'));
         $poi->unitCost($prod['cost']);
         $poi->caseSize($item['caseSize']);
