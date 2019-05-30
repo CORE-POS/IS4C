@@ -9,6 +9,61 @@ using System.Reflection;
 
 class Watcher
 {
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct STARTUPINFO
+    {
+        public Int32 cb;
+        public string lpReserved;
+        public string lpDesktop;
+        public string lpTitle;
+        public Int32 dwX;
+        public Int32 dwY;
+        public Int32 dwXSize;
+        public Int32 dwYSize;
+        public Int32 dwXCountChars;
+        public Int32 dwYCountChars;
+        public Int32 dwFillAttribute;
+        public Int32 dwFlags;
+        public Int16 wShowWindow;
+        public Int16 cbReserved2;
+        public IntPtr lpReserved2;
+        public IntPtr hStdInput;
+        public IntPtr hStdOutput;
+        public IntPtr hStdError;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PROCESS_INFORMATION
+    {
+        public IntPtr hProcess;
+        public IntPtr hThread;
+        public int dwProcessId;
+        public int dwThreadId;
+    }
+
+    [DllImport("kernel32.dll")]
+    static extern bool CreateProcess(
+        string lpApplicationName,
+        string lpCommandLine,
+        IntPtr lpProcessAttributes,
+        IntPtr lpThreadAttributes,
+        bool bInheritHandles,
+        uint dwCreationFlags,
+        IntPtr lpEnvironment,
+        string lpCurrentDirectory,
+        [In] ref STARTUPINFO lpStartupInfo,
+        out PROCESS_INFORMATION lpProcessInformation
+    );
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    static extern bool CloseHandle(IntPtr hObject);
+
+    const int STARTF_USESHOWWINDOW = 1;
+    const int SW_SHOWMINNOACTIVE = 7;
+    const int CREATE_NEW_CONSOLE = 0x00000010;
+
     [DllImport("user32.dll")]
     static extern bool SetForegroundWindow(IntPtr hWnd);
 
@@ -42,6 +97,10 @@ class Watcher
         // restart pos.exe minimized whenever it exits
         Console.WriteLine(DateTime.Now.ToString() + ": starting driver");
         while (true) {
+            // START FIRST IMPLEMENTATION
+            // Previous implementation
+            // Uses strictly .NET to launch pos.exe process
+            /*
             var p = new Process();
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.StartInfo.FileName = my_location + sep + "pos.exe";
@@ -55,7 +114,28 @@ class Watcher
             while (p.MainWindowHandle == IntPtr.Zero);
             Watcher.maintainFocus(browserName);
             p.WaitForExit();
-            Console.WriteLine(DateTime.Now.ToString() + ": re-starting driver");
+            Console.WriteLine(DateTime.Now.ToString() + ": re-starting driver (C# build)");
+            */
+            // END FIRST IMPLEMENTATION
+
+            // START SECOND IMPLEMENTATION
+            // C++ heavier approach
+            // Using CreateProcess from the kernel gives additional option
+            // SHOWMINNOACTIVE (show minimized no activate)
+            // "activate" seems to means give the new window input focus
+            STARTUPINFO si = new STARTUPINFO();
+            si.cb = Marshal.SizeOf(si);
+            si.dwFlags = STARTF_USESHOWWINDOW;
+            si.wShowWindow = SW_SHOWMINNOACTIVE;
+            PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
+            CreateProcess(null, my_location + sep + "pos.exe", IntPtr.Zero, IntPtr.Zero, true, CREATE_NEW_CONSOLE, IntPtr.Zero, null, ref si, out pi);
+            Watcher.current = Process.GetProcessById(pi.dwProcessId);
+            Watcher.maintainFocus(browserName);
+            Watcher.current.WaitForExit();
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            Console.WriteLine(DateTime.Now.ToString() + ": re-starting driver (C++ build)");
+            // END SECOND IMPLEMENTATION
         }
     }
 
