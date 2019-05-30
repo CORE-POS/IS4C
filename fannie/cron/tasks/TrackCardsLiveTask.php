@@ -34,6 +34,7 @@ class TrackCardsLiveTask extends FannieTask
                 AND register_no=?
                 AND trans_no=?
                 AND store_id=?");
+        $lastSeenP = $dbc->prepare("UPDATE " .FannieDB::fqn('TrackedCards', 'op') . "SET lastSeen=? WHERE hash=?");
         $transR = $dbc->query("SELECT * FROM " . FannieDB::fqn('dlog', 'trans') . " WHERE trans_type='T' AND charflag='PT' and card_no IN (9, 11)");
         while ($transW = $dbc->fetchRow($transR)) {
             $stamp = strtotime($transW['tdate']);
@@ -65,6 +66,7 @@ class TrackCardsLiveTask extends FannieTask
                         $transW['store_id'],
                     );
                     $dbc->execute($upP, $upArgs);
+                    $dbc->execute($lastSeenP, array($transW['tdate'], $hash));
                 }
             }
         }
