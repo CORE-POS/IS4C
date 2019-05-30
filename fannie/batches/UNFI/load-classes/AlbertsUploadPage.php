@@ -63,7 +63,7 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         ),
     );
 
-    protected $skip_first = 47;
+    protected $skip_first = -1;
 
     protected $use_splits = false;
     protected $use_js = false;

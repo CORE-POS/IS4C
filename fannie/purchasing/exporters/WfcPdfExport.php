@@ -21,24 +21,30 @@
 
 *********************************************************************************/
 
-if (!class_exists('DefaultCsvPoExport')) {
-    include(dirname(__FILE__) . '/DefaultCsvPoExport.php');
+if (!class_exists('DefaultPdfPoExport')) {
+    include(dirname(__FILE__) . '/DefaultPdfPoExport.php');
 }
 
-class WfcPoExport extends DefaultCsvPoExport 
+class WfcPdfExport extends DefaultPdfPoExport 
 {
-    public $nice_name = 'WFC';
-    public $extension = 'csv';
-    public $mime_type = 'text/csv';
+    public $nice_name = 'WFC (PDF)';
+    public $extension = 'pdf';
+    public $mime_type = 'application/pdf';
 
     public function exportString($id)
     {
-        ob_start();
-        $this->export_order($id);
-        return ob_get_clean();
+        $pdf = $this->prepOrder($id);
+        return $pdf->Output('string', 'S');
     }
 
     public function export_order($id)
+    {
+        $pdf = $this->prepOrder($id);
+
+        $pdf->Output('order_export.pdf', 'D');
+    }
+
+    public function prepOrder($id)
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $order = new PurchaseOrderModel($dbc);
@@ -55,29 +61,27 @@ class WfcPoExport extends DefaultCsvPoExport
         $notes->load();
         $noteContent = trim($notes->notes());
 
-        echo "\r\n";
-        if ($auto->accountID() != '') {
-            echo "Account# " . $auto->accountID() . "\r\n";
-        }
-        echo "PO# " . $id . "\r\n";
+        $pdf = $this->buildPDF($id);
+        $pdf->Ln(10);
+        $pdf->Cell(0, 2, '', 'B', 1);
+        $pdf->Ln(5);
+
+        $pdf->Cell(50, 5, 'Whole Foods Co-op', 0, 1);
         if ($order->storeID() == 1) {
-            echo "Whole Foods Co-op\r\n";
-            echo "610 E 4th St\r\n";
-            echo "\"Duluth, MN 55805\"\r\n";
-            echo "(218) 728-0884\r\n";
+            $pdf->Cell(50, 5, '610 E 4th St', 0, 1);
+            $pdf->Cell(50, 5, 'Duluth, MN 55805', 0, 1);
+            $pdf->Cell(50, 5, '(218) 728-0884', 0, 1);
         } elseif ($order->storeID() == 2) {
-            echo "Whole Foods Co-op\r\n";
-            echo "4426 Grand Ave\r\n";
-            echo "\"Duluth, MN 55807\"\r\n";
-            echo "(218) 336-0279\r\n";
+            $pdf->Cell(50, 5, '4426 Grand Ave', 0, 1);
+            $pdf->Cell(50, 5, 'Duluth, MN 55807', 0, 1);
+            $pdf->Cell(50, 5, '(218) 336-0279', 0, 1);
         }
-
-        if ($noteContent != '') {
-            echo "Notes:\r\n";
-            echo "\"{$noteContent}\"\r\n";
+        if ($auto->accountID()) {
+            $pdf->Cell(50, 5, 'Account #: ' . $auto->accountID(), 0, 1);
         }
+        $pdf->Cell(50, 5, 'PO #: ' . $id, 0, 1);
 
-        parent::export_order($id);
+        return $pdf;
     }
 }
 

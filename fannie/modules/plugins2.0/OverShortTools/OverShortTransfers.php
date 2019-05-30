@@ -9,10 +9,11 @@ class OverShortTransfers extends FannieReportPage
 {
     protected $title = 'Transfers Report';
     protected $header = 'Transfers Report';
-    protected $report_headers = array('Code', 'Order(s)', 'Total');
+    protected $report_headers = array('GL-ID', 'End Date', 'Account#', 'Debit', 'Credit', 'Note');
     public $description = '[Transfers Report] exports data about cross-store transfers.';
     public $report_set = 'Finance';
     protected $required_fields = array('date1', 'date2');
+    protected $no_sort_but_style = true;
 
     function fetch_report_data()
     {
@@ -36,6 +37,7 @@ class OverShortTransfers extends FannieReportPage
         $args[] = $this->form->date2 . ' 23:59:59';
         $args[] = $this->form->date1 . ' 00:00:00';
         $args[] = $this->form->date2 . ' 23:59:59';
+        $noteP = $this->connection->prepare("SELECT notes FROM PurchaseOrderNotes WHERE orderID=?");
         $prep = $this->connection->prepare("
             SELECT i.salesCode,
                 o.storeID,
@@ -43,7 +45,7 @@ class OverShortTransfers extends FannieReportPage
                     WHEN i.receivedTotalCost = 0 OR i.receivedTotalCost IS NULL THEN unitCost*caseSize*quantity 
                     ELSE receivedTotalCost 
                 END) AS ttl,
-                GROUP_CONCAT(DISTINCT o.orderID SEPARATOR ' ') AS orders
+                o.orderID
             FROM PurchaseOrder AS o
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
             WHERE o.vendorID IN ({$inStr})
@@ -53,24 +55,36 @@ class OverShortTransfers extends FannieReportPage
                     o.placedDate BETWEEN ? AND ?
                 )
             GROUP BY i.salesCode,
-                o.storeID");
+                o.storeID,
+                o.orderID
+            ORDER BY
+                ABS(SUM(CASE 
+                    WHEN i.receivedTotalCost = 0 OR i.receivedTotalCost IS NULL THEN unitCost*caseSize*quantity 
+                    ELSE receivedTotalCost 
+                END)), ttl");
         $res = $this->connection->execute($prep, $args);
+        $stamp = strtotime($this->form->date1);
+        $glID = date('Ym01', $stamp);
+        $endDate = date('n/t/y', $stamp);
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $code = $accounting::toPurchaseCode($row['salesCode']);
             $code = $accounting::extend($code, $row['storeID']);
-            if (!isset($data[$code])) {
-                $data[$code] = array($code, '', 0);
-            }
-            $data[$code][2] += $row['ttl'];
-            $link = '';
-            foreach (explode(' ', $row['orders']) as $oid) {
-                $link .= sprintf('<a href="../../../purchasing/ViewPurchaseOrders.php?id=%d">%d</a> ', $oid, $oid);
-            }
-            $data[$code][1] .= $link;
+            $note = $this->connection->getValue($noteP, array($row['orderID']));
+            $note = $note ? $note : 'Product Transfer';
+            $credit = $row['ttl'] <= 0 ? $row['ttl'] * -1 : '';
+            $debit = $row['ttl'] > 0 ? $row['ttl'] : '';
+            $data[] = array(
+                $glID,
+                $endDate,
+                $code,
+                sprintf('%.2f', $debit),
+                sprintf('%.2f', $credit),
+                $note,
+            );
         }
 
-        return $this->dekey_array($data);
+        return $data;
     }
 
     function form_content()

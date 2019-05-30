@@ -31,6 +31,7 @@ foreach($FANNIE_LANES as $lane) {
     if ($dbc->connections[$lane['op']] !== false) {
 
         $dbc->query("DELETE FROM custdata WHERE type IN ('TERM','INACT2')", $lane['op']);
+        $dbc->query("DELETE FROM custdata WHERE memType IN (7)", $lane['op']);
     }
 }
 

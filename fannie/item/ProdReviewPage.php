@@ -164,7 +164,7 @@ HTML;
                 INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 LEFT JOIN vendorReviewSchedule AS v ON p.default_vendor_id=v.vid
             WHERE p.inUse = 1
-                AND m.superID in (1,4,5,8,9,13,17)
+                AND m.superID in (1,4,5,8,9,13,17,3)
                 AND v.exclude <> 1
             GROUP BY p.upc
         ");

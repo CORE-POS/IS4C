@@ -73,13 +73,9 @@ class TrackCardsTask extends FannieTask
             AND times > 5
             AND cardNo IS NULL
             ORDER BY times ASC");
-        var_dump($dbc->numRows($res));
-        $tagP = $dbc->prepare("UPDATE TrackedCards SET cardNo=? WHERE hash=?");
         $whMonths = array();
         while ($row = $dbc->fetchRow($res)) {
-            var_dump($row); exit;
             $whMonths = $this->trackUser($dbc, $row['name'], $row['PAN'], $row['hash'], $row['firstSeen'], $whMonths);
-            $dbc->execute($tagP, array($max, $row['hash']));
             break;
         }
         foreach ($whMonths as $dm => $set) {
@@ -87,10 +83,10 @@ class TrackCardsTask extends FannieTask
             $month = ltrim(substr($dm, -2), '0');
             echo "Reloading warehouse $year-$month (1/2)\n";
             $model = new SumMemSalesByDayModel($dbc);
-            $model->refresh_data($this->config->get('TRANS_DB'), $year, $month);
+            $model->refresh_data($this->config->get('TRANS_DB'), $month, $year);
             echo "Reloading warehouse $year-$month (2/2)\n";
             $model = new SumMemTypeSalesByDayModel($dbc);
-            $model->refresh_data($this->config->get('TRANS_DB'), $year, $month);
+            $model->refresh_data($this->config->get('TRANS_DB'), $month, $year);
         }
     }
 
@@ -98,6 +94,16 @@ class TrackCardsTask extends FannieTask
     {
         $maxP = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
         $max = $dbc->getValue($maxP) + 1;
+        $fn = '';
+        $ln = $name;
+        if (strstr($name, '/')) {
+            $temp = explode('/', $name, 2);
+            $temp = array_map('trim', $temp);
+            if ($temp[0] != '' && $temp[1] != '') {
+                $ln = $temp[0];
+                $fn = $temp[1];
+            }
+        }
         $member = array(
             'cardNo' => $max,
             'memberStatus' => 'REG',
@@ -106,11 +112,14 @@ class TrackCardsTask extends FannieTask
             'customers' => array(
                 array(
                     'accountHolder' => true,
-                    'firstName' => '',
-                    'lastName' => $name,
+                    'firstName' => $fn,
+                    'lastName' => $ln,
                 ),
             ),
         );
+        COREPOS\Fannie\API\member\MemberREST::post($max, $member);
+        $trackP = $dbc->prepare("UPDATE TrackedCards SET cardNo=? WHERE hash=?");
+        $dbc->execute($trackP, array($max, $hash));
         $startTS = strtotime($startDate);
         $endTS = strtotime('yesterday');
         $ptP = $dbc->prepare("SELECT * FROM " . FannieDB::fqn('PaycardTransactions', 'trans') . "
@@ -120,7 +129,7 @@ class TrackCardsTask extends FannieTask
         $setP = $dbc->prepare("UPDATE " . FannieDB::fqn('bigArchive', 'arch') . "
                     SET card_no=?
                     WHERE card_no IN (9, 11)
-                        AND tdate BETWEEN ? AND ?
+                        AND datetime BETWEEN ? AND ?
                         AND emp_no=?
                         AND register_no=?
                         AND trans_no=?");
@@ -133,6 +142,7 @@ class TrackCardsTask extends FannieTask
                 foreach ($ptRows as $ptRow) {
                     $date = date('Y-m-d', strtotime($ptRow['requestDatetime']));
                     $args = array(
+                        $max,
                         $date,
                         $date . ' 23:59:59',
                         $ptRow['empNo'],

@@ -30,7 +30,18 @@ class DefaultPdfPoExport {
     function send_headers(){
     }
 
+    public function exportString($id)
+    {
+        $pdf = $this->buildPDF($id);
+        return $pdf->Output('string', 'S');
+    }
+
     function export_order($id){
+        $pdf = $this->buildPDF($id);
+        $pdf->Output('order_export.pdf', 'D');
+    }
+
+    protected function buildPDF($id){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
@@ -73,23 +84,25 @@ class DefaultPdfPoExport {
                 $cur_page = $pdf->PageNo();
                 $pdf->Cell(25, 5, 'SKU', 0, 0);
                 $pdf->Cell(20, 5, 'Order Qty', 0, 0);
+                $pdf->Cell(20, 5, 'Case Size', 0, 0);
+                $pdf->Cell(20, 5, 'Total Units', 0, 0);
+                $pdf->Cell(20, 5, 'Unit Size', 0, 0);
                 $pdf->Cell(30, 5, 'Brand', 0, 0);
                 $pdf->Cell(65, 5, 'Description', 0, 0);
-                $pdf->Cell(20, 5, 'Case Size', 0, 0);
-                $pdf->Cell(20, 5, 'Est. Cost', 0, 0);
                 $pdf->Ln();
             }
 
             $pdf->Cell(25, 5, $obj->sku(), 0, 0);
             $pdf->Cell(20, 5, $obj->quantity(), 0, 0, 'C');
-            $pdf->Cell(30, 5, $obj->brand(), 0, 0);
-            $pdf->Cell(65, 5, $obj->description(), 0, 0);
             $pdf->Cell(20, 5, $obj->caseSize(), 0, 0, 'C');
-            $pdf->Cell(20, 5, sprintf('%.2f',$obj->caseSize()*$obj->unitCost()*$obj->quantity()), 0, 0);
+            $pdf->Cell(20, 5, $obj->caseSize() * $obj->quantity(), 0, 0, 'C');
+            $pdf->Cell(20, 5, $obj->unitSize(), 0, 0, 'C');
+            $pdf->Cell(30, 5, substr($obj->brand(), 0, 10), 0, 0);
+            $pdf->Cell(65, 5, $obj->description(), 0, 0);
             $pdf->Ln();
         }
 
-        $pdf->Output('order_export.pdf', 'D');
+        return $pdf;
     }
 }
 

@@ -233,11 +233,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         if (!class_exists($this->sendAs)) {
             return $this->unknownRequestHandler();
         }
+        if (!class_exists('WfcPoExport')) {
+            include('exporters/WfcPoExport.php');
+        }
 
-        ob_start();
-        $exportObj = new $this->sendAs();
-        $exportObj->export_order($this->id);
-        $exported = ob_get_clean();
+        $csvObj = new WfcPoExport();
+        $exported = $csvObj->exportString($this->id);
 
         $html = $this->csvToHtml($exported);
         $nonHtml = str_replace("\r", "", $exported);
@@ -270,7 +271,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mail->FromName = $this->config->get('PO_EMAIL_NAME');
         $mail->isHTML = true;
         $mail->addAddress($vendor->email());
-        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && $order->storeID() == 2) {
             $mail->From = 'dbuyers@wholefoods.coop';
             $mail->FromName = 'Whole Foods Co-op Denfeld';
             $mail->addCC('dbuyers@wholefoods.coop');
@@ -287,8 +288,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mail->AltBody = $mail->Body;
         $mail->Body = '<p>' . $mail->Body . '</p>' . $html;
         $mail->AltBody .= $nonHtml;
+        $exportObj = new $this->sendAs();
+        $attachment = $exportObj->exportString($this->id);
         $mail->addStringAttachment(
-            $exported,
+            $attachment,
             'Order ' . date('Y-m-d') . '.' . $exportObj->extension,
             'base64',
             $exportObj->mime_type

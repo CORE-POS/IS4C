@@ -171,6 +171,13 @@ class TransferPurchaseOrder extends FannieRESTfulPage
             }
         }
 
+        $note = new PurchaseOrderNotesModel($dbc);
+        $note->notes('Original invoice ' . $original->vendorInvoiceID());
+        $note->orderID($fromID);
+        $note->save();
+        $note->orderID($destID);
+        $note->save();
+
         return 'ViewPurchaseOrders.php?id=' . $destID;
     }
 

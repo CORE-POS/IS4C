@@ -33,6 +33,11 @@ class ReceivingTagsExport extends DefaultCsvPoExport
     public $extension = 'pdf';
     public $mime_type = 'application/pdf';
 
+    public function exportString($id)
+    {
+        return 'Unsupported';
+    }
+
     public function export_order($id)
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
