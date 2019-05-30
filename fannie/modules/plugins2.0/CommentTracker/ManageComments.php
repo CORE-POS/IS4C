@@ -216,20 +216,48 @@ class ManageComments extends FannieRESTfulPage
 
     protected function post_new_handler()
     {
+        $cardno = trim(FormLib::get('cardno'));
+        $name = trim(FormLib::get('name'));
+        $email = trim(FormLib::get('email'));
+        $phone = trim(FormLib::get('phone'));
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($settings['CommentDB']);
         $comment = new CommentsModel($this->connection);
         $comment->categoryID(FormLib::get('cat'));
         $comment->publishable(1);
         $comment->appropriate(FormLib::get('appr') ? 1 : 0);
-        $comment->name(FormLib::get('name'));
-        $comment->email(FormLib::get('email'));
-        $comment->phone(FormLib::get('phone'));
+        $comment->name($name);
+        $comment->email($email);
+        $comment->phone($phone);
         $comment->comment(FormLib::get('comment'));
         $comment->tdate(FormLib::get('tdate'));
         $comment->fromPaper(1);
         $comment->userID(FannieAuth::getUID());
-        $comment->ownerID(FormLib::get('cardno'));
+        $comment->ownerID($cardno);
+
+        $dbc = $this->connection;
+        if (empty($name) && $cardno) {
+            $prep = $dbc->prepare("SELECT firstName, lastName FROM " . FannieDB::fqn('custdata', 'op') .' WHERE CardNo=? AND personNum=1');
+            $cust = $dbc->getRow($prep, array($cardno));
+            if ($cust) {
+                $comment->name($cust['firstName'] . ' ' . $cust['lastName']);
+            }
+        }
+        if (empty($email)) {
+            $prep = $dbc->prepare("SELECT email_1 FROM " . FannieDB::fqn('meminfo', 'op') .' WHERE card_no=?');
+            $memEmail = $dbc->getValue($prep, array($cardno));
+            if ($memEmail) {
+                $comment->email($memEmail);
+            }
+        }
+        if (empty($phone)) {
+            $prep = $dbc->prepare("SELECT phone FROM " . FannieDB::fqn('meminfo', 'op') .' WHERE card_no=?');
+            $memPhone = $dbc->getValue($prep, array($cardno));
+            if ($memPhone) {
+                $comment->phone($memPhone);
+            }
+        }
+
         $cID = $comment->save();
 
         $history = new CommentHistoryModel($this->connection);
