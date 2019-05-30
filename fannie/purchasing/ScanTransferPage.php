@@ -144,6 +144,7 @@ HTML;
                 AND store_id=1');
         $upc = BarcodeLib::padUPC($this->id);
         $info = $this->connection->getRow($infoP, array($upc));
+        $info['cost'] = sprintf('%.2f', $info['cost']);
         
         $ret = <<<HTML
 <form method="post">
