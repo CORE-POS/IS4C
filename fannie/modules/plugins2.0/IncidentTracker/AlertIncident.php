@@ -66,6 +66,16 @@ class AlertIncident extends FannieRESTfulPage
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $prefix = $settings['IncidentDB'] . $this->connection->sep();
+        $commentP = $this->connection->prepare("
+            SELECT incidentID
+            FROM {$prefix}IncidentComments
+            WHERE comment LIKE ? OR comment LIKE ?");
+        $cArgs = array(
+            '%' . $this->search . '%',
+            '%' . str_replace(' ', '%', trim($this->search)) . '%',
+        );
+        $cIDs = $this->connection->getAllValues($commentP, $cArgs);
+        list($inStr, $args) = $this->connection->safeInClause($cIDs);
         $searchP = $this->connection->prepare("
             SELECT i.*,
                 COALESCE(t.incidentSubType, 'Other') AS incidentSubType,
@@ -77,13 +87,11 @@ class AlertIncident extends FannieRESTfulPage
                 LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
                 LEFT JOIN Users as u ON i.uid=u.uid
                 LEFT JOIN Stores AS s ON i.storeID=s.storeID
-            WHERE (details LIKE ? OR details LIKE ?)
+            WHERE (i.incidentID IN ({$inStr}) OR details LIKE ? OR details LIKE ?)
                 AND i.deleted=0
             ORDER BY tdate DESC");
-        $args = array(
-            '%' . $this->search . '%',
-            '%' . str_replace(' ', '%', trim($this->search)) . '%',
-        );
+        $args[] = '%' . $this->search . '%';
+        $args[] = '%' . str_replace(' ', '%', trim($this->search)) . '%';
         $searchR = $this->connection->execute($searchP, $args);
 
         $ret = '
