@@ -96,7 +96,7 @@ class FormLib extends \COREPOS\common\FormLib
         $todayLY = array(date('Y-m-d', $ly), date('Y-m-d', $ly));
 
         $mondayLY = $ly;
-        while(date('N',$monday) != $week_start) {
+        while(date('N',$mondayLY) != $week_start) {
             $mondayLY = mktime(0,0,0,date('n',$mondayLY),date('j',$mondayLY)+1,date('Y',$mondayLY));
         }
         $thisWeekLY = array(date('Y-m-d', $mondayLY), date('Y-m-d', mktime(0,0,0,date('n',$mondayLY),date('j',$mondayLY)+6,date('Y',$mondayLY))));
