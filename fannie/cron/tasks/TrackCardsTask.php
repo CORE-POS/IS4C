@@ -74,9 +74,14 @@ class TrackCardsTask extends FannieTask
             AND cardNo IS NULL
             ORDER BY times DESC");
         $whMonths = array();
+        $limit = 2;
+        $count = 0;
         while ($row = $dbc->fetchRow($res)) {
             $whMonths = $this->trackUser($dbc, $row['name'], $row['PAN'], $row['hash'], $row['firstSeen'], $whMonths);
-            break;
+            $count++;
+            if ($count >= $limit) {
+                break;
+            }
         }
         foreach ($whMonths as $ymd => $set) {
             $stamp = strtotime($ymd);
