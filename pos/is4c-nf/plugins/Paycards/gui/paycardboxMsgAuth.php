@@ -76,7 +76,11 @@ class paycardboxMsgAuth extends PaycardProcessPage {
     private function setAmount($amt)
     {
         $this->conf->set("paycard_amount",$amt);
-        if ($this->conf->get('CacheCardCashBack') > 0 && $this->conf->get('CacheCardCashBack') <= 40) {
+        $cbLimit = $this->conf->get('PaycardsTermCashBackLimit');
+        if (!is_numeric($cbLimit)) {
+            $cbLimit = 40;
+        }
+        if ($this->conf->get('CacheCardCashBack') > 0 && $this->conf->get('CacheCardCashBack') <= $cbLimit) {
             $this->conf->set('paycard_amount',($amt)+$this->conf->get('CacheCardCashBack'));
         }
     }

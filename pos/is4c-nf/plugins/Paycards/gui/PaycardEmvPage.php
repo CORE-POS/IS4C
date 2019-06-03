@@ -67,15 +67,19 @@ class PaycardEmvPage extends PaycardProcessPage
                 }
             } elseif ( $input != "" && substr($input,-2) != "CL") {
                 // any other input is an alternate amount
+                $cbLimit = $this->conf->get('PaycardsTermCashBackLimit');
+                if (!is_numeric($cbLimit)) {
+                    $cbLimit = 40;
+                }
                 if (substr($input, -2) == 'CA' && is_numeric(substr($input, 0, strlen($input)-2))) {
                     $cashback = substr($input, 0, strlen($input)-2) / 100;
-                    if ($cashback > 0 && $cashback <= 40) {
+                    if ($cashback > 0 && $cashback <= $cbLimit) {
                         $this->conf->set('CacheCardCashBack', $cashback);
                         $this->conf->set('paycard_amount', $this->conf->get('amtdue') + $cashback);
                     }
                 } elseif (is_numeric($input)) {
                     $this->conf->set("paycard_amount",$input/100);
-                    if ($this->conf->get('CacheCardCashBack') > 0 && $this->conf->get('CacheCardCashBack') <= 40) {
+                    if ($this->conf->get('CacheCardCashBack') > 0 && $this->conf->get('CacheCardCashBack') <= $cbLimit) {
                         $this->conf->set('paycard_amount',($input/100)+$this->conf->get('CacheCardCashBack'));
                     }
                 }
