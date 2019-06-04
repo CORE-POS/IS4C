@@ -11,15 +11,16 @@ namespace COREPOS\Fannie\API;
  * Auto-includes graphing JS libs in HTML format
  * Includes provided HTML and/or JS in HTML format
  */
-class FannieGraphReportPage extends FanniePage
+class FannieGraphReportPage extends \FannieReportPage
 {
     public function preprocess()
     {
         parent::preprocess();
         // custom: needs graphing JS/CSS
         if ($this->content_function == 'report_content' && $this->report_format == 'html') {
-            $this->addScript('../../src/javascript/Chart.min.js');
-            $this->addScript('../../src/javascript/CoreChart.js');
+            $url = $this->config->get('URL');
+            $this->addScript($url . 'src/javascript/Chart.min.js');
+            $this->addScript($url . 'src/javascript/CoreChart.js');
         }
 
         return true;
