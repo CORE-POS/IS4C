@@ -128,6 +128,7 @@ class YOYDeptSales extends COREPOS\Fannie\API\FannieGraphReportPage
     {
         $this->addOnloadCommand('initSelect();');
         $this->addOnloadCommand('reDrawGraph();');
+        $this->addOnloadCommand("\$('tbody td').click(clickTable);");
         return <<<HTML
 <div class="col-sm-11">
     <p>
@@ -155,7 +156,6 @@ function reDrawGraph() {
     var elem = false;
     $('tbody td.reportColumn1').each(function() {
         if ($(this).html().trim() == selected) {
-            console.log('found');
             elem = $(this).closest('tr').get(0);
         }
     });
@@ -185,6 +185,13 @@ function reDrawGraph() {
     } else {
         $('#graphCanvas').html('');
     }
+}
+
+function clickTable(ev) {
+    var elem = ev.target;
+    var dept = $(elem).closest('tr').find('td.reportColumn1').html().trim();
+    $('#graphRowSelect').val(dept);
+    reDrawGraph();
 }
 JAVASCRIPT;
     }
