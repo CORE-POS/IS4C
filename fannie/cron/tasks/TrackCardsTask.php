@@ -73,10 +73,12 @@ class TrackCardsTask extends FannieTask
             AND times > 5
             AND cardNo IS NULL
             ORDER BY times DESC");
+        echo $dbc->numRows($res) . " available cards\n";
         $whMonths = array();
         $limit = 2;
         $count = 0;
         while ($row = $dbc->fetchRow($res)) {
+            echo "{$row['name']} seen {$row['times']} times\n";
             $whMonths = $this->trackUser($dbc, $row['name'], $row['PAN'], $row['hash'], $row['firstSeen'], $whMonths);
             $count++;
             if ($count >= $limit) {
