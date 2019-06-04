@@ -63,6 +63,14 @@ function parserHandler(data)
                 var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
                 $('#receipticon').attr('src', newicon);
             }
+            $.ajax({
+                url: CORE_JS_PREFIX+'ajax/AjaxNotifiers.php',
+                type: 'GET',
+                cache: false
+            }).done(function (resp) {
+                $('#scaleIconBox').html(resp);
+                customerWindowHtml('#scaleIconBox', resp);
+            });
         }).fail(function() {
             var icon = $('#receipticon').attr('src');
             var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
