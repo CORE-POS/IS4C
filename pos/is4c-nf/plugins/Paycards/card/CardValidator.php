@@ -102,5 +102,17 @@ class CardValidator
         }
         return array(true, 'valid');
     }
+
+    public function allowCashback($cardType)
+    {
+        switch (strtoupper($cardType)) {
+            case 'DEBIT':
+                return true;
+            case 'EBTCASH':
+                return true;
+            default:
+                return false;
+        }
+    }
 }
 

@@ -26,6 +26,7 @@ use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\plugins\Paycards\card\CardReader;
+use COREPOS\pos\plugins\Paycards\card\CardValidator;
 
 if (!class_exists("PaycardLib")) 
     include_once(realpath(dirname(__FILE__)."/paycardLib.php"));
@@ -164,7 +165,8 @@ class paycardEntered extends Parser
             } 
             $this->conf->set("paycard_amount",$this->conf->get("fsEligible"));
         }
-        if (($type == 'EBTCASH' || $type == 'DEBIT') && $this->conf->get('CacheCardCashBack') > 0){
+        $cval = new CardValidator();
+        if ($cval->allowCashback($type) && $this->conf->get('CacheCardCashBack') > 0) {
             $this->conf->set('paycard_amount',
                 $this->conf->get('amtdue') + $this->conf->get('CacheCardCashBack'));
         }

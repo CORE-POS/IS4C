@@ -30,6 +30,7 @@ use COREPOS\pos\plugins\Paycards\sql\PaycardRequest;
 use COREPOS\pos\plugins\Paycards\sql\PaycardVoidRequest;
 use COREPOS\pos\plugins\Paycards\sql\PaycardGiftRequest;
 use COREPOS\pos\plugins\Paycards\sql\PaycardResponse;
+use COREPOS\pos\plugins\Paycards\card\CardValidator;
 use COREPOS\pos\plugins\Paycards\card\EncBlock;
 use COREPOS\pos\plugins\Paycards\xml\XmlData;
 
@@ -913,7 +914,8 @@ class MercuryE2E extends BasicCCModule
             <Frequency>OneTime</Frequency>
             <Amount>
                 <Purchase>'.$request->formattedAmount().'</Purchase>';
-        if ($request->cashback > 0 && ($request->type == "Debit" || $request->type == "EBTCASH")) {
+        $cval =new CardValidator();
+        if ($request->cashback > 0 && $cval->allowCashback($request->type)) {
                 $msgXml .= "<CashBack>" . $request->formattedCashBack() . "</CashBack>";
         }
         if ($tipped) {

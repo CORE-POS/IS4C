@@ -71,7 +71,8 @@ class PaycardEmvPage extends PaycardProcessPage
                 if (!is_numeric($cbLimit)) {
                     $cbLimit = 40;
                 }
-                if (substr($input, -2) == 'CA' && is_numeric(substr($input, 0, strlen($input)-2))) {
+                $cval = new CardValidator();
+                if (substr($input, -2) == 'CA' && is_numeric(substr($input, 0, strlen($input)-2)) && $cval->allowCashback($this->conf->get('CacheCardType'))) {
                     $cashback = substr($input, 0, strlen($input)-2) / 100;
                     if ($cashback > 0 && $cashback <= $cbLimit) {
                         $this->conf->set('CacheCardCashBack', $cashback);
