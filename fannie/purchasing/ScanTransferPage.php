@@ -145,6 +145,11 @@ HTML;
         $upc = BarcodeLib::padUPC($this->id);
         $info = $this->connection->getRow($infoP, array($upc));
         $info['cost'] = sprintf('%.2f', $info['cost']);
+        $accounting = $this->config->get('ACCOUNTING_MODULE');
+        if (!class_exists($accounting)) {
+            $accounting = '\COREPOS\Fannie\API\item\Accounting';
+        }
+        $info['salesCode'] = $accounting::toPurchaseCode($info['salesCode']);
         
         $ret = <<<HTML
 <form method="post">
