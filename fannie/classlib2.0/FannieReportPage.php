@@ -484,7 +484,7 @@ class FannieReportPage extends FanniePage
         return $data;
     }
 
-    private function getCacheKey()
+    protected function getCacheKey()
     {
         $reflector = new ReflectionClass($this);
         $qstr = filter_input(INPUT_SERVER, 'QUERY_STRING');
