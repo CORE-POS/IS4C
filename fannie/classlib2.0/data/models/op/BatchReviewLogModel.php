@@ -38,7 +38,7 @@ class BatchReviewLogModel extends BasicModel
     'user' => array('type'=>'VARCHAR(30)'),
     'created' => array('type'=>'DATETIME'),
     'forced' => array('type'=>'DATETIME'),
-    'notes' => array('type'=>'TEXT'),
+    'comments' => array('type'=>'TEXT', 'replaces'=>'notes'),
     );
 
 }
