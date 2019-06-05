@@ -74,19 +74,10 @@ class DeleteShelfTags extends FanniePage
             if ($id == 0) {
                 $new_id = -999;
             }
-            $clear = new ShelftagsModel($dbc);
-            $clear->id($new_id);
-            foreach ($current_set as $tag) {
-                // delete existing negative id tag for upc
-                $clear->upc($tag->upc());
-                $clear->delete();
-                // save tag as negative id
-                $old_id = $tag->id();
-                $tag->id($new_id);
-                $tag->save();
-                $tag->id($old_id);
-                $tag->delete();
-            }
+            $clearP = $dbc->prepare("DELETE FROM shelftags WHERE id=?");
+            $rotateP = $dbc->prepare("UPDATE shelftags SET id=? WHERE id=?");
+            $dbc->execute($clearP, array($new_id));
+            $dbc->execute($rotateP, array($new_id, $id));
             $this->messages = '<div class="alert alert-success">
                 Barcode table cleared <a href="ShelfTagIndex.php">Click here to continue</a>
                 </div>';
