@@ -97,11 +97,11 @@ class YOYDeptSales extends COREPOS\Fannie\API\FannieGraphReportPage
         foreach ($depts as $dept => $nothing) {
             $record = array(
                 $dept,
-                $data[$dept . '::0'][1] ?? '??',
+                isset($data[$dept . '::0'][1]) ? $data[$dept . '::0'][1] :  '??',
             );
             for ($i=0; $i<$years; $i++) {
-                $record[] = $data[$dept . '::' . $i][2] ?? 0;
-                $record[] = $data[$dept . '::' . $i][3] ?? 0;
+                $record[] = isset($data[$dept . '::' . $i][2]) ? $data[$dept . '::' . $i][2] : 0;
+                $record[] = isset($data[$dept . '::' . $i][3]) ? $data[$dept . '::' . $i][3] : 0;
             }
             $realData[] = $record;
         }
