@@ -182,7 +182,7 @@ function loadlc(id){
         $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
         $this->addOnloadCommand("\$('select.chosen').chosen();");
-        $this->addScript('lcEditor.js');
+        $this->addScript('lcEditor.js?date=20190605');
         if (FormLib::get('start')) {
             $start = (int)FormLib::get('start');
             $this->addOnloadCommand("\$('#lcselect').val({$start});");

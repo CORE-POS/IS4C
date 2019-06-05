@@ -40,10 +40,23 @@ class LikeCodeAjax extends FannieRESTfulPage
             'post<id><rcat>',
             'post<id><icat>',
             'post<id><storeID><inUse>',
-            'post<id><storeID><internal>'
+            'post<id><storeID><internal>',
+            'post<id><storeID><sign>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function post_id_storeID_sign_handler()
+    {
+        $model = new LikeCodeActiveMapModel($this->connection);
+        $model->likeCode($this->id);
+        $model->storeID($this->storeID);
+        $model->defaultSign($this->sign);
+        $model->save();
+        echo 'Sign: ' . $this->sign;
+
+        return false;
     }
 
     private function getOthersInSort($dbc, $sort, $lc)
@@ -76,6 +89,36 @@ class LikeCodeAjax extends FannieRESTfulPage
         return $ret;
     }
 
+    private function getSignOpts()
+    {
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        $enabled = $this->config->get('ENABLED_SIGNAGE');
+        if (count($enabled) > 0) {
+            $mods = array_filter($mods, function ($i) use ($enabled) {
+                return in_array($i, $enabled) || in_array(str_replace('\\', '-', $i), $enabled);
+            });
+        }
+        sort($mods);
+        $tagEnabled = $this->config->get('ENABLED_TAGS');
+        foreach (COREPOS\Fannie\API\item\signage\LegacyWrapper::getLayouts() as $l) {
+            if (in_array($l, $tagEnabled) && count($tagEnabled) > 0) {
+                $mods[] = 'Legacy:' . $l;
+            }
+        }
+        $opts = array('');
+        foreach ($mods as $m) {
+            $name = $m;
+            if (strstr($m, '\\')) {
+                $pts = explode('\\', $m);
+                $name = $pts[count($pts)-1];
+            }
+            if ($name === 'LegacyWrapper') continue;
+            $opts[] = $name;
+        }
+
+        return $opts;
+    }
+
     protected function get_id_handler()
     {
         $dbc = $this->connection;
@@ -95,16 +138,25 @@ class LikeCodeAjax extends FannieRESTfulPage
             WHERE s.hasOwnItems=1
             ORDER BY s.storeID');
         $activeR = $dbc->execute($activeP, array($this->id));
+        $signOpts = $this->getSignOpts();
         $table = '';
         while ($activeW = $dbc->fetchRow($activeR)) {
+            $opts = '';
+            foreach ($signOpts as $o) {
+                $opts .= sprintf('<option %s>%s</option>',
+                    ($o == $activeW['defaultSign'] ? 'selected' : ''), $o);
+            }
             $table .= sprintf('<tr><td>%s</td>
                 <td><input type="checkbox" onchange="lcEditor.toggleUsage(%d,%d);" %s /></td>
                 <td><input type="checkbox" onchange="lcEditor.toggleInternal(%d,%d);" %s /></td>
-                <td>%s</td></tr>',
+                <td>%s</td></tr>
+                <tr><td>&nbsp;</td><td colspan="2">Default Sign</td>
+                <td><select class="form-control input-sm" onchange="lcEditor.saveSign(%d,%d,this.value);">%s</select></td></tr>',
                 $activeW['description'],
                 $this->id, $activeW['sID'], $activeW['inUse'] ? 'checked' : '',
                 $this->id, $activeW['sID'], $activeW['internalUse'] ? 'checked' : '',
-                $activeW['lastSold']
+                $activeW['lastSold'],
+                $this->id, $activeW['sID'], $opts
             );
         }
         if ($table !== '') {

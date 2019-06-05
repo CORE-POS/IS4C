@@ -37,6 +37,7 @@ class LikeCodeActiveMapModel extends BasicModel
     'inUse' => array('type'=>'TINYINT', 'default'=>0),
     'internalUse' => array('type'=>'TINYINT', 'default'=>0),
     'lastSold' => array('type'=>'DATETIME'),
+    'defaultSign' => array('type'=>'VARCHAR(255)'),
     );
 
     public function doc()

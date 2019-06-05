@@ -44,6 +44,10 @@ var lcEditor = (function ($) {
         ajax('id='+lc+'&icat='+encodeURIComponent(cat));
     };
 
+    mod.saveSign = function(lc, storeID, sign) {
+        ajax('id='+lc+'&storeID='+storeID+'&sign='+encodeURIComponent(sign));
+    }
+
     return mod;
 
 }(jQuery));
