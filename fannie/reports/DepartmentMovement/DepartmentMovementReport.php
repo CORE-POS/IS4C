@@ -249,7 +249,7 @@ class DepartmentMovementReport extends FannieReportPage
                     continue;
                 } else {
                     $record[] = $row['upc'];
-                    $record[] = $row['brand'];
+                    $record[] = $row['brand'] ? $row['brand'] : '';
                     $record[] = $row['description'];
                     $record[] = sprintf('%.2f', $row['rings']);
                     $record[] = sprintf('%.2f', $row['qty']);
