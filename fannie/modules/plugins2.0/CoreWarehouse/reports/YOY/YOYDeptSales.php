@@ -10,6 +10,8 @@ class YOYDeptSales extends COREPOS\Fannie\API\FannieGraphReportPage
     protected $header = 'Year Over Year Department Sales Report';
     protected $title = 'Year Over Year Department Sales Report';
     public $discoverable = true;
+    public $description = '[Year over Year Department Sales] compares several years\' sales by department';
+    public $report_set = 'Sales Reports';
     protected $required_fields = array('date1', 'date2', 'years', 'super', 'store');
     protected $report_headers = array('Dept#', 'Dept');
     protected $new_tablesorter = true;
