@@ -1219,6 +1219,7 @@ HTML;
         $cur = 0;
         $upcFields = '';
         $upcs = '';
+        $allLCs = true;
         while ($fetchW = $dbc->fetchRow($fetchR)) {
             $cur = ($cur + 1) % 2;
             $ret .= "<tr>";
@@ -1229,6 +1230,7 @@ HTML;
                 $ret .= " <a href=\"\" onclick=\"\$('.lc-item-{$likecode}').toggle(); return false;\">[+]</a>";
                 $ret .= "</td>";
             } else {
+                $allLCs = false;
                 $upcFields .= sprintf('<input type="hidden" name="u[]" value="%s" />', $fetchW['upc']);
                 $upcs .= $fetchW['upc'] . "\n";
                 $conflict = '';
@@ -1328,6 +1330,10 @@ HTML;
                 <input type="hidden" name="extern" value="1" />
                 <input type="hidden" name="upcs" value="' . $upcs . '" />
                 </p>';
+        }
+
+        if ($allLCs && $model->discountType() == 0) {
+            $ret = str_replace('SignFromSearch.php?batch', 'LikeCodeBatchSigns.php?id', $ret);
         }
 
         return $ret;

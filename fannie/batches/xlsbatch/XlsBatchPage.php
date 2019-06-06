@@ -123,16 +123,16 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $upcChk = $dbc->prepare("SELECT upc FROM products WHERE upc=?");
 
         $insP = $dbc->prepare("INSERT INTO batchList 
-            (batchID, pricemethod, quantity, active, upc, salePrice, groupSalePrice)
+            (batchID, pricemethod, quantity, active, upc, salePrice, groupSalePrice, signMultiplier)
             VALUES
-            (?, 0, 0, 0, ?, ?, ?)");
+            (?, 0, 0, 0, ?, ?, ?, ?)");
         $batchList = $dbc->tableDefinition('batchList');
         $saveCost = false;
         if (isset($batchList['cost'])) {
             $insP = $dbc->prepare("INSERT INTO batchList 
-                (batchID, pricemethod, quantity, active, upc, salePrice, groupSalePrice, cost)
+                (batchID, pricemethod, quantity, active, upc, salePrice, groupSalePrice, cost, signMultiplier)
                 VALUES
-                (?, 0, 0, 0, ?, ?, ?, ?)");
+                (?, 0, 0, 0, ?, ?, ?, ?, ?)");
             $saveCost = true;
         }
 
@@ -149,6 +149,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $upc = str_replace("-","",$upc);    
             $price = trim($price,' ');
             $price = trim($price,'$');
+            $mult = 1;
             if (!is_numeric($upc)) {
                 $ret .= "<i>Omitting item. Identifier {$upc} isn't a number</i><br />";
                 continue; 
@@ -175,10 +176,15 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 if ($dbc->num_rows($chkR) ==  0) continue;
             }   
 
+            if (isset($line[5]) && trim($line[5]) == 's') {
+                $mult = 0;
+            }
+
             $insArgs = array($batchID, $upc, $price, $price);
             if ($saveCost) {
                 $insArgs[] = $cost;
             }
+            $insArgs[] = $mult;
             $dbc->execute($insP, $insArgs);
             /** Worried about speed here. Log many?
             $bu = new BatchUpdateModel($dbc);
