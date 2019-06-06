@@ -10,6 +10,15 @@ class RpLocalLcsPage extends FannieRESTfulPage
     protected $header = 'RP Local Like Codes';
     protected $title = 'RP Local Like Codes';
 
+    protected function post_id_view()
+    {
+        $prep = $this->connection->prepare('INSERT INTO RpLocalLCs (likeCode) VALUES (?)');
+        $this->connection->execute($prep, array($this->id));
+
+        return '<div class="alert alert-success">Like Code Added</div>'
+            . $this->get_view();
+    }
+
     protected function post_view()
     {
         $this->connection->query('TRUNCATE TABLE RpLocalLCs');
