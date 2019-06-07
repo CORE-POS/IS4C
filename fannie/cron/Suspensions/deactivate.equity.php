@@ -66,6 +66,7 @@ $susQ = "INSERT INTO suspensions
     )
     and c.Type='PC' and n.payments < 100
     and c.memType in (1,3,5)
+    AND c.CardNo <> 18506
     and NOT EXISTS(SELECT NULL FROM suspensions as s
     WHERE s.cardno=m.card_no)";
 if (!isset($custdata['ChargeLimit'])) {
@@ -90,6 +91,7 @@ $histQ = "INSERT INTO suspension_history
         )
         and c.Type='PC' and n.payments < 100
         and c.memType in (1,3)
+        AND c.CardNo <> 18506
         and NOT EXISTS(SELECT NULL FROM suspensions as s
         WHERE s.cardno=m.card_no)";
 $sql->query($histQ);
