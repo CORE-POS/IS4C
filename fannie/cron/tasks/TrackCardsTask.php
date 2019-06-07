@@ -75,7 +75,7 @@ class TrackCardsTask extends FannieTask
             ORDER BY times DESC");
         echo $dbc->numRows($res) . " available cards\n";
         $whMonths = array();
-        $limit = 2;
+        $limit = 5;
         $count = 0;
         while ($row = $dbc->fetchRow($res)) {
             echo "{$row['name']} seen {$row['times']} times\n";
@@ -110,6 +110,7 @@ class TrackCardsTask extends FannieTask
         //return $max + 1;
 
         $try = $max - 1;
+        $try = 4000;
         $existP = $dbc->prepare("SELECT CardNo FROM custdata WHERE CardNo=?");
         while ($try > 0) {
             $exists = $dbc->getValue($existP, array($try));
