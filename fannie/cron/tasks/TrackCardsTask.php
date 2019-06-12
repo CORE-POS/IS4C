@@ -70,12 +70,12 @@ class TrackCardsTask extends FannieTask
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $res = $dbc->query("SELECT * FROM TrackedCards WHERE "
             . $dbc->monthdiff($dbc->now(), 'firstSeen') . " <= times
-            AND times > 5
+            AND times >= 10 
             AND cardNo IS NULL
             ORDER BY times DESC");
         echo $dbc->numRows($res) . " available cards\n";
         $whMonths = array();
-        $limit = 5;
+        $limit = 10;
         $count = 0;
         while ($row = $dbc->fetchRow($res)) {
             echo "{$row['name']} seen {$row['times']} times\n";
