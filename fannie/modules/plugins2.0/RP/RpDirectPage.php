@@ -22,10 +22,20 @@ class RpDirectPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>');
+        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<clear>');
         $this->userID = FannieAuth::getUID($this->current_user);
 
         return parent::preprocess();
+    }
+
+    protected function get_clear_handler()
+    {
+        unset($_SESSION['rpState']);
+        $model = new RpSessionsModel($this->connection);
+        $model->userID($this->userID);
+        $model->delete();
+
+        return 'RpDirectPage.php';
     }
 
     protected function get_json_handler()
@@ -217,7 +227,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20190509');
+        $this->addScript('rpDirect.js?date=20190612');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -335,13 +345,14 @@ class RpDirectPage extends FannieRESTfulPage
         $res = $this->connection->execute($prep, array($store));
         $tables = '';
         $category = false;
+        $hiddenItems = '';
         while ($row = $this->connection->fetchRow($res)) {
             $likeCode = substr($row['upc'], 2);
+            $appendTables = true;
             if (!in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) {
-                continue;
+                $appendTables = false;
             }
-            $row['caseSize'] = 1;
-            if ($row['categoryID'] !== $category) {
+            if ($row['categoryID'] !== $category && $appendTables) {
                 if ($category !== false) {
                     $tables .= '</table>';
                 }
@@ -362,6 +373,8 @@ class RpDirectPage extends FannieRESTfulPage
             if (($par / $row['caseSize']) < 0.1) {
                 $par = 0.1 * $row['caseSize'];
             }
+            // reset case size *after* setting min par at 0.1 standard cases
+            $row['caseSize'] = 1;
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
@@ -387,6 +400,7 @@ class RpDirectPage extends FannieRESTfulPage
                     substr($row['upc'], 2), $row['upc']);
             }
             $orderAmt = 0;
+            /** no auto-fill on direct
             $start = $par;
             while ($start > (0.25 * $row['caseSize'])) {
                 $orderAmt++;
@@ -396,6 +410,7 @@ class RpDirectPage extends FannieRESTfulPage
                     break;
                 }
             }
+             */
             $inOrder = $this->connection->getRow($inOrderP, array_merge($ioArgs, array($upc)));
             if ($inOrder) {
                 $orderAmt = $inOrder['quantity'];
@@ -416,7 +431,7 @@ class RpDirectPage extends FannieRESTfulPage
             }
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
-            $tables .= sprintf('<tr>
+            $nextRow = sprintf('<tr>
                 <td>%s %s</td>
                 <td><select class="primaryFarm form-control input-sm">%s</option></td>
                 <td><select class="secondaryFarm form-control input-sm">%s</option></td>
@@ -461,8 +476,17 @@ class RpDirectPage extends FannieRESTfulPage
                 $upc, $store, $row['backupID'],
                 ($inOrder['vendorID'] == $row['backupID'] ? 'checked' : '')
             );
+            if ($appendTables) {
+                $tables .= $nextRow;
+            } else {
+                $hiddenItems .= $nextRow;
+            }
         }
         $tables .= '</table>';
+
+        $tables .= '<table style="display:none;">'
+            . $hiddenItems
+            . '</table>';
 
         $ts = time();
         while (date('N', $ts) != 1) {
@@ -612,6 +636,8 @@ class RpDirectPage extends FannieRESTfulPage
             <span class="sr-only">Searching</span>
         </div>
     </div>
+    <br />
+    <a href="RpDirectPage.php?clear=1" class="btn btn-default">Clear Session Data</a>
 </p>
 HTML;
     }

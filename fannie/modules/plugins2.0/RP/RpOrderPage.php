@@ -215,7 +215,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20190509');
+        $this->addScript('rpOrder.js?date=20190612');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {

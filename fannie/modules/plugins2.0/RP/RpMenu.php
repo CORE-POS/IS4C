@@ -26,7 +26,7 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="RpFarmSchedule.php">Committment Schedule</a> - set primary and secondary farm for a given like code & time period</li>
         <li><a href="RpFixedMaps.php">Fixed Maps</a> - attach a specific vendor SKU to a likecode instead of using automated name-based matching</li>
         <li><a href="RpFileManager.php">Import from RP</a> - reload data from the RP Excel file</li>
-        <li><a href="RpSegments.php">Sales Segmentation</a> - projected day-by-day sales for a week
+        <li><a href="RpSegmentation.php">Sales Segmentation</a> - projected day-by-day sales for a week
     </ul>
 </ul>
 HTML;
