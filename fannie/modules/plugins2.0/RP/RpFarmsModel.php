@@ -34,6 +34,13 @@ class RpFarmsModel extends BasicModel
     protected $columns = array(
     'rpFarmID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'name' => array('type'=>'VARCHAR(255)'),
+    'monday' => array('type'=>'TINYINT', 'default'=>0),
+    'tuesday' => array('type'=>'TINYINT', 'default'=>0),
+    'wednesday' => array('type'=>'TINYINT', 'default'=>0),
+    'thursday' => array('type'=>'TINYINT', 'default'=>0),
+    'friday' => array('type'=>'TINYINT', 'default'=>0),
+    'saturday' => array('type'=>'TINYINT', 'default'=>0),
+    'sunday' => array('type'=>'TINYINT', 'default'=>0),
     );
 }
 
