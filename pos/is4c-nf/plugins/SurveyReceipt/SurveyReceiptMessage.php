@@ -48,7 +48,7 @@ class SurveyReceiptMessage extends ReceiptMessage
                 . $PRINT->TextStyle(true, false);
         $col2 = array('Transaction Code: '
                 . $PRINT->TextStyle(true, true)
-                . $ref
+                . str_replace('-', '', $ref)
                 . $PRINT->TextStyle(true, false)
         );
         $col2[] = 'Time: '
@@ -79,7 +79,7 @@ class SurveyReceiptMessage extends ReceiptMessage
     public function standalone_receipt($ref, $reprint=false)
     {
         $receipt = ReceiptLib::printReceiptHeader(date('Y-m-d H:i:s'), '1-2-3');
-        $receipt .= $this->message(1, $ref, false);
+        $receipt .= $this->message(1, '1-2-3', false);
 
         return $receipt;
     }
