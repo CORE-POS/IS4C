@@ -9,6 +9,8 @@ var rpOrder = (function ($) {
     };
     var searchVendor = 0;
     var retainElem = false;
+    var minDate = false;
+    var maxDate = false;
 
     mod.setSearchVendor = function(v) {
         searchVendor = v;
@@ -75,6 +77,37 @@ var rpOrder = (function ($) {
         });
     };
 
+    function clearIncoming() {
+        $('input.onHand').each(function () {
+            $(this).attr('data-incoming', 0);
+            $(this).closest('td').removeClass('success').attr('title', '');;
+        });
+    };
+
+    function getIncoming(min, max) {
+        var store = $('select[name=store]').val();
+        $.ajax({
+            type: 'get',
+            data: 'date1='+min+'&date2='+max+'&store='+store,
+            dataType: 'json'
+        }).done(function (resp) {
+            var qtyMap = {};
+            for (var i=0; i<resp.length; i++) {
+                var obj = resp[i];
+                qtyMap[obj.upc] = obj.qty;
+            }
+            $('td.upc a').each(function () {
+                var upc = $(this).text();
+                if (qtyMap.hasOwnProperty(upc)) {
+                    var row = $(this).closest('tr');
+                    var onHand = $(row).find('input.onHand');
+                    $(onHand).attr('data-incoming', qtyMap[upc]);
+                    $(onHand).closest('td').addClass('success').attr('title', 'Incoming: ' + qtyMap[upc]);
+                    mod.reCalcRow(row);
+                }
+            });
+        });
+    };
 
     mod.initState = function(s) {
         if (s) {
@@ -129,11 +162,20 @@ var rpOrder = (function ($) {
     };
 
     mod.updateDays = function() {
+        clearIncoming();
         var week = $('#projSales').html().replace(',', '');
         var selectedDays = 0;
+        minDate = false;
+        maxDate = false;
         $('.daycheck:checked').each(function () {
             var pct = $(this).val().replace('%', '') / 100;
             selectedDays += pct * week;
+            if (minDate === false || dateID < minDate) {
+                minDate = dateID;
+            }
+            if (maxDate === false || dateID > maxDate) {
+                maxDate = dateID;
+            }
         });
         $('#selectedSales').html(Math.round(selectedDays * 100) / 100);
 
@@ -166,6 +208,9 @@ var rpOrder = (function ($) {
             mod.reCalcRow($(this).closest('tr'));
         });
         updateState();
+        if (minDate !== false && maxDate !== false) {
+            getIncoming(minDate, maxDate);
+        }
     };
 
     mod.reCalcRow = function(elem) {
@@ -176,6 +221,10 @@ var rpOrder = (function ($) {
             retainElem = $('#retention');
         }
         onHand = onHand * (retainElem.val() / 100);
+        var incoming = Number($(elem).find('input.onHand').attr('data-incoming'));
+        if (!isNaN(incoming)) {
+            onHand += incoming;
+        }
 
         var start = (adj * 1 * caseSize) - (onHand * 1 * caseSize);
         var cases = 0;

@@ -22,10 +22,35 @@ class RpDirectPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<clear>');
+        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>');
         $this->userID = FannieAuth::getUID($this->current_user);
 
         return parent::preprocess();
+    }
+
+    protected function get_date1_date2_handler()
+    {
+        $prep = $this->connection->prepare("SELECT internalUPC, SUM(quantity) AS qty
+            FROM PurchaseOrderItems AS i
+                INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
+            WHERE o.vendorID=-2
+                AND o.userID=-99
+                AND o.placed=1
+                AND o.storeID=?
+                AND i.receivedDate IS NOT NULL
+                AND i.receivedDate BETWEEN ? AND ?
+            GROUP BY internalUPC");
+        $date1 = date('Y-m-d', strtotime(FormLib::get('date1')));
+        $date2 = date('Y-m-d', strtotime(FormLib::get('date2')));
+        $qtys = $this->connection->getAllRows($prep, array(FormLib::get('store'), $date1, $date2));
+
+        $ret = array();
+        foreach ($qtys as $row) {
+            $ret[] = array('upc' => $row['internalUPC'], 'qty' => $row['qty']);
+        }
+        echo json_encode($ret);
+
+        return false;
     }
 
     protected function get_clear_handler()
@@ -432,13 +457,13 @@ class RpDirectPage extends FannieRESTfulPage
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
             $nextRow = sprintf('<tr>
-                <td>%s %s</td>
+                <td class="upc">%s %s</td>
                 <td><select class="primaryFarm form-control input-sm">%s</option></td>
                 <td><select class="secondaryFarm form-control input-sm">%s</option></td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td style="display:none;" class="caseSize">%s</td>
                 <td><input type="text" class="form-control input-sm onHand" value="0" 
-                    style="width: 5em;" id="onHand%s"
+                    style="width: 5em;" id="onHand%s" data-incoming="0"
                     onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
                     onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
                 <input type="hidden" class="price" value="%.2f" />
@@ -511,6 +536,12 @@ class RpDirectPage extends FannieRESTfulPage
             $days = array_map(function ($i) { return sprintf('%.2f%%', $i*100); }, $days);
         }
 
+        $mStamp = date('N') == 1 ? strtotime('today') : strtotime('last monday');
+        $dateIDs = array();
+        for ($i=0; $i<7; $i++) {
+            $dateIDs[] = date('Ymd', mktime(0,0,0,date('n',$mStamp),date('j',$mStamp)+$i,date('Y',$mStamp)));
+        }
+
         $cats = new RpOrderCategoriesModel($this->connection);
         $catOpts = $cats->toOptions();
 
@@ -526,18 +557,25 @@ class RpDirectPage extends FannieRESTfulPage
     <a href="RpFileManager.php">RP Data</a>
     <fieldset>
         <label title="{$days['Mon']}"><input type="checkbox" class="daycheck"
+            data-dateid="{$dateIDs[0]}"
             onchange="rpOrder.updateDays();" value="{$days['Mon']}" /> Monday</label>
         <label title="{$days['Tue']}"><input type="checkbox" class="daycheck"
+            data-dateid="{$dateIDs[1]}"
             onchange="rpOrder.updateDays();" value="{$days['Tue']}" /> Tuesday</label>
         <label title="{$days['Wed']}"><input type="checkbox" class="daycheck"
+            data-dateid="{$dateIDs[2]}"
             onchange="rpOrder.updateDays();" value="{$days['Wed']}" /> Wednesday</label>
         <label title="{$days['Thu']}"><input type="checkbox" class="daycheck"
+            data-dateid="{$dateIDs[3]}"
             onchange="rpOrder.updateDays();" value="{$days['Thu']}" /> Thursday</label>
         <label title="{$days['Fri']}"><input type="checkbox" class="daycheck"
+            data-dateid="{$dateIDs[4]}"
             onchange="rpOrder.updateDays();" value="{$days['Fri']}" /> Friday</label>
         <label title="{$days['Sat']}"><input type="checkbox" class="daycheck"
+            data-dateid="{$dateIDs[5]}"
             onchange="rpOrder.updateDays();" value="{$days['Sat']}" /> Saturday</label>
         <label title="{$days['Sun']}"><input type="checkbox" class="daycheck"
+            data-dateid="{$dateIDs[6]}"
             onchange="rpOrder.updateDays();" value="{$days['Sun']}" /> Sunday</label>
     </fieldset>
     <label>Projected Sales these Days</label>:
