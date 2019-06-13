@@ -144,6 +144,10 @@ HTML;
                 AND store_id=1');
         $upc = BarcodeLib::padUPC($this->id);
         $info = $this->connection->getRow($infoP, array($upc));
+        if ($info == false && substr($upc, 0, 3) == '002') {
+            $upc = substr($upc, 0, 7) . '000000';
+            $info = $this->connection->getRow($infoP, array($upc));
+        }
         $info['cost'] = sprintf('%.2f', $info['cost']);
         $accounting = $this->config->get('ACCOUNTING_MODULE');
         if (!class_exists($accounting)) {
