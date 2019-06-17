@@ -66,7 +66,7 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetX($this->left + ($this->width*$column));
         $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
 
-        if ($item['signMultiplier'] == 1 || $item['signMultiplier'] == 0) {
+        if (!isset($item['signMultiplier']) || $item['signMultiplier'] == 1 || $item['signMultiplier'] == 0) {
             $price = str_replace('$', '', $price);
             if (strstr($price, '/lb.')) {
                 $price = str_replace('/lb.', '/ lb', $price);
