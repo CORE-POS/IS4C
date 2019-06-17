@@ -126,11 +126,12 @@ class AlertIncident extends FannieRESTfulPage
                 LEFT JOIN {$prefix}IncidentLocations AS l ON i.incidentLocationID=l.incidentLocationID
                 LEFT JOIN Users as u ON i.uid=u.uid
                 LEFT JOIN Stores AS s ON i.storeID=s.storeID
-            WHERE (i.incidentID IN ({$inStr}) OR details LIKE ? OR details LIKE ?)
+            WHERE (i.incidentID IN ({$inStr}) OR details LIKE ? OR details LIKE ? OR personName LIKE ?)
                 AND i.deleted=0
             ORDER BY tdate DESC");
         $args[] = '%' . $this->search . '%';
         $args[] = '%' . str_replace(' ', '%', trim($this->search)) . '%';
+        $args[] = '%' . $this->search . '%';
         $searchR = $this->connection->execute($searchP, $args);
 
         $ret = '
