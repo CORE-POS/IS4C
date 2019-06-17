@@ -22,8 +22,47 @@ class AlertIncident extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<new>', 'get<search>', 'post<escalate>');
+        $this->addRoute('get<new>', 'get<search>', 'post<escalate>', 'post<id><field><value>');
         return parent::preprocess();
+    }
+
+    protected function post_id_field_value_handler()
+    {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($settings['IncidentDB']);
+        $model = new IncidentsModel($this->connection);
+        $model->incidentID($this->id);
+        if (trim($this->value) == '') {
+            echo 'No value!';
+            return false;
+        }
+        switch ($this->field) {
+            case 'personName':
+                $model->personName($this->value);
+                break;
+            case 'personDOB':
+                $model->personDOB($this->value);
+                break;
+            case 'employees':
+                $model->employees($this->value);
+                break;
+            case 'caseNumber':
+                $model->caseNumber($this->value);
+                break;
+            case 'trespassStart':
+                $model->tresspassStart($this->value);
+                break;
+            case 'trespassEnd':
+                $model->tresspassEnd($this->value);
+                break;
+            default:
+                echo 'Unknown';
+                return false;
+        }
+        $model->save();
+        echo 'OK';
+
+        return false;
     }
 
     protected function post_escalate_handler()
@@ -337,8 +376,35 @@ class AlertIncident extends FannieRESTfulPage
         $deleteURL = "?_method=delete&id={$this->id}&undo=" . ($row['deleted'] ? '1' : '0');
         $deleteVerb = $row['deleted'] ? 'Undelete' : 'Delete';
         $escalated = $row['escalate'] ? 'checked' : '';
+        $case = '';
+        if ($row['police'] == 'Yes') {
+            $case = sprintf('<tr><th>Case #</th><td><input type="text" class="form-control input-sm" value="%s" 
+                onchange="saveField(\'caseNumber\', this.value, %d);" /></td></tr>',
+                $row['caseNumber'], $this->id);
+        }
+        $tpass = '';
+        if ($row['trespass'] == 'Yes') {
+            $tpass = sprintf('<tr><th>Starts</th><td><input type="text" class="form-control input-sm date-field" value="%s" 
+                onchange="saveField(\'trespassStart\', this.value, %d);" /></td></tr>',
+                $row['tresspassStart'], $this->id);
+            $tpass .= sprintf('<tr><th>Ends</th><td><input type="text" class="form-control input-sm date-field" value="%s" 
+                onchange="saveField(\'tresspassEnd\', this.value, %d);" /></td></tr>',
+                $row['tresspassEnd'], $this->id);
+        }
 
         return <<<HTML
+<script type="text/javascript">
+function saveField(field, newVal, commentID) {
+    var dstr = 'id='+commentID;
+    dstr += '&field=' + field;
+    dstr += '&value=' + encodeURIComponent(newVal);
+    $.ajax({
+        url: 'AlertIncident.php',
+        data: dstr,
+        type: 'post'
+    });
+}
+</script>
 <p>
     <a href="AlertIncident.php" class="btn btn-default">Home</a>
     {$prev}
@@ -364,11 +430,25 @@ class AlertIncident extends FannieRESTfulPage
     <th>Entered by</th><td>{$row['userName']}</td>
 </tr>
 <tr>
+    <th>Staff involved</th><td><input type="text" class="form-control input-sm" value="{$row['employees']}" 
+        onchange="saveField('employees', this.value, {$this->id});" /></td>
+</tr>
+<tr>
+    <th>Name</th><td><input type="text" class="form-control input-sm" value="{$row['personName']}" 
+        onchange="saveField('personName', this.value, {$this->id});" /></td>
+</tr>
+<tr>
+    <th>DoB</th><td><input type="text" class="form-control input-sm date-field" value="{$row['personDOB']}" 
+        onchange="saveField('personDOB', this.value, {$this->id});" /></td>
+</tr>
+<tr>
     <th>Called police</th><td>{$row['police']}</td>
 </tr>
+{$case}
 <tr>
     <th>Requested trespass</th><td>{$row['trespass']}</td>
 </tr>
+{$tpass}
 <tr>
     <th>Escalate to Store Managers</th>
     <td><input type="checkbox" onchange="\$.ajax({type:'post',data:'escalate={$this->id}'});" {$escalated} /></td>

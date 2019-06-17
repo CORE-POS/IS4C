@@ -49,6 +49,12 @@ class IncidentsModel extends BasicModel
     'json' => array('type'=>'TEXT'),
     'modified' => array('type'=>'DATETIME'),
     'escalate' => array('type'=>'TINYINT', 'default'=>0),
+    'personName' => array('type'=>'VARCHAR(255)', 'index'=>true),
+    'personDOB' => array('type'=>'DATETIME'),
+    'trespassStart' => array('type'=>'DATETIME'),
+    'trespassEnd' => array('type'=>'DATETIME'),
+    'caseNumber' => array('type'=>'VARCHAR(255)'),
+    'employees' => array('type'=>'VARCHAR(255)'),
     );
 }
 
