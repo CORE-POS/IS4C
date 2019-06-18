@@ -115,7 +115,7 @@ class DIScanner extends FannieRESTfulPage
         $dbc = $this->connection;
         $prep = $dbc->prepare("
             SELECT d.upc, d.item, d.attnFlag, d.id,
-                d.fraction, d.cases, d.units
+                d.fraction, d.cases, d.units, d.size
             FROM deliInventoryCat AS d
             WHERE d.storeID=?
                 AND d.upc=?");
@@ -153,7 +153,7 @@ class DIScanner extends FannieRESTfulPage
 <h3><input type="checkbox" onchange="scanner.attn({$row['id']}, this);" title="Needs further attention" {$attn} /> {$item}</h3>
 <div class="row lead">
     <div class="col-sm-3">
-        Current eaches: <span id="curQty">{$row['fraction']}</span>
+        Cur. eaches ({$row['size']}): <span id="curQty">{$row['fraction']}</span>
         <input type="hidden" id="lastQty" value="{$row['fraction']}" />
     </div>
     <div class="col-sm-3">
@@ -170,7 +170,7 @@ class DIScanner extends FannieRESTfulPage
 </div>
 <div class="row lead">
     <div class="col-sm-3">
-        Current cases ({$row['units']}): <span id="curCases">{$row['cases']}</span>
+        Cur. cases ({$row['units']}): <span id="curCases">{$row['cases']}</span>
         <input type="hidden" id="lastCases" value="{$row['cases']}" />
     </div>
     <div class="col-sm-3">
@@ -215,6 +215,12 @@ class DIScanner extends FannieRESTfulPage
            <button type="button" onclick="scanner.addRemoveTare(1);" class="btn btn-lg btn-danger">[R]emove</button> 
         </div>
         <span id="numTares">0</span>
+    </div>
+</div>
+<div class="row lead">
+    <div class="col-sm-3">
+        <a href="" class="btn btn-default btn-info"
+            onclick="$('#upc').val('{$this->id}'); scanner.search(); return false;">Repeat Same Item</a>
     </div>
 </div>
 HTML;
