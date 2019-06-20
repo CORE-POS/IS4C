@@ -75,8 +75,10 @@ Note it does not truncate the unified table first.';
         return $bigArchive;
     }
 
-    private function createPartitions($dbc, $monthly_tables)
+    private function createPartitions($dbc, $monthly_tables, $bigArchive)
     {
+        echo "Big archive: " . $bigArchive . "\n";
+        var_dump($monthly_tables);
         foreach ($monthly_tables as $table) {
             $valid = preg_match('/transArchive([0-9]{4})([0-9]{2})/', $table, $matches);
             $year = $matches[1];
@@ -175,7 +177,7 @@ Note it does not truncate the unified table first.';
             return false;
         }
 
-        if (!$this->createPartitions($dbc, $monthly_tables)) {
+        if (!$this->createPartitions($dbc, $monthly_tables, $bigArchive)) {
             return false;
         }
 
