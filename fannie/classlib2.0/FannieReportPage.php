@@ -960,6 +960,9 @@ class FannieReportPage extends FanniePage
     public function dekey_array($arr)
     {
         $ret = array();
+        if (!is_array($arr)) {
+            return $ret;
+        }
         foreach($arr as $outer_key => $row) {
             $record = array();
             foreach($row as $key => $val) {
