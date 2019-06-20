@@ -252,7 +252,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         }
 
         $ret = '';
-        if ($this->card_no) {
+        if ($this->card_no !== false) {
             $ret .= sprintf('(<a href="%s?f1=%s&f2=%s&f3=%s&order=%s">Back to All Owners</a>)<br />',
                     filter_input(INPUT_SERVER, 'PHP_SELF'), $filter_status, $filter_buyer, $filter_supplier, FormLib::get('order'));
         }
@@ -311,7 +311,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         $ret .= "Current Orders";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         $ret .= sprintf('<a href="OldSpecialOrdersPage.php%s">Old Orders</a>',
-            ($this->card_no ? '?card_no='.$this->card_no :'')
+            ($this->card_no !== false ? '?card_no='.$this->card_no :'')
         );
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -358,7 +358,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         /**
           Also filter by member number if applicable
         */
-        if ($this->card_no) {
+        if ($this->card_no !== false) {
             $filterstring .= " AND p.card_no=?";
             $filterargs[] = $this->card_no;
             $ret .= sprintf('<input type="hidden" id="cardno" value="%d" />',$this->card_no);

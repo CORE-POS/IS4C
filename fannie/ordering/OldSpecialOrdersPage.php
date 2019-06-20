@@ -68,7 +68,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
         }
 
         $ret = '';
-        if ($this->card_no) {
+        if ($this->card_no !== false) {
             $ret .= sprintf('(<a href="%s?f1=%s&f2=%s&f3=%s">Back to All Owners</a>)<br />',
                     $_SERVER['PHP_SELF'], $filter_status, $filter_buyer, $filter_supplier);
         }
@@ -114,7 +114,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
         $ret .= '<a href="index.php">Main Menu</a>';
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         $ret .= sprintf('<a href="NewSpecialOrdersPage.php%s">Current Orders</a>',
-            ($this->card_no ? '?card_no='.$this->card_no :'')
+            ($this->card_no !== false ? '?card_no='.$this->card_no :'')
         );
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         $ret .= "Old Orders";
@@ -155,7 +155,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
         /**
           Also filter by member number if applicable
         */
-        if ($this->card_no) {
+        if ($this->card_no !== false) {
             $filterstring .= " AND p.card_no=?";
             $filterargs[] = $this->card_no;
             $ret .= sprintf('<input type="hidden" id="cardno" value="%d" />',$_REQUEST['card_no']);
@@ -185,7 +185,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
             GROUP BY p.order_id,statusFlag,subStatus
             HAVING 
                 (count(*) > 1 OR SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0)";
-        if (!$this->card_no) {
+        if ($this->card_no !== false) {
             $lookupQ .= "
                 AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*2)
                 AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*2) ";
@@ -269,7 +269,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
         /**
           Paging links if not using member number filter
         */
-        if (!$this->card_no) {
+        if ($this->card_no !== false) {
             $url = filter_input(INPUT_SERVER, 'REQUEST_URI');
             if (!strstr($url,"page=")) {
                 if (substr($url,-4)==".php") {
