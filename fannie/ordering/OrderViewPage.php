@@ -290,7 +290,7 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc = $this->connection;
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
             (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Add Item', "UPC {$this->upc}, Cases {$this->cases}"));
+        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Add Item', "UPC {$this->upc}, Cases {$this->cases}"));
 
         return false;
     }
