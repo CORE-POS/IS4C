@@ -50,10 +50,10 @@ class AlertIncident extends FannieRESTfulPage
                 $model->caseNumber($this->value);
                 break;
             case 'trespassStart':
-                $model->tresspassStart($this->value);
+                $model->trespassStart($this->value);
                 break;
             case 'trespassEnd':
-                $model->tresspassEnd($this->value);
+                $model->trespassEnd($this->value);
                 break;
             default:
                 echo 'Unknown';
@@ -387,10 +387,10 @@ class AlertIncident extends FannieRESTfulPage
         if ($row['trespass'] == 'Yes') {
             $tpass = sprintf('<tr><th>Starts</th><td><input type="text" class="form-control input-sm date-field" value="%s" 
                 onchange="saveField(\'trespassStart\', this.value, %d);" /></td></tr>',
-                $row['tresspassStart'], $this->id);
+                $row['trespassStart'], $this->id);
             $tpass .= sprintf('<tr><th>Ends</th><td><input type="text" class="form-control input-sm date-field" value="%s" 
-                onchange="saveField(\'tresspassEnd\', this.value, %d);" /></td></tr>',
-                $row['tresspassEnd'], $this->id);
+                onchange="saveField(\'trespassEnd\', this.value, %d);" /></td></tr>',
+                $row['trespassEnd'], $this->id);
         }
 
         return <<<HTML
