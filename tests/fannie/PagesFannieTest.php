@@ -174,7 +174,8 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $obj->setLogger($logger);
         $dbc->selectDB($op_db);
         $obj->setConnection($dbc);
-        $this->assertNotEquals(0, strlen($obj->graphHTML()));
+        $this->assertNotEquals(0, strlen($obj->report_content()));
+        $this->assertEquals(0, strlen($obj->graphHTML()));
         $this->assertEquals(0, strlen($obj->graphJS()));
         $obj->preprocess();
 
