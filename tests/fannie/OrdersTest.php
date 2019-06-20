@@ -62,12 +62,16 @@ class OrdersTest extends PHPUnit_Framework_TestCase
         $exp = array(
             'ChefTecExport',
             'DefaultCsvPoExport',
-            //'DefaultPdfPoExport', FPDF die()s because it can't ouput
+            'DefaultPdfPoExport',
             'ReceivingTagsExport',
             'Unfi7DigitCsvExport',
             'WfcPoExport',
+            'WfcPdfExport',
         );
         foreach ($exp as $e) {
+            if ($e == 'DefaultPdfPoExport' || $e == 'WfcPdfExport') { // FPDF die()s because it can't ouput
+                continue;
+            }
             if (!class_exists($e)) {
                 include(__DIR__ . '/../../fannie/purchasing/exporters/' . $e . '.php');
             }
@@ -75,6 +79,14 @@ class OrdersTest extends PHPUnit_Framework_TestCase
             ob_start();
             $obj->export_order(1);
             ob_end_clean();
+        }
+
+        foreach ($exp as $e) {
+            if (!class_exists($e)) {
+                include(__DIR__ . '/../../fannie/purchasing/exporters/' . $e . '.php');
+            }
+            $obj = new $e();
+            $str = $obj->exportString(1);
         }
     }
 }
