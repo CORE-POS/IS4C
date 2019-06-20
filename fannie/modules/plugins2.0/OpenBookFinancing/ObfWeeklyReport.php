@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Operators as Op;
+
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -243,7 +245,7 @@ class ObfWeeklyReport extends FannieReportPage
             }
             if (isset($data[$i][3]) && preg_match('/^[\d,]+$/', $data[$i][3])) {
                 $amt = str_replace(',', '', $data[$i][3]);
-                $percentage = ((float)$amt) / ((float)$total_sales->projected);
+                $percentage = Op::div((float)$amt, (float)$total_sales->projected);
                 $data[$i][3] = number_format($percentage*100, 2) . '%';
             }
         }
