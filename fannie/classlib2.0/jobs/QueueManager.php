@@ -17,7 +17,7 @@ class QueueManager
     private function redisConnect()
     {
         $conf = FannieConfig::config('PLUGIN_SETTINGS');
-        $redis_host = $conf['SatelliteRedis'];
+        $redis_host = isset($conf['SatelliteRedis']) ? $conf['SatelliteRedis'] : '127.0.0.1';
         $this->log("Connecting to Redis {$redis_host}");
         try {
             $redis = new \Predis\Client($redis_host);

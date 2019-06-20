@@ -12,6 +12,7 @@
             <file>tests/fannie/AuthTest.php</file>
             <file>tests/fannie/FannieSQLManagerTest.php</file>
             <file>tests/fannie/ItemsTest.php</file>
+            <file>tests/fannie/JobsTest.php</file>
             <file>tests/fannie/LogTest.php</file>
             <file>tests/fannie/MembersTest.php</file>
             <file>tests/fannie/ModelsTest.php</file>
