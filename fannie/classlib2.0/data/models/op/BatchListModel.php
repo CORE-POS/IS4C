@@ -45,6 +45,27 @@ class BatchListModel extends BasicModel
 
     protected $unique = array('batchID','upc');
 
+    public function getUPCs($batchID=false)
+    {
+        $lcP = $this->connection->prepare('SELECT upc FROM upcLike where likeCode=?');
+        $prep = $this->connection->prepare("SELECT upc FROM batchList WHERE batchID=?");
+        $res = $this->connection->execute($prep, array($batchID ? $batchID : $this->batchID()));
+        $ret = array();
+        while ($upcW = $this->connection->fetchRow($res)) {
+            if (substr($upcW['upc'], 0, 2) == 'LC') {
+                $lcR = $this->connexction->execute($lcP, array(substr($upcW['upc'], 2)));
+                while ($lcW = $this->connection->fetchRow($lcR)) {
+                    $ret[] = $lcW['upc'];
+                }
+            } else {
+                $ret[] = $upcW['upc'];
+            }
+        }
+
+        return $ret;
+    }
+
+
     public function doc()
     {
         return '
