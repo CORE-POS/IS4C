@@ -39,5 +39,9 @@ class ProdReviewModel extends \COREPOS\common\BasicModel
     );
     protected $unique = array('upc'); 
 
+    public function doc()
+    {
+        return 'Keep track of when a person last checked on an item';
+    }
 }
 
