@@ -74,7 +74,7 @@ class ErrorHandler
                     . $errline
                     . ', '
                     . $errfile;
-            self::$logger->debug($msg);
+            self::$logger->warning($msg);
         }
 
         return true;
@@ -91,7 +91,7 @@ class ErrorHandler
                 . $exception->getLine()
                 . ", "
                 . $exception->getFile();
-        self::$logger->debug($msg);
+        self::$logger->warning($msg);
     }
 
     /**
