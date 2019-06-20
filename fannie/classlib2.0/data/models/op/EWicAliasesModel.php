@@ -35,5 +35,15 @@ class EWicAliasesModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'aliasedUPC' => array('type'=>'VARCHAR(13)')
     );
+
+    public function doc()
+    {
+        return '
+eWIC aliases are for items that are WIC-eligible but not on the official
+approved items list (APL). In practice this means packaged produce that
+needs to be mapped to the equivalent PLU. In the table "upc" is the UPC
+on the packaging and "aliasedUPC" is the recognized PLU"
+';
+    }
 }
 

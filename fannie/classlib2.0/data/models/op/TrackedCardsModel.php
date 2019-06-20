@@ -41,5 +41,21 @@ class TrackedCardsModel extends BasicModel
     'cardNo' => array('type'=>'INT'),
     'converted' => array('type'=>'INT'),
     );
+
+    public function doc()
+    {
+        return '
+Track credit cards as a mechanism to distinguish non-owner
+shoppers. Hash here is an MD5 hash of the last four digits
+of the card plus the name on the card to minimize duplicates
+(common names or repeats of the last 4 digits).
+
+
+Times is the number of times a card has been encountered.
+cardNo is the custdata account that has been assigned to this
+shopper. converted is to store the member number if the person
+eventually joins.
+';
+    }
 }
 

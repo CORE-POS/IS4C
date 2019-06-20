@@ -39,5 +39,10 @@ class SpecialOrderEditsModel extends BasicModel
     'action' => array('type'=>'VARCHAR(255)'),
     'detail' => array('type'=>'VARCHAR(255)'),
     );
+
+    public function doc()
+    {
+        return 'Audit log for changes to special order';
+    }
 }
 

@@ -45,5 +45,14 @@ class SalesLiftsModel extends BasicModel
     'compareTotal' => array('type'=>'MONEY'),
     );
 
+    public function doc()
+    {
+        return '
+Compare an item\'s performance during a sales batch to the same-length
+preceeding period (i.e., if it was on sale for 7 days the comparison period
+will be the 7 days immediately prior to the sale). This is stored here
+because calculating it on-demand as reports run isn\'t feasible.
+';
+    }
 }
 

@@ -41,5 +41,21 @@ class BatchReviewLogModel extends BasicModel
     'comments' => array('type'=>'TEXT', 'replaces'=>'notes'),
     );
 
+    public function doc()
+    {
+        return '
+Tracks information about price change batches. This assumes price
+update cycles are happening on a per-vendor basis.
+
+* bid is the batchID
+* vid is te vendorID
+* printed indicates whether signage has been prepared
+* user lists the last user to update the record
+* created is the date the batch was *added* to the review log
+* forced is when the batch was forced
+* notes is a spot for random comments
+';
+    }
+
 }
 

@@ -40,5 +40,15 @@ class ProductCostChangesModel extends BasicModel
     'date' => array('type'=>'DATE'),
     );
 
+    public function doc()
+    {
+        return '
+Track changes to product costs. This is redudant with the
+table ProdCostHistory but the format differences haven\'t been
+reconciled yet. This stores two sequential costs per record
+for easier access to the difference.
+';
+    }
+
 }
 

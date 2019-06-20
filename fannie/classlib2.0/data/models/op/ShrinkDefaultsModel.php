@@ -37,5 +37,13 @@ class ShrinkDefaultsModel extends BasicModel
     'deptID' => array('type'=>'INT'),
     'lossContribute' => array('type'=>'CHAR(1)'),
     );
+
+    public function doc()
+    {
+        return '
+Configure whether the default selection with shrink is Loss or Contribute
+based on super department and/or department
+';
+    }
 }
 
