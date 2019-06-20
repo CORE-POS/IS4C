@@ -54,5 +54,10 @@ class FannieReportTool extends \FanniePage
 
     public $discoverable = true;
 
+    public function coverage()
+    {
+        // code coverage metrics require something callable
+    }
+
 }
 
