@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Operators as Op;
+
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -274,7 +276,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 if (!is_array($this->PLAN_CACHE2)) {
                     $this->PLAN_CACHE2 = $this->getPlanSales($weekID);
                 }
-                $ret += $this->PLAN_CACHE2[$categoryID . ',' . $superID];
+                $ret += isset($this->PLAN_CACHE2[$categoryID . ',' . $superID]) ? $this->PLAN_CACHE2[$categoryID . ',' . $superID] : 0;
             } elseif ($weekID >= 201) {
                 $ret += $this->PLAN_SALES_Q4_2018[$categoryID . ',' . $superID];
             } elseif ($weekID >= 188) {
@@ -429,7 +431,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             */
             while ($row = $dbc->fetch_row($salesR)) {
                 $projIndex = $category->obfCategoryID() . ',' . $row['superID'];
-                $proj = $PLAN_SALES[$projIndex];
+                $proj = isset($PLAN_SALES[$projIndex]) ? $PLAN_SALES[$projIndex] : 0;
                 $trend1 = $this->calculateTrend($dbc, $category->obfCategoryID(), $row['superID']);
                 $dept_trend += $trend1;
                 $total_sales->trend += $trend1;
@@ -648,13 +650,13 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $data[] = array(
                 'Sales per Hour',
                 '',
-                sprintf('%.2f', $total_sales->projected / $proj_hours),
+                sprintf('%.2f', Op::div($total_sales->projected, $proj_hours)),
                 '',
                 sprintf('%.2f', $total_sales->trend / $trend_hours),
                 number_format($labor->hours() == 0 ? 0 : $total_sales->thisYear / $labor->hours(), 2),
                 '',
                 '',
-                number_format(($labor->hours() == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
+                number_format(Op::div($total_sales->thisYear, $labor->hours()) - Op::div($total_sales->projected, $proj_hours), 2),
                 number_format($quarter_actual_sph - $quarter_proj_sph, 2),
                 'meta' => FannieReportPage::META_COLOR,
                 'meta_background' => $this->colors[0],
@@ -732,13 +734,13 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = array(
             'Sales per Hour',
             '',
-            sprintf('%.2f', $total_sales->projected / $total_hours->projected),
+            sprintf('%.2f', Op::div($total_sales->projected, $total_hours->projected)),
             '',
             sprintf('%.2f', $total_sales->trend / $total_hours->trend),
             number_format($total_hours->actual == 0 ? 0 : $total_sales->thisYear / $total_hours->actual, 2),
             '',
             '',
-            number_format(($total_hours->actual == 0 ? 0 : $total_sales->thisYear/$total_hours->actual) - ($total_sales->projected/$total_hours->projected), 2),
+            number_format(Op::div($total_sales->thisYear, $total_hours->actual) - Op::div($total_sales->projected, $total_hours->projected), 2),
             number_format($quarter_actual_sph - $quarter_proj_sph, 2),
             'meta' => FannieReportPage::META_COLOR,
             'meta_background' => $this->colors[0],
@@ -838,7 +840,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 number_format($labor->hours() == 0 ? 0 : ($total_sales->thisYear+$otherStore['actual']) / $labor->hours(), 2),
                 '',
                 '',
-                number_format(($labor->hours() == 0 || $proj_hours == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
+                number_format(Op::div($total_sales->thisYear, $labor->hours()) - Op::div($total_sales->projected, $proj_hours), 2),
                 '',//number_format($quarter_actual_sph - $quarter_proj_sph, 2),
                 'meta' => FannieReportPage::META_COLOR,
                 'meta_background' => $this->colors[0],
