@@ -86,7 +86,7 @@ Note it does not truncate the unified table first.';
             $valid = preg_match('/transArchive([0-9]{4})([0-9]{2})/', $table, $matches);
             $year = $matches[1];
             $month = $matches[2];
-            if ($year == "1900" && $month == "01") {
+            if ($year == "1901" && $month == "01") {
                 // this gets created in the CI environment
                 // haven't debugged how/why
                 continue;
