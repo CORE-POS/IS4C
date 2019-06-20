@@ -30,7 +30,7 @@ install:
     - rm composer.json
     - rm composer.lock
     - composer init -n
-    - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap twig/twig twig/extensions
+    - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap twig/twig twig/extensions predis/predis
     - mkdir -p build/logs
     - npm install acorn
 
