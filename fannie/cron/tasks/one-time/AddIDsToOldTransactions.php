@@ -34,17 +34,14 @@ tables checked before running this.';
 
     public $schedulable = false;
 
-    public function run()
+    private function findMax($dbc)
     {
-        global $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
-
         /**
           Find current maximum assigned store_row_id
           Depending what time this is run, that might be
           found in today's transactions or yesterday's transactions
         */
         $currentMax = 0;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
         $maxR = $dbc->query('SELECT MAX(store_row_id) FROM dtransactions');
         if ($dbc->num_rows($maxR) > 0) {
             $maxW = $dbc->fetch_row($maxR);
@@ -72,6 +69,14 @@ tables checked before running this.';
         $currentMax = 9999;
          */
 
+        return $currentMax;
+    }
+
+    public function run()
+    {
+        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
+
+        $currentMax = $this->findMax($dbc);
         echo $this->cronMsg("Current maximum is ".$currentMax);
 
         /* oldest known transaction data
@@ -87,8 +92,8 @@ tables checked before running this.';
             }
 
             echo $this->cronMsg('Processing: '.$year.' '.$month);
-            $table = $FANNIE_ARCHIVE_DB . $dbc->sep();
-            if ($FANNIE_ARCHIVE_METHOD == 'partitions') {
+            $table = $this->config->get('ARCHIVE_DB') . $dbc->sep();
+            if ($this->config->get('ARCHIVE_METHOD') == 'partitions') {
                 $table .= 'bigArchive';
             } else {
                 $table .= 'transArchive' . $year . str_pad($month, 2, '0', STR_PAD_LEFT);
