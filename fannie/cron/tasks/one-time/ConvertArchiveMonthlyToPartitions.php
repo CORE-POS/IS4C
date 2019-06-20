@@ -70,7 +70,7 @@ Note it does not truncate the unified table first.';
             return false;
         }
         $bigArchive = $dbc->fetchRow($bigArchive);
-        $bigArchive = $bigArchive[0];
+        $bigArchive = $bigArchive[1];
 
         return $bigArchive;
     }
