@@ -71,14 +71,17 @@ Note it does not truncate the unified table first.';
         }
         $bigArchive = $dbc->fetchRow($bigArchive);
         $bigArchive = $bigArchive[1];
+        if (!strstr($bigArchive, 'PARTITION')) {
+            echo "Table bigArchive is not partitioned\n";
+            echo "No data has been copied\n";
+            return false;
+        }
 
         return $bigArchive;
     }
 
     private function createPartitions($dbc, $monthly_tables, $bigArchive)
     {
-        echo "Big archive: " . $bigArchive . "\n";
-        var_dump($monthly_tables);
         foreach ($monthly_tables as $table) {
             $valid = preg_match('/transArchive([0-9]{4})([0-9]{2})/', $table, $matches);
             $year = $matches[1];

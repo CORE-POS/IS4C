@@ -502,5 +502,14 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
         ob_end_clean();
     }
+
+    public function testEndSale()
+    {
+        $task = new EndSalesBatchAlertTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
 }
 

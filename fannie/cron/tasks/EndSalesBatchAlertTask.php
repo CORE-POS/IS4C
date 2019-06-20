@@ -49,7 +49,6 @@ class EndSalesBatchAlertTask extends FannieTask
         $grocEmail = $this->config->get('GROCERY_EMAIL');
         $scanEmail = $this->config->get('SCANCOORD_EMAIL');
         $contacts = array($grocEmail,$scanEmail);
-        $contacts[] = 'jmatthews@wholefoods.coop';
         $this->getBathchesBySuperDept($superDepts,$contacts);
 
         return false;
@@ -78,42 +77,6 @@ class EndSalesBatchAlertTask extends FannieTask
         $result = $dbc->execute($prep,$args);
 
         $ret = '';
-        $style = '
-            <style>
-                table, th, td {
-                    border: 1px solid black;
-                    border-collapse: collapse;
-                }
-                th {
-                    width: 210px;
-                    background-color: lightblue;
-                }
-                tr.danger {
-                    background-color: tomato;
-                }
-                td.produce {
-                    background-color: #71c98a;
-                }
-                td.grocery, td.refrigerated, td.frozen,
-                    td.bulk, td.gen_merch, td.meat {
-                    background-color: #ffa72b;
-                }
-                td.wellness {
-                    background-color: cyan;
-                }
-                td.deli {
-                    background-color: #c674cc;
-                }
-                td.it {
-                    background-color: lightgrey;
-                }
-                span.danger {
-                    background-color: tomato;
-                    background-radius: 2px;
-                    padding: 2px;
-                }
-            </style>
-        ';
 
         $table = '<table><thead><th>Batch Name</th><th>Batch ID</th><th>Start Date</th>
                 <th>End Date</th><th>Owner</th></thead><tbody>';
@@ -181,7 +144,7 @@ class EndSalesBatchAlertTask extends FannieTask
                 $mail->From = 'automail@wholefoods.coop';
                 $mail->FromName = 'CORE POS Monitoring';
                 $mail->Subject ='Report: Sales Batches End Alerts';
-                $msg = $style;
+                $msg = $this->style;
                 $msg .= date('m-d-y').' Sales batches ending <span class="danger">today</span> 
                     through the next 7 days. <br /><br />';
                 $msg .= $ret;
@@ -195,4 +158,40 @@ class EndSalesBatchAlertTask extends FannieTask
         }
     }
 
+    private $style = '
+            <style>
+                table, th, td {
+                    border: 1px solid black;
+                    border-collapse: collapse;
+                }
+                th {
+                    width: 210px;
+                    background-color: lightblue;
+                }
+                tr.danger {
+                    background-color: tomato;
+                }
+                td.produce {
+                    background-color: #71c98a;
+                }
+                td.grocery, td.refrigerated, td.frozen,
+                    td.bulk, td.gen_merch, td.meat {
+                    background-color: #ffa72b;
+                }
+                td.wellness {
+                    background-color: cyan;
+                }
+                td.deli {
+                    background-color: #c674cc;
+                }
+                td.it {
+                    background-color: lightgrey;
+                }
+                span.danger {
+                    background-color: tomato;
+                    background-radius: 2px;
+                    padding: 2px;
+                }
+            </style>
+        ';
 }
