@@ -13,3 +13,6 @@ exclude_paths:
 - "fannie/src/Excel/*"
 - "fannie/modules/plugins2.0/CoopDealsSigns/noauto/fonts/*"
 - "tests/*"
+- "fannie/item/prodAllLanes_WEFC_Toronto.php"
+- "fannie/cron/members.sync.with.CiviCRM.php"
+- "fannie/cron/members.update.from.CiviCRM.php"
