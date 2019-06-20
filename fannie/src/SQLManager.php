@@ -44,7 +44,7 @@ class SQLManager extends \COREPOS\common\SQLManager
     */
     public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
-        $this->setQueryLog(new FannieLogger());
+        $this->setQueryLog(FannieLogger::factory());
 
         parent::__construct(
             $server, 
