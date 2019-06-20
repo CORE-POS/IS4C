@@ -30,30 +30,36 @@ use \FannieDB;
  */
 class SqlUpdate extends Job
 {
+    private function validateData($dbc)
+    {
+        if (!isset($this->data['table'])) {
+            return 'Error: no table specified' . PHP_EOL;
+        }
+        $table = $this->data['table'];
+        if (!$dbc->tableExists($table)) {
+            return 'Error: table does not exist: ' . $table . PHP_EOL;
+        } 
+        if (!isset($this->data['where']) || !isset($this->data['set'])) {
+            return 'Error: no update provided' . PHP_EOL;
+        }
+        if (!is_array($this->data['where']) || !is_array($this->data['set'])) {
+            return 'Error: malformed update' . PHP_EOL;
+        }
+        if (count($this->data['where']) == 0 || count($this->data['set']) == 0) {
+            return 'Error: empty update' . PHP_EOL;
+        }
+
+        return true;
+    }
+
     public function run()
     {
         $config = FannieConfig::factory();
         $dbc = FannieDB::get($config->get('OP_DB'));
 
-        if (!isset($this->data['table'])) {
-            echo 'Error: no table specified' . PHP_EOL;
-            return false;
-        }
-        $table = $this->data['table'];
-        if (!$dbc->tableExists($table)) {
-            echo 'Error: table does not exist: ' . $table . PHP_EOL;
-            return false;
-        } 
-        if (!isset($this->data['where']) || !isset($this->data['set'])) {
-            echo 'Error: no update provided' . PHP_EOL;
-            return false;
-        }
-        if (!is_array($this->data['where']) || !is_array($this->data['set'])) {
-            echo 'Error: malformed update' . PHP_EOL;
-            return false;
-        }
-        if (count($this->data['where']) == 0 || count($this->data['set']) == 0) {
-            echo 'Error: empty update' . PHP_EOL;
+        $valid = $this->validateData($dbc);
+        if ($valid !== true) {
+            echo $valid;
             return false;
         }
 
