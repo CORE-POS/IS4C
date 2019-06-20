@@ -456,13 +456,51 @@ class TasksTest extends PHPUnit_Framework_TestCase
 
     public function testOneTime()
     {
-        foreach (array('InitProductCreated', 'InitLastSold', 'InitProductAttributes') as $class) {
+        foreach (array('InitProductCreated', 'InitLastSold', 'InitProductAttributes', 'ConvertArchiveMonthlyToPartitions', 'CustdataToCustomerAccountsTask', 'AddIDsToOldTransactions') as $class) {
             $task = new $class();
             $task = $this->initTask($task);
             ob_start();
             $task->run();
             ob_end_clean();
         }
+    }
+
+    public function testOOS()
+    {
+        $task = new OutOfStocksTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testTrackCards()
+    {
+        foreach (array('TrackCardsTask', 'TrackCardsLiveTask') as $class) {
+            $task = new $class();
+            $task = $this->initTask($task);
+            ob_start();
+            $task->run();
+            ob_end_clean();
+        }
+    }
+
+    public function testPCAlert()
+    {
+        $task = new PaycardAlertTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testLift()
+    {
+        $task = new SalesLiftTask();
+        $task = $this->initTask($task);
+        ob_start();
+        $task->run();
+        ob_end_clean();
     }
 }
 
