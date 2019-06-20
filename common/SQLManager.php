@@ -1726,8 +1726,8 @@ class SQLManager
     */  
     public function logger($str)
     {
-        if (is_object($this->QUERY_LOG) && method_exists($this->QUERY_LOG, 'debug')) {
-            $this->QUERY_LOG->debug($str);
+        if (is_object($this->QUERY_LOG) && method_exists($this->QUERY_LOG, 'warning')) {
+            $this->QUERY_LOG->warning($str);
 
             return true;
         }
