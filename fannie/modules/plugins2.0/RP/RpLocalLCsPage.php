@@ -5,7 +5,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
-class RpLocalLcsPage extends FannieRESTfulPage
+class RpLocalLCsPage extends FannieRESTfulPage
 {
     protected $header = 'RP Local Like Codes';
     protected $title = 'RP Local Like Codes';
