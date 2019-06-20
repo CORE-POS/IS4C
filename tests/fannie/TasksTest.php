@@ -459,9 +459,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         foreach (array('InitProductCreated', 'InitLastSold', 'InitProductAttributes', 'ConvertArchiveMonthlyToPartitions', 'CustdataToCustomerAccountsTask', 'AddIDsToOldTransactions') as $class) {
             $task = new $class();
             $task = $this->initTask($task);
-            ob_start();
+            //ob_start();
             $task->run();
-            ob_end_clean();
+            //ob_end_clean();
         }
     }
 
