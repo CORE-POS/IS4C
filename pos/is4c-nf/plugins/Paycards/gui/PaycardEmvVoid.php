@@ -33,9 +33,8 @@ class PaycardEmvVoid extends PaycardProcessPage
     private $id = false;
     private $runTransaction = false;
 
-    function preprocess()
+    private function findTransaction()
     {
-        $this->hide_input(true);
         $dbc = Database::tDataConnect();
         $query = '
             SELECT MAX(paycardTransactionID) 
@@ -68,11 +67,18 @@ class PaycardEmvVoid extends PaycardProcessPage
                 $this->conf->set('paycard_amount', $dbc->getValue($query));
             }
         }
+    }
+
+    function preprocess()
+    {
+        $this->hide_input(true);
+        $this->findTransaction();
         if (!$this->id) {
             $this->conf->set('boxMsg', 'Cannot locate transaction to void' . $this->conf->get('paycard_id'));
             $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
             return false;
         } elseif ($this->conf->get('paycard_amount') == 0) {
+            $dbc = Database::tDataConnect();
             $prep = $dbc->prepare('SELECT amount FROM PaycardTransactions WHERE paycardTransactionID=?');
             $this->conf->set('paycard_amount', $dbc->getValue($prep, array($this->id)));
         }
