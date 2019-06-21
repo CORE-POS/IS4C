@@ -129,15 +129,9 @@ tools/cron jobs/sprocs/etc actually do. They probably
         $this->inUse($product->inUse());
         $this->user($user);
 
-        $likecode = 0;
-        if ($this->connection->table_exists('upcLike')) {
-            $upcQ = $this->connection->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
-            $upcR = $this->connection->execute($upcQ, array($this->upc()));
-            if ($this->connection->num_rows($upcR) > 0) {
-                $upcW = $this->connection->fetch_row($upcR);
-                $this->likeCode($upcW['likeCode']);
-            }
-        }
+        $lcP = $this->connection->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+        $likecode = $this->connection->getValue($lcP, array($this->upc()));
+        $this->likeCode($likecode ? $likecode : 0);
 
         $this->save();
 
