@@ -32,7 +32,7 @@ class RpSegmentsModel extends BasicModel
     protected $name = "RpSegments";
 
     protected $columns = array(
-    'rpSegementID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
+    'rpSegmentID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'storeID' => array('type'=>'INT'),
     'startDate' => array('type'=>'DATETIME'),
     'sales' => array('type'=>'MONEY'),
