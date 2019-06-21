@@ -53,7 +53,7 @@ class BatchListModel extends BasicModel
         $ret = array();
         while ($upcW = $this->connection->fetchRow($res)) {
             if (substr($upcW['upc'], 0, 2) == 'LC') {
-                $lcR = $this->connexction->execute($lcP, array(substr($upcW['upc'], 2)));
+                $lcR = $this->connection->execute($lcP, array(substr($upcW['upc'], 2)));
                 while ($lcW = $this->connection->fetchRow($lcR)) {
                     $ret[] = $lcW['upc'];
                 }
