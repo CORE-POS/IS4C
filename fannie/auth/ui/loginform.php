@@ -73,6 +73,25 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     }
 
     /**
+     * Check name & password against enabled
+     * authentication source(s)
+     */
+    private function validateLogin($name, $password)
+    {
+        $login = login($name,$password);
+
+        if (!$login && FannieConfig::config('AUTH_LDAP', false)) {
+            $login = ldap_login($name,$password);
+        }
+
+        if (!$login && FannieConfig::config('AUTH_SHADOW', false)) {
+            $login = shadow_login($name,$password);
+        }
+
+        return $login;
+    }
+
+    /**
       Check submitted credentials. Redirect to destination
       on success, proceed to error message on failure
 
@@ -84,38 +103,29 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     */
     public function post_name_password_handler()
     {
-        $name = $this->name;
-        $password = $this->password;
-        $login = login($name,$password);
         $redirect = FormLib::get('redirect', 'menu.php');
 
-        if (!$login && FannieConfig::config('AUTH_LDAP', false)) {
-            $login = ldap_login($name,$password);
-        }
-
-        if (!$login && FannieConfig::config('AUTH_SHADOW', false)) {
-            $login = shadow_login($name,$password);
-        }
-
+        $login = $this->validateLogin($this->name, $this->password);
         if ($login) {
             $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
             $otpP = $dbc->prepare('SELECT * FROM Users WHERE name=?');
-            $user = $dbc->getRow($otpP, array($name));
+            $user = $dbc->getRow($otpP, array($this->name));
             if (isset($user['totpURL']) && $user['totpURL']) {
-                $redirect = 'loginform.php?name=' . urlencode($name) . '&factor=1&redirect=' . urlencode($redirect);
-                $uid = getUID($name);
+                $redirect = 'loginform.php?name=' . urlencode($this->name) . '&factor=1&redirect=' . urlencode($redirect);
+                $uid = getUID($this->name);
                 $expires = date('Y-m-d H:i:s', time() + (3*60));
                 $sessionP = $dbc->prepare('INSERT INTO userSessions 
                             (uid,session_id,ip,expires)
                             VALUES (?,?,?,?)');
                 $dbc->execute($sessionP, array($uid, 'temp-login', '127.0.0.1', $expires));
             } else {
-                doLogin($name);
+                doLogin($this->name);
             }
+
             return $redirect;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
@@ -208,41 +218,46 @@ HTML;
     {
         $current_user = checkLogin();
 
-        ob_start();
         if ($current_user) {
-            echo "You are logged in as $current_user<p />";
-            if (isset($_GET['redirect'])){
-                echo "<b style=\"font-size:1.5em;\">It looks like you don't have permission to access this page</b><p />";
-            }
-            echo "<a href=menu.php>Main menu</a>  |  <a href=loginform.php?logout=yes>Logout</a>?";
-        } else {
-            $redirect = FormLib::get('redirect', 'menu.php');
-            echo "<form action=loginform.php method=post>";
-            echo '<p>';
-            echo '<div class="form-group">';
-            echo '<label for="authUserName">Name</label>';
-            echo '<input class="form-control" id="authUserName" name="name" type="text" />';
-            echo '</div>';
-            echo '<div class="form-group">';
-            echo '<label for="authPassword">Password</label>';
-            echo '<input class="form-control" id="authPassword" name="password" type="password" />';
-            echo '</div>';
-            echo '</p>';
-            echo '<p><button type="submit" class="btn btn-default">Login</button></p>';
-            echo "<input type=hidden value=$redirect name=redirect />";
-            echo "<input type=hidden id=\"linea-in\" />";
-            echo "</form>";
-            $domain = $this->config->get('TLS_DOMAIN');
-            if ($domain && !isset($_SERVER['HTTPS']) || empty($_SERVER['HTTPS'])) {
-                $url = $this->config->get('URL');
-                echo "<p><a href=\"https://{$domain}{$url}auth/ui/loginform.php?redirect=$redirect\">Switch to HTTPS</a></p>";
-            }
-            $this->add_onload_command('$(\'#authUserName\').focus();');
-            $this->addScript('auth.js');
-            $this->addOnloadCommand("enableLinea('#linea-in', CoreAuth.linea);\n");
+            $rdWarn = isset($_GET['redirect'])
+                ? "<b style=\"font-size:1.5em;\">It looks like you don't have permission to access this page</b><p />"
+                : '';
+            return <<<HTML
+You are logged in as {$current_user}<p />
+{$rdWarn}
+<a href=menu.php>Main menu</a>  |  <a href=loginform.php?logout=yes>Logout</a>
+HTML;
         }
 
-        return ob_get_clean();
+        $this->addScript('auth.js');
+        $this->addOnloadCommand('$(\'#authUserName\').focus();');
+        $this->addOnloadCommand("enableLinea('#linea-in', CoreAuth.linea);\n");
+        $redirect = FormLib::get('redirect', 'menu.php');
+        $httpsLink = '';
+        $domain = $this->config->get('TLS_DOMAIN');
+        if ($domain && !isset($_SERVER['HTTPS']) || empty($_SERVER['HTTPS'])) {
+            $url = $this->config->get('URL');
+            $httpsLink = "<p><a href=\"https://{$domain}{$url}auth/ui/loginform.php?redirect=$redirect\">Switch to HTTPS</a></p>";
+        }
+
+        return <<<HTML
+<form action=loginform.php method=post>
+<p>
+    <div class="form-group">
+        <label for="authUserName">Name</label>
+        <input class="form-control" id="authUserName" name="name" type="text" />
+    </div>
+    <div class="form-group">
+        <label for="authPassword">Password</label>
+        <input class="form-control" id="authPassword" name="password" type="password" />
+    </div>
+</p>
+<p><button type="submit" class="btn btn-default">Login</button></p>
+<input type=hidden value="{$redirect}" name=redirect />
+<input type=hidden id=\"linea-in\" />
+</form>
+$httpsLink
+HTML;
     }
 
     public function unitTest($phpunit)
