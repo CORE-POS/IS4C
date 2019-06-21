@@ -117,12 +117,8 @@ class DeptSettingsReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $opts = "";
-        $prep = $dbc->prepare("SELECT superID,super_name fROM superDeptNames ORDER BY super_name");
-        $resp = $dbc->execute($prep);
-        while($row = $dbc->fetch_row($resp)) {
-            $opts .= "<option value=$row[0]>$row[1]</option>";
-        }
+        $model = new SuperDeptNamesModel($dbc);
+        $opts = $model->toOptions(-999);
 
         $depts = "";
         $prep = $dbc->prepare("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
@@ -133,8 +129,7 @@ class DeptSettingsReport extends FannieReportPage
             if ($d1 === false) $d1 = $row[0];
         }
 
-        ob_start();
-        ?>
+        return <<<HTML
 <form action=DeptSettingsReport.php method=get>
 <div class="panel panel-default">
     <div class="panel-heading">
@@ -142,7 +137,7 @@ class DeptSettingsReport extends FannieReportPage
     </div>
     <div class="panel-body">
         <p>
-            <select name="superdept" class="form-control"><?php echo $opts; ?></select>
+            <select name="superdept" class="form-control">{$opts}</select>
         </p>
         <p>
             <button type=submit name=submit value="by_sd" class="btn btn-default">Get Report</button>
@@ -156,7 +151,7 @@ class DeptSettingsReport extends FannieReportPage
     <div class="panel-body">
         <p>
             <div class="col-sm-2">
-                <input type=text name=dept1 id=dept1 value="<?php echo $d1; ?>" class="form-control" />
+                <input type=text name=dept1 id=dept1 value="{$d1}" class="form-control" />
             </div>
             <div class="col-sm-10">
                 <select onchange="$('#dept1').val(this.value)" class="form-control">
@@ -166,11 +161,11 @@ class DeptSettingsReport extends FannieReportPage
         </p>
         <p>
             <div class="col-sm-2">
-                <input type=text name=dept2 id=dept2 value="<?php echo $d1; ?>" class="form-control" />
+                <input type=text name=dept2 id=dept2 value="{$d1}" class="form-control" />
             </div>
             <div class="col-sm-10">
                 <select onchange="$('#dept2').val(this.value)" class="form-control">
-                <?php echo $depts; ?>
+                {$depts}
                 </select>
             </div>
         </p>
@@ -181,8 +176,7 @@ class DeptSettingsReport extends FannieReportPage
     </div>
 </div>
 </form>
-<?php
-        return ob_get_clean();
+HTML;
     }
 
     public function helpContent()
