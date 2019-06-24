@@ -198,6 +198,7 @@ HTML;
             $res = $dbc->execute($prep);
             $row = $dbc->fetchArray($res);
             $id = $row['maxid'];
+            $args = array($id);
             $prep = $dbc->prepare("SELECT max(commentID) AS maxid FROM CustomerServiceTracker.TrackerComments WHERE trackerID = ?");
             $res = $dbc->execute($prep,$args);
             $row = $dbc->fetchArray($res);
