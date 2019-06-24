@@ -112,7 +112,7 @@ class EquitySalesReport extends FannieReportPage
 
         $date_selector = ($span < 60) ? 'year(tdate), month(tdate), day(tdate)' : "year(tdate), month(tdate)";
         $day_names = array();
-        if ($weekday == 1) {
+        if (isset($weekday) && $weekday == 1) {
             $date_selector = $dbc->dayofweek('tdate');
 
             $timestamp = strtotime('next Sunday');
@@ -453,8 +453,8 @@ JAVASCRIPT;
                     </div>
                     ',
                     $wordyNums[$i],
-                    $date1,
-                    $date2,
+                    isset($date1) ? $date1 : '',
+                    isset($date2) ? $date2 : '',
                     $storepicker['html'],
                     $equitypicker
                 );
@@ -500,9 +500,9 @@ JAVASCRIPT;
                     $hide, 
                     $wordyNums[$i],
                     $d1, $d1, 
-                    ${"date$d1"},
+                    isset(${"date$d1"}) ? ${"date$d1"} : '',
                     $require, $d2, $d2, 
-                    ${"date$d2"},
+                    isset(${"date$d2"}) ? ${"date$d2"} : '',
                     $require, $d1, $d1, $d1
                 );
             }
