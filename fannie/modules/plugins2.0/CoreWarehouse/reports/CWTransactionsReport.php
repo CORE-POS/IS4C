@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Operators as Op;
+
 include(dirname(__FILE__).'/../../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
@@ -132,11 +134,11 @@ class CWTransactionsReport extends FannieReportPage
                 $labels[$i],
                 '',
                 sprintf('%d', $numTrans[$i]),
-                sprintf('%.2f', $avgTender[$i] / $numTrans[$i]),
-                sprintf('%.2f', $avgItemQty[$i] / $numTrans[$i]),
-                sprintf('%.2f', $avgItemTtl[$i] / $numTrans[$i]),
-                sprintf('%.2f', $avgRealQty[$i] / $numTrans[$i]),
-                sprintf('%.2f', $avgRealTtl[$i] / $numTrans[$i]),
+                sprintf('%.2f', Op::div($avgTender[$i], $numTrans[$i])),
+                sprintf('%.2f', Op::div($avgItemQty[$i], $numTrans[$i])),
+                sprintf('%.2f', Op::div($avgItemTtl[$i], $numTrans[$i])),
+                sprintf('%.2f', Op::div($avgRealQty[$i], $numTrans[$i])),
+                sprintf('%.2f', Op::div($avgRealTtl[$i], $numTrans[$i])),
             );
             $ret[] = $total_line;
         }
