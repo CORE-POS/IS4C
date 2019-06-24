@@ -55,7 +55,6 @@ class TrackCardsLiveTask extends FannieTask
                 $hash = md5($pan . $name);
                 $tracked = $dbc->getValue($tcP, array($hash));
                 if ($tracked) {
-                    echo "$hash is $tracked\n";
                     $upArgs = array(
                         $tracked,
                         date('Y-m-d 00:00:00', $stamp),
