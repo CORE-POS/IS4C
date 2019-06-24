@@ -50,10 +50,22 @@ class AlertIncident extends FannieRESTfulPage
                 $model->caseNumber($this->value);
                 break;
             case 'trespassStart':
-                $model->trespassStart($this->value);
+                $stamp = strtotime($this->value);
+                if ($stamp) {
+                    $model->trespassStart(date('Y-m-d', $stamp));
+                }
                 break;
             case 'trespassEnd':
-                $model->trespassEnd($this->value);
+                $stamp = strtotime($this->value);
+                if ($stamp) {
+                    $model->trespassEnd(date('Y-m-d', $stamp));
+                }
+                break;
+            case 'police':
+                $model->police($this->value);
+                break;
+            case 'trespass':
+                $model->trespass($this->value);
                 break;
             default:
                 echo 'Unknown';
@@ -217,8 +229,23 @@ class AlertIncident extends FannieRESTfulPage
         $model->reportedBy(FormLib::get('reported'));
         $model->tdate(date('Y-m-d H:i:s'));
         $model->modified(date('Y-m-d H:i:s'));
+        $model->employees(FormLib::get('staff',''));
+        $model->personName(FormLib::get('name',''));
+        $dob = strtotime(FormLib::get('dob'));
+        if ($dob) {
+            $model->personDOB(date('Y-m-d', $dob));
+        }
         $model->police(FormLib::get('police', 0));
+        $model->caseNumber(FormLib::get('case',''));
         $model->trespass(FormLib::get('trespass', 0));
+        $tStart = strtotime(FormLib::get('tStart'));
+        if ($tStart) {
+            $model->trespassStart(date('Y-m-d', $tStart));
+        }
+        $tEnd = strtotime(FormLib::get('tEnd'));
+        if ($tEnd) {
+            $model->trespassStart(date('Y-m-d', $tEnd));
+        }
         $model->details(FormLib::get('details'));
         $model->uid($uid);
         $model->storeID(FormLib::get('store'));
@@ -382,6 +409,17 @@ class AlertIncident extends FannieRESTfulPage
             $case = sprintf('<tr><th>Case #</th><td><input type="text" class="form-control input-sm" value="%s" 
                 onchange="saveField(\'caseNumber\', this.value, %d);" /></td></tr>',
                 $row['caseNumber'], $this->id);
+            $row['police'] = '<select onchange="saveReload(\'police\', this.value, ' . $this->id . ');"
+                class="form-control input-sm">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>';
+        } else {
+            $row['police'] = '<select onchange="saveReload(\'police\', this.value, ' . $this->id . ');"
+                class="form-control input-sm">
+                    <option value="1">Yes</option>
+                    <option value="0" selected>No</option>
+                </select>';
         }
         $tpass = '';
         if ($row['trespass'] == 'Yes') {
@@ -391,6 +429,17 @@ class AlertIncident extends FannieRESTfulPage
             $tpass .= sprintf('<tr><th>Ends</th><td><input type="text" class="form-control input-sm date-field" value="%s" 
                 onchange="saveField(\'trespassEnd\', this.value, %d);" /></td></tr>',
                 $row['trespassEnd'], $this->id);
+            $row['trespass'] = '<select onchange="saveReload(\'trespass\', this.value, ' . $this->id . ');"
+                class="form-control input-sm">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>';
+        } else {
+            $row['trespass'] = '<select onchange="saveReload(\'trespass\', this.value, ' . $this->id . ');"
+                class="form-control input-sm">
+                    <option value="1">Yes</option>
+                    <option value="0" selected>No</option>
+                </select>';
         }
 
         return <<<HTML
@@ -403,6 +452,18 @@ function saveField(field, newVal, commentID) {
         url: 'AlertIncident.php',
         data: dstr,
         type: 'post'
+    });
+}
+function saveReload(field, newVal, commentID) {
+    var dstr = 'id='+commentID;
+    dstr += '&field=' + field;
+    dstr += '&value=' + encodeURIComponent(newVal);
+    $.ajax({
+        url: 'AlertIncident.php',
+        data: dstr,
+        type: 'post'
+    }).done(function (resp) {
+        location.reload();
     });
 }
 </script>
@@ -554,14 +615,38 @@ HTML;
         </select>
     </div>
     <div class="form-group">
+        <label>Staff involved</label>
+        <input type="text" class="form-control" name="staff" value="" />
+    </div>
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" class="form-control" name="name" value="" />
+    </div>
+    <div class="form-group">
+        <label>DoB</label>
+        <input type="text" class="form-control date-field" name="dob" value="" />
+    </div>
+    <div class="form-group">
         <label>Called police
             <input type="checkbox" name="police" value="1" />
         </label>
     </div>
     <div class="form-group">
+        <label>Case #</label>
+        <input type="text" class="form-control" name="case" value="" />
+    </div>
+    <div class="form-group">
         <label>Requested trespass
             <input type="checkbox" name="trespass" value="1" />
         </label>
+    </div>
+    <div class="form-group">
+        <label>Start</label>
+        <input type="text" class="form-control date-field" name="tStart" value="" />
+    </div>
+    <div class="form-group">
+        <label>End</label>
+        <input type="text" class="form-control date-field" name="tEnd" value="" />
     </div>
     <div class="form-group">
         <label>Tales of Truculence and Tomfoolery</label>
