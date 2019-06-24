@@ -53,31 +53,11 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\signage\Signage12UpL
                     // draw tick marks again
                     // sometimes other content of the page
                     // overwrites them
-                    $pdf->Line(2, $height+0.0, 6, $height+0.0);
-                    $pdf->Line(2, (2*$height)+1.0, 6, (2*$height)+1.0);
-                    $pdf->Line(4*$width-3, $height+0.0, 4*$width+1, $height+0.0);
-                    $pdf->Line(4*$width-3, (2*$height)+1.0, 4*$width+1, (2*$height)+1.0);
-
-                    $pdf->Line($width+1.5, 2, $width+1.5, 8);
-                    $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 8);
-                    $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 8);
-                    $pdf->Line($width+1.5, (3*$height)-6, $width+1.5, 3*$height);
-                    $pdf->Line(2*$width+1.5, (3*$height)-6, 2*$width+1.5, 3*$height);
-                    $pdf->Line(3*$width+1.5, (3*$height)-6, 3*$width+1.5, 3*$height);
+                    $pdf = $this->tickMarks($pdf, $width, $height);
                 }
                 $pdf->AddPage();
                 // draw tick marks for cutting
-                $pdf->Line(2, $height+0.0, 6, $height+0.0);
-                $pdf->Line(2, (2*$height)+1.0, 6, (2*$height)+1.0);
-                $pdf->Line(4*$width-3, $height+0.0, 4*$width+1, $height+0.0);
-                $pdf->Line(4*$width-3, (2*$height)+1.0, 4*$width+1, (2*$height)+1.0);
-
-                $pdf->Line($width+1.5, 2, $width+1.5, 8);
-                $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 8);
-                $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 8);
-                $pdf->Line($width+1.5, (3*$height)-6, $width+1.5, 3*$height);
-                $pdf->Line(2*$width+1.5, (3*$height)-6, 2*$width+1.5, 3*$height);
-                $pdf->Line(3*$width+1.5, (3*$height)-6, 3*$width+1.5, 3*$height);
+                $pdf = $this->tickMarks($pdf, $width, $height);
                 $sign = 0;
             }
 
