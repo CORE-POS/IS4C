@@ -339,8 +339,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 if (strstr(strtoupper($note), 'TRANSFER')) {
                     $data[] = array(
                         $termW['card_no'],
-                        date('Y-m-d', strtotime($detailW['suspDate'])),
-                        $termW['LastName'] . ', ' . $row['FirstName'],
+                        date('Y-m-d', strtotime($termW['suspDate'])),
+                        $termW['LastName'] . ', ' . $termW['FirstName'],
                         sprintf('%.2f', $termW['payments']),
                         null,
                         $note,
