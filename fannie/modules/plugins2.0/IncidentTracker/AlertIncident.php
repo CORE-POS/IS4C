@@ -41,7 +41,8 @@ class AlertIncident extends FannieRESTfulPage
                 $model->personName($this->value);
                 break;
             case 'personDOB':
-                $model->personDOB($this->value);
+                $stamp = strtotime($this->value);
+                $model->personDOB($stamp ? date('Y-m-d', $stamp) : null);
                 break;
             case 'employees':
                 $model->employees($this->value);
@@ -51,15 +52,11 @@ class AlertIncident extends FannieRESTfulPage
                 break;
             case 'trespassStart':
                 $stamp = strtotime($this->value);
-                if ($stamp) {
-                    $model->trespassStart(date('Y-m-d', $stamp));
-                }
+                $model->trespassStart($stamp ? date('Y-m-d', $stamp) : null);
                 break;
             case 'trespassEnd':
                 $stamp = strtotime($this->value);
-                if ($stamp) {
-                    $model->trespassEnd(date('Y-m-d', $stamp));
-                }
+                $model->trespassEnd($stamp ? date('Y-m-d', $stamp) : null);
                 break;
             case 'police':
                 $model->police($this->value);
