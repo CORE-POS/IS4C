@@ -18,6 +18,7 @@ exclude_paths:
 - "fannie/item/itemMaint_WEFC_Toronto.php"
 - "fannie/item/itemMaint_WEFC_Toronto.php"
 - "fannie/item/prodAllLanes_WEFC_Toronto.php"
+- "fannie/item/prodFunction_WEFC_Toronto.php"
 - "fannie/item/itemMaint_WEFC_Toronto.php"
 - "fannie/item/updateItems_WEFC_Toronto.php"
 - "fannie/item/import/loadWEFCTorontoProducts.php"
