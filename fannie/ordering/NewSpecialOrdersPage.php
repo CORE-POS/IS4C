@@ -187,6 +187,10 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         $items = array();
         $suppliers = array();
         while ($itemsW = $dbc->fetchRow($itemsR)) {
+            if (memory_get_usage() > 67108864) {
+                $this->logger->warning(print_r($_SERVER, true));
+                break;
+            }
             $items = $this->appendByID($items, $itemsW['order_id'], $itemsW['description']);
             if (!empty($itemsW['mixMatch'])) {
                 $suppliers = $this->appendByID($suppliers, $itemsW['order_id'], $itemsW['mixMatch']);
