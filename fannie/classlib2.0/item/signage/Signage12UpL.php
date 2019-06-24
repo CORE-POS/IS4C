@@ -101,6 +101,23 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
         return $pdf;
     }
 
+    protected function tickMarks($pdf, $width, $height)
+    {
+        $pdf->Line(2, $height+0.0, 6, $height+0.0);
+        $pdf->Line(2, (2*$height)+1.0, 6, (2*$height)+1.0);
+        $pdf->Line(4*$width-3, $height+0.0, 4*$width+1, $height+0.0);
+        $pdf->Line(4*$width-3, (2*$height)+1.0, 4*$width+1, (2*$height)+1.0);
+
+        $pdf->Line($width+1.5, 2, $width+1.5, 8);
+        $pdf->Line(2*$width+1.5, 2, 2*$width+1.5, 8);
+        $pdf->Line(3*$width+1.5, 2, 3*$width+1.5, 8);
+        $pdf->Line($width+1.5, (3*$height)-6, $width+1.5, 3*$height);
+        $pdf->Line(2*$width+1.5, (3*$height)-6, 2*$width+1.5, 3*$height);
+        $pdf->Line(3*$width+1.5, (3*$height)-6, 3*$width+1.5, 3*$height);
+
+        return $pdf;
+    }
+
     protected function createPDF()
     {
         $pdf = new \FPDF('L', 'mm', 'Letter');
