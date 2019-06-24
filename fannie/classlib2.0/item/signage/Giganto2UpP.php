@@ -105,7 +105,7 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
-            if ($item['nonSalePrice'] > $item['normal_price']) {
+            if (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price']) {
                 $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 19));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
@@ -119,7 +119,7 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     $item['originShortName'] = 'Product of ' . trim($item['originShortName']);
                 }
                 $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'C');
-            } elseif ($item['nonSalePrice'] > $item['normal_price']) {
+            } elseif (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price']) {
                 $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $saved = $item['nonSalePrice'] - $item['normal_price'];
