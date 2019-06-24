@@ -211,6 +211,9 @@ class EditBatchPage extends FannieRESTfulPage
             $upc,
         );
         $stamp = strtotime($batch->startDate());
+        if ($stamp === false) {
+            return false;
+        }
         $args[] = $stamp ? date('Y-m-d', $stamp) : '1900-01-01';
         $stamp = strtotime($batch->endDate());
         $args[] = $stamp ? date('Y-m-d', $stamp) : '1900-01-01';
