@@ -196,6 +196,13 @@ class FannieAutoComplete extends FannieWebService
             case 'memail':
                 return MemberREST::autoComplete($args->field, $args->search);
 
+            case 'mfirstnamen':
+            case 'mlastnamen':
+            case 'maddressn':
+            case 'mcityn':
+            case 'memailn':
+                return MemberREST::autoComplete(substr($args->field, 0, strlen($args->field)-1), $args->search, true);
+
             case 'sku':
                 $query = 'SELECT sku
                           FROM vendorItems

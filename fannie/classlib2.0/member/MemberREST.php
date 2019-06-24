@@ -1210,8 +1210,10 @@ class MemberREST
       Provide lookups for the autocomplete service
       @param $field [string] field name being autocompleted
       @param $val [string] partial field 
+      @param $convertToID [boolean] give autocomplete results as ID instead
+        of the matching string
     */
-    public static function autoComplete($field, $val)
+    public static function autoComplete($field, $val, $convertToID=false)
     {
         $config = FannieConfig::factory();
         $dbc = FannieDB::getReadOnly($config->get('OP_DB'));
@@ -1234,7 +1236,14 @@ class MemberREST
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetch_row($res)) {
-            $ret[] = $row[0];
+            if ($convertToID) {
+                $ret[] = array(
+                    'label' => $row[0],
+                    'value' => $row[1],
+                );
+            } else {
+                $ret[] = $row[0];
+            }
             if (count($ret) > 50) {
                 break;
             }
@@ -1246,16 +1255,16 @@ class MemberREST
     private static function autoCompleteFirstName($val)
     {
         if (FannieConfig::config('CUST_SCHEMA') == 1) {
-            $query = 'SELECT firstName
+            $query = 'SELECT firstName, customerID
             FROM Customers
             WHERE firstName LIKE ?
-            GROUP BY firstName
+            GROUP BY firstName, customerID
             ORDER BY firstName';
         } else {
-            $query = 'SELECT FirstName
+            $query = 'SELECT FirstName, CardNo
             FROM custdata
             WHERE FirstName LIKE ?
-            GROUP BY FirstName
+            GROUP BY FirstName, CardNo
             ORDER BY FirstName';
         }
 
@@ -1265,16 +1274,16 @@ class MemberREST
     private static function autoCompleteLastName($val)
     {
         if (FannieConfig::config('CUST_SCHEMA') == 1) {
-            $query = 'SELECT lastName
+            $query = 'SELECT lastName, customerID
             FROM Customers
             WHERE lastName LIKE ?
-            GROUP BY lastName
+            GROUP BY lastName, customerID
             ORDER BY lastName';
         } else {
-            $query = 'SELECT LastName
+            $query = 'SELECT LastName, CardNo
             FROM custdata
             WHERE LastName LIKE ?
-            GROUP BY LastName
+            GROUP BY LastName, CardNo
             ORDER BY LastName';
         }
 
@@ -1284,16 +1293,16 @@ class MemberREST
     private static function autoCompleteAddress($val)
     {
         if (FannieConfig::config('CUST_SCHEMA') == 1) {
-            $query = 'SELECT addressLineOne
+            $query = 'SELECT addressLineOne, cardNo
                        FROM CustomerAccounts
                        WHERE addressLineOne LIKE ?
-                       GROUP BY addressLineOne
+                       GROUP BY addressLineOne, cardNo
                        ORDER BY addressLineOne';
         } else {
-            $query = 'SELECT street
+            $query = 'SELECT street, card_no
                        FROM meminfo
                        WHERE street LIKE ?
-                       GROUP BY street
+                       GROUP BY street, card_no
                        ORDER BY street';
         }
 
@@ -1304,15 +1313,15 @@ class MemberREST
     {
         if (FannieConfig::config('CUST_SCHEMA') == 1) {
             $query = 'SELECT city
-                       FROM CustomerAccounts
+                       FROM CustomerAccounts, cardNo
                        WHERE city LIKE ?
-                       GROUP BY city
+                       GROUP BY city, cardNo
                        ORDER BY city';
         } else {
-            $query = 'SELECT city
+            $query = 'SELECT city, card_no
                        FROM meminfo
                        WHERE city LIKE ?
-                       GROUP BY city
+                       GROUP BY city, card_no
                        ORDER BY city';
         }
 
@@ -1323,15 +1332,15 @@ class MemberREST
     {
         if (FannieConfig::config('CUST_SCHEMA') == 1) {
             $query = 'SELECT email
-                       FROM Customers
+                       FROM Customers, customerID
                        WHERE email LIKE ?
-                       GROUP BY email
+                       GROUP BY email, customerID
                        ORDER BY email';
         } else {
-            $query = 'SELECT email_1
+            $query = 'SELECT email_1, card_no
                        FROM meminfo
                        WHERE email_1 LIKE ?
-                       GROUP BY email_1
+                       GROUP BY email_1, card_no
                        ORDER BY email_1';
         }
 
