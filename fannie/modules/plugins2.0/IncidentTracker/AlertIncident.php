@@ -79,7 +79,11 @@ class AlertIncident extends FannieRESTfulPage
         $msg = "Alert needing attention\n";
         $msg .= 'http://key/git/fannie/modules/plugins2.0/IncidentTracker/AlertIncident.php?id=' . $this->escalate . "\n\n";
 
-        $row = $this->getIncident($this->escalate);
+        try {
+            $row = $this->getIncident($this->escalate);
+        } catch (Exception $ex) {
+            return false; // incident not found; can't escalate
+        }
         $comments =  $this->getComments($this->escalate);
         
         $msg .= "Date {$row['tdate']}\n";
@@ -268,22 +272,27 @@ class AlertIncident extends FannieRESTfulPage
         $id = $model->save();
 
         $this->connection->selectDB($this->config->get('OP_DB'));
-        $incident = $this->getIncident($id);
-        $prefix = $settings['IncidentDB'] . $this->connection->sep();
-        $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=1");
-        while ($row = $this->connection->fetchRow($res)) {
-            try {
-                switch (strtolower($row['method'])) {
-                    case 'slack':
-                        $slack = new Slack();
-                        $slack->send($incident, $row['address']);
-                        break;
-                    case 'email':
-                        $email = new Email();
-                        $email->send($incident, $row['address']);
-                        break;
-                }
-            } catch (Exception $ex) {}
+        try {
+            $incident = $this->getIncident($id);
+            $prefix = $settings['IncidentDB'] . $this->connection->sep();
+            $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=1");
+            while ($row = $this->connection->fetchRow($res)) {
+                try {
+                    switch (strtolower($row['method'])) {
+                        case 'slack':
+                            $slack = new Slack();
+                            $slack->send($incident, $row['address']);
+                            break;
+                        case 'email':
+                            $email = new Email();
+                            $email->send($incident, $row['address']);
+                            break;
+                    }
+                } catch (Exception $ex) {}
+            }
+        } catch (Exception $ex) {
+            // something went wrong here and the new incident doesn't exist
+            // letting the redirect happen is OK since it'll show an error
         }
 
         return 'AlertIncident.php?id=' . $id;
@@ -328,6 +337,9 @@ class AlertIncident extends FannieRESTfulPage
             WHERE i.incidentID=?";
         $prep = $this->connection->prepare($query);
         $row = $this->connection->getRow($prep, array($id));
+        if ($row === false) {
+            throw new Exception('incident not found: ' . $id);
+        }
         $row['reportedBy'] = $row['reportedBy'] == 0 ? 'Staff' : 'Customer';
         $row['police'] = $row['police'] ? 'Yes' : 'No';
         $row['trespass'] = $row['trespass'] ? 'Yes' : 'No';
@@ -370,7 +382,11 @@ class AlertIncident extends FannieRESTfulPage
 
     protected function get_id_view()
     {
-        $row = $this->getIncident($this->id);
+        try {
+            $row = $this->getIncident($this->id);
+        } catch (Exception $ex) {
+            return '<div class="alert alert-danger">Unknown alert</div>';
+        }
         list($prev, $next) = $this->getPrevNext($row['modified']);
         $row['details'] = nl2br($row['details']);
         $img1 = $row['image1'] ? "<img style=\"max-width: 95%;\" src=\"image/{$row['image1']}\" />" : '';
