@@ -22,7 +22,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
         $mod = str_replace('-', '\\', $mod);
         $brands = FormLib::get('brand');
         $items = FormLib::get('desc');
-        $lcs = FormLib::get('lc');
+        $lcs = FormLib::get('lc', array());
         $prices = FormLib::get('price');
         $scales = FormLib::get('scale');
         $origins = FormLib::get('origin');
@@ -235,6 +235,15 @@ function toggleSign(ev) {
 }
 </script>
 HTML;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_handler());
+        ob_end_clean();
     }
 }
 
