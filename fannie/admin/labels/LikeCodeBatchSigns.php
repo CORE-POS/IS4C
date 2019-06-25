@@ -134,7 +134,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
                 $row['salePrice'],
                 $prod['scale'],
                 ($prod['uBrand'] ? $prod['uBrand'] : $prod['brand']),
-                ($prod['uDesc'] ? $prod['uDesc'] : $prod['description']),
+                ($prod['uDesc'] ? ucwords(strtolower($prod['uDesc'])) : ucwords(strtolower($prod['description']))),
                 ($lc['organic'] ? 'Organic' : 'Non-Organic'),
                 $map['defaultSign'],
                 $likeCode
