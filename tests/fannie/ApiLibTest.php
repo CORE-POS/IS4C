@@ -404,5 +404,10 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, file_exists($file));
         unlink($file);
     }
+
+    public function testOperators()
+    {
+        $this->assertEquals(0, COREPOS\Fannie\API\lib\Operators::div(0, 0));
+    }
 }
 
