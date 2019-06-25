@@ -135,7 +135,7 @@ foreach($data as $row) {
         $pdf->Cell($width,4,'ORGANIC',0,1,'L');
         $descY += 4;
         $maxLines = 1;
-    } else if ($row['upc'] === '' && strtolower($row['brand']) == 'organic') {
+    } else if ($row['upc'] === '' && strtolower(trim($row['brand'])) == 'organic') {
         $pdf->SetFont($font,'B',10);  //Set the font
         $pdf->Cell($width,4,'ORGANIC',0,1,'L');
         $descY += 4;

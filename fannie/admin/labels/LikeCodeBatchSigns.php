@@ -26,7 +26,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
         $prices = FormLib::get('price');
         $scales = FormLib::get('scale');
         $origins = FormLib::get('origin');
-        $excludes = FormLib::get('exclude');
+        $excludes = FormLib::get('exclude', array());
         $data = array();
         for ($i=0; $i<count($lcs); $i++) {
             if (in_array($lcs[$i], $excludes)) {
