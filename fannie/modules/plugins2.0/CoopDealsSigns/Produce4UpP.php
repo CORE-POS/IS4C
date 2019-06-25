@@ -57,6 +57,7 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
         $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height));
         $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
+        $item['brand'] = ''; // still want the line for spacing purposes
         $pdf->Cell($effective_width, 10, strtoupper($item['brand']), 0, 1, 'C');
         $pdf->SetX($this->left + ($this->width*$column));
         $pdf->SetFont($this->font, '', $this->MED_FONT);
@@ -67,11 +68,10 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
 
         if (!isset($item['signMultiplier']) || $item['signMultiplier'] == 1 || $item['signMultiplier'] == 0) {
-            $price = str_replace('$', '', $price);
             if (strstr($price, '/lb.')) {
-                $price = str_replace('/lb.', '/ lb', $price);
+                $price = str_replace(' /lb.', '/lb', $price);
             } else {
-                $price .= ' / ea';
+                $price .= '/ea';
             }
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 35);
             $pdf->SetFont($this->font, '', $this->BIG_FONT - 29);
