@@ -26,7 +26,7 @@
 /**
   @class ProdReviewModel
 */
-class ProdReviewModel extends \COREPOS\common\BasicModel
+class ProdReviewModel extends BasicModel
 {
     protected $name = "prodReview";
     protected $preferred_db = 'op';

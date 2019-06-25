@@ -33,11 +33,15 @@ class OrderGuideOnHandsModel extends BasicModel
 
     protected $columns = array(
     'orderGuideID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
-    'orderGuideID' => array('type'=>'INT'),
     'orderID' => array('type'=>'INT'),
     'upc' => array('type'=>'VARCHAR(13)'),
     'onHand' => array('type'=>'MONEY'),
     );
+
+    public function doc()
+    {
+        return 'Keep track of on-hand totals for guide-based ordering';
+    }
 
 }
 

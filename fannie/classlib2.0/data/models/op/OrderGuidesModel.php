@@ -40,5 +40,13 @@ class OrderGuidesModel extends BasicModel
     'par' => array('type'=>'MONEY'),
     'seq' => array('type'=>'INT'),
     );
+
+    public function doc()
+    {
+        return '
+An OrderGuide is a non-automated way to build purchase orders. A guide is
+defined with a preset selection of items and the user than fills in the
+amounts to order';
+    }
 }
 
