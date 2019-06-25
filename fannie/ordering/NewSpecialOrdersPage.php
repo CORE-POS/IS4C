@@ -174,6 +174,9 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
     {
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
         list($oids, $oargs) = $dbc->safeInClause($ids);
+        if (count($ids) > 1000) {
+            return array(array(), array());
+        }
 
         $itemsQ = $dbc->prepare("
             SELECT order_id,

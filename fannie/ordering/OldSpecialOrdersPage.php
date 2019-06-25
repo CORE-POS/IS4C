@@ -185,7 +185,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
             GROUP BY p.order_id,statusFlag,subStatus
             HAVING 
                 (count(*) > 1 OR SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0)";
-        if ($this->card_no !== false) {
+        if ($this->card_no === false) {
             $lookupQ .= "
                 AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*2)
                 AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*2) ";
