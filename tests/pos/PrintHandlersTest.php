@@ -179,5 +179,14 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
         $ph->RenderBitmapFromFile($fn);
         $ph->RenderBitmapFromRam(123);
     }
+
+    public function testNetRaw()
+    {
+        $ph = new COREPOS\pos\lib\PrintHandlers\ESCNetRawHandler();
+        $this->assertEquals(0, $ph->writeLine('test'));
+        $ph->setTarget('localhost:9100');
+        $ph->setTarget('localhost');
+        $this->assertEquals(false, $ph->writeLine('test'));
+    }
 }
 

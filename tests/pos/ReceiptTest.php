@@ -18,6 +18,7 @@ use COREPOS\pos\lib\ReceiptBuilding\Format\TwoLineItemReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\WfcEquityMessage;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
 use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DefaultHtmlEmail;
+use COREPOS\pos\lib\ReceiptBuilding\ThankYou\NoThanks;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 
 /**
@@ -421,6 +422,12 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         foreach ($mods as $mod) {
             $this->assertInternalType('string', $mod::get(new WrappedStorage()));
         }
+    }
+
+    public function testThanks()
+    {
+        $obj = new NoThanks();
+        $this->assertEquals('', $obj->message('1-2-3'));
     }
 }
 

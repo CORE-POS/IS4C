@@ -5,6 +5,7 @@ use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DynamicKey;
 use COREPOS\pos\lib\ItemNotFound;
 use COREPOS\pos\lib\JsonLib;
 use COREPOS\pos\lib\MiscLib;
@@ -12,6 +13,7 @@ use COREPOS\pos\lib\Notifier;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\Undo;
 use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 use COREPOS\pos\lib\ItemAction;
 
@@ -780,6 +782,19 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $act = new ItemAction();
         // coverage
         $act->callback(array());
+    }
+
+    public function testDynamicKey()
+    {
+        $key = new DynamicKey('label', 'entry', true, true);
+        $this->assertInternalType('object', $key);
+        $json = json_encode($key);
+        $this->assertInternalType('array', $json);
+    }
+
+    public function testUndo()
+    {
+        Undo::reverseTransaction(1, 2, 3);
     }
 }
 

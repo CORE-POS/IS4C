@@ -169,5 +169,11 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $ajax = new COREPOS\pos\ajax\AjaxJsError(new WrappedStorage(), $form);
         $this->assertEquals('Done', $ajax->ajax());
     }
+
+    public function testNotifiers()
+    {
+        $ajax = new COREPOS\pos\ajax\AjaxNotifiers(new WrappedStorage(), new ValueContainer());
+        $this->assertEquals('', $ajax->ajax());
+    }
 }
 

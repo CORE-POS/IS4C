@@ -75,4 +75,12 @@ class PagesTest extends PHPUnit_Framework_TestCase
             $obj->unitTest($this);
         }
     }
+
+    public function testHelp()
+    {
+        ob_start();
+        include(__DIR__ . '/../../pos/is4c-nf/gui-modules/help/HelpPage.php');
+        $page = ob_get_clean();
+        $this->assertNotEquals(0, strlen($page));
+    }
 }
