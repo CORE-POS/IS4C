@@ -22,6 +22,6 @@ exclude_paths:
 - "fannie/item/itemMaint_WEFC_Toronto.php"
 - "fannie/item/updateItems_WEFC_Toronto.php"
 - "fannie/item/import/loadWEFCTorontoProducts.php"
-- "fannie/item/departments/import/loadWEFCTorontoDepts.php"
+- "fannie/item/departments/loadWEFCTorontoDepts.php"
 - "fannie/cron/members.sync.with.CiviCRM.php"
 - "fannie/cron/members.update.from.CiviCRM.php"
