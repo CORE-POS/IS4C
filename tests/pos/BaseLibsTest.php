@@ -8,6 +8,7 @@ use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DynamicKey;
 use COREPOS\pos\lib\ItemNotFound;
 use COREPOS\pos\lib\JsonLib;
+use COREPOS\pos\lib\LaneConfig;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\Notifier;
 use COREPOS\pos\lib\PrehLib;
@@ -797,6 +798,17 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         try {
             Undo::reverseTransaction(1, 2, 3);
         } catch (Exception $ex) {}
+    }
+
+    public function testConfig()
+    {
+        $conf = new LaneConfig();
+        $this->assertEquals('', $conf->get('foo'));
+        $this->assertEquals(false, $conf->hasItem('foo'));
+        $conf->set('foo', 'bar');
+        $this->assertEquals('bar', $conf->get('foo'));
+        $conf->clear();
+        $conf->refresh();
     }
 }
 
