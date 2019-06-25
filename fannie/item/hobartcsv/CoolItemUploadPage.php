@@ -105,7 +105,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 'Price' => $price,
                 'Type' => $item['weight'] == 0 ? 'Random Weight' : 'Fixed Weight',
                 'ReportingClass' => 1,
-                'ExpandedText' => $text,
+                'ExpandedText' => $item['text'],
                 'MOSA' => $item['mosaStatement'],
                 'OriginText' => $cool,
             );
