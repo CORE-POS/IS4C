@@ -100,13 +100,13 @@ class Giganto1UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
-            if ($item['nonSalePrice'] > $item['normal_price']) {
+            if (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price']) {
                 $pdf->SetXY($this->left, $this->top + ($this->height - $this->top - 9));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
                 $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             }
-            if ($item['nonSalePrice'] > $item['normal_price']) {
+            if (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price']) {
                 $pdf->SetXY($this->left, $this->top + ($this->height - $this->top - 9));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $saved = $item['nonSalePrice'] - $item['normal_price'];
