@@ -77,6 +77,11 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/dev/null', $bl->getLogLocation(0));
         $bl->log(0, ''); // interface method
         $bl->setRemoteSyslog('127.0.0.1');
+
+        $log = new \COREPOS\common\Logger();
+        for ($i=0; $i<8; $i++) {
+            $log->log($i, 'test');
+        }
     }
 
     public function testModel()
