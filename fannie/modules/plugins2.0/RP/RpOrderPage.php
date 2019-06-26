@@ -180,6 +180,12 @@ class RpOrderPage extends FannieRESTfulPage
         $sku = $vendor == $item['backupID'] ? $item['backupSKU'] : $item['vendorSKU'];
         if ($sku == 'DIRECT') {
             $sku = $upc;
+        } else {
+            $vcostP = $this->connection->prepare("SELECT cost FROM vendorItems WHERE vendorID=? AND sku=?");
+            $vcost = $this->connection->getValue($vcostP, array($vendor, $sku));
+            if ($vcost) {
+                $prod['cost'] = $vcost;
+            }
         }
 
         $poi = new PurchaseOrderItemsModel($this->connection);
@@ -370,9 +376,13 @@ class RpOrderPage extends FannieRESTfulPage
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
+            /** sometimes mismatch doesn't require scaling;
+             * e.g., cost *is* per-lb but the number of lbs per
+             * case is indeterminate
             if ($cost['units'] > 1 && $cost['units'] != $row['caseSize']) {
                 $cost['cost'] /= $cost['units'];
             }
+             */
             $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
             $startIcon = '';
             $starting = $this->connection->getValue($startingP, array($row['upc'], $store));

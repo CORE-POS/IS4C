@@ -49,6 +49,7 @@ class RpPrintOrders extends FannieRESTfulPage
         $ret = '<table class="table table-bordered">
             <tr><th>Vendor</th><th>Status</th><th>Description</th><th>CS</th><th>Incoming</th></tr>';
         $orgP = $this->connection->prepare("SELECT organic FROM likeCodes WHERE likeCode=?");
+        $costTotal = 0;
         while ($row = $this->connection->fetchRow($res)) {
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $suffix = '';
@@ -76,10 +77,11 @@ class RpPrintOrders extends FannieRESTfulPage
                 $suffix,
                 $recv
             );
+            $costTotal += ($row['quantity'] * $row['caseSize'] * $row['unitCost']);
         }
         $ret .= '</table>';
 
-        return $ret;
+        return '<div class="pull-right h4">Est. Total: $' . $costTotal . '</div>' . $ret;
     }
 
     protected function css_content()
