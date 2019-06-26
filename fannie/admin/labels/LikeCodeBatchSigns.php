@@ -241,9 +241,6 @@ HTML;
     {
         $this->id = 1;
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
-        ob_start();
-        $phpunit->assertEquals(false, $this->post_id_handler());
-        ob_end_clean();
     }
 }
 
