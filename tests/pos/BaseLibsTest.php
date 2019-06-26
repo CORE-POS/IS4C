@@ -804,7 +804,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     {
         $conf = new LaneConfig();
         $this->assertEquals('', $conf->get('foo'));
-        $this->assertEquals(false, $conf->hasItem('foo'));
+        $this->assertEquals(false, $conf->has('foo'));
         $conf->set('foo', 'bar');
         $this->assertEquals('bar', $conf->get('foo'));
         $conf->clear();
