@@ -404,7 +404,7 @@ class SQLManager
     */
     public function query($query_text,$which_connection='',$params=false)
     {
-        if (memory_get_usage() > 67108864) {
+        if (php_sapi_name() != 'cli' && memory_get_usage() > 67108864) {
             $this->logger("High memory on query: " . print_r($query_text, true));
         }
         $con = $this->getNamedConnection($which_connection);
