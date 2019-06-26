@@ -94,6 +94,9 @@ class MercuryDC extends MercuryE2E
             if (!$tipped) {
                 $msgXml .= '<OKAmount>Disallow</OKAmount>';
             }
+            if ($request->cashback > 0) {
+                $msgXml .= '<CardType>Debit</CardType>';
+            }
             $msgXml .= '
             <Account>
                 <AcctNo>' . ($prompt ? 'Prompt' : 'SecureDevice') . '</AcctNo>

@@ -110,6 +110,8 @@ class CardValidator
                 return true;
             case 'EBTCASH':
                 return true;
+            case 'EMV':
+                return true;
             default:
                 return false;
         }
