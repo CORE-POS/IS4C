@@ -17,8 +17,8 @@ class TrackCardsTask extends FannieTask
     public function run()
     {
         $startTS = strtotime('yesterday');
-        //$this->checkDay(date('Y-m-d', $startTS));
-        $this->allocateAccounts();
+        $this->checkDay(date('Y-m-d', $startTS));
+        //$this->allocateAccounts();
     }
 
     private function checkDay($date)
