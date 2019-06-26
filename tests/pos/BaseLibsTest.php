@@ -8,13 +8,13 @@ use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DynamicKey;
 use COREPOS\pos\lib\ItemNotFound;
 use COREPOS\pos\lib\JsonLib;
-use COREPOS\pos\lib\LaneConfig;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\Notifier;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\Undo;
+use COREPOS\pos\lib\LocalStorage\LaneConfig;
 use COREPOS\pos\lib\LocalStorage\WrappedStorage;
 use COREPOS\pos\lib\ItemAction;
 
