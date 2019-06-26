@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 class ProdReviewRequest 
 {    
-    public function run()
+    public static function run()
     {
         $obj = new ProdReviewRequest();
         $obj->updateComment();
