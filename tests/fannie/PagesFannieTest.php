@@ -180,7 +180,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $obj->preprocess();
 
         $obj = new COREPOS\Fannie\API\FannieReportTool();
-        $obj->coverage();
+        $this->assertEquals(0, $obj->coverage());
 
         /*
         $obj->themed = true;
