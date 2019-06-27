@@ -32,7 +32,7 @@ class RpOrderItemsModel extends BasicModel
     protected $name = "RpOrderItems";
 
     protected $columns = array(
-    'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
+    'upc' => array('type'=>'VARCHAR(25)', 'primary_key'=>true),
     'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'categoryID' => array('type'=>'INT'),
     'addedBy' => array('type'=>'TINYINT', 'default'=>0),
