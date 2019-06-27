@@ -336,6 +336,7 @@ HTML;
         if ($vid == 0) {
             $vid  = "n/a";
         }
+        $user = FannieAuth::getUID($this->current_user);
         $setA = array($bid,$vid,$user);
         $setP = $dbc->prepare("
             INSERT INTO batchReviewLog (bid, vid, printed, user, created, forced)
