@@ -341,6 +341,17 @@ class HouseCouponEditor extends FanniePage
         $ret = '<form class="form-horizontal" action="HouseCouponEditor.php" method="post">';
         $ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
 
+        $memOpts = array(
+            0 => 'No',
+            1 => 'Yes',
+            2 => 'Plus',
+        );
+        $optStr = '';
+        foreach ($memOpts as $val => $label) {
+            $optStr .= sprintf('<option %s value="%d">%s</option>',
+                $mem == $val ? 'selected' : '', $val, $label);
+        }
+
         $ret .= sprintf('
             <div class="row">
                 <div class="col-sm-1 text-right">Coupon ID#</div>
@@ -369,9 +380,10 @@ class HouseCouponEditor extends FanniePage
                 </div>
             </div>
             <div class="row">
-                <label class="col-sm-2">Member Only
-                <input type=checkbox name=memberonly id=memberonly value="1" %s />
-                </label>
+                <label class="col-sm-1">Member Only</label>
+                <div class="col-sm-1">
+                    <select class="form-control input-sm" name="memberonly" id="memberonly">%s</select>
+                </div>
                 <label class="col-sm-2">Auto-apply
                 <input type=checkbox name=autoapply id=autoapply value="1" %s />
                 </label>
@@ -385,7 +397,7 @@ class HouseCouponEditor extends FanniePage
             $description,
             $limit,
             $starts, $expires,
-            ($mem==1?'checked':''),
+            $optStr,
             ($auto==1?'checked':'') 
         );
         foreach($depts as $k=>$v){
