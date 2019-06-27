@@ -225,7 +225,7 @@ CSS;
         $opts = $model->toOptions($super);
         $this->addScript('js/full.js?date=20190327');
         $this->addScript('../../../item/autocomplete.js?date=20181211');
-        $ws = $FANNIE_URL . '../../../ws/';
+        $ws = '../../../ws/';
         $this->addOnloadCommand("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { full.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");
