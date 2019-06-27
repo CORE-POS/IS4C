@@ -327,6 +327,17 @@ HTML;
 </table>
 HTML;
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->assertNotEquals(0, strlen($this->get_view()));
+        $this->new = 1;
+        $this->assertNotEquals(0, strlen($this->get_new_view()));
+        $this->order = 1;
+        $this->assertNotEquals(0, strlen($this->get_order_view()));
+        $this->edit = 1;
+        $this->assertNotEquals(0, strlen($this->get_edit_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();
