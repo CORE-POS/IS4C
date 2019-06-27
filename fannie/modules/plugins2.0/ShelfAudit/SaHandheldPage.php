@@ -57,6 +57,7 @@ class SaHandheldPage extends FannieRESTfulPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         if ($this->id !== '') {
             $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
+            $original = $this->id;
             $upc = BarcodeLib::padUPC($this->id);
             $scalePrice = false;
             if (substr($upc, 0, 3) == '002') {
@@ -72,8 +73,8 @@ class SaHandheldPage extends FannieRESTfulPage
                     AND s.section=?
                 WHERE p.upc=? 
                 ORDER BY v.vendorID';
-            $p = $dbc->prepare($q);
-            $r = $dbc->execute($p,array($store, $this->section, $upc));
+            $mainP = $dbc->prepare($q);
+            $r = $dbc->execute($mainP,array($store, $this->section, $upc));
             if ($dbc->numRows($r) == 0 && substr($upc, 0, 5) == '00454') {
                 // look up special order
                 $orderID = (int)substr($upc, 5, 6);
@@ -92,6 +93,9 @@ class SaHandheldPage extends FannieRESTfulPage
                     $p = $dbc->prepare($q2);
                     $r = $dbc->execute($p, $args);
                 }
+            } elseif ($dbc->numRows($r)==0 && strlen(ltrim($upc, '0')) == 6) {
+                $upc = BarcodeLib::padUPC('0' . ltrim($upc, '0'));
+                $r = $dbc->execute($mainP,array($store, $this->section, $upc));
             } elseif ($dbc->numRows($r)==0) {
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM

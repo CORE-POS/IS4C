@@ -151,6 +151,13 @@ class SaFullPage extends FannieRESTfulPage
             $row = $dbc->getRow($prep, array($section, $store, $this->id));
         }
         if ($row === false) {
+            $this->id = ltrim($this->id, '0');
+            if (strlen($this->id) == 6) {
+                $this->id = BarcodeLib::padUPC('0' . $this->id);
+            }
+            $row = $dbc->getRow($prep, array($section, $store, $this->id));
+        }
+        if ($row === false) {
             echo '<div class="alert alert-danger">Item not found' . $this->id . '</div>';
             return false;
         }
