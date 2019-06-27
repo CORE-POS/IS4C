@@ -157,12 +157,17 @@ class HouseCoupon extends SpecialUPC
             );
     }
 
-    private function isMember()
+    /**
+     * Determine if the customer is a member
+     * @param $couponFlag [int] value of houseCoupons.memberOnly
+     * @return [boolean]
+     */
+    private function isMember($couponFlag)
     {
         $isMem = false;
         if ($this->session->get('isMember') == 1) {
             $isMem = true;
-        } elseif ($this->session->get('memberID') == $this->session->get('visitingMem')) {
+        } elseif ($this->session->get('memberID') == $this->session->get('visitingMem') && $couponFlag == 2) {
             $isMem = true;
         } elseif ($this->session->get('memberID') == '0') {
             $isMem = false;
@@ -195,7 +200,7 @@ class HouseCoupon extends SpecialUPC
 
         /* check for member-only, longer use tracking
            available with member coupons */
-        if ($infoW["memberOnly"] == 1 && !$this->isMember()) {
+        if ($infoW["memberOnly"] >= 1 && !$this->isMember($info['memberOnly'])) {
             if ($quiet) {
                 return false;
             }
