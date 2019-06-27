@@ -110,7 +110,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
         $lcP = $this->connection->prepare("SELECT * FROM likeCodes WHERE likeCode=?");
         $mapP = $this->connection->prepare("SELECT * FROM LikeCodeActiveMap WHERE likeCode=? AND storeID=?");
         $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
-        $stores = FormLib::storePicker('store', false);
+        $stores = FormLib::storePicker('store', false, 'toggleAll();');
         $all = FormLib::get('all') ? 'checked' : '';
         $table = '';
         while ($row = $this->connection->fetchRow($res)) {
@@ -146,12 +146,12 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
         return <<<HTML
 <form method="post">
 <p class="form-inline">
-<input type="hidden" name="id" value="{$this->id}" />
+<input type="hidden" name="id" id="id" value="{$this->id}" />
 {$stores['html']}
 <select name="sign" id="sign" class="form-control">{$signs}</select>
 <!--<label><input type="checkbox" {$all} name="all" value="1" /> All</label>-->
 <button type="submit" class="btn btn-default">Print</button>
-<label><input type="checkbox" onchange="toggleAll(event);" {$all} /> Show all items</label>
+<label><input type="checkbox" id="all" onchange="toggleAll();" {$all} /> Show all items</label>
 </p>
 <table class="table">
 <tr>
@@ -169,12 +169,11 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
 <script type="text/javascript">
 var organicMode = 99;
 var signMode = 99;
-function toggleAll(ev) {
-    if (ev.target.checked) {
-        window.location = 'LikeCodeBatchSigns.php?id={$this->id}&all=1';
-    } else {
-        window.location = 'LikeCodeBatchSigns.php?id={$this->id}&all=0';
-    }
+function toggleAll() {
+    var dstr = '?id=' + $('#id').val();
+    dstr += '&store=' + $('select[name=store]').val();
+    dstr += '&all=' + ($('#all').prop('checked') ? '1' : '0');
+    location= 'LikeCodeBatchSigns.php' + dstr;
 }
 function orgMatches(str) {
     if (organicMode == 99) {

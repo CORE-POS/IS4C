@@ -225,8 +225,9 @@ class FormLib extends \COREPOS\common\FormLib
       @return keyed [array]
         - html => [string] select box
         - names => [array] store names
+        - onchange => [string] optional onchange action
     */
-    public static function storePicker($field_name='store', $all=true)
+    public static function storePicker($field_name='store', $all=true, $onchange='')
     {
         $op_db = FannieConfig::config('OP_DB');
         $dbc = FannieDB::getReadOnly($op_db);
@@ -237,7 +238,7 @@ class FormLib extends \COREPOS\common\FormLib
         if ($current !== false) {
             $byIP = false;
         }
-        $ret = '<select name="' . $field_name . '" class="form-control">';
+        $ret = '<select name="' . $field_name . '" class="form-control" onchange="' . $onchange . '">';
         if ($all) {
             $labels = array(0 => _('All Stores'));
             $ret .= '<option value="0">' . $labels[0] . '</option>';
