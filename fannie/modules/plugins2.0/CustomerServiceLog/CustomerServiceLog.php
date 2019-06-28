@@ -87,7 +87,7 @@ HTML;
         $args = array($id);
         $prep = $dbc->prepare("
             SELECT
-                m.city, m.zip, m.phone, m.email_1, m.email_2, m.street,
+                m.city, m.zip, m.phone, m.email_1, m.email_2, m.street, m.state,
                 c.FirstName as first_name, c.LastName as last_name, m.card_no
             FROM custdata AS c
                 LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
