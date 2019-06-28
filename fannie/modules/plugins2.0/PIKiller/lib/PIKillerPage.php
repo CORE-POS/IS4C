@@ -47,7 +47,7 @@ class PIKillerPage extends FannieRESTfulPage {
             <title>'.$this->title.'</title>
             </head>
             <body bgcolor="#66CC99" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-            <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
+            <table width="700" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
             <tr>
             <td colspan="2"><img src="images/newLogo_small1.gif" /></td>
             </tr>
@@ -71,6 +71,8 @@ class PIKillerPage extends FannieRESTfulPage {
                 href="'.($this->card_no?'PIAccessPage.php?id='.$this->card_no:'').'">Access</a>
             <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
                 href="'.($this->card_no?'PIB2BListPage.php?id='.$this->card_no:'').'">B2B</a>
+            <a style="margin-left:15px;margin-right:15px;vertical-align: top; color:#6c9;" 
+                href="../../../">Fannie</a>
             </div>
             </td>
             </tr>
