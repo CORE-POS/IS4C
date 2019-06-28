@@ -43,16 +43,18 @@ class PIDocumentsPage extends PIKillerPage {
     protected function get_id_view()
     {
         ob_start();
-        echo '<tr><td>';
 
-        $dir = opendir(__DIR__ . '/noauto/docfile/' . $this->id);
-        echo '<ul style="font-size: 145%">';
-        while ($dir && ($file=readdir($dir)) !== false) {
-            if ($file[0] == '.') continue;
-            echo '<li><a href="noauto/docfile/' . $this->id . '/' . $file . '">' . $file . '</li>';
+        if (file_exists(__DIR__ . '/noauto/docfile/' . $this->id)) {
+            echo '<tr><td>';
+            $dir = opendir(__DIR__ . '/noauto/docfile/' . $this->id);
+            echo '<ul style="font-size: 145%">';
+            while ($dir && ($file=readdir($dir)) !== false) {
+                if ($file[0] == '.') continue;
+                echo '<li><a href="noauto/docfile/' . $this->id . '/' . $file . '">' . $file . '</li>';
+            }
+            echo '</ul>';
+            echo '</td></tr>';
         }
-        echo '</ul>';
-        echo '</td></tr>';
         echo '<tr><td style="padding-left: 20px;">
             <button type="button" onclick="window.location=\'PISignaturePage.php?id=' . $this->id . '\';">Sign</button>
             </td></tr>';
