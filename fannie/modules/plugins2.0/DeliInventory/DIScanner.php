@@ -257,22 +257,30 @@ CSS;
         $this->addOnloadCommand("\$('#upc').on('autocompleteselect', function(event, ui) { scanner.autosubmit(event, ui); });");
         $this->addOnloadCommand("\$('#upc').focus();");
         $this->addOnloadCommand("enableLinea('#upc', scanner.search);");
+        $back = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        $backBtn = $back ? '<a href="' . $back . '" class="btn btn-default">Back</a>' : '';
 
         return <<<HTML
 <form method="post" id="searchform" onsubmit="scanner.search(); return false;">
     <hr />
-    <p>
-        <div class="input-group">
-            <span class="input-group-addon hidden-xs">Search</span>
-            <input type="text" name="id" id="upc" class="form-control focused" />
-            <span class="input-group-btn">
-                <button type="submit" class="btn btn-default" tabindex="-1">Go</button>
-            </span>
+    <div class="row">
+        <div class="col-sm-10">
+            <div class="input-group">
+                <span class="input-group-addon hidden-xs">Search</span>
+                <input type="text" name="id" id="upc" class="form-control focused" />
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-default" tabindex="-1">Go</button>
+                </span>
+            </div>
         </div>
-    </p>
+        <div class="col-sm-2">
+            {$backBtn}
+        </div>
+    </div>
 </form>
 <div id="results"></div>
 <div id="recent"></div>
+<br />
 HTML;
     }
 }
