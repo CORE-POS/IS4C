@@ -4,6 +4,9 @@ include(__DIR__ . '/../../../config.php');
 if (!class_exists('\\FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('CategoriesModel')) {
+    include(__DIR__ . '/models/CategoriesModel.php');
+}
 
 class CommentCategories extends FannieRESTfulPage
 {

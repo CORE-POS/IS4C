@@ -133,7 +133,7 @@ class PITermCheck extends FannieRESTfulPage
          * Generate a check
          *****************/
         $pdf = new FPDF('P', 'mm', 'Letter');
-        $pdf->SetMargins($left, $left, $left); // quarter-inch margins
+        $pdf->SetMargins(null, null, null); // quarter-inch margins
         $pdf->SetAutoPageBreak(false);
         $pdf->AddPage();
 
