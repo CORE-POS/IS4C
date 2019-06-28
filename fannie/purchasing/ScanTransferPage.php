@@ -16,8 +16,13 @@ class ScanTransferPage extends FannieRESTfulPage
     public function preprocess()
     {
         if (php_sapi_name() !== 'cli') {
-            @session_start();
-            if (!isset($this->session->items)) {
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+                if (!isset($this->session->items)) {
+                    $this->session->items = array();
+                }
+            }
+            if (!is_array($this->session->items)) {
                 $this->session->items = array();
             }
         }
