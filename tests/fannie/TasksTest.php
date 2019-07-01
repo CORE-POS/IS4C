@@ -50,7 +50,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
           Verify dtransactions was cleared
         */
         $trans_db = FannieDB::get($config->get('TRANS_DB'));
-        $records = $trans_db->query('SELECT * FROM dtransactions WHERE datetime < \'' date('Y-m-d 00:00:00') . '\'');
+        $records = $trans_db->query('SELECT * FROM dtransactions WHERE datetime < \'' . date('Y-m-d 00:00:00') . '\'');
         $data = array();
         while ($row = $trans_db->fetchRow($records)) {
             $data[] = $row;
