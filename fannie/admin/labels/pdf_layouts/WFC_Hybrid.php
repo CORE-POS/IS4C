@@ -154,7 +154,7 @@ foreach($data as $row) {
         $pak = $row['units'];
         $size = $row['units'] . "-" . $row['size'];
         $sku = $row['sku'];
-        $ppu = $row['pricePerUnit'];
+        $ppu = isset($row['pricePerUnit']) ? $row['pricePerUnit'] : '';
         $upc = ltrim($row['upc'],0);
         $check = $pdf->GetCheckDigit($upc);
         $vendor = substr($row['vendor'],0,7);
