@@ -1,0 +1,86 @@
+<?php
+
+include(__DIR__ . '/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
+}
+
+class RdwImport extends FannieRESTfulPage
+{
+    protected $title = 'RDW COOL Data Import';
+    protected $header = 'RDW COOL Data Import';
+
+    protected function post_handler()
+    {
+        $this->data = array();
+        $this->invoice = array();
+        $invoice = FormLib::get('invoice');
+        foreach (explode("\n", $invoice) as $line) {
+            $hasSku = preg_match('/.* (\d\d\d\d\d) .*/', $line, $matches);
+            if ($hasSku) {
+                $sku = $matches[1];
+                $cool = substr($line, 0, strpos($line, ' '));
+                $this->data[$sku] = $cool;
+                $this->invoice[$sku] = $line;
+            }
+        }
+
+        return true;
+    }
+
+    protected function post_view()
+    {
+        $vendorID = 136;
+        $likeP = $this->connection->prepare("SELECT likeCode
+            FROM VendorLikeCodeMap
+            WHERE vendorID=? AND sku=?");
+        $model = new LikeCodesModel($this->connection);
+        $opts = array();
+        foreach ($model->find() as $obj) {
+            $opts[$obj->likeCode()] = $obj->likeCodeDesc();
+        }
+        $ret = '<form method="post" action="CoolImportSave.php">
+            <table class="table table-bordered">';
+        foreach ($this->data as $sku => $cool) {
+            $item = $this->invoice[$sku];
+            $lc = $this->connection->getValue($likeP, array($vendorID, $sku));
+            $ret .= sprintf('<tr><td>%s</td><td>%s</td>
+                        <td>%s<input type="hidden" name="cool[]" value="%s" /></td>
+                        <td><select name="lc[]" class="form-control input-sm chosen">
+                        <option value=""></option>',
+                $sku, $item, $cool, $cool);
+            foreach ($opts as $val => $label) {
+                $ret .= sprintf('<option %s value="%d">%d %s</option>',
+                    $lc == $val ? 'selected' : '', $val, $val, $label);
+            }
+            $ret .= '</select></td></tr>';
+        }
+        $ret .= '</table>
+            <p><button class="btn btn-default" type="submit">Save</button></p>';
+
+        $this->addScript('../../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen();");
+
+        return $ret;
+    }
+
+    protected function get_view()
+    {
+        return <<<HTML
+<form method="post">
+<div class="form-group">
+    <label>Copy/Paste Invoice Data</label>
+    <textarea name="invoice" class="form-control" rows="20"></textarea>
+</div>
+<div class="form-group">
+    <button type="submit" class="btn btn-default">Import</button>
+</div>
+</form>
+HTML;
+    }
+
+}
+
+FannieDispatch::conditionalExec();
+

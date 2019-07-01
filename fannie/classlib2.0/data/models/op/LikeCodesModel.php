@@ -40,6 +40,8 @@ class LikeCodesModel extends BasicModel
     'sortRetail' => array('type'=>'VARCHAR(255)'),
     'sortInternal' => array('type'=>'VARCHAR(255)'),
     'origin' => array('type'=>'VARCHAR(255)'),
+    'originChanged' => array('type'=>'DATETIME'),
+    'signOrigin' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function toOptions($selected=0, $id_as_label=false)
