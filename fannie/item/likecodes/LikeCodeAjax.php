@@ -36,9 +36,11 @@ class LikeCodeAjax extends FannieRESTfulPage
             'post<id><strict>',
             'post<id><organic>',
             'post<id><multi>',
+            'post<id><cool>',
             'post<id><vendorID>',
             'post<id><rcat>',
             'post<id><icat>',
+            'post<id><origin>',
             'post<id><storeID><inUse>',
             'post<id><storeID><internal>',
             'post<id><storeID><sign>'
@@ -188,6 +190,8 @@ class LikeCodeAjax extends FannieRESTfulPage
                 <label><input type="checkbox" %s onchange="lcEditor.toggleOrganic(%d);" /> Organic</label>
                 &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
                 <label><input type="checkbox" %s onchange="lcEditor.toggleMulti(%d);" /> Multi-Vendor</label>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+                <label><input type="checkbox" %s onchange="lcEditor.toggleCOOL(%d);" /> COOL Signs</label>
                 <p>
                     <label>Preferred Vendor</label>
                     <select onchange="lcEditor.updateVendor(%d, this.value);" class="form-control v-chosen">
@@ -204,6 +208,11 @@ class LikeCodeAjax extends FannieRESTfulPage
                     <input type="text" onchange="lcEditor.internalCat(%d, this.value);" 
                         class="form-control internalCat" value="%s" />
                 </p>
+                <p>
+                    <label>Origin</label>
+                    <input type="text" onchange="lcEditor.origin(%d, this.value);" 
+                        class="form-control origin" value="%s" />
+                </p>
                 %s
                 <p>%s</p>
             </div>
@@ -214,10 +223,13 @@ class LikeCodeAjax extends FannieRESTfulPage
             $likeCode->likeCode(),
             $likeCode->multiVendor() ? 'checked' : '',
             $likeCode->likeCode(),
+            $likeCode->signOrigin() ? 'checked' : '',
+            $likeCode->likeCode(),
             $likeCode->likeCode(),
             $vOpts,
             $likeCode->likeCode(), $likeCode->sortRetail(),
             $likeCode->likeCode(), $likeCode->sortInternal(),
+            $likeCode->likeCode(), $likeCode->origin(),
             $table,
             $ret
         );
@@ -244,6 +256,11 @@ class LikeCodeAjax extends FannieRESTfulPage
     protected function post_id_multi_handler()
     {
         return $this->toggleField($this->id, 'multiVendor');
+    }
+
+    protected function post_id_cool_handler()
+    {
+        return $this->toggleField($this->id, 'signOrigin');
     }
 
     protected function getLcModel($likeCode)
@@ -295,6 +312,24 @@ class LikeCodeAjax extends FannieRESTfulPage
         echo 'Done';
         return false;
     }
+
+    protected function post_id_origin_handler()
+    {
+        $model = $this->getLcModel($this->id);
+        if ($model === false) {
+            return false;
+        }
+        $new = strtoupper(trim($this->origin));
+        if ($new != strtoupper($model->origin())) {
+            $model->origin($new);
+            $model->originChanged(date('Y-m-d H:i:s'));
+            $model->save();
+        }
+
+        echo 'Done';
+        return false;
+    }
+
     protected function post_id_icat_handler()
     {
         $model = $this->getLcModel($this->id);

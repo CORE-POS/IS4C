@@ -118,23 +118,26 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
             $prod = $this->connection->getRow($prodP, array($likeCode));
             $lc = $this->connection->getRow($lcP, array($likeCode));
             $map = $this->connection->getRow($mapP, array($likeCode, $store));
-            $table .= sprintf('<tr><td>%d<input type="hidden" name="lc[]" value="%s" />
+            $table .= sprintf('<tr><td><a href="../../item/likecodes/LikeCodeEditor.php?start=%d">%d</a>
+                <input type="hidden" name="lc[]" value="%s" />
                 <input type="hidden" name="price[]" value="%s" />
                 <input type="hidden" name="scale[]" value="%s" />
                 </td>
                 <td><input type="text" name="brand[]" class="form-control input-sm" value="%s" /></td>
                 <td><input type="text" name="desc[]" class="form-control input-sm" value="%s" /></td>
-                <td><input type="text" name="origin[]" class="form-control input-sm" value="" /></td>
+                <td><input type="text" name="origin[]" class="form-control input-sm" value="%s" /></td>
                 <td class="orgStatus"><a href="" onclick="toggleOrganic(event); return false;">%s</a></td>
                 <td class="defaultSign"><a href="" onclick="toggleSign(event); return false;">%s</a></td>
                 <td><input type="checkbox" class="exclude" name="exclude[]" value="%s" /></td>
                 </tr>',
                 $likeCode,
                 $likeCode,
+                $likeCode,
                 $row['salePrice'],
                 $prod['scale'],
                 ($prod['uBrand'] ? $prod['uBrand'] : $prod['brand']),
                 ($prod['uDesc'] ? ucwords(strtolower($prod['uDesc'])) : ucwords(strtolower($prod['description']))),
+                ($lc['signOrigin'] ? $lc['origin'] : ''),
                 ($lc['organic'] ? 'Organic' : 'Non-Organic'),
                 $map['defaultSign'],
                 $likeCode

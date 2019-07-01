@@ -136,6 +136,9 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $saveCost = true;
         }
 
+        $lc1P = $dbc->prepare("UPDATE likeCodes SET signOrigin=? WHERE likeCode=?");
+        $lc2P = $dbc->prepare("UPDATE likeCodes SET origin=? WHERE likeCode=?");
+
         $queue = new QueueManager();
 
         $ret = '';
@@ -198,6 +201,15 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $name = isset($line[$indexes['name']]) ? trim($line[$indexes['name']]) : '';
                 if ($vendor != '' && $name != '') {
                     $this->queueUpdate($queue, $upc, $vendor, $name);
+                }
+            }
+            if ($this->config->COOP_ID == 'WFC_Duluth' && substr($upc, 0, 2) == 'LC' && isset($line[6]) && isset($line[7])) {
+                $signOrigin = strtoupper(trim($line[7])) == 'Y' ? 1 : 0;
+                $origin = strtoupper(trim($line[6]));
+                $like = substr($upc, 2);
+                $dbc->execute($lc1P, array($signOrigin, $like));
+                if ($origin) {
+                    $dbc->execute($lc2P, array($origin, $like));
                 }
             }
         }
