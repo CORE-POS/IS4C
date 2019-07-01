@@ -102,8 +102,6 @@ for ($ocount=0;$ocount<$offset;$ocount++){
 }
 */
 $str = '';
-$f = fopen('coreydeleteme.txt', 'w');
-fwrite($f, $json, 100);
 $tagcount = count($data);
 if ($tagcount < 20) {
     for ($tagcount; $tagcount < 20; $tagcount++) {
