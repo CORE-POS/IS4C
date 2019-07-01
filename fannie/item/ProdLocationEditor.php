@@ -650,6 +650,8 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $brand = $model->brand();
                 $description = $model->description();
                 $sugLocation = $this->getLocation($model->department(),$dbc);
+                $department = $model->department();
+                $dept_name = '';
             } else {
                 while ($row = $dbc->fetch_row($result)) {
                     $floorID = $row['floorSectionID'];
