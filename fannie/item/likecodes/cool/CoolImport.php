@@ -87,6 +87,7 @@ class CoolImport extends COREPOS\Fannie\API\FannieUploadPage
         return <<<HTML
 <p>
 Custom importers:<br />
+<a href="CpwImport.php">CPW</a><br />
 <a href="RdwImport.php">RDW</a><br />
 </p>
 HTML;
