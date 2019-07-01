@@ -304,9 +304,11 @@ class ContributionTool extends FannieRESTfulPage
             $ret .= '<tr><th>Item</th><th>Name</th><th>Current Margin</th><th>% Store Sales</th><th>% Category Sales</th></tr>';
             foreach ($items as $row) {
                 $css = '';
+                /** Throwing notices; not sure if $highlight should be getting through to here
                 if ($row['margin'] > 0 && ($row['margin']*100) < $highlight) {
                     $css = 'class="danger"';
                 }
+                 */
                 $ret .= sprintf('<tr %s><td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td><td>%.2f</td><td>%.3f</td><td>%.2f</td>',
                     $css, $row['upc'], $row['upc'],
