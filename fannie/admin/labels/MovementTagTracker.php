@@ -190,7 +190,7 @@ class MovementTagTracker extends FannieRESTfulPage
             <th><span class='glyphicon glyphicon-trash'></span></th><tbody>";
         foreach ($params as $id => $row) {
             $table .= "<tr>";
-            if ($params[$id]['type'] == 'range') {
+            if (isset($params[$id]['type']) && $params[$id]['type'] == 'range') {
                 $storeName = $storepicker['names'][$row['store']];
                 $param = key($params[$id]);
                 $table .= "<td>$storeName</td>";
@@ -411,7 +411,7 @@ HTML;
             $params[$id][$param] = $row['value'];
         }
         foreach ($params as $id => $row) {
-            if ($params[$id]['type'] == 'range'
+            if (isset($params[$id]['type']) && $params[$id]['type'] == 'range'
             && $params[$id]['store'] == $storeID) {
                 $start = $row['start'];
                 $end = $row['end'];
