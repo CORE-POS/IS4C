@@ -88,6 +88,7 @@ JAVASCRIPT;
             );
         }
 
+        /*
         if ($today) {
             $prep = $this->connection->prepare('SELECT SUM(total)/20 FROM ' . FannieDB::fqn('dlog', 'trans') . " WHERE department=992");
             $data[] = array(
@@ -95,6 +96,7 @@ JAVASCRIPT;
                 sprintf('%d', $this->connection->getValue($prep)),
             );
         }
+         */
 
         return $data;
     }
