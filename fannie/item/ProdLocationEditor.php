@@ -458,7 +458,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $item[$row['upc']]['desc'] = $row['pdesc'];
                 $item[$row['upc']]['brand'] = $row['brand'];
                 $item[$row['upc']]['dept_name'] = $row['dept_name'];
-                $item[$row['upc']]['curSections'] = $row['sections'];
+                $item[$row['upc']]['curSections'] = isset($row['sections']) ? $row['sections'] : '';
             }
             if ($dbc->error()) {
                 echo '<div class="alert alert-danger">' . $dbc->error() . '</div>';
