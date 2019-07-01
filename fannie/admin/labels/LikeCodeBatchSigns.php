@@ -118,6 +118,9 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
             $prod = $this->connection->getRow($prodP, array($likeCode));
             $lc = $this->connection->getRow($lcP, array($likeCode));
             $map = $this->connection->getRow($mapP, array($likeCode, $store));
+            if ($lc['organic']) {
+                $prod['uBrand'] = 'Organic';
+            }
             $table .= sprintf('<tr><td><a href="../../item/likecodes/LikeCodeEditor.php?start=%d">%d</a>
                 <input type="hidden" name="lc[]" value="%s" />
                 <input type="hidden" name="price[]" value="%s" />
