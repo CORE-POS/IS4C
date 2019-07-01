@@ -611,6 +611,8 @@ class RpOrderPage extends FannieRESTfulPage
 </div>
 <p>
     <button class="btn btn-default orderAll" onclick="rpOrder.orderAll();">Order All</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="RpDirectPage.php" class="btn btn-default">Switch to Direct</a>
     <div class="progress collapse">
         <div class="progress-bar progress-bar-striped active"  role="progressbar" 
             aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
@@ -621,6 +623,8 @@ class RpOrderPage extends FannieRESTfulPage
 {$tables}
 <p>
     <button class="btn btn-default orderAll" onclick="rpOrder.orderAll();">Order All</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="RpDirectPage.php" class="btn btn-default">Switch to Direct</a>
     <div class="progress collapse">
         <div class="progress-bar progress-bar-striped active"  role="progressbar" 
             aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">

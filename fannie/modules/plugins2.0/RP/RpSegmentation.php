@@ -126,6 +126,9 @@ class RpSegmentation extends FannieRESTfulPage
 
     protected function get_view()
     {
+        $backLink = isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'RpDirectPage.php')
+            ? 'RpDirectPage.php'
+            : 'RpOrderPage.php';
         $store = FormLib::get('store');
         if (!$store) {
             $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
@@ -173,7 +176,7 @@ class RpSegmentation extends FannieRESTfulPage
         <div id="historyDiv"></div>
     </p>
     <p>
-        <a href="RpOrderPage.php" class="btn btn-default">Back to Order Guide</a>
+        <a href="{$backLink}" class="btn btn-default">Back to Order Guide</a>
     </p>
     </div>
 </div>

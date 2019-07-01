@@ -5,7 +5,8 @@ var rpOrder = (function ($) {
         'retention': 60,
         'days': [false, false, false, false, false, false, false],
         'onHand': {},
-        'orderAmt': {}
+        'orderAmt': {},
+        'directAmt': {}
     };
     var searchVendor = 0;
     var retainElem = false;
@@ -118,6 +119,9 @@ var rpOrder = (function ($) {
             if (state['orderAmt'].__proto__ == Array.prototype) {
                 state['orderAmt'] = {};
             }
+            if (state['directAmt'].__proto__ == Array.prototype) {
+                state['directAmt'] = {};
+            }
             $('#retention').val(state['retention']);
             var i = 0;
             $('.daycheck').each(function() {
@@ -128,10 +132,10 @@ var rpOrder = (function ($) {
             });
             mod.updateDays();
 
-            var oIDs = Object.keys(state['orderAmt']);
+            var oIDs = Object.keys(state['directAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
             }
 
             var hIDs = Object.keys(state['onHand']);
@@ -142,10 +146,10 @@ var rpOrder = (function ($) {
                 mod.reCalcRow($(elem).closest('tr'));
             }
 
-            var oIDs = Object.keys(state['orderAmt']);
+            var oIDs = Object.keys(state['directAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
             }
         }
         saveLoop();
@@ -158,7 +162,7 @@ var rpOrder = (function ($) {
     };
 
     mod.updateOrder = function(elem) {
-        state['orderAmt'][elem.id] = elem.value;
+        state['directAmt'][elem.id] = elem.value;
     };
 
     mod.updateDays = function() {

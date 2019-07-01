@@ -47,6 +47,10 @@ class RpFileManager extends FannieRESTfulPage
             $rps .= sprintf('<option value="%s">%s</option>', $o, basename($o));
         }
 
+        $backLink = isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'RpDirectPage.php')
+            ? 'RpDirectPage.php'
+            : 'RpOrderPage.php';
+
         return <<<HTML
 <p>
     <label>Choose a file to import from</label>:
@@ -58,7 +62,7 @@ class RpFileManager extends FannieRESTfulPage
         <em>This should take about 30 seconds</em>
     </p>
     <p>
-        <a href="RpOrderPage.php" class="btn btn-default">Back to Order Guide</a>
+        <a href="{$backLink}" class="btn btn-default">Back to Order Guide</a>
     </p>
     <div id="counter"></div>
     <div id="results"></div>

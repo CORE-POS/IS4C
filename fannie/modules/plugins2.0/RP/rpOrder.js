@@ -5,7 +5,8 @@ var rpOrder = (function ($) {
         'retention': 60,
         'days': [false, false, false, false, false, false, false],
         'onHand': {},
-        'orderAmt': {}
+        'orderAmt': {},
+        'directAmt': {}
     };
     var searchVendor = 0;
     var retainElem = false;
@@ -117,6 +118,9 @@ var rpOrder = (function ($) {
             }
             if (state['orderAmt'].__proto__ == Array.prototype) {
                 state['orderAmt'] = {};
+            }
+            if (state['directAmt'].__proto__ == Array.prototype) {
+                state['directAmt'] = {};
             }
             $('#retention').val(state['retention']);
             var i = 0;
