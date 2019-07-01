@@ -115,7 +115,7 @@ class CpwImport extends FannieRESTfulPage
             if (!is_numeric($sku)) {
                 continue;
             }
-            $item = $data[2];
+            $item = isset($data[2]) ? $data[2] : '';
             $cool = $this->findCOOL($item);
             $this->data[$sku] = $cool;
             $this->invoice[$sku] = $item;
