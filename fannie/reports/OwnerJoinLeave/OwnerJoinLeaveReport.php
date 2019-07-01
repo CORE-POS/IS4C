@@ -379,7 +379,10 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $stockR = $dbc->execute($this->stockP, array($cardno));
         while ($stockW = $dbc->fetchRow($stockR)) {
             list($date,) = explode(' ', $stockW['tdate']);
-            list($emp, $reg, $trans) = explode('-', $stockW['trans_num']);
+            $emp=$reg=$trans=0;
+            if (strstr($stockW['trans_num'], '-')) {
+                list($emp, $reg, $trans) = explode('-', $stockW['trans_num']);
+            }
             $args = array(
                 $date . ' 00:00:00',
                 $date . ' 23:59:59',
