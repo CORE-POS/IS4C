@@ -46,8 +46,9 @@ class CoolImport extends COREPOS\Fannie\API\FannieUploadPage
             <table class="table table-bordered">';
         foreach ($linedata as $line) {
             $sku = trim($line[$indexes['sku']]);
-            $cool = trim($line[$indexes['cool']]);
+            $cool = strtoupper(trim($line[$indexes['cool']]));
             $item = trim($line[$indexes['item']]);
+            $cool = str_replace('UNITED STATES', 'USA', $cool);
             $lc = $this->connection->getValue($likeP, array($vendorID, $sku));
             $ret .= sprintf('<tr><td>%s</td><td>%s</td>
                         <td>%s<input type="hidden" name="cool[]" value="%s" /></td>

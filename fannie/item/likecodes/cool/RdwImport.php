@@ -15,13 +15,20 @@ class RdwImport extends FannieRESTfulPage
         $this->data = array();
         $this->invoice = array();
         $invoice = FormLib::get('invoice');
+        $prev = false;
         foreach (explode("\n", $invoice) as $line) {
             $hasSku = preg_match('/.* (\d\d\d\d\d) .*/', $line, $matches);
             if ($hasSku) {
                 $sku = $matches[1];
                 $cool = substr($line, 0, strpos($line, ' '));
+                if ($cool == 'COSTA') {
+                    $cool = 'COSTA RICA';
+                }
                 $this->data[$sku] = $cool;
                 $this->invoice[$sku] = $line;
+                $prev = $sku;
+            } elseif ($prev) {
+                $this->data[$prev] .= ' AND ' . $line;
             }
         }
 
@@ -45,9 +52,9 @@ class RdwImport extends FannieRESTfulPage
             $item = $this->invoice[$sku];
             $lc = $this->connection->getValue($likeP, array($vendorID, $sku));
             $ret .= sprintf('<tr><td>%s</td><td>%s</td>
-                        <td>%s<input type="hidden" name="cool[]" value="%s" /></td>
+                        <td><input type="text" name="cool[]" class="form-control input-sm" value="%s" /></td>
                         <td><select name="lc[]" class="form-control input-sm chosen">
-                        <option value=""></option>',
+                        <option value="">Skip item</option>',
                 $sku, $item, $cool, $cool);
             foreach ($opts as $val => $label) {
                 $ret .= sprintf('<option %s value="%d">%d %s</option>',
