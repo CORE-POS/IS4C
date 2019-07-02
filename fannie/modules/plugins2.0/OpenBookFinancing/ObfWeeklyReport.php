@@ -1033,7 +1033,36 @@ class ObfWeeklyReport extends FannieReportPage
                 }
                 $sales->save();
             }
+
+            if ($week->obfWeekID() > 265) {
+                $prep = $dbc->prepare("SELECT SUM(total) FROM {$dlog2}
+                            WHERE tdate BETWEEN ? AND ?
+                                AND store_id=?
+                                AND upc IN (SELECT upc FROM " . FannieDB::fqn('products', 'op') . " WHERE department=80)");
+                $hsAdj = $dbc->getValue($prep, array(
+                    date('Y-m-d 00:00:00', $dateInfo['start_ly']),
+                    date('Y-m-d 23:59:59', $dateInfo['end_ly']),
+                    1));
+                $upP = $dbc->prepare("UPDATE ObfSalesCache SET lastYearSales = lastYearSales + ?
+                    WHERE obfCategoryID=2 AND superID=10 AND obfWeekID=?");
+                $dbc->execute($upP, array($hsAdj, $week->obfWeekID()));
+                $upP = $dbc->prepare("UPDATE ObfSalesCache SET lastYearSales = lastYearSales - ?
+                    WHERE obfCategoryID=3 AND superID=4 AND obfWeekID=?");
+                $dbc->execute($upP, array($hsAdj, $week->obfWeekID()));
+
+                $denAdj = $dbc->getValue($prep, array(
+                    date('Y-m-d 00:00:00', $dateInfo['start_ly']),
+                    date('Y-m-d 23:59:59', $dateInfo['end_ly']),
+                    2));
+                $upP = $dbc->prepare("UPDATE ObfSalesCache SET lastYearSales = lastYearSales + ?
+                    WHERE obfCategoryID=8 AND superID=10 AND obfWeekID=?");
+                $dbc->execute($upP, array($denAdj, $week->obfWeekID()));
+                $upP = $dbc->prepare("UPDATE ObfSalesCache SET lastYearSales = lastYearSales - ?
+                    WHERE obfCategoryID=9 AND superID=4 AND obfWeekID=?");
+                $dbc->execute($upP, array($denAdj, $week->obfWeekID()));
+            }
         }
+
     }
 
     protected $salesP = null;
