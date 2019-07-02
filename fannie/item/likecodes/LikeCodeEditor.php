@@ -167,6 +167,7 @@ function loadlc(id){
             <ul>
                 <li><a href="LikeCodeActivity.php">Likecode Status & Activity</a></li>
                 <li><a href="LikeCodeSKUsPage.php">Likecode Vendor SKUs & Pricing</a></li>
+                <li><a href="cool/CoolImport.php">COOL Imports</a></li>
             </ul>
         </div>
         <div id="rightdiv" class="col-sm-6">

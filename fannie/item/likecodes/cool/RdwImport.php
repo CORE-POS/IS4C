@@ -44,7 +44,9 @@ class RdwImport extends FannieRESTfulPage
         $model = new LikeCodesModel($this->connection);
         $opts = array();
         foreach ($model->find() as $obj) {
-            $opts[$obj->likeCode()] = $obj->likeCodeDesc();
+            $opts[$obj->likeCode()] = $obj->likeCodeDesc()
+                . ' '
+                . ($obj->organic() ? '(O)' : '(C)');
         }
         $ret = '<form method="post" action="CoolImportSave.php">
             <table class="table table-bordered">';

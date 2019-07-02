@@ -27,6 +27,16 @@ class CoolImportSave extends FannieRESTfulPage
                 $ret .= sprintf('%d %s is still from %s & unchanged<br />',
                     $lcs[$i], $likecode['likeCodeDesc'], strtoupper($cools[$i]));
             } else {
+                $changed = $likecode['originChanged'];
+                if (date('Y-m-d') == date('Y-m-d', strtotime($changed))) {
+                    $curOrigins = explode('AND', strtoupper($likecode['origin']));
+                    $newOrigin = strtoupper($cools[$i]);
+                    foreach ($curOrigins as $co) {
+                        if ($co != $newOrigin) {
+                            $cools[$i] .= ' AND ' . $co;
+                        }
+                    }
+                }
                 $this->connection->execute($upP, array(strtoupper($cools[$i]), date('Y-m-d H:i:s'), $lcs[$i]));
                 $ret .= sprintf('%d %s is updated to be from %s<br />',
                     $lcs[$i], $likecode['likeCodeDesc'], strtoupper($cools[$i]));
