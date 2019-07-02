@@ -520,6 +520,7 @@ class RpDirectPage extends FannieRESTfulPage
         $weekStart = date('Y-m-d', $ts);
         $weekP = $this->connection->prepare("SELECT * FROM RpSegments WHERE startDate=? AND storeID=?");
         $projected = 'n/a';
+        $baseRetain = 60;
         $days = array(
             'Mon' => 'n/a',
             'Tue' => 'n/a',
@@ -532,6 +533,7 @@ class RpDirectPage extends FannieRESTfulPage
         $week = $this->connection->getRow($weekP, array($weekStart, $store));
         if ($week) {
             $projected = number_format($week['sales']);
+            $baseRetain = $week['retention'];
             $days = json_decode($week['segmentation'], true);
             $days = array_map(function ($i) { return sprintf('%.2f%%', $i*100); }, $days);
         }
@@ -589,7 +591,7 @@ class RpDirectPage extends FannieRESTfulPage
     <div class="form-inline">
     <div class="input-group">
         <span class="input-group-addon">Retention</span>
-        <input type="number" value="60" id="retention" class="form-control input-sm" />
+        <input type="number" value="{$baseRetain}" id="retention" class="form-control input-sm" />
         <span class="input-group-addon">%</span>
     </div> 
     </div> 

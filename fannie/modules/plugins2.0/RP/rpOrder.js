@@ -122,7 +122,6 @@ var rpOrder = (function ($) {
             if (state['directAmt'].__proto__ == Array.prototype) {
                 state['directAmt'] = {};
             }
-            $('#retention').val(state['retention']);
             var i = 0;
             $('.daycheck').each(function() {
                 if (state['days'][i]) {

@@ -36,6 +36,7 @@ class RpSegmentsModel extends BasicModel
     'storeID' => array('type'=>'INT'),
     'startDate' => array('type'=>'DATETIME'),
     'sales' => array('type'=>'MONEY'),
+    'retention' => array('type'=>'MONEY', 'default'=>60),
     'segmentation' => array('type'=>'VARCHAR(255)'),
     );
 }

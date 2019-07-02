@@ -28,16 +28,17 @@ class RpSegmentation extends FannieRESTfulPage
         }
         $sales = FormLib::get('sales');
         $sales = str_replace(',', '', $sales);
+        $retain = FormLib::get('retention');
 
         $existsP = $this->connection->prepare("SELECT rpSegmentID FROM RpSegments WHERE storeID=? AND startDate=?");
         $exists = $this->connection->getValue($existsP, array($this->store, $this->segID));
         if ($exists) {
-            $prep = $this->connection->prepare("UPDATE RpSegments SET sales=?, segmentation=? WHERE rpSegmentID=?");
-            $saved = $this->connection->execute($prep, array($sales, json_encode($segment), $exists));
+            $prep = $this->connection->prepare("UPDATE RpSegments SET sales=?, retention=?, segmentation=? WHERE rpSegmentID=?");
+            $saved = $this->connection->execute($prep, array($sales, $retain, json_encode($segment), $exists));
         } else {
             $prep = $this->connection->prepare("INSERT INTO RpSegments
-                (storeID, startDate, sales, segmentation) VALUES (?, ?, ?, ?)");
-            $saved = $this->connection->execute($prep, array($this->store, $this->segID, $sales, json_encode($segment)));
+                (storeID, startDate, sales, retention, segmentation) VALUES (?, ?, ?, ?, ?)");
+            $saved = $this->connection->execute($prep, array($this->store, $this->segID, $sales, $retain, json_encode($segment)));
         }
 
         $json['err'] = $saved ? false : true;
@@ -57,9 +58,11 @@ class RpSegmentation extends FannieRESTfulPage
         $prep = $this->connection->prepare("SELECT * FROM RpSegments WHERE storeID=? AND startDate=?");
         $row = $this->connection->getRow($prep, array($this->store, $this->segID));
         $plan = 0;
+        $retain = 60;
         $json = array();
         if ($row) {
             $plan = $row['sales'];
+            $retain = $row['retention'];
             $json = json_decode($row['segmentation'], true);
         }
 
@@ -67,6 +70,10 @@ class RpSegmentation extends FannieRESTfulPage
         $ret .= sprintf('<tr><th>Sales</th>
             <th><input type="text" name="sales" value="%s" class="form-control" /></th></tr>',
             number_format($plan));
+        $ret .= sprintf('<tr><th>Retention</th><th><div class="input-group">
+            <input type="text" name="retention" value="%s" class="form-control" />
+            <span class="input-group-addon">%%</span></th></tr>',
+            number_format($retain));
         $sum = 0;
         foreach (array('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun') as $day) {
             $ret .= sprintf('<tr><td>%s</td>
