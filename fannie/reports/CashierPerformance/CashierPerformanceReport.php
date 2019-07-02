@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\FanniePlugin;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -67,7 +69,7 @@ class CashierPerformanceReport extends FannieReportPage
                     " WHERE proc_date BETWEEN ? AND ?", 1);
         $chkP = $dbc->prepare($chkQ);
         $chk = $dbc->getValue($chkP, array($date1, $date1 . ' 23:59:59'));
-        if ($chk === false) {
+        if ($chk === false && in_array('CoreWarehouse', FanniePlugin::getPluginList())) {
             $detailP = $dbc->prepare('
                 SELECT SUM(CASE WHEN transInterval > 600 THEN 600 ELSE transInterval END) AS seconds,
                     COUNT(*) AS numTrans
