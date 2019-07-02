@@ -177,6 +177,8 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $existsP = $dbc->prepare("SELECT upc FROM vendorItems WHERE upc=? AND vendorID=?");
+        $skuExistsP = $dbc->prepare("SELECT sku FROM vendorItems WHERE sku=? AND vendorID=?");
+        $skuClearP = $dbc->prepare("DELETE FROM vendorItems WHERE sku=? AND vendorID=?");
         $costP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=? AND default_vendor_id=?');
         $updatedUPCs = array();
 
@@ -272,6 +274,9 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $prep = $dbc->prepare($query);
                 $dbc->execute($prep, $args);
             } elseif (is_numeric($reg_unit) && $reg_unit <> 0) {
+                if ($dbc->getValue($skuExistsP, array($sku, $VENDOR_ID))) {
+                    $dbc->execute($skuClearP, array($sku, $VENDOR_ID));
+                }
                 $args = array(
                     $brand, $sku, $size, $upc,
                     $qty, $reg_unit, $description, $category,
@@ -361,7 +366,9 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         if (php_sapi_name() !== 'cli') {
             /* this page requires a session to pass some extra
                state information through multiple requests */
-            @session_start();
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+            }
         }
 
         return parent::preprocess();
