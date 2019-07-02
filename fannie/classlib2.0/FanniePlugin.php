@@ -74,7 +74,7 @@ class FanniePlugin extends \COREPOS\common\CorePlugin
         return parent::memberOf($file, 'plugins2.0');
     }
 
-    protected static function getPluginList()
+    public static function getPluginList()
     {
         $plugin_list = \FannieConfig::factory()->get('PLUGIN_LIST');
         if (is_array($plugin_list)) {
