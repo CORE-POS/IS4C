@@ -605,9 +605,11 @@ class FannieUploadPage extends \FanniePage
             $row++;
             if ($row < $this->skip_first && $this->skip_first > 0) continue;
             if ($this->skip_first < 0 && count($data) < count($this->preview_opts)) continue;
-            foreach($data as $d) {
-                $table .='<td>'.$d.'</td>';
-                $j++;
+            if (is_array($data)) {
+                foreach($data as $d) {
+                    $table .='<td>'.$d.'</td>';
+                    $j++;
+                }
             }
             if ($j > $width) $width = $j;
             $table .= '</tr>';
