@@ -348,7 +348,7 @@ class WfcClassRegistryPage extends FanniePage
 
         $ret = '';
         $curPlu = FormLib::get('class_plu');
-        if (is_numeric($curPlu)) {
+        if (is_numeric($curPlu) && isset($classUPC[$curPlu])) {
             $upc = BarcodeLib::padUPC($classUPC[$curPlu]);
             $ret .= '<input type="hidden" id="curUpc" value="'.$upc.'">';
             $ret .= '<input type="hidden" id="notified" value="'.$notified[$curPlu].'">';
@@ -595,7 +595,7 @@ class WfcClassRegistryPage extends FanniePage
         $info->upc(FormLib::get('class_plu'));
         $info->id(FormLib::get('id'));
 
-        $ret .= '<p class="bg-success" align="center"> <b>';
+        $ret = '<p class="bg-success" align="center"> <b>';
 
         foreach ($info->find() as $info) {
             $ret .= $info->first_name() . " ";
