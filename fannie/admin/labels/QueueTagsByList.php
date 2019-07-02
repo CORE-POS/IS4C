@@ -85,10 +85,12 @@ class QueueTagsByList extends FannieRESTfulPage
                 $aDanger.= "{$upc}<br/>";    
             }
         }
+        $success = '';
         if ($aSuccess) {
             $success = "<div class='alert alert-success'>
                 Successfully Queued UPCs<br/>{$aSuccess}</div>";
         }
+        $danger = '';
         if ($aDanger) {
             $danger = "<div class='alert alert-danger'>
                 UPCs that did not save to queue{$aDanger}</div>";
