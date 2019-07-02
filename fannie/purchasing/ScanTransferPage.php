@@ -158,7 +158,9 @@ HTML;
         if (!class_exists($accounting)) {
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
-        $info['salesCode'] = $accounting::toPurchaseCode($info['salesCode']);
+        $info['salesCode'] = isset($info['salesCode']) ? $accounting::toPurchaseCode($info['salesCode']) : '';
+        $info['brand'] = isset($info['brand']) ? $info['brand'] : '';
+        $info['description'] = isset($info['description']) ? $info['description'] : '';
         
         $ret = <<<HTML
 <form method="post">
