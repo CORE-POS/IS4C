@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Operators as Op;
+
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -84,7 +86,7 @@ class RoundUpReport extends FannieReportPage
                 $row['qty'],
                 sprintf('%.2f', $row['ttl']),
                 $transactions,
-                sprintf('%.2f', ($row['qty'] / $transactions) * 100),
+                sprintf('%.2f', Op::div($row['qty'], $transactions) * 100),
             );
         }
 
