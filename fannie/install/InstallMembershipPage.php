@@ -170,6 +170,18 @@ URL Parameter name:
 <?php echo installTextField('FANNIE_MEMBER_PARAM', $FANNIE_MEMBER_PARAM, 'memNum'); ?>
 </div>
 <hr />
+<h4 class="install">Max Normal Account Number</h4>
+<div>
+The maximum number of normal customer accounts. This should be a high value and defaults
+to one billion. The purpose of the limit is to create a space for <em>non-normal</em>
+accounts that are automatically generated and not used directly by people. Cordoning
+these off keeps the length of the account numbers real people are using from growing
+too quickly.
+<br />
+Maximum:
+<?php echo installTextField('FANNIE_CARDNO_MAX', $FANNIE_CARDNO_MAX, '1000000000'); ?>
+</div>
+<hr />
 <p>
     <button type="submit" class="btn btn-default">Save Configuration</button>
 </p>

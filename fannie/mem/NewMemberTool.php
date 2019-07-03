@@ -200,11 +200,12 @@ class NewMemberTool extends FanniePage
         */
 
         /* everything's set but the actual member #s */
-        $numQ = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
+        $limit = $this->config->get('CARDNO_MAX', 1000000000);
+        $numQ = $dbc->prepare("SELECT MAX(CardNo) FROM custdata WHERE CardNo <= ?");
         if ($FANNIE_SERVER_DBMS == 'MSSQL') {
-            $numQ = $dbc->prepare("SELECT MAX(CAST(CardNo AS int)) FROM custdata");
+            $numQ = $dbc->prepare("SELECT MAX(CAST(CardNo AS int)) FROM custdata WHERE CAST(CardNo AS int) <= ?");
         }
-        $numR = $dbc->execute($numQ);
+        $numR = $dbc->execute($numQ, array($limit));
         $start = 1;
         if ($dbc->num_rows($numR) > 0) {
             $numW = $dbc->fetch_row($numR);
