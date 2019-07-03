@@ -100,7 +100,7 @@ class EmployeesPage extends FannieRESTfulPage
         $delP = $this->connection->prepare('DELETE FROM EmployeePositions WHERE employeeID=?');
         $insP = $this->connection->prepare('INSERT INTO EmployeePositions (employeeID, positionID) VALUES (?, ?)');
         $this->connection->execute($delP, array($this->id));
-        foreach (FormLib::get('pos') as $p) {
+        foreach (FormLib::get('pos', array()) as $p) {
             $this->connection->execute($insP, array($this->id, $p));
         }
         $this->connection->commitTransaction();
