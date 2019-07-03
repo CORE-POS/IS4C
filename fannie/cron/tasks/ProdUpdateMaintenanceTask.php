@@ -27,8 +27,8 @@ class ProdUpdateMaintenanceTask extends FannieTask
     public $name = 'Product Changelog Maintenance';
 
     public $description = 'Scans product update history for
-changes to department and/or price and files those changes
-separately for quick reference.
+changes to department and/or price and/or cost and
+files those changes separately for quick reference.
 
 Deprecated the old CompressProdUpdate jobs. Do not schedule both
 this and the older jobs - especially CompressProdUpdate/archive.php.';
@@ -45,8 +45,12 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     {
         $prodUpdate = $dbc->tableDefinition('prodUpdate');
         $priceHistory = $dbc->tableDefinition('prodPriceHistory');
+        $costHistory = $dbc->tableDefinition('prodCostHistory');
         $deptHistory = $dbc->tableDefinition('prodDepartmentHistory');
-        if (isset($prodUpdate['prodUpdateID']) && isset($priceHistory['prodUpdateID']) && isset($deptHistory['prodUpdateID'])) {
+        if (isset($prodUpdate['prodUpdateID']) &&
+            isset($priceHistory['prodUpdateID']) &&
+            isset($costHistory['prodUpdateID']) &&
+            isset($deptHistory['prodUpdateID'])) {
             return true;
         } else {
             return false;
@@ -63,15 +67,20 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             // schema is updated
             $this->cronMsg('New archiving method for prodUpdate', FannieLogger::INFO);
 
-            // migrate data if needed
-            // and rebuild the history tables from scratch
-            // so they have correct prodUpdateID values
+            /**
+              Migrate data if needed
+              and rebuild the history tables from scratch
+              so they have correct prodUpdateID values.
+            */
             if ($dbc->table_exists('prodUpdateArchive')) {
                 $chk = $dbc->query($dbc->addSelectLimit('SELECT upc FROM prodUpdateArchive', 1));
                 if ($dbc->num_rows($chk) > 0) {
                     $this->cronMsg('Need to migrate prodUpdateArchive data', FannieLogger::INFO);
                     if ($this->migrateArchive($dbc)) {
                         $dbc->query('TRUNCATE TABLE prodPriceHistory');
+                        if ($dbc->tableExists('ProdCostHistory')) {
+                            $dbc->query('TRUNCATE TABLE prodCostHistory');
+                        }
                         $dbc->query('TRUNCATE TABLE prodDepartmentHistory');
                     }
                 }
@@ -81,7 +90,8 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
               New method:
               1. Lookup the last prodUpdate record ID added to the price history
               2. Scan newer prodUpdate records for price changes
-              3. Repeat for department history/changes
+              2. Scan newer prodUpdate records for cost changes
+              3. Do the same for department history/changes
               4. Do not use prodUpdateArchive
             */
             $limit = $this->lastUpdateID($dbc, 'prodPriceHistory');
@@ -125,8 +135,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     }
 
     /**
-      Scan prodUpdate from price changes and log them
-      in prodPriceHistory
+      Scan prodUpdate for price changes and log them in prodPriceHistory.
       @param $dbc [SQLManager] db connection
       @param $offset [optional int] start scanning from this prodUpdateID
     */
@@ -185,8 +194,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     }
 
     /**
-      Scan prodUpdate from cost changes and log them
-      in ProdCostHistory
+      Scan prodUpdate for cost changes and log them in prodCostHistory.
       @param $dbc [SQLManager] db connection
       @param $offset [optional int] start scanning from this prodUpdateID
     */
@@ -201,7 +209,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             WHERE upc=?
             ORDER BY modified DESC");
         $upc = null;
-        $prevPrice = null;
+        $prevCost = null;
         $update = new ProdUpdateModel($dbc); 
         $history = new ProdCostHistoryModel($dbc);
 
@@ -220,15 +228,15 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
 
             if ($upc === null || $upc != $update->upc()) {
                 $upc = $update->upc();
-                $prevPrice = null;
+                $prevCost = null;
                 $chkR = $dbc->execute($chkP, array($upc));
                 if ($dbc->numRows($chkR) > 0) {
                     $chkW = $dbc->fetch_row($chkR);
-                    $prevPrice = $chkW['cost'];
+                    $prevCost = $chkW['cost'];
                 }
             }
             
-            if ($prevPrice != $update->cost()) {
+            if ($prevCost != $update->cost()) {
                 $history->reset();
                 $history->upc($upc);
                 $history->storeID($update->storeID());
@@ -240,7 +248,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
                 $this->cronMsg('Add cost change #' . $update->prodUpdateID(), FannieLogger::INFO);
             }
 
-            $prevPrice = $update->cost();
+            $prevCost = $update->cost();
 
             if ($this->test_mode) {
                 break;
@@ -250,8 +258,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
 
 
     /**
-      Scan prodUpdate from dept changes and log them
-      in prodDepartmentHistory
+      Scan prodUpdate for dept changes and log them in prodDepartmentHistory.
       @param $dbc [SQLManager] db connection
       @param $offset [optional int] start scanning from this prodUpdateID
     */
