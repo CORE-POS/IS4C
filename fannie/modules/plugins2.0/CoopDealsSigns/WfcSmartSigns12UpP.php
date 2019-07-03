@@ -92,7 +92,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
     {
         if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/noauto/images/codeals_top_12.png';
-        } elseif (!empty($item['batchName']) && isset($item['batchType']) && $item['batchType'] != 4) {
+        } elseif (!empty($item['batchName']) && ((isset($item['batchType']) && $item['batchType'] != 4) || !isset($item['batchType']))) {
             return __DIR__ . '/noauto/images/chaching_top_12.png';
         } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_top_12.png';
