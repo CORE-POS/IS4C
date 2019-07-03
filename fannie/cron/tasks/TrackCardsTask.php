@@ -75,7 +75,7 @@ class TrackCardsTask extends FannieTask
             ORDER BY times DESC");
         echo $dbc->numRows($res) . " available cards\n";
         $whMonths = array();
-        $limit = 10;
+        $limit = 1;
         $count = 0;
         while ($row = $dbc->fetchRow($res)) {
             echo "{$row['name']} seen {$row['times']} times\n";
@@ -104,31 +104,17 @@ class TrackCardsTask extends FannieTask
 
     private function getCardNo($dbc)
     {
-        $maxP = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
-        $max = $dbc->getValue($maxP);
+        $limit = $this->config->get('CARDNO_MAX', 1000000000);
+        $maxP = $dbc->prepare("SELECT MAX(CardNo) FROM custdata WHERE CardNo > ?");
+        $max = $dbc->getValue($maxP, $limit);
 
-        //return $max + 1;
-
-        $try = $max - 1;
-        $try = 4000;
-        $existP = $dbc->prepare("SELECT CardNo FROM custdata WHERE CardNo=?");
-        while ($try > 0) {
-            $exists = $dbc->getValue($existP, array($try));
-            if (!$exists) {
-                return $try;
-            }
-
-            $try--;
-        }
-
-        $this->cronMsg('No card numbers available!');
-        exit;
+        return $max ? $max + 1 : $limit + 1;
     }
 
     private function trackUser($dbc, $name, $pan, $hash, $startDate, $whMonths)
     {
         $max = $this->getCardNo($dbc);
-        echo "$hash will be $max\n";
+        echo "$hash will be " . number_format($max) . "\n";
         $fn = '';
         $ln = $name;
         if (strstr($name, '/')) {
