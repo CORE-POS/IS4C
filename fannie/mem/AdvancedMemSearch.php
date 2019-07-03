@@ -91,12 +91,14 @@ class AdvancedMemSearch extends FannieRESTfulPage
             <th>Owner #</th><th>First Name</th><th>Last Name</th><th>Status</th><th>Type</th></thead>
             <tbody>';
         $copyPaste = "";
+        $url = $this->config->get('URL') . $this->config->get('MEMBER_URL', 'mem/MemberEditor.php');
+        $urlParam = $this->config->get('MEMBER_PARAM', 'memNum');
         foreach ($data as $d) {
             $checked = in_array($d['CardNo'], $saved) ? 'checked' : '';
             $ret .= "<tr>
                 <td><input type=\"checkbox\" onchange=\"checkedCount('#selection-counter', '.savedCB');\" 
                     class=\"savedCB\" {$checked} name=\"saved[]\" value=\"{$d['CardNo']}\" /></td>
-                <td><a href=\"MemberEditor.php?memNum={$d['CardNo']}\">{$d['CardNo']}</a></td>
+                <td><a href=\"{$url}?{$urlParam}={$d['CardNo']}\">{$d['CardNo']}</a></td>
                 <td>{$d['FirstName']}</td><td>{$d['LastName']}</td><td>{$d['Type']}</td><td>{$d['memDesc']}</td></tr>";
             $copyPaste .= $d['CardNo'] . "\n";
         }
