@@ -1025,6 +1025,9 @@ class MemberREST
                 LEFT JOIN memberCards AS u ON c.CardNo=u.card_no
                 LEFT JOIN memContact AS t ON c.CardNo=t.card_no
             WHERE 1=1 ';
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
+            $query .= ' AND c.memType <> 7 ';
+        }
         $params = array();
         if (!isset($json['customers']) || !is_array($json['customers'])) {
             $json['customers'] = array();
@@ -1264,6 +1267,7 @@ class MemberREST
             $query = 'SELECT FirstName, CardNo
             FROM custdata
             WHERE FirstName LIKE ?
+                ' . (FannieConfig::config('COOP_ID') == 'WFC_Duluth') ? ' AND memType <> 7 ' : '' . '
             GROUP BY FirstName, CardNo
             ORDER BY FirstName';
         }
@@ -1283,6 +1287,7 @@ class MemberREST
             $query = 'SELECT LastName, CardNo
             FROM custdata
             WHERE LastName LIKE ?
+                ' . (FannieConfig::config('COOP_ID') == 'WFC_Duluth' ? ' AND memType <> 7 ' : '') . '
             GROUP BY LastName, CardNo
             ORDER BY LastName';
         }
