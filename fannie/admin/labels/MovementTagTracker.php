@@ -431,8 +431,7 @@ HTML;
             $table .= "<tr>";
             foreach ($colNames as $colName) {
                 if ($colName == 'upc') {
-                    $table .= "<td>
-                        <a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
+                    $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
                         target='_blank'>{$array[$colName]}</a></td>";
                 } else {
                     $table .= "<td>{$array[$colName]}</td>";
