@@ -377,6 +377,14 @@ class OrderViewPage extends FannieRESTfulPage
                 $memNum = $c->card_no();
                 break;
             }
+        } elseif ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $custdata = new CustdataModel($dbc);
+            $custdata->CardNo($memNum);
+            $custdata->personNum(1);
+            $custdata->load();
+            if ($custdata->memType() == 7) {
+                $memNum = '';
+            }
         }
 
         // look up member id if applicable
