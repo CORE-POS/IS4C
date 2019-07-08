@@ -61,9 +61,11 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_AUTOREFERER, true);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36');
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         $login_page = curl_exec($ch);
         curl_close($ch);
+        $this->cronMsg("Got login page");
 
         /**
           Get hidden fields from login page
@@ -89,6 +91,7 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_AUTOREFERER, true);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36');
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $login_post);
@@ -97,6 +100,7 @@ class UIGTask extends FannieTask
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $referer = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
+        $this->cronMsg("POST login page");
 
         preg_match_all($inputs_regex, $body, $matches);
         $post_data = '';
@@ -116,6 +120,7 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_AUTOREFERER, true);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36');
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -123,6 +128,8 @@ class UIGTask extends FannieTask
         $body = curl_exec($ch);
         $referer = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
+
+        $this->cronMsg("Home page");
 
         /**
         Requesting session value isn't necessary
@@ -151,9 +158,12 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36');
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         $invoice_page = curl_exec($ch);
         curl_close($ch);
+
+        $this->cronMsg("Invoices page");
 
         // not sure if this is actually needed
         // browser ends up with this cookie
@@ -237,6 +247,7 @@ class UIGTask extends FannieTask
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36');
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
             curl_setopt($ch, CURLOPT_REFERER, $INVOICE_URL);
             curl_setopt($ch, CURLOPT_POST, true);
@@ -270,6 +281,7 @@ class UIGTask extends FannieTask
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36');
                 curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
                 $invoice_file = curl_exec($ch);
                 curl_close($ch);
