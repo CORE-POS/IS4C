@@ -64,13 +64,10 @@ class StaffArAccountsPage extends FannieRESTfulPage
             FROM StaffArAccounts AS s
                 LEFT JOIN " . FannieDB::fqn('custdata', 'op') . " AS c ON s.card_no=c.CardNo AND c.personNum=1
             ORDER BY c.lastName");
-        echo "Co Code,Batch ID,File #,adjust ded code ,adjust ded amount\r\n";
+        echo "Employee ID (Clock Sequence),\"1 = Earning, 3 = Deduction\",Paycom Deduction Code,adjust ded amount\r\n";
         while ($row = $dbc->fetchRow($res)) {
-            printf('"%s","%s","%s","%s",%.2f' . "\r\n",
-                'U8U',
-                '160815',
+            printf('"%s",3,IOU,%.2f' . "\r\n",
                 $row['adpID'],
-                'I',
                 $row['adjust']
             );
         }
