@@ -1047,7 +1047,7 @@ class ObfWeeklyReport extends FannieReportPage
                     WHERE obfCategoryID=2 AND superID=10 AND obfWeekID=?");
                 $dbc->execute($upP, array($hsAdj, $week->obfWeekID()));
                 $upP = $dbc->prepare("UPDATE ObfSalesCache SET lastYearSales = lastYearSales - ?
-                    WHERE obfCategoryID=3 AND superID=4 AND obfWeekID=?");
+                    WHERE obfCategoryID=3 AND superID=18 AND obfWeekID=?");
                 $dbc->execute($upP, array($hsAdj, $week->obfWeekID()));
 
                 $denAdj = $dbc->getValue($prep, array(
@@ -1058,7 +1058,7 @@ class ObfWeeklyReport extends FannieReportPage
                     WHERE obfCategoryID=8 AND superID=10 AND obfWeekID=?");
                 $dbc->execute($upP, array($denAdj, $week->obfWeekID()));
                 $upP = $dbc->prepare("UPDATE ObfSalesCache SET lastYearSales = lastYearSales - ?
-                    WHERE obfCategoryID=9 AND superID=4 AND obfWeekID=?");
+                    WHERE obfCategoryID=9 AND superID=18 AND obfWeekID=?");
                 $dbc->execute($upP, array($denAdj, $week->obfWeekID()));
             }
         }
