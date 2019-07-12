@@ -50,11 +50,11 @@ class WicMnAplTask extends FannieTask
         $dbc->startTransaction();
         foreach ($data as $line) {
 
-            $upc = trim($line[1]);
-            $catID = trim($line[3]);
-            $catName = trim($line[4]);
-            $subCatID = trim($line[5]);
-            $subCatName = trim($line[6]);
+            $upc = trim($line[2]);
+            $catID = trim($line[4]);
+            $catName = trim($line[5]);
+            $subCatID = trim($line[6]);
+            $subCatName = trim($line[7]);
 
             $upc = str_replace(" ","",$upc);
             $upc = str_replace("-","",$upc);
