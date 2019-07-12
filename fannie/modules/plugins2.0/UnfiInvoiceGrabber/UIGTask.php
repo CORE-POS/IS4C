@@ -186,6 +186,10 @@ class UIGTask extends FannieTask
                 break;
             }
         }
+        if (count($dates) == 0) {
+            $this->cronMsg("No UNFI invoices available to download!",
+                FannieLogger::ALERT);
+        }
 
         /**
           Extract inputs by id
@@ -211,7 +215,7 @@ class UIGTask extends FannieTask
             $doCheck = $dbc->execute($check, array($this->vendor_id, $good_date, $good_date));
             $diff = time() - strtotime($date->Text);
             $repeat = false;
-            if ($dbc->num_rows($doCheck) > 0 && $diff > (7 * 24 * 60 * 60)) {
+            if ($dbc->numRows($doCheck) > 0 && $diff > (30 * 24 * 60 * 60)) {
                 continue;
             } elseif ($diff > (30 * 24 * 60 *60)) {
                 continue;
