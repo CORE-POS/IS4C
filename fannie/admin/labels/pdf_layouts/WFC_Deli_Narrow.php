@@ -115,18 +115,18 @@ foreach($data as $k => $row){
         $pdf->SetFillColor(255, 255, 255);
         $pdf->SetTextColor(0, 0, 0);
     } 
-   $price = $row['normal_price'];
+   $price = isset($row['normal_price']) ? $row['normal_price'] : 0;
    //$desc = strtoupper(substr($row['description'],0,27));
    //$desc = str_replace("\n", "", $desc);
    //$desc = str_replace("\r", "", $desc);
-   $brand = ucwords(strtolower($row['brand']));
-   $pak = $row['units'];
-   $size = $row['units'] . "-" . $row['size'];
-   $sku = $row['sku'];
-   $ppu = $row['pricePerUnit'];
+   $brand = ucwords(strtolower(isset($row['brand']) ? $row['brand'] : ''));
+   $pak = isset($row['units']) ? $row['units'] : 1;
+   $size = $row['units'] . "-" . (isset($row['size']) ? $row['size'] : '');
+   $sku = isset($row['sku']) ? $row['sku'] : '';
+   $ppu = isset($row['pricePerUnit']) ? $row['pricePerUnit'] : '';
    $upc = ltrim($row['upc'],0);
    $check = $pdf->GetCheckDigit($upc);
-   $vendor = substr($row['vendor'],0,7);
+   $vendor = substr(isset($row['vendor']) ? $row['vendor'] : '',0,7);
 
    //get fancy description
    $args = array($row['upc']);
