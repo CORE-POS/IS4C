@@ -1267,7 +1267,7 @@ class MemberREST
             $query = 'SELECT FirstName, CardNo
             FROM custdata
             WHERE FirstName LIKE ?
-                ' . (FannieConfig::config('COOP_ID') == 'WFC_Duluth') ? ' AND memType <> 7 ' : '' . '
+                ' . (FannieConfig::config('COOP_ID') == 'WFC_Duluth' ? ' AND memType <> 7 ' : '') . '
             GROUP BY FirstName, CardNo
             ORDER BY FirstName';
         }
