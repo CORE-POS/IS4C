@@ -271,7 +271,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 if (!is_array($this->PLAN_CACHE1)) {
                     $this->PLAN_CACHE1 = $this->getPlanSales($weekID);
                 }
-                $ret += $this->PLAN_CACHE1[$categoryID . ',' . $superID];
+                $ret += isset($this->PLAN_CACHE1[$categoryID . ',' . $superID]) ? $this->PLAN_CACHE1[$categoryID . ',' . $superID] : 0;
             } elseif ($weekID >= 214) {
                 if (!is_array($this->PLAN_CACHE2)) {
                     $this->PLAN_CACHE2 = $this->getPlanSales($weekID);
