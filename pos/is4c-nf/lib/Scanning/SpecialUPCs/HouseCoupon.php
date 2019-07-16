@@ -636,6 +636,42 @@ class HouseCoupon extends SpecialUPC
                 $deptR = $transDB->query($deptQ);
                 $row = $transDB->fetch_row($deptR);
                 $value = $row[1] - $value;
+            case "P+": // set price, mixed prices
+                $discoVal = $infoW["discountValue"];
+                // get number of qualifiers in transaction
+                $qualQ = 'SELECT SUM(l.quantity) '
+                    . $this->baseSQL($transDB, $coupID, 'upc') . '
+                    AND h.type in ("QUALIFIER")';
+                $qualP = $transDB->prepare($qualQ);
+                $qualW = $transDB->getRow($qualP);
+                // qualQty = total quantity of qualifier items found
+                $qualQty = $qualW[0];
+                $deptQ = "SELECT (total/quantity) AS value, quantity
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    AND h.type IN ('BOTH', 'DISCOUNT')
+                    AND l.total > 0
+                    ORDER BY unitPrice ASC 
+                    LIMIT " . $qualQty;
+                $deptP = $transDB->prepare($deptQ);
+                $deptR = $transDB->execute($deptP);
+                // $j = number of eligible discount items found;
+                $j = 0;
+                // $deptPrice = total price of discount items found
+                $deptPrice = 0;
+                while ($row = $transDB->fetchRow($deptR)) {
+                    // only tally discount item price if elible based on qualifier qty
+                    if ($j < $qualQty) {
+                        unset($curQty);
+                        $curQty = $row['quantity'];
+                        for ($i=0; $i<$curQty; $i++) {
+                            $deptPrice += $row['value']; 
+                            $j++;
+                        }
+                    }
+                }
+                $price = $discoVal * $j;
+                $value = ($deptPrice != 0) ? $price - $deptPrice : 0;
+                $value *= -1;
                 break;
             case "FD": // flat discount for departments
                 // simply take off the requested amount
