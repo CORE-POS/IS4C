@@ -151,7 +151,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
                     } else {
                         $batchLists['12CD']['LAMINATES'] .= 'batch[]='.$id.'&';
                     }
-                } elseif ($owner == 'GROCERY') {
+                } elseif ($owner == 'GROCERY' || $owner == 'BREAD') {
                     if (strpos($batchName,'TPR')) {
                         $batchLists['12TPR']['GROCERY'] .= 'batch[]='.$id.'&';
                     } else {
