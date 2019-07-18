@@ -373,6 +373,7 @@ class MercuryE2E extends BasicCCModule
                 // include it in the tender line
                 $recordID = $this->last_paycard_transaction_id;
                 $charflag = ($recordID != 0) ? 'PT' : '';
+                $this->conf->set('refund', 0); // refund flag should not invert tender amount
                 TransRecord::addFlaggedTender($tenderDescription, $tenderCode, $amt, $recordID, $charflag);
 
                 $apprType = 'Approved';
