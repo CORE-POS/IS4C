@@ -1223,7 +1223,7 @@ class MemberREST
         if (strtolower($field) == 'mfirstname') {
             list($query, $args) = self::autoCompleteFirstName($val);
         } elseif (strtolower($field) == 'mlastname') {
-            list($query, $args) = self::autoCompleteLastName($val);
+            list($query, $args) = self::autoCompleteLastName($val, $convertToID);
         } elseif (strtolower($field) == 'maddress') {
             list($query, $args) = self::autoCompleteAddress($val);
         } elseif (strtolower($field) == 'mcity') {
@@ -1275,7 +1275,7 @@ class MemberREST
         return array($query, array('%' . $val . '%'));
     }
 
-    private static function autoCompleteLastName($val)
+    private static function autoCompleteLastName($val, $convertToID=false)
     {
         if (FannieConfig::config('CUST_SCHEMA') == 1) {
             $query = 'SELECT lastName, customerID
@@ -1284,12 +1284,17 @@ class MemberREST
             GROUP BY lastName, customerID
             ORDER BY lastName';
         } else {
-            $query = 'SELECT LastName, CardNo
-            FROM custdata
+            $ln = 'LastName';
+            if ($convertToID) {
+                $ln = "CONCAT(LastName, ' (', memDesc, ')')";
+            }
+            $query = 'SELECT ' . $ln . ' AS ln, CardNo
+            FROM custdata AS c
+                LEFT JOIN memtype AS m ON c.memType=m.memtype
             WHERE LastName LIKE ?
-                ' . (FannieConfig::config('COOP_ID') == 'WFC_Duluth' ? ' AND memType <> 7 ' : '') . '
-            GROUP BY LastName, CardNo
-            ORDER BY LastName';
+                ' . (FannieConfig::config('COOP_ID') == 'WFC_Duluth' ? ' AND c.memType <> 7 ' : '') . '
+            GROUP BY ' . $ln . ', CardNo
+            ORDER BY ' . $ln;
         }
 
         return array($query, array('%' . $val . '%'));
