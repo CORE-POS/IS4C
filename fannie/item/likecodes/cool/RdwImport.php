@@ -53,6 +53,11 @@ class RdwImport extends FannieRESTfulPage
         foreach ($this->data as $sku => $cool) {
             $item = $this->invoice[$sku];
             $lc = $this->connection->getValue($likeP, array($vendorID, $sku));
+            if ($cool == 'NEW') {
+                $cool = 'NEW ZEALAND';
+            } elseif (is_numeric($cool)) {
+                $lc = -1; // skip update if there's no valid origin
+            }
             $ret .= sprintf('<tr><td>%s</td><td>%s</td>
                         <td><input type="text" name="cool[]" class="form-control input-sm" value="%s" /></td>
                         <td><select name="lc[]" class="form-control input-sm chosen">
