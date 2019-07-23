@@ -224,7 +224,7 @@ class B2BInvoicePage extends FannieRESTfulPage
     </tr>
     <tr>
         <th>Web ID</th>
-        <td colspan="2">{$invoice->uuid}</td>
+        <td colspan="2"><a href="https://store.wholefoods.coop/invoice/{$invoice->uuid}">{$invoice->uuid}</a></td>
     </tr>
 </table>
 <hr />
