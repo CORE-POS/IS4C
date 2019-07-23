@@ -260,6 +260,17 @@ XML;
             'numflag' => $pcID,
         );
         DTrans::addItem($dbc, $trans, $params);
+
+        $noteP = $dbc->prepare("SELECT note FROM " . FannieDB::fqn('memberNotes', 'op') . " WHERE cardno=?");
+        $note = $dbc->getValue($noteP, array($card_no));
+        $insP = $dbc->prepare("INSERT INTO " . FannieDB::fqn('memberNotes', 'op') . " (cardno, note, stamp, username) VALUES (?, ?, ?, ?)");
+        $args = array(
+            $card_no,
+            'Recurring payment failed ' . date('Y-m-d') . "\n" . $note,
+            date('Y-m-d H:i:s'),
+            'auto',
+        );
+        $dbc->execute($insP, $args);
     }
 
     private function successTransaction($dbc, $emp, $reg, $trans, $amt, $card_no, $pcID)
