@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Operators as Op;
+
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../classlib2.0/FannieAPI.php');
@@ -223,8 +225,8 @@ HTML;
             }
         }
         foreach ($data as $vid => $row) {
-            $data[$vid]['priority'] = $row['good'] / $row['total'];
-            $data[$vid]['score'] = $row['good'] / $row['total'];
+            $data[$vid]['priority'] = Op::div($row['good'], $row['total']);
+            $data[$vid]['score'] = Op::div($row['good'], $row['total']);
             if ($data[$vid]['priority'] == 0) {
                 $data[$vid]['priority'] = 1.01;
             } 
@@ -238,7 +240,7 @@ HTML;
             <thead><th>VID</th><th>Vendor</th><th>Priority</th><th>ProdCount</th><th>% Reviewed</th></thead><tbody>";
         $vExclude = array(NULL,-1,1,2,242,70);
         foreach ($data as $k => $v) {
-            if (!in_array($v["vid"],$vExclude)) {
+            if (isset($v['vid']) && !in_array($v['vid'],$vExclude)) {
                 if ($v["priority"] == 1.01) {
                     $v["score"] = 0;
                     $n = 0;
@@ -253,6 +255,9 @@ HTML;
                     $r = (255 * $n);
                     $g = (255 - (100 * $n));
                     $b = 0;
+                }
+                if (!isset($color)) {
+                    $color = '';
                 }
                 $grade = "<span style='font-size: 10px; height: 15px; width: 90%;
                     color: {$color}; float: left; text-align: center;
