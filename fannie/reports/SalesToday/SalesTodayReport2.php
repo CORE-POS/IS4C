@@ -143,46 +143,50 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
             curl_close($ch);
             fclose($fp);
         }
-        $fp = fopen($feedCache, 'r');
-        $document = Sabre\VObject\Reader::read($fp, Sabre\VObject\Reader::OPTION_FORGIVING);
-        $events = $document->getBaseComponents('VEvent');
-        $todayDT = new DateTime(date('Y-m-d'));
-        $counter = 0;
         $cal = '';
-        foreach ($events as $event) {
-            $start = $event->DTSTART->getDateTime();
-            if ($start < $todayDT) continue;
-            $end = $event->DTEND->getDateTime();
+        try {
+            $fp = fopen($feedCache, 'r');
+            $document = Sabre\VObject\Reader::read($fp, Sabre\VObject\Reader::OPTION_FORGIVING);
+            $events = $document->getBaseComponents('VEvent');
+            $todayDT = new DateTime(date('Y-m-d'));
+            $counter = 0;
+            foreach ($events as $event) {
+                $start = $event->DTSTART->getDateTime();
+                if ($start < $todayDT) continue;
+                $end = $event->DTEND->getDateTime();
 
-            $startDay = $start->format('D M jS');
-            $startTime = $start->format('g:ia');
-            $endDay = $end->format('D M jS');
-            $endTime = $end->format('g:ia');
+                $startDay = $start->format('D M jS');
+                $startTime = $start->format('g:ia');
+                $endDay = $end->format('D M jS');
+                $endTime = $end->format('g:ia');
 
-            $highlight = '';
-            if ($startDay == $todayDT->format('D M jS')) {
-                $highlight = 'class="alert-info"';
+                $highlight = '';
+                if ($startDay == $todayDT->format('D M jS')) {
+                    $highlight = 'class="alert-info"';
+                }
+
+                $cal .= '<p ' . $highlight . '>';
+                $event->SUMMARY = str_replace('Copy: ', '', $event->SUMMARY);
+                $cal .= '<strong>' . $event->SUMMARY . '</strong><br />';
+
+                if ($startDay == $endDay) {
+                    $cal .= $startDay . ' ' . $startTime . ' - ' . $endTime . '<br />';
+                } else {
+                    $cal .= $startDay . ' ' . $startTime . ' - ' . $endDay . ' ' . $endTime . '<br />';
+                }
+                if ($event->LOCATION) {
+                    $cal .= 'Location: ' . $event->LOCATION . '<br />';
+                }
+                if ($event->DESCRIPTION) {
+                    //$cal .= nl2br(trim($event->DESCRIPTION)) . '<br />';
+                }
+                $cal .= '</p>';
+
+                $counter++;
+                if ($counter >= 3) break;
             }
-
-            $cal .= '<p ' . $highlight . '>';
-            $event->SUMMARY = str_replace('Copy: ', '', $event->SUMMARY);
-            $cal .= '<strong>' . $event->SUMMARY . '</strong><br />';
-
-            if ($startDay == $endDay) {
-                $cal .= $startDay . ' ' . $startTime . ' - ' . $endTime . '<br />';
-            } else {
-                $cal .= $startDay . ' ' . $startTime . ' - ' . $endDay . ' ' . $endTime . '<br />';
-            }
-            if ($event->LOCATION) {
-                $cal .= 'Location: ' . $event->LOCATION . '<br />';
-            }
-            if ($event->DESCRIPTION) {
-                //$cal .= nl2br(trim($event->DESCRIPTION)) . '<br />';
-            }
-            $cal .= '</p>';
-
-            $counter++;
-            if ($counter >= 3) break;
+        } catch (Exception $ex) {
+            // calendar was unavailable
         }
 
         ob_start();
