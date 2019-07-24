@@ -159,6 +159,23 @@ class ShrinkTool extends FannieRESTfulPage
         return array('', 'selected', '');
     }
 
+    private function getDefaultReason($dbc)
+    {
+        $deptP = $dbc->prepare("SELECT shrinkReasonID FROM ShrinkDefaults WHERE deptID=?");
+        $dDefault = $dbc->getValue($deptP, array($this->department));
+        if ($dDefault) {
+            return $dDefault;
+        }
+
+        $superP = $dbc->prepare("SELECT shrinkReasonID FROM ShrinkDefaults WHERE superID=?");
+        $sDefault = $dbc->getValue($superP, array($this->superID));
+        if ($sDefault) {
+            return $sDefault;
+        }
+
+        return 0;
+    }
+
     public function get_id_view()
     {
         global $FANNIE_OP_DB;
@@ -166,9 +183,11 @@ class ShrinkTool extends FannieRESTfulPage
         $this->add_onload_command("\$('#qty-field').focus();\n");
 
         $reasons = new ShrinkReasonsModel($dbc);
+        $default = $this->getDefaultReason($dbc);
         $shrink_opts = '';
         foreach ($reasons->find('description') as $reason) {
-            $shrink_opts .= sprintf('<option value="%d">%s</option>',
+            $shrink_opts .= sprintf('<option %s value="%d">%s</option>',
+                ($default == $reason->shrinkReasonID() ? 'selected' : ''),
                 $reason->shrinkReasonID(), $reason->description());
         }
         list($choose,$loss,$contrib) = $this->getLossContribute($dbc);

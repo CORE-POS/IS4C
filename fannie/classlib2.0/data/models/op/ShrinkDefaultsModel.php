@@ -36,6 +36,7 @@ class ShrinkDefaultsModel extends BasicModel
     'superID' => array('type'=>'INT'),
     'deptID' => array('type'=>'INT'),
     'lossContribute' => array('type'=>'CHAR(1)'),
+    'shrinkReasonID' => array('type'=>'INT', 'default'=>0),
     );
 
     public function doc()
