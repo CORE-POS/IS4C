@@ -72,11 +72,11 @@ class FannieAutoComplete extends FannieWebService
                     }
                     $prep = $dbc->prepare('SELECT p.upc,
                                             p.description AS posDesc,
-                                            p.size,
+                                            MAX(p.size) AS size,
                                             ' . ItemText::longBrandSQL() . ',
                                             ' . ItemText::longDescriptionSQL() . ',
-                                            l.likeCode,
-                                            p.scale
+                                            MAX(l.likeCode) AS likeCode,
+                                            MAX(p.scale) AS scale
                                            FROM products AS p
                                             LEFT JOIN productUser AS u ON u.upc=p.upc
                                             LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
@@ -88,7 +88,10 @@ class FannieAutoComplete extends FannieWebService
                                             ' . $also . '
                                             AND p.inUse=1
                                            GROUP BY p.upc,
-                                            p.description
+                                            p.brand,
+                                            u.brand,
+                                            p.description,
+                                            u.description
                                            ORDER BY MAX(p.last_sold) DESC, p.description');
                     $res = $dbc->execute($prep, $queryArgs);
                 } elseif (ltrim($args->search, '0') != '') {

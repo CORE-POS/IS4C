@@ -81,7 +81,7 @@ class InitLastSold extends FannieTask
                 trans_num,
                 upc
             HAVING SUM(total) <> 0
-            ORDER BY tdate
+            ORDER BY MAX(tdate)
             ');
         while ($missingW = $dbc->fetchRow($missingR)) {
             echo "Scanning sales for {$missingW['upc']}\n";
