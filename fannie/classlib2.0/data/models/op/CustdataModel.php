@@ -55,7 +55,7 @@ class CustdataModel extends BasicModel
     'memCoupons' => array('type'=>'INT','default'=>1),
     'blueLine' => array('type'=>'VARCHAR(50)'),
     'Shown' => array('type'=>'TINYINT','default'=>1),
-    'LastChange' => array('type'=>'TIMESTAMP'),
+    'LastChange' => array('type'=>'DATETIME'),
     'id' => array('type'=>'INT','primary_key'=>True,'default'=>0,'increment'=>True)
     );
 
