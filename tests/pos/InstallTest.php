@@ -16,7 +16,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('array', $errors);
         foreach ($errors as $error) {
             $this->assertInternalType('array', $error, 'Invalid status entry');
-            $this->assertArrayHasKey('error', $error, 'Status entry missing key: error');
+            $this->assertArrayHasKey('error', $error, 'Status entry missing key: error; detail ' . print_r($error, true));
             $this->assertEquals(0, $error['error'], 'Error creating ' . $error['struct'] 
                 . ', ' . (isset($error['details']) ? $error['details'] : ''));
             $exists = $db->table_exists($error['struct']);
