@@ -21,10 +21,6 @@
 
 *********************************************************************************/
 
-if (function_exists('duplicate_structure')) {
-    return;
-}
-
 /* query to create another table with the same
     columns
 */
