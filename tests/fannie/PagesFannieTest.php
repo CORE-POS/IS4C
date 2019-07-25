@@ -204,12 +204,5 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $s = new SigImage();
         $s->unitTest($this);
     }
-
-    public function testPageLayouts()
-    {
-        ob_start();
-        include(__DIR__ . '/../../fannie/src/navbar.dynamic.php');
-        ob_end_clean();
-    }
 }
 
