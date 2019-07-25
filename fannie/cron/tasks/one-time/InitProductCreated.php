@@ -78,7 +78,7 @@ class InitProductCreated extends FannieTask
             $store = $missingW['store_id'];
             $created = $dbc->getValue($log1P, array($upc, $store));
             if ($created === false || $created === null) {
-                $created = $dbc->getValue($log1P, array($upc));
+                $created = $dbc->getValue($log1P, array($upc, $store));
                 if ($created === false || $created === null) {
                     $created = date('Y-m-d H:i:s');
                 }
