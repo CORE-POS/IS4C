@@ -3,7 +3,7 @@ language: php
 # keep verisions minimal to limit total
 # builds on free service. politeness.
 php:
-    - "5.5"
+    - "7.0"
 
 services:
     - mysql
