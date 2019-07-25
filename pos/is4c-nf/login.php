@@ -52,7 +52,7 @@ CoreState::initiateSession();
 if (CoreLocal::get('CashierNo') === '') {
     trigger_error('Cannot initialize system', E_USER_ERROR);
     echo "Initialization failed; check configuration" . PHP_EOL;
-    exit;
+    return;
 }
 
 CoreLocal::set('ValidJson', false);
