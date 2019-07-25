@@ -125,7 +125,7 @@ class TrendsReport extends FannieReportPage
                 MONTH(t.tdate) AS month,
                 DAY(t.tdate) AS day,
                 $select_cols, "
-                . DTrans::sumQuantity('t') . " AS total
+                . DTrans::sumQuantity('t', true) . " AS total
             " . $from_where['query'] . "
                 AND trans_status <> 'M'
                 AND trans_type = 'I'

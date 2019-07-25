@@ -199,9 +199,11 @@ class DTrans
       of a penny are counted as one instead of whatever value
       is in the quantity field.  
       @param $prefix [optional] table alias
+      @param $scaleAsEaches [optional] calculate service-scale items as
+        units instead of weights
       @return string SQL snippet
     */
-    public static function sumQuantity($prefix='')
+    public static function sumQuantity($prefix='', $scaleAsEaches=false)
     {
         if (!empty($prefix)) {
             $prefix = $prefix . '.';
@@ -211,6 +213,8 @@ class DTrans
                 . 'WHEN ' . $prefix . "trans_status = 'M' THEN 0 "
                 . 'WHEN ' . $prefix . "trans_subtype = 'OG' THEN 0 "
                 . 'WHEN ' . $prefix . "unitPrice = 0.01 THEN 1 "
+                . ($scaleAsEaches ? "WHEN {$prefix}upc LIKE '002%' AND {$prefix}quantity >= 0 THEN 1 " : '')
+                . ($scaleAsEaches ? "WHEN {$prefix}upc LIKE '002%' AND {$prefix}quantity < 0 THEN -1 " : '')
                 . 'ELSE ' . $prefix . 'quantity '
                 . 'END) ';
     }
