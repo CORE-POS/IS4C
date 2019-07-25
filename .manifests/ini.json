@@ -1,0 +1,10 @@
+{
+    laneno: 99,
+    store_id: 1,
+    localhost: "localhost",
+    localUser: "root",
+    localPass: "",
+    pDatabase: "opdata",
+    tDatabase: "translog",
+    DBMS: "mysqli"
+}
