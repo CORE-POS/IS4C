@@ -99,7 +99,7 @@ class CoopDealsReviewPage extends FanniePage
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE t.upc IN ({$upcIn})
                 AND t.dealSet=?
-            ORDER BY s.super_name, t.upc
+            ORDER BY batch, t.upc
         ");
         $saleItemsR = $dbc->execute($saleItemsP, $args);
 
