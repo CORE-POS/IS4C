@@ -38,6 +38,8 @@ class VendorLikeCodeMapModel extends BasicModel
     'sku' => array('type'=>'VARCHAR(13)'),
     );
 
+    protected $unique = array('likeCode', 'vendorID');
+
     public function doc()
     {
         return '
