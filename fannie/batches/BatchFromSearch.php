@@ -442,7 +442,7 @@ HTML;
         $json = ob_get_clean();
         $arr = json_decode($json, true);
         $phpunit->assertInternalType('array', $arr);
-        $phpunit->assertEquals(1, count($arr));
+        $phpunit->assertEquals(1, count($arr), 'Should not be empty array; JSON was ' . $json);
         $phpunit->assertEquals($this->u[0], $arr[0]['upc']);
         $phpunit->assertEquals(0, $arr[0]['srp']);
 
