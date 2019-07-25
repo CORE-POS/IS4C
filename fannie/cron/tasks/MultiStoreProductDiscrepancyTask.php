@@ -76,7 +76,7 @@ class MultiStoreProductDiscrepancyTask extends FannieTask
             FROM products
             GROUP BY upc
             HAVING MIN({$field}) <> MAX({$field})
-            ORDER BY department
+            ORDER BY MAX(department)
         ");
         $count = $dbc->numRows($diffR);
         $msg = "";

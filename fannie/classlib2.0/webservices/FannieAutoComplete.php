@@ -99,7 +99,7 @@ class FannieAutoComplete extends FannieWebService
                             \'\' AS brand,
                             \'\' AS size,
                             \'\' AS likeCode,
-                            p.scale
+                            MAX(p.scale) AS scale
                         FROM products AS p
                         WHERE p.upc LIKE ?
                         GROUP BY p.upc');

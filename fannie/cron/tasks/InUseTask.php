@@ -60,7 +60,13 @@ class InUseTask extends FannieTask
         // Get a list of UPC that are currently on sale
         $saleUpcs = array();
         $p = $dbc->prepare("
-            SELECT bl.upc, bl.salePrice, bl.batchID, p.brand, p.description, date(b.startDate) AS startDate, date(b.endDate) AS endDate
+            SELECT bl.upc, 
+                MAX(bl.salePrice) AS salePrice,
+                MAX(bl.batchID) AS batchID,
+                MAX(p.brand) AS brand,
+                MAX(p.description) AS description,
+                date(MAX(b.startDate)) AS startDate,
+                date(MAX(b.endDate)) AS endDate
             FROM batchList AS bl
                 LEFT JOIN products AS p ON bl.upc=p.upc
                 LEFT JOIN batches AS b ON bl.batchID=b.batchID

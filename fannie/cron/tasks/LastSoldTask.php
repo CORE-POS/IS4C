@@ -77,7 +77,7 @@ class LastSoldTask extends FannieTask
                 store_id,
                 upc
             HAVING SUM(total) <> 0
-            ORDER BY tdate
+            ORDER BY MAX(tdate)
             ';
         $res = $dbc->query($query);
         while ($w = $dbc->fetchRow($res)) {

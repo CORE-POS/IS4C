@@ -139,7 +139,8 @@ class EquitySalesReport extends FannieReportPage
                 AND d.tdate BETWEEN ? AND ?
                 AND d.emp_no <> 1001
                 $store_selector
-            GROUP BY $date_selector
+            GROUP BY $date_selector,
+                CONCAT(year(tdate), '-', month(tdate), '-', day(tdate))
             ORDER BY $date_selector";
         $args = array($date1.' 00:00:00', $date2.' 23:59:59', $store);
         $prep = $dbc->prepare($query);
