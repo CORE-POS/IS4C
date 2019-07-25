@@ -151,7 +151,8 @@ class ManualSignsPage extends FannieRESTfulPage
         $ret .= '</select>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="submit" name="pdf" value="Print" 
-                    class="btn btn-default">Print</button>';
+                    class="btn btn-default">Print</button>
+                 <label><input type="checkbox" name="offset" value="1" /> Offset</label>';
         $ret .= '</div>';
         $ret .= '<hr />';
 
