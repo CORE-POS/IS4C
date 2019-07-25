@@ -77,6 +77,7 @@ class Creator
                     $errors[] = array(
                         'struct' => $table,
                         'query' => _('None'),
+                        'error' => _('Failed loading sample data'),
                         'details' => _('Failed loading sample data'),
                     );
                 }
