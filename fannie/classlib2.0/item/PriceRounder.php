@@ -28,7 +28,7 @@ namespace COREPOS\Fannie\API\item;
   API class to define rounding rules
   used when setting prices
 */
-class PriceRounder
+class PriceRounder 
 {
     /**
       The round function takes a numeric price and returns
@@ -84,6 +84,10 @@ class PriceRounder
                                     $wholeP--;
                                     $end = 0.99;
                                 }
+                                // don't end prices like 30.99, 40.99, round down 
+                                if ($wholeP % 10 == 0 && $end == 0.99) {
+                                    $wholeP--;
+                                }
                                 $price = $wholeP + $end;
 
                                 return $price;
@@ -93,10 +97,10 @@ class PriceRounder
                 }
             }
         }
-        // special case: if price == 10.99, round down to 9.99
-        if ($price == 10.99) {
-            $price = 9.99;
+        if ($wholeP % 10 == 0 && $end == 0.99) {
+            $wholeP--;
         }
+        $price = $wholeP + $end;
         return substr($price, 0, 5);
     }
 
