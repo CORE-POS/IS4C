@@ -97,7 +97,7 @@ class MemDiscountRemoveModel extends \COREPOS\pos\lib\models\trans\LocalTransMod
             card_no as card_no
             from localtemptrans 
             where ((discounttype = 2 and unitPrice <> regPrice) or trans_status = 'M') 
-            group by register_no, emp_no, trans_no, upc, description, card_no 
+            group by register_no, emp_no, trans_no, upc, description, card_no, volDiscType 
             having 
             sum(case when (discounttype = 2 and unitPrice <> regPrice) then -1 * memDiscount 
             else memDiscount end)<> 0";

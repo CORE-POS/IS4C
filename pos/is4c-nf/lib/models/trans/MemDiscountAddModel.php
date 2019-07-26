@@ -92,7 +92,7 @@ class MemDiscountAddModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
             card_no as card_no
             from localtemptrans 
             where ((discounttype = 2 and unitPrice = regPrice) or trans_status = 'M') 
-            group by register_no, emp_no, trans_no, upc, description, card_no 
+            group by register_no, emp_no, trans_no, upc, description, card_no, volDiscType
             having 
             sum(memDiscount)<> 0";
         $try = $this->connection->query($viewSQL);
