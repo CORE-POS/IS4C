@@ -1005,7 +1005,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $item = $dbc->getRow($itemP, array('0089773700120', 3));
         $this->assertEquals($item['total'], $item['regPrice']);
         $this->assertEquals($item['total'], $item['unitPrice']);
-        $this->assertEquals(-0.46, $item['total']);
+        $this->assertEquals(-0.46, $item['total'], 'Row is ' . print_r($item, true));
         $this->assertEquals('M', $item['trans_status']);
         $this->assertEquals(-0.46, $item['memDiscount']);
         $this->assertEquals(1, $item['quantity']);

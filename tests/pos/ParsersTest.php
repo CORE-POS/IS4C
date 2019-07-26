@@ -221,7 +221,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('fsTaxExempt', 0);
         lttLib::clear();
         $out = $t->parse('TL');
-        $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
+        $this->assertEquals('/memlist.php', substr($out['main_frame'], -12), 'Parse is ' . json_encode($out));
         lttLib::clear();
         COREPOS\pos\lib\MemberLib::setMember(1, 1);
         $out = $t->parse('TL');
