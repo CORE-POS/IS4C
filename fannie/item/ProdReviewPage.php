@@ -298,7 +298,7 @@ HTML;
         $prep = $dbc->prepare("DELETE FROM batchReviewLog WHERE bid= ?");
         $dbc->execute($prep,$args);
 
-        return header('location: '.$ERVER['PHP_SELF'].'?batchLog=1');
+        return header('location: '.$_SERVER['PHP_SELF'].'?batchLog=1');
     }
 
     public function get_batchLog_printAll_handler()
