@@ -223,7 +223,7 @@ class CoopDealsReviewPage extends FanniePage
                 p.description,
                 t.price,
                 t.abtpr
-            ORDER BY s.super_name,t.upc
+            ORDER BY batch,t.upc
         ");
         $result = $dbc->execute($query, array($set));
 
