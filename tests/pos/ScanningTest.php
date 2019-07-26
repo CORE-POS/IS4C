@@ -992,11 +992,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $session = new WrappedStorage();
         $itemP = $dbc->prepare('SELECT * FROM localtemptrans WHERE upc=? AND trans_id=?');
 
-        // TODO: debug locally. Something going wrong but not clear what
-        $dbc->query('TRUNCATE TABLE localtemptrans');
-        CoreState::transReset();
-        return;
-
         /**
          * Add item, set member, verify discount
          */
