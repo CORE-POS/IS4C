@@ -70,6 +70,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
     function testTenderDbRecords()
     {
+        COREPOS\pos\lib\CoreState::memberReset();
         lttLib::clear();
         $t = new TenderModule('CA', 1.00);
         $t->add();
@@ -78,7 +79,6 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $record['trans_subtype'] = 'CA';
         $record['description'] = 'Cash';
         $record['total'] = -1.00;
-        $record['memType'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
         $v = new COREPOS\pos\parser\parse\VoidCmd(new WrappedStorage());
