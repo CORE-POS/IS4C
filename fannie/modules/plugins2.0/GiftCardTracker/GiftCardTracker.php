@@ -66,6 +66,7 @@ class GiftCardTracker extends FannieRESTfulPage
         $email = FormLib::get('email');
         $zip = FormLib::get('zip');
         $notes = FormLib::get('notes');
+        $store = 0;
         $args = array($cardNo, $firstName, $lastName, $phone, $amount, $gcid, $username,
             $city, $state, $zip, $addr1, $store, $email, $notes);
         $prep = $dbc->prepare("
