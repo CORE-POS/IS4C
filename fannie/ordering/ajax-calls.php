@@ -570,6 +570,12 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
     $st = $statusW['numflag'];
     $timestamp = time();
 
+    $memP = $dbc->prepare("SELECT m.*
+        FROM {$TRANS}{$from} AS o
+            INNER JOIN " . FannieDB::fqn('meminfo', 'op') . " AS m ON o.card_no=m.card_no
+        WHERE o.orderID=?");
+    $mem = $dbc->getRow($memP, array($old_id));
+
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
     // load values from old order
     $soModel = new SpecialOrdersModel($dbc);
@@ -579,6 +585,16 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
     $soModel->specialOrderID($new_id);
     $soModel->statusFlag( ($st == 1) ? 3 : 0 );
     $soModel->subStatus($timestamp);
+    // use latest contact info if available
+    if ($mem && strlen($mem['street']) > 0) {
+        $soModel->street($mem['street']);
+        $soModel->city($mem['city']);
+        $soModel->state($mem['state']);
+        $soModel->zip($mem['zip']);
+        $soModel->phone($mem['phone']);
+        $soModel->altPhone($mem['email_2']);
+        $soModel->email($mem['email_1']);
+    }
     // save with the new ID
     $soModel->save();
     $dbc = FannieDB::get($FANNIE_OP_DB);
