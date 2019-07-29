@@ -573,7 +573,7 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
     $memP = $dbc->prepare("SELECT m.*
         FROM {$TRANS}{$from} AS o
             INNER JOIN " . FannieDB::fqn('meminfo', 'op') . " AS m ON o.card_no=m.card_no
-        WHERE o.orderID=?");
+        WHERE o.order_id=?");
     $mem = $dbc->getRow($memP, array($old_id));
 
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
