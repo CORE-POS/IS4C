@@ -324,6 +324,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                 'end_ts' => $end_ts,
                 'start_ly' => $start_ly,
                 'end_ly' => $end_ly,
+                'averageWeek' => false,
             );
             $this->updateSalesCache($week, array($num_cached, $ly_cached), $dateInfo);
         }
