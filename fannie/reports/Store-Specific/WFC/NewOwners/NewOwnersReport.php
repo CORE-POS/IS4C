@@ -100,7 +100,9 @@ JAVASCRIPT;
     function calculate_footers($data)
     {
         $sum = array_reduce($data, function($c, $i) { return $c + $i[1]; }, 0);
-        $sum2 = array_reduce($data, function($c, $i) { return $c + $i[2]; }, 0);
+        $sum2 = array_reduce($data, function($c, $i) { 
+            return $c + (isset($i[2]) ? $i[2] : 0); },
+            0);
         return array('Total', $sum, $sum2);
     }
 
