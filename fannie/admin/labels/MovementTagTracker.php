@@ -427,21 +427,23 @@ HTML;
             $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
             <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables' id='my-table-$storeID'><thead >$thead</thead><tbody>";
-        foreach ($this->item as $row => $array) {
-            $table .= "<tr>";
-            foreach ($colNames as $colName) {
-                if ($colName == 'upc') {
-                    $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
-                        target='_blank'>{$array[$colName]}</a></td>";
-                } else {
-                    $table .= "<td>{$array[$colName]}</td>";
+        if (is_array($this->item)) {
+            foreach ($this->item as $row => $array) {
+                $table .= "<tr>";
+                foreach ($colNames as $colName) {
+                    if ($colName == 'upc') {
+                        $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
+                            target='_blank'>{$array[$colName]}</a></td>";
+                    } else {
+                        $table .= "<td>{$array[$colName]}</td>";
+                    }
                 }
+                $table .= "</tr>";
             }
-            $table .= "</tr>";
         }
         $table .= "</tbody></table>";
 
-        if (count($this->item) > 0) {
+        if (isset($this->item) && count($this->item) > 0) {
             unset($this->item);
             return $table;
         } else {
