@@ -111,7 +111,11 @@ class BatchFromSearch extends FannieRESTfulPage
           If tags were requested and it's price change batch, make them
           Lookup vendor info for each item then add a shelftag record
         */
-        $tagset = $this->form->tagset;
+        try {
+            $tagset = $this->form->tagset;
+        } catch (Exception $ex) {
+            $tagset = '';
+        }
         if ($discounttype == 0 && $tagset !== '') {
             $this->itemsToTags($tagset, $dbc, $upcs, $prices);
         }
