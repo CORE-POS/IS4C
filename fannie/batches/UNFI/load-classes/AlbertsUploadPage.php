@@ -95,8 +95,17 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return BarcodeLib::padUPC($upc);
     }
 
-    private function parseSize($str)
+    private function parseSize($str, $scale)
     {
+        if (strstr(strtolower($str), 'bin')) {
+            if (!$scale && preg_match('/(\d+)\s*-(\d+)\s*ct/', strtolower($str), $matches)) {
+                $case = ($matches[1] + $matches[2]) / 2;
+                return array($case, 'ea');
+            } elseif (preg_match('/(\d+)\s*-(\d+)\s*lb/', strtolower($str), $matches)) {
+                $case = ($matches[1] + $matches[2]) / 2;
+                return array($case, 'lb');
+            }
+        }
         if (preg_match('/\d+x\d+/', $str)) {
             list($case, $size) = explode('x', $str, 2);
             return array(trim($case), trim($size));
@@ -133,6 +142,7 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 modified=' . $dbc->now() . '
             WHERE upc=?
                 AND default_vendor_id=?');
+        $scaleP = $dbc->prepare("SELECT scale FROM products WHERE upc=?");
         $itemP = $dbc->prepare("
             INSERT INTO vendorItems (
                 brand, sku, size, upc,
@@ -165,7 +175,8 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 continue;
             }
             $size = trim($data[$indexes['size']]);
-            list($case, $unit) = $this->parseSize($size);
+            $scale = $dbc->getValue($scaleP, array($upc));
+            list($case, $unit) = $this->parseSize($size, $scale);
 
             // need unit cost, not case cost
             $reg_unit = $reg / $case;
