@@ -170,9 +170,12 @@ class AlbertsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             // need unit cost, not case cost
             $reg_unit = $reg / $case;
 
+            /* parseSize is not completely reliable;
+             * mistakes there blow cost way out of proportion
             $dbc->execute($extraP, array($reg_unit,$upc));
             $dbc->execute($prodP, array($reg_unit,$upc,$VENDOR_ID));
             $updated_upcs[] = $upc;
+             */
 
             $dbc->execute($delP, array($sku, $VENDOR_ID));
             $dbc->execute($itemP, array($sku, $unit, $upc, $case, $reg_unit,
