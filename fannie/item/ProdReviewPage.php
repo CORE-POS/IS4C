@@ -341,13 +341,17 @@ HTML;
         if ($vid == 0) {
             $vid  = "n/a";
         }
-        $user = FannieAuth::getUID($this->current_user);
-        $setA = array($bid,$vid,$user);
-        $setP = $dbc->prepare("
-            INSERT INTO batchReviewLog (bid, vid, printed, user, created, forced)
-            VALUES (?, ?, 0, ?, NOW(), 0);
-        ");
-        $dbc->execute($setP,$setA);
+        $chkP = $dbc->prepare("SELECT bid FROM batchReviewLog WHERE bid=?");
+        $chk = $dbc->getValue($chkP, array($bid));
+        if (!$chk) {
+            $user = FannieAuth::getUID($this->current_user);
+            $setA = array($bid,$vid,$user);
+            $setP = $dbc->prepare("
+                INSERT INTO batchReviewLog (bid, vid, printed, user, created, forced)
+                VALUES (?, ?, 0, ?, NOW(), 0);
+            ");
+            $dbc->execute($setP,$setA);
+        }
 
         return header('location: '.$_SERVER['PHP_SELF'].'?batchLog=1');
     }
