@@ -308,7 +308,7 @@ class AlertIncident extends FannieRESTfulPage
             FROM {$prefix}IncidentComments AS i
                 LEFT JOIN Users as u ON i.userID=u.uid
             WHERE incidentID=?
-            ORDER BY tdate";
+            ORDER BY tdate DESC";
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array($id));
         $ret = array();
