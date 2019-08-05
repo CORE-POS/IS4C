@@ -55,7 +55,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
         $query = '
             SELECT v.upc,
                 v.sku,
-                p.cost,
+                COALESCE(p.cost, v.cost) AS cost,
                 CASE
                     WHEN c.margin IS NOT NULL AND c.margin <> 0 THEN c.margin 
                     WHEN a.margin IS NOT NULL THEN a.margin
