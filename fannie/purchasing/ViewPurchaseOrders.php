@@ -1188,8 +1188,8 @@ HTML;
             <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
             <td><button type="submit" class="btn btn-default">Add New Item</button><input type="hidden" name="id" value="%d" /></td>
             </tr>',
-            $item['sku'],
-            $item['sku'],
+            isset($item['sku']) ? $item['sku'] : $this->sku,
+            isset($item['sku']) ? $item['sku'] : $this->sku,
             $item['upc'],
             $item['brand'],
             $item['description'],
