@@ -50,17 +50,27 @@ class PIAccessPage extends PIKillerPage
         $date = date('Y-m-d', strtotime('3 years ago'));
         $dlog = DTransactionsModel::selectDlog($date);
 
+        $this->id = sprintf('%d', $this->id);
+        /**
+         * This seems to be a VERY weird MySQL bug.
+         * The type of the column "card_no" is VARCHAR
+         * but binding card_no as a string, which happens
+         * when using a prepared statement, returns zero
+         * rows. Putting single quotes around the embedded
+         * value also returns zero rows. The query only
+         * returns rows when provided the wrong data type
+         */
         $query = $this->connection->prepare("
             SELECT tdate, trans_num, numflag
             FROM {$dlog}
             WHERE upc='ACCESS'
                 AND tdate >= ?
-                AND card_no=?
+                AND card_no={$this->id}
             ORDER BY tdate DESC");
 
         $ret = '<tr><td>Access History since ' . $date;
         $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
-        $res = $this->connection->execute($query, array($date, $this->id));
+        $res = $this->connection->execute($query, array($date));
         $max = false;
         while ($row = $this->connection->fetchRow($res)) {
             if (!$max) {
