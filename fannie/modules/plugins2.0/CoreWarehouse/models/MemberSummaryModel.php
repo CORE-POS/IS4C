@@ -69,6 +69,8 @@ class MemberSummaryModel extends CoreWarehouseModel
     'longlightTotalItems' => array('type'=>'DOUBLE'),
     'longlightAverageItems' => array('type'=>'DOUBLE'),
     'longlightTotalVisits' => array('type'=>'INT'),
+    'homeStoreID' => array('type'=>'INT'),
+    'homeStorePercent' => array('type'=>'DOUBLE'),
     );
 
     public function refresh_data($trans_db, $month, $year, $day=False)
@@ -344,6 +346,35 @@ class MemberSummaryModel extends CoreWarehouseModel
         while ($row = $dbc->fetchRow($result)) {
             $dbc->execute($rankP, array($rank, $row['card_no']));
             $rank++;
+        }
+        $dbc->commitTransaction();
+
+        $year_args = array(
+            date('Ym01', $lastyear),
+            date('Ymt', $lastmonth),
+        );
+        $storeP = $dbc->prepare("SELECT
+            SUM(transCount) AS ttl,
+            SUM(CASE WHEN store_id=1 THEN transCount ELSE 0 END) AS hs,
+            SUM(CASE WHEN store_id=2 THEN transCount ELSE 0 END) AS den,
+            card_no
+            FROM sumMemSalesByDay
+            WHERE date_id BETWEEN ? AND ?
+            GROUP BY card_no");
+        $res = $dbc->execute($storeP, $year_args);
+        $homeP = $dbc->prepare("UPDATE MemberSummary
+            SET homeStoreID=?, homeStorePercent=?
+            WHERE card_no=?");
+        $dbc->startTransaction();
+        while ($counts = $dbc->fetchRow($res)) {
+            if ($counts['hs'] > $counts['den']) {
+                $homeID = 1;
+                $homePercent = $counts['hs'] / $counts['ttl'];
+            } else {
+                $homeID = 2;
+                $homePercent = $counts['den'] / $counts['ttl'];
+            }
+            $dbc->execute($homeP, array($homeID, $homePercent, $counts['card_no']));
         }
         $dbc->commitTransaction();
     }
