@@ -39,9 +39,7 @@ class TransList extends NoInputCorePage
                 try {
                     Undo::reverseTransaction($emp, $reg, $trans);
                     TransRecord::addcomment("RO FOR $emp-$reg-$trans");
-                    Database::rotateTempData();
-                    Database::clearTempTables();
-                    CoreLocal::set('transno', Database::gettransno($emp));
+                    TransRecord::finalizeTransaction();
                     $dbc = Database::tDataConnect();
                     $againP = $dbc->prepare("INSERT INTO localtemptrans
                         SELECT * FROM localtranstoday
