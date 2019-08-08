@@ -97,6 +97,8 @@ messages from POS?',
             'Yes' => 1,
             'No' => 0,
             'Member Only' => 2,
+            'Debit DC' => 3,
+            'Debit + EMV DC' => 4,
             )
         ),
         'PaycardsTermCashBackLimit' => array(

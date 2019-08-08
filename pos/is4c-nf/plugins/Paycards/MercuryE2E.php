@@ -918,6 +918,10 @@ class MercuryE2E extends BasicCCModule
         $cval =new CardValidator();
         if ($request->cashback > 0 && $cval->allowCashback($request->type)) {
                 $msgXml .= "<CashBack>" . $request->formattedCashBack() . "</CashBack>";
+        } elseif ($this->conf->get('PaycardsOfferCashBack') == 3 && strtoupper($request->type) == 'DEBIT') {
+            $msgXml .= "<CashBack>Prompt</CashBack>";
+        } elseif ($this->conf->get('PaycardsOfferCashBack') == 4 && in_array(strtoupper($request->type), array('DEBIT','EMV'))) {
+            $msgXml .= "<CashBack>Prompt</CashBack>";
         }
         if ($tipped) {
             $msgXml .= '<Gratuity>Prompt</Gratuity>';
@@ -977,14 +981,26 @@ class MercuryE2E extends BasicCCModule
         return "https://$domain/ws/ws.asmx";
     }
 
+    /**
+     * Check for mismatched auth amounts
+     * @param $amt authorized amount
+     * @param $request PaycardRequest
+     *
+     * If the authorized amount is less than expected
+     * it's normally a partial authorization.
+     * If the amount is more than expected cashback
+     * was probably added to the transaction
+     */
     protected function handlePartial($amt, $request)
     {
         if ($amt != abs($this->conf->get("paycard_amount"))) {
             $request->changeAmount($amt);
 
+            if ($amt < abs($this->conf->get('paycard_amount'))) {
+                $this->conf->set("paycard_partial",True);
+                UdpComm::udpSend('goodBeep');
+            }
             $this->conf->set("paycard_amount",$amt);
-            $this->conf->set("paycard_partial",True);
-            UdpComm::udpSend('goodBeep');
         }
     }
 
