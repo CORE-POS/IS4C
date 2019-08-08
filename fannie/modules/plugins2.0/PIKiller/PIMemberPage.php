@@ -338,16 +338,20 @@ class PIMemberPage extends PIKillerPage {
         }
         echo "</tr>";
 
+        $whP = $this->connection->prepare('SELECT * FROM ' . FannieDB::fqn('MemberSummary','plugin:WarehouseDatabase') . ' WHERE card_no=?');
+        $whData = $this->connection->getRow($whP, array($this->id));
+
         echo "<tr>";
         echo '<input type="hidden" name="customerID" value="' . $this->primary_customer['customerID'] . '" />';
         echo "<td class=\"yellowbg\">First Name: </td>";
         echo '<td>'.$this->text_or_field('FirstName',$this->primary_customer['firstName']).'</td>';
         echo "<td class=\"yellowbg\">Last Name: </td>";
         echo '<td>'.$this->text_or_field('LastName',$this->primary_customer['lastName']).'</td>';
+        echo "<td class=\"yellowbg\">Home Store: </td>";
+        printf('<td>%s (%.2f%%)</td>',
+            ($whData['homeStoreID'] == 1 ? 'Hillside' : 'Denfeld'),
+            $whData['homeStorePercent']*100);
         echo '</tr>';
-
-        $whP = $this->connection->prepare('SELECT * FROM ' . FannieDB::fqn('MemberSummary','plugin:WarehouseDatabase') . ' WHERE card_no=?');
-        $whData = $this->connection->getRow($whP, array($this->id));
 
         echo "<tr>";
         echo "<td class=\"yellowbg\">Address1: </td>";
