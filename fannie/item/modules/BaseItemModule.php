@@ -1161,8 +1161,8 @@ HTML;
                     WHERE sku=?
                         AND upc=?
                         AND vendorID=?');
-                $existsR = $dbc->execute($existsP, array($upc, $upc, $vendorID));
-                if ($dbc->numRows($existsR) > 0 && $sku != $upc) {
+                $exists = $dbc->getValue($existsP, array($upc, $upc, $vendorID));
+                if ($exists && $sku != $upc && $sku != $exists) {
                     $fixSkuP = $dbc->prepare('
                         UPDATE vendorItems
                         SET sku=?
