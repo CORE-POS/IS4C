@@ -280,6 +280,7 @@ HTML;
         if ($department) {
             $orderBy = sprintf('CASE WHEN p.department=%d THEN 1 ELSE p.department+99999 END', $department);
         }
+        $orderBy = "MAX(p.last_sold) DESC";
         $prep = $dbc->prepare("
             SELECT p.upc, p.brand, p.description, p.normal_price, p.department,
                 m.super_name, v.srp
@@ -299,7 +300,6 @@ HTML;
                 )
             GROUP BY d.upc
             ORDER BY " . $orderBy . "
-            LIMIT 32;
         ");
         $res = $dbc->execute($prep, $args);
         $upcs = array();
@@ -310,8 +310,11 @@ HTML;
             $data[$row['upc']]['description'] = $row['description'];
             $data[$row['upc']]['dept'] = $row['super_name'];
             $this->upcs[$row['upc']] = $row['normal_price'] + .04;;
-            if (substr($row['srp'], -1) == '9') {
+            if (substr($row['srp'], -1) == '9' && $row['srp'] > $row['normal_price']) {
                 $this->upcs[$row['upc']] = $row['srp'];
+            }
+            if (count($this->upcs) >= 32) {
+                break;
             }
         }
 
