@@ -62,7 +62,7 @@ class PcDailyReport extends FannieReportPage
         $mercuryQ = "
             SELECT cardType,
                 CASE 
-                    WHEN transType='Sale' THEN 'Sales'
+                    WHEN transType IN ('Sale', 'R.Sale') THEN 'Sales'
                     WHEN transType='Return' THEN 'Returns'
                     WHEN transType='VOID' THEN 'Sales'
                     ELSE 'Unknown'
@@ -105,17 +105,19 @@ class PcDailyReport extends FannieReportPage
                 );
             }
             $transType = $mercuryW['transType'];
-            $proc[$cardType][$transType]['amt'] += $mercuryW['ttl'];
-            $proc[$cardType][$transType]['num'] += $mercuryW['num'];
-            $issuer = $mercuryW['cardIssuer'];
-            if (!isset($proc[$cardType]['Details'][$issuer])) {
-                $proc[$cardType]['Details'][$issuer] = array(
-                    'Sales' => array('amt'=>0.0, 'num'=>0),
-                    'Returns' => array('amt'=>0.0, 'num'=>0),
-                );
+            if (isset($proc[$cardType]) && isset($proc[$cardType][$transType])) {
+                $proc[$cardType][$transType]['amt'] += $mercuryW['ttl'];
+                $proc[$cardType][$transType]['num'] += $mercuryW['num'];
+                $issuer = $mercuryW['cardIssuer'];
+                if (!isset($proc[$cardType]['Details'][$issuer])) {
+                    $proc[$cardType]['Details'][$issuer] = array(
+                        'Sales' => array('amt'=>0.0, 'num'=>0),
+                        'Returns' => array('amt'=>0.0, 'num'=>0),
+                    );
+                }
+                $proc[$cardType]['Details'][$issuer][$transType]['amt'] += $mercuryW['ttl'];
+                $proc[$cardType]['Details'][$issuer][$transType]['num'] += $mercuryW['num'];
             }
-            $proc[$cardType]['Details'][$issuer][$transType]['amt'] += $mercuryW['ttl'];
-            $proc[$cardType]['Details'][$issuer][$transType]['num'] += $mercuryW['num'];
         }
 
         return $proc;
