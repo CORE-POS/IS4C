@@ -70,6 +70,7 @@ class CashierByDayModel extends CoreWarehouseModel
             from {$target_table} 
             where trans_type IN ('I','D','0','C')
                 AND tdate BETWEEN ? AND ?
+                AND department <> 701
             group by DATE_FORMAT(tdate,'%Y%m%d'), trans_num";
         $prep = $this->connection->prepare($cashierPerformanceSQL);
         $this->connection->execute($prep, array($start_date, $end_date . ' 23:59:59'));
