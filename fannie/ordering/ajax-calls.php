@@ -804,11 +804,11 @@ function getCustomerForm($orderID,$memNum="0")
         $statusR = $dbc->execute($statusQ,array($memNum));
         $status_row  = $dbc->fetch_row($statusR);
         if ($status_row['Type'] == 'INACT') {
-            $status_row['status'] = 'Inactive';
+            $status_row['status'] = '<span style="color: #a94442; font-size: 140%; font-weight: bold;">Inactive</span>';
         } elseif ($status_row['Type'] == 'INACT2') {
-            $status_row['status'] = 'Inactive';
+            $status_row['status'] = '<span style="color: #a94442; font-size: 140%; font-weight: bold;">Inactive</span>';
         } elseif ($status_row['Type'] == 'TERM') {
-            $status_row['status'] = 'Terminated';
+            $status_row['status'] = '<span style="color: #a94442; font-size: 140%; font-weight: bold;">Terminated</span>';
         }
     } 
 
@@ -1008,6 +1008,14 @@ function getCustomerForm($orderID,$memNum="0")
         $orderModel->state(), $orderID,
         $orderModel->zip(), $orderID
     );
+
+    $noteP = $dbc->prepare('SELECT note FROM ' . FannieDB::fqn('memberNotes', 'op') . ' WHERE cardno=? ORDER BY stamp DESC');
+    $acctNote = $dbc->getValue($noteP, array($memNum));
+    $acctNote = str_replace("\r", "", $acctNote);
+    $acctNote = str_replace('<br /><br />', '<br />', $acctNote);
+    if (trim($acctNote)) {
+        $ret .= '<tr><th>Acct Notes</th><td colspan="8" style="font-size: 85%;">' . $acctNote . '</td></tr>';
+    }
 
     $ret .= '</table>';
 

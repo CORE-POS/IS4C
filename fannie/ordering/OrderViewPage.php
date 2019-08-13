@@ -477,11 +477,11 @@ class OrderViewPage extends FannieRESTfulPage
             if ($custdata->load()) {
                 $status_row['Type'] = $custdata->Type();
                 if ($status_row['Type'] == 'INACT') {
-                    $status_row['status'] = 'Inactive';
+                    $status_row['status'] = '<span class="lead text-danger">Inactive</span>';
                 } elseif ($status_row['Type'] == 'INACT2') {
-                    $status_row['status'] = 'Inactive';
+                    $status_row['status'] = '<span class="lead text-danger">Inactive</span>';
                 } elseif ($status_row['Type'] == 'TERM') {
-                    $status_row['status'] = 'Terminated';
+                    $status_row['status'] = '<span class="lead text-danger">Terminated</span>';
                 }
             }
         } 
