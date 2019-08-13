@@ -86,6 +86,7 @@ Replaces nightly.tablecache.php';
             max(card_no) as card_no
             from dlog_90_view 
             where trans_type IN ('I','D','0','C')
+                AND department <> 701
             group by year(tdate),month(tdate),day(tdate),trans_num";
 
         if (!$sql->isView('CashPerformDay')) {
