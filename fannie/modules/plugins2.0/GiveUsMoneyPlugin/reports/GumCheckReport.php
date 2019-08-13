@@ -52,12 +52,36 @@ class GumCheckReport extends FannieReportPage
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
+        $loanP = $dbc->prepare("
+            SELECT card_no
+            FROM GumLoanPayoffMap AS m
+                INNER JOIN GumLoanAccounts AS l ON m.gumLoanAccountID=l.gumLoanAccountID
+            WHERE gumPayoffID=?");
+
+        $equityP = $dbc->prepare("
+            SELECT card_no
+            FROM GumEquityPayoffMap AS m
+                INNER JOIN GumEquityShares AS l ON m.gumEquityShareID=l.gumEquityShareID
+            WHERE gumPayoffID=?");
+
         $prep = $dbc->prepare("
             SELECT * FROM GumPayoffs
             WHERE issueDate BETWEEN ? AND ?");
         $res = $dbc->execute($prep, array($this->form->date1, $this->form->date2 . ' 23:59:59'));
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
+            if (empty($row['reason'])) {
+                $loan = $dbc->getValue($loanP, array($row['gumPayoffID']));
+                if ($loan) {
+                    $row['reason'] = 'LOAN ' . $loan;
+                }
+            }
+            if (empty($row['reason'])) {
+                $equity = $dbc->getValue($equityP, array($row['gumPayoffID']));
+                if ($equity) {
+                    $row['reason'] = 'C EQUITY ' . $equity;
+                }
+            }
             $data[] = array(
                 $row['checkNumber'],
                 $row['issueDate'],
