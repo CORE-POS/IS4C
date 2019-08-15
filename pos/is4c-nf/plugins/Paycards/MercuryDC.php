@@ -1,7 +1,9 @@
 <?php
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\LaneLogger;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\plugins\Paycards\sql\PaycardRequest;
 use COREPOS\pos\plugins\Paycards\sql\PaycardGiftRequest;
@@ -710,7 +712,29 @@ class MercuryDC extends MercuryE2E
                     $items = 'APPROVED ITEMS' . "\n" . $items;
                     $receipt = $items . "\n" . "BALANCE\n" . $receipt;
                 }
+            } else {
+                $slip = ReceiptLib::centerString("................................................")."\n";
+                // store header
+                for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
+                    $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
+                }
+                $slip .= "\n";
+                $col1 = array();
+                $col2 = array();
+                $col1[] = $xml->query('/RStream/TranResponse/TranCode');
+                $col2[] = "Card: ". $xml->query('/RStream/TranResponse/AcctNo');
+                $col1[] = "Sequence: " . $xml->query('/RStream/TranResponse/RefNo');
+                $col2[] = "Authorization: " . $xml->query('/RStream/TranResponse/AuthCode');
+                $slip .= ReceiptLib::twoColumns($col1, $col2);
+
+                $slip .= ReceiptLib::centerString("................................................")."\n";
+                $receipt = $slip
+                    . ReceiptLib::centerString("................................................")."\n"
+                    . ReceiptLib::centerString("B A L A N C E") . "\n"
+                    . ReceiptLib::centerString("................................................")."\n"
+                    . $receipt;
             }
+
             $printP = $dbc->prepare('
                 INSERT INTO EmvReceipt
                     (dateID, tdate, empNo, registerNo, transNo, transID, content)
@@ -848,9 +872,9 @@ class MercuryDC extends MercuryE2E
             $ret .= str_pad($qty, 8, ' ', STR_PAD_RIGHT);
             if (isset($row['subcat']) && $row['subcat']) {
 
-                $ret .= $row['cat']['name'] . ' ' . $row['subcat']['name'] . ' ';
+                $ret .= str_pad($row['cat']['units'], 3) . ' ' . $row['cat']['name'] . ' ' . $row['subcat']['name'] . ' ';
             } else {
-                $ret .= $row['cat']['name'] . ' ';
+                $ret .= str_pad($row['cat']['units'], 3) . ' ' . $row['cat']['name'] . ' ';
             }
 
             $ret .= "\n";

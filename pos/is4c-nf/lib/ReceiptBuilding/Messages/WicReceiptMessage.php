@@ -12,9 +12,7 @@ class WicReceiptMessage extends ReceiptMessage
     public function standalone_receipt($ref, $reprint=False)
     {
         return 
-            ReceiptLib::centerString("................................................")."\n"
-            . ReceiptLib::centerString("B A L A N C E") . "\n"
-            . ReceiptLib::centerString("................................................")."\n"
+            ReceiptLib::printReceiptHeader(time(), $ref)
             . $this->message(1, $ref, $reprint)
             . ReceiptLib::centerString("................................................")."\n"
             . ReceiptLib::centerString("E L I G I B L E    I T E M S") . "\n"
@@ -127,7 +125,7 @@ class WicReceiptMessage extends ReceiptMessage
                 AND registerNo=?
                 AND transNo=?
                 AND content LIKE \'%Benefits expire%\'
-            ORDER BY transID DESC
+            ORDER BY transID DESC, tdate DESC
         ');
         $balance = $dbc->getValue($emvP, array($date, $emp, $reg, $trans));
         $slip .= $balance ? $balance : '';
