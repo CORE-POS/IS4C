@@ -248,6 +248,9 @@ class PaycardEmvWic extends PaycardProcessPage
                 $ret .= "<{$tag}{$i}>{$upc}</{$tag}{$i}>";
             }
             if ($add && $row['eWicCategoryID'] == 19) {
+                if ($row['ttl'] > $categories[$key]) {
+                    $row['ttl'] = $categories[$key];
+                }
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['ttl']) . "</ItemQty{$i}>";
                 $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', 1) . "</ItemPrice{$i}>";
                 $i++;
