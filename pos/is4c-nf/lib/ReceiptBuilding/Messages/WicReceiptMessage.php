@@ -24,11 +24,15 @@ class WicReceiptMessage extends ReceiptMessage
     private function potentialItems($wicData)
     {
         $ret = "";
-        $categories = array('cat'=>array(), 'sub'=>array());
+        $categories = array();
         foreach ($wicData as $balanceRecord) {
-            $categories['cat'][$balanceRecord['cat']['eWicCategoryID']] = true;
             if (isset($balanceRecord['subcat'])) {
-                $categories['sub'][$balanceRecord['subcat']['eWicSubCategoryID']] = true;
+                $key = $balanceRecord['cat']['eWicCategoryID']
+                    . ':' . $balanceRecord['subcat']['eWicSubCategoryID'];
+                $categories[$key] = $balanceRecord['qty'];
+            } else {
+                $key = $balanceRecord['cat']['eWicCategoryID'];
+                $categories[$key] = $balanceRecord['qty'];
             }
         }
 
@@ -38,7 +42,9 @@ class WicReceiptMessage extends ReceiptMessage
                 INNER JOIN ' . CoreLocal::get('pDatabase') . $dbc->sep() . 'EWicItems AS e ON t.upc=e.upc
             ORDER BY t.trans_id');
         while ($row = $dbc->fetchRow($res)) {
-            if ($row['eWicCategoryID'] && isset($categories['cat'][$row['eWicCategoryID']])) {
+            $key1 = $row['eWicCategoryID'];
+            $key2 = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
+            if (isset($categories[$key1]) || isset($categories[$key2])) {
                 $ret .= $row['description'] . "\n";
             }
         }
