@@ -872,7 +872,9 @@ class MercuryDC extends MercuryE2E
             $ret .= str_pad($qty, 8, ' ', STR_PAD_RIGHT);
             if (isset($row['subcat']) && $row['subcat']) {
 
-                $ret .= str_pad($row['cat']['units'], 3) . ' ' . $row['cat']['name'] . ' ' . $row['subcat']['name'] . ' ';
+                $ret .= str_pad($row['subcat']['units'], 3)
+                        . ' ' . $row['cat']['name']
+                        . ' ' . $row['subcat']['name'] . ' ';
             } else {
                 $ret .= str_pad($row['cat']['units'], 3) . ' ' . $row['cat']['name'] . ' ';
             }

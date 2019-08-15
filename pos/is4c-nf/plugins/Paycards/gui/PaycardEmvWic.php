@@ -116,6 +116,19 @@ class PaycardEmvWic extends PaycardProcessPage
         $aliasP = $dbc->prepare("SELECT * FROM " . $this->conf->get('pDatabase') . $dbc->sep() . "EWicItems WHERE alias=?");
         $better = new BetterXmlData($xml);
         $i = 1;
+        /**
+          This currently does not behave as spec'd. When an item
+          is approved for a lower price that status does not say
+          "approved for a lower price"; it just says "approved"
+          like any other item. The authorized amount in the response
+          also does not factor in price reductions so on net it
+          works out OK. Not adjusting the prices and tendering
+          the authorized amount in effect pays for the appropriate
+          items. If the authorized amount in the reponse changes
+          to the sum of the approved price then there'll have to
+          be an adjustment along the lines of this loop.
+        */
+        /*
         while (true) {
             $status = $better->query('/RStream/TranResponse/ItemData/ItemStatus' . $i);
             $status = strtolower($status);
@@ -145,6 +158,7 @@ class PaycardEmvWic extends PaycardProcessPage
             $i++;
             if ($i > 1000) break;
         }
+        */
 
         $amount = $better->query('/RStream/TranResponse/Amount/Authorize');
         $amount = "" . (-1*$amount);
@@ -157,26 +171,27 @@ class PaycardEmvWic extends PaycardProcessPage
      * Get item data XML for eligible items
      * @param $arr [array] EWic Balance Data
      * @return [string] XML
-     *
-     * This is a fairly simplistic approach. It gets all EWic items
-     * from the current transaction and just checks whether its category
-     * and subcategory is present in the balance data. This will result in
-     * sending excess quantities sometimes but partial approvals need to
-     * get handled with the response anyway.
-     *
-     * Erring on the side of sending too many items seems better for the
-     * customer. Any mistake in an overly stringent approach here and *not*
-     * sending an item that's actually eligible means the customer can't
-     * fully utilize their balance.
      */
     private function getItemData($arr)
     {
         $ret = '';
-        $categories = array('cat'=>array(), 'sub'=>array());
+        /**
+          Convert balance to a more useful format.
+          Key is either:
+           - categoryID:subCategoryID
+           - categoryID
+
+          Value is the quantity avaliable
+        */
+        $categories = array();
         foreach ($arr as $balanceRecord) {
-            $categories['cat'][$balanceRecord['cat']['eWicCategoryID']] = true;
             if (isset($balanceRecord['subcat'])) {
-                $categories['sub'][$balanceRecord['subcat']['eWicSubCategoryID']] = true;
+                $key = $balanceRecord['cat']['eWicCategoryID']
+                    . ':' . $balanceRecord['subcat']['eWicSubCategoryID'];
+                $categories[$key] = $balanceRecord['qty'];
+            } else {
+                $key = $balanceRecord['cat']['eWicCategoryID'];
+                $categories[$key] = $balanceRecord['qty'];
             }
         }
 
@@ -214,21 +229,41 @@ class PaycardEmvWic extends PaycardProcessPage
                     $couponCache[$manu] = true;
                 }
             }
+            /**
+                Check if the whole category is available. If not
+                check whether the specific subcategory is availble.
+                Keep $key to later decrement the appropriate quantity
+            */
             $add = false;
-            if ($row['eWicCategoryID'] && isset($categories['cat'][$row['eWicCategoryID']])) {
-                $ret .= "<{$tag}{$i}>{$upc}</{$tag}{$i}>";
+            $key = $row['eWicCategoryID'];
+            if (isset($categories[$key]) && $categories[$key] > 0) {
                 $add = true;
+            } else {
+                $key = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
+                if (isset($categories[$key]) && $categories[$key] > 0) {
+                    $add = true;
+                }
+            }
+            if ($add) {
+                $ret .= "<{$tag}{$i}>{$upc}</{$tag}{$i}>";
             }
             if ($add && $row['eWicCategoryID'] == 19) {
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['ttl']) . "</ItemQty{$i}>";
                 $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', 1) . "</ItemPrice{$i}>";
                 $i++;
                 $total += $row['ttl'];
+                $categories[$key] -= $row['ttl'];
             } elseif ($add) {
+                if ($row['qty'] > $categories[$key]) {
+                    $price = $row['ttl'] / $row['qty'];
+                    $row['qty'] = $categories[$key];
+                    $row['ttl'] = $price * $row['qty'];
+                }
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['qty']) . "</ItemQty{$i}>";
                 $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', $row['ttl'] / $row['qty']) . "</ItemPrice{$i}>";
                 $i++;
                 $total += $row['ttl'];
+                $categories[$key] -= $row['qty'];
             }
         }
         $this->conf->set('paycard_amount', $total);
