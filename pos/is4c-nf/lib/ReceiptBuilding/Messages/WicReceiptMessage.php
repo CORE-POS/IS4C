@@ -37,10 +37,12 @@ class WicReceiptMessage extends ReceiptMessage
         }
 
         $dbc = Database::tDataConnect();
-        $res = $dbc->query('SELECT *
+        $res = $dbc->query('SELECT t.upc, description, eWicCategoryID, eWicSubCategoryID 
             FROM localtemptrans AS t
                 INNER JOIN ' . CoreLocal::get('pDatabase') . $dbc->sep() . 'EWicItems AS e ON t.upc=e.upc
-            ORDER BY t.trans_id');
+            GROUP BY upc, description, eWicCategoryID, eWicSubCategoryID
+            HAVING SUM(total) > 0
+            ORDER BY MIN(t.trans_id)');
         while ($row = $dbc->fetchRow($res)) {
             $key1 = $row['eWicCategoryID'];
             $key2 = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
