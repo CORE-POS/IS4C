@@ -63,6 +63,7 @@ class PriceRounder
             3 => 0.30,
         );
 
+        $end = substr($price, -2);
         foreach ($endingCaps as $level => $cap) {
             if ($price <= $cap) {
                 foreach ($endings as $k => $endArray) {
