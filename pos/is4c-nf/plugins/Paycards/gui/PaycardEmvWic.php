@@ -226,7 +226,7 @@ class PaycardEmvWic extends PaycardProcessPage
                 $total += $row['ttl'];
             } elseif ($add) {
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['qty']) . "</ItemQty{$i}>";
-                $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', $row['ttl']) . "</ItemPrice{$i}>";
+                $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', $row['ttl'] / $row['qty']) . "</ItemPrice{$i}>";
                 $i++;
                 $total += $row['ttl'];
             }
