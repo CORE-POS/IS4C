@@ -147,6 +147,7 @@ class MercuryDC extends MercuryE2E
         $cardType = 'EWIC';
 
         $request->setManual($prompt ? 1 : 0);
+        $this->conf->set('paycard_keyed', $prompt ? 1 : 0);
 
         try {
             $request->saveRequest();
@@ -308,7 +309,7 @@ class MercuryDC extends MercuryE2E
         } else { // add non-EMV fields
             $msgXml .= '
             <Account>
-                <AcctNo>' . ($prev['manual'] == 0 ? 'Prompt' : 'SecureDevice') . '</AcctNo>
+                <AcctNo>' . ($prev['manual'] == 1 ? 'Prompt' : 'SecureDevice') . '</AcctNo>
             </Account>
             <TranType>' . $tranType . '</TranType>';
             if ($cardType) {
