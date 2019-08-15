@@ -204,7 +204,8 @@ class PaycardEmvWic extends PaycardProcessPage
         $couponP = $dbc->prepare("SELECT SUM(total) FROM localtemptrans WHERE upc LIKE ?");
         $res = $dbc->query('SELECT SUM(t.quantity) AS qty, SUM(t.total) AS ttl,
             CASE WHEN e.alias IS NOT NULL THEN e.alias ELSE e.upc END AS upc,
-            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID
+            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID,
+            MAX(discountable) AS discountable, MAX(percentDiscount) AS percentDiscount
             FROM localtemptrans AS t
                 INNER JOIN ' . $this->conf->get('pDatabase') . $dbc->sep() . 'EWicItems AS e ON t.upc=e.upc
             GROUP BY
@@ -224,10 +225,21 @@ class PaycardEmvWic extends PaycardProcessPage
             if ($manu != '00000' && !isset($couponCache[$manu])) {
                 $couponApplied = $dbc->getValue($appliedP, array($row['upc']));
                 if ($couponApplied) {
-                    $couponValue = $dbc->getValue($appliedP, array('005' . $manu . '%'));
+                    $couponValue = $dbc->getValue($couponP, array('005' . $manu . '%'));
                     $row['ttl'] += $couponValue; // coupons are negative
-                    $couponCache[$manu] = true;
+                    if ($row['ttl'] < 0.005) { // coupon made item free
+                        continue;
+                    }
                 }
+                $couponCache[$manu] = true;
+            }
+            if ($row['discountable'] && $row['percentDiscount']) {
+                $row['ttl'] *= (1 - ($row['percentDiscount'] / 100));
+            }
+            if ($row['ttl'] < 0.005) {
+                // item was voided, free w/ coupon, or otherwise
+                // had cost drop to $0
+                continue;
             }
             /**
                 Check if the whole category is available. If not
