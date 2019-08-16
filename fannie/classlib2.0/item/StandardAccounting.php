@@ -81,7 +81,6 @@ class StandardAccounting extends Accounting
         switch (substr($code, 1)) {
             case '1201':
             case '1205':
-            case '1600':
                 return self::perStoreCode($code, $store_id) . '-20';
             case '1300':
             case '1310':
@@ -102,6 +101,7 @@ class StandardAccounting extends Accounting
             case '1510':
             case '1515':
             case '1520':
+            case '1600':
             case '1605':
             case '1610':
             case '1640':
