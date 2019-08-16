@@ -26,11 +26,11 @@ class WicReceiptMessage extends ReceiptMessage
         $ret = "";
         $categories = array();
         foreach ($wicData as $balanceRecord) {
-            if (isset($balanceRecord['subcat'])) {
+            if (isset($balanceRecord['subcat']) && $balanceRecord['qty'] > 0) {
                 $key = $balanceRecord['cat']['eWicCategoryID']
                     . ':' . $balanceRecord['subcat']['eWicSubCategoryID'];
                 $categories[$key] = $balanceRecord['qty'];
-            } else {
+            } elseif ($balanceRecord['qty'] > 0) {
                 $key = $balanceRecord['cat']['eWicCategoryID'];
                 $categories[$key] = $balanceRecord['qty'];
             }
