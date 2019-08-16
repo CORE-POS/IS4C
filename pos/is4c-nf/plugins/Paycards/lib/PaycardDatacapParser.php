@@ -93,7 +93,7 @@ class PaycardDatacapParser extends Parser
         switch ($str) {
             case 'DATACAP':
                 $ret['main_frame'] = $pluginInfo->pluginUrl().'/gui/PaycardEmvMenu.php';
-                if ($this->conf->get('ttlflag') != 1) {
+                if (abs($this->conf->get('amtdue')) < 0.005) {
                     $ret['main_frame'] .= '?selectlist=PV';
                 }
                 break; 

@@ -101,6 +101,7 @@ class PaycardEmvMenu extends NoInputCorePage
                     $this->menu = array(
                         'PVEF' => 'Food Balance',
                         'PVEC' => 'Cash Balance',
+                        'PVWI' => 'eWIC Balance',
                         'PVGD' => 'Gift Balance',
                     );
                     $this->clearToHome = 1;
