@@ -59,6 +59,13 @@ class SaReportPage extends FanniePage {
                 $this->sql_actions='Unable to delete record, please try again. <!-- '.$query.' -->';
             }
         } elseif (FormLib::get_form_value('clear') == 'yes'){
+            $arch = $dbc->prepare("INSERT INTO SaArchive (tdate, storeID, data) VALUES (?, ?, ?)");
+            foreach (array(1, 2) as $storeID) {
+                $this->store = $storeID;
+                $this->getScanData();
+                $csv = $this->csv_content();
+                $dbc->execute($arch, array(date('Y-m-d H:i:s'), $storeID, $csv));
+            }
             $query=$dbc->prepare('update sa_inventory set clear=1;');
             $result=$dbc->execute($query);
             if ($result) {
@@ -69,18 +76,36 @@ class SaReportPage extends FanniePage {
             $this->sql_actions='Unable to clear old scans, try again. <!-- '.$query.' -->';
         }
 
-        $order='dept_no,s.section,s.datetime';
-        if(FormLib::get_form_value('excel') == 'yes'){
-            $order='salesCode, dept_no, s.datetime';
-        }
-    
         $this->store = FormLib::get('store', false);
         if ($this->store === false ) {
             $this->store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         }
         if ($this->config->get('STORE_MODE') !== 'HQ') {
-            $store = 0;
+            $this->store = 0;
         }
+        $this->getScanData();
+
+        if (!empty($this->scans) && FormLib::get_form_value('excel') == 'yes'){
+            header("Content-type: text/csv");
+            header("Content-Disposition: attachment; filename=inventory_scans.csv");
+            header("Pragma: no-cache");
+            header("Expires: 0");
+            echo $this->csv_content();
+            return False;
+        }
+
+        return True;
+    }
+
+    private function getScanData()
+    {
+        global $FANNIE_PLUGIN_SETTINGS,$FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']);
+        $order='dept_no,s.section,s.datetime';
+        if(FormLib::get_form_value('excel') == 'yes'){
+            $order='salesCode, dept_no, s.datetime';
+        }
+    
         $soQ = "
             SELECT s.id,
                 s.datetime,
@@ -207,17 +232,6 @@ class SaReportPage extends FanniePage {
         } else {
             $this->status = 'Bad - IT problem';
         }
-
-        if (!empty($this->scans) && FormLib::get_form_value('excel') == 'yes'){
-            header("Content-type: text/csv");
-            header("Content-Disposition: attachment; filename=inventory_scans.csv");
-            header("Pragma: no-cache");
-            header("Expires: 0");
-            echo $this->csv_content();
-            return False;
-        }
-
-        return True;
     }
 
     function css_content(){
