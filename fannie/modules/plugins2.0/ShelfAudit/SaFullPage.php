@@ -44,6 +44,7 @@ class SaFullPage extends FannieRESTfulPage
             $prep = $dbc->prepare("DELETE FROM " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . "
                 WHERE upc=?
                     AND section=?
+                    AND clear=0
                     AND storeID=?");
             $dbc->execute($prep, array(BarcodeLib::padUPC($this->id), $section, $store));
         } elseif ($chk && $realQty < 9999) {
@@ -52,6 +53,7 @@ class SaFullPage extends FannieRESTfulPage
                     datetime=" . $dbc->now() . "
                 WHERE upc=?
                     AND section=?
+                    AND clear=0
                     AND storeID=?");
             $dbc->execute($prep, array($realQty, BarcodeLib::padUPC($this->id), $section, $store));
         } elseif ($realQty < 9999) {
