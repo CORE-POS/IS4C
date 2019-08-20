@@ -16,6 +16,18 @@ if (!class_exists('\\CommentsModel')) {
 
 class MailPipe extends AttachmentEmailPipe
 {
+    private function spamCheck($msg)
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'spm');
+        file_put_contents($tmp, $msg);
+
+        $cmd = "/usr/bin/spamc -c < " . escapeshellarg($tmp);
+        exec($cmd, $ouput, $return);
+
+        unlink($tmp);
+
+        return $return == 1 ? true : false;
+    }
     /**
      * Form sends text as quoted-printable.
      * Decode it.
@@ -36,6 +48,10 @@ class MailPipe extends AttachmentEmailPipe
 
     public function processMail($msg)
     {
+        if ($this->spamCheck($msg)) {
+            return;
+        }
+
         $info = $this->parseEmail($msg);
         $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
         $log = new \FannieLogger();
