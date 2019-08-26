@@ -58,7 +58,8 @@ class ShrinkReasonEditor extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $reasons = new ShrinkReasonsModel(FannieDB::get($FANNIE_OP_DB));
         $reasons->shrinkReasonID($this->id);
-        $reasons->delete();
+        $reasons->disabled(1);
+        $reasons->save();
 
         header('Location: ' . $_SERVER['PHP_SELF']);
 
@@ -89,6 +90,7 @@ class ShrinkReasonEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $reasons = new ShrinkReasonsModel(FannieDB::get($FANNIE_OP_DB));
+        $reasons->disabled(0);
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
             <div id="alert-area"></div>
             <table class="table">'; 

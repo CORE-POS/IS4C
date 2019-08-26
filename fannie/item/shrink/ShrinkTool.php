@@ -183,6 +183,7 @@ class ShrinkTool extends FannieRESTfulPage
         $this->add_onload_command("\$('#qty-field').focus();\n");
 
         $reasons = new ShrinkReasonsModel($dbc);
+        $reasons->disabled(0);
         $default = $this->getDefaultReason($dbc);
         $shrink_opts = '';
         foreach ($reasons->find('description') as $reason) {

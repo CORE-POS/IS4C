@@ -102,6 +102,7 @@ class ShrinkEditor extends FannieRESTfulPage
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $model = new ShrinkReasonsModel($dbc);
+        $model->disabled(0);
         $reasons = array(0 => 'n/a');
         foreach ($model->find('description') as $obj) {
             $reasons[$obj->shrinkReasonID()] = $obj->description();
