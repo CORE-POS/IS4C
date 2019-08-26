@@ -207,6 +207,8 @@ class GumEmailPage extends FannieRESTfulPage
         $mail->FromName = 'Whole Foods Co-op';
         $mail->addReplyTo('finance@wholefoods.coop');
         $mail->addAddress($this->meminfo->email_1());
+        $mail->addBCC('dwelnetz@wholefoods.coop');
+        $mail->addBCC('andy@wholefoods.coop');
         $mail->isHTML(true);
         $mail->Subject = 'Owner Loan Statement';
         $mail->Body = $html;
