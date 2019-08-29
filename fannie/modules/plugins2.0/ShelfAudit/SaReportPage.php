@@ -60,11 +60,13 @@ class SaReportPage extends FanniePage {
             }
         } elseif (FormLib::get_form_value('clear') == 'yes'){
             $arch = $dbc->prepare("INSERT INTO SaArchive (tdate, storeID, data) VALUES (?, ?, ?)");
+            $dateP = $dbc->prepare("SELECT MIN(datetime) FROM sa_inventory WHERE clear=0 and storeID=?");
             foreach (array(1, 2) as $storeID) {
                 $this->store = $storeID;
                 $this->getScanData();
                 $csv = $this->csv_content();
-                $dbc->execute($arch, array(date('Y-m-d H:i:s'), $storeID, $csv));
+                $date = $dbc->getValue($dateP, array($storeID));
+                $dbc->execute($arch, array($date, $storeID, $csv));
             }
             $query=$dbc->prepare('update sa_inventory set clear=1;');
             $result=$dbc->execute($query);
