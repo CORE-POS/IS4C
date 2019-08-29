@@ -17,9 +17,29 @@ class DIPage2 extends FannieRESTfulPage
     {
         $this->addRoute('get<catUp>', 'get<catDown>', 'post<newItem>',
             'post<newCat>', 'delete<catID>', 'post<oldCat><renameCat>',
-            'post<seq><catID>', 'get<print>');
+            'post<seq><catID>', 'get<print>', 'get<clear>');
 
         return parent::preprocess();
+    }
+
+    protected function get_clear_handler()
+    {
+        $storeID=1;
+        $saveP = $this->connection->prepare("INSERT INTO DeliSnapshots
+            (snapShotDate, id, item, orderno, units, cases, fraction,
+            totalstock, price, total, size, category, upc, vendorID,
+            storeID, categoryID, seq, modified, attnFlag)
+            SELECT " . $this->connection->curdate() . ", d.*
+            FROM deliInventoryCat AS d WHERE storeID=?");
+        $saved = $this->connection->execute($saveP, array($storeID));
+        if ($saved) {
+            $clearP = $this->connection->prepare("UPDATE deliInventoryCat
+                SET cases=0, fraction=0, totalstock=0
+                WHERE storeID=?");
+            $this->connection->execute($clearP, array($storeID));
+        }
+
+        return 'DIPage.php';
     }
 
     protected function post_seq_catID_handler()
