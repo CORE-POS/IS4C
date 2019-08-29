@@ -232,11 +232,17 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
                 if (substr($size, -1) == '#' && substr($alias['upc'], 0, 3) == '002') {
                     $qty = trim($size, '# ');
+                    if ($qty == 0) {
+                        $qty = 1;
+                    }
                     $reg_unit = $reg / $qty;
                     $net_unit = $net / $qty;
                     $size = '#';
                 } elseif (substr($size, -2) == 'LB' && substr($alias['upc'], 0, 3) == '002') {
                     $qty = trim($size, 'LB ');
+                    if ($qty == 0) {
+                        $qty = 1;
+                    }
                     $reg_unit = $reg / $qty;
                     $net_unit = $net / $qty;
                     $size = 'LB';
@@ -328,7 +334,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     function results_content()
     {
         $ret = "<p>Price data import complete</p>";
-        $ret .= '<p><a href="'.filter_input(INPUT_SEVER, 'PHP_SELF').'">Upload Another</a></p>';
+        $ret .= '<p><a href="'.filter_input(INPUT_SERVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
     }
