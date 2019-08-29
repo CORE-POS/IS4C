@@ -112,6 +112,62 @@ class StatementsPluginEmail extends FannieRESTfulPage
         return true;
     }
 
+    private function checkPickUps($dbc, $ids)
+    {
+        list($inStr, $args) = $dbc->safeInClause($ids);
+        $prep = $dbc->prepare("SELECT email, company
+            FROM CheckPickUps
+            WHERE checkPickUpID IN ({$inStr})");
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $mail = new PHPMailer();
+            $mail->isSMTP();
+            $mail->Host = '127.0.0.1';
+            $mail->Port = 25;
+            $mail->SMTPAuth = false;
+            $mail->From = 'finance@wholefoods.coop';
+            $mail->FromName = 'Whole Foods Co-op';
+
+            $today = date('F j, Y');
+            $body = <<<BODY
+Valued Vendor:
+
+Your requested check to pick up is available at the customer service desk at the Hillside location after 5pm today ({$today}). 
+If you have any questions regarding this email or your check, please direct all questions to finance@wholefoods.coop.  Please allow 1 business day for a response. 
+
+Thank you,
+Finance Department
+Whole Foods Co-op
+218 - 728 - 0884 
+finance@wholefoods.coop
+BODY;
+
+            $htmlBody = <<<HTML
+Valued Vendor:<br />
+<br />
+Your requested check to pick up is available at the customer service desk at the Hillside location after 5pm today ({$today}). 
+If you have any questions regarding this email or your check, please direct all questions to finance@wholefoods.coop.  Please allow 1 business day for a response. <br />
+<br />
+Thank you,<br />
+<u>Finance Department</u><br />
+Whole Foods Co-op<br />
+218 - 728 - 0884<br />
+finance@wholefoods.coop<br />
+HTML;
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Check Payment Alert Whole Foods Co-op';
+            $mail->Body = $htmlBody;
+            $mail->AltBody = $body;
+            $mail->addAddress($row['email']);
+            $mail->addBCC('andy@wholefoods.coop');
+            $mail->send();
+            $this->sent[$row['company']] = $row['email'];
+        }
+
+        return true;
+    }
+
     public function post_id_handler()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
@@ -124,6 +180,9 @@ class StatementsPluginEmail extends FannieRESTfulPage
         }
         if (count($this->id) > 0 && substr($this->id[0], 0, 3) == 'b2b') {
             return $this->b2bHandler($dbc, $this->id);
+        }
+        if (FormLib::get('check-pick-ups')) {
+            return $this->checkPickUps($dbc, $this->id);
         }
         foreach($this->id as $c) {
             $cards .= "?,";

@@ -38,6 +38,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $this->__routes[] = 'get<equityTab>';
         $this->__routes[] = 'get<arTab>';
         $this->__routes[] = 'get<termTab>';
+        $this->__routes[] = 'get<checkTab>';
         $this->__routes[] = 'post<csv>';
 
         return parent::preprocess();
@@ -60,6 +61,13 @@ class StatementsPluginIndex extends FannieRESTfulPage
     public function get_termTab_handler()
     {
         echo $this->termForm();
+
+        return false;
+    }
+
+    public function get_checkTab_handler()
+    {
+        echo $this->checkForm();
 
         return false;
     }
@@ -89,6 +97,7 @@ class StatementsPluginIndex extends FannieRESTfulPage
         $ret .= '<li><a href="' . $_SERVER['PHP_SELF'] . '?equityTab=1">Equity Reminders</a></li>';
         $ret .= '<li><a href="' . $_SERVER['PHP_SELF'] . '?arTab=1">AR Notices</a></li>';
         $ret .= '<li><a href="' . $_SERVER['PHP_SELF'] . '?termTab=1">Term Letters</a></li>';
+        $ret .= '<li><a href="' . $_SERVER['PHP_SELF'] . '?checkTab=1">Check Pick Ups</a></li>';
         $ret .= '</ul>';
         $ret .= '<div id="welcomeTab">';
         $ret .= $this->welcomeForm();
@@ -202,6 +211,34 @@ class StatementsPluginIndex extends FannieRESTfulPage
         }
 
         return $ret;
+    }
+
+    private function checkForm()
+    {
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $res = $dbc->query("SELECT * FROM CheckPickUps");
+        $opts = '';
+        while ($row = $dbc->fetchRow($res)) {
+            $opts .= sprintf('<option value="%d">%s (%s)</option>',
+                $row['checkPickUpID'], $row['company'], $row['name']);
+        }
+
+        return <<<HTML
+<form id="checkForm" action="StatementsPluginEmail.php" method="post">
+<input type="hidden" name="check-pick-ups" value="1" />
+<button type="button" onclick="jQuery('#checkForm option').each(function(){jQuery(this).prop('selected', true);});
+                    return false;">Select All</button>
+<button type="submit">Email</button>
+
+<br />
+
+<select id="arAccounts" name="id[]" multiple size="20">
+{$opts}
+</select>
+</form>
+HTML;
     }
 
     private function arForm()
