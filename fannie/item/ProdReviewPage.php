@@ -166,7 +166,7 @@ HTML;
                 INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 LEFT JOIN vendorReviewSchedule AS v ON p.default_vendor_id=v.vid
             WHERE p.inUse = 1
-                AND m.superID in (1,4,5,8,9,13,17,3)
+                AND m.superID in (1,4,5,8,9,13,17,3,18)
                 AND v.exclude <> 1
             GROUP BY p.upc
         ");
@@ -341,17 +341,13 @@ HTML;
         if ($vid == 0) {
             $vid  = "n/a";
         }
-        $chkP = $dbc->prepare("SELECT bid FROM batchReviewLog WHERE bid=?");
-        $chk = $dbc->getValue($chkP, array($bid));
-        if (!$chk) {
-            $user = FannieAuth::getUID($this->current_user);
-            $setA = array($bid,$vid,$user);
-            $setP = $dbc->prepare("
-                INSERT INTO batchReviewLog (bid, vid, printed, user, created, forced)
-                VALUES (?, ?, 0, ?, NOW(), 0);
-            ");
-            $dbc->execute($setP,$setA);
-        }
+        $user = FannieAuth::getUID($this->current_user);
+        $setA = array($bid,$vid,$user);
+        $setP = $dbc->prepare("
+            INSERT INTO batchReviewLog (bid, vid, printed, user, created, forced)
+            VALUES (?, ?, 0, ?, NOW(), 0);
+        ");
+        $dbc->execute($setP,$setA);
 
         return header('location: '.$_SERVER['PHP_SELF'].'?batchLog=1');
     }
@@ -450,6 +446,7 @@ HTML;
         /*
             tableA = unforced batches | tableB = forced.
         */
+        $bids = "0";
         $pAllBtn = "<button class='btn btn-default btn-xs' 
             onClick='printAll(); return false;'><span class='glyphicon glyphicon-print'></span></button>";
         $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
@@ -475,6 +472,7 @@ HTML;
             $curBid = $row['bid'];
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
             if ($row['forced'] == '0000-00-00 00:00:00') {
+                $bids .= ",".$curBid;
                 $tableA .= "<tr>";
                 $tableA .= "<td><input type='checkbox' id='check$curBid'></td>";
                 $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
@@ -512,6 +510,35 @@ HTML;
         $tableA .= '</tbody></table></div>';
         $tableB .= '</tbody></table></div>';
 
+        $tableC = "<div class=\"well well-sm\" align=\"center\">
+            <a onclick=\"\" data-toggle=\"collapse\" data-target=\"#scale-item-table\">
+                <span class=\" glyphicon glyphicon-triangle-bottom\"></span> Scale items </a> in un-forced batches
+                </span></div>";
+        $tableC .= "<div id=\"scale-item-table\" class=\"collapse\"><table class=\"table small table-condensed \"><tbody>";
+        $query = "
+            SELECT b.upc, p.brand, p.description, b.batchID
+            FROM batchList AS b
+                LEFT JOIN products AS p ON b.upc=p.upc
+            WHERE b.batchID IN ($bids) 
+                AND b.upc > 19999999999 
+                AND b.upc < 29999999999
+            GROUP BY b.upc
+        ";
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $upc = $row['upc'];
+            $brand = $row['brand'];
+            $description = $row['description'];
+            $batchID = $row['batchID'];
+            $tableC .= "<tr>";
+            $tableC .= "<td><a href=\"ItemEditorPage.php?searchupc=$upc&ntype=UPC\" target=\"_blank\">$upc</a></td>";
+            $tableC .= "<td>$brand</td>";
+            $tableC .= "<td>$description</td>";
+            $tableC .= "<td>$batchID</td>";
+        }
+        $tableC .= "</tbody></table></div>";
+
         return <<<HTML
 <div id="ajax-processing" style="text-align: center; position: fixed; top: 48vh; left: 40vw; font-weight: bold; background: rgba(255, 100, 100, 0.8); border: 3px solid pink; display: none;">BATCH BEING FORCED, PLEASE WAIT</div>
 <div align="">
@@ -519,18 +546,24 @@ HTML;
             <div>{$this->backBtn()}</div>
             <h4>Review Batch Log</h4>
         </div>
-        <div class="">
-            <form method="get" class="form-inline">
-                <div class="form-group">
-                    <input type="text" class="form-control" name="bid" value="{$bid}"
-                        autofocus placeholder="Enter Batch ID" />
-                    <input type="hidden" name="batchLog" value="1"/>
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="btn btn-default" value="1" name="getBatch">Stage Batch</button>
-                </div>
-                <div id="alert"><div id="resp"></div></div>
-            </form>
+        <div class="row">
+            <div class="col-lg-4">
+                <form method="get" class="form-inline">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="bid" value="{$bid}"
+                            autofocus placeholder="Enter Batch ID" />
+                        <input type="hidden" name="batchLog" value="1"/>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-default" value="1" name="getBatch">Stage Batch</button>
+                    </div>
+                    <div id="alert"><div id="resp"></div></div>
+                </form>
+            </div>
+            <div class="col-lg-1"></div>
+            <div class="col-lg-7">
+                $tableC
+            </div>
         </div>
         {$bData}
         <h4 align="center">Staged Batches</h4>
@@ -583,7 +616,7 @@ HTML;
         $p->default_vendor_id($vid);
         $p->inUse(1);
 
-        $masterDepts = array(1,3,4,5,8,9,13,17);
+        $masterDepts = array(1,3,4,5,8,9,13,17,18);
         $curDepts = array();
         $m = new MasterSuperDeptsModel($dbc);
         foreach ($masterDepts as $mDept) {
