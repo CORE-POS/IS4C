@@ -24,7 +24,7 @@ class DIPage2 extends FannieRESTfulPage
 
     protected function get_clear_handler()
     {
-        $storeID=1;
+        $storeID=2;
         $saveP = $this->connection->prepare("INSERT INTO DeliSnapshots
             (snapShotDate, id, item, orderno, units, cases, fraction,
             totalstock, price, total, size, category, upc, vendorID,
@@ -39,7 +39,7 @@ class DIPage2 extends FannieRESTfulPage
             $this->connection->execute($clearP, array($storeID));
         }
 
-        return 'DIPage.php';
+        return 'DIPage2.php';
     }
 
     protected function post_seq_catID_handler()
