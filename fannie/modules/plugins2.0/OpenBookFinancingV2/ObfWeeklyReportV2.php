@@ -353,7 +353,6 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());
 
-        $PLAN_SALES = $this->getPlanSales($this->form->weekID);
 
         $store = FormLib::get('store', 1);
         
@@ -395,6 +394,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             );
             $this->updateSalesCache($week, array($num_cached, $ly_cached), $dateInfo);
         }
+
+        $PLAN_SALES = $this->getPlanSales($this->form->weekID);
 
         // record set to return
         $data = array();                
