@@ -29,6 +29,7 @@ $paidP = $dbc->prepare('SELECT checkIssued
 $loans = new GumLoanAccountsModel($dbc);
 // GumLoanAccounts.loanDate < end of fiscal year
 $loans->loanDate(date('Y-m-d 00:00:00', $endFY), '<');
+//$loans->card_no(11270);
 foreach ($loans->find('loanDate') as $loan) {
     if ($loan->card_no() == 652 || $loan->card_no() == 6780) continue;
 
