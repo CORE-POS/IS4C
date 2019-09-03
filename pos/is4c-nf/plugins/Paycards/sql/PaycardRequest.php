@@ -112,6 +112,11 @@ class PaycardRequest
         $this->amount = $amt;
     }
 
+    public function setCashBack($amt)
+    {
+        $this->cashback = $amt;
+    }
+
     public function setCardholder($name)
     {
         $name = str_replace("\\",'',$name);

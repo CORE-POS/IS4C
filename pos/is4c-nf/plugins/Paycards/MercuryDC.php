@@ -78,6 +78,7 @@ class MercuryDC extends MercuryE2E
         }
         $this->conf->set('LastEmvPcId', $request->last_paycard_transaction_id);
         $this->conf->set('LastEmvReqType', 'normal');
+        $this->conf->set('LastEmvCashBack', false);
 
         // start with fields common to PDCX and EMVX
         $msgXml = $this->beginXmlRequest($request, false, false, $tipped);
@@ -158,6 +159,7 @@ class MercuryDC extends MercuryE2E
         }
         $this->conf->set('LastEmvPcId', $request->last_paycard_transaction_id);
         $this->conf->set('LastEmvReqType', 'normal');
+        $this->conf->set('LastEmvCashBack', false);
 
         // start with fields common to PDCX and EMVX
         $msgXml = $this->beginXmlRequest($request);
@@ -288,6 +290,11 @@ class MercuryDC extends MercuryE2E
 
         // common fields
         $request->setAmount(abs($prev['amount']));
+        $request->setCashBack(0);
+        if ($this->conf->get('LastEmvCashBack')) {
+            $request->setAmount(abs($prev['amount']) - $this->conf->get('LastEmvCashBack'));
+            $request->setCashBack($this->conf->get('LastEmvCashBack'));
+        }
         $msgXml = $this->beginXmlRequest($request);
         $msgXml .= '<TranCode>' . $tranCode . '</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
@@ -455,6 +462,7 @@ class MercuryDC extends MercuryE2E
         }
         $this->conf->set('LastEmvPcId', $request->last_paycard_transaction_id);
         $this->conf->set('LastEmvReqType', 'gift');
+        $this->conf->set('LastEmvCashBack', false);
         $this->conf->set('paycard_amount', $amount);
         $this->conf->set('paycard_id', $this->conf->get('LastID'+1));
         $this->conf->set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
@@ -603,6 +611,9 @@ class MercuryDC extends MercuryE2E
                 $deptObj = new COREPOS\pos\lib\DeptLib($this->conf);
                 $deptObj->deptkey($tipAmount*100, $dept . '0');
             }
+
+            $cashback = $xml->query('/RStream/TranResponse/Amount/CashBack');
+            $this->conf->set('LastEmvCashBack', $cashback);
         }
 
         $pan = $xml->query('/RStream/TranResponse/AcctNo');
