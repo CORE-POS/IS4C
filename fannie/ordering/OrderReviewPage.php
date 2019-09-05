@@ -265,7 +265,7 @@ class OrderReviewPage extends FannieRESTfulPage
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= sprintf('<td colspan="2" align="right">Unit Price: $%.2f</td>',
-            ($row['regPrice']/$row['ItemQtty']/$row['quantity']));
+            Op::div( Op::div($row['regPrice'],$row['ItemQtty']), $row['quantity'] ));
         $ret .= sprintf('<td>From: %s</td>',$row['mixMatch']);
         $ret .= '<td>Discount</td>';
         if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
