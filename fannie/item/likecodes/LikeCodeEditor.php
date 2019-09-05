@@ -112,7 +112,7 @@ function loadlc(id){
     }).done(function(resp){
         $('.progress').hide();
         $('#rightdiv').html(resp.form);
-        $('.v-chosen').chosen();
+        $('.v-chosen').chosen({search_contains: true});
         $('input.retailCat').autocomplete({source: resp.retail });
         $('input.internalCat').autocomplete({source: resp.internal });
         $('#lcCategories').html(resp.similar);
@@ -182,7 +182,7 @@ function loadlc(id){
 
         $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
-        $this->addOnloadCommand("\$('select.chosen').chosen();");
+        $this->addOnloadCommand("\$('select.chosen').chosen({search_contains: true});");
         $this->addScript('lcEditor.js?date=20190701');
         if (FormLib::get('start')) {
             $start = (int)FormLib::get('start');
