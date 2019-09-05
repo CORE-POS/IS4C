@@ -18,6 +18,13 @@ class MailPipe extends AttachmentEmailPipe
 {
     private function spamCheck($msg)
     {
+        $log = fopen('/tmp/spam.log', 'a');
+        fwrite($log, date('r') . "\n");
+        fwrite($log, "Received comment\n");
+        fwrite($log, str_repeat('-', 50) . "\n");
+        fwrite($log, $msg . "\n");
+        fwrite($log, str_repeat('-', 50) . "\n");
+
         $tmp = tempnam(sys_get_temp_dir(), 'spm');
         file_put_contents($tmp, $msg);
 
@@ -25,6 +32,10 @@ class MailPipe extends AttachmentEmailPipe
         exec($cmd, $ouput, $return);
 
         unlink($tmp);
+
+        fwrite($log, "spamc said: " . implode("\n", $output));
+        fwrite($log, "spamc returned: " . $return . "\n");
+        fclose($log);
 
         return $return == 1 ? true : false;
     }
