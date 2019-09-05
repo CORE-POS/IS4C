@@ -75,6 +75,7 @@ class MemberSummaryModel extends CoreWarehouseModel
     'longlightTotalVisits' => array('type'=>'INT'),
     'homeStoreID' => array('type'=>'INT'),
     'homeStorePercent' => array('type'=>'DOUBLE'),
+    'storeCouponPercent' => array('type'=>'DOUBLE'),
     );
 
     public function refresh_data($trans_db, $month, $year, $day=False)
@@ -447,6 +448,32 @@ class MemberSummaryModel extends CoreWarehouseModel
         $dbc->commitTransaction();
     }
 
+    private function couponUsage($dbc)
+    {
+        $year_ago = mktime(0, 0, 0, date('n'), date('j'), date('Y')-1);
+        $yesterday = strtotime('yesterday');
+        $year_args = array(
+            date('Ymd', $year_ago),
+            date('Ymd', $yesterday),
+        );
+        $coupP = $dbc->prepare("
+            SELECT card_no,
+                SUM(CASE WHEN usedCoupon=1 THEN 1 ELSE 0 END) as coupons,
+                COUNT(*) AS transactions
+            FROM transactionSummary
+            WHERE date_id BETWEEN ? AND ?
+            GROUP BY card_no");
+        $res = $dbc->execute($coupP, $year_args);
+        $setP = $dbc->prepare("UPDATE MemberSummary
+            SET storeCouponPercent=?
+            WHERE card_no=?");
+        $dbc->startTransaction();
+        while ($row = $dbc->fetchRow($res)) {
+            $dbc->execute($setP, array($row['coupons'] / $row['transactions'], $row['card_no']));
+        }
+        $dbc->commitTransaction();
+    }
+
     /**
      * Refresh just a subset of stats instead of
      * doing the full reload. This makes some data fresher
@@ -462,6 +489,8 @@ class MemberSummaryModel extends CoreWarehouseModel
         $this->lastYearStats($this->connection);
         echo "Update store preferences\n";
         $this->storePreference($this->connection);
+        echo "Update coupon usage\n";
+        $this->couponUsage($this->connection);
     }
 }
 

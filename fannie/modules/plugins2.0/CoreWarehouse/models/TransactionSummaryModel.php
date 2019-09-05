@@ -49,7 +49,8 @@ class TransactionSummaryModel extends CoreWarehouseModel {
     'end_time' => array('type'=>'DATETIME'),
     'duration' => array('type'=>'INT'),
     'card_no' => array('type'=>'INT','index'=>True),
-    'memType' => array('type'=>'SMALLINT','index'=>True)
+    'memType' => array('type'=>'SMALLINT','index'=>True),
+    'usedCoupon' => array('type'=>'TINYINT', 'default' => 0),
     );
 
     public function refresh_data($trans_db, $month, $year, $day=False){
@@ -90,7 +91,8 @@ class TransactionSummaryModel extends CoreWarehouseModel {
             MAX(tdate) as end_time, "
             .$this->connection->seconddiff('MIN(tdate)','MAX(tdate)')." as duration,
             MAX(card_no) as card_no,
-            MAX(memType) as memType
+            MAX(memType) as memType,
+            MAX(CASE WHEN trans_subtype IN ('IC') THEN 1 ELSE 0 END) AS usedCoupon
             FROM $target_table as t LEFT JOIN "
             .$FANNIE_OP_DB.$this->connection->sep()."MasterSuperDepts as m
             ON t.department=m.dept_ID
