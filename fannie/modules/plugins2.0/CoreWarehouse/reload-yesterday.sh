@@ -13,3 +13,5 @@ php CwLoadDataPage.php -x -d "$yesterday"
 yesterday=`date --date=yesterday +"%F"`
 php CwLoadDataPage.php -a -d "$yesterday"
 
+php models/MemberSummaryModel.php
+
