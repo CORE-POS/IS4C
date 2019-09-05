@@ -159,7 +159,7 @@ class CpwImport extends FannieRESTfulPage
 
         $this->addScript('../../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../../src/javascript/chosen/bootstrap-chosen.css');
-        $this->addOnloadCommand("\$('select.chosen').chosen();");
+        $this->addOnloadCommand("\$('select.chosen').chosen({search_contains: true});");
 
         return $ret;
     }

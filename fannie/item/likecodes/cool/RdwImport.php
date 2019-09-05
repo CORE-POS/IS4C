@@ -29,6 +29,7 @@ class RdwImport extends FannieRESTfulPage
                 $prev = $sku;
             } elseif ($prev) {
                 $this->data[$prev] .= ' AND ' . $line;
+                $this->data[$prev] = str_replace('N/A AND ', '', $this->data[$prev]);
             }
         }
 
@@ -74,7 +75,7 @@ class RdwImport extends FannieRESTfulPage
 
         $this->addScript('../../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../../src/javascript/chosen/bootstrap-chosen.css');
-        $this->addOnloadCommand("\$('select.chosen').chosen();");
+        $this->addOnloadCommand("\$('select.chosen').chosen({search_contains: true});");
 
         return $ret;
     }
