@@ -62,11 +62,14 @@ class ProdLocationEditor extends FannieRESTfulPage
         $newLocation = FormLib::get('newLocation');
 
         $args = array($upc, $newLocation);
-        $prep = $dbc->prepare('
-            INSERT INTO FloorSectionProductMap (upc, floorSectionID)
-                values (?, ?)
-        ');
-        $dbc->execute($prep, $args);
+        $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?)");
+        if ($dbc->getValue($chkP, $args)) {
+            $prep = $dbc->prepare('
+                INSERT INTO FloorSectionProductMap (upc, floorSectionID)
+                    values (?, ?)
+            ');
+            $dbc->execute($prep, $args);
+        }
 
         $ret = '';
         if ($dbc->error()) {
@@ -167,12 +170,15 @@ class ProdLocationEditor extends FannieRESTfulPage
             if ($section > 0) $item[$upc] = $section;
         }
 
+        $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?)");
         $prep = $dbc->prepare('
             INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
         ');
         foreach ($item as $upc => $section) {
             $args = array($upc, $section );
-            $dbc->execute($prep, $args);
+            if ($dbc->getValue($chkP, $args)) {
+                $dbc->execute($prep, $args);
+            }
         }
         $ret .= '<div class="alert alert-success">Update Successful</div>';
 
@@ -215,10 +221,13 @@ class ProdLocationEditor extends FannieRESTfulPage
             $dbc->execute($prepZ,$args);
 
             $args = array($upc,$section);
-            $prep = $dbc->prepare('
-                INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
-            ');
-            $dbc->execute($prep, $args);
+            $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?)");
+            if ($dbc->getValue($chkP, $args)) {
+                $prep = $dbc->prepare('
+                    INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
+                ');
+                $dbc->execute($prep, $args);
+            }
         }
         $ret .= '<div class="alert alert-success">Update Successful</div>';
 
