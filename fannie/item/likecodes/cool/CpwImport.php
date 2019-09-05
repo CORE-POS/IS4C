@@ -93,13 +93,14 @@ class CpwImport extends FannieRESTfulPage
             return implode(' AND ', $vals);
         }
 
+        $candidate = '';
         foreach ($this->COOL_MAP as $abbrev => $full) {
             if (strpos($str, ' ' . $abbrev)) {
-                return $full;
+                $candidate = $full;
             }
         }
 
-        return '';
+        return $candidate;
     }
 
     protected function post_handler()
