@@ -9,6 +9,7 @@ class EqPlanTask extends FannieTask
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $this->abMismatch($dbc); return;
         $this->getOnline($dbc);
         $this->getInStore($dbc);
 
@@ -105,6 +106,20 @@ class EqPlanTask extends FannieTask
         $res = $dbc->execute($prep, array($yesterday . ' 00:00:00', $yesterday . ' 23:59:59'));
         while ($row = $dbc->fetchRow($res)) {
             $this->cronMsg('Unexpected equity payment from owner #' . $row['card_no'], FannieLogger::ALERT);
+        }
+    }
+
+    private function abMismatch($dbc)
+    {
+        $res = $dbc->query("
+            SELECT card_no, sum(stockPurchase) AS ttl
+            FROM " . FannieDB::fqn('stockpurchases', 'trans') . "
+            WHERE dept=992 AND card_no <> 11
+            GROUP BY card_no
+            HAVING sum(stockPurchase) > 20
+        ");
+        while ($row = $dbc->fetchRow($res)) {
+            $this->cronMsg(sprintf('Excess A equity #%d, $%.2f', $row['card_no'], $row['ttl']), FannieLogger::ALERT);
         }
     }
 }
