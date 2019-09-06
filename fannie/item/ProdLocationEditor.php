@@ -62,7 +62,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $newLocation = FormLib::get('newLocation');
 
         $args = array($upc, $newLocation);
-        $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?)");
+        $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?");
         if ($dbc->getValue($chkP, $args)) {
             $prep = $dbc->prepare('
                 INSERT INTO FloorSectionProductMap (upc, floorSectionID)
@@ -170,7 +170,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             if ($section > 0) $item[$upc] = $section;
         }
 
-        $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?)");
+        $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?");
         $prep = $dbc->prepare('
             INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
         ');
@@ -221,7 +221,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             $dbc->execute($prepZ,$args);
 
             $args = array($upc,$section);
-            $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?)");
+            $chkP = $dbc->prepare("SELECT 1 FROM FloorSectionProductMap WHERE upc=? AND floorSectionID=?");
             if ($dbc->getValue($chkP, $args)) {
                 $prep = $dbc->prepare('
                     INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
