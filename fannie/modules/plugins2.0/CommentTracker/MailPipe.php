@@ -29,11 +29,12 @@ class MailPipe extends AttachmentEmailPipe
         file_put_contents($tmp, $msg);
 
         $cmd = "/usr/bin/spamc -c < " . escapeshellarg($tmp);
-        exec($cmd, $ouput, $return);
+        $line = exec($cmd, $ouput, $return);
 
         unlink($tmp);
 
-        fwrite($log, "spamc said: " . implode("\n", $output));
+        fwrite($log, "spamc said: " . $line . "\n");
+        fwrite($log, "spamc said: " . implode("\n", $output) . "\n");
         fwrite($log, "spamc returned: " . $return . "\n");
         fclose($log);
 
