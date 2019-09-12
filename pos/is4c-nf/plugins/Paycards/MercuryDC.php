@@ -258,6 +258,9 @@ class MercuryDC extends MercuryE2E
         if ($prev['cardType'] == 'EMV' && substr($prev['mode'], -4) == 'Sale') {
             $tranCode = 'EMVVoidSale';
             $tranType = 'EMV';
+            if ($this->conf->get('LastEmvCashBack')) {
+                $tranCode = 'EMVReturn';
+            }
         } elseif ($prev['cardType'] == 'EMV' && $prev['mode'] == 'Return') {
             $tranCode = 'EMVVoidReturn';
             $tranType = 'EMV';
@@ -291,10 +294,12 @@ class MercuryDC extends MercuryE2E
         // common fields
         $request->setAmount(abs($prev['amount']));
         $request->setCashBack(0);
+        /*
         if ($this->conf->get('LastEmvCashBack')) {
             $request->setAmount(abs($prev['amount']) - $this->conf->get('LastEmvCashBack'));
             $request->setCashBack($this->conf->get('LastEmvCashBack'));
         }
+         */
         $msgXml = $this->beginXmlRequest($request);
         $msgXml .= '<TranCode>' . $tranCode . '</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
