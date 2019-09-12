@@ -62,7 +62,6 @@ class TagsNoPrice extends \COREPOS\Fannie\API\item\FannieSignage
         foreach ($data as $item) {
 
             // extract & format data
-            $price = $item['normal_price'];
             $desc = isset($item['posDescription']) && !empty($item['posDescription']) ? $item['posDescription'] : $item['description'];
             $brand = strtoupper(substr($item['brand'],0,13));
             $pak = $item['units'];
