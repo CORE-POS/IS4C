@@ -68,8 +68,8 @@ class FastBackupTask extends FannieTask
                 . " --chunk-filesize 10"
                 . " --less-locking"
                 . " --ouput-dir " . escapeshellarg($dir)
-                . " -u " . escapeshellarg($this->config->get('SERVER_USER')
-                . " -p " . escapeshellarg($this->config->get('SERVER_PW');
+                . " -u " . escapeshellarg($this->config->get('SERVER_USER'))
+                . " -p " . escapeshellarg($this->config->get('SERVER_PW'));
             if ($db !== "__ALL__") {
                 $cmd .= " -B " . escapeshellarg($db);
             }
