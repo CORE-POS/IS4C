@@ -52,7 +52,7 @@ class SimpleBackupTask extends FannieTask
             $path = realpath($FANNIE_PLUGIN_SETTINGS['SimpleBackupDir']);
             $dir = $path . "/" . $db;
             if (!is_dir($dir) && !mkdir($dir)) {
-                $this->cronMsg('Could not create backup directory: ' . $dir, FannieLogger::ERROR);
+                $this->cronMsg('Could not create backup directory: ' . $dir, FannieLogger::ALERT);
                 continue;
             }
 
@@ -71,7 +71,7 @@ class SimpleBackupTask extends FannieTask
 
             $cmd = realpath($FANNIE_PLUGIN_SETTINGS['SimpleBackupBinPath']."/mysqldump");
             if ($cmd === false) {
-                $this->cronMsg('Could not locate mysqldump program', FannieLogger::ERROR);
+                $this->cronMsg('Could not locate mysqldump program', FannieLogger::ALERT);
                 break; // no point in trying other databases
             }
             $cmd = escapeshellcmd($cmd);
@@ -88,13 +88,13 @@ class SimpleBackupTask extends FannieTask
                 $outfile .= '.gz';
             }
 
-            $cmd .= ' > ' . escapeshellarg($outfile);
+            $cmd .= ' > ' . escapeshellarg($outfile, $retval);
             system($cmd);
 
-            if (file_exists($outfile)) {
+            if (file_exists($outfile) && $retval == 0) {
                 $this->cronMsg('Backup successful: ' . $outfile, FannieLogger::INFO);
             } else {
-                $this->cronMsg('Error creating backup: ' . $outfile, FannieLogger::ERROR);
+                $this->cronMsg('Error creating backup: ' . $outfile, FannieLogger::ALERT);
             }
         }
     }
