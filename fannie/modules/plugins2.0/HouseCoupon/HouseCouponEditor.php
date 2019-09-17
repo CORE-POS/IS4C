@@ -454,6 +454,7 @@ class HouseCouponEditor extends FanniePage
             'BQ'=>'BOGO (Qty limited)',
             'BH'=>'BOHO (Buy one get one 1/2 off)',
             'BM'=>'BOHO (Buy one get one 1/2 off, mixed items)',
+            'B+'=>'BOHO (Buy one get one 1/2 off, variable prices)',
             '%'=>'Percent Discount (End of transaction)',
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
             '%I'=>'Percent Discount (Specific Items)',
