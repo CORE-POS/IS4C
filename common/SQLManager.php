@@ -1616,7 +1616,8 @@ class SQLManager
         $res = $this->execute($sql, $input_array, $which_connection);
         if ($res && $this->numRows($res) > 0) {
             $row = $this->fetchRow($res);
-            return $row[0];
+            $vals = array_values($row);
+            return isset($vals[0]) ? $vals[0] : false;
         } elseif ($res && $this->numRows($res) == 0) {
             return false;
         } else {
