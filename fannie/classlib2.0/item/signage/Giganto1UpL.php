@@ -71,6 +71,7 @@ class Giganto1UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($this->width, 12, $item['size'], 0, 1, 'C');
              */
             if ($item['originShortName'] != '') {
+                $lower = trim(strtolower($item['originShortName']));
                 if (substr($lower, 0, 10) !== 'product of') {
                     $item['originShortName'] = 'Product of ' . trim($item['originShortName']);
                 }
