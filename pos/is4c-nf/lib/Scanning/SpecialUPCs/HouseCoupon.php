@@ -623,6 +623,40 @@ class HouseCoupon extends SpecialUPC
                 }
                 $value = MiscLib::truncate2($value/2);
                 break;
+            case 'B+': // BOHO - variably priced items
+                $discoVal = $infoW["discountValue"];
+                // get number of qualifiers in transaction
+                $qualQ = 'SELECT SUM(l.quantity) '
+                    . $this->baseSQL($transDB, $coupID, 'upc') . '
+                    AND h.type in ("QUALIFIER", "BOTH")';
+                $qualP = $transDB->prepare($qualQ);
+                $qualW = $transDB->getRow($qualP);
+                // qualQty = total quantity of qualifier items found
+                $qualQty = $qualW[0] / 2;
+                $qualQty = floor($qualQty); 
+                $deptQ = "SELECT total AS value, quantity
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    AND h.type IN ('BOTH', 'DISCOUNT')
+                    AND l.total > 0
+                    ORDER BY unitPrice ASC 
+                    LIMIT " . $qualQty;
+                $deptP = $transDB->prepare($deptQ);
+                $deptR = $transDB->execute($deptP);
+                $j = 0;
+                $curQty = null;
+                $deptPrice = 0;
+                while ($row = $transDB->fetchRow($deptR)) {
+                    if ($j < $qualQty && $j < $discoVal) {
+                        unset($curQty);
+                        $curQty = $row['quantity'];
+                        for ($i=0; $i<$curQty; $i++) {
+                            $deptPrice += $row['value']; 
+                            $j++;
+                        }
+                    }
+                }
+                $value = $deptPrice / 2;
+                break;
             case "P": // discount price
                 // query to get the item's department and current value
                 // current value minus the discount price is how much to
