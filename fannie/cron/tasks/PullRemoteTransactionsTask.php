@@ -70,12 +70,12 @@ class PullRemoteTransactionsTask extends FannieTask
 
             $lowerBound = $dbc->getValue($max1, array($remoteID));
             if ($lowerBound === false) {
-                $this->cronMsg('Polling problem: cannot lookup info in dtransactions', FannieLogger::WARNING);
+                $this->cronMsg('Polling problem: cannot lookup info in dtransactions (#' . $remoteID . ')', FannieLogger::WARNING);
                 continue;
             } elseif ($lowerBound == 0) {
                 $lowerBound = $dbc->getValue($max2, array($remoteID));
                 if ($lowerBound === false) {
-                    $this->cronMsg('Polling problem: cannot lookup info in transarchive', FannieLogger::WARNING);
+                    $this->cronMsg('Polling problem: cannot lookup info in dtransactions (#' . $remoteID . ')', FannieLogger::WARNING);
                     continue;
                 }
             }
