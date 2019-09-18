@@ -158,6 +158,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
 <!--<label><input type="checkbox" {$all} name="all" value="1" /> All</label>-->
 <button type="submit" class="btn btn-default">Print</button>
 <label><input type="checkbox" id="all" onchange="toggleAll();" {$all} /> Show all items</label>
+&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="offset" value="1" /> Offset</label>
 </p>
 <table class="table">
 <tr>
