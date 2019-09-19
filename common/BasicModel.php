@@ -509,8 +509,11 @@ class BasicModel
         if ($this->connection->num_rows($result) > 0) {
             $row = $this->connection->fetch_row($result);
             foreach($this->columns as $name => $definition) {
-                if (!isset($row[$name])) continue;
-                $this->instance[$name] = $row[$name];
+                if (isset($row[$name])) {
+                    $this->instance[$name] = $row[$name];
+                } elseif (isset($row[strtolower($name)])) {
+                    $this->instance[$name] = $row[strtolower($name)];
+                }
             }
             $this->record_changed = false;
 
