@@ -40,7 +40,7 @@ class AnnualMeetingParser extends Parser {
         if (in_array($plu, $this->plus)){
             if (strlen($str)==4) {
                 return true;
-            } elseif(in_array(strtoupper($str[4]), array('S','C','K'))) {
+            } elseif(in_array(strtoupper($str[4]), array('S','C','K','T','D'))) {
                 return true;
             }
         }
@@ -55,7 +55,9 @@ class AnnualMeetingParser extends Parser {
             $desc = $this->descriptions[$str];
             $opts = array(
                 $desc.' (Squash)' => 'S',
+                $desc.' (Squash G/F)' => 'T',
                 $desc.' (Chicken)' => 'C',
+                $desc.' (Chicken G/F)' => 'D',
             );
             if ($str == 1041){
                 $opts[$desc.' (Kids)'] = 'K';
