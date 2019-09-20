@@ -110,7 +110,7 @@ class Result implements \ArrayAccess, \Serializable, \Countable, \Iterator
     */
     public static function many($rowset)
     {
-        return array_map(function($i) { new Result($i) }, $rowset);
+        return array_map(function($i) { new Result($i); }, $rowset);
     }
 }
 

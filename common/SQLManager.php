@@ -23,6 +23,7 @@
 
 namespace COREPOS\common;
 use COREPOS\common\sql\CharSets;
+use COREPOS\common\sql\Result;
 use \Exception;
 
 if (!function_exists("ADONewConnection")) {
@@ -435,11 +436,6 @@ class SQLManager
             $this->logger($logMsg);
         }
 
-        // only wrap postgres results for now
-        if (is_array($result) && $this->connectionType($which_connection) == 'postgres9') {
-            $result = COREPOS\Common\sql\Result::many($result);
-        }
-
         return $result;
     }
 
@@ -584,6 +580,10 @@ class SQLManager
         $ret = $result_object->fields;
         if ($result_object) {
             $result_object->MoveNext();
+        }
+        // only wrap postgres results for now
+        if (is_array($ret) && $this->connectionType($which_connection) == 'postgres9') {
+            $ret = new Result($ret);
         }
 
         return $ret;
