@@ -105,7 +105,7 @@ $str = '';
 $tagcount = count($data);
 if ($tagcount < 20) {
     for ($tagcount; $tagcount < 20; $tagcount++) {
-        $data[]['upc'] = "0000000001234";
+        $data[]['upc'] = "0000000000000";
     }
 }
 $i = 0;
