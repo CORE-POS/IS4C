@@ -57,5 +57,18 @@ class FormLib
     {
         return $item;
     }
+
+    public static function generateToken()
+    {
+        if (function_exists('random_bytes')) {
+            $bytes = random_bytes(32);
+        } elseif (function_exists('openssl_random_pseudo_bytes')) {
+            $bytes = openssl_random_pseudo_bytes(32);
+        } else {
+            $bytes = md5(mt_rand());
+        }
+
+        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
+    }
 }
 
