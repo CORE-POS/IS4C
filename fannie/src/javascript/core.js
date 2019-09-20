@@ -282,3 +282,14 @@ function chainSubDepartments(ws_url, params)
     });
 }
 
+function appendTokens(token) {
+    var forms = document.getElementsByTagName('form');
+    var field = document.createElement('input');
+    field.type = 'hidden';
+    field.name = '_token_';
+    field.value = token;
+    for (var form of forms) {
+        form.appendChild(field);
+    }
+}
+

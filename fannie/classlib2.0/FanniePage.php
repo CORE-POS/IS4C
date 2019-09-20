@@ -48,6 +48,14 @@ class FanniePage extends \COREPOS\common\ui\CorePage
     protected $session;
 
     /**
+     * Validated means the request includes a random token matching the session token
+     * Auto validation means the individual page does not want to manage
+     * token checks manually.
+     */
+    protected $validated = false;
+    protected $autoValidate = false;
+
+    /**
       Include javascript necessary to integrate linea
       scanner device
     */
@@ -133,7 +141,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
                 $this->addScript($url . 'src/javascript/jquery-ui.js');
             }
             $this->addScript($url . 'src/javascript/calculator.js');
-            $this->addScript($url . 'src/javascript/core.js?date=20171213');
+            $this->addScript($url . 'src/javascript/core.js?date=20190920');
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                 // windows has trouble with symlinks
                 $this->addCssFile($url . 'src/javascript/jquery-ui-1.10.4/css/smoothness/jquery-ui.min.css?id=20140625');
@@ -461,6 +469,17 @@ function enableLinea(selector, callback)
             $this->loginRedirect();
             exit;
         }
+
+        if (FormLib::get('_token_') && isset($this->session->csrfToken)) {
+            $this->validated = FormLib::get('_token_') === $this->session->csrfToken;
+            if (!$this->validated && $this->autoValidate) {
+                echo 'HTTP 400';
+                exit;
+            }
+        } elseif (!isset($this->session->csrfToken)) {
+            $this->session->csrfToken = COREPOS\common\FormLib::generateToken();
+        }
+        $this->addOnloadCommand("appendTokens('{$this->session->csrfToken}');");
     }
 
     public function setPermissions($p)
