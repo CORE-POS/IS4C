@@ -70,7 +70,7 @@ class TaxViewModel extends ViewModel
             taxrates AS r 
             LEFT JOIN localtemptrans AS l
             ON r.id=l.tax
-            JOIN lttsummary AS s
+            CROSS JOIN lttsummary AS s
             WHERE trans_type <> 'L'
             GROUP BY r.id,r.description";
     }

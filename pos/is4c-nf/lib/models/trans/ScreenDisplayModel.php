@@ -97,11 +97,11 @@ class ScreenDisplayModel extends ViewModel
             as comment,
             CASE
             WHEN (voided = 3 or voided = 5 or voided = 7 or voided = 11 or voided = 17)
-                THEN unitPrice
+                THEN " . $con->numberFormat('unitPrice') . "
             WHEN (trans_status = 'D')
                 THEN ''
             ELSE
-                total
+                " . $con->numberFormat('total') . "
             END
             as total,
             CASE
