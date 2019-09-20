@@ -435,6 +435,11 @@ class SQLManager
             $this->logger($logMsg);
         }
 
+        // only wrap postgres results for now
+        if (is_array($result) && $this->connectionType($which_connection) == 'postgres9') {
+            $result = COREPOS\Common\sql\Result::many($result);
+        }
+
         return $result;
     }
 
