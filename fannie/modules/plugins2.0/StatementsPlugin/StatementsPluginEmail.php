@@ -132,7 +132,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             $body = <<<BODY
 Valued Vendor:
 
-Your requested check to pick up is available at the customer service desk at the Hillside location after 5pm today ({$today}). 
+Your requested check to pick up is available at the customer service desk at the Hillside location after 8am today ({$today}). 
 If you have any questions regarding this email or your check, please direct all questions to finance@wholefoods.coop.  Please allow 1 business day for a response. 
 
 Thank you,
@@ -145,7 +145,7 @@ BODY;
             $htmlBody = <<<HTML
 Valued Vendor:<br />
 <br />
-Your requested check to pick up is available at the customer service desk at the Hillside location after 5pm today ({$today}). 
+Your requested check to pick up is available at the customer service desk at the Hillside location after 8am today ({$today}). 
 If you have any questions regarding this email or your check, please direct all questions to finance@wholefoods.coop.  Please allow 1 business day for a response. <br />
 <br />
 Thank you,<br />
