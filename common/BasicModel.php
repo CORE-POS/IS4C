@@ -75,7 +75,7 @@ class BasicModel
     protected $meta_types = array(
         'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY'),
         'BIGINT UNSIGNED' => array('default'=>'BIGINT UNSIGNED', 'mssql'=>'BIGINT', 'postgres9'=>'BIGINT'),
-        'REAL' => array('default'=>'DOUBLE'),
+        'REAL' => array('default'=>'DOUBLE', 'postgres9' => 'DOUBLE PRECISION'),
         'TINYINT' => array('default'=>'TINYINT', 'postgres9'=>'SMALLINT'),
         'DATETIME' => array('default'=>'DATETIME', 'postgres9'=>'TIMESTAMP'),
         'DOUBLE' => array('default'=>'DOUBLE', 'postgres9'=>'DOUBLE PRECISION'),
@@ -665,6 +665,7 @@ class BasicModel
     */
     public function getMeta($type, $dbms)
     {
+        $type = strtolower($type);
         if (!isset($this->meta_types[strtoupper($type)])) {
             return $type;
         }
