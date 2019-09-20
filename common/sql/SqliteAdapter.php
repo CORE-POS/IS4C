@@ -160,5 +160,15 @@ class SqliteAdapter implements DialectAdapter
     {
         return 'SELECT 1';
     }
+
+    public function space($num)
+    {
+        return "SPACE({$num})";
+    }
+
+    public function numberFormat($num)
+    {
+        return "printf('%2f', {$num})";
+    }
 }
 

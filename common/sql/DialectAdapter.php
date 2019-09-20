@@ -47,5 +47,7 @@ interface DialectAdapter
     public function setCharSet($charset);
     public function getProcessList();
     public function kill($intID);
+    public function space($num);
+    public function numberFormat($num);
 }
 

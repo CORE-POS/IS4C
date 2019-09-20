@@ -173,5 +173,15 @@ class PgsqlAdapter implements DialectAdapter
 
         return sprintf('SELECT pg_cancel_backend(%d)', $intID);
     }
+
+    public function space($num)
+    {
+        return "REPEAT(' ', {$num})";
+    }
+
+    public function numberFormat($num)
+    {
+        return "FORMAT('%s', ROUND({$num}, 2))";
+    }
 }
 

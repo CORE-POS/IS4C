@@ -163,5 +163,15 @@ class MysqlAdapter implements DialectAdapter
 
         return sprintf('KILL %d', $intID);
     }
+
+    public function space($num)
+    {
+        return "SPACE({$num})";
+    }
+
+    public function numberFormat($num)
+    {
+        return "FORMAT({$num}, 2)";
+    }
 }
 

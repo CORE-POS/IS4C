@@ -1930,5 +1930,19 @@ class SQLManager
 
         return $con->query($query);
     }
+
+    public function space($num, $which_connection='')
+    {
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->space($num);
+    }
+
+    public function numberFormat($num, $which_connection='')
+    {
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->numberFormat($num);
+    }
 }
 
