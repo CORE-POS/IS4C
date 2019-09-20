@@ -485,7 +485,7 @@ class BasicModel
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
-            if (!isset($table_def[$name])) {
+            if (!isset($table_def[$column]) && !isset($table_def[strtolower($column)])) {
                 // underlying table is missing the column
                 // constraint only used for select columns
                 // if a uniqueness-constraint column is missing
@@ -568,7 +568,7 @@ class BasicModel
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
-            if (!isset($table_def[$name])) {
+            if (!isset($table_def[$name]) && !isset($table_def[strtolower($name)])) {
                 continue;
             }
             $sql .= $this->identifierEscape($dbms, $name).',';
@@ -778,8 +778,7 @@ class BasicModel
             if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
                 // omit autoincrement column from insert
                 continue;
-            } else if (!isset($table_def[$column])) {
-                // underlying table is missing this column
+            } elseif (!isset($table_def[$column]) && !isset($table_def[strtolower($column)])) {
                 continue;
             }
             $cols .= $this->identifierEscape($dbms, $column).',';
@@ -833,7 +832,7 @@ class BasicModel
             } else {
                 if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
                     continue;
-                } else if (!isset($table_def[$column])) {
+                } elseif (!isset($table_def[$column]) && !isset($table_def[strtolower($column)])) {
                     // underlying table is missing this column
                     continue;
                 }
