@@ -231,6 +231,7 @@ class HouseCouponEditor extends FanniePage
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="button" class="fancybox-btn btn btn-default"
             href="explainify.html">Explanation of Settings</button>';
+        $ret .= ' <input type="checkbox" id="activeCoupons"> <label for="activeCoupons">Show Active Coupons</label>';
         $this->addOnloadCommand('$(\'.fancybox-btn\').fancybox();');
         $ret .= '</p>';
         $ret .= '</form>';
@@ -454,7 +455,6 @@ class HouseCouponEditor extends FanniePage
             'BQ'=>'BOGO (Qty limited)',
             'BH'=>'BOHO (Buy one get one 1/2 off)',
             'BM'=>'BOHO (Buy one get one 1/2 off, mixed items)',
-            'B+'=>'BOHO (Buy one get one 1/2 off, variable prices)',
             '%'=>'Percent Discount (End of transaction)',
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
             '%I'=>'Percent Discount (Specific Items)',
@@ -556,6 +556,33 @@ class HouseCouponEditor extends FanniePage
 
             return true;
         }
+        $('#activeCoupons').change(function(){
+            var checked = $(this).prop('checked');
+            if (checked == true) {
+                viewActiveCoupons();
+            } else {
+                $('tr').each(function(){
+                    $(this).show();
+                });
+            }
+        });
+        var viewActiveCoupons = function(){
+            var now = new Date();
+            $('tr').each(function(){
+                $(this).show();
+            });
+            $('table tr td:nth-child(4)').each(function(){
+                var begin = $(this).text();
+                begin = new Date(begin);
+                var end = $(this).next('td').text();
+                end = new Date(end);
+                if (now < end && now > begin) {
+                    $(this).closest('tr').show();
+                } else {
+                    $(this).closest('tr').hide();
+                }
+            });
+        };
         <?php
         return ob_get_clean();
     }
