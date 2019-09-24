@@ -427,7 +427,7 @@ HTML;
             $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
             <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables' id='my-table-$storeID'><thead >$thead</thead><tbody>";
-        if (property_exists($this, 'item') && is_array($this->item)) {
+        if (isset($this->item) && is_array($this->item)) {
             foreach ($this->item as $row => $array) {
                 $table .= "<tr>";
                 foreach ($colNames as $colName) {
