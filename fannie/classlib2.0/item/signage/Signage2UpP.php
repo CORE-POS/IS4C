@@ -77,7 +77,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
         }
-        if ($item['nonSalePrice'] > $item['normal_price']) {
+        if (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price']) {
             $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
