@@ -35,7 +35,7 @@ class AnnualMeetingParser extends Parser {
 
     function check($str)
     {
-        if (strlen($str) < 4) return false;
+        if (strlen($str) < 4 || strlen($str) > 5) return false;
         $plu = substr($str,0,4);
         if (in_array($plu, $this->plus)){
             if (strlen($str)==4) {
