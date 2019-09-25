@@ -89,6 +89,12 @@ class OwnerJoinLeaveReport extends FannieReportPage
             WHERE card_no=?
                 AND tdate <= ?');
 
+        $franReqP = false;
+        if ($this->config->COOP_ID == 'WFC_Duluth') {
+            $franReqP = $dbc->prepare("SELECT note FROM memberNotes
+                WHERE note LIKE '%FUNDS REQ%' AND cardno=?");
+        }
+
         $data = array();
         $totals = array();
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
@@ -107,6 +113,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $newCount = 0;
         while ($row = $dbc->fetch_row($joinR)) {
             $actual = $dbc->getValue($stockP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
+            if ($franReqP && !$row['name']) {
+                $row['name'] = $dbc->getValue($franReqP, array($row['card_no']));
+            }
             $data[] = array(
                 $row['card_no'],
                 date('Y-m-d', strtotime($row['start_date'])),    
@@ -235,17 +244,19 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 WHERE cardno=?
                 ORDER BY stamp DESC
             ');
+            $pendingCount = 0;
             while ($row = $dbc->fetchRow($termR)) {
                 $note = $dbc->getValue($noteP, array($row['card_no']));
                 if (strstr(strtoupper($note), 'TRANSFER')) {
                     continue;
                 }
                 $fran = $this->franAmount($dbc, $row['card_no']);
+                $actual = $dbc->getValue($stockP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
                 $record = array(
                     $row['card_no'],
                     date('Y-m-d', strtotime($row['suspDate'])),    
                     $row['FirstName'] . ' ' . $row['LastName'],
-                    sprintf('%.2f', $row['payments'] - $fran),
+                    sprintf('%.2f', $actual - $fran),
                     sprintf('%.2f', $fran),
                 );
                 if ($note !== false) {
@@ -257,7 +268,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     $record[] = '?';
                 }
                 $data[] = $record;
+                $pendingCoun++;
             }
+            $this->report_headers[5][0] .= ' (' . $pendingCount . ')';
 
             $this->report_headers[] = array('Fran Allocations', null, null, null, null, null);
             $this->report_headers[] = array('Number', 'Date', 'Name', 'Stock', null, 'Allocation');
@@ -295,17 +308,18 @@ class OwnerJoinLeaveReport extends FannieReportPage
             while ($w = $dbc->fetchRow($franR)) {
                 $detailR = $dbc->execute($detailP, array($w['cardno']));
                 $detailW = $dbc->fetchRow($detailR);
+                $actual = $dbc->getValue($stockP, array($w['cardno'], $this->form->date2 . ' 23:59:59'));
                 $data[] = array(
                     $detailW['CardNo'],
                     date('Y-m-d', strtotime($detailW['stamp'])),
                     $detailW['FirstName'] . ' ' . $detailW['LastName'],
-                    $detailW['payments'],
+                    $actual,
                     null,
                     $detailW['note'],
                 );
                 $franCount++;
             }
-            $this->report_headers[5][0] .= ' (' . $franCount . ')';
+            $this->report_headers[7][0] .= ' (' . $franCount . ')';
 
             $this->report_headers[] = array('Transfer Requests', null, null, null, null, null);
             $this->report_headers[] = array('Owner #', 'Date', 'Name', 'Equity', null, 'Request');
@@ -337,11 +351,12 @@ class OwnerJoinLeaveReport extends FannieReportPage
             while ($termW = $dbc->fetchRow($termR)) {
                 $note = $dbc->getValue($noteP, array($termW['card_no']));
                 if (strstr(strtoupper($note), 'TRANSFER')) {
+                    $actual = $dbc->getValue($stockP, array($termW['card_no'], $this->form->date2 . ' 23:59:59'));
                     $data[] = array(
                         $termW['card_no'],
                         date('Y-m-d', strtotime($termW['suspDate'])),
                         $termW['LastName'] . ', ' . $termW['FirstName'],
-                        sprintf('%.2f', $termW['payments']),
+                        sprintf('%.2f', $actual),
                         null,
                         $note,
                     );
