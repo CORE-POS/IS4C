@@ -66,6 +66,8 @@ class UIGLib
             }
             $header_info = array();
             $item_info = array();
+            $csvfile = tempnam(__DIR__ . '/noauto/originals/', 'inv');
+            $csvFP = fopen($csvfile, 'w');
             while(!feof($fp)) {
                 $line = fgetcsv($fp);
                 if (strtolower($line[0]) == 'header') {
@@ -74,6 +76,7 @@ class UIGLib
                     $item = self::parseItem($line, $vendorID);
                     $item_info[] = $item;
                 }
+                fputcsv($csvFP, $line);
             }
 
             if (count($item_info) > 0) {
@@ -132,6 +135,10 @@ class UIGLib
 
                     $model->save();
                 }
+
+                rename($csvfile, __DIR__ . '/noauto/originals/' . $id . '.csv');
+            } else {
+                unlink($csvfile);
             }
         }
 
