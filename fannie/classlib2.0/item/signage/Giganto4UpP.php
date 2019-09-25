@@ -71,7 +71,7 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $item['size'] = $this->formatSize($item['size'], $item);
         $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
-        if (isset($item['signMultiplier']) && $item['signMultiplier'] != -3) {
+        if (!isset($item['signMultiplier']) || $item['signMultiplier'] != -3) {
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 35);
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
             if (strstr($price, 'lb')) {
