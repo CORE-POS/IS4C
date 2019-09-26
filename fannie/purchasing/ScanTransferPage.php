@@ -66,10 +66,12 @@ class ScanTransferPage extends FannieRESTfulPage
 
             $orderOut->orderID($outID);
             $orderOut->vendorInvoiceID('XFER-OUT-' . $inID);
+            $orderOut->transferID(-1 * $inID);
             $orderOut->save();
 
             $orderIn->orderID($inID);
             $orderIn->vendorInvoiceID('XFER-IN-' . $outID);
+            $orderIn->transferID($outID);
             $orderIn->save();
 
             $item = new PurchaseOrderItemsModel($this->connection);
@@ -77,7 +79,7 @@ class ScanTransferPage extends FannieRESTfulPage
                 $item->internalUPC($upc);
                 $item->sku($upc);
                 $item->brand($data['brand']);
-                $item->description = $data['desc'];
+                $item->description($data['desc']);
                 $item->unitCost($data['cost']);  
                 $item->salesCode($data['codeTo']);
                 $item->caseSize(1);

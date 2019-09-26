@@ -68,9 +68,6 @@ class TransferPurchaseOrder extends FannieRESTfulPage
         $order1->placedDate(date('Y-m-d H:i:s'));
         $order1->creationDate(date('Y-m-d H:i:s'));
         $fromID = $order1->save();
-        $order1->vendorInvoiceID('XFER-' . $fromID);
-        $order1->orderID($fromID);
-        $order1->save();
 
         $order2 = new PurchaseOrderModel($dbc);
         $order1->vendorID(FormLib::get('vendor'));
@@ -79,7 +76,13 @@ class TransferPurchaseOrder extends FannieRESTfulPage
         $order2->placedDate(date('Y-m-d H:i:s'));
         $order1->creationDate(date('Y-m-d H:i:s'));
         $order2->vendorInvoiceID('XFER-' . $fromID);
+        $order2->transferID($fromID);
         $destID = $order2->save();
+
+        $order1->vendorInvoiceID('XFER-' . $destID);
+        $order1->transferID(-1 * $destID);
+        $order1->orderID($fromID);
+        $order1->save();
 
         $poi = new PurchaseOrderItemsModel($dbc);
         for ($i=0; $i<count($upcs); $i++) {
@@ -148,9 +151,11 @@ class TransferPurchaseOrder extends FannieRESTfulPage
         $order2->placedDate(date('Y-m-d H:i:s'));
         $order2->creationDate(date('Y-m-d H:i:s'));
         $order2->vendorInvoiceID('XFER-IN-' . $fromID);
+        $order2->transferID($fromID);
         $destID = $order2->save();
 
         $order1->vendorInvoiceID('XFER-OUT-' . $destID);
+        $order1->transferID(-1 * $destID);
         $order1->orderID($fromID);
         $order1->save();
 

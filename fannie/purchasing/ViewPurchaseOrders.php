@@ -647,6 +647,35 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         'notes'=>'',
     );
 
+    private function transferHeader($order, $store, $vendor)
+    {
+        if (!$order->transferID()) {
+            return '';
+        }
+
+        $first = 'Receiving';
+        $second = 'Sending';
+        $otherID = $order->transferID();
+        $link = 'Credit';
+        $self = 'Invoice';
+        if ($order->transferID() < 0) {
+            $first = 'Sending';
+            $second = 'Receiving';
+            $otherID = -1 * $order->transferID();
+            $link = 'Invoice';
+            $self = 'Credit';
+        }
+
+        return <<<HTML
+<div class="alert alert-info">
+Transfer {$self} |
+{$first}: {$store} |
+{$second}: {$vendor} |
+<a href="ViewPurchaseOrders.php?id={$otherID}">Matching {$link}</a>
+</div>
+HTML;
+    }
+
     protected function get_id_view()
     {
         $dbc = $this->connection;
@@ -680,6 +709,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         }
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
+        $xferHeader = $this->transferHeader($order, $sname, $vendor['vendorName']);
 
         $batchStart = date('Y-m-d', strtotime('+30 days'));
         $batchP = $dbc->prepare("
@@ -739,6 +769,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             href="ViewPurchaseOrders.php?{$init}">All Orders</a>
     </div>
 </p>
+{$xferHeader}
 <div class="row">
     <div class="col-sm-6">
         <table class="table table-bordered small">
