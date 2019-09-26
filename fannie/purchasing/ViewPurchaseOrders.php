@@ -479,17 +479,30 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
         $order = new PurchaseOrderModel($dbc);
         $order->orderID($this->id);
-        $order->delete();
-
-        $items = new PurchaseOrderItemsModel($dbc);
-        $items->orderID($this->id);
-        foreach ($items->find() as $item) {
-            $item->delete();
+        $order->load();
+        $ids = array($this->id);
+        if ($order->transferID()) {
+            $ids[] = abs($order->transferID());
         }
+        $this->deleteOrders($dbc, $ids);
 
         echo 'deleted';
 
         return false;
+    }
+
+    private function deleteOrders($dbc, $ids)
+    {
+        foreach ($ids as $id) {
+            $order = new PurchaseOrderModel($dbc);
+            $order->orderID($id);
+            $order->delete();
+            $items = new PurchaseOrderItemsModel($dbc);
+            $items->orderID($id);
+            foreach ($items->find() as $item) {
+                $item->delete();
+            }
+        }
     }
 
     /**
