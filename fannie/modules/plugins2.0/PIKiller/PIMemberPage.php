@@ -368,8 +368,13 @@ class PIMemberPage extends PIKillerPage {
         echo '<td>'.$this->text_or_field('address2',$this->account['addressSecondLine']).'</td>';
         echo "<td class=\"yellowbg\">UPC: </td>";
         echo '<td colspan=\"2\">'.$this->text_or_field('upc',$this->account['idCardUPC']).'</td>';
+        /*
         echo "<td class=\"yellowbg\">Shop Rate: </td>";
         printf('<td>%.2f</td>', $whData['yearTotalVisits'] / 12);
+         */
+        echo "<td class=\"yellowbg\">Election Password: </td>";
+        $vP = $dbc->prepare("SELECT password FROM Voters WHERE cardNo=?");
+        printf('<td>%s</td>', $dbc->getValue($vP, array($this->id)));
         echo "</tr>";
 
         echo "<tr>";
