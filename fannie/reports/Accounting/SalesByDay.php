@@ -109,7 +109,7 @@ class SalesByDay extends FannieReportPage
     {
         $dates = FormLib::standardDateFields();
         $store = FormLib::storePicker();
-        $opts = array();
+        $opts = '';
         $res = $this->connection->query('SELECT salesCode FROM departments GROUP BY salesCode ORDER BY salesCode');
         while ($row = $this->connection->fetchRow($res)) {
             $opts .= sprintf('<option>%s</option>', $row['salesCode']);
