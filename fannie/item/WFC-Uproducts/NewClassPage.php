@@ -57,7 +57,8 @@ class NewClassPage extends FannieRESTfulPage
         $likeCode = FormLib::get('likeCode');
         $pDept = FormLib::get('pDept');
         $size = FormLib::get('size');
-        $sellonline = FormLib::get('sellonline');
+        //$sellonline = FormLib::get('sellonline');
+        $sellonline = 0;
         $expires = FormLib::get('expires') . ' 00:00:00';
         $wBrand = FormLib::get('wBrand');
         $wDesc = FormLib::get('wDesc');
@@ -157,7 +158,7 @@ HTML;
             <div class="form-group">
                 <label for="pDesc">POS Description</label>
                 <input type="text" class="form-control len-lg" name="pDesc" id="pDesc" value="CLASS - "
-                    maxlength="30" required/>
+                    maxlength="30"  onkeyup="this.value = this.value.toUpperCase();" required/>
             </div>
             <div class="form-group">
                 <label for="pBrand">POS Brand</label>
@@ -275,7 +276,7 @@ HTML;
     
     public function javascriptContent()
     {
-        return <<<HTML
+        return <<<JAVASCRIPT
 $(document).ready(function() {
     var input = $("#upc");
     var len = input.val().length;
@@ -338,7 +339,7 @@ function autofill() {
         temp = temp.toUpperCase();
         $('#pDesc').val(temp);
     });
-HTML;
+JAVASCRIPT;
     }
 
     public function helpContent()
