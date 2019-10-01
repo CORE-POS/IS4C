@@ -89,7 +89,7 @@ foreach($records as $w){
     list($fname, $lname) = wfc_am_get_names($w['name']);
     printf('<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
         <td>%s</td><td>%s</td><td>%d</td><td>%d</td>
-        <td>%d</td><td>%d</td>
+        <td>%d</td><td>%d</td><td>%d</td>
         <td>%s</td><td>%s</td></tr>',
         $w['tdate'],$w['card_no'],$lname,$fname,$w['email'],
         $w['phone'],$w['guest_count']+1,
