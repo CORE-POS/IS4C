@@ -255,7 +255,7 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         $logger = new FannieLogger();
 
         foreach ($actions as $flagID => $action) {
-            $status = $flags[$flagID] ? 1 : 0;
+            $status = (isset($flags[$flagID]) && $flags[$flagID]) ? 1 : 0;
             $job = array(
                 'class' => $action,
                 'data' => array(
