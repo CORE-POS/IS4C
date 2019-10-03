@@ -74,6 +74,9 @@ a[type="submit"] {
     onclick="location='SaPriceChangePage.php';return false;" />
     -->
 <a class="btn btn-default btn-lg" type="submit"
+    href="../../../item/shrink/ShrinkTool.php" />Shrink</a>
+<hr />
+<a class="btn btn-default btn-lg" type="submit"
     href="SaItemList.php" />Quick List</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
