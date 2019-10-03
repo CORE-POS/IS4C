@@ -87,6 +87,11 @@ function enableLinea(selector, callback) {
         });
     }
 
+    document.addEventListener("BarcodeScanned", function (ev) {
+        var data = ev.value;
+        lineaBarcode(data, selector, callback);
+    }, false);
+
     // for webhub
     IPC_PARAMS.selector = selector;
     IPC_PARAMS.callback = callback;
