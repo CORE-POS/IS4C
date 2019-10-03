@@ -63,7 +63,7 @@ class SqlUpdate extends Job
             return false;
         }
 
-        $query = 'UPDATE ' . $table . ' SET ';
+        $query = 'UPDATE ' . $this->data['table'] . ' SET ';
         $args = array();
         foreach ($this->data['set'] as $col => $val) {
             $query .= $dbc->identifierEscape($col) . '=?,';
