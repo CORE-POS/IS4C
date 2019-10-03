@@ -171,6 +171,14 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
         }
         if (count($upcs) <= 10) {
             COREPOS\Fannie\API\data\ItemSync::sync($upcs);
+        } else {
+            $queue = new COREPOS\Fannie\API\jobs\QueueManager();
+            $queue->add(array(
+                'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
+                'data' => array(
+                    'upc' => $upcs,
+                ),
+            ));
         }
 
         return true;

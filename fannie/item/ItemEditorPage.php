@@ -635,6 +635,14 @@ HTML;
         $FANNIE_COOP_ID = $this->config->get('COOP_ID');
         if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
             updateAllLanes($upc, array('products','productUser'));
+        } elseif (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WFC_Duluth') {
+            $queue = new COREPOS\Fannie\API\jobs\QueueManager();
+            $queue->add(array(
+                'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
+                'data' => array(
+                    'upc' => $upc,
+                ),
+            ));
         } else {
             COREPOS\Fannie\API\data\ItemSync::sync($upc);
         }
