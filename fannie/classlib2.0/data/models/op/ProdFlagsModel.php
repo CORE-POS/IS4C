@@ -34,6 +34,7 @@ class ProdFlagsModel extends BasicModel
     'bit_number' => array('type'=>'TINYINT', 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(50)'),
     'active' => array('type'=>'TINYINT', 'default'=>1),
+    'action' => array('type'=>'VARCHAR(255)'),
     );
 
     public function doc()
@@ -45,6 +46,13 @@ Depends on:
 Use:
 Properties for the product table\'s
 numflag column
+
+Active is used to enable or disable a flag. Deleting flags
+can cause confusion if items still have that particular bit
+set in numflag.
+
+Action is a Job class that\' triggered when a flag is
+set or unset.
         ';
     }
 }

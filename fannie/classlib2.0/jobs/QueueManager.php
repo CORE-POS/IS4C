@@ -121,6 +121,7 @@ class QueueManager
                 $this->runJobs($redis);
 
             } catch (Exception $ex) {
+                $this->log($ex->getMessage());
                 if ($redis === false || !$redis->isConnected()) {
                     sleep(5);
                     $this->redisConnect();

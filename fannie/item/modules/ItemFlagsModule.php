@@ -160,6 +160,17 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         return $this->realSave($upc, '');
     }
 
+    private function actionMap($dbc)
+    {
+        $res = $dbc->query("SELECT bit_number, action FROM prodFlags WHERE action IS NOT NULL AND action <> ''");
+        $ret = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[$row['bit_number']] = $row['action'];
+        }
+
+        return $ret;
+    }
+
     private function realSave($upc, $suffix)
     {
         try {
@@ -185,10 +196,12 @@ class ItemFlagsModule extends ItemModule implements ItemRow
           JSON object with all flags false
         */
         $json = array();
+        $bitStatus = array();
         $flagMap = array();
         for ($i=0; $i<count($attrs); $i++) {
             $json[$attrs[$i]] = false;
             $flagMap[$bits[$i]] = $attrs[$i];
+            $bitStatus[$bits[$i]] = false;
         }
 
         $numflag = 0;   
@@ -201,6 +214,7 @@ class ItemFlagsModule extends ItemModule implements ItemRow
             // set flag in JSON representation
             $attr = $flagMap[$f];
             $json[$attr] = true;
+            $bitStatus[$f] = true;
         }
 
         $model = new ProductsModel($dbc);
@@ -215,7 +229,7 @@ class ItemFlagsModule extends ItemModule implements ItemRow
         /**
           Only add attributes entry if it changed
         */
-        if ($suffix === '' || $suffix = FannieConfig::config('STORE_ID')) {
+        if ($suffix === '' || $suffix == FannieConfig::config('STORE_ID')) {
             $curQ = 'SELECT attributes FROM ProductAttributes WHERE upc=? ORDER BY modified DESC';
             $curQ = $dbc->addSelectLimit($curQ, 1);
             $curP = $dbc->prepare($curQ);
@@ -230,7 +244,30 @@ class ItemFlagsModule extends ItemModule implements ItemRow
             }
         }
 
+        $this->queueActions($this->actionMap($dbc), $bitStatus, $upc, $suffix);
+
         return $saved ? true : false;
+    }
+
+    private function queueActions($actions, $flags, $upc, $store)
+    {
+        $queue = new  COREPOS\Fannie\API\jobs\QueueManager();
+        $logger = new FannieLogger();
+
+        foreach ($actions as $flagID => $action) {
+            $status = $flags[$flagID] ? 1 : 0;
+            $job = array(
+                'class' => $action,
+                'data' => array(
+                    'upc' => $upc,
+                    'store' => $store,
+                    'flag' => $status,
+                ),
+            );
+            $now = microtime(true);
+            $queue->add($job);
+            $logger->debug('Queueing time: ' . (microtime(true) - $now));
+        }
     }
 }
 

@@ -56,15 +56,16 @@ class ItemFlags extends FanniePage {
 
     private function updateCallback($dbc, $ids, $descs, $active)
     {
-        $upP = $dbc->prepare("
-            UPDATE prodFlags 
-            SET description=?,
-                active=?
-            WHERE bit_number=?");
+        $model = new ProdFlagsModel($dbc);
+        $actions = FormLib::get('action');
         for ($i=0;$i<count($ids);$i++) {
             if (isset($descs[$i]) && !empty($descs[$i])) {
                 $a = in_array($ids[$i], $active) ? 1 : 0;
-                $dbc->execute($upP,array($descs[$i],$a,$ids[$i]));   
+                $model->bit_number($ids[$i]);
+                $model->active($a);
+                $model->description($descs[$i]);
+                $model->action(isset($actions[$i]) ? $actions[$i] : '');
+                $model->save();
             }
         }
     }
@@ -119,7 +120,9 @@ class ItemFlags extends FanniePage {
             $prep = $dbc->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY bit_number");
             $excelCols = array('','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
         } else {
-            $prep = $dbc->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY description");
+            $def = $dbc->tableDefinition('prodFlags');
+            $action = isset($def['action']) ? 'action' : "'' as action";
+            $prep = $dbc->prepare("SELECT bit_number,description,active,{$action} FROM prodFlags ORDER BY description");
         }
         $res = $dbc->execute($prep);
         echo '<div class="row">
@@ -128,6 +131,7 @@ class ItemFlags extends FanniePage {
         echo '<tr>
             <th>Current Flags</th>
             <th>Enabled</th>
+            <th>Action</th>
             <th><span class="glyphicon glyphicon-trash"></span></th>
             </tr>';
         while ($w = $dbc->fetchRow($res)) {
@@ -138,6 +142,7 @@ class ItemFlags extends FanniePage {
                     <td><input type="checkbox" name="active[]" value="%d"
                         %s /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
+                    <td></td>
                     </tr>',
                     $w['bit_number'],
                     ($w['bit_number'] <= count($excelCols))?$excelCols[$w['bit_number']]:'',
@@ -153,11 +158,13 @@ class ItemFlags extends FanniePage {
                     <input type="hidden" name="mask[]" value="%d" /></td>
                     <td><input type="checkbox" name="active[]" value="%d"
                         %s /></td>
+                    <td><input type="text" class="form-control" name="action[]" value="%s" /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
                     </tr>',
                     $w['description'],$w['bit_number'],
                     $w['bit_number'],
                     ($w['active'] ? 'checked' : ''),
+                    $w['action'],
                     $w['bit_number']
                 );
             }
