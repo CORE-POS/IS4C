@@ -297,6 +297,7 @@ class RpImport extends FannieRESTfulPage
 
         $dbc = $this->connection;
         $lcP = $dbc->prepare('UPDATE likeCodes SET organic=?, preferredVendorID=?, origin=? WHERE likeCode=?');
+        $lcNoOriginP = $dbc->prepare('UPDATE likeCodes SET organic=?, preferredVendorID=? WHERE likeCode=?');
         $orgP = $dbc->prepare('
             UPDATE upcLike AS u
                 INNER JOIN products AS p ON u.upc=p.upc
@@ -319,13 +320,22 @@ class RpImport extends FannieRESTfulPage
                 ($i['organic'] ? 'Yes' : 'No'),
                 ($i['scale'] ? 'Yes' : 'No')
             );
-            $args = array(
-                $i['organic'] ? 1 : 0,
-                $this->vendorToID($i['vendor']),
-                $i['origin'],
-                $i['lc'],
-            );
-            $dbc->execute($lcP, $args);
+            if ($i['origin']) {
+                $args = array(
+                    $i['organic'] ? 1 : 0,
+                    $this->vendorToID($i['vendor']),
+                    $i['origin'],
+                    $i['lc'],
+                );
+                $dbc->execute($lcP, $args);
+            } else {
+                $args = array(
+                    $i['organic'] ? 1 : 0,
+                    $this->vendorToID($i['vendor']),
+                    $i['lc'],
+                );
+                $dbc->execute($lcNoOriginP, $args);
+            }
             if ($i['organic']) {
                 $dbc->execute($orgP, array($orgBits, $i['lc']));
             } else {
