@@ -15,25 +15,106 @@ class RdwImport extends FannieRESTfulPage
         $this->data = array();
         $this->invoice = array();
         $invoice = FormLib::get('invoice');
+        $ref = FormLib::get('ref');
+        $date = FormLib::get('date');
+        $store = FormLib::get('store');
+        $orderID = $this->getPO($ref, $store, $date);
         $prev = false;
+        $regex = '/([^0-9]*)([0-9]+) (.*) (\d\d\d\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (.*)/';
+        $invItems = array();
         foreach (explode("\n", $invoice) as $line) {
-            $hasSku = preg_match('/.* (\d\d\d\d\d) .*/', $line, $matches);
+            $hasSku = preg_match($regex, $line, $matches);
             if ($hasSku) {
-                $sku = $matches[1];
-                $cool = substr($line, 0, strpos($line, ' '));
+                $sku = $matches[4];
+                $cool = trim($matches[1]);
                 if ($cool == 'COSTA') {
                     $cool = 'COSTA RICA';
                 }
                 $this->data[$sku] = $cool;
                 $this->invoice[$sku] = $line;
+                $invItems[] = $matches;
                 $prev = $sku;
             } elseif ($prev) {
                 $this->data[$prev] .= ' AND ' . $line;
                 $this->data[$prev] = str_replace('N/A AND ', '', $this->data[$prev]);
             }
         }
+        $model = new PurchaseOrderItemsModel($this->connection);
+        foreach ($invItems as $item) {
+            list($desc, $case, $unit) = $this->getSize($item[3]);
+            $model->orderID($orderID);
+            $sku = $item[4];
+            $model->sku($sku);
+            $model->quantity($item[2]);
+            $model->unitCost($item[5] / $case);
+            $model->caseSize($case);
+            $model->unitSize($unit);
+            $model->receivedDate($date);
+            $model->receivedQty($item[2] * $case);
+            $model->receivedTotalCost($item[7]);
+            $model->brand($this->data[$sku]);
+            $model->description($desc);
+            $model->internalUPC(BarcodeLib::padUPC($this->fixUPC($item[9])));
+            $model->salesCode(51300);
+            $model->save();
+        }
 
         return true;
+    }
+
+    private function fixUPC($upc)
+    {
+        $upc = trim($upc);
+        if (strlen($upc) == 5) {
+            return $upc[0] == '9' ? substr($upc, 1) : $upc;
+        }
+        $upc = str_replace(' ', '', $upc);
+        $upc = str_replace('-', '', $upc);
+
+        return substr($upc, 0, strlen($upc) - 1);
+    }
+
+    private function getSize($item)
+    {
+        $item = trim(strtoupper($item));
+        if (preg_match('/^(\d+) *LB (.*)/', $item, $matches)) {
+            return array($matches[2], $matches[1], 'LB');
+        } elseif (preg_match('/^(\d+) *CT (.*)/', $item, $matches)) {
+            return array($matches[2], $matches[1], 'CT');
+        } elseif (preg_match('/^(\d+\/[0-9\.]+ *.+?) (.*)/', $item, $matches)) {
+            list($case, $unit) = explode('/', $matches[1]);
+            return array($matches[2], $case, $unit);
+        } elseif (preg_match('/^(\d+\/[0-9\.]) *# (.*)/', $item, $matches)) {
+            list($case, $unit) = explode('/', $matches[1]);
+            return array($matches[2], $case, $unit . ' LB');
+        } elseif (preg_match('/^(\d+-\d+) (.+?) (.*)/', $item, $matches)) {
+            list($min, $max) = explode('-', $matches[1]);
+            return array($matches[3], ($min + $max) / 2, $matches[2]);
+        } elseif (preg_match('/^([0-9\.]+ *OZ) (.*)/', $item, $matches)) {
+            return array($matches[2], 1, $matches[1]);
+        }
+
+        return array($item, 1, '');
+    }
+
+    private function getPO($ref, $store, $date)
+    {
+        $prep = $this->connection->prepare("SELECT orderID FROM PurchaseOrder
+            WHERE vendorInvoiceID=? AND vendorID=136 AND storeID=?");
+        $exists = $this->connection->getValue($prep, array($ref, $store));
+        if ($exists) {
+            return $exists;
+        }
+
+        $order = new PurchaseOrderModel($this->connection);
+        $order->vendorID(136);
+        $order->storeID($store);
+        $order->vendorInvoiceID($ref);
+        $order->placed(1);
+        $order->creationDate($date);
+        $order->placedDate($date);
+
+        return $order->save();
     }
 
     protected function post_view()
@@ -56,7 +137,7 @@ class RdwImport extends FannieRESTfulPage
             $lc = $this->connection->getValue($likeP, array($vendorID, $sku));
             if ($cool == 'NEW') {
                 $cool = 'NEW ZEALAND';
-            } elseif (is_numeric($cool)) {
+            } elseif (is_numeric($cool) || $cool == '') {
                 $lc = -1; // skip update if there's no valid origin
             }
             $ret .= sprintf('<tr><td>%s</td><td>%s</td>
@@ -82,11 +163,24 @@ class RdwImport extends FannieRESTfulPage
 
     protected function get_view()
     {
+        $stores = FormLib::storePicker();
         return <<<HTML
 <form method="post">
 <div class="form-group">
     <label>Copy/Paste Invoice Data</label>
     <textarea name="invoice" class="form-control" rows="20"></textarea>
+</div>
+<div class="form-group">
+    <label>Date</label>
+    <input type="text" class="form-control date-field" name="date" required />
+</div>
+<div class="form-group">
+    <label>Invoice #</label>
+    <input type="text" class="form-control" name="ref" required />
+</div>
+<div class="form-group">
+    <label>Store</label>
+    {$stores['html']}
 </div>
 <div class="form-group">
     <button type="submit" class="btn btn-default">Import</button>
