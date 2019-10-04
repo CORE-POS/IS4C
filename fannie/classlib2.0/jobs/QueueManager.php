@@ -93,7 +93,7 @@ class QueueManager
             $this->runJob($json);
         }
 
-        $json = $redis->brpop('jobHigh', 30);
+        $json = $redis->brpop('jobHigh', 10);
         if ($json !== null) {
             $this->runJob($json);
         }
