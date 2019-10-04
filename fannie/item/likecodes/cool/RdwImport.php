@@ -79,6 +79,8 @@ class RdwImport extends FannieRESTfulPage
         $item = trim(strtoupper($item));
         if (preg_match('/^(\d+) *LB (.*)/', $item, $matches)) {
             return array($matches[2], $matches[1], 'LB');
+        } elseif (preg_match('/^(\d+) *# (.*)/', $item, $matches)) {
+            return array($matches[2], $matches[1], 'LB');
         } elseif (preg_match('/^(\d+) *CT (.*)/', $item, $matches)) {
             return array($matches[2], $matches[1], 'CT');
         } elseif (preg_match('/^(\d+\/[0-9\.]+ *.+?) (.*)/', $item, $matches)) {
