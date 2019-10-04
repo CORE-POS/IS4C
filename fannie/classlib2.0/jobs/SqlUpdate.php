@@ -30,18 +30,17 @@ use \FannieDB;
  */
 class SqlUpdate extends Job
 {
+    protected $requiredFields = array('table', 'where', 'set');
+
     private function validateData($dbc)
     {
-        if (!isset($this->data['table'])) {
-            return 'Error: no table specified' . PHP_EOL;
+        if (!$this->checkData()) {
+            return false;
         }
         $table = $this->data['table'];
         if (!$dbc->tableExists($table)) {
             return 'Error: table does not exist: ' . $table . PHP_EOL;
         } 
-        if (!isset($this->data['where']) || !isset($this->data['set'])) {
-            return 'Error: no update provided' . PHP_EOL;
-        }
         if (!is_array($this->data['where']) || !is_array($this->data['set'])) {
             return 'Error: malformed update' . PHP_EOL;
         }
