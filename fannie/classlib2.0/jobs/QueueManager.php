@@ -137,6 +137,11 @@ if (!class_exists('\\FannieAPI')) {
 }
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
     // run
+
+    $logger = FannieLogger::factory();
+    COREPOS\common\ErrorHandler::setLogger($logger);
+    COREPOS\common\ErrorHandler::setErrorHandlers();
+
     $qm = new QueueManager();
     $qm->start();
 }
