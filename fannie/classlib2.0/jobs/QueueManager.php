@@ -2,6 +2,8 @@
 
 namespace COREPOS\Fannie\API\jobs;
 use \FannieConfig;
+use \FannieLogger;
+use \COREPOS\common\ErrorHandler;
 use \Exception;
 
 class QueueManager
@@ -139,8 +141,8 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
     // run
 
     $logger = FannieLogger::factory();
-    COREPOS\common\ErrorHandler::setLogger($logger);
-    COREPOS\common\ErrorHandler::setErrorHandlers();
+    ErrorHandler::setLogger($logger);
+    ErrorHandler::setErrorHandlers();
 
     $qm = new QueueManager();
     $qm->start();
