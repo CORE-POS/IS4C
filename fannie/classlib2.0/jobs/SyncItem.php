@@ -1,7 +1,6 @@
 <?php
 
 namespace COREPOS\Fannie\API\jobs;
-use \FannieDB;
 
 class SyncItem extends Job
 {
