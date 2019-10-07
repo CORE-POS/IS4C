@@ -37,7 +37,24 @@ class NewClassPage extends FannieRESTfulPage
     function preprocess()
     {
         $this->__routes[] = 'get<create>';
+        $this->__routes[] = 'post<exists>';
         return parent::preprocess();
+    }
+
+    protected function post_exists_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $upc = FormLib::get('upc');
+        $upc = BarcodeLib::padUPC($upc);
+        $args = array($upc);
+        $prep = $dbc->prepare('SELECT upc FROM products WHERE upc = ?');
+        $res = $dbc->execute($prep, $args);
+        $row = $dbc->fetchRow($res);
+        echo $exists = $row['upc'];
+
+        return false;
+
     }
     
     protected function get_create_handler()
@@ -152,7 +169,7 @@ HTML;
     <form class="" method="get"> 
         <div class="col-md-3">
             <div class="form-group">
-                <label for="upc">UPC</label>
+                <label for="upc">UPC</label><span id="upc-warning"></span>
                 <input type="text" class="form-control len-md" name="upc" id="upc" autofocus value="99" required/>
             </div>
             <div class="form-group">
@@ -165,15 +182,8 @@ HTML;
                 <input type="text" class="form-control len-md" name="pBrand" value="WFC-U" readonly="readonly" required/>
             </div>
             <div class="form-group">
-                <label for="pPrice">Price</label><br/>
-                <input type="radio" name="price" value="0.00" selected/> <i>Free</i> <span style="color: grey">| </span>
-                <input type="radio" name="price" value="12.00"/> $12 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="15.00"/> $15 <br/>
-                <input type="radio" name="price" value="20.00"/> $20 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="25.00"/> $25 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="30.00"/> $30 <span style="color: grey">| </span>
-                <input type="radio" name="price" value="40.00"/> $40 <br/>
-                <input type="radio" name="price" value="60.00"/> $60 
+                <label for="Price">Price</label><br/>
+                <input type="number" class="form-control len-lg" name="price" min="0" />
             </div>
             <!--
             <div class="form-group">
@@ -243,7 +253,7 @@ START - END LOCATION
 rows="20"></textarea>
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-default" name="create" value="1">Create WFC-U Class</button>
+                <button type="submit" class="btn btn-default" name="create" value="1" id="submit-btn">Create WFC-U Class</button>
             </div>
         </div>
     </form>
@@ -277,6 +287,26 @@ HTML;
     public function javascriptContent()
     {
         return <<<JAVASCRIPT
+$('#upc').keyup(function(e){
+    var upc = $(this).val();
+    var length = upc.length;
+    if (length == 8) {
+        $.ajax({
+            type: 'post',
+            data: 'upc='+upc+'&exists=1',
+            success: function(response)
+            {
+                if (response != '') {
+                    $('#upc-warning').html("<div class='alert alert-danger'>Product Already Exists</div>");
+                    $('#submit-btn').attr('disabled', true);
+                } else {
+                    $('#upc-warning').html("");
+                    $('#submit-btn').attr('disabled', false);
+                }
+            }
+        });
+    }
+});
 $(document).ready(function() {
     var input = $("#upc");
     var len = input.val().length;
