@@ -182,6 +182,7 @@ Deprecates nightly.equity.php.';
                 SET startdate=?,
                     mostRecent=?
                 WHERE card_no=?');
+            $dbc->startTransaction();
             foreach ($voids as $card_no => $transactions) {
                 $query = '
                     SELECT MIN(tdate) AS startdate,
@@ -206,6 +207,7 @@ Deprecates nightly.equity.php.';
                     ));
                 }
             }
+            $dbc->commitTransaction();
         }
 
         /**
