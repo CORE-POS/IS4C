@@ -154,6 +154,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $user = FannieAuth::getUID($this->current_user);
 
         try {
             list($VENDOR_ID, $vendorName) = $this->validateVendorID($dbc);
@@ -180,6 +181,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $skuExistsP = $dbc->prepare("SELECT sku FROM vendorItems WHERE sku=? AND vendorID=?");
         $skuClearP = $dbc->prepare("DELETE FROM vendorItems WHERE sku=? AND vendorID=?");
         $costP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=? AND default_vendor_id=?');
+        $reviewP = $dbc->prepare('UPDATE prodReview SET user=?, reviewed=' . $dbc->now() . ' WHERE upc=?');
         $updatedUPCs = array();
 
         $dbc->startTransaction();
@@ -292,6 +294,9 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if ($this->session->vUploadChangeCosts && $reg_unit) {
                 $dbc->execute($costP, array($reg_unit, $upc, $VENDOR_ID));
                 $updatedUPCs[] = $upc;
+            }
+            if ($this->session->vUploadChangeCosts) {
+                $dbc->execute($reviewP, array($user, $upc));
             }
         }
 
