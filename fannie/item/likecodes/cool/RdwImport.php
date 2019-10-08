@@ -45,18 +45,25 @@ class RdwImport extends FannieRESTfulPage
             $model->orderID($orderID);
             $sku = $item[4];
             $model->sku($sku);
-            $model->quantity($item[2]);
-            $model->unitCost($item[5] / $case);
-            $model->caseSize($case);
-            $model->unitSize($unit);
-            $model->receivedDate($date);
-            $model->receivedQty($item[2] * $case);
-            $model->receivedTotalCost($item[7]);
-            $model->brand($this->data[$sku]);
-            $model->description($desc);
-            $model->internalUPC(BarcodeLib::padUPC($this->fixUPC($item[9])));
-            $model->salesCode(51300);
-            $model->save();
+            if ($model->load()) {
+                $model->quantity($model->quantity() + $item[2]);
+                $model->receivedQty($model->receivedQty() + ($item[2] * $case));
+                $model->receivedTotalCost($model->receivedTotalCost() + $item[7]);
+                $model->save();
+            } else {
+                $model->quantity($item[2]);
+                $model->unitCost($item[5] / $case);
+                $model->caseSize($case);
+                $model->unitSize($unit);
+                $model->receivedDate($date);
+                $model->receivedQty($item[2] * $case);
+                $model->receivedTotalCost($item[7]);
+                $model->brand($this->data[$sku]);
+                $model->description($desc);
+                $model->internalUPC(BarcodeLib::padUPC($this->fixUPC($item[9])));
+                $model->salesCode(51300);
+                $model->save();
+            }
         }
 
         return true;
