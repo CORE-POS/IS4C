@@ -49,6 +49,7 @@ class DepartmentsModel extends BasicModel
     'memberOnly' => array('type'=>'SMALLINT', 'default'=>0),
     'line_item_discount' => array('type'=>'TINYINT', 'default'=>1),
     'dept_wicable' => array('type'=>'TINYINT', 'default'=>0),
+    'active' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     protected function hookAddColumnmargin()
