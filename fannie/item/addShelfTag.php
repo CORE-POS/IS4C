@@ -151,11 +151,18 @@ HTML;
           $shelftag->count(FormLib::get('count', 1));
           $insR = $shelftag->save();
 
+          $ret = '<div class="alert alert-success">Created Tag</div>
+             <p>
+              <a id="jankyRedirect" href="../admin/labels/ManualSignsPage.php?queueID=' . FormLib::get('subID') . '"
+                class="btn btn-default" target="_parent">Print Now</a>
+              </p>';
           if ($insR === false) {
-            return '<div class="alert alert-danger">Error creating tag</div>';
-          } else {
-            return '<div class="alert alert-success">Created Tag</div>';
+            $ret = '<div class="alert alert-danger">Error creating tag</div>';
           }
+
+          $this->addOnloadCommand("\$('#jankyRedirect').click();");
+
+          return $ret;
         }
     }
 
