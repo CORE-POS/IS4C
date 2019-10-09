@@ -69,6 +69,7 @@ class CpwImport extends FannieRESTfulPage
         'CH' => 'CHILE',
         'CHILE' => 'CHILE',
         'ECUADOR' => 'ECUADOR',
+        'JAMAICA' => 'JAMAICA',
     );
 
     protected function expandCOOL($str)
@@ -93,14 +94,19 @@ class CpwImport extends FannieRESTfulPage
             return implode(' AND ', $vals);
         }
 
-        $candidate = '';
         foreach ($this->COOL_MAP as $abbrev => $full) {
-            if (strpos($str, ' ' . $abbrev)) {
-                $candidate = $full;
+            $len = strlen($abbrev) + 1;
+            if (substr($str, -1*$len) == ' ' . $abbrev) {
+                return $full;
+            }
+        }
+        foreach ($this->COOL_MAP as $abbrev => $full) {
+            if (strpos($str, ' '. $abbrev . ' ')) {
+                return $full;
             }
         }
 
-        return $candidate;
+        return '';
     }
 
     protected function post_handler()
