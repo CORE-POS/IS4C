@@ -47,6 +47,8 @@ class MailChimpSync extends \COREPOS\Fannie\API\FanniePlugin
             'description'=>'Set this to Yes once the field has been created. This plugin
             will create the field automatically, but polling on every synchronization
             to check whether it exists is against MailChimp\'s best practices.'),
+    'MailChimpMergeVarName' => array('default' => 'OWNER NUMBER', 'label' => 'Owner Number field name',
+            'descriptio' => 'Name of the Mailchimp MERGEVAR field containing the owner number'),
     );
 
     public $plugin_description = 'Plugin for posting reversal transaction. A reversal is

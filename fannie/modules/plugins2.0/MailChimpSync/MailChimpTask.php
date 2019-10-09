@@ -31,6 +31,7 @@ if (!class_exists('FannieAPI')) {
 class MailChimpTask extends FannieTask
 {
     private $requiredMergeFields = array();
+    private $ownerField = 'OWNER NUMBER';
 
     protected function getSettings()
     {
@@ -39,6 +40,9 @@ class MailChimpTask extends FannieTask
         $LISTID='54100d18af';
         $APIKEY = $FANNIE_PLUGIN_SETTINGS['MailChimpApiKey'];
         $LISTID = $FANNIE_PLUGIN_SETTINGS['MailChimpListID'];
+        if ($FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarName']) {
+            $this->ownerField =$FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarName'];
+        }
 
         return array($APIKEY, $LISTID);
     }
@@ -274,7 +278,7 @@ class MailChimpTask extends FannieTask
 
     protected function unpackRecord($record, $columns)
     {
-        $card_no = $record[$columns['OWNER NUMBER']];
+        $card_no = $record[$columns[$this->ownerField]];
         $email = $record[$columns['EMAIL ADDRESS']];
         $fname = $record[$columns['FIRST NAME']];
         $lname = $record[$columns['LAST NAME']];
