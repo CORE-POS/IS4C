@@ -479,7 +479,7 @@ function enableLinea(selector, callback)
         } elseif (!isset($this->session->csrfToken)) {
             $this->session->csrfToken = COREPOS\common\FormLib::generateToken();
         }
-        $this->addOnloadCommand("appendTokens('{$this->session->csrfToken}');");
+        $this->addOnloadCommand("if (typeof appendTokens == 'function') { appendTokens('{$this->session->csrfToken}'); }");
     }
 
     public function setPermissions($p)
