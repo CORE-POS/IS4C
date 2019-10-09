@@ -1497,6 +1497,9 @@ class SQLManager
         $vals = "(";
         $args = array();
         foreach ($values as $k=>$v) {
+            if (strtolower($this->connectionType($which_connection)) === 'postgres9') {
+                $k = strtolower($k);
+            }
             if (isset($t_def[$k])) {
                 $vals .= '?,';
                 $args[] = $v;
@@ -1544,6 +1547,9 @@ class SQLManager
         $sets = "";
         $args = array();
         foreach($values as $k=>$v) {
+            if (strtolower($this->connectionType($which_connection)) === 'postgres9') {
+                $k = strtolower($k);
+            }
             if (isset($t_def[$k])) {
                 $sets .= $this->identifierEscape($k) . ' = ?,';
                 $args[] = $v;
