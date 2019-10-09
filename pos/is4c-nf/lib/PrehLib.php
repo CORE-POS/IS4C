@@ -476,7 +476,7 @@ static public function peekItem($fullRecord=false, $transID=false)
     $row = $dbc->fetchRow($res);
 
     if ($fullRecord) {
-        return is_array($row) ? $row : false;
+        return $row ? $row : false;
     }
     return isset($row['description']) ? $row['description'] : false;
 }
