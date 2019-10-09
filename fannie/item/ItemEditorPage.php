@@ -138,6 +138,9 @@ class ItemEditorPage extends FanniePage
         if (FormLib::get_form_value('searchupc') !== '') {
             $this->mode = 'searchResults';
         }
+        if (FormLib::get('superFilter', false) !== false) {
+            $this->session->superFilter = FormLib::get('superFilter');
+        }
 
         if (FormLib::get_form_value('createBtn') !== ''){
             $this->msgs = $this->saveItem(true);
@@ -176,6 +179,8 @@ class ItemEditorPage extends FanniePage
                     . $this->msgs
                     . '</blockquote>';
         }
+        $model = new SuperDeptNamesModel($this->connection);
+        $sOpts = $model->toOptions($this->session->superFilter);
         $ret = <<<HTML
 {$vars['msgs']}
 <form action="{$vars['self']}" name="searchform" method=get>
@@ -202,6 +207,13 @@ class ItemEditorPage extends FanniePage
             <input type="checkbox" name="inUse" value="1" />
             Include items that are not inUse
         </label>
+    </p>
+    <p class="form-inline">
+        <label>Filter</label>:
+        <select class="form-control input-sm" name="superFilter">
+            <option value="">Select one...</option>
+            {$sOpts}
+        </select>
     </p>
 </form>
 <p><a href="AdvancedItemSearch.php">{$vars['advancedSearch']}</a>
@@ -258,15 +270,22 @@ HTML;
                     break;
             }
         } else {
+            $superFilter = isset($this->session->superFilter) && $this->session->superFilter !== '';
+            $superJoin = $superFilter ? ' left join superdepts AS s ON p.department=s.dept_ID ' : '';
             $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
                 FROM products AS p
                     left join vendors AS n ON p.default_vendor_id=n.vendorID
+                    {$superJoin}
                 WHERE (description LIKE ? 
                     OR n.vendorName LIKE ?
                     OR p.brand LIKE ?)";
             $args[] = '%'.$upc.'%';
             $args[] = '%'.$upc.'%';
             $args[] = '%'.$upc.'%';
+            if ($superFilter) {
+                $query .= " AND s.superID=? ";
+                $args[] = $this->session->superFilter;
+            }
         }
         if (!$inUseFlag) {
             $query .= ' AND inUse=1 ';
