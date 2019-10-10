@@ -181,7 +181,7 @@ class ManualSignsPage extends FannieRESTfulPage
         }
         $offset = '';
         if (FormLib::get('queueID') == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
-            $mods = array('Produce4UpP', 'Legacy:WFC Produce');
+            $mods = array('Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
             $offset = 'checked';
         }
 
