@@ -60,7 +60,9 @@ class QueueTagsByLC extends FannieRESTfulPage
         $tag = new ShelftagsModel($dbc);
         $info = "";
         $aSuccess = "";
+        $success = "";
         $aDanger = "";
+        $danger = "";
         foreach ($likecodes as $lc) {
             $upc = $dbc->getValue($upcP, array($lc));
             $product->upc($upc);
