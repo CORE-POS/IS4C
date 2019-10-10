@@ -485,7 +485,7 @@ class BasicModel
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
-            if (!isset($table_def[$column]) && !isset($table_def[strtolower($column)])) {
+            if (!isset($table_def[$name]) && !isset($table_def[strtolower($name)])) {
                 // underlying table is missing the column
                 // constraint only used for select columns
                 // if a uniqueness-constraint column is missing
