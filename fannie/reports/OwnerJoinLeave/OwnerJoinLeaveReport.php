@@ -268,7 +268,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     $record[] = '?';
                 }
                 $data[] = $record;
-                $pendingCoun++;
+                $pendingCount++;
             }
             $this->report_headers[5][0] .= ' (' . $pendingCount . ')';
 
