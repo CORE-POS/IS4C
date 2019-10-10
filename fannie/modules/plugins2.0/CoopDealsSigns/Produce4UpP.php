@@ -120,7 +120,7 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
         if ($item['originShortName'] != '') {
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
-            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $pdf->SetFont($this->alt_font, '', $this->MED_FONT);
             $lower = trim(strtolower($item['originShortName']));
             if (substr($lower, 0, 10) !== 'product of') {
                 $item['originShortName'] = 'Product of ' . trim($item['originShortName']);
