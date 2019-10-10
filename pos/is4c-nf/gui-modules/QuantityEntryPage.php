@@ -150,7 +150,15 @@ class QuantityEntryPage extends BasicCorePage
         if ($mode == self::MODE_VERBATIM && !is_numeric($qtty)) {
             $this->msg = _('invalid quantity<br />enter number');
             return true;
-        } elseif ($mode != self::MODE_VERBATIM && $qtty != ((int)$qtty)) {
+        } elseif ($mode == self::MODE_PRECISE && strpos($qtty, ".") == 2) {
+            $this->boxColor="errorColoredArea";
+            $this->msg = _('invalid precision weight')
+                    . '<br />'
+                    . _('weight must be less than 10 pounds');
+            
+            return true;
+            
+        } elseif ($mode != self::MODE_VERBATIM && $qtty != ((int)$qtty) && $qtty != floatval($qtty)) {
             $this->boxColor="errorColoredArea";
             if ($mode == self::MODE_PRECISE) {
                 $this->msg = _("invalid precision weight") 
@@ -163,14 +171,31 @@ class QuantityEntryPage extends BasicCorePage
             }
 
             return true;
-        } elseif ($mode == self::MODE_PRECISE && strlen($qtty) != 3) {
+        } elseif ($mode == self::MODE_PRECISE && strlen($qtty) != 3 && strlen($qtty) != 5) {
+            $this->boxColor="errorColoredArea";
+            if (strpos($qtty, ".") === false) {
+                $this->msg = _('invalid precision weight')
+                        . '<br />'
+                        . _('enter three digits')
+                        . _('<br/><br/><i>include decimal point for<br/>
+                            weight over 1 pound</i>');
+            } else {
+                $this->msg = _('invalid precision weight')
+                        . '<br />'
+                        . _('enter three digits after decimal');
+            }
+            return true;
+        } elseif ($mode == self::MODE_PRECISE && strpos($qtty, ".") !== false && strlen($qtty) != 5 && floatval($qtty) <= 9.999) {
             $this->boxColor="errorColoredArea";
             $this->msg = _('invalid precision weight')
                     . '<br />'
-                    . _('enter three digits');
+                    . _('enter three digits after decimal');
+            
             return true;
-        } elseif ($mode == self::MODE_PRECISE) {
+        }  elseif ($mode == self::MODE_PRECISE && strlen($qtty) == 3 ) {
             $qtty /= 1000.00;
+            $qtty = round($qtty, 3);
+        } elseif ($mode == self::MODE_PRECISE && strlen($qtty) == 5) {
             $qtty = round($qtty, 3);
         }
 
@@ -200,7 +225,7 @@ class QuantityEntryPage extends BasicCorePage
         <?php echo $this->msg ?>
         </span><br />
         <p>
-        <?php echo _("enter quantity or clear to cancel"); ?>
+        <?php echo _("enter quantity or clear to cancel<br/><br/>"); ?>
         </p> 
         </div>
         </div>
