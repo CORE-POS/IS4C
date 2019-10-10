@@ -670,6 +670,7 @@ class HouseCoupon extends SpecialUPC
                 $deptR = $transDB->query($deptQ);
                 $row = $transDB->fetch_row($deptR);
                 $value = $row[1] - $value;
+                break;
             case "P+": // set price, mixed prices
                 $discoVal = $infoW["discountValue"];
                 // get number of qualifiers in transaction
@@ -854,7 +855,7 @@ class HouseCoupon extends SpecialUPC
             case "%D": // percent discount on all items in give department(s)
                 $valQ = "select sum(total) 
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
-                    and h.type in ('BOTH', 'DISCOUNT')";
+                    and h.type in ('BOTH', 'DISCOUNT') AND l.discountable >= 0";
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
                 $value = $row[0] * $infoW["discountValue"];
