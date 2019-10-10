@@ -138,8 +138,9 @@ HTML;
 </select>
 <form class="form-inline" method="get">
     <select name="list[]" class="form-control" size="10" id="lcList" multiple style="min-width: 100px;"></select>
-    <select name="tagID" class="form-control">{$options}</select>
+    <select name="tagID" class="form-control" onchange="relink(this.value);">{$options}</select>
     <button type="submit" class="btn btn-default">Add to Queue</button>
+    <a href="ManualSignsPage.php?queueID=6" id="printLink" class="btn btn-default">Print Now</a>
 </form>    
 HTML;
     }
@@ -156,6 +157,9 @@ function queueLC(e) {
     var newopt = '<option value="' + cur.val() + '">' + cur.text() + '</option>';
     $('#lcList').append(newopt);
     $('#lcList option').prop('selected', true);
+}
+function relink(tagID) {
+    $('#printLink').attr("href", "ManualSignsPage.php?queueID=" + tagID);
 }
 HTML;
     }
