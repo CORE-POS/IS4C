@@ -9,7 +9,7 @@ class EqPlanTask extends FannieTask
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $this->abMismatch($dbc); return;
+        $this->abMismatch($dbc);
         $this->getOnline($dbc);
         $this->getInStore($dbc);
 
