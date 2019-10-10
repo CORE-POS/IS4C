@@ -200,7 +200,7 @@ class HouseCoupon extends SpecialUPC
 
         /* check for member-only, longer use tracking
            available with member coupons */
-        if ($infoW["memberOnly"] >= 1 && !$this->isMember($info['memberOnly'])) {
+        if ($infoW["memberOnly"] >= 1 && !$this->isMember($infoW['memberOnly'])) {
             if ($quiet) {
                 return false;
             }
