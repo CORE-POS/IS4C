@@ -138,6 +138,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         $lc1P = $dbc->prepare("UPDATE likeCodes SET signOrigin=? WHERE likeCode=?");
         $lc2P = $dbc->prepare("UPDATE likeCodes SET origin=? WHERE likeCode=?");
+        $originP = $dbc->prepare("SELECT origin FROM likeCodes WHERE likeCode=?");
 
         $queue = new QueueManager();
 
@@ -187,14 +188,6 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             if ($saveCost) {
                 $insArgs[] = $cost;
             }
-            $insArgs[] = $mult;
-            $dbc->execute($insP, $insArgs);
-            /** Worried about speed here. Log many?
-            $bu = new BatchUpdateModel($dbc);
-            $bu->batchID($batchID);
-            $bu->upc($upc);
-            $bu->logUpdate($bu::UPDATE_ADDED);
-             */
 
             if ($this->config->COOP_ID == 'WFC_Duluth' && substr($upc, 0, 2) == 'LC' && $indexes['vendor'] && $indexes['name']) {
                 $vendor = isset($line[$indexes['vendor']]) ? trim($line[$indexes['vendor']]) : '';
@@ -209,9 +202,23 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $like = substr($upc, 2);
                 $dbc->execute($lc1P, array($signOrigin, $like));
                 if ($origin) {
+                    $current = $dbc->getValue($originP, array($like));
                     $dbc->execute($lc2P, array($origin, $like));
+                    if (strtoupper(trim($current)) != $origin) {
+                        $mult = 0;
+                    }
                 }
             }
+
+            $insArgs[] = $mult;
+            $dbc->execute($insP, $insArgs);
+            /** Worried about speed here. Log many?
+            $bu = new BatchUpdateModel($dbc);
+            $bu->batchID($batchID);
+            $bu->upc($upc);
+            $bu->logUpdate($bu::UPDATE_ADDED);
+             */
+
         }
         $dbc->commitTransaction();
 
