@@ -158,6 +158,7 @@ class undo_confirm extends BasicCorePage
           via Database::loadglobalvalues().
         */
         $this->assignTransaction();
+        CoreLocal::set("receiptToggle", 1);
         $this->change_page($this->page_url."gui-modules/pos2.php?reginput=0CA&repeat=1");
 
         return false;
