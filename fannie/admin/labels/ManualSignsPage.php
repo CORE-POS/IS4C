@@ -42,6 +42,14 @@ class ManualSignsPage extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    protected function delete_id_handler()
+    {
+        $prep = $this->connection->prepare("DELETE FROM shelftags WHERE id=?");
+        $this->connection->execute($prep, array($this->id));
+
+        return 'QueueTagsByLC.php';
+    }
+
     protected function post_u_handler()
     {
         list($inStr, $args) = $this->connection->safeInClause($this->u);
@@ -115,10 +123,13 @@ class ManualSignsPage extends FannieRESTfulPage
         $origins = FormLib::get('origin');
         $start = FormLib::get('start');
         $end = FormLib::get('end');
+        $exclude = FormLib::get('exclude');
 
         $items = array();
         for ($i=0; $i<count($descriptions); $i++) {
             if ($descriptions[$i] == '') {
+                continue;
+            } elseif (in_array($i, $exclude)) {
                 continue;
             }
             $items[] = array(
@@ -180,9 +191,12 @@ class ManualSignsPage extends FannieRESTfulPage
             }
         }
         $offset = '';
+        $clearBtn = '';
         if (FormLib::get('queueID') == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
             $mods = array('Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
             $offset = 'checked';
+            $clearBtn = '<a href="ManualSignsPage.php?_method=delete&id=' . FormLib::get('queueID') . '"
+                class="btn btn-default pull-right">Clear Queue</a>';
         }
 
         $ret .= '<div class="form-group form-inline">';
@@ -203,6 +217,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $ret .= '<button type="submit" name="pdf" value="Print" 
                     class="btn btn-default">Print</button>
                  <label><input type="checkbox" name="offset" value="1" ' . $offset . ' /> Offset</label>';
+        $ret .= $clearBtn;
         $ret .= '</div>';
         $ret .= '<hr />';
 
@@ -227,6 +242,7 @@ class ManualSignsPage extends FannieRESTfulPage
         <th>Origin/Reg. Price</th>
         <th>Start Date</th>
         <th>End Date</th>
+        <th>Exclude</th>
     </tr>
     </thead>
     <tbody>
@@ -265,6 +281,9 @@ class ManualSignsPage extends FannieRESTfulPage
             <input type="text" class="form-control input-sm date-field" placeholder="Change All"
                 onchange="if (this.value !== '') $('.input-end').val(this.value);" />
         </td>
+        <td>
+            <input type="checkbox" onchange="$('.exc').prop('checked', $(this).prop('checked'));" />
+        </td>
     </tr>
 HTML;
     }
@@ -293,6 +312,7 @@ HTML;
     <td><input type="text" name="origin[]" class="form-control input-sm input-origin" value="{$origin}" /></td>
     <td><input type="text" name="start[]" class="form-control input-sm input-start date-field" /></td>
     <td><input type="text" name="end[]" class="form-control input-sm input-end date-field" /></td>
+    <td><input type="checkbox" class="exc" name="exclude[]" value="{$i}" /></td>
 </tr>
 HTML;
         }
