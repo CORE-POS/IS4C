@@ -122,6 +122,7 @@ class PaycardEmvPage extends PaycardProcessPage
         }
         $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
         $overrides = $this->conf->get('portOverrides');
+        $overrides = array(); // not sure this feature will go through
         ?>
 <script type="text/javascript">
 function emvSubmit() {
