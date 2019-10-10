@@ -35,6 +35,8 @@ class LineItemDiscount extends Parser
     {
         if ($str == "LD") {
             return true;
+        } elseif (strlen($str) > 2 && substr($str, 0, 2) == 'LD' && is_numeric(substr($str, 2))) {
+            return true;
         }
         return false;
     }
@@ -46,6 +48,7 @@ class LineItemDiscount extends Parser
         // this is the currently selected item
         $transID = $this->session->get("currentid");
         $row = PrehLib::peekItem(true, $transID);
+        $dbc = Database::tDataConnect();
 
         if ($row === false) {
             // this shouldn't happen unless there's some weird session problem
@@ -65,44 +68,74 @@ class LineItemDiscount extends Parser
                 DisplayLib::standardClearButton()
             ));
         } 
-        if ($row['discounttype'] != 0) {
-            // for simplicity, sale items cannot be discounted
-            // this also prevents using this function more than
-            // once on a single item
-            return $ret->output(DisplayLib::boxMsg(
-                _("Item already discounted"),
-                '',
-                false,
-                DisplayLib::standardClearButton()
-            ));
-        } 
-        // discount is simply the total times the 
-        //   non-member discount percentage
-        // total is discounted immediately using
-        //   the non-member percentage
-        // memDiscount is the difference between total
-        //   member discount and the non-member discount
-        //   since the non-member discount is applied 
-        //   immediately
-        // setting discounttype=2 makes the member discount
-        //   apply when a [valid] member number is entered
-        $discQ = sprintf("UPDATE localtemptrans SET
-            discount=(regPrice * quantity * %f), 
-            total=(total-(regPrice*quantity*%f)),
-            memDiscount=((regPrice*quantity*%f) - (regPrice*quantity*%f)),
-            discounttype=2
-            WHERE trans_id=%d",
-            $this->session->get("LineItemDiscountNonMem"),
-            $this->session->get("LineItemDiscountNonMem"),
-            $this->session->get("LineItemDiscountMem"),
-            $this->session->get("LineItemDiscountNonMem"),
-            $transID);
-        $dbc = Database::tDataConnect();
-        $dbc->query($discQ);
 
-        // add notification line for nonMem discount
-        TransRecord::adddiscount($row['regPrice']*$row['quantity']*$this->session->get("LineItemDiscountNonMem"),
-            $row['department']);
+        if ($str == 'LD') {
+            if ($row['discounttype'] != 0) {
+                // for simplicity, sale items cannot be discounted
+                // this also prevents using this function more than
+                // once on a single item
+                return $ret->output(DisplayLib::boxMsg(
+                    _("Item already discounted"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                ));
+            } 
+            // discount is simply the total times the 
+            //   non-member discount percentage
+            // total is discounted immediately using
+            //   the non-member percentage
+            // memDiscount is the difference between total
+            //   member discount and the non-member discount
+            //   since the non-member discount is applied 
+            //   immediately
+            // setting discounttype=2 makes the member discount
+            //   apply when a [valid] member number is entered
+            $discQ = sprintf("UPDATE localtemptrans SET
+                discount=(regPrice * quantity * %f), 
+                total=(total-(regPrice*quantity*%f)),
+                memDiscount=((regPrice*quantity*%f) - (regPrice*quantity*%f)),
+                discounttype=2
+                WHERE trans_id=%d",
+                $this->session->get("LineItemDiscountNonMem"),
+                $this->session->get("LineItemDiscountNonMem"),
+                $this->session->get("LineItemDiscountMem"),
+                $this->session->get("LineItemDiscountNonMem"),
+                $transID);
+            $dbc->query($discQ);
+
+            // add notification line for nonMem discount
+            TransRecord::adddiscount($row['regPrice']*$row['quantity']*$this->session->get("LineItemDiscountNonMem"),
+                $row['department']);
+        } else {
+            if ($row['charflag'] == 'PO') {
+                return $ret->output(DisplayLib::boxMsg(
+                    _("Item already discounted"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                ));
+            } 
+
+            $amt = substr($str, 2);
+            $amt /= 100;
+            if ($amt > $row['unitPrice']) {
+                return $ret->output(DisplayLib::boxMsg(
+                    _("Cannot discount this item"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                ));
+            }
+            $unitPrice = $row['unitPrice'] - $amt;
+            $total = $row['quantity'] * $unitPrice;
+            $upP = $dbc->prepare("UPDATE localtemptrans
+                SET charflag='PO',
+                    unitPrice=?,
+                    total=?
+                WHERE trans_id=?");
+            $dbc->execute($upP, array($unitPrice, $total, $transID));
+        }
 
         // footer should be redrawn since savings and totals
         // have changed. Output is the list of items
