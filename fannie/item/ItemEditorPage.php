@@ -181,6 +181,9 @@ class ItemEditorPage extends FanniePage
         }
         $model = new SuperDeptNamesModel($this->connection);
         $sOpts = $model->toOptions($this->session->superFilter);
+        if ($this->session->superFilter !== '') {
+            $this->addOnloadCommand("EXTRA_AUTO_COMPLETE_PARAMS = { superID: " . $this->session->superFilter . " };");
+        }
         $ret = <<<HTML
 {$vars['msgs']}
 <form action="{$vars['self']}" name="searchform" method=get>
@@ -210,7 +213,8 @@ class ItemEditorPage extends FanniePage
     </p>
     <p class="form-inline">
         <label>Filter</label>:
-        <select class="form-control input-sm" name="superFilter">
+        <select class="form-control input-sm" name="superFilter"
+            onchange="if (this.value == '') { EXTRA_AUTO_COMPLETE_PARAMS = {}; } else { EXTRA_AUTO_COMPLETE_PARAMS = { superID: this.value }; }">
             <option value="">Select one...</option>
             {$sOpts}
         </select>
