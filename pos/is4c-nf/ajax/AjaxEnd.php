@@ -73,6 +73,7 @@ class AjaxEnd extends AjaxCallback
                 $sdObj->readReset();
             }
             $this->session->set('ccTermState','swipe');
+            $this->session->set('lotterySpin',false);
             $this->uploadAndReset();
             $this->session->set("End",0);
             Database::flushJobs();
