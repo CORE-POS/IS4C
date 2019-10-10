@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\Parser;
 
