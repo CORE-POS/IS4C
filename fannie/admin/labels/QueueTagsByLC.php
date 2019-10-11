@@ -36,6 +36,8 @@ class QueueTagsByLC extends FannieRESTfulPage
         by picking like codes.';
     public $themed = true;
 
+    private $msgs = '';
+
     public function preprocess()
     {
 
@@ -44,12 +46,11 @@ class QueueTagsByLC extends FannieRESTfulPage
         return parent::preprocess();
     }
 
-    public function get_list_view()
+    protected function get_list_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $ret = $this->get_view();
         $tagID = FormLib::get('tagID');
         $likecodes = FormLib::get('list');
         $upcP = $dbc->prepare("SELECT u.upc
@@ -98,11 +99,17 @@ class QueueTagsByLC extends FannieRESTfulPage
                 UPCs that did not save to queue{$aDanger}</div>";
         }
 
-        return <<<HTML
-{$success}
-{$danger}
-{$ret}
-HTML;
+        $this->msgs = $success . $danger;
+        if (FormLib::get('print')) {
+            return 'ManualSignsPage.php?queueID=' . $tagID;
+        }
+
+        return true;
+    }
+
+    public function get_list_view()
+    {
+        return $this->msgs . $this->get_view();
     }
 
     public function get_view()
@@ -138,11 +145,12 @@ HTML;
     <option value="">Select likecode(s)</option>
     {$lOpts}
 </select>
-<form class="form-inline" method="get">
+<form id="queueForm" class="form-inline" method="get">
     <select name="list[]" class="form-control" size="10" id="lcList" multiple style="min-width: 100px;"></select>
     <select name="tagID" class="form-control" onchange="relink(this.value);">{$options}</select>
     <button type="submit" class="btn btn-default">Add to Queue</button>
-    <a href="ManualSignsPage.php?queueID=6" id="printLink" class="btn btn-default">Print Now</a>
+    <a href="ManualSignsPage.php?queueID=6" id="printLink"
+        onclick="return autoSubmit();" class="btn btn-default">Print Now</a>
 </form>    
 HTML;
     }
@@ -162,6 +170,17 @@ function queueLC(e) {
 }
 function relink(tagID) {
     $('#printLink').attr("href", "ManualSignsPage.php?queueID=" + tagID);
+}
+function autoSubmit() {
+    var cur = $('#lcList option');
+    console.log(cur.length);
+    if (cur.length > 0) {
+        $('#queueForm').append('<input type="hidden" name="print" value="1" />');
+        $('#queueForm').submit();
+        return false;
+    }
+
+    return true;
 }
 HTML;
     }
