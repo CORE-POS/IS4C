@@ -20,5 +20,6 @@ class RpCleanupTask extends FannieTask
         $dbc->query("DELETE FROM RpSessions");
         $dbc->query("UPDATE PurchaseOrder SET placed=1, placedDate=" . $dbc->now() . "
                 WHERE userID=-99 AND placed=0");
+        $dbc->query('DELETE FROM shelftags WHERE id=6');
     }
 }
