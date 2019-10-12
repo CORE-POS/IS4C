@@ -123,7 +123,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $origins = FormLib::get('origin');
         $start = FormLib::get('start');
         $end = FormLib::get('end');
-        $exclude = FormLib::get('exclude');
+        $exclude = FormLib::get('exclude', array());
 
         $items = array();
         for ($i=0; $i<count($descriptions); $i++) {
