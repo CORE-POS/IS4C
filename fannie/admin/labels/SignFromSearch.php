@@ -70,6 +70,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         if (!is_array($this->u)) {
             $this->u = array($this->u);
         }
+        $this->upcs = array();
         foreach($this->u as $postdata) {
             if (is_numeric($postdata)) {
                 $this->upcs[] = BarcodeLib::padUPC($postdata);
