@@ -353,7 +353,7 @@ HTML;
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $date = new DateTime();
-        $date->sub(new DateInterval('P1M'));
+        $date->sub(new DateInterval('P2M'));
         $prevMonth = $date->format('Y-m-d 00:00:00') . '<br/>';
         $args = array($storeID, $volMin, $volMax, $posLimit, $negLimit, $prevMonth);
         $var = ($storeID == 1) ? 3 : 7;
