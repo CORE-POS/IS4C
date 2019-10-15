@@ -147,8 +147,10 @@ class SaReportPage extends FanniePage {
         $args = array($this->store);
         $super = FormLib::get('super', -1);
         $superAnd = '';
+        $superTable = "MasterSuperDepts";
         if ($super >= 0) {
             $superAnd = ' AND m.superID=? ';
+            $superTable = "superdepts";
             $args[] = $super;
         }
         $q= $dbc->prepare("SELECT
@@ -194,7 +196,7 @@ class SaReportPage extends FanniePage {
         FROM sa_inventory AS s 
             LEFT JOIN {$OPDB}products AS p ON s.upc=p.upc AND p.store_id=1 
             LEFT JOIN {$OPDB}departments AS d ON p.department=d.dept_no
-            LEFT JOIN {$OPDB}MasterSuperDepts AS m ON p.department=m.dept_ID
+            LEFT JOIN {$OPDB}{$superTable} AS m ON p.department=m.dept_ID
             LEFT JOIN {$OPDB}vendorItems AS v ON s.upc=v.upc AND v.vendorID=1
             LEFT JOIN {$OPDB}vendorDepartments AS y ON v.vendorDept=y.deptID AND v.vendorID=y.vendorID
             LEFT JOIN {$OPDB}departments AS z ON y.posDeptID=z.dept_no
@@ -480,7 +482,7 @@ table.shelf-audit tr:hover {
     function body_content(){
         ob_start();
         $stores = FormLib::storePicker();
-        $model = new MasterSuperDeptsModel($this->connection);
+        $model = new SuperDeptNamesModel($this->connection);
         $model->whichDB($this->config->get('OP_DB'));
         $super = FormLib::get('super', -1);
         $mOpts = $model->toOptions($super);
