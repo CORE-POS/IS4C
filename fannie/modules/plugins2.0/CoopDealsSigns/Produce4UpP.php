@@ -35,7 +35,7 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $alt_font = 'Arial';
 
     protected $width = 139;
-    protected $height = 108;
+    protected $height = 104;
     protected $top = 30;
     protected $left = 16;
 
