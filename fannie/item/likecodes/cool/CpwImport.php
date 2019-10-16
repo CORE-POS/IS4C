@@ -70,6 +70,7 @@ class CpwImport extends FannieRESTfulPage
         'CHILE' => 'CHILE',
         'ECUADOR' => 'ECUADOR',
         'JAMAICA' => 'JAMAICA',
+        'CAN' => 'CANADA',
     );
 
     protected function expandCOOL($str)
