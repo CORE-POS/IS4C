@@ -27,12 +27,24 @@ use COREPOS\pos\lib\MiscLib;
 
 class BottleReturnDept extends SpecialDept
 {
-    public $help_summary = 'Negate entered amount e.g. 100 means $1 refund not $1 sale';
+    public $help_summary = 'Invert entered amount e.g. 100 means $1 refund not $1 sale';
 
     public function handle($deptID,$amount,$json)
     {
-        if (strstr($this->session->get('strEntered'), 'DP') && $this->session->get('msgrepeat') == 0) { // invert has not happened yet
-            $this->session->set('strEntered', (100*$amount * -1).'DP'.$deptID);
+        // msgrepeat == 0 implies price is not inverted yet.
+        if (strstr($this->session->get('strEntered'), 'DP') &&
+            $this->session->get('msgrepeat') == 0)
+        {
+            // Re-compose the entered string with inverted price.
+            // First, compose the multiple part, if there is one.
+            $quantityString = ($this->session->get("quantity") > 0 &&
+                $this->session->get("multiple") == 1) ?
+                $qtyString = $this->session->get("quantity") . '*' :
+                '';
+            // Compose with inverted price.
+            $this->session->set('strEntered', $qtyString.(100*$amount * -1).'DP'.$deptID);
+            // Re-submit with inverted price, and msgrepeat == 1 to prevent
+            //  this inversion from being done again.
             $this->session->set('msgrepeat', 1);
             $json['main_frame'] = MiscLib::baseURL().'gui-modules/boxMsg2.php?autoconfirm=1';
         }
