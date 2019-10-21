@@ -260,7 +260,7 @@ class EOMReport extends FannieReportPage
         );
         $collectors = array(
             'State' => array(0.06875, 0),
-            'City' => array(0.01, 0),
+            'City' => array(0.015, 0),
             'Deli' => array(0.0225, 0),
             'County' => array(0.005, 0),
         );
