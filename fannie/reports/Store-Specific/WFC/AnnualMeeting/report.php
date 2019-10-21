@@ -35,6 +35,7 @@ $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
     LEFT JOIN meminfo AS m ON d.card_no=m.card_no
     LEFT JOIN regNotes AS n ON d.card_no=n.card_no
     WHERE upc IN ('0000000001041','0000000001042')
+        AND d.card_no <> 3145
     GROUP BY d.card_no
     ORDER BY MIN(tdate)";
 $records = array();
