@@ -362,7 +362,7 @@ echo $output;
         $collected[$row['taxID']] = $row['ttl'];
     }
     $state = 0.06875;
-    $city = 0.01;
+    $city = 0.015;
     $deli = 0.0225;
     $county = 0.005;
     $startDT = new DateTime($start);
