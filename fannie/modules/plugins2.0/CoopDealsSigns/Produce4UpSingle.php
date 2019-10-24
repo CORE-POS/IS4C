@@ -13,10 +13,11 @@ class Produce4UpSingle extends Produce4UpP
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
 
-    protected $width = 139;
+    protected $width = 149;
     protected $height = 108;
-    protected $top = 30;
+    protected $top = 25;
     protected $left = 16;
+    protected $bottomLineShift = 28;
 
     protected function createPDF()
     {

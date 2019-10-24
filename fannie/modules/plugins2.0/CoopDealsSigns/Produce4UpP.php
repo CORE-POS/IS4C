@@ -38,6 +38,7 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $height = 104;
     protected $top = 30;
     protected $left = 16;
+    protected $bottomLineShift = 20;
 
     protected function createPDF()
     {
@@ -106,20 +107,20 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
         if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
             // intl would be nice
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
-            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - $this->bottomLineShift));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
         }
 
         if (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price']) {
-            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - $this->bottomLineShift));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
             $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
         }
 
         if ($item['originShortName'] != '') {
-            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - $this->bottomLineShift));
             $pdf->SetFont($this->alt_font, '', $this->MED_FONT);
             $lower = trim(strtolower($item['originShortName']));
             if (substr($lower, 0, 10) !== 'product of') {
