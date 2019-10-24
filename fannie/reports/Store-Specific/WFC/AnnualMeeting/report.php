@@ -54,7 +54,7 @@ while($hereW = $fannieDB->fetch_row($hereR)){
 include(__DIR__ . '/../../../../src/Credentials/OutsideDB.tunneled.php');
 // online registrations
 $query = "SELECT r.tdate,r.card_no,name,email,
-    phone,guest_count,child_count,
+    phone,SUM(CASE WHEN m.type='GUEST' THEN 1 ELSE 0 END) AS guest_count,child_count,
     SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as squash,
     SUM(CASE WHEN m.subtype=2 THEN 1 ELSE 0 END) as squashgf,
     SUM(CASE WHEN m.subtype=3 THEN 1 ELSE 0 END) as chicken,
@@ -69,6 +69,8 @@ $query = "SELECT r.tdate,r.card_no,name,email,
     phone,guest_count,child_count
     ORDER BY tdate";
 $res = $dbc->query($query);
+var_dump($dbc->error());
+var_dump($dbc->tableDefinition('regMeals'));
 while($row = $dbc->fetch_row($res)){
     $records[] = $row;
 }
