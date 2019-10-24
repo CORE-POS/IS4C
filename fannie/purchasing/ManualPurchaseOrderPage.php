@@ -255,9 +255,11 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
 
         $ret .= '</form>';
 
-        $this->addScript('js/manual.js');
+        $this->addScript('js/manual.js?date=20191024');
         $this->addScript('../item/autocomplete.js');
-        $this->addOnloadCommand('addInvoiceLine();');
+        if (FormLib::get('adjust') == '') {
+            $this->addOnloadCommand('addInvoiceLine();');
+        }
 
         return $ret;
     }

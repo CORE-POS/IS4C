@@ -69,7 +69,7 @@ function totalField(row)
 
 function brandField(row)
 {
-    var brand = $('<input type="text" name="brand[]" required />')
+    var brand = $('<input type="text" name="brand[]" />')
         .val($('#vendor-name strong').html())
         .addClass('item-brand')
         .addClass('input-sm')
