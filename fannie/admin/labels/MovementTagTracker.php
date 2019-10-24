@@ -33,14 +33,125 @@ class MovementTagTracker extends FannieRESTfulPage
     public $description = '[Movement Shelf-Tag Tracker] Find tags to reprint based
         on change in sales volume.';
     private $item = array();
+    protected $must_authenticate = true;
+    protected $stores = array(1=>'Hillside', 2=>'Denfeld');
 
     public function preprocess()
     {
         $this->__routes[] = "get<addRange>";
         $this->__routes[] = "get<delete>";
         $this->__routes[] = "get<exclusionName>";
+        $this->__routes[] = "post<upcs>";
+        $this->__routes[] = "get<data>";
 
         return parent::preprocess();
+    }
+
+    public function get_data_view()
+    {
+        $dbc = fanniedb::get($this->config->get('op_db'));
+
+        $args = array($storeID);
+        $td = '';
+        $th = '';
+        $cols = array('updateID', 'upc', 'brand', 'description', 'dept', 'storeID', 
+            'auto_par', 'adjustment', 'modified');
+        foreach ($cols as $col) {
+            $th.= "<th>$col</th>";
+        }
+        $prep = $dbc->prepare("SELECT m.*, DATE(m.modified) as modified, 
+                p.brand, p.description,
+                CONCAT(d.dept_no, ' ', d.dept_name) AS dept
+            FROM MovementUpdate AS m
+                LEFT JOIN products AS p ON m.upc=p.upc
+                LEFT JOIN departments AS d ON p.department=d.dept_no
+            GROUP BY updateID
+            ");
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $td .= "<tr>";
+            foreach ($cols as $col) {
+                $td .= "<td data-column=\"$col\">{$row[$col]}</td>";
+            }
+            $td .= "</tr>";
+        }
+
+        $stores = FormLib::storePicker();
+        $this->addOnloadCommand("$('#datepicker1').datepicker({dateFormat: 'yy-mm-dd'});");
+        $this->addOnloadCommand("$('#datepicker2').datepicker({dateFormat: 'yy-mm-dd'});");
+        $this->addScript("movementTag.js");
+        $this->addOnloadcommand("movementTableFilter.filter_table();");
+
+        return <<<HTML
+<h2>Shelftag Replacement History</h2>
+<div class="row">
+    <ul><li><a href="ShelfTagIndex.php">Shelftag Index</a></li></ul>
+    <div class="col-lg-2"><div class="form-group">{$stores['html']}</div></div>
+    <div class="col-lg-2"><div class="form-group">
+        <input class="form-control" id="datepicker1" data-var="from"  type="text" placeholder="From"/>
+    </div></div>
+    <div class="col-lg-2"><div class="form-group">
+        <input class="form-control" id="datepicker2" data-var="to"  type="text" placeholder="To"/>
+    </div></div>
+    <div class="col-lg-2"><div class="form-group">
+        <input class="form-control" id="upc-filter" data-var="upc" type="text" placeholder="UPC"/>
+    </div></div>
+    <div class="col-lg-2"><div class="form-group">
+        <input class="form-control" id="brand-filter" data-var="brand"  type="text" placeholder="Brand"/>
+    </div></div>
+    <div class="col-lg-2"><div class="form-group">
+        <input class="form-control" id="desc-filter" data-var="desc"  type="text" placeholder="Description"/>
+    </div></div>
+</div>
+<div class="row">
+    <div class="col-lg-2"><div class="form-group">
+        <button class="btn btn-default" style="width: 45%">Submit</button>
+        <button class="btn btn-default" style="width: 45%" onclick="
+            $('input').each(function(){ $(this).val(''); $(this).trigger('change') });"
+        >Clear</button>
+    </div></div>
+</div>
+<table id="mu-table" class="table table-bordered table-sm small"><thead>$th</thead><tbody>$td</tbody></table>
+HTML;
+    }
+
+    public function post_upcs_handler()
+    {
+        $dbc = fanniedb::get($this->config->get('op_db'));
+        $upcs = FormLib::get('upcs');
+        $adjustments = FormLib::get('adjustments');
+        $auto_pars = FormLib::get('auto_par');
+        $storeID = FormLib::get('storeID');
+        $ret = '';
+        $today = new DateTime();
+        
+        $args = array($storeID);
+        $prep = $dbc->prepare("SELECT DATE(MAX(modified)) FROM MovementUpdate
+            WHERE storeID = ?");
+        if ($dbc->getValue($prep, $args) == $today->format('Y-m-d')) {
+        } else {
+            foreach ($upcs as $k => $upc) {
+                $ret .= "<div>$upc, {$adjustments[$k]}</div>";
+                $args = array($upc, $storeID, $adjustments[$k], $auto_pars[$k]);
+                $prep = $dbc->prepare("INSERT INTO MovementUpdate 
+                    (upc, storeID, adjustment, auto_par, modified) VALUES (?, ?, ?, ?, NOW())");
+                $res = $dbc->execute($prep, $args);
+                if ($er = $dbc->error()) $ret .= $er;
+            }
+            $valA = array($storeID);
+            $valP = $dbc->prepare("SELECT * FROM MovementUpdate 
+                WHERE storeID = ? AND DATE(modified) = DATE(NOW());");
+            $valR = $dbc->execute($valP, $valA);
+            $valCount = $dbc->numRows($valR);
+            if ($valCount == count($upcs)) {
+                return header('location: MovementTagTracker.php?status=success');
+            } else {
+                return header('location: MovementTagTracker.php?status=fail&err='.$ret);
+            }
+        }
+        
+        return header('location: MovementTagTracker.php?status=uptodate');
+
     }
 
     public function get_exclusionName_handler()
@@ -140,28 +251,86 @@ class MovementTagTracker extends FannieRESTfulPage
         return false;
     }
 
+    private function draw_expired_table()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $date = new DateTime();
+        $date->sub(new DateInterval('P1Y'));
+
+        $args = array($storeID, $date->format('Y-m-d'), $storeID);
+        $prep = $dbc->prepare("SELECT p.upc, DATE(m.modified) AS modified, p.brand, p.description, f.name
+            FROM MovementTags AS m 
+                LEFT JOIN products AS p ON p.upc=m.upc 
+                    AND p.store_id=m.storeID 
+                LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID 
+                LEFT JOIN FloorSectionProductMap AS fs ON fs.upc=p.upc
+                LEFT JOIN FloorSections AS f ON f.storeID=p.store_id
+                    AND f.floorSectionID=fs.floorSectionID
+            WHERE m.storeID = ? 
+                AND m.modified < ? 
+                AND m.upc NOT IN 
+                    (SELECT upc FROM woodshed_no_replicate.doNotTrack WHERE method = 'getMissingMovementTags') 
+                AND s.superID NOT IN (0, 1, 3, 6)
+                AND p.store_id = ?
+                AND p.inUse = 1
+                AND f.name IS NOT NULL
+            GROUP BY p.upc
+            ORDER BY f.name
+        ");
+        $cols = array('upc', 'brand', 'description', 'modified', 'name');
+        $res = $dbc->execute($prep, $args);
+        $table = '<h2 id="expired-heading">Expired Tags for '.$this->stores[$storeID].'</h2>
+            <table class="table table-bordered table-striped table-condensed">
+            <thead><th>upc</th><th>brand</th><th>description</th><th>last replaced</th>
+            <th>location</th></thead><tbody>';
+        while ($row = $dbc->fetchRow($res)) {
+            $table .= "<tr>";
+            foreach ($cols as $col) {
+                $table .= "<td>{$row[$col]}</td>";
+            }
+            $table .= "</tr>";
+        }
+        $table .= "</tbody></table>";
+
+        return $table;
+    }
+
     public function get_view()
     {
         $ret = "";
+
         $li = "<ul>";
         $tables = array();
-        $stores = array(1=>'Hillside', 2=>'Denfeld');
-        $li .= "<li><a href='ShelfTagIndex.php'>Back to Shelftags Index</a></li>";
-        foreach ($stores as $id => $name) {
+        foreach ($this->stores as $id => $name) {
             $tables[] = $this->draw_table($name, $id);
-            $li .= "<li><a href='#$name'>$name</a></li>";
+            $li .= "<div><a href='#$name'>$name</a></div>";
         }
+        $li .= "<div><a href='#expired-heading'>Expired Tags</a></div>";
+        $li .= "<li><a href='ShelfTagIndex.php'>Shelftags Index</a></li>";
         $li .= "<li><a href='?id=config'>Settings</a></li>";
+        $li .= "<li><a href=\"MovementTagTracker.php?data=view\">Data</a></div></li>";
         $li .= "</ul>";
         foreach ($tables as $table) {
             $ret .= $table;
+        }
+        $ret .= $this->draw_expired_table();
+        $status = FormLib::get('status');
+        $alert = '';
+        if ($status == 'success') {
+            $alert = "<div class=\"alert alert-success\">Movement has been recorded</div>";
+        } elseif ($status == 'fail') {
+            $alert = "<div class=\"alert alert-danger\">Something went wrong, movement was not recorded</div>";
+        } elseif ($status == 'uptodate') {
+            $alert = "<div class=\"alert alert-warning\">Movement for the selected store is already up to date</div>";
         }
         $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
         $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
         $this->addOnloadCommand("$('#my-table-1').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
         $this->addOnloadCommand("$('#my-table-2').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
-        return $li . $ret;
+        return "<div align=\"center\">$alert</div>" . $li . $ret . <<<HTML
+HTML;
     }
 
     public function get_id_view()
@@ -353,7 +522,7 @@ HTML;
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $date = new DateTime();
-        $date->sub(new DateInterval('P2M'));
+        $date->sub(new DateInterval('P1M'));
         $prevMonth = $date->format('Y-m-d 00:00:00') . '<br/>';
         $args = array($storeID, $volMin, $volMax, $posLimit, $negLimit, $prevMonth);
         $var = ($storeID == 1) ? 3 : 7;
@@ -427,23 +596,44 @@ HTML;
             $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
             <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables' id='my-table-$storeID'><thead >$thead</thead><tbody>";
-        if (isset($this->item) && is_array($this->item)) {
-            foreach ($this->item as $row => $array) {
-                $table .= "<tr>";
-                foreach ($colNames as $colName) {
-                    if ($colName == 'upc') {
-                        $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
-                            target='_blank'>{$array[$colName]}</a></td>";
-                    } else {
-                        $table .= "<td>{$array[$colName]}</td>";
-                    }
+        foreach ($this->item as $row => $array) {
+            $table .= "<tr>";
+            foreach ($colNames as $colName) {
+                if ($colName == 'upc') {
+                    $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
+                        target='_blank'>{$array[$colName]}</a></td>";
+                } else {
+                    $table .= "<td>{$array[$colName]}</td>";
                 }
-                $table .= "</tr>";
             }
+            $table .= "</tr>";
         }
         $table .= "</tbody></table>";
 
-        if (isset($this->item) && count($this->item) > 0) {
+        $form = '<form method="post"><input type="hidden" name="storeID" value="'.$storeID.'"/>';
+        foreach ($this->item as $k => $row) {
+            $form .= sprintf("<input type=\"hidden\" name=\"upcs[]\" value=\"%s\" />
+                <input type=\"hidden\" name=\"adjustments[]\" value=\"%f\" />
+                <input type=\"hidden\" name=\"auto_par[]\" value=\"%f\" />
+                ",
+                $row['upc'],
+                $row['diff'],
+                $row['auto_par']
+            );
+        }
+
+        $authorized = false;
+        if (FannieAuth::validateUserQuiet('admin')) {
+            $authorized = true;
+        }
+        $form .= "<div class=\"form-group\" align=\"right\">
+            <li><button type=\"submit\" class=\"submitData btn btn-info btn-xs\">Submit $storeName Data</button></form></li>
+            </div>";
+        if ($authorized === true) {
+            $table = $form . $table;
+        }
+
+        if (count($this->item) > 0) {
             unset($this->item);
             return $table;
         } else {
@@ -475,14 +665,36 @@ $('.glyphicon').click(function()
         return false;
     }
 });
+$('.submitData').click(function()
+{
+    var c = confirm("Submit movement adjustments to database?");
+    if (c == true) {
+        return true;
+    } else {
+        return false;
+    }
+});
 JAVASCRIPT;
     }
 
     public function helpContent()
     {
         return <<<HTML
-<p>This page lists products that should have
-new movement tags printed for each store.</p>
+<ul>
+    <li><strong>auto_par</strong> is the average par of the product
+        at the time the tag is updated.</li>
+    <li><strong>adjustment</strong> is the change in par-average made to the 
+        tag that is on the sales floor and is being replaced.
+        A positive adjustment denotes that sales have increased, while negative 
+        means the opposite.<br/><u>Example</u>
+        <table class="table table-bordered">
+            <tr><td>upc</th><th>description</th><th>auto_par</th><th>adjustment</th>
+            <tr><td>0004114849148</td><td>LIBERT  YOGURT,OG2,WM,VANILLA BN</td><td>4.56</td><td>4.56</td>
+        </table>
+        <p>At the time of re-printing this tag, the average par of the product was 4.56.
+            The adjustment from the tag on the shelf was 4.56, meaning the tag on the shelf
+            did not yet have a par on it (this was likely a new or returning item).
+    </li>
 HTML;
     }
 
