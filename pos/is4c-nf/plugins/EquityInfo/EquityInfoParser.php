@@ -47,12 +47,12 @@ class EquityInfoParser extends Parser
                 a.nextPaymentDate,
                 p.name,
                 a.nextPaymentAmount,
-		h.payments,
-		p.finalBalance
+                h.payments,
+                p.finalBalance
             FROM {$prefix}custdata AS c
                 LEFT JOIN {$prefix}EquityPaymentPlanAccounts AS a ON c.CardNo=a.cardNo
                 LEFT JOIN {$prefix}EquityPaymentPlans AS p ON a.equityPaymentPlanID=p.equityPaymentPlanID
-		LEFT JOIN core_trans.equity_history_sum AS h ON c.CardNo = h.card_no
+                LEFT JOIN core_trans.equity_history_sum AS h ON c.CardNo = h.card_no
             WHERE c.CardNo=%d
                 AND c.personNum=1",
             CoreLocal::get('memberID')
@@ -64,21 +64,21 @@ class EquityInfoParser extends Parser
         }
         $row = $dbc->fetchRow($result);
 
-	$nextPay = ($row['nextPaymentDate']) ? date('F j, Y',strtotime($row['nextPaymentDate'])) : 'n/a';
-	
+        $nextPay = ($row['nextPaymentDate']) ? date('F j, Y',strtotime($row['nextPaymentDate'])) : 'n/a';
+    
         $msg = sprintf('
             Member #%d<br />
             Name: %s<br />
             Next Payment Due: %s<br />
             Payment Plan: %s<br />
             Next Payment Amount: $%.2f<br />
-	    Amount Remaining: $%.2f<br />',
+            Amount Remaining: $%.2f<br />',
             $row['CardNo'],
             $row['FirstName'] . ' ' . $row['LastName'],
-	    $nextPay,
+            $nextPay,
             $row['name'],
             $row['nextPaymentAmount'],
-	    $row['finalBalance'] - $row['payments']
+            $row['finalBalance'] - $row['payments']
         );
         $ret['output'] = DisplayLib::boxMsg($msg, 'Member Information', true);
 
