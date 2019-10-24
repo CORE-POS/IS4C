@@ -54,12 +54,12 @@ class MovementTagTracker extends FannieRESTfulPage
         $args = array($storeID);
         $td = '';
         $th = '';
-        $cols = array('updateID', 'upc', 'brand', 'description', 'dept', 'storeID', 
+        $cols = array('updateID', 'upc', 'brand', 'description', 'dept', 'storeID',
             'auto_par', 'adjustment', 'modified');
         foreach ($cols as $col) {
             $th.= "<th>$col</th>";
         }
-        $prep = $dbc->prepare("SELECT m.*, DATE(m.modified) as modified, 
+        $prep = $dbc->prepare("SELECT m.*, DATE(m.modified) as modified,
                 p.brand, p.description,
                 CONCAT(d.dept_no, ' ', d.dept_name) AS dept
             FROM MovementUpdate AS m
@@ -124,7 +124,7 @@ HTML;
         $storeID = FormLib::get('storeID');
         $ret = '';
         $today = new DateTime();
-        
+
         $args = array($storeID);
         $prep = $dbc->prepare("SELECT DATE(MAX(modified)) FROM MovementUpdate
             WHERE storeID = ?");
@@ -133,13 +133,13 @@ HTML;
             foreach ($upcs as $k => $upc) {
                 $ret .= "<div>$upc, {$adjustments[$k]}</div>";
                 $args = array($upc, $storeID, $adjustments[$k], $auto_pars[$k]);
-                $prep = $dbc->prepare("INSERT INTO MovementUpdate 
+                $prep = $dbc->prepare("INSERT INTO MovementUpdate
                     (upc, storeID, adjustment, auto_par, modified) VALUES (?, ?, ?, ?, NOW())");
                 $res = $dbc->execute($prep, $args);
                 if ($er = $dbc->error()) $ret .= $er;
             }
             $valA = array($storeID);
-            $valP = $dbc->prepare("SELECT * FROM MovementUpdate 
+            $valP = $dbc->prepare("SELECT * FROM MovementUpdate
                 WHERE storeID = ? AND DATE(modified) = DATE(NOW());");
             $valR = $dbc->execute($valP, $valA);
             $valCount = $dbc->numRows($valR);
@@ -149,7 +149,7 @@ HTML;
                 return header('location: MovementTagTracker.php?status=fail&err='.$ret);
             }
         }
-        
+
         return header('location: MovementTagTracker.php?status=uptodate');
 
     }
@@ -180,7 +180,7 @@ HTML;
         $prep = $dbc->prepare("
             INSERT INTO MovementTrackerParams (parameter, value) VALUES (?, ?)");
         $res = $dbc->execute($prep, $args);
-        
+
         $alerts = "";
         if ($er = $dbc->error()) {
             $alerts .= "<div class='alert alert-danger'>$er</div>";
@@ -260,17 +260,17 @@ HTML;
 
         $args = array($storeID, $date->format('Y-m-d'), $storeID);
         $prep = $dbc->prepare("SELECT p.upc, DATE(m.modified) AS modified, p.brand, p.description, f.name
-            FROM MovementTags AS m 
-                LEFT JOIN products AS p ON p.upc=m.upc 
-                    AND p.store_id=m.storeID 
-                LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID 
+            FROM MovementTags AS m
+                LEFT JOIN products AS p ON p.upc=m.upc
+                    AND p.store_id=m.storeID
+                LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
                 LEFT JOIN FloorSectionProductMap AS fs ON fs.upc=p.upc
                 LEFT JOIN FloorSections AS f ON f.storeID=p.store_id
                     AND f.floorSectionID=fs.floorSectionID
-            WHERE m.storeID = ? 
-                AND m.modified < ? 
-                AND m.upc NOT IN 
-                    (SELECT upc FROM woodshed_no_replicate.doNotTrack WHERE method = 'getMissingMovementTags') 
+            WHERE m.storeID = ?
+                AND m.modified < ?
+                AND m.upc NOT IN
+                    (SELECT upc FROM woodshed_no_replicate.doNotTrack WHERE method = 'getMissingMovementTags')
                 AND s.superID NOT IN (0, 1, 3, 6)
                 AND p.store_id = ?
                 AND p.inUse = 1
@@ -469,7 +469,7 @@ HTML;
             <table class='table table-small table-bordered'>
             <thead><th>Exclusion Type</th><th>Value</th><th>
             <span class='glyphicon glyphicon-trash'></span></th></thead><tbody>";
-        $exclP = $dbc->prepare("SELECT * FROM MovementTrackerParams 
+        $exclP = $dbc->prepare("SELECT * FROM MovementTrackerParams
             WHERE parameter IN ('Product', 'Brand', 'Dept') ORDER BY parameter, value;");
         $exclR = $dbc->execute($exclP);
         while ($row = $dbc->fetchRow($exclR)) {
@@ -683,9 +683,9 @@ JAVASCRIPT;
 <ul>
     <li><strong>auto_par</strong> is the average par of the product
         at the time the tag is updated.</li>
-    <li><strong>adjustment</strong> is the change in par-average made to the 
+    <li><strong>adjustment</strong> is the change in par-average made to the
         tag that is on the sales floor and is being replaced.
-        A positive adjustment denotes that sales have increased, while negative 
+        A positive adjustment denotes that sales have increased, while negative
         means the opposite.<br/><u>Example</u>
         <table class="table table-bordered">
             <tr><td>upc</th><th>description</th><th>auto_par</th><th>adjustment</th>

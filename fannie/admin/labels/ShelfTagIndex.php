@@ -120,17 +120,17 @@ function printMany(){
         ob_start();
         ?>
         <div class="col-sm-8">
-        
+
         <ul class="nav nav-tabs" role="tablist">
             <li class="active"><a href="ShelfTagIndex.php">Regular shelf tags</a></li>
             <li><a href="BatchShelfTags.php">Batch shelf tags</a></li>
         </ul>
         <p>
         <div class="form-group form-inline">
-            <label>Offset</label>: 
+            <label>Offset</label>:
             <input type="checkbox" class="price-field form-control" id=offset name="offset" value=1 />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <label>Layout</label>: 
+            <label>Layout</label>:
         <select id=layoutselector class="form-control">
         <?php
         $tagEnabled = $this->config->get('ENABLED_SIGNAGE');
@@ -145,7 +145,7 @@ function printMany(){
         ?>
         </select>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <label>Sort</label>: 
+            <label>Sort</label>:
             <select id="tag-sort" class="form-control">
                 <option>Department</option>
                 <option>Alphabetically</option>
@@ -157,8 +157,8 @@ function printMany(){
         <?php
 
         $query = $dbc->prepare("
-            SELECT s.shelfTagQueueID, 
-                s.description, 
+            SELECT s.shelfTagQueueID,
+                s.description,
                 count(distinct t.upc) AS ct
             FROM ShelfTagQueues AS s
                 LEFT JOIN shelftags AS t ON s.shelfTagQueueID = t.id
@@ -183,7 +183,7 @@ function printMany(){
         ?>
         </table>
         <p>
-            <a href="" onclick="printMany(); return false;" class="btn btn-default">Print Selected</a> 
+            <a href="" onclick="printMany(); return false;" class="btn btn-default">Print Selected</a>
         </p>
         </div>
 
@@ -198,7 +198,7 @@ function printMany(){
             <div><a href="../../item/handheld/ItemStatusPage.php">Scan a Single Item</a></div>
         </div>
         <?php
-        
+
         return ob_get_clean();
     }
 
@@ -226,7 +226,7 @@ function printMany(){
         }
         $trc = ($lastTagQueue == $row[0]) ? "alert-warning" : "";
         if ($layoutselected == "MovementTags") {
-            /* 
+            /*
                 what needs to happen
                 . include SignFromSearch.php
                 . instantiate an object of SignFromSearch()
@@ -246,7 +246,7 @@ function printMany(){
             <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
             <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
             <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
-            <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
+            <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td>
             </tr>",
             $trc,$row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
         } else {
@@ -257,7 +257,7 @@ function printMany(){
             <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
             <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
             <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
-            <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
+            <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td>
             </tr>",
             $trc, $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
         }

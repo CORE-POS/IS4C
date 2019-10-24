@@ -1,10 +1,10 @@
 var movementTableFilter = (function ($) {
-    
+
     var mod = {};
-    
+
     mod.from = '';
     mod.to = '';
-    mod.upc = ''; 
+    mod.upc = '';
     mod.brand = '';
     mod.desc = '';
     mod.store = '';
@@ -15,7 +15,7 @@ var movementTableFilter = (function ($) {
         'brand':2,
         'description':3
     };
-    
+
     mod.hello = function(){
         alert('hi');
     };
@@ -29,7 +29,7 @@ var movementTableFilter = (function ($) {
         $('#mu-table tr').each(function(){
             $(this).show();
         });
-        // hide rows as filters are applied 
+        // hide rows as filters are applied
         $('#mu-table tr').each(function(){
             if (mod.upc != '') {
                 var cur_upc = $(this).find('td:eq(1)').text();
