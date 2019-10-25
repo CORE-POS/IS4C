@@ -14,7 +14,7 @@ class IntEndParser extends Parser
         $ret = $this->default_json();
         $self = new Intercept();
         $ret['main_frame'] = $self->pluginUrl()
-            . 'InterceptPage.php';
+            . '/InterceptPage.php';
         $this->session->set('InterceptedCommand', substr($str, 9));
 
         return $ret;
