@@ -264,7 +264,8 @@ HTML;
         $flyerPeriod = substr_replace($flyerPeriod, "", -1);
 
         $res = $dbc->execute($prep, $args);
-        $ret .=  "<table class='table table-bordered'  align='center' width='100%'>";
+        $ret .=  "<div class='table-responsive'>
+            <table class='table table-bordered'  align='center' width='100%'>";
         $check = '';
         while ($row = $dbc->fetch_row($res)) {
             $upc = $row['upc'];
@@ -283,7 +284,7 @@ HTML;
             $ret .=  '<td><b>Department</b></td><td>' . $superName .'</td></tr>';
             $check = $row['upc'];
         }
-        $ret .= '</table>';
+        $ret .= '</table></div>';
 
         if ($dbc->error()) {
             $ret .= '<div class="alert alert-warning">' . $dbc->error() . '</div>';
@@ -490,7 +491,7 @@ HTML;
             <div class="row"><div class="col-md-2">
                 <table class="table"><tbody>
                     <tr><td><a class="btn btn-default btn-xs wide" href="CoopDealsLookupPage.php">Select Month</a></td></tr>
-                    <tr><td><a class="btn btn-default btn-xs wide" href="../../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">Batch Check</a></td></tr>
+                    <tr><td><a class="btn btn-default btn-xs wide" href="../../../../Scannie/content/Scanning/BatchCheck/SCS.php">Batch Check</a></td></tr>
                     <tr><td><a class="btn btn-default btn-xs wide" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Exit</a></td></tr>
                 </tbody></table>
             </div></div>
