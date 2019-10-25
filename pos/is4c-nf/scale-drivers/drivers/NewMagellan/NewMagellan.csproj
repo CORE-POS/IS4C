@@ -91,6 +91,15 @@
         Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
   </Target>
 
+  <!-- Build CHttp.dll -->
+  <ItemGroup>
+    <CHttp Include="CHttp.cs" />
+  </ItemGroup>
+  <Target Name="CHttpLibrary" Inputs="@(CHttp)" Outputs="CHttp.dll">
+    <Csc Sources="@(CHttp)" TargetType="library" OutputAssembly="CHttp.dll" 
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+  </Target>
+
   <!-- Build Bitmap.dll -->
   <ItemGroup>
     <Bitmap Include="BitmapConverter.cs" />
@@ -173,9 +182,12 @@
     <SPH Include="SPH_Datacap_PDCX.cs" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
     <SPH Include="SPH_Datacap_EMVX.cs" 
         Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') And Exists('DSIEMVXLib.dll') AND Exists('AxDSIEMVXLib.dll') " />
+    <SPH Include="SPH_Datacap_Gen2.cs" 
+        Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') And Exists('DSIEMVXLib.dll') AND Exists('AxDSIEMVXLib.dll') " />
 
     <SPHRef Include="DelegateForm.dll" />
     <SPHRef Include="Bitmap.dll" />
+    <SPHRef Include="CHttp.dll" />
     <SPHRef Include="USBLayer.dll" />
     <SPHRef Include="ParallelLayer.dll" />
     <SPHRef Include="DSIPDCXLib.dll" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
@@ -186,6 +198,7 @@
     <SPHRef Include="System.Drawing.dll" Condition=" '$(OS)' == 'Unix' " />
 
     <SPHTarget Include="DelegateFormLibrary" />
+    <SPHTarget Include="CHttpLibrary" />
     <SPHTarget Include="BitmapLibrary" />
     <SPHTarget Include="USBLayerLibrary" />
     <SPHTarget Include="ParallelLayerLibrary" />
