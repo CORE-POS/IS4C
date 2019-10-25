@@ -533,10 +533,18 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                       On a client/3006 error or server/4003 error keep trying IPs.
                       Both indicate a network connectivity error that may just be
                       transient.
+                      003327 is a Com Port access error. May be transient in some cases.
                     */
                     if (origin.InnerXml == "Client" && return_code.InnerXml == "003006") {
                         this.LogMessage("Retry on client 3006 (epay: " + IP + ")");
                         this.reverse_servers = !this.reverse_servers;
+                    } else if (origin.InnerXml == "Client" && return_code.InnerXml == "003327") { 
+                        this.LogMessage("Retry on client 3006 (COM error)");
+                        Thread.Sleep(500);
+                        var new_port = this.PortSearch(this.device_identifier);
+                        if (new_port != "" && new_port != this.com_port && new_port.All(char.IsNumber)) {
+                            this.com_port = new_port;
+                        }
                     } else if (origin.InnerXml == "Server" && return_code.InnerXml == "004003") {
                         this.LogMessage("Retry on server 4003 (epay: " + IP + ")");
                     } else {
@@ -720,6 +728,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return ComPortUtility.FindComPort("Verifone");
             case "INGENICOISC250":
             case "INGENICOISC250_MERCURY_E2E":
+            case "INGENICOISC250_RAPIDCONNECT_E2E":
                 return ComPortUtility.FindComPort("Ingenico");
             default:
                 return "";
@@ -737,6 +746,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return "VX805";
             case "INGENICOISC250":
             case "INGENICOISC250_MERCURY_E2E":
+            case "INGENICOISC250_RAPIDCONNECT_E2E":
                 return "ISC250";
             case "INGENICOISC480":
             case "INGENICOISC480_RAPIDCONNECT_E2E":
