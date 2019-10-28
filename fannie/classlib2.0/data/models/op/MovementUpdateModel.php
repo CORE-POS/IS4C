@@ -39,7 +39,7 @@ class MovementUpdateModel extends BasicModel
     'storeID' => array('type'=>'INT(11)'),
     'adjustment' => array('type'=>'DECIMAL(10,2)'),
     'modified' => array('type'=>'DATETIME'),
-    'auto_par' => array('DECIMAL(10,2)')
+    'auto_par' => array('type'=>'DECIMAL(10,2)'),
     );
 
     public function definition()

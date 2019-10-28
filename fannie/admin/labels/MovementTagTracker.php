@@ -276,7 +276,7 @@ HTML;
                 AND p.store_id = ?
                 AND p.inUse = 1
                 AND f.name IS NOT NULL
-            GROUP BY p.upc
+            GROUP BY p.upc, DATE(m.modified), p.brand, p.description, f.name
             ORDER BY f.name
         ");
         $cols = array('upc', 'brand', 'description', 'modified', 'name');
