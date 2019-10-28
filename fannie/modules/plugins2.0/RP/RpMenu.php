@@ -21,6 +21,7 @@ class RpMenu extends FannieRESTfulPage
     </ul>
     <li>Data Management</li>
     <ul>
+        <li><a href="RpCategoriesPage.php">Categories</a> - sort which order the categories appear in</li>
         <li><a href="RpFarmsPage.php">Farms</a> - list of local growers for direct ordering</li>
         <li><a href="RpLocalLCsPage.php">Local Like Codes</a> - subset of like codes that are ordered direct</li>
         <li><a href="RpFarmSchedule.php">Committment Schedule</a> - set primary and secondary farm for a given like code & time period</li>
