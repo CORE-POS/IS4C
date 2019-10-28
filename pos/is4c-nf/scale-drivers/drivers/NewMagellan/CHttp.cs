@@ -61,6 +61,7 @@ public class Server {
       Send back a response using an object return from GetNext()
     */
     public void Respond(HttpListenerResponse resp, string msg) {
+        resp.Headers.Add("Access-Control-Allow-Origin", "*");
         var buf = System.Text.Encoding.UTF8.GetBytes(msg);
         resp.ContentLength64 = buf.Length;
         resp.OutputStream.Write(buf, 0, buf.Length);

@@ -253,6 +253,7 @@ public class SPH_Datacap_Gen2 : SerialPortHandler
     public override void Read()
     { 
         var deviceThread = new Thread(new ThreadStart(this.DeviceLoop));
+        deviceThread.Start();
         this.device_thread_id = deviceThread.ManagedThreadId;
         Console.WriteLine("Set device thread: " + this.device_thread_id);
         Server http = new Server();
@@ -262,7 +263,6 @@ public class SPH_Datacap_Gen2 : SerialPortHandler
             string keyVal = "key";
             bool saveResult = false;
             try {
-                Console.WriteLine("Listening for HTTP");
                 var pair = http.GetNext();
 
                 if (rba != null) {
