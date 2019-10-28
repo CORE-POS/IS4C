@@ -583,9 +583,9 @@ class HouseCouponEditor extends FanniePage
                 }
             });
         };
-        $(document).ready(function(){
-            $('#activeCoupons').trigger('click');
-        });
+        //$(document).ready(function(){
+        //    $('#activeCoupons').trigger('click');
+        //});
         <?php
         return ob_get_clean();
     }
