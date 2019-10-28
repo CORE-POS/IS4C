@@ -50,8 +50,9 @@ public class Server {
         if (!req.HasEntityBody) {
             ret.body = "";
         } else {
-            var reader = new StreamReader(req.InputStream, req.ContentEncoding);
-            ret.body = reader.ReadToEnd();
+            using (var reader = new StreamReader(req.InputStream, req.ContentEncoding)) {
+                ret.body = reader.ReadToEnd();
+            }
         }
 
         return ret;
