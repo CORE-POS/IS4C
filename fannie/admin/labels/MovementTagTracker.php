@@ -269,8 +269,9 @@ HTML;
                     AND f.floorSectionID=fs.floorSectionID
             WHERE m.storeID = ?
                 AND m.modified < ?
-                AND m.upc NOT IN
-                    (SELECT upc FROM woodshed_no_replicate.doNotTrack WHERE method = 'getMissingMovementTags')
+                " . ($this->config->get('COOP_ID') == 'WFC_Duluth' ? 
+                    "AND m.upc NOT IN (SELECT upc FROM woodshed_no_replicate.doNotTrack WHERE method = 'getMissingMovementTags')"
+                    : '') . "
                 AND s.superID NOT IN (0, 1, 3, 6)
                 AND p.store_id = ?
                 AND p.inUse = 1
