@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-    Copyright 2014 Whole Foods Co-op
+    Copyright 2019 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -19,6 +19,23 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+/*
+  This is functionally pretty similar to SPH_Datacap_EMVX. The main read loop
+  listens for HTTP requests, runs the request through the appropriate ActiveX
+  control, and relays back a HTTP response. There are two significant differences:
+
+  1) Rather than implementing its own HTTP server it uses CHttp which in turn
+     uses System.Net.HttpListener and friends. There's nothing necessarily wrong
+     with the implementation in SPH_Datacap_EMVX but the standard library one
+     is probably more robust.
+
+  2) All ActiveX calls are kept in the same thread (DeviceLoop). Using the same
+     control from multiple threads may lead to some instability. Other threads
+     that need to interact with the ActiveX controls need to push messages onto
+     the work_queue and then monitor http_message for a response.
+
+*/
 
 using System;
 using System.IO;
