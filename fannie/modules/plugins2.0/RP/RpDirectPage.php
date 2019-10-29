@@ -456,7 +456,7 @@ class RpDirectPage extends FannieRESTfulPage
             }
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
-            $nextRow = sprintf('<tr>
+            $nextRow = sprintf('<tr class="%s">
                 <td class="upc">%s %s</td>
                 <td><select class="primaryFarm form-control input-sm">%s</option></td>
                 <td><select class="secondaryFarm form-control input-sm">%s</option></td>
@@ -479,6 +479,7 @@ class RpDirectPage extends FannieRESTfulPage
                     <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Sec</label>
                 </td>
                 </tr>',
+                (in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) ? 'extraLocal' : '',
                 $row['upc'], $lcName,
                 $opt1,
                 $opt2,
@@ -589,12 +590,18 @@ class RpDirectPage extends FannieRESTfulPage
     <label>Adjustment</label>:
     <span id="adjDiff">0</span>
     <div class="form-inline">
-    <div class="input-group">
-        <span class="input-group-addon">Retention</span>
-        <input type="number" value="{$baseRetain}" id="retention" class="form-control input-sm" />
-        <span class="input-group-addon">%</span>
+        <div class="input-group">
+            <span class="input-group-addon">Retention</span>
+            <input type="number" value="{$baseRetain}" id="retention" class="form-control input-sm" />
+            <span class="input-group-addon">%</span>
+        </div> 
     </div> 
-    </div> 
+    <div class="form-group">
+        <label title="Show only items currently set to DIRECT">
+            <input type="checkbox" onchange="if (this.checked) $('tr.extraLocal').hide(); else $('tr.extraLocal').show();" />
+            Limited List
+        </label>
+    </div>
     <p>
         <ul id="openOrders">{$orderLinks}</ul>
         <span id="printLink">{$printLink}</span>
