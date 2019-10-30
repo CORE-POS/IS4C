@@ -119,15 +119,7 @@ class LineItemDiscount extends Parser
 
             $amt = substr($str, 2);
             $amt /= 100;
-            if ($amt > $row['unitPrice']) {
-                return $ret->output(DisplayLib::boxMsg(
-                    _("Cannot discount this item"),
-                    '',
-                    false,
-                    DisplayLib::standardClearButton()
-                ));
-            }
-            $unitPrice = $row['unitPrice'] - $amt;
+            $unitPrice = $row['unitPrice'] * (1 - $amt);
             $total = $row['quantity'] * $unitPrice;
             $upP = $dbc->prepare("UPDATE localtemptrans
                 SET charflag='PO',
