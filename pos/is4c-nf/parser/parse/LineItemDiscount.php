@@ -117,16 +117,31 @@ class LineItemDiscount extends Parser
                 ));
             } 
 
+            $dbc = Database::pDataConnect();
+            $prep = $dbc->prepare("SELECT line_item_discountable FROM products WHERE upc=?");
+            $discountable = $dbc->getValue($prep, array($row['upc']));
+            if (!$discountable) {
+                return $ret->output(DisplayLib::boxMsg(
+                    _("Item not eligible for discount"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                ));
+            }
+
             $amt = substr($str, 2);
             $amt /= 100;
             $unitPrice = $row['unitPrice'] * (1 - $amt);
             $total = $row['quantity'] * $unitPrice;
+            $dbc = Database::tDataConnect();
             $upP = $dbc->prepare("UPDATE localtemptrans
                 SET charflag='PO',
                     unitPrice=?,
                     total=?
                 WHERE trans_id=?");
             $dbc->execute($upP, array($unitPrice, $total, $transID));
+
+            TransRecord::adddiscount($row['unitPrice'] * ($amt), $row['department']);
         }
 
         // footer should be redrawn since savings and totals
