@@ -36,6 +36,7 @@ class USFTask extends FannieTask
             }
 
             $this->connection->startTransaction();
+            $first = true;
             while (!feof($fp)) {
                 $data = fgetcsv($fp);
 
@@ -88,11 +89,11 @@ class USFTask extends FannieTask
                 $unitPrice = round($unitPrice, 3);
 
                 $upc = $this->updateCatalog($vendorID, $sku, $item, $brand, $size, $units, $unitPrice, $doUpdates);
-                $orderID = $this->findPO($store, $invoice, $vendorID, $orderDate);
+                $orderID = $this->findPO($store, $invoice, $vendorID, $orderDate, $first);
                 if (!$orderID) continue;
                 $this->updatePO($orderID, $shipDate, $ordered, $shipped, $sku, $upc, $item, $brand, $size, $units, $unitPrice, $fullPrice);
                 $orders[$orderID] = $invoice;
-                $count++;
+                $first = false;
             }
             $this->connection->commitTransaction();
         }
@@ -159,7 +160,7 @@ class USFTask extends FannieTask
     }
 
     private $poP = false;
-    private function findPO($store, $invoice, $vendor, $date)
+    private function findPO($store, $invoice, $vendor, $date, $first)
     {
         if (!$this->poP) {
             $this->poP = $this->connection->prepare("SELECT orderID FROM PurchaseOrder WHERE storeID=? AND vendorID=? AND vendorInvoiceID=?");
@@ -176,6 +177,11 @@ class USFTask extends FannieTask
             $model->vendorInvoiceID($invoice);
             $orderID = $model->save();
 
+        } elseif ($first) {
+            // zero out old amounts to avoid doubling them on re-import
+            $prep = $this->connection->prepare("UPDATE PurchaseOrderItems SET quantity=0, receivedQty=0, receivedTotalCost=0
+                WHERE orderID=?");
+            $this->connection->execute($prep, array($orderID));
         }
 
         return $orderID;
