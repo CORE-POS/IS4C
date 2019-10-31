@@ -753,7 +753,7 @@ HTML;
                         when the item is entered</li>
                     <li>Discount controls which type of discounts apply to the item:
                         <ul>
-                        <li>Trans only means the item is only eligible for discounts that apply to
+                        <li>Trxn only means the item is only eligible for discounts that apply to
                         the entire transaction such as a member\'s discount</li>
                         <li>Line only means the item is only eligible for percent discount
                         explictly applied by the cashier as they ring in the item.</li>

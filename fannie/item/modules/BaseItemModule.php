@@ -642,7 +642,7 @@ HTML;
             $disc_opts = array(
                 0 => 'No',
                 1 => 'Yes',
-                2 => 'Trans Only',
+                2 => 'Trxn Only',
                 3 => 'Line Only',
             );
             $rowItem['discount'] = $this->mapDiscounts($rowItem['discount'], $rowItem['line_item_discountable']);

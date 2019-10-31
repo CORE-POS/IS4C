@@ -123,7 +123,7 @@ class DepartmentEditor extends FannieRESTfulPage
         } elseif (!$reg && $line) {
             $select = 3;
         }
-        $opts = array(0=>'No', 1=>'Yes', 2=>'Trans only', 3=>'Line Only');
+        $opts = array(0=>'No', 1=>'Yes', 2=>'Trxn only', 3=>'Line Only');
         $ret = '';
         foreach ($opts as $k => $v) {
             $ret .= sprintf('<option %s value="%d">%s</option>',

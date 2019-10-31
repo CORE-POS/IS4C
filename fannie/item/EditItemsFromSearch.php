@@ -420,7 +420,7 @@ HTML;
 
     private function discountOpts($reg, $line)
     {
-        $opts = array('No', 'Yes', 'Trans Only', 'Line Only');
+        $opts = array('No', 'Yes', 'Trxn Only', 'Line Only');
         $index = 0;
         if ($reg == 1 && $line == 1) {
             $index = 1;
