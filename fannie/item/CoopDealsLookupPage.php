@@ -373,8 +373,8 @@ HTML;
             } else {
                 $result = $dbc->execute($selMonthQ,$selMonthA);
             }
-            $sel = "";
             while ($row = $dbc->fetchRow($result)) {
+                $sel = "";
                 $option = "option";
                 $add = "";
                 $batchID = $row['batchID'];
