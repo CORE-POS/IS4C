@@ -8,20 +8,42 @@ var movementTableFilter = (function ($) {
     mod.brand = '';
     mod.desc = '';
     mod.store = '';
-    mod.col_nums = {
-        'upc':1,
-        'from':8,
-        'to':8,
-        'brand':2,
-        'description':3
-    };
-
-    mod.hello = function(){
-        alert('hi');
-    };
+    mod.depts = [];
+    mod.dept = '';
+    mod.locs = [];
+    mod.loc = '';
 
     mod.filter_table = function(){
         this.setChangedValue();
+    };
+
+    mod.setDepts = function(){
+        $('#mu-table tr').each(function(){
+            var department = $(this).find('td:eq(4)').text();
+            if ($.inArray(department, mod.depts) == -1) {
+                mod.depts.push(department);
+            }
+            var loc = $(this).find('td:eq(9)').text();
+            if ($.inArray(loc, mod.locs) == -1) {
+                mod.locs.push(loc);
+            }
+        });
+        this.depts.sort();
+        this.locs.sort();
+        $.each(this.depts, function(k,v) {
+            if (v == '') {
+                v = 'Department';
+            }
+            var option = '<option value="'+v+'">'+v+'</option>';
+            $('#dept-filter').append(option);
+        });
+        $.each(this.locs, function(k,v) {
+            if (v == '') {
+                v = 'Floor Location';
+            }
+            var option = '<option value="'+v+'">'+v+'</option>';
+            $('#loc-filter').append(option);
+        });
     };
 
     mod.setFilter = function(){
@@ -87,6 +109,22 @@ var movementTableFilter = (function ($) {
                 }
 
             }
+            if (mod.dept != '' && mod.dept != 'Department') {
+                var cur_dept = $(this).find('td:eq(4)').text();
+                if (cur_dept.indexOf(mod.dept) <= -1) {
+                    if (!$(this).parent('thead').is('thead')) {
+                        $(this).hide();
+                    }
+                }
+            }
+            if (mod.loc != '' && mod.loc != 'Floor Location') {
+                var cur_loc = $(this).find('td:eq(9)').text();
+                if (cur_loc.indexOf(mod.loc) <= -1) {
+                    if (!$(this).parent('thead').is('thead')) {
+                        $(this).hide();
+                    }
+                }
+            }
         });
     };
 
@@ -114,10 +152,21 @@ var movementTableFilter = (function ($) {
             }
             mod.setFilter();
         });
-        $('select').change(function(){
+        $('select[name=store]').change(function(){
             mod.store = $(this).children('option:selected').val();
             mod.setFilter();
         });
+        $('select[name=dept-filter]').change(function(){
+            mod.dept = $(this).find('option:selected').text();;
+            mod.setFilter();
+        });
+        $('select[name=loc-filter]').change(function(){
+            mod.loc = $(this).find('option:selected').text();;
+            mod.setFilter();
+        });
+        this.setDepts();
+        //$('select[name=store]').val($('#select[name=store] option:first').val());
+        $('select[name=store]').prop('selectedIndex', 0);
     };
 
     return mod;

@@ -55,17 +55,21 @@ class MovementTagTracker extends FannieRESTfulPage
         $td = '';
         $th = '';
         $cols = array('updateID', 'upc', 'brand', 'description', 'dept', 'storeID',
-            'auto_par', 'adjustment', 'modified');
+            'auto_par', 'adjustment', 'modified', 'name');
         foreach ($cols as $col) {
             $th.= "<th>$col</th>";
         }
         $prep = $dbc->prepare("SELECT m.*, DATE(m.modified) as modified,
                 p.brand, p.description,
-                CONCAT(d.dept_no, ' ', d.dept_name) AS dept
+                CONCAT(d.dept_no, ' ', d.dept_name) AS dept,
+                f.name
             FROM MovementUpdate AS m
                 LEFT JOIN products AS p ON m.upc=p.upc
                 LEFT JOIN departments AS d ON p.department=d.dept_no
-            GROUP BY updateID
+                LEFT JOIN FloorSectionProductMap AS fspm ON m.upc=fspm.upc
+                LEFT JOIN FloorSections AS f ON fspm.floorSectionID=f.floorSectionID
+            GROUP BY m.upc, DATE(m.modified)
+            ORDER BY m.updateID
             ");
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetchRow($res)) {
@@ -107,8 +111,21 @@ class MovementTagTracker extends FannieRESTfulPage
     <div class="col-lg-2"><div class="form-group">
         <button class="btn btn-default" style="width: 45%">Submit</button>
         <button class="btn btn-default" style="width: 45%" onclick="
-            $('input').each(function(){ $(this).val(''); $(this).trigger('change') });"
+            $('input').each(function(){ $(this).val(''); $(this).trigger('change') });
+            $('#dept-filter').val($('#dept-filter option:first').val());
+            $('#dept-filter').trigger('change');
+            $('#loc-filter').val($('#loc-filter option:first').val());
+            $('#loc-filter').trigger('change');
+            "
         >Clear</button>
+    </div></div>
+    <div class="col-lg-2"><div class="form-group">
+        <select class="form-control" name="dept-filter" id="dept-filter" data-var="dept">
+        </select>
+    </div></div>
+    <div class="col-lg-2"><div class="form-group">
+        <select class="form-control" name="loc-filter" id="loc-filter" data-var="loc">
+        </select>
     </div></div>
 </div>
 <table id="mu-table" class="table table-bordered table-sm small"><thead>$th</thead><tbody>$td</tbody></table>
