@@ -160,6 +160,9 @@ class HouseCouponEditor extends FanniePage
             $mtype = FormLib::get_form_value('mtype','Q');
             $mval = FormLib::get_form_value('mval',0);
             $descript = FormLib::get_form_value('description',0);
+            $superID = FormLib::get_form_value('superID',0);
+            $summary = FormLib::get_form_value('summary',0);
+            $label = FormLib::get_form_value('label',0);
             $auto = FormLib::get('autoapply', 0);
             $starts = FormLib::get('starts');
             if ($starts == '') {
@@ -178,6 +181,9 @@ class HouseCouponEditor extends FanniePage
             $model->department($dept);
             $model->description($descript);
             $model->memberOnly($mem);
+            $model->superID($superID);
+            $model->summary($summary);
+            $model->label($label);
             $model->auto($auto);
             $model->save();
 
@@ -231,15 +237,29 @@ class HouseCouponEditor extends FanniePage
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="button" class="fancybox-btn btn btn-default"
             href="explainify.html">Explanation of Settings</button>';
-        $ret .= ' <input type="checkbox" id="activeCoupons"> <label for="activeCoupons">Show Active Coupons</label>';
+        $ret .= ' <input type="checkbox" id="activeCoupons"> <label for="activeCoupons">View Only Active Coupons</label> | ';
+        $ret .= ' <input type="checkbox" id="summaryView"> <label for="summaryView">Summary View</label>';
         $this->addOnloadCommand('$(\'.fancybox-btn\').fancybox();');
         $ret .= '</p>';
         $ret .= '</form>';
         $ret .= '<table class="table tablesorter">';
-        $ret .= '<thead><tr><th>ID</th><th>Name</th><th>Value</th>';
+        $ret .= '<thead><tr><th>ID</th><th>Name</th>
+            <th class="summary-view-td">SuperID</th>
+            <th class="summary-view-td">Summary</th>
+            <th class="summary-view-td">Label</th>
+            <th>Value</th>';
         $ret .= '<th>Begins</th><th>Expires</th><th>&nbsp;</th></tr></thead><tbody>';
         $model = new HouseCouponsModel($dbc);
+        $superModel = new MasterSuperDeptsModel($dbc);
         foreach($model->find('coupID', true) as $obj) {
+            //$superModel->reset();
+            //$superModel->superID($obj->superID);
+            $superModel->reset();
+            $superModel->superID($obj->superID());
+            $super = null;
+            foreach ($superModel->find() as $o) {
+                $super = $o->super_name();
+            }
             if (strstr($obj->startDate(), ' ')) {
                 $tmp = explode(' ', $obj->startDate());
                 $obj->startDate($tmp[0]);
@@ -264,8 +284,12 @@ class HouseCouponEditor extends FanniePage
                 );
             }
             $ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
-                    <td>%s</td><td>%.2f%s</td><td>%s</td><td>%s</td>
-                    <td>
+                    <td>%s</td>
+                    <td class="summary-view-td">%s</td>
+                    <td class="summary-view-td">%s</td>
+                    <td class="summary-view-td">%s</td>
+                    <td>%.2f%s</td><td>%s</td><td>%s</td>
+                    <td class="report-btns">
                         <a href="%sws/barcode-pdf/?upc=%s&name=%s"
                         class="btn btn-default btn-sm">Print Barcode</a>
                         <a href="%sreports/ProductMovement/ProductMovementModular.php?upc=%s&date1=%s&date2=%s"
@@ -276,7 +300,11 @@ class HouseCouponEditor extends FanniePage
                         class="btn btn-default btn-sm %s">Member Baskets</a>
                     </tr>',
                     $obj->coupID(),$obj->coupID(),$obj->description(),
-                    $obj->discountValue(), $obj->discountType(),
+                    $super,
+                    $obj->summary(),
+                    $obj->label(),
+                    $obj->discountValue(),
+                    $obj->discountType(),
                     $obj->startDate(), $obj->endDate(),
                     $FANNIE_URL,
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
@@ -338,6 +366,11 @@ class HouseCouponEditor extends FanniePage
         $dept = $model->department();
         $description = $model->description();
         $auto = $model->auto();
+        $owner = $model->superID();
+        $superModel = new MasterSuperDeptsModel($this->connection);
+        $superOpts = $superModel->toOptions($owner);
+        $summary = $model->summary();
+        $label_name = $model->label();
 
         $ret = '<form class="form-horizontal" action="HouseCouponEditor.php" method="post">';
         $ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
@@ -484,6 +517,22 @@ class HouseCouponEditor extends FanniePage
             class=\"form-control\" /></div>
             </div>";
 
+        $ret .= '<div class="row">
+                <label class="col-sm-1 control-label">Owner</label>
+                <div class="col-sm-3">
+                    <select class="form-control" name=superID>'.$superOpts.'</select>
+                </div>
+                <label class="col-sm-1 control-label">Summary</label>
+                <div class="col-sm-3"><input type=text name=summary class="form-control" value="'.$summary.'" /></div>
+            </div>
+            <br/>
+            <div class="row">
+                <label class="col-sm-1 control-label">Label</label>
+                <div class="col-sm-3"><input type=text name=label class="form-control" value="'.$label_name.'" /></div>
+            </div>
+            ';
+
+
         $ret .= "<br /><button type=submit name=submit_save value=Save class=\"btn btn-default btn-core\">
             Save Settings</button>";
         $ret .= ' <button type="button" value="Back" class="btn btn-default btn-reset" 
@@ -571,8 +620,9 @@ class HouseCouponEditor extends FanniePage
             $('tr').each(function(){
                 $(this).show();
             });
-            $('table tr td:nth-child(4)').each(function(){
+            $('table tr td:nth-child(7)').each(function(){
                 var begin = $(this).text();
+                console.log(begin);
                 begin = new Date(begin);
                 var end = $(this).next('td').text();
                 end = new Date(end);
@@ -583,9 +633,30 @@ class HouseCouponEditor extends FanniePage
                 }
             });
         };
-        //$(document).ready(function(){
-        //    $('#activeCoupons').trigger('click');
-        //});
+        $(document).ready(function(){
+            $('.summary-view-td').each(function(){
+                $(this).hide();
+            });
+        });
+        $('#summaryView').change(function(){
+            var checked = $(this).prop('checked');
+            if (checked == true) {
+                $('.report-btns').each(function(){
+                    $(this).hide();
+                });
+                $('.summary-view-td').each(function(){
+                    $(this).show();
+                });
+            } else {
+                $('.report-btns').each(function(){
+                    $(this).show();
+                });
+                $('.summary-view-td').each(function(){
+                    $(this).hide();
+                });
+            }
+        });
+
         <?php
         return ob_get_clean();
     }

@@ -45,6 +45,9 @@ class HouseCouponsModel extends BasicModel
     'department' => array('type'=>'INT'),
     'auto' => array('type'=>'TINYINT', 'default'=>0),
     'virtualOnly' => array('type'=>'TINYINT', 'default'=>0),
+    'superID' => array('type'=>'INT'),
+    'summary' => array('type'=>'VARCHAR(65)'),
+    'label' => array('type'=>'VARCHAR(30)'),
     );
 
     public function doc()
