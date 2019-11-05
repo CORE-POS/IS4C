@@ -195,7 +195,7 @@ HTML;
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-        $upc = $this->upc;
+        $upc = trim($this->upc);
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         $heading = '';
 
