@@ -1,7 +1,5 @@
 <?php
 
-use COREPOS\Fannie\API\item\StandardAccounting;
-
 include(__DIR__ . '/../../../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__).'/../../../../../classlib2.0/FannieAPI.php');
@@ -55,7 +53,6 @@ class EOMSuperLayer extends FannieReportPage
             $date = date('Y-m-d', strtotime($row['date_id']));
             $link = sprintf('<a href="EOMSuperDetail.php?date=%s&store=%d&super=%d">%s</a>',
                 $date, $store, $super, $date);
-            $code = StandardAccounting::extend($row['salesCode'], $row['store_id']);
             $data[] = array(
                 $link,
                 $row['superID'],
