@@ -27,7 +27,7 @@
 class HouseVirtualCouponsModel extends BasicModel
 {
 
-    protected $name = "HouseVirtualCoupons";
+    protected $name = "houseVirtualCoupons";
     protected $preferred_db = 'op';
 
     protected $columns = array(

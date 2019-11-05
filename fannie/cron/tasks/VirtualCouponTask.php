@@ -43,7 +43,7 @@ based on expiration and/or use.';
 
         // delete expired entries
         $expireR = $dbc->query("
-            DELETE FROM HouseVirtualCoupons
+            DELETE FROM houseVirtualCoupons
             WHERE end_date < " . $dbc->curdate()
         );
 
@@ -54,13 +54,13 @@ based on expiration and/or use.';
           entry.
         */
         $delP = $dbc->prepare("
-            DELETE FROM HouseVirtualCoupons
+            DELETE FROM houseVirtualCoupons
             WHERE card_no=?
                 AND coupID=?
         ");
         $currentP = $dbc->prepare("
             SELECT card_no, coupID, start_date, end_date
-            FROM HouseVirtualCoupons
+            FROM houseVirtualCoupons
             WHERE start_date >= ?
         ");
         $yesterday = date('Y-m-d', strtotime('yesterday'));
