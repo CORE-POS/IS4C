@@ -11,6 +11,7 @@ namespace COREPOS\common;
 class NamedSession
 {
     private $name;
+    private $changed = false;
     public function __construct($name)
     {
         // security is not the goal here.
@@ -30,6 +31,9 @@ class NamedSession
     public function __set($key, $val)
     {
         $realKey = $this->name . '-' . $key;
+        if (isset($_SESSION[$realKey]) && $_SESSION[$realKey] != $val) {
+            $this->changed = true;
+        }
         $_SESSION[$realKey] = $val;
 
         return $this;
@@ -44,7 +48,32 @@ class NamedSession
     public function __unset($key)
     {
         $realKey = $this->name . '-' . $key;
+        if (isset($_SESSION[$realKey])) {
+            $this->changed = true;
+        }
         unset($_SESSION[$realKey]);
+    }
+
+    public function changed()
+    {
+        return $this->changed;
+    }
+
+    public function getPerma()
+    {
+        $ret = array();
+        $len = strlen($this->name) + 1;
+        foreach ($_SESSION as $key => $val) {
+            if (substr($key, 0, $len) != $this->name . '-') {
+                continue;
+            }
+            $key = substr($key, $len);
+            if (substr($key, 0, 2) == '__') {
+                $ret[$key] = $val;
+            }
+        }
+
+        return $ret;
     }
 }
 
