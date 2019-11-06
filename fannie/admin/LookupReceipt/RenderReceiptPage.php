@@ -263,6 +263,16 @@ HTML;
         $emp_no = $row2['emp_no'];  
         $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') { 
+            $typeP = $this->connection->prepare("SELECT memType FROM "
+                . FannieDB::fqn('custdata', 'op') . "
+                WHERE CardNo=? AND personNum=1");
+            $type = $this->connection->getValue($typeP, array($row2['memberID']));
+            if ($type == 7) {
+                $row2['memberID'] = 11;
+            }
+        }
+
         $receiptHeader = $this->receiptHeaderLines();
 
         $ret = "<table border=\"$border\" bgcolor=\"$bgcolor\">\n";
