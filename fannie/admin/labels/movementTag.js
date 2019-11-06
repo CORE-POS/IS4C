@@ -12,9 +12,14 @@ var movementTableFilter = (function ($) {
     mod.dept = '';
     mod.locs = [];
     mod.loc = '';
+    mod.count_upcs = [];
 
     mod.filter_table = function(){
         this.setChangedValue();
+        this.clickColumns();
+        this.wipeUpdateCol();
+        this.countUpcs();
+        this.addSymbol();
     };
 
     mod.setDepts = function(){
@@ -167,6 +172,49 @@ var movementTableFilter = (function ($) {
         this.setDepts();
         //$('select[name=store]').val($('#select[name=store] option:first').val());
         $('select[name=store]').prop('selectedIndex', 0);
+    };
+
+    mod.clickColumns = function(){
+        var columns = ['upc', 'brand', 'loc'];
+        $.each(columns, function(k,column) {
+            $('td[data-column='+column+']').click(function(){
+                var cur_text = $(this).text();
+                $('#'+column+'-filter').val(cur_text)
+                    .trigger('change');
+            });
+            $('td[data-column='+column+']').hover(function(){
+                $(this).css('cursor', 'pointer');
+            });
+        });
+    };
+
+    mod.countUpcs = function(){
+        $('td[data-column=upc]').each(function(){
+            var upc = $(this).text();
+            if (mod.count_upcs[upc] == undefined) {
+                mod.count_upcs[upc] = 1;
+            } else {
+                mod.count_upcs[upc]++;
+            }
+            $('td:contains('+upc+')').prev().text(mod.count_upcs[upc]);
+        });
+        console.log(mod.count_upcs);
+    };
+
+    mod.wipeUpdateCol = function(){
+        $('tr').each(function(){
+            $(this).find('td:eq(0)').text(0);
+        });
+    };
+
+    mod.addSymbol = function(){
+        $('tr').each(function(){
+            var number  = $(this).find('td:eq(7)').text();
+            number = parseFloat(number);
+            if (number > 0.01) {
+                $(this).find('td:eq(7)').text('+'+number);
+            }
+        });
     };
 
     return mod;

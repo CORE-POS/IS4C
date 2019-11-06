@@ -54,15 +54,15 @@ class MovementTagTracker extends FannieRESTfulPage
         $args = array($storeID);
         $td = '';
         $th = '';
-        $cols = array('updateID', 'upc', 'brand', 'description', 'dept', 'storeID',
-            'auto_par', 'adjustment', 'modified', 'name');
+        $cols = array('count', 'upc', 'brand', 'description', 'dept', 'storeID',
+            'auto_par', 'adjustment', 'modified', 'loc');
         foreach ($cols as $col) {
             $th.= "<th>$col</th>";
         }
-        $prep = $dbc->prepare("SELECT m.*, DATE(m.modified) as modified,
+        $prep = $dbc->prepare("SELECT m.*, DATE(m.modified) as modified, m.updateID as count,
                 p.brand, p.description,
                 CONCAT(d.dept_no, ' ', d.dept_name) AS dept,
-                f.name
+                f.name AS loc
             FROM MovementUpdate AS m
                 LEFT JOIN products AS p ON m.upc=p.upc
                 LEFT JOIN departments AS d ON p.department=d.dept_no
@@ -85,6 +85,9 @@ class MovementTagTracker extends FannieRESTfulPage
         $this->addOnloadCommand("$('#datepicker2').datepicker({dateFormat: 'yy-mm-dd'});");
         $this->addScript("movementTag.js");
         $this->addOnloadcommand("movementTableFilter.filter_table();");
+        $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
+        $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
+        $this->addOnloadCommand("$('#mu-table').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
         return <<<HTML
 <h2>Shelftag Replacement History</h2>
