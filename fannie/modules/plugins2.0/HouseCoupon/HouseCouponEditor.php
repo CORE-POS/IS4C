@@ -244,7 +244,7 @@ class HouseCouponEditor extends FanniePage
         $ret .= '</form>';
         $ret .= '<table class="table tablesorter">';
         $ret .= '<thead><tr><th>ID</th><th>Name</th>
-            <th class="summary-view-td">SuperID</th>
+            <th class="summary-view-td">Owner</th>
             <th class="summary-view-td">Summary</th>
             <th class="summary-view-td">Label</th>
             <th>Value</th>';
