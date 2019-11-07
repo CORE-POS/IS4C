@@ -178,6 +178,7 @@ class RpOrderPage extends FannieRESTfulPage
         }
 
         $sku = $vendor == $item['backupID'] ? $item['backupSKU'] : $item['vendorSKU'];
+        $prod['cost'] = $item['cost'] / $item['caseSize'];
         if ($sku == 'DIRECT') {
             $sku = $upc;
         } else {
@@ -341,7 +342,8 @@ class RpOrderPage extends FannieRESTfulPage
                 r.backupItem,
                 r.caseSize,
                 r.vendorID,
-                r.backupID
+                r.backupID,
+                r.cost
             FROM RpOrderItems AS r
                 LEFT JOIN RpOrderCategories AS c ON r.categoryID=c.rpOrderCategoryID
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
@@ -376,13 +378,9 @@ class RpOrderPage extends FannieRESTfulPage
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
-            /** sometimes mismatch doesn't require scaling;
-             * e.g., cost *is* per-lb but the number of lbs per
-             * case is indeterminate
-            if ($cost['units'] > 1 && $cost['units'] != $row['caseSize']) {
-                $cost['cost'] /= $cost['units'];
+            if (!$cost) {
+                $cost = array('cost' => $row['cost'] / $row['caseSize'], 'units' => $row['caseSize']);
             }
-             */
             $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
             $startIcon = '';
             $starting = $this->connection->getValue($startingP, array($row['upc'], $store));
@@ -418,9 +416,9 @@ class RpOrderPage extends FannieRESTfulPage
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
             $tables .= sprintf('<tr>
-                <td class="upc">%s %s</td>
-                <td>%s</td>
-                <td>%s</td>
+                <td class="upc %s">%s %s</td>
+                <td class="%s">%s</td>
+                <td class="%s">%s</td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td class="caseSize">%s</td>
                 <td><input type="text" class="form-control input-sm onHand" value="0" 
@@ -440,8 +438,10 @@ class RpOrderPage extends FannieRESTfulPage
                     <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s %s /> Sec</label>
                 </td>
                 </tr>',
-                $row['upc'], $lcName,
+                ($onSale ? "success" : ''), $row['upc'], $lcName,
+                ($onSale ? 'success' : ''),
                 $row['vendorName'],
+                ($onSale ? 'success' : ''),
                 $row['backupVendor'],
                 ($onSale ? 'success' : ''),
                 ($onSale ? "On sale through {$onSale}" : ''),
@@ -565,7 +565,7 @@ class RpOrderPage extends FannieRESTfulPage
     <div class="form-inline">
     <div class="input-group">
         <span class="input-group-addon">Retention</span>
-        <input type="number" value="{$baseRetain}" id="retention" class="form-control input-sm" />
+        <input type="number" disabled value="{$baseRetain}" id="retention" class="form-control input-sm" />
         <span class="input-group-addon">%</span>
     </div> 
     </div> 

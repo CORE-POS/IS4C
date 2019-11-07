@@ -114,8 +114,8 @@ class RpImport extends FannieRESTfulPage
         $lcSortP = $this->connection->prepare("UPDATE likeCodes SET sortRetail=? WHERE likeCode=?");
         $makeP = $this->connection->prepare("INSERT INTO RpOrderCategories (name) VALUES (?)");
         $insP = $this->connection->prepare("INSERT INTO RpOrderItems
-            (upc, storeID, categoryID, vendorID, vendorSKU, vendorItem, backupID, backupSKU, backupItem, caseSize)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            (upc, storeID, categoryID, vendorID, vendorSKU, vendorItem, backupID, backupSKU, backupItem, caseSize, cost)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $this->connection->query('TRUNCATE TABLE RpOrderItems');
         $this->connection->startTransaction();
         $added = array();
@@ -188,6 +188,7 @@ class RpImport extends FannieRESTfulPage
                     ($backupCatalog ? $backupCatalog['sku'] : null),
                     ($backupCatalog ? $backupCatalog['description'] : $backupName),
                     $info['units'],
+                    $info['cost'],
                 );
                 $this->connection->execute($insP, $args);
             }
@@ -469,6 +470,7 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                         $otherData[$lc]['rdwSKU'] = (int)$data[23];
                         $otherData[$lc]['sort'] = $data[11];
                         $otherData[$lc]['units'] = $data[42];
+                        $otherData[$lc]['cost'] = $data[40];
                     }
 
                 }

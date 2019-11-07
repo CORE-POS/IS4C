@@ -103,7 +103,7 @@ var rpOrder = (function ($) {
                     var row = $(this).closest('tr');
                     var onHand = $(row).find('input.onHand');
                     $(onHand).attr('data-incoming', qtyMap[upc]);
-                    $(onHand).closest('td').addClass('success').attr('title', 'Incoming: ' + qtyMap[upc]);
+                    $(onHand).closest('td').addClass('warning').attr('title', 'Incoming: ' + qtyMap[upc]);
                     mod.reCalcRow(row);
                 }
             });

@@ -177,6 +177,8 @@ class RpDirectPage extends FannieRESTfulPage
             $prodP = $this->connection->prepare("SELECT brand, size, cost FROM products WHERE upc=?");
             $prod = $this->connection->getRow($prodP, array($upc));
         }
+        // use RP cost
+        $prod['cost'] = $item['cost'] / $item['caseSize'];
         $mapP = $this->connection->prepare("SELECT sku FROM RpFixedMaps WHERE likeCode=?");
         $mapped = $this->connection->getValue($mapP, array(str_replace('LC', '', $upc)));
         if ($mapped) {
@@ -360,7 +362,8 @@ class RpDirectPage extends FannieRESTfulPage
                 r.backupItem,
                 r.caseSize,
                 r.vendorID,
-                r.backupID
+                r.backupID,
+                r.cost
             FROM RpOrderItems AS r
                 LEFT JOIN RpOrderCategories AS c ON r.categoryID=c.rpOrderCategoryID
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
@@ -405,6 +408,9 @@ class RpDirectPage extends FannieRESTfulPage
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
             if ($cost['units'] > 1 && $cost['units'] != $row['caseSize']) {
                 $cost['cost'] /= $cost['units'];
+            }
+            if (!$cost) {
+                $cost = array('cost' => $row['cost'] / $row['caseSize'], 'units' => $row['caseSize']);
             }
             $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
             $startIcon = '';
@@ -615,7 +621,7 @@ class RpDirectPage extends FannieRESTfulPage
     <div class="form-inline">
         <div class="input-group">
             <span class="input-group-addon">Retention</span>
-            <input type="number" value="{$baseRetain}" id="retention" class="form-control input-sm" />
+            <input type="number" disabled value="{$baseRetain}" id="retention" class="form-control input-sm" />
             <span class="input-group-addon">%</span>
         </div> 
     </div> 
