@@ -273,6 +273,9 @@ var rpOrder = (function ($) {
         var myTable = $(elem).closest('table');
         var nextTable = $(myTable).next().next('table');
         next = $(nextTable).find('td').first().parent();
+        if ($(next).css('display') == 'none') {
+            return nextRow(next);
+        }
         if (next.length > 0) {
             return next.get(0);
         }
@@ -301,6 +304,9 @@ var rpOrder = (function ($) {
         var myTable = $(elem).closest('table');
         var prevTable = $(myTable).prev().prev('table');
         prev = $(prevTable).find('td').last().parent();
+        if ($(prev).css('display') == 'none') {
+            return prevRow(prev);
+        }
         if (prev.length > 0) {
             return prev.get(0);
         }
@@ -405,6 +411,16 @@ var rpOrder = (function ($) {
 
         meters.hide();
         buttons.prop('disabled', false);
+    };
+
+    mod.defaultFarm = function(farm) {
+        if (farm) {
+            $('.primaryFarm').val(farm);
+        } else {
+            $('.primaryFarm').each(function() {
+                $(this).val($(this).attr('data-default'));
+            });
+        }
     };
 
     return mod;

@@ -464,7 +464,7 @@ class RpDirectPage extends FannieRESTfulPage
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
             $nextRow = sprintf('<tr class="%s">
                 <td class="upc %s">%s %s</td>
-                <td class="%s"><select class="primaryFarm form-control input-sm">%s</option></td>
+                <td class="%s"><select class="primaryFarm form-control input-sm" data-default="%s">%s</option></td>
                 <td class="%s"><select class="secondaryFarm form-control input-sm">%s</option></td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td style="display:none;" class="caseSize">%s</td>
@@ -488,6 +488,7 @@ class RpDirectPage extends FannieRESTfulPage
                 (in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) ? 'extraLocal' : '',
                 ($onSale ? "success" : ''), $row['upc'], $lcName,
                 ($onSale ? 'success' : ''),
+                $farm1,
                 $opt1,
                 ($onSale ? 'success' : ''),
                 $opt2,
@@ -573,6 +574,8 @@ class RpDirectPage extends FannieRESTfulPage
 
         $cats = new RpOrderCategoriesModel($this->connection);
         $catOpts = $cats->toOptions();
+        $farms = new RpFarmsModel($this->connection);
+        $farmOpts = $farms->toOptions();
 
         return <<<HTML
 <div class="row">
@@ -625,6 +628,15 @@ class RpDirectPage extends FannieRESTfulPage
             <span class="input-group-addon">%</span>
         </div> 
     </div> 
+    <div class="form-inline">
+        <div class="input-group">
+            <span class="input-group-addon">Single Farm</span>
+            <select onchange="rpOrder.defaultFarm(this.value);" class="form-control">
+                <option></option>
+                {$farmOpts}
+            </select>
+        </div>
+    </div>
     <div class="form-group">
         <label title="Show only items currently set to DIRECT">
             <input type="checkbox" onchange="if (this.checked) $('tr.extraLocal').hide(); else $('tr.extraLocal').show();" />
