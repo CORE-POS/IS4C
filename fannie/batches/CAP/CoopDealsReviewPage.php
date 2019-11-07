@@ -217,7 +217,6 @@ class CoopDealsReviewPage extends FanniePage
                 LEFT JOIN products AS p ON t.upc=p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE t.dealSet=?
-                AND p.inUse=1
             GROUP BY t.upc,
                 p.brand,
                 p.description,
