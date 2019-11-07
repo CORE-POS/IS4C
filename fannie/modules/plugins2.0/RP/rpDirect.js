@@ -166,13 +166,17 @@ var rpOrder = (function ($) {
 
     mod.updateDays = function() {
         clearIncoming();
-        var week = $('#projSales').html().replace(',', '');
+        var week = $('#modProj').html();
+        if (week == 0) {
+            week = $('#projSales').html().replace(',', '');
+        }
         var selectedDays = 0;
         minDate = false;
         maxDate = false;
         $('.daycheck:checked').each(function () {
             var pct = $(this).val().replace('%', '') / 100;
             selectedDays += pct * week;
+            var dateID = $(this).data('dateid');
             if (minDate === false || dateID < minDate) {
                 minDate = dateID;
             }
@@ -250,9 +254,21 @@ var rpOrder = (function ($) {
 
     function nextRow(elem) {
         var myRow = $(elem).closest('tr');
-        var next = $(myRow).next('tr');
-        if (next.length > 0) {
-            return next.get(0);
+        var limit = 0;
+        while (true) {
+            var next = $(myRow).next('tr');
+            if (next.length == 0) {
+                break;
+            }
+            if ($(next).css('display') == 'none') {
+                myRow = next;
+            } else if (next.length > 0) {
+                return next.get(0);
+            }
+            limit++;
+            if (limit > 10) {
+                break;
+            }
         }
         var myTable = $(elem).closest('table');
         var nextTable = $(myTable).next().next('table');
@@ -266,9 +282,21 @@ var rpOrder = (function ($) {
 
     function prevRow(elem) {
         var myRow = $(elem).closest('tr');
-        var prev = $(myRow).prev('tr');
-        if ($(prev).find('td').length > 0) {
-            return prev.get(0);
+        var limit = 0;
+        while (true) {
+            var prev = $(myRow).prev('tr');
+            if (prev.length == 0) {
+                break;
+            }
+            if ($(prev).css('display') == 'none') {
+                myRow = prev;
+            } else if ($(prev).find('td').length > 0) {
+                return prev.get(0);
+            }
+            limit++;
+            if (limit > 10) {
+                break;
+            }
         }
         var myTable = $(elem).closest('table');
         var prevTable = $(myTable).prev().prev('table');

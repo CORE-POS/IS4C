@@ -252,7 +252,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20190612');
+        $this->addScript('rpDirect.js?date=20191107');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -457,9 +457,9 @@ class RpDirectPage extends FannieRESTfulPage
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
             $nextRow = sprintf('<tr class="%s">
-                <td class="upc">%s %s</td>
-                <td><select class="primaryFarm form-control input-sm">%s</option></td>
-                <td><select class="secondaryFarm form-control input-sm">%s</option></td>
+                <td class="upc %s">%s %s</td>
+                <td class="%s"><select class="primaryFarm form-control input-sm">%s</option></td>
+                <td class="%s"><select class="secondaryFarm form-control input-sm">%s</option></td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td style="display:none;" class="caseSize">%s</td>
                 <td><input type="text" class="form-control input-sm onHand" value="0" 
@@ -480,8 +480,10 @@ class RpDirectPage extends FannieRESTfulPage
                 </td>
                 </tr>',
                 (in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) ? 'extraLocal' : '',
-                $row['upc'], $lcName,
+                ($onSale ? "success" : ''), $row['upc'], $lcName,
+                ($onSale ? 'success' : ''),
                 $opt1,
+                ($onSale ? 'success' : ''),
                 $opt2,
                 ($onSale ? 'success' : ''),
                 ($onSale ? "On sale through {$onSale}" : ''),
@@ -532,11 +534,29 @@ class RpDirectPage extends FannieRESTfulPage
             'Sun' => 'n/a',
         );
         $week = $this->connection->getRow($weekP, array($weekStart, $store));
+        $modProj = 0;
         if ($week) {
             $projected = number_format($week['sales']);
             $baseRetain = $week['retention'];
             $days = json_decode($week['segmentation'], true);
             $days = array_map(function ($i) { return sprintf('%.2f%%', $i*100); }, $days);
+            $thisYear = json_decode($week['thisYear'], true);
+            $lastYear = json_decode($week['lastYear'], true);
+            $sums = array('this' => 0, 'last' => 0);
+            $dataPoints = 0;
+            foreach ($thisYear as $key => $val) {
+                if ($val > 0 && $lastYear[$key] > 0) {
+                    $sums['this'] += $val;
+                    $sums['last'] += $lastYear[$key];
+                    $dataPoints++;
+                }
+            }
+            $growth = ($sums['this'] - $sums['last']) / $sums['last'];
+            $growth *= ($dataPoints / 7);
+            foreach ($lastYear as $key => $val) {
+                $modProj += ($val * (1 + $growth));
+            }
+            $modProj = round($modProj, 2);
         }
 
         $mStamp = date('N') == 1 ? strtotime('today') : strtotime('last monday');
@@ -581,6 +601,9 @@ class RpDirectPage extends FannieRESTfulPage
             data-dateid="{$dateIDs[6]}"
             onchange="rpOrder.updateDays();" value="{$days['Sun']}" /> Sunday</label>
     </fieldset>
+    <label title="Based on sales growth so far this week">Modified Projection</label>:
+    <span id="modProj">{$modProj}</span>
+    <br />
     <label>Projected Sales these Days</label>:
     <span id="selectedSales">0</span>
     <br />

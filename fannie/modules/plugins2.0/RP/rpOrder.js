@@ -166,7 +166,10 @@ var rpOrder = (function ($) {
 
     mod.updateDays = function() {
         clearIncoming();
-        var week = $('#projSales').html().replace(',', '');
+        var week = $('#modProj').html();
+        if (week == 0) {
+            week = $('#projSales').html().replace(',', '');
+        }
         var selectedDays = 0;
         minDate = false;
         maxDate = false;

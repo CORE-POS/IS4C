@@ -38,6 +38,8 @@ class RpSegmentsModel extends BasicModel
     'sales' => array('type'=>'MONEY'),
     'retention' => array('type'=>'MONEY', 'default'=>60),
     'segmentation' => array('type'=>'VARCHAR(255)'),
+    'lastYear' => array('type'=>'VARCHAR(255)', 'replaces'=>'yearOverYear'),
+    'thisYear' => array('type'=>'VARCHAR(255)'),
     );
 }
 
