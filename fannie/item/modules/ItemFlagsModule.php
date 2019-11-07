@@ -252,7 +252,6 @@ class ItemFlagsModule extends ItemModule implements ItemRow
     private function queueActions($actions, $flags, $upc, $store)
     {
         $queue = new  COREPOS\Fannie\API\jobs\QueueManager();
-        $logger = new FannieLogger();
 
         foreach ($actions as $flagID => $action) {
             $status = (isset($flags[$flagID]) && $flags[$flagID]) ? 1 : 0;
@@ -264,9 +263,6 @@ class ItemFlagsModule extends ItemModule implements ItemRow
                     'flag' => $status,
                 ),
             );
-            $now = microtime(true);
-            $queue->add($job);
-            $logger->debug('Queueing time: ' . (microtime(true) - $now));
         }
     }
 }
