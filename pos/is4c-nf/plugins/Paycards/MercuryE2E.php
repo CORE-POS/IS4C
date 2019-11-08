@@ -916,12 +916,19 @@ class MercuryE2E extends BasicCCModule
             <Amount>
                 <Purchase>'.$request->formattedAmount().'</Purchase>';
         $cval =new CardValidator();
+        $cbMax = $this->conf->get('PaycardsTermCashBackLimit');
         if ($request->cashback > 0 && $cval->allowCashback($request->type)) {
                 $msgXml .= "<CashBack>" . $request->formattedCashBack() . "</CashBack>";
         } elseif ($this->conf->get('PaycardsOfferCashBack') == 3 && strtoupper($request->type) == 'DEBIT') {
             $msgXml .= "<CashBack>Prompt</CashBack>";
+            if (is_numeric($cbMax) && $cbMax > 0) {
+                $msgXml .= sprintf('<MaximumCashBack>%.2f</MaximumCashBack>', $cbMax);
+            }
         } elseif ($this->conf->get('PaycardsOfferCashBack') == 4 && in_array(strtoupper($request->type), array('DEBIT','EMV'))) {
             $msgXml .= "<CashBack>Prompt</CashBack>";
+            if (is_numeric($cbMax) && $cbMax > 0) {
+                $msgXml .= sprintf('<MaximumCashBack>%.2f</MaximumCashBack>', $cbMax);
+            }
         }
         if ($tipped) {
             $msgXml .= '<Gratuity>Prompt</Gratuity>';
