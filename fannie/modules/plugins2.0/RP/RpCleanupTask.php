@@ -37,7 +37,6 @@ class RpCleanupTask extends FannieTask
                 AND m.superID=6
                 AND d.store_id=?
                 AND d.tdate >= ?
-                AND d.tdate < CURDATE()
             GROUP BY {$DoW}
             ORDER BY {$DoW}");
         $segP = $dbc->prepare("UPDATE RpSegments
