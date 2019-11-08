@@ -486,13 +486,13 @@ class RpDirectPage extends FannieRESTfulPage
                 </td>
                 </tr>',
                 (in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) ? 'extraLocal' : '',
-                ($onSale ? "success" : ''), $row['upc'], $lcName,
-                ($onSale ? 'success' : ''),
+                ($onSale ? "rp-success" : ''), $row['upc'], $lcName,
+                ($onSale ? 'rp-success' : ''),
                 $farm1,
                 $opt1,
-                ($onSale ? 'success' : ''),
+                ($onSale ? 'rp-success' : ''),
                 $opt2,
-                ($onSale ? 'success' : ''),
+                ($onSale ? 'rp-success' : ''),
                 ($onSale ? "On sale through {$onSale}" : ''),
                 $cost['cost'] * $row['caseSize'],
                 ($row['vendorSKU'] ? '(' . $row['vendorSKU'] . ')' : ''),
@@ -733,6 +733,20 @@ class RpDirectPage extends FannieRESTfulPage
 </p>
 HTML;
     }
+
+    protected function css_content()
+    {
+        return <<<CSS
+.rp-success {
+    background-color: #f772d2;
+}
+.table-striped>tbody>tr:nth-child(odd)>td.rp-success {
+    background-color: #f772d2;
+}
+CSS;
+    }
+
+
 }
 
 FannieDispatch::conditionalExec();

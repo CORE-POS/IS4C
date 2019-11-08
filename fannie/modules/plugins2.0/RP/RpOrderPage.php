@@ -378,7 +378,7 @@ class RpOrderPage extends FannieRESTfulPage
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
-            if (!$cost) {
+            if (!$cost || !$cost['cost']) {
                 $cost = array('cost' => $row['cost'] / $row['caseSize'], 'units' => $row['caseSize']);
             }
             $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
@@ -438,12 +438,12 @@ class RpOrderPage extends FannieRESTfulPage
                     <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s %s /> Sec</label>
                 </td>
                 </tr>',
-                ($onSale ? "success" : ''), $row['upc'], $lcName,
-                ($onSale ? 'success' : ''),
+                ($onSale ? "rp-success" : ''), $row['upc'], $lcName,
+                ($onSale ? 'rp-success' : ''),
                 $row['vendorName'],
-                ($onSale ? 'success' : ''),
+                ($onSale ? 'rp-success' : ''),
                 $row['backupVendor'],
-                ($onSale ? 'success' : ''),
+                ($onSale ? 'rp-success' : ''),
                 ($onSale ? "On sale through {$onSale}" : ''),
                 $cost['cost'] * $row['caseSize'],
                 ($row['vendorSKU'] ? '(' . $row['vendorSKU'] . ')' : ''),
@@ -656,6 +656,18 @@ class RpOrderPage extends FannieRESTfulPage
     </div>
 </p>
 HTML;
+    }
+
+    protected function css_content()
+    {
+        return <<<CSS
+.rp-success {
+    background-color: #f772d2;
+}
+.table-striped>tbody>tr:nth-child(odd)>td.rp-success {
+    background-color: #f772d2;
+}
+CSS;
     }
 }
 
