@@ -170,12 +170,11 @@ var movementTableFilter = (function ($) {
             mod.setFilter();
         });
         this.setDepts();
-        //$('select[name=store]').val($('#select[name=store] option:first').val());
         $('select[name=store]').prop('selectedIndex', 0);
     };
 
     mod.clickColumns = function(){
-        var columns = ['upc', 'brand', 'loc'];
+        var columns = ['upc', 'brand', 'loc', 'dept'];
         $.each(columns, function(k,column) {
             $('td[data-column='+column+']').click(function(){
                 var cur_text = $(this).text();
