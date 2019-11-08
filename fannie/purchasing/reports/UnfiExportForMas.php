@@ -88,6 +88,7 @@ class UnfiExportForMas extends FannieReportPage
                         LEFT JOIN vendors AS n ON n.vendorID=i.vendorID
                     WHERE i.vendorID=? 
                         AND o.receivedDate BETWEEN ? AND ?
+                        AND o.orderID <> -99
                     GROUP BY o.orderID, o.salesCode, i.vendorInvoiceID, i.vendorOrderID
                     ORDER BY rdate, i.vendorInvoiceID, o.salesCode';
         $codingP = $dbc->prepare($codingQ);
