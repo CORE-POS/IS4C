@@ -491,6 +491,7 @@ class RpOrderPage extends FannieRESTfulPage
             $days = json_decode($week['segmentation'], true);
             $days = array_map(function ($i) { return sprintf('%.2f%%', $i*100); }, $days);
             $thisYear = json_decode($week['thisYear'], true);
+            $thisYear = is_array($thisYear) ? $thisYear : array();
             $lastYear = json_decode($week['lastYear'], true);
             $sums = array('this' => 0, 'last' => 0);
             $dataPoints = 0;
@@ -501,12 +502,14 @@ class RpOrderPage extends FannieRESTfulPage
                     $dataPoints++;
                 }
             }
-            $growth = ($sums['this'] - $sums['last']) / $sums['last'];
-            $growth *= ($dataPoints / 7);
-            foreach ($lastYear as $key => $val) {
-                $modProj += ($val * (1 + $growth));
+            if ($dataPoints > 0) {
+                $growth = ($sums['this'] - $sums['last']) / $sums['last'];
+                $growth *= ($dataPoints / 7);
+                foreach ($lastYear as $key => $val) {
+                    $modProj += ($val * (1 + $growth));
+                }
+                $modProj = round($modProj, 2);
             }
-            $modProj = round($modProj, 2);
         }
 
         $mStamp = date('N') == 1 ? strtotime('today') : strtotime('last monday');
