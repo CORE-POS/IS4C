@@ -247,7 +247,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20191107');
+        $this->addScript('rpOrder.js?date=20191111');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -415,7 +415,7 @@ class RpOrderPage extends FannieRESTfulPage
             }
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
-            $tables .= sprintf('<tr>
+            $tables .= sprintf('<tr class="item-row vendor-%d">
                 <td class="upc %s">%s %s</td>
                 <td class="%s">%s</td>
                 <td class="%s">%s</td>
@@ -438,6 +438,7 @@ class RpOrderPage extends FannieRESTfulPage
                     <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s %s /> Sec</label>
                 </td>
                 </tr>',
+                $row['vendorID'],
                 ($onSale ? "rp-success" : ''), $row['upc'], $lcName,
                 ($onSale ? 'rp-success' : ''),
                 $row['vendorName'],
@@ -639,6 +640,18 @@ class RpOrderPage extends FannieRESTfulPage
     <button class="btn btn-default orderAll" onclick="rpOrder.orderAll();">Order All</button>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <a href="RpDirectPage.php" class="btn btn-default">Switch to Direct</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div class="form-inline">
+    <div class="input-group">
+        <span class="input-group-addon">Filter</span>
+        <select class="form-control" onchange="rpOrder.vendorFilter(this.value);">
+            <option value="">Select one...</option>
+            <option value="292">Alberts</option>
+            <option value="293">CPW</option>
+            <option value="136">RDW</option>
+        </select>
+    </div>
+    </div>
     <div class="progress collapse">
         <div class="progress-bar progress-bar-striped active"  role="progressbar" 
             aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">

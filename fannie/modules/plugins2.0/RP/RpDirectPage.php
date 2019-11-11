@@ -558,12 +558,14 @@ class RpDirectPage extends FannieRESTfulPage
                     $dataPoints++;
                 }
             }
-            $growth = ($sums['this'] - $sums['last']) / $sums['last'];
-            $growth *= ($dataPoints / 7);
-            foreach ($lastYear as $key => $val) {
-                $modProj += ($val * (1 + $growth));
+            if ($dataPoints > 0) {
+                $growth = ($sums['this'] - $sums['last']) / $sums['last'];
+                $growth *= ($dataPoints / 7);
+                foreach ($lastYear as $key => $val) {
+                    $modProj += ($val * (1 + $growth));
+                }
+                $modProj = round($modProj, 2);
             }
-            $modProj = round($modProj, 2);
         }
 
         $mStamp = date('N') == 1 ? strtotime('today') : strtotime('last monday');

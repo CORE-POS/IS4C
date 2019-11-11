@@ -254,13 +254,28 @@ var rpOrder = (function ($) {
 
     function nextRow(elem) {
         var myRow = $(elem).closest('tr');
-        var next = $(myRow).next('tr');
-        if (next.length > 0) {
-            return next.get(0);
+        var limit = 0;
+        while (true) {
+            var next = $(myRow).next('tr');
+            if (next.length == 0) {
+                break;
+            }
+            if ($(next).css('display') == 'none') {
+                myRow = next;
+            } else if (next.length > 0) {
+                return next.get(0);
+            }
+            limit++;
+            if (limit > 10) {
+                break;
+            }
         }
         var myTable = $(elem).closest('table');
         var nextTable = $(myTable).next().next('table');
         next = $(nextTable).find('td').first().parent();
+        if ($(next).css('display') == 'none') {
+            return nextRow(next);
+        }
         if (next.length > 0) {
             return next.get(0);
         }
@@ -270,13 +285,28 @@ var rpOrder = (function ($) {
 
     function prevRow(elem) {
         var myRow = $(elem).closest('tr');
-        var prev = $(myRow).prev('tr');
-        if ($(prev).find('td').length > 0) {
-            return prev.get(0);
+        var limit = 0;
+        while (true) {
+            var prev = $(myRow).prev('tr');
+            if (prev.length == 0) {
+                break;
+            }
+            if ($(prev).css('display') == 'none') {
+                myRow = prev;
+            } else if ($(prev).find('td').length > 0) {
+                return prev.get(0);
+            }
+            limit++;
+            if (limit > 10) {
+                break;
+            }
         }
         var myTable = $(elem).closest('table');
         var prevTable = $(myTable).prev().prev('table');
         prev = $(prevTable).find('td').last().parent();
+        if ($(prev).css('display') == 'none') {
+            return prevRow(prev);
+        }
         if (prev.length > 0) {
             return prev.get(0);
         }
@@ -374,6 +404,15 @@ var rpOrder = (function ($) {
 
         meters.hide();
         buttons.prop('disabled', false);
+    };
+
+    mod.vendorFilter = function(vendorID) {
+        if (!vendorID) {
+            $('tr.item-row').show();
+        } else {
+            $('tr.item-row').hide();
+            $('tr.vendor-' + vendorID).show();
+        }
     };
 
     return mod;
