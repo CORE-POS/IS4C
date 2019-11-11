@@ -139,7 +139,7 @@ class ItemEditorPage extends FanniePage
             $this->mode = 'searchResults';
         }
         if (FormLib::get('superFilter', false) !== false) {
-            $this->session->superFilter = FormLib::get('superFilter');
+            $this->session->__superFilter = FormLib::get('superFilter');
         }
 
         if (FormLib::get_form_value('createBtn') !== ''){
@@ -180,9 +180,9 @@ class ItemEditorPage extends FanniePage
                     . '</blockquote>';
         }
         $model = new SuperDeptNamesModel($this->connection);
-        $sOpts = $model->toOptions($this->session->superFilter);
-        if ($this->session->superFilter !== '') {
-            $this->addOnloadCommand("EXTRA_AUTO_COMPLETE_PARAMS = { superID: " . $this->session->superFilter . " };");
+        $sOpts = $model->toOptions($this->session->__superFilter);
+        if ($this->session->__superFilter !== '') {
+            $this->addOnloadCommand("EXTRA_AUTO_COMPLETE_PARAMS = { superID: " . $this->session->__superFilter . " };");
         }
         $ret = <<<HTML
 {$vars['msgs']}
@@ -274,7 +274,7 @@ HTML;
                     break;
             }
         } else {
-            $superFilter = isset($this->session->superFilter) && $this->session->superFilter !== '';
+            $superFilter = isset($this->session->__superFilter) && $this->session->__superFilter !== '';
             $superJoin = $superFilter ? ' left join superdepts AS s ON p.department=s.dept_ID ' : '';
             $query = "SELECT p.*,n.vendorName AS distributor,p.brand AS manufacturer 
                 FROM products AS p
@@ -288,7 +288,7 @@ HTML;
             $args[] = '%'.$upc.'%';
             if ($superFilter) {
                 $query .= " AND s.superID=? ";
-                $args[] = $this->session->superFilter;
+                $args[] = $this->session->__superFilter;
             }
         }
         if (!$inUseFlag) {
