@@ -162,6 +162,7 @@ class HouseCouponEditor extends FanniePage
             $descript = FormLib::get_form_value('description',0);
             $superID = FormLib::get_form_value('superID',0);
             $summary = FormLib::get_form_value('summary',0);
+            $maxVal = FormLib::get_form_value('maxVal',0);
             $label = FormLib::get_form_value('label',0);
             $auto = FormLib::get('autoapply', 0);
             $starts = FormLib::get('starts');
@@ -183,6 +184,7 @@ class HouseCouponEditor extends FanniePage
             $model->memberOnly($mem);
             $model->superID($superID);
             $model->summary($summary);
+            $model->maxValue($maxVal);
             $model->label($label);
             $model->auto($auto);
             $model->save();
@@ -370,6 +372,7 @@ class HouseCouponEditor extends FanniePage
         $superModel = new MasterSuperDeptsModel($this->connection);
         $superOpts = $superModel->toOptions($owner);
         $summary = $model->summary();
+        $maxVal = $model->maxValue();
         $label_name = $model->label();
 
         $ret = '<form class="form-horizontal" action="HouseCouponEditor.php" method="post">';
@@ -522,13 +525,15 @@ class HouseCouponEditor extends FanniePage
                 <div class="col-sm-3">
                     <select class="form-control" name=superID>'.$superOpts.'</select>
                 </div>
-                <label class="col-sm-1 control-label">Summary</label>
-                <div class="col-sm-3"><input type=text name=summary class="form-control" value="'.$summary.'" /></div>
+                <label class="col-sm-1 control-label">Maximum value</label>
+                <div class="col-sm-3"><input type=text name=maxVal class="form-control" value="'.$maxVal.'" /></div>
             </div>
             <br/>
             <div class="row">
                 <label class="col-sm-1 control-label">Label</label>
                 <div class="col-sm-3"><input type=text name=label class="form-control" value="'.$label_name.'" /></div>
+                <label class="col-sm-1 control-label">Summary</label>
+                <div class="col-sm-3"><input type=text name=summary class="form-control" value="'.$summary.'" /></div>
             </div>
             ';
 
