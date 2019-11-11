@@ -470,22 +470,21 @@ function enableLinea(selector, callback)
             exit;
         }
 
-        /*
         if (!isset($_COOKIE['__perma'])) {
             $perma = uniqid(true);
-            setcookie('__perma', $perma, time()*60*60*24*999,'/');
+            setcookie('__perma', $perma, time()+60*60*24*999,'/');
         } elseif (isset($_COOKIE['__perma']) && !isset($this->session->__perma)) {
             $redis = $this->getRedis();
             if ($redis) {
                 $vals = $redis->get($_COOKIE['__perma']);
-                $vals = unserialize($vals);
-                foreach ($vals as $k => $v) {
-                    $this->session->{$k} = $v;
+                if ($vals) {
+                    $vals = unserialize($vals);
+                    foreach ($vals as $k => $v) {
+                        $this->session->{$k} = $v;
+                    }
                 }
-                $this->session->__perma = true;
             }
         }
-         */
 
         if (FormLib::get('_token_') && isset($this->session->csrfToken)) {
             $this->validated = FormLib::get('_token_') === $this->session->csrfToken;
@@ -501,23 +500,20 @@ function enableLinea(selector, callback)
 
     protected function postFlight()
     {
-        /*
         if ($this->session->changed() && isset($_COOKIE['__perma'])) {
             $redis = $this->getRedis();
             if ($redis) {
                 $data = $this->session->getPerma();
                 $data = serialize($data);
-                $redis->setEx($_COOKIE['__perma'], 60*60*24*30, $data);
+                $res = $redis->setEx($_COOKIE['__perma'], 60*60*24*30, $data);
             }
         }
-         */
     }
 
     protected function getRedis()
     {
         $conf = $this->config->get('PLUGIN_SETTINGS');
         $redis_host = isset($conf['SatelliteRedis']) ? $conf['SatelliteRedis'] : '127.0.0.1';
-        $this->log("Connecting to Redis {$redis_host}");
         try {
             $redis = new \Predis\Client($redis_host);
             return $redis;
