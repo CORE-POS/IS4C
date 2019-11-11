@@ -47,6 +47,7 @@ class HouseCouponsModel extends BasicModel
     'department' => array('type'=>'INT'),
     'auto' => array('type'=>'TINYINT', 'default'=>0),
     'virtualOnly' => array('type'=>'TINYINT', 'default'=>0),
+    'maxValue' => array('type'=>'MONEY', 'default'=>0),
     );
 
     public function doc()
