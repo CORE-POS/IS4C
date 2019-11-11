@@ -114,7 +114,8 @@ class HouseCoupon extends SpecialUPC
                           WHEN startDate IS NULL THEN 0 
                           ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
                         END as preStart,
-                        virtualOnly";
+                        virtualOnly,
+                        maxValue";
         } else {
             // new(ish) columns 16apr14
             $hctable = $dbc->tableDefinition('houseCoupons');
@@ -133,6 +134,7 @@ class HouseCoupon extends SpecialUPC
                 $infoQ .= ', \'1900-01-01\' AS startDate, 0 AS preStart';
             }
             $infoQ .= isset($hctable['virtualOnly']) ? ', virtualOnly ' : ', 0 AS virtualOnly ';
+            $infoQ .= isset($hctable['maxValue']) ? ', maxValue ' : ', 0 AS maxValue ';
         }
         $infoQ .= " FROM  houseCoupons 
                     WHERE coupID=" . ((int)$coupID);
@@ -911,6 +913,10 @@ class HouseCoupon extends SpecialUPC
                 $value = 0;
                 $description = $couponPD . ' % Discount Coupon';
                 break;
+        }
+
+        if ($infoW['maxValue'] > 0 && $value > $infoW['maxValue']) {
+            $value = $infoW['maxValue'];
         }
 
         return array('value' => $value, 'department' => $infoW['department'], 'description' => $description, 'discountable'=>$discountable);
