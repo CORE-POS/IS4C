@@ -110,9 +110,10 @@ class CoopDealsReviewPage extends FanniePage
                 discountType,
                 priority,
                 startDate,
-                endDate
+                endDate,
+                owner
             )
-            VALUES (?, ?, ?, 0, ?, ?)
+            VALUES (?, ?, ?, 0, ?, ?, ?)
         ');
 
         $blDef = $dbc->tableDefinition('batchList');
@@ -148,6 +149,8 @@ class CoopDealsReviewPage extends FanniePage
                     $args[] = $start;
                     $args[] = $b_end;
                 }
+                list($firstWord) = explode(' ', $args[0]);
+                $args[] = $firstWord;
     
                 $dbc->execute($batchP,$args);
                 $bID = $dbc->insertID();
