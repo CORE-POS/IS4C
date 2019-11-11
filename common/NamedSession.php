@@ -59,6 +59,19 @@ class NamedSession
         return $this->changed;
     }
 
+    public function perma()
+    {
+        $args = func_get_args();
+        switch (count($args)) {
+            case 1:
+                return $this->__get('__' . $args[0]);
+            case 2:
+                return $this->__set('__' . $args[0], $args[1]);
+            default:
+                throw new \Exception('perma() takes 1 or 2 arguments');
+        }
+    }
+
     public function getPerma()
     {
         $ret = array();
