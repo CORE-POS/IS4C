@@ -134,7 +134,8 @@ class HouseCoupon extends SpecialUPC
                 $infoQ .= ', \'1900-01-01\' AS startDate, 0 AS preStart';
             }
             $infoQ .= isset($hctable['virtualOnly']) ? ', virtualOnly ' : ', 0 AS virtualOnly ';
-            $infoQ .= isset($hctable['maxValue']) ? ', maxValue ' : ', 0 AS maxValue ';
+            $mval = $dbc->identifierEscape('maxValue');
+            $infoQ .= isset($hctable['maxValue']) ? ", {$mval} " : ", 0 AS {$mval} ";
         }
         $infoQ .= " FROM  houseCoupons 
                     WHERE coupID=" . ((int)$coupID);
