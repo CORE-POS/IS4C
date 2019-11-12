@@ -115,7 +115,7 @@ class HouseCoupon extends SpecialUPC
                           ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
                         END as preStart,
                         virtualOnly,
-                        maxValue";
+                        " . $dbc->escape("maxValue");
         } else {
             // new(ish) columns 16apr14
             $hctable = $dbc->tableDefinition('houseCoupons');
