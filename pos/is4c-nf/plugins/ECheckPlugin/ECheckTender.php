@@ -76,7 +76,7 @@ class ECheckTender extends TenderModule
         /**
           If paper check, endorsing prompt
         */
-        if (($this->tender_code == 'CK' || $this->tender_code == 'TC') && CoreLocal::get('enableFranking') == 1) {
+        if ($this->tender_code == 'CK' && CoreLocal::get('enableFranking') == 1) {
             if (CoreLocal::get('msgrepeat') == 0) {
                 CoreLocal::set('lastRepeat', 'echeckEndorse');
                 return $this->endorsing();
