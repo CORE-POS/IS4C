@@ -191,6 +191,11 @@ class RpSegmentation extends FannieRESTfulPage
         }
         $sSelect = FormLib::storePicker();
         $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpSegmentation.php?store=\' + this.value;"', $sSelect['html']);
+        $ts = time();
+        while (date('N', $ts) != 1) {
+            $ts = mktime(0, 0, 0, date('n', $ts), date('j', $ts) - 1, date('Y', $ts));
+        }
+        $monday = date('Y-m-d', $ts);
 
         $segs = '';
         $prep = $this->connection->prepare("SELECT * FROM RpSegments WHERE storeID=? ORDER BY startDate DESC");
@@ -207,6 +212,7 @@ class RpSegmentation extends FannieRESTfulPage
                 $cur = $row;
             }
         }
+        $this->addOnloadCommand("\$('#segID').trigger('change');");
 
         return <<<HTML
 <div class="row">
@@ -217,8 +223,8 @@ class RpSegmentation extends FannieRESTfulPage
         <form id="segForm" onsubmit="saveSegment(); return false;">
         <label>Store:</label> {$sSelect['html']}
         <label>Week of:</label>
-        <input type="text" class="form-control date-field" name="segID"
-            onchange="getPlan(this.value, {$store});" />
+        <input type="text" class="form-control date-field" id="segID" name="segID"
+            onchange="getPlan(this.value, {$store});" value="{$monday}" />
         <div id="segFields"></div>
         </form>
     </p>
