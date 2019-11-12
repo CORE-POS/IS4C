@@ -385,6 +385,11 @@ class MercuryE2E extends BasicCCModule
                 }
                 $this->conf->set('paycard_partial', false);
 
+                $cbMsg = '';
+                if ($this->conf->get('LastEmvCashBack')) {
+                    $cbMsg = sprintf('<p><b>Cashback: %.2f</b></p>', $this->conf->get('LastEmvCashBack'));
+                }
+
                 $isCredit = ($this->conf->get('CacheCardType') == 'CREDIT' || $this->conf->get('CacheCardType') == '') ? true : false;
                 $needSig = ($this->conf->get('paycard_amount') > $this->conf->get('CCSigLimit') || $this->conf->get('paycard_amount') < 0) ? true : false;
                 if ($this->conf->get('paycard_recurring')) {
@@ -400,6 +405,7 @@ class MercuryE2E extends BasicCCModule
                 } elseif (($isCredit || $this->conf->get('EmvSignature') === true) && $needSig) {
                     $this->conf->set("boxMsg",
                             "<b>$apprType</b>
+                            {$cbMsg}
                             <font size=-1>
                             <p>Please verify cardholder signature
                             <p>[enter] to continue
@@ -412,6 +418,7 @@ class MercuryE2E extends BasicCCModule
                 } else {
                     $this->conf->set("boxMsg",
                             "<b>$apprType</b>
+                            {$cbMsg}
                             <font size=-1>
                             <p>No signature required
                             <p>[enter] to continue
