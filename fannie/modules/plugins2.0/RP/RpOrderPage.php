@@ -494,21 +494,28 @@ class RpOrderPage extends FannieRESTfulPage
             $thisYear = json_decode($week['thisYear'], true);
             $thisYear = is_array($thisYear) ? $thisYear : array();
             $lastYear = json_decode($week['lastYear'], true);
-            $sums = array('this' => 0, 'last' => 0);
+            $sums = array('this' => 0, 'last' => 0, 'proj' => 0);
             $dataPoints = 0;
             foreach ($thisYear as $key => $val) {
                 if ($val > 0 && $lastYear[$key] > 0) {
                     $sums['this'] += $val;
                     $sums['last'] += $lastYear[$key];
+                    $sums['proj'] += str_replace(',', '', $projected) * (str_replace('%', '', $days[$key]) / 100.00);
                     $dataPoints++;
                 }
             }
             if ($dataPoints > 0) {
-                $growth = ($sums['this'] - $sums['last']) / $sums['last'];
+                $growth = ($sums['this'] - $sums['proj']) / $sums['proj'];
                 $growth *= ($dataPoints / 7);
+                foreach ($days as $day) {
+                    $val = str_replace(',', '', $projected) * (str_replace('%', '', $day) / 100.00);
+                    $modProj += ($val * (1 + $growth));
+                }
+                /*
                 foreach ($lastYear as $key => $val) {
                     $modProj += ($val * (1 + $growth));
                 }
+                 */
                 $modProj = round($modProj, 2);
             }
         }
