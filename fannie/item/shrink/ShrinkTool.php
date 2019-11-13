@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\Store;
+
 require(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../classlib2.0/FannieAPI.php');
@@ -68,6 +70,9 @@ class ShrinkTool extends FannieRESTfulPage
         $record['trans_status'] = 'Z';
         if (FormLib::get('store', false) !== false) {
             $record['store_id'] = FormLib::get('store');
+            if ($record['store_id'] == 50) {
+                $record['store_id'] = Store::getIdByIp();
+            }
         }
 
         $info = DTrans::parameterize($record, 'datetime', $dbc->now());
