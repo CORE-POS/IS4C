@@ -689,9 +689,11 @@ class FannieReportPage extends FanniePage
                         foreach ($_POST as $key => $val) {
                             if (is_array($val)) {
                                 foreach ($val as $v) {
+                                    $v = str_replace('"', '', $v);
                                     $ret .= "<input type=\"hidden\" name=\"{$key}[]\" value=\"{$v}\" />";
                                 }
                             } else {
+                                $val = str_replace('"', '', $val);
                                 $ret .= "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />";
                             }
                         }
