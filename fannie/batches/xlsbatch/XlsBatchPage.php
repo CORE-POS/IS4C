@@ -251,7 +251,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             'data' => array(
                 'table' => 'likeCodes',
                 'set' => array(
-                    'likeCodeDesc' => $name,
+                    //'likeCodeDesc' => $name,
                     'preferredVendorID' => $vID,
                 ),
                 'where' => array(
