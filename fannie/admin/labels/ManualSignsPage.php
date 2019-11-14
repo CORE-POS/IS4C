@@ -59,6 +59,8 @@ class ManualSignsPage extends FannieRESTfulPage
                 ' . ItemText::longDescriptionSQL() . ',
                 ' . ItemText::signSizeSQL() . ',
                 p.scale,
+                NULL AS startDate,
+                NULL AS endDate,
                 \'\' AS price,
                 \'\' AS origin
             FROM products AS p
@@ -84,7 +86,10 @@ class ManualSignsPage extends FannieRESTfulPage
                 ' . ItemText::longDescriptionSQL() . ',
                 ' . ItemText::signSizeSQL() . ',
                 p.scale,
-                p.normal_price AS price,
+                CASE WHEN p.discounttype=1 AND p.special_price > 0 THEN p.special_price ELSE p.normal_price END AS price,
+                p.normal_price,
+                CASE WHEN p.discounttype=1 AND p.special_price > 0 THEN p.start_date ELSE NULL END AS startDate,
+                CASE WHEN p.discounttype=1 AND p.special_price > 0 THEN p.end_date ELSE NULL END AS endDate,
                 \'\' AS origin
             FROM products AS p
                 INNER JOIN shelftags AS s ON p.upc=s.upc
@@ -104,6 +109,14 @@ class ManualSignsPage extends FannieRESTfulPage
                 if ($this->queueID == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
                     $lcRow = $this->connection->getRow($lcP, array($row['upc']));
                     $row['origin'] = $lcRow['origin'];
+                    if ($row['normal_price'] > $row['price']) {
+                        $row['origin'] .= '/' . $row['normal_price'];
+                    }
+                } else {
+                    // preserve normal behavior
+                    $row['price'] = $row['normal_price'];
+                    $row['startDate'] = '';
+                    $row['endDate'] = '';
                 }
                 $this->items[] = $row;
             }
@@ -132,7 +145,7 @@ class ManualSignsPage extends FannieRESTfulPage
             } elseif (in_array($i, $exclude)) {
                 continue;
             }
-            $items[] = array(
+            $item = array(
                 'upc' => '',
                 'description' => $descriptions[$i],
                 'posDescription' => $descriptions[$i],
@@ -149,6 +162,13 @@ class ManualSignsPage extends FannieRESTfulPage
                 'originName' => $origins[$i],
                 'originShortName' => $origins[$i],
             );
+            if (strstr($origins[$i], '/')) {
+                list($origin, $regPrice) = explode('/', $origins[$i], 2);
+                $item['originName'] = trim($origin);
+                $item['originShortName'] = trim($origin);
+                $item['nonSalePrice'] = trim($regPrice);
+            }
+            $items[] = $item;
         }
 
         $class = FormLib::get('signmod');
@@ -193,7 +213,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $offset = '';
         $clearBtn = '';
         if (FormLib::get('queueID') == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
-            $mods = array('Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
+            $mods = array('Produce4UpP', 'Produce4UpSingle', 'Giganto4UpSingle', 'Legacy:WFC Produce');
             $offset = 'checked';
             $clearBtn = '<a href="ManualSignsPage.php?_method=delete&id=' . FormLib::get('queueID') . '"
                 class="btn btn-default pull-right">Clear Queue</a>';
@@ -299,6 +319,8 @@ HTML;
             $price = isset($items[$i]) ? $items[$i]['price'] : '';
             $scaleY = isset($items[$i]) && $items[$i]['scale'] ? 'selected' : '';
             $origin = isset($items[$i]) ? $items[$i]['origin'] : '';
+            $start = isset($items[$i]) ? $items[$i]['startDate'] : '';
+            $end = isset($items[$i]) ? $items[$i]['endDate'] : '';
             $ret .= <<<HTML
 <tr>
     <td><input type="text" name="brand[]" class="form-control input-sm input-brand" value="{$brand}" /></td>
@@ -310,8 +332,8 @@ HTML;
     </select></td>
     <td><input type="text" name="size[]" class="form-control input-sm input-size" value="{$size}" /></td>
     <td><input type="text" name="origin[]" class="form-control input-sm input-origin" value="{$origin}" /></td>
-    <td><input type="text" name="start[]" class="form-control input-sm input-start date-field" /></td>
-    <td><input type="text" name="end[]" class="form-control input-sm input-end date-field" /></td>
+    <td><input type="text" name="start[]" class="form-control input-sm input-start date-field" value="{$start}" /></td>
+    <td><input type="text" name="end[]" class="form-control input-sm input-end date-field" value="{$end}" /></td>
     <td><input type="checkbox" class="exc" name="exclude[]" value="{$i}" /></td>
 </tr>
 HTML;
