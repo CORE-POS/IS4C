@@ -56,6 +56,8 @@ class PullRemoteTransactionsTask extends FannieTask
                     WHERE store_id=?
                 ');
 
+        $verifyP = $dbc->prepare("SELECT COUNT(*) FROM {$local_dtrans} WHERE store_id=?");
+
         $stores = new StoresModel($dbc);
         foreach($stores->find() as $store) {
             if ($store->dbHost() == $this->config->get('SERVER')) {
@@ -98,6 +100,11 @@ class PullRemoteTransactionsTask extends FannieTask
             // reduces chances of a name collision
             $dbc->transfer($store->transDB(), $selectQ,
                            $FANNIE_OP_DB, $insertQ);
+
+            $records = $dbc->getValue($verifyP, array($remoteID));
+            if ($records == 0) {
+                $this->cronMsg('No records imported for store #' . $remoteID, FannieLogger::ALERT);
+            }
         }
     }
 }
