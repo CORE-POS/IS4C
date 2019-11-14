@@ -22,10 +22,20 @@ class RpOrderPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>');
+        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>', 'get<clear>');
         $this->userID = FannieAuth::getUID($this->current_user);
 
         return parent::preprocess();
+    }
+
+    protected function get_clear_handler()
+    {
+        unset($_SESSION['rpState']);
+        $model = new RpSessionsModel($this->connection);
+        $model->userID($this->userID);
+        $model->delete();
+
+        return 'RpOrderPage.php';
     }
 
     protected function get_date1_date2_handler()
@@ -400,6 +410,7 @@ class RpOrderPage extends FannieRESTfulPage
                     substr($row['upc'], 2), $row['upc']);
             }
             $orderAmt = 0;
+            /* don't do naive, pre-inventory suggested amounts
             $start = $par;
             while ($start > (0.25 * $row['caseSize'])) {
                 $orderAmt++;
@@ -409,6 +420,7 @@ class RpOrderPage extends FannieRESTfulPage
                     break;
                 }
             }
+             */
             $inOrder = $this->connection->getRow($inOrderP, array_merge($ioArgs, array($upc)));
             if ($inOrder) {
                 $orderAmt = $inOrder['quantity'];
@@ -677,6 +689,10 @@ class RpOrderPage extends FannieRESTfulPage
             <span class="sr-only">Searching</span>
         </div>
     </div>
+</p>
+<hr />
+<p>
+    <a href="RpOrderPage.php?clear=1" class="btn btn-danger">Clear My Session</a>
 </p>
 HTML;
     }
