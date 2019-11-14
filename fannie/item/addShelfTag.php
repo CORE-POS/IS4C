@@ -60,7 +60,9 @@ class addShelfTag extends FannieRESTfulPage
         <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/jquery-ui.css">
         <script type="text/javascript" src="../src/javascript/jquery.js"></script>
+        <script type="text/javascript" src="../src/javascript/jquery-ui.js"></script>
         <script type="text/javascript" src="../src/javascript/bootstrap/js/bootstrap.min.js"></script>
         <script type="text/javascript">
         $(document).ready(function(){
@@ -153,14 +155,29 @@ HTML;
 
           $ret = '<div class="alert alert-success">Created Tag</div>
              <p>
-              <a id="jankyRedirect" href="../admin/labels/ManualSignsPage.php?queueID=' . FormLib::get('subID') . '"
+              <a href="../admin/labels/ManualSignsPage.php?queueID=' . FormLib::get('subID') . '"
                 class="btn btn-default" target="_parent">Print Now</a>
-              </p>';
+              </p>
+              <div class="col-sm-5">
+                <form action="ItemEditorPage.php" target="_parent" method="get">
+                <div class="input-group">
+                    <span class="input-group-addon">Search</span>
+                    <input type="text" class="form-control" name="searchupc" id="upc" />
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-default">Go</button>
+                    </span>
+              </div>
+              </form>';
           if ($insR === false) {
             $ret = '<div class="alert alert-danger">Error creating tag</div>';
           }
-
-          $this->addOnloadCommand("\$('#jankyRedirect').click();");
+          $this->addScript('autocomplete.js');
+          if ($this->session->__superFilter !== '') {
+            $this->addOnloadCommand("EXTRA_AUTO_COMPLETE_PARAMS = { superID: " . $this->session->__superFilter . " };");
+          }
+          $wsUrl = '../ws/';
+          $this->addOnloadCommand("bindAutoComplete('#upc', '$wsUrl', 'item');\n");
+          $this->addOnloadCommand('$(\'#upc\').focus();');
 
           return $ret;
         }
