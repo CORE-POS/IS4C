@@ -263,6 +263,7 @@ class ItemFlagsModule extends ItemModule implements ItemRow
                     'flag' => $status,
                 ),
             );
+            $queue->add($job);
         }
     }
 }
