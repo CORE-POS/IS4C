@@ -25,6 +25,7 @@ use COREPOS\pos\lib\LaneLogger;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\ReceiptLib;
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\plugins\Paycards\xml\BetterXmlData;
 if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
@@ -53,6 +54,7 @@ class PaycardEmvWic extends PaycardProcessPage
                     $receipt = ReceiptLib::printReceipt('wicSlip', ReceiptLib::receiptNumber());
                     $this->conf->set('receiptToggle', $cur);
                     ReceiptLib::writeLine($receipt);
+                    UdpComm::udpSend('termYesNoContinue eWIC sale?');
                 } else {
                     $this->cleanup();
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
@@ -292,6 +294,19 @@ class PaycardEmvWic extends PaycardProcessPage
         echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
         echo '<script type="text/javascript" src="../js/emv.js?date=20180308"></script>';
         if (!$this->runTransaction) {
+            echo <<<HTML
+<script type="text/javascript">
+function parseWrapper(str) {
+    if (str.toUpperCase() == 'TERMYES') {
+        $('#reginput').val('');
+        $('#formlocal').submit();
+    }  else if (str.toUpperCase() == 'TERMNO') {
+        $('#reginput').val('CL');
+        $('#formlocal').submit();
+    }
+}
+</script>
+HTML;
             return '';
         }
         $e2e = new MercuryDC($this->conf->get('PaycardsDatacapName'));
@@ -350,6 +365,20 @@ function checkForCancel(ev) {
 }
 </script>
         <?php
+    }
+
+    public function getFooter()
+    {
+        $ret = "<div id=\"footer\">"
+            . DisplayLib::printfooter()
+            . "</div>\n"
+            . "</div>\n";
+        ob_start();
+        $this->scale_box();
+        $this->scanner_scale_polling(true);
+        $ret .= ob_get_clean();
+
+        return $ret;
     }
 
     function body_content()
