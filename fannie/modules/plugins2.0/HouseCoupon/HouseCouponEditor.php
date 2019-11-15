@@ -399,7 +399,7 @@ class HouseCouponEditor extends FanniePage
                 </div>
             </div>
             <div class="row">
-                <label class="col-sm-1 control-label">Label</label>
+                <label class="col-sm-1 control-label">Receipt Label</label>
                 <div class="col-sm-3"><input type=text name=description value="%s" class="form-control" /></div>
                 <label class="col-sm-1 control-label">Limit</label>
                 <div class="col-sm-3"><input type=text name=limit class="form-control" value="%s" /></div>
@@ -530,7 +530,7 @@ class HouseCouponEditor extends FanniePage
             </div>
             <br/>
             <div class="row">
-                <label class="col-sm-1 control-label">Label</label>
+                <label class="col-sm-1 control-label">Internal Label</label>
                 <div class="col-sm-3"><input type=text name=label class="form-control" value="'.$label_name.'" /></div>
                 <label class="col-sm-1 control-label">Summary</label>
                 <div class="col-sm-3"><input type=text name=summary class="form-control" value="'.$summary.'" /></div>
