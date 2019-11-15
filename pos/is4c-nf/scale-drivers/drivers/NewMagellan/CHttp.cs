@@ -47,9 +47,8 @@ public class Server {
         var req = cxt.Request;
         var ret = new ResponsePair();
         ret.response = cxt.Response;
-        if (!req.HasEntityBody) {
-            ret.body = "";
-        } else {
+        ret.body = "";
+        if (req.HasEntityBody) {
             using (var reader = new StreamReader(req.InputStream, req.ContentEncoding)) {
                 ret.body = reader.ReadToEnd();
             }
