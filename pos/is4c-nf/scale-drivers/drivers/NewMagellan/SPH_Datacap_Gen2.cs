@@ -370,6 +370,11 @@ public class SPH_Datacap_Gen2 : SerialPortHandler
             //sig_message = msg.Substring(7);
             msg = "termSig";
         }
+        string question = "";
+        if (msg.Length > 9 && msg.Substring(0, 9) == "termYesNo") {
+            question = msg.Substring(9);
+            msg = "termYesNo";
+        }
         if (msg.Length > 10 && msg.Substring(0, 10) == "screenLine") {
             string line = msg.Substring(10);
             msg = "IGNORE";
@@ -409,6 +414,13 @@ public class SPH_Datacap_Gen2 : SerialPortHandler
                 }
                 FlaggedReset();
                 GetSignature();
+                break;
+            case "termYesNo":
+                if (rba != null) {
+                    rba.stubStop();
+                }
+                FlaggedReset();
+                GetYesNo(question);
                 break;
             case "termGetType":
                 break;
@@ -804,6 +816,45 @@ public class SPH_Datacap_Gen2 : SerialPortHandler
         }
 
         return "<err>Error collecting signature</err>";
+    }
+
+    protected string GetYesNo(string question)
+    {
+        string xml="<?xml version=\"1.0\"?>"
+            + "<TStream>"
+            + "<Transaction>"
+            + "<HostOrIP>127.0.0.1</HostOrIP>"
+            + "<MerchantID>MerchantID</MerchantID>"
+            + (this.terminalID.Length > 0 ? "<TerminalID>" + this.terminalID + "</TerminalID>" : "")
+            + "<TranCode>GetAnswer</TranCode>"
+            + "<SecureDevice>" + SecureDeviceToEmvType(this.device_identifier) + "</SecureDevice>"
+            + "<ComPort>" + this.com_port + "</ComPort>"
+            + "<SequenceNo>" + SequenceNo() + "</SequenceNo>"
+            + (question.Length > 0 ? "<Question>" + question + "</Question>" : "")
+            + "</Transaction>"
+            + "</TStream>";
+        string result = ProcessEMV(xml, false);
+        XmlDocument doc = new XmlDocument();
+        try {
+            doc.LoadXml(result);
+            XmlNode status = doc.SelectSingleNode("RStream/CmdResponse/CmdStatus");
+            if (status.InnerText == "Success") {
+                this.PadReset();
+                parent.MsgSend("termYes");
+                return "";
+            } else if (status.InnerText == "Error") {
+                XmlNode textResp = doc.SelectSingleNode("RStream/CmdResponse/TextResponse");
+                if (textResp.InnerText.Contains("'No' Pressed")) {
+                    this.PadReset();
+                    parent.MsgSend("termNo");
+                    return "";
+                }
+            }
+        } catch (Exception ex) {
+            this.LogMessage(ex.ToString());
+        }
+
+        return "<err>Error collecting answer</err>";
     }
 
     protected string PortSearch(string device)
