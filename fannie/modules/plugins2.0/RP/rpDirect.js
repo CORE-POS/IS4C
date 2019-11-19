@@ -224,6 +224,9 @@ var rpOrder = (function ($) {
         var caseSize = $(elem).find('td.caseSize').html();
         var adj = $(elem).find('td.parCell').html();
         var onHand = $(elem).find('input.onHand').val();
+        if (onHand <= 0) {
+            return;
+        }
         if (!retainElem) {
             retainElem = $('#retention');
         }

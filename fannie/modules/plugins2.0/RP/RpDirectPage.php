@@ -254,7 +254,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20191107');
+        $this->addScript('rpDirect.js?date=20191118');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
