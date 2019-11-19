@@ -49,7 +49,8 @@ class MovementTagTracker extends FannieRESTfulPage
 
     public function get_data_view()
     {
-        $dbc = fanniedb::get($this->config->get('op_db'));
+        $dbc = Fanniedb::get($this->config->get('op_db'));
+        $storeID = FormLib::get('store');
 
         $args = array($storeID);
         $td = '';
@@ -69,7 +70,7 @@ class MovementTagTracker extends FannieRESTfulPage
                 LEFT JOIN FloorSectionProductMap AS fspm ON m.upc=fspm.upc
                 LEFT JOIN FloorSections AS f ON fspm.floorSectionID=f.floorSectionID
             GROUP BY m.upc, DATE(m.modified)
-            ORDER BY m.updateID
+            ORDER BY m.updateID DESC
             ");
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetchRow($res)) {
@@ -617,30 +618,34 @@ HTML;
             $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
             <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables' id='my-table-$storeID'><thead >$thead</thead><tbody>";
-        foreach ($this->item as $row => $array) {
-            $table .= "<tr>";
-            foreach ($colNames as $colName) {
-                if ($colName == 'upc') {
-                    $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
-                        target='_blank'>{$array[$colName]}</a></td>";
-                } else {
-                    $table .= "<td>{$array[$colName]}</td>";
+        if (isset($this->item) && is_array($this->item)) {
+            foreach ($this->item as $row => $array) {
+                $table .= "<tr>";
+                foreach ($colNames as $colName) {
+                    if ($colName == 'upc') {
+                        $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
+                            target='_blank'>{$array[$colName]}</a></td>";
+                    } else {
+                        $table .= "<td>{$array[$colName]}</td>";
+                    }
                 }
+                $table .= "</tr>";
             }
-            $table .= "</tr>";
         }
         $table .= "</tbody></table>";
 
         $form = '<form method="post"><input type="hidden" name="storeID" value="'.$storeID.'"/>';
-        foreach ($this->item as $k => $row) {
-            $form .= sprintf("<input type=\"hidden\" name=\"upcs[]\" value=\"%s\" />
-                <input type=\"hidden\" name=\"adjustments[]\" value=\"%f\" />
-                <input type=\"hidden\" name=\"auto_par[]\" value=\"%f\" />
-                ",
-                $row['upc'],
-                $row['diff'],
-                $row['auto_par']
-            );
+        if (isset($this->item) && is_array($this->item)) {
+            foreach ($this->item as $k => $row) {
+                $form .= sprintf("<input type=\"hidden\" name=\"upcs[]\" value=\"%s\" />
+                    <input type=\"hidden\" name=\"adjustments[]\" value=\"%f\" />
+                    <input type=\"hidden\" name=\"auto_par[]\" value=\"%f\" />
+                    ",
+                    $row['upc'],
+                    $row['diff'],
+                    $row['auto_par']
+                );
+            }
         }
 
         $authorized = false;
@@ -654,7 +659,7 @@ HTML;
             $table = $form . $table;
         }
 
-        if (count($this->item) > 0) {
+        if (isset($this->item) && count($this->item) > 0) {
             unset($this->item);
             return $table;
         } else {
