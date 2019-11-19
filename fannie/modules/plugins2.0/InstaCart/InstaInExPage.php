@@ -136,7 +136,7 @@ class InstaInExPage extends FannieRESTfulPage
         }
 
         $plugin = $this->config->get('PLUGIN_SETTINGS');
-        if ($plugin['InstaCardMode']) {
+        if ($plugin['InstaCartMode']) {
             $itemTable = $this->itemTable($plugin['InstaCartDB'] . $this->connection->sep() . 'InstaIncludes', 'Included Items');
             $alert = "Opt-in Mode. Only items listed here will be submitted.";
         } else {
