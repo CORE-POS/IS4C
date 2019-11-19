@@ -471,7 +471,7 @@ function enableLinea(selector, callback)
         }
 
         if (!isset($_COOKIE['__perma'])) {
-            $perma = uniqid(true);
+            $perma = uniqid('', true);
             setcookie('__perma', $perma, time()+60*60*24*999,'/');
         } elseif (isset($_COOKIE['__perma']) && !isset($this->session->__perma)) {
             $redis = $this->getRedis();
@@ -482,6 +482,7 @@ function enableLinea(selector, callback)
                     foreach ($vals as $k => $v) {
                         $this->session->{$k} = $v;
                     }
+                    $this->session->__perma = true;
                 }
             }
         }
