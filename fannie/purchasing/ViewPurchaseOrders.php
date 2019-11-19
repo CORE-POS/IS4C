@@ -1226,7 +1226,7 @@ HTML;
             <td><input type="text" class="form-control" name="upc" value="%s" /></td>
             <td><input type="text" class="form-control" name="brand" value="%s" /></td>
             <td><input type="text" class="form-control" name="description" value="%s" /></td>
-            <td><input type="text" class="form-control" name="orderQty" value="%s" /></td>
+            <td><input type="hidden" class="form-control" name="orderQty" value="%s" />0</td>
             <td><input type="text" class="form-control" name="orderCost" value="%.2f" /></td>
             <td><input type="text" class="form-control" name="receiveQty" value="%s" /></td>
             <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
