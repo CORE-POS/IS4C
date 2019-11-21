@@ -178,6 +178,10 @@ class OrderGenTask extends FannieTask
         $res = $dbc->execute($prep, $args);
         $orders = array();
         while ($row = $dbc->fetchRow($res)) {
+            if ($row['upc'] == '0071001303991') {
+                $this->cronMsg('Got mystery UPC', FannieLogger::ALERT);
+                $this->cronMsg(print_r($row, true), FannieLogger::ALERT);
+            }
             $cache = $dbc->getRow($curP, array($row['upc'],$row['storeID']));
             if ($cache === false) {
                 continue;
@@ -275,6 +279,10 @@ class OrderGenTask extends FannieTask
                 $poi->description($itemR['description']);
                 $poi->internalUPC($row['upc']);
                 $poi->save();
+                if ($row['upc'] == '0071001303991') {
+                    $this->cronMsg('Got mystery UPC but only later', FannieLogger::ALERT);
+                    $this->cronMsg(print_r($row, true), FannieLogger::ALERT);
+                }
             }
         }
         $dbc->commitTransaction();
