@@ -43,7 +43,8 @@ class GenericBillingPage extends FannieRESTfulPage
     {
         $value = FormLib::get_form_value('id');
         $this->add_onload_command('$(\'#memnum\').val($(\'#sel\').val());');
-        $this->addScript('billing.js');
+        $this->addScript('../../src/javascript/vue.js');
+        $this->addScript('billing.js?date=20191121');
         $accounts = \COREPOS\Fannie\API\member\MemberREST::search(
             array(
                 'customerTypeID' => 2,
@@ -74,8 +75,48 @@ class GenericBillingPage extends FannieRESTfulPage
     </select>
     <button type=submit class="btn btn-default">Submit</button>
 </div>
-</form><hr /><div id="contentArea"></div>
-<div id="resultArea"></div>
+</form><hr />
+<div id="contentArea" v-bind:class="hidden">
+    <form onsubmit="genericBilling.postBilling();return false;">
+    <div class="col-sm-6">
+        <table class="table">
+            <tr>
+                <th>Member</th>
+                <td>{{ cardNo }}<input type=hidden id=form_memnum v-bind:value="cardNo" /></td>
+                <th>Name</th>
+                <td>{{ lastName }}</td>
+            </tr>
+            <tr>
+                <th>Current Balance</th>
+                <td>{{ balance }}</td>
+                <th>Bill</th>
+                <td>
+                    <div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input type=text class="form-control" id=amount required v-bind:value="amount" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>For</th>
+                <td colspan=3><input type=text maxlength=35 id=desc 
+                    class="form-control" required v-bind:value="description" /></td>
+            </tr>
+        </table>
+        <p>
+            <button type=submit class="btn btn-default">Bill Account</button>
+        </p>
+    </div>
+    </form>
+</div>
+<div id="resultArea">
+    <div v-bind:class="alertClass" role="alert">
+        <button type="button" class="close" v-on:click="hide">
+            <span>&times;</span>
+        </button>
+        {{ message }}
+    </div>
+</div>
 HTML;
     }
 
@@ -88,40 +129,12 @@ HTML;
             WHERE n.card_no=?";
         $prep = $sql->prepare($query);
         $row = $sql->getRow($prep, array($this->id));
-
-        echo <<<HTML
-<form onsubmit="genericBilling.postBilling();return false;">
-<div class="col-sm-6">
-    <table class="table">
-        <tr>
-            <th>Member</th>
-            <td>{$account['cardNo']}<input type=hidden id=form_memnum value="{$account['cardNo']}" /></td>
-            <th>Name</th>
-            <td>{$account['customers'][0]['lastName']}</td>
-        </tr>
-        <tr>
-            <th>Current Balance</th>
-            <td>{$row['balance']}</td>
-            <th>Bill</th>
-            <td>
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input type=text class="form-control" id=amount required />
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <th>For</th>
-            <td colspan=3><input type=text maxlength=35 id=desc 
-                class="form-control" required /></td>
-        </tr>
-    </table>
-    <p>
-        <button type=submit class="btn btn-default">Bill Account</button>
-    </p>
-</div>
-</form>
-HTML;
+        $json = array(
+            'cardNo' => $this->id,
+            'lastName' => $account['customers'][0]['lastName'],
+            'balance' => $row['balance'],
+        );
+        echo json_encode($json);
 
         return false;
     }
