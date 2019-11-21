@@ -39,8 +39,17 @@ class MercuryDC extends MercuryE2E
         $tranCode = $amount > 0 ? 'Sale' : 'Return';
 
         $tipped = false;
+        $emvCardType = false;
         if ($type == 'EMVTIP') {
             $tipped = true;
+            $type = 'EMV';
+            $this->conf->set('CachedCardType', 'EMV');
+        } elseif ($type == 'EMVCC') {
+            $emvCardType = 'Credit';
+            $type = 'EMV';
+            $this->conf->set('CachedCardType', 'EMV');
+        } elseif ($type == 'EMVDC') {
+            $emvCardType = 'Debit';
             $type = 'EMV';
             $this->conf->set('CachedCardType', 'EMV');
         }
@@ -108,6 +117,9 @@ class MercuryDC extends MercuryE2E
                 $msgXml .= '<MerchantLanguage>English</MerchantLanguage>';
             } elseif ($this->conf->get('PaycardsDatacapMode') == 3) {
                 $msgXml .= '<MerchantLanguage>French</MerchantLanguage>';
+            }
+            if ($emvCardType) {
+                $msgXml .= '<CardType>' . $emvCardType . '</CardType>';
             }
         } else {
             $msgXml .= '

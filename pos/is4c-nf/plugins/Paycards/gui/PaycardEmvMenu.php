@@ -53,6 +53,8 @@ class PaycardEmvMenu extends NoInputCorePage
                 case 'EC':
                 case 'GD':
                 case 'EMVTIP':
+                case 'EMVDC':
+                case 'EMVCC':
                     $json = $parser->parse('DATACAP' . $choice);
                     $this->change_page($json['main_frame']);
                     return false;
@@ -123,6 +125,24 @@ class PaycardEmvMenu extends NoInputCorePage
                         'EMVTIP' => 'EMV w/ Tipping',
                         'CC' => 'Credit only',
                         'DC' => 'Debit only',
+                        'EBT' => 'EBT',
+                        'GIFT' => 'Gift',
+                    );
+                } elseif ($this->conf->get('PaycardEmvCreditDebit') == 2) {
+                    $this->menu = array(
+                        'EMV' => 'EMV Credit/Debit',
+                        'EMVCC' => 'Credit (chip)',
+                        'CC' => 'Credit (swipe)',
+                        'EMVDC' => 'Debit (chip)',
+                        'DC' => 'Debit (swipe)',
+                        'EBT' => 'EBT',
+                        'GIFT' => 'Gift',
+                    );
+                } elseif ($this->conf->get('PaycardEmvCreditDebit') == 1) {
+                    $this->menu = array(
+                        'EMV' => 'EMV Credit/Debit',
+                        'EMVCC' => 'Credit (chip)',
+                        'EMVDC' => 'Debit (chip)',
                         'EBT' => 'EBT',
                         'GIFT' => 'Gift',
                     );

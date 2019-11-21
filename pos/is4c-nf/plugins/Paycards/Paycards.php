@@ -241,6 +241,16 @@ messages from POS?',
             'description' => 'Tips are added as an open ring to the specified department',
             'default' => '',
         ),
+        'PaycardEmvCreditDebit' => array(
+            'label' => 'EMV Credit/Debit options',
+            'description' => 'Available charge vairants',
+            'default' => 0,
+            'options' => array(
+                'Chip (either), Chip (specific), Swipe (specific)' => 2,
+                'Chip (either), Chip (specific)' => 1,
+                'Chip (either), Swipe (specific)' => 0,
+            )
+        ),
     );
 
     public function plugin_transaction_reset()
