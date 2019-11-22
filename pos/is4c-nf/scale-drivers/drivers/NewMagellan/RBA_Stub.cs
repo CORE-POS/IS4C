@@ -78,6 +78,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private bool allowDebitCB = true;
     private string defaultMsg = "Welcome";
     private string bufferedCardType = "";
+    private bool allowMessages = true;
 
     public RBA_Stub(string p)
     {
@@ -89,6 +90,11 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     public void SetEMV(RbaButtons emv)
     {
         this.emv_buttons = emv;
+    }
+
+    public void DisableMessages()
+    {
+        this.allowMessages = false;
     }
 
     public void SetCashBack(bool cb)
@@ -142,6 +148,9 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
     public void showMessage(string msg)
     {
+        if (!this.allowMessages) {
+            return;
+        }
         try {
             stubStop();
             initPort();
