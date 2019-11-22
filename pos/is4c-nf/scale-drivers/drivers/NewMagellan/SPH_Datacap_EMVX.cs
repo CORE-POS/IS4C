@@ -294,6 +294,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 if (rba != null) {
                     rba.stubStop();
                 }
+                lock(emvLock) {
+                    emv_reset = true;
+                }
                 ReInitDevice();
                 break;
             case "termManual":
