@@ -1228,7 +1228,7 @@ HTML;
             <td><input type="text" class="form-control" name="description" value="%s" /></td>
             <td><input type="hidden" class="form-control" name="orderQty" value="%s" />0</td>
             <td><input type="text" class="form-control" name="orderCost" value="%.2f" /></td>
-            <td><input type="text" class="form-control" name="receiveQty" value="%s" /></td>
+            <td><input type="text" class="form-control receiveQty" name="receiveQty" value="%s" /></td>
             <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
             <td><button type="submit" class="btn btn-default">Add New Item</button><input type="hidden" name="id" value="%d" /></td>
             </tr>',
@@ -1292,7 +1292,7 @@ HTML;
                 <th>Qty Received</th></tr>
                 <tr><td>%s (%sx%s)</td>
                 <td class="hidden-xs">%.2f</td>
-                <td><input type="text" pattern="\\d*" class="form-control" name="qty[]" value="%s" /></td>
+                <td><input type="text" pattern="\\d*" class="form-control receiveQty" name="qty[]" value="%s" /></td>
                 </tr><tr><th>Cost Received</th></tr>
                 <td><input type="number" min="-999" max="999" step="0.01" pattern="\\d+(\\.\\d*)?" class="form-control" name="cost[]" value="%.2f" /></td>
                 <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id[]" value="%d" /></td>
@@ -1338,7 +1338,7 @@ HTML;
 
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
-        $this->addScript('js/view.js');
+        $this->addScript('js/view.js?date=20191121');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
         $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 

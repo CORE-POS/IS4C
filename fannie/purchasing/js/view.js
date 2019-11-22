@@ -77,6 +77,18 @@ function receiveSKU()
 
 function saveReceive()
 {
+    var check = false;
+    $('input.receiveQty').each(function () {
+        var qty = $(this).val();
+        if (qty > 9999) {
+            if (!confirm("Is this quantity correct? " + qty)) {
+                check = true;
+            }
+        }
+    });
+    if (check) {
+        return;
+    }
     var dstr = $('#item-area :input').serialize();
     $.ajax({
         type: 'post',
