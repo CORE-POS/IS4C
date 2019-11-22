@@ -103,22 +103,16 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 pdc_active = false;
             }
         }
-        /*
         lock (emvLock) {
             if (emv_active) {
-                try {
-                    Console.WriteLine("Reset EMV");
+                Console.WriteLine("Reset EMV");
+                var type = emv_ax_control.GetType();
+                if (type.GetMethod("CancelRequest") != null) {
                     emv_ax_control.CancelRequest();
                     emv_active = false;
-                } catch (Exception) {
-                    // I assume this will through if either the ActiveX DLL
-                    // was generated against an older OCX that doesn't have
-                    // this method or if the DLL has the method but the
-                    // OCX does not. OCX v1.22+ should have the method.
                 }
             }
         }
-        */
 
         if (emv_ax_control == null) {
             emv_ax_control = new DsiEMVX();
