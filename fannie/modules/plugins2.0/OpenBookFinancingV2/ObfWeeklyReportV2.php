@@ -528,7 +528,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 $quarter['planSales'] = $qt_splh['planSales'];
             }
             $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
-            $qt_proj_hours = ($dept_proj * $ou_weeks) / $labor->splhTarget();
+            $qt_proj_hours = Op::div(($dept_proj * $ou_weeks), $labor->splhTarget());
             $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
@@ -562,7 +562,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 '',
                 number_format(Op::div($dept_proj, $proj_hours), 2),
                 '',
-                number_format($dept_trend / $trend_hours, 2),
+                number_format(Op::div($dept_trend, $trend_hours), 2),
                 number_format($labor->hours() == 0 ? 0 : $sum[0] / $labor->hours(), 2),
                 sprintf('%.2f%%', $this->percentGrowth(Op::div($sum[0], $labor->hours()), Op::div($dept_proj,$proj_hours))),
                 '',
@@ -653,7 +653,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 '',
                 sprintf('%.2f', Op::div($total_sales->projected, $proj_hours)),
                 '',
-                sprintf('%.2f', $total_sales->trend / $trend_hours),
+                sprintf('%.2f', Op::div($total_sales->trend, $trend_hours)),
                 number_format($labor->hours() == 0 ? 0 : $total_sales->thisYear / $labor->hours(), 2),
                 '',
                 '',
@@ -737,7 +737,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             '',
             sprintf('%.2f', Op::div($total_sales->projected, $total_hours->projected)),
             '',
-            sprintf('%.2f', $total_sales->trend / $total_hours->trend),
+            sprintf('%.2f', Op::div($total_sales->trend, $total_hours->trend)),
             number_format($total_hours->actual == 0 ? 0 : $total_sales->thisYear / $total_hours->actual, 2),
             '',
             '',
@@ -920,7 +920,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = array(
             'Sales per Hour',
             '',
-            sprintf('%.2f', ($total_sales->projected+$otherStore['plan']) / ($total_hours->projected+$otherStore['planHours'])),
+            sprintf('%.2f', Op::div($total_sales->projected+$otherStore['plan'], ($total_hours->projected+$otherStore['planHours']))),
             '',
             '',
             number_format($total_hours->actual == 0 ? 0 : ($total_sales->thisYear+$otherStore['actual']) / ($total_hours->actual+$otherStore['hours']), 2),
