@@ -23,6 +23,33 @@
 var subDept = (function($) {
     var mod = {};
 
+    var deptList = new Vue({
+        el: '#deptselect',
+        data: {
+            deptID: 0
+        },
+        methods: {
+            show: function() {
+                subDept.show(this.deptID);
+            }
+        }
+    });
+
+    var subList = new Vue({
+        el: '#subdiv',
+        data: {
+            subs: [],
+            dept: "",
+            selected: []
+        },
+        methods: {
+            // Observer layer doesn't grok reduce()
+            get: function () {
+                return this.selected;
+            }
+        }
+    });
+
     var alertMsg = function(severity, msg) {
         showBootstrapAlert('#alertarea', severity, msg);
     };
@@ -40,46 +67,45 @@ var subDept = (function($) {
         var name = $('#deptselect option:selected').text();
         $.ajax({
             type: 'post',
-            data: d
+            data: d,
+            dataType: "json"
         }).fail(function(){
             errorMsg('Error loading sub departments');
         }).done(function(resp){
-            $('#subselect').html(resp);
-            $('#subdiv').show();
-            $('#formdiv').show();
-            $('#subname').html('Subdepts in '+name);
+            subList.subs = resp;
+            subList.dept = 'Subdepts in ' + name;
         });
     };
 
     mod.add = function() {
         var name = $('#newname').val();
-        var did = $('#deptselect').val();
+        var did = deptList.deptID;
         var d = 'action=addSub&name='+name+'&did='+did;
         $.ajax({
             type: 'post',
-            data: d
+            data: d,
+            dataType: "json"
         }).fail(function() {
             errorMsg('Error creating sub department');
         }).done(function(resp){
-            $('#subselect').html(resp);
+            subList.subs = resp;
             $('#newname').val('');
             goodMsg('Added sub department ' + name);
         });
     };
 
     mod.del = function() {
-        var did = $('#deptselect').val();
+        var did = deptList.deptID;
         var d = 'action=deleteSub&did='+did;
-        $('#subselect option:selected').each(function(){
-            d += '&sid[]='+$(this).val();
-        });
+        d += subList.get().reduce((acc, x) => acc + '&sid[]=' + x, "");
         $.ajax({
             type: 'post',
-            data: d
+            data: d,
+            dataType: "json"
         }).fail(function(){
             errorMsg('Error deleting sub department(s)');
         }).done(function(resp){
-            $('#subselect').html(resp);
+            subList.subs = resp;
             goodMsg('Deleted sub department(s)');
         });
     };

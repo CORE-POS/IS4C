@@ -111,11 +111,14 @@ class SubDeptEditor extends FanniePage
                 WHERE dept_ID=? ORDER BY subdept_name");
         $r = $dbc->execute($p,array($deptID));
         
-        $ret = '';
+        $ret = array();
         while ($w = $dbc->fetch_row($r)) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                    $w['subdept_no'],$w['subdept_name']);
+            $ret[] = array(
+                'id' => $w['subdept_no'],
+                'name' => $w['subdept_name'],
+            );
         }
+        $ret = json_encode($ret);
 
         return $ret;
     }
@@ -142,14 +145,17 @@ class SubDeptEditor extends FanniePage
         ?>
         <div id="alertarea"></div>
         <label class="control-label">Choose a department</label>
-        <select class="form-control" id=deptselect onchange="subDept.show(this.value);">
+        <select class="form-control" id=deptselect v-on:change="show(this.value);" v-model="deptID">
+            <option value="">Select one</option>
         <?php echo $opts ?>
         </select>
         <hr />
         <div class="col-sm-3">
             <p id="subdiv">
-                <label class="control-label" id=subname></label>
-                <select class="form-control" id=subselect size=12 multiple></select>
+                <label class="control-label" id=subname>{{ dept }}</label>
+                <select class="form-control" id=subselect size=12 multiple v-model="selected">
+                    <option v-for="sub in subs" v-bind:key="sub.id" v-bind:value="sub.id">{{ sub.name }}</option>
+                </select>
             </p>
         </div>
         <div id="formdiv" class="col-sm-3">
@@ -166,8 +172,9 @@ class SubDeptEditor extends FanniePage
         </div>
         <?php
 
+        $this->addScript('../../src/javascript/vue.js');
         $this->addScript('sub.js');
-        $this->addOnloadCommand('showSubsForDept('.$firstID.');');
+        $this->addOnloadCommand('subDept.show('.$firstID.');');
         
         return ob_get_clean();
     }
