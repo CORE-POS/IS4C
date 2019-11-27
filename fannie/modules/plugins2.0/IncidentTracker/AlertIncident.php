@@ -101,7 +101,7 @@ class AlertIncident extends FannieRESTfulPage
         }
 
         $subject = 'Alert Needing Attention';
-        $to = 'andy@wholefoods.coop,sbroome@wholefoods.coop,michael@wholefoods.coop,shannigan@wholefoods.coop';
+        $to = 'andy@wholefoods.coop,jkrussow@wholefoods.coop,michael@wholefoods.coop,shannigan@wholefoods.coop';
 
         $upP = $this->connection->prepare("
             UPDATE " . FannieDB::fqn('Incidents', 'plugin:IncidentDB') . "
