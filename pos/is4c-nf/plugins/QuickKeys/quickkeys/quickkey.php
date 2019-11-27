@@ -86,14 +86,18 @@ class quickkey {
         } else {
             $imgURL = $baseURL . 'plugins/QuickKeys/quickkeys/' 
                 . (is_numeric($this->img) ? 'noauto/img.php?imgID=' . $this->img : 'imgs/' . $this->img);
-            $ret .= sprintf("<input type=\"%s\" onclick=\"%s\"
+            $fontSize = strlen($this->title) > 10 ? 75 : 100;
+            $ret .= sprintf("<button type=\"%s\" onclick=\"%s\"
                 name=\"quickkey_submit\" id=\"%s\" value=\"%s\"
-                class=\"quick_button pos-button coloredBorder quickButtonImage\" 
-                style=\"background-image:url(%s);\" />
+                class=\"quick_button pos-button coloredBorder quickButtonImage\">
+                <span style=\"font-size: %d%%; line-height: 0.2em;\">%s</span><br />
+                <img src=\"%s\" />
+                </button>
                 <input type=\"hidden\" name=\"%s\"
                 value=\"%s\" />",
                 $tagType, $onclick,
                 $id,$this->title,
+                $fontSize, $this->title,
                 $imgURL,
                 md5($this->title),
                 $this->output_text);
