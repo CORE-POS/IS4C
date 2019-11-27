@@ -93,6 +93,11 @@ var qlEdit = (function ($) {
                     cur['imageURL'] += '&ms=' + (new Date().getMilliseconds());
                     vm.$set(vm.entries, index, cur);
                 });
+            },
+            // drilldown to submenu
+            submenu: function(id) {
+                lookupForm.menuNumber = id;
+                lookupForm.getMenu();
             }
         }
     });

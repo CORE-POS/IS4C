@@ -79,7 +79,11 @@ class QLEdit extends FannieRESTfulPage
     <td><a href="#" v-on:click.prevent="moveUp(index);">Up</a></td>
     <td>{{entry.id}}</td>
     <td><input type="text" class="form-control" v-model="entry.label" /></td>
-    <td><input type="text" class="form-control" v-model="entry.action" /></td>
+    <td>
+        <input type="text" class="form-control" v-model="entry.action" />
+        <a v-if="entry.action.substring(0,2) == 'QK'" href="3"
+            v-on:click.prevent="submenu(entry.action.substring(2));">Edit submenu</a>
+    </td>
     <td>
         <img v-if="entry.image" v-bind:src="entry.imageURL" />
     </td>
