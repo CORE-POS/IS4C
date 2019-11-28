@@ -665,6 +665,10 @@ class WfcClassRegistryPage extends FanniePage
     public function javascriptContent()
     {
         return <<<JAVASCRIPT
+$('input[type="checkbox"][name="expired"]').click(function(){
+    //window.location.reload();
+    document.forms['classSelector'].submit();
+});
 $('.cardno').change(function(){
     var ownerid = $(this).val();
     var seat = $(this).closest('tr').find('.seat').text();
