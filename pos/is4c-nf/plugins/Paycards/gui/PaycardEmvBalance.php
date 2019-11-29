@@ -70,7 +70,7 @@ class PaycardEmvBalance extends PaycardProcessPage
 <script type="text/javascript" src="../js/emv.js?date=20180308"></script>
 <script type="text/javascript">
 function emvSubmit() {
-    $('div.baseHeight').html('Processing transaction');
+    emv.showProcessing('div.baseHeight');
     // POST XML request to driver using AJAX
     var xmlData = '<?php echo json_encode($e2e->prepareDataCapBalance($this->conf->get('CacheCardType'), $this->prompt)); ?>';
     if (xmlData == '"Error"') { // failed to save request info in database
