@@ -33,7 +33,8 @@ var qlEdit = (function ($) {
         el: '#entryTable',
         data: {
             entries: [],
-            newID: 0
+            newID: 0,
+            parentID: []
         },
         methods: {
             // move entry row up
@@ -96,8 +97,15 @@ var qlEdit = (function ($) {
             },
             // drilldown to submenu
             submenu: function(id) {
+                this.parentID.push(lookupForm.menuNumber);
                 lookupForm.menuNumber = id;
                 lookupForm.getMenu();
+            },
+            parentMenu: function() {
+                if (this.parentID) {
+                    lookupForm.menuNumber = this.parentID.pop();
+                    lookupForm.getMenu();
+                }
             }
         }
     });

@@ -101,6 +101,8 @@ class QLEdit extends FannieRESTfulPage
 <button type="button" class="btn btn-default" v-on:click="save();">Save</button>
 &nbsp;&nbsp;&nbsp;&nbsp;
 <button type="button" class="btn btn-default" v-on:click="add();">Add Entry</button>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<button type="button" class="btn btn-default" v-if="parentID.length" v-on:click="parentMenu();">Back</button>
 </div>
 <br />
 HTML;
