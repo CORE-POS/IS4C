@@ -72,7 +72,7 @@ class QuickKeyLauncher extends Parser
         return $ret;
     }
 
-    public function getKeys($number)
+    public function getKeys($number, $filter='')
     {
         $dbc = Database::pDataConnect();
         $my_keys = array();
@@ -84,6 +84,9 @@ class QuickKeyLauncher extends Parser
                 ORDER BY sequence');
             $res = $dbc->execute($prep, array($number));
             while ($row = $dbc->fetch_row($res)) {
+                if ($filter && !stristr($row['label'], $filter)) {
+                    continue;
+                }
                 if (isset($row['imageType']) && $row['imageType']) {
                     $my_keys[] = new quickkey($row['label'], $row['action'], $row['quickLookupID']);
                 } else {

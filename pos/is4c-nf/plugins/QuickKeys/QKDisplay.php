@@ -37,6 +37,7 @@ class QKDisplay extends NoInputCorePage
         var prevKey = -1;
         var prevPrevKey = -1;
         var selectedId = 0;
+        var filter_string = "";
         function keyCheck(e) {
             var jsKey;
             if(!e)e = window.event;
@@ -67,7 +68,26 @@ class QKDisplay extends NoInputCorePage
             }
             prevPrevKey = prevKey;
             prevKey = jsKey;
-            console.log(jsKey);
+
+            var filter_changed = false;
+            if (isFilterKey(jsKey)) {
+                filter_string += String.fromCharCode(jsKey);
+                filter_changed = true;
+            } else if (jsKey === 8) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (filter_string.length > 0) {
+                    filter_string = filter_string.substring(0, filter_string.length-1);
+                    filter_changed = true;
+                }
+            }
+            if (filter_changed && filter_string.length > 0) {
+                $('.inputform').html(filter_string);
+                reFilter(filter_string);
+            } else if (filter_changed) {
+                $('.inputform').html('&nbsp;');
+                reFilter('');
+            }
         }
 
         document.onkeyup = keyCheck;
@@ -84,6 +104,34 @@ class QKDisplay extends NoInputCorePage
                 $('.quick_button').removeClass('coloredArea');
                 $('#qkDiv'+id+' .quick_button').addClass('coloredArea');
             }
+        }
+
+        function isFilterKey(keyCode)
+        {
+            if (keyCode >= 65 && keyCode <= 90) {
+                return true;
+            } else if (keyCode === 32) {
+                return true; // space
+            } else if (keyCode === 44) {
+                return true; // comma
+            } else if (keyCode === 46) {
+                return true; // period
+            } else {
+                return false;
+            }
+        }
+
+        function reFilter(filter) {
+            var dstr = 'offset=' + <?php echo $this->offset; ?>;
+            dstr += '&filter=' + encodeURIComponent(filter);
+            $.ajax({
+                url: 'QKDisplay.php',
+                data: dstr,
+                type: 'post'
+            }).done(function (resp) {
+                $('#qkForm').html(resp);
+                setSelected(7);
+            });
         }
         </script> 
         <?php
@@ -120,6 +168,10 @@ class QKDisplay extends NoInputCorePage
 
             $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             return false;
+        } elseif (FormLib::get('filter', false) !== false) {
+            $newKeys = $this->drawKeys(FormLib::get('filter'));
+            echo $newKeys;
+            return false;
         }
         return true;
     } // END preprocess() FUNCTION
@@ -129,15 +181,24 @@ class QKDisplay extends NoInputCorePage
         $this->add_onload_command("setSelected(7);");
 
         echo "<div class=\"baseHeight\">";
-        echo "<form action=\"" . AutoLoader::ownURL() ."\" method=\"post\">";
+        echo "<form id=\"qkForm\" action=\"" . AutoLoader::ownURL() ."\" method=\"post\">";
 
+        echo $this->drawKeys();
+
+        echo "</form>";
+        echo "</div>";
+    } // END body_content() FUNCTION
+
+    private function drawKeys($filter='')
+    {
         $launcher = new QuickKeyLauncher($this->session);
-        $my_keys = $launcher->getKeys(CoreLocal::get('qkNumber'));
+        $my_keys = $launcher->getKeys(CoreLocal::get('qkNumber'), $filter);
 
         $num_pages = ceil(count($my_keys)/9.0);
         $page = $this->offset % $num_pages;
         if ($page < 0) $page = $num_pages + $page;
 
+        ob_start();
         $count = 0;
         $clearButton = false;
         for ($i=$page*9; $i < count($my_keys); $i++) {
@@ -161,6 +222,9 @@ class QKDisplay extends NoInputCorePage
             $count++;
             if ($count > 8) break;
         }
+        if (count($my_keys) == 0) {
+            echo "<div class=\"qkRow\">";
+        }
         if (!$clearButton) {
             $this->clearButton('qkBox');
             echo "</div>";
@@ -170,9 +234,9 @@ class QKDisplay extends NoInputCorePage
         }
         echo "</div>";
         echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";    
-        echo "</form>";
-        echo "</div>";
-    } // END body_content() FUNCTION
+
+        return ob_get_clean();
+    }
 
     private function clearButton($class)
     {
