@@ -31,8 +31,9 @@ class OsFillsReport extends FannieReportPage
         $query = "SELECT dateStr, amt
             FROM {$table}
             WHERE rowName='atm'
-                AND denomination='fill'
-                AND storeID=?
+                AND denomination='fill'";
+        $query .= (FormLib::get('store') == 0) ? 'AND storeID <> ?' : 'AND storeID=?';
+        $query .= "
                 AND UNIX_TIMESTAMP(RIGHT(dateStr, 10)) BETWEEN ? AND ?";
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array(
