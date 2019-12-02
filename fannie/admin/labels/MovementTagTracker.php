@@ -320,14 +320,12 @@ HTML;
 
     public function get_view()
     {
+        $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $ret = "";
 
         $li = "<ul>";
         $tables = array();
-        foreach ($this->stores as $id => $name) {
-            $tables[] = $this->draw_table($name, $id);
-            $li .= "<div><a href='#$name'>$name</a></div>";
-        }
+        $tables[] = $this->draw_table($this->stores[$storeID], $storeID);
         $li .= "<div><a href='#expired-heading'>Expired Tags</a></div>";
         $li .= "<li><a href='ShelfTagIndex.php'>Shelftags Index</a></li>";
         $li .= "<li><a href='?id=config'>Settings</a></li>";
