@@ -490,8 +490,9 @@ HTML;
                 $tableA .= "<td><textarea name='comments' class='batchLogInput editable'
                     '/>{$row['comments']}</textarea></td>";
                 $action = '';
+                $noPunctBatchName = str_replace("'", "", $batchName);
                 $action = "<td class='btn btn-default btn-wide' style='border: 1px solid tomato;'
-                    onClick='forceBatch($curBid, \"$batchName\"); return false;' id='force$curBid'>Force</td>";
+                    onClick='forceBatch($curBid, \"$noPunctBatchName\"); return false;' id='force$curBid'>Force</td>";
                 $tableA .= "<td><span class='glyphicon glyphicon-trash' onClick='deleteRow($curBid)'></span></td>";
                 $tableA .= $action;
                 $tableA .= "</tr>";
