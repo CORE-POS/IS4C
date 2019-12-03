@@ -520,6 +520,7 @@ class HouseCouponEditor extends FanniePage
             class=\"form-control\" /></div>
             </div>";
 
+
         $ret .= '<div class="row">
                 <label class="col-sm-1 control-label">Owner</label>
                 <div class="col-sm-3">
@@ -531,7 +532,7 @@ class HouseCouponEditor extends FanniePage
             <br/>
             <div class="row">
                 <label class="col-sm-1 control-label">Internal Label</label>
-                <div class="col-sm-3"><input type=text name=label class="form-control" value="'.$label_name.'" /></div>
+                <div class="col-sm-3"><input type=text name=label id="label" class="form-control" value="'.$label_name.'"/></div>
                 <label class="col-sm-1 control-label">Summary</label>
                 <div class="col-sm-3"><input type=text name=summary class="form-control" value="'.$summary.'" /></div>
             </div>
@@ -585,85 +586,101 @@ class HouseCouponEditor extends FanniePage
 
     public function javascriptContent()
     {
-        ob_start();
-        ?>
-        function addItemToCoupon()
-        {
-            var dataStr = $('#add-item-form :input').serialize();
-            dataStr += '&ajax-add=1';
-            $.ajax({
-                type: 'post',
-                data: dataStr,
-                success: function(resp) {
-                    $('#coupon-item-table').html(resp);
-                    $('.add-item-field').val('');
-                }
-            });
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $prep = $dbc->prepare("SELECT label FROM houseCoupons GROUP BY label");
+        $res = $dbc->execute($prep);
+        $dlist = '[';
+        while ($row = $dbc->fetchRow($res)) {
+            $label = $row['label'];
+            if ($label != null) {
+                $dlist .= "'$label',";
+            }
         }
-        function addSubmitDown(ev) {
-            var keyCode = ev.which ? ev.which : ev.keyCode; 
-            if (keyCode == 13) {
-                ev.preventDefault();
-                addItemToCoupon();
-                return false;
-            }
+        $dlist .= ']';
 
-            return true;
+        return <<<JAVASCRIPT
+var availableTags = $dlist;
+$( function() {
+    $("#label").autocomplete({
+        source: availableTags
+    });
+});
+function addItemToCoupon()
+{
+    var dataStr = $('#add-item-form :input').serialize();
+    dataStr += '&ajax-add=1';
+    $.ajax({
+        type: 'post',
+        data: dataStr,
+        success: function(resp) {
+            $('#coupon-item-table').html(resp);
+            $('.add-item-field').val('');
         }
-        $('#activeCoupons').change(function(){
-            var checked = $(this).prop('checked');
-            if (checked == true) {
-                viewActiveCoupons();
-            } else {
-                $('tr').each(function(){
-                    $(this).show();
-                });
-            }
-        });
-        var viewActiveCoupons = function(){
-            var now = new Date();
-            $('tr').each(function(){
-                $(this).show();
-            });
-            $('table tr td:nth-child(7)').each(function(){
-                var begin = $(this).text();
-                console.log(begin);
-                begin = new Date(begin);
-                var end = $(this).next('td').text();
-                end = new Date(end);
-                if (now < end && now > begin) {
-                    $(this).closest('tr').show();
-                } else {
-                    $(this).closest('tr').hide();
-                }
-            });
-        };
-        $(document).ready(function(){
-            $('.summary-view-td').each(function(){
-                $(this).hide();
-            });
-        });
-        $('#summaryView').change(function(){
-            var checked = $(this).prop('checked');
-            if (checked == true) {
-                $('.report-btns').each(function(){
-                    $(this).hide();
-                });
-                $('.summary-view-td').each(function(){
-                    $(this).show();
-                });
-            } else {
-                $('.report-btns').each(function(){
-                    $(this).show();
-                });
-                $('.summary-view-td').each(function(){
-                    $(this).hide();
-                });
-            }
-        });
+    });
+}
+function addSubmitDown(ev) {
+    var keyCode = ev.which ? ev.which : ev.keyCode; 
+    if (keyCode == 13) {
+        ev.preventDefault();
+        addItemToCoupon();
+        return false;
+    }
 
-        <?php
-        return ob_get_clean();
+    return true;
+}
+$('#activeCoupons').change(function(){
+    var checked = $(this).prop('checked');
+    if (checked == true) {
+        viewActiveCoupons();
+    } else {
+        $('tr').each(function(){
+            $(this).show();
+        });
+    }
+});
+var viewActiveCoupons = function(){
+    var now = new Date();
+    $('tr').each(function(){
+        $(this).show();
+    });
+    $('table tr td:nth-child(7)').each(function(){
+        var begin = $(this).text();
+        console.log(begin);
+        begin = new Date(begin);
+        var end = $(this).next('td').text();
+        end = new Date(end);
+        if (now < end && now > begin) {
+            $(this).closest('tr').show();
+        } else {
+            $(this).closest('tr').hide();
+        }
+    });
+};
+$(document).ready(function(){
+    $('.summary-view-td').each(function(){
+        $(this).hide();
+    });
+});
+$('#summaryView').change(function(){
+    var checked = $(this).prop('checked');
+    if (checked == true) {
+        $('.report-btns').each(function(){
+            $(this).hide();
+        });
+        $('.summary-view-td').each(function(){
+            $(this).show();
+        });
+    } else {
+        $('.report-btns').each(function(){
+            $(this).show();
+        });
+        $('.summary-view-td').each(function(){
+            $(this).hide();
+        });
+    }
+});
+JAVASCRIPT;
+
     }
 
     private function couponItemTable($id)
