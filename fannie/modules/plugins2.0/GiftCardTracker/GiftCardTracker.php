@@ -95,7 +95,7 @@ class GiftCardTracker extends FannieRESTfulPage
         //$address = $json->address;
         if ($owner != 11) {
             $a = array($owner);
-            $p = $prepare("SELECT addressFirstLine AS addr FROM CustomerAccounts WHERE cardNo = ?");
+            $p = $dbc->prepare("SELECT addressFirstLine AS addr FROM CustomerAccounts WHERE cardNo = ?");
             $r = $dbc->execute($p, $a);
             $address = $dbc->fetchRow($r);
             $address = $address['addr'];
