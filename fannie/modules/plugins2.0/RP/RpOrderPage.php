@@ -315,12 +315,22 @@ class RpOrderPage extends FannieRESTfulPage
         $mapP = $this->connection->prepare("SELECT * FROM RpFixedMaps WHERE likeCode=?");
         $lcnameP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
 
+        $dow = date('N');
+        $saleDate = date('Y-m-d');
+        if ($dow >= 6 || $dow <= 2) {
+            $ts = time();
+            while (date('N', $ts) != 3) {
+                $ts = mktime(0, 0, 0, date('n',$ts), date('j',$ts), date('Y',$ts));
+            }
+            $saleDate = date('Y-m-d', $ts);
+        }
+
         $saleP = $this->connection->prepare("SELECT endDate
             FROM batchList AS l
                 INNER JOIN batches AS b ON l.batchID=b.batchID
                 INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID
             WHERE l.upc=? AND m.storeID=?
-                AND " . $this->connection->curdate() . " BETWEEN startDate AND endDate
+                AND '{$saleDate}' BETWEEN startDate AND endDate
                 AND b.discountType > 0");
 
         $ago = date('Y-m-d', strtotime('-3 days'));
