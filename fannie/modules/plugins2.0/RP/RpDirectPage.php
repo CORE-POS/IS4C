@@ -310,7 +310,7 @@ class RpDirectPage extends FannieRESTfulPage
             WHERE u.likeCode=?");
         $costP = $this->connection->prepare("SELECT cost, units FROM vendorItems WHERE vendorID=? and sku=?");
         $mapP = $this->connection->prepare("SELECT * FROM RpFixedMaps WHERE likeCode=?");
-        $lcnameP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
+        $lcP = $this->connection->prepare("SELECT likeCodeDesc, organic FROM likeCodes WHERE likeCode=?");
 
         $dow = date('N');
         $saleDate = date('Y-m-d');
@@ -406,7 +406,9 @@ class RpDirectPage extends FannieRESTfulPage
                 $row['vendorSKU'] = $mapped['sku'];
                 $row['lookupID'] = $mapped['vendorID'];
             }
-            $lcName = $this->connection->getValue($lcnameP, array(str_replace('LC', '', $row['upc'])));
+            $lcRow = $this->connection->getRow($lcP, array(str_replace('LC', '', $row['upc'])));
+            $lcName = $lcRow['likeCodeDesc'];
+            $organic = $lcRow['organic'] ? true : false;
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
             if (($par / $row['caseSize']) < 0.1) {
                 $par = 0.1 * $row['caseSize'];
@@ -472,6 +474,15 @@ class RpDirectPage extends FannieRESTfulPage
             }
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
+            $highlight = '';
+            $tooltip = '';
+            if ($onSale) {
+                $highlight = 'rp-success';
+                $tooltip = "On sale through {$onSale}";
+            } elseif (!$organic) {
+                $highlight = 'alert-warning';
+                $tooltip = 'Conventional';
+            }
             $nextRow = sprintf('<tr class="%s">
                 <td class="upc %s">%s %s</td>
                 <td class="%s"><select class="primaryFarm form-control input-sm" data-default="%s">%s</option></td>
@@ -496,14 +507,14 @@ class RpDirectPage extends FannieRESTfulPage
                 </td>
                 </tr>',
                 (in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) ? 'extraLocal' : '',
-                ($onSale ? "rp-success" : ''), $row['upc'], $lcName,
-                ($onSale ? 'rp-success' : ''),
+                $highlight, $row['upc'], $lcName,
+                $highlight,
                 $farm1,
                 $opt1,
-                ($onSale ? 'rp-success' : ''),
+                $highlight,
                 $opt2,
-                ($onSale ? 'rp-success' : ''),
-                ($onSale ? "On sale through {$onSale}" : ''),
+                $highlight,
+                $tooltip,
                 $cost['cost'] * $row['caseSize'],
                 ($row['vendorSKU'] ? '(' . $row['vendorSKU'] . ')' : ''),
                 $row['vendorItem'],
