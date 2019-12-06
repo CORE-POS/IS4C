@@ -174,6 +174,8 @@ class HouseCoupon extends SpecialUPC
             $isMem = true;
         } elseif ($this->session->get('memberID') == '0') {
             $isMem = false;
+        } elseif ($this->session->get('memberID') == 5608) {
+            $isMem = true;
         }
 
         return $isMem;
@@ -816,7 +818,11 @@ class HouseCoupon extends SpecialUPC
                     $value = 100;
                 }
                 $discountable = 0;
-                TransRecord::addtender('Store Credit', 'SC', $value);
+                $curR = $transDB->prepare("SELECT SUM(-1 * total) AS ttl FROM translog.localtemptrans WHERE upc='0049999900370'");
+                $current = $transDB->getValue($curR);
+                if ($value - $current) {
+                    TransRecord::addtender('Store Credit', 'SC', $value - $current);
+                }
                 \CoreLocal::set("receiptToggle",1);
                 break;
             case "F": // completely flat; no scaling for weight
