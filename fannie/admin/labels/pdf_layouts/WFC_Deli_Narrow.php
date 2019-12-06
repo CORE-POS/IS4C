@@ -143,7 +143,7 @@ foreach($data as $k => $row){
    $desc = str_replace("\r", "", $desc);
    $scale = $row['scale'];
    $price = ($scale == 0) ? "$".$price : "";
-   if ($scale != 0) continue;
+   //if ($scale != 0) continue;
 
    // writing data
    // basically just set cursor position
