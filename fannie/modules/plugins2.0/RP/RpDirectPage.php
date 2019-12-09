@@ -317,7 +317,7 @@ class RpDirectPage extends FannieRESTfulPage
         if ($dow >= 6 || $dow <= 2) {
             $ts = time();
             while (date('N', $ts) != 3) {
-                $ts = mktime(0, 0, 0, date('n',$ts), date('j',$ts), date('Y',$ts));
+                $ts = mktime(0, 0, 0, date('n',$ts), date('j',$ts) + 1, date('Y',$ts));
             }
             $saleDate = date('Y-m-d', $ts);
         }
