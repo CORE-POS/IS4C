@@ -141,6 +141,9 @@ class RpPrintOrders extends FannieRESTfulPage
     .table .warning td {
         background-color: #fcf8e3 !important;
     }
+    body {
+        -webkit-print-color-adjust: exact;
+    }
 }
 CSS;
     }
