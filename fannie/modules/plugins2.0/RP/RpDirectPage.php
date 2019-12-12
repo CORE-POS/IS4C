@@ -252,6 +252,18 @@ class RpDirectPage extends FannieRESTfulPage
         return $ret . $this->get_view();
     }
 
+    protected function isMobile()
+    {
+        $userAgent = strtolower(filter_input(INPUT_SERVER, 'HTTP_USER_AGENT'));
+        if (strstr($userAgent, 'android')) {
+            return true;
+        } elseif (strstr($userAgent, 'iphone os')) {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function get_view()
     {
         $this->addScript('rpDirect.js?date=20191118');
@@ -272,6 +284,8 @@ class RpDirectPage extends FannieRESTfulPage
             }
         }
         $this->addOnloadCommand("rpOrder.initState({$jsState});");
+
+        $fieldType = $this->isMobile() ? 'type="number" min="0" max="99999" step="0.01"' : 'type="text"';
 
         $ordersP = $this->connection->prepare("
             SELECT o.orderID, v.vendorName
@@ -489,7 +503,7 @@ class RpDirectPage extends FannieRESTfulPage
                 <td class="%s"><select class="secondaryFarm form-control input-sm">%s</option></td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td style="display:none;" class="caseSize">%s</td>
-                <td><input type="text" class="form-control input-sm onHand" value="0" 
+                <td><input %s class="form-control input-sm onHand" value="0" 
                     style="width: 5em;" id="onHand%s" data-incoming="0"
                     onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
                     onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
@@ -497,7 +511,7 @@ class RpDirectPage extends FannieRESTfulPage
                 <input type="hidden" class="basePar" value="%.2f" />
                 <td class="parCell">%.2f</td>
                 <td class="form-inline %s">
-                    <input type="text" style="width: 5em;"class="form-control input-sm orderAmt"
+                    <input %s style="width: 5em;"class="form-control input-sm orderAmt"
                         id="orderAmt%s" onkeyup="rpOrder.orderKey(event); rpOrder.updateOrder(this);"
                         onfocus="this.select();" value="%d" />
                     <button class="btn btn-success btn-sm" onclick="rpOrder.inc(this, 1);">+</button>
@@ -520,11 +534,13 @@ class RpDirectPage extends FannieRESTfulPage
                 $row['vendorItem'],
                 $startIcon, $endIcon,
                 $row['caseSize'],
+                $fieldType,
                 $upc,
                 $price,
                 $par,
                 $par / $row['caseSize'],
                 ($inOrder ? 'info' : ''),
+                $fieldType,
                 $upc,
                 $orderAmt,
                 $upc, $store, $row['vendorID'],
