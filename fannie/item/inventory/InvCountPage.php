@@ -74,9 +74,9 @@ class InvCountPage extends FannieRESTfulPage
     {
         $upc = BarcodeLib::padUPC($this->id);
         try {
+            $storeID = FormLib::get('storeID', 1);
             $count = $this->form->count;
             $par = $this->form->par;
-            $storeID = FormLib::get('storeID', 1);
             $add = FormLib::get('addOn', false);
             if ($add) {
                 $upP = $this->connection->prepare('UPDATE InventoryCounts SET count=count+?
@@ -189,7 +189,7 @@ class InvCountPage extends FannieRESTfulPage
             $addBtn = '';
         }
 
-        $ret = '<form method="post">
+        $ret = '<form method="post" name="quick_item_edit_form">
             <div class="form-group">
             <input type="hidden" name="id" value="' . $this->id . '" />
             <input type="hidden" name="storeID" value="' . $store . '" />
@@ -197,15 +197,42 @@ class InvCountPage extends FannieRESTfulPage
                 <tr>
                     <th>Update Count</th>
                     <th>Update Par</th>
-                    <td>&nbsp;</td>
+                    <th>Save</th>
                 </tr><tr>
                     <td>
-                        <input type="text" pattern="' . $pattern . '" class="form-control" 
-                            id="count-field" required name="count" />
-                        <input type="hidden" name="par" value="' . round($info['par'], 2) . '" />
+                        <div class="form-group">
+                            <input type="text" pattern="' . $pattern . '" class="form-control" 
+                                id="count-field" required name="count" />
+                        </div>
                     </td>
                     <td>
-                        <button type="submit" class="btn btn-default btn-sm">Save</button>
+                        <div class="form-group">
+                            <input type="text" pattern="' . $pattern . '" class="form-control" 
+                                id="par-field" name="par" value="' . round($info['par'],2) .'"/>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <span class="btn btn-default btn-sm"
+                                onclick=\'
+                                    function recalcVendorTotals(){
+                                        $.ajax({
+                                            "type": "post",
+                                            "data": "recalc=' . $prod->default_vendor_id() . '&store=' . $store . '",
+                                            success: function(response)
+                                            {
+                                                document.forms["quick_item_edit_form"].submit();
+                                            },
+                                            fail: function(response)
+                                            {
+                                                document.forms["quick_item_edit_form"].submit();
+                                            },
+                                        });
+                                    };
+                                    recalcVendorTotals();
+                                    return false;
+                                \'>Submit</span>
+                        </div>
                     </td>
                 </tr>
             </table>';
