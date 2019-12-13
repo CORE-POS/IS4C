@@ -180,6 +180,7 @@ class IllnessLogsPage extends FannieRESTfulPage
             $includeList = true;
         }
         $access = $this->getAccess();
+        $allAccess = FannieAuth::validateUserQuiet('hr_editor');
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
 
@@ -221,6 +222,10 @@ class IllnessLogsPage extends FannieRESTfulPage
                     if ($type['edit']) {
                         $userEditCSS = '';
                     }
+                } elseif ($allAccess) {
+                    $hasAccess = true;
+                    $userEditCSS = '';
+                    break;
                 }
             }
             if (!$hasAccess) continue;
