@@ -1,5 +1,5 @@
 
-var qlEdit = (function ($) {
+var qlEdit = (function () {
 
     var mod = {};
 
@@ -13,11 +13,11 @@ var qlEdit = (function ($) {
         },
         methods: {
             getMenu: function() {
-                $.ajax({
-                    url: 'QLEdit.php?id=' + this.menuNumber,
-                    dataType: 'json'
-                }).done(function (resp) {
-                    entryTable.entries = resp;
+                fetch('QLEdit.php?id=' + this.menuNumber)
+                .then(function(resp) {
+                    if (resp.ok) {
+                        resp.json().then(i=> entryTable.entries = i);
+                    }
                 });
             }
         },
@@ -55,16 +55,18 @@ var qlEdit = (function ($) {
             },
             // save current entries
             save: function() {
-                var d = 'id='+lookupForm.menuNumber;
-                d += this.entries.reduce((acc, x) => acc + '&ql[]=' + x.id, "");
-                d += this.entries.reduce((acc, x) => acc + '&label[]=' + x.label, "");
-                d += this.entries.reduce((acc, x) => acc + '&action[]=' + x.action, "");
-                $.ajax({
-                    type: 'post',
-                    data: d
-                }).success(function (resp) {
-                    lookupForm.getMenu();
+                var fd = new FormData;
+                fd.append('id', lookupForm.menuNumber);
+                this.entries.forEach(function (i) {
+                    fd.append('ql[]', i.id);
+                    fd.append('label[]', i.label);
+                    fd.append('action[]', i.action);
                 });
+                fetch('QLEdit.php', {
+                    method: 'post',
+                    body: fd
+                }).then(resp => resp.text())
+                .then(resp => lookupForm.getMenu());
             },
             // add more entries to the table
             // ID decrements so there won't be duplicate
@@ -78,9 +80,21 @@ var qlEdit = (function ($) {
                 var data = new FormData();
                 var vm = this;
                 data.append('id', id);
-                var files = $('#newFile' + id).prop('files');
+                var files = document.getElementById('newFile').files;
                 if (files.length == 0) return;
                 data.append('newImage', files[0]);
+                fetch('QuickLookupsImages.php', {
+                    method: 'post',
+                    body: data
+                }).then(resp => resp.text())
+                .then(function (resp) {
+                    var cur = vm.entries[index];
+                    cur['image'] = true;
+                    cur['imageURL'] = 'QuickLookupsImages.php?id=' + id;
+                    cur['imageURL'] += '&ms=' + (new Date().getMilliseconds());
+                    vm.$set(vm.entries, index, cur);
+                });
+                /*
                 $.ajax({
                     url: 'QuickLookupsImages.php',
                     type: 'post',
@@ -94,6 +108,7 @@ var qlEdit = (function ($) {
                     cur['imageURL'] += '&ms=' + (new Date().getMilliseconds());
                     vm.$set(vm.entries, index, cur);
                 });
+                */
             },
             // drilldown to submenu
             submenu: function(id) {
@@ -112,5 +127,5 @@ var qlEdit = (function ($) {
 
     return mod;
 
-})(jQuery);
+})();
 
