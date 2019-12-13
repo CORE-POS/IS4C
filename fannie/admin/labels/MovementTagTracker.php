@@ -298,6 +298,8 @@ HTML;
                 AND p.inUse = 1
                 AND f.name IS NOT NULL
                 AND p.upc NOT IN (SELECT value FROM MovementTrackerParams WHERE parameter = 'Product')
+                AND p.numflag & (1 << 19) = 0
+                AND not numflag & (1 << 1)
             GROUP BY p.upc, DATE(m.modified), p.brand, p.description, f.name
             ORDER BY f.name
         ");
