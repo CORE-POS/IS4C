@@ -1,5 +1,6 @@
 <?php
 
+use COREPOS\Fannie\API\lib\Operators as Op;
 
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -40,7 +41,7 @@ class RpMarginEst extends FannieReportPage
                     sprintf('%.2f', $mvmt),
                     sprintf('%.2f', $unitCost * $mvmt),
                     sprintf('%.2f', $retail * $mvmt),
-                    sprintf('%.2f', ($retail - $unitCost) / $retail * 100),
+                    sprintf('%.2f', Op::div($retail - $unitCost, $retail) * 100),
                 );
             }
         }
@@ -55,7 +56,7 @@ class RpMarginEst extends FannieReportPage
             $sums[0] += $row[6];
             $sums[1] += $row[7];
         }
-        $margin = ($sums[1] - $sums[0]) / $sums[1] * 100;
+        $margin = Op::div($sums[1] - $sums[0], $sums[1]) * 100;
 
         return array('Total', '', '', '', '', '', sprintf('%.2f', $sums[0]), sprintf('%.2f', $sums[1]), sprintf('%.2f', $margin));
     }
