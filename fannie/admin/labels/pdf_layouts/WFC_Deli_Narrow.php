@@ -120,6 +120,7 @@ foreach($data as $k => $row){
    //$desc = str_replace("\n", "", $desc);
    //$desc = str_replace("\r", "", $desc);
    $brand = ucwords(strtolower(isset($row['brand']) ? $row['brand'] : ''));
+   if ($brand == 'Bulk') $brand = '';
    $pak = isset($row['units']) ? $row['units'] : 1;
    $size = $pak . "-" . (isset($row['size']) ? $row['size'] : '');
    $sku = isset($row['sku']) ? $row['sku'] : '';
