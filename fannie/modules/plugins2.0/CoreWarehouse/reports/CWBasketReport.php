@@ -109,6 +109,7 @@ class CWBasketReport extends FannieReportPage
                 INNER JOIN WarehouseDates AS w ON t.date_id=w.warehouseDateID
                 LEFT JOIN ' . $this->config->get('OP_DB') . $dbc->sep() . 'memtype AS m ON m.memtype=t.memType
             WHERE t.date_id BETWEEN ? AND ?
+                AND t.tenderTotal <> 0
             GROUP BY custdataType,
                 w.year,
                 w.isoWeekNumber 
@@ -119,9 +120,11 @@ class CWBasketReport extends FannieReportPage
 
         $data = array();
         while ($w = $dbc->fetchRow($result)) {
+            /*
             if ($w['end'] - $w['start'] < 6) {
                 continue;
             }
+            */
             $span = date('Y-m-d', strtotime($w['start']))
                 . ' - '
                 . date('Y-m-d', strtotime($w['end']));
