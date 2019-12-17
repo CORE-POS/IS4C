@@ -21,7 +21,10 @@ class RpDailyPage extends FannieRESTfulPage
             $ts = mktime(0, 0, 0, date('n', $ts), date('j', $ts) - 1, date('Y', $ts));
         }
 
-        $ret = $this->salesTable($store, $ts);
+        $stores = FormLib::storePicker('store', false, "window.location='RpDailyPage.php?store='+this.value");
+        $ret = '<div class="form-group">' . $stores['html'] . '</div>';
+
+        $ret .= $this->salesTable($store, $ts);
 
         $ret .= '<div class="row">';
         $ret .= '<div class="col-sm-4">';
@@ -94,12 +97,13 @@ class RpDailyPage extends FannieRESTfulPage
             FROM RpOrderItems AS i
                 LEFT JOIN " . FannieDB::fqn('Smoothed', 'plugin:WarehouseDatabase') . " AS w
                     ON i.upc=w.upc AND i.storeID=w.storeID
-            WHERE i.upc=?");
+            WHERE i.upc=?
+                AND i.storeID=?");
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $record = array('name' => $row['likeCodeDesc']);
             $record['retail'] = $this->connection->getValue($retailP, array($row['likeCode'], $store));
-            $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode']));
+            $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode'], $store));
             $record['smoothed'] = $info['movement'];
             $record['caseSize'] = $info['caseSize'];
             $record['total'] = $record['retail'] * $info['movement'];
@@ -153,12 +157,13 @@ class RpDailyPage extends FannieRESTfulPage
             FROM RpOrderItems AS i
                 LEFT JOIN " . FannieDB::fqn('Smoothed', 'plugin:WarehouseDatabase') . " AS w
                     ON i.upc=w.upc AND i.storeID=w.storeID
-            WHERE i.upc=?");
+            WHERE i.upc=?
+                AND i.storeID=?");
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $record = array('name' => $row['likeCodeDesc']);
             $record['retail'] = $this->connection->getValue($retailP, array($row['likeCode'], $store));
-            $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode']));
+            $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode'], $store));
             $record['smoothed'] = $info['movement'];
             $record['caseSize'] = $info['caseSize'];
             $record['total'] = $record['retail'] * $info['movement'];
