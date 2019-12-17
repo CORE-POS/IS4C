@@ -86,7 +86,7 @@ class PriceRounder
                                     $end = 0.99;
                                 }
                                 // don't end prices like 30.99, 40.99, round down 
-                                if ($wholeP % 10 == 0 && $end == 0.99) {
+                                if ($wholeP > 0 && $wholeP % 10 == 0 && $end == 0.99) {
                                     $wholeP--;
                                 }
                                 $price = $wholeP + $end;
@@ -98,7 +98,7 @@ class PriceRounder
                 }
             }
         }
-        if ($wholeP % 10 == 0 && $end == 0.99) {
+        if ($wholeP > 0 && $wholeP % 10 == 0 && $end == 0.99) {
             $wholeP--;
         }
         $price = $wholeP + $end;
