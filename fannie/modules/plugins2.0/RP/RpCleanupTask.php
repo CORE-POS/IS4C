@@ -27,7 +27,6 @@ class RpCleanupTask extends FannieTask
             $ts = mktime(0, 0, 0, date('n', $ts), date('j', $ts) - 1, date('Y', $ts));
         }
         $cutoff = date('Y-m-d', $ts);
-        echo $cutoff . "\n";
         $dlog = DTransactionsModel::selectDlog($cutoff);
         $DoW = $dbc->dayofweek('tdate');
         $prep = $dbc->prepare("SELECT {$DoW} AS DoW, SUM(total) AS ttl
@@ -74,5 +73,18 @@ class RpCleanupTask extends FannieTask
             }
             $dbc->execute($segP, array(json_encode($thisYear), $store, $cutoff));
         }
+
+        $retailP = $dbc->prepare("SELECT AVG(CASE WHEN discounttype=1 THEN special_price ELSE normal_price END)
+            FROM upcLike AS u
+                INNER JOIN products AS p ON u.upc=p.upc
+            WHERE u.likeCode=?");
+        $upP = $dbc->prepare("UPDATE RpSubTypes SET price=? WHERE upc=?");
+        $res = $dbc->query("SELECT upc FROM RpSubTypes");
+        $dbc->startTransaction();
+        while ($row = $dbc->fetchRow($res)) {
+            $price = $dbc->getValue($retailP, array(substr($row['upc'], 2)));
+            $dbc->execute($upP, array($price, $row['upc']));
+        }
+        $dbc->commitTransaction();
     }
 }
