@@ -5,13 +5,16 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('RpOrderCategoriesModel')) {
-    include(__DIR__ . '/RpOrderCategoriesModel.php');
+    include(__DIR__ . '/models/RpOrderCategoriesModel.php');
 }
 if (!class_exists('RpOrderItemsModel')) {
-    include(__DIR__ . '/RpOrderItemsModel.php');
+    include(__DIR__ . '/models/RpOrderItemsModel.php');
 }
 if (!class_exists('RpSessionsModel')) {
-    include(__DIR__ . '/RpSessionsModel.php');
+    include(__DIR__ . '/models/RpSessionsModel.php');
+}
+if (!class_exists('RpFarmsModel')) {
+    include(__DIR__ . '/models/RpFarmsModel.php');
 }
 
 class RpDirectPage extends FannieRESTfulPage

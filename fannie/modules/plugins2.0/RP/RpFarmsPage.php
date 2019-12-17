@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('RpFarmsModel')) {
-    include(__DIR__ . '/RpFarmsModel.php');
+    include(__DIR__ . '/models/RpFarmsModel.php');
 }
 
 class RpFarmsPage extends FannieCRUDPage

@@ -5,7 +5,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('RpFixedMapsModel')) {
-    include(__DIR__ . '/RpFixedMapsModel.php');
+    include(__DIR__ . '/models/RpFixedMapsModel.php');
 }
 
 class RpFixedMaps extends FannieRESTfulPage
