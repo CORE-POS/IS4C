@@ -397,6 +397,11 @@ class HouseCouponEditor extends FanniePage
                 <div class="col-sm-3 text-left">
                     <a href="%sws/barcode-pdf/?upc=%s&name=%s">%s</a>
                 </div>
+                <div class="col-sm-2 text-right">
+                    <a href="DuplicateCoupon.php?id=%d" class="btn btn-default">
+                        Duplicate Coupon
+                    </a>
+                </div>
             </div>
             <div class="row">
                 <label class="col-sm-1 control-label">Receipt Label</label>
@@ -431,6 +436,7 @@ class HouseCouponEditor extends FanniePage
             "00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
             urlencode($description),
             "00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
+            $cid,
             $description,
             $limit,
             $starts, $expires,
