@@ -107,7 +107,7 @@ class RpDailyPage extends FannieRESTfulPage
             $record['smoothed'] = $info['movement'];
             $record['caseSize'] = $info['caseSize'];
             $record['total'] = $record['retail'] * $info['movement'];
-            $cases = sprintf('%.1f', $info['movement'] / $info['caseSize']);
+            $cases = sprintf('%.1f', Op::div($info['movement'], $info['caseSize']));
             $last = substr($cases, -1);
             if ($last > 5) {
                 $cases = ceil($cases);
