@@ -150,6 +150,14 @@ class NewClassPage extends FannieRESTfulPage
             $alert = '<div class="alert alert-danger">Something went wrong. Error-code: 
                 '.$error.'<br/>View: '.$ln.'</div>';
         }
+
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $prep = $dbc->prepare("SELECT upc FROM products WHERE upc LIKE '0000099%'
+            ORDER BY upc DESC LIMIT 1;");
+        $res = $dbc->execute($prep);
+        $row = $dbc->fetchRow($res);
+        $newClassUpc = $row['upc'] + 1;
         
         return <<<HTML
         <div align="center">
@@ -157,20 +165,26 @@ class NewClassPage extends FannieRESTfulPage
         <div class="panel panel-default" style="max-width: 900px;">
         <div class="panel-heading" id="heading"><strong>Create a new WFC-U Class</strong></div>
         <div class="panel-body" style="text-align: left;">
-            {$this->form_content()}
+            {$this->form_content($newClassUpc)}
         </div></div></div>
 HTML;
     }
     
-    public function form_content()
+    public function form_content($newClassUpc)
     {
+        $this->addOnloadCommand("$('#date').datepicker({dateFormat: 'yy-mm-dd'});");
+
         return <<<HTML
 <div>
     <form class="" method="get"> 
         <div class="col-md-3">
             <div class="form-group">
                 <label for="upc">UPC</label><span id="upc-warning"></span>
-                <input type="text" class="form-control len-md" name="upc" id="upc" autofocus value="99" required/>
+                <input type="text" class="form-control len-md" name="upc" id="upc" autofocus value="00000$newClassUpc" required/>
+            </div>
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="text" class="form-control len-md" name="date" id="date" required/>
             </div>
             <div class="form-group">
                 <label for="pDesc">POS Description</label>
@@ -306,6 +320,19 @@ $('#upc').keyup(function(e){
             }
         });
     }
+});
+$('#date').change(function(){
+    var dateVal = $(this).val();
+
+    var wDesc = $('#wDesc').val();  
+    wDesc = wDesc.replace('MM-DD-YYYY', dateVal);
+    $('#wDesc').val(wDesc);
+
+    //var month = dateObj.getMonth();
+    //var day = dateObj.getDate();
+    //var year = dateObj.getFullYear();
+    //var expireDate = year+'-'+month+'-'+day;
+    //$('#expires').val(expireDate);
 });
 $(document).ready(function() {
     var input = $("#upc");
