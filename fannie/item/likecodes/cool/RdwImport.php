@@ -21,9 +21,11 @@ class RdwImport extends FannieRESTfulPage
         $orderID = $this->getPO($ref, $store, $date);
         $prev = false;
         $regex = '/([^0-9]*)([0-9]+) (.*) (\d\d\d\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (.*)/';
+        $altRegex = '/([^0-9]*)([0-9]+) (.*) (\d\d\d\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d)/';
         $invItems = array();
         foreach (explode("\n", $invoice) as $line) {
             $hasSku = preg_match($regex, $line, $matches);
+            $hasAlt = preg_match($altRegex, $line, $alts);
             if ($hasSku) {
                 $sku = $matches[4];
                 $cool = trim($matches[1]);
@@ -33,6 +35,17 @@ class RdwImport extends FannieRESTfulPage
                 $this->data[$sku] = $cool;
                 $this->invoice[$sku] = $line;
                 $invItems[] = $matches;
+                $prev = $sku;
+            } elseif ($hasAlt) {
+                $sku = $alts[4];
+                $cool = trim($alts[1]);
+                if ($cool == 'COSTA') {
+                    $cool = 'COSTA RICA';
+                }
+                $this->data[$sku] = $cool;
+                $this->invoice[$sku] = $line;
+                $alts[9] = 0; // no UPC given
+                $invItems[] = $alts;
                 $prev = $sku;
             } elseif ($prev) {
                 $this->data[$prev] .= ' AND ' . $line;
