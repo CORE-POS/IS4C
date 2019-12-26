@@ -70,37 +70,35 @@ class ProductMovementModular extends FannieReportPage
             return DTransactionsModel::selectDTrans($date1, $date2);
         }
 
-        return DTransactionsModel::selectDlog($date1, $date2);
+        return DTrans::getView($date1, $date2);
     }
 
-    private function defaultQuery($dlog, $store)
+    private function defaultQuery($dlog, $store, $between)
     {
-        return "SELECT 
-                    MONTH(t.tdate),
-                    DAY(t.tdate),
-                    YEAR(t.tdate),
+        $ymd = DTrans::extractYMD($dlog);
+        return "SELECT {$ymd},
                     t.upc,
                     p.brand,
                     p.description,
-                    " . DTrans::sumQuantity('t') . " AS qty,
+                    " . DTrans::sumQuantity('t', false, $dlog) . " AS qty,
                     SUM(t.total) AS total
                   FROM $dlog AS t 
                     " . DTrans::joinProducts('t', 'p', 'LEFT') . "
                   WHERE t.upc = ? AND
-                    t.tdate BETWEEN ? AND ?
+                    {$between}
                     AND " . DTrans::isStoreID($store, 't') . "
                   GROUP BY 
-                    YEAR(t.tdate),
-                    MONTH(t.tdate),
-                    DAY(t.tdate),
+                    {$ymd},
                     t.upc,
                     p.description
-                  ORDER BY year(t.tdate),month(t.tdate),day(t.tdate)";
+                  ORDER BY {$ymd}";
     }
 
     private function wfcRrrQuery($dlog, $store)
     {
-        return "select MONTH(datetime),DAY(datetime),YEAR(datetime),
+        $ymd = DTrans::extractYMD($dlog);
+        $ymd = str_replace('tdate', 'datetime', $ymd);
+        return "select {$ymd},
             upc,'' AS brand,'RRR' AS description,
             sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
             sum(t.total) AS total from
@@ -110,13 +108,15 @@ class ProductMovementModular extends FannieReportPage
             AND " . DTrans::isStoreID($store, 't') . "
             and emp_no <> 9999 and register_no <> 99
             and trans_status <> 'X'
-            GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
-            ORDER BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+            GROUP BY {$ymd}
+            ORDER BY {$ymd}";
     }
 
     private function nonNumericQuery($dlog, $store)
     {
-        return "select MONTH(datetime),DAY(datetime),YEAR(datetime),
+        $ymd = DTrans::extractYMD($dlog);
+        $ymd = str_replace('tdate', 'datetime', $ymd);
+        return "select {$ymd},
             upc,'' AS brand, description,
             sum(CASE WHEN quantity=0 THEN 1 ELSE quantity END) as qty,
             sum(t.total) AS total from
@@ -126,7 +126,7 @@ class ProductMovementModular extends FannieReportPage
             AND " . DTrans::isStoreID($store, 't') . "
             and emp_no <> 9999 and register_no <> 99
             and (trans_status <> 'X' || trans_type='L')
-            GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+            GROUP BY {$ymd}";
     }
 
     function fetch_report_data()
@@ -142,14 +142,16 @@ class ProductMovementModular extends FannieReportPage
         $store = FormLib::get('store', 0);
 
         $dlog = $this->getTransTable($upc, $date1, $date2);
+        list($between, $dates) = DTrans::dateBetween($dlog, $date1, $date2);
 
-        $query = $this->defaultQuery($dlog, $store);
-        $args = array($upc,$date1.' 00:00:00',$date2.' 23:59:59', $store);
+        $query = $this->defaultQuery($dlog, $store, $between);
+        $args = array($upc, $dates[0], $dates[1], $store);
         if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
             $query = $this->wfcRrrQuery($dlog, $store);
         } elseif (!is_numeric($upc)) {
             $this->nonNumericQuery($dlog, $store);
         }
+
         $prep = $dbc->prepare($query);
         try {
             $result = $dbc->execute($prep,$args);
@@ -173,7 +175,7 @@ class ProductMovementModular extends FannieReportPage
     private function rowToRecord($row)
     {
         $record = array();
-        $record[] = $row[0]."/".$row[1]."/".$row[2];
+        $record[] = $row[1]."/".$row[2]."/".$row[0];
         $record[] = $row['upc'];
         $record[] = $row['brand'] === null ? '' : $row['brand'];
         $record[] = $row['description'] === null ? '' : $row['description'];

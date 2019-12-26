@@ -203,10 +203,13 @@ class DTrans
         units instead of weights
       @return string SQL snippet
     */
-    public static function sumQuantity($prefix='', $scaleAsEaches=false)
+    public static function sumQuantity($prefix='', $scaleAsEaches=false, $table='')
     {
         if (!empty($prefix)) {
             $prefix = $prefix . '.';
+        }
+        if (strstr($table, 'sumRingSalesByDay')) {
+            return "SUM({$prefix}quantity)";
         }
 
         return ' SUM(CASE '
@@ -467,6 +470,53 @@ class DTrans
         }
 
         return array($where, $args);
+    }
+
+    public static function getView($date1, $date2)
+    {
+        $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        $config = FannieConfig::config('PLUGIN_LIST');
+        if (in_array('CoreWarehouse', $config) && substr($dlog, -5) != '.dlog' && substr($dlog, -7) != '.dlog_15') {
+            return FannieDB::fqn('sumRingSalesByDay', 'plugin:WarehouseDatabase');
+        }
+
+        return $dlog;
+    }
+
+    public static function dateBetween($table, $date1, $date2)
+    {
+        $ts1 = strtotime($date1);
+        $ts2 = strtotime($date2);
+        if ($ts1 === false) {
+            $ts1 = time();
+        }
+        if ($ts2 === false) {
+            $ts2 = time();
+        }
+        if (strstr($table, 'sumRingSalesByDay')) {
+            return array(' date_id BETWEEN ? AND ? ', array(date('Ymd',$ts1), date('Ymd', $ts2)));
+        }
+        $args = array(
+            date('Y-m-d 00:00:00', $ts1),
+            date('Y-m-d 23:59:59', $ts2),
+        );
+
+        return array(' tdate BETWEEN ? AND ? ', $args);
+    }
+
+    public static function extractYMD($table)
+    {
+        if (strstr($table, 'sumRingSalesByDay')) {
+            return '
+                SUBSTRING(date_id, 1, 4),
+                SUBSTRING(date_id, 5, 2),
+                SUBSTRING(date_id, 7, 2)';
+        }
+
+        return '
+            YEAR(tdate),
+            MONTH(tdate),
+            DAY(tdate)';
     }
 }
 
