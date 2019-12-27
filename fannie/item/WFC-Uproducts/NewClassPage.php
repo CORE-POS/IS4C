@@ -172,7 +172,7 @@ HTML;
     
     public function form_content($newClassUpc)
     {
-        $this->addOnloadCommand("$('#date').datepicker({dateFormat: 'yy-mm-dd'});");
+        $this->addOnloadCommand("$('#date').datepicker({dateFormat: 'mm-dd-yy'});");
 
         return <<<HTML
 <div>
