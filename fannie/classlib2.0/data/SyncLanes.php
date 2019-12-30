@@ -135,7 +135,7 @@ class SyncLanes
                     $lane_def = $dbc->tableDefinition($table, $lane[$db]);
                     $columns = self::commonColumns($server_def, $lane_def);
                     if ($columns === false) {
-                        $ret['messages'] .= "No matching columns on lane $laneNumber table $table" . self::endLine();
+                        $ret['messages'] .= "Error: No matching columns on lane $laneNumber table $table" . self::endLine();
                         continue;
                     }
                     $my_cols = self::safeColumnString($dbc, $server_db, $columns);
