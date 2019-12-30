@@ -315,7 +315,6 @@ class WfcClassRegistryPage extends FanniePage
     private function listClasses()
     {
         $FANNIE_URL = $this->config->get('URL');
-        echo "<div id=\"line-div\"></div>";
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
@@ -454,16 +453,32 @@ class WfcClassRegistryPage extends FanniePage
                 $classSize = $row['size'];
             }
 
+            //redo this to insert 
             $sAddSeat = "INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ";
             for ($i=$numSeats; $i<$classSize; $i++) {
-                        $sAddSeat .= " ( " . $plu . ", " . ($i+1) . ", 1) ";
-                        if (($i+1)<$classSize) {
-                            $sAddSeat .= ", ";
-                        }
+                $sAddSeat .= " ( " . $plu . ", " . ($i+1) . ", 1) ";
+                if (($i+1)<$classSize) {
+                    $sAddSeat .= ", ";
+                }
             }
             if ($numSeats != $classSize) {
                 $pAddSeat = $dbc->prepare("{$sAddSeat}");
                 $rAddSeat = $dbc->execute($pAddSeat);
+            }
+            // if class is for children, include children seats
+            if (strpos(strtolower($className[$curPlu]), 'kid') !== false
+                    || strpos(strtolower($className[$curPlu]), 'child') !== false) {
+                $sAddSeat = "INSERT INTO wfcuRegistry (upc, seat, seatType, childseat) VALUES ";
+                for ($i=$numSeats; $i<$classSize; $i++) {
+                    $sAddSeat .= " ( " . $plu . ", " . ($i+1) . ", 1, 1) ";
+                    if (($i+1)<$classSize) {
+                        $sAddSeat .= ", ";
+                    }
+                }
+                if ($numSeats != $classSize) {
+                    $pAddSeat = $dbc->prepare("{$sAddSeat}");
+                    $rAddSeat = $dbc->execute($pAddSeat);
+                }
             }
 
             $prep = $dbc->prepare("SELECT count(id) FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
@@ -731,33 +746,44 @@ JAVASCRIPT;
     {
         $ret = '';
         $i = 0;
-        foreach ($items->find() as $item) {
+        foreach ($items->find('seat') as $item) {
             $i+=1;
+            $isChild = $item->childseat();
+            $ageLabel = ($isChild) ? '<span style="position: absolute; margin-top: -18px"><i>Age</i></span>' : '';
+            $firstNameLabel = ($isChild) ? '<span style="position: absolute; margin-top: -18px"><i>Child\'s first name</i></span>' : '';
+            $lastNameLabel = ($isChild) ? '<span style="position: absolute; margin-top: -18px"><i>Child\'s last name</i></span>' : '';
+            $disabled = ($isChild) ? 'hidden' : 'text';
             $ret .= sprintf('<tr>
                 <td class="id collapse">%s</td>
-                <td class="seat">%d</td>
+                <td class="seat">%s</td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm w-xs editable cardno" name="editCard_no" value="%s" /></td>
+                    <input type="'.$disabled.'" class="form-control input-sm w-xs editable cardno" name="editCard_no" value="%s"/></td>
                 <td><span class="collapse">%s</span>
+                    %s
                     <input type="text" class="form-control input-sm editable first_name" name="editFirst" value="%s" /></td>
                 <td><span class="collapse">%s</span>
+                    %s
                     <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
                 <td><span class="collapse">%s</span>
+                    %s
                     <input type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
                 <td><span class="collapse">%s</span>
-                    <input type="text" class="form-control input-sm editable" name="editEmail" value="%s" /></td>
+                    <input type="'.$disabled.'" class="form-control input-sm editable" name="editEmail" value="%s" /></td>
                 <td><span class="collapse">%s</span>
-                    <select class="form-control input-sm editable" name="editPayment">
+                    <select class="form-control input-sm editable '.$disabled.'" name="editPayment">
                         <option value="student has not paid">*unpaid*</option>',
                 $item->id(),
-                $i,
+                $isChild ? '<i style="display: none;">child-seat('.$item->seat().')</i>' : $item->seat(),
                 $item->card_no(),
                 $item->card_no(),
                 $item->first_name(),
+                $firstNameLabel,
                 $item->first_name(),
                 $item->last_name(),
+                $lastNameLabel,
                 $item->last_name(),
                 $item->phone(),
+                $ageLabel,
                 $item->phone(),
                 $item->email(),
                 $item->email(),

@@ -55,6 +55,7 @@ class wfcuRegistryModel extends BasicModel
     'refund' => array('type'=>'VARCHAR(30)'),
     'amount' => array('type'=>'DECIMAL(10,2)'),
     'email' => array('type'=>'VARCHAR(255)'),
+    'childseat' => array('type'=>'TINYINY()'),
     );
 }
 
