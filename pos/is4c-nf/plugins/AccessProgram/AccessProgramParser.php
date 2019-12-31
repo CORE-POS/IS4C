@@ -21,11 +21,13 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parser\Parser;
+use COREPOS\pos\parser\parse\VoidCmd;
 
 class AccessProgramParser extends Parser {
 
@@ -33,16 +35,23 @@ class AccessProgramParser extends Parser {
     {
         if (substr($str, 0, 6) == 'ACCESS') {
             return true;
+        } elseif ($str == 'VD0000000010730') {
+            return true;
         }
+
+        return false;
     }
 
     public function parse($str)
     {
         $ret = $this->default_json();
+        if ($str == 'VD0000000010730') {
+            return $this->voidBags($str);
+        }
 
         if (CoreLocal::get('memberID') == '0') {
             $ret['output'] = DisplayLib::boxMsg(
-                _("Apply member number first"),
+                _("Apply member number first" . $str),
                 _('No member selected'),
                 false,
                 array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
@@ -86,6 +95,18 @@ class AccessProgramParser extends Parser {
         $ret['receipt'] = 'accessSignupSlip';
 
         return $ret;
+    }
+
+    private function voidBags($json)
+    {
+        $dbc = Database::tDataConnect();
+        $ttlP = $dbc->prepare("SELECT SUM(total) FROM localtemptrans WHERE upc='0000000010730'");
+        while ($dbc->getValue($ttlP) > 0.005) {
+            $void = new VoidCmd($this->session);
+            $json = $void->parse('VD0000000010730');
+        }
+
+        return $json;
     }
 
     public static $adminLoginMsg = 'Login to approve Access Application';
