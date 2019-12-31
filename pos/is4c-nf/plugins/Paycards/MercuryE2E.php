@@ -24,6 +24,7 @@
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\plugins\Paycards\sql\PaycardRequest;
@@ -375,6 +376,9 @@ class MercuryE2E extends BasicCCModule
                 $charflag = ($recordID != 0) ? 'PT' : '';
                 $this->conf->set('refund', 0); // refund flag should not invert tender amount
                 TransRecord::addFlaggedTender($tenderDescription, $tenderCode, $amt, $recordID, $charflag);
+                if ($tenderCode == 'EF' || $tenderCode == 'EC') {
+                    PrehLib::ttl();
+                }
 
                 $apprType = 'Approved';
                 if ($this->conf->get('paycard_partial')){
