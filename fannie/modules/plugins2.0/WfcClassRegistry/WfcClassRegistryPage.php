@@ -746,7 +746,12 @@ JAVASCRIPT;
     {
         $ret = '';
         $i = 0;
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         foreach ($items->find('seat') as $item) {
+            $puModel = new ProductUserModel($dbc);
+            $puModel->upc(BarcodeLib::padUpc($item->upc()));
+            $obj = $puModel->find('narrow');
+            $accessDiscount = ($obj[0]->narrow() == 1) ? true : false;
             $i+=1;
             $isChild = $item->childseat();
             $ageLabel = ($isChild) ? '<span style="position: absolute; margin-top: -18px"><i>Age</i></span>' : '';
@@ -789,7 +794,9 @@ JAVASCRIPT;
                 $item->email(),
                 htmlspecialchars($item->payment())
             );
-            foreach (array('Cash', 'Card', 'Gift Card', 'Check', 'Other') as $tender) {
+            $paymentTypes = array();
+            $paymentTypes = ($accessDiscount == true) ? array('Cash', 'Card', 'Gift Card', 'Check', 'ACCESS', 'Other') : array('Cash', 'Card', 'Gift Card', 'Check', 'Other');
+            foreach ($paymentTypes as $tender) {
                 $ret .= sprintf('<option %s value="%s">%s</option>',
                     ($tender == $item->payment() ? 'selected' : ''),
                     $tender, $tender);
