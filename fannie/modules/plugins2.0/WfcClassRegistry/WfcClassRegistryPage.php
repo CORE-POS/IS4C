@@ -31,14 +31,13 @@ if (!class_exists('wfcuRegistryModel')) {
 
 class WfcClassRegistryPage extends FanniePage
 {
-    public $description = "[Module] for managing WFC-U Class Sign-In";
+    public $description = "[WFC-U Public Class Registry] Register customers for 
+        public classes offered by WFC.";
     public $themed = true;
-
+    public $plugin_settings = array();
     protected $must_authenticate = true;
-
     protected $header = "Fannie :: WFC-U Class Registry";
     protected $title = "WFC Class Sign-in";
-
     private $display_function;
     private $coupon_id;
     private $plu;
