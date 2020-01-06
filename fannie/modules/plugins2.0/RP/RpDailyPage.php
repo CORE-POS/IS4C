@@ -21,24 +21,53 @@ class RpDailyPage extends FannieRESTfulPage
             $ts = mktime(0, 0, 0, date('n', $ts), date('j', $ts) - 1, date('Y', $ts));
         }
 
+        $sales = $this->salesTable($store, $ts);
+        $greens = $this->greensTable($store);
+        $preps = $this->prepsTable($store);
+        $stock = $this->stockFirst($store);
+        $today = date('l, F jS');
+
         $stores = FormLib::storePicker('store', false, "window.location='RpDailyPage.php?store='+this.value");
-        $ret = '<div class="form-group">' . $stores['html'] . '</div>';
 
-        $ret .= $this->salesTable($store, $ts);
-
-        $ret .= '<div class="row">';
-        $ret .= '<div class="col-sm-4">';
-        $ret .= $this->greensTable($store);
-        $ret .= '</div>';
-        $ret .= '<div class="col-sm-4">';
-        $ret .= $this->prepsTable($store);
-        $ret .= '</div>';
-        $ret .= '<div class="col-sm-3">';
-        $ret .= $this->stockFirst($store);
-        $ret .= '</div>';
-        $ret .= '</div>';
-
-        return $ret;
+        return <<<HTML
+<div class="row">
+    <div class="col-sm-5">
+        <h3>{$today}</h3>
+    </div>
+    <div class="col-sm-5">
+        {$stores['html']}
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-8">
+        <div class="row=">
+            {$sales}
+        </div>
+        <div class="row=">
+            <table class="table table-bordered">
+                <tr><th style="text-align: center;" align="center">On Shift Today / Samples</th></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td></tr>
+            </table>
+        </div>
+        <div class="row=">
+            <div class="col-sm-6">
+                {$preps}
+            </div>
+            <div class="col-sm-6">
+                {$greens}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        {$stock}
+    </div>
+</div>
+HTML;
     }
 
     private function salesTable($store, $ts)
@@ -132,9 +161,9 @@ class RpDailyPage extends FannieRESTfulPage
         });
 
         $ret = '<table class="table table-bordered table-striped">
-            <tr><th><a href="RpGreensPreps.php">Greens</a></th><th>Cases</th></tr>';
+            <tr><th><a href="RpGreensPreps.php">Greens</a></th><th>Cases</th><th>Initial</th></tr>';
         foreach ($data as $row) {
-            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><tr>',
+            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><td></td><tr>',
                 $row['name'], $row['cases']);
         }
 
@@ -192,9 +221,9 @@ class RpDailyPage extends FannieRESTfulPage
         });
 
         $ret = '<table class="table table-bordered table-striped">
-            <tr><th><a href="RpGreensPreps.php">Repack</a></th><th>Cases</th></tr>';
+            <tr><th><a href="RpGreensPreps.php">Repack</a></th><th>Cases</th><th>Initial</th></tr>';
         foreach ($data as $row) {
-            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><tr>',
+            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><td></td><tr>',
                 $row['name'], $row['cases']);
         }
 
