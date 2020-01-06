@@ -146,7 +146,7 @@ class UnfiExportForMas extends FannieReportPage
 
     private function wfcCoding($code,$storeID)
     {
-        if (substr($code, 0, 3) === '512' || $code === '51600') {
+        if (substr($code, 0, 3) === '512') {
             return $code . '0' . $storeID . '20';
         } elseif ($code === '51300' || $code === '51310' || $code === '51315') {
             return $code . '0' . $storeID . '30';
