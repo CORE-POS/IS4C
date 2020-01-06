@@ -68,6 +68,8 @@ class ProductMovementModular extends FannieReportPage
     {
         if (!is_numeric($upc) || $upc == "0000000000052") {
             return DTransactionsModel::selectDTrans($date1, $date2);
+        } elseif (substr($upc, 0, 3) == '004') {
+            return DTransactionsModel::selectDLog($date1, $date2);
         }
 
         return DTrans::getView($date1, $date2);
