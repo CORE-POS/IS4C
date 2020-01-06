@@ -293,6 +293,9 @@ class ObfSummaryReport extends ObfWeeklyReportV2
         $start_ts = strtotime($week->startDate());
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
         list($year, $month) = $this->findYearMonth($start_ts, $end_ts);
+        if ($this->form->weekID == 292) {
+            $year--;
+        }
 
         /**
           Use the entire month from the previous calendar year
@@ -318,14 +321,15 @@ class ObfSummaryReport extends ObfWeeklyReportV2
         $sales->obfWeekID($week->obfWeekID());
         $sales->lastYearSales(0, '>');
         $ly_cached = $sales->find();
+        $dateInfo = array(
+            'start_ts' => $start_ts,
+            'end_ts' => $end_ts,
+            'start_ly' => $start_ly,
+            'end_ly' => $end_ly,
+            'averageWeek' => false,
+        );
+        var_dump(date('Y-m-d', $dateInfo['start_ly']));
         if (count($num_cached) == 0 || count($ly_cached) == 0) {
-            $dateInfo = array(
-                'start_ts' => $start_ts,
-                'end_ts' => $end_ts,
-                'start_ly' => $start_ly,
-                'end_ly' => $end_ly,
-                'averageWeek' => false,
-            );
             $this->updateSalesCache($week, array($num_cached, $ly_cached), $dateInfo);
         }
 
