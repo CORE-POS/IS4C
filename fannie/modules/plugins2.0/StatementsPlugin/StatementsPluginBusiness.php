@@ -42,7 +42,7 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             if (!empty($primary['firstName'])) {
                 $name = $primary['firstName'].' '.$name;
             }
-            $pdf->Cell(50,10,trim($card_no).' '.trim($name),0);
+            $pdf->Cell(50,10,trim($invoice['cardNo']).' '.trim($name),0);
             $pdf->Ln(5);
             $pdf->Cell(80, 10, $account['addressFirstLine'], 0);
             $pdf->Ln(5);
