@@ -17,7 +17,7 @@ class BagFeeTotal extends TotalAction
             FROM localtemptrans");
         $info = $dbc->getRow($prep);
         $tenderAmt = $info['tender'];
-        if (CoreLocal::get('memType') == 5 || abs($tenderAmt) > 0.005) {
+        if (abs($info['fees']) > 0.005 && (CoreLocal::get('memType') == 5 || abs($tenderAmt) > 0.005)) {
             $dbc->query("UPDATE localtemptrans SET total=0 WHERE upc='0000000010730'");
             return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=TO&repeat=1';
         }
