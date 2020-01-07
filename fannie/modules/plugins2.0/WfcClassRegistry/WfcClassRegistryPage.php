@@ -460,7 +460,7 @@ class WfcClassRegistryPage extends FanniePage
                     $sAddSeat .= ", ";
                 }
             }
-            if ($numSeats != $classSize) {
+            if ($numSeats < $classSize) {
                 $pAddSeat = $dbc->prepare("{$sAddSeat}");
                 $rAddSeat = $dbc->execute($pAddSeat);
             }
