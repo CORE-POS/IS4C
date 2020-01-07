@@ -53,6 +53,8 @@ class WFCFixup extends PreParser {
         } elseif ($str == 'FS') {
             $this->remainder = 'WIC';
             return true;
+        } elseif ($str == 'DP2040') {
+            return 'QK4000';
         }
         return False;
     }
