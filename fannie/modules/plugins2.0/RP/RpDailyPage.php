@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\Fannie\API\lib\Operators as Op;
+use COREPOS\Fannie\API\data\DataConvert; 
 
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -11,6 +12,109 @@ class RpDailyPage extends FannieRESTfulPage
 {
     protected $header = 'RP Daily Page';
     protected $title = 'RP Daily Page';
+
+    public function preprocess()
+    {
+        $this->addRoute('get<pdf>');
+
+        return parent::preprocess();
+    }
+
+    protected function css_content()
+    {
+        return <<<CSS
+#primary-content {
+}
+table {
+    page-break-inside: avoid;
+}
+CSS;
+    }
+
+    protected function get_pdf_handler()
+    {
+        $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
+
+        $ts = time();
+        while (date('N', $ts) != 1) {
+            $ts = mktime(0, 0, 0, date('n', $ts), date('j', $ts) - 1, date('Y', $ts));
+        }
+
+        $sales = $this->salesTable($store, $ts);
+        $greens = $this->greensTable($store);
+        $preps = $this->prepsTable($store);
+        $stock = $this->stockFirst($store);
+        $today = date('l, F jS');
+        $model = new StoresModel($this->connection);
+        $model->storeID($store);
+        $model->load();
+
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddPage();
+        $pdf->SetFont('Arial', 'B', 18);
+        $pdf->SetXY(5, 5);
+        $pdf->Cell(200, 15, $today, 0, 0, 'L');
+        $pdf->SetXY(5, 5);
+        $pdf->Cell(200, 15, $model->description(), 0, 0, 'R');
+
+        $sales = DataConvert::htmlToArray($sales);
+        $pdf->SetFont('Arial', '', 9);
+        $pdf->SetXY(5, 20);
+        foreach ($sales as $row) {
+            $pdf->SetX(5);
+            if (count($row) == 4) {
+                $pdf->Cell(30, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
+                $pdf->Cell(30, 7, str_replace('bold', '', $row[1]), 1, 0, 'L');
+                $pdf->Cell(30, 7, str_replace('bold', '', $row[2]), 1, 0, 'L');
+                $pdf->Cell(30, 7, str_replace('bold', '', $row[3]), 1, 1, 'L');
+            } else {
+                $pdf->Cell(60, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
+                $pdf->Cell(60, 7, str_replace('bold', '', $row[1]), 1, 1, 'L');
+            }
+        }
+
+        $pdf->SetXY(5, 85);
+        $pdf->Cell(120, 7, 'On Shift Today / Samples', 1, 1, 'C');
+        for ($i=0; $i<6; $i++) {
+            $pdf->SetX(5);
+            $pdf->Cell(120, 7, '', 1, 1, 'C');
+        }
+
+        $preps = DataConvert::htmlToArray($preps);
+        $pdf->SetXY(5, 140);
+        foreach ($preps as $row) {
+            $pdf->SetX(5);
+            if (!empty($row[0])) {
+                $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
+                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 0, 'L');
+                $pdf->Cell(13, 7, str_replace('bold', '', $row[2]), 1, 1, 'L');
+            }
+        }
+
+        $greens = DataConvert::htmlToArray($greens);
+        $pdf->SetXY(83, 140);
+        foreach ($greens as $row) {
+            $pdf->SetX(83);
+            if (!empty($row[0])) {
+                $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
+                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 0, 'L');
+                $pdf->Cell(13, 7, str_replace('bold', '', $row[2]), 1, 1, 'L');
+            }
+        }
+
+        $stock = DataConvert::htmlToArray($stock);
+        $pdf->SetXY(160, 20);
+        foreach ($stock as $row) {
+            $pdf->SetX(160);
+            if (!empty($row[0])) {
+                $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 1, 'L');
+            }
+        }
+
+        $pdf->Output('Daily.pdf', 'I');
+
+        return false;
+    }
 
     protected function get_view()
     {
@@ -30,11 +134,15 @@ class RpDailyPage extends FannieRESTfulPage
         $stores = FormLib::storePicker('store', false, "window.location='RpDailyPage.php?store='+this.value");
 
         return <<<HTML
+<div style="">
 <div class="row">
     <div class="col-sm-5">
         <h3>{$today}</h3>
     </div>
-    <div class="col-sm-5">
+    <div class="col-sm-2">
+        <a href="RpDailyPage.php?pdf=1&store={$store}" class="btn btn-default">Print</a>
+    </div>
+    <div class="col-sm-3">
         {$stores['html']}
     </div>
 </div>
@@ -66,6 +174,7 @@ class RpDailyPage extends FannieRESTfulPage
     <div class="col-sm-3">
         {$stock}
     </div>
+</div>
 </div>
 HTML;
     }
