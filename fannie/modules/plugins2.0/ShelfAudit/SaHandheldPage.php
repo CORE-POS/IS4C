@@ -273,6 +273,19 @@ document.addEventListener("BarcodeScanned", function (ev) {
     $('#upc_in').val(upc);
     $('#goBtn').click();
 }, false);
+
+var socketm = document.createElement("input");
+socketm.id = 'socketm';
+socketm.type = "hidden";
+Object.defineProperty(socketm, "value", {
+    get: function() { return this._value; },
+    set: function(v) {
+        var upc = v.substring(0,v.length-1);
+        $('#upc_in').val(upc);
+        $('#goBtn').click();
+    }
+});
+document.body.appendChild(socketm);
         <?php } ?>
 
         <?php
