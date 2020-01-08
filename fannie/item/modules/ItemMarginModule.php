@@ -255,14 +255,16 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
         $vendorR = $dbc->execute($vendorP, array($upc));
         if ($vendorR && $dbc->num_rows($vendorR) > 0) {
             $w = $dbc->fetch_row($vendorR);
-            $desired_margin = $w['margin'] * 100;
-            if ($w['specialMargin']) {
-                $desired_margin = 100* $w['specialMargin'];
-                $w['name'] = 'Custom';
+            if ($w['margin'] > 0) {
+                $desired_margin = $w['margin'] * 100;
+                if ($w['specialMargin'] > 0) {
+                    $desired_margin = 100* $w['specialMargin'];
+                    $w['name'] = 'Custom';
+                }
+                $ret .= sprintf('Desired margin for this vendor category (%s) is %.2f%%<br />',
+                        $w['vendorName'] . ':' . $w['name'],
+                        $desired_margin);
             }
-            $ret .= sprintf('Desired margin for this vendor category (%s) is %.2f%%<br />',
-                    $w['vendorName'] . ':' . $w['name'],
-                    $desired_margin);
         }
 
         $shippingP = $dbc->prepare('
