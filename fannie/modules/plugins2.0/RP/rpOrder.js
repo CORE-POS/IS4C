@@ -370,6 +370,7 @@ var rpOrder = (function ($) {
                     newlink += '<a href="../../../purchasing/ViewPurchaseOrders.php?id=' + resp.orderID + '">';
                     newlink += resp.name + '</a></li>';
                     $('#openOrders').append(newlink);
+                    $('#altOpenOrders').append(newlink);
                 }
                 var orderIDs = "";
                 $('#openOrders li').each(function () {
@@ -378,6 +379,7 @@ var rpOrder = (function ($) {
                 if (orderIDs) {
                     var printLink = '<a href="RpPrintOrders.php?id=' + orderIDs + '">Print these</a>';
                     $('#printLink').html(printLink);
+                    $('#altPrintLink').html(printLink);
                 }
             });
         } else {

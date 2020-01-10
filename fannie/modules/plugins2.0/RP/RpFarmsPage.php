@@ -32,8 +32,8 @@ if (!class_exists('RpFarmsModel')) {
 
 class RpFarmsPage extends FannieCRUDPage
 {
-    protected $header = 'RP Farms';
-    protected $title = 'RP Farms';
+    protected $header = 'Farms';
+    protected $title = 'Farms';
 
     /**
       @property $model_name

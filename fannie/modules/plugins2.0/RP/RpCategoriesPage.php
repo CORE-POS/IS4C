@@ -10,8 +10,8 @@ if (!class_exists('RpOrderCategoriesModel')) {
 
 class RpCategoriesPage extends FannieRESTfulPage
 {
-    protected $header = 'RP Categories';
-    protected $title = 'RP Categories';
+    protected $header = 'Produce Ordering Categories';
+    protected $title = 'Produce Ordering Categories';
     protected $must_authenticate = true;
 
     protected function post_id_view()

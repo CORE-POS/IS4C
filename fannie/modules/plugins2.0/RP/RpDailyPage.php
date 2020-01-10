@@ -10,8 +10,8 @@ if (!class_exists('FannieAPI')) {
 
 class RpDailyPage extends FannieRESTfulPage
 {
-    protected $header = 'RP Daily Page';
-    protected $title = 'RP Daily Page';
+    protected $header = 'Daily Page';
+    protected $title = 'Daily Page';
 
     public function preprocess()
     {
@@ -86,8 +86,7 @@ CSS;
             $pdf->SetX(5);
             if (!empty($row[0])) {
                 $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
-                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 0, 'L');
-                $pdf->Cell(13, 7, str_replace('bold', '', $row[2]), 1, 1, 'L');
+                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 1, 'L');
             }
         }
 
@@ -97,8 +96,7 @@ CSS;
             $pdf->SetX(83);
             if (!empty($row[0])) {
                 $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
-                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 0, 'L');
-                $pdf->Cell(13, 7, str_replace('bold', '', $row[2]), 1, 1, 'L');
+                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 1, 'L');
             }
         }
 
@@ -270,9 +268,9 @@ HTML;
         });
 
         $ret = '<table class="table table-bordered table-striped">
-            <tr><th><a href="RpGreensPreps.php">Greens</a></th><th>Cases</th><th>Initial</th></tr>';
+            <tr><th><a href="RpGreensPreps.php">Greens</a></th><th>Cases</th></tr>';
         foreach ($data as $row) {
-            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><td></td><tr>',
+            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><tr>',
                 $row['name'], $row['cases']);
         }
 
@@ -330,9 +328,9 @@ HTML;
         });
 
         $ret = '<table class="table table-bordered table-striped">
-            <tr><th><a href="RpGreensPreps.php">Repack</a></th><th>Cases</th><th>Initial</th></tr>';
+            <tr><th><a href="RpGreensPreps.php">Repack</a></th><th>Cases</th></tr>';
         foreach ($data as $row) {
-            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><td></td><tr>',
+            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><tr>',
                 $row['name'], $row['cases']);
         }
 

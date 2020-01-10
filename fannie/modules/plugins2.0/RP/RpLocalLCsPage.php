@@ -7,8 +7,8 @@ if (!class_exists('FannieAPI')) {
 
 class RpLocalLCsPage extends FannieRESTfulPage
 {
-    protected $header = 'RP Local Like Codes';
-    protected $title = 'RP Local Like Codes';
+    protected $header = 'Local Like Codes';
+    protected $title = 'Local Like Codes';
 
     protected function post_id_view()
     {

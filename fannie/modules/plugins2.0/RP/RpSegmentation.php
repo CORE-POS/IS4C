@@ -7,8 +7,8 @@ if (!class_exists('FannieAPI')) {
 
 class RpSegmentation extends FannieRESTfulPage
 {
-    protected $header = 'RP Segmentation';
-    protected $title = 'RP Segmentation';
+    protected $header = 'Segmentation';
+    protected $title = 'Segmentation';
 
     public function preprocess()
     {

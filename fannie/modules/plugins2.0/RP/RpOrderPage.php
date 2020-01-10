@@ -16,8 +16,8 @@ if (!class_exists('RpSessionsModel')) {
 
 class RpOrderPage extends FannieRESTfulPage
 {
-    protected $header = 'RP Order Guide';
-    protected $title = 'RP Order Guide';
+    protected $header = 'Daily Order Guide';
+    protected $title = 'Daily Order Guide';
     protected $must_authenticate = true;
 
     public function preprocess()
@@ -269,7 +269,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20191118');
+        $this->addScript('rpOrder.js?date=20200108');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -735,6 +735,10 @@ class RpOrderPage extends FannieRESTfulPage
             <span class="sr-only">Searching</span>
         </div>
     </div>
+</p>
+<p>
+    <ul id="altOpenOrders">{$orderLinks}</ul>
+    <span id="altPrintLink">{$printLink}</span>
 </p>
 <hr />
 <p>

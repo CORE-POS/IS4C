@@ -7,8 +7,8 @@ if (!class_exists('FannieAPI')) {
 
 class RpFarmSchedule extends FannieRESTfulPage
 {
-    protected $header = 'RP Direct Schedule';
-    protected $title = 'RP Direct Schedule';
+    protected $header = 'Direct Schedule';
+    protected $title = 'Direct Schedule';
 
     protected function post_id_handler()
     {

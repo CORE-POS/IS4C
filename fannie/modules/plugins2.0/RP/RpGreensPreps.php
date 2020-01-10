@@ -7,8 +7,8 @@ if (!class_exists('FannieAPI')) {
 
 class RpGreensPreps extends FannieRESTfulPage
 {
-    protected $header = 'RP Greens & Preps';
-    protected $title = 'RP Greens & Preps';
+    protected $header = 'Greens & Preps';
+    protected $title = 'Greens & Preps';
 
     protected function post_handler()
     {

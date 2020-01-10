@@ -10,8 +10,8 @@ if (!class_exists('RpFixedMapsModel')) {
 
 class RpFixedMaps extends FannieRESTfulPage
 {
-    protected $header = 'RP Fixed Mappings';
-    protected $title = 'RP Fixed Mappings';
+    protected $header = 'Fixed Mappings';
+    protected $title = 'Fixed Mappings';
 
     protected function get_id_handler()
     {

@@ -19,8 +19,8 @@ if (!class_exists('RpFarmsModel')) {
 
 class RpDirectPage extends FannieRESTfulPage
 {
-    protected $header = 'RP Direct Guide';
-    protected $title = 'RP Direct Guide';
+    protected $header = 'Daily Direct Guide';
+    protected $title = 'Daily Direct Guide';
     protected $must_authenticate = true;
 
     public function preprocess()
