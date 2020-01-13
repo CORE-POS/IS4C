@@ -85,6 +85,8 @@ class RpPrintOrders extends FannieRESTfulPage
             <tr><th>Vendor</th><th>Status</th><th>Description</th><th>CS</th><th>Incoming</th></tr>';
         $orgP = $this->connection->prepare("SELECT organic FROM likeCodes WHERE likeCode=?");
         $costTotal = 0;
+        $mapP = $this->connection->prepare("SELECT description FROM RpFixedMaps AS r INNER JOIN vendorItems AS v
+            ON r.sku=v.sku AND r.vendorID=v.vendorID WHERE r.likeCode=?");
         while ($row = $this->connection->fetchRow($res)) {
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $suffix = '';
@@ -100,6 +102,10 @@ class RpPrintOrders extends FannieRESTfulPage
                     $row['receivedDate'], $row['upc'], $row['orderID']);
             }
             $organic = $this->connection->getValue($orgP, array(str_replace('LC', '', $row['upc'])));
+            $map = $this->connection->getValue($mapP, array(str_replace('LC', '', $row['upc'])));
+            if ($map) {
+                $row['vendorItem'] = $map;
+            }
             $ret .= sprintf('<tr class="%s">
                 <td class="vendor">%s</td><td>%s</td><td>$%.2f (%s) %s %s</td><td>%s%s</td>
                 <td class="incoming">%s</td></tr>',
