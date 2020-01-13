@@ -69,6 +69,15 @@ var rpOrder = (function ($) {
         });
     };
 
+    function save() {
+        $.ajax({
+            type: 'get',
+            data: 'json=' + encodeURIComponent(JSON.stringify(state))
+        }).always(function() {
+            // no repeat
+        });
+    }
+
     function saveLoop() {
         $.ajax({
             type: 'get',
@@ -158,10 +167,12 @@ var rpOrder = (function ($) {
         var onHand = state['onHand'];
         onHand[elem.id] = elem.value;
         state['onHand'] = onHand;
+        save();
     };
 
     mod.updateOrder = function(elem) {
         state['orderAmt'][elem.id] = elem.value;
+        save();
     };
 
     mod.updateDays = function() {
@@ -411,13 +422,11 @@ var rpOrder = (function ($) {
         buttons.prop('disabled', false);
     };
 
-    mod.vendorFilter = function(vendorID) {
-        if (!vendorID) {
-            $('tr.item-row').show();
-        } else {
-            $('tr.item-row').hide();
-            $('tr.vendor-' + vendorID).show();
-        }
+    mod.vendorFilter = function() {
+        $('tr.item-row').hide();
+        $('input.vFilter:checked').each(function () {
+            $('tr.vendor-' + $(this).val()).show();
+        });
     };
 
     return mod;

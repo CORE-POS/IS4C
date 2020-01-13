@@ -269,7 +269,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200108');
+        $this->addScript('rpOrder.js?date=20200113');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -707,15 +707,15 @@ class RpOrderPage extends FannieRESTfulPage
     <a href="RpDirectPage.php" class="btn btn-default">Switch to Direct</a>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <div class="form-inline">
-    <div class="input-group">
-        <span class="input-group-addon">Filter</span>
-        <select class="form-control" onchange="rpOrder.vendorFilter(this.value);">
-            <option value="">Select one...</option>
-            <option value="292">Alberts</option>
-            <option value="293">CPW</option>
-            <option value="136">RDW</option>
-        </select>
-    </div>
+        <strong>Filter</strong>
+        &nbsp;&nbsp;&nbsp;
+        <label><input class="vFilter" type="checkbox" checked value="292" onchange="rpOrder.vendorFilter();" /> Alberts</label>
+        &nbsp;&nbsp;&nbsp;
+        <label><input class="vFilter" type="checkbox" checked value="293" onchange="rpOrder.vendorFilter();" /> CPW</label>
+        &nbsp;&nbsp;&nbsp;
+        <label><input class="vFilter" type="checkbox" checked value="136" onchange="rpOrder.vendorFilter();" /> RDW</label>
+        &nbsp;&nbsp;&nbsp;
+        <label><input class="vFilter" type="checkbox" checked value="-2" onchange="rpOrder.vendorFilter();" /> Direct</label>
     </div>
     <div class="progress collapse">
         <div class="progress-bar progress-bar-striped active"  role="progressbar" 
