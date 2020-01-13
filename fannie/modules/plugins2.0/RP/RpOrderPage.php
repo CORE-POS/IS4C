@@ -326,7 +326,7 @@ class RpOrderPage extends FannieRESTfulPage
                 INNER JOIN products AS p ON p.upc=u.upc
             WHERE u.likeCode=?");
         $costP = $this->connection->prepare("SELECT cost, units FROM vendorItems WHERE vendorID=? and sku=?");
-        $mapR = $this->connection->query("SELECT * FROM RpFixedMaps");
+        $mapR = $this->connection->query("SELECT * FROM RpFixedMaps AS r LEFT JOIN vendorItems AS v ON r.sku=v.sku AND r.vendorID=v.vendorID");
         $mappings = array();
         while ($mapW = $this->connection->fetchRow($mapR)) {
             $mappings[$mapW['likeCode']] = $mapW;
@@ -412,6 +412,9 @@ class RpOrderPage extends FannieRESTfulPage
             if ($mapped) {
                 $row['vendorSKU'] = $mapped['sku'];
                 $row['lookupID'] = $mapped['vendorID'];
+                if ($mapped['description']) {
+                    $row['vendorItem'] = $mapped['description'];
+                }
             }
             $lcRow = isset($lcInfo[$lc]) ? $lcInfo[$lc] : array('likeCodeDesc'=>'', 'organic'=>false);
             $lcName = $lcRow['likeCodeDesc'];
