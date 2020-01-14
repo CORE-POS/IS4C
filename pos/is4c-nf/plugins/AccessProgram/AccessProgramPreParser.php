@@ -14,7 +14,7 @@ class AccessProgramPreParser extends PreParser
     {
         $item = PrehLib::peekItem(true, $this->session->get('currentid'));
         if ($item['upc'] == '0000000010730') {
-            return 'VD' . $item['upc'];
+            return 'VD10730';
         }
 
         return $str;

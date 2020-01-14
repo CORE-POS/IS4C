@@ -35,7 +35,7 @@ class AccessProgramParser extends Parser {
     {
         if (substr($str, 0, 6) == 'ACCESS') {
             return true;
-        } elseif ($str == 'VD0000000010730') {
+        } elseif ($str == 'VD10730') {
             return true;
         }
 
@@ -45,13 +45,13 @@ class AccessProgramParser extends Parser {
     public function parse($str)
     {
         $ret = $this->default_json();
-        if ($str == 'VD0000000010730') {
+        if ($str == 'VD10730') {
             return $this->voidBags($str);
         }
 
         if (CoreLocal::get('memberID') == '0') {
             $ret['output'] = DisplayLib::boxMsg(
-                _("Apply member number first" . $str),
+                _("Apply member number first"),
                 _('No member selected'),
                 false,
                 array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
