@@ -156,7 +156,7 @@ class PaycardFixSale extends FannieRESTfulPage
         if ($ptrans['processor'] == 'RapidConnect') {
             $hostOrIP = $credentials['hosts']['RapidConnect' . $storeID][0];
             $storeID = "RapidConnect" . $storeID;
-            $terminalID = '<TerminalID>{{TerminalID}}</TerminalID>';
+            $terminalID = '<TerminalID>' . $credentials[$storeID][1] . '</TerminalID>';
         }
 
         $reqXML = <<<XML
