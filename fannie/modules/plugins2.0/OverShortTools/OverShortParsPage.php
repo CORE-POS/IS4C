@@ -22,6 +22,7 @@ class OverShortParsPage extends FannieRESTfulPage
         $stores->hasOwnItems(1);
         $stores = $stores->find();
         $pars = array();
+        $ret = '';
         foreach (array("0.01", "0.05", "0.10", "0.25", "1.00", "5.00", "10.00") as $denom) {
             $ret .= '<tr><td>' . $denom . '</td>';
             foreach ($stores as $s) {
