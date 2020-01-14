@@ -72,14 +72,16 @@ class RpPrintOrders extends FannieRESTfulPage
                 i.brand,
                 i.orderID,
                 i.receivedDate,
-                r.upc
+                r.upc,
+                i.internalUPC,
+                c.seq
             FROM PurchaseOrder AS o
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
-                LEFT JOIN RpOrderItems AS r ON i.internalUPC=r.upc AND o.storeID=r.storeID
+                LEFT JOIN RpOrderItems AS r ON i.internalUPC=LEFT(r.upc, 13) AND o.storeID=r.storeID
                 lEFT JOIN RpOrderCategories AS c ON r.categoryID=c.rpOrderCategoryID
                 LEFT JOIN vendors AS n ON o.vendorID=n.vendorID
             WHERE o.orderID IN ({$inStr})
-            ORDER BY n.vendorName, i.brand, c.seq");
+            ORDER BY n.vendorName, CASE WHEN o.vendorID=-2 THEN i.brand ELSE '' END, c.seq");
         $res = $this->connection->execute($prep, $args);
         $ret = '<table class="table table-bordered">
             <tr><th>Vendor</th><th>Status</th><th>Description</th><th>CS</th><th>Incoming</th></tr>';
