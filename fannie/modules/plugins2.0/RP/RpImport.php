@@ -452,9 +452,9 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                             if (!in_array($lc, $dupes)) {
                                 $dupes[] = $lc;
                             }
-                            $lcPlus = $lc . '-' . uniqid();
+                            $lcPlus = substr($lc . '-' . strrev(uniqid()), 0, 13);
                             while (isset($otherData[$lcPlus])) {
-                                $lcPlus = $lc . '-' . uniqid();
+                                $lcPlus = substr($lc . '-' . strrev(uniqid()), 0, 13);
                             }
                             $lc = $lcPlus;
                             $otherData[$lc] = array();
