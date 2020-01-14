@@ -480,7 +480,7 @@ class RpOrderPage extends FannieRESTfulPage
                 <td class="%s">%s</td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td class="caseSize">%s</td>
-                <td><input %s class="form-control input-sm onHand" value="0" 
+                <td><input %s class="form-control input-sm onHand" value="" 
                     style="width: 5em;" id="onHand%s" data-incoming="0"
                     onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
                     onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
@@ -709,6 +709,9 @@ class RpOrderPage extends FannieRESTfulPage
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <a href="RpDirectPage.php" class="btn btn-default">Switch to Direct</a>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="" class="btn btn-success" onclick="rpOrder.save(); return false;">Save</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="last-save">n/a</span>
     <div class="form-inline">
         <strong>Filter</strong>
         &nbsp;&nbsp;&nbsp;
@@ -732,6 +735,10 @@ class RpOrderPage extends FannieRESTfulPage
     <button class="btn btn-default orderAll" onclick="rpOrder.orderAll();">Order All</button>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <a href="RpDirectPage.php" class="btn btn-default">Switch to Direct</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="" class="btn btn-success" onclick="rpOrder.save(); return false;">Save</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="last-save">n/a</span>
     <div class="progress collapse">
         <div class="progress-bar progress-bar-striped active"  role="progressbar" 
             aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">

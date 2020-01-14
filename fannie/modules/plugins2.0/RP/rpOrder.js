@@ -69,12 +69,13 @@ var rpOrder = (function ($) {
         });
     };
 
-    function save() {
+    mod.save = function() {
         $.ajax({
             type: 'get',
             data: 'json=' + encodeURIComponent(JSON.stringify(state))
-        }).always(function() {
-            // no repeat
+        }).done(function() {
+            var now = new Date();
+            $('.last-save').html(now.toLocaleTimeString());
         });
     }
 
@@ -160,19 +161,31 @@ var rpOrder = (function ($) {
                 document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
             }
         }
-        saveLoop();
+        //saveLoop();
     };
 
     mod.updateOnHand = function(elem) {
         var onHand = state['onHand'];
         onHand[elem.id] = elem.value;
         state['onHand'] = onHand;
-        save();
+        mod.save();
     };
 
     mod.updateOrder = function(elem) {
         state['orderAmt'][elem.id] = elem.value;
-        save();
+        mod.save();
+        var inOrder = $(elem).closest('tr').find('input:checked');
+        if (inOrder.length > 0) {
+            var ids = inOrder.first().val();
+            console.log(ids);
+            $.ajax({
+                'type': 'post',
+                'data': 'id=' + ids + '&qty=' + elem.value,
+                'dataType': 'json'
+            }).done(function (resp) {
+                // order is updated!
+            });
+        }
     };
 
     mod.updateDays = function() {
@@ -229,6 +242,7 @@ var rpOrder = (function ($) {
         if (minDate !== false && maxDate !== false) {
             getIncoming(minDate, maxDate);
         }
+        mod.save();
     };
 
     mod.reCalcRow = function(elem) {
@@ -253,7 +267,9 @@ var rpOrder = (function ($) {
             cases += 1;
             start -= caseSize;
         }
-        $(elem).find('input.orderAmt').val(cases);
+        if ($(elem).find('input.orderAmt').val() <= 0) {
+            $(elem).find('input.orderAmt').val(cases);
+        }
     };
 
     mod.inc = function(btn, amt) {
