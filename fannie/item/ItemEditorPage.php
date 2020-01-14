@@ -215,7 +215,7 @@ class ItemEditorPage extends FanniePage
         <label>Filter</label>:
         <select class="form-control input-sm" name="superFilter"
             onchange="if (this.value == '') { EXTRA_AUTO_COMPLETE_PARAMS = {}; } else { EXTRA_AUTO_COMPLETE_PARAMS = { superID: this.value }; }">
-            <option value="">Select one...</option>
+            <option value="">No Filter</option>
             {$sOpts}
         </select>
     </p>
