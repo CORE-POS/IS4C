@@ -269,7 +269,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200114');
+        $this->addScript('rpOrder.js?date=20200114.1');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -459,7 +459,7 @@ class RpOrderPage extends FannieRESTfulPage
                 }
             }
              */
-            $inOrder = $this->connection->getRow($inOrderP, array_merge($ioArgs, array($upc)));
+            $inOrder = $this->connection->getRow($inOrderP, array_merge($ioArgs, array(substr($upc, 0, 13))));
             if ($inOrder) {
                 $orderAmt = $inOrder['quantity'];
             }
@@ -494,7 +494,7 @@ class RpOrderPage extends FannieRESTfulPage
                     <button class="btn btn-success btn-sm" onclick="rpOrder.inc(this, 1);">+</button>
                     <button class="btn btn-danger btn-sm" onclick="rpOrder.inc(this, -1);">-</button>
                     <label><input type="checkbox" class="orderPri" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Pri</label>
-                    <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s %s /> Sec</label>
+                    <label><input type="checkbox" class="orderSec" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s %s /> Sec</label>
                 </td>
                 </tr>',
                 $row['vendorID'],

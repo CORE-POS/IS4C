@@ -428,7 +428,8 @@ var rpOrder = (function ($) {
 
         $('input.orderPri').each(function () {
             var qty = $(this).closest('tr').find('input.orderAmt').val();
-            if (qty > 0 && !$(this).prop('checked')) {
+            var secondary = $(this).closest('tr').find('input.orderSec');
+            if (qty > 0 && !$(this).prop('checked') && !secondary.prop('checked')) {
                 $(this).prop('checked', true);
                 mod.placeOrder(this);
             }
