@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 }
 
-class VolumePricingModule extends \COREPOS\Fannie\API\item\ItemModule 
+class VolumePricingModule extends \COREPOS\Fannie\API\item\ItemModule
 {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
@@ -45,7 +45,7 @@ class VolumePricingModule extends \COREPOS\Fannie\API\item\ItemModule
         $model->upc($upc);
         $model->load();
 
-        $methods = array(0=>'Disabled',2=>'Use this price for full sets',1=>'Always use this price');
+        $methods = array(0=>'Disabled',2=>'Use this price for full sets',1=>'Always use this price',6=>'More than Qty  (price is disc %, needs Mix/Match code)');
 
         $ret .= "<table class=\"table table-bordered\"><tr>";
         $ret .= '<tr><th>Enabled</td>
@@ -94,8 +94,7 @@ class VolumePricingModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($r1 === false) {
             return false;
         } else {
-            return true;    
+            return true;
         }
     }
 }
-
