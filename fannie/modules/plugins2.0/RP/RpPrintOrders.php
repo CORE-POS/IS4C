@@ -89,6 +89,7 @@ class RpPrintOrders extends FannieRESTfulPage
         $costTotal = 0;
         $mapP = $this->connection->prepare("SELECT description FROM RpFixedMaps AS r INNER JOIN vendorItems AS v
             ON r.sku=v.sku AND r.vendorID=v.vendorID WHERE r.likeCode=?");
+        $lcP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
         while ($row = $this->connection->fetchRow($res)) {
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $suffix = '';
@@ -103,17 +104,23 @@ class RpPrintOrders extends FannieRESTfulPage
                             value="%s" style="font-size: 85%%;" data-upc="%s" data-order-id="%d" />',
                     $row['receivedDate'], $row['upc'], $row['orderID']);
             }
+            $likecode = str_replace('LC', '', $row['upc']);
+            if (strstr($likecode, '-')) {
+                list($likecode, $rest) = explode('-', $likecode, 2);
+            }
             $organic = $this->connection->getValue($orgP, array(str_replace('LC', '', $row['upc'])));
             $map = $this->connection->getValue($mapP, array(str_replace('LC', '', $row['upc'])));
+            $lcName = $this->connection->getValue($lcP, array($likecode));
             if ($map) {
                 $row['vendorItem'] = $map;
             }
             $ret .= sprintf('<tr class="%s">
-                <td class="vendor">%s</td><td>%s</td><td>$%.2f (%s) %s %s</td><td>%s%s</td>
+                <td class="vendor">%s</td><td>%s</td><td>%s $%.2f (%s) %s %s</td><td>%s%s</td>
                 <td class="incoming">%s</td></tr>',
                 $this->vendorColor($row['vendorName']),
                 $row['vendorName'],
                 ($organic ? 'org' : 'non-o'),
+                $lcName,
                 $row['unitCost'] * $row['caseSize'],
                 $row['sku'],
                 $row['vendorItem'] ? $row['vendorItem'] : $row['description'],
