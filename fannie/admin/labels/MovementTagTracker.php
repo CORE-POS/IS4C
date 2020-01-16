@@ -43,8 +43,24 @@ class MovementTagTracker extends FannieRESTfulPage
         $this->__routes[] = "get<exclusionName>";
         $this->__routes[] = "post<upcs>";
         $this->__routes[] = "get<data>";
+        $this->__routes[] = "get<expired>";
 
         return parent::preprocess();
+    }
+
+    public function get_expired_view()
+    {
+        $li = "<ul>";
+        $li .= "<li><a href=\"MovementTagTracker.php?data=view\">Data</a></li>";
+        $li .= "<li><a href='?id=config'>Settings</a></li>";
+        $li .= "<li><a href='ShelfTagIndex.php'>Shelftags Index</a></li>";
+        $li .= "<li><a href='MovementTagTracker.php'>Tracker</a></li>";
+        $li .= "</ul>";
+
+        return <<<HTML
+$li
+{$this->draw_expired_table()}
+HTML;
     }
 
     public function get_data_view()
@@ -329,7 +345,7 @@ HTML;
         $li = "<ul>";
         $tables = array();
         $tables[] = $this->draw_table($this->stores[$storeID], $storeID);
-        $li .= "<div><a href='#expired-heading'>Expired Tags</a></div>";
+        $li .= "<li><a href='?expired=1'>Expired Tags</a></li>";
         $li .= "<li><a href='ShelfTagIndex.php'>Shelftags Index</a></li>";
         $li .= "<li><a href='?id=config'>Settings</a></li>";
         $li .= "<li><a href=\"MovementTagTracker.php?data=view\">Data</a></div></li>";
@@ -337,7 +353,6 @@ HTML;
         foreach ($tables as $table) {
             $ret .= $table;
         }
-        $ret .= $this->draw_expired_table();
         $status = FormLib::get('status');
         $alert = '';
         if ($status == 'success') {
