@@ -148,7 +148,7 @@ class ProductMovementModular extends FannieReportPage
 
         $query = $this->defaultQuery($dlog, $store, $between);
         $args = array($upc, $dates[0], $dates[1], $store);
-        if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
+        if (strtolower(trim($upc)) == "rrr" || $upc == "0000000000052"){
             $query = $this->wfcRrrQuery($dlog, $store);
         } elseif (!is_numeric($upc)) {
             $this->nonNumericQuery($dlog, $store);
