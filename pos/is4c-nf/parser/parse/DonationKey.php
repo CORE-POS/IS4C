@@ -24,6 +24,8 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DeptLib;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\parser\Parser;
 
 class DonationKey extends Parser 
@@ -52,6 +54,9 @@ class DonationKey extends Parser
             $next = ceil($ttl);
             $amt = sprintf('%.2f',(($ttl == $next) ? 1.00 : ($next - $ttl)));
             $ret = $lib->deptkey($amt*100, $dept.'0', $ret);
+            PrehLib::ttl();
+            $ret['output'] = DisplayLib::lastpage();
+            $ret['redraw_footer'] = True;
         } else {
             $amt = substr($str,0,strlen($str)-2);
             $ret = $lib->deptkey($amt, $dept.'0', $ret);
