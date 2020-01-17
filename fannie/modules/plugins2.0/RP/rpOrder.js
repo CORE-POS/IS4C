@@ -144,7 +144,9 @@ var rpOrder = (function ($) {
             var oIDs = Object.keys(state['orderAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                if (state['orderAmount'][elemID] !== '') {
+                    document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                }
             }
 
             var hIDs = Object.keys(state['onHand']);
@@ -158,7 +160,9 @@ var rpOrder = (function ($) {
             var oIDs = Object.keys(state['orderAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                if (state['orderAmount'][elemID] !== '') {
+                    document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                }
             }
         }
         //saveLoop();
@@ -177,7 +181,6 @@ var rpOrder = (function ($) {
         var inOrder = $(elem).closest('tr').find('input:checked');
         if (inOrder.length > 0) {
             var ids = inOrder.first().val();
-            console.log(ids);
             $.ajax({
                 'type': 'post',
                 'data': 'id=' + ids + '&qty=' + elem.value,

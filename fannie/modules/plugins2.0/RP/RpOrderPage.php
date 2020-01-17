@@ -269,7 +269,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200114.1');
+        $this->addScript('rpOrder.js?date=20200117');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -447,7 +447,7 @@ class RpOrderPage extends FannieRESTfulPage
                 $row['upc'] = sprintf('<a href="../../../item/likecodes/LikeCodeEditor.php?start=%d">%s</a>',
                     substr($row['upc'], 2), $row['upc']);
             }
-            $orderAmt = 0;
+            $orderAmt = '';
             /* don't do naive, pre-inventory suggested amounts
             $start = $par;
             while ($start > (0.25 * $row['caseSize'])) {
@@ -490,7 +490,7 @@ class RpOrderPage extends FannieRESTfulPage
                 <td class="form-inline %s">
                     <input %s style="width: 5em;"class="form-control input-sm orderAmt"
                         id="orderAmt%s" onkeyup="rpOrder.orderKey(event); rpOrder.updateOrder(this);"
-                        onfocus="this.select();" value="%d" />
+                        onfocus="this.select();" value="%s" />
                     <button class="btn btn-success btn-sm" onclick="rpOrder.inc(this, 1);">+</button>
                     <button class="btn btn-danger btn-sm" onclick="rpOrder.inc(this, -1);">-</button>
                     <label><input type="checkbox" class="orderPri" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Pri</label>
