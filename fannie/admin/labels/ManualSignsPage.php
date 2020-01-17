@@ -101,7 +101,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $args = array($this->queueID, $this->config->get('STORE_ID'));
         $res = $this->connection->execute($prep, $args);
         $prevUPC = false;
-        $lcP = $this->connection->prepare("SELECT origin, signOrigin FROM likeCodes AS l
+        $lcP = $this->connection->prepare("SELECT origin, signOrigin, organic FROM likeCodes AS l
             INNER JOIN upcLike AS u ON l.likeCode=u.likeCode
             WHERE u.upc=?");
         while ($row = $this->connection->fetchRow($res)) {
@@ -112,6 +112,7 @@ class ManualSignsPage extends FannieRESTfulPage
                     if ($row['normal_price'] > $row['price']) {
                         $row['origin'] .= '/' . $row['normal_price'];
                     }
+                    $row['brand'] = $lcRow['organic'] ? 'ORGANIC' : '';
                 } else {
                     // preserve normal behavior
                     $row['price'] = $row['normal_price'];
