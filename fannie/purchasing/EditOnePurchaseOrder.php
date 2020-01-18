@@ -304,7 +304,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $vendorID = $order->vendorID();
 
         $q = 'SELECT vendorName, 
-            sum(case when i.orderID is null then 0 else 1 END) as rows, 
+            sum(case when i.orderID is null then 0 else 1 END) as \'rows\', 
             MAX(creationDate) as date,
             sum(unitCost*caseSize*quantity) as estimatedCost
             FROM PurchaseOrder as p 
