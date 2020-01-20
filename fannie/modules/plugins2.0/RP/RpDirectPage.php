@@ -588,6 +588,7 @@ class RpDirectPage extends FannieRESTfulPage
             $days = json_decode($week['segmentation'], true);
             $days = array_map(function ($i) { return sprintf('%.2f%%', $i*100); }, $days);
             $thisYear = json_decode($week['thisYear'], true);
+            $thisYear = is_array($thisYear) ? $thisYear : array();
             $lastYear = json_decode($week['lastYear'], true);
             $sums = array('this' => 0, 'last' => 0, 'proj' => 0);
             $dataPoints = 0;
