@@ -69,6 +69,16 @@ var rpOrder = (function ($) {
         });
     };
 
+    mod.save = function() {
+        $.ajax({
+            type: 'get',
+            data: 'json=' + encodeURIComponent(JSON.stringify(state))
+        }).done(function() {
+            var now = new Date();
+            $('.last-save').html(now.toLocaleTimeString());
+        });
+    }
+
     function saveLoop() {
         $.ajax({
             type: 'get',
@@ -134,7 +144,9 @@ var rpOrder = (function ($) {
             var oIDs = Object.keys(state['directAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
+                if (state['directAmt'][elemID] !== '') {
+                    document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
+                }
             }
 
             var hIDs = Object.keys(state['onHand']);
@@ -148,20 +160,35 @@ var rpOrder = (function ($) {
             var oIDs = Object.keys(state['directAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
+                if (state['directAmt'][elemID] !== '') {
+                    document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
+                }
             }
         }
-        saveLoop();
+        //saveLoop();
     };
 
     mod.updateOnHand = function(elem) {
         var onHand = state['onHand'];
         onHand[elem.id] = elem.value;
         state['onHand'] = onHand;
+        mod.save();
     };
 
     mod.updateOrder = function(elem) {
         state['directAmt'][elem.id] = elem.value;
+        mod.save();
+        var inOrder = $(elem).closest('tr').find('input:checked');
+        if (inOrder.length > 0) {
+            var ids = inOrder.first().val();
+            $.ajax({
+                'type': 'post',
+                'data': 'id=' + ids + '&qty=' + elem.value,
+                'dataType': 'json'
+            }).done(function (resp) {
+                // order is updated!
+            });
+        }
     };
 
     mod.updateDays = function() {
@@ -218,10 +245,12 @@ var rpOrder = (function ($) {
         if (minDate !== false && maxDate !== false) {
             getIncoming(minDate, maxDate);
         }
+        mod.save();
     };
 
     mod.reCalcRow = function(elem) {
         var caseSize = $(elem).find('td.caseSize').html();
+        var realSize = $(elem).find('td.realSize').html();
         var adj = $(elem).find('td.parCell').html();
         var onHand = $(elem).find('input.onHand').val();
         if (onHand <= 0) {
@@ -236,13 +265,13 @@ var rpOrder = (function ($) {
             onHand += incoming;
         }
 
-        var start = (adj * 1 * caseSize) - (onHand * 1 * caseSize);
+        var start = (adj * 1 * caseSize) - (onHand * 1 * realSize);
         var cases = 0;
         while (start > (0.25 * caseSize)) {
             cases += 1;
-            start -= caseSize;
+            start -= realSize;
         }
-        $(elem).find('input.orderAmt').val(cases);
+        $(elem).find('input.orderAmt').val(cases * realSize);
     };
 
     mod.inc = function(btn, amt) {
@@ -377,6 +406,7 @@ var rpOrder = (function ($) {
                     newlink += '<a href="../../../purchasing/ViewPurchaseOrders.php?id=' + resp.orderID + '">';
                     newlink += resp.name + '</a></li>';
                     $('#openOrders').append(newlink);
+                    $('#altOpenOrders').append(newlink);
                 }
                 var orderIDs = "";
                 $('#openOrders li').each(function () {
@@ -385,6 +415,7 @@ var rpOrder = (function ($) {
                 if (orderIDs) {
                     var printLink = '<a href="RpPrintOrders.php?id=' + orderIDs + '">Print these</a>';
                     $('#printLink').html(printLink);
+                    $('#altPrintLink').html(printLink);
                 }
             });
         } else {

@@ -269,7 +269,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20191118');
+        $this->addScript('rpDirect.js?date=20200120');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -431,6 +431,7 @@ class RpDirectPage extends FannieRESTfulPage
                 $par = 0.1 * $row['caseSize'];
             }
             // reset case size *after* setting min par at 0.1 standard cases
+            $row['realSize'] = $row['caseSize'];
             $row['caseSize'] = 1;
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
@@ -459,7 +460,7 @@ class RpDirectPage extends FannieRESTfulPage
                 $row['upc'] = sprintf('<a href="../../../item/likecodes/LikeCodeEditor.php?start=%d">%s</a>',
                     substr($row['upc'], 2), $row['upc']);
             }
-            $orderAmt = 0;
+            $orderAmt = '';
             /** no auto-fill on direct
             $start = $par;
             while ($start > (0.25 * $row['caseSize'])) {
@@ -506,7 +507,8 @@ class RpDirectPage extends FannieRESTfulPage
                 <td class="%s"><select class="secondaryFarm form-control input-sm">%s</option></td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td style="display:none;" class="caseSize">%s</td>
-                <td><input %s class="form-control input-sm onHand" value="0" 
+                <td style="display:none;" class="realSize">%s</td>
+                <td><input %s class="form-control input-sm onHand" value="" 
                     style="width: 5em;" id="onHand%s" data-incoming="0"
                     onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
                     onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
@@ -516,7 +518,7 @@ class RpDirectPage extends FannieRESTfulPage
                 <td class="form-inline %s">
                     <input %s style="width: 5em;"class="form-control input-sm orderAmt"
                         id="orderAmt%s" onkeyup="rpOrder.orderKey(event); rpOrder.updateOrder(this);"
-                        onfocus="this.select();" value="%d" />
+                        onfocus="this.select();" value="%s" />
                     <button class="btn btn-success btn-sm" onclick="rpOrder.inc(this, 1);">+</button>
                     <button class="btn btn-danger btn-sm" onclick="rpOrder.inc(this, -1);">-</button>
                     <label><input type="checkbox" class="orderPri" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Pri</label>
@@ -537,6 +539,7 @@ class RpDirectPage extends FannieRESTfulPage
                 $row['vendorItem'],
                 $startIcon, $endIcon,
                 $row['caseSize'],
+                $row['realSize'],
                 $fieldType,
                 $upc,
                 $price,
@@ -779,6 +782,13 @@ class RpDirectPage extends FannieRESTfulPage
         </div>
     </div>
     <br />
+</p>
+<p>
+    <ul id="altOpenOrders">{$orderLinks}</ul>
+    <span id="altPrintLink">{$printLink}</span>
+</p>
+<hr />
+<p>
     <a href="RpDirectPage.php?clear=1" class="btn btn-default">Clear Session Data</a>
 </p>
 HTML;
