@@ -60,6 +60,7 @@ class CwLoadDataPage extends FanniePage {
             if ($file[0] == '.') continue;
             if (substr($file,-9) != 'Model.php') continue;
             if ($file == 'CoreWarehouseModel.php') continue;
+            if ($file == 'IsMemCouponModel.php') continue;
             $ret[] = substr($file,0,strlen($file)-4);
         }
         rsort($ret);
