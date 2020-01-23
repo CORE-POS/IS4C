@@ -260,9 +260,11 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     sprintf('%.2f', $fran),
                 );
                 if ($note !== false) {
+                    /*
                     if (strstr($note, '<br />')) {
                         list($note,) = explode('<br />', $note, 2);
                     }
+*/
                     $record[] = $note;
                 } else {
                     $record[] = '?';
@@ -280,16 +282,19 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 'meta_background'=>'#ccc','meta_foreground'=>'#000');
 
             $franP = $dbc->prepare('
-                SELECT cardno
+                SELECT n.cardno
                 FROM memberNotes AS n
                     LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
                     LEFT JOIN memDates AS d ON n.cardno=d.card_no
+                    LEFT JOIN custdata AS c ON n.cardno=c.CardNo AND c.personNum=1
                 WHERE note LIKE \'%FUNDS REQ%\'
                     AND n.stamp >= ?
                     AND d.start_date < ?
                     AND e.payments <= 100
-                GROUP BY cardno
-                ORDER BY cardno');
+                    AND c.Type <> \'TERM\'
+                    AND c.Type <> \'INACT2\'
+                GROUP BY n.cardno
+                ORDER BY n.cardno');
             $detailP = $dbc->prepare('
                 SELECT c.CardNo,
                     c.FirstName,
