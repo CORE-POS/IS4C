@@ -121,6 +121,7 @@ var rpOrder = (function ($) {
     };
 
     mod.initState = function(s) {
+        console.log(s);
         if (s) {
             state = s;
             if (state['onHand'].__proto__ == Array.prototype) {
@@ -144,7 +145,7 @@ var rpOrder = (function ($) {
             var oIDs = Object.keys(state['orderAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                if (state['orderAmount'][elemID] !== '') {
+                if (state['orderAmt'][elemID] !== '') {
                     document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
                 }
             }
@@ -160,7 +161,7 @@ var rpOrder = (function ($) {
             var oIDs = Object.keys(state['orderAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                if (state['orderAmount'][elemID] !== '') {
+                if (state['orderAmt'][elemID] !== '') {
                     document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
                 }
             }
