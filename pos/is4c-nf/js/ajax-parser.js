@@ -58,7 +58,7 @@ function parserHandler(data)
 			dataType: 'json',
 			cache: false
 		}).done(function(data) {
-            if (data.error) {
+            if (data && data.error) {
                 var icon = $('#receipticon').attr('src');
                 var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
                 $('#receipticon').attr('src', newicon);
