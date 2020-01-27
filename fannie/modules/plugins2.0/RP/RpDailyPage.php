@@ -180,6 +180,9 @@ HTML;
     private function salesTable($store, $ts)
     {
         $segP = $this->connection->prepare("SELECT * FROM RpSegments WHERE storeID=? AND startDate=?");
+        if (date('N') == 1) {
+            $ts = mktime(0, 0, 0, date('n', $ts), date('j',$ts) - 7, date('Y',$ts));
+        }
         $seg = $this->connection->getRow($segP, array($store, date('Y-m-d', $ts)));
         $ret = '<table class="table table-bordered table-striped">
             <tr><th>Day</th><th>Goal</th><th>Actual</th><th>Growth</th></tr>';
