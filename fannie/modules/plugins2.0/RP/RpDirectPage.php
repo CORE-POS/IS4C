@@ -25,7 +25,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>');
+        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>', 'get<clear>');
         $this->userID = FannieAuth::getUID($this->current_user);
 
         return parent::preprocess();
@@ -58,7 +58,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_clear_handler()
     {
-        unset($_SESSION['rpState']);
+        $_SESSION['rpState'] = 'false';
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
         $model->delete();
@@ -73,7 +73,6 @@ class RpDirectPage extends FannieRESTfulPage
         $model->userID($this->userID);
         $model->data($this->json);
         $model->save();
-        var_dump($_SESSION['rpState']);
         echo 'OK';
 
         return false;
@@ -286,6 +285,7 @@ class RpDirectPage extends FannieRESTfulPage
                 $_SESSION['rpState'] = json_decode($sModel->data(), true);
             }
         }
+        var_dump($jsState);
         $this->addOnloadCommand("rpOrder.initState({$jsState});");
 
         $fieldType = $this->isMobile() ? 'type="number" min="0" max="99999" step="0.01"' : 'type="text"';
