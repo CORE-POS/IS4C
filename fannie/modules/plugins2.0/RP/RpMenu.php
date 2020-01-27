@@ -18,6 +18,7 @@ class RpMenu extends FannieRESTfulPage
     <ul>
         <li><a href="RpOrderPage.php">Regular Ordering</a> - Alberts, CPW, RDW, and year-round direct</li>
         <li><a href="RpDirectPage.php">Direct Ordering</a> - local & seasonal</li>
+        <li><a href="RpArchivePage.php">Direct Orders Archive</a> - local & seasonal</li>
         <li><a href="RpDailyPage.php">Daily Sheet Info</a> - sales info & item lists</li>
     </ul>
 </ul>

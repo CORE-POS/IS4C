@@ -285,7 +285,6 @@ class RpDirectPage extends FannieRESTfulPage
                 $_SESSION['rpState'] = json_decode($sModel->data(), true);
             }
         }
-        var_dump($jsState);
         $this->addOnloadCommand("rpOrder.initState({$jsState});");
 
         $fieldType = $this->isMobile() ? 'type="number" min="0" max="99999" step="0.01"' : 'type="text"';
