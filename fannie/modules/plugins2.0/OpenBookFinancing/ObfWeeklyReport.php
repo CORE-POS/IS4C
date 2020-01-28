@@ -1137,9 +1137,11 @@ class ObfWeeklyReport extends FannieReportPage
 
         $this->stockP = $dbc->prepare('
             SELECT SUM(stockPurchase) AS ttl
-            FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'stockpurchases
+            FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'stockpurchases AS s
+                INNER JOIN ' . FannieDB::fqn('custdata', 'op') . ' AS c ON s.card_no=c.CardNo AND c.personNum=1
             WHERE tdate BETWEEN ? AND ?
                 AND dept=992
+                AND c.Type=\'PC\'
                 AND trans_num NOT LIKE \'1001-30-%\'
         ');
     }
