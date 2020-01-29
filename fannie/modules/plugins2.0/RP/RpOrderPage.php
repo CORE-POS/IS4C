@@ -22,7 +22,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>', 'get<clear>');
+        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>', 'get<clear>', 'post<json>');
         $this->userID = FannieAuth::getUID($this->current_user);
 
         return parent::preprocess();
@@ -61,6 +61,11 @@ class RpOrderPage extends FannieRESTfulPage
         echo json_encode($ret);
 
         return false;
+    }
+
+    protected function post_json_handler()
+    {
+        return $this->get_json_handler();
     }
 
     protected function get_json_handler()
@@ -269,7 +274,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200122');
+        $this->addScript('rpOrder.js?date=20200129');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {

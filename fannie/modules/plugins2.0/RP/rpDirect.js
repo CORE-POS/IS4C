@@ -71,7 +71,7 @@ var rpOrder = (function ($) {
 
     mod.save = function() {
         $.ajax({
-            type: 'get',
+            type: 'post',
             data: 'json=' + encodeURIComponent(JSON.stringify(state))
         }).done(function() {
             var now = new Date();

@@ -25,7 +25,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>', 'get<clear>');
+        $this->addRoute('get<searchVendor>', 'get<searchLC>', 'get<json>', 'get<date1><date2>', 'get<clear>', 'post<json>');
         $this->userID = FannieAuth::getUID($this->current_user);
 
         return parent::preprocess();
@@ -64,6 +64,11 @@ class RpDirectPage extends FannieRESTfulPage
         $model->delete();
 
         return 'RpDirectPage.php';
+    }
+
+    protected function post_json_handler()
+    {
+        return $this->get_json_handler();
     }
 
     protected function get_json_handler()
@@ -268,7 +273,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20200120');
+        $this->addScript('rpDirect.js?date=20200129');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
