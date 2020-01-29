@@ -15,7 +15,7 @@ class USFTask extends FannieTask
             . escapeshellarg($settings['USFInvoiceUser'])
             . ' -p '
             . escapeshellarg($settings['USFInvoicePass']);
-        exec($cmd);
+        exec($cmd, $output);
 
         $za = new ZipArchive();
         $try = $za->open("/tmp/usf/invoiceDetails.ZIP");
@@ -76,7 +76,7 @@ class USFTask extends FannieTask
                 } elseif ($priceType == 'EA') {
                     list($units, $size) = explode(' ', $sizeInfo, 2);
                     $size = '#';
-                    $unitPrice = $price / $units;
+                    $unitPrice = $units == 0 ? $price : $price / $units;
                 } elseif ($priceType == 'CS') {
                     if (strstr($sizeInfo, '/')) {
                         list($units, $size) = explode('/', $sizeInfo, 2);
@@ -131,6 +131,30 @@ class USFTask extends FannieTask
         return $upc;
     }
 
+    private function getCode($upc, $sku)
+    {
+        $upcP = $this->connection->prepare("SELECT d.salesCode
+            FROM products AS p
+                INNER JOIN departments AS d ON p.department=d.dept_no
+            WHERE p.upc=?");
+        $code = $this->connection->getValue($upcP, array($upc));
+        if ($code == 41201 || $code == 41205) {
+            return $code;
+        }
+        $skuP = $this->connection->prepare("SELECT d.salesCode
+            FROM vendorItems AS v
+                INNER JOIN products AS p ON v.upc=p.upc
+                INNER JOIN departments AS d ON p.department=d.dept_no
+            WHERE v.sku=?
+                AND v.vendorID=35");
+        $code = $this->connection->getValue($upcP, array($upc));
+        if ($code == 41201 || $code == 41205) {
+            return $code;
+        }
+
+        return 41201;
+    }
+
     private $poi = false;
     private function updatePO($orderID, $shipDate, $ordered, $shipped, $sku, $upc, $item, $brand, $size, $units, $price, $fullPrice)
     {
@@ -143,6 +167,9 @@ class USFTask extends FannieTask
             $poi->quantity($poi->quantity() + $ordered);
             $poi->receivedQty($poi->receivedQty() + ($shipped * $units));
             $poi->receivedTotalCost($poi->receivedTotalCost() + $fullPrice);
+            if ($poi->salesCode() == 0) {
+                $poi->salesCode($this->getCode($upc, $sku));
+            }
             $poi->save();
         } else {
             $poi->quantity($ordered);
@@ -155,6 +182,7 @@ class USFTask extends FannieTask
             $poi->brand($brand);
             $poi->description($item);
             $poi->internalUPC($upc);
+            $poi->salesCode($this->getCode($upc, $sku));
             $poi->save();
         }
     }
