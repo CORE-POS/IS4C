@@ -68,7 +68,8 @@ $susQ = "INSERT INTO suspensions
     and c.memType in (1,3,5)
     AND c.CardNo <> 18506
     and NOT EXISTS(SELECT NULL FROM suspensions as s
-    WHERE s.cardno=m.card_no)";
+    WHERE s.cardno=m.card_no)
+    AND DATE_ADD((select max(tdate) from is4c_trans.stockpurchases WHERE card_no=m.card_no), INTERVAL 1 YEAR) < '$dStr'";
 if (!isset($custdata['ChargeLimit'])) {
     $susQ = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $susQ);
 }
