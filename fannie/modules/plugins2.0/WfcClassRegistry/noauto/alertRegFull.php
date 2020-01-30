@@ -69,7 +69,7 @@ function sendEmail()
         'Content-type: text/html; charset=iso-8859-1',
         'from: automail@wholefoods.coop'
     );
-    $to = $this->config->get('ADMIN_EMAIL');
+    $to = 'it@wholefoods.coop';
     if (class_exists('PHPMailer')) {
         $msg = '';
         $msg .= '<h1>WFC-U Class'.$upc.': '.$className.'</h1>This class has only
