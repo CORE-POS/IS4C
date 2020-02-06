@@ -333,6 +333,7 @@ class EpScaleLib
     static public function deleteItemsFromScales($items, $scales=array())
     {
         $config = \FannieConfig::factory(); 
+        $dbc = \FannieDB::get($config->get('OP_DB'));
 
         if (!is_array($items)) {
             $items = array($items);
@@ -345,14 +346,19 @@ class EpScaleLib
         }
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
-            $selected_scales = $config->get('SCALES');
+            $prep = $dbc->prepare("SELECT * FROM ServiceScales");
+            $selected_scales = $dbc->getAllRows($prep);
         }
         $scale_model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
         $counter = 0;
+        $epScales = array();
         foreach ($selected_scales as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $counter . '.dat';
             $fptr = fopen($file_name, 'w');
             foreach ($items as $plu) {
+                if (isset($epScales[$scale['epDeptNo']])) {
+                    continue;
+                }
                 if (strlen($plu) !== 4) {
                     // might be a UPC
                     $upc = str_pad($plu, 13, '0', STR_PAD_LEFT);
@@ -362,6 +368,18 @@ class EpScaleLib
                     }
                     $plu = ServiceScaleLib::upcToPLU($upc);
                 }
+                fwrite($fptr, 'BNA' . $file_prefix . '_' . $counter . chr(253) . self::$NEWLINE);
+                $line = 'CCOSPID' . chr(253); 
+                $line .= 'SNO' . $scale['epStoreNo'] . chr(253);
+                $line .= 'DNO' . $scale['epDeptNo'] . chr(253);
+                $line .= 'PNO' . $plu . chr(253);
+                fwrite($fptr, $line . self::$NEWLINE);
+                $line = 'CCOSIID' . chr(253); 
+                $line .= 'SNO' . $scale['epStoreNo'] . chr(253);
+                $line .= 'DNO' . $scale['epDeptNo'] . chr(253);
+                $line .= 'INO' . $plu . chr(253);
+                fwrite($fptr, $line . self::$NEWLINE);
+                $epScales[$scale['epDeptNo']] = true;
             }
             fclose($fptr);
 
