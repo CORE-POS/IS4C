@@ -5,7 +5,7 @@ if (!class_exists('\\FannieAPI')) {
     include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 }
 
-class CWNewDemos extends FannieRESTfulPage
+class CwNewDemos extends FannieRESTfulPage
 {
     public $discoverable = false;
     public $themed = true;
