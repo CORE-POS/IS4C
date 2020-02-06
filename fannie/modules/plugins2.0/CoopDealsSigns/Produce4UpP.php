@@ -71,6 +71,8 @@ class Produce4UpP extends \COREPOS\Fannie\API\item\FannieSignage
         if (!isset($item['signMultiplier']) || $item['signMultiplier'] == 1 || $item['signMultiplier'] == 0) {
             if (strstr($price, '/lb.')) {
                 $price = str_replace(' /lb.', '/lb', $price);
+            } elseif (strstr($price, '/')) {
+                // skip
             } else {
                 $price .= '/ea';
             }
