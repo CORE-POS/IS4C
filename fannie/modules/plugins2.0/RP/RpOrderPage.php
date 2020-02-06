@@ -274,7 +274,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200129');
+        $this->addScript('rpOrder.js?date=20200204');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -731,7 +731,7 @@ class RpOrderPage extends FannieRESTfulPage
     <div class="progress collapse">
         <div class="progress-bar progress-bar-striped active"  role="progressbar" 
             aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-            <span class="sr-only">Searching</span>
+            <span class="sr-only">Ordering</span>
         </div>
     </div>
 </p>

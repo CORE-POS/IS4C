@@ -395,6 +395,7 @@ var rpOrder = (function ($) {
                 'data': 'id=' + id + '&qty=' + qty,
                 'dataType': 'json'
             }).done(function (resp) {
+                mod.all--;
                 $(elem).closest('td').addClass('info');
                 if ($('#openOrders').find('#link'+resp.orderID).length == 0) {
                     var newlink = '<li id="link' + resp.orderID + '">';
@@ -420,27 +421,39 @@ var rpOrder = (function ($) {
                 'dataType': 'json'
             }).done(function (resp) {
                 $(elem).closest('td').removeClass('info');
+                mod.all--;
             });
         }
     };
 
+    function endOrderAll(count, meters, buttons) {
+        if (count > 15 || mod.all <= 0) {
+            meters.hide();
+            buttons.prop('disabled', false);
+        } else {
+            setTimeout(function () { endOrderAll(count + 1, meters, buttons) }, 1000);
+        }
+    };
+
+    mod.all = 0;
     mod.orderAll = function() {
         var buttons = $('button.orderAll');
         var meters = $('.progress');
         buttons.prop('disabled', true);
         meters.show();
+        mod.all = 0;
 
         $('input.orderPri').each(function () {
             var qty = $(this).closest('tr').find('input.orderAmt').val();
             var secondary = $(this).closest('tr').find('input.orderSec');
             if (qty > 0 && !$(this).prop('checked') && !secondary.prop('checked')) {
                 $(this).prop('checked', true);
+                mod.all++;
                 mod.placeOrder(this);
             }
         });
 
-        meters.hide();
-        buttons.prop('disabled', false);
+        setTimeout(function () { endOrderAll(1, meters, buttons) }, 1000);
     };
 
     mod.vendorFilter = function() {
