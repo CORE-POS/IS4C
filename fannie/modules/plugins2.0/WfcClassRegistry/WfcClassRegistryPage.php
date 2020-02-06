@@ -491,10 +491,11 @@ class WfcClassRegistryPage extends FanniePage
             }
 
             //  Create a new (blank) 'Waiting List' row if the previous row no longer NULL.
-            $prep = $dbc->prepare("SELECT id, first_name FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
+            $prep = $dbc->prepare("SELECT id, LENGTH(first_name) AS firstNameLength 
+                FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
             $resp = $dbc->execute($prep);
             while ($row = $dbc->fetch_row($resp)) {
-                $name = $row['first_name'];
+                $firstNameLength = $row['firstNameLength'];
                 $id = $row['id'];
             }
             $prep = $dbc->prepare("SELECT max(id) as id FROM wfcuRegistry;");
@@ -503,7 +504,7 @@ class WfcClassRegistryPage extends FanniePage
                 $maxID = $row['id'];
             }
             $nextId = ($maxID + 1);
-            if (isset($name)) {
+            if ($firstNameLength != 0) {
                 $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ({$plu}, {$nextId}, 0);");
                 $resp = $dbc->execute($prep);
             }

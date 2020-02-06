@@ -35,8 +35,8 @@ class wfcuRegistryModel extends BasicModel
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)'),
     'class' => array('type'=>'VARCHAR(255)'),
-    'first_name' => array('type'=>'VARCHAR(30)'),
-    'last_name' => array('type'=>'VARCHAR(30)'),
+    'first_name' => array('type'=>'VARCHAR(30)','default'=>''),
+    'last_name' => array('type'=>'VARCHAR(30)','default'=>''),
     'first_opt_name' => array('type'=>'VARCHAR(30)'),
     'last_opt_name' => array('type'=>'VARCHAR(30)'),
     'phone' => array('type'=>'VARCHAR(30)'),
