@@ -34,14 +34,24 @@ class USFTask extends FannieTask
             if (!$fp) {
                 continue;
             }
+            echo $info['name'] . "\n";
 
             $this->connection->startTransaction();
             $first = true;
+            $orderTotal = 0;
+            $invoiceTotal = 0;
+            $orderID = false;
+            $shipDate = false;
             while (!feof($fp)) {
                 $data = fgetcsv($fp);
 
                 $invoice = $this->getField($data, 0);
                 $orderDate = $this->getField($data, 9);
+                $credit = $this->getField($data, 16);
+                if ($credit) {
+                    $invoice = $credit;
+                    $orderDate = $this->getField($data, 17);
+                }
                 $orderDate = date('Y-m-d', strtotime($orderDate));
                 $shipDate = $this->getField($data, 12);
                 $shipDate = date('Y-m-d', strtotime($shipDate));
@@ -55,6 +65,8 @@ class USFTask extends FannieTask
                 $price = $this->getField($data, 55);
                 $fullPrice = $this->getField($data, 56);
                 $unitPrice = $price;
+                $invoiceTotal = $this->getField($data, 14);
+                $orderTotal += $fullPrice;
 
                 if (!is_numeric($sku)) continue;
                 if ($priceType == '') continue;
@@ -94,6 +106,24 @@ class USFTask extends FannieTask
                 $this->updatePO($orderID, $shipDate, $ordered, $shipped, $sku, $upc, $item, $brand, $size, $units, $unitPrice, $fullPrice);
                 $orders[$orderID] = $invoice;
                 $first = false;
+            }
+            if ($orderID && abs($orderTotal - $invoiceTotal) > 0.005) {
+                $tax = $invoiceTotal - $orderTotal;
+                $descriptor = abs($tax - 4) < 0.005 ? 'FUEL' : 'TAX';
+                $poi = new PurchaseOrderItemsModel($this->connection);
+                $poi->orderID($orderID);
+                $poi->sku($descriptor);
+                $poi->quantity(1);
+                $poi->unitCost($tax);
+                $poi->caseSize(1);
+                $poi->receivedQty(1);
+                $poi->receivedDate($shipDate);
+                $poi->receivedTotalCost($tax);
+                $poi->brand($descriptor);
+                $poi->description($descriptor);
+                $poi->unitSize('n/a');
+                $poi->internalUPC('0000000000000');
+                $poi->save();
             }
             $this->connection->commitTransaction();
         }
@@ -163,12 +193,16 @@ class USFTask extends FannieTask
         }
         $poi->orderID($orderID);
         $poi->sku($sku);
+        $code = $this->getCode($upc, $sku);
+        if (trim($brand) == 'ECOLAB') {
+            $code = 63320;
+        }
         if ($poi->load()) {
             $poi->quantity($poi->quantity() + $ordered);
             $poi->receivedQty($poi->receivedQty() + ($shipped * $units));
             $poi->receivedTotalCost($poi->receivedTotalCost() + $fullPrice);
-            if ($poi->salesCode() == 0) {
-                $poi->salesCode($this->getCode($upc, $sku));
+            if ($poi->salesCode() == 0 || $code == 63320) {
+                $poi->salesCode($code);
             }
             $poi->save();
         } else {
@@ -182,7 +216,7 @@ class USFTask extends FannieTask
             $poi->brand($brand);
             $poi->description($item);
             $poi->internalUPC($upc);
-            $poi->salesCode($this->getCode($upc, $sku));
+            $poi->salesCode($code);
             $poi->save();
         }
     }
