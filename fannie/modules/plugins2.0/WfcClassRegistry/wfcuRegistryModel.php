@@ -57,5 +57,78 @@ class wfcuRegistryModel extends BasicModel
     'email' => array('type'=>'VARCHAR(255)'),
     'childseat' => array('type'=>'TINYINY()'),
     );
+
+    public function getNumSeatAvail($upc)
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $args = array($upc);
+        $prep = $dbc->prepare("
+            SELECT MAX(seat) - SUM(CASE WHEN first_name != '' AND seatType=1 THEN 1 ELSE 0 END) as seatsLeft,
+                p.description,
+                p.soldOut
+            FROM wfcuRegistry AS r
+                LEFT JOIN productUser AS p ON LPAD(r.upc,13,'0')=p.upc
+                WHERE r.upc = ?;
+        ");
+        $res = $dbc->execute($prep,$args);
+        while ($row = $dbc->fetchRow($res)) {
+            $numSeatLeft = $row['seatsLeft'];
+        }
+
+        return $numSeatLeft;
+
+    }
+
+    public function setSoldOut($upc)
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $localDB = $dbc;
+        include(__DIR__.'/../../../src/Credentials/OutsideDB.tunneled.php');
+        $remoteDB = $dbc;
+
+        $args = array(str_pad($upc, 13, '0', STR_PAD_LEFT));
+        $prep = $dbc->prepare("UPDATE productUser SET soldOut = 1 WHERE upc = ?");
+        $res = $localDB->execute($prep, $args);
+        $res = $remoteDB->execute($prep, $args);
+        if ($er = $dbc->error()) return $er;
+
+        return false;
+    }
+
+    public function getFirstAvailSeat($upc)
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $prep = $dbc->prepare("
+            SELECT id 
+            FROM wfcuRegistry 
+            WHERE upc = ?
+                AND seatType = 1 
+                AND LENGTH(first_name) = 0 
+                AND LENGTH(last_name) = 0 
+            ORDER BY SEAT ASC 
+            LIMIT 1; 
+        ");
+        $res = $dbc->execute($prep, array($upc));
+        $row = $dbc->fetchRow($res);
+        $id = $row['id'];
+        if ($id > 1) {
+            return $id;
+        } else {
+            // if class is full, create new seat
+            $maxA = array($upc);
+            $maxP = $dbc->prepare("SELECT MAX(seat)+1 AS seat 
+                FROM wfcuRegistry WHERE upc = ? AND seatType = 1;");
+            $maxR = $dbc->execute($maxP, $maxA);
+            $row = $dbc->fetchRow($maxR);
+            $maxSeat = $row['seat'];
+            $newA = array($upc, $maxSeat);
+            $newP = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType, first_name, last_name)
+                VALUES (?, ?, 1, '', '')");
+            $newR = $dbc->execute($newP, $newA);
+            
+            return self::getFirstAvailSeat($upc);
+        }
+
+    }
 }
 
