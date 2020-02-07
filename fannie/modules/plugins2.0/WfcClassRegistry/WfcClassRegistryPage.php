@@ -353,6 +353,7 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '<input type="hidden" id="soldOut" value="'.$soldOut[$curPlu].'">';
             $ret .= '<input type="hidden" id="className" value="'.$className[$curPlu].'">';
             $ret .= '<input type="hidden" id="classExpires" value="'.$classExp[$curPlu].'">';
+            $ret .= '<input type="hidden" id="maxSize" value="'.$classSize[$curPlu].'">';
             $newExpires = new DateTime($classExp[$curPlu]);
             $newExpires->modify('-2 days');
             $ret .= '<input type="hidden" id="newDate" value="'.$newExpires->format('Y-m-d h:i:s').'">';
@@ -591,7 +592,6 @@ class WfcClassRegistryPage extends FanniePage
             $this->addOnloadCommand('itemEditing(' . $classSize . ');');
         }
         $this->addOnloadCommand('withdraw();');
-        $this->addOnloadCommand('checkSoldOut();');
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
@@ -722,6 +722,14 @@ $('.cardno').change(function(){
                 });
             }
         });
+    }
+});
+$('tr').each(function(){
+    var maxSeat = parseInt($('#maxSize').val(), 10);
+    var curSeat = parseInt($(this).find('.seat').text(), 10);
+    //console.log(maxSeat+', '+curSeat);
+    if (curSeat > maxSeat) {
+        $(this).addClass('alert-warning');
     }
 });
 JAVASCRIPT;
