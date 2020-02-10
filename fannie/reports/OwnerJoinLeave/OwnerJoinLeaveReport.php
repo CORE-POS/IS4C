@@ -43,7 +43,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         array('Total Equity', null, null, null, null, null),
         array('Period', null, 'Number of Owners', '', null, null),
         array('New Owners', null, null, null, null, null),
-        array('Number', 'Date', 'Name', 'Stock', 'Payment Plan', null),
+        array('Number', 'Date', 'Name', 'Stock', 'Payment Plan', 'Store'),
     );
 
     public function fetch_report_data()
@@ -89,6 +89,13 @@ class OwnerJoinLeaveReport extends FannieReportPage
             WHERE card_no=?
                 AND tdate <= ?');
 
+        $initialP = $dbc->prepare('SELECT trans_num
+            FROM ' . $FANNIE_TRANS_DB. $dbc->sep() . 'stockpurchases
+            WHERE card_no=?
+                AND tdate <= ?
+            ORDER BY tdate');
+
+
         $franReqP = false;
         if ($this->config->COOP_ID == 'WFC_Duluth') {
             $franReqP = $dbc->prepare("SELECT note FROM memberNotes
@@ -113,6 +120,16 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $newCount = 0;
         while ($row = $dbc->fetch_row($joinR)) {
             $actual = $dbc->getValue($stockP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
+            $initial = $dbc->getValue($initialP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
+            list($emp, $reg, $trans) = explode('-', $initial);
+            $store = '?';
+            if ($reg > 0 && $reg < 10) {
+                $store = 'Hillside';
+            } elseif ($reg > 10 && $reg < 20) {
+                $store = 'Denfeld';
+            } elseif ($reg == 50) {
+                $store = 'Website';
+            }
             if ($franReqP && !$row['name']) {
                 $row['name'] = $dbc->getValue($franReqP, array($row['card_no']));
             }
@@ -122,7 +139,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 $row['FirstName'] . ' ' . $row['LastName'],
                 sprintf('$%.2f', $actual),
                 ($row['name'] ? $row['name'] : ''),
-                null,
+                $store,
             );
             $totals['new']++;
             $totals['newStock'] += $actual;
@@ -164,7 +181,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             FROM memDates AS m
                 INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1
             WHERE m.start_date <= ?
-                AND c.Type=\'PC\'
+               AND c.Type=\'PC\'
         ');
         $activeR = $dbc->execute($activeP, array($args[1]));
         $totals['active'] = '?';
