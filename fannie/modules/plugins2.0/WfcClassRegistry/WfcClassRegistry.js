@@ -117,17 +117,3 @@ function withdraw()
         });
     });
 }
-function checkSoldOut()
-{
-    $('.first_name').change(function(){
-        // testing 10/22 csather
-        console.log('checkSoldOut() is being called');
-        $.ajax({
-            type: 'post',
-            url: 'noauto/alertRegFull.php',
-            dataType: 'json',
-            data: 'upc='+$('#upc').val(),
-            success: function(resp) {}
-        });
-    });
-}
