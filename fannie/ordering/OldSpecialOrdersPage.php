@@ -269,7 +269,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
         /**
           Paging links if not using member number filter
         */
-        if ($this->card_no !== false) {
+        if ($this->card_no == false) {
             $url = filter_input(INPUT_SERVER, 'REQUEST_URI');
             if (!strstr($url,"page=")) {
                 if (substr($url,-4)==".php") {
