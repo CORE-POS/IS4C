@@ -183,7 +183,7 @@ class RpImport extends FannieRESTfulPage
                     $catID,
                     $vendorID,
                     ($mainCatalog ? $mainCatalog['sku'] : null),
-                    ($mainCatalog ? $mainCatalog['description'] : $name),
+                    $name,
                     $backupID,
                     ($backupCatalog ? $backupCatalog['sku'] : null),
                     ($backupCatalog ? $backupCatalog['description'] : $backupName),
@@ -452,9 +452,11 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                             if (!in_array($lc, $dupes)) {
                                 $dupes[] = $lc;
                             }
-                            $lcPlus = substr($lc . '-' . strrev(uniqid()), 0, 13);
+                            $lcPlus = substr($lc . '-' . md5($data[9]), 0, 11);
+                            $collide = 1;
                             while (isset($otherData[$lcPlus])) {
-                                $lcPlus = substr($lc . '-' . strrev(uniqid()), 0, 13);
+                                $lcPlus = substr($lc . '-' . md5($data[9] . $collide), 0, 11);
+                                $collide++;
                             }
                             $lc = $lcPlus;
                             $otherData[$lc] = array();
