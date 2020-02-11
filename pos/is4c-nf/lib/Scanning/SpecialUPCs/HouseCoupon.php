@@ -802,6 +802,7 @@ class HouseCoupon extends SpecialUPC
                 $discW = $transDB->fetch_row($discR);
 
                 $sets = ($qualW['qty'] > $discW['qty']) ? $discW['qty'] : $qualW['qty'];
+                $sets = ($sets % 2 == 0) ? $sets : $sets -= 1;
                 $value = $sets * $value;
                 break;
             case 'SC':
