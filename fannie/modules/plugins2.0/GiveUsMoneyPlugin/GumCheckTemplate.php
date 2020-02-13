@@ -175,9 +175,6 @@ class GumCheckTemplate
        }
        $ret .= '</div>';
        $ret .= '<div style="float: left; width: 30%; text-align: center;">';
-       if (file_exists(dirname(__FILE__) . '/img/sig.png')) {
-           $ret .= '<img src="img/sig.png" style="border-bottom: 1px solid black; width:200px;" /><br />';
-       }
        $ret .= 'Authorized By Signature';
        $ret .= '</div>';
        $ret .= '</div>'; // end checkRowTwo;
