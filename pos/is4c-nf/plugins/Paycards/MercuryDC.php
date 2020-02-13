@@ -120,6 +120,10 @@ class MercuryDC extends MercuryE2E
             }
             if ($emvCardType) {
                 $msgXml .= '<CardType>' . $emvCardType . '</CardType>';
+            } elseif ($this->conf->get('ccTermState') == 'DCDC') {
+                $msgXml .= '<CardType>Debit</CardType>';
+            } elseif ($this->conf->get('ccTermState') == 'DCCC') {
+                $msgXml .= '<CardType>Credit</CardType>';
             }
         } else {
             $msgXml .= '
