@@ -33,9 +33,24 @@ class ProdReviewModule extends \COREPOS\Fannie\API\item\ItemModule
         $review = $dbc->getRow($reviewP, array($upc));
         $newItem = ($exists === false && $review === false) ? 'checked' : '';
         if ($review === false) {
-            $review = array('upc'=>$upc, 'user'=>'n/a', 'reviewed'=>'never');
+            $review = array('upc'=>$upc, 'user'=>'n/a', 'reviewed'=>'never', 'comment'=>'+');
         }
         $css = ($expand_mode == 1 || $newItem == 'checked') ? '' : ' collapse';
+
+        $prodReviewCommentClick = <<<JAVASCRIPT
+$(this).css('border', '1px solid lightgrey')
+    .css('border-radius', '3px')
+    .attr('contentEditable', true)
+    .css('padding', '5px')
+    .css('cursor', 'auto');
+JAVASCRIPT;
+
+        $prodReviewCommentChange = <<<JAVASCRIPT
+var upc = $upc;
+var text = $(this).val();
+$(this).css('border', '0px solid transparent')
+    .css('padding', '0px');
+JAVASCRIPT;
 
         return <<<HTML
 <div id="ProdReviewFieldset" class="panel panel-default">
@@ -44,7 +59,11 @@ class ProdReviewModule extends \COREPOS\Fannie\API\item\ItemModule
             Product Review</a>
     </div>
     <div id="ProdReviewContents" class="panel-body {$css}">
-        <strong>Last Reviewed</strong> {$review['reviewed']} by {$review['user']}<br />
+        <strong>Last Reviewed</strong> {$review['reviewed']} by {$review['user']}<br/> 
+        <strong>Comment</strong> <input type="text" id="prodReviewComment" name="prodReviewComment"
+            style="cursor: pointer; display: inline-block; width: 90%; border: none;" 
+            onclick="$prodReviewCommentClick" onblur="$prodReviewCommentChange" 
+            value="{$review['comment']}" /><br />
         <label>Mark as reviewed today 
             <input type="checkbox" name="prodReview" value="1" {$newItem} />
         </label>
@@ -57,12 +76,20 @@ HTML;
     {
         try {
             $mark = $this->form->prodReview;
+            $text = $this->form->prodReviewComment;
             if ($mark) {
                 $dbc = $this->db();
                 $model = new ProdReviewModel($dbc);
                 $model->upc(BarcodeLib::padUPC($upc));
                 $model->user(FannieAuth::getUID());
                 $model->reviewed(date('Y-m-d H:i:s'));
+                $model->save();
+            }
+            if ($text != '+') {
+                $dbc = $this->db();
+                $model = new ProdReviewModel($dbc);
+                $model->upc(BarcodeLib::padUPC($upc));
+                $model->comment($text);
                 $model->save();
             }
         } catch (Exception $ex) {
