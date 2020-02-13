@@ -60,15 +60,23 @@ class RegistryApply extends FannieRESTfulPage
             // temporary fix, upcs cannot be padded for WfcClassRegistryPage class
             $upc = ltrim($upc, '0');
             $qty = $json['qtys'][$i];
+            if (strlen($json['phone']) == 10) {
+                $phone = $json['phone'];
+                $phone = substr($phone, 0, 3) . '-'. substr($phone, 3, 3) . '-' . substr($phone, 6);
+                $json['phone'] = $phone;
+            }
             for ($i=$qty;$i>0;$i--) {
                 $model->reset();
                 $model->upc($upc);
                 $id = $model->getFirstAvailSeat($upc);
                 $model->id($id);
-                $model->first_name($json['firstName']);
-                $model->last_name($json['lastName']);
+                $model->first_name(strtoupper($json['firstName']));
+                $model->last_name(strtoupper($json['lastName']));
                 $model->card_no($json['card_no']);
                 $model->details($json['notes']);
+                $model->email(strtoupper($json['email']));
+                $model->phone($json['phone']);
+                $model->payment($json['payment']);
                 $model->save();
             }
         }
