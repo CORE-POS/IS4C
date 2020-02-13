@@ -100,6 +100,7 @@ CSS;
             }
         }
 
+        $stock = str_replace('&', '&amp;', $stock);
         $stock = DataConvert::htmlToArray($stock);
         $pdf->SetXY(160, 20);
         foreach ($stock as $row) {
@@ -194,6 +195,7 @@ HTML;
         $pcts = json_decode($seg['segmentation'], true);
         $thisYear = json_decode($seg['thisYear'], true);
         $modify = array('plan'=>0, 'this'=>0, 'points'=>0);
+        $planTTL = 0;
         foreach ($pcts as $day => $pct) {
             $plan = $ttl * $pct;
             $cur = $thisYear[$day] > 0 ? $thisYear[$day] : '';
@@ -208,14 +210,26 @@ HTML;
                 $modify['this'] += $cur;
                 $modify['points']++;
             }
+            $planTTL += $plan;
         }
         if ($modify['points']) {
             $mod = ($modify['this'] - $modify['plan']) / $modify['plan'];
             $mod *= $modify['points'] / 7;
             $ttl = $ttl * (1 + $mod);
         }
+        $growth = ($ttl - $planTTL) / $ttl * 100;
+        if (date('N') == 1) {
+            $lastYear = json_decode($seg['lastYear'], true);
+            $ly = 0;
+            foreach ($lastYear as $day => $amount) {
+                $ly += $amount;
+            }
+            $growth = ($ttl - $ly) / $ttl * 100;
+        }
         $ret .= '<tr><th colspan="2">Projected Total</th><th>'
-            . number_format($ttl, 2) . '</th></tr></table>';
+            . number_format($ttl, 2) . '</th><th>'
+            . sprintf('%.2f%%', $growth) . '</th></tr></table>';
+
 
         return $ret;
     } 
