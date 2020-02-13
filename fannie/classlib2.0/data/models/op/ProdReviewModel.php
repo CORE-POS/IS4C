@@ -36,6 +36,7 @@ class ProdReviewModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)', 'unique'=>true),
     'user' => array('type'=>'INT'),
     'reviewed' => array('type'=>'DATETIME'),
+    'comment' => array('type'=>'text'),
     );
     protected $unique = array('upc'); 
 
