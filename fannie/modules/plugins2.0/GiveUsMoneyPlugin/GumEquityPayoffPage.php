@@ -85,7 +85,6 @@ class GumEquityPayoffPage extends FannieRESTfulPage
                 $this->check_info->gumPayoffID($payoff_id);
                 $this->check_info->amount(-1*$this->payoff->value());
                 $this->check_info->issueDate(date('Y-m-d'));
-                $this->check_info->save();
                 $this->check_info->load();
             }
         } else {
@@ -154,15 +153,11 @@ class GumEquityPayoffPage extends FannieRESTfulPage
             }
         }
 
-        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', $this->check_info->checkNumber());
-        $check->renderAsPDF($pdf);
-
         $pdf->Output('EquityPayoff.pdf', 'I');
 
         if (FormLib::get('issued') == '1') {
             $this->check_info->checkIssued(1);
             $this->check_info->issueDate(date('Y-m-d H:i:s'));
-            $this->check_info->save();
         }
 
         return false;
@@ -232,8 +227,6 @@ class GumEquityPayoffPage extends FannieRESTfulPage
         $ret .= '</table>';
 
         $ret .= '<hr />';
-        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', $this->check_info->checkNumber());
-        $ret .= $check->renderAsHTML();
 
         return $ret;
     }

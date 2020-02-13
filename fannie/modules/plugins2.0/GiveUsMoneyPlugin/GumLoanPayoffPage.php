@@ -85,7 +85,6 @@ class GumLoanPayoffPage extends FannieRESTfulPage
                 $loan_info = GumLib::loanSchedule($this->loan); 
                 $this->check_info->amount($loan_info['balance']);
                 $this->check_info->issueDate(date('Y-m-d'));
-                $this->check_info->save();
                 $this->check_info->load();
             }
         } else {
@@ -215,15 +214,11 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $form =  new GumTaxFormTemplate($this->custdata, $this->meminfo, $ssn, date('Y'), $fields, $this->loan->accountNumber());
         $ret = $form->renderAsPDF($pdf, 105);
 
-        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $loan_info['balance'], 'Loan Repayment', $this->check_info->checkNumber());
-        $check->renderAsPDF($pdf);
-
         $pdf->Output('LoanPayoff.pdf', 'I');
 
         if (FormLib::get('issued') == '1') {
             $this->check_info->checkIssued(1);
             $this->check_info->issueDate(date('Y-m-d H:i:s'));
-            $this->check_info->save();
         }
 
         return false;
@@ -353,9 +348,6 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $ret .= $form->renderAsHTML();
 
         $ret .= '<hr />';
-
-        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $loan_info['balance'], 'Loan Repayment', $this->check_info->checkNumber());
-        $ret .= $check->renderAsHTML();
 
         return $ret;
     }
