@@ -249,9 +249,11 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $query .= 'description=?, ';
                     $args[] = $description;
                 }
-                if ($indexes['qty'] !== false && !empty($qty)) {
-                    $query .= 'units=?, ';
-                    $args[] = $qty;
+                if ($this->session->vUploadChangeCaseQty != false) {
+                    if ($indexes['qty'] !== false && !empty($qty)) {
+                        $query .= 'units=?, ';
+                        $args[] = $qty;
+                    }
                 }
                 if ($indexes['unitCost'] !== false || $indexes['cost'] !== false) {
                     $query .= 'cost=?, ';
@@ -324,13 +326,14 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $this->session->vUploadCheckDigits = FormLib::get('rm_cds') !== '' ? true : false;
         $this->session->vUploadChangeCosts = FormLib::get('up_costs') !== '' ? true : false;
+        $this->session->vUploadChangeCaseQty = FormLib::get('up_case_qty') !== '' ? true : false;
     }
 
     function preview_content()
     {
         return '<input type="checkbox" name="rm_cds" value="1" checked /> Remove check digits<br />
-                <input type="checkbox" name="up_costs" value="1" checked /> Update product costs';
-    }
+                <input type="checkbox" name="up_costs" value="1" checked /> Update product costs<br />
+                <input type="checkbox" name="up_case_qty" value="1" checked /> Update case qty (uncheck for Wellness)'; }
 
     function results_content()
     {
