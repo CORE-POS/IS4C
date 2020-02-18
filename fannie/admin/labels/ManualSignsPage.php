@@ -85,6 +85,7 @@ class ManualSignsPage extends FannieRESTfulPage
                 ' . ItemText::longBrandSQL() . ',
                 ' . ItemText::longDescriptionSQL() . ',
                 ' . ItemText::signSizeSQL() . ',
+                CASE WHEN u.upc IS NULL OR u.upc=\'\' THEN 0 ELSE 1 END AS signText,
                 p.scale,
                 CASE WHEN p.discounttype=1 AND p.special_price > 0 THEN p.special_price ELSE p.normal_price END AS price,
                 p.normal_price,
@@ -101,7 +102,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $args = array($this->queueID, $this->config->get('STORE_ID'));
         $res = $this->connection->execute($prep, $args);
         $prevUPC = false;
-        $lcP = $this->connection->prepare("SELECT origin, signOrigin, organic FROM likeCodes AS l
+        $lcP = $this->connection->prepare("SELECT origin, signOrigin, organic, likeCodeDesc FROM likeCodes AS l
             INNER JOIN upcLike AS u ON l.likeCode=u.likeCode
             WHERE u.upc=?");
         while ($row = $this->connection->fetchRow($res)) {
@@ -111,6 +112,9 @@ class ManualSignsPage extends FannieRESTfulPage
                     $row['origin'] = $lcRow['signOrigin'] ? $lcRow['origin'] : '';
                     if ($row['normal_price'] > $row['price']) {
                         $row['origin'] .= '/' . $row['normal_price'];
+                    }
+                    if (!$row['signText'] && $lcRow['likeCodeDesc']) {
+                        $row['description'] = $lcRow['likeCodeDesc'];
                     }
                     $row['brand'] = $lcRow['organic'] ? 'ORGANIC' : '';
                 } else {
