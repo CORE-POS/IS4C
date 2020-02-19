@@ -45,7 +45,7 @@ function addToPos(upc){
 function brandchange() {
 	var did = $('#categoryselect').val();
 	var vid = $('#vendorID').val();
-	var brand = $('#brandselect').val();
+	var brand = encodeURIComponent($('#brandselect').val());
 
 	if (brand == ""){
 		$('#contentarea').html('');
