@@ -393,7 +393,7 @@ class BrowseVendorItems extends FanniePage
         <p><a href="VendorIndexPage.php?vid=<?php echo $vid; ?>" class="btn btn-default">Home</a></p>
         <?php
         
-        $this->addScript('browse.js');
+        $this->addScript('browse.js?date=20200219');
 
         return ob_get_clean();
     }
