@@ -256,6 +256,9 @@ var rpOrder = (function ($) {
         if (onHand <= 0) {
             return;
         }
+        if ($('input#autoOrderCheck').prop('checked') == false) {
+            return;
+        }
         if (!retainElem) {
             retainElem = $('#retention');
         }
@@ -271,8 +274,9 @@ var rpOrder = (function ($) {
             cases += 1;
             start -= caseSize;
         }
-        if ($(elem).find('input.orderAmt').val() <= 0) {
-            $(elem).find('input.orderAmt').val(cases);
+        orderField = $(elem).find('input.orderAmt');
+        if (orderField.val() <= 0 && orderField.is(':visible')) {
+            orderField.val(cases);
         }
     };
 

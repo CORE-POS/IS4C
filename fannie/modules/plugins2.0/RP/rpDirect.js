@@ -272,7 +272,10 @@ var rpOrder = (function ($) {
             cases += 1;
             start -= realSize;
         }
-        $(elem).find('input.orderAmt').val(cases * realSize);
+        orderField = $(elem).find('input.orderAmt');
+        if (orderField.val() <= 0 && orderField.is(':visible')) {
+            orderField.val(cases * realSize);
+        }
     };
 
     mod.inc = function(btn, amt) {

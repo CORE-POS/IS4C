@@ -277,7 +277,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200204');
+        $this->addScript('rpOrder.js?date=20200220');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -730,6 +730,12 @@ class RpOrderPage extends FannieRESTfulPage
         <label><input class="vFilter" type="checkbox" checked value="136" onchange="rpOrder.vendorFilter();" /> RDW</label>
         &nbsp;&nbsp;&nbsp;
         <label><input class="vFilter" type="checkbox" checked value="-2" onchange="rpOrder.vendorFilter();" /> Direct</label>
+    </div>
+    <div class="form-group">
+        <label>
+            <input type="checkbox" checked id="autoOrderCheck" />
+            Auto-fill order amounts
+        </label>
     </div>
     <div class="progress collapse">
         <div class="progress-bar progress-bar-striped active"  role="progressbar" 
