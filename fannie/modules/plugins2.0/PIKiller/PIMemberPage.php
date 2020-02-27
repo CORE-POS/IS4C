@@ -322,8 +322,8 @@ class PIMemberPage extends PIKillerPage {
         if ($this->auth_mode == 'Full') {
             echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?edit=1&id='.$this->card_no.'">Change Status</a>';
             if (substr($status, 0, 4) === 'TERM' && $this->__models['equity']->payments() > 0) {
-                echo '&nbsp;&nbsp;&nbsp;<a onclick="return confirm(\'Refund equity via check?\');" 
-                    href="PITermCheck.php?id='.$this->card_no.'">Term Check</a>';
+                echo '&nbsp;&nbsp;&nbsp;<a onclick="return confirm(\'Remove equity and term?\');" 
+                    href="PITermCheck.php?id='.$this->card_no.'">Term Account</a>';
             }
         }
         else if ($this->auth_mode == 'Limited' && isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() == 16){
