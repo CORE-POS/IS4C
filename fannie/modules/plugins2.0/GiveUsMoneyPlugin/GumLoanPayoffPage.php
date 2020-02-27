@@ -85,6 +85,8 @@ class GumLoanPayoffPage extends FannieRESTfulPage
                 $loan_info = GumLib::loanSchedule($this->loan); 
                 $this->check_info->amount($loan_info['balance']);
                 $this->check_info->issueDate(date('Y-m-d'));
+                $this->check_info->checkNumber(0);
+                $this->check_info->save();
                 $this->check_info->load();
             }
         } else {
@@ -219,6 +221,7 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         if (FormLib::get('issued') == '1') {
             $this->check_info->checkIssued(1);
             $this->check_info->issueDate(date('Y-m-d H:i:s'));
+            $this->check_info->save();
         }
 
         return false;
