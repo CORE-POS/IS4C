@@ -84,6 +84,14 @@ class PriceBatchTask extends FannieTask
                 AND l.upc NOT LIKE 'LC%'
                 AND b.discounttype = 0
                 AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+            $chk_vital[] = $sql->query("UPDATE scaleItems AS p LEFT JOIN
+                batchList AS l ON l.upc=p.plu LEFT JOIN
+                batches AS b ON b.batchID=l.batchID
+                SET p.price = l.salePrice
+                WHERE l.batchID=b.batchID AND l.upc=p.upc
+                AND l.upc NOT LIKE 'LC%'
+                AND b.discounttype = 0
+                AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
         } else {
             $costChange = str_replace('p.cost', 'cost', $costChange);
             $chk_vital[] = $sql->query("UPDATE products SET
@@ -91,6 +99,13 @@ class PriceBatchTask extends FannieTask
                 normal_price = l.salePrice
                 FROM products AS p, batches AS b, batchList AS l
                 WHERE l.batchID=b.batchID AND l.upc=p.upc
+                AND l.upc NOT LIKE 'LC%'
+                AND b.discounttype = 0
+                AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+            $chk_vital[] = $sql->query("UPDATE scaleItems SET
+                price = l.salePrice
+                FROM scaleItems AS p, batches AS b, batchList AS l
+                WHERE l.batchID=b.batchID AND l.upc=p.plu
                 AND l.upc NOT LIKE 'LC%'
                 AND b.discounttype = 0
                 AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
