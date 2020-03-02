@@ -88,7 +88,7 @@ class PriceBatchTask extends FannieTask
                 batchList AS l ON l.upc=p.plu LEFT JOIN
                 batches AS b ON b.batchID=l.batchID
                 SET p.price = l.salePrice
-                WHERE l.batchID=b.batchID AND l.upc=p.upc
+                WHERE l.batchID=b.batchID AND l.upc=p.plu
                 AND l.upc NOT LIKE 'LC%'
                 AND b.discounttype = 0
                 AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
