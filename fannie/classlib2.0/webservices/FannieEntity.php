@@ -34,6 +34,7 @@ class FannieEntity extends FannieWebService
         'Customers',
         'MemberCards',
         'MemContact',
+        'VendorContact',
     );
 
     public function run($args=array())

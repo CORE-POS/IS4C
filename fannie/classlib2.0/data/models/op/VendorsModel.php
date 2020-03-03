@@ -65,6 +65,22 @@ class VendorsModel extends BasicModel
         return parent::toOptions($selected, $id_as_label);
     }
 
+    public function save()
+    {
+        $result = parent::save();
+
+        $contact = new VendorContactModel($this->connection);
+        $contact->vendorID($this->vendorID());
+        $contact->phone($this->phone());
+        $contact->fax($this->fax());
+        $contact->email($this->email());
+        $contact->website($this->website());
+        $contact->notes($this->notes());
+        $contact->save();
+
+        return $result;
+    }
+
     public function doc()
     {
         return '
