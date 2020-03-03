@@ -143,15 +143,6 @@ class VendorIndexPage extends FannieRESTfulPage
         $vModel->localOriginID($localID);
         $success = $vModel->save();
 
-        $vcModel = new VendorContactModel($dbc);
-        $vcModel->vendorID($id);
-        $vcModel->phone(FormLib::get('phone'));
-        $vcModel->fax(FormLib::get('fax'));
-        $vcModel->email(FormLib::get('email'));
-        $vcModel->website($web);
-        $vcModel->notes(FormLib::get('notes'));
-        $vcModel->save();
-
         $ret = array('error'=>0, 'msg'=>'');
         if ($success) {
             $ret['msg'] = 'Saved vendor information';
