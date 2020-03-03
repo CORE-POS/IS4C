@@ -392,7 +392,6 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $this->addScript('../../src/javascript/chkboxMulticlick.js');
         $this->addOnloadCommand('allow_group_select_checkboxes("printSignTable")');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
-        //$this->addOnloadCommand("$('#updateBtn').click(function(){confirm(\"hi\")});");
 
         return $ret;
     }
@@ -435,7 +434,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
     public function javascriptContent()
     {
-        return <<<HTML
+        return <<<JAVASCRIPT
     $('textarea').each(function(){
         var text = $(this).text();
         if (text == text.toUpperCase()) {
@@ -464,7 +463,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $("#signform").submit();
         }
     }
-HTML;
+JAVASCRIPT;
     }
 
     public function helpContent()
