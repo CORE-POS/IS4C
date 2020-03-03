@@ -74,7 +74,6 @@ class NewClassPage extends FannieRESTfulPage
         $likeCode = FormLib::get('likeCode');
         $pDept = FormLib::get('pDept');
         $size = FormLib::get('size');
-        //$sellonline = FormLib::get('sellonline');
         $sellonline = 0;
         $expires = FormLib::get('expires') . ' 00:00:00';
         $wBrand = FormLib::get('wBrand');
@@ -139,6 +138,7 @@ class NewClassPage extends FannieRESTfulPage
     {
         $alert = '';
         $upc = FormLib::get('upc');
+        $upc = BarcodeLib::padUPC($upc);
         $ln = '<a href="../ItemEditorPage.php?searchupc='.$upc.
                 '&ntype=UPC&searchBtn=">'.$upc.'</a>';
         if (FormLib::get('created') == 'success') {

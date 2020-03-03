@@ -75,7 +75,7 @@ class WfcClassRegistryPage extends FanniePage
         $localDB = $dbc;
         include(__DIR__.'/../../../src/Credentials/OutsideDB.tunneled.php');
         $remoteDB = $dbc;
-        $upc = FormLib::get('upc');
+        $upc = BarcodeLib::padUpc(FormLib::get('upc'));
         $newDate = FormLib::get('newDate');
 
         $args = array($newDate,$upc);
@@ -88,7 +88,7 @@ class WfcClassRegistryPage extends FanniePage
 
     public function notify_handler()
     {
-        $upc = FormLib::get('upc');
+        $upc = BarcodeLib::padUpc(FormLib::get('upc'));
         $class = FormLib::get('className');
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -110,7 +110,7 @@ class WfcClassRegistryPage extends FanniePage
         $localDB = $dbc;
         include(__DIR__.'/../../../src/Credentials/OutsideDB.tunneled.php');
         $remoteDB = $dbc;
-        $upc = FormLib::get('upc');
+        $upc = BarcodeLib::padUpc(FormLib::get('upc'));
         $class = FormLib::get('className');
 
         $args = array($upc);
@@ -131,7 +131,7 @@ class WfcClassRegistryPage extends FanniePage
     {
         $seats = FormLib::get('seats');
         $registered = FormLib::get('n');
-        $upc = FormLib::get('upc');
+        $upc = BarcodeLib::padUpc(FormLib::get('upc'));
         $className = FormLib::get('className');
         if (!class_exists('PHPMailer')) {
             // can't send
@@ -406,7 +406,7 @@ class WfcClassRegistryPage extends FanniePage
         $ret .= '</div>';
 
         $key = FormLib::get('class_plu');
-        $plu = isset($classUPC[$key]) ? $classUPC[$key] : '';
+        $plu = isset($classUPC[$key]) ? barcodeLib::padUpc($classUPC[$key]) : '';
         $this->plu = $plu;
 
         //* Create table if it doesn't exist

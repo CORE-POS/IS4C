@@ -57,8 +57,6 @@ class RegistryApply extends FannieRESTfulPage
         } 
         $model = new wfcuRegistryModel($dbc);
         foreach ($json['upcs'] as $i => $upc) {
-            // temporary fix, upcs cannot be padded for WfcClassRegistryPage class
-            $upc = ltrim($upc, '0');
             $qty = $json['qtys'][$i];
             if (strlen($json['phone']) == 10) {
                 $phone = $json['phone'];

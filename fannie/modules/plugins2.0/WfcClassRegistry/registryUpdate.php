@@ -74,7 +74,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 
     $ret = array('error'=>0);
     if (strlen($_POST['upc']) == 8) {
-        $item->upc($_POST['upc']);
+        $item->upc(str_pad(($_POST['upc']), 13, "0", STR_PAD_LEFT));
         $item->id($_POST['seat']);
     } else {
         $ret['error'] = 1;
