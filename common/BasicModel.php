@@ -454,7 +454,7 @@ class BasicModel
         return $ret;
     }
 
-    protected function isUnique()
+    public function isUnique()
     {
         foreach($this->unique as $column) {
             if (!isset($this->instance[$column])) {
