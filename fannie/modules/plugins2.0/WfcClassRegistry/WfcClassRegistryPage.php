@@ -431,53 +431,40 @@ class WfcClassRegistryPage extends FanniePage
             echo $dbc->error() . '<br />';
         }
 
+        //* Insert IDs into Rows based on class size
         if($plu) {
-            //* Insert IDs into Rows based on class size
+            $plu = BarcodeLib::padUpc($plu);
             $pCheck = $dbc->prepare("
-                SELECT count(seat)
+                SELECT COUNT(seat)
                 FROM wfcuRegistry
-                WHERE upc = {$plu}
-                    AND seatType=1
-            ;");
-            $rCheck = $dbc->execute($pCheck);
-            while ($row = $dbc->fetch_row($rCheck)) {
-                $numSeats = $row['count(seat)'];
-            }
+                WHERE upc = ? 
+                    AND seatType = 1
+                    AND childSeat = 0;");
+            $rCheck = $dbc->execute($pCheck, array($plu));
+            $numSeats = $dbc->fetchRow($rCheck);
+            $numSeats = $numSeats[0];
+
             $pCheck = $dbc->prepare("
                 SELECT size
                 FROM products
-                WHERE upc = {$plu}
-            ;");
-            $rCheck = $dbc->execute($pCheck);
-            while ($row = $dbc->fetch_row($rCheck)) {
-                $classSize = $row['size'];
-            }
+                WHERE upc = ?;");
+            $rCheck = $dbc->execute($pCheck, array($plu));
+            $classSize = $dbc->fetchRow($rCheck);
+            $classSize = $classSize[0];
 
-            //redo this to insert 
-            $sAddSeat = "INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ";
-            for ($i=$numSeats; $i<$classSize; $i++) {
-                $sAddSeat .= " ( " . $plu . ", " . ($i+1) . ", 1) ";
-                if (($i+1)<$classSize) {
-                    $sAddSeat .= ", ";
-                }
-            }
             if ($numSeats < $classSize) {
-                $pAddSeat = $dbc->prepare("{$sAddSeat}");
-                $rAddSeat = $dbc->execute($pAddSeat);
-            }
-            // if class is for children, include children seats
-            if (strpos(strtolower($className[$curPlu]), 'kid') !== false
-                    || strpos(strtolower($className[$curPlu]), 'child') !== false) {
-                $sAddSeat = "INSERT INTO wfcuRegistry (upc, seat, seatType, childseat) VALUES ";
                 for ($i=$numSeats; $i<$classSize; $i++) {
-                    $sAddSeat .= " ( " . $plu . ", " . ($i+1) . ", 1, 1) ";
-                    if (($i+1)<$classSize) {
-                        $sAddSeat .= ", ";
+                    $aAddSeat = array($plu, $i+1, 1); 
+                    $pAddSeat = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType)
+                        VALUES (?, ?, ?);");
+                    $dbc->execute($pAddSeat, $aAddSeat);
+                    if (strpos(strtolower($className[$curPlu]), 'kid') !== false
+                            || strpos(strtolower($className[$curPlu]), 'child') !== false) {
+                        $aAddSeat = array($plu, $i+1, 1, 1); 
+                        $pAddSeat = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType, childSeat)
+                            VALUES (?, ?, ?, ?);");
+                        $dbc->execute($pAddSeat, $aAddSeat);
                     }
-                }
-                if ($numSeats < $classSize) {
-                    $pAddSeat = $dbc->prepare("{$sAddSeat}");
-                    $rAddSeat = $dbc->execute($pAddSeat);
                 }
             }
 
