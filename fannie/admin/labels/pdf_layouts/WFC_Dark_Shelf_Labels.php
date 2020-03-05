@@ -139,12 +139,21 @@ foreach($data as $k => $row){
    $res = $dbc->execute($prep, $args);
    $row = $dbc->fetchRow($res);
    $desc = $row['description'];
+   $scale = $row['scale'];
+
+   $pScale = $dbc->prepare("SELECT weight FROM scaleItems WHERE plu = ?");
+   $rScale = $dbc->execute($pScale, $args);
+   $row = $dbc->fetchRow($rScale);
+   $weight = $row['weight'];
        
    $desc = str_replace("\n", "", $desc);
    $desc = str_replace("\r", "", $desc);
-   $scale = $row['scale'];
-   $price = ($scale == 0) ? "$".$price : "";
-   //if ($scale != 0) continue;
+
+   if ($scale == 1 || $weight == 1 || $desc == '') {
+        $price = "";       
+   } else {
+        $price = "$".$price;
+   }
 
    // writing data
    // basically just set cursor position
