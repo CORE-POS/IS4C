@@ -111,7 +111,7 @@ class FannieEntity extends FannieWebService
     public function run($args=array())
     {
         $ret = array();
-        $errored = $this->checkBasicErrors($ret);
+        $errored = $this->checkBasicErrors($args, $ret);
         if ($errored !== false) {
             return $errored;
         }
@@ -119,6 +119,7 @@ class FannieEntity extends FannieWebService
         /**
          * Make sure all provided columns are valid
          */
+        $model = $args->entity . 'Model';
         $obj = new $model(FannieDB::get(FannieConfig::config('OP_DB')));
         $cols = $obj->getColumns();
         foreach ($args->columns as $key => $val) {
@@ -138,6 +139,7 @@ class FannieEntity extends FannieWebService
             $obj->$key($val);
         }
 
+        $method = strtolower($args->submethod);
         if ($method == 'get') {
             $ret['result'] = array_map(function ($i) { return $i->toJSON(); }, $obj->find());
         } else {
@@ -162,7 +164,7 @@ class FannieEntity extends FannieWebService
                  * record by auto increment
                  */
                 $newID = $obj->save();
-                if ($saved === false) {
+                if ($newID === false) {
                     $ret['error'] = array(
                         'code' => -32000,
                         'message' => 'Error saving data',
