@@ -52,6 +52,8 @@ class RdwImport extends FannieRESTfulPage
                 $this->data[$prev] = str_replace('N/A AND ', '', $this->data[$prev]);
             }
         }
+        $clearP = $this->connection->prepare("DELETE FROM PurchaseOrderItems WHERE orderID=?");
+        $this->connection->execute($clearP, array($orderID));
         $model = new PurchaseOrderItemsModel($this->connection);
         foreach ($invItems as $item) {
             list($desc, $case, $unit) = $this->getSize($item[3]);
