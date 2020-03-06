@@ -45,12 +45,14 @@ class StoreFloorsPage extends FannieRESTfulPage
         $model = new FloorSectionsModel($this->connection);
         $model->storeID($this->id);
         $labels = '';
+        $highlight = $this->form->tryGet('section');
         foreach ($model->find() as $section) {
             $labels .= sprintf('<div class="floorlabel"
-                style="position: absolute; top: %dpx; left: %dpx;
+                style="position: absolute; top: %dpx; left: %dpx; %s
                 transform: rotate(%ddeg); transform-origin: left top 0;">%s</div>',
                 $section->mapY(),
                 $section->mapX(),
+                ($section->floorSectionID() == $highlight ? 'color: red; font-weight: bold;' : ''),
                 $section->mapRotate(),
                 $section->name()
             );

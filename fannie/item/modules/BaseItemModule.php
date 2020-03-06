@@ -413,6 +413,9 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 (!empty($item['last_sold']) ? $item['last_sold'] : 'n/a')
             );
         }
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
+            $ret .= ' | <a href="mapping/FindItem.php?id=' . $upc . '">Find it!</a>';
+        }
         $ret .= '</div>'; // end panel-heading
 
         $ret .= '<div class="panel-body">';
