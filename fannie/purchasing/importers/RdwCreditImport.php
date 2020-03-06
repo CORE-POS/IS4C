@@ -28,6 +28,8 @@ class RdwCreditImport extends FannieRESTfulPage
             return 'RdwCreditImport';
         }
         $this->orderID = $this->getPO($ref, $store, $date);
+        $clearP = $this->connection->prepare("DELETE FROM PurchaseOrderItems WHERE orderID=?");
+        $this->connection->execute($clearP, array($this->orderID));
         $model = new PurchaseOrderItemsModel($this->connection);
         foreach ($invItems as $item) {
             $desc = $item[2];
