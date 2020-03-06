@@ -164,7 +164,7 @@ class FannieEntity extends FannieWebService
                  * record by auto increment
                  */
                 $newID = $obj->save();
-                if ($saved === false) {
+                if ($newID === false) {
                     $ret['error'] = array(
                         'code' => -32000,
                         'message' => 'Error saving data',
