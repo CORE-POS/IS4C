@@ -102,7 +102,12 @@ class UIGLib
                     $id = $dbc->insertID();
                 }
 
+                $fakeSku = 1;
                 foreach($item_info as $item) {
+                    if ($item['sku'] == 0) {
+                        $item['sku'] = $fakeSku;
+                        $fakeSku++;
+                    }
                     $model = new PurchaseOrderItemsModel($dbc);
                     $model->orderID($id);
                     $model->sku($item['sku']);
