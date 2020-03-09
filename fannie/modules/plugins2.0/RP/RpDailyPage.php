@@ -217,6 +217,9 @@ HTML;
             $mod *= $modify['points'] / 7;
             $ttl = $ttl * (1 + $mod);
         }
+        if (date('N') == 1) {
+            $ttl = $modify['this'];
+        }
         $growth = ($ttl - $planTTL) / $ttl * 100;
         if (date('N') == 1) {
             $lastYear = json_decode($seg['lastYear'], true);
