@@ -12,6 +12,7 @@ class InstaDetailReport extends FannieReportPage
     protected $title = 'InstaCart Detail Report';
     protected $header = 'InstaCart Detail Report';
     public $description = '[InstaCart Detail Report] displays transaction details for a given order';
+    public $discoverable = false;
     protected $required_fields = array('date', 'order');
     protected $report_headers = array('UPC', 'Brand', 'Description', 'Qty', 'Online Total', 'Total');
 
