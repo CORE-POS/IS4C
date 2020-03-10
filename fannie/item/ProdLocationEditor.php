@@ -548,6 +548,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
             <td><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';
+        $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addOnloadCommand("$('.mySortableTable').tablesorter();");
 
         return $ret;
