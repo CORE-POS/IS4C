@@ -768,6 +768,10 @@ class RpOrderPage extends FannieRESTfulPage
 <p>
     <a href="RpOrderPage.php?clear=1" class="btn btn-danger">Clear My Session</a>
 </p>
+<div id="eruda">
+</div>
+<script src="//cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init({ container: document.getElementById('eruda') });</script>
 HTML;
     }
 
