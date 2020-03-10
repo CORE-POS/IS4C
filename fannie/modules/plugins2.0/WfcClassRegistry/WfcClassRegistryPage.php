@@ -281,8 +281,8 @@ class WfcClassRegistryPage extends FanniePage
 
         $this->add_onload_command('itemEditing(' . (isset($classSize) ? $classSize : '') . ');');
         //$this->add_onload_command('withdraw();');
-        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
-        $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
+        $this->addScript('../../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addCssFile('../../../src/javascript/tablesorter/themes/blue/style.css');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
 
         return $ret;
