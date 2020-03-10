@@ -293,3 +293,20 @@ function appendTokens(token) {
     }
 }
 
+function logJsErrors(urlStem) {
+    window.onerror = function(msg, pageURL, lineNo, colNo, error) {
+        var logEntry = { 
+            message: msg,
+            url: pageURL,
+            line: lineNo,
+            col: colNo,
+            detail: error
+        };
+        $.ajax({
+            url: urlStem + 'logs/LogJS.php',
+            method: 'get',
+            data: 'id=' + JSON.stringify(logEntry)
+        });
+    };
+}
+
