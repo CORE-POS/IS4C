@@ -240,6 +240,9 @@ function doubleBeep() {
         <?php if ($this->linea_ios_mode){ ?>
 Device = new ScannerDevice({
     barcodeData: function (data, type){
+        if (typeof(data) === 'undefined') {
+            return;
+        }
         var upc = data.substring(0,data.length-1);
         if ($('#upc_in').length > 0){
             $('#upc_in').val(upc);
