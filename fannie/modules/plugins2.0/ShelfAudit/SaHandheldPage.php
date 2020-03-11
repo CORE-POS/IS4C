@@ -265,6 +265,9 @@ ScannerDevice.registerListener(Device);
 if (typeof WebBarcode != 'undefined') {
     WebBarcode.onBarcodeScan(function(ev) {
         var data = ev.value;
+        if (typeof(data) === 'undefined') {
+            return;
+        }
         var upc = data.substring(0,data.length-1);
         $('#upc_in').val(upc);
         $('#goBtn').click();
@@ -272,6 +275,9 @@ if (typeof WebBarcode != 'undefined') {
 }
 document.addEventListener("BarcodeScanned", function (ev) {
     var data = ev.value;
+    if (typeof(data) === 'undefined') {
+        return;
+    }
     var upc = data.substring(0,data.length-1);
     $('#upc_in').val(upc);
     $('#goBtn').click();
