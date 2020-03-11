@@ -22,6 +22,9 @@
   triggered, if present, or the closest form is submitted
 */
 function lineaBarcode(upc, selector, callback) {
+    if (typeof upc === 'undefined') {
+        return;
+    }
     upc = upc.substring(0,upc.length-1);
     if ($(selector).length > 0){
         $(selector).val(upc);
