@@ -294,13 +294,14 @@ function appendTokens(token) {
 }
 
 function logJsErrors(urlStem) {
-    window.onerror = function(msg, pageURL, lineNo, colNo, error) {
+    window.onerror = function(msg, scriptURL, lineNo, colNo, error) {
         var logEntry = { 
             message: msg,
-            url: pageURL,
+            url: scriptURL,
             line: lineNo,
             col: colNo,
-            detail: error
+            detail: error,
+            page: window.location
         };
         $.ajax({
             url: urlStem + 'logs/LogJS.php',
