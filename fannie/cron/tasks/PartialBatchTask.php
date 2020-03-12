@@ -58,10 +58,99 @@ times will be limited by how frequently this task runs.';
         $today = date('Y-m-d');
         $now = new DateTime();
 
+        $multiStore= false;
+        list($curP, $unsaleP, $saleP, $query) = $this->oneStoreQueries($dbc);
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $multiStore= true;
+            list($curP, $unsaleP, $saleP, $query) = $this->multiStoreQueries($dbc);
+        }
+        $changedUPCs = array();
+
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, array($today));
+        $hour = date('G');
+        $minute = ltrim(date('i'), '0');
+        while ($row = $dbc->fetchRow($res)) {
+            if (!$this->appliesToday($row['repetition'])) {
+                continue;
+            }
+
+            $start = new DateTime($today . ' ' . $row['startTime']);
+            $end = new DateTime($today . ' ' . $row['endTime']);
+            if ($row['paddingMinutes']) {
+                $end = $end->add(new DateInterval('PT' . $row['paddingMinutes'] . 'M'));
+            }
+            $itemArgs = array($row['upc']);
+            if ($multiStore) {
+                $itemArgs = array($row['upc'], $row['storeID']);
+            }
+
+            if ($now >= $end) {
+                // batch should stop
+                // if the batchID does not match leave it alone
+                $current = $dbc->getRow($curP, array($itemArgs));
+                if ($current['batchID'] == $row['batchID']) {
+                    $dbc->execute($unsaleP, array($itemArgs));
+                    $changedUPCs[] = $row['upc'];
+                }
+            } elseif ($now >= $start) {
+                // batch should start
+                // Matching batchID should mean this sale has already started
+                $current = $dbc->getRow($curP, array($itemArgs));
+                if ($current['batchID'] != $row['batchID'] && ($current['discounttype'] == 0 || $row['overwriteSales'] == 1)) {
+                    $saleArgs = array(
+                        $row['salePrice'],
+                        $row['batchID'],
+                        $row['discounttype'],
+                        $today . ' ' . $row['startTime'],
+                        $today . ' ' . $row['endTime'],
+                        $row['upc'],
+                    );
+                    if ($multiStore) {
+                        $saleArgs[] = $row['storeID'];
+                    }
+                    $dbc->execute($saleP, $saleArgs);
+                    $changedUPCs[] = $row['upc'];
+                }
+            }
+        }
+        print_r($changedUPCs);
+
+        ItemSync::sync($changedUPCs);
+    }
+
+    private function oneStoreQueries($dbc)
+    {
         $curP = $dbc->prepare('SELECT discounttype, batchID FROM products WHERE upc=?');
         $unsaleP = $dbc->prepare('UPDATE products SET special_price=0, batchID=0, discounttype=0, start_date=\'1900-01-01\', end_date=\'1900-01-01\' WHERE upc=?');
         $saleP = $dbc->prepare('UPDATE products SET special_price=?, batchID=?, discounttype=?, start_date=?, end_date=? WHERE upc=?');
-        $changedUPCs = array();
+
+        $query = 'SELECT p.startTime,
+                p.endTime,
+                p.paddingMinutes,
+                p.overwriteSales,
+                p.repetition,
+                l.salePrice,
+                b.discounttype,
+                l.upc,
+                p.batchID,
+                m.storeID
+            FROM PartialBatches AS p
+                INNER JOIN batches AS b ON p.batchID=b.batchID
+                INNER JOIN batchList AS l ON p.batchID=l.batchID
+                INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID
+            WHERE ? BETWEEN b.startDate AND b.endDate
+                AND b.discounttype > 0';
+        return array($curP, $unsaleP, $saleP, $query);
+    }
+
+    private function multiStoreQueries($dbc)
+    {
+        $curP = $dbc->prepare('SELECT discounttype, batchID FROM products WHERE upc=? AND store_id=?');
+        $unsaleP = $dbc->prepare('UPDATE products SET special_price=0, batchID=0, discounttype=0, start_date=\'1900-01-01\', end_date=\'1900-01-01\'
+            WHERE upc=? AND store_id=?');
+        $saleP = $dbc->prepare('UPDATE products SET special_price=?, batchID=?, discounttype=?, start_date=?, end_date=?
+            WHERE upc=? AND store_id=?');
 
         $query = 'SELECT p.startTime,
                 p.endTime,
@@ -77,48 +166,7 @@ times will be limited by how frequently this task runs.';
                 INNER JOIN batchList AS l ON p.batchID=l.batchID
             WHERE ? BETWEEN b.startDate AND b.endDate
                 AND b.discounttype > 0';
-        $prep = $dbc->prepare($query);
-        $res = $dbc->execute($prep, array($today));
-        $hour = date('G');
-        $minute = ltrim(date('i'), '0');
-        while ($row = $dbc->fetchRow($res)) {
-            if (!$this->appliesToday($row['repetition'])) {
-                continue;
-            }
-
-            $start = new DateTime($today . ' ' . $row['startTime']);
-            $end = new DateTime($today . ' ' . $row['endTime']);
-            if ($row['paddingMinutes']) {
-                $end = $end->add(new DateInterval('PT' . $row['paddingMinutes'] . 'M'));
-            }
-
-            if ($now >= $end) {
-                // batch should stop
-                // if the batchID does not match leave it alone
-                $current = $dbc->getRow($curP, array($row['upc']));
-                if ($current['batchID'] == $row['batchID']) {
-                    $dbc->execute($unsaleP, array($row['upc']));
-                    $changedUPCs[] = $row['upc'];
-                }
-            } elseif ($now >= $start) {
-                // batch should start
-                // Matching batchID should mean this sale has already started
-                $current = $dbc->getRow($curP, array($row['upc']));
-                if ($current['batchID'] != $row['batchID'] && ($current['discounttype'] == 0 || $row['overwriteSales'] == 1)) {
-                    $dbc->execute($saleP, array(
-                        $row['salePrice'],
-                        $row['batchID'],
-                        $row['discounttype'],
-                        $today . ' ' . $row['startTime'],
-                        $today . ' ' . $row['endTime'],
-                        $row['upc'],
-                    ));
-                    $changedUPCs[] = $row['upc'];
-                }
-            }
-        }
-
-        ItemSync::sync($changedUPCs);
+        return array($curP, $unsaleP, $saleP, $query);
     }
 
     private function appliesToday($repetition)
