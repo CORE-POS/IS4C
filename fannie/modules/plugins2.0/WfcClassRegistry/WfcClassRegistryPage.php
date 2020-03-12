@@ -510,9 +510,11 @@ class WfcClassRegistryPage extends FanniePage
             $items->upc($this->plu);
             $items->seatType(1);
 
+            list($rows, $count) = $this->printItems($items);
+            $sorter = $count ? "tablesorter" : "";
             $ret .= '<div id="alert-area"></div>
             <h4>Class Registry</h4>
-            <table class="table tablesorter" name="ClassRegistry" id="table-roster">';
+            <table class="table ' . $sorter . '" name="ClassRegistry" id="table-roster">';
             $ret .= '<thead><tr></tr>
                 <tr><th>Seat</th>
                 <th>Mem #</th>
@@ -525,17 +527,19 @@ class WfcClassRegistryPage extends FanniePage
                 </thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
-            $ret .= $this->printItems($items);
+            $ret .= $rows;
             $ret .= '</tr></tbody></table>';
 
             $items->reset();
             $items->upc($this->plu);
             $items->seatType(0);
 
+            list($rows, $count) = $this->printItems($items);
+            $sorter = $count ? "tablesorter" : "";
             //* Waiting List Roster
             $ret .= '<div id="alert-area"></div>
             <h4>Waiting List</h4>
-            <table class="table tablesorter" id="table-waiting">';
+            <table class="table ' . $sorter . '" id="table-waiting">';
             $ret .= '<thead>
                 <tr><th></th>
                 <th>Mem #</th>
@@ -547,7 +551,6 @@ class WfcClassRegistryPage extends FanniePage
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
-            $ret .= $this->printItems($items);
             $ret.= '<tr><td><button type="button" class="btn btn-default" onclick="window.location.reload();">Add Row</button></tr>';
             $ret .= '</tbody></table>';
 
@@ -555,10 +558,12 @@ class WfcClassRegistryPage extends FanniePage
             $items->upc($this->plu);
             $items->seatType(3);
 
+            list($rows, $count) = $this->printItems($items);
+            $sorter = $count ? "tablesorter" : "";
             //* Class Cancellations
             $ret .= '<div id="alert-area"></div>
             <h4>Cancellations</h4>
-            <table class="table tablesorter" id="table-cancel">';
+            <table class="table i' . $sorter . '" id="table-cancel">';
             $ret .= '<thead><tr>
                 <tr><th></th>
                 <th>Mem #</th>
@@ -571,7 +576,6 @@ class WfcClassRegistryPage extends FanniePage
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
-            $ret .= $this->printItems($items, false);
             $ret .= '</tbody></table></div>';
         }
 
@@ -737,11 +741,19 @@ JAVASCRIPT;
             </p>';
     }
 
+    /**
+     * Changed to return body of the table AND a row count.
+     *
+     * Calling tablesorter on an empty table causes a JS
+     * error so the caller uses the row count to check
+     * whether the table should be designated sortable.
+     */
     private function printItems($items, $withCancel=true)
     {
         $ret = '';
         $i = 0;
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $rowCount = 0;
         foreach ($items->find('seat') as $item) {
             $puModel = new ProductUserModel($dbc);
             $puModel->upc(BarcodeLib::padUpc($item->upc()));
@@ -813,9 +825,10 @@ JAVASCRIPT;
                     $item->upc()
                 );
             }
+            $rowCount++;
         }
 
-        return $ret;
+        return array($ret, $rowCount);
     }
 
     private function printCredits($items)
