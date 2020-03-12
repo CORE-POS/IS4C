@@ -131,8 +131,7 @@ class BatchTypeEditor extends FanniePage {
         }
         if (FormLib::get('addtype') !== ''){
             $prep = $dbc->prepare("SELECT MAX(batchTypeID) FROM batchType");
-            $res = $dbc->execute($prep);
-            $tid = array_pop($dbc->fetch_row($res));
+            $tid = $dbc->getValue($prep);
             $tid = (empty($tid)) ? 1 : $tid + 1;
 
             $ins = $dbc->prepare("INSERT INTO batchType (batchTypeID,typeDesc,discType)
