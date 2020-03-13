@@ -66,10 +66,10 @@ var baseItem = (function() {
             if (!resp.error) {
                 $('#local-origin-id').val(resp.localID);
                 $('.tab-pane.active .product-case-size').prop('disabled', false);
-                $('#product-sku-field').prop('disabled', false);
+                $('.sku-field').prop('disabled', false);
             } else {
                 $('.tab-pane.active .product-case-size').prop('disabled', true);
-                $('#product-sku-field').prop('disabled', true);
+                $('.sku-field').prop('disabled', true);
             }
         });
     };

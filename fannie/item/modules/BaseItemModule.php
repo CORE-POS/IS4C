@@ -464,7 +464,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
     <td colspan="5">
         <div class="input-group" style="width:100%;">
             <input type="text" maxlength="30" class="form-control syncable-input descript-input" required
-                name="descript[]" id="descript" value="{$rowItem['description']}" 
+                name="descript[]" value="{$rowItem['description']}" 
                 onkeyup="$(this).next().html(30-(this.value.length));" />
             <span class="input-group-addon">{$limit}</span>
         </div>
@@ -715,10 +715,10 @@ HTML;
     </td>
     <th class="small text-right">SKU</th>
     <td colspan="2">
-        <input type="text" name="vendorSKU" class="form-control input-sm"
-            value="{$rowItem['sku']}" 
+        <input type="text" name="vendorSKU" value="{$rowItem['sku']}" 
+            class="form-control input-sm sku-field syncable-input"
             onchange="$('#vsku{$jsVendorID}').val(this.value);" 
-            {$vFieldsDisabled} {$aliasDisabled} id="product-sku-field" />
+            {$vFieldsDisabled} {$aliasDisabled} />
         <input type="hidden" name="isAlias" value="{$rowItem['isAlias']}" />
     </td>
 </tr>
