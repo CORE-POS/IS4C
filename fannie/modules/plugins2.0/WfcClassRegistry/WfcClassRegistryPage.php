@@ -551,6 +551,7 @@ class WfcClassRegistryPage extends FanniePage
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
+            $ret .= $rows;
             $ret.= '<tr><td><button type="button" class="btn btn-default" onclick="window.location.reload();">Add Row</button></tr>';
             $ret .= '</tbody></table>';
 
@@ -576,6 +577,7 @@ class WfcClassRegistryPage extends FanniePage
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
+            $ret .= $rows;
             $ret .= '</tbody></table></div>';
         }
 
