@@ -468,20 +468,20 @@ class WfcClassRegistryPage extends FanniePage
                 }
             }
 
-            $prep = $dbc->prepare("SELECT count(id) FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
-            $resp = $dbc->execute($prep);
+            $prep = $dbc->prepare("SELECT count(id) FROM wfcuRegistry WHERE seatType=0 AND upc=?;");
+            $resp = $dbc->execute($prep, array($plu));
             while ($row = $dbc->fetch_row($resp)) {
                 $waitSize = $row['count(id)'];
             }
             if ($waitSize == 0 || !isset($waitSize)) {
-                $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ({$plu}, 1, 0);");
-                $resp = $dbc->execute($prep);
+                $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES (?, 1, 0);");
+                $resp = $dbc->execute($prep, array($plu));
             }
 
             //  Create a new (blank) 'Waiting List' row if the previous row no longer NULL.
             $prep = $dbc->prepare("SELECT id, LENGTH(first_name) AS firstNameLength 
-                FROM wfcuRegistry WHERE seatType=0 AND upc={$plu};");
-            $resp = $dbc->execute($prep);
+                FROM wfcuRegistry WHERE seatType=0 AND upc=?;");
+            $resp = $dbc->execute($prep, array($plu));
             while ($row = $dbc->fetch_row($resp)) {
                 $firstNameLength = $row['firstNameLength'];
                 $id = $row['id'];
@@ -598,7 +598,7 @@ class WfcClassRegistryPage extends FanniePage
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $info = new wfcuRegistryModel($dbc);
         $move = new wfcuRegistryModel($dbc);
-        $info->upc(FormLib::get('class_plu'));
+        $info->upc(BarcodeLib::padUpc(FormLib::get('class_plu')));
         $info->id(FormLib::get('id'));
 
         $ret = '<p class="bg-success" align="center"> <b>';
