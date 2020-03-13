@@ -31,7 +31,7 @@ class FindItem extends FannieRESTfulPage
         }
         $stores = new StoresModel($this->connection);
         $stores->hasOwnItems(1);
-        $itemP = $this->connection->prepare('SELECT last_sold FROM products WHERE upc=? AND store_id=?');
+        $itemP = $this->connection->prepare('SELECT last_sold, numflag FROM products WHERE upc=? AND store_id=?');
         $storeSection = '<div class="row">';
         $floorP = $this->connection->prepare('
             SELECT f.floorSectionID, f.name
@@ -41,7 +41,8 @@ class FindItem extends FannieRESTfulPage
         foreach ($stores->find('description') as $s) {
             $storeSection .= '<div class="col-sm-3">';
             $storeSection .= '<strong>' . $s->description() . '</strong><br />';
-            $lastSold = $this->connection->getValue($itemP, array($upc, $s->storeID()));
+            $item = $this->connection->getRow($itemP, array($upc, $s->storeID()));
+            $lastSold = $item['last_sold'];
             if ($lastSold) {
                 $today = new DateTime();
                 list($lastSold,) = explode(' ', $lastSold);
@@ -51,13 +52,20 @@ class FindItem extends FannieRESTfulPage
             } else {
                 $storeSection .= 'Last sold: never<br />';
             }
+            if ($item['numflag'] & (1 << 18)) {
+                $storeSection .= '<em>This item may be out of stock</em><br />';
+            }
+            if ($item['numflag'] & (1 << 19)) {
+                $storeSection .= '<em>This item has been discontinued</em><br />';
+            }
             $locations = $this->connection->getAllRows($floorP, array($upc, $s->storeID()));
-            $storeSection .= 'Location(s):<br />';
+            $storeSection .= '<br />Location(s):<br />';
             if (count($locations) == 0) {
                 $storeSection .= 'Unknown<br />';
             }  else {
                 foreach ($locations as $l) {
-                    $storeSection .= sprintf('<a href="StoreFloorsPage.php?id=%d&section=%d">%s</a><br />',
+                    $storeSection .= sprintf('<a href="StoreFloorsPage.php?id=%d&section=%d">%s
+                            <span class="glyphicon glyphicon-info-sign"></span></a><br />',
                         $s->storeID(),
                         $l['floorSectionID'],
                         $l['name']);
@@ -73,6 +81,7 @@ class FindItem extends FannieRESTfulPage
     {$aka}<br />
 </p>
 {$storeSection}
+<hr />
 <p>
     {$img}
 </p>
