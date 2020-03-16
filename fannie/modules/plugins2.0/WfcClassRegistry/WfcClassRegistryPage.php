@@ -53,14 +53,14 @@ class WfcClassRegistryPage extends FanniePage
             $this->sellOut_handler();
         } elseif (FormLib::get('newDate', false) !== false) {
             $this->newDate_handler();
+        } elseif (FormLib::get('cancel', false) !== false) {
+            $this->cancel_handler();
         }
 
 
         $this->display_function = 'listClasses';
 
-        if (FormLib::get('cancel', false) !== false) {
-            $this->display_function = 'cancel_vew';
-        } elseif (FormLib::get('sign_pay', false) !== false) {
+        if (FormLib::get('sign_pay', false) !== false) {
             $this->display_function = 'sign_pay_view';
         } elseif (FormLib::get('credits', false) !== false) {
             $this->display_function = 'credits_view';
@@ -486,17 +486,21 @@ class WfcClassRegistryPage extends FanniePage
                 $firstNameLength = $row['firstNameLength'];
                 $id = $row['id'];
             }
-            $prep = $dbc->prepare("SELECT max(id) as id FROM wfcuRegistry;");
-            $resp = $dbc->execute($prep);
-            while ($row = $dbc->fetch_row($resp)) {
-                $maxID = $row['id'];
-            }
-            $nextId = ($maxID + 1);
-            if ($firstNameLength != 0) {
-                $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ({$plu}, {$nextId}, 0);");
-                $resp = $dbc->execute($prep);
-            }
+            $prep = $dbc->prepare("SELECT id FROM wfcuRegistry WHERE upc = ?
+                AND seatType = 0 AND LENGTH(first_name) = 0");
+            $resp = $dbc->execute($prep, array($plu));
+            $rows = $dbc->numRows($resp);
 
+            if ($rows == 0) {
+                $prep = $dbc->prepare("SELECT MAX(seat) AS max FROM wfcuRegistry WHERE upc = ? 
+                    AND seatType = 0");
+                $resp = $dbc->execute($prep, array($plu));
+                $row = $dbc->fetchRow($resp);
+                $max = $row['max'];
+                $max += 1;
+                $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES (?, ?, 0);");
+                $resp = $dbc->execute($prep, array($plu, $max));
+            }
         }
 
         if ($key > -1) {
@@ -510,7 +514,7 @@ class WfcClassRegistryPage extends FanniePage
             $items->upc($this->plu);
             $items->seatType(1);
 
-            list($rows, $count) = $this->printItems($items);
+            list($rows, $count) = $this->printItems($items, $curPlu);
             $sorter = $count ? "tablesorter" : "";
             $ret .= '<div id="alert-area"></div>
             <h4>Class Registry</h4>
@@ -594,34 +598,32 @@ class WfcClassRegistryPage extends FanniePage
         return $ret;
     }
 
-    private function cancel_vew()
+    private function cancel_handler()
     {
-        $key = FormLib::get('key');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $info = new wfcuRegistryModel($dbc);
-        $move = new wfcuRegistryModel($dbc);
-        $info->upc(BarcodeLib::padUpc(FormLib::get('class_plu')));
-        $info->id(FormLib::get('id'));
-
-        $ret = '<p class="bg-success" align="center"> <b>';
-
-        foreach ($info->find() as $info) {
-            $ret .= $info->first_name() . " ";
-            $ret .= $info->last_name() . " Owner#: ";
-            $ret .= $info->card_no() . " </b> has been removed from the class registry</p>";
-
-            $move->upc($info->upc());
-            $move->first_name($info->first_name());
-            $move->last_name($info->last_name());
-            $move->card_no($info->card_no());
-            $move->payment($info->payment());
-            $move->phone($info->phone());
-            $move->seatType(3);
-            $saved = $move->save();
-            $deleted = $info->delete();
+        //$class_plu = FormLib::get('class_plu');
+        $model = new wfcuRegistryModel($dbc);
+        $newRow = new wfcuRegistryModel($dbc);
+        $model->id(FormLib::get('id'));
+        $model->load();
+        $cols = array("id","upc","first_name","last_name","phone","card_no","payment","refund","modified","seat","seatType","details","amount","email","childseat");
+        // set new row into cancelled table with data from row selected
+        foreach ($cols as $col) {
+            $newRow->{$col}($model->{$col}());
         }
-        $ret .= '<a class="btn btn-default" href=' . '?class_plu=' . $key . '>Return to Registry</a>';
-        return $ret;
+        $newRow->id(null);
+        $newRow->seatType(3);
+        $newRow->seat(null);
+        $newRow->save();
+        // unset data in original row so it can be used again 
+        $cols = array("first_name","last_name","phone","card_no","payment","refund","email");
+        foreach ($cols as $col) {
+            $model->{$col}(null);
+        };
+        $model->save();
+
+        return header('location: WfcClassRegistryPage.php?class_plu=16');
+        
     }
 
     private function sign_pay_view()
@@ -750,7 +752,7 @@ JAVASCRIPT;
      * error so the caller uses the row count to check
      * whether the table should be designated sortable.
      */
-    private function printItems($items, $withCancel=true)
+    private function printItems($items, $curPlu=false, $withCancel=true)
     {
         $ret = '';
         $i = 0;
@@ -821,8 +823,8 @@ JAVASCRIPT;
 
             if ($withCancel && $item->first_name()) {
                 $ret .= sprintf('
-                    <td><a class="btn btn-default" href="?class_plu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',
-                    $item->upc(),
+                    <td><a class="btn btn-default" href="?classplu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',
+                    $curPlu,
                     $item->id(),
                     $item->upc()
                 );
