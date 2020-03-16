@@ -594,19 +594,36 @@ class WfcClassRegistryPage extends FanniePage
         //$class_plu = FormLib::get('class_plu');
         $model = new wfcuRegistryModel($dbc);
         $newRow = new wfcuRegistryModel($dbc);
+        $child = new wfcuRegistryModel($dbc);
         $model->id(FormLib::get('id'));
         $model->load();
         $cols = array("id","upc","first_name","last_name","phone","card_no","payment","refund","modified","seat","seatType","details","amount","email","childseat");
+
         // set new row into cancelled table with data from row selected
         foreach ($cols as $col) {
             $newRow->{$col}($model->{$col}());
+            if ($col == 'details') {
+                $details = $model->{$col}();
+            }
         }
+        // if class has child seats, save child info to details
+        $child->id(FormLib::get('id') + 1);
+        $child->load();
+        if ($child->childseat() == 1) {
+            $newRow->details($details."\r\nchild=".$child->first_name().' '.$child->last_name().'; age='.$child->phone());
+            $child->first_name(null);
+            $child->last_name(null);
+            $child->phone(null);
+            $child->save();
+        }
+
         $newRow->id(null);
         $newRow->seatType(3);
         $newRow->seat(null);
         $newRow->save();
+
         // unset data in original row so it can be used again 
-        $cols = array("first_name","last_name","phone","card_no","payment","refund","email");
+        $cols = array("first_name","last_name","phone","card_no","payment","refund","email","details");
         foreach ($cols as $col) {
             $model->{$col}(null);
         };
@@ -619,8 +636,7 @@ class WfcClassRegistryPage extends FanniePage
     private function sign_pay_view()
     {
         $key = FormLib::get('key');
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-
+        $dbc = FannieDB::get($this->config->get('OP_DB')); 
         $locateEmptySeat = new wfcuRegistryModel($dbc);
         $locateEmptySeat->seatType(1);
         $locateEmptySeat->upc(FormLib::get('class_plu'));
@@ -717,6 +733,13 @@ $('tr').each(function(){
         $(this).addClass('alert-warning');
     }
 });
+$('.btn-cancel').click(function(){
+    c = confirm('Move customer to Cancellations?');
+    if (c === false) {
+        return false;
+    }
+    return true;
+});
 JAVASCRIPT;
     }
 
@@ -804,9 +827,9 @@ JAVASCRIPT;
                 $item->details()
             );
 
-            if ($withCancel && $item->first_name()) {
+            if ($withCancel && $item->first_name() && $item->childseat() != 1 && $item->seatType() == 1) {
                 $ret .= sprintf('
-                    <td><a class="btn btn-default" href="?classplu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',
+                    <td><a class="btn btn-default btn-cancel" href="?classplu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',
                     $curPlu,
                     $item->id(),
                     $item->upc()
