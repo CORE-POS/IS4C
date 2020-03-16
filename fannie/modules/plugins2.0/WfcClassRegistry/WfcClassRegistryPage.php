@@ -228,7 +228,7 @@ class WfcClassRegistryPage extends FanniePage
         }
 
         $items->seatType(4);
-        $ret .= '<div id="alert-area"></div><table class="table tablesorter">';
+        $ret .= '<div id="alert-area"></div><table class="table">';
         $ret .= '<thead><label>Pending Credits</label></tr>
             <tr>
             <th style="width: 10px;"></th>
@@ -251,7 +251,7 @@ class WfcClassRegistryPage extends FanniePage
 
         //  Processed Credits
         $ret .= '<br /><br />';
-        $ret .= '<div id="alert-area"></div><table class="table tablesorter table-condensed table-stripped small">';
+        $ret .= '<div id="alert-area"></div><table class="table table-condensed table-stripped small">';
         $ret .= '<thead><label>Processed Credits</label></tr>
             <tr>
             <th style="width: 10px;"></th>
@@ -280,10 +280,6 @@ class WfcClassRegistryPage extends FanniePage
         $ret .= '</tbody></table>';
 
         $this->add_onload_command('itemEditing(' . (isset($classSize) ? $classSize : '') . ');');
-        //$this->add_onload_command('withdraw();');
-        $this->addScript('../../../src/javascript/tablesorter/jquery.tablesorter.js');
-        $this->addCssFile('../../../src/javascript/tablesorter/themes/blue/style.css');
-        $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
 
         return $ret;
     }
@@ -515,10 +511,9 @@ class WfcClassRegistryPage extends FanniePage
             $items->seatType(1);
 
             list($rows, $count) = $this->printItems($items, $curPlu);
-            $sorter = $count ? "tablesorter" : "";
             $ret .= '<div id="alert-area"></div>
             <h4>Class Registry</h4>
-            <table class="table ' . $sorter . '" name="ClassRegistry" id="table-roster">';
+            <table class="table" name="ClassRegistry" id="table-roster">';
             $ret .= '<thead><tr></tr>
                 <tr><th>Seat</th>
                 <th>Mem #</th>
@@ -539,11 +534,10 @@ class WfcClassRegistryPage extends FanniePage
             $items->seatType(0);
 
             list($rows, $count) = $this->printItems($items);
-            $sorter = $count ? "tablesorter" : "";
             //* Waiting List Roster
             $ret .= '<div id="alert-area"></div>
             <h4>Waiting List</h4>
-            <table class="table ' . $sorter . '" id="table-waiting">';
+            <table class="table" id="table-waiting">';
             $ret .= '<thead>
                 <tr><th></th>
                 <th>Mem #</th>
@@ -564,7 +558,6 @@ class WfcClassRegistryPage extends FanniePage
             $items->seatType(3);
 
             list($rows, $count) = $this->printItems($items);
-            $sorter = $count ? "tablesorter" : "";
             //* Class Cancellations
             $ret .= '<div id="alert-area"></div>
             <h4>Cancellations</h4>
@@ -589,9 +582,6 @@ class WfcClassRegistryPage extends FanniePage
             $this->addOnloadCommand('itemEditing(' . $classSize . ');');
         }
         $this->addOnloadCommand('withdraw();');
-        $this->addScript('../../../src/javascript/tablesorter/jquery.tablesorter.js');
-        $this->addCssFile('../../../src/javascript/tablesorter/themes/blue/style.css');
-        $this->addOnloadCommand("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
 
         $dbc->close();
 
@@ -745,13 +735,6 @@ JAVASCRIPT;
             </p>';
     }
 
-    /**
-     * Changed to return body of the table AND a row count.
-     *
-     * Calling tablesorter on an empty table causes a JS
-     * error so the caller uses the row count to check
-     * whether the table should be designated sortable.
-     */
     private function printItems($items, $curPlu=false, $withCancel=true)
     {
         $ret = '';
