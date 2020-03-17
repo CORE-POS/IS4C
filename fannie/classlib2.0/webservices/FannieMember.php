@@ -103,8 +103,17 @@ class FannieMember extends FannieWebService
         switch ($method) {
         case 'get':
             return MemberREST::get($args->cardNo);
-        case 'post':
-            return MemberREST::post($args->cardNo, $args->member);
+        case 'set':
+            // for some reason (?) $args->member is a `stdClass Object`
+            // instance, so first we must convert that to a normal array, since
+            // that seems to be what the REST logic wants
+            $member = (array)$args->member;
+            $customers = [];    // also must convert each customer to array
+            foreach ($member['customers'] as $customer) {
+                array_push($customers, (array)$customer);
+            }
+            $member['customers'] = $customers;
+            return MemberREST::post($args->cardNo, $member);
         }
     }
 }
