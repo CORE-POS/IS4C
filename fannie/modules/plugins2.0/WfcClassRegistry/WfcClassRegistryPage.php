@@ -561,7 +561,7 @@ class WfcClassRegistryPage extends FanniePage
             //* Class Cancellations
             $ret .= '<div id="alert-area"></div>
             <h4>Cancellations</h4>
-            <table class="table i' . $sorter . '" id="table-cancel">';
+            <table class="table" id="table-cancel">';
             $ret .= '<thead><tr>
                 <tr><th></th>
                 <th>Mem #</th>
