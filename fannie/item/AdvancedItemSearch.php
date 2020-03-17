@@ -1099,9 +1099,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
 <script type="text/javascript">
 var lastChecked = null;
 var i = 0;
-$('.upcCheckBox').each(function(){
-    $(this).attr('data-index', i);
-    i++;
+var indexCheckboxes = function(){
+    $('.upcCheckBox').each(function(){
+        $(this).attr('data-index', i);
+        i++;
+    });
+};
+indexCheckboxes();
+$('table').click(function(){
+    indexCheckboxes();
 });
 $('.upcCheckBox').on("click", function(e){
     if(lastChecked && e.shiftKey) {
