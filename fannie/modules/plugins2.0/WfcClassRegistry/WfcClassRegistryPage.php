@@ -45,9 +45,7 @@ class WfcClassRegistryPage extends FanniePage
     public function preprocess()
     {
         $this->addScript('WfcClassRegistry.js?date=20180302');
-        if (FormLib::get('process', false) !== false) {
-            $this->credits_save_handler();
-        } elseif (FormLib::get('notify', false) !== false) {
+        if (FormLib::get('notify', false) !== false) {
             $this->notify_handler();
         } elseif (FormLib::get('sellOut', false) !== false) {
             $this->sellOut_handler();
@@ -62,10 +60,7 @@ class WfcClassRegistryPage extends FanniePage
 
         if (FormLib::get('sign_pay', false) !== false) {
             $this->display_function = 'sign_pay_view';
-        } elseif (FormLib::get('credits', false) !== false) {
-            $this->display_function = 'credits_view';
         }
-
         return true;
     }
 
@@ -155,133 +150,6 @@ class WfcClassRegistryPage extends FanniePage
         $ret = $mail->send();
 
         return $ret ? true : false;
-    }
-
-
-    private function credits_save_handler()
-    {
-        $credits = array();
-        $credits = FormLib::get('processCredit');
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $items = new wfcuRegistryModel($dbc);
-
-        foreach ($credits as $id) {
-            $items->id($id);
-            $items->seatType(99);
-            if ($save = $items->save()) {
-                $resp = '<span class="text-success">saved!</span>';
-            } else {
-                $resp = '<span class="text-danger">There was an error saving.</span>';
-            }
-        }
-
-        return $resp;
-    }
-
-    private function credits_view()
-    {
-
-        $ret = '';
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $ret .= '<div align="center"><h2>WFC-U Credits</h2><a href="?class_plu=0">Return to Registry</a></div>';
-        $items = new wfcuRegistryModel($dbc);
-
-        //  Create a new empty credit pending row if there is no empty row.
-        $prep = $dbc->prepare("SELECT id, first_name FROM wfcuRegistry WHERE seatType=4 AND upc='99999999';");
-        $resp = $dbc->execute($prep);
-        while ($row = $dbc->fetch_row($resp)) {
-            $name = $row['first_name'];
-            $id = $row['id'];
-        }
-        if ($dbc->error()) {
-            $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
-        }
-        $prep = $dbc->prepare("SELECT max(id) as id FROM wfcuRegistry;");
-        $resp = $dbc->execute($prep);
-        while ($row = $dbc->fetch_row($resp)) {
-            $maxID = $row['id'];
-        }
-        if ($dbc->error()) {
-            $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
-        }
-        $nextId = ($maxID + 1);
-        if (isset($name)) {
-            $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ('99999999', ?, 4);");
-            $dbc->execute($prep,$nextId);
-            if ($dbc->error()) {
-                $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
-            }
-        }
-
-        // Create the first row if there are no rows
-        $prepA = $dbc->prepare("SELECT count(*) AS count FROM wfcuRegistry WHERE seatType=4;");
-        $resA = $dbc->execute($prepA);
-        while ($row = $dbc->fetchRow($resA)) {
-            $rows = $row['count'];
-        }
-        if ($rows < 1) {
-            $prepB = $dbc->prepare("INSERT INTO wfcuRegistry (upc, id, seatType) VALUES ('99999999', ?, 4);");
-            $dbc->execute($prepB,$nextId);
-            if ($dbc->error()) {
-                $ret .= '<div class="alert alert-danger">'.$dbc->error().'</div>';
-            }
-        }
-
-        $items->seatType(4);
-        $ret .= '<div id="alert-area"></div><table class="table">';
-        $ret .= '<thead><label>Pending Credits</label></tr>
-            <tr>
-            <th style="width: 10px;"></th>
-            <th style="width: 200px;">First</th>
-            <th style="width: 200px;">Last</th>
-            <th style="width: 100px;">Mem #</th>
-            <th style="width: 130px;">Phone Number</th>
-            <th style="width: 80px;">Amount</th>
-            <th>Notes</th>
-            <th style="width: 20px;"></th>
-            </thead>';
-        $ret .= '<tbody>';
-        $ret .= '<form method="post"><input type="hidden" class="upc" id="upc" name="upc" value="99999999" /></form>';
-        $ret .= $this->printCredits($items);
-        $ret .= '</tbody></table>';
-
-        $items->reset();
-        $items->upc(99999999);
-        $items->seatType(99);
-
-        //  Processed Credits
-        $ret .= '<br /><br />';
-        $ret .= '<div id="alert-area"></div><table class="table table-condensed table-stripped small">';
-        $ret .= '<thead><label>Processed Credits</label></tr>
-            <tr>
-            <th style="width: 10px;"></th>
-            <th style="width: 200px;">First</th>
-            <th style="width: 200px;">Last</th>
-            <th style="width: 100px;">Mem #</th>
-            <th style="width: 130px;">Phone Number</th>
-            <th style="width: 80px;">Amount</th>
-            <th>Notes</th>
-            <th style="width: 200px;">Processed On</th>
-            </thead>';
-        $ret .= '<tbody>';
-        foreach ($items->find('modified') as $data) {
-            $ret .= sprintf(
-                '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
-                '',
-                $data->first_name(),
-                $data->last_name(),
-                $data->card_no(),
-                $data->phone(),
-                $data->amount(),
-                $data->details(),
-                $data->modified()
-            );
-        }
-        $ret .= '</tbody></table>';
-
-        $this->add_onload_command('itemEditing(' . (isset($classSize) ? $classSize : '') . ');');
-
-        return $ret;
     }
 
     public function css_content()
@@ -396,8 +264,7 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '<input type="hidden" name="expired" value="1">';
         }
         $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vPrev.'">Prev</button>&nbsp;';
-        $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vNext.'">Next</button>&nbsp;|&nbsp;';
-        $ret .= '<a class=\'btn btn-default btn-xs\' href="?credits=1" style="border: 1px solid orange;">View Credits</a>&nbsp&nbsp;';
+        $ret .= '<button type="submit" class="btn-default btn-xs" name="class_plu" value="'.$vNext.'">Next</button>&nbsp;';
         $ret .= '</form>';
         $ret .= '</div>';
 
