@@ -207,6 +207,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $upc = $data[$indexes['upc']];
             $upc = str_replace(' ', '', $upc);
             $upc = str_replace('-', '', $upc);
+            $upc = str_replace("'", '', $upc);
             if (strlen($upc) > 13) {
                 $upc = substr($upc, -13);
             } else {
