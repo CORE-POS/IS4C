@@ -94,7 +94,7 @@ class InstaInExPage extends FannieRESTfulPage
     {
         $plugin = $this->config->get('PLUGIN_SETTINGS');
         $table = $plugin['InstaCartDB'] . $this->connection->sep() . 'InstaExcludes';
-        if ($plugin['InstaCardMode']) {
+        if ($plugin['InstaCartMode']) {
             $table = $plugin['InstaCartDB'] . $this->connection->sep() . 'InstaIncludes';
         }
         $upc = BarcodeLib::padUPC($this->id);
@@ -111,7 +111,7 @@ class InstaInExPage extends FannieRESTfulPage
     {
         $plugin = $this->config->get('PLUGIN_SETTINGS');
         $table = $plugin['InstaCartDB'] . $this->connection->sep() . 'InstaExcludes';
-        if ($plugin['InstaCardMode']) {
+        if ($plugin['InstaCartMode']) {
             $table = $plugin['InstaCartDB'] . $this->connection->sep() . 'InstaIncludes';
         }
         $upc = BarcodeLib::padUPC($this->id);

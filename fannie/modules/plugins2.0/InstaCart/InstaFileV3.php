@@ -61,7 +61,8 @@ class InstaFileV3
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN FloorSectionsListTable AS f ON p.upc=f.upc AND p.store_id=f.storeID
             WHERE m.superID <> 0
-                AND p.inUse=1";
+                AND p.inUse=1
+                AND (numflag & (1<<18)) = 0";
         $args = array();
         if ($this->config->get('STORE_MODE') == 'HQ') {
             $args[] = $this->config->get('STORE_ID');
