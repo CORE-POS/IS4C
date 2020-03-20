@@ -727,7 +727,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ret .= '</table>';
 
         $ret = preg_replace('/[^\x0-\x7E]/','', $ret);
-        echo json_encode(array('customer'=>$ret, 'footer'=>$extra));
+        echo json_encode(array('customer'=>$ret, 'footer'=>$extra, 'memType'=>$custdata->memType()));
 
         return false;
     }
@@ -909,7 +909,7 @@ HTML;
         $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
         $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
-            o.trans_id,o.unitPrice,o.memType,o.staff,o.trans_status
+            o.trans_id,o.unitPrice,o.memType,o.staff,o.trans_status,o.discountable
             FROM {$TRANS}PendingSpecialOrder as o
                 LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
@@ -934,7 +934,7 @@ HTML;
             $ret .= sprintf('
                     <tbody>
                     <tr>
-                    <td>%s</td>
+                    <td class="upc">%s</td>
                     <td><input class="form-control input-sm item-field" name="sku"
                         value="%s" /></td>
                     <td><input class="form-control input-sm item-field" name="description"
@@ -1006,7 +1006,9 @@ HTML;
 
             $ret .= '<td>Discount</td>';
             if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
-                $ret .= '<td class="disc-percent" id="discPercent'.$row['trans_id'].'">Sale</td>';
+                $ret .= '<td class="disc-percent" id="discPercent'.$row['upc'].'">Sale</td>';
+            } else if ($row['discountable'] == 0) {
+                $ret .= '<td class="disc-percent" id="discPercent'.$row['upc'].'">Never</td>';
             } else if ($row['regPrice'] != $row['total']) {
                 $ret .= sprintf('<td class="disc-percent" id="discPercent%d">%d%%</td>',$row['upc'],
                     $row['regPrice'] == 0 ? 0 : round(100*(($row['regPrice']-$row['total'])/$row['regPrice'])));

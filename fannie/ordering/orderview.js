@@ -120,6 +120,42 @@ var orderView = (function($) {
                 $('#customerDiv').html(resp.customer);
                 mod.afterLoadCustomer();
             }
+            if (resp.memType) {
+                var memType = parseInt(resp.memType, 10);
+                var discMemTypes = [1,3,5,6];
+                console.log($.inArray(memType, discMemTypes));
+                var i = 0;
+                $('.upc').each(function(){
+                    i++;
+                });
+                $('.upc').each(function(){
+                    var upc = $(this).text();
+                    var srp = $('#srp'+i).val();
+                    var actual = $('#act'+i).val();
+                    if ($.inArray(memType, discMemTypes) != -1) {
+                        // add member discounts 
+                        if (actual == srp) {
+                            var discText = $('#discPercent'+upc).text();
+                            if (discText != 'Never' && discText != 'Sale') {
+                                var newsrp = actual - (actual * 0.15);
+                                newsrp = newsrp.toFixed(2);
+                                $('#act'+i).val(newsrp);
+                                $('#act'+i).trigger('change');
+                            }
+                        }
+                    } else {
+                        // remove member discounts 
+                        if (actual < srp) {
+                            var discText = $('#discPercent'+upc).text();
+                            if (discText != 'Sale') {
+                                $('#act'+i).val(srp);
+                                $('#act'+i).trigger('change');
+                            }
+                        }
+                    }
+                    i--;
+                });
+            }
         });
     };
 
