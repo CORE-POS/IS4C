@@ -799,14 +799,14 @@ class MemberREST
             if (isset($json['startDate'])) {
                 $startDate = $json['startDate'];
                 if ($startDate == '') {
-                    $startDate = '0000-00-00';
+                    $startDate = NULL;
                 }
                 $dates->start_date($startDate);
             }
             if (isset($json['endDate'])) {
                 $endDate = $json['endDate'];
                 if ($endDate == '') {
-                    $endDate = '0000-00-00';
+                    $endDate = NULL;
                 }
                 $dates->end_date($endDate);
             }
