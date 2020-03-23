@@ -797,10 +797,18 @@ class MemberREST
         if (isset($json['startDate']) || isset($json['endDate'])) {
             $dates = self::getModel($dbc, 'MemDatesModel');
             if (isset($json['startDate'])) {
-                $dates->start_date($json['startDate']); 
+                $startDate = $json['startDate'];
+                if ($startDate == '') {
+                    $startDate = NULL;
+                }
+                $dates->start_date($startDate);
             }
             if (isset($json['endDate'])) {
-                $dates->end_date($json['endDate']); 
+                $endDate = $json['endDate'];
+                if ($endDate == '') {
+                    $endDate = NULL;
+                }
+                $dates->end_date($endDate);
             }
             $dates->card_no($id);
             if (!$dates->save()) {
