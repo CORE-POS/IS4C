@@ -150,6 +150,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 </ul>
             </li>
             <li><a href="../admin/labels/PickTagsPage.php">Pick Tags</a>
+            <li><a href="SalesByInvoicePage.php">Check Movement by Invoice</a>
             </ul>';
         
     }
