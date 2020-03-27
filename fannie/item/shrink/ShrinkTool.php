@@ -185,7 +185,7 @@ class ShrinkTool extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $this->add_onload_command("\$('#qty-field').focus();\n");
+        $this->add_onload_command("\$('#qty-field').focus().select();\n");
 
         $reasons = new ShrinkReasonsModel($dbc);
         $reasons->disabled(0);
