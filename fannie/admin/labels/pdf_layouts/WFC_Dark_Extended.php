@@ -56,21 +56,21 @@ function WFC_Dark_Extended($data,$offset=0)
             $i = 0;
         }
         if ($i == 0) {
-            $pdf = generateTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+            $pdf = generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         } else if ($i % 4 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $pdf = generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         $i++;
     }
 
     $pdf = $pdf->Output();
 }
 
-function generateTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
     $desc = $row['description'];
     $brand = $row['brand'];
