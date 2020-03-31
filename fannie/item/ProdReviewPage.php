@@ -474,7 +474,7 @@ HTML;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $bids .= ",".$curBid;
                 $tableA .= "<tr>";
-                $tableA .= "<td><input type='checkbox' id='check$curBid'></td>";
+                $tableA .= "<td><input type='checkbox' id='check$curBid' class='upcCheckBox'></td>";
                 $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
                 $batchName = $row['batchName'];
                 $tableA .= "<td>{$batchName}</td>";
@@ -652,7 +652,7 @@ HTML;
         $table = '<table class="table table-condensed small tablesorter tablesorter-bootstrap" id="reviewtable">';
         $table .= '<thead><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Reviewed On</th></thead><tbody><td></td><td></td><td></td><td></td><td>
-            <input type="checkbox" id="checkAll" style="border: 1px solid red;"></td>';
+            <input type="checkbox" id="checkAll" class="upcCheckBox" style="border: 1px solid red;"></td>';
 
         $pr = new ProdReviewModel($dbc);
         $in = array();
@@ -669,7 +669,7 @@ HTML;
                 } else {
                     $table .= '<td><i class="text-danger">no review date</i></td>';
                 }
-                $table .= '<td><input type="checkbox"class="chk" name="checked[]" value="'.$obj->upc().'"></td>';
+                $table .= '<td><input type="checkbox"class="chk upcCheckBox" name="checked[]" value="'.$obj->upc().'"></td>';
                 $table .= '</tr>';
             }
             $in[] = $obj->upc();
@@ -961,6 +961,41 @@ HTML;
    {
        ob_start();
        ?>
+var lastChecked = null;
+var i = 0;
+var indexCheckboxes = function(){
+    $('.upcCheckBox').each(function(){
+        $(this).attr('data-index', i);
+        i++;
+    });
+};
+indexCheckboxes();
+$('table').click(function(){
+    indexCheckboxes();
+});
+$('.upcCheckBox').on("click", function(e){
+    if(lastChecked && e.shiftKey) {
+        var i = parseInt(lastChecked.attr('data-index'));
+        var j = parseInt($(this).attr('data-index'));
+        var checked = $(this).is(":checked");
+
+        var low = i;
+        var high = j;
+        if (i>j){
+            var low = j;
+            var high = i;
+        }
+
+        for(var c = low; c < high; c++) {
+            if (c != low && c!= high) {
+                var check = checked ? true : false;
+                $('input[data-index="'+c+'"').prop("checked", check);
+            }
+        }
+    }
+    lastChecked = $(this);
+});
+
 $(document).ready( function() {
     $('#checkAll').click( function () {
        checkAll();
