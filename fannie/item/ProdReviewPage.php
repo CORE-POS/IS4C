@@ -721,7 +721,7 @@ HTML;
 
     public function draw_table($data,$dbc)
     {
-        $table = '<table class="table table-condensed small">';
+        $table = '<table class="table table-condensed table-striped small">';
         $table .= '<thead><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Last Reviewed</th></thead><tbody>';
         $pr = new ProdReviewModel($dbc);
@@ -1001,24 +1001,6 @@ $(document).ready( function() {
        checkAll();
     });
     editable();
-});
-
-var pigeonholes = {};
-var colors = ['white','orange','tomato','purple','cyan','lightblue','yellowgreen'];
-var x = 0;
-$('td.reviewed').each(function(){
-    var date = $(this).text();
-    if (date in pigeonholes) {
-    } else {
-        pigeonholes[date] = colors[x]; 
-        x++;
-    }
-});
-$('td.reviewed').each(function(){
-    var date = $(this).text();
-    if (date in pigeonholes) {
-        $(this).css('background','linear-gradient(to right, white, 80%, '+pigeonholes[date]+')');
-    }
 });
 
 function deleteRow(id)
