@@ -333,6 +333,9 @@ HTML;
         $numType = FormLib::get_form_value('ntype','UPC');
         $inUseFlag = FormLib::get('inUse', false);
         $store_id = $this->config->get('STORE_ID');
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $store_id = COREPOS\Fannie\API\lib\Store::getIdByIp(); 
+        }
 
         $query = "";
         $args = array();
