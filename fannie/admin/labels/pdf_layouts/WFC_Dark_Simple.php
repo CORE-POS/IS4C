@@ -7,7 +7,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class WFC_Dark_Simple_PDF extends FpdfWithBarcode
+class WFC_Dark_Simple extends FpdfWithBarcode
 {
     private $tagdate;
     function setTagDate($str){
@@ -21,10 +21,10 @@ class WFC_Dark_Simple_PDF extends FpdfWithBarcode
     }
 }
 
-function WFC_Dark_Simple($data,$offset=0)
+function WFC_Dark_Simple ($data,$offset=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new FPDF('L','mm','Letter');
+    $pdf = new WFC_Dark_Simple('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(0, 0, 0);
     $pdf->SetTextColor(255, 255, 255);
@@ -67,7 +67,98 @@ function WFC_Dark_Simple($data,$offset=0)
         $i++;
     }
 
+    /*
+        Print additional mirror images for back side of tags
+    */
+    $i = 0;
+    $x = $left+$guide; $y = $top+$guide;
+    if (count($data) % 4 != 0) {
+        for ($j=count($data) % 4; $j<4; $j++) {
+            $data[] = '';
+        }
+    }
+    $data = arrayMirrorRowsSimple($data, 4);
+    $pdf->AddPage('L');
+    foreach($data as $k => $row){
+        if ($i % 24 == 0 && $i != 0) {
+            $pdf->AddPage('L');
+            $x = $left;
+            $y = $top;
+            $i = 0;
+        }
+        if ($i == 0) {
+            $pdf = generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        } else if ($i % 4 == 0 && $i != 0) {
+            $x = $left+$guide;
+            $y += $height+$guide;
+        } else {
+            $x += $width+$guide;
+        }
+        $pdf = generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $i++;
+    }
+
     $pdf = $pdf->Output();
+}
+
+function generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+{
+    $upc = $row['upc'];
+    $desc = $row['description'];
+    $brand = $row['brand'];
+    $price = $row['normal_price'];
+    $vendor = $row['vendor'];
+    $pdf->SetFillColor(255, 255, 255);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetFont('Gill','', 9);
+
+    // prep tag canvas
+    $pdf->SetXY($x,$y);
+    $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
+
+    /*
+        Add UPC Text
+    */
+    $pdf->SetXY($x,$y+4);
+    $pdf->Cell($width, 8, $upc, 0, 1, 'C', true); 
+
+    /*
+        Add Brand & Description Text
+    */
+    $pdf->SetXY($x,$y+12);
+    $pdf->Cell($width, 5, $brand, 0, 1, 'C', true); 
+    $pdf->SetXY($x,$y+18);
+    $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
+
+
+    /*
+        Add Vendor Text
+    */
+    $pdf->SetXY($x,$y+27);
+    $pdf->Cell($width, 5, $vendor, 0, 1, 'C', true); 
+
+    /*
+        Create Guide-Lines
+    */ 
+    $pdf->SetFillColor(155, 155, 155);
+    // vertical 
+    $pdf->SetXY($width+$x, $y);
+    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
+
+    $pdf->SetXY($x-$guide, $y-$guide); 
+    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
+
+    // horizontal
+    $pdf->SetXY($x, $y-$guide); 
+    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    $pdf->SetXY($x, $y+$height); 
+    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    $pdf->SetFillColor(0, 0, 0);
+
+    return $pdf;
+
 }
 
 function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
@@ -142,3 +233,16 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     return $pdf;
 }
 
+function arrayMirrorRowsSimple($array, $cols)
+{
+    $newArray = array();
+    $chunks = array_chunk($array, $cols);
+    foreach ($chunks as $chunk) {
+        $chunk = array_reverse($chunk);
+        foreach ($chunk as $v) {
+            $newArray[] = $v;
+        }
+    }
+
+    return $newArray;
+}
