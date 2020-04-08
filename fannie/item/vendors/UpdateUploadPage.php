@@ -182,7 +182,9 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $skuClearP = $dbc->prepare("DELETE FROM vendorItems WHERE sku=? AND vendorID=?");
         $costP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=? AND default_vendor_id=?');
         $reviewP = $dbc->prepare('UPDATE prodReview SET user=?, reviewed=' . $dbc->now() . ' WHERE upc=?');
+        $prodInfoP = $dbc->prepare('SELECT brand, description FROM vendorItems WHERE sku=? AND vendorID=?');
         $updatedUPCs = array();
+
 
         $dbc->startTransaction();
         foreach($linedata as $data) {
@@ -193,7 +195,19 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // grab data from appropriate columns
             $sku = $data[$indexes['sku']];
             $brand = ($indexes['brand'] === false) ? $vendorName : substr($data[$indexes['brand']], 0, 50);
+            if ($indexes['brand'] === false) {
+                $prodInfoR = $dbc->execute($prodInfoP, $sku, $VENDOR_ID);
+                $row = $dbc->fetchRow($prodInfoR);
+                $brand = $row['brand'];
+            } else {
+                $brand = substr($data[$indexes['brand']], 0, 50);
+            }
             $description = ($indexes['desc'] === false) ? '' : substr($data[$indexes['desc']], 0, 50);
+            if ($description === '') {
+                $prodInfoR = $dbc->execute($prodInfoP, $sku, $VENDOR_ID);
+                $row = $dbc->fetchRow($prodInfoR);
+                $description = $row['description'];
+            }
             $description = preg_replace('/[^\x20-\x7E]/','', $description);
             if ($indexes['qty'] === false) {
                 $qty = 1.0;
@@ -218,6 +232,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             if ($this->session->vUploadCheckDigits)
                 $upc = '0'.substr($upc,0,12);
+
             $category = ($indexes['vDept'] === false) ? 0 : $data[$indexes['vDept']];
 
             $reg_unit = $this->getCost($data, $indexes['unitCost'], $indexes['cost'], $qty);
