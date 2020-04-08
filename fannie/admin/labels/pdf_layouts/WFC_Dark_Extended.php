@@ -7,7 +7,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class WFC_Dark_Extended extends FpdfWithBarcode
+class WFC_Dark_Extended_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     function setTagDate($str){
