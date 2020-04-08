@@ -39,7 +39,7 @@ class SpecialOrdersMenu extends FanniePage
     {
         return <<<HTML
 <ul>
-<li><a href="OrderViewPage.php">Create Order</a></li>
+<li><a href="OrderViewPage.php">Create Order</a> Note: WFC isn't taking new orders at this time.</li>
 <li>Review Orders
     <ul>
     <li><a href="NewSpecialOrdersPage.php">Active Orders</a></li>
