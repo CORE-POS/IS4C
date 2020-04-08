@@ -75,6 +75,8 @@ class UnfiExportForMas extends FannieReportPage
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
 
+        $vendorID = FormLib::get('vendorID');
+        $args = array($vendorID, $date1.' 00:00:00', $date2.' 23:59:59');
         $codingQ = 'SELECT o.orderID, 
                         o.salesCode, 
                         i.vendorOrderID,
@@ -88,15 +90,18 @@ class UnfiExportForMas extends FannieReportPage
                         LEFT JOIN vendors AS n ON n.vendorID=i.vendorID
                     WHERE i.vendorID=? 
                         AND o.receivedDate BETWEEN ? AND ?
-                        AND o.orderID <> -99
-                    GROUP BY o.orderID, o.salesCode, i.vendorInvoiceID, i.vendorOrderID
+                        AND o.orderID <> -99 ';
+        if (FormLib::get('store')) {
+            $codingQ .= ' AND i.storeID=? ';
+            $args[] = FormLib::get('store');
+        }
+        $codingQ .= ' GROUP BY o.orderID, o.salesCode, i.vendorInvoiceID, i.vendorOrderID
                     ORDER BY rdate, i.vendorInvoiceID, o.salesCode';
         $codingP = $dbc->prepare($codingQ);
 
         $report = array();
         $invoice_sums = array();
-        $vendorID = FormLib::get('vendorID');
-        $codingR = $dbc->execute($codingP, array($vendorID, $date1.' 00:00:00', $date2.' 23:59:59'));
+        $codingR = $dbc->execute($codingP, $args);
         $orders = array();
         while ($codingW = $dbc->fetch_row($codingR)) {
             if ($codingW['rtc'] == 0) {
@@ -158,6 +163,7 @@ class UnfiExportForMas extends FannieReportPage
     function form_content()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $stores = FormLib::storePicker();
         ob_start();
         ?>
 <form method = "get" action="UnfiExportForMas.php">
@@ -184,6 +190,10 @@ class UnfiExportForMas extends FannieReportPage
         }
         ?>
         </select>
+    </div>
+    <div class="form-group">
+        <label>Store</label>
+        <?php echo $stores['html']; ?>
     </div>
     <p>
         <button type="submit" class="btn btn-default btn-core">Submit</button>
