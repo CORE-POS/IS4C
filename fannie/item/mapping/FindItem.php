@@ -34,9 +34,10 @@ class FindItem extends FannieRESTfulPage
         $itemP = $this->connection->prepare('SELECT last_sold, numflag FROM products WHERE upc=? AND store_id=?');
         $storeSection = '<div class="row">';
         $floorP = $this->connection->prepare('
-            SELECT f.floorSectionID, f.name
+            SELECT f.floorSectionID, f.name, s.subSection
             FROM FloorSectionProductMap AS m
                 INNER JOIN FloorSections AS f ON m.floorSectionID=f.floorSectionID
+                LEFT JOIN FloorSubSections AS s ON m.floorSectionID=s.floorSectionID AND m.upc=s.upc
             WHERE m.upc=? AND f.storeID=?');
         foreach ($stores->find('description') as $s) {
             $storeSection .= '<div class="col-sm-3">';
@@ -64,6 +65,9 @@ class FindItem extends FannieRESTfulPage
                 $storeSection .= 'Unknown<br />';
             }  else {
                 foreach ($locations as $l) {
+                    if ($l['subSection']) {
+                        $l['name'] .= ' (' . $l['subSection'] . ')';
+                    }
                     $storeSection .= sprintf('<a href="StoreFloorsPage.php?id=%d&section=%d">%s
                             <span class="glyphicon glyphicon-info-sign"></span></a><br />',
                         $s->storeID(),
