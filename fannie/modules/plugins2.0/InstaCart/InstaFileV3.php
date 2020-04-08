@@ -47,7 +47,8 @@ class InstaFileV3
                 y.datedSigns,
                 CASE WHEN (numflag & (1<<16)) <> 0 THEN 1 ELSE 0 END AS organic,
                 CASE WHEN (numflag & (1<<17)) <> 0 THEN 1 ELSE 0 END AS glutenfree,
-                f.sections,
+                s.name AS sections,
+                z.subSection,
                 m.superID,
                 p.department,
                 p.subdept,
@@ -59,7 +60,9 @@ class InstaFileV3
                 LEFT JOIN batches AS b ON p.batchID=b.batchID
                 LEFT JOIN batchType AS y on b.batchType=y.batchTypeID
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                LEFT JOIN FloorSectionsListTable AS f ON p.upc=f.upc AND p.store_id=f.storeID
+                LEFT JOIN FloorSectionMinIdView AS f ON p.upc=f.upc AND p.store_id=f.storeID
+                LEFT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
+                LEFT JOIN FloorSubSections AS z ON f.floorSectionID=z.floorSectionID AND f.upc=z.upc
             WHERE m.superID <> 0
                 AND p.inUse=1
                 AND (numflag & (1<<18)) = 0";
@@ -211,9 +214,8 @@ class InstaFileV3
             $location = "";
             if (strlen($row['sections']) > 0) {
                 $location = $row['sections'];
-                if (strpos($location, ',')) {
-                    list($location,) = explode(',', $location, 2);
-                    $location = trim($location);
+                if ($row['subSection']) {
+                    $location .= ' ' . $row['subSection'];
                 }
                 $location = '"{""Aisle"": ""' . $location . '""}"';
             }
