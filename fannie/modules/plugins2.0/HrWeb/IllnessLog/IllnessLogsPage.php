@@ -216,16 +216,17 @@ class IllnessLogsPage extends FannieRESTfulPage
             }
             $hasAccess = false;
             $userEditCSS = 'collapse';
-            foreach ($access as $area => $type) {
-                if (isset($empAreas[$eID][$area])) {
-                    $hasAccess = true;
-                    if ($type['edit']) {
-                        $userEditCSS = '';
+            if ($allAccess) {
+                $hasAccess = true;
+                $userEditCSS = '';
+            } else {
+                foreach ($access as $area => $type) {
+                    if (isset($empAreas[$eID][$area])) {
+                        $hasAccess = true;
+                        if ($type['edit']) {
+                            $userEditCSS = '';
+                        }
                     }
-                } elseif ($allAccess) {
-                    $hasAccess = true;
-                    $userEditCSS = '';
-                    break;
                 }
             }
             if (!$hasAccess) continue;
