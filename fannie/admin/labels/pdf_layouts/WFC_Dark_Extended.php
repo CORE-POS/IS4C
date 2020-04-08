@@ -7,29 +7,30 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class WFC_Dark_Extended_PDF extends FpdfWithBarcode
+class WFC_Dark_Extended extends FpdfWithBarcode
 {
     private $tagdate;
-    function setTagDate($str){
+    public function setTagDate($str){
         $this->tagdate = $str;
     }
 
-    function barcodeText($x, $y, $h, $barcode, $len)
+    public function barcodeText($x, $y, $h, $barcode, $len)
     {
         $this->SetFont('Arial','',8);
         $this->Text($x,$y-$h+(17/$this->k),substr($barcode,-$len).' '.$this->tagdate);
     }
+
 }
 
 function WFC_Dark_Extended($data,$offset=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new FPDF('L','mm','Letter');
+    $pdf = new WFC_Dark_Extended('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(0, 0, 0);
     $pdf->SetTextColor(255, 255, 255);
 
-    define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
     $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
     $pdf->AddFont('Gill', '', 'GillSansMTPro-Heavy.php');
     $pdf->SetFont('Gill','B', 16);  //Set the font 
@@ -49,6 +50,7 @@ function WFC_Dark_Extended($data,$offset=0)
 
     $i = 0;
     foreach($data as $k => $row){
+        $upc = $row['upc'];
         if ($i % 24 == 0 && $i != 0) {
             $pdf->AddPage('L');
             $x = $left;
@@ -57,6 +59,11 @@ function WFC_Dark_Extended($data,$offset=0)
         }
         if ($i == 0) {
             $pdf = generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+            //can't get UPC_A to work, get FPDF error: Could not include font metric file
+            //if (strlen($upc) <= 11)
+            //    $pdf->UPC_A($x,$y,$upc,7);  //generate barcode and place on label
+            //else
+            //    $pdf->EAN13($x,$y,$upc,7);  //generate barcode and place on label
         } else if ($i % 4 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
@@ -67,11 +74,104 @@ function WFC_Dark_Extended($data,$offset=0)
         $i++;
     }
 
+    /*
+        Print additional mirror images for back side of tags
+    */
+    $i = 0;
+    $x = $left+$guide; $y = $top+$guide;
+    if (count($data) % 4 != 0) {
+        for ($j=count($data) % 4; $j<4; $j++) {
+            $data[] = '';
+        }
+    }
+    $data = arrayMirrorRowsExtended($data, 4);
+    $pdf->AddPage('L');
+    foreach($data as $k => $row){
+        if ($i % 24 == 0 && $i != 0) {
+            $pdf->AddPage('L');
+            $x = $left;
+            $y = $top;
+            $i = 0;
+        }
+        if ($i == 0) {
+            $pdf = generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        } else if ($i % 4 == 0 && $i != 0) {
+            $x = $left+$guide;
+            $y += $height+$guide;
+        } else {
+            $x += $width+$guide;
+        }
+        $pdf = generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $i++;
+    }
+
     $pdf = $pdf->Output();
+}
+
+
+function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+{
+    $upc = $row['upc'];
+    $desc = $row['description'];
+    $brand = $row['brand'];
+    $price = $row['normal_price'];
+    $vendor = $row['vendor'];
+    $pdf->SetFillColor(255, 255, 255);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetFont('Gill','', 9);
+
+    // prep tag canvas
+    $pdf->SetXY($x,$y);
+    $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
+
+    /*
+        Add UPC Text
+    */
+    $pdf->SetXY($x,$y+4);
+    $pdf->Cell($width, 8, $upc, 0, 1, 'C', true); 
+
+    /*
+        Add Brand & Description Text
+    */
+    $pdf->SetXY($x,$y+12);
+    $pdf->Cell($width, 5, $brand, 0, 1, 'C', true); 
+    $pdf->SetXY($x,$y+18);
+    $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
+
+
+    /*
+        Add Vendor Text
+    */
+    $pdf->SetXY($x,$y+27);
+    $pdf->Cell($width, 5, $vendor, 0, 1, 'C', true); 
+
+    /*
+        Create Guide-Lines
+    */ 
+    $pdf->SetFillColor(155, 155, 155);
+    // vertical 
+    $pdf->SetXY($width+$x, $y);
+    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
+
+    $pdf->SetXY($x-$guide, $y-$guide); 
+    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
+
+    // horizontal
+    $pdf->SetXY($x, $y-$guide); 
+    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    $pdf->SetXY($x, $y+$height); 
+    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    $pdf->SetFillColor(0, 0, 0);
+
+    return $pdf;
+
 }
 
 function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
+    $upc = $row['upc'];
     $desc = $row['description'];
     $brand = $row['brand'];
     $price = $row['normal_price'];
@@ -112,7 +212,7 @@ function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     } else {
         $pdf->SetFont('Gill','B', 16);
     }
-    $pdf->SetXY($x,$y+2);
+    $pdf->SetXY($x,$y+4);
     $pdf->Cell($width, 8, $brand, 0, 1, 'C', true); 
 
     /*
@@ -127,12 +227,12 @@ function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         $pdf->SetFont('Gill','', 16);
     }
     if (count($lines) > 1) {
-        $pdf->SetXY($x,$y+12);
+        $pdf->SetXY($x,$y+13);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
-        $pdf->SetXY($x, $y+19);
+        $pdf->SetXY($x, $y+20);
         $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
     } else {
-        $pdf->SetXY($x,$y+14);
+        $pdf->SetXY($x,$y+15);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
     }
 
@@ -140,6 +240,7 @@ function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     /*
         Add Price Text
     */
+    $pdf->SetFont('Gill','B', 19);  //Set the font 
     $pdf->SetXY($x,$y+27);
     $pdf->Cell($width, 5, "$".$price, 0, 1, 'C', true); 
 
@@ -166,3 +267,16 @@ function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     return $pdf;
 }
 
+function arrayMirrorRowsExtended($array, $cols)
+{
+    $newArray = array();
+    $chunks = array_chunk($array, $cols);
+    foreach ($chunks as $chunk) {
+        $chunk = array_reverse($chunk);
+        foreach ($chunk as $v) {
+            $newArray[] = $v;
+        }
+    }
+
+    return $newArray;
+}
