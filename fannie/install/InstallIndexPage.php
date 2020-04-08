@@ -661,6 +661,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'FloorSectionProductMapModel',
         'FloorSectionsListViewModel',
         'FloorSectionsListTableModel',
+        'FloorSectionMinIdViewModel',
+        'FloorSubSectionsModel',
         'HouseCouponsModel',
         'HouseCouponItemsModel',
         'HouseVirtualCouponsModel',
