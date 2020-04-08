@@ -99,7 +99,7 @@ class undo extends NoInputCorePage
                 total, regPrice, tax, foodstamp, discount, memDiscount,
                 discountable, discounttype, voided, PercentDiscount,
                 ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
-                matched, card_no, trans_id
+                matched, card_no, trans_id, charflag
                 from localtranstoday where register_no = $registerNo
                 and emp_no = $empNo and trans_no = $oldTransNo
                 and datetime >= " . $dbc->curdate() . "
@@ -123,7 +123,7 @@ class undo extends NoInputCorePage
                 total, regPrice, tax, foodstamp, discount, memDiscount,
                 discountable, discounttype, voided, PercentDiscount,
                 ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
-                matched, card_no, trans_id
+                matched, card_no, trans_id, charflag
                 from dtransactions where register_no = $registerNo
                 and emp_no = $empNo and trans_no = $oldTransNo
                 and datetime >= " . $dbc->curdate() . "
