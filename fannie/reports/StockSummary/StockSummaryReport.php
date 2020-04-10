@@ -36,6 +36,8 @@ class StockSummaryReport extends FannieReportPage
     protected $report_headers = array('Mem#', 'Name', 'Effective Status', 'Status', 'A', 'B', 'Unknown');
     protected $report_cache = 'none';
     protected $required_fields = array('date');
+    protected $sortable = false;
+    protected $no_sort_but_style = true;
 
     public function fetch_report_data()
     {
