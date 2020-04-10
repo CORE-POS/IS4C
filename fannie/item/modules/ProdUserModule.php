@@ -257,7 +257,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
                 $dbc->execute($insP, array($newID, $upc));
             }
             if ($newID && trim($floorSubs[$i])) {
-                $dbc->execute($addSubP, array($upc, $newID, $floorSubs[$i]));
+                $dbc->execute($addSubP, array($upc, $newID, strtolower($floorSubs[$i])));
             }
         }
     }
