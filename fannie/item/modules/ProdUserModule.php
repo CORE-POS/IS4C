@@ -50,16 +50,18 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $sectionP = $dbc->prepare("SELECT s.description AS store,
                 f.floorSectionID,
                 f.name,
-                CASE WHEN m.upc IS NULL THEN 0 ELSE 1 END AS matched
+                CASE WHEN m.upc IS NULL THEN 0 ELSE 1 END AS matched,
+                b.subSection AS sub
             FROM FloorSections AS f
                 LEFT JOIN Stores AS s ON f.storeId=s.storeID
                 LEFT JOIN FloorSectionProductMap AS m ON f.floorSectionID=m.floorSectionID AND m.upc=?
+                LEFT JOIN FloorSubSections AS b ON f.floorSectionID=b.floorSectionID AND b.upc=m.upc
             ORDER BY s.description, f.name");
         $sectionR = $dbc->execute($sectionP, array($upc));
         $sections = array();
         $marked = array();
         while ($row = $dbc->fetchRow($sectionR)) {
-            $sections[$row['floorSectionID']] = array('label'=> $row['store'] . ' ' . $row['name'], 'matches' => $row['matched']);
+            $sections[$row['floorSectionID']] = array('label'=> $row['store'] . ' ' . $row['name'], 'matches' => $row['matched'], 'sub'=>$row['sub']);
             if ($row['matched']) {
                 $marked[] = $row['floorSectionID'];
             }
@@ -105,16 +107,23 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         for ($i=0; $i<count($marked); $i++) {
             $ret .= '<div class="row form-group">
                         <label title="Location on the floor" class="col-sm-1">Loc.</label>
-                        <div class="col-sm-8">
+                        <div class="col-sm-6">
                             <select name="floorID[]" class="form-control">
                             <option value="0">n/a</option>';
+            $sub = '';
             foreach ($sections as $id => $arr) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                         isset($marked[$i]) && $marked[$i] == $id ? 'selected' : '',
                         $id, $arr['label']
                 );
+                if (isset($marked[$i]) && $marked[$i] == $id && $arr['sub']) {
+                    $sub = $arr['sub'];
+                }
             }
             $ret .= '</select>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control input-sm" name="floorSub[]" value="' . $sub . '" />
                     </div>
                     <div class="col-sm-3 text-left">
                         ' . ($i == 0 ? '<a href="mapping/FloorSectionsPage.php" target="_blank">Add more</a>' : '') . '
@@ -230,11 +239,14 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
      * and re-populating with the submitted values. This is mostly to avoid churning
      * through identity column values on every save.
      */
-    private function saveLocation($dbc, $upc, $floorIDs, $oldFloorIDs)
+    private function saveLocation($dbc, $upc, $floorIDs, $oldFloorIDs, $floorSubs)
     {
         $insP = $dbc->prepare('INSERT INTO FloorSectionProductMap (floorSectionID, upc) VALUES (?, ?)');
         $upP = $dbc->prepare('UPDATE FloorSectionProductMap SET floorSectionID=? WHERE floorSectionID=? AND upc=?');
         $delP = $dbc->prepare('DELETE FROM FloorSectionProductMap WHERE floorSectionID=? AND upc=?');
+        $clearSubP = $dbc->prepare("DELETE FROM FloorSubSections WHERE upc=?");
+        $dbc->execute($clearSubP, array($upc));
+        $addSubP = $dbc->prepare("INSERT INTO FloorSubSections (upc, floorSectionID, subSection) VALUES (?, ?, ?)");
         for ($i=0; $i<count($floorIDs); $i++) {
             $newID = $floorIDs[$i];
             if ($newID == 0 && isset($oldFloorIDs[$i]))  {
@@ -243,6 +255,9 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
                 $dbc->execute($upP, array($newID, $oldFloorIDs[$i], $upc));
             } elseif ($newID != 0 && (!isset($oldFloorIDs[$i]) || $newID != $oldFloorIDs[$i])) {
                 $dbc->execute($insP, array($newID, $upc));
+            }
+            if ($newID && trim($floorSubs[$i])) {
+                $dbc->execute($addSubP, array($upc, $newID, $floorSubs[$i]));
             }
         }
     }
@@ -254,6 +269,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $desc = FormLib::get('lf_desc');
         $origin = FormLib::get('origin', 0);
         $floorIDs = FormLib::get('floorID', array());
+        $floorSubs = FormLib::get('floorSub', array());
         $oldfloorIDs = FormLib::get('currentFloor', array());
         $narrow = FormLib::get('narrowTag', 0) ? 1 : 0;
         $text = FormLib::get('lf_text');
@@ -268,7 +284,7 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $dbc = $this->db();
 
-        $this->saveLocation($dbc, $upc, $floorIDs, $oldfloorIDs);
+        $this->saveLocation($dbc, $upc, $floorIDs, $oldfloorIDs, $floorSubs);
 
         $model = new ProductUserModel($dbc);
         $model->upc($upc);
