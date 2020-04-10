@@ -170,6 +170,7 @@ class ViewPickups extends FannieRESTfulPage
                 ($order->status == $s ? 'checked' : ''),
                 $s, $s);
         }
+        $order->notes = nl2br($order->notes); 
 
         return <<<HTML
 <p>
