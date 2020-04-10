@@ -7,6 +7,25 @@ if (!class_exists('FannieAPI')) {
 
 class InstaWfcExport extends FannieTask 
 {
+    private $skipUPCs = array(
+    '0000000003266' => true,
+    '0000000003262' => true,
+    '0000000003267' => true,
+    '0000000004541' => true,
+    '0000000004993' => 'ORANGE CAULIFLOWER',
+    '0000000004570' => 'ROMANESCO',
+    '0000000004391' => 'HAMLIN ORANGES',
+    '0000000004458' => 'ALGERIAN TANGERINES',
+    '0000000004055' => 'GOLDEN NUGGET MANDARINS',
+    '0000000003753' => 'KISHU MANDARINS',
+    '0000000004457' => 'TDE MANDARINS',
+    '0082890459003' => 'MANDARINS 2# BAG',
+    '0007224013377' => 'MANDARINS 2# BAG',
+    '0000000004022' => 'GREEN GRAPES',
+    '0000000004107' => 'SWEETANGO APPLES',
+    '0000000004744' => 'BEAUTY HEART RADISHES',
+    );
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -43,6 +62,9 @@ class InstaWfcExport extends FannieTask
                 $upc = substr($upc, -4);
             }
             $upc = BarcodeLib::padUPC($upc);
+            if (isset($this->skipUPCs[$upc])) {
+                continue;
+            }
             $user = $dbc->getRow($userP, array($upc));
             if ($user != false) {
                 $keys = array_keys($user);
