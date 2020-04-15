@@ -697,6 +697,18 @@ HTML;
             });
         ");
 
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorID($curVendor);
+        $vendor->load();
+        $shipping = $vendor->shippingMarkup();
+        if ($shipping > 0) {
+            $shipping = $vendor->shippingMarkup() * 100;
+            $shipping = "<label>Shipping Markup</label> $shipping%";
+        } else {
+            $shipping = '';
+        }
+       
+
         return <<<HTML
 {$this->backBtn()}
 <form class="form" method="get" name="vform">
@@ -710,6 +722,7 @@ HTML;
         </select>
     </div>
 </form>
+<div>$shipping</div>
 $vdepts
 <form class="form-inline" method="get">
     {$table}
