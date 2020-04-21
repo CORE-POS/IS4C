@@ -737,6 +737,8 @@ HTML;
                 AND b.discounttype > 0
         ");
 
+        $invP = $dbc->prepare("SELECT onHand FROM InventoryCache WHERE upc=? AND storeID=?");
+
         $exportOpts = '';
         foreach (COREPOS\Fannie\API\item\InventoryLib::orderExporters() as $class => $name) {
             $selected = $class === $this->config->get('DEFAULT_PO_EXPORT') ? 'selected' : '';
@@ -858,6 +860,7 @@ HTML;
             <th class="thead">Units/Case</th>
             <th class="thead">Cases</th>
             <th class="thead hidden-xs">Est. Cost</th>
+            ' . (!$order->placed() ? '<th class="thead hidden-xs">On Hand</th>' : '') . '
             <th class="thead hidden-xs">Received</th>
             <th class="thead">Rec. Qty</th>
             <th class="thead hidden-xs">Rec. Cost</th>
@@ -865,6 +868,7 @@ HTML;
         $count = 0;
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
+            $onHand = '';
             if (!$order->placed()) {
                 $batchR = $dbc->execute($batchP, array($obj->internalUPC(), $orderObj->storeID, $batchStart));
                 $title = '';
@@ -876,6 +880,7 @@ HTML;
                 if ($title) {
                     $css = 'class="info" title="' . $title . '"';
                 }
+                $onHand = '<td class="hidden-xs">' . $dbc->getValue($invP, array($obj->internalUPC(), $order->storeID())) . '</td>';
             }
             $link = '../item/ItemEditorPage.php?searchupc=' . $obj->internalUPC();
             if ($obj->isSpecialOrder()) {
@@ -903,6 +908,7 @@ HTML;
                         </span>
                     </td>
                     <td class="hidden-xs">%.2f</td>
+                    %s
                     <td class="hidden-xs">%s</td><td>%s</td><td class="hidden-xs">%.2f</td>
                     <td class="hidden-xs">
                         <select class="form-control input-sm" onchange="isSO(%d, \'%s\', this.value);">
@@ -918,6 +924,7 @@ HTML;
                     $obj->unitSize(), $obj->caseSize(),
                     $count, $obj->quantity(), $pendingOnlyClass, $this->id, $obj->sku(), $count, $this->id, $obj->sku(), $count,
                     ($obj->quantity() * $obj->caseSize() * $obj->unitCost()),
+                    $onHand,
                     strtotime($obj->receivedDate()) ? date('Y-m-d', strtotime($obj->receivedDate())) : 'n/a',
                     $obj->receivedQty(),
                     $obj->receivedTotalCost(),
