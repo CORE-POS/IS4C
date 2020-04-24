@@ -10,11 +10,11 @@ if (!class_exists('FannieAPI')) {
 class WFC_Dark_Simple extends FpdfWithBarcode
 {
     private $tagdate;
-    function setTagDate($str){
+    public function setTagDate($str){
         $this->tagdate = $str;
     }
 
-    function barcodeText($x, $y, $h, $barcode, $len)
+    public function barcodeText($x, $y, $h, $barcode, $len)
     {
         $this->SetFont('Arial','',8);
         $this->Text($x,$y-$h+(17/$this->k),substr($barcode,-$len).' '.$this->tagdate);
@@ -29,10 +29,10 @@ function WFC_Dark_Simple ($data,$offset=0)
     $pdf->SetFillColor(0, 0, 0);
     $pdf->SetTextColor(255, 255, 255);
 
-    define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    define('FPDF_FONTPATH', __DIR__ . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
     $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
     $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-    $pdf->SetFont('Gill', 'B', 16);  //Set the font 
+    $pdf->SetFont('Gill', 'B', 16); 
 
     $width = 68;
     $height = 34;
@@ -108,6 +108,7 @@ function generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $d
     $brand = $row['brand'];
     $price = $row['normal_price'];
     $vendor = $row['vendor'];
+    $size = $row['size'];
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Gill','', 9);
@@ -130,12 +131,18 @@ function generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $d
     $pdf->SetXY($x,$y+18);
     $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
 
-
     /*
         Add Vendor Text
     */
     $pdf->SetXY($x,$y+27);
     $pdf->Cell($width, 5, $vendor, 0, 1, 'C', true); 
+
+    /*
+        Add Size Text
+    */
+    $pdf->SetXY($x+40,$y+27);
+    $pdf->Cell('25', 8, $size, 0, 1, 'R', true); 
+
 
     /*
         Create Guide-Lines
