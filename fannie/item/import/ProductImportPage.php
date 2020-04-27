@@ -125,6 +125,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             // upc cleanup
             $upc = str_replace(" ","",$upc);
             $upc = str_replace("-","",$upc);
+            $upc = str_replace("'","",$upc);
             if (!is_numeric($upc)) continue; // skip header(s) or blank rows
 
             if ($checks) {
