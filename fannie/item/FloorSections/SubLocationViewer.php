@@ -98,6 +98,7 @@ class SubLocationViewer extends FannieRESTfulPage
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title">Product List</h4>
+                <p id="modal-title-body"></p>
             </div>
             <div class="modal-body" id="modal-body">
                 <p>Data</p>
@@ -109,6 +110,7 @@ class SubLocationViewer extends FannieRESTfulPage
     </div>
 </div>
 
+<div id="scroll-search" style="width: 200px; position: fixed; top: 5px; left: 60px; display: none;"><input "type="text" name="searchin" id="searchin-2" class="form-control"></div>
 <div class="row">
     <div class="col-lg-4">
         <div class="form-group">
@@ -117,7 +119,11 @@ class SubLocationViewer extends FannieRESTfulPage
         </div>
     </div>
     <div class="col-lg-4"></div>
-    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <ul>
+            <li><a href="EditLocations.php">Sub-Section Editor</a></li>
+        </ul>
+    </div>
 </div>
 <div class="table-responsive"><table class="table table-bordered table-sm small" id="mytable"><tbody>$td</tbody></table></div>
 HTML;
@@ -176,6 +182,7 @@ $('.dept').on('click', function(){
             console.log('success');
             console.log(resp);
             $('#modal-body').html('<table class="table table-bordered table-striped table-condensed"><thead></thead><tbody>'+resp+'</tbody></table>');
+            $('#modal-title-body').html("<h4>Section: <strong>"+section+"</strong> | Sub-Section: <strong>"+sub+"</strong></h4>");
         }
     }).done(function(resp) {
         console.log('done'); 
@@ -184,17 +191,29 @@ $('.dept').on('click', function(){
 });
 $("#searchin").keyup(function(e){
     var text = $(this).val().toUpperCase();
-    console.log(text);
     $('td').each(function(){
         if ($(this).closest('table').attr('id') == "mytable") {
             var tdText = $(this).text().toUpperCase();
             if (!tdText.includes(text)) {
-                $(this).css('background', 'grey');
+                $(this).css('background', 'lightgrey');
             } else {
-                $(this).css('background', 'transparent');
+                $(this).css('background', '#FFFFCC');
             }
         }
     });
+    $('#searchin-2').val(text);
+});
+$("#searchin-2").keyup(function(e){
+    var text = $(this).val().toUpperCase();
+    $('#searchin').val(text).trigger('keyup');
+});
+$(window).scroll(function () {
+    var scrollTop = $(this).scrollTop();
+    if (scrollTop > 300) {
+        $('#scroll-search').fadeIn('slow');
+    } else {
+        $('#scroll-search').fadeOut('slow');
+    }
 });
 JAVASCRIPT;
     }
