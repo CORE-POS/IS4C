@@ -300,6 +300,8 @@ HTML;
                 $option = "option";
                 $add = "";
                 $batchID = $row['batchID'];
+                $condensed = $row['batchName'];
+                $condensed = str_replace("Co-op Deals", '', $condensed);
                 if (in_array($batchID,$foundIn)) {
                     $option = "option style='background-color: tomato; color: white' ";
                     $add = "# ";
@@ -311,7 +313,7 @@ HTML;
                         $sel = " ";
                     }
                 }
-                $ret .= "<$option value='$batchID' $sel>$add {$row['batchName']}</option>";
+                $ret .= "<$option value='$batchID' $sel>$add $condensed</option>";
             }
             $cycleA = ($cycle != 'B') ? 'checked' : '';
             $cycleB = ($cycle == 'B') ? 'checked' : '';
