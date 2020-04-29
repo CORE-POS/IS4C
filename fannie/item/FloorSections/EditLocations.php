@@ -244,7 +244,8 @@ class EditLocations extends FannieRESTfulPage
                 $stripe,
                 $i,
                 $this->floorSectionSelect($sections, $floorSectionID)
-                    ." <span class=\"btn btn-default glyphicon glyphicon-trash btn-remove-section\" style=\"float:right; margin: 5px;\"></span>",
+                    ." <span class=\"btn btn-default glyphicon glyphicon-trash btn-remove-section\" 
+                        style=\"float:right; margin: 5px;\" data-floorSectionID=\"$floorSectionID\"></span>",
                 $stripe,
                 $i,
                 "<select class=\"form-control edit-subsection\" data-floorSection=\"$floorSectionID\">$subSectionOpts</select>",
@@ -445,7 +446,13 @@ $('.btn-remove-section').click(function(){
     if (c == true) {
         var rowData = $(this).parent('td').parent('tr').find('.row-data');
         var upc = rowData.attr('data-upc');
+        if (upc == null) {
+            upc = $('#upc').val();
+        }
         var floorSectionID = rowData.attr('data-floorSectionID');
+        if (floorSectionID == null) {
+            floorSectionID = $(this).attr('data-floorSectionID');
+        }
         $.ajax({
             type: 'post',
             data: 'removesection=true&upc='+upc+'&floorSectionID='+floorSectionID,
@@ -456,6 +463,7 @@ $('.btn-remove-section').click(function(){
                     $(this).closest('tr').hide();
                     $('#ajax-success').show();
                     $('#ajax-success').fadeOut(1500);
+                    location.reload();
                 } else {
                     $('#ajax-danger').show();
                     $('#ajax-danger').fadeOut(1500);
