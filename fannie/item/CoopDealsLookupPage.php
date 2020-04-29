@@ -46,56 +46,14 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             }
         }
 
-       $this->__routes[] = 'get<upc>';
+       $this->__routes[] = 'get<cycle>';
+       $this->__routes[] = 'get<month><upc>';
        $this->__routes[] = 'get<insert>';
        $this->__routes[] = 'get<month>';
-       $this->__routes[] = 'get<cycle>';
 
        return parent::preprocess();
     }
 
-    function get_cycle_handler() {
-
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upc = FormLib::get('upc');
-
-        if ($this->session->cycleDate) {
-            unset($this->session->cycleDate);
-            return header('location: CoopDealsLookupPage.php?upc='.$upc);
-        }
-
-        $prep = $dbc->prepare('
-            SELECT
-                batchID,
-                batchName,
-                owner,
-                batchType,
-                startDate,
-                endDate
-            FROM is4c_op.batches
-            WHERE CURDATE() between startDate and endDate
-                AND batchType = 1
-                AND (batchName like "%Deals A%"
-                    OR batchName like "%Deals B%")
-            LIMIT 1;
-        ');
-        $res = $dbc->execute($prep);
-        while ($row = $dbc->fetchRow($res)) {
-            if (strpos($row['batchName'],"Co-op Deals A")) {
-                $date = new DateTime($row['endDate']);
-                date_add($date, date_interval_create_from_date_string('2 days'));
-                $this->session->cycleDate = sprintf("%s",$date->format('Y-m-d'));
-            } elseif (strpos($row['batchName'],"Co-op Deals B")) {
-                $date = new DateTime($row['startDate']);
-                date_add($date, date_interval_create_from_date_string('-2 days'));
-                $this->session->cycleDate = sprintf("%s",$date->format('Y-m-d'));
-            }
-        }
-
-        return header('location: CoopDealsLookupPage.php?upc='.$upc);
-
-    }
 
     function get_insert_view()
     {
@@ -187,7 +145,7 @@ HTML;
         }
     }
 
-    function get_upc_view()
+    public function get_month_upc_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -195,29 +153,12 @@ HTML;
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-        $upc = trim($this->upc);
+        $upc = trim(FormLib::get('upc'));
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
+        $cycle = FormLib::get('cycle');
         $heading = '';
 
         $ret = '';
-        $heading .= '
-            <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
-                <div class="form-group">
-                    <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
-                </div>
-                <div class="form-group">
-                    <input type="submit" class="btn btn-default" value="go"/>
-                </div>
-            </form>
-        ';
-        if ($this->session->cycleDate) {
-            $heading .= "<b>Switch_Cycle</b>: Alternate cycle batches loaded.<br/>";
-            $cycleB = true;
-        } else {
-            $cycleB = false;
-        }
-        $heading .= '<strong>Month</strong>: ' . $this->session->month . '<br>';
-        $heading .= 'UPC: ' . $upc;
 
         //Check if product exists
         $args = array($upc);
@@ -227,7 +168,8 @@ HTML;
             $heading .= "<div class='alert alert-danger' align='center'>Product does not exist in POS</div>";
         }
 
-        $month = $this->session->month;
+        //$month = $this->session->month;
+        $month = FormLib::get('month');
         $mono = new DateTime($month);
         $mono = $mono->format('m');
         $args = array($upc, $month);
@@ -311,20 +253,9 @@ HTML;
             } else {
                 $datePicker = "CURDATE()";
             }
-            $curMonthQueryStr = "
-                select
-                    batchID,
-                    batchName,
-                    owner,
-                    batchType
-                from is4c_op.batches
-                where {$datePicker} between startDate and endDate
-                and batchType = 1;
-            ";
-            $curMonthQ = $dbc->prepare($curMonthQueryStr);
 
             $selMonthA = array($checkMoStart,$checkMoEnd);
-            $cycleStr = ($cycleB === false) ? " AND (batchName LIKE '% A %'
+            $cycleStr = ($cycle != 'B') ? " AND (batchName LIKE '% A %'
                 OR batchName LIKE '% TPR %')" : " AND batchName LIKE '% B %' ";
             $q = "
                 SELECT
@@ -339,12 +270,7 @@ HTML;
                     AND batchType = 1;
             ";
             $selMonthQ = $dbc->prepare($q);
-            $curMonth = date('F');
-            if ($curMonth == $this->session->month) {
-                $result = $dbc->execute($curMonthQ);
-            } else {
-                $result = $dbc->execute($selMonthQ,$selMonthA);
-            }
+            $result = $dbc->execute($selMonthQ,$selMonthA);
 
             $batchIDs = array();
             while ($row = $dbc->fetchRow($result)) {
@@ -363,16 +289,12 @@ HTML;
             }
 
             $ret .=  '
-                <form method="get" class="">
+                <form method="get" class="" id="upc-form">
                     <label>Sales Batches</label>
                     <div class="form-group">
                         <select class="form-control" name="batches">
             ';
-            if ($curMonth == $this->session->month) {
-                $result = $dbc->execute($curMonthQ);
-            } else {
-                $result = $dbc->execute($selMonthQ,$selMonthA);
-            }
+            $result = $dbc->execute($selMonthQ,$selMonthA);
             while ($row = $dbc->fetchRow($result)) {
                 $sel = "";
                 $option = "option";
@@ -391,29 +313,51 @@ HTML;
                 }
                 $ret .= "<$option value='$batchID' $sel>$add {$row['batchName']}</option>";
             }
+            $cycleA = ($cycle != 'B') ? 'checked' : '';
+            $cycleB = ($cycle == 'B') ? 'checked' : '';
             $ret .=  '
                     </select>
                     </div>
+                    <label for="radioGroup">Cycle</label>
+                    <div class="form-group" id="radioGroup">
+                        <input type="radio" id="A" name="cycle" value="A" '.$cycleA.'>
+                        <label for="A">A</label>
+                    </div>
                     <div class="form-group">
-                        <input type="submit" name="cycle" value="Switch_Cycle" class="btn btn-default form-control">
+                        <input type="radio" id="B" name="cycle" value="B" '.$cycleB.'>
+                        <label for="B">B</label>
                     </div>
                     <div class="form-group">
                         <input type="submit" class="btn btn-danger form-control" value="Add this item to batch">
                     </div>
                     <input type="hidden" name="insert" value="1">
-                    <input type="hidden" name="upc" value="' . $upc . '">
                     <input type="hidden" name="salePrice" value="' . $srp . '">
-                </form>
             ';
         }
 
-        $ret .= $this->navBtns();
-
         return <<<HTML
 <div class="row">
-    <div class="col-md-6">
-        $heading$ret
+    <div class="col-lg-3"></div>
+    <div class="col-lg-6">
+        <form id="upc-form" action="{$_SERVER['PHP_SELF']}"  method="get" name="upc-form">
+            {$this->monthOptions()}
+            {$this->upcInput()}
+            $heading
+            $ret
+        </form>
     </div>
+    <div class="col-lg-3"></div>
+</div>
+<div class="row">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-3">{$this->navBtns()}</div>
+            <div class="col-lg-3"></div>
+        </div>
+    </div>
+    <div class="col-lg-4"></div>
 </div>
 HTML;
     }
@@ -421,65 +365,116 @@ HTML;
     function get_month_view()
     {
         $this->session->month = FormLib::get('month');
-        //$this->addScript('../autocomplete.js');
-        //$this->addOnloadCommand("bindAutoComplete('#upc', '../../ws/', 'item');\n");
         if (FormLib::get('linea') != 1) {
             $this->addOnloadCommand("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
 
-        $ret = '';
-        echo '<strong>Month</strong>: ' . $this->session->month . '<br>';
-
-        $ret .= '
-            <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="">
+        return <<<HTML
+<div class="row">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <form id="upc-form" action="{$_SERVER['PHP_SELF']}"  method="get" name="upc-form" class="">
+            {$this->monthOptions()}
+            <div class="form-group">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
-                <input type="submit" class="btn btn-default" value="go">
-            </form>
-            '.$this->navBtns().'
-        ';
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-default" value="Submit UPC">
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+<div class="row">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-3">
+                {$this->navBtns()}
+            </div>
+            <div class="col-lg-3"></div>
+        </div>
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+HTML;
+    }
 
-        return $ret;
+    public function monthOptions()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $prep = $dbc->prepare("SELECT dealSet FROM CoopDealsItems GROUP BY dealSet");
+        $res = $dbc->execute($prep);
+        $options = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $date = new DateTime($row['dealSet']);
+            $options[$date->format('m')] = $row['dealSet'];
+        }
+        ksort($options);
+        $opts = '';
+        foreach ($options as $option) {
+            $sel = (FormLib::get('month') == $option) ? 'selected' : '';
+            $opts .= "<option value='$option' $sel>$option</option>";
+        }
+
+        return <<<HTML
+<label for="month">Month</label><br>
+<select name="month" id="month" class="form-control" style="text-align: center">
+    <option value="false">Select a Month</option>
+    {$opts}
+</select>&nbsp;
+HTML;
+    }
+
+    public function upcInput()
+    {
+        $upc = FormLib::get('upc');
+
+        return <<<HTML
+<div class="form-group">
+    <input type="text" class="form-control" name="upc" id="upc" value="$upc"
+        placeholder="Scan Barcode" autofocus>
+</div>
+<div class="form-group" align="center">
+    <button class="btn btn-default">Submit</button>
+</div>
+HTML;
     }
 
     function get_view()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $curMonth = date('F');
-        $dealSets = "";
-        $prep = $dbc->prepare("SELECT dealSet FROM CoopDealsItems
-            GROUP BY dealSet");
-        $res = $dbc->execute($prep);
-        while ($row = $dbc->fetchRow($res)) {
-            $dealSets .= "<option value='{$row['dealSet']}'>{$row['dealSet']}</option>";
-        }
+
+        $monthOpts = $this->monthOptions();
 
         return <<<HTML
 <div class="row">
-    <div class="col-md-3">
-        <form method="get" name="useCurMo" class="">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <form method="get" name="upc-form" class="">
             <div class="form-group">
-                <input type="hidden" name="month" value="{$curMonth}">
-            </div>
-            <div class="form-group">
-                <button type="submit" class="form-control btn btn-default" >Use Current Month</button>
-            </div>
-        </form>
-        <form method="get" name="id-form" class="">
-            or <label>Select a Month</label><br>
-            <div class="form-group">
-                <select name="month" id="month" class="form-control" style="text-align: center">
-                {$dealSets}
-                </select>&nbsp;
+                {$monthOpts}
             </div>
             <div class="form-group">
                 <button type="submit" class="form-control btn btn-default">Submit</button><br>
             </div>
         </form>
     </div>
+    <div class="col-lg-4"></div>
 </div>
-{$this->navBtns()}
+<div class="row">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-3">{$this->navBtns()}</div>
+            <div class="col-lg-3"></div>
+        </div>
+    </div>
+    <div class="col-lg-4"></div>
+</div>
 HTML;
 
     }
@@ -490,9 +485,8 @@ HTML;
         $ret .= '
             <div class="row"><div class="col-md-2">
                 <table class="table"><tbody>
-                    <tr><td><a class="btn btn-default btn-xs wide" href="CoopDealsLookupPage.php">Select Month</a></td></tr>
                     <tr><td><a class="btn btn-default btn-xs wide" href="../../../../Scannie/content/Scanning/BatchCheck/SCS.php">Batch Check</a></td></tr>
-                    <tr><td><a class="btn btn-default btn-xs wide" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Exit</a></td></tr>
+                    <tr><td><a class="btn btn-default btn-xs wide" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Menu</a></td></tr>
                 </tbody></table>
             </div></div>
         ';
@@ -503,7 +497,10 @@ HTML;
     {
         return <<<JAVASCRIPT
 $('#month').on('change', function(){
-    document.forms['id-form'].submit();
+    document.forms['upc-form'].submit();
+});
+$('input:radio').change(function(){
+    document.forms['upc-form'].submit();
 });
 JAVASCRIPT;
     }
