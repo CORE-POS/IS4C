@@ -297,6 +297,9 @@ class EditLocations extends FannieRESTfulPage
 <form class="form-inline" id="table-update">
 <div class="table-responsive"><table class="table table-bordered table-sm small" id="handheldtable"><thead>$th</thead><tbody>$td</tbody></table></div>
 </form>
+<div class="form-group">
+    <a class="btn btn-default" href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Menu</a>
+</div>
 HTML;
     }
 
