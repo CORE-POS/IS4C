@@ -268,6 +268,12 @@ HTML;
             <a href="?export=1&set=' . $this->section . '" id="exportLink" class="btn btn-default btn-info">
                 Export List
             </a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            |
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="SaMenuPage.php" class="btn btn-default">
+                Menu
+            </a>
             </p>';
 
         $this->addScript('js/handheld.js');
