@@ -60,61 +60,56 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $batchID = FormLib::get('batches');
+        $batchID = FormLib::get('batchID');
         $upc = FormLib::get('upc');
         $salePrice = FormLib::get('salePrice');
+        $alertType = null;
 
-        $prep = $dbc->prepare('SELECT * FROM batches WHERE batchID = ?');
-        $res = $dbc->execute($prep, $batchID);
-        $row = $dbc->fetch_row($res);
-        $batchID = $row['batchID'];
-        $batchName = $row['batchName'];
-        $args = array($upc, $batchID, $salePrice, $salePrice);
-
-        $prep = $dbc->prepare('
-            INSERT INTO batchList
-            (upc, batchID, salePrice, groupSalePrice, active) VALUES (?,?,?,?,"1")
-        ');
-        $dbc->execute($prep,$args);
-
-        if ($er = $dbc->error()) {
-            return <<<HTML
-<div class="row">
-    <div class="col-md-6">
-        <div class="alert alert-danger">$msg</div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-2">
-        <div class="form-group">
-            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php?upc={$upc}">Scan Another</a>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php">Start Over</a>
-        </div>
-    </div>
-</div>
-HTML;
+        $prep = $dbc->prepare('SELECT * FROM batchList WHERE batchID = ? AND upc = ?');
+        $res = $dbc->execute($prep, array($batchID, $upc));
+        $rows = $dbc->numRows($res);
+        if ($rows > 0) {
+            $alertType = 'info'; 
+            $msg = "Item already found in batch #$batchID";
         } else {
-            $msg = "Item Added to Batch #$batchID";
-            $b = new BatchesModel($dbc);
-            if ($this->forceBatchOkay($batchID,$b)) {
-                $b->forceStartBatch($batchID);
-                $msg .= " & Batch #{$batchID} forced.";
-            }
+            $prep = $dbc->prepare('SELECT * FROM batches WHERE batchID = ?');
+            $res = $dbc->execute($prep, $batchID);
+            $row = $dbc->fetch_row($res);
+            $batchID = $row['batchID'];
+            $batchName = $row['batchName'];
+            $args = array($upc, $batchID, $salePrice, $salePrice);
 
-            return <<<HTML
+            $prep = $dbc->prepare('
+                INSERT INTO batchList
+                (upc, batchID, salePrice, groupSalePrice, active) VALUES (?,?,?,?,"1")
+            ');
+            $dbc->execute($prep,$args);
+
+            if ($er = $dbc->error()) {
+                $alertType = 'danger';
+                $msg = $er;
+            } else {
+                $alertType = 'success';
+                $msg = "Item Added to Batch #$batchID";
+                $b = new BatchesModel($dbc);
+                if ($this->forceBatchOkay($batchID,$b)) {
+                    $b->forceStartBatch($batchID);
+                    $msg .= " & Batch #{$batchID} forced.";
+                }
+            }
+        }
+        
+
+        return <<<HTML
 <div class="row">
     <div class="col-md-6">
-        <div class="alert alert-success">$msg</div>
+        <div class="alert alert-$alertType">$msg</div>
     </div>
 </div>
 <div class="row">
     <div class="col-md-2">
         <div class="form-group">
-            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php?upc={$upc}">Scan Another</a>
+            <a class="btn btn-default form-control" onclick="window.history.back(); return false;">Back</a>
         </div>
     </div>
     <div class="col-md-2">
@@ -124,7 +119,6 @@ HTML;
     </div>
 </div>
 HTML;
-        }
 
     }
 
@@ -292,7 +286,7 @@ HTML;
                 <form method="get" class="" id="upc-form">
                     <label>Sales Batches</label>
                     <div class="form-group">
-                        <select class="form-control" name="batches">
+                        <select class="form-control select-batch" id="select-batch" name="batches">
             ';
             $result = $dbc->execute($selMonthQ,$selMonthA);
             while ($row = $dbc->fetchRow($result)) {
@@ -329,11 +323,6 @@ HTML;
                         <input type="radio" id="B" name="cycle" value="B" '.$cycleB.'>
                         <label for="B">B</label>
                     </div>
-                    <div class="form-group">
-                        <input type="submit" class="btn btn-danger form-control" value="Add this item to batch">
-                    </div>
-                    <input type="hidden" name="insert" value="1">
-                    <input type="hidden" name="salePrice" value="' . $srp . '">
             ';
         }
 
@@ -346,6 +335,15 @@ HTML;
             {$this->upcInput()}
             $heading
             $ret
+        </form>
+        <form id="insert-form" action="{$_SERVER['PHP_SELF']}"  method="get" name="insert-form">
+            <div class="form-group">
+                <input type="submit" class="btn btn-danger form-control" value="Add this item to batch">
+            </div>
+            <input type="hidden" name="insert" value="1">
+            <input type="hidden" name="salePrice" value="$srp">
+            <input type="hidden" name="batchID" id="batchID" >
+            <input type="hidden" name="upc" value="$upc">
         </form>
     </div>
     <div class="col-lg-3"></div>
@@ -503,6 +501,16 @@ $('#month').on('change', function(){
 });
 $('input:radio').change(function(){
     document.forms['upc-form'].submit();
+});
+
+// this also needs to be done on-load, as select may not be changed
+$('select.select-batch').change(function(){
+    var batchID = $(this).find('option:selected').val();
+    $('#batchID').val(batchID); 
+});
+$(document).ready(function(){
+    var batchID = $('#select-batch').find('option:selected').val(); 
+    $('#batchID').val(batchID); 
 });
 JAVASCRIPT;
     }
