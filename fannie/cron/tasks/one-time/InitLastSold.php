@@ -53,7 +53,7 @@ class InitLastSold extends FannieTask
             WHERE upc=?');
 
         // really old date to ensure we get the whole history
-        $dlog = DTransactionsModel::selectDlog('1950-01-01', date('Y-m-d'));
+        $dlog = DTransactionsModel::selectDlog('1970-01-02', date('Y-m-d'));
 
         $missingR = $dbc->query('
             SELECT upc
