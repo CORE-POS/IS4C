@@ -135,13 +135,15 @@ function generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $d
         Add Vendor Text
     */
     $pdf->SetXY($x,$y+27);
-    $pdf->Cell($width, 5, $vendor, 0, 1, 'C', true); 
+    $pdf->Cell($width, 5, $vendor, 0, 1, 'L', true); 
 
     /*
         Add Size Text
     */
-    $pdf->SetXY($x+40,$y+27);
-    $pdf->Cell('25', 8, $size, 0, 1, 'R', true); 
+    if ($size > 0) {
+        $pdf->SetXY($x+52,$y+27);
+        $pdf->Cell('15', 5, $size, 0, 1, 'R', true); 
+    }
 
 
     /*
