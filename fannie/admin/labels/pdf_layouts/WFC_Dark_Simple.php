@@ -19,6 +19,26 @@ class WFC_Dark_Simple extends FpdfWithBarcode
         $this->SetFont('Arial','',8);
         $this->Text($x,$y-$h+(17/$this->k),substr($barcode,-$len).' '.$this->tagdate);
     }
+
+    static public function stringToLines($string) {
+        $length = strlen($string);
+        $lines = array();
+        // return 1 to 4 lines based on $desc size
+        if ($length < 22) {
+            $lines[] = $string;
+        } else if ($length < 40) {
+            $wrp = wordwrap($string, 22, "*", false);
+            $lines = explode('*', $wrp);
+        } else if ($length < 60) {
+            $wrp = wordwrap($string, 22, "*", false);
+            $lines = explode('*', $wrp);
+        } else {
+            $wrp = wordwrap($string, 22, "*", false);
+            $lines = explode('*', $wrp);
+        }
+
+        return $lines;
+    }
 }
 
 function WFC_Dark_Simple ($data,$offset=0)
@@ -187,33 +207,37 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $pdf->SetXY($x,$y);
     $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
 
-    // use line break to split str if exists; else wordwrap if 2 lines req.
-    $lines = array();
+    $lines = WFC_Dark_Simple::stringToLines($desc);
     if (strstr($desc, "\r\n")) {
         $lines = explode ("\r\n", $desc);
-    } elseif (strlen($desc) > 20) {
-        $wrp = wordwrap($desc, strlen($desc)/1.5, "*", false);
-        $lines = explode('*', $wrp);
-    } else {
-        $lines[0] = $desc;
     }
 
     /*
         Add Description Text
     */
-    $strlen = (strlen($lines[0]) > strlen($lines[1])) ? strlen($lines[0]) : strlen($lines[1]);
-    if ($strlen >= 30) {
-        $pdf->SetFont('Gill','B', 9);  //Set the font 
-    } elseif ($strlen > 20 && $strlen < 30) {
-        $pdf->SetFont('Gill','B', 12);  //Set the font 
-    } else {
-        $pdf->SetFont('Gill','B', 16);  //Set the font 
-    }
-    if (count($lines) > 1) {
+    $pdf->SetFont('Gill','B', 16);  //Set the font 
+    $lineCount = count($lines);
+    if ($lineCount == 2) {
         $pdf->SetXY($x,$y+12);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
         $pdf->SetXY($x, $y+19);
         $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
+    } elseif ($lineCount == 3) {
+        $pdf->SetXY($x,$y+7);
+        $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
+        $pdf->SetXY($x, $y+14);
+        $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
+        $pdf->SetXY($x, $y+21);
+        $pdf->Cell($width, 5, $lines[2], 0, 1, 'C', true); 
+    } elseif ($lineCount == 4) {
+        $pdf->SetXY($x,$y+4);
+        $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
+        $pdf->SetXY($x, $y+11);
+        $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
+        $pdf->SetXY($x, $y+18);
+        $pdf->Cell($width, 5, $lines[2], 0, 1, 'C', true); 
+        $pdf->SetXY($x, $y+25);
+        $pdf->Cell($width, 5, $lines[3], 0, 1, 'C', true); 
     } else {
         $pdf->SetXY($x,$y+15);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
