@@ -223,11 +223,11 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         $pdf->SetXY($x, $y+19);
         $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
     } elseif ($lineCount == 3) {
-        $pdf->SetXY($x,$y+7);
+        $pdf->SetXY($x,$y+8);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
-        $pdf->SetXY($x, $y+14);
+        $pdf->SetXY($x, $y+15);
         $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
-        $pdf->SetXY($x, $y+21);
+        $pdf->SetXY($x, $y+22);
         $pdf->Cell($width, 5, $lines[2], 0, 1, 'C', true); 
     } elseif ($lineCount == 4) {
         $pdf->SetXY($x,$y+4);
