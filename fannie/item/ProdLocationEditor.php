@@ -758,15 +758,30 @@ class ProdLocationEditor extends FannieRESTfulPage
 
     function get_view()
     {
-        return '
-            <div class="container pull-left">
-            <form class="form-inline" method="get">
-                <input type="submit" class="btn btn-default" style="width: 300px" name="searchupc" value="Single UPC Update"><br><br>
-                <input type="submit" class="btn btn-default" style="width: 300px" name="list" value="List of UPCs Update"><br><br>
-                <input type="submit" class="btn btn-default" style="width: 300px" name="batch" value="Locations by BATCH"><br><br>
-            </form>
+        return <<<HTML
+<div class="row">
+    <div class="col-lg-4">
+    </div>
+    <div class="col-lg-4">
+        <form method="get">
+            <div class="form-group">
+                <button type="submit" class="btn btn-default" style="width: 300px" name="searchupc">Edit a single <strong>upc</strong></button>
             </div>
-        ';
+            <div class="form-group">
+                <button type="submit" class="btn btn-default" style="width: 300px" name="list">Edit a list of <strong>upcs</strong></button>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-default" style="width: 300px" name="batch">Edit Locations by <strong>batch-ids</strong></button>
+            </div>
+            <div class="form-group">
+                <a class="btn btn-default" style="width: 300px" href="FloorSections/EditLocations.php">Edit Floor <strong>sub-locations</strong></a>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+HTML;
     }
 
     private function arrayToOpts($arr, $selected=-999, $id_label=false)
