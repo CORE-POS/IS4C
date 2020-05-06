@@ -465,7 +465,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         <div class="input-group" style="width:100%;">
             <input type="text" maxlength="30" class="form-control syncable-input descript-input" required
                 name="descript[]" value="{$rowItem['description']}" 
-                onkeyup="$(this).next().html(30-(this.value.length)); $(this).val($(this).val().toUpperCase());" />
+                onkeyup="$(this).next().html(30-(this.value.length));" />
             <span class="input-group-addon">{$limit}</span>
         </div>
     </td>

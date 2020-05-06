@@ -52,9 +52,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         tr.green td.sub {
             background:#ccffcc;
         }
-        tr.greenb td.sub {
-            background:#ddffcc;
-        }
         tr.red td.sub {
             background:#F7BABA;
         }
@@ -283,7 +280,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <th class=\"thead\">Var</th>
             <th class=\"thead\">Batch</th>
             <th class=\"thead\">Ignore</th></tr></thead><tbody>";
-        $rounder = new PriceRounder();
         while ($row = $dbc->fetch_row($result)) {
             $vendorModel->reset();
             $vendorModel->upc($row['upc']);
@@ -300,7 +296,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $alias = $dbc->getRow($aliasP, array($row['upc']));
                 $row['vendorDept'] = $alias['vendorDept'];
                 $row['srp'] = $alias['srp'] * $alias['multiplier'];
-                $row['srp'] = $rounder->round($row['srp']);
             }
             if ($row['difference']) {
             }
@@ -461,18 +456,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
     {
         ob_start();
         ?>
-        $('.green').each(function(){
-            var price = $(this).find('td:eq(4)').text();
-            price = parseFloat(price);
-            var srp = $(this).find('td:eq(9)').text();
-            srp = parseFloat(srp);
-            if (price < srp) {
-                var text = $(this).find('td:eq(10)').text();
-                $(this).find('td:eq(10)').css('background', 'pink');
-            } else {
-                var text = $(this).find('td:eq(10)').text();
-            }
-        });
         var $table = $('#mytable');
         $table.floatThead();
         function showOnlyClass(classname) {

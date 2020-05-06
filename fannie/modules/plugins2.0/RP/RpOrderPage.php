@@ -40,7 +40,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_date1_date2_handler()
     {
-        $prep = $this->connection->prepare("SELECT internalUPC, GROUP_CONCAT(i.brand) AS brand, SUM(quantity) AS qty
+        $prep = $this->connection->prepare("SELECT internalUPC, SUM(quantity) AS qty
             FROM PurchaseOrderItems AS i
                 INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
             WHERE o.vendorID=-2
@@ -56,7 +56,7 @@ class RpOrderPage extends FannieRESTfulPage
 
         $ret = array();
         foreach ($qtys as $row) {
-            $ret[] = array('upc' => $row['internalUPC'], 'qty' => $row['qty'], 'brand' => $row['brand']);
+            $ret[] = array('upc' => $row['internalUPC'], 'qty' => $row['qty']);
         }
         echo json_encode($ret);
 
@@ -277,7 +277,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200424');
+        $this->addScript('rpOrder.js?date=20200220');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {

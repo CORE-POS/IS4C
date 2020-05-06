@@ -436,9 +436,6 @@ HTML;
                 &nbsp;&nbsp;&nbsp;
                 <a href="../ShelfAudit/SaAdjustmentsPage.php">Transfer to Adjustments</a>
             </p>';
-        $ret .= '<p>
-            <a href="DIExport.php" class="btn btn-default">Export Data</a>
-            </p>';
 
         $vendR = $this->connection->query("SELECT vendorID, vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName");
         $vendors = array();

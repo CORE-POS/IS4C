@@ -69,10 +69,9 @@ class ChefTecExport
         );
 
         foreach ($items->find() as $obj) {
-            $obj->description(str_replace('"', '', $obj->description()));
             list($units, $unit_of_measure) = $this->getUnits($obj);
             echo $obj->sku().',';
-            echo '"'.$obj->brand() . ' ' . $obj->description().'",';
+            echo '"'.$obj->description().'",';
             echo $order->vendorInvoiceID() . ',';
             echo date('Ymd', strtotime($obj->receivedDate())) . ',';
             printf('%f,', $units * $obj->caseSize() * $obj->quantity());
@@ -102,10 +101,9 @@ class ChefTecExport
             $units = $a * $b;
         }
         if (strstr($unit_of_measure, '/')) { // space probably omitted
-            if (preg_match('/([0-9.]+)\/([0-9.]+)(.+)/', $unit_of_measure, $matches)) {
-                $units = $matches[1] * $matches[2];
-                $unit_of_measure = $matches[3];
-            }
+            preg_match('/([0-9.]+)\/([0-9.]+)(.+)/', $unit_of_measure, $matches);
+            $units = $matches[1] * $matches[2];
+            $unit_of_measure = $matches[3];
         }
 
         return array($units, $unit_of_measure);

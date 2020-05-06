@@ -138,7 +138,6 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     return substr($ret, 0, strlen($ret)-1);
                 } else {
                     $i = str_replace('-', '', $i);
-                    $i = str_replace("'", '', $i);
                 }
                 return $i;
             }, $upcs);

@@ -357,10 +357,7 @@ class ItemStatusPage extends FannieRESTfulPage
                     </form>
                 </div>
                 <div class="col-md-6">
-                    <ul>
-                        <li><a href="../../admin/labels/ShelfTagIndex.php">Print Shelf Tags</a></li>
-                        <li><a href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Menu</a></li>
-                    </ul>
+                    <a href="../../admin/labels/ShelfTagIndex.php">Print Shelf Tags</a>
                 </div>
             </div>
                 

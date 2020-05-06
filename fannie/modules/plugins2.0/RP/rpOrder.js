@@ -103,21 +103,17 @@ var rpOrder = (function ($) {
             dataType: 'json'
         }).done(function (resp) {
             var qtyMap = {};
-            var brandMap = {};
             for (var i=0; i<resp.length; i++) {
                 var obj = resp[i];
                 qtyMap[obj.upc] = obj.qty;
-                brandMap[obj.upc] = obj.brand;
             }
-            console.log(qtyMap);
             $('td.upc a').each(function () {
                 var upc = $(this).text();
                 if (qtyMap.hasOwnProperty(upc)) {
-                    console.log(upc);
                     var row = $(this).closest('tr');
                     var onHand = $(row).find('input.onHand');
                     $(onHand).attr('data-incoming', qtyMap[upc]);
-                    $(onHand).closest('td').addClass('alert-success').attr('title', 'Incoming: ' + qtyMap[upc] + ' from ' + brandMap[upc]);
+                    $(onHand).closest('td').addClass('warning').attr('title', 'Incoming: ' + qtyMap[upc]);
                     mod.reCalcRow(row);
                 }
             });
