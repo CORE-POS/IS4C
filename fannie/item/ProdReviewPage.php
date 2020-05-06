@@ -942,10 +942,10 @@ HTML;
                     <div class="divider"></div>
                     <label>Other Pages</label>
                     <ul>
-                        <li><a href="ProdLocationEditor.php">Product Location Editor</a></li>
-                        <li><a href="ProdReviewPage.php?batchLog=1">Review Batch Log</a></li>
-                        <li><a href="ProdReviewPage.php?schedule=1">Vendor Review Schedule</a></li>
-                        <li><a href="ProdReviewPage.php?schedule=1&setup=1">Vendor Schedule Setup</a></li>
+                        <li><a href="ProdLocationEditor.php">Product <strong>Location</strong> Editor</a></li>
+                        <li><a href="ProdReviewPage.php?batchLog=1">Review <strong>Batch Log</strong></a></li>
+                        <li><a href="ProdReviewPage.php?schedule=1">Vendor <strong>Review Schedule</strong></a></li>
+                        <li><a href="ProdReviewPage.php?schedule=1&setup=1">Vendor Schedule <strong>Setup</strong></a></li>
                     </ul>
                 </form>
                 <div class="divider hidden-md hidden-lg"></div>
