@@ -82,7 +82,7 @@ class BigArchiveModel extends DTransactionsModel
         $dbms = $this->connection->dbmsName();
 
         if (strstr($dbms, 'mysql')) {
-            return $this->initMysqlPartitions($timestamp, $last_month);
+            return $this->initMysqlPartitions($timestamp, $next_month);
         } elseif ($dbms === 'postgres9') {
             return $this->initPostgresPartitions($timestamp, $year, $month);
         }

@@ -25,6 +25,7 @@ use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class nslogin extends NoInputCorePage 
