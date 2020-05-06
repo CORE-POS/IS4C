@@ -33,10 +33,13 @@ class InstaWfcExport extends FannieTask
         if (!class_exists('InstaFileV3')) {
             include(__DIR__ . '/InstaFileV3.php');
         }
+        /*
         $csvfile = tempnam(sys_get_temp_dir(), 'ICT');
         $insta = new InstaFileV3($dbc, $this->config);
         $insta->getFile($csvfile);
         $datafile = fopen($csvfile, 'r');
+         */
+        $datafile = fopen(__DIR__ . '/transplants.csv', 'r');
         $userfile = fopen('/tmp/pickupUser.csv', 'w');
         $itemfile = fopen('/tmp/pickupItem.csv', 'w');
         $userP = $dbc->prepare("SELECT
@@ -110,7 +113,9 @@ class InstaWfcExport extends FannieTask
             OPTIONALLY ENCLOSED BY '\"'
             LINES TERMINATED BY '\\n'");
         
+        /*
         unlink($csvfile);
+         */
     }
 }
 
