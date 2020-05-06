@@ -73,7 +73,6 @@ class FixRepackWeightsTask extends FannieTask
             ORDER BY d.upc
             ");
         $res = $dbc->execute($prep, array($date, $date . ' 23:59:59'));
-        echo $dbc->numRows($res) . "\n";
         while ($row = $dbc->fetchRow($res)) {
             $qty = $row['total'] / $row['normal_price'];
             $rounded = round($qty, 2);
@@ -81,12 +80,16 @@ class FixRepackWeightsTask extends FannieTask
             if (abs($match - $row['total']) < 0.005) {
                 continue;
             } 
+            /*
             echo "UPC {$row['upc']}\n";
             echo "Qty is $qty\n";
             echo "Rounds to $rounded\n";
             echo "$match is {$row['total']}\n";
             echo "Row Id {$row['store_row_id']}\n";
+             */
             if (abs($match - $row['total']) > 0.15) {
+                $this->cronMsg('Strange repack weight encountered for ' . $date
+                    . ', halting process', FannieLogger::ERROR);
                 break;
             } 
 
