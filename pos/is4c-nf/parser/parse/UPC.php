@@ -366,6 +366,15 @@ class UPC extends Parser
         $row['foodstamp'] = $foodstamp;
         $row['discount'] = $discountable;
 
+        if ($row['special_limit'] && $row['discounttype'] == 0 && $this->hardLimit($dbc, $row, $quantity)) {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Already purchase maximum amount"),
+                _('Quantity Limited Item'),
+                false,
+                DisplayLib::standardClearButton()
+            );
+            return $ret;
+        }
         $row = $this->enforceSaleLimit($dbc, $row, $quantity);
 
         /*
@@ -820,6 +829,28 @@ class UPC extends Parser
         }
 
         return $ret;
+    }
+
+    private function hardLimit($dbc, $row, $quantity)
+    {
+            $appliedQ = "
+                SELECT SUM(quantity) AS saleQty
+                FROM " . $this->session->get('tDatabase') . $dbc->sep() . "localtemptrans
+                WHERE discounttype = 0
+                    AND (
+                        upc='{$row['upc']}'
+                        OR (mixMatch='{$row['mixmatchcode']}' AND mixMatch<>''
+                            AND mixMatch<>'0' AND mixMatch IS NOT NULL)
+                    )";
+            $appliedR = $dbc->query($appliedQ);
+            if ($appliedR && $dbc->num_rows($appliedR)) {
+                $appliedW = $dbc->fetch_row($appliedR);
+                if (($appliedW['saleQty']+$quantity) > $row['special_limit']) {
+                    return true;
+                }
+            }
+
+            return false;
     }
 
     private function enforceSaleLimit($dbc, $row, $quantity)
