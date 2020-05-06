@@ -69,9 +69,9 @@ function reprice(upc){
     var elem = $('#row'+upc).find('.srp');
     var srp = elem.html();
 
-    var content = "<div class=\"form-inline input-group\"><span class=\"input-group-addon\">$</span>";
-    content += "<input type=\"text\" id=\"newprice"+upc+"\" value=\""+srp+"\" class=\"form-control\" size=4 /></div>";
-    var content2 = "<button type=\"button\" onclick=\"saveprice('"+upc+"');\" class=\"btn btn-default\">Save</button>";
+    var content = "";
+    content += "<input type=\"text\" id=\"newprice"+upc+"\" value=\""+srp+"\" class=\"\" style=\"width: 100%; border: 0px solid transparent; padding: 0px;\"/>";
+    var content2 = "<button type=\"button\" onclick=\"saveprice('"+upc+"');\" class=\"btn btn-default btn-sm\">Save</button>";
     elem.html(content);
     $('#row'+upc).find('.dmargin').html(content2);
     $('#newprice'+upc).focus().select();
