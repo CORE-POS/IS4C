@@ -7,7 +7,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class WFC_Dark_Simple extends FpdfWithBarcode
+class WFC_Dark_Simple_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     public function setTagDate($str){
@@ -44,7 +44,7 @@ class WFC_Dark_Simple extends FpdfWithBarcode
 function WFC_Dark_Simple ($data,$offset=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new WFC_Dark_Simple('L','mm','Letter');
+    $pdf = new WFC_Dark_Simple_PDF('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(0, 0, 0);
     $pdf->SetTextColor(255, 255, 255);
