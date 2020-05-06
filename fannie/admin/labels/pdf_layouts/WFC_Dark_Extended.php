@@ -31,9 +31,9 @@ function WFC_Dark_Extended($data,$offset=0)
     $pdf->SetTextColor(255, 255, 255);
 
     define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
     $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-    $pdf->AddFont('Gill', '', 'GillSansMTPro-Heavy.php');
-    $pdf->SetFont('Gill','B', 16);  //Set the font 
+    $pdf->SetFont('Gill','B', 16);
 
     $width = 68;
     $height = 34;
@@ -116,6 +116,7 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $brand = $row['brand'];
     $price = $row['normal_price'];
     $vendor = $row['vendor'];
+    $size = $row['size'];
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Gill','', 9);
@@ -143,7 +144,15 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         Add Vendor Text
     */
     $pdf->SetXY($x,$y+27);
-    $pdf->Cell($width, 5, $vendor, 0, 1, 'C', true); 
+    $pdf->Cell($width, 5, $vendor, 0, 1, 'L', true); 
+
+    /*
+        Add Size Text
+    */
+    if ($size > 0) {
+        $pdf->SetXY($x+52,$y+27);
+        $pdf->Cell('15', 5, $size, 0, 1, 'R', true); 
+    }
 
     /*
         Create Guide-Lines
@@ -220,11 +229,11 @@ function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     */
     $strlen = (strlen($lines[0]) > strlen($lines[1])) ? strlen($lines[0]) : strlen($lines[1]);
     if ($strlen >= 30) {
-        $pdf->SetFont('Gill','', 9);
+        $pdf->SetFont('Gill','B', 9);
     } elseif ($strlen > 20 && $strlen < 30) {
-        $pdf->SetFont('Gill','', 12);
+        $pdf->SetFont('Gill','B', 12);
     } else {
-        $pdf->SetFont('Gill','', 16);
+        $pdf->SetFont('Gill','B', 16);
     }
     if (count($lines) > 1) {
         $pdf->SetXY($x,$y+13);
