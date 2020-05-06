@@ -532,8 +532,6 @@ CSS;
     {
         $phpunit->assertInternalType('string', $this->get_view());
         $phpunit->assertInternalType('string', $this->get_month_view());
-        $this->upc = '0000000000111';
-        $phpunit->assertInternalType('string', $this->get_upc_view());
     }
 }
 
