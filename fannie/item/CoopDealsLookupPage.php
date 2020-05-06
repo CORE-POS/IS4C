@@ -410,8 +410,12 @@ HTML;
         $res = $dbc->execute($prep);
         $options = array();
         while ($row = $dbc->fetchRow($res)) {
-            $date = new DateTime($row['dealSet']);
-            $options[$date->format('m')] = $row['dealSet'];
+            try {
+                $date = new DateTime($row['dealSet']);
+                $options[$date->format('m')] = $row['dealSet'];
+            } catch (Exception $ex) {
+                $options[$row['dealSet']] = $row['dealSet'];
+            }
         }
         ksort($options);
         $opts = '';
