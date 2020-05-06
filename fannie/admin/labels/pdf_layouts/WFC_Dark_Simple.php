@@ -207,7 +207,7 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $pdf->SetXY($x,$y);
     $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
 
-    $lines = WFC_Dark_Simple::stringToLines($desc);
+    $lines = WFC_Dark_Simple_PDF::stringToLines($desc);
     if (strstr($desc, "\r\n")) {
         $lines = explode ("\r\n", $desc);
     }
