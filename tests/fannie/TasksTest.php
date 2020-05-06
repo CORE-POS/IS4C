@@ -456,7 +456,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
 
     public function testOneTime()
     {
-        foreach (array('InitProductCreated', 'InitLastSold', 'InitProductAttributes', 'ConvertArchiveMonthlyToPartitions', 'CustdataToCustomerAccountsTask', 'AddIDsToOldTransactions') as $class) {
+        foreach (array('InitProductCreated', 'InitLastSold', 'InitProductAttributes', 'CustdataToCustomerAccountsTask', 'AddIDsToOldTransactions') as $class) {
             $task = new $class();
             $task = $this->initTask($task);
             //ob_start();
