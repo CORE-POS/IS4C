@@ -87,7 +87,7 @@ a[type="submit"] {
 <hr />
 {$wfcTools[0]}
 <a class="btn btn-default btn-lg" type="submit"
-    href="../../../../../Scannie/content/Scanning/BatchCheck/SCS.php" />Batch Check</a>
+    href="../../../../../Scannie/content/Scanning/BatchCheck/newMenu.php" />Batch Check</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../item/CoopDealsLookupPage.php" />C+D Check Sale</a>
@@ -100,6 +100,9 @@ a[type="submit"] {
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="SaOutOfStock.php" />Out of Stocks</a>
+<hr />
+<a class="btn btn-default btn-lg" type="submit"
+    href="../../../item/FloorSections/EditLocations.php?upc=0" />Physical Product Locations</a>
 <hr />
 {$wfcTools[1]}
 </p>
