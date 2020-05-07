@@ -10,7 +10,7 @@ class OrderToCore
         $this->dbc = $dbc; 
     }
 
-    public function import($order)
+    public function import($order, $codingOverride=false)
     {
         $porder = new \PurchaseOrderModel($this->dbc);
         $storeID = $this->addressToStoreID($order['shipTo']);
@@ -38,7 +38,8 @@ class OrderToCore
         foreach ($order['items'] as $i) {
             $items->description($i['description']);
             $items->quantity($i['orderedQty']);
-            $items->caseSize(1);
+            $items->caseSize($i['caseSize']);
+            $items->unitSize($i['unitSize']);
             $items->unitCost($i['casePrice']);
             $items->sku($i['sku']);
             $items->receivedDate($order['shipDate']);
@@ -49,6 +50,9 @@ class OrderToCore
                 $items->internalUPC($upc);
             } else {
                 $items->internalUPC(str_repeat('0', 13));
+            }
+            if ($codingOverride) {
+                $items->salesCode($codingOverride);
             }
             $items->save();
         }

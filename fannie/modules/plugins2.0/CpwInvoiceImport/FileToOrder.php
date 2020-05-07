@@ -71,6 +71,7 @@ class FileToOrder
 
     private function normalizeItemLine($item)
     {
+        list($case, $unit) = $this->parseSize($item[2]);
         return array(
             'description' => $item[2],
             'orderedQty' => $item[0] === null ? 0 : $item[0],
@@ -78,7 +79,21 @@ class FileToOrder
             'sku' => $item[5] === null ? $item[2] : $item[5],
             'casePrice' => $item[6] === null ? $item[7] : $item[6],
             'total' => $item[7],
+            'caseSize' => $case,
+            'unitSize' => $unit,
         );
+    }
+
+    private function parseSize($item)
+    {
+        $item = strtoupper($item);
+        if (preg_match('/([0-9\.]+)\s*LB/', $item, $matches)) {
+            return array($matches[1], 'LB');
+        } elseif (preg_match('/\s([0-9\.]+)\s*GAL/', $item, $matches)) {
+            return array($matches[1], 'GAL');
+        }
+
+        return array(1, 'CASE');
     }
 
 }
