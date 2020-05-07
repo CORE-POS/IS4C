@@ -91,7 +91,7 @@ var rpOrder = (function ($) {
     function clearIncoming() {
         $('input.onHand').each(function () {
             $(this).attr('data-incoming', 0);
-            $(this).closest('td').removeClass('success').attr('title', '');;
+            $(this).closest('td').find('span.incoming-notice').html('');
         });
     };
 
@@ -103,11 +103,11 @@ var rpOrder = (function ($) {
             dataType: 'json'
         }).done(function (resp) {
             var qtyMap = {};
-            var brandMap = {};
+            var textMap = {};
             for (var i=0; i<resp.length; i++) {
                 var obj = resp[i];
                 qtyMap[obj.upc] = obj.qty;
-                brandMap[obj.upc] = obj.brand;
+                textMap[obj.upc] = obj.text;
             }
             console.log(qtyMap);
             $('td.upc a').each(function () {
@@ -117,7 +117,8 @@ var rpOrder = (function ($) {
                     var row = $(this).closest('tr');
                     var onHand = $(row).find('input.onHand');
                     $(onHand).attr('data-incoming', qtyMap[upc]);
-                    $(onHand).closest('td').addClass('alert-success').attr('title', 'Incoming: ' + qtyMap[upc] + ' from ' + brandMap[upc]);
+                    $(onHand).closest('td').find('span.incoming-notice').html(textMap[upc]);
+                    //$(onHand).closest('td').addClass('alert-success').attr('title', 'Incoming: ' + qtyMap[upc] + ' from ' + brandMap[upc]);
                     mod.reCalcRow(row);
                 }
             });

@@ -40,7 +40,23 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_date1_date2_handler()
     {
-        $prep = $this->connection->prepare("SELECT internalUPC, GROUP_CONCAT(i.brand) AS brand, SUM(quantity) AS qty
+        $date1 = date('Y-m-d', strtotime(FormLib::get('date1')));
+        $date2 = date('Y-m-d', strtotime(FormLib::get('date2')));
+        $args = array(FormLib::get('store'), $date1, $date2);
+        $ignore = '0 AS ignored';
+
+        $extra = strtotime($date2);
+        if ($extra) {
+            $extra = mktime(0,0,0,date('n',$extra),date('j',$extra)+2,date('Y',$extra));
+            $date3 = date('Y-m-d', $extra);
+            // safe embed because it's a formatted date string or false
+            // for any user input
+            $ignore = "CASE WHEN receivedDate > {$date2} THEN 1 ELSE 0 END AS ignored";
+            $args[2] = $date3;
+        }
+
+        $prep = $this->connection->prepare("SELECT receivedDate, internalUPC AS upc, brand, quantity AS qty,
+                {$ignore}
             FROM PurchaseOrderItems AS i
                 INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
             WHERE o.vendorID=-2
@@ -49,16 +65,30 @@ class RpOrderPage extends FannieRESTfulPage
                 AND o.storeID=?
                 AND i.receivedDate IS NOT NULL
                 AND i.receivedDate BETWEEN ? AND ?
-            GROUP BY internalUPC");
-        $date1 = date('Y-m-d', strtotime(FormLib::get('date1')));
-        $date2 = date('Y-m-d', strtotime(FormLib::get('date2')));
-        $qtys = $this->connection->getAllRows($prep, array(FormLib::get('store'), $date1, $date2));
+            ORDER BY i.receivedDate
+            ");
+        $qtys = $this->connection->getAllRows($prep, $args);
 
         $ret = array();
         foreach ($qtys as $row) {
-            $ret[] = array('upc' => $row['internalUPC'], 'qty' => $row['qty'], 'brand' => $row['brand']);
+            if (!isset($ret[$row['upc']])) {
+                $ret[$row['upc']] = array('upc' => $row['upc'], 'qty' => 0, 'text' => '');
+            }
+            if ($row['ignored'] != 1) {
+                $ret[$row['upc']]['qty'] += $row['qty'];
+            }
+            if ($ret[$row['upc']]['text'] != '') {
+                $ret[$row['upc']]['text'] .= '<br />';
+            }
+            $ts = strtotime($row['receivedDate']);
+            $text = date('n/j', $ts) . ' ' . $row['qty'] . ' ' . $row['brand'];
+            $ret[$row['upc']]['text'] .= $text;
         }
-        echo json_encode($ret);
+        $dekey = array();
+        foreach ($ret as $upc => $row) {
+            $dekey[] = $row;
+        }
+        echo json_encode($dekey);
 
         return false;
     }
@@ -277,7 +307,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20200424');
+        $this->addScript('rpOrder.js?date=20200507');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -491,7 +521,8 @@ class RpOrderPage extends FannieRESTfulPage
                 <td><input %s class="form-control input-sm onHand" value="" 
                     style="width: 5em;" id="onHand%s" data-incoming="0"
                     onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
-                    onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
+                    onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" />
+                    <span class="incoming-notice"></span></td>
                 <input type="hidden" class="price" value="%.2f" />
                 <input type="hidden" class="basePar" value="%.2f" />
                 <td class="parCell">%.2f</td>
@@ -783,6 +814,10 @@ HTML;
 }
 .table-striped>tbody>tr:nth-child(odd)>td.rp-success {
     background-color: #f772d2;
+}
+.incoming-notice {
+    font-weight: bold;
+    color: #15AF23;
 }
 CSS;
     }

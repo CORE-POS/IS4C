@@ -33,7 +33,24 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_date1_date2_handler()
     {
-        $prep = $this->connection->prepare("SELECT internalUPC, SUM(quantity) AS qty
+        $date1 = date('Y-m-d', strtotime(FormLib::get('date1')));
+        $date2 = date('Y-m-d', strtotime(FormLib::get('date2')));
+        $args = array(FormLib::get('store'), $date1, $date2);
+        $ignore = '0 AS ignored';
+
+        $date3 = false;
+        $extra = FormLib::get('date3');
+        $d3ts = strtotime($extra);
+        if ($d3ts && $extra) {
+            $date3 = date('Y-m-d', $d3ts);
+            // safe embed because it's a formatted date string or false
+            // for any user input
+            $ignore = "CASE WHEN receivedDate > {$date2} THEN 1 ELSE 0 END AS ignored";
+            $args[2] = $date3;
+        }
+
+        $prep = $this->connection->prepare("SELECT receivedDate, internalUPC AS upc, brand, quantity AS qty,
+                {$ignore}
             FROM PurchaseOrderItems AS i
                 INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
             WHERE o.vendorID=-2
@@ -42,16 +59,30 @@ class RpDirectPage extends FannieRESTfulPage
                 AND o.storeID=?
                 AND i.receivedDate IS NOT NULL
                 AND i.receivedDate BETWEEN ? AND ?
-            GROUP BY internalUPC");
-        $date1 = date('Y-m-d', strtotime(FormLib::get('date1')));
-        $date2 = date('Y-m-d', strtotime(FormLib::get('date2')));
-        $qtys = $this->connection->getAllRows($prep, array(FormLib::get('store'), $date1, $date2));
+            ORDER BY i.receivedDate
+            ");
+        $qtys = $this->connection->getAllRows($prep, $args);
 
         $ret = array();
         foreach ($qtys as $row) {
-            $ret[] = array('upc' => $row['internalUPC'], 'qty' => $row['qty']);
+            if (!isset($ret[$row['upc']])) {
+                $ret[$row['upc']] = array('upc' => $row['upc'], 'qty' => 0, 'text' => '');
+            }
+            if ($row['ignored'] != 1) {
+                $ret[$row['upc']]['qty'] += $row['qty'];
+            }
+            if ($ret[$row['upc']]['text'] != '') {
+                $ret[$row['upc']]['text'] .= '<br />';
+            }
+            $ts = strtotime($row['receivedDate']);
+            $text = date('n/j', $ts) . ' ' . $row['qty'] . ' ' . $row['brand'];
+            $ret[$row['upc']]['text'] .= $text;
         }
-        echo json_encode($ret);
+        $dekey = array();
+        foreach ($ret as $upc => $row) {
+            $dekey[] = $row;
+        }
+        echo json_encode($dekey);
 
         return false;
     }
@@ -273,7 +304,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20200129');
+        $this->addScript('rpDirect.js?date=20200507');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -764,6 +795,12 @@ class RpDirectPage extends FannieRESTfulPage
 </div>
 </div>
 <p>
+    <div class="form-group">
+        <label>
+            <input type="checkbox" checked id="autoOrderCheck" />
+            Auto-fill order amounts
+        </label>
+    </div>
     <button class="btn btn-default orderAll" onclick="rpOrder.orderAll();">Order All</button>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <a href="RpOrderPage.php" class="btn btn-default">Switch to Regular</a>

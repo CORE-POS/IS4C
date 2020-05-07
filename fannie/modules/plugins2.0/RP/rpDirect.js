@@ -91,7 +91,7 @@ var rpOrder = (function ($) {
     function clearIncoming() {
         $('input.onHand').each(function () {
             $(this).attr('data-incoming', 0);
-            $(this).closest('td').removeClass('success').attr('title', '');;
+            $(this).closest('td').find('span.incoming-notice').html('');
         });
     };
 
@@ -103,9 +103,11 @@ var rpOrder = (function ($) {
             dataType: 'json'
         }).done(function (resp) {
             var qtyMap = {};
+            var textMap = {};
             for (var i=0; i<resp.length; i++) {
                 var obj = resp[i];
                 qtyMap[obj.upc] = obj.qty;
+                textMap[obj.upc] = obj.text;
             }
             $('td.upc a').each(function () {
                 var upc = $(this).text();
@@ -113,7 +115,8 @@ var rpOrder = (function ($) {
                     var row = $(this).closest('tr');
                     var onHand = $(row).find('input.onHand');
                     $(onHand).attr('data-incoming', qtyMap[upc]);
-                    $(onHand).closest('td').addClass('warning').attr('title', 'Incoming: ' + qtyMap[upc]);
+                    $(onHand).closest('td').find('span.incoming-notice').html(textMap[upc]);
+                    //$(onHand).closest('td').addClass('warning').attr('title', 'Incoming: ' + qtyMap[upc]);
                     mod.reCalcRow(row);
                 }
             });
@@ -255,6 +258,9 @@ var rpOrder = (function ($) {
         var adj = $(elem).find('td.parCell').html();
         var onHand = $(elem).find('input.onHand').val();
         if (onHand <= 0) {
+            return;
+        }
+        if ($('input#autoOrderCheck').prop('checked') == false) {
             return;
         }
         if (!retainElem) {
