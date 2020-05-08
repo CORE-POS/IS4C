@@ -177,9 +177,16 @@ class RpDirectPage extends FannieRESTfulPage
             FROM PurchaseOrder WHERE placed=0 AND storeID=? AND vendorID=? AND userID=-99");
         $orderID = $this->connection->getValue($findP, array($store, $vendor));
 
-        $delP = $this->connection->prepare("DELETE FROM PurchaseOrderItems
-            WHERE orderID=? AND internalUPC=?");
-        $this->connection->execute($delP, array($orderID, $upc));
+        $delQ = "DELETE FROM PurchaseOrderItems
+            WHERE orderID=? AND internalUPC=?";
+        $args = array($orderID, $upc);
+        $farm = FormLib::get('farm', false);
+        if ($farm) {
+            $delQ .= ' AND brand=?';
+            $args[] = $farm;
+        }
+        $delP= $this->connection->prepare($delQ);
+        $this->connection->execute($delP, $args);
 
         echo json_encode(array('unlink' => false));
 
@@ -234,6 +241,13 @@ class RpDirectPage extends FannieRESTfulPage
             $sku = $upc;
         }
 
+        $farm = FormLib::get('farm');
+        if ($farm) {
+            $words = array_map('trim', explode(' ', $farm));
+            $initials = array_reduce($words, function($c, $i) { return $c . $i[0]; });
+            $sku = $initials . $sku;
+        }
+
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($orderID);
         $poi->sku($sku);
@@ -241,7 +255,7 @@ class RpDirectPage extends FannieRESTfulPage
         $poi->unitCost($prod['cost']);
         $poi->caseSize(1);
         $poi->unitSize($prod['size']);
-        $poi->brand(FormLib::get('farm'));
+        $poi->brand($farm);
         $poi->description($vendor == $item['backupID'] ? $item['backupItem'] : $item['vendorItem']);
         $poi->internalUPC($upc);
         $poi->save();
@@ -304,7 +318,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20200507');
+        $this->addScript('rpDirect.js?date=20200508');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -451,7 +465,7 @@ class RpDirectPage extends FannieRESTfulPage
                 $category = $row['categoryID'];
                 $tables .= '<table class="table table-bordered table-striped small">
                     <tr><th>LC</th><th>Primary</th><th>Secondary</th><th>Item</th>
-                    <th>On Hand</th><th>Par</th><th>Order</th></tr>';
+                    <th>On Hand</th><th>Par</th><th colspan="2">Order</th></tr>';
             }
             $mapped = $this->connection->getRow($mapP, array(str_replace('LC', '', $row['upc'])));
             if ($mapped) {
@@ -554,10 +568,15 @@ class RpDirectPage extends FannieRESTfulPage
                     <input %s style="width: 5em;"class="form-control input-sm orderAmt"
                         id="orderAmt%s" onkeyup="rpOrder.orderKey(event); rpOrder.updateOrder(this);"
                         onfocus="this.select();" value="%s" />
-                    <button class="btn btn-success btn-sm" onclick="rpOrder.inc(this, 1);">+</button>
-                    <button class="btn btn-danger btn-sm" onclick="rpOrder.inc(this, -1);">-</button>
-                    <label><input type="checkbox" class="orderPri" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Pri</label>
-                    <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s /> Sec</label>
+                    <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s 
+                        class="orderPri" tabindex="-1" /> Pri</label>
+                </td>
+                <td class="form-inline %s">
+                    <input %s style="width: 5em;"class="form-control input-sm secondAmt"
+                        id="secondAmt%s" onkeyup="rpOrder.secondaryKey(event); rpOrder.updateOrder(this);"
+                        onfocus="this.select();" value="%s" />
+                    <label><input type="checkbox" onchange="rpOrder.placeOrder(this);" value="%s,%d,%d" %s 
+                        class="orderSec" tabindex="-1" /> Sec</label>
                 </td>
                 </tr>',
                 (in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) ? 'extraLocal' : '',
@@ -586,6 +605,10 @@ class RpDirectPage extends FannieRESTfulPage
                 $orderAmt,
                 $upc, $store, $row['vendorID'],
                 ($inOrder['vendorID'] == $row['vendorID'] ? 'checked' : ''),
+                '', // in secondary order ($inOrder ? 'info' : ''),
+                $fieldType,
+                $upc,
+                '', // secondary order amount
                 $upc, $store, $row['backupID'],
                 ($inOrder['vendorID'] == $row['backupID'] ? 'checked' : '')
             );

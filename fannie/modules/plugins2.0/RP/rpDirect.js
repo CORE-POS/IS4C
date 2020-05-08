@@ -391,18 +391,43 @@ var rpOrder = (function ($) {
         } else if (ev.which == 37) {
             ev.preventDefault();
             $(ev.target).closest('tr').find('input.onHand').focus();
+        } else if (ev.which == 39) {
+            ev.preventDefault();
+            $(ev.target).closest('tr').find('input.secondAmt').focus();
+        }
+    };
+
+    mod.secondaryKey = function(ev) {
+        if (ev.which == 13 || ev.which == 40) {
+            ev.preventDefault();
+            var next = nextRow(ev.target);
+            if (next) {
+                $(next).find('input.secondAmt').focus();
+            }
+        } else if (ev.which == 38) {
+            ev.preventDefault();
+            var prev = prevRow(ev.target);
+            if (prev) {
+                $(prev).find('input.secondAmt').focus();
+            }
+        } else if (ev.which == 37) {
+            ev.preventDefault();
+            $(ev.target).closest('tr').find('input.orderAmt').focus();
         }
     };
 
     mod.placeOrder = function(elem) {
         var id = encodeURIComponent($(elem).val());
-        var qty = $(elem).closest('tr').find('input.orderAmt').val();
-        if ($(elem).prop('checked') && qty) {
+        if ($(elem).prop('checked')) {
             var farm = $(elem).closest('tr').find('.secondaryFarm option:selected').text();
+            var qty = $(elem).closest('tr').find('input.secondAmt').val();
             if ($(elem).hasClass('orderPri')) {
                 farm = $(elem).closest('tr').find('.primaryFarm option:selected').text();
+                qty = $(elem).closest('tr').find('input.orderAmt').val();
             }
-            if (farm == '') {
+            console.log("Farm: " + farm);
+            console.log("Qty: " + qty);
+            if (farm == '' || !qty) {
                 return;
             }
             $.ajax({
@@ -429,9 +454,13 @@ var rpOrder = (function ($) {
                 }
             });
         } else {
+            var farm = $(elem).closest('tr').find('.secondaryFarm option:selected').text();
+            if ($(elem).hasClass('orderPri')) {
+                farm = $(elem).closest('tr').find('.primaryFarm option:selected').text();
+            }
             $.ajax({
                 'type': 'post',
-                'data': 'id=' + id + '&_method=delete',
+                'data': 'id=' + id + '&_method=delete' + '&farm=' + encodeURIComponent(farm),
                 'dataType': 'json'
             }).done(function (resp) {
                 $(elem).closest('td').removeClass('info');
@@ -447,6 +476,13 @@ var rpOrder = (function ($) {
 
         $('input.orderPri').each(function () {
             var qty = $(this).closest('tr').find('input.orderAmt').val();
+            if (qty > 0 && !$(this).prop('checked')) {
+                $(this).prop('checked', true);
+                mod.placeOrder(this);
+            }
+        });
+        $('input.orderSec').each(function () {
+            var qty = $(this).closest('tr').find('input.secondAmt').val();
             if (qty > 0 && !$(this).prop('checked')) {
                 $(this).prop('checked', true);
                 mod.placeOrder(this);
