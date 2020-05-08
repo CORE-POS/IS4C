@@ -114,7 +114,6 @@ times will be limited by how frequently this task runs.';
                 }
             }
         }
-        print_r($changedUPCs);
 
         ItemSync::sync($changedUPCs);
     }
