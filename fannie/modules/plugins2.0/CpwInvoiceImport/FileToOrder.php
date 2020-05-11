@@ -87,10 +87,15 @@ class FileToOrder
     private function parseSize($item)
     {
         $item = strtoupper($item);
-        if (preg_match('/([0-9\.]+)\s*LB/', $item, $matches)) {
+        if (preg_match('/([0-9\.]+)\s*-\s*([0-9\.]+)\s*LB/', $item, $matches)) {
+            $avg = ($matches[1] + $matches[2]) / 2;
+            return array($avg, 'LB');
+        } elseif (preg_match('/([0-9\.]+)\s*LB/', $item, $matches)) {
             return array($matches[1], 'LB');
         } elseif (preg_match('/\s([0-9\.]+)\s*GAL/', $item, $matches)) {
             return array($matches[1], 'GAL');
+        } elseif (preg_match('/([0-9]+)\/([0-9\.]+)\s*OZ/', $item, $matches)) {
+            return array($matches[1] * $matches[2], 'OZ');
         }
 
         return array(1, 'CASE');
