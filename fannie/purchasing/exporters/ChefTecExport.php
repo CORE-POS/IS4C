@@ -77,7 +77,7 @@ class ChefTecExport
             echo date('Ymd', strtotime($obj->receivedDate())) . ',';
             printf('%f,', $units * $obj->caseSize() * $obj->quantity());
             echo $unit_of_measure . ',';
-            printf('%.2f,', $obj->unitCost() * $obj->caseSize() * $obj->quantity());
+            printf('%.2f,', $obj->receivedTotalCost());
             echo '"'.$obj->description().'",';
             echo '"",'; // alt. indicator
             echo '"",'; // alt. unit
