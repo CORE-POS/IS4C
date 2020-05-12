@@ -54,7 +54,8 @@ class ViewPickups extends FannieRESTfulPage
             $pdf->Cell(100,10,$order->name(),0,1,'C');
             $pdf->SetFont('Arial','','16');
             $pdf->SetX($posX);
-            $pdf->Cell(100,10,$order->orderNumber(),0,1,'C');
+            $oID = $order->orderNumber() ? $order->orderNumber() : $order->pickupOrderID();
+            $pdf->Cell(100,10,$oID,0,1,'C');
             list($date,) = explode(' ', $order->pDate());
             $pdf->SetX($posX);
             $pdf->Cell(100,10,$date . ' ' . $order->pTime(),0,1,'C');
@@ -162,6 +163,9 @@ class ViewPickups extends FannieRESTfulPage
         $pickList = $this->pickList($this->id, $order->storeID);
         $pickList = $this->sortList($pickList);
         $listHTML = $this->pickListToHTML($pickList);
+        if (!$order->orderNumber) {
+            $order->orderNumber = $order->pickupOrderID;
+        }
 
         $status = array('NEW', 'READY', 'COMPLETE', 'CANCELLED');
         $radios = '';
@@ -261,6 +265,9 @@ HTML;
         while ($row = $this->connection->fetchRow($res)) {
             list($dateTime,) = explode(' ', $row['pDate']);
             $dateTime .= ' ' . $row['pTime'];
+            if (!$row['orderNumber']) {
+                $row['orderNumber'] = $row['pickupOrderID'];
+            }
             $table .= sprintf('<tr>
                 <td><a href="ViewPickups.php?id=%d" class="btn btn-default">View</td>
                 <td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
