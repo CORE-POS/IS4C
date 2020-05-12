@@ -39,7 +39,6 @@ class InstaWfcExport extends FannieTask
         $insta->getFile($csvfile);
         $datafile = fopen($csvfile, 'r');
          */
-        $datafile = fopen(__DIR__ . '/transplants.csv', 'r');
         $userfile = fopen('/tmp/pickupUser.csv', 'w');
         $itemfile = fopen('/tmp/pickupItem.csv', 'w');
         $userP = $dbc->prepare("SELECT
@@ -53,7 +52,10 @@ class InstaWfcExport extends FannieTask
             idEnforced, cost, special_cost, received_cost, 1 AS inUse, numflag, subdept, deposit, local,
             store_id, default_vendor_id, current_origin_id, auto_par, price_rule_id, last_sold, id
             FROM products WHERE upc=? AND store_id=1"); 
-        while (!feof($datafile)) {
+        $upcR = $dbc->query("SELECT upc FROM PickupEnabled WHERE enabled=1");
+        //while (!feof($datafile)) {
+        while ($upcW = $dbc->fetchRow($upcR)) {
+            /*
             $line = fgetcsv($datafile);
             if (!is_numeric($line[0])) {
                 continue;
@@ -68,6 +70,8 @@ class InstaWfcExport extends FannieTask
             if (isset($this->skipUPCs[$upc])) {
                 continue;
             }
+             */
+            $upc = $upcW['upc'];
             $user = $dbc->getRow($userP, array($upc));
             if ($user != false) {
                 $keys = array_keys($user);
