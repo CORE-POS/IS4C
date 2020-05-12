@@ -77,7 +77,7 @@ class FileToOrder
             'orderedQty' => $item[0] === null ? 0 : $item[0],
             'shippedQty' => $item[1] === null ? 0 : $item[1],
             'sku' => $item[5] === null ? $item[2] : $item[5],
-            'casePrice' => $item[6] === null ? $item[7] : $item[6],
+            'casePrice' => $item[7] / $case,
             'total' => $item[7],
             'caseSize' => $case,
             'unitSize' => $unit,
@@ -90,6 +90,8 @@ class FileToOrder
         if (preg_match('/([0-9\.]+)\s*-\s*([0-9\.]+)\s*LB/', $item, $matches)) {
             $avg = ($matches[1] + $matches[2]) / 2;
             return array($avg, 'LB');
+        } elseif (preg_match('/([0-9]+)\/([0-9\.]+)\s*LB/', $item, $matches)) {
+            return array($matches[1] * $matches[2], 'LB');
         } elseif (preg_match('/([0-9\.]+)\s*LB/', $item, $matches)) {
             return array($matches[1], 'LB');
         } elseif (preg_match('/\s([0-9\.]+)\s*GAL/', $item, $matches)) {
