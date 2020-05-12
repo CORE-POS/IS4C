@@ -211,6 +211,10 @@ HTML;
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
+        if (FormLib::get('externalOnly')) {
+            $where .= ' AND memType NOT IN (3,4,9) ';
+        }
+
         $query = "SELECT $date_selector, $hour as hour, 
                     count(distinct trans_num) as num_trans,
                     sum(d.total) AS ttl
@@ -224,6 +228,7 @@ HTML;
                     AND $where
                     AND " . DTrans::isStoreID($store, 'd') . "
                    GROUP BY $date_selector, $hour
+                   {$having}
                    ORDER BY $date_selector, $hour";
 
         $prep = $dbc->prepare($query);
@@ -385,6 +390,12 @@ JAVASCRIPT;
             <div class="col-sm-4">
                 <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
             </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">
+                Exclude staff &amp; nabs
+                <input type="checkbox" name="externalOnly" value="1" />
+            </label>
         </div>
     </div>
     <div class="col-sm-5">
