@@ -52,7 +52,7 @@ class InstaWfcExport extends FannieTask
             idEnforced, cost, special_cost, received_cost, 1 AS inUse, numflag, subdept, deposit, local,
             store_id, default_vendor_id, current_origin_id, auto_par, price_rule_id, last_sold, id
             FROM products WHERE upc=? AND store_id=1"); 
-        $upcR = $dbc->query("SELECT upc FROM PickupEnabled WHERE enabled=1");
+        $upcR = $dbc->query("SELECT upc, enabled FROM PickupEnabled");
         //while (!feof($datafile)) {
         while ($upcW = $dbc->fetchRow($upcR)) {
             /*
@@ -73,6 +73,10 @@ class InstaWfcExport extends FannieTask
              */
             $upc = $upcW['upc'];
             $user = $dbc->getRow($userP, array($upc));
+            if (!$upcW['enabled']) {
+                $user['enableOnline'] = 0;
+                $user['soldOut'] = 1;
+            }
             if ($user != false) {
                 $keys = array_keys($user);
                 foreach ($keys as $k) {
