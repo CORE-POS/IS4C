@@ -295,7 +295,7 @@ function appendTokens(token) {
 
 function logJsErrors(urlStem) {
     window.onerror = function(msg, scriptURL, lineNo, colNo, error) {
-        if (msg && msg.toLowerCase() != 'script error') {
+        if (msg && msg.toLowerCase().substring(0, 12) != 'script error') {
             var logEntry = { 
                 message: msg,
                 url: scriptURL,
