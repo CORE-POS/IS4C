@@ -43,7 +43,7 @@ class DeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     $log->debug($ex->getMessage());
                     $log->debug('Error: ' . $ex->getMessage());
                 }
-                //unlink($temp);
+                unlink($temp);
             }
         } else {
             $log->debug('Message had zero attachments');

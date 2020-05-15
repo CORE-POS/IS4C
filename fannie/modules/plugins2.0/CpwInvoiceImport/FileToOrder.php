@@ -94,6 +94,13 @@ class FileToOrder
             return array($matches[1] * $matches[2], 'LB');
         } elseif (preg_match('/([0-9\.]+)\s*LB/', $item, $matches)) {
             return array($matches[1], 'LB');
+        } elseif (preg_match('/([0-9\.]+)\s*-\s*([0-9\.]+)\s*CT/', $item, $matches)) {
+            $avg = ($matches[1] + $matches[2]) / 2;
+            return array($avg, 'CT');
+        } elseif (preg_match('/([0-9]+)\s*CT/', $item, $matches)) {
+            return array($matches[1], 'CT');
+        } elseif (preg_match('/([0-9]+)\s*DOZ/', $item, $matches)) {
+            return array($matches[1], 'DOZ');
         } elseif (preg_match('/\s([0-9\.]+)\s*GAL/', $item, $matches)) {
             return array($matches[1], 'GAL');
         } elseif (preg_match('/([0-9]+)\/([0-9\.]+)\s*OZ/', $item, $matches)) {
