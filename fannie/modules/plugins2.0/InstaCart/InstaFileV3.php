@@ -21,6 +21,12 @@ class InstaFileV3
         $instaDB = $settings['InstaCartDB'];
         $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaIncludes WHERE upc=?');
         $excludeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaExcludes WHERE upc=?');
+        $saleP = $this->dbc->prepare("SELECT salePrice
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+            WHERE l.upc=?
+                AND batchType=16
+                AND " . $this->dbc->curdate() . " BETWEEN b.startDate AND b.endDate");
         $instaMode = $settings['InstaCartMode'];
         $sep = ',';
         $newline = "\r\n";
@@ -226,7 +232,13 @@ class InstaFileV3
                 fprintf($csv, $sep);
             }
 
-            if (!$settings['InstaSalePrices'] || $row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
+            if ($row['special_price'] != 0 && $row['special_price'] < $row['normal_price'] && $row['datedSigns'] && $row['specialpricemethod'] == 0 && $row['discounttype'] == 1 && $this->dbc->getValue($saleP, array($row['upc']))) {
+                fprintf($csv, '%.2f%s', $row['special_price'], $sep);
+                fwrite($csv, date('m/d/Y', strtotime($row['start_date'])) . $sep);
+                $ts = strtotime($row['end_date']);
+                $next = mktime(0,0,0, date('n',$ts), date('j',$ts)+1, date('Y', $ts));
+                fwrite($csv, date('m/d/Y', $next) . $sep);
+            } elseif (!$settings['InstaSalePrices'] || $row['special_price'] == 0 || $row['special_price'] >= $row['normal_price'] || !$row['datedSigns'] || $row['specialpricemethod'] != 0 || $row['discounttype'] != 1) {
                 fwrite($csv, $sep . $sep . $sep);
             } else {
                 fprintf($csv, '%.2f%s', $row['special_price'], $sep);
