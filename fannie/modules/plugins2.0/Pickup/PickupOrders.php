@@ -228,6 +228,8 @@ HTML;
     <a href="ViewPickups.php" class="btn btn-default">View Orders</a>
 </p>
 <p>
+    <a href="PickupEnabledPage.php" class="btn btn-default">Manage Item Listings</a>
+<p>
 <form method="get" action="PickupOrders.php">
     <div class="form-group">
         <div class="input-group">

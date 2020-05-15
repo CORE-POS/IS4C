@@ -56,6 +56,8 @@ class PickupEnabledPage extends FannieRESTfulPage
 <form method="post" action="PickupEnabledPage.php">
 <p>
     <button type="submit" class="btn btn-default">Update Availability</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a class="btn btn-default" href="PickupOrders.php">Main Menu</a>
 </p>
 <table class="table table-striped table-bordered">
     <tr><th>UPC</th><th>Item</th><th>Sell Online</th></tr>
@@ -63,6 +65,8 @@ class PickupEnabledPage extends FannieRESTfulPage
 </table>
 <p>
     <button type="submit" class="btn btn-default">Update Availability</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a class="btn btn-default" href="PickupOrders.php">Main Menu</a>
 </p>
 </form>
 HTML;
