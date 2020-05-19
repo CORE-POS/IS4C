@@ -88,9 +88,9 @@ class FixRepackWeightsTask extends FannieTask
             echo "Row Id {$row['store_row_id']}\n";
              */
             if (abs($match - $row['total']) > 0.15) {
-                $this->cronMsg('Strange repack weight encountered for ' . $date
-                    . ', halting process', FannieLogger::ERROR);
-                break;
+                $this->cronMsg('Strange repack weight encountered for ' . $date,
+                    FannieLogger::ERROR);
+                continue;
             } 
 
             $itemQtty = $row['trans_status'] == 'R' ? -1 * $rounded : $rounded;
