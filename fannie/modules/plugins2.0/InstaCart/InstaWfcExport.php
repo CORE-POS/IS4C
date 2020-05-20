@@ -120,6 +120,9 @@ class InstaWfcExport extends FannieTask
             FIELDS TERMINATED BY ','
             OPTIONALLY ENCLOSED BY '\"'
             LINES TERMINATED BY '\\n'");
+
+        $dbc->query("DELETE FROM localtemptrans WHERE trans_type='I'
+            AND upc NOT IN (SELECT upc FROM productUser WHERE enabledOnline=1)");
         
         /*
         unlink($csvfile);
