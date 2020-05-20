@@ -253,7 +253,7 @@ HTML;
 <p>
     <div class="input-group">
         <span class="input-group-addon">ID#</span>
-        <input type="text" id="faker" class="form-control input-lg" />
+        <input type="text" id="faker" class="form-control input-lg" disabled />
     </div>
     <input type="hidden" id="real" value="" name="lookup" />
 </p>
