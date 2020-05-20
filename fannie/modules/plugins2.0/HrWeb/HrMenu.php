@@ -67,6 +67,15 @@ class HrMenu extends FannieRESTfulPage
                 <td><a href="IllnessReport/IllnessLogReport.php">Illness Log Reporting</a></td>
                 <td>View and filter illness log entries</td>
             </tr>
+            <tr><th colspan="2">Screening Records</th></tr>
+            <tr>
+                <td><a href="Screening/ScreeningEmployeePage.php">Screening Logins</a></td>
+                <td>Manage logins to the kiosk</td>
+            </tr>
+            <tr>
+                <td><a href="Screening/ScreeningReportPage.php">Screening Records Reporting</a></td>
+                <td>View screening log entries</td>
+            </tr>
         </table>';
 
         return $ret;
