@@ -54,7 +54,7 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                         $log->debug($orderID);
                     }
                     $isBulk = false;
-                    if (strstr($data[11], 'Bulk')) {
+                    if (strstr($data[11], 'Bulk') && strstr($data[12], 'Meat')) {
                         $isBulk = true;
                     }
                     $poi = new PurchaseOrderItemsModel($dbc);
