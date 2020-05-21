@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\parser\PreParser;
+use COREPOS\pos\lib\Database;
 
 class CashDropPreParser extends PreParser {
 

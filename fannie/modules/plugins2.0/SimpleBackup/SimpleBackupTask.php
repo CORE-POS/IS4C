@@ -75,11 +75,11 @@ class SimpleBackupTask extends FannieTask
                 break; // no point in trying other databases
             }
             $cmd = escapeshellcmd($cmd);
-            $cmd .= ' -q --databases 
-                -h ' . escapeshellarg($FANNIE_SERVER) . '
-                -u ' . escapeshellarg($FANNIE_SERVER_USER) . '
-                -p' . escapeshellarg($FANNIE_SERVER_PW) . ' 
-                ' . escapeshellarg($db);
+            $cmd .= ' -q ' .
+                ' -h ' . escapeshellarg($FANNIE_SERVER) .
+                ' -u ' . escapeshellarg($FANNIE_SERVER_USER) .
+                ' -p' . escapeshellarg($FANNIE_SERVER_PW) .
+                ' ' .  escapeshellarg($db);
             $outfile = $dir . '/' . $db . date('Ymd') . '.sql';
 
             $gzip = $this->gzip();
@@ -88,10 +88,15 @@ class SimpleBackupTask extends FannieTask
                 $outfile .= '.gz';
             }
 
-            $cmd .= ' > ' . escapeshellarg($outfile, $retval);
-            system($cmd);
+            $cmd .= ' > ' . escapeshellarg($outfile);
+            
+            $this->cronMsg("cmd: $cmd", FannieLogger::INFO);
+            $retVal = 0;
+            $lastLine = system($cmd, $retVal);
+            $this->cronMsg("retVal: $retVal", FannieLogger::INFO);
+            $this->cronMsg("lastLine: $lastLine", FannieLogger::INFO);
 
-            if (file_exists($outfile) && $retval == 0) {
+            if (file_exists($outfile) && $retVal == 0) {
                 $this->cronMsg('Backup successful: ' . $outfile, FannieLogger::INFO);
             } else {
                 $this->cronMsg('Error creating backup: ' . $outfile, FannieLogger::ALERT);
