@@ -29,7 +29,7 @@ class ScreeningPage extends FannieRESTfulPage
 <body>
     <div class="container">
         <div class="row" align="center">
-            <div class="col-sm-10">
+            <div class="col-sm-12">
 HTML;
     }
 
@@ -276,6 +276,22 @@ HTML;
         <button class="btn btn-default btn-lg btn-block" type="submit" style="height: 100px; font-size: 300%;">ENTER</button>
     </div>
 </div>
+<h2>ATTENION ALL EMPLOYEES COVID-19 DAILY SCREENING</h2>
+<p style="text-align:left; font-size: 150%; color: red; background-color: #fdb900;">
+For Use Only During an International Pandemic as Declared by The World Health Organization
+</p>
+<p style="text-align: left; font-size: 150%;">
+This is to assure the safety of all Whole Foods Co-op (WFC) team members and our customers and any private health information you share will be safeguarded under HIPPA.
+</p>
+<p style="text-align: left; font-size: 150%;">
+In order for you to work in-person at WFC you must complete this screening DAILY before entering the workspace.   Failure to do so or failure to accurately report will be considered employee misconduct that could lead to disciplinary action up to and including termination of employment. 
+</p>
+<p style="text-align: left; font-size: 150%;">
+<span style="background-color: #fdb900;">If you answer YES to any question, you are NOT to report to work.</span> Contact your supervisor and HR at 218.491.4821 immediately.
+</p>
+<p style="text-align: left; font-size: 150%;">
+If you answer NO to all of the questions and you have taken your temperature you are good to go!  - Just remember to wash your hands directly after clocking in.
+</p>
 </form>
 <script type="text/javascript">
 function addDigit(num) {
