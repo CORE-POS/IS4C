@@ -144,6 +144,12 @@ class UIGLib
                         $model->salesCode($code);
                     }
 
+                    switch ($item['sku']) { // anomoly handler
+                        case '0473850';
+                            $model->unitSize('#');
+                            break;
+                    }
+
                     $model->save();
                 }
 
