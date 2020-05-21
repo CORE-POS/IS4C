@@ -14,7 +14,7 @@ class ScreeningReportPage extends FannieReportPage
     public $discoverable = false;
     protected $required_fields = array('date1', 'date2');
 
-    protected $report_headers = array('Date', 'Name', 'Temperature', 'Cough', 'Breath Shortness', 'Fever/Chills', 'Vomit/Diarrhea', 'Taste/Smell');
+    protected $report_headers = array('Date', 'Name', 'Temperature', 'Reported Symptoms');
 
     protected $new_tablesorter = true;
 
@@ -35,11 +35,7 @@ class ScreeningReportPage extends FannieReportPage
                 $row['tdate'],
                 $row['name'],
                 $row['temperature'],
-                ($row['dryCough'] ? 'Yes' : 'No'),
-                ($row['shortnessBreath'] ? 'Yes' : 'No'),
-                ($row['feverChills'] ? 'Yes' : 'No'),
-                ($row['vomitDiah'] ? 'Yes' : 'No'),
-                ($row['tasteSmell'] ? 'Yes' : 'No'),
+                ($row['anySymptom'] ? 'Yes' : 'No'),
             );
         }
 

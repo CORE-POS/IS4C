@@ -47,29 +47,20 @@ HTML;
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
         $temp = FormLib::get('temp');
-        $cough = FormLib::get('cough') ? 1 : 0;
-        $breath = FormLib::get('breath') ? 1 : 0;
-        $fever = FormLib::get('fever') ? 1 : 0;
-        $vomit = FormLib::get('vomit') ? 1 : 0;
-        $taste = FormLib::get('taste') ? 1 : 0;
+        $any = FormLib::get('any') ? 1 : 0;
         $empID = $this->id;
 
         $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('ScreeningEntries', 'plugin:HrWebDB') . "
-            (screeningEmployeeID, tdate, temperature, dryCough, shortnessBreath, feverChills,
-            vomitDiah, tasteSmell) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            (screeningEmployeeID, tdate, temperature, anySymptom) 
+            VALUES (?, ?, ?, ?)");
         $args = array(
             $empID,
             date('Y-m-d H:i:s'),
             $temp,
-            $cough,
-            $breath,
-            $fever,
-            $vomit,
-            $taste,
+            $any,
         );
         $dbc->execute($prep, $args);
-        if ($temp >= 100.5 || $cough || $breath || $fever || $vomit || $taste) {
+        if ($temp >= 100.5 || $any) {
             return <<<HTML
 <div style="font-size: 200% !important;">
     <div class="alert alert-danger">You've selected symptom(s)</div>
@@ -108,7 +99,7 @@ HTML;
 <p>
     <div class="input-group">
         <span class="input-group-addon">Today's Temperature</span>
-        <input type="number" step="0.1" class="form-control input-lg" required name="temp" inputmode="decimal" id="temp" />
+        <input type="text" class="form-control input-lg" required name="temp" id="temp" />
     </div>
 </p>
 <div class="row">
@@ -173,60 +164,32 @@ HTML;
 <table class="table" style="font-size: 200%;">
 <tr>
     <th>Dry Cough</th>
-    <td><label class="radio-inline">
-        <input type="radio" name="cough" value="1" required />
-        Yes
-    </label></td>
-    <td><label class="radio-inline">
-        <input type="radio" name="cough" value="0" required />
-        No
-    </label></td>
 </tr>
 <tr>
     <th>Shortness of Breath</th>
-    <td><label class="radio-inline">
-        <input type="radio" name="breath" value="1" required />
-        Yes
-    </label></td>
-    <td><label class="radio-inline">
-        <input type="radio" name="breath" value="0" required />
-        No
-    </label></td>
 </tr>
 <tr>
     <th>Fever of 100.5 or above / Chills</th>
-    <td><label class="radio-inline">
-        <input type="radio" name="fever" value="1" required />
-        Yes
-    </label></td>
-    <td><label class="radio-inline">
-        <input type="radio" name="fever" value="0" required />
-        No
-    </label></td>
 </tr>
 <tr>
     <th>Vomiting / Diarrhea</th>
-    <td><label class="radio-inline">
-        <input type="radio" name="vomit" value="1" required />
-        Yes
-    </label></td>
-    <td><label class="radio-inline">
-        <input type="radio" name="vomit" value="0" required />
-        No
-    </label></td>
 </tr>
 <tr>
     <th>Loss of Taste or Smell</th>
-    <td><label class="radio-inline">
-        <input type="radio" name="taste" value="1" required />
-        Yes
-    </label></td>
-    <td><label class="radio-inline">
-        <input type="radio" name="taste" value="0" required />
-        No
-    </label></td>
 </tr>
 </table>
+<p style="font-size: 200%;">
+    <label class="radio-inline">
+        <input type="radio" name="any" value="1" required />
+        Yes
+    </label>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label class="radio-inline">
+        <input type="radio" name="any" value="0" required />
+        No
+    </label>
+</p>
+<hr />
 <p style="font-size: 200%;">
     <button type="submit" class="btn btn-default btn-lg">Save Info</button>
 </p>
@@ -236,6 +199,7 @@ HTML;
 </p>
 <script type="text/javascript">
 function addDigit(num) {
+    console.log(num);
     var cur = $('#temp').val();
     $('#temp').val(cur + "" + num);
 }

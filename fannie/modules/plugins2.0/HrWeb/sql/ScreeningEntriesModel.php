@@ -42,6 +42,7 @@ class ScreeningEntriesModel extends BasicModel
     'feverChills' => array('type'=>'TINYINT', 'default'=>0),
     'vomitDiah' => array('type'=>'TINYINT', 'default'=>0),
     'tasteSmell' => array('type'=>'TINYINT', 'default'=>0),
+    'anySymptom' => array('type'=>'TINYINT', 'default'=>0),
     'deleted' => array('type'=>'TINYINT', 'default'=>0),
     );
 
