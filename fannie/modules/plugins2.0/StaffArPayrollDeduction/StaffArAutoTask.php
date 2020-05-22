@@ -63,6 +63,7 @@ class StaffArAutoTask extends FannieTask
             $mail->isHTML = false;
             $mail->addAddress('tracyjohnson@wholefoods.coop');
             $mail->addAddress('jlepak@wholefoods.coop');
+            $mail->addAddress('andy@wholefoods.coop');
             $mail->Subject = 'Payroll Deductions for ' . $next;
             $mail->Body = 'Data file attached';
             $mail->addStringAttachment(
