@@ -74,8 +74,8 @@ class InstaWfcExport extends FannieTask
             $upc = $upcW['upc'];
             $user = $dbc->getRow($userP, array($upc));
             if (!$upcW['enabled']) {
-                $user['enableOnline'] = 0;
-                $user['soldOut'] = 1;
+                $user[6] = 0;
+                $user[7] = 1;
             }
             if ($user != false) {
                 $keys = array_keys($user);
