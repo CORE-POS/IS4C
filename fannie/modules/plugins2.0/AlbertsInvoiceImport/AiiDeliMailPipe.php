@@ -16,6 +16,10 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
         $boundary = $this->hasAttachments($info['headers']);
         $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
         $log = new \FannieLogger();
+        $storeID = 1;
+        if (stristr($info['body'], 'DENFELD')) {
+            $storeID = 2;
+        }
 
         if ($boundary) {
             $pieces = $this->extractAttachments($info['body'], $boundary);
@@ -45,7 +49,7 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     if (!$orderID) {
                         $order = new PurchaseOrderModel($dbc);
                         $order->vendorID(28);
-                        $order->storeID(1);
+                        $order->storeID($storeID);
                         $order->creationDate($date);
                         $order->placed(1);
                         $order->placedDate($date);
