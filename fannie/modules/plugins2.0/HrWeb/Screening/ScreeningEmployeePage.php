@@ -11,7 +11,7 @@ if (!class_exists('COREPOS\\Fannie\\Plugin\\HrWeb\\sql\\ScreeningEmployeesModel'
 class ScreeningEmployeePage extends FannieRESTfulPage
 {
     protected $must_authenticate = true;
-    protected $auth_classes = array('illness_editor', 'hr_editor');
+    protected $auth_classes = array('illness_editor', 'hr_editor', 'illness_viewer');
     protected $header = 'Screening Logins';
     protected $title = 'Screening Logins';
     public $discoverable = false;
@@ -112,28 +112,35 @@ HTML;
         $model = new COREPOS\Fannie\Plugin\HrWeb\sql\ScreeningEmployeesModel($dbc);
         $model->deleted(0);
 
+        $noEdit = 'collapse';
+        if (FannieAuth::validateUserQuiet('illness_editor') || FannieAuth::validateUserQuiet('hr_editor')) {
+            $noEdit = '';
+        }
+
         $body = '';
         foreach ($model->find('name') as $obj) {
             $obj = $obj->toStdClass();
             $body .= sprintf('<tr><td>%s</td><td>%s</td>
-                <td><a href="ScreeningEmployeePage.php?id=%d">Edit</a></td>
-                <td><a href="ScreeningEmployeePage.php?id=%d&_method=delete">Delete</a></td>
+                <td class="%s"><a href="ScreeningEmployeePage.php?id=%d">Edit</a></td>
+                <td class="%s"><a href="ScreeningEmployeePage.php?id=%d&_method=delete">Delete</a></td>
                 </tr>',
-                $obj->name, $obj->code, $obj->screeningEmployeeID, $obj->screeningEmployeeID);
+                $obj->name, $obj->code,
+                $noEdit, $obj->screeningEmployeeID,
+                $noEdit, $obj->screeningEmployeeID);
         }
 
         return <<<HTML
 <p>
-    <a href="ScreeningEmployeePage.php?_method=put" class="btn btn-default">Add Entry</a>
+    <a href="ScreeningEmployeePage.php?_method=put" class="btn btn-default {$noEdit}">Add Entry</a>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <a href="../HrMenu.php" class="btn btn-default">Main Menu</a>
 </p>
 <table class="table table-bordered table-striped">
-    <tr><th>Name</th><th>Login</th><th></th><th></th></tr>
+    <tr><th>Name</th><th>Login</th><th colspan="2" class="{$noEdit}"></th></tr>
     {$body}
 </table>
 <p>
-    <a href="ScreeningEmployeePage.php?_method=put" class="btn btn-default">Add Entry</a>
+    <a href="ScreeningEmployeePage.php?_method=put" class="btn btn-default {$noEdit}">Add Entry</a>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <a href="../HrMenu.php" class="btn btn-default">Main Menu</a>
 </p>
