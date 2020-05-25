@@ -46,21 +46,21 @@ HTML;
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
-        $temp = FormLib::get('temp');
         $any = FormLib::get('any') ? 1 : 0;
+        $highTemp = FormLib::get('highTemp') ? 1 : 0;
         $empID = $this->id;
 
         $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('ScreeningEntries', 'plugin:HrWebDB') . "
-            (screeningEmployeeID, tdate, temperature, anySymptom) 
+            (screeningEmployeeID, tdate, highTemp, anySymptom) 
             VALUES (?, ?, ?, ?)");
         $args = array(
             $empID,
             date('Y-m-d H:i:s'),
-            $temp,
+            $highTemp,
             $any,
         );
         $dbc->execute($prep, $args);
-        if ($temp >= 100.5 || $any) {
+        if ($highTemp || $any) {
             return <<<HTML
 <div style="font-size: 200% !important;">
     <div class="alert alert-danger">You've selected symptom(s)</div>
@@ -97,67 +97,20 @@ HTML;
     <h3>Hi {$info['name']}</h3>
 </p>
 <p>
-    <div class="input-group">
-        <span class="input-group-addon">Today's Temperature</span>
-        <input type="text" class="form-control input-lg" required name="temp" id="temp" />
-    </div>
+<h3>Is your temperature 100.5 or above?</h3>
 </p>
-<div class="row">
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(1);" style="height: 100px; font-size: 300%;">1</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(2);" style="height: 100px; font-size: 300%;">2</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(3);" style="height: 100px; font-size: 300%;">3</button>
-    </div>
-</div>
-<div class="row" style="margin-top: 1em;">
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(4);" style="height: 100px; font-size: 300%;">4</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(5);" style="height: 100px; font-size: 300%;">5</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(6);" style="height: 100px; font-size: 300%;">6</button>
-    </div>
-</div>
-<div class="row" style="margin-top: 1em;">
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(7);" style="height: 100px; font-size: 300%;">7</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(8);" style="height: 100px; font-size: 300%;">8</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(9);" style="height: 100px; font-size: 300%;">9</button>
-    </div>
-</div>
-<div class="row" style="margin-top: 1em;">
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="clearDigits();" style="height: 100px; font-size: 300%;">CLEAR</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit(0);" style="height: 100px; font-size: 300%;">0</button>
-    </div>
-    <div class="col-sm-4">
-        <button class="btn btn-default btn-lg btn-block" type="button" 
-            onclick="addDigit('.');" style="height: 100px; font-size: 300%;">.</button>
-    </div>
-</div>
+<p style="font-size: 200%;">
+    <label class="radio-inline">
+        <input type="radio" name="highTemp" value="1" required />
+        Yes
+    </label>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label class="radio-inline">
+        <input type="radio" name="highTemp" value="0" required />
+        No
+    </label>
+</p>
+<hr />
 <p>
 <h3>Are you experiencing any COVID-19 related symptoms?</h3>
 </p>
@@ -276,7 +229,7 @@ HTML;
         <button class="btn btn-default btn-lg btn-block" type="submit" style="height: 100px; font-size: 300%;">ENTER</button>
     </div>
 </div>
-<h2>ATTENION ALL EMPLOYEES COVID-19 DAILY SCREENING</h2>
+<h2>ATTENTION ALL EMPLOYEES COVID-19 DAILY SCREENING</h2>
 <p style="text-align:left; font-size: 150%; color: red; background-color: #fdb900;">
 For Use Only During an International Pandemic as Declared by The World Health Organization
 </p>
