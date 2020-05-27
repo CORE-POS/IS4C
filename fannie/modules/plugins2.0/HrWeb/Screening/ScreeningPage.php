@@ -10,6 +10,7 @@ class ScreeningPage extends FannieRESTfulPage
 
     public function preprocess()
     {
+        $this->addRoute('get<finish>');
         $ret = parent::preprocess();
 
         return $ret;
@@ -17,6 +18,11 @@ class ScreeningPage extends FannieRESTfulPage
 
     public function getHeader()
     {
+        header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+        header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
         $ignore = parent::getHeader();
 
         return <<<HTML
@@ -25,6 +31,7 @@ class ScreeningPage extends FannieRESTfulPage
     <link rel="stylesheet" type="text/css" href="../../../../src/javascript/composer-components/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../../../../src/javascript/composer-components/bootstrap-default/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../../../../src/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
 </head>
 <body>
     <div class="container">
@@ -60,7 +67,40 @@ HTML;
             $any,
         );
         $dbc->execute($prep, $args);
+
+        $this->addOnloadCommand("setTimeout(function() { \$('#finishForm').submit(); }, 250);");
+
         if ($highTemp || $any) {
+
+            $prep = $dbc->prepare("SELECT screeningEmployeeID, name FROM "
+                . FannieDB::fqn('ScreeningEmployees', 'plugin:HrWebDB') . " WHERE code=? AND deleted=0");
+            $info = $dbc->getRow($prep, array($empID));
+            $subject = 'Screening Positive Notification';
+            $body = $info['name'] . ' reported symptoms at the screening station.';
+            $to = 'hr@wholefoods.coop';
+            $headers = "From: hillside@wholefoods.coop\r\n";
+            mail($to, $subject, $body, $headers);
+
+            return <<<HTML
+<div style="font-size: 200% !important;">
+    <div class="alert alert-danger">You've selected symptom(s)</div>
+Please isolate yourself from others immediately, <b>do not clock in for work and go home</b>.
+Contact your manager and HR at 218.491.4821.
+</div>
+<p style="font-size: 200%;">
+    <a href="ScreeningPage.php" class="btn btn-default btn-lg btn-block">Clear This Screen</a>
+</p>
+<form id="finishForm" action="ScreeningPage.php"><input type="hidden" name="finish" value="1" /></form>
+HTML;
+        }
+
+        return '<div class="alert alert-success">Entry logged</div>' . $this->get_view()
+            . '<form id="finishForm" action="ScreeningPage.php"><input type="hidden" name="finish" value="0" /></form>';
+    }
+
+    protected function get_finish_view()
+    {
+        if ($this->finish) {
             return <<<HTML
 <div style="font-size: 200% !important;">
     <div class="alert alert-danger">You've selected symptom(s)</div>
@@ -88,16 +128,25 @@ HTML;
             return '<div class="alert alert-danger">ID not found</div>' . $this->get_view();
         }
 
+        $prep = $dbc->prepare("SELECT nonce FROM " . FannieDB::fqn('ScreeningNonce', 'plugin:HrWebDB'));
+        $nonce = $dbc->getValue($prep);
+        $dbc->query("UPDATE " . FannieDB::fqn('ScreeningNonce', 'plugin:HrWebDB') . " SET nonce=''");
+        if ($nonce === false || strlen($nonce) == 0 || $nonce != FormLib::get('nonce')) {
+            return '<div class="alert alert-danger">Session expired</div>' . $this->get_view();
+        }
+
         $this->addOnloadCommand("\$('input[name=temp]').focus();");
 
         return <<<HTML
-<form method="post" action="ScreeningPage.php">
+<div id="hideAll" style="display: none;">
+<form method="post" action="ScreeningPage.php"
+    onsubmit="document.getElementById('hideAll').style.display='none';">
 <p>
     <input type="hidden" name="id" value="{$info['screeningEmployeeID']}" />
     <h3>Hi {$info['name']}</h3>
 </p>
 <p>
-<h3>Is your temperature 100.5 or above?</h3>
+<h3>Is your temperature above 100.4 degrees?</h3>
 </p>
 <p style="font-size: 200%;">
     <label class="radio-inline">
@@ -150,6 +199,7 @@ HTML;
 <p style="font-size: 200%;">
     <a href="ScreeningPage.php" class="btn btn-default btn-lg">Cancel</a>
 </p>
+</div>
 <script type="text/javascript">
 function addDigit(num) {
     console.log(num);
@@ -159,18 +209,31 @@ function addDigit(num) {
 function clearDigits() {
     $('#temp').val('');
 }
+window.onpageshow = function(event) {
+    if (event.persisted) {
+        window.location.reload();
+    } else {
+        document.getElementById('hideAll').style.display = 'block';
+    }
+}
 </script>
 HTML;
     }
 
     protected function get_view()
     {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $nonce = uniqid('', true);
+        $setP = $dbc->prepare("UPDATE " . FannieDB::fqn('ScreeningNonce', 'plugin:HrWebDB') . " SET nonce=?");
+        $dbc->execute($setP, array($nonce));
+
         return <<<HTML
 <form method="post" action="ScreeningPage.php">
+<input type="hidden" name="nonce" value="{$nonce}" />
 <p>
     <div class="input-group">
         <span class="input-group-addon">ID#</span>
-        <input type="text" id="faker" class="form-control input-lg" disabled />
+        <input type="text" id="faker" class="form-control input-lg" disabled style="background: white;" />
     </div>
     <input type="hidden" id="real" value="" name="lookup" />
 </p>
