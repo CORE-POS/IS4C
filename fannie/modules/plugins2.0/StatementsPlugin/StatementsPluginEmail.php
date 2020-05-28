@@ -1,4 +1,7 @@
 <?php
+
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 include_once(dirname(__FILE__) . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__) . '/../../../classlib2.0/FannieAPI.php');
@@ -22,7 +25,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
         $ids = array_map(function($i) { return str_replace('b2b', '', $i); }, $ids);
         $invP = $dbc->prepare('SELECT * FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'B2BInvoices WHERE b2bInvoiceID=?');
         foreach ($ids as $id) {
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->isSMTP();
             $mail->Host = '127.0.0.1';
             $mail->Port = 25;
@@ -120,7 +123,7 @@ class StatementsPluginEmail extends FannieRESTfulPage
             WHERE checkPickUpID IN ({$inStr})");
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetchRow($res)) {
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->isSMTP();
             $mail->Host = '127.0.0.1';
             $mail->Port = 25;
@@ -330,7 +333,7 @@ HTML;
         $rowNum=0;
         $dlogMin = date('Y-m-d', mktime(0,0,0, date('n'), date('j')-90, date('Y')));
         foreach ($this->id as $card_no) {
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->isSMTP();
             $mail->Host = '127.0.0.1';
             $mail->Port = 25;
