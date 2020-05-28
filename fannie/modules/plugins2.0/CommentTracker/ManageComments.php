@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('\\FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -182,7 +184,7 @@ class ManageComments extends FannieRESTfulPage
         if ($msg != '') {
             if (!$noSend && filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $response->sent(1);
-                $mail = new PHPMailer();
+                $mail = OutgoingEmail::get();
                 $mail->From = ($this->current_user ? $this->current_user : 'info'). '@wholefoods.coop';
                 $mail->FromName = 'Whole Foods Co-op';
                 $mail->addAddress($email);

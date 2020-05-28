@@ -2,6 +2,7 @@
 
 namespace COREPOS\Fannie\Plugin\CommentTracker;
 use COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe;
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
 
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('\\FannieAPI')) {
@@ -111,7 +112,7 @@ class MailPipe extends AttachmentEmailPipe
         $dbc->execute($historyP, array($commentID, 0, date('Y-m-d H:i:s'), 'Inital category ' . $catW['name']));
 
         if ($catW && $catW['notifyAddress']) {
-            $mail = new \PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->addReplyTo('ff8219e9ba6148408c89232465df9e53+' . $commentID . '@wholefoods.coop');
             $mail->setFrom('comments@wholefoods.coop', 'Comment Tracker');
             $mail->Subject = 'New Comment Needing Response';

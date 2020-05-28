@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 class CommentSummaryTask extends FannieTask
 {
     public $name = 'Comment Tracker Summary';
@@ -25,7 +27,7 @@ class CommentSummaryTask extends FannieTask
         $res = $dbc->execute($prep);
         $notified = array();
         while ($row = $dbc->fetchRow($res)) {
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->From = 'comments@wholefoods.coop';
             $mail->FromName = 'Comment Tracker';
             $mail->Subject = $row['name'] . ' Comment Summary';

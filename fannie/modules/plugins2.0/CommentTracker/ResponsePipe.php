@@ -2,6 +2,7 @@
 
 namespace COREPOS\Fannie\Plugin\CommentTracker;
 use COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe;
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
 
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('\\FannieAPI')) {
@@ -80,7 +81,7 @@ class ResponsePipe extends AttachmentEmailPipe
             $orig = implode("\n", $orig);
             $orig = html_entity_decode($orig, ENT_QUOTES | ENT_HTML401);
             $resp->sent(1);
-            $mail = new \PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->From = 'info@wholefoods.coop';
             if ($from) {
                 $mail->From = $from;

@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 class CommentNotifyTask extends FannieTask
 {
     public $name = 'Comment Tracker Notifications';
@@ -23,7 +25,7 @@ class CommentNotifyTask extends FannieTask
         $res = $dbc->execute($prep);
         $historyP = $dbc->prepare("INSERT INTO CommentHistory (commentID, userID, tdate, log) VALUES (?, ?, ?, ?)");
         while ($row = $dbc->fetchRow($res)) {
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->From = 'comments@wholefoods.coop';
             $mail->FromName = 'Comment Tracker';
             $mail->addReplyTo('ff8219e9ba6148408c89232465df9e53+' . $row['commentID'] . '@wholefoods.coop');
