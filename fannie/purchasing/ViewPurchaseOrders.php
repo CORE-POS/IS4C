@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\Fannie\API\lib\Store;
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
 
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
@@ -261,7 +262,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $userEmail = $userInfo['email'];
         $userRealName = $userInfo['real_name'];
 
-        $mail = new PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->isSMTP();
         $mail->Host = '127.0.0.1';
         $mail->Port = 25;
