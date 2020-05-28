@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../classlib2.0/FannieAPI.php');
@@ -51,7 +53,7 @@ class DashBoard extends FannieRESTfulPage
     private function emailConfiguration()
     {
         include(dirname(__FILE__) . '/../config.php');
-        $warn = !class_exists('PHPMailer') ? '<div class="alert alert-warning">' . _('PHPMailer is missing. Use composer to install it or notifications will not be sent.') . '</div>' : '';
+        $warn = !OutgoingEmail::available() ? '<div class="alert alert-warning">' . _('PHPMailer is missing. Use composer to install it or notifications will not be sent.') . '</div>' : '';
         $ret = '<div class="panel panel-default">
             <div class="panel-heading">
                 <a href="" onclick="$(\'#email-config\').toggle(); return false;">
