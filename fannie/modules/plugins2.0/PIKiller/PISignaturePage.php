@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -71,7 +73,7 @@ class PISignaturePage extends FannieRESTfulPage
     {
         $primary = \COREPOS\Fannie\API\Member\MemberREST::getPrimary($mem);
         if (filter_var($primary[0]['email'], FILTER_VALIDATE_EMAIL)) {
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->From = 'info@wholefoods.coop';
             $mail->FromName = 'Whole Foods Co-op';
             $mail->AddAddress($primary[0]['email']);
