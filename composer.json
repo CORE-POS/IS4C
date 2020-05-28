@@ -19,7 +19,7 @@
         "components/jquery": "1.11.1",
         "components/bootstrap": "3.2.*",
         "components/bootstrap-default": "~3.2",
-        "phpmailer/phpmailer": "~5.2",
+        "phpmailer/phpmailer": "6.1.6",
         "psr/log": "~1.0",
         "sabre/vobject": "~3.4",
         "endroid/qrcode": "~1.5",
