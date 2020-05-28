@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 class ScheduledEmailSendTask extends FannieTask
 {
     public $name = 'Scheduled Emails Task';
@@ -118,7 +120,7 @@ class ScheduledEmailSendTask extends FannieTask
         $config = FannieConfig::factory();
         $settings = $config->get('PLUGIN_SETTINGS');
 
-        $mail = new PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->isSMTP();
         $mail->Host = '127.0.0.1';
         $mail->Port = 25;
