@@ -1,6 +1,7 @@
 <?php
 
 namespace COREPOS\Fannie\Plugin\IncidentTracker\notifiers;
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
 use \FannieDB;
 use \FannieConfig;
 
@@ -8,11 +9,11 @@ class AlertDigest
 {
     public function send($incident, $address)
     {
-        if (!class_exists('PHPMailer')) {
+        if (!OutgoingEmail::available()) {
             // can't send
             return false;
         }
-        $mail = new \PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->From = 'alerts@wholefoods.coop';
         $mail->FromName = 'Alerts Digest';
         foreach (explode(',', $address) as $a) {
