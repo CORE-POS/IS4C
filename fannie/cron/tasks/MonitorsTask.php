@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 class MonitorsTask extends FannieTask
 {
     public $name = 'Monitoring Task';
@@ -61,11 +63,11 @@ to assess conditions, generate reports, and populate the dashboard.';
 
     private function sendEmail($msg)
     {
-        if (!class_exists('PHPMailer')) {
+        if (!OutgoingEmail::available()) {
             $this->logger->error('Cannot send notifications without PHPMailer');
             return;
         }
-        $mail = new PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->isSMTP();
         $mail->Host = $this->config->get('MON_SMTP_HOST');
         $mail->Port = $this->config->get('MON_SMTP_PORT');

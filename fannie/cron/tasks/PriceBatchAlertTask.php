@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 if (!class_exists('BasicModel')) {
     include(dirname(__FILE__).'/../../classlib2.0/data/models/BasicModel.php');
 }
@@ -129,8 +132,8 @@ class PriceBatchAlertTask extends FannieTask
             }
             $ret .= '</tbody></table>';
             
-            if (class_exists('PHPMailer')) {
-                $mail = new PHPMailer();                
+            if (OutgoingEmail::available()) {
+                $mail = OutgoingEmail::get();
                 foreach ($contacts as $contact) {
                     $mail->addAddress($contact);
                 }

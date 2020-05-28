@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 class AutoOrderTask extends FannieTask
 {
     public $name = 'Auto Re-order';
@@ -37,7 +39,7 @@ class AutoOrderTask extends FannieTask
 
     private function getMailer()
     {
-        $mail = new PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->isSMTP();
         $mail->Host = '127.0.0.1';
         $mail->Port = 25;

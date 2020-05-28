@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 if (!class_exists('BasicModel')) {
     include(dirname(__FILE__).'/../../classlib2.0/data/models/BasicModel.php');
 }
@@ -135,8 +138,8 @@ class EndSalesBatchAlertTask extends FannieTask
                 $ret .= '<div align="center"><h4>Products in Disco Batches</h4>'.$tableC.'</div>';
             }
 
-            if (class_exists('PHPMailer') && ($countA > 0 || $countB > 0)) {
-                $mail = new PHPMailer();                
+            if (OutgoingEmail::available() && ($countA > 0 || $countB > 0)) {
+                $mail = OutgoingEmail::get();
                 foreach ($contacts as $contact) {
                     $mail->addAddress($contact);
                 }
