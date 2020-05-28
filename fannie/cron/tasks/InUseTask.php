@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 if (!class_exists('BasicModel')) {
     include(dirname(__FILE__).'/../../classlib2.0/data/models/BasicModel.php');
 }
@@ -220,7 +223,7 @@ class InUseTask extends FannieTask
 
         $to = $this->config->get('FANNIE_ADMIN_EMAIL');
 
-        if (class_exists('PHPMailer')) {
+        if (OutgoingEmail::available()) {
             $msg = '
 <style>
     table, tr, td { 
@@ -247,7 +250,7 @@ class InUseTask extends FannieTask
             $msg .= '<br />';
             $msg .= '<br />';
 
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->isHTML();
             $mail->addAddress($to);
             $mail->From = 'automail@wholefoods.coop';
