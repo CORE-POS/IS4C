@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -198,7 +200,7 @@ class GumEmailPage extends FannieRESTfulPage
         $log->uid($uid);
         $log->messageType('Statement (' . $this->id . ')');
 
-        $mail = new PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->isSMTP();
         $mail->Host = '127.0.0.1';
         $mail->Port = 25;
@@ -377,7 +379,7 @@ class GumEmailPage extends FannieRESTfulPage
         $subject = 'SAMPLE WFC Owner Financing: Class C Stock Dividend';
         $to = $this->meminfo->email_1();
 
-        $mail = new PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->From = 'finance@wholefoods.coop';
         $mail->FromName = 'Whole Foods Co-op';
         $mail->AddAddress('andy@wholefoods.coop');
