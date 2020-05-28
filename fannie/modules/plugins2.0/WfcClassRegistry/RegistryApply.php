@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
@@ -84,10 +86,10 @@ class RegistryApply extends FannieRESTfulPage
         $puModel->load();
         if ($seats == 0 && $puModel->soldOut() == 0) {
             $model->setSoldOut($upc);
-            if (!class_exists('PHPMailer')) {
+            if (!OutgoingEmail::available()) {
                 return false;
             } else {
-                $mail = new PHPMailer();
+                $mail = OutgoingEmail::get();
                 $mail->From = 'automail@wholefoods.coop';
                 $mail->FromName = 'WFC-U Class Registration Alerts';
                 $mail->addAddress('it@wholefoods.coop');

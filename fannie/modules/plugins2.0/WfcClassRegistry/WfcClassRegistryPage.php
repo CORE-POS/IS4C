@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 include(__DIR__.'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -128,11 +130,11 @@ class WfcClassRegistryPage extends FanniePage
         $registered = FormLib::get('n');
         $upc = BarcodeLib::padUpc(FormLib::get('upc'));
         $className = FormLib::get('className');
-        if (!class_exists('PHPMailer')) {
+        if (!OutgoingEmail::available()) {
             // can't send
             return false;
         }
-        $mail = new PHPMailer();
+        $mail = OutgoingEmail::get();
         $mail->From = 'automail@wholefoods.coop';
         $mail->FromName = 'WFC-U Class Registration Alerts';
         foreach ($to as $address) {
