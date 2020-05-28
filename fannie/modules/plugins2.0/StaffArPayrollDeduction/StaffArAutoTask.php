@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\Fannie\API\data\pipes\OutgoingEmail;
+
 class StaffArAutoTask extends FannieTask
 {
     public $name = 'Staff AR Setup';
@@ -52,7 +54,7 @@ class StaffArAutoTask extends FannieTask
                 );
             }
 
-            $mail = new PHPMailer();
+            $mail = OutgoingEmail::get();
             $mail->isSMTP();
             $mail->Host = '127.0.0.1';
             $mail->Port = 25;
