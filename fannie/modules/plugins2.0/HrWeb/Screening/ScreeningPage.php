@@ -73,7 +73,7 @@ HTML;
         if ($highTemp || $any) {
 
             $prep = $dbc->prepare("SELECT screeningEmployeeID, name FROM "
-                . FannieDB::fqn('ScreeningEmployees', 'plugin:HrWebDB') . " WHERE code=? AND deleted=0");
+                . FannieDB::fqn('ScreeningEmployees', 'plugin:HrWebDB') . " WHERE screeningEmployeeID=? AND deleted=0");
             $info = $dbc->getRow($prep, array($empID));
             $subject = 'Screening Positive Notification';
             $body = $info['name'] . ' reported symptoms at the screening station.';
