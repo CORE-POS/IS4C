@@ -2,7 +2,6 @@
 
 namespace COREPOS\pos\lib\PrintHandlers;
 use \CoreLocal;
-use \PHPMailer;
 
 /**
  @class EmailPrintHandler
@@ -35,7 +34,11 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
             $subject .= "-".CoreLocal::get("laneno");
             $subject .= "-".CoreLocal::get("transno");
 
-            $mail = new PHPMailer();
+            if (class_exists('\\PHPMailer')) {
+                $mail = new \PHPMailer();
+            } else {
+                $mail = new \PHPMailer\PHPMailer\PHPMailer();
+            }
             if (CoreLocal::get('emailReceiptSmtp') == 1) {
                 /** setup SMTP parameters **/
                 $mail->isSMTP();
