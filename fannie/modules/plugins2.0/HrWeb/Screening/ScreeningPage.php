@@ -77,7 +77,7 @@ HTML;
             $info = $dbc->getRow($prep, array($empID));
             $subject = 'Screening Positive Notification';
             $body = $info['name'] . ' reported symptoms at the screening station.';
-            $to = 'hr@wholefoods.coop';
+            $to = 'hr@wholefoods.coop, shannigan@wholefoods.coop';
             $headers = "From: hillside@wholefoods.coop\r\n";
             mail($to, $subject, $body, $headers);
 
