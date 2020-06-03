@@ -74,6 +74,10 @@ HTML;
                 }
             }
         }
+
+        $cutoff = date('Y-m-d', strtotime('2 days ago'));
+        $spamP = $dbc->prepare("DELETE FROM Comments WHERE categoryID=-1 AND tdate <= ?");
+        $dbc->execute($spamP, array($cutoff));
     }
 }
 

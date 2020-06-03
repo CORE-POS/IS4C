@@ -46,7 +46,8 @@ class SearchComments extends FannieRESTfulPage
                 FROM {$prefix}Comments AS c
                     LEFT JOIN {$prefix}Categories AS t ON t.categoryID=c.categoryID
                     LEFT JOIN {$prefix}Responses AS r ON r.commentID=c.commentID
-                WHERE c.comment LIKE ? OR r.response LIKE ?
+                WHERE (c.comment LIKE ? OR r.response LIKE ?)
+                    AND c.categoryID <> -1
                 ORDER BY c.commentID DESC");
             $searchR = $this->connection->execute($searchP, array('%' . $this->id . '%', '%' . $this->id . '%')); 
             $prevID = null;
