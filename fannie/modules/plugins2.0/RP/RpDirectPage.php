@@ -325,7 +325,7 @@ class RpDirectPage extends FannieRESTfulPage
             $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         }
         $sSelect = FormLib::storePicker();
-        $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpOrderPage.php?store=\' + this.value;"', $sSelect['html']);
+        $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpDirectPage.php?store=\' + this.value;"', $sSelect['html']);
         $jsState = isset($_SESSION['rpState']) ? json_encode($_SESSION['rpState']) : "false";
         if ($jsState === "false") {
             $sModel = new RpSessionsModel($this->connection);
