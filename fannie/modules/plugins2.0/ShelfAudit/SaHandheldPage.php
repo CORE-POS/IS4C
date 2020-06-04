@@ -66,8 +66,9 @@ class SaHandheldPage extends FannieRESTfulPage
             }
             $ret['upc'] = $upc;     
             $store = FormLib::get('store', 0);
-            $q = 'SELECT p.description,v.brand,s.quantity,v.units,p.normal_price FROM
+            $q = 'SELECT p.description,v.brand,s.quantity,v.units,p.normal_price,i.bycount FROM
                 products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
+                LEFT JOIN scaleItems AS i ON p.upc=i.plu
                 LEFT JOIN '.$settings['ShelfAuditDB'].$dbc->sep().
                 'sa_inventory AS s ON p.upc=s.upc AND s.clear=0 AND s.storeID=?
                     AND s.section=?
@@ -118,6 +119,9 @@ class SaHandheldPage extends FannieRESTfulPage
                 }
                 if (!isset($this->current_item_data['case_sizes'])){
                     $ret['case_sizes'] = array();
+                }
+                if (!isset($this->current_item_data['bycount'])){
+                    $ret['bycount'] = $w['bycount'];
                 }
                 if ($scalePrice && $w['normal_price']) {
                     $ret['case_sizes'][] = sprintf('%.2f', $scalePrice / $w['normal_price']);
@@ -339,6 +343,15 @@ document.body.appendChild(socketm);
                 <button type="button" tabindex="-1" onclick="handheld.updateQty(%s)" class="btn btn-danger btn-lg">-%s</button>',
                 $s,$s,-1*$s,$s);
         }
+        $defaultBtns = <<<HTML
+    <button tabindex="-1" type="button" onclick="handheld.updateQty(1);" class="btn btn-success btn-lg">+1</button>
+    <button tabindex="-1" type="button" onclick="handheld.updateQty(-1);" class="btn btn-danger btn-lg">-1</button>
+HTML;
+        if ($data['bycount'] === '0' ) {
+            $defaultBtns = '';
+        } elseif ($data['bycount'] > 0) {
+            $cases = '';
+        }
         echo <<<HTML
 <p>
     {$data['upc']} {$data['desc']}<br />
@@ -353,8 +366,7 @@ document.body.appendChild(socketm);
         onkeyup="handheld.qtyTyped(event);" id="cur_qty" 
         onkeydown="handheld.catchTab(event);" />
     <input type="hidden" id="cur_upc" value="{$data['upc']}" />
-    <button tabindex="-1" type="button" onclick="handheld.updateQty(1);" class="btn btn-success btn-lg">+1</button>
-    <button tabindex="-1" type="button" onclick="handheld.updateQty(-1);" class="btn btn-danger btn-lg">-1</button>
+    {$defaultBtns}
     {$cases}
 </div>
 HTML;
