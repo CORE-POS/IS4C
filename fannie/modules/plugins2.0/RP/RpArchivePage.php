@@ -7,7 +7,7 @@ class RpArchivePage extends FannieReportPage
     protected $title = 'Archived Orders';
     protected $new_tablesorter = true;
     protected $required_fields = array('date1', 'date2');
-    protected $report_headers = array('Farm', 'Item', 'Quantity', 'Ordered', 'Delivery');
+    protected $report_headers = array('Farm', 'Item', 'Quantity', 'Ordered', 'Delivery', 'Purchase Order');
 
     public function fetch_report_data()
     {
@@ -23,7 +23,7 @@ class RpArchivePage extends FannieReportPage
         }
 
         $prep = $this->connection->prepare("
-            SELECT i.brand, i.description, o.placedDate, i.receivedDate, i.quantity
+            SELECT i.brand, i.description, o.placedDate, i.receivedDate, i.quantity, i.orderID
             FROM PurchaseOrder AS o
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
             WHERE o.userID=-99
@@ -34,12 +34,15 @@ class RpArchivePage extends FannieReportPage
         $res = $this->connection->execute($prep, array($store, $date1, $date2));
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
+            $link = sprintf('<a href="../../../purchasing/ViewPurchaseOrders.php?id=%d">%d</a>',
+                $row['orderID'], $row['orderID']);
             $data[] = array(
                 $row['brand'],
                 $row['description'],
                 $row['quantity'],
                 $row['placedDate'],
-                $row['receivedDate']
+                $row['receivedDate'],
+                $link
             );
         }
 
