@@ -1,7 +1,5 @@
 <?php
 
-use COREPOS\Fannie\API\item\StandardAccounting;
-
 include(__DIR__ . '/../../../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__).'/../../../../../classlib2.0/FannieAPI.php');
@@ -46,7 +44,6 @@ class EOMSuperDetail extends FannieReportPage
         $res = $this->connection->execute($prep, array($date . ' 00:00:00', $date . ' 23:59:59', $store, $super));
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
-            $code = StandardAccounting::extend($row['salesCode'], $row['store_id']);
             $data[] = array(
                 $row['tdate'],
                 $row['superID'],
