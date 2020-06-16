@@ -51,11 +51,11 @@ class OsTillCountsPage extends FannieRESTfulPage
             }
             $form .= '<b>Till #' . $i . '</b><br />';
             $form .= sprintf('<div class="form-group"><div class="input-group">
-                <span class="input-group-addon">Amount</span>
+                <span class="input-group-addon">Drop Amount</span>
                 <input type="text" name="amt[]" class="form-control" value="%s" />
                 </div></div>', $current['dropAmount']);
             $form .= sprintf('<div class="form-group"><div class="input-group">
-                <span class="input-group-addon">Variance</span>
+                <span class="input-group-addon">A.M. Variance</span>
                 <input type="text" name="var[]" class="form-control" value="%s" />
                 </div></div>', $current['variance']);
             $form .= '<hr />';
