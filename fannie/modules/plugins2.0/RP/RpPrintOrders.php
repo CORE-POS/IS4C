@@ -4,6 +4,9 @@ include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('RpSessionsModel')) {
+    include(__DIR__ . '/models/RpSessionsModel.php');
+}
 
 class RpPrintOrders extends FannieRESTfulPage
 {
@@ -21,11 +24,25 @@ class RpPrintOrders extends FannieRESTfulPage
     {
         $orderID = FormLib::get('orderID');
         $date = FormLib::get('date');
-        $prep = $this->connection->prepare("UPDATE PurchaseOrderItems SET receivedDate=? WHERE orderID=? AND internalUPC=?");
-        $this->connection->execute($prep, array($date, $orderID, $this->id));
+        $brand = FormLib::get('brand');
+        $prep = $this->connection->prepare("UPDATE PurchaseOrderItems SET receivedDate=? WHERE orderID=? AND internalUPC=? AND brand=?");
+        $this->connection->execute($prep, array($date, $orderID, $this->id, $brand));
         echo 'OK';
 
         return false;
+    }
+
+    protected function get_archive_handler()
+    {
+        if ($_SESSION['rpState']) {
+            $_SESSION['rpState']['directAmt'] = array();
+            $json = json_encode($_SESSION['rpState']);
+            $model = new RpSessionsModel($this->connection);
+            $model->userID(FannieAuth::getUID($this->current_user));
+            $model->data($json);
+            $model->save();
+        }
+        return true;
     }
 
     protected function get_archive_view()
@@ -90,20 +107,11 @@ class RpPrintOrders extends FannieRESTfulPage
         $mapP = $this->connection->prepare("SELECT description FROM RpFixedMaps AS r INNER JOIN vendorItems AS v
             ON r.sku=v.sku AND r.vendorID=v.vendorID WHERE r.likeCode=?");
         $lcP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
+        $copyPaste = array();
         while ($row = $this->connection->fetchRow($res)) {
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $suffix = '';
             $recv = '';
-            if ($row['brand'] && $row['vendorName'] == 'Direct Produce') {
-                $row['vendorName'] = $row['brand'];
-                $suffix = ' (ea)';
-                if (strpos($row['receivedDate'], ' ')) {
-                    list($row['receivedDate'],) = explode(' ', $row['receivedDate']);
-                }
-                $recv = sprintf('<input type="text" size="2" class="form-control input-sm date-field"
-                            value="%s" style="font-size: 85%%;" data-upc="%s" data-order-id="%d" />',
-                    $row['receivedDate'], $row['upc'], $row['orderID']);
-            }
             $likecode = str_replace('LC', '', $row['upc']);
             if (strstr($likecode, '-')) {
                 list($likecode, $rest) = explode('-', $likecode, 2);
@@ -111,6 +119,21 @@ class RpPrintOrders extends FannieRESTfulPage
             $organic = $this->connection->getValue($orgP, array(str_replace('LC', '', $row['upc'])));
             $map = $this->connection->getValue($mapP, array(str_replace('LC', '', $row['upc'])));
             $lcName = $this->connection->getValue($lcP, array($likecode));
+            if ($row['brand'] && $row['vendorName'] == 'Direct Produce') {
+                $row['vendorName'] = $row['brand'];
+                $suffix = ' (ea)';
+                if (strpos($row['receivedDate'], ' ')) {
+                    list($row['receivedDate'],) = explode(' ', $row['receivedDate']);
+                }
+                $recv = sprintf('<input type="text" size="2" class="form-control input-sm date-field"
+                            value="%s" style="font-size: 85%%;" data-upc="%s" data-order-id="%d" 
+                            data-brand="%s" />',
+                    $row['receivedDate'], $row['upc'], $row['orderID'], $row['brand']);
+                if (!isset($copyPaste[$row['brand']])) {
+                    $copyPaste[$row['brand']] = '';
+                }
+                $copyPaste[$row['brand']] .= $row['quantity'] . "\t" . $lcName . "\n";
+            }
             if ($map) {
                 $row['vendorItem'] = $map;
             }
@@ -135,6 +158,15 @@ class RpPrintOrders extends FannieRESTfulPage
         $ret .= '<p>
             <a href="RpPrintOrders.php?archive=' . $this->id . '" class="btn btn-default">Archive Order(s)</a>
             </p>';
+
+        if (count($copyPaste) > 0) {
+            $ret .= '<hr />';
+            foreach ($copyPaste as $farm => $msg) {
+                $ret .= '<b>' . $farm . '</b><br />';
+                $ret .= '<pre>' . $msg . '</pre>';
+                $ret .= '<hr />';
+            }
+        }
 
         $this->addOnloadCommand("\$('td.incoming input').change(function () { syncIncoming(this); });");
 
@@ -166,8 +198,8 @@ CSS;
     protected function javascript_content()
     {
         return <<<JAVASCRIPT
-function setRecvDate(d, upc, oID) {
-    var dstr = 'id='+upc+'&orderID='+oID+'&date='+d;
+function setRecvDate(d, upc, oID, brand) {
+    var dstr = 'id='+upc+'&orderID='+oID+'&date='+d+'&brand='+encodeURIComponent(brand);
     $.ajax({
         url: 'RpPrintOrders.php',
         type: 'post',
@@ -181,7 +213,7 @@ function syncIncoming(elem) {
         if ($(this).text() == farm) {
             var inp = $(this).closest('tr').find('td.incoming input');
             $(inp).val(myDate);
-            setRecvDate(myDate, $(inp).attr("data-upc"), $(inp).attr("data-order-id"));
+            setRecvDate(myDate, $(inp).attr("data-upc"), $(inp).attr("data-order-id"), $(inp).attr('data-brand'));
         }
     });
 }
