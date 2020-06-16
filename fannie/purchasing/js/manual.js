@@ -91,6 +91,9 @@ function descriptionField(row)
 
 function removeButton(row)
 {
+    if ($('input[name=order-id]').length > 0) {
+        return;
+    }
     var remove = $('<button type="button">')
         .addClass('btn')
         .addClass('btn-default')
