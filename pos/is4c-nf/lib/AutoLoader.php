@@ -215,7 +215,7 @@ class AutoLoader
                 if ($includeBase) $ret[] = $name;
                 continue;
             }
-            if (in_array($name, self::$blacklist)) {
+            if (in_array($name, self::$ignoreClass)) {
                 continue;
             }
 
@@ -250,11 +250,11 @@ class AutoLoader
         return $ret;
     }
 
-    static private $blacklist = array();
-    static public function blacklist($class)
+    static private $ignoreClass = array();
+    static public function ignoreClass($class)
     {
-        if (!in_array($class, self::$blacklist)) {
-            self::$blacklist[] = $class;
+        if (!in_array($class, self::$ignoreClass)) {
+            self::$ignoreClass[] = $class;
         }
     }
 
