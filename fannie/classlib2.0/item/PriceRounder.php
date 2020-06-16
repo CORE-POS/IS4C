@@ -61,6 +61,7 @@ class PriceRounder
             1 => 0.16,
             2 => 0.16,
             3 => 0.30,
+            4 => 0.29
         );
 
         $end = substr($price, -2);
@@ -70,15 +71,13 @@ class PriceRounder
                     if ($k == $level ) {
                         foreach ($endArray as $end) {
                             if ($fractionP < $end) {
-                                if ($wholeP >= 10) {
-                                    // whole >= 10
-                                } elseif ($fractionP <= $specialRound[$level]) {
+                                if ($fractionP <= $specialRound[$level] && $wholeP > 0) {
                                     // special round down to nearest whole.99
                                     $wholeP--;
                                     $end = 0.99;
                                 }
                                 // don't end prices like 30.99, 40.99, round down 
-                                if ($wholeP > 0 && $wholeP % 10 == 0 && $end == 0.99 && $wholeP != '10') {
+                                if ($wholeP % 10 == 0 && $end == 0.99 && $wholeP != 10 && $wholeP != 0) {
                                     $wholeP--;
                                 }
                                 $price = $wholeP + $end;
