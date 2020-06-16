@@ -78,7 +78,7 @@ $dlog = "trans_archive.dlogBig";
 $dtrans = "trans_archive.bigArchive";
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
-    echo "<a href=index.php?excel=xls&monthMinus=$monthMinus&store=$store>Save to Excel</a>";
+    echo "<a href=index.php?excel=xls&month=$month&year=$year&store=$store>Save to Excel</a>";
 echo "<p />";
 
 $output = \COREPOS\Fannie\API\data\DataCache::getFile('monthly');
