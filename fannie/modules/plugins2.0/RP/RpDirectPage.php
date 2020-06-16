@@ -452,8 +452,12 @@ class RpDirectPage extends FannieRESTfulPage
         $hiddenItems = '';
         while ($row = $this->connection->fetchRow($res)) {
             $likeCode = substr($row['upc'], 2);
+            $localLC = $likeCode;
+            if (strpos($localLC, '-')) {
+                list($localLC,) = explode('-', $localLC, 2);
+            }
             $appendTables = true;
-            if (!in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) {
+            if (!in_array($localLC, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) {
                 $appendTables = false;
             }
             if ($row['categoryID'] !== $category && $appendTables) {
