@@ -103,8 +103,32 @@ function removeButton(row)
     row.append($('<td>').append(remove));
 }
 
+function receiveLine()
+{
+    var row = $('<tr class="small">');
+    row.append('<th class="text-right">Recv\'d Qty</th>');
+    row.append('<td><input type="text" name="recv-cases[]" class="input-sm recv-cases form-control" /></td>'); 
+    row.append('<th class="text-right" colspan="2">Recv\'d Cost</th>');
+    row.append('<td><input type="text" name="recv-cost[]" class="input-sm recv-cost form-control" /></td>'); 
+    row.append('<th class="text-right">Recv\'d Date</th>');
+    row.append('<td><input type="text" name="recv-date[]" class="input-sm recv-date form-control" /></td>'); 
+
+    row.prependTo('#invoice-table tbody');
+
+    $('input.recv-date').datepicker({
+        dateFormat: 'yy-mm-dd',    
+        changeYear: true,
+        yearRange: "c-10:c+10",
+    });
+    $('input.recv-date').attr('autocomplete', 'off');
+}
+
 function addInvoiceLine()
 {
+    if ($('input[name=order-id]').length > 0) {
+        receiveLine();
+    }
+
     var vendor_id = $('#vendor-id').val();
     var row = $('<tr>');
 
@@ -234,8 +258,7 @@ function existingOrder(orderJSON, itemsJSON)
     var items = JSON.parse(itemsJSON);
 
     if (order.creationDate) {
-        var dateparts = order.creationDate.split(' ');
-        $('input[name=order-date]').val(dateparts[0]);
+        $('input[name=order-date]').val(order.creationDate);
     }
     if (order.vendorOrderID) {
         $('input[name=po-number]').val(order.vendorOrderID);
@@ -243,6 +266,14 @@ function existingOrder(orderJSON, itemsJSON)
     if (order.vendorInvoiceID) {
         $('input[name=inv-number]').val(order.vendorInvoiceID);
     }
+
+    var name = $('#vendor-name').html();
+    name = name.replace('New <', 'Existing <');
+    name += ' #' + order.orderID;
+    $('#vendor-name').html(name);
+
+    var idField = $('<input type="hidden" name="order-id" />').val(order.orderID);
+    $('#order-form').append(idField);
 
     loading = true;
     items.forEach(function(item) {
@@ -263,15 +294,10 @@ function existingOrder(orderJSON, itemsJSON)
         $('input.price-field:first').val(total);
         $('input.item-brand:first').val(item.brand);
         $('input.item-description:first').val(item.description);
+        $('input.recv-cases:first').val(item.receivedQty);
+        $('input.recv-cost:first').val(item.receivedTotalCost);
+        $('input.recv-date:first').val(item.receivedDate);
     });
 
-    var name = $('#vendor-name').html();
-    name = name.replace('New <', 'Existing <');
-    name += ' #' + order.orderID;
-    $('#vendor-name').html(name);
-
-    var idField = $('<input type="hidden" name="order-id" />').val(order.orderID);
-    $('#order-form').append(idField);
-    
     setTimeout(stopLoading, 250);
 }
