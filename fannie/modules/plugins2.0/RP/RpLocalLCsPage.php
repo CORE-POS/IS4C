@@ -10,6 +10,15 @@ class RpLocalLCsPage extends FannieRESTfulPage
     protected $header = 'Local Like Codes';
     protected $title = 'Local Like Codes';
 
+    protected function delete_id_view()
+    {
+        $prep = $this->connection->prepare('DELETE FROM RpLocalLCs WHERE likeCode=?');
+        $this->connection->execute($prep, array($this->id));
+
+        return '<div class="alert alert-success">Like Code Deleted</div>'
+            . $this->get_view();
+    }
+
     protected function post_id_view()
     {
         $prep = $this->connection->prepare('INSERT INTO RpLocalLCs (likeCode) VALUES (?)');
@@ -45,7 +54,13 @@ class RpLocalLCsPage extends FannieRESTfulPage
             ORDER BY l.likeCodeDesc');
         $table = '';
         while ($row = $this->connection->fetchRow($res)) {
-            $table .= sprintf('<tr><td>%d</td><td>%s</td></tr>', $row['likeCode'], $row['likeCodeDesc']);
+            $table .= sprintf('<tr><td>%d</td><td>%s</td>
+                <td><a href="RpLocalLCsPage.php?_method=delete&id=%s">%s</a>
+                </tr>',
+                $row['likeCode'], $row['likeCodeDesc'],
+                $row['likeCode'],
+                COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
+            );
         }
 
         $model = new LikeCodesModel($this->connection);
@@ -62,6 +77,8 @@ class RpLocalLCsPage extends FannieRESTfulPage
 </div>
 <div class="form-group">
     <button type="submit" class="btn btn-default">Add</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="RpDirectPage.php" class="btn btn-default">Direct Order Guide</a>
 </div>
 </form>
 <b>Locally-Available Like Codes</b>
