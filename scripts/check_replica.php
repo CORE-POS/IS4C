@@ -1,14 +1,14 @@
 <?php
 /**
- * Description: This script checks the slave status on the configured host
+ * Description: This script checks the replication status on the configured host
  *              printing "BAD <description>" or "OK <description>" for failure
  *              or success respectively.
  *              The possible failures could include:
  *              1) connection failure
  *              2) query failure (permissions, network, etc.)
  *              3) fetch failure (???)
- *              4) slave or io thread is not running
- *              5) Unknown master state (seconds_behind_master is null)
+ *              4) replica sql or io thread is not running
+ *              5) Unknown primary state (seconds_behind_master is null)
  *              6) seconds_behind_master has exceeded the configured threshold
  *
  *              If none of these condition occur, we asssume success and return
@@ -73,21 +73,21 @@ foreach ($host as $key => $value) {
  
     mysql_close($link);
  
-    $slave_lag_threshold = 120;
+    $lag_threshold = 120;
  
     $tests = array(
-        'test_slave_io_thread' => array('Slave_IO_Running', "\$var === 'Yes'",
-                                        'Slave IO Thread is not running'),
-        'test_slave_sql_thread' => array('Slave_SQL_Running', "\$var === 'Yes'",
-                                        'Slave SQL Thread is not running')
+        'test_replica_io_thread' => array('Slave_IO_Running', "\$var === 'Yes'",
+                                        'Replica IO Thread is not running'),
+        'test_replica_sql_thread' => array('Slave_SQL_Running', "\$var === 'Yes'",
+                                        'Replica SQL Thread is not running')
 //        'test_last_err' => array('Last_Errno', "\$var == 0",
 //                                 "Error encountered during replication - "
 //                                 .$status['Last_Error']),
-//        'test_master_status' => array('Seconds_Behind_Master', "isset(\$var)",
-//                                        'Unknown master status (Seconds_Behind_Master IS NULL)'),
-//        'test_slave_lag' => array('Seconds_Behind_Master',
-//                                  "\$var < \$slave_lag_threshold",
-//                                  "Slave is ${status['Seconds_Behind_Master']}s behind master (threshold=$slave_lag_threshold)")
+//        'test_primary_status' => array('Seconds_Behind_Master', "isset(\$var)",
+//                                        'Unknown primary status (Seconds_Behind_Master IS NULL)'),
+//        'test_replica_lag' => array('Seconds_Behind_Master',
+//                                  "\$var < \$lag_threshold",
+//                                  "Replica is ${status['Seconds_Behind_Master']}s behind the primary (threshold=$lag_threshold)")
     );
  
     $epic_fail = false;
@@ -105,7 +105,7 @@ foreach ($host as $key => $value) {
         //print $val1."\n";
         }
         if ($val1 > 0) {
-            print "[".$key."] BAD: Slave failure detected.  Attempting RESET.\n"; 
+            print "[".$key."] BAD: Replica failure detected.  Attempting RESET.\n"; 
             $reset = "mysql -u".$user." -p".$pass." -h ".$value." -e \"slave stop;reset slave;slave start\"";
             exec($reset, $output, $result);
         if ($result <> 0) {
@@ -135,9 +135,14 @@ foreach ($host as $key => $value) {
     }
 }
 
-function reset_slave($host_ip) {
+function reset_replica($host_ip) {
     $reset = "mysql -u".$user." -p".$pass." -h ".$host_ip." -e \"slave stop;reset slave;slave start\"";
     exec($reset, $output, $result);
     $ret = ($result > 0) ? true : false;
+}
+
+function reset_slave($host_ip) {
+    trigger_error("Deprecated function called; use 'reset_replica' instead.", E_USER_NOTICE);
+    return reset_replica($host_ip);
 }
 
