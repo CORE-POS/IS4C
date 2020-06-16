@@ -75,10 +75,31 @@ CSS;
 
         $pdf->SetXY(5, 85);
         $pdf->Cell(120, 7, 'On Shift Today / Samples', 1, 1, 'C');
-        for ($i=0; $i<6; $i++) {
+        for ($i=0; $i<4; $i++) {
             $pdf->SetX(5);
             $pdf->Cell(120, 7, '', 1, 1, 'C');
         }
+        $pdf->SetX(5);
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell(120, 7, 'Sanitizing:', 1, 0, 'L');
+        $pdf->SetFont('Arial', '', 9);
+        $pdf->SetX(30);
+        $pdf->Cell(12, 7, '6', 0, 0);
+        $pdf->Cell(12, 7, '8', 0, 0);
+        $pdf->Cell(12, 7, '10', 0, 0);
+        $pdf->Cell(12, 7, '12', 0, 0);
+        $pdf->Cell(12, 7, '2', 0, 0);
+        $pdf->Cell(12, 7, '4', 0, 0);
+        $pdf->Cell(12, 7, '6', 0, 0);
+        $pdf->Cell(12, 7, '8', 0, 0);
+        $pdf->Ln();
+        $pdf->SetX(5);
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell(120, 7, 'Daily Critical Temp Food spot check:', 1, 0, 'L');
+        $pdf->SetFont('Arial', '', 9);
+        $pdf->SetX(63);
+        $pdf->Cell(12, 8, '_________', 0, 0);
+        $pdf->Ln();
 
         $preps = DataConvert::htmlToArray($preps);
         $pdf->SetXY(5, 140);
@@ -157,8 +178,33 @@ CSS;
                 <tr><td>&nbsp;</td></tr>
                 <tr><td>&nbsp;</td></tr>
                 <tr><td>&nbsp;</td></tr>
-                <tr><td>&nbsp;</td></tr>
-                <tr><td>&nbsp;</td></tr>
+                <tr><td><b>Sanitizing</b>:
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    6
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    8
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    10
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    12
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    2
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    4
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    6
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    8
+                </td></tr>
+                <tr><td><b>Daily Critical Temp Food spot check</b>: ____________</td></tr>
             </table>
         </div>
         <div class="row=">
