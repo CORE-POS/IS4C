@@ -82,9 +82,9 @@ class EditFieldFromSearch extends FannieRESTfulPage
         $model = new ProductsModel($this->connection);
         $columns = $model->getColumns();
         $opts = '<option value="">Select field...</option>';
-        $blacklist = array('upc', 'store_id', 'id', 'modified', 'last_sold', 'created');
+        $ignoreColumn = array('upc', 'store_id', 'id', 'modified', 'last_sold', 'created');
         foreach ($columns as $name => $info) {
-            if (!in_array($name, $blacklist)) {
+            if (!in_array($name, $ignoreColumn)) {
                 $opts .= '<option>' . $name . '</option>';
             }
         }
