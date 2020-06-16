@@ -48,20 +48,26 @@ class RpLocalLCsPage extends FannieRESTfulPage
             $table .= sprintf('<tr><td>%d</td><td>%s</td></tr>', $row['likeCode'], $row['likeCodeDesc']);
         }
 
+        $model = new LikeCodesModel($this->connection);
+        $opts = '<option value="">' . $model->toOptions();
+        $this->addScript('../../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.chosen').chosen({search_contains: true});");
+
         return <<<HTML
-<b>Locally-Available Like Codes</b>
-<table class="table">
-    {$table}
-</table>
 <form method="post" action="RpLocalLCsPage.php">
 <div class="form-group">
     <label>Add Like Code</label>
-    <input type="text" name="id" class="form-control" />
+    <select name="id" class="form-control chosen">{$opts}</select>
 </div>
 <div class="form-group">
     <button type="submit" class="btn btn-default">Add</button>
 </div>
 </form>
+<b>Locally-Available Like Codes</b>
+<table class="table">
+    {$table}
+</table>
 <form method="post" action="RpLocalLCsPage.php">
 <div class="form-group">
     <label>Replace List of Like Codes</label>
