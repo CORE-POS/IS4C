@@ -26,7 +26,7 @@ class FannieEntity extends FannieWebService
 {
     public $type = 'json'; // json/plain by default
 
-    private $blacklist = array(
+    private $notEditable = array(
         'Custdata',
         'Meminfo',
         'MemDates',
@@ -73,7 +73,7 @@ class FannieEntity extends FannieWebService
             return $ret;
         }
 
-        if ($method == 'set' && in_array($args->entity, $this->blacklist)) {
+        if ($method == 'set' && in_array($args->entity, $this->notEditable)) {
             $ret['error'] = array(
                 'code' => -32600,
                 'message' => 'Set not allowed on this entity',
