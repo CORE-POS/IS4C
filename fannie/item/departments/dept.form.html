@@ -55,7 +55,11 @@ return <<<HTML
 </div>
 {$vals['hiddenID']}
 <input type=hidden id=isNew name=new value="{$vals['isNew']}" />
+<br />
 <p><button type=submit value=Save onclick="deptEdit.deptSave(); return false;"
-    class="btn btn-default">Save</button></p>
+    class="btn btn-default">Save</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label><input type="checkbox" name="active" {$vals['active']} value="1" /> Active</label>
+</p>
 HTML;
 
