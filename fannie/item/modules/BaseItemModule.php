@@ -1236,6 +1236,9 @@ HTML;
         $superID = '';
         $dbc = $this->db();
 
+        $dDef = $dbc->tableDefinition('departments');
+        $active = isset($dDef['active']) ? ' d.active=1 ' : '';
+
         $deptQ = '
             SELECT dept_no,
                 dept_name,
@@ -1247,9 +1250,10 @@ HTML;
                 LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
                 LEFT JOIN superdepts AS m ON d.dept_no=m.dept_ID ';
         if (is_array($range_limit) && count($range_limit) == 2) {
-            $deptQ .= ' WHERE m.superID BETWEEN ? AND ? ';
+            $deptQ .= ' WHERE m.superID BETWEEN ? AND ? AND ' . $active;
         } else {
             $range_limit = array();
+            $deptQ .= ' WHERE ' . $active;
         }
         $deptQ .= '
             GROUP BY d.dept_no,
