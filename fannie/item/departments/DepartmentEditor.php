@@ -167,8 +167,7 @@ class DepartmentEditor extends FannieRESTfulPage
         $model->modified(date('Y-m-d H:i:s'));
         $model->margin($margin);
         $model->salesCode($pcode);
-        $active = FormLib::get('active', false);
-        $model->active(($active || $active === false) ? 1 : 0);
+        $model->active(FormLib::get('active', 0));
         if (FormLib::get('new', 0) == 1) {
             $model->modifiedby(1);
             $model->dept_see_id(0);
