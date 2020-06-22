@@ -318,7 +318,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20200508');
+        $this->addScript('rpDirect.js?date=20200622');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -564,7 +564,8 @@ class RpDirectPage extends FannieRESTfulPage
                 <td><input %s class="form-control input-sm onHand" value="" 
                     style="width: 5em;" id="onHand%s" data-incoming="0"
                     onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
-                    onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" /></td>
+                    onfocus="this.select();" onkeyup="rpOrder.onHandKey(event);" />
+                    <span class="incoming-notice"></span></td>
                 <input type="hidden" class="price" value="%.2f" />
                 <input type="hidden" class="basePar" value="%.2f" />
                 <td class="parCell">%.2f</td>
@@ -870,6 +871,10 @@ HTML;
 }
 .table-striped>tbody>tr:nth-child(odd)>td.rp-success {
     background-color: #f772d2;
+}
+.incoming-notice {
+    font-weight: bold;
+    color: #15AF23;
 }
 CSS;
     }

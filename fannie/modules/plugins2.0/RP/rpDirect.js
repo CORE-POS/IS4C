@@ -124,8 +124,7 @@ var rpOrder = (function ($) {
     };
 
     mod.initState = function(s) {
-        if (s) {
-            console.log(s);
+        if (typeof s == 'object') {
             state = s;
             if (state['onHand'].__proto__ == Array.prototype) {
                 state['onHand'] = {};
