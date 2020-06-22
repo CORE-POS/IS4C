@@ -135,7 +135,7 @@ function generateChefTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         $str = preg_replace( "/\r|\n/", "", $str);
         $mod = 4.3 * $k;
         $pdf->SetXY($x+5, $y+$mod);
-        $pdf->Cell(92, 5, $str, 0, 1, 'C', true);
+        $pdf->Cell(110, 5, $str, 0, 1, 'C', true);
     }
 
 
