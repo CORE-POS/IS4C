@@ -23,7 +23,7 @@ class OverShortParsPage extends FannieRESTfulPage
         $stores = $stores->find();
         $pars = array();
         $ret = '';
-        foreach (array("0.01", "0.05", "0.10", "0.25", "1.00", "5.00", "10.00") as $denom) {
+        foreach (array("0.01", "0.05", "0.10", "0.25", "1.00", "5.00", "10.00", "20.00") as $denom) {
             $ret .= '<tr><td>' . $denom . '</td>';
             foreach ($stores as $s) {
                 if (!isset($pars[$s->storeID()])) {
@@ -61,7 +61,7 @@ class OverShortParsPage extends FannieRESTfulPage
         }
         $ret .= '</tr></thead><tbody>';
 
-        foreach (array("0.01", "0.05", "0.10", "0.25", "1.00", "5.00", "10.00") as $denom) {
+        foreach (array("0.01", "0.05", "0.10", "0.25", "1.00", "5.00", "10.00", "20.00") as $denom) {
             $ret .= '<tr><td>' . $denom . '</td>';
             foreach ($stores as $s) {
 

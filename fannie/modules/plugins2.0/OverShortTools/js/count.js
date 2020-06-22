@@ -62,6 +62,11 @@ function saveAtmAmount(){
 	} else {
 		ret += '|reject:0';
     }
+	if ($('#atmCount').length !== 0) {
+		ret += '|count:'+$('#atmCount').val();
+	} else {
+		ret += '|count:0';
+    }
 	return ret;
 }
 
@@ -381,6 +386,12 @@ function updateBuyAmount(d){
 
 function updateAtmAmounts(){
 	updateDepositAmount('20.00');
+    var par = Number(document.getElementById('par20.00').innerHTML);
+    var cur = Number(document.getElementById('atmCount').value);
+    if (par - cur > 0) {
+        var buy = Math.round((par - cur) * 100) / 100;
+        document.getElementById('buyAmount20.00').innerHTML = buy;
+    }
 }
 
 function denom_overage(overage){

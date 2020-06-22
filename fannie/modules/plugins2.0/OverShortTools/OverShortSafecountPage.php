@@ -125,7 +125,7 @@ class OverShortSafecountPage extends FanniePage {
                 'openSafeCount'=>array(),
                 'closeSafeCount'=>array(),
                 'dropAmount'=>array(),
-                'atm'=>array('fill'=>0,'reject'=>0)
+                'atm'=>array('fill'=>0,'reject'=>0,'count'=>0)
                 );
 
         $denoms = array('0.01','0.05','0.10','0.25','Junk','1.00','5.00','10.00','20.00','50.00','100.00','Checks');
@@ -231,7 +231,10 @@ class OverShortSafecountPage extends FanniePage {
         $accountableTotal += $val;
 
         $ret .= "<tr class=\"color\"><th title=\"Fill is cash retained to refill the ATM. Reject is worn or damaged bills that the ATM cannot process and will be deposited instead.\">ATM</th>";
-        $ret .= "<td colspan=\"7\">&nbsp;</td>";
+        $ret .= "<td colspan=\"5\">&nbsp;</td>";
+        $ret .= "<td>Count:</td>";
+        $ret .= "<td><input size=4 type=text id=atmCount value=\"".$holding['atm']['count']."\"
+                onchange=\"updateAtmAmounts();\" /></td>";
         $ret .= "<td>Fill:</td>";
         $ret .= "<td><input size=4 type=text id=atmFill value=\"".$holding['atm']['fill']."\"
                 onchange=\"updateAtmAmounts();\" /></td>";
@@ -370,10 +373,11 @@ class OverShortSafecountPage extends FanniePage {
         $ret .= "<td id=par1.00>".$pars['1.00']."</td>";
         $ret .= "<td id=par5.00>".$pars['5.00']."</td>";
         $ret .= "<td id=par10.00>".$pars['10.00']."</td>";
-        $ret .= "<td colspan=4>&nbsp;</td>";
+        $ret .= "<td id=par20.00>".$pars['20.00']."</td>";
+        $ret .= "<td colspan=3>&nbsp;</td>";
         $ret .= sprintf("<td>%.2f</td></tr>",$parTTL);
 
-        $buyAmounts = array("0.01"=>0,"0.05"=>0,"0.10"=>0,"0.25"=>0,"1.00"=>0,"5.00"=>0,"10.00"=>0);
+        $buyAmounts = array("0.01"=>0,"0.05"=>0,"0.10"=>0,"0.25"=>0,"1.00"=>0,"5.00"=>0,"10.00"=>0,"20.00"=>0);
         foreach ($buyAmounts as $k=>$v){
             $val = $pars[$k];
             $val -= $holding['changeOrder'][$k];
@@ -396,6 +400,10 @@ class OverShortSafecountPage extends FanniePage {
         while($buyAmounts['10.00'] % 10 == 0 && $buyAmounts['10.00'] % 50 != 0){ 
             $buyAmounts['10.00'] -= 10;
             $overage += 10;
+        }
+        $buyAmounts['20.00'] = $pars['20.00'] - $holding['atm']['count'];
+        if ($buyAmounts['20.00'] < 0) {
+            $buyAmounts['20.00'] = 0;
         }
 
         $overs = $this->denom_overage($overage);
@@ -516,7 +524,7 @@ class OverShortSafecountPage extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/count.js?date=20190404');
+        $this->addScript('js/count.js?date=20200622');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');
