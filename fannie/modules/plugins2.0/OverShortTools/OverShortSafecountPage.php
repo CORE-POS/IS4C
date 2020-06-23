@@ -379,6 +379,9 @@ class OverShortSafecountPage extends FanniePage {
 
         $buyAmounts = array("0.01"=>0,"0.05"=>0,"0.10"=>0,"0.25"=>0,"1.00"=>0,"5.00"=>0,"10.00"=>0,"20.00"=>0);
         foreach ($buyAmounts as $k=>$v){
+            if ($k == '20.00') {
+                continue; // buy 20s but don't fill w/ them
+            }
             $val = $pars[$k];
             $val -= $holding['changeOrder'][$k];
             $val -= $holding['openSafeCount'][$k];
