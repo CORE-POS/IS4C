@@ -438,6 +438,9 @@ HTML;
             </p>';
         $ret .= '<p>
             <a href="DIExport.php" class="btn btn-default">Export Data</a>
+                &nbsp;&nbsp;&nbsp;|
+                &nbsp;&nbsp;&nbsp;
+            <a href="DICostUpdatePage.php" class="btn btn-default">Update Costs from Invoices</a>
             </p>';
 
         $vendR = $this->connection->query("SELECT vendorID, vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName");
