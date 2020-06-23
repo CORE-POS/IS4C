@@ -31,7 +31,7 @@ class DIInvoiceTask extends FannieTask
         while ($row = $dbc->fetchRow($res)) {
             $inv = $dbc->getRow($invP, array($row['vendorID'], $row['orderno']));
             if ($inv) {
-                echo "Found invoice for {$inv['sku']}\n";
+                //echo "Found invoice for {$inv['sku']}\n";
                 $model = new DeliInvLatestMapModel($dbc);
                 $model->vendorID($row['vendorID']);
                 $model->sku($inv['sku']);
