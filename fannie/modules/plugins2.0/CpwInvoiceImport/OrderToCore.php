@@ -56,6 +56,8 @@ class OrderToCore
             }
             $items->save();
         }
+
+        return $orderID;
     }
 
     private function getUPC($vendorID, $sku)

@@ -24,7 +24,6 @@ class DeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
         if ($boundary) {
             $pieces = $this->extractAttachments($info['body'], $boundary);
             foreach ($pieces['attachments'] as $a) {
-                $log->debug('Checking attachment ' . $a['name']);
                 $temp = tempnam(sys_get_temp_dir(), 'cpw');
                 if (strstr($a['name'], '";')) {
                     list($a['name'],) = explode('";', $a['name'], 2);
@@ -34,16 +33,18 @@ class DeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     $temp .= '.' . $orig[count($orig)-1];
                 }
                 file_put_contents($temp, $a['content']);
-                $log->debug("Temp file: " . $temp);
                 try {
                     $order = $fto->read($temp);
-                    $log->debug(print_r($order, true));
-                    $otc->import($order, '51201'); 
+                    $orderID = $otc->import($order, '51201'); 
+                    $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.csv';
+                    rename($temp, $dest);
                 } catch (\Exception $ex) {
                     $log->debug($ex->getMessage());
                     $log->debug('Error: ' . $ex->getMessage());
                 }
-                unlink($temp);
+                if (file_exists($temp)) {
+                    unlink($temp);
+                }
             }
         } else {
             $log->debug('Message had zero attachments');
