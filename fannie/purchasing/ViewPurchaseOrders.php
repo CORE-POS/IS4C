@@ -942,6 +942,12 @@ HTML;
         }
         $ret = str_replace('{{CODING}}', $coding_rows, $ret);
 
+        if (file_exists(__DIR__ . '/noauto/invoices/' . $this->id . '.csv')) {
+            $ret .= '<p><a href="noauto/invoices/' . $this->id . '.csv">Download Original</a></p>';
+        } elseif (file_exists(__DIR__ . '/noauto/invoices/' . $this->id . '.xls')) {
+            $ret .= '<p><a href="noauto/invoices/' . $this->id . '.xls">Download Original</a></p>';
+        }
+
         $this->addScript('js/view.js?date=20180220');
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
