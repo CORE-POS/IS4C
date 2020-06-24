@@ -85,6 +85,7 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                 }
                 $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.csv';
                 rename($temp, $dest);
+                chmod($dest, 0644);
                 if (file_exists($temp)) {
                     unlink($temp);
                 }
