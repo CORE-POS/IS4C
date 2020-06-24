@@ -36,8 +36,9 @@ class DeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                 try {
                     $order = $fto->read($temp);
                     $orderID = $otc->import($order, '51201'); 
-                    $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.csv';
+                    $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.xls';
                     rename($temp, $dest);
+                    chmod($dest, 0644);
                 } catch (\Exception $ex) {
                     $log->debug($ex->getMessage());
                     $log->debug('Error: ' . $ex->getMessage());
