@@ -1,4 +1,9 @@
-<?php include(__DIR__ . '/../../../config.php'); if (!class_exists('FannieAPI')) { include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
+<?php
+
+include(__DIR__ . '/../../../config.php');
+
+if (!class_exists('FannieAPI')) {
+    include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
 class RpArchivePage extends FannieReportPage
