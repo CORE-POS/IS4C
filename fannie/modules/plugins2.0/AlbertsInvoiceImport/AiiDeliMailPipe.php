@@ -15,7 +15,6 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
         $info = $this->parseEmail($msg);
         $boundary = $this->hasAttachments($info['headers']);
         $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
-        $log = new \FannieLogger();
         $storeID = 1;
         if (stristr($info['body'], 'DENFELD')) {
             $storeID = 2;
@@ -37,7 +36,6 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     unlink($temp);
                     continue;
                 }
-                $log->debug($temp);
                 $orderID = false;
                 $fp = fopen($temp, 'r');
                 while (!feof($fp)) {
@@ -55,7 +53,6 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                         $order->placedDate($date);
                         $order->vendorInvoiceID($data[0]);
                         $orderID = $order->save();
-                        $log->debug($orderID);
                     }
                     $isBulk = false;
                     if (strstr($data[11], 'Bulk') && strstr($data[12], 'Meat')) {
@@ -86,10 +83,12 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     $poi->salesCode(51201);
                     $poi->save();
                 }
-                unlink($temp);
+                $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.csv';
+                rename($temp, $dest);
+                if (file_exists($temp)) {
+                    unlink($temp);
+                }
             }
-        } else {
-            $log->debug('Message had zero attachments');
         }
     }
 }
