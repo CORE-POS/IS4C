@@ -131,6 +131,7 @@ class USFTask extends FannieTask
 
                 $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.csv';
                 rename($csvout, $dest);
+                chmod($dest, 0644);
                 
             }
             $this->connection->commitTransaction();
