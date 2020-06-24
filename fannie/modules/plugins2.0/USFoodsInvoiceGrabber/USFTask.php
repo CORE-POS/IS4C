@@ -42,8 +42,11 @@ class USFTask extends FannieTask
             $invoiceTotal = 0;
             $orderID = false;
             $shipDate = false;
+            $csvout = tempnam(sys_get_temp_dir(), 'usf');
+            $csvFP = fopen($csvout, 'w');
             while (!feof($fp)) {
                 $data = fgetcsv($fp);
+                fputcsv($csvFP, $data);
 
                 $invoice = $this->getField($data, 0);
                 $orderDate = $this->getField($data, 9);
@@ -107,6 +110,7 @@ class USFTask extends FannieTask
                 $orders[$orderID] = $invoice;
                 $first = false;
             }
+            fclose($csvFP);
             if ($orderID && abs($orderTotal - $invoiceTotal) > 0.005) {
                 $tax = $invoiceTotal - $orderTotal;
                 $descriptor = abs($tax - 4) < 0.005 ? 'FUEL' : 'TAX';
@@ -124,8 +128,15 @@ class USFTask extends FannieTask
                 $poi->unitSize('n/a');
                 $poi->internalUPC('0000000000000');
                 $poi->save();
+
+                $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.csv';
+                rename($csvout, $dest);
+                
             }
             $this->connection->commitTransaction();
+            if (file_exists($csvout)) {
+                unlink($csvout);
+            }
         }
 
         if (count($orders) == 0) {
