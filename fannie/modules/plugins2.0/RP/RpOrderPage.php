@@ -64,7 +64,10 @@ class RpOrderPage extends FannieRESTfulPage
                 AND o.placed=1
                 AND o.storeID=?
                 AND i.receivedDate IS NOT NULL
-                AND i.receivedDate BETWEEN ? AND ?
+                AND (
+                    i.receivedDate BETWEEN ? AND ?
+                    OR i.receivedDate = " . $this->connection->curdate() . "
+                )
             ORDER BY i.receivedDate
             ");
         $qtys = $this->connection->getAllRows($prep, $args);
