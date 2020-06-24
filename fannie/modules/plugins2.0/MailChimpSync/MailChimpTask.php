@@ -62,6 +62,7 @@ class MailChimpTask extends FannieTask
 
         if ($field_id === false) {
             echo 'Adding member# field' . "\n";
+            /** doesn't worK?
             $new = $chimp->post("lists/{$LISTID}/merge_fields", array(
                 'tag' => 'CARDNO',
                 'name' => 'Owner Number',
@@ -70,6 +71,7 @@ class MailChimpTask extends FannieTask
                 'public' => false,
             ));
             $field_id = $new['merge_id'];
+             */
         }
 
         if ($field_id === false) {
