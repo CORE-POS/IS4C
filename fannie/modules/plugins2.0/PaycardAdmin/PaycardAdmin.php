@@ -25,8 +25,6 @@
 */
 class PaycardAdmin extends COREPOS\Fannie\API\FanniePlugin 
 {
-    public $plugin_settings = array();
-
     public $plugin_description = 'WFC Plugin for payment card admin operations.';
 
     public $plugin_settings = array(
