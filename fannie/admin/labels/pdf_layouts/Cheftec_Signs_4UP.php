@@ -10,11 +10,11 @@ if (!class_exists('CTDB')) {
     include(__DIR__ . '/CTDB.php');
 }
 
-class Cheftec_Signs_4UP extends FpdfWithBarcode { }
+class Cheftec_Signs_4UP_PDF extends FpdfWithBarcode { }
 
 function Cheftec_Signs_4UP($data,$offset=0)
 {
-    $pdf = new Cheftec_Signs_4UP('L','mm','Letter');
+    $pdf = new Cheftec_Signs_4UP_PDF('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
