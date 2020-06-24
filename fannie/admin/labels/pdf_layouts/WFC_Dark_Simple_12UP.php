@@ -7,7 +7,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class WFC_Dark_Simple_PDF extends FpdfWithBarcode
+class WFC_Dark_Simple_12UP_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     public function setTagDate($str){
@@ -24,16 +24,16 @@ class WFC_Dark_Simple_PDF extends FpdfWithBarcode
         $length = strlen($string);
         $lines = array();
         // return 1 to 4 lines based on $desc size
-        if ($length < 22) {
+        if ($length < 21) {
             $lines[] = $string;
         } else if ($length < 40) {
-            $wrp = wordwrap($string, 22, "*", false);
+            $wrp = wordwrap($string, 21, "*", false);
             $lines = explode('*', $wrp);
         } else if ($length < 60) {
-            $wrp = wordwrap($string, 22, "*", false);
+            $wrp = wordwrap($string, 21, "*", false);
             $lines = explode('*', $wrp);
         } else {
-            $wrp = wordwrap($string, 22, "*", false);
+            $wrp = wordwrap($string, 21, "*", false);
             $lines = explode('*', $wrp);
         }
 
@@ -41,10 +41,10 @@ class WFC_Dark_Simple_PDF extends FpdfWithBarcode
     }
 }
 
-function WFC_Dark_Simple ($data,$offset=0)
+function WFC_Dark_Simple_12UP ($data,$offset=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new WFC_Dark_Simple_PDF('L','mm','Letter');
+    $pdf = new WFC_Dark_Simple_12UP_PDF('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(0, 0, 0);
     $pdf->SetTextColor(255, 255, 255);
@@ -55,7 +55,7 @@ function WFC_Dark_Simple ($data,$offset=0)
     $pdf->SetFont('Gill', 'B', 16); 
 
     $width = 68;
-    $height = 34;
+    $height = 68;
     $left = 3;  
     $top = 3;
     $guide = 0.3;
@@ -69,7 +69,7 @@ function WFC_Dark_Simple ($data,$offset=0)
 
     $i = 0;
     foreach($data as $k => $row){
-        if ($i % 24 == 0 && $i != 0) {
+        if ($i % 12 == 0 && $i != 0) {
             $pdf->AddPage('L');
             $x = $left;
             $y = $top;
@@ -100,28 +100,28 @@ function WFC_Dark_Simple ($data,$offset=0)
     $data = arrayMirrorRowsSimple($data, 4);
     $pdf->AddPage('L');
     foreach($data as $k => $row){
-        if ($i % 24 == 0 && $i != 0) {
+        if ($i % 12 == 0 && $i != 0) {
             $pdf->AddPage('L');
             $x = $left;
             $y = $top;
             $i = 0;
         }
         if ($i == 0) {
-            $pdf = generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+            $pdf = generateMirrorTagSimple12($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         } else if ($i % 4 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $pdf = generateMirrorTagSimple12($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         $i++;
     }
 
     $pdf = $pdf->Output();
 }
 
-function generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+function generateMirrorTagSimple12($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
     $upc = $row['upc'];
     $desc = $row['description'];
@@ -207,7 +207,7 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $pdf->SetXY($x,$y);
     $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
 
-    $lines = WFC_Dark_Simple_PDF::stringToLines($desc);
+    $lines = WFC_Dark_Simple_12UP_PDF::stringToLines($desc);
     if (strstr($desc, "\r\n")) {
         $lines = explode ("\r\n", $desc);
     }
@@ -217,6 +217,8 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     */
     $pdf->SetFont('Gill','B', 16);  //Set the font 
     $lineCount = count($lines);
+    $temp_y = $y;
+    $y = $y+15;
     if ($lineCount == 2) {
         $pdf->SetXY($x,$y+12);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
@@ -242,6 +244,7 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         $pdf->SetXY($x,$y+15);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
     }
+    $y = $temp_y;
 
     /*
         Create Guide-Lines
