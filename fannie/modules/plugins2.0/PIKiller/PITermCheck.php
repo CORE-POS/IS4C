@@ -113,7 +113,7 @@ class PITermCheck extends FannieRESTfulPage
         $record['emp_no'] = 1001;
         $record['trans_no'] = $trans;
         $record['upc'] = '0';
-        $record['description'] = '63350-00-00';
+        $record['description'] = '21000-00-00';
         $record['trans_type'] = 'C';
         $record['trans_subtype'] = 'CM';
         $record['card_no'] = $this->id;
