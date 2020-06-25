@@ -467,11 +467,22 @@ var rpOrder = (function ($) {
         }
     };
 
+    function endOrderAll(count, meters, buttons) {
+        if (count > 15 || mod.all <= 0) {
+            meters.hide();
+            buttons.prop('disabled', false);
+        } else {
+            setTimeout(function () { endOrderAll(count + 1, meters, buttons) }, 1000);
+        }
+    };
+
+    mod.all = 0;
     mod.orderAll = function() {
         var buttons = $('button.orderAll');
         var meters = $('.progress');
         buttons.prop('disabled', true);
         meters.show();
+        mod.all = 0;
 
         $('input.orderPri').each(function () {
             var qty = $(this).closest('tr').find('input.orderAmt').val();
@@ -488,8 +499,7 @@ var rpOrder = (function ($) {
             }
         });
 
-        meters.hide();
-        buttons.prop('disabled', false);
+        setTimeout(function () { endOrderAll(1, meters, buttons) }, 1000);
     };
 
     mod.defaultFarm = function(farm) {
