@@ -75,9 +75,7 @@ function Soup_Signs_4UP($data,$offset=0)
 function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
     $upc = $row['upc'];
-    //$desc = $row['description'];
     $brand = $row['description'];
-    //$price = $row['normal_price'];
 
     $args = array($row['upc']);
     $row = array();
@@ -88,18 +86,13 @@ function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
     
-    $prefix = (substr(strtolower($row['text']), 0, 11) == 'ingredients') ? '' : 'Ingredients: ';
-    $desc = $prefix.$row['text'];
+    $desc = $row['text'];
     $brand = strtolower($brand);
     $brand = ucwords($brand);
     $brand = str_replace("Qt", "", $brand);
     $brand = str_replace("Quart", "", $brand);
     $brand = str_replace("Pt", "", $brand);
     $brand = str_replace("Pint", "", $brand);
-
-    // prep tag canvas
-    //$pdf->SetXY($x,$y);
-    //$pdf->Cell($width, $height, '', 0, 1, 'C', true); 
 
     /*
         Add Brand Text
@@ -115,7 +108,6 @@ function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $wrap = wordwrap($desc, 68, "\n");
     $exp = explode("\n", $wrap);
 
-    //$x = 5; $y = 8;
     $y = $y+40;
     $x = $x+10;
     foreach ($exp as $k => $str) {
@@ -126,7 +118,6 @@ function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         $pdf->SetXY($x+5, $y+$mod);
         $pdf->Cell(92, 5, $str, 0, 1, 'C', true);
     }
-
 
     /*
         Create Guide-Lines
