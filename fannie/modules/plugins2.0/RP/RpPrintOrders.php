@@ -173,6 +173,35 @@ class RpPrintOrders extends FannieRESTfulPage
         return '<div class="pull-right h4">Est. Total: $' . $costTotal . '</div>' . $ret;
     }
 
+    protected function get_view()
+    {
+        $query = 'SELECT o.orderID, o.creationDate, v.vendorName, s.description
+            FROM PurchaseOrder AS o
+                INNER JOIN vendors AS v ON o.vendorID=v.vendorID
+                INNER JOIN Stores AS s ON o.storeID=s.storeID
+            WHERE o.userID=-99
+            ORDER BY o.creationDate DESC';
+        $query = $this->connection->addSelectLimit($query, 100);
+        $res = $this->connection->query($query);
+        $opts = '';
+        while ($row = $this->connection->fetchRow($res)) {
+            $opts .= sprintf('<option value="%d">%s %s %s</option>',
+                $row['orderID'], $row['creationDate'], $row['description'], $row['vendorName']);
+        }
+
+        return <<<HTML
+<form method="get" action="RpPrintOrders.php">
+<div class="form-group">
+    <label>Choose Order</label>
+    <select name="id" class="form-control">{$opts}</select>
+</div>
+<div class="form-group">
+    <button type="submit" class="btn btn-default">Reprint</button>
+</div>
+</form>
+HTML;
+    }
+
     protected function css_content()
     {
         return <<<CSS

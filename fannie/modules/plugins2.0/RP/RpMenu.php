@@ -20,6 +20,7 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="RpDirectPage.php">Direct Ordering</a> - local & seasonal</li>
         <li><a href="RpArchivePage.php">Direct Orders Archive</a> - local & seasonal</li>
         <li><a href="RpDailyPage.php">Daily Sheet Info</a> - sales info & item lists</li>
+        <li><a href="RpPrintOrders.php">Reprint Order</a> - reprint an archived order</li>
     </ul>
 </ul>
 <hr />
