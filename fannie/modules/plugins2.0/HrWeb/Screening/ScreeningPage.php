@@ -166,19 +166,24 @@ HTML;
 <table class="table" style="font-size: 200%;">
 <tr>
     <th>Dry Cough</th>
-</tr>
-<tr>
     <th>Shortness of Breath</th>
 </tr>
 <tr>
     <th>Fever of 100.5 or above / Chills</th>
-</tr>
-<tr>
     <th>Vomiting / Diarrhea</th>
 </tr>
 <tr>
     <th>Loss of Taste or Smell</th>
+    <th>Fatigue</th>
 </tr>
+    <th>Muscle or Body Aches</th>
+    <th>Headache</th>
+</tr>
+<tr>
+    <th>Sore Throat</th>
+    <th>Congestion or Runny Nose</th>
+</tr>
+</table>
 </table>
 <p style="font-size: 200%;">
     <label class="radio-inline">
