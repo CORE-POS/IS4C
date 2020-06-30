@@ -249,19 +249,19 @@ class RpDirectPage extends FannieRESTfulPage
             $words = array_map('trim', explode(' ', $farm));
             $initials = array_reduce($words, function($c, $i) { return $c . $i[0]; });
             $sku = $initials . $sku;
-        }
 
-        $poi = new PurchaseOrderItemsModel($this->connection);
-        $poi->orderID($orderID);
-        $poi->sku($sku);
-        $poi->quantity(FormLib::get('qty'));
-        $poi->unitCost($prod['cost']);
-        $poi->caseSize(1);
-        $poi->unitSize($prod['size']);
-        $poi->brand($farm);
-        $poi->description($vendor == $item['backupID'] ? $item['backupItem'] : $item['vendorItem']);
-        $poi->internalUPC($upc);
-        $poi->save();
+            $poi = new PurchaseOrderItemsModel($this->connection);
+            $poi->orderID($orderID);
+            $poi->sku($sku);
+            $poi->quantity(FormLib::get('qty'));
+            $poi->unitCost($prod['cost']);
+            $poi->caseSize(1);
+            $poi->unitSize($prod['size']);
+            $poi->brand($farm);
+            $poi->description($vendor == $item['backupID'] ? $item['backupItem'] : $item['vendorItem']);
+            $poi->internalUPC($upc);
+            $poi->save();
+        }
 
         $vendP = $this->connection->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
         $vend = $this->connection->getValue($vendP, array($vendor));
