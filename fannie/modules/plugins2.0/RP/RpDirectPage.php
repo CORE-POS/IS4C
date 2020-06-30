@@ -442,18 +442,50 @@ class RpDirectPage extends FannieRESTfulPage
                 r.caseSize,
                 r.vendorID,
                 r.backupID,
-                r.cost
+                r.cost,
+                c.seq,
+                0 AS pri
             FROM RpOrderItems AS r
                 LEFT JOIN RpOrderCategories AS c ON r.categoryID=c.rpOrderCategoryID
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
                 LEFT JOIN vendors AS b ON r.backupID=b.vendorID
-            WHERE r.storeID=?
-            ORDER BY c.seq, c.name, r.vendorItem");
+            WHERE r.storeID=2
+
+            UNION ALL
+
+            SELECT r.upc,
+                r.categoryID,
+                c.name,
+                v.vendorName AS vendorName,
+                b.vendorName AS backupVendor,
+                r.vendorSKU,
+                r.vendorItem,
+                r.backupSKU,
+                r.backupItem,
+                r.caseSize,
+                r.vendorID,
+                r.backupID,
+                r.cost,
+                c.seq,
+                1 AS pri
+                FROM RpLocalItems AS r
+                    LEFT JOIN RpOrderCategories AS c ON r.categoryID=c.rpOrderCategoryID
+                    LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
+                    LEFT JOIN vendors AS b ON r.backupID=b.vendorID
+                WHERE r.likeCode IN (SELECT likeCode FROM RpLocalLCs)
+                    
+            ORDER BY seq, pri, name, vendorItem
+        ");
         $res = $this->connection->execute($prep, array($store));
         $tables = '';
         $category = false;
         $hiddenItems = '';
+        $seen = array();
         while ($row = $this->connection->fetchRow($res)) {
+            if (isset($seen[$row['upc']])) {
+                continue;
+            }
+            $seen[$row['upc']] = true;
             $likeCode = substr($row['upc'], 2);
             $localLC = $likeCode;
             if (strpos($localLC, '-')) {
@@ -618,7 +650,7 @@ class RpDirectPage extends FannieRESTfulPage
                 $upc,
                 '', // secondary order amount
                 $upc, $store, $row['backupID'],
-                ($inOrder['vendorID'] == $row['backupID'] ? 'checked' : '')
+                ($inOrder['vendorID'] == $row['backupID'] && $row['backupID'] != null ? 'checked' : '')
             );
             if ($appendTables) {
                 $tables .= $nextRow;
