@@ -7,7 +7,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class WFC_Dark_Extended_PDF extends FpdfWithBarcode
+class WFC_Dark_Extended_24UP_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     public function setTagDate($str){
@@ -22,10 +22,10 @@ class WFC_Dark_Extended_PDF extends FpdfWithBarcode
 
 }
 
-function WFC_Dark_Extended($data,$offset=0)
+function WFC_Dark_Extended_24UP($data,$offset=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new WFC_Dark_Extended_PDF('L','mm','Letter');
+    $pdf = new WFC_Dark_Extended_24UP_PDF('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(0, 0, 0);
     $pdf->SetTextColor(255, 255, 255);
@@ -58,7 +58,7 @@ function WFC_Dark_Extended($data,$offset=0)
             $i = 0;
         }
         if ($i == 0) {
-            $pdf = generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+            $pdf = generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
             //can't get UPC_A to work, get FPDF error: Could not include font metric file
             //if (strlen($upc) <= 11)
             //    $pdf->UPC_A($x,$y,$upc,7);  //generate barcode and place on label
@@ -70,7 +70,7 @@ function WFC_Dark_Extended($data,$offset=0)
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $pdf = generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         $i++;
     }
 
@@ -84,7 +84,7 @@ function WFC_Dark_Extended($data,$offset=0)
             $data[] = '';
         }
     }
-    $data = arrayMirrorRowsExtended($data, 4);
+    $data = arrayMirrorRowsExtended_24UP($data, 4);
     $pdf->AddPage('L');
     foreach($data as $k => $row){
         if ($i % 24 == 0 && $i != 0) {
@@ -178,7 +178,7 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 
 }
 
-function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
     $upc = $row['upc'];
     $desc = $row['description'];
@@ -276,7 +276,7 @@ function generateExtendedTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     return $pdf;
 }
 
-function arrayMirrorRowsExtended($array, $cols)
+function arrayMirrorRowsExtended_24UP($array, $cols)
 {
     $newArray = array();
     $chunks = array_chunk($array, $cols);
