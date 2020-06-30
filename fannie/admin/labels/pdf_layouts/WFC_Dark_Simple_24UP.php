@@ -76,14 +76,14 @@ function WFC_Dark_Simple_24UP ($data,$offset=0)
             $i = 0;
         }
         if ($i == 0) {
-            $pdf = generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+            $pdf = generateSimpleTag2($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         } else if ($i % 4 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $pdf = generateSimpleTag2($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         $i++;
     }
 
@@ -97,7 +97,7 @@ function WFC_Dark_Simple_24UP ($data,$offset=0)
             $data[] = '';
         }
     }
-    $data = arrayMirrorRowsSimple($data, 4);
+    $data = arrayMirrorRowsSimple2($data, 4);
     $pdf->AddPage('L');
     foreach($data as $k => $row){
         if ($i % 24 == 0 && $i != 0) {
@@ -190,7 +190,7 @@ function generateMirrorTagSimple($x, $y, $guide, $width, $height, $pdf, $row, $d
 
 }
 
-function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+function generateSimpleTag2($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
     $desc = $row['description'];
     $args = array($row['upc']);
@@ -266,7 +266,7 @@ function generateSimpleTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     return $pdf;
 }
 
-function arrayMirrorRowsSimple($array, $cols)
+function arrayMirrorRowsSimple2($array, $cols)
 {
     $newArray = array();
     $chunks = array_chunk($array, $cols);
