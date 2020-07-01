@@ -302,7 +302,7 @@ function logJsErrors(urlStem) {
                 line: lineNo,
                 col: colNo,
                 detail: error,
-                page: window.location
+                page: window.location.pathname
             };
             $.ajax({
                 url: urlStem + 'logs/LogJS.php',
