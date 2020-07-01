@@ -330,7 +330,7 @@ table.shelf-audit tr:hover {
     }
 
     function csv_content(){
-        $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Status,Normal Retail Total\r\n";
+        $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Status,Normal Retail Total,Location\r\n";
         $totals = array();
         $vendors = array();
         $manuals = array();
@@ -393,12 +393,13 @@ table.shelf-audit tr:hover {
                 $row['cost'] = $row['normal_retail'] - ($row['margin'] * $row['normal_retail']);
                 $row['retailstatus'] .= '*';
             }
-            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.2f,\r\n",
+            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.2f,%s\r\n",
                 $row['upc'],$row['description'],$row['vendor'],$row['salesCode'],$row['dept_no'],
                 $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
                 $row['normal_retail'],
                 $row['retailstatus'],
-                ($row['quantity']*$row['normal_retail'])
+                ($row['quantity']*$row['normal_retail']),
+                $row['section']
             );
 
             if (!isset($totals[$row['salesCode']])) {
@@ -506,7 +507,7 @@ table.shelf-audit tr:hover {
                 <option value="-1">All</option><?php echo $mOpts; ?></select></p>
             <p><a href="?excel=yes&store=<?php echo $this->store; ?>&super=<?php echo $super; ?>">download as csv</a></p>
         <?php
-        if ($this->scans) {
+        if ($this->scans && FannieAuth::validateUserQuiet('admin')) {
             $clear = '<div><a href="SaReportPage.php?clear=yes">Clear Old</a></div>';
             print_r($clear);
         }
