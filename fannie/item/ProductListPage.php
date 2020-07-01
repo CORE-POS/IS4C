@@ -289,7 +289,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $super = FormLib::get('deptSub');
         $vendorID = FormLib::get('vendor');
         $upc_list = FormLib::get('u', array());
-        $inUse = FormLib::get('inUse', 1);
+        $inUse = FormLib::get('inUse', 0);
         $store = FormLib::get('store', 0);
 
         $sort = FormLib::get('sort','Department');   
@@ -419,7 +419,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         } else {
             return 'Unknown search method';
         }
-        $query .= ' AND i.inUse=' . ($inUse==1 ? 1 : 0) . ' ';
+        if ($inUse) {
+            $query .= ' AND i.inUse=1 ';
+        }
         if ($store > 0) {
             $query .= ' AND i.store_id=? ';
             $args[] = $store;
