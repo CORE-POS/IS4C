@@ -441,7 +441,7 @@ HTML;
         $ret .= '</table>';
         $ret .= '<hr />
             <p>
-                <a href="DIPage.php?clear=1" class="btn btn-danger" onclick="return confirm(\'Clear totals?\');">Clear</a>
+                <a href="DIPage2.php?clear=1" class="btn btn-danger" onclick="return confirm(\'Clear totals?\');">Clear</a>
                 &nbsp;&nbsp;&nbsp;|
                 &nbsp;&nbsp;&nbsp;
                 <a href="../ShelfAudit/SaAdjustmentsPage.php">Transfer to Adjustments</a>
