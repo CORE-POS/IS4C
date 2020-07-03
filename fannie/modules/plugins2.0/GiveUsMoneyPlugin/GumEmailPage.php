@@ -134,7 +134,7 @@ class GumEmailPage extends FannieRESTfulPage
         // bridge may change selected database
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
-        $preamble = 'Hello Owner, ' . "\n\n";
+        $preamble = 'Hello ' . $this->custdata->FirstName() . ', ' . "\n\n";
         $preamble .= 'Here is a statement on your Owner loan to WFC as of '
             . date('m/d/Y', mktime(0, 0, 0, GumLib::getSetting('FYendMonth'), GumLib::getSetting('FYendDay'), date('Y')))
             . ', the end of the Co-op\'s fiscal year. This is just for your information -'
@@ -142,7 +142,8 @@ class GumEmailPage extends FannieRESTfulPage
             . ' loan is repaid.'
             . "\n\n"
             . 'Thank you for your support.'
-            . ' If you have any questions, please contact finance@wholefoods.coop  (218) 728-0884, ext. 1.';
+            . ' If you have any questions, please contact Josephine Lepak (jlepak@wholefoods.coop, (218) 728-0884, ext. 456.)'
+            . "\n\n";
 
         $info_section = 'First Name: ' . $this->custdata->FirstName() . "\n"
             . 'Last Name: ' . $this->custdata->LastName() . "\n"
@@ -207,9 +208,8 @@ class GumEmailPage extends FannieRESTfulPage
         $mail->SMTPAuth = false;
         $mail->From = 'finance@wholefoods.coop';
         $mail->FromName = 'Whole Foods Co-op';
-        $mail->addReplyTo('finance@wholefoods.coop');
+        $mail->addReplyTo('jlepak@wholefoods.coop');
         $mail->addAddress($this->meminfo->email_1());
-        $mail->addBCC('dwelnetz@wholefoods.coop');
         $mail->addBCC('andy@wholefoods.coop');
         $mail->isHTML(true);
         $mail->Subject = 'Owner Loan Statement';
