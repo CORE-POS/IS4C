@@ -297,10 +297,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                     </span> ';
             }
             if ($row['alias']) {
-                $alias = $dbc->getRow($aliasP, array($row['upc']));
-                $row['vendorDept'] = $alias['vendorDept'];
-                $row['srp'] = $alias['srp'] * $alias['multiplier'];
-                $row['srp'] = $rounder->round($row['srp']);
+                //$alias = $dbc->getRow($aliasP, array($row['upc']));
+                //$row['vendorDept'] = $alias['vendorDept'];
+                //$row['srp'] = $alias['srp'] * $alias['multiplier'];
+                //$row['srp'] = $rounder->round($row['srp']);
             }
             if ($row['difference']) {
             }
