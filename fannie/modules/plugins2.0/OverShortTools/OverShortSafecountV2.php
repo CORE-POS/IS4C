@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
-class OverShortSafecountPage extends FanniePage {
+class OverShortSafecountV2 extends FanniePage {
 
     protected $window_dressing = False;
     protected $auth_classes = array('overshorts');
@@ -60,24 +60,20 @@ class OverShortSafecountPage extends FanniePage {
             echo $this->save($dateStr, $store,
                 FormLib::get_form_value('changeOrder'),
                 FormLib::get_form_value('openSafeCount'),
-                FormLib::get_form_value('closeSafeCount'),
                 FormLib::get_form_value('buyAmount'),
-                FormLib::get_form_value('dropAmount'),
-                FormLib::get_form_value('depositAmount'),
-                FormLib::get_form_value('atmAmount')
+                FormLib::get_form_value('atmAmount'),
+                FormLib::get_form_value('tillCount')
                 );
             break;  
         }
     }
 
-    function save($dateStr,$store,$changeOrder,$openSafeCount,$closeSafeCount,$buyAmount,$dropAmount,$depositAmount,$atmAmount){
+    function save($dateStr,$store,$changeOrder,$openSafeCount,$buyAmount,$atmAmount,$tillCount){
         $this->saveInputs($dateStr,$store,'changeOrder',$changeOrder);
         $this->saveInputs($dateStr,$store,'openSafeCount',$openSafeCount);
-        $this->saveInputs($dateStr,$store,'closeSafeCount',$closeSafeCount);
         $this->saveInputs($dateStr,$store,'buyAmount',$buyAmount);
-        $this->saveInputs($dateStr,$store,'dropAmount',$dropAmount);
-        $this->saveInputs($dateStr,$store,'depositAmount',$depositAmount);
         $this->saveInputs($dateStr,$store,'atm',$atmAmount);
+        $this->saveTillCounts($dateStr, $store, $tillCount);
     
         return 'Saved';
     }
@@ -90,7 +86,7 @@ class OverShortSafecountPage extends FanniePage {
         $model->dateStr($dateStr);
         $model->storeID($store);
         $model->rowName($row);
-        $model->countFormat(1);
+        $model->countFormat(2);
 
         $temp = explode('|',$data);
         foreach($temp as $t){
@@ -101,6 +97,32 @@ class OverShortSafecountPage extends FanniePage {
         
             if ($amt == '') continue;
 
+            $model->denomination($denom);
+            $model->amt($amt);
+            $model->save();
+        }
+    }
+
+    function saveTillCounts($dateStr, $store, $data)
+    {
+        global $FANNIE_PLUGIN_SETTINGS;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
+
+        $model = new DailyDepositModel($dbc);
+        $model->dateStr($dateStr);
+        $model->storeID($store);
+        $model->countFormat(2);
+        $temp = explode('|',$data);
+        foreach($temp as $t){
+            $temp2 = explode(':',$t);
+            if (count($temp2) < 2) continue;
+            $rowID = substr($temp2[0], 0, 11);
+            $denom = substr($temp2[0], 11);
+            $amt = $temp2[1];
+        
+            if ($amt == '') continue;
+
+            $model->rowName($rowID);
             $model->denomination($denom);
             $model->amt($amt);
             $model->save();
@@ -124,9 +146,7 @@ class OverShortSafecountPage extends FanniePage {
 
         $holding = array('changeOrder'=>array(),
                 'openSafeCount'=>array(),
-                'closeSafeCount'=>array(),
-                'dropAmount'=>array(),
-                'atm'=>array('fill'=>0,'reject'=>0,'count'=>0)
+                'atm'=>array('count'=>0)
                 );
 
         $denoms = array('0.01','0.05','0.10','0.25','Junk','1.00','5.00','10.00','20.00','50.00','100.00','Checks');
@@ -140,9 +160,9 @@ class OverShortSafecountPage extends FanniePage {
         $model->dateStr($dateStr);
         $model->storeID($store);
         foreach($model->find() as $obj){
-            if ($obj->rowName() == 'buyAmount')
-                continue;
-        
+            if (!isset($holding[$obj->rowName()])) {
+                $holding[$obj->rowName()] = array();
+            }
             $holding[$obj->rowName()][$obj->denomination()] = $obj->amt();
         }
 
@@ -158,7 +178,7 @@ class OverShortSafecountPage extends FanniePage {
         $ret .= "<tr class=color><th title=\"Currency ordered from the bank. This should match Buy Amount from the previous count.\">Change Order</th>";
         $sum = 0;
         foreach($denoms as $d){ 
-            if ($d == 'Checks' || $d == "100.00" || $d == "50.00" || $d == "20.00" || $d == "Junk") 
+            if ($d == 'Checks' || $d == "100.00" || $d == "50.00" || $d == "Junk") 
                 $ret .= "<td>&nbsp;</td>";
             else{
                 $ret .= "<td><input size=4 type=text id=\"changeOrder$d\" value=".$holding['changeOrder'][$d];
@@ -195,8 +215,6 @@ class OverShortSafecountPage extends FanniePage {
         while($countW = $dbc->fetch_row($countR))
             $osCounts[$countW[0]] = $countW[1];
 
-        $bags = round($osCounts['SCA'] / 168.00);
-        //$osCounts['CA'] -= 168*$bags;
 
         $ret .= "<tr class=color><th title=\"This is the Open Safe Count plus the Change Order.\">Total Change Fund</th>";
         $sum = 0;
@@ -213,56 +231,14 @@ class OverShortSafecountPage extends FanniePage {
         $ret .= "<td id=cashInTillsTotal>$sum</td></tr>";
         $accountableTotal += $sum;
 
-        $ret .= "<tr><th title=\"Money dropped by cashiers since the last count. The total comes from adding the daily over/short counts for cash and checks. The 1.00 value is then auto-adjusted so the line sum matches the total.\">Drop Amount</th>";
-        foreach($denoms as $d){
-            if ($d == "1.00"){
-                $ret .= "<td id=dropAmount1.00>".$holding['dropAmount'][$d]."</td>";
-            }
-            else if ($d == "Checks"){
-                $ret .= "<td id=dropAmountChecks>".$osCounts['CK']."</td>";
-            }
-            else {
-                $ret .= "<td><input size=4 type=text id=dropAmount$d value=".$holding['dropAmount'][$d];
-                $ret .= " onchange=\"updateDropAmount('$d');\" /></td>";
-            }
-        }
-        $val = ($osCounts['CA'] + $osCounts['CK']);
-        $ret .= "<td id=dropAmountTotal>".round($val,2)."</td></tr>";
-        $buyAmountTotal -= $val;
-        $accountableTotal += $val;
-
-        $ret .= "<tr class=\"color\"><th title=\"Fill is cash retained to refill the ATM. Reject is worn or damaged bills that the ATM cannot process and will be deposited instead.\">ATM</th>";
-        $ret .= "<td colspan=\"5\">&nbsp;</td>";
+        $ret .= "<tr><th title=\"Cash on-hand in the ATM\">ATM</th>";
+        $ret .= "<td colspan=\"7\">&nbsp;</td>";
         $ret .= "<td>Count:</td>";
         $ret .= "<td><input size=4 type=text id=atmCount value=\"".$holding['atm']['count']."\"
                 onchange=\"updateAtmAmounts();\" /></td>";
-        $ret .= "<td>Fill:</td>";
-        $ret .= "<td><input size=4 type=text id=atmFill value=\"".$holding['atm']['fill']."\"
-                onchange=\"updateAtmAmounts();\" /></td>";
-        $ret .= "<td>&nbsp;</td>";
-        $ret .= "<td>Reject:</td>";
-        $ret .= "<td><input size=4 type=text id=atmReject value=\"".$holding['atm']['reject']."\"
-                onchange=\"updateAtmAmounts();\" /></td>";
-        $ret .= "<td>&nbsp;</td>";
+        $ret .= "<td colspan=\"4\">&nbsp;</td>";
         $ret .= "</tr>";
 
-        $accountableTotal += ($holding['atm']['reject'] - $holding['atm']['fill']);
-        
-        $ret .= "<tr><th>Fill Amount</th>";
-        $ret .= "<td id=fill0.01>".(1*$bags)."</td>";
-        $ret .= "<td id=fill0.05>".(2*$bags)."</td>";
-        $ret .= "<td id=fill0.10>".(5*$bags)."</td>";
-        $ret .= "<td id=fill0.25>".(10*$bags)."</td>";
-        $ret .= "<td>&nbsp;</td>";
-        $ret .= "<td id=fill1.00>".(50*$bags)."</td>";
-        $ret .= "<td id=fill5.00>".(50*$bags)."</td>";
-        $ret .= "<td id=fill10.00>".(50*$bags)."</td>";
-        $ret .= "<td colspan=4>&nbsp;</td>";
-        $ret .= "<td id=fillTotal>".(168*$bags)."</td></tr>";
-
-        $accountableTotal -= (168*$bags);
-
-        $fills = array('0.01'=>1,'0.05'=>2,'0.10'=>5,'0.25'=>10,'1.00'=>50,'5.00'=>50,'10.00'=>50);
         if ($store == 1) {
             $pars = array("0.01"=>60,"0.05"=>120,"0.10"=>320,"0.25"=>1200,"1.00"=>2600,"5.00"=>1000,"10.00"=>1300);
         } else {
@@ -274,95 +250,6 @@ class OverShortSafecountPage extends FanniePage {
                 $pars = $json[$store];
             }
         }
-
-        $ret .= "<tr class=\"color\"><th title=\"The amount we're sending to the bank is calculated by subtracting the Total Change Fund and Drop Amount from the Par Amount. With coins loose amounts that won't fit in a roll are also deposited. With 20.00s the deposit is modifed by ATM fills and rejects.\">Deposit Amount</th>";
-        $sum = 0;
-        $depositAmount = array();
-        foreach($denoms as $d){
-            if ($d == 'Checks'){
-                $ret .= "<td id=depositAmount$d>".$osCounts['CK']."</td>";
-                $sum += $osCounts['CK'];
-                $depositAmount['Checks'] = $osCounts['CK'];
-            }
-            else if ($d == '100.00' || $d == '50.00' || $d == 'Junk'){
-                $ret .= "<td id=depositAmount$d>".($holding['openSafeCount'][$d] + $holding['dropAmount'][$d])."</td>";
-                $sum += ($holding['openSafeCount'][$d] + $holding['dropAmount'][$d]);
-                $depositAmount[$d] = $holding['openSafeCount'][$d]+$holding['dropAmount'][$d];
-            }
-            else if ($d == '20.00'){
-                $atmTtl = $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] 
-                    - $holding['atm']['fill'] + $holding['atm']['reject'];
-                $ret .= "<td id=depositAmount$d>".$atmTtl."</td>";
-                $sum += $atmTtl;
-                $depositAmount[$d] = $atmTtl;
-            }
-            else if ($d == '10.00'){
-                $val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - $pars['10.00'] - (50*$bags);
-                $val = round($val,2);
-                if ($val < 0) $val = 0;
-                $ret .= "<td id=depositAmount$d>".$val."</td>";
-                $sum += $val;
-                $depositAmount[$d] = $val;
-            }
-            else if ($d == '5.00'){
-                $val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - $pars['5.00'] - (50*$bags);
-                $val = round($val,2);
-                if ($val < 0) $val = 0;
-                $ret .= "<td id=depositAmount$d>".$val."</td>";
-                $sum += $val;
-                $depositAmount[$d] = $val;
-            }
-            else if ($d == '1.00'){
-                $ret .= "<td id=depositAmount$d>0</td>";
-                $val = round($val,2);
-                $depositAmount[$d] = 0;
-            }
-            else if ($d == '0.25'){
-                $val = $holding['dropAmount'][$d] - ( ((int)($holding['dropAmount'][$d]/10)) * 10 );
-                $val = round($val,2);
-                $ret .= "<td id=depositAmount$d>".$val."</td>";
-                $sum += $val;
-                $depositAmount[$d] = $val;
-            }
-            else if ($d == '0.10'){
-                $val = $holding['dropAmount'][$d] - ( ((int)($holding['dropAmount'][$d]/5)) * 5 );
-                $val = round($val,2);
-                $ret .= "<td id=depositAmount$d>".$val."</td>";
-                $sum += $val;
-                $depositAmount[$d] = $val;
-            }
-            else if ($d == '0.05'){
-                $val = $holding['dropAmount'][$d] - ( ((int)($holding['dropAmount'][$d]/2)) * 2 );
-                $val = round($val,2);
-                $ret .= "<td id=depositAmount$d>".$val."</td>";
-                $sum += $val;
-                $depositAmount[$d] = $val;
-            }
-            else if ($d == '0.01'){
-                $val = $holding['dropAmount'][$d] - ( ((int)($holding['dropAmount'][$d]/0.50)) * 0.50 );
-                $val = round($val,2);
-                $ret .= "<td id=depositAmount$d>".$val."</td>";
-                $sum += $val;
-                $depositAmount[$d] = $val;
-            }
-        }
-        $ret .= "<td id=depositAmountTotal>$sum</td></tr>";
-        $buyAmountTotal += $sum;
-        $accountableTotal -= $sum;
-        
-        $ret .= "<tr><th title=\"What remains in the safe after the count is Total Change Fund plus Drop Amount minus Deposit Amount.\">Close Safe Count</th>";
-        $sum = 0;
-        foreach($denoms as $d){
-            if ($d == 'Checks' || $d == "Junk") 
-                $ret .= "<td>&nbsp;</td>";
-            else{
-                $ret .= "<td><input size=4 type=text id=safeCount2$d value=".$holding['closeSafeCount'][$d];
-                $ret .= " onchange=\"updateCloseSafeCount('$d');\" /></td>";
-                $sum += $holding['closeSafeCount'][$d];
-            }
-        }
-        $ret .= "<td id=safeCount2Total>$sum</td></tr>";
-        $actualTotal += $sum;
 
         $parTTL = 0; foreach($pars as $k=>$v) $parTTL += $v;
         $ret .= "<tr class=\"color\"><th title=\"Pars are the amounts we want to keep on hand of each denomination. Click here to adjust the current pars for the store.\"><a href=\"OverShortParsPage.php\">Par Amounts</a></th>";
@@ -378,52 +265,14 @@ class OverShortSafecountPage extends FanniePage {
         $ret .= "<td colspan=3>&nbsp;</td>";
         $ret .= sprintf("<td>%.2f</td></tr>",$parTTL);
 
-        $buyAmounts = array("0.01"=>0,"0.05"=>0,"0.10"=>0,"0.25"=>0,"1.00"=>0,"5.00"=>0,"10.00"=>0,"20.00"=>0);
-        foreach ($buyAmounts as $k=>$v){
-            if ($k == '20.00') {
-                continue; // buy 20s but don't fill w/ them
-            }
-            $val = $pars[$k];
-            $val -= $holding['changeOrder'][$k];
-            $val -= $holding['openSafeCount'][$k];
-            $val -= $holding['dropAmount'][$k];
-            $val += $depositAmount[$k];
-            $val += ($fills[$k]*$bags);
-            if ($val < 0) $val = 0;
-            $buyAmounts[$k] = $val;
-        }
-        $overage = 0;
-        while($buyAmounts['1.00'] % 50 != 0){
-            $buyAmounts['1.00'] -= 1;
-            $overage += 1;
-        }
-        while($buyAmounts['5.00'] % 5 == 0 && $buyAmounts['5.00'] % 50 != 0){ 
-            $buyAmounts['5.00'] -= 5;
-            $overage += 5;
-        }
-        while($buyAmounts['10.00'] % 10 == 0 && $buyAmounts['10.00'] % 50 != 0){ 
-            $buyAmounts['10.00'] -= 10;
-            $overage += 10;
-        }
-        $buyAmounts['20.00'] = $pars['20.00'] - $holding['atm']['count'];
-        if ($buyAmounts['20.00'] < 0) {
-            $buyAmounts['20.00'] = 0;
-        }
-
-        $overs = $this->denom_overage($overage);
-        $buyAmounts['0.25'] += $overs['0.25'];
-        $buyAmounts['0.10'] += $overs['0.10'];
-        $buyAmounts['0.05'] += $overs['0.05'];
-        $buyAmounts['0.01'] += $overs['0.01'];
-
-        $ret .= "<tr><th title=\"This is what we need to order from the bank to reach pars. It's not exactly Par Amount minus Close Safe Count because we can only purchase change in specific-sized rolls.\">Buy Amount</th>";
+        $ret .= "<tr><th title=\"This is what we need to order from the bank to reach pars. It's Par minus Total Change Fund except for 20s which are also reduced by the ATM on-hand count.\">Buy Amount</th>";
         foreach ($denoms as $d){
-            if (isset($buyAmounts[$d]))
-                $ret .= "<td id=buyAmount$d>".$buyAmounts[$d]."</td>";
+            if (isset($holding['buyAmount'][$d]))
+                $ret .= "<td id=buyAmount$d>".$holding['buyAmount'][$d]."</td>";
             else
                 $ret .= "<td>&nbsp;</td>";
         }
-        $ret .= "<td id=buyAmountTotal>".array_sum($buyAmounts)."</td></tr>";
+        $ret .= "<td id=buyAmountTotal>".array_sum($holding['buyAmount'])."</td></tr>";
 
         $dlog = DTransactionsModel::selectDlog($startDate,$endDate);
         $dlogClause = str_replace(' date ', ' d.tdate ', $dateClause);
@@ -488,6 +337,36 @@ class OverShortSafecountPage extends FanniePage {
             $ret .= "<td colspan=7>&nbsp;</td>";
         $ret .= "</tr>";
 
+        $startTS = strtotime($startDate);
+        $endTS = strtotime($endDate);
+        $ttlP = $dbc->prepare("SELECT SUM(dropAmount) FROM DailyTillCounts WHERE dateID=? AND storeID=?");
+        $count = 0;
+        while ($startTS <= $endTS) {
+            $date = date('Y-m-d', $startTS);
+            $dateID = date('Ymd', $startTS);
+
+            $startTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS) + 1, date('Y', $startTS));
+            $class = $count % 2 == 0 ? 'color' : '';
+            $ret .= '<tr class="' . $class . '"><th>' . $date . '</th>';
+            foreach ($denoms as $d) {
+                if ($d == 'Checks') {
+                    $ret .= '<td>&nbsp;</td>';
+                } else {
+                    $val = '';
+                    if (isset($holding['day' . $dateID]) && isset($holding['day' . $dateID][$d])) {
+                        $val = $holding['day' . $dateID][$d];
+                    }
+                    $ret .= sprintf('<td><input size=4 type="text" class="tillCounts" id="day%s%s" value="%s" /></td>',
+                        $dateID, $d, $val);
+                }
+            }
+            $ttl = $dbc->getValue($ttlP, array($dateID, $store));
+            $ret .= '<td>' . $ttl . '</td>';
+
+            $ret .= '</tr>';
+            $count++;
+        }
+
         $ret .= "</table>";
         $ret .= "<input type=hidden id=savedDate1 value=\"$startDate\" />";
         $ret .= "<input type=hidden id=savedDate2 value=\"$endDate\" />";
@@ -497,20 +376,6 @@ class OverShortSafecountPage extends FanniePage {
         }
         $ret .= "<input type=submit value=Save onclick=\"save();\" />";
     
-        return $ret;
-    }
-
-    function denom_overage($overage){
-        $ret = array("0.25"=>0,"0.10"=>0,"0.05"=>0,"0.01"=>0);
-
-        $ret["0.25"] = floor($overage / 10.0)*10;
-        $overage = $overage % 10;
-        $ret["0.10"] = floor($overage / 5.0)*5;
-        $overage = $overage % 5;
-        $ret["0.05"] = floor($overage / 2.0)*2;
-        $overage = $overage % 2;
-        $ret["0.01"] = floor($overage / 0.50)*0.50;
-        
         return $ret;
     }
 
@@ -528,7 +393,7 @@ class OverShortSafecountPage extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/count.js?date=20200622');
+        $this->addScript('js/countV2.js?date=20200622');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');
@@ -546,7 +411,7 @@ class OverShortSafecountPage extends FanniePage {
         <div id=input>
         <table>
         <tr>
-            <th colspan="5">June 2020 &amp; older version (<a href="OverShortSafecountV2.php">Switch</a>)</th>
+            <th colspan="5">July 2020 &amp; newer version (<a href="OverShortSafecountPage.php">Switch</a>)</th>
         </tr>
         <tr>
             <th>Start Date</th><td><input type=text id=startDate autocomplete=off /></td>
@@ -557,7 +422,7 @@ class OverShortSafecountPage extends FanniePage {
             Recent Counts: <select onchange="existingDates(this.value);">
             <option value=''>Select one...</option>
             <?php
-            $res = $dbc->query('SELECT dateStr FROM dailyDeposit WHERE countFormat=1 GROUP BY dateStr ORDER BY dateStr DESC');
+            $res = $dbc->query('SELECT dateStr FROM dailyDeposit WHERE countFormat=2 GROUP BY dateStr ORDER BY dateStr DESC');
             $count = 0;
             while($row = $dbc->fetch_row($res)) {
                 if ($count++ > 100) {

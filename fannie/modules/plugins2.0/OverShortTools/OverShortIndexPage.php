@@ -64,7 +64,18 @@ class OverShortIndexPage extends FanniePage {
                         same data so you can mix and match if needed.</ul>');
             ?>
         </li>
-        <li><a href="OverShortSafecountPage.php" target="_SafeCount">Safe Count</a>
+        <li><a href="OverShortSafecountV2.php" target="_SafeCount">Safe Count</a> (July 2020 &amp; newer)
+            <?php
+            echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<br />Enter information about cash on hand to calculate
+                        <ul><li>what should be sent to the bank,
+                        <li>how much change to order
+                        in various denominations, and
+                        <li>what should remain afterwards.
+                        </ul>
+                        <b>Very WFC specific</b>');
+            ?>
+        </li> 
+        <li><a href="OverShortSafecountPage.php" target="_SafeCount">Safe Count</a> (June 2020 &amp; older)
             <?php
             echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<br />Enter information about cash on hand to calculate
                         <ul><li>what should be sent to the bank,

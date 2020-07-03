@@ -32,6 +32,7 @@ class DailyDepositModel extends BasicModel {
     'denomination' => array('type'=>'VARCHAR(6)','primary_key'=>true),
     'amt' => array('type'=>'MONEY','default'=>0),
     'storeID' => array('type'=>'INT','primary_key'=>true),
+    'countFormat' => array('type'=>'SMALLINT', 'default'=>1),
     );
 }
 
