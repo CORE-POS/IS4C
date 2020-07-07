@@ -271,7 +271,9 @@ class OverShortSafecountV2 extends FanniePage {
             else
                 $ret .= "<td>&nbsp;</td>";
         }
-        $ret .= "<td id=buyAmountTotal>".array_sum($holding['buyAmount'])."</td></tr>";
+        $ret .= "<td id=buyAmountTotal>".
+            (isset($holding['buyAmount']) ? array_sum($holding['buyAmount']) : 0)
+            ."</td></tr>";
 
         $dlog = DTransactionsModel::selectDlog($startDate,$endDate);
         $dlogClause = str_replace(' date ', ' d.tdate ', $dateClause);
