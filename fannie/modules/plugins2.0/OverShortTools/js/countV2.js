@@ -177,9 +177,11 @@ function updateBuyAmount(d){
 		} else {
 			var val = Number(document.getElementById('par'+denom).innerHTML);
 
-			val -= Number(document.getElementById('cashInTills'+denom).innerHTML);
             if (denom === '20.00') {
+                val -= Number(document.getElementById('changeOrder20.00').value);
                 val -= Number(document.getElementById('atmCount').value);
+            } else {
+                val -= Number(document.getElementById('cashInTills'+denom).innerHTML);
             }
 
 			if (val < 0) val = 0;

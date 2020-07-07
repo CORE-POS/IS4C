@@ -145,6 +145,7 @@ class OverShortSafecountV2 extends FanniePage {
 
         $holding = array('changeOrder'=>array(),
                 'openSafeCount'=>array(),
+                'buyAmount' => array(),
                 'atm'=>array('count'=>0)
                 );
 
@@ -269,7 +270,7 @@ class OverShortSafecountV2 extends FanniePage {
             if (isset($holding['buyAmount'][$d]))
                 $ret .= "<td id=buyAmount$d>".$holding['buyAmount'][$d]."</td>";
             else
-                $ret .= "<td>&nbsp;</td>";
+                $ret .= "<td id=buyAmount$d></td>";
         }
         $ret .= "<td id=buyAmountTotal>".
             (isset($holding['buyAmount']) ? array_sum($holding['buyAmount']) : 0)
@@ -385,7 +386,7 @@ class OverShortSafecountV2 extends FanniePage {
         }
         $ret .= '<td><input type="text" size="4" class="drop" id="dropExtra" value="' . $cur . '" 
             onchange="recalcDropVariance(event);" /></td>';
-        $cash = $holding['openSafeCount']['50.00'] + $holding['openSafeCount']['100.00'];
+        $cash = $holding['openSafeCount']['20.00'] + $holding['openSafeCount']['50.00'] + $holding['openSafeCount']['100.00'];
         $ret .= '<td class="pos" id="extraPos">' . sprintf('%.2f', $cash) . '</td>';
         $ret .= '<td class="var">' . sprintf('%.2f', $cur - $cash) . '</td>';
         $ret .= '</tr>';
