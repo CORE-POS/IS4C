@@ -350,6 +350,7 @@ class OverShortSafecountV2 extends FanniePage {
         $ttlP = $dbc->prepare("SELECT SUM(dropAmount) FROM DailyTillCounts WHERE dateID=? AND storeID=?");
         $count = 0;
         $dropTTL = 0;
+        $dropVar = 0;
         while ($startTS <= $endTS) {
             $date = date('Y-m-d', $startTS);
             $dateID = date('Ymd', $startTS);
@@ -377,6 +378,7 @@ class OverShortSafecountV2 extends FanniePage {
             $startTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS) + 1, date('Y', $startTS));
             $count++;
             $dropTTL += $cur;
+            $dropVar += ($cur - $cash);
         }
         $class = $count % 2 == 0 ? 'color' : '';
         $ret .= '<tr class="' . $class . '"><td>Open Safe</td><td>n/a</td>';
@@ -392,10 +394,13 @@ class OverShortSafecountV2 extends FanniePage {
         $ret .= '</tr>';
         $count++;
         $dropTTL += $cur;
+        $dropVar += ($cur - $cash);
         $class = $count % 2 == 0 ? 'color' : '';
         $ret .= '<tr class="' . $class . '"><td>Total</td><td></td>';
         $ret .= '<td id="dropTTL">' . sprintf('%.2f', $dropTTL) . '</td>';
-        $ret .= '<td></td><td></td></tr>';
+        $ret .= '<td></td>';
+        $ret .= '<td id="dropVar">' . sprintf('%.2f', $dropVar) . '</td>';
+        $ret .= '</tr>';
 
         $ret .= "</table>";
         $ret .= '<br /><br />';
@@ -424,7 +429,7 @@ class OverShortSafecountV2 extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/countV2.js?date=20200707.1');
+        $this->addScript('js/countV2.js?date=20200707.2');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');

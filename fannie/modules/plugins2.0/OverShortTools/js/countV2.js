@@ -265,9 +265,6 @@ function recalcDropVariance(e) {
     var elem = e.target;
     var cash = $(elem).closest('tr').find('.pos').html();
     var myself = elem.value;
-    console.log(cash);
-    console.log(myself);
-    console.log(myself - cash);
     var diff = Math.round((myself - cash) * 100) / 100;
     $(elem).closest('tr').find('.var').html(diff);
 
@@ -276,5 +273,12 @@ function recalcDropVariance(e) {
         sum += Number($(this).val());
     });
     $('#dropTTL').html(sum);
+
+    sum = 0;
+    $('.var').each(function() {
+        sum += Number($(this).html());
+    });
+    sum = Math.round(sum * 100) / 100;
+    $('#dropVar').html(sum);
 }
 
