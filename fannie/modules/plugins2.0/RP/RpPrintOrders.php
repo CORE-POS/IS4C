@@ -34,8 +34,10 @@ class RpPrintOrders extends FannieRESTfulPage
 
     protected function get_archive_handler()
     {
-        if ($_SESSION['rpState']) {
+        if (isset($_SESSION['rpState'])) {
             $_SESSION['rpState']['directAmt'] = array();
+            $_SESSION['rpState']['priFarms'] = array();
+            $_SESSION['rpState']['secFarms'] = array();
             $json = json_encode($_SESSION['rpState']);
             $model = new RpSessionsModel($this->connection);
             $model->userID(FannieAuth::getUID($this->current_user));

@@ -6,7 +6,9 @@ var rpOrder = (function ($) {
         'days': [false, false, false, false, false, false, false],
         'onHand': {},
         'orderAmt': {},
-        'directAmt': {}
+        'directAmt': {},
+        'priFarms': {},
+        'secFarms': {}
     };
     var searchVendor = 0;
     var retainElem = false;
@@ -135,6 +137,12 @@ var rpOrder = (function ($) {
             if (state['directAmt'].__proto__ == Array.prototype) {
                 state['directAmt'] = {};
             }
+            if (state['priFarms'].__proto__ == Array.prototype) {
+                state['priFarms'] = {};
+            }
+            if (state['secFarms'].__proto__ == Array.prototype) {
+                state['secFarms'] = {};
+            }
             var i = 0;
             $('.daycheck').each(function() {
                 if (state['days'][i]) {
@@ -160,6 +168,22 @@ var rpOrder = (function ($) {
                 mod.reCalcRow($(elem).closest('tr'));
             }
 
+            var pIDs = Object.keys(state['priFarms']);
+            for (i=0; i<pIDs.length; i++) {
+                var elemID = pIDs[i];
+                if (state['priFarms'][elemID] !== '') {
+                    document.getElementById(elemID).value = state['priFarms'][elemID];
+                }
+            }
+
+            var sIDs = Object.keys(state['secFarms']);
+            for (i=0; i<sIDs.length; i++) {
+                var elemID = sIDs[i];
+                if (state['secFarms'][elemID] !== '') {
+                    document.getElementById(elemID).value = state['secFarms'][elemID];
+                }
+            }
+
             var oIDs = Object.keys(state['directAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
@@ -169,6 +193,19 @@ var rpOrder = (function ($) {
             }
         }
         //saveLoop();
+    };
+
+    mod.updateFarm = function(elem) {
+        if ($(elem).hasClass('primaryFarm')) {
+            var pf = state['priFarms'];
+            pf[elem.id] = elem.value;
+            state['priFarms'] = pf;
+        } else {
+            var sf = state['secFarms'];
+            sf[elem.id] = elem.value;
+            state['secFarms'] = sf;
+        }
+        mod.save();
     };
 
     mod.updateOnHand = function(elem) {

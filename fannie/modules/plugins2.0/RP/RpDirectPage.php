@@ -321,7 +321,7 @@ class RpDirectPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDirect.js?date=20200625');
+        $this->addScript('rpDirect.js?date=20200707');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -591,8 +591,8 @@ class RpDirectPage extends FannieRESTfulPage
             }
             $nextRow = sprintf('<tr class="%s">
                 <td class="upc %s">%s %s</td>
-                <td class="%s"><select class="primaryFarm form-control input-sm" data-default="%s">%s</option></td>
-                <td class="%s"><select class="secondaryFarm form-control input-sm">%s</option></td>
+                <td class="%s"><select class="primaryFarm form-control input-sm" data-default="%s" id="pf%s" onchange="rpOrder.updateFarm(this);">%s</option></td>
+                <td class="%s"><select class="secondaryFarm form-control input-sm" id="sf%s" onchange="rpOrder.updateFarm(this);">%s</option></td>
                 <td class="%s" title="%s">$%.2f %s %s %s%s</td>
                 <td style="display:none;" class="caseSize">%s</td>
                 <td style="display:none;" class="realSize">%s</td>
@@ -622,10 +622,10 @@ class RpDirectPage extends FannieRESTfulPage
                 (in_array($likeCode, $directLCs) && $row['vendorID'] != -2 && $row['backupID'] != -2) ? 'extraLocal' : '',
                 $highlight, $row['upc'], $lcName,
                 $highlight,
-                $farm1,
+                $farm1, $upc,
                 $opt1,
                 $highlight,
-                $opt2,
+                $upc, $opt2,
                 $highlight,
                 $tooltip,
                 $cost['cost'] * $row['caseSize'],
