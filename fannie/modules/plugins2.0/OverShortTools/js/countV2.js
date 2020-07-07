@@ -50,11 +50,10 @@ function saveRow(rowName){
 
 function saveTillCounts() {
     var ret = '';
-    $('.tillCounts').each(function() {
-        var rowID = this.id.substring(0, 11);
-        var denom = this.id.substring(11);
+    $('.drop').each(function() {
+        var rowID = this.id;
         var amt = Number(this.value);
-        ret += rowID + denom + ":" + amt + "|";
+        ret += rowID + ":" + amt + "|";
     });
 
     return ret;
@@ -119,6 +118,13 @@ function updateOpenSafeCount(d){
 	resumInputs('safeCount1');
 	resumRow('cashInTills');
     updateBuyAmount(d);
+
+    if (d == '50.00' || d == '100.00') {
+        var newttl = Number(document.getElementById('safeCount150.00').value);
+        newttl += Number(document.getElementById('safeCount1100.00').value);
+        document.getElementById('extraPos').innerHTML = newttl;
+        document.getElementById('dropExtra').dispatchEvent(new Event('change'));
+    }
 
 	updateAAVariance();
 }
@@ -252,3 +258,21 @@ function existingDates(dateStr)
         }
     }
 }
+
+function recalcDropVariance(e) {
+    var elem = e.target;
+    var cash = $(elem).closest('tr').find('.pos').html();
+    var myself = elem.value;
+    console.log(cash);
+    console.log(myself);
+    console.log(myself - cash);
+    var diff = Math.round((myself - cash) * 100) / 100;
+    $(elem).closest('tr').find('.var').html(diff);
+
+    var sum = 0;
+    $('.drop').each(function() {
+        sum += Number($(this).val());
+    });
+    $('#dropTTL').html(sum);
+}
+

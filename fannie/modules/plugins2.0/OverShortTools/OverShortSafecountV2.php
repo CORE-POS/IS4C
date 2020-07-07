@@ -116,14 +116,13 @@ class OverShortSafecountV2 extends FanniePage {
         foreach($temp as $t){
             $temp2 = explode(':',$t);
             if (count($temp2) < 2) continue;
-            $rowID = substr($temp2[0], 0, 11);
-            $denom = substr($temp2[0], 11);
+            $rowID = $temp2[0];
             $amt = $temp2[1];
         
             if ($amt == '') continue;
 
             $model->rowName($rowID);
-            $model->denomination($denom);
+            $model->denomination('ttl');
             $model->amt($amt);
             $model->save();
         }
@@ -336,38 +335,67 @@ class OverShortSafecountV2 extends FanniePage {
         if ($num % 2 != 0)
             $ret .= "<td colspan=7>&nbsp;</td>";
         $ret .= "</tr>";
+        $ret .= "</table>";
+
+        $ret .= '<br /><br />';
+
+        $ret .= "<table cellspacing=0 border=1 cellpadding=4>";
+        $ret .= '<tr><th>Date</th><th>MOD Count</th><th>Drop</th><th>POS</th><th>Var.</th></tr>';
 
         $startTS = strtotime($startDate);
         $endTS = strtotime($endDate);
         $ttlP = $dbc->prepare("SELECT SUM(dropAmount) FROM DailyTillCounts WHERE dateID=? AND storeID=?");
         $count = 0;
+        $dropTTL = 0;
         while ($startTS <= $endTS) {
             $date = date('Y-m-d', $startTS);
             $dateID = date('Ymd', $startTS);
 
-            $startTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS) + 1, date('Y', $startTS));
+            $dlog = DTransactionsModel::selectDlog($date);
+            $caP = $dbc->prepare("SELECT -1 * SUM(total) FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_type='T' AND store_id=?
+                AND (trans_subtype='CA' OR (trans_subtype='CK' AND description='Check'))");
+
             $class = $count % 2 == 0 ? 'color' : '';
-            $ret .= '<tr class="' . $class . '"><th>' . $date . '</th>';
-            foreach ($denoms as $d) {
-                if ($d == 'Checks') {
-                    $ret .= '<td>&nbsp;</td>';
-                } else {
-                    $val = '';
-                    if (isset($holding['day' . $dateID]) && isset($holding['day' . $dateID][$d])) {
-                        $val = $holding['day' . $dateID][$d];
-                    }
-                    $ret .= sprintf('<td><input size=4 type="text" class="tillCounts" id="day%s%s" value="%s" /></td>',
-                        $dateID, $d, $val);
-                }
-            }
+            $ret .= '<tr class="' . $class . '">';
+            $ret .= '<td>' . $date . '</td>';
             $ttl = $dbc->getValue($ttlP, array($dateID, $store));
             $ret .= '<td>' . $ttl . '</td>';
+            $cur = 0;
+            if (isset($holding['drop' . $dateID]) && isset($holding['drop' . $dateID]['ttl'])) {
+                $cur = $holding['drop' . $dateID]['ttl'];
+            }
+            $ret .= '<td><input type="text" size="4" class="drop" id="drop' . $dateID . '" value="' . $cur . '" 
+                onchange="recalcDropVariance(event);" /></td>';
+            $cash = $dbc->getValue($caP, array($date, $date . ' 23:59:59', $store));
+            $ret .= '<td class="pos">' . sprintf('%.2f', $cash) . '</td>';
+            $ret .= '<td class="var">' . sprintf('%.2f', $cur - $cash) . '</td>';
 
             $ret .= '</tr>';
+            $startTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS) + 1, date('Y', $startTS));
             $count++;
+            $dropTTL += $cur;
         }
+        $class = $count % 2 == 0 ? 'color' : '';
+        $ret .= '<tr class="' . $class . '"><td>Open Safe</td><td>n/a</td>';
+        $cur = '';
+        if (isset($holding['dropExtra']) && isset($holding['dropExtra']['ttl'])) {
+            $cur = $holding['dropExtra']['ttl'];
+        }
+        $ret .= '<td><input type="text" size="4" class="drop" id="dropExtra" value="' . $cur . '" 
+            onchange="recalcDropVariance(event);" /></td>';
+        $cash = $holding['openSafeCount']['50.00'] + $holding['openSafeCount']['100.00'];
+        $ret .= '<td class="pos" id="extraPos">' . sprintf('%.2f', $cash) . '</td>';
+        $ret .= '<td class="var">' . sprintf('%.2f', $cur - $cash) . '</td>';
+        $ret .= '</tr>';
+        $count++;
+        $dropTTL += $cur;
+        $class = $count % 2 == 0 ? 'color' : '';
+        $ret .= '<tr class="' . $class . '"><td>Total</td><td></td>';
+        $ret .= '<td id="dropTTL">' . sprintf('%.2f', $dropTTL) . '</td>';
+        $ret .= '<td></td><td></td></tr>';
 
         $ret .= "</table>";
+        $ret .= '<br /><br />';
         $ret .= "<input type=hidden id=savedDate1 value=\"$startDate\" />";
         $ret .= "<input type=hidden id=savedDate2 value=\"$endDate\" />";
         $ret .= "<input type=hidden id=savedStore value=\"$store\" />";
@@ -393,7 +421,7 @@ class OverShortSafecountV2 extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/countV2.js?date=20200622');
+        $this->addScript('js/countV2.js?date=20200707');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');
