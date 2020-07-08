@@ -282,7 +282,7 @@ class OverShortDepositSlips extends FanniePage
         $pdf->MultiCell(55,8,"Change Request",0,'C',1);
 
         $pdf->SetTextColor(0,0,0);
-        $denoms = array('0.01','0.05','0.10','0.25','1.00','5.00','10.00');
+        $denoms = array('0.01','0.05','0.10','0.25','1.00','5.00','10.00', '20.00');
         $total = array_sum($dbstack['buyAmount']);
         if (!empty($dbstack['buyAmount'])){
             if ($dbstack['buyAmount']['0.01'] > 50)

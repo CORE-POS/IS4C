@@ -119,9 +119,10 @@ function updateOpenSafeCount(d){
 	resumRow('cashInTills');
     updateBuyAmount(d);
 
-    if (d == '50.00' || d == '100.00') {
+    if (d == '20.00' || d == '50.00' || d == '100.00') {
         var newttl = Number(document.getElementById('safeCount150.00').value);
         newttl += Number(document.getElementById('safeCount1100.00').value);
+        newttl += Number(document.getElementById('safeCount120.00').value);
         document.getElementById('extraPos').innerHTML = newttl;
         document.getElementById('dropExtra').dispatchEvent(new Event('change'));
     }
