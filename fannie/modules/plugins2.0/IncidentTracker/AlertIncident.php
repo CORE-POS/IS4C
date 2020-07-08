@@ -2,6 +2,7 @@
 
 use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Slack;
 use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Email;
+use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Basecamp;
 
 include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -282,6 +283,10 @@ class AlertIncident extends FannieRESTfulPage
                         case 'slack':
                             $slack = new Slack();
                             $slack->send($incident, $row['address']);
+                            break;
+                        case 'basecamp':
+                            $bc = new Basecamp();
+                            $bc->send($incident, $row['address']);
                             break;
                         case 'email':
                             $email = new Email();
