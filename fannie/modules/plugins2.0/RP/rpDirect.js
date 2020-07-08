@@ -137,10 +137,10 @@ var rpOrder = (function ($) {
             if (state['directAmt'].__proto__ == Array.prototype) {
                 state['directAmt'] = {};
             }
-            if (state['priFarms'].__proto__ == Array.prototype) {
+            if (!state.hasOwnProperty('priFarms') || state['priFarms'].__proto__ == Array.prototype) {
                 state['priFarms'] = {};
             }
-            if (state['secFarms'].__proto__ == Array.prototype) {
+            if (!state.hasOwnProperty('secFarms') || state['secFarms'].__proto__ == Array.prototype) {
                 state['secFarms'] = {};
             }
             var i = 0;
