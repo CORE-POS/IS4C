@@ -73,6 +73,10 @@ class HrMenu extends FannieRESTfulPage
                 <td>Manage logins to the kiosk</td>
             </tr>
             <tr>
+                <td><a href="Screening/ScreeningManualEntry.php">Screening Manual Entry</a></td>
+                <td>Manually enter results from paper forms</td>
+            </tr>
+            <tr>
                 <td><a href="Screening/ScreeningReportPage.php">Screening Records Reporting</a></td>
                 <td>View screening log entries</td>
             </tr>
