@@ -162,6 +162,7 @@ class DIPage extends FannieRESTfulPage
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET price=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(trim(FormLib::get('cost'), '$'), $this->id));
         } elseif (FormLib::get('upc', false) !== false) {
+            $this->id = BarcodeLib::padUPC($this->id);
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET upc=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('upc'), $this->id));
         } elseif (FormLib::get('sku', false) !== false) {

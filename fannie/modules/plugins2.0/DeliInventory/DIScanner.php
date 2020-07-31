@@ -266,7 +266,7 @@ CSS;
     <div class="row">
         <div class="col-sm-10">
             <div class="input-group">
-                <span class="input-group-addon hidden-xs">Search</span>
+                <span class="input-group-addon hidden-xs">Enter Prepared</span>
                 <input type="text" name="id" id="upc" class="form-control focused" />
                 <span class="input-group-btn">
                     <button type="submit" class="btn btn-default" tabindex="-1">Go</button>
@@ -281,6 +281,9 @@ CSS;
 <div id="results"></div>
 <div id="recent"></div>
 <br />
+<div id="instructions">
+Use this tool for Deli ingredients that aren't sold directly to customers.
+</div>
 HTML;
     }
 }
