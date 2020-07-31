@@ -90,7 +90,7 @@ HTML;
 <div style="font-size: 200% !important;">
     <div class="alert alert-danger">You've selected symptom(s)</div>
 Please isolate yourself from others immediately, <b>do not clock in for work and go home</b>.
-Contact your manager and HR at 218.491.4821.
+Contact your manager and either your Store Manager (952.687.1381) or General Manager (218.428.5747).
 </div>
 <p style="font-size: 200%;">
     <a href="ScreeningPage.php" class="btn btn-default btn-lg btn-block">Clear This Screen</a>
@@ -110,7 +110,7 @@ HTML;
 <div style="font-size: 200% !important;">
     <div class="alert alert-danger">You've selected symptom(s)</div>
 Please isolate yourself from others immediately, <b>do not clock in for work and go home</b>.
-Contact your manager and HR at 218.491.4821.
+Contact your manager and either your Store Manager (952.687.1381) or General Manager (218.428.5747).
 </div>
 <p style="font-size: 200%;">
     <a href="ScreeningPage.php" class="btn btn-default btn-lg btn-block">Clear This Screen</a>
