@@ -44,7 +44,7 @@ monthly.nabs.php.';
     {
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
 
-        $nabQ = 'SELECT CardNo FROM ' . $this->config->get('OP_DB').$dbc->sep() . 'custdata
+        $nabQ = 'SELECT CardNo, memType FROM ' . $this->config->get('OP_DB').$dbc->sep() . 'custdata
             WHERE memType=4 and personNum=1';
         $nabR = $dbc->query($nabQ);
 
@@ -83,6 +83,7 @@ monthly.nabs.php.';
                     $record['quantity'] = 1;
                     $record['ItemQtty'] = 1;
                     $record['card_no'] = $nabW['CardNo'];
+                    $record['memType'] = $nabW['memType'];
                     $record['regPrice'] = $balW[0];
                     $record['total'] = $balW[0];
                     $record['unitPrice'] = $balW[0];
