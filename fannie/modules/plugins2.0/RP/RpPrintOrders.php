@@ -134,7 +134,8 @@ class RpPrintOrders extends FannieRESTfulPage
                 if (!isset($copyPaste[$row['brand']])) {
                     $copyPaste[$row['brand']] = '';
                 }
-                $copyPaste[$row['brand']] .= $row['quantity'] . "\t" . $lcName . "\n";
+                $copyPaste[$row['brand']] .= $row['quantity'] . "\t"
+                    . ($row['vendorItem'] ? $row['vendorItem'] : $row['description']) . "\n";
             }
             if ($map) {
                 $row['vendorItem'] = $map;
