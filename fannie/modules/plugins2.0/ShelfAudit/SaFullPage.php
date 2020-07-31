@@ -248,7 +248,7 @@ CSS;
     <hr />
     <p>
         <div class="input-group">
-            <span class="input-group-addon">Search</span>
+            <span class="input-group-addon">Enter Produce/Deli</span>
             <input type="text" name="id" id="upc" class="form-control focused" />
             <span class="input-group-btn">
                 <button type="submit" class="btn btn-default" tabindex="-1">Go</button>
@@ -258,6 +258,9 @@ CSS;
 </form>
 <div id="results"></div>
 <div id="recent"></div>
+<div id="instructions">
+Use this tool for Produce and Deli items that are sold to customers. Deli ingredients that are sold to customers by Grocery rather than Deli should be entered <a href="../DeliInventory/DIScanner.php">here</a> instead.
+</div>
 HTML;
     }
 }
