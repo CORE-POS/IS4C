@@ -95,7 +95,6 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
         $po->creationDate($date);
         $po->placed(1);
         $po->placedDate($date);
-        $po->userID(FannieAuth::getUID());
         $po->vendorOrderID($po_num);
         $po->vendorInvoiceID($inv_num);
         // if an orderID is supplied, update the existing order
@@ -104,6 +103,8 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
             $po->orderID($orderID);
             $po->save();
         } else {
+            // only alter user when creating a new PO
+            $po->userID(FannieAuth::getUID());
             $orderID = $po->save();
         }
 
