@@ -10,6 +10,11 @@ class ScreeningPage extends FannieRESTfulPage
 
     public function preprocess()
     {
+        $remoteIP = $_SERVER['REMOTE_ADDR'];
+        if (substr($remoteIP, 0, 7) == '10.2.2.') {
+            header('Location: http://10.2.2.2/screening/');
+            return false;
+        }
         $this->addRoute('get<finish>');
         $ret = parent::preprocess();
 
@@ -77,7 +82,7 @@ HTML;
             $info = $dbc->getRow($prep, array($empID));
             $subject = 'Screening Positive Notification';
             $body = $info['name'] . ' reported symptoms at the screening station.';
-            $to = 'hr@wholefoods.coop, shannigan@wholefoods.coop';
+            $to = 'hr@wholefoods.coop, shannigan@wholefoods.coop, michael@wholefoods.coop, jkrussow@wholefoods.coop';
             $headers = "From: hillside@wholefoods.coop\r\n";
             mail($to, $subject, $body, $headers);
 
