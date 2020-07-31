@@ -73,6 +73,7 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $transDB = $this->config->get('TRANS_DB') . $dbc->sep();
+        $nabs = DTrans::memTypeIgnore($dbc);
 
         // hourly sales today
         $query = "
@@ -83,6 +84,7 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
             WHERE t.superID > 0 
                 AND " . DTrans::isStoreID($this->store, 'd') . "
                 AND d.trans_type IN ('I','D','M')
+                AND d.memType NOT IN {$nabs}
             GROUP BY " . $dbc->hour('tdate') . "
             ORDER BY " . $dbc->hour('tdate');
         $prep = $dbc->prepare($query);
@@ -109,6 +111,7 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
                     AND " . DTrans::isStoreID($this->store, 'd') . "
                     AND d.trans_type IN ('I','D','M')
                     AND d.tdate BETWEEN ? AND ?
+                    AND d.memType NOT IN {$nabs}
                 GROUP BY " . $dbc->hour('tdate') . "
                 ORDER BY " . $dbc->hour('tdate');
             $prep = $dbc->prepare($query);

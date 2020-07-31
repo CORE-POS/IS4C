@@ -88,6 +88,7 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
 
     private function salesQuery($dbc)
     {
+        $nabs = DTrans::memTypeIgnore($dbc);
         $args = array();
         $query1 ="
             SELECT ".$dbc->hour('tdate').", 
@@ -101,7 +102,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
                 LEFT JOIN MasterSuperDepts AS t ON d.department = t.dept_ID
             WHERE d.tdate >= " . $dbc->curdate() . "
                 AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
-                AND (t.superID > 0 or t.superID IS NULL) ";
+                AND (t.superID > 0 or t.superID IS NULL)
+                AND d.memType NOT IN {$nabs}";
         if ($this->store != 0) {
             $query1 .= ' AND d.store_id=? ';
             $args[] = $this->store;
