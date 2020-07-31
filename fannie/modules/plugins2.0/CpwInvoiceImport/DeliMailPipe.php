@@ -34,13 +34,16 @@ class DeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                 }
                 file_put_contents($temp, $a['content']);
                 try {
+                    $log->debug("Process file: " . $a['name']);
                     $order = $fto->read($temp);
                     $orderID = $otc->import($order, '51201'); 
                     $dest = __DIR__ . '/../../../purchasing/noauto/invoices/' . $orderID . '.xls';
                     rename($temp, $dest);
                     chmod($dest, 0644);
+                    $log->debug('Success on ' . $orderID);
                 } catch (\Exception $ex) {
                     $log->debug($ex->getMessage());
+                    $log->debug('File: ' . $a['name']);
                     $log->debug('Error: ' . $ex->getMessage());
                 }
                 if (file_exists($temp)) {

@@ -11,12 +11,15 @@ class FileToOrder
         if (!is_array($arr)) {
             throw new \Exception('Invalid file');
         }
+        $log = new \FannieLogger();
         $inv = $this->getHeaderField($arr, 'Invoice');
         $oDate = $this->getHeaderField($arr, 'Order Date');
         $sDate = $this->getHeaderField($arr, 'Ship Date');
         $addr = $this->getShippingAddress($arr);
 
         $items = $this->getItemLines($arr);
+        $log->debug('Line count: ' . count($arr));
+        $log->debug('Item count: ' . count($items));
         if (count($items) == 0) {
             throw new \Exception('Order is empty');
         }
