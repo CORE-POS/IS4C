@@ -230,7 +230,6 @@ HTML;
                     AND $where
                     AND " . DTrans::isStoreID($store, 'd') . "
                    GROUP BY $date_selector, $hour
-                   {$having}
                    ORDER BY $date_selector, $hour";
 
         $prep = $dbc->prepare($query);
