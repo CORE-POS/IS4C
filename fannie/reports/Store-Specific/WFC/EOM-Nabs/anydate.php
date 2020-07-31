@@ -1,14 +1,19 @@
 <?php
 use COREPOS\Fannie\API\item\StandardAccounting;
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 include('../../../../config.php');
 include(__DIR__ . '/../../../../classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-$month = FormLib::get('month', date('n')-1);
-$year = FormLib::get('year', date('Y'));
-if ($month == 0) {
-    $month = 12;
-    $year -= 1;
+$date1 = FormLib::get('date1');
+$date2 = FormLib::get('date2');
+if ($date1 === '' || $date2 === '') {
+    $date2 = date('Y-m-d', strtotime('last sunday'));
+    $date1 = new DateTime($date2);
+    $date1->sub(new DateInterval('P6D'));
+    $date1 = $date1->format('Y-m-d');
 }
 
 if (isset($_GET['excel'])){
@@ -16,13 +21,22 @@ if (isset($_GET['excel'])){
     header('Content-Disposition: attachment; filename="dailyReport.xls"');
 } else {
     $storeInfo = FormLib::storePicker();
-    echo '<p>Current: Monthly  | Switch to: <a href="anydate.php">Any Date(s)</a></p>';
-    echo '<form action="index.php" method="get">'
+    echo '<p>Current: Any Date(s)  |  Switch to: <a href="index.php">Monthly</a></p>';
+    echo '<form action="anydate.php" method="get">'
         . $storeInfo['html'] . 
-        ' Month <input type="text" name="month" value="' . $month . '" />
-        Year <input type="text" name="year" value="' . $year . '" />
+        ' Start <input type="text" name="date1" class="date-field" value="' . $date1 . '" />
+        End <input type="text" name="date2" class="date-field" value="' . $date2 . '" />
         <input type="submit" value="Change" />
         </form>';
+    echo '<script src="../../../../src/javascript/jquery.js"></script>';
+    echo '<script src="../../../../src/javascript/jquery-ui.js"></script>';
+    echo '<script src="../../../../src/javascript/core.js"></script>';
+    echo '<link rel="stylesheet" type="text/css" href="../../../../src/javascript/jquery-ui.css">';
+    echo '<script>
+$(document).ready(function() {
+    standardFieldMarkup();
+});
+        </script>';
 }
 
 $store = FormLib::get('store', false);
@@ -71,23 +85,21 @@ td.center {
 <?php
 
 echo "<b>";
-$stamp = mktime(0, 0, 0, $month, 1, $year);
-echo strtoupper(date("F",$stamp));
+echo strtoupper($date1 . ' - ' . $date2);
 echo " ";
-echo date("Y",$stamp);
 $dlog = "trans_archive.dlogBig";
 $dtrans = "trans_archive.bigArchive";
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
-    echo "<a href=index.php?excel=xls&month=$month&year=$year&store=$store>Save to Excel</a>";
+    echo "<a href=anydate.php?excel=xls&date1=$date1&date2=$date2&store=$store>Save to Excel</a>";
 echo "<p />";
 
-$output = \COREPOS\Fannie\API\data\DataCache::getFile('monthly');
+$output = \COREPOS\Fannie\API\data\DataCache::getFile('weekly');
 if (true || !$output){
     ob_start();
 
-    $start = date("Y-m-01",$stamp);
-    $end = date("Y-m-t",$stamp);
+    $start = $date1;
+    $end = $date2;
     $span = array("$start 00:00:00","$end 23:59:59");
 
     $accounts = array();
