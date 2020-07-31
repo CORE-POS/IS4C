@@ -299,9 +299,7 @@ STR;
             'MOSA' => $scaleItem->mosaStatement(),
             'inUse' => count($inUse) == 0 ? 0 : 1,
         );
-        if ($netWeight != 0) {
-            $item_info['NetWeight'] = $netWeight;
-        }
+        $item_info['NetWeight'] = $netWeight;
         if ($graphics) {
             $item_info['Graphics'] = 121;
         }

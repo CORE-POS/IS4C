@@ -466,8 +466,8 @@ HTML;
                     $authorized = true;
                 }
             }
-        } elseif (substr($upc, 0, 3) == '002' && $this->config->get('COOP_ID') == 'WFC_Duluth') {
-            $authorized = true;
+        //} elseif (substr($upc, 0, 3) == '002' && $this->config->get('COOP_ID') == 'WFC_Duluth') {
+         //   $authorized = true;
         }
 
         return $authorized;
