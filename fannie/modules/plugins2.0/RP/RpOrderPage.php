@@ -43,7 +43,7 @@ class RpOrderPage extends FannieRESTfulPage
         $date1 = date('Y-m-d', strtotime(FormLib::get('date1')));
         $date2 = date('Y-m-d', strtotime(FormLib::get('date2')));
         $args = array(FormLib::get('store'), $date1, $date2);
-        $ignore = '0 AS ignored';
+        $ignore = 'CASE WHEN receivedDate < ' . $this->connection->curdate() . ' THEN 1 ELSE 0 END AS ignored';
 
         $extra = strtotime($date2);
         if ($extra) {
@@ -51,7 +51,8 @@ class RpOrderPage extends FannieRESTfulPage
             $date3 = date('Y-m-d', $extra);
             // safe embed because it's a formatted date string or false
             // for any user input
-            $ignore = "CASE WHEN receivedDate > {$date2} THEN 1 ELSE 0 END AS ignored";
+            $ignore = "CASE WHEN receivedDate > {$date2} OR receivedDate < " . $this->connection->curdate() . " 
+                THEN 1 ELSE 0 END AS ignored";
             $args[2] = $date3;
         }
 
