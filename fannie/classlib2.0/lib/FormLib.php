@@ -617,6 +617,7 @@ HTML;
         $dlog = DTransactionsModel::selectDlog($start_date, $end_date);
         $lookupType = self::get('lookup-type', 'dept');
         $store = self::get('store', false);
+        $ignoreMemType = DTrans::memTypeIgnore($dbc);
         if ($store === false) {
             $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
             if ($store === false) {
@@ -648,6 +649,7 @@ HTML;
         }
 
         $query .= ' WHERE t.tdate BETWEEN ? AND ? ';
+        $query .= ' AND t.memType NOT IN ' . $ignoreMemType;
         $args[] = $start_date . ' 00:00:00';
         $args[] = $end_date . ' 23:59:59';
         $query .= ' AND ' . DTrans::isStoreID($store, 't') . ' ';
