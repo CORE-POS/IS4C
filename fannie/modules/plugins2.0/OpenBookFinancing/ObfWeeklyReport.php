@@ -1034,7 +1034,7 @@ class ObfWeeklyReport extends FannieReportPage
                 $sales->save();
             }
 
-            if ($week->obfWeekID() > 265) {
+            if ($week->obfWeekID() > 265 && $week->obfWeekID() < 323) {
                 $prep = $dbc->prepare("SELECT SUM(total) FROM {$dlog2}
                             WHERE tdate BETWEEN ? AND ?
                                 AND store_id=?
