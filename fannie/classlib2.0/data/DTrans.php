@@ -518,5 +518,17 @@ class DTrans
             MONTH(tdate),
             DAY(tdate)';
     }
+
+    public static function memTypeIgnore($dbc)
+    {
+        $prep = $dbc->prepare("SELECT memtype FROM " . FannieDB::fqn('memtype', 'op') . " WHERE ignoreSales=1");
+        $ignores = $dbc->getAllValues($prep, array());
+        if ($ignores === false || count($ignores) == 0) {
+            return '(-9999)';
+        }
+        $ignores = array_map(function ($i) { return (int)$i; }, $ignores);
+
+        return '(' . implode(',', $ignores) . ')';
+    }
 }
 
