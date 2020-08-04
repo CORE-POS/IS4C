@@ -330,7 +330,7 @@ class BatchFromSearch extends FannieRESTfulPage
         <input type="text" id="muMargin" class="form-control" value="0" onchange="margin(this.value);" />
         <span class="input-group-addon">%</span>
     </div>
-    <button class="btn btn-default" onclick="margin(\$('#muMargin').val()); return false">Go</button>
+    <span class="btn btn-default" onclick="margin(\$('#muMargin').val()); return false">Go</span>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <br/>
     <label>Tags</label> <select name="tagset" class="form-control" id="tagset"><option value="">No Tags</option>
