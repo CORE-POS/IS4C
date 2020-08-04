@@ -56,6 +56,14 @@ function markDown(amt) {
 function markUp(amt) {
     markDown(-1 * amt);
 }
+function margin(amt) {
+    if (Math.abs(amt) >= 1) amt = amt / 100;
+    $('tr.batchItem').each(function(){
+        var cost = $(this).find('.currentCost').val();
+        srp = cost / (1 - amt);
+        $(this).find('.itemPrice').val(srp);
+    });
+}
 function noEnter(e) {
     if (e.keyCode == 13) {
         $(this).trigger('change');

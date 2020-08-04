@@ -318,13 +318,21 @@ class BatchFromSearch extends FannieRESTfulPage
         {$vOpts}
     </select>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <label>Markup</label>
+    <label title="Markup product price by percent">Markup</label>
     <div class="input-group">
-        <input type="text" id="muPercent" class="form-control" value="10" onchange="markUp(this.value);" />
+        <input type="text" id="muPercent" class="form-control" value="0" onchange="markUp(this.value);" />
         <span class="input-group-addon">%</span>
     </div>
     <button type="submit" class="btn btn-default" onclick="markUp(\$('#muPercent').val()); return false">Go</button>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label title="Find SRP based on product cost by margin">Margin</label>
+    <div class="input-group">
+        <input type="text" id="muMargin" class="form-control" value="0" onchange="margin(this.value);" />
+        <span class="input-group-addon">%</span>
+    </div>
+    <button class="btn btn-default" onclick="margin(\$('#muMargin').val()); return false">Go</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <br/>
     <label>Tags</label> <select name="tagset" class="form-control" id="tagset"><option value="">No Tags</option>
     {$qOpts}
     </select>
@@ -335,7 +343,7 @@ class BatchFromSearch extends FannieRESTfulPage
 HTML;
 
         list($in_sql, $args) = $dbc->safeInClause($this->upcs);
-        $query = 'SELECT p.upc, p.description, p.normal_price, m.superID,
+        $query = 'SELECT p.upc, p.description, p.normal_price, m.superID, p.cost, 
                 MAX(CASE WHEN v.srp IS NULL THEN 0.00 ELSE v.srp END) as srp
                 FROM products AS p
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
@@ -352,6 +360,7 @@ HTML;
                             <td><input type="hidden" name="upc[]" class="itemUPC" value="%s" />%s</td>
                             <td>%s</td>
                             <td>$%.2f<input type="hidden" class="currentPrice" value="%.2f" /></td>
+                            <td>$%.2f<input type="hidden" class="currentCost" value="%.2f" /></td>
                             <td><div class="input-group">
                                 <span class="input-group-addon">$</span>
                                 <input type="text" name="price[]" class="itemPrice form-control" value="0.00" />
@@ -362,6 +371,7 @@ HTML;
                             $row['upc'], $row['upc'],
                             $row['description'],
                             $row['normal_price'], $row['normal_price'],
+                            $row['cost'], $row['cost'],
                             $row['srp']
             );
 
@@ -420,6 +430,8 @@ HTML;
             products in the list. The markup percentage is
             an alternative to vendor-based pricing and will
             create new prices that are X% above current retail.
+            The margin percentage will calculate SRPs based 
+            on the cost of each product.
             New shelftags are allocated and the Tags dropdown
             controls which set they land in.
             </p>';
