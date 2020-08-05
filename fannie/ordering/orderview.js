@@ -401,6 +401,30 @@ var orderView = (function($) {
         });
     }
 
+    mod.getComms = function(oid) {
+        $.ajax({
+            url: 'OrderAjax.php',
+            type: 'get',
+            data: 'id='+oid+'&comms=1'
+        }).done(function (resp) {
+            $('#commLog').html(resp);
+        });
+    };
+
+    mod.sendMsg = function() {
+        var msgID = $('#commID').val();
+        if (msgID == 0) {
+            return;
+        }
+        $.ajax({
+            url: 'OrderAjax.php',
+            type: 'post',
+            data: 'id='+$('#orderID').val() + '&commID=' + msgID
+        }).done(function (resp) {
+            $('#commLog').html(resp);
+        });
+    };
+
     return mod;
 
 }(jQuery));
@@ -420,6 +444,8 @@ $(document).ready(function(){
         orderView.saveConfirmDate(e.target.checked, $('#orderID').val());
     });
     orderView.afterLoadItems();
+
+    orderView.getComms($('#orderID').val());
 });
 
 $(window).unload(function() {

@@ -643,12 +643,14 @@ class OrderViewPage extends FannieRESTfulPage
         $contactOpts = array(
             0 => 'Call',
             1 => 'Email',
+            /*
             2 => 'Text (AT&T)',
             3 => 'Text (Sprint)',
             4 => 'Text (T-Mobile)',
             5 => 'Text (Verizon)',
             6 => 'Text (Google Fi)',
-            7 => 'Actual SMS',
+             */
+            7 => 'Text',
         );
         $contactHtml = '';
         foreach ($contactOpts as $id=>$val) {
@@ -1343,6 +1345,23 @@ HTML;
 <div class="panel panel-default">
     <div class="panel-heading">Order Items</div>
     <div class="panel-body" id="itemDiv">{$itemInfo}</div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="form-group">
+            <div class="input-group">
+                <select class="form-control" id="commID">
+                    <option value="0">Select a message</option>
+                    <option value="1">Didn't arrive, will re-order</option>
+                    <option value="2">Not available, cancelling order</option>
+                </select>
+                <span class="input-group-btn">
+                    <button onclick="orderView.sendMsg();" class="btn btn-default">Send</button>
+                </span>
+            </div>
+        </div>
+        <div id="commLog"></div>
+    </div>
 </div>
 <div id="footerDiv">{$customerInfo['footer']}</div>
 <input type=hidden value="{$orderID}" id="init_oid" />
