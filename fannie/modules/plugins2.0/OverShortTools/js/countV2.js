@@ -23,8 +23,9 @@ function save(){
 	var buyAmount = saveRow('buyAmount');
 	var atmAmount = saveAtmAmount();
     var tillCount = saveTillCounts();
+    var notes = saveNotes();
 
-	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&buyAmount='+buyAmount+'&atmAmount='+atmAmount+'&tillCount='+tillCount+'&store='+store;
+	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&buyAmount='+buyAmount+'&atmAmount='+atmAmount+'&tillCount='+tillCount+'&notes='+notes+'&store='+store;
 
 	$.ajax({
 		url: 'OverShortSafecountV2.php',
@@ -54,6 +55,17 @@ function saveTillCounts() {
         var rowID = this.id;
         var amt = Number(this.value);
         ret += rowID + ":" + amt + "|";
+    });
+
+    return ret;
+}
+
+function saveNotes() {
+    var ret = '';
+    $('.day-notes').each(function () {
+        var noteID = this.id;
+        var note = encodeURIComponent(this.value);
+        ret += noteID + ':' + note + '|';
     });
 
     return ret;
@@ -119,10 +131,11 @@ function updateOpenSafeCount(d){
 	resumRow('cashInTills');
     updateBuyAmount(d);
 
-    if (d == '20.00' || d == '50.00' || d == '100.00') {
+    if (d == '20.00' || d == '50.00' || d == '100.00' || d == 'Junk') {
         var newttl = Number(document.getElementById('safeCount150.00').value);
         newttl += Number(document.getElementById('safeCount1100.00').value);
         newttl += Number(document.getElementById('safeCount120.00').value);
+        newttl += Number(document.getElementById('safeCount1Junk').value);
         document.getElementById('extraPos').innerHTML = newttl;
         document.getElementById('dropExtra').dispatchEvent(new Event('change'));
     }
