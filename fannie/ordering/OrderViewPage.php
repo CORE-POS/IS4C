@@ -307,7 +307,7 @@ class OrderViewPage extends FannieRESTfulPage
         $soModel->phone($this->ph1);
         $soModel->altPhone($this->ph2);
         $soModel->email($this->email);
-        $soModel->sendEmails(FormLib::get('contactBy', 0));
+        $soModel->sendEmails(FormLib::get('contactBy', 8));
 
         if (FormLib::get('fn', false) !== false) {
             $soModel->firstName(FormLib::get('fn'));
@@ -463,7 +463,7 @@ class OrderViewPage extends FannieRESTfulPage
                         WHERE c.card_no=?
                         ORDER BY c.datetime DESC", 1));
                     $prefVal = $dbc->getValue($prefP, array($memNum));
-                    $orderModel->sendEmails($prefVal ? $prefVal : 0);
+                    $orderModel->sendEmails($prefVal ? $prefVal : 8);
 
                     $orderModel->save();
                     $orderModel->specialOrderID($orderID);
@@ -641,6 +641,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ret .= "</select></td></tr>";
 
         $contactOpts = array(
+            8 => 'Choose...',
             0 => 'Call',
             1 => 'Email',
             /*
