@@ -1,5 +1,11 @@
 var orderView = (function($) {
     var mod = {};
+    var forceUPC = true;
+
+    mod.forceUPC = function(f) {
+        forceUPC = f;
+    };
+
     mod.saveContactInfo = function()
     {
         var dstr = $('.contact-field').serialize();
@@ -234,13 +240,15 @@ var orderView = (function($) {
         var cardno = $('#memNum').val();
         var upc = $('#newupc').val();
         var qty = $('#newcases').val();
-        $.ajax({
-            type: 'post',
-            data: 'orderID='+oid+'&memNum='+cardno+'&upc='+upc+'&cases='+qty
-        }).done(function(resp){
-            $('#itemDiv').html(resp);
-            mod.afterLoadItems();
-        });
+        if (/^\d+$/.test(upc.trim()) || !forceUPC) {
+            $.ajax({
+                type: 'post',
+                data: 'orderID='+oid+'&memNum='+cardno+'&upc='+upc+'&cases='+qty
+            }).done(function(resp){
+                $('#itemDiv').html(resp);
+                mod.afterLoadItems();
+            });
+        }
     };
     mod.deleteID = function(orderID,transID)
     {

@@ -1368,10 +1368,13 @@ HTML;
 <input type=hidden value="{$orderID}" id="init_oid" />
 HTML;
 
-        $this->addScript('orderview.js?date=20180809');
+        $this->addScript('orderview.js?date=20180806');
         $this->addScript('../item/autocomplete.js');
         $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
+        if (FannieAuth::validateUserQuiet('ordering_edit')) {
+            $this->addOnloadCommand('orderView.forceUPC(false);');
+        }
 
         return $ret;
     }
