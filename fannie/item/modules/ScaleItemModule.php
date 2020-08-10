@@ -117,8 +117,10 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $ret .= "<tr><td colspan=7>";
         $ret .= '<div class="col-sm-6">';
-        $ret .= "<b>Expanded text:<br />
-            <textarea name=s_text id=s_text rows=4 cols=45 class=\"form-control\">";
+        $measure = str_replace("\r", '', $scale['text']);
+        $measure = str_replace("\n", '', $measure);
+        $ret .= "<b>Expanded text (<span id=\"expLength\">" . strlen($measure) . "</span>):<br />
+            <textarea name=s_text id=s_text rows=4 cols=45 class=\"form-control\" onkeyup=\"scaleItem.countField('s_text', 'expLength');\">";
         $ret .= $scale['text'];
         $ret .= "</textarea>";
         $ret .= '<br /><b>Linked PLU</b><br />';
@@ -127,14 +129,14 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '</div>';
         $ret .= '<div class="col-sm-4">';
         $ret .= '<div class="form-group">
-            <button type="button" class="btn btn-default btn-sm" onclick="appendScaleTag(\'mosa\'); return false;">MOSA</button>
+            <button type="button" class="btn btn-default btn-sm" onclick="scaleItem.appendScaleTag(\'mosa\'); return false;">MOSA</button>
             <label>
                 <input type="checkbox" name="scale_mosa" ' . ($scale['mosaStatement'] ? 'checked' : '') . ' />
                 Include MOSA statement
             </label>
             </div>';
         $ret .= '<div class="form-group">
-            <button type="button" class="btn btn-default btn-sm" onclick="appendScaleTag(\'cool\'); return false;">COOL</button>
+            <button type="button" class="btn btn-default btn-sm" onclick="scaleItem.appendScaleTag(\'cool\'); return false;">COOL</button>
             <input type="text" class="form-control" name="scale_origin" value="' . $scale['originText'] . '" 
                 placeholder="Country of origin text" />
             </div>';
@@ -184,16 +186,9 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         return $ret;
     }
 
-    function getFormJavascript($upc)
+    public function getFormJavascript($upc)
     {
-        return <<<STR
-function appendScaleTag(tag) {
-    var current = $('#s_text').val();
-    current += "{" + tag + "}";
-    $('#s_text').val(current);
-    console.log(current);
-}
-STR;
+        return file_get_contents(__DIR__ . '/scaleItem.js');
     }
 
     function SaveFormData($upc)
