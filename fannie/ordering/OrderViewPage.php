@@ -1337,7 +1337,6 @@ HTML;
 
         $ret .= <<<HTML
 <p />
-<div class="alert alert-danger">WFC is not currently taking special orders</div>
 <input type=hidden id=redirectURL value="{$return_path}" />
 <div class="panel panel-default">
     <div class="panel-heading">Customer Information</div>
