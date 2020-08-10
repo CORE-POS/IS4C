@@ -83,7 +83,7 @@ HTML;
             $subject = 'Screening Positive Notification';
             $body = $info['name'] . ' reported symptoms at the screening station.';
             $to = 'hr@wholefoods.coop, shannigan@wholefoods.coop, michael@wholefoods.coop, jkrussow@wholefoods.coop';
-            $headers = "From: hillside@wholefoods.coop\r\n";
+            $headers = "From: hillside-screening@wholefoods.coop\r\n";
             mail($to, $subject, $body, $headers);
 
             return <<<HTML
