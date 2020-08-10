@@ -1223,7 +1223,16 @@ HTML;
         $upcFields = '';
         $upcs = '';
         $allLCs = true;
+        $products = new ProductsModel($dbc);
         while ($fetchW = $dbc->fetchRow($fetchR)) {
+            $products->reset();
+            $products->upc($fetchW['upc']);
+            if ($this->config->get('STORE_MODE') == 'HQ') {
+                $storeLocation = COREPOS\Fannie\API\lib\Store::getIdByIp();
+                $products->store_id($storeLocation);
+            }
+            $products->load();
+            $tr_style = ($products->inUse() === '0') ? "style=\"color: black; background-color: lightgrey;\"" : "";
             $cur = ($cur + 1) % 2;
             $ret .= "<tr>";
             $fetchW['upc'] = rtrim($fetchW['upc']);
@@ -1261,8 +1270,8 @@ HTML;
                 $ret .= "<td bgcolor=$colors[$cur]><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$fetchW['upc']}\"
                     target=\"_new{$fetchW['upc']}\">{$fetchW['upc']}</a>{$conflict}</td>";
             }
-            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['brand']}</td>";
-            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['description']}</td>";
+            $ret .= "<td bgcolor=$colors[$cur]><span $tr_style>{$fetchW['brand']}</span></td>";
+            $ret .= "<td bgcolor=$colors[$cur]><span $tr_style>{$fetchW['description']}</span></td>";
             $ret .= "<td bgcolor=$colors[$cur] class=\"price\">{$fetchW['normal_price']}</td>";
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
             $qty = is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0 ? $fetchW['quantity'] : 1;
@@ -1667,7 +1676,9 @@ HTML;
             collectively. These limits cannot be used for volume sale price (i.e., 2-for-$1).</p>
             <p><em>Cut</em> and <em>Paste</em> can move items items from one batch to
             another. This feature requires user authentication so that each user has their
-            own clipboard and don\'t interfere with each oter.</p>
+            own clipboard and don\'t interfere with each other.</p>
+            <p><em>Items highlighted</em> in grey are not in-use in POS for the store the 
+            batch is being viewed from.</p>
             ';
     }
 
