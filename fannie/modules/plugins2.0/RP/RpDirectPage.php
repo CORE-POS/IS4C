@@ -219,8 +219,8 @@ class RpDirectPage extends FannieRESTfulPage
         $itemP = $this->connection->prepare("SELECT * FROM RpOrderItems WHERE upc=? AND storeID=?");
         $item = $this->connection->getRow($itemP, array($upc, $store));
         if ($item === false) {
-            $itemP = $this->connection->prepare("SELECT * FROM RpLocalItems WHERE upc=? AND storeID=?");
-            $item = $this->connection->getRow($itemP, array($upc, $store));
+            $itemP = $this->connection->prepare("SELECT * FROM RpLocalItems WHERE upc=?");
+            $item = $this->connection->getRow($itemP, array($upc));
         }
         if (substr($upc, 0, 2) == "LC") {
             $prodP = $this->connection->prepare("SELECT p.brand, p.size, p.cost FROM upcLike AS u
