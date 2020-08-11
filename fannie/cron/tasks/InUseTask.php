@@ -88,18 +88,27 @@ class InUseTask extends FannieTask
         }
 
         $upcs = array();
-        $prepZ = $dbc->prepare("SELECT upc FROM products GROUP BY upc");
+        // procute a list of every applicable upc in POS to check
+        $prepZ = $dbc->prepare("
+            SELECT p.upc
+            FROM products AS p
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE m.superID IN (1,4,5,8,9,13,17,18)
+                AND p.department NOT IN (225,226,228,229,602)
+                AND p.department NOT BETWEEN 60 AND 80
+            GROUP BY upc;
+        ");
         $resZ = $dbc->execute($prepZ);
         while ($row = $dbc->fetchRow($resZ)) {
             $upcs[] = $row['upc'];
         }
 
-        $y = date('Y');
-        $m = date('m') - 1;
-        $d = date('d');
-        $checkDate = $y.'-'.$m.'-'.$d;
+        $date = new DateTime();
+        $date ->sub(new DateInterval('P1M'));
+        $checkDate = $date->format('Y-m-d');
 
         $exempts = array();
+        // find upcs to exclude from UPDATE ~ SET inUse = 0 query
         foreach ($upcs as $upc) {
             $stores = array(1,2);
             foreach ($stores as $store) {
@@ -154,7 +163,8 @@ class InUseTask extends FannieTask
                     )
                     AND p.store_id = ?
                     AND p.inUse = 1
-                    AND (i.superID <> 6 OR p.upc NOT LIKE \'000000%\')
+                    AND i.superID <> 6 
+                    AND upc NOT LIKE "%000000"
                     AND p.upc NOT IN ('.$inClause.')
                 ';
             $updateUnuse = $dbc->prepare($updateQunuse);
