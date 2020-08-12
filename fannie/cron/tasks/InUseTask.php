@@ -95,7 +95,7 @@ class InUseTask extends FannieTask
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE m.superID IN (1,4,5,8,9,13,17,18)
                 AND p.department NOT IN (225,226,228,229,602)
-                AND p.department NOT BETWEEN 60 AND 80
+                AND p.department NOT BETWEEN 60 AND 81
             GROUP BY upc;
         ");
         $resZ = $dbc->execute($prepZ);
@@ -142,8 +142,10 @@ class InUseTask extends FannieTask
                     UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.last_sold) > i.time
                     OR (UNIX_TIMESTAMP(CURDATE()) - UNIX_TIMESTAMP(p.created) > i.time AND p.last_sold IS NULL)
             )
-            AND p.inUse = 1
-            AND (i.superID <> 6 OR p.upc NOT LIKE '000000%')
+                AND p.inUse = 1
+                AND s.superID IN (1,4,5,8,9,13,17,18)
+                AND p.department NOT IN (225,226,228,229,602)
+                AND p.department NOT BETWEEN 60 AND 81
             ORDER BY p.store_id;
         ");
         $resultA = $dbc->execute($reportInUse);
@@ -163,8 +165,9 @@ class InUseTask extends FannieTask
                     )
                     AND p.store_id = ?
                     AND p.inUse = 1
-                    AND i.superID <> 6 
-                    AND upc NOT LIKE "%000000"
+                    AND s.superID IN (1,4,5,8,9,13,17,18)
+                    AND p.department NOT IN (225,226,228,229,602)
+                    AND p.department NOT BETWEEN 60 AND 81
                     AND p.upc NOT IN ('.$inClause.')
                 ';
             $updateUnuse = $dbc->prepare($updateQunuse);
