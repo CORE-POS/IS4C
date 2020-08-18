@@ -83,7 +83,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'GD' => 21205,
         'SC' => 21200,
         'MI' => 10710,
-        'IC' => 67710,
+        'IC' => 66600,
         'MA' => 66600,
         'RR' => 63380,  
         'OB' => 66600,
@@ -91,7 +91,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'RB' => 31140,
         'PP' => 10295,
         'NCGA' => 66600,
-        'Member Discounts' => 66600,
+        'Member Discounts' => 66601,
         'Staff Discounts' => 61170,
         );
 
