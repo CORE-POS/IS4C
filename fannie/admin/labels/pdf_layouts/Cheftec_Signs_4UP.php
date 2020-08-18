@@ -263,12 +263,18 @@ class CTRecipesStandalone
         $ret = '';
         $names = array();
         $temp = array();
+        $i = 0;
         foreach ($list as $k => $v) {
             $name = $v['name'];
             if (!in_array($name, $names)) {
                 $names[] = $name;
-                $temp[] = $v;
+                $temp[$i] = $v;
             } 
+            if (strpos($temp[$i]['name'], "*") !== false) {
+                $temp[$i]['name'] = str_replace("*", "", $name);
+                $temp[$i]['name'] .= "*";
+            }
+            $i++;
         }
         $list = $temp;
         foreach ($list as $i) {
