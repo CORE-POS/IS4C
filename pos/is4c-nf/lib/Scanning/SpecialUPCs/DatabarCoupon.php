@@ -158,6 +158,13 @@ class DatabarCoupon extends SpecialUPC
             $pos += 1;
 
             $coupon->requiredRulesCode = $upc[$pos];
+            /**
+             * I cannot find any clear specification of what this rule is supposed to do.
+             * All real-life coupons seem to use it identically to rule #0
+             */
+            if ($coupon->requiredRulesCode == 3) {
+                $coupon->requiredRulesCode = 0;
+            }
             $pos += 1;
 
             $srLength = (int)$upc[$pos];        
@@ -318,7 +325,7 @@ class DatabarCoupon extends SpecialUPC
         }
 
         list($coupon->secondReq, $json) = $this->validateRequirement($coupon->secondReq, $json);
-        if (!$coupon->secondReq->valid && (!property_exists($coupon->thirdReq, 'value') || $coupon->requiredRulesCode == 1)) {
+        if (!$coupon->secondReq->valid && !$coupon->firstReq->valid && (!property_exists($coupon->thirdReq, 'value') || $coupon->requiredRulesCode == 1)) {
             // if the secondary requirment isn't valid and
             //    a) there are no more requirments, or
             //    b) all requirements are mandatory
@@ -349,9 +356,9 @@ class DatabarCoupon extends SpecialUPC
                     return $json;
                 }
                 break;
-            case '3': // allow for any of the prefixes?
-                  // be misreading documentation on this one
-                if (!$coupon->firstReq->valid && !$coupon->secondReq->valid && !$coupon->thirdReq->valid) {
+            case '3': // either second or third. seems odd, may
+                      // be misreading documentation on this one
+                if (!$coupon->secondReq->valid && !$coupon->thirdReq->valid) {
                     return $json;
                 }
                 break;
