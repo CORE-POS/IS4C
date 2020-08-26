@@ -74,10 +74,12 @@ class MailChimpTask extends FannieTask
              */
         }
 
+        /*
         if ($field_id === false) {
             $this->cronMsg('Error: could not locate / create owner number field!', FannieLogger::NOTICE);
             return false;
         }
+         */
 
         return true;
     }
