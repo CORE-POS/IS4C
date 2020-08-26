@@ -194,7 +194,7 @@ class SaFullPage extends FannieRESTfulPage
     <div class="col-sm-3">
         <div class="input-group">
             <span class="input-group-addon">Quantity</span>
-            <input type="number" name="qty" id="newQty" class="form-control" 
+            <input type="text" name="qty" id="newQty" class="form-control" 
                 onkeyup="full.keybind(event);" onkeydown="full.tab(event);" />
         </div> 
     </div>
