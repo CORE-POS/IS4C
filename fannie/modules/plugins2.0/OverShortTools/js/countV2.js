@@ -241,7 +241,7 @@ function updateBuyAmount(d){
         dimes += 0.10;
     }
     dimes = Math.round(dimes * 100) / 100;
-    document.getElementById('buyAmount0.05').innerHTML = dimes;
+    document.getElementById('buyAmount0.10').innerHTML = dimes;
 
     var nickels = Number(document.getElementById('buyAmount0.05').innerHTML);
     while ((Math.round(nickels * 100)) % 200 != 0 && (Math.round(nickels * 100)) % 5 == 0) {
