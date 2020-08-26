@@ -349,7 +349,7 @@ HTML;
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 WHERE p.upc IN ( ' . $in_sql . ')
-                GROUP BY p.upc, p.description, p.normal_price, m.superID
+                GROUP BY p.upc, p.description, p.normal_price, m.superID,p.cost
                 ORDER BY p.upc';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
