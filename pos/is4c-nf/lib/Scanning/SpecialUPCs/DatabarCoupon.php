@@ -157,6 +157,9 @@ class DatabarCoupon extends SpecialUPC
         if (isset($upc[$pos]) && $upc[$pos] == "1") {
             $pos += 1;
 
+            $coupon->requiredRulesCode = $upc[$pos];
+            $pos += 1;
+
             $srLength = (int)$upc[$pos];        
             $pos += 1;
             $coupon->secondReq->value = substr($upc,$pos,$srLength);
@@ -346,9 +349,9 @@ class DatabarCoupon extends SpecialUPC
                     return $json;
                 }
                 break;
-            case '3': // either second or third. seems odd, may
+            case '3': // allow for any of the prefixes?
                   // be misreading documentation on this one
-                if (!$coupon->secondReq->valid && !$coupon->thirdReq->valid) {
+                if (!$coupon->firstReq->valid && !$coupon->secondReq->valid && !$coupon->thirdReq->valid) {
                     return $json;
                 }
                 break;
@@ -420,7 +423,7 @@ class DatabarCoupon extends SpecialUPC
 
         TransRecord::addCoupon($couponUPC, $coupon->firstReq->department, -1*$value);
         $json['output'] = DisplayLib::lastpage();
-    
+
         return $json;
     }
 
