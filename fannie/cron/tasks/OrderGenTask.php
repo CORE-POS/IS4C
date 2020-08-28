@@ -202,7 +202,7 @@ class OrderGenTask extends FannieTask
             }
             if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
                 $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
-                if ($prodW === false || $prodW['inUse'] == 0) {
+                if ($prodW === false) {
                     continue;
                 }
                 /**
