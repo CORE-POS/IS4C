@@ -55,6 +55,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
             $task->setVendors($vendors);
             $task->setUser(FannieAuth::getUID($this->current_user));
             $task->setStore($this->form->store);
+            $task->setAllowNotInUse(FormLib::get('allowInactive') ? true : false);
             $task->run();
 
             return 'ViewPurchaseOrders.php?init=pending';
@@ -95,6 +96,9 @@ class PurchasingIndexPage extends FannieRESTfulPage
             <p>
                 <label>Store</label>
                 ' . $stores['html'] . '
+            </p>
+            <p>
+                <label><input type="checkbox" value="1" name="allowInactive" /> Include inactive items</label>
             </p>
             </div></div>
             <div class="small panel panel-default">

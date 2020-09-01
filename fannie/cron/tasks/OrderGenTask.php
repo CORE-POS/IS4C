@@ -74,6 +74,12 @@ class OrderGenTask extends FannieTask
         $this->forecast = $f;
     }
 
+    private $allowNotInUse = false;
+    public function setAllowNotInUse($niu)
+    {
+        $this->allowNotInUse = $niu;
+    }
+
     private function freshenCache($dbc)
     {
         $dbc->startTransaction();
@@ -202,7 +208,7 @@ class OrderGenTask extends FannieTask
             }
             if ($cur !== false && ($cur < $row['par'] || ($cur == 1 && $row['par'] == 1))) {
                 $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
-                if ($prodW === false) {
+                if ($prodW === false || ($prodW['inUse'] == 0 && !$this->allowNotInUse)) {
                     continue;
                 }
                 /**
