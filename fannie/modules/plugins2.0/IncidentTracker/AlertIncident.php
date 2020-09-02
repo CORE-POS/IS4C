@@ -219,7 +219,7 @@ class AlertIncident extends FannieRESTfulPage
         $this->connection->selectDB($this->config->get('OP_DB'));
         try {
             $incident = $this->getIncident($id);
-            $comments = $this->getComments($id);
+            $comments = $this->getComments($id, false);
             $settings = $this->config->get('PLUGIN_SETTINGS');
             $prefix = $settings['IncidentDB'] . $this->connection->sep();
             $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=1");
@@ -387,7 +387,7 @@ class AlertIncident extends FannieRESTfulPage
         return 'AlertIncident.php?id=' . $id;
     }
 
-    protected function getComments($id)
+    protected function getComments($id, $reverse=true;)
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $prefix = $settings['IncidentDB'] . $this->connection->sep();
@@ -397,7 +397,7 @@ class AlertIncident extends FannieRESTfulPage
             FROM {$prefix}IncidentComments AS i
                 LEFT JOIN Users as u ON i.userID=u.uid
             WHERE incidentID=?
-            ORDER BY tdate DESC";
+            ORDER BY tdate " . ($reverse ? 'DESC' : 'ASC');
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array($id));
         $ret = array();
