@@ -387,7 +387,7 @@ class AlertIncident extends FannieRESTfulPage
         return 'AlertIncident.php?id=' . $id;
     }
 
-    protected function getComments($id, $reverse=true;)
+    protected function getComments($id, $reverse=true)
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $prefix = $settings['IncidentDB'] . $this->connection->sep();
