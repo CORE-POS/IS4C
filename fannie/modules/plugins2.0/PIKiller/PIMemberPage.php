@@ -425,8 +425,13 @@ class PIMemberPage extends PIKillerPage {
         $opts = array();
         $memtypes = new MemtypeModel($dbc);
         foreach($memtypes->find('memtype') as $mt){
-            $labels[] = $mt->memDesc();
-            $opts[] = $mt->memtype();
+            if ($mt->enabled()) {
+                $labels[] = $mt->memDesc();
+                $opts[] = $mt->memtype();
+            } elseif ($mt->memtype() == $this->account['customerTypeID']) {
+                $labels[] = $mt->memDesc();
+                $opts[] = $mt->memtype();
+            }
         }
         echo '<td>'.$this->text_or_select('memType',$this->account['customerTypeID'],
                 $opts, $labels,array(),$limitedEdit).'</td>';
