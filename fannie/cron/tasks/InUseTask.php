@@ -88,7 +88,7 @@ class InUseTask extends FannieTask
         }
 
         $upcs = array();
-        // procute a list of every applicable upc in POS to check
+        // procure a list of every applicable upc in POS to check
         $prepZ = $dbc->prepare("
             SELECT p.upc
             FROM products AS p
@@ -107,12 +107,14 @@ class InUseTask extends FannieTask
         $date ->sub(new DateInterval('P1M'));
         $checkDate = $date->format('Y-m-d');
 
+        // exclude items that have been modified within last 30 days from "set inUse = 0" query
         $exempts = array();
-        // find upcs to exclude from UPDATE ~ SET inUse = 0 query
+        $stores = array(1,2);
+        foreach ($stores as $store) {
+            $exempts[$store] = array();
+        }
         foreach ($upcs as $upc) {
-            $stores = array(1,2);
             foreach ($stores as $store) {
-                $exempts[$store] = array();
                 $args = array($store,$upc,$checkDate);
                 $prepA = $dbc->prepare("SELECT upc, modified, inUse FROM products WHERE store_id = ? AND upc = ? AND modified >= ? ORDER BY modified DESC LIMIT 1;");
                 $resA = $dbc->execute($prepA,$args);
