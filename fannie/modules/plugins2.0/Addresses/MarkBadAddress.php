@@ -83,6 +83,21 @@ class MarkBadAddress extends Job
                 }
             }
         }
+
+        if (filter_var($this->data['email'], FILTER_VALIDATE_EMAIL)) {
+            // usually lots of these gets queued
+            // delay to avoid seeming spam-y
+            $wait = rand(30, 60);
+            sleep($wait);
+            $to = $this->data['email'];
+            $subject = 'Whole Foods Co-op Address';
+            $body = "Hello,\n\nWhole Foods Co-op does not currently have a valid mailing address for your account."
+                . " Please fill out this form to update your contact information:\n\n"
+                . "https://wholefoods.coop/ownership-1/owner-solutions/\n\n"
+                . "Your Owner Number is {$id}\n";
+            $headers = "From: Whole Foods Co-op <info@wholefoods.coop>\r\n";
+            mail($to, $subject, $body, $headers);
+        }
     }
 }
 

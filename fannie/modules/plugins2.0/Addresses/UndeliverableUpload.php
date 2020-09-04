@@ -18,6 +18,12 @@ class UndeliverableUpload extends COREPOS\Fannie\API\FannieUploadPage
             'default' => 0,
             'required' => true,
         ),
+        'email' => array(
+            'name' => 'email',
+            'display_name' => 'Email',
+            'default' => 9,
+            'required' => true,
+        ),
     );
 
     private $updateCount = 0;
@@ -41,11 +47,13 @@ class UndeliverableUpload extends COREPOS\Fannie\API\FannieUploadPage
                 'data' => array(
                     'id' => $id,
                     'code' => 16,
+                    'email' => $line[$indexes['email']],
                 ),
             ));
             $this->updateCount++;
-            break;
         }
+
+        return true;
     }
 
     public function results_content()
