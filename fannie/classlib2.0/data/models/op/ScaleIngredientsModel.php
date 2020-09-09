@@ -1,7 +1,8 @@
 <?php
+
 /*******************************************************************************
 
-    Copyright 2014 Whole Foods Co-op
+    Copyright 2020 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -20,35 +21,21 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+        
 
 /**
-  @class ServiceScalesModel
+  @class ScaleIngredientsModel
 */
-class ServiceScalesModel extends BasicModel
+class ScaleIngredientsModel extends BasicModel
 {
-
-    protected $name = "ServiceScales";
+    protected $name = "ScaleIngredients";
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'serviceScaleID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
-    'description' => array('type'=>'VARCHAR(50)'),
-    'host' => array('type'=>'VARCHAR(50)'),
-    'scaleType' => array('type'=>'VARCHAR(50)'),
-    'scaleDeptName' => array('type'=>'VARCHAR(25)'),
-    'superID' => array('type'=>'INT'),
-    'epDeptNo' => array('type'=>'SMALLINT', 'default'=>1),
-    'epStoreNo' => array('type'=>'SMALLINT', 'default'=>0),
-    'epScaleAddress' => array('type'=>'SMALLINT', 'default'=>1),
-    'storeID' => array('type'=>'INT'),
+    'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
+    'storeID' => array('type'=>'INT', 'primary_key'=>true),
+    'ingredients' => array('type'=>'TEXT'),
     );
 
-    public function doc()
-    {
-        return '
-Use:
-List service scales and network info.
-        ';
-    }
 }
 
