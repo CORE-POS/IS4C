@@ -227,8 +227,6 @@ class FanniePage extends \COREPOS\common\ui\CorePage
         $FANNIE_URL = $this->config->get('URL');
         ob_start();
         $START_TIMESTAMP = $this->start_timestamp;
-        $QUERY_COUNT = $this->connection->queryCount();
-        $ALL_QUERIES = $this->connection->loggedQueries();
         if ($this->themed) {
             include(dirname(__FILE__) . '/../src/footer.bootstrap.html');
             $modal = $this->helpModal();
