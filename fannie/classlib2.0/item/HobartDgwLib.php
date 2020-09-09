@@ -155,17 +155,21 @@ class HobartDgwLib
                     $has_et = true;
                     $mode = $new_item ? 'WriteOneExpandedText' : 'ChangeOneExpandedText';
                     fwrite($fp,"Record Type,Expanded Text Number,Expanded Text\r\n");
+                    $realText = $item['ExpandedText'];
+                    if (isset($scale['storeID']) && isset($item['ExpandedText' . $scale['storeID']])) {
+                        $realText = $item['ExpandedText' . $scale['storeID']];
+                    }
                     if ($item['MOSA']) {
-                        $item['ExpandedText'] = str_replace('{mosa}', 'Certified Organic By MOSA', $item['ExpandedText']);
+                        $realText = str_replace('{mosa}', 'Certified Organic By MOSA', $realText);
                     } else {
-                        $item['ExpandedText'] = str_replace('{mosa}', '', $item['ExpandedText']);
+                        $realText = str_replace('{mosa}', '', $realText);
                     }
                     if (!isset($item['OriginText'])) {
                         $item['OriginText'] = '';
                     }
-                    $item['ExpandedText'] = str_replace('{cool}', $item['OriginText'], $item['ExpandedText']);
+                    $realText = str_replace('{cool}', $item['OriginText'], $realText);
                     $text = '';
-                    foreach (explode("\n", $item['ExpandedText']) as $line) {
+                    foreach (explode("\n", $realText) as $line) {
                         $text .= wordwrap($line, 50, "\n") . "\n";
                     }
                     $text = preg_replace("/\\r/", '', $text);

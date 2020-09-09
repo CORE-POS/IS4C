@@ -89,16 +89,20 @@ class EpScaleLib
         if ($scale_model->epStoreNo() != 0) {
             $et_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);
         }
+        $text_field = $item_info['ExpandedText'];
+        if (isset($item_info['ExpandedText' . $scale_model->storeID()])) {
+            $text_field = $item_info['ExpandedText' . $scale_model->storeID()];
+        }
         $et_line .= 'DNO' . $scale_model->epDeptNo() . chr(253);
         $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
         $et_line .= 'PNO' . $item_info['PLU'] . chr(253);
         $et_line .= 'INO' . $item_info['PLU'] . chr(253);
-        $et_line .= 'ITE' . self::expandedText($item_info['ExpandedText'], $item_info, $scale_model) . chr(253);
+        $et_line .= 'ITE' . self::expandedText($text_field, $item_info) . chr(253);
 
         return $et_line;
     }
 
-    static private function expandedText($text, $item_info, $scale_model)
+    static private function expandedText($text, $item_info)
     {
         if ($item_info['MOSA']) {
             $text = str_replace('{mosa}', 'Certified Organic By MOSA', $text);
