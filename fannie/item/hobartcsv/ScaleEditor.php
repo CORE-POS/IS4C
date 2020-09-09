@@ -71,6 +71,7 @@ class ScaleEditor extends FannieRESTfulPage
         $types = FormLib::get('type', array());
         $dept = FormLib::get('scaleDept', array());
         $super = FormLib::get('super', array());
+        $store = FormLib::get('storeID', array());
         $ep_st = FormLib::get('store-no', array());
         $ep_dept = FormLib::get('dept-no', array());
         $ep_addr = FormLib::get('address-no', array());
@@ -95,6 +96,9 @@ class ScaleEditor extends FannieRESTfulPage
                     $super[$i] = null;
                 }
                 $scale->superID($super[$i]);
+            }
+            if (isset($store[$i])) {
+                $scale->storeID($store[$i]);
             }
             if (isset($ep_st[$i])) {
                 $scale->epStoreNo($ep_st[$i]);
@@ -129,7 +133,7 @@ class ScaleEditor extends FannieRESTfulPage
         
         $ret .= '<table class="table">
             <tr><th>Description</th><th>Host</th><th>Type</th><th>Scale Dept.</th><th>POS Super Dept</th>
-            <th>Store # (EP)</th><th>Dept # (EP)</th><th>Address # (EP)</th>
+            <th>POS Store ID</th><th>Store # (EP)</th><th>Dept # (EP)</th><th>Address # (EP)</th>
             </tr>';
         foreach ($scales->find('description') as $scale) {
             $ret .= sprintf('<tr>
@@ -158,12 +162,15 @@ class ScaleEditor extends FannieRESTfulPage
             }
             $ret .= '</select></td>';
             $ret .= sprintf('
+                        <td><input type="text" name="storeID[]"
+                            class="form-control" value="%d" /></td>
                         <td><input type="text" name="store-no[]"
                             class="form-control" value="%d" /></td>
                         <td><input type="text" name="dept-no[]"
                             class="form-control" value="%d" /></td>
                         <td><input type="text" name="address-no[]"
                             class="form-control" value="%d" /></td>',
+                        $scale->storeID(),
                         $scale->epStoreNo(),
                         $scale->epDeptNo(),
                         $scale->epScaleAddress()
