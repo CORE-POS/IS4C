@@ -1,18 +1,23 @@
-var scaleItem = (function($) {
+var scaleItem = (function() {
     var mod = {};
     
     mod.countField = function(field, output) {
-        var txt = document.getElementById(field).value;
-        txt = txt.replace(/\r/g, "");
-        txt = txt.replace(/\n/g, "");
+        var txt = $('.' + field + ':visible').val();
+        var countable = txt.replace(/\r/g, "");
+        countable = countable.replace(/\n/g, "");
 
-        document.getElementById(output).innerHTML = txt.length;
+        if ($('#si_sync').prop('checked')) {
+            $('.' + field + ':hidden').val(txt);
+        }
+
+        document.getElementById(output).innerHTML = countable.length;
     };
 
     mod.appendScaleTag = function(tag) {
-        var current = document.getElementById('s_text').value;
+        var current = $('.s_text:visible').val();
         current += "{" + tag + "}";
-        document.getElementById('s_text').value = current;
+        $('.s_text:visible').val(current);
+        mod.countField('s_text', 'expLength');
     };
 
     return mod;
