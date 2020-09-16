@@ -255,9 +255,12 @@ var rgbToHex = function(rgb){
 JAVASCRIPT;
     }
 
-    public function help_content()
+    public function helpContent()
     {
         return <<<HTML
+Define custom POS keyboard layouts and save as a printable PDF 
+document. In <strong>cmd </strong> and <strong>Label</strong>, 
+fields, use pipes ( "|" ) to delimit new lines.
 HTML;
     }
 
