@@ -39,6 +39,16 @@ class MSEditor extends FannieRESTfulPage
         $model->load();
         $ms = $model->toStdClass();
 
+        $this->addCssFile('../DBA/node_modules/codemirror/lib/codemirror.css');
+        $this->addScript('../DBA/node_modules/codemirror/lib/codemirror.js');
+        $this->addScript('../DBA/node_modules/codemirror//addon/mode/multiplex.js');
+        $this->addScript('../DBA/node_modules/codemirror/mode/htmlembedded/htmlembedded.js');
+        $this->addScript('../DBA/node_modules/codemirror/mode/css/css.js');
+        $this->addScript('../DBA/node_modules/codemirror/mode/xml/xml.js');
+        $this->addScript('../DBA/node_modules/codemirror/mode/javascript/javascript.js');
+        $this->addScript('../DBA/node_modules/codemirror/mode/htmlmixed/htmlmixed.js');
+        $this->addOnloadCommand('CodeMirror.fromTextArea(document.getElementById("queryTA"), { lineNumbers: true, mode: "htmlembedded" });');
+
         return <<<HTML
 <form method="post" action="MSEditor.php">
 <div class="form-group">
@@ -51,7 +61,7 @@ class MSEditor extends FannieRESTfulPage
 </div>
 <div class="form-group">
     <label>Layout</label>
-    <textarea class="form-control" name="layout" rows="10">{$ms->layout}</textarea>
+    <textarea id="queryTA" class="form-control" name="layout" rows="10">{$ms->layout}</textarea>
 </div>
 <div class="form-group">
     <input type="hidden" name="id" value="{$this->id}" />

@@ -27,6 +27,9 @@ class MSItems extends FannieRESTfulPage
         $aligns = FormLib::get('align');
         $texts = FormLib::get('text');
         $prices = FormLib::get('price');
+        $prices2 = FormLib::get('price2');
+        $option = FormLib::get('option');
+        $extra = FormLib::get('extra');
         $this->connection->startTransaction();
         for ($i=0; $i<count($itemIDs); $i++) {
             $itemID = $itemIDs[$i];
@@ -39,6 +42,9 @@ class MSItems extends FannieRESTfulPage
                 'type' => isset($types[$i]) ? $types[$i] : 'priceditem',
                 'text' => isset($texts[$i]) ? $texts[$i] : '',
                 'price' => isset($prices[$i]) ? $prices[$i] : '',
+                'price2' => isset($prices2[$i]) ? $prices2[$i] : '',
+                'option' => isset($option[$i]) ? $option[$i] : '',
+                'extra' => isset($extra[$i]) ? $extra[$i] : '',
             );
             $model->metadata(json_encode($meta));
             if ($itemID) {
@@ -80,12 +86,36 @@ HTML;
                 $ret .= <<<HTML
 <label>Item</label>: <input type="text" class="form-control" name="text[]" value="{$item->metadata['text']}" />
 <label>Price</label>: <input type="text" class="form-control" name="price[]" value="{$item->metadata['price']}" />
+<input type="hidden" class="form-control" name="price2[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="option[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="extra[]" value="{$item->metadata['price2']}" />
+HTML;
+                break;
+            case 'dualpriceditem':
+                $ret .= <<<HTML
+<label>Item</label>: <input type="text" class="form-control" name="text[]" value="{$item->metadata['text']}" />
+<label>Price 1</label>: <input type="text" class="form-control" name="price[]" value="{$item->metadata['price']}" />
+<label>Price 2</label>: <input type="text" class="form-control" name="price2[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="option[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="extra[]" value="{$item->metadata['price2']}" />
 HTML;
                 break;
             case 'description':
                 $ret .= <<<HTML
-<label>Item</label>: <input type="text" class="form-control" name="text[]" value="{$item->metadata['text']}" />
+<label>Description</label>: <input type="text" class="form-control" name="text[]" value="{$item->metadata['text']}" />
 <input type="hidden" class="form-control" name="price[]" value="{$item->metadata['price']}" />
+<input type="hidden" class="form-control" name="price2[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="option[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="extra[]" value="{$item->metadata['price2']}" />
+HTML;
+                break;
+            case 'header':
+                $ret .= <<<HTML
+<label>Header</label>: <input type="text" class="form-control" name="text[]" value="{$item->metadata['text']}" />
+<input type="hidden" class="form-control" name="price[]" value="{$item->metadata['price']}" />
+<input type="hidden" class="form-control" name="price2[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="option[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="extra[]" value="{$item->metadata['price2']}" />
 HTML;
                 break;
             case 'divider':
@@ -93,6 +123,18 @@ HTML;
 (Divider)
 <input type="hidden" class="form-control" name="text[]" value="{$item->metadata['price']}" />
 <input type="hidden" class="form-control" name="price[]" value="{$item->metadata['price']}" />
+<input type="hidden" class="form-control" name="price[]" value="{$item->metadata['price']}" />
+<input type="hidden" class="form-control" name="option[]" value="{$item->metadata['price2']}" />
+<input type="hidden" class="form-control" name="extra[]" value="{$item->metadata['price2']}" />
+HTML;
+                break;
+            case 'sandwichstep':
+                $ret .= <<<HTML
+<label>Step</label>: <input type="text" class="form-control" name="text[]" value="{$item->metadata['text']}" />
+<label>Options</label>: <input type="text" class="form-control" name="option[]" value="{$item->metadata['option']}" />
+<label>Extra</label>: <input type="text" class="form-control" name="extra[]" value="{$item->metadata['extra']}" />
+<input type="hidden" class="form-control" name="price[]" value="{$item->metadata['price']}" />
+<input type="hidden" class="form-control" name="price2[]" value="{$item->metadata['price2']}" />
 HTML;
                 break;
         }
@@ -118,7 +160,7 @@ HTML;
             $item = new MenuScreenItemsModel($this->connection);
             $item->menuScreenID($this->id);
             $item->columnNumber($i);
-            foreach ($item->find() as $obj) {
+            foreach ($item->find('rowNumber') as $obj) {
                 $cols .= $this->getItemRow($obj);
             }
             $cols .= '</table>';
@@ -126,7 +168,7 @@ HTML;
             $colOpts .= "<option value=\"{$i}\">Column #{$i}</option>";
         }
 
-        $this->addScript('js/msi.js');
+        $this->addScript('js/msi.js?date=20200915');
         $this->addOnloadCommand('msi.enableSorting();');
 
         return <<<HTML
@@ -145,7 +187,10 @@ HTML;
             <div class="form-inline">
                 <select id="newItemType" class="form-control">
                     <option>Priced Item</option>
+                    <option>Dual Priced Item</option>
+                    <option>Header</option>
                     <option>Description</option>
+                    <option>Sandwich Step</option>
                     <option>Divider</option>
                 </select>
                 <select id="newItemCol" class="form-control">
