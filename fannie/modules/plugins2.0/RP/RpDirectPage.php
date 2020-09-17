@@ -454,7 +454,7 @@ class RpDirectPage extends FannieRESTfulPage
                 LEFT JOIN RpOrderCategories AS c ON r.categoryID=c.rpOrderCategoryID
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
                 LEFT JOIN vendors AS b ON r.backupID=b.vendorID
-            WHERE r.storeID=2
+            WHERE r.storeID=?
 
             UNION ALL
 
@@ -516,9 +516,13 @@ class RpDirectPage extends FannieRESTfulPage
                 $row['vendorSKU'] = $mapped['sku'];
                 $row['lookupID'] = $mapped['vendorID'];
             }
-            $lcRow = $this->connection->getRow($lcP, array(str_replace('LC', '', $row['upc'])));
-            $lcName = $lcRow['likeCodeDesc'];
-            $organic = $lcRow['organic'] ? true : false;
+            $organic = false;
+            $lcName = $row['vendorItem'];
+            if (is_numeric(str_replace('LC', '', $row['upc']))) {
+                $lcRow = $this->connection->getRow($lcP, array(str_replace('LC', '', $row['upc'])));
+                $lcName = $lcRow['likeCodeDesc'];
+                $organic = $lcRow['organic'] ? true : false;
+            }
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
             if (($par / $row['caseSize']) < 0.1) {
                 $par = 0.1 * $row['caseSize'];
