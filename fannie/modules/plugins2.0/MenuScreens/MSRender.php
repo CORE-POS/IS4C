@@ -51,6 +51,7 @@ class MSRender extends FannieRESTfulPage
         case 'header':
             return sprintf('<span class="msheader">%s</span><span class="dual-price1">12oz</span><span class="dual-price2">16oz</span>', $meta['text']);
         case 'description':
+            $meta['text'] = str_replace('OG', '<span class="organic">OG</span>', $meta['text']);
             return sprintf('<span class="msdescription">%s</span>', $meta['text']);
         case 'divider':
             return '<span class="msdivider"></span>';
@@ -59,7 +60,11 @@ class MSRender extends FannieRESTfulPage
             $ret = '<div class="step-header"><span class="circled">' . $this->step_number . '</span> ' . $meta['text'] . '</div>';
             $opts = explode(',', $meta['option']);
             $opts = array_map('trim', $opts);
+            $opts = array_map(function ($i) { return str_replace(' ', '&nbsp;', $i); }, $opts);
+            $opts = array_map(function ($i) { return str_replace('-', '&#8209;', $i); }, $opts);
             $opts = implode(' &#x2027; ', $opts);
+            $opts = str_replace('OG', '<span class="organic">OG</span>', $opts);
+            $opts = str_replace('HM', '<span class="organic">HM</span>', $opts);
             $ret .= '<div class="step-options">' . $opts . '</div>';
             $ret .= '<div class="step-extra">' . $meta['extra'] . '</div>';
             return $ret;
