@@ -414,7 +414,7 @@ class SQLManager
         $con = $this->getNamedConnection($which_connection);
 
         $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
-        if (strtoupper(substr($query_text, 0, 4)) !== "USE ") {
+        if (is_string($query_text) && strtoupper(substr($query_text, 0, 4)) !== "USE ") {
             $this->query_counter++;
             $this->queries[] = is_array($query_text) ? $query_text[0] : $query_text;
         }
