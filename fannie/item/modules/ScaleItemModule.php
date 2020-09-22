@@ -436,7 +436,8 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 $dbc->execute($delP, array($mapW['serviceScaleID'], $upc));
             }
             if (count($scales) > 0) {
-                \COREPOS\Fannie\API\item\HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
+                // intentionally disabled. seems to trigger too often
+                //\COREPOS\Fannie\API\item\HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
             }
         }
     }
