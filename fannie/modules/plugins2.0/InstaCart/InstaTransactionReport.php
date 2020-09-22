@@ -17,7 +17,7 @@ class InstaTransactionReport extends FannieReportPage
     {
         $prep = $this->connection->prepare("
             SELECT MAX(userID) AS userID,
-                deliveryID AS orderID,
+                orderID AS orderID,
                 MAX(orderDate) AS orderDate,
                 MAX(deliveryDate) AS deliveryDate,
                 SUM(quantity) AS qty,
@@ -33,7 +33,7 @@ class InstaTransactionReport extends FannieReportPage
                 LEFT JOIN Stores AS s ON i.storeID=s.storeID
                 LEFT JOIN custdata AS c ON i.cardNo=c.CardNo AND c.personNum=1
             WHERE i.orderDate BETWEEN ? AND ?
-            GROUP BY i.deliveryID");
+            GROUP BY i.orderID");
             
         $res = $this->connection->execute($prep, array($this->form->date1, $this->form->date2 . ' 23:59:59'));
         $data = array();
