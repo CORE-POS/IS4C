@@ -45,12 +45,27 @@ class MSRender extends FannieRESTfulPage
     {
         switch ($meta['type']) {
         case 'priceditem':
+            if (preg_match('/(.+)(\(.+?\))(.*)/', $meta['text'], $matches)) {
+                $meta['text'] = $matches[1] . '<span class="parens">' . $matches[2] . '</span>' . $matches[3];
+            }
             return sprintf('<span class="priced-text">%s</span><span class="priced-price">%s</span>', $meta['text'], $meta['price']);
         case 'dualpriceditem':
+            if (preg_match('/(.+)(\(.+?\))(.*)/', $meta['text'], $matches)) {
+                $meta['text'] = $matches[1] . '<span class="parens">' . $matches[2] . '</span>' . $matches[3];
+            }
+            if (preg_match('/(.+)(\(.+?\))(.*)/', $meta['price'], $matches)) {
+                $meta['price'] = $matches[1] . '<span class="parens">' . $matches[2] . '</span>' . $matches[3];
+            }
+            if (preg_match('/(.+)(\(.+?\))(.*)/', $meta['price2'], $matches)) {
+                $meta['price2'] = $matches[1] . '<span class="parens">' . $matches[2] . '</span>' . $matches[3];
+            }
             return sprintf('<span class="dual-priced-text">%s</span><span class="dual-price1">%s</span><span class="dual-price2">%s</span>', $meta['text'], $meta['price'], $meta['price2']);
         case 'header':
             return sprintf('<span class="msheader">%s</span><span class="dual-price1">12oz</span><span class="dual-price2">16oz</span>', $meta['text']);
         case 'description':
+            if (preg_match('/(.+)(\(.+?\))(.*)/', $meta['text'], $matches)) {
+                $meta['text'] = $matches[1] . '<span class="parens">' . $matches[2] . '</span>' . $matches[3];
+            }
             $meta['text'] = str_replace('OG', '<span class="organic">OG</span>', $meta['text']);
             return sprintf('<span class="msdescription">%s</span>', $meta['text']);
         case 'divider':
