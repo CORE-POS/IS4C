@@ -36,8 +36,6 @@ class MailChimpTask extends FannieTask
     protected function getSettings()
     {
         $FANNIE_PLUGIN_SETTINGS = $this->config->get('PLUGIN_SETTINGS');
-        $APIKEY='a92f83d3e5f7fe52d4579e7902c6491d-us8';
-        $LISTID='54100d18af';
         $APIKEY = $FANNIE_PLUGIN_SETTINGS['MailChimpApiKey'];
         $LISTID = $FANNIE_PLUGIN_SETTINGS['MailChimpListID'];
         if ($FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarName']) {
