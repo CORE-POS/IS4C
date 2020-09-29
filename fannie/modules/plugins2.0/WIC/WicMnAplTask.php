@@ -2,12 +2,41 @@
 
 use COREPOS\Fannie\API\data\FileData;
 
+use League\Flysystem\Sftp\SftpAdapter;
+use League\Flysystem\Filesystem;
+
 class WicMnAplTask extends FannieTask
 {
     private $URL = 'https://www.health.state.mn.us/docs/people/wic/vendor/fpchng/upc/apl.xlsx';
 
     private function download($url)
     {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $url = $settings['WicAplURL'];
+        $port = 22;
+        if (strstr($url, ':')) {
+            list($url, $port) = explode(':', $url, 2);
+        }
+        $adapter = new SftpAdapter(array(
+            'host' => $url,
+            'port' => $port,
+            'username' => $settings['WicAplUser'],
+            'password' => $settings['WicAplPass'],
+        ));
+        $filesystem = new Filesystem($adapter);
+        $contents = $filesystem->listContents('.', false);
+        foreach ($contents as $c) {
+            if ($c['extension'] == 'apl' && substr($c['filename'], -3) == '04b') {
+                $apl = $filesystem->read($c['path']);
+                $tempfile = tempnam(sys_get_temp_dir(), 'apl');
+                file_put_contents($tempfile, $apl);
+
+                return $tempfile;
+            }
+        }
+
+        return false;
+        /*
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_AUTOREFERER, true);
@@ -28,19 +57,19 @@ class WicMnAplTask extends FannieTask
         }
 
         return $filename;
+         */
     }
 
     public function run()
     {
-        $xlsx = $this->download($this->URL);
-        $data = FileData::xlsxToArray($xlsx);
-        if ($data === false || count($data) === 0) {
+        $aplfile = $this->download($this->URL);
+        if ($aplfile === false) {
             $this->cronMsg('MN APL file is empty or damaged', FannieLogger::ALERT);
             return false;
         }
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID) VALUES (?, ?, ?, ?)');
+        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID, broadband) VALUES (?, ?, ?, ?, ?)');
 
         $count = 0;
         $dbc->query("DROP TABLE IF EXISTS EWicBackup");
@@ -48,20 +77,35 @@ class WicMnAplTask extends FannieTask
         $dbc->query("INSERT INTO EWicBackup SELECT * FROM EWicItems");
         $dbc->query("TRUNCATE TABLE EWicItems");
         $dbc->startTransaction();
-        foreach ($data as $line) {
+        $fp = fopen($aplfile, 'r');
+        while (($line = fgets($fp)) !== false) {
 
-            $upc = trim($line[2]);
-            $catID = trim($line[4]);
-            $catName = trim($line[5]);
-            $subCatID = trim($line[6]);
-            $subCatName = trim($line[7]);
+            $upc = substr($line, 12, 17);
+            if (!is_numeric($upc)) continue;
+            $upc = BarcodeLib::padUPC(substr($upc, 0, strlen($upc)-1));
+            $upcCheck = substr($line, 12, 17);
+            if ($upcCheck[0] == '0') {
+                $upcCheck = substr($upcCheck, -12);
+            }
+            $item = rtrim(substr($line, 29, 50));
+            $catID = substr($line, 79, 2);
+            $cat = substr($line, 81, 50);
+            $subID = substr($line, 131, 4);
+            $sub = rtrim(substr($line, 134, 50));
+            $unit = substr($line, 184, 3);
 
-            $upc = str_replace(" ","",$upc);
-            $upc = str_replace("-","",$upc);
-            if (!is_numeric($upc)) continue; // skip header(s) or blank rows
-            $ourUPC = BarcodeLib::padUPC(substr($upc, 0, strlen($upc)-1));
+            $end = trim(substr($line, -21));
+            $broadband = substr($end, -1);
+            $startTS = mktime(0, 0, 0, substr($end, 4, 2), substr($end, 6, 2), substr($end, 0, 4));
+            $endTS = mktime(0, 0, 0, substr($end, 12, 2), substr($end, 14, 2), substr($end, 8, 4));
+            $now = time();
 
-            $dbc->execute($addItem, array($ourUPC, $upc, $catID, $subCatID));
+            if ($now < $startTS || $now > $endTS) {
+                // not currently valid
+            } else {
+                $dbc->execute($addItem, array($upc, $upcCheck, $catID, $subID, $broadband));
+            }
+
 
             $count++;
             if ($count % 1000 == 0) {
@@ -83,7 +127,7 @@ class WicMnAplTask extends FannieTask
         }
         $dbc->query("DROP TABLE IF EXISTS EWicBackup");
 
-        unlink($xlsx);
+        unlink($aplfile);
 
         $this->cronMsg("Reloaded MN APL with {$count} items");
     }
