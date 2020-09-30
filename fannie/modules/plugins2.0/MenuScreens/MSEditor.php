@@ -94,6 +94,9 @@ HTML;
 <p>
     <a href="MSEditor.php?id=0" class="btn btn-default">Create New Menu</a>
 </p>
+<p>
+    <a href="MSDevices.php" class="btn btn-default">Devices</a>
+</p>
 HTML;
     }
 }

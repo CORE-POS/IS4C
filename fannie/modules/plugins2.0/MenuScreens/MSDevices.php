@@ -37,7 +37,7 @@ class MSDevices extends FannieRESTfulPage
         $model = new MenuScreenDevicesModel($this->connection);
         $ret = '<ul>';
         foreach ($model->find() as $obj) {
-            $ret .= sprintf('<li>#%d %s</li>', $obj->menuScreenDeviceID(), $obj->ip());
+            $ret .= sprintf('<li>#%d <a href="http://%s/">%s</a></li>', $obj->menuScreenDeviceID(), trim($obj->ip()), $obj->ip());
         }
         $ret .= '</ul>';
 
