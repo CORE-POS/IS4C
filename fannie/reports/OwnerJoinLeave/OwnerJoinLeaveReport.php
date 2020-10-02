@@ -326,20 +326,28 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     AND c.personNum=1
                 ORDER BY n.stamp DESC');
             $franR = $dbc->execute($franP, $args);
+            $minDateP = $dbc->prepare("SELECT MIN(stamp) FROM memberNotes WHERE note LIKE '%FUNDS REQ%' AND cardno=?");
+            $startDT = new DateTime($this->form->date1);
+            $endDT = new DateTime($this->form->date2);
             $franCount = 0;
             while ($w = $dbc->fetchRow($franR)) {
                 $detailR = $dbc->execute($detailP, array($w['cardno']));
                 $detailW = $dbc->fetchRow($detailR);
                 $actual = $dbc->getValue($stockP, array($w['cardno'], $this->form->date2 . ' 23:59:59'));
-                $data[] = array(
-                    $detailW['CardNo'],
-                    date('Y-m-d', strtotime($detailW['stamp'])),
-                    $detailW['FirstName'] . ' ' . $detailW['LastName'],
-                    $actual,
-                    null,
-                    $detailW['note'],
-                );
-                $franCount++;
+                $minDate = $dbc->getValue($minDateP, array($w['cardno']));
+                list($minDate,) = explode(' ', $minDate, 2);
+                $minDT = new DateTime($minDate);
+                if ($actual >= 100 && $minDT >= $startDT && $minDT <= $endDT) {
+                    $data[] = array(
+                        $detailW['CardNo'],
+                        date('Y-m-d', strtotime($minDate)),
+                        $detailW['FirstName'] . ' ' . $detailW['LastName'],
+                        $actual,
+                        null,
+                        $detailW['note'],
+                    );
+                    $franCount++;
+                }
             }
             $this->report_headers[7][0] .= ' (' . $franCount . ')';
 
@@ -374,15 +382,17 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 $note = $dbc->getValue($noteP, array($termW['card_no']));
                 if (strstr(strtoupper($note), 'TRANSFER')) {
                     $actual = $dbc->getValue($stockP, array($termW['card_no'], $this->form->date2 . ' 23:59:59'));
-                    $data[] = array(
-                        $termW['card_no'],
-                        date('Y-m-d', strtotime($termW['suspDate'])),
-                        $termW['LastName'] . ', ' . $termW['FirstName'],
-                        sprintf('%.2f', $actual),
-                        null,
-                        $note,
-                    );
-                    $termCount++;
+                    if ($actual > 0) {
+                        $data[] = array(
+                            $termW['card_no'],
+                            date('Y-m-d', strtotime($termW['suspDate'])),
+                            $termW['LastName'] . ', ' . $termW['FirstName'],
+                            sprintf('%.2f', $actual),
+                            null,
+                            $note,
+                        );
+                        $termCount++;
+                    }
                 }
             }
             $this->report_headers[9][0] .= ' (' . $termCount . ')';
