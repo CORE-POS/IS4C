@@ -60,22 +60,24 @@ HTML;
 
         $any = FormLib::get('any') ? 1 : 0;
         $highTemp = FormLib::get('highTemp') ? 1 : 0;
+        $exp = FormLib::get('exp') ? 1 : 0;
         $empID = $this->id;
 
         $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('ScreeningEntries', 'plugin:HrWebDB') . "
-            (screeningEmployeeID, tdate, highTemp, anySymptom) 
+            (screeningEmployeeID, tdate, highTemp, anySymptom, exposure) 
             VALUES (?, ?, ?, ?)");
         $args = array(
             $empID,
             date('Y-m-d H:i:s'),
             $highTemp,
             $any,
+            $exp,
         );
         $dbc->execute($prep, $args);
 
         $this->addOnloadCommand("setTimeout(function() { \$('#finishForm').submit(); }, 250);");
 
-        if ($highTemp || $any) {
+        if ($highTemp || $any || $exp) {
 
             $prep = $dbc->prepare("SELECT screeningEmployeeID, name FROM "
                 . FannieDB::fqn('ScreeningEmployees', 'plugin:HrWebDB') . " WHERE screeningEmployeeID=? AND deleted=0");
