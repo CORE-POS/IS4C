@@ -186,6 +186,8 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
                                     INNER JOIN superdepts AS s ON p.department=s.dept_ID
                                 WHERE p.upc=?
                                     AND s.superID=?');
+        $isMapped = $dbc->prepare("SELECT upc FROM ServiceScaleItemMap WHERE upc=?");
+        $isMapped = $dbc->getValue($isMapped, array($upc));
         $ret .= '<div class="col-sm-2">';
         foreach ($scales->find('description') as $scale) {
             $checked = false;
@@ -193,7 +195,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             if ($dbc->num_rows($mapR) > 0) {
                 // marked in map table
                 $checked = true;
-            } else {
+            } elseif (!$isMapped) {
                 $deptR = $dbc->execute($deptP, array($upc, $scale->superID()));
                 if ($dbc->num_rows($deptR) > 0) {
                     // in a POS department corresponding 
