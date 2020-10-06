@@ -65,7 +65,7 @@ HTML;
 
         $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('ScreeningEntries', 'plugin:HrWebDB') . "
             (screeningEmployeeID, tdate, highTemp, anySymptom, exposure) 
-            VALUES (?, ?, ?, ?)");
+            VALUES (?, ?, ?, ?, ?)");
         $args = array(
             $empID,
             date('Y-m-d H:i:s'),
@@ -191,7 +191,6 @@ HTML;
     <th>Congestion or Runny Nose</th>
 </tr>
 </table>
-</table>
 <p style="font-size: 200%;">
     <label class="radio-inline">
         <input type="radio" name="any" value="1" required />
@@ -200,6 +199,21 @@ HTML;
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <label class="radio-inline">
         <input type="radio" name="any" value="0" required />
+        No
+    </label>
+</p>
+<hr />
+<p>
+<h3>Have you had direct contact with a positive COVID-19 case?</h3>
+</p>
+<p style="font-size: 200%;">
+    <label class="radio-inline">
+        <input type="radio" name="exp" value="1" required />
+        Yes
+    </label>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label class="radio-inline">
+        <input type="radio" name="exp" value="0" required />
         No
     </label>
 </p>
