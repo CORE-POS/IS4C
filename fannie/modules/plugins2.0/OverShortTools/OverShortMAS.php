@@ -103,6 +103,14 @@ class OverShortMAS extends FannieRESTfulPage {
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
 
+        $icP = $dbc->prepare("SELECT upc, description, sum(total) AS ttl
+                FROM {$dlog} AS d
+                WHERE trans_type='T'
+                    AND trans_subtype='IC'
+                    AND " . DTrans::isStoreID($store, 'd') . "
+                    AND tdate BETWEEN ? AND ?
+                GROUP BY upc, description");
+        $coupP = $dbc->prepare("SELECT memberOnly FROM houseCoupons WHERE coupID=?");
         $tenderQ = "SELECT SUM(total) AS amount,
                 CASE WHEN description='REBATE CHECK' THEN 'RB'
                 WHEN trans_subtype IN ('CA','CK') THEN 'CA'
@@ -123,14 +131,29 @@ class OverShortMAS extends FannieRESTfulPage {
         $tenderP = $dbc->prepare($tenderQ);
         $tenderR = $dbc->execute($tenderP, $args);
         while($w = $dbc->fetch_row($tenderR)){
-            $coding = isset($codes[$w['type']]) ? $codes[$w['type']] : 10120;
-            $name = isset($names[$w['type']]) ? $names[$w['type']] : $w['name'];
-            $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
-            $debit = $w['amount'] > 0 ? $w['amount'] : 0;
-            $row = array($dateID, $dateStr,
-                str_pad($coding,9,'0',STR_PAD_RIGHT),
-                $credit, $debit, $name);    
-            $records[] = $row;
+            if ($w['type'] == 'IC') {
+                $icR = $dbc->execute($icP, $args);
+                while ($icW = $dbc->fetchRow($icR)) {
+                    $coupID = sprintf('%d', substr($icW['upc'], -5));
+                    $memOnly = $dbc->getValue($coupP, array($coupID));
+                    $coding = (!$coupID || $memOnly) ? 66600 : 67715;
+                    $credit = $icW['ttl'] < 0 ? -1*$icW['ttl'] : 0;
+                    $debit = $icW['ttl'] > 0 ? $icW['ttl'] : 0;
+                    $row = array($dateID, $dateStr,
+                        str_pad($coding,9,'0',STR_PAD_RIGHT),
+                        $credit, $debit, $icW['description']);    
+                    $records[] = $row;
+                }
+            } else {
+                $coding = isset($codes[$w['type']]) ? $codes[$w['type']] : 10120;
+                $name = isset($names[$w['type']]) ? $names[$w['type']] : $w['name'];
+                $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
+                $debit = $w['amount'] > 0 ? $w['amount'] : 0;
+                $row = array($dateID, $dateStr,
+                    str_pad($coding,9,'0',STR_PAD_RIGHT),
+                    $credit, $debit, $name);    
+                $records[] = $row;
+            }
         }
 
         $discountQ = "SELECT SUM(total) as amount, d.store_id,
