@@ -82,7 +82,7 @@ public class SPH_Magellan_Scale : SerialPortHandler
 
     public override void SetConfig(Dictionary<string,string> d)
     {
-        if (d.ContainsKey("dualPollMode") && d["dualPollMode"].ToLower() == "true") {
+        if (d != null && d.ContainsKey("dualPollMode") && d["dualPollMode"].ToLower() == "true") {
             this.usingS11 = true;
         }
     }
