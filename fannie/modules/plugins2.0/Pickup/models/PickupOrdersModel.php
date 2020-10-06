@@ -44,6 +44,7 @@ class PickupOrdersModel extends BasicModel
     'storeID' => array('type'=>'INT'),
     'status' => array('type'=>'VARCHAR(255)'),
     'cardNo' => array('type'=>'INT'),
+    'placedDate' => array('type'=>'VARCHAR(255)'),
     );
 }
 
