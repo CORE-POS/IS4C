@@ -175,11 +175,15 @@ HTML;
 <form method="post" action="MSItems.php" id="menu-items-form">
     <div class="form-group">
         <button type="submit" class="btn btn-default">Save</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="MSEditor.php" class="btn btn-default">Back to All Menus</a>
     </div>
     <input type="hidden" name="id" value="{$this->id}" />
     {$cols}
     <div class="form-group">
         <button type="submit" class="btn btn-default">Save</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="MSEditor.php" class="btn btn-default">Back to All Menus</a>
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">Add Item</div>
