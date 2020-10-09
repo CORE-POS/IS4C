@@ -20,8 +20,13 @@ class PickupOrdersReport extends FannieReportPage
             $date1 = $this->form->date1;
             $date2 = $this->form->date2;
             $store = FormLib::get('store');
+            $format = FormLib::get('format');
         } catch (Exception $ex) {
             return array();
+        }
+
+        if ($format == 'Wide') {
+            return $this->wideReportData($date1, $date2, $store);
         }
 
         $prep = $this->connection->prepare("
@@ -53,10 +58,109 @@ class PickupOrdersReport extends FannieReportPage
         return $data;
     }
 
+    private function wideReportData($date1, $date2, $store)
+    {
+        $itemP = $this->connection->prepare("SELECT u.brand, u.description
+                    FROM PickupOrders AS o
+                        INNER JOIN PickupOrderItems AS i ON i.pickupOrderID=o.pickupOrderID
+                        LEFT JOIN productUser AS u ON i.upc=u.upc
+                    WHERE o.placedDate BETWEEN ? AND ?
+                        AND o.storeID=?
+                        AND o.status IN ('NEW')
+                    GROUP BY u.brand, u.description
+                    ORDER BY u.brand DESC, u.description");
+        $items = $this->connection->getAllRows($itemP, array($date1, $date2 . ' 23:59:59', $store));
+        $this->report_headers = array('Ordered', 'First Name', 'Last Name', 'Phone #', 'Order #', 'Location', 'Curbside');
+        $itemStart = 7;
+        $colMap = array();
+        for ($i=0; $i<count($items); $i++) {
+            $item = $items[$i]['brand'] . ' ' . $items[$i]['description'];
+            $colMap[$item] = $itemStart + $i;
+            $this->report_headers[] = $item;
+        }
+
+        $oiP = $this->connection->prepare("SELECT u.brand, u.description, quantity
+            FROM PickupOrderItems AS i
+                LEFT JOIN productUser AS u ON i.upc=u.upc
+            WHERE pickupOrderID=?
+            ORDER BY brand DESC, description");
+        $baseP = $this->connection->prepare("
+            SELECT o.placedDate, o.name, o.phone, o.pickupOrderID, s.description, o.curbside
+            FROM PickupOrders AS o
+                INNER JOIN Stores AS s ON o.storeID=s.storeID
+            WHERE o.placedDate BETWEEN ? AND ?
+                AND o.status IN ('NEW')
+                AND o.storeID=?
+            ORDER BY o.placedDate");
+        $baseR = $this->connection->execute($baseP, array($date1, $date2 . ' 23:59:59', $store));
+        $data = array();
+        while ($baseW = $this->connection->fetchRow($baseR)) {
+            $name = strrev($baseW['name']);
+            $names = explode(' ', $name);
+            $names = array_map(function($i) { return strrev(trim($i)); }, $names);
+            $record = array(
+                $baseW['placedDate'],
+                $names[0],
+                $names[1],
+                $baseW['phone'],
+                $baseW['pickupOrderID'],
+                $baseW['description'],
+                $baseW['curbside'] ? 'Yes' : 'No',
+            );
+            $pos = $itemStart;
+            $oiR = $this->connection->execute($oiP, array($baseW['pickupOrderID']));
+            while ($oiW = $this->connection->fetchRow($oiR)) {
+                $item = $oiW['brand'] . ' ' . $oiW['description'];
+                if ($colMap[$item] == $pos) {
+                    $record[] = $oiW['quantity'];
+                    $pos++;
+                } else {
+                    while ($colMap[$item] != $pos) {
+                        $record[] = '';
+                        $pos++;
+                    }
+                    $record[] = $oiW['quantity'];
+                    $pos++;
+                }
+            }
+            while ($pos < count($this->report_headers)) {
+                $record[] = '';
+                $pos++;
+            }
+            $data[] = $record;
+        }
+
+        return $data;
+    }
+
+    public function calculate_footers($data)
+    {
+        if (count($this->report_headers) == 4) {
+            return array();
+        }
+        $sums = array();
+        $itemStart = 7;
+        for ($i=7; $i < count($this->report_headers); $i++) {
+            $sums[] = 0;
+        }
+        foreach ($data as $row) {
+            for ($i=0; $i<count($sums); $i++) {
+                $val = $row[$i + $itemStart];
+                if ($val) {
+                    $sums[$i] += $val;
+                }
+            }
+        }
+
+        return array_merge(array('Total', null, null, null, null, null, null), $sums);
+    }
+
     public function form_content()
     {
         $stores = FormLib::storePicker();
         $dates = FormLib::standardDateFields();
+        $this->addOnloadCommand("\$('#date1').val('2020-10-26');");
+        $this->addOnloadCommand("\$('#date2').val('2020-11-26');");
 
         return <<<HTML
 <form method="get">
@@ -64,6 +168,13 @@ class PickupOrdersReport extends FannieReportPage
         <div class="form-group">
             <label>Store</label>
             {$stores['html']}
+        </div>
+        <div class="form-group">
+            <label>Format</label>
+            <select class="form-control" name="format">
+                <option>Wide</option>
+                <option>Item Summary</option>
+            </select>
         </div>
         <div class="form-group">
             <button type="submit" class="btn btn-default">Get List</button>

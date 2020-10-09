@@ -45,6 +45,7 @@ class PickupOrdersModel extends BasicModel
     'status' => array('type'=>'VARCHAR(255)'),
     'cardNo' => array('type'=>'INT'),
     'placedDate' => array('type'=>'VARCHAR(255)'),
+    'curbside' => array('type'=>'TINYINT', 'default'=>1),
     );
 }
 

@@ -24,9 +24,6 @@ class ViewPickups extends FannieRESTfulPage
 
     protected function post_id_print_handler()
     {
-        $order = new PickupOrdersModel($this->connection);
-        $order->pickupOrderID($this->id);
-        $order->load();
 
         $pdf=new FPDF('P','mm','Letter'); //start new instance of PDF
         $pdf->Open(); //open new PDF Document
@@ -34,7 +31,18 @@ class ViewPickups extends FannieRESTfulPage
         $posX = 0;
         $posY = 0;
         $date = date("m/d/Y");
-        for ($i=0; $i<$this->print; $i++) {
+        if (!is_array($this->id)) {
+            $this->id = array($this->id);
+        }
+        $oiP = $this->connection->prepare("SELECT u.brand, u.description, quantity
+            FROM PickupOrderItems AS i
+                LEFT JOIN productUser AS u ON i.upc=u.upc
+            WHERE pickupOrderID=?
+            ORDER BY brand DESC, description");
+        foreach ($this->id as $id) {
+            $order = new PickupOrdersModel($this->connection);
+            $order->pickupOrderID($id);
+            $order->load();
             if ($count % 4 == 0){ 
                 $pdf->AddPage();
                 $pdf->SetDrawColor(0,0,0);
@@ -45,29 +53,40 @@ class ViewPickups extends FannieRESTfulPage
             $posX = $count % 2 == 0 ? 5 : 115;
             $posY = ($count/2) % 2 == 0 ? 10 : 145;
             $pdf->SetXY($posX,$posY);
-
             $pdf->SetFont('Arial','','16');
-            $pdf->Cell(100,10,'DRY    COOL    FROZEN',0,1,'C');
-            $pdf->Ln();
+
+            if ($order->curbside()) {
+                $pdf->SetXY($posX,$posY + 12);
+                $pdf->Cell(6, 6, 'C', 1, 0);
+                $pdf->SetXY($posX,$posY);
+            }
+
             $pdf->SetX($posX);
             $pdf->SetFont('Arial','B','24');
             $pdf->Cell(100,10,$order->name(),0,1,'C');
             $pdf->SetFont('Arial','','16');
             $pdf->SetX($posX);
             $oID = $order->orderNumber() ? $order->orderNumber() : $order->pickupOrderID();
-            $pdf->Cell(100,10,$oID,0,1,'C');
+            $pdf->Cell(100,10,'Order #: ' . $oID,0,1,'C');
             list($date,) = explode(' ', $order->pDate());
+            $ts = strtotime($date);
+            $date = date('D, M j', $ts);
             $pdf->SetX($posX);
-            $pdf->Cell(100,10,$date . ' ' . $order->pTime(),0,1,'C');
-            /*
-            $pdf->Ln();
+            $pdf->Cell(100,10,'Pickup: ' . $date . ' ' . $order->pTime(),0,1,'C');
             $pdf->SetX($posX);
-            $pdf->Cell(100,10,($i+1) . '/' . $this->print,0,1,'C');
-             */
+            $pdf->Cell(100,10,'Phone: ' . $order->phone(), 0, 1, 'C');
+
+            $pdf->SetFont('Arial','','12');
+            $oiR = $this->connection->execute($oiP, array($id));
+            while ($oiW = $this->connection->fetchRow($oiR)) {
+                $pdf->SetX($posX);
+                $pdf->Cell(20, 7, $oiW['quantity'], 0, 0, 'L');
+                $pdf->MultiCell(75, 7, $oiW['brand'] . ' ' . $oiW['description']);
+            }
 
             $count++;
         }
-        $pdf->Output();
+        $pdf->Output('PickupOrder.pdf', 'I');
 
         return false;
     }
@@ -236,8 +255,8 @@ class ViewPickups extends FannieRESTfulPage
     <div class="form-group">
         <input type="hidden" name="id" value="{$this->id}" />
         <div class="input-group">
-            <span class="input-group-addon"># of tags</span>
-            <input type="text" class="form-control" value="1" name="print" />
+            <!--<span class="input-group-addon"># of tags</span>-->
+            <input type="hidden" class="form-control" value="1" name="print" />
         </div>
     </div>
     <div class="form-group">
@@ -270,9 +289,11 @@ HTML;
             }
             $table .= sprintf('<tr>
                 <td><a href="ViewPickups.php?id=%d" class="btn btn-default">View</td>
-                <td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+                <td>%s</td><td>%s</td><td>%s</td><td>%s</td>
+                <td><input type="checkbox" name="print" value="%d" /></tr>',
                 $row['pickupOrderID'],
-                $row['orderNumber'], $row['name'], $dateTime, $row['status']);
+                $row['orderNumber'], $row['name'], $dateTime, $row['status'],
+                $row['pickupOrderID']);
         }
         return <<<HTML
 <p>
@@ -283,10 +304,26 @@ HTML;
 </p>
 <p>
 <table class="table table-bordered table-striped">
-<tr><th><th>Order Number</th><th>Name</th><th>Pickup Date+Time</th><th>Status</th></tr>
+<tr><th><th>Order Number</th><th>Name</th><th>Pickup Date+Time</th><th>Status</th><th>Print</th></tr>
     {$table}
 </table>
+<div>
+<button type="button" class="btn btn-default" onclick="printAll();">Print</button>
+</div>
 </p>
+<script>
+function printAll() {
+    var form = '<form id="printAllForm" method="post"><input type="hidden" name="print" value="1" />';
+    $('input[name=print]').each(function() {
+        if ($(this).prop('checked')) {
+            form += '<input name="id[]" type="hidden" value="' + $(this).val() + '" />';
+        }
+    });
+    form += '</form>';
+    $('body').append(form);
+    $('#printAllForm').submit();
+}
+</script>
 HTML;
     }
 }
