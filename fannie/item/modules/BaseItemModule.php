@@ -865,6 +865,7 @@ HTML;
         asort($mods);
         $ret = '';
         foreach (array_keys($mods) as $mod) {
+            if ($mods["$mod"] < 1) { continue; }
             if (!class_exists($mod, false)) {
                 include(__DIR__ . '/' . $mod . '.php');
             }
@@ -880,6 +881,7 @@ HTML;
         $mods = FannieConfig::config('PRODUCT_ROWS');
         asort($mods);
         foreach (array_keys($mods) as $mod) {
+            if ($mods["$mod"] < 1) { continue; }
             if (!class_exists($mod, false)) {
                 include(__DIR__ . '/' . $mod . '.php');
             }
