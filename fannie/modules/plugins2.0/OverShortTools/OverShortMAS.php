@@ -381,6 +381,8 @@ class OverShortMAS extends FannieRESTfulPage {
                 $line = substr($line,0,strlen($line)-1)."\r\n";
                 $ret .= $line;
             }
+            // bail out to avoid extra html bits in the csv
+            echo $ret; exit;
         }
         return $ret;
     }
