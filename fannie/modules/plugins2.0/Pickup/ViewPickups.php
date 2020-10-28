@@ -32,12 +32,18 @@ class ViewPickups extends FannieRESTfulPage
         $posY = 0;
         $date = date("m/d/Y");
         if (!is_array($this->id)) {
-            $this->id = array($this->id);
+            $multi = FormLib::get('multi', 1);
+            $arr = array();
+            for ($i=0; $i<$multi; $i++) {
+                $arr[] = $this->id;
+            }
+            $this->id = $arr;
         }
         $oiP = $this->connection->prepare("SELECT u.brand, u.description, quantity
             FROM PickupOrderItems AS i
                 LEFT JOIN productUser AS u ON i.upc=u.upc
             WHERE pickupOrderID=?
+                AND i.upc NOT IN ('', '0', 'TAX')
             ORDER BY brand DESC, description");
         foreach ($this->id as $id) {
             $order = new PickupOrdersModel($this->connection);
@@ -82,6 +88,11 @@ class ViewPickups extends FannieRESTfulPage
                 $pdf->SetX($posX);
                 $pdf->Cell(20, 7, $oiW['quantity'], 0, 0, 'L');
                 $pdf->MultiCell(75, 7, $oiW['brand'] . ' ' . $oiW['description']);
+            }
+
+            if ($multi > 1) {
+                $pdf->SetXY($posX, $posY + 100);
+                $pdf->Cell(100,10,($count+1) . '/' . $multi,0,1,'C');
             }
 
             $count++;
@@ -255,9 +266,10 @@ class ViewPickups extends FannieRESTfulPage
     <div class="form-group">
         <input type="hidden" name="id" value="{$this->id}" />
         <div class="input-group">
-            <!--<span class="input-group-addon"># of tags</span>-->
-            <input type="hidden" class="form-control" value="1" name="print" />
+            <span class="input-group-addon"># of tags</span>
+            <input type="text" class="form-control" name="multi" value="1" />
         </div>
+        <input type="hidden" class="form-control" value="1" name="print" />
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-default">Print</button>
