@@ -333,6 +333,13 @@ class InstaFileV3
             return false;
         }
 
+        $overP = $this->dbc->prepare("SELECT upc FROM " . FannieDB::fqn('InstaOverrides', 'plugin:InstaCartDB') . " WHERE upc=?");
+        $override = $this->dbc->getValue($overP, array($upc));
+        if ($override) {
+            echo "OVERRIDE!!!\n";
+            return true;
+        }
+
         if ($created) {
             if (!isset($this->cCache)) {
                 $this->cCache = array();
