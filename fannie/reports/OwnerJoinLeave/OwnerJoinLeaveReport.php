@@ -367,7 +367,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     INNER JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
                     LEFT JOIN ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'equity_live_balance AS n ON s.cardno=n.memnum
                 WHERE c.Type=\'INACT2\'
-                    AND (s.suspDate >= ?)
+                    AND (s.suspDate BETWEEN ? AND ?)
                 ORDER BY s.suspDate
             ');
             $noteP = $dbc->prepare('
@@ -376,7 +376,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 WHERE cardno=?
                 ORDER BY stamp DESC
             ');
-            $termR = $dbc->execute($termP, $args[0]);
+            $termR = $dbc->execute($termP, $args);
             $termCount = 0;
             while ($termW = $dbc->fetchRow($termR)) {
                 $note = $dbc->getValue($noteP, array($termW['card_no']));
