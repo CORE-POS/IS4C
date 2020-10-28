@@ -110,6 +110,9 @@ class PosKeyboard extends FanniePage
                     $pdf->SetXY($left + 2.5, $top + (4 * $ln) + $mod + 2.5);
                     $pdf->cell($keySize - 5, 0.1, null, 'B', 0, 'C', 1);
                 }
+                if ($text == 'Baked') {
+                    $pdf->Image("http://key/git/fannie/admin/PosKeyboards/muffin-icon.jpg", $left, $top, 15, 15, 'JPG');
+                }
             }
             $i++;
         }
