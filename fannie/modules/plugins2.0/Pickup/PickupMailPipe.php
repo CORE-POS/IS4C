@@ -51,8 +51,8 @@ class PickupMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                 $json = json_decode($a['content'], true);
                 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
                 $orderP = $dbc->prepare("INSERT INTO PickupOrders
-                    (name, phone, vehicle, pDate, pTime, notes, storeID, status, placedDate, curbside)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 'NEW', ?, ?)");
+                    (name, phone, vehicle, pDate, pTime, notes, storeID, status, placedDate, curbside, orderNumber)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'NEW', ?, ?, ?)");
                 $dbc->execute($orderP, array(
                     $json['name'],
                     $json['phone'],
@@ -63,6 +63,7 @@ class PickupMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     $json['store'],
                     date('Y-m-d H:i:s'),
                     $json['curbside'] ? 1 : 0,
+                    $json['orderNo'],
                 ));
                 $orderID = $dbc->insertID();
 
