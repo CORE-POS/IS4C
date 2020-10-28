@@ -40,6 +40,8 @@ class PickupOrdersReport extends FannieReportPage
             WHERE o.placedDate BETWEEN ? AND ?
                 AND o.storeID=?
                 AND o.status in ('NEW')
+                AND i.upc <> ''
+                AND i.upc <> '0'
             GROUP BY d.dept_name, u.brand, u.description
         ");
         $res = $this->connection->execute($prep, array($date1, $date2 . ' 23:59:59', $store));
@@ -60,18 +62,21 @@ class PickupOrdersReport extends FannieReportPage
 
     private function wideReportData($date1, $date2, $store)
     {
-        $itemP = $this->connection->prepare("SELECT u.brand, u.description
+        $itemP = $this->connection->prepare("SELECT u.brand, u.description, i.upc
                     FROM PickupOrders AS o
                         INNER JOIN PickupOrderItems AS i ON i.pickupOrderID=o.pickupOrderID
                         LEFT JOIN productUser AS u ON i.upc=u.upc
                     WHERE o.placedDate BETWEEN ? AND ?
                         AND o.storeID=?
                         AND o.status IN ('NEW')
+                        AND i.upc <> ''
+                        AND i.upc <> '0'
+                        AND i.upc <> 'TAX'
                     GROUP BY u.brand, u.description
                     ORDER BY u.brand DESC, u.description");
         $items = $this->connection->getAllRows($itemP, array($date1, $date2 . ' 23:59:59', $store));
-        $this->report_headers = array('Ordered', 'First Name', 'Last Name', 'Phone #', 'Order #', 'Location', 'Curbside');
-        $itemStart = 7;
+        $this->report_headers = array('Ordered', 'First Name', 'Last Name', 'Phone #', 'Order #', 'Location', 'Curbside', 'Pickup Date', 'Pickup Time');
+        $itemStart = 9;
         $colMap = array();
         for ($i=0; $i<count($items); $i++) {
             $item = $items[$i]['brand'] . ' ' . $items[$i]['description'];
@@ -83,9 +88,13 @@ class PickupOrdersReport extends FannieReportPage
             FROM PickupOrderItems AS i
                 LEFT JOIN productUser AS u ON i.upc=u.upc
             WHERE pickupOrderID=?
+                AND i.upc <> ''
+                AND i.upc <> '0'
+                AND i.upc <> 'TAX'
             ORDER BY brand DESC, description");
         $baseP = $this->connection->prepare("
-            SELECT o.placedDate, o.name, o.phone, o.pickupOrderID, s.description, o.curbside
+            SELECT o.placedDate, o.name, o.phone, o.pickupOrderID, s.description, o.curbside,
+                o.pDate, o.pTime, o.orderNumber
             FROM PickupOrders AS o
                 INNER JOIN Stores AS s ON o.storeID=s.storeID
             WHERE o.placedDate BETWEEN ? AND ?
@@ -98,14 +107,17 @@ class PickupOrdersReport extends FannieReportPage
             $name = strrev($baseW['name']);
             $names = explode(' ', $name);
             $names = array_map(function($i) { return strrev(trim($i)); }, $names);
+            list($baseW['pDate'],) = explode(' ', $baseW['pDate']);
             $record = array(
                 $baseW['placedDate'],
                 $names[0],
                 $names[1],
                 $baseW['phone'],
-                $baseW['pickupOrderID'],
+                $baseW['orderNumber'],
                 $baseW['description'],
                 $baseW['curbside'] ? 'Yes' : 'No',
+                $baseW['pDate'],
+                $baseW['pTime'],
             );
             $pos = $itemStart;
             $oiR = $this->connection->execute($oiP, array($baseW['pickupOrderID']));
@@ -139,8 +151,8 @@ class PickupOrdersReport extends FannieReportPage
             return array();
         }
         $sums = array();
-        $itemStart = 7;
-        for ($i=7; $i < count($this->report_headers); $i++) {
+        $itemStart = 9;
+        for ($i=$itemStart; $i < count($this->report_headers); $i++) {
             $sums[] = 0;
         }
         foreach ($data as $row) {
@@ -152,7 +164,7 @@ class PickupOrdersReport extends FannieReportPage
             }
         }
 
-        return array_merge(array('Total', null, null, null, null, null, null), $sums);
+        return array_merge(array('Total', null, null, null, null, null, null, null, null), $sums);
     }
 
     public function form_content()
