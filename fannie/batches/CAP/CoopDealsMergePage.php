@@ -123,11 +123,20 @@ class CoopDealsMergePage extends FannieRESTfulPage
                 t.cost
             FROM
                 CoopDealsItems as t
-                " . DTrans::joinProducts('t', 'p', 'INNER') . "
+                INNER JOIN products AS p ON t.upc=p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE p.inUse=1
                 AND t.price < p.normal_price
                 AND t.dealSet=?
+            GROUP BY
+                t.upc,
+                p.description,
+                p.brand,
+                t.price,
+                CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END,
+                t.abtpr,
+                multiplier,
+                t.cost
             ORDER BY s.super_name,t.upc
         ");
         $result = $dbc->execute($query, array($set));
