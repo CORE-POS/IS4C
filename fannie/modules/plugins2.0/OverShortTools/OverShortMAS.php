@@ -194,6 +194,132 @@ class OverShortMAS extends FannieRESTfulPage {
         $salesP = $dbc->prepare($salesQ);
         $salesR = $dbc->execute($salesP, $args);
         while($w = $dbc->fetch_row($salesR)){
+            if ($w['store_id'] == '50' && $w['salesCode'] == '41201') {
+                $amts = array(
+                    1 => 0,
+                    2 => 0,
+                    '??' => 0,
+                );
+                $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_subtype='CM'
+                    AND description LIKE 'STORE%' AND emp_no=? AND register_no=? AND trans_no=?
+                    AND store_id=?"); 
+                $salesQ = "SELECT emp_no, register_no, trans_no, sum(total) as amount, min(tdate) as tdate
+                    FROM $dlog AS d 
+                    INNER JOIN departments as t ON d.department = t.dept_no
+                    INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.trans_type IN ('I','D')
+                    AND " . DTrans::isStoreID($store, 'd') . "
+                    AND tdate BETWEEN ? AND ?
+                    AND m.superID > 0
+                    AND salesCode = '41201'
+                    AND register_no <> 20
+                    GROUP BY emp_no, register_no, trans_no";
+                $salesP = $dbc->prepare($salesQ);
+                $innerR = $dbc->execute($salesP, $args);
+                while ($innerW = $dbc->fetchRow($innerR)) {
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $args[0]);
+                    $storeR = $dbc->getValue($storeP, $storeArgs);
+                    list(,$storeID) = explode(' ', $storeR);
+                    if ($storeID == 1) {
+                        $amts[1] += $innerW['amount'];
+                    } elseif ($storeID == 2) {
+                        $amts[2] += $innerW['amount'];
+                    } else {
+                        $amts['??'] += $innerW['amount'];
+                    }
+                }
+                if ($amts[1] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412010120',
+                        ($amts[1] < 0 ? -1*$amts[1] : 0),
+                        ($amts[1] > 0 ? $amts[1] : 0),
+                        $names['41201'],
+                    );
+                }
+                if ($amts[2] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412010220',
+                        ($amts[2] < 0 ? -1*$amts[2] : 0),
+                        ($amts[2] > 0 ? $amts[2] : 0),
+                        $names['41201'],
+                    );
+                }
+                if ($amts['??'] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '41201??00',
+                        ($amts['??'] < 0 ? -1*$amts['??'] : 0),
+                        ($amts['??'] > 0 ? $amts['??'] : 0),
+                        $names['41201'],
+                    );
+                }
+                continue;
+            }
+            if ($w['store_id'] == '50' && $w['salesCode'] == '41205') {
+                $amts = array(
+                    1 => 0,
+                    2 => 0,
+                    '??' => 0,
+                );
+                $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_subtype='CM'
+                    AND description LIKE 'STORE%' AND emp_no=? AND register_no=? AND trans_no=?
+                    AND store_id=?"); 
+                $salesQ = "SELECT emp_no, register_no, trans_no, sum(total) as amount, min(tdate) as tdate
+                    FROM $dlog AS d 
+                    INNER JOIN departments as t ON d.department = t.dept_no
+                    INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.trans_type IN ('I','D')
+                    AND " . DTrans::isStoreID($store, 'd') . "
+                    AND tdate BETWEEN ? AND ?
+                    AND m.superID > 0
+                    AND salesCode = '41205'
+                    AND register_no <> 20
+                    GROUP BY emp_no, register_no, trans_no";
+                $salesP = $dbc->prepare($salesQ);
+                $innerR = $dbc->execute($salesP, $args);
+                while ($innerW = $dbc->fetchRow($innerR)) {
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $args[0]);
+                    $storeR = $dbc->getValue($storeP, $storeArgs);
+                    list(,$storeID) = explode(' ', $storeR);
+                    if ($storeID == 1) {
+                        $amts[1] += $innerW['amount'];
+                    } elseif ($storeID == 2) {
+                        $amts[2] += $innerW['amount'];
+                    } else {
+                        $amts['??'] += $innerW['amount'];
+                    }
+                }
+                if ($amts[1] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412050120',
+                        ($amts[1] < 0 ? -1*$amts[1] : 0),
+                        ($amts[1] > 0 ? $amts[1] : 0),
+                        $names['41205'],
+                    );
+                }
+                if ($amts[2] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412050220',
+                        ($amts[2] < 0 ? -1*$amts[2] : 0),
+                        ($amts[2] > 0 ? $amts[2] : 0),
+                        $names['41205'],
+                    );
+                }
+                if ($amts['??'] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '41201??00',
+                        ($amts['??'] < 0 ? -1*$amts['??'] : 0),
+                        ($amts['??'] > 0 ? $amts['??'] : 0),
+                        $names['41205'],
+                    );
+                }
+                continue;
+            }
             $coding = isset($codes[$w['salesCode']]) ? $codes[$w['salesCode']] : $w['salesCode'];
             $coding = $accounting::extend($coding, $w['store_id']);
             $name = isset($names[$w['salesCode']]) ? $names[$w['salesCode']] : $w['name'];
