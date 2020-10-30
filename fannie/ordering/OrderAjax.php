@@ -215,7 +215,7 @@ class OrderAjax extends FannieRESTfulPage
         $json = array('tdate'=> date('m/d/Y'));
         if ($this->status == 5) {
             // check necessity
-            $itemP = $dbc->prepare("SELECT COUNT(*) AS items FROM " . FannieDB::fqn('pendingSpecialOrder', 'trans') . " WHERE trans_id > 0 AND order_id=?");
+            $itemP = $dbc->prepare("SELECT COUNT(*) AS items FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . " WHERE trans_id > 0 AND order_id=?");
             $itemCount = $dbc->getValue($itemP, array($this->id));
             $sentP = $dbc->prepare("SELECT COUNT(*) FROM SpecialOrderCommLog WHERE specialOrderID = ? AND message LIKE '%arrived%'");
             $sentCount = $dbc->getValue($sentP, array($this->id));
