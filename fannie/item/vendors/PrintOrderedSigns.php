@@ -99,15 +99,14 @@ class PrintOrderedSigns extends FannieRESTfulPage
     </div>
     <div class="col-lg-4">
 
-            <div><a href="CreateTagsByDept.php">Create Tags By Department</a></div>
-            <div><a href="CreateTagsByManu.php">Create Tags By Brand</a></div>
-            <div><a href="QueueTagsByList.php">Queue Tags by A List</a></div>
-            <div><a href="QueueTagsByLC.php">Queue Tags by Like Code</a></div>
-            <div><a href="MovementTagTracker.php">Movement Tag Tracker</a>
-                | <a href="MovementTagTracker.php?id=config">Settings</a>
-                | <a href="MovementTagTracker.php?data=view">Data</a></div>
+            <div><a href="../../admin/labels/CreateTagsByDept.php">Create Tags By Department</a></div>
+            <div><a href="../../admin/labels/CreateTagsByManu.php">Create Tags By Brand</a></div>
+            <div><a href="../../admin/labels/QueueTagsByList.php">Queue Tags by A List</a></div>
+            <div><a href="../../admin/labels/QueueTagsByLC.php">Queue Tags by Like Code</a></div>
+            <div><a href="../../admin/labels/MovementTagTracker.php">Movement Tag Tracker</a>
+                | <a href="../../admin/labels/MovementTagTracker.php?id=config">Settings</a>
+                | <a href="../../admin/labels/MovementTagTracker.php?data=view">Data</a></div>
             <div><a href="../../item/handheld/ItemStatusPage.php">Scan a Single Item</a></div>
-            <div><a href="../../item/vendors/PrintOrderedSigns.php">Print Tags in Order</a></div>
     </div>
     <div class="col-lg-4">
     </div>
