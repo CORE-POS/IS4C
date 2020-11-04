@@ -237,6 +237,51 @@ if (!$output || isset($_REQUEST['recache'])){
         } 
         $supers[$s][1] += $w[4];
     }
+    if ($store == 50) {
+        $depts = array();
+        $amts = array(
+            '41201-1' => 0,
+            '41201-2' => 0,
+            '41201-5' => 0,
+            '41201-5' => 0,
+        );
+        $webQ="select t.department,
+        s.superID,
+        d.salesCode,d.dept_name,
+        SUM(t.total),
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+        FROM $dlog as t 
+            INNER JOIN departments as d ON t.department = d.dept_no
+            LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = d.dept_no    
+        WHERE tdate BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 't') . "
+            AND t.department <> 0
+            AND s.superID > 0
+            AND t.trans_type <> 'T'
+            AND t.trans_type IN ('I', 'D')
+        GROUP BY
+        s.superID,t.department,d.dept_name,d.salesCode,
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+        order by s.superID,t.department";
+        $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE trans_subtype='CM' AND description LIKE '%STORE%'
+            AND tdate BETWEEN ? AND ? AND emp_no=? AND register_no=? AND trans_no=?");
+        $webP = $dbc->prepare($webQ);
+        $webR = $dbc->execute($webP, $args);
+        while ($row = $dbc->fetchRow($webR)) {
+            $key = $row['salesCode'] . '-';
+            $tdate = date('Y-m-d', mktime(0, 0, 0, $row[6], $row[7], $row[5]));
+            $storeCM = $dbc->getValue($storeP, array($tdate, $tdate . ' 23:59:59', $row['emp_no'], $row['register_no'], $row['trans_no']));
+            list(,$storeID) = explode(' ', $storeCM);
+            $key .= $storeID;
+            $amts[$key] += $row[4];
+        }
+        $depts = array(
+            array(80, 3, '41205-01-20', 'DOutsideBakery', $amts['41205-1']),
+            array(80, 3, '41205-02-20', 'DOutsideBakery', $amts['41205-2']),
+            array(83, 3, '41201-01-20', 'DTHANKSGIVING', $amts['41201-1']),
+            array(83, 3, '41201-02-20', 'DTHANKSGIVING', $amts['41201-2']),
+        );
+    }
     unset($supers[0]);
     select_to_table3($depts,5,0,'ffffff');
     echo '<b>Total Sales by Group</b>';
@@ -294,6 +339,42 @@ if (!$output || isset($_REQUEST['recache'])){
     while ($w = $dbc->fetchRow($res)) {
         $mems[] = $w;
         $ttl += $w[1];
+    }
+    $query13 = "SELECT   m.memDesc,SUM(d.total) AS Sales,
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+    FROM         $dlog d INNER JOIN
+                  custdata c ON d.card_no = c.CardNo INNER JOIN
+                  memtype m ON c.memType = m.memtype
+    WHERE d.tdate BETWEEN ? AND ?
+        AND " . DTrans::isStoreID($store, 'd') . "
+    AND (d.department < 600) AND d.department <> 0 AND (c.personnum= 1 or c.personnum is null)
+    AND d.trans_type <> 'T'
+    GROUP BY m.memDesc,
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+    ORDER BY m.memDesc";
+    $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE trans_subtype='CM' AND description LIKE '%STORE%'
+        AND tdate BETWEEN ? AND ? AND emp_no=? AND register_no=? AND trans_no=?");
+    $prep = $dbc->prepare($query13);
+    $res = $dbc->execute($prep, $args);
+    $mSums = array();
+    while ($w = $dbc->fetchRow($res)) {
+        $key = $w['memDesc'];
+        $tdate = date('Y-m-d', mktime(0, 0, 0, $w[3], $w[4], $w[2]));
+        $storeCM = $dbc->getValue($storeP, array($tdate, $tdate . ' 23:59:59', $w['emp_no'], $w['register_no'], $w['trans_no']));
+        list(,$storeID) = explode(' ', $storeCM);
+        if ($storeID == 1) {
+            $key .= ' HS';
+        } elseif ($storeID == 2) {
+            $key .= ' DN';
+        }
+        if (!isset($mSums[$key])) {
+            $mSums[$key] = 0;
+        }
+        $mSums[$key] += $w[1];
+    }
+    $mems = array();
+    foreach ($mSums as $k => $v) {
+        $mems[] = array($k, $v);
     }
     select_to_table3($mems,2,0,'ffffff');
     select_to_table3(array(array($ttl)),1,0,'ffffff');
@@ -354,6 +435,17 @@ echo $output;
                     AND upc=\'TAXLINEITEM\'
                     AND ' . DTrans::isNotTesting() . '
                 GROUP BY taxID';
+    if ($store == 50) {
+        $newTaxQ = 'SELECT \'Deli\' AS description,
+                        SUM(total) AS ttl,
+                        2 AS taxID
+                    FROM is4c_trans.transarchive AS t
+                    WHERE datetime BETWEEN ? AND ?
+                        AND ' . DTrans::isStoreID($store, 't') . '
+                        AND upc=\'TAX\'
+                        AND ' . DTrans::isNotTesting() . '
+                    GROUP BY taxID';
+    }
     $sql = FannieDB::get($FANNIE_OP_DB);
     $prep = $sql->prepare($newTaxQ);
     $res = $sql->execute($prep, $args);
